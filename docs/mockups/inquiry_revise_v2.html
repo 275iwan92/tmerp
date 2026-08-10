@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Inkuiri REVISE (scope)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 74px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+header h1{font-size:15px;font-weight:700}header .sub{font-size:11px;color:#aeb8d8}
+.tag{font-size:10px;font-weight:800;padding:3px 10px;border-radius:8px}
+.tag.rev{background:#e6a23c;color:#3a2600}.tag.b{background:#c47a2c;color:#fff}.tag.st{background:#dce7ff;color:#1a4bb8}
+.back{margin-left:auto;background:#43508a;color:#cfd6ef;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
+.wrap{max-width:1040px;margin:16px auto;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;overflow:hidden}
+.card>h3{margin:0;padding:9px 14px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:13px;color:#2c3e69;display:flex;align-items:center;gap:8px}
+.pad{padding:14px}
+label{font-size:11px;color:#667;font-weight:700;display:block;margin-bottom:3px}
+input,select,textarea{padding:7px 9px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;width:100%;font-family:inherit}
+input:disabled{background:#eef0f3;color:#8a94a6}
+.row{display:grid;gap:12px}.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}
+.note{padding:9px 12px;border-radius:7px;font-size:11.5px;margin:0 14px 12px;line-height:1.5}
+.note.o{background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}
+.note.b{background:#e8f4ff;border:1px solid #b8d9f5;color:#1560a8}
+.note.g{background:#f0f7f4;border:1px solid #c6e5d5;color:#177a4b}
+/* origin trace */
+.trace{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f8fafc;border:1px solid #dde3ec;border-radius:8px;padding:11px 13px;margin:0 14px 12px;font-size:11.5px}
+.trace .node{background:#fff;border:1px solid #cfd7e3;border-radius:7px;padding:5px 10px}
+.trace .node b{color:#2c3e69}.trace .ar{color:#b9c2d0;font-size:15px}
+.trace .node.co{border-color:#22a06b;background:#f0faf5}
+/* scope */
+.scope{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 14px 12px}
+.opt{display:flex;gap:9px;align-items:flex-start;border:1.5px solid #cfd7e3;border-radius:8px;padding:10px 12px;cursor:pointer;background:#fff}
+.opt.on{border-color:#e6a23c;background:#fffdf5;box-shadow:0 0 0 2px #fbe7c1}
+.opt input{width:auto;margin-top:2px;flex:0 0 auto}
+.opt .tx b{font-size:12.5px;color:#2c3e69;display:block}.opt .tx span{font-size:10.5px;color:#8a94a6;display:block;margin-top:1px;line-height:1.35}
+/* trigger matrix */
+.matrix{margin:0 14px 12px;border:1px solid #dde3ec;border-radius:8px;overflow:hidden}
+.matrix .mh{background:#2c3e69;color:#fff;font-size:11px;font-weight:700;padding:6px 12px}
+.mrow{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid #eef1f5;font-size:12px}
+.mrow .lb{width:150px;font-weight:600;color:#556}
+.flag{font-size:10px;font-weight:700;padding:2px 9px;border-radius:8px}
+.flag.on{background:#ffe1e1;color:#c0392b}.flag.off{background:#eef1f5;color:#a8b0bd}
+.mrow .why{color:#8a94a6;font-size:10.5px;margin-left:auto}
+/* dynamic edit blocks */
+.eb{margin:0 14px 12px;border:1px dashed #cfd7e3;border-radius:8px;padding:12px;background:#fcfdff}
+.eb.hidden{display:none}
+.eb .t{font-size:11px;font-weight:700;color:#2c3e69;text-transform:uppercase;letter-spacing:.3px;margin-bottom:9px}
+.inkrow{display:grid;grid-template-columns:60px 1fr 100px 30px;gap:8px;align-items:center;margin-bottom:6px}
+.addln{background:#eef3fb;color:#2c7be5;border:1px dashed #9cc0f0;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.newink{background:#fff8e1;border:1px solid #ffe08a}
+.hppimpact{background:#fdecea;border:1px solid #f5b7b1;color:#943126;font-size:11.5px;border-radius:7px;padding:8px 11px;margin-top:9px;display:flex;gap:8px;align-items:center}
+.actionbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9dfe8;padding:11px 20px;display:flex;gap:10px;align-items:center;z-index:60;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+.btn{border:none;padding:9px 18px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600}
+.btn.p{background:#2c7be5;color:#fff}.btn.g{background:#e6eaf0;color:#333}.btn.s{background:#22a06b;color:#fff}
+@media(max-width:760px){.scope{grid-template-columns:1fr}.c2,.c3{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header>
+  <div><h1>Inkuiri Produk — REVISE</h1><div class="sub">ubah spec via copy-record · versi baru</div></div>
+  <span class="tag b">SISI B · SALES</span><span class="tag st">DRAFT v2</span>
+  <button class="back">← Batal</button>
+</header>
+
+<div class="wrap">
+
+  <!-- ORIGIN TRACE -->
+  <div class="card">
+    <h3>1️⃣ Produk Asal & Jejak Relasi</h3>
+    <div class="trace">
+      <span class="node"><b>Master:</b> PRD-2024-0417</span><span class="ar">←</span>
+      <span class="node"><b>Inquiry asal:</b> INQ-2026-0188 (v1)</span><span class="ar">→</span>
+      <span class="node co"><b>CO aktif:</b> CO-2026-0455 (pakai v1, beku)</span>
+    </div>
+    <div class="note b">🔗 REVISE membuat <b>versi baru</b>. CO lama tetap memakai snapshot v1 (harga & layout beku) — <b>tidak terpengaruh</b>. Versi baru harus <b>PRICE_APPROVED</b> sebelum masuk quotation/CO berikutnya. Versi v1 → status <b>CANCELLED · SUPERSEDED</b>.</div>
+    <div class="pad row c3">
+      <div><label>Customer</label><input value="PT. Sinar Kemasan Abadi" disabled></div>
+      <div><label>Produk</label><input value="Inner Box Vitamin C 30's" disabled></div>
+      <div><label>Versi baru</label><input value="v2" disabled></div>
+    </div>
+  </div>
+
+  <!-- SCOPE -->
+  <div class="card">
+    <h3>2️⃣ Scope Revisi <span style="margin-left:auto;font-weight:400;color:#8a94a6;font-size:11px">pilih yang berubah (boleh &gt;1)</span></h3>
+    <div class="note o">Scope menentukan <b>apa yang wajib diproses ulang</b>. Pilih manual — sistem tak menebak, agar tak memicu proof/imposisi mahal yang tak perlu.</div>
+    <div class="scope">
+      <label class="opt" onclick="tog(this,'MATERIAL')"><input type="checkbox"><span class="tx"><b>🧱 Material</b><span>Bahan/gramasi berubah (mis. 310→350gsm karena kurang tebal). → costing ulang.</span></span></label>
+      <label class="opt" onclick="tog(this,'DIMENSION')"><input type="checkbox"><span class="tx"><b>📐 Dimensi</b><span>Ukuran P×L×T berubah (mis. kurang kecil sedikit). → imposisi ulang + costing.</span></span></label>
+      <label class="opt on" onclick="tog(this,'ARTWORK')"><input type="checkbox" checked><span class="tx"><b>🎨 Artwork</b><span>Desain berubah (mis. +logo Halal Indonesia). → proof warna ulang.</span></span></label>
+      <label class="opt on" onclick="tog(this,'COLOR')"><input type="checkbox" checked><span class="tx"><b>🖌️ Warna</b><span>Tinta/plate berubah (mis. +1 spot Halal). → +plate → costing ulang.</span></span></label>
+      <label class="opt" onclick="tog(this,'PROCESS')"><input type="checkbox"><span class="tx"><b>⚙️ Proses</b><span>Urutan/finishing berubah. → costing ulang.</span></span></label>
+    </div>
+    <div class="pad" style="padding-top:0">
+      <label>Alasan Revisi (revise_reason)</label>
+      <input value="Tambah logo Halal Indonesia (spot ink) — permintaan customer">
+    </div>
+  </div>
+
+  <!-- TRIGGER MATRIX -->
+  <div class="card">
+    <h3>3️⃣ Konsekuensi (otomatis dari scope)</h3>
+    <div class="matrix">
+      <div class="mh">Yang wajib diproses ulang</div>
+      <div class="mrow"><span class="lb">📐 Imposisi ulang</span><span class="flag off" id="fImpo">TIDAK</span><span class="why" id="wImpo">dieline & ukuran tetap → layout reuse</span></div>
+      <div class="mrow"><span class="lb">🎨 Proof warna ulang</span><span class="flag on" id="fProof">YA</span><span class="why" id="wProof">artwork berubah (logo Halal) → verifikasi visual</span></div>
+      <div class="mrow"><span class="lb">💰 Costing / HPP ulang</span><span class="flag on" id="fCost">YA</span><span class="why" id="wCost">+1 plate spot → biaya naik</span></div>
+      <div class="mrow"><span class="lb">📅 Due-date reset</span><span class="flag on" id="fDue">YA</span><span class="why">14 hari kerja dari approval proof baru</span></div>
+    </div>
+  </div>
+
+  <!-- DYNAMIC: WARNA (contoh Halal +1 spot) -->
+  <div class="eb" id="ebColor">
+    <div class="t">🖌️ Warna — Perubahan Plate</div>
+    <div class="inkrow" style="font-size:10px;color:#8a94a6;font-weight:700"><span>UNIT</span><span>TINTA</span><span>PASS</span><span></span></div>
+    <div class="inkrow"><input value="U1" disabled><input value="CYAN" disabled><input value="CS" disabled><span></span></div>
+    <div class="inkrow"><input value="U2" disabled><input value="MAGENTA" disabled><input value="CS" disabled><span></span></div>
+    <div class="inkrow"><input value="U3" disabled><input value="YELLOW" disabled><input value="CS" disabled><span></span></div>
+    <div class="inkrow"><input value="U4" disabled><input value="BLACK" disabled><input value="CS" disabled><span></span></div>
+    <div class="inkrow newink"><input value="U5" ><input value="SPOT — Halal Green (PANTONE 348C)"><input value="KS"><button class="addln" style="padding:6px">baru</button></div>
+    <div class="hppimpact">⚠️ <b>+1 plate (spot Halal)</b> → jumlah plate 4→5, tambah 1 pass. HPP/pcs naik ± <b>Rp 45</b> walau ukuran &amp; bahan tetap. Menunggu perhitungan Costing.</div>
+  </div>
+
+  <!-- DYNAMIC: DIMENSI (hidden default) -->
+  <div class="eb hidden" id="ebDim">
+    <div class="t">📐 Dimensi — Ukuran Baru</div>
+    <div class="row c3">
+      <div><label>Panjang (cm)</label><input value="8.0"></div>
+      <div><label>Lebar (cm)</label><input value="3.8"></div>
+      <div><label>Tinggi (cm)</label><input value="12.0"></div>
+    </div>
+    <div class="note o" style="margin:10px 0 0">Ukuran berubah → <b>up per plano bisa berubah</b> → imposisi WAJIB diulang (DRAFT→VERIFIED). Designer akan verifikasi layout baru.</div>
+  </div>
+
+  <!-- DYNAMIC: MATERIAL (hidden default) -->
+  <div class="eb hidden" id="ebMat">
+    <div class="t">🧱 Material — Substitusi</div>
+    <div class="row c2">
+      <div><label>Layer 1 (lama)</label><input value="Duplex 310gsm" disabled></div>
+      <div><label>Layer 1 (baru)</label><input value="Duplex 350gsm"></div>
+    </div>
+    <div class="note b" style="margin:10px 0 0">Gramasi naik → harga bahan naik → costing ulang. Imposisi tetap (ukuran sama).</div>
+  </div>
+
+</div>
+
+<div class="actionbar">
+  <button class="btn g">💾 Simpan Draft</button>
+  <span style="font-size:11px;color:#8a94a6;margin-left:6px">Scope: <b id="scopeList">ARTWORK, COLOR</b> · Doc <b>INQ-RV-2026-0192</b></span>
+  <button class="btn s" style="margin-left:auto">➜ Submit ke Costing (v2)</button>
+</div>
+
+<script>
+const S={MATERIAL:false,DIMENSION:false,ARTWORK:true,COLOR:true,PROCESS:false};
+function tog(el,k){el.classList.toggle('on');S[k]=!S[k];render();}
+function render(){
+  document.getElementById('ebColor').classList.toggle('hidden',!S.COLOR);
+  document.getElementById('ebDim').classList.toggle('hidden',!S.DIMENSION);
+  document.getElementById('ebMat').classList.toggle('hidden',!S.MATERIAL);
+  const impo=S.DIMENSION, proof=S.ARTWORK, cost=S.MATERIAL||S.DIMENSION||S.COLOR||S.PROCESS, due=S.ARTWORK;
+  set('fImpo',impo,'wImpo',impo?'ukuran berubah → up/plano dihitung ulang':'dieline & ukuran tetap → layout reuse');
+  set('fProof',proof,'wProof',proof?'artwork berubah → verifikasi visual':'artwork tetap');
+  set('fCost',cost,'wCost',cost?'material/plate/proses berubah → biaya berubah':'tak ada perubahan biaya');
+  set('fDue',due,null,null);
+  document.getElementById('scopeList').textContent=Object.keys(S).filter(k=>S[k]).join(', ')||'(belum ada)';
+}
+function set(id,on,wid,txt){const f=document.getElementById(id);f.textContent=on?'YA':'TIDAK';f.className='flag '+(on?'on':'off');if(wid&&txt)document.getElementById(wid).textContent=txt;}
+render();
+</script>
+</body></html>

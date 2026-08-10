@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  FORECAST ENGINE — PROTOTYPE  ·  PETA DATA UNTUK DEVELOPER
+================================================================================
+  SIFAT   : PROTOTYPE, data simulasi (average tahun-tahun sebelumnya). Butuh >=1 th data riil.
+  BENTUK  : 2 kotak. KIRI = prediksi berbasis WAKTU+EVENT. KANAN = prediksi berbasis AREA.
+
+  ── READ (sumber saat nyata) ──────────────────────────────────────────────────
+   i_inquiry / co_header+co_item : histori order (produk, qty, tanggal, area) → average
+   m_area                        : area customer (hanya area yang PERNAH order)
+   m_season_calendar (BARU)      : event per bulan (Idulfitri, Natal, Imlek…) → tema produk
+   m_product                     : nama produk + tema/kategori
+
+  ── WRITE (saat nyata) ────────────────────────────────────────────────────────
+   f_product_forecast : hasil prediksi (produk, periode, qty, basis: waktu/area)
+
+  CATATAN: KIRI ambil average bulan-depan tahun lalu + cek EVENT bulan itu (tema laris).
+           KANAN ambil average per area (yang pernah order) + produk per area.
+================================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Forecast</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 40px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}header .sub{font-size:12px;opacity:.75}
+header .back{margin-left:auto;background:#43508a;color:#cfd6ef;border:none;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none}
+.wrap{max-width:1080px;margin:16px auto;padding:0 16px}
+.note{font-size:11.5px;padding:8px 12px;border-radius:6px;line-height:1.5;margin-bottom:14px;background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:780px){.cols{grid-template-columns:1fr}}
+.box{background:#fff;border:1px solid #d9dfe8;border-radius:9px;overflow:hidden}
+.box>h3{margin:0;padding:11px 15px;font-size:13.5px;color:#fff;display:flex;align-items:center;gap:8px}
+.box.left>h3{background:#2c7be5}
+.box.right>h3{background:#22a06b}
+.box .body{padding:14px}
+
+/* blok prediksi (kiri) */
+.pred{border:1px solid #e2e7ee;border-radius:8px;margin-bottom:12px;overflow:hidden}
+.pred:last-child{margin-bottom:0}
+.pred-hd{background:#f4f8ff;padding:9px 13px;border-bottom:1px solid #e2e7ee}
+.pred-hd .t{font-size:13px;font-weight:700;color:#2c3e69}
+.pred-hd .ev{font-size:11px;color:#8a4b00;margin-top:2px;display:flex;align-items:center;gap:5px}
+.pred-hd .ev b{color:#c0392b}
+.plist{padding:6px 0}
+.prow{display:flex;align-items:center;gap:10px;padding:7px 13px}
+.prow .nm{flex:1;font-size:12.5px;color:#2c3e69}
+.prow .nm .th{font-size:10px;color:#8a94a6;display:block;margin-top:1px}
+.prow .qty{font-size:13px;font-weight:700;color:#0e5c38;font-variant-numeric:tabular-nums;text-align:right}
+.prow .qty small{font-size:10px;color:#8a94a6;font-weight:500}
+.hot{font-size:9px;font-weight:700;background:#fdecec;color:#c0392b;padding:1px 6px;border-radius:8px;margin-left:6px}
+
+/* area (kanan) */
+.area{border:1px solid #e2e7ee;border-radius:8px;margin-bottom:10px;overflow:hidden}
+.area:last-child{margin-bottom:0}
+.area-hd{background:#f1faf6;padding:8px 13px;font-size:12.5px;font-weight:700;color:#177a4b;display:flex;align-items:center;gap:7px}
+.area-hd .tot{margin-left:auto;font-size:11px;color:#0e8a4f;font-weight:600}
+.arow{display:flex;align-items:center;gap:10px;padding:6px 13px;border-top:1px solid #eef4f0}
+.arow .nm{flex:1;font-size:12px;color:#2c3e69}
+.arow .qty{font-size:12.5px;font-weight:600;color:#0e5c38;font-variant-numeric:tabular-nums}
+.mono{font-family:ui-monospace,monospace;font-size:10.5px;color:#8a94a6}
+</style>
+</head>
+<body>
+<header>
+  <b>📈 Forecast</b>
+  <span class="sub">rata-rata tahun sebelumnya + event</span>
+  <a class="back" href="inquiry_hub.html">← Menu</a>
+</header>
+
+<div class="wrap">
+  <div class="note">
+    ⚠️ Prototype · data simulasi dari <b>rata-rata tahun-tahun sebelumnya</b>. Alat bantu, bukan angka pasti.
+  </div>
+
+  <div class="cols">
+
+    <!-- ============ KIRI: WAKTU + EVENT ============ -->
+    <div class="box left">
+      <h3>🗓️ Prediksi Berdasarkan Waktu</h3>
+      <div class="body" id="leftBody"></div>
+    </div>
+
+    <!-- ============ KANAN: AREA ============ -->
+    <div class="box right">
+      <h3>📍 Prediksi Berdasarkan Area</h3>
+      <div class="body" id="rightBody"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===== DUMMY: average tahun lalu ===== */
+/* KIRI: prediksi bulan depan & 3 bulan ke depan + EVENT bulan itu tahun lalu */
+var PRED = [
+  { label:'Bulan Depan — April 2027', event:'Idulfitri (H-30)', theme:'kemasan makanan & parcel Lebaran',
+    products:[
+      {nm:'Box Snack Lebaran', th:'tema Lebaran', qty:'32 ton', hot:true},
+      {nm:'Gift Box Parcel',   th:'tema Lebaran', qty:'18 ton', hot:true},
+      {nm:'Kemasan Teh Celup', th:'reguler',      qty:'12 ton', hot:false}
+    ]},
+  { label:'3 Bulan ke Depan — Jun 2027', event:'Iduladha', theme:'kemasan daging & katering',
+    products:[
+      {nm:'Box Katering',      th:'tema Iduladha', qty:'14 ton', hot:true},
+      {nm:'Sleeve Kopi',       th:'reguler',       qty:'9 ton',  hot:false},
+      {nm:'Kemasan Teh Celup', th:'reguler',       qty:'11 ton', hot:false}
+    ]}
+];
+
+/* KANAN: area yang PERNAH order + produk per area (average) */
+var AREAS = [
+  { area:'Jawa Barat', tot:'41 ton', products:[
+      {nm:'Kemasan Teh Celup', qty:'16 ton'},
+      {nm:'Box Snack',         qty:'15 ton'},
+      {nm:'Sleeve Kopi',       qty:'10 ton'}
+    ]},
+  { area:'Jawa Timur', tot:'28 ton', products:[
+      {nm:'Gift Box Parcel',   qty:'12 ton'},
+      {nm:'Box Katering',      qty:'10 ton'},
+      {nm:'Kemasan Teh Celup', qty:'6 ton'}
+    ]},
+  { area:'Jawa Tengah', tot:'19 ton', products:[
+      {nm:'Box Snack',         qty:'11 ton'},
+      {nm:'Sleeve Kopi',       qty:'8 ton'}
+    ]}
+];
+
+/* render kiri */
+document.getElementById('leftBody').innerHTML = PRED.map(function(p){
+  return '<div class="pred">'
+    + '<div class="pred-hd"><div class="t">'+p.label+'</div>'
+    + '<div class="ev">🎊 Event: <b>'+p.event+'</b> → laris: '+p.theme+'</div></div>'
+    + '<div class="plist">'
+    + p.products.map(function(x){
+        return '<div class="prow"><div class="nm">'+x.nm
+          + (x.hot?'<span class="hot">LARIS</span>':'')
+          + '<span class="th">'+x.th+'</span></div>'
+          + '<div class="qty">'+x.qty+'</div></div>';
+      }).join('')
+    + '</div></div>';
+}).join('');
+
+/* render kanan */
+document.getElementById('rightBody').innerHTML =
+  '<div class="mono" style="margin-bottom:8px">Area yang pernah order (average tahun sebelumnya)</div>'
+  + AREAS.map(function(a){
+  return '<div class="area">'
+    + '<div class="area-hd">📍 '+a.area+'<span class="tot">'+a.tot+'</span></div>'
+    + a.products.map(function(x){
+        return '<div class="arow"><div class="nm">'+x.nm+'</div><div class="qty">'+x.qty+'</div></div>';
+      }).join('')
+    + '</div>';
+}).join('');
+</script>
+</body>
+</html>

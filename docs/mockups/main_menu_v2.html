@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TELASIH MAKMUR — ERP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{
+    --side:#1f2742;--side-2:#27314f;--side-hover:#2d3860;--topbar:#141b30;
+    --accent:#2f6fed;--accent-2:#255bd4;--side-ink:#cbd1e6;--side-muted:#7b85a8;
+    --content-bg:#eef1f6;--tabbar:#e6e8f2;--border:#e3e7f0;
+    --ink:#3a4568;--ink-strong:#2f3a5e;--muted:#9aa3bd;--violet:#7a52d0;--amber:#b6852a;
+    --side-w:262px;--topbar-h:56px;--tab-h:44px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--content-bg);color:var(--ink);overflow:hidden}
+  #app{display:flex;height:100vh}
+
+  aside{width:var(--side-w);background:var(--side);color:var(--side-ink);display:flex;flex-direction:column;flex-shrink:0;transition:width .18s;overflow:hidden}
+  body.mini aside{width:66px}
+  body.nosidebar aside{width:0}
+  .side-head{height:var(--topbar-h);display:flex;align-items:center;gap:10px;padding:0 14px;background:rgba(0,0,0,.18);flex-shrink:0}
+  .logo-badge{width:34px;height:34px;border-radius:9px;background:conic-gradient(from 200deg,#ff5f6d,#ffc371,#2f6fed,#8a5cf6,#ff5f6d);flex-shrink:0}
+  .logo-txt{line-height:1.05;overflow:hidden;white-space:nowrap}
+  .logo-txt b{font-size:15px;letter-spacing:.4px;color:#fff}
+  .logo-txt span{font-size:10px;letter-spacing:2px;color:var(--side-muted);text-transform:uppercase}
+  .side-collapse{margin-left:auto;background:none;border:none;color:var(--side-muted);cursor:pointer;font-size:15px;padding:6px;border-radius:6px}
+  .side-collapse:hover{background:rgba(255,255,255,.08);color:#fff}
+  body.mini .logo-txt{display:none}
+  .mod-title{display:flex;align-items:center;gap:11px;padding:16px 16px 10px;color:#fff;font-size:15px;font-weight:700;letter-spacing:.6px;white-space:nowrap}
+  .mod-title .ic{font-size:18px;width:22px;text-align:center;flex-shrink:0}
+  body.mini .mod-title{justify-content:center;padding:16px 0 10px}
+  body.mini .mod-title .lbl{display:none}
+  .side-nav{flex:1;overflow-y:auto;padding:4px 8px 12px}
+  .side-nav::-webkit-scrollbar{width:8px}.side-nav::-webkit-scrollbar-thumb{background:#39456e;border-radius:8px}
+  .side-cap{font-size:10px;letter-spacing:.7px;text-transform:uppercase;color:var(--side-muted);padding:11px 12px 5px;font-weight:700;white-space:nowrap}
+  body.mini .side-cap{display:none}
+  .leaf{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;text-align:left;color:#aeb6d4;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;white-space:nowrap}
+  .leaf:hover{background:var(--side-hover);color:#fff}
+  .leaf.active{background:var(--accent);color:#fff}
+  .leaf .lic{width:20px;text-align:center;flex-shrink:0;font-size:13px;opacity:.9}
+  body.mini .leaf{justify-content:center;padding:11px 0}
+  body.mini .leaf .lbl{display:none}
+  .side-hint{color:var(--side-muted);font-size:13px;line-height:1.55;padding:14px 16px}
+  body.mini .side-hint{display:none}
+
+  #main{flex:1;display:flex;flex-direction:column;min-width:0}
+  #topbar{height:var(--topbar-h);background:var(--topbar);color:#fff;display:flex;align-items:center;gap:4px;padding:0 12px;flex-shrink:0}
+  body.notopbar #topbar{display:none}
+  .tb-btn{background:none;border:none;color:#c7cee6;cursor:pointer;font-size:18px;padding:8px;border-radius:8px;line-height:1}
+  .tb-btn:hover{background:rgba(255,255,255,.10);color:#fff}
+  nav.mega{display:flex;align-items:stretch;height:100%;margin-left:6px;overflow-x:auto}
+  nav.mega::-webkit-scrollbar{height:0}
+  .mega-item{background:none;border:none;color:#c1c8e2;font-size:13.5px;font-weight:600;padding:0 14px;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;border-bottom:3px solid transparent}
+  .mega-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .mega-item.active{color:#fff;background:rgba(47,111,237,.18);border-bottom-color:var(--accent)}
+  .mega-item .mi{font-size:15px}
+  .tb-spacer{flex:1}
+  .lang{position:relative}
+  .lang-menu{position:absolute;right:0;top:42px;background:#fff;color:var(--ink);border-radius:9px;box-shadow:0 12px 30px rgba(15,22,45,.2);overflow:hidden;display:none;min-width:150px;z-index:40}
+  .lang-menu.open{display:block}
+  .lang-menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:10px 14px;font-size:13.5px;color:var(--ink);cursor:pointer}
+  .lang-menu button:hover{background:#f2f5fb}
+  .avatar{width:32px;height:32px;border-radius:50%;background:#c3ccdf;display:flex;align-items:center;justify-content:center;margin-left:4px;cursor:pointer}
+  .avatar svg{width:20px;height:20px;fill:#5a6488}
+  #topbar-restore{display:none;position:absolute;top:6px;right:14px;z-index:45}
+  body.notopbar #topbar-restore{display:block}
+  #topbar-restore button{background:var(--topbar);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+
+  #tabbar{height:var(--tab-h);background:var(--tabbar);display:flex;align-items:flex-end;gap:2px;padding:0 8px;flex-shrink:0;overflow-x:auto}
+  #tabbar::-webkit-scrollbar{height:0}
+  #tabbar:empty::before{content:"Belum ada menu terbuka";color:var(--muted);font-size:12.5px;align-self:center;padding:0 8px}
+  .tab{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px 0 13px;background:#d3d7e8;color:#5a6488;border-radius:9px 9px 0 0;cursor:pointer;font-size:13px;white-space:nowrap;max-width:230px}
+  .tab:hover{background:#dde0ee}
+  .tab.active{background:#fff;color:var(--ink-strong);font-weight:600;box-shadow:0 -2px 0 var(--accent) inset}
+  .tab .tlbl{overflow:hidden;text-overflow:ellipsis}
+  .tab .tx{border:none;background:none;color:inherit;cursor:pointer;font-size:15px;line-height:1;opacity:.6;padding:0 2px;border-radius:4px}
+  .tab .tx:hover{opacity:1;background:rgba(0,0,0,.08)}
+
+  #content{flex:1;position:relative;overflow:hidden;background:var(--content-bg)}
+  .pane{position:absolute;inset:0;overflow:auto;padding:22px;display:none}
+  .pane.active{display:block}
+  .pane.framed{padding:0}
+  .pane iframe{width:100%;height:100%;border:none;background:#fff}
+  .home{max-width:760px;margin:6vh auto 0;text-align:center}
+  .home .hero{width:70px;height:70px;border-radius:18px;background:conic-gradient(from 200deg,#ff5f6d,#ffc371,#2f6fed,#8a5cf6,#ff5f6d);margin:0 auto 20px}
+  .home h1{font-size:26px;color:var(--ink-strong);margin-bottom:10px}
+  .home p{color:var(--muted);font-size:15px;line-height:1.6}
+  .home .hint{margin-top:18px;font-size:13px;color:var(--muted)}
+  .home kbd{background:#e2e6f0;border-radius:5px;padding:2px 7px;font-family:inherit}
+
+  .app-mock{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+  .am-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#eef4ef;border-bottom:1px solid #dbe6de}
+  .am-head h2{font-size:15px;letter-spacing:.4px;color:#33604a;text-transform:uppercase}
+  .am-head .date{font-size:13px;color:#4a7a5f;font-weight:600}
+  .am-tools{display:flex;align-items:center;gap:10px;padding:14px 20px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+  .am-search{display:flex;align-items:center;gap:6px;border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--muted);font-size:13px;min-width:170px}
+  .am-btn{border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+  .am-btn.g{background:#22b07d;color:#fff}.am-btn.n{background:#eef1f6;color:var(--ink)}
+  .am-note{padding:10px 20px;font-size:12px;color:var(--muted);background:#fafbfd;border-bottom:1px solid var(--border)}
+  .am-note code{background:#eef1f6;padding:1px 6px;border-radius:4px}
+  table.am-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+  .am-tbl th{text-align:left;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;padding:11px 20px;border-bottom:2px solid var(--border)}
+  .am-tbl td{padding:12px 20px;border-bottom:1px solid #eef1f6;color:var(--ink-strong)}
+  .am-pill{font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px}
+  .am-pill.ok{background:#e4f6ec;color:#22905f}.am-pill.wait{background:#fdeede;color:#b6852a}
+  .am-form{padding:22px 24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:720px}
+  .am-form .f{display:flex;flex-direction:column}.am-form .f.full{grid-column:1/-1}
+  .am-form label{font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .am-form input{border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--ink-strong);background:#fff}
+  .am-actions{grid-column:1/-1;display:flex;gap:10px;margin-top:6px}
+
+  .pal-ov{position:fixed;inset:0;background:rgba(20,27,48,.45);display:none;justify-content:center;align-items:flex-start;padding-top:12vh;z-index:120}
+  .pal-ov.open{display:flex}
+  .pal{width:100%;max-width:580px;background:#fff;border-radius:16px;box-shadow:0 30px 80px rgba(10,18,45,.4);overflow:hidden}
+  .pal-in{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+  .pal-in input{flex:1;border:none;outline:none;font-size:16px;color:var(--ink-strong)}
+  .pal-list{max-height:330px;overflow-y:auto;padding:8px}
+  .pal-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer}
+  .pal-row.sel,.pal-row:hover{background:#f2f5fb}
+  .pal-row .nm{font-size:14px;color:var(--ink-strong)}.pal-row .mm{font-size:12px;color:var(--muted)}
+  .pal-row .lic{width:18px;text-align:center}
+  .pal-empty{padding:24px;text-align:center;color:var(--muted);font-size:14px}
+  .pal-foot{display:flex;gap:16px;padding:9px 16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);background:#fafbfd}
+  .pal-foot kbd{background:#eef1f6;border-radius:4px;padding:1px 6px}
+
+  /* Topbar badge + popover */
+  .tb-btn.hasbadge{position:relative}
+  .tbadge{position:absolute;top:3px;right:3px;min-width:15px;height:15px;padding:0 4px;background:#e5484d;color:#fff;font-size:9.5px;font-weight:700;border-radius:9px;display:flex;align-items:center;justify-content:center;line-height:1}
+  .pop{position:relative;display:flex;align-items:center}
+  .avatar-btn{display:flex;align-items:center;gap:7px;background:none;border:none;cursor:pointer;padding:5px 7px;border-radius:9px}
+  .avatar-btn:hover{background:rgba(255,255,255,.10)}
+  .avatar-btn .avatar{width:30px;height:30px}
+  .pop-menu{position:absolute;right:0;top:46px;background:#fff;color:var(--ink);border-radius:12px;box-shadow:0 16px 44px rgba(15,22,45,.24);min-width:256px;display:none;overflow:hidden;z-index:70}
+  .pop-menu.open{display:block}
+  .um-head{display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid var(--border)}
+  .um-av{width:44px;height:44px;border-radius:50%;background:#dce1ee;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .um-av svg{width:26px;height:26px;fill:#7b85a4}
+  .um-name{font-weight:700;color:var(--ink-strong);font-size:14.5px}
+  .um-mail{font-size:12px;color:var(--muted)}
+  .um-role{display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:var(--accent);background:#e7effe;padding:2px 8px;border-radius:10px}
+  .um-list{padding:6px}
+  .um-item{display:flex;align-items:center;gap:11px;width:100%;background:none;border:none;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--ink);text-decoration:none}
+  .um-item:hover{background:#f2f5fb}
+  .um-item i{width:18px;text-align:center;color:var(--muted)}
+  .um-item.danger{color:#d0453f}.um-item.danger:hover{background:#fdeceb}.um-item.danger i{color:#d0453f}
+  .um-sep{height:1px;background:var(--border);margin:6px 8px}
+  .nz{display:flex;gap:11px;padding:11px 12px;border-radius:8px;cursor:pointer}
+  .nz:hover{background:#f2f5fb}
+  .nz .dotc{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+  .nz .nt{font-size:13px;color:var(--ink-strong)}.nz .ns{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .pm-head{padding:13px 16px;border-bottom:1px solid var(--border);font-weight:700;color:var(--ink-strong);font-size:14px;display:flex;justify-content:space-between;align-items:center}
+  .pm-head a{font-size:12px;color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
+
+  /* Drawer chat / AI */
+  .backdrop{position:fixed;inset:0;background:rgba(20,27,48,.4);opacity:0;pointer-events:none;transition:opacity .2s;z-index:110}
+  .backdrop.on{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100vh;width:390px;max-width:92vw;background:#fff;box-shadow:-12px 0 40px rgba(15,22,45,.2);transform:translateX(100%);transition:transform .22s;z-index:115;display:flex;flex-direction:column}
+  .drawer.on{transform:none}
+  .dr-head{height:56px;display:flex;align-items:center;gap:9px;padding:0 16px;border-bottom:1px solid var(--border);flex-shrink:0}
+  .dr-head .ico{color:var(--accent)}.dr-title{font-weight:700;color:var(--ink-strong)}
+  .dr-head .x{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px}
+  .chat-body{flex:1;display:flex;min-height:0}
+  .chat-list{width:132px;border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0}
+  .cl-item{padding:11px 10px;cursor:pointer;border-bottom:1px solid #f1f3f9;font-size:12.5px}
+  .cl-item:hover{background:#f7f9fc}.cl-item.active{background:#eef4ff}
+  .cl-item b{color:var(--ink-strong);display:block}.cl-item span{color:var(--muted);font-size:11px}
+  .chat-main{flex:1;display:flex;flex-direction:column;min-width:0}
+  .msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+  .msg{max-width:82%;padding:9px 12px;border-radius:12px;font-size:13px;line-height:1.4}
+  .msg.them{background:#f0f2f7;color:var(--ink-strong);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.me{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .chat-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)}
+  .chat-in input{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13.5px;outline:none}
+  .chat-in button{background:var(--accent);color:#fff;border:none;border-radius:50%;width:38px;height:38px;cursor:pointer;flex-shrink:0}
+  .ai-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:11px}
+  .ai-intro{background:#faf7ff;border:1px dashed #d7c3ff;border-radius:12px;padding:14px;font-size:13px;color:#6b4bb0;line-height:1.5}
+  .ai-chip{display:inline-block;background:#eef4ff;color:var(--accent);border:none;border-radius:16px;padding:7px 12px;font-size:12.5px;cursor:pointer;margin:4px 4px 0 0}
+  .ai-chip:hover{background:#e0eaff}
+  .ai-msg{max-width:88%;padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.45}
+  .ai-msg.me{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .ai-msg.bot{background:#f4f1fb;color:var(--ink-strong);align-self:flex-start;border-bottom-left-radius:4px}
+  .ai-in{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)}
+  .ai-in input{flex:1;min-width:0;border:1.5px solid var(--border);border-radius:20px;padding:9px 14px;font-size:13.5px;outline:none}
+  .ai-in button{background:#7a52d0;color:#fff;border:none;border-radius:50%;width:38px;height:38px;cursor:pointer}
+
+  /* Modal */
+  .mov{position:fixed;inset:0;background:rgba(20,27,48,.45);display:none;align-items:center;justify-content:center;z-index:120;padding:20px}
+  .mov.on{display:flex}
+  .modal{background:#fff;width:100%;max-width:430px;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(15,22,45,.3)}
+  .mh{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+  .mh h3{font-size:16px;color:var(--ink-strong)}.mh .x{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer}
+  .mb{padding:20px}
+  .mf{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--border);background:#fafbfd}
+  .mfield{margin-bottom:14px}.mfield label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .mfield input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;color:var(--ink-strong)}
+  .mfield input[readonly]{background:#f2f4f8;color:var(--muted)}
+  .mbtn{border:none;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:600;cursor:pointer}
+  .mbtn.p{background:var(--accent);color:#fff}.mbtn.c{background:#eef1f6;color:var(--ink)}
+  .photo-row{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+  .photo-big{width:60px;height:60px;border-radius:50%;background:#dce1ee;display:flex;align-items:center;justify-content:center}
+  .photo-big svg{width:34px;height:34px;fill:#7b85a4}
+  .ghost{background:#eef2fb;color:var(--accent);border:none;border-radius:8px;padding:8px 13px;font-size:12.5px;font-weight:600;cursor:pointer}
+  .avatar-btn .avatar{position:relative}
+  .av-dot{position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#e5484d;border:2px solid var(--topbar)}
+  .av-dot.hide{display:none}
+  .um-count{margin-left:auto;background:#e5484d;color:#fff;font-size:10.5px;font-weight:700;border-radius:9px;min-width:18px;height:18px;padding:0 5px;display:flex;align-items:center;justify-content:center}
+  .um-langs{display:flex;gap:6px;margin-left:auto}
+  .um-flag{border:1px solid var(--border);background:#fff;border-radius:7px;padding:2px 7px;font-size:14px;cursor:pointer}
+  .um-flag.active{border-color:var(--accent);box-shadow:0 0 0 2px rgba(47,111,237,.15)}
+  .um-cap{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);font-weight:700;padding:9px 12px 3px}
+</style>
+</head>
+<body>
+<div id="app">
+  <aside>
+    <div class="side-head">
+      <span class="logo-badge"></span>
+      <span class="logo-txt"><b>TELASIH MAKMUR</b><br><span>packaging solution</span></span>
+      <button class="side-collapse" onclick="document.body.classList.toggle('mini')" title="Ciutkan sidebar (mini)">⊟</button>
+    </div>
+    <div class="mod-title" id="modTitle"></div>
+    <div class="side-nav" id="sideNav"></div>
+  </aside>
+  <div id="main">
+    <header id="topbar">
+      <button class="tb-btn" onclick="document.body.classList.toggle('nosidebar')" title="Sembunyikan sidebar">☰</button>
+      <nav class="mega" id="mega"></nav>
+      <div class="tb-spacer"></div>
+      <button class="tb-btn" onclick="openPalette()" title="Cari / perintah (Ctrl K)"><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button class="tb-btn" onclick="document.body.classList.add('notopbar')" title="Sembunyikan top bar"><i class="fa-solid fa-chevron-up"></i></button>
+      <div class="pop" id="userPop">
+        <button class="avatar-btn" id="avatarBtn" title="Budi Santoso"><span class="avatar"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg><span class="av-dot" id="avDot"></span></span><i class="fa-solid fa-chevron-down" style="font-size:10px;color:#9aa3c2"></i></button>
+        <div class="pop-menu" id="userMenu"></div>
+      </div>
+    </header>
+    <div id="topbar-restore"><button onclick="document.body.classList.remove('notopbar')">▾ Tampilkan top bar</button></div>
+    <div id="tabbar"></div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+
+<!-- Drawer Chat (antar pengguna) — data mock; PRODUKSI: sys_chat_conversations / sys_chat_messages -->
+<aside class="drawer" id="chatDrawer">
+  <div class="dr-head"><i class="fa-solid fa-comment-dots ico"></i><span class="dr-title">Chat</span><button class="x" data-close="chatDrawer"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="chat-body">
+    <div class="chat-list" id="chatList"></div>
+    <div class="chat-main">
+      <div class="msgs" id="msgs"></div>
+      <div class="chat-in"><input id="chatInput" placeholder="Tulis pesan…"><button id="chatSend"><i class="fa-solid fa-paper-plane"></i></button></div>
+    </div>
+  </div>
+</aside>
+
+<!-- Drawer Asisten AI (pratinjau) — seam untuk LLM; kini memetakan ke registry menu -->
+<aside class="drawer" id="aiDrawer">
+  <div class="dr-head"><i class="fa-solid fa-wand-magic-sparkles ico" style="color:#7a52d0"></i><span class="dr-title">Asisten AI</span><span style="font-size:11px;color:var(--muted);margin-left:4px">pratinjau</span><button class="x" data-close="aiDrawer"><i class="fa-solid fa-xmark"></i></button></div>
+  <div class="ai-body" id="aiBody">
+    <div class="ai-intro">Tanya dengan bahasa biasa — mis. <b>“buka quotation”</b> atau <b>“daftar produk”</b>, saya bantu bukakan form/grid-nya di tab. Versi ini masih pratinjau; jawaban cerdas penuh menyusul lewat LLM.
+      <div style="margin-top:10px">
+        <button class="ai-chip" data-ai="buka quotation">buka quotation</button>
+        <button class="ai-chip" data-ai="daftar produk">daftar produk</button>
+        <button class="ai-chip" data-ai="purchase order">purchase order</button>
+      </div>
+    </div>
+  </div>
+  <div class="ai-in"><input id="aiInput" placeholder="Ketik permintaan…"><button id="aiSend"><i class="fa-solid fa-arrow-up"></i></button></div>
+</aside>
+
+<!-- Modal Edit profil -->
+<div class="mov" id="mEdit"><div class="modal">
+  <div class="mh"><h3>Edit profil</h3><button class="x" data-mclose="mEdit">&times;</button></div>
+  <div class="mb">
+    <div class="photo-row"><span class="photo-big"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span><button class="ghost">Ubah foto</button></div>
+    <div class="mfield"><label>Nama lengkap</label><input value="Budi Santoso"></div>
+    <div class="mfield"><label>Email</label><input value="budi.santoso@telasih.co.id"></div>
+    <div class="mfield"><label>No. telepon</label><input value="0812-3456-7890"></div>
+    <div class="mfield"><label>Jabatan</label><input value="Administrator" readonly></div>
+  </div>
+  <div class="mf"><button class="mbtn c" data-mclose="mEdit">Batal</button><button class="mbtn p" data-mclose="mEdit">Simpan</button></div>
+</div></div>
+
+<!-- Modal Ubah password -->
+<div class="mov" id="mPass"><div class="modal">
+  <div class="mh"><h3>Ubah password</h3><button class="x" data-mclose="mPass">&times;</button></div>
+  <div class="mb">
+    <div class="mfield"><label>Password lama</label><input type="password" placeholder="Password saat ini"></div>
+    <div class="mfield"><label>Password baru</label><input type="password" placeholder="Min. 8 karakter"></div>
+    <div class="mfield"><label>Konfirmasi password baru</label><input type="password" placeholder="Ulangi password"></div>
+  </div>
+  <div class="mf"><button class="mbtn c" data-mclose="mPass">Batal</button><button class="mbtn p" data-mclose="mPass">Simpan</button></div>
+</div></div>
+
+<!-- Drawer Notifikasi — PRODUKSI: sys_notifications -->
+<aside class="drawer" id="notifDrawer">
+  <div class="dr-head"><i class="fa-solid fa-bell ico"></i><span class="dr-title">Notifikasi</span><button class="x" data-close="notifDrawer"><i class="fa-solid fa-xmark"></i></button></div>
+  <div style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border)"><a id="markReadAll" style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600">Tandai semua terbaca</a></div>
+  <div style="flex:1;overflow-y:auto;padding:6px" id="notifList"></div>
+</aside>
+
+<div class="pal-ov" id="palOv">
+  <div class="pal">
+    <div class="pal-in"><span>🔎</span><input id="palIn" placeholder="Ketik nama form, grid, atau laporan…" autocomplete="off"></div>
+    <div class="pal-list" id="palList"></div>
+    <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> pilih</span><span><kbd>↵</kbd> buka</span><span><kbd>esc</kbd> tutup</span></div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+//  SUMBER MENU = array datar yang MIRROR baris sys_app_menu.
+//  Kolom: id, pid(parent_id), code, label, mt(menu_type),
+//         ot(object_type), tg(target), icon.
+//  PRODUKSI: ganti array ini dengan hasil
+//     SELECT id,parent_id,code,label,menu_type,object_type,target,icon
+//     FROM sys_app_menu WHERE is_active=1 ORDER BY parent_id, sort_order;
+//  (difilter hak akses grup dulu). Sisa kode di bawah tidak berubah.
+//  Catatan: baris HOME TIDAK ada di sys_app_menu — itu landing shell,
+//  ditambahkan terpisah. Bila ingin dikelola dari tabel, tambah 1 baris.
+// =====================================================================
+const R=(id,pid,code,label,mt,ot,tg,icon)=>({id,pid,code,label,mt,ot:ot||null,tg:tg||null,icon:icon||null});
+const ROWS=[
+  // --- MODUL (icon terisi di tabel) ---
+  R(1,null,'SALES','Sales','module',null,null,'fa-solid fa-file-invoice-dollar'),
+  R(2,null,'PROC','Procurement','module',null,null,'fa-solid fa-cart-shopping'),
+  R(3,null,'INV','Inventory','module',null,null,'fa-solid fa-boxes-stacked'),
+  R(4,null,'PROD','Production','module',null,null,'fa-solid fa-industry'),
+  R(5,null,'MDATA','Master Data','module',null,null,'fa-solid fa-database'),
+  R(6,null,'FINACC','Finance & Accounting','module',null,null,'fa-solid fa-sack-dollar'),
+  R(9,null,'SETUP','Setup','module',null,null,'fa-solid fa-gear'),
+  // --- SALES ---
+  R(110,1,'SALES_TRX','Transaksi','group'),
+  R(111,110,'SALES_INQ','Inquiry Product','item','form','form_inquiry.php'),
+  R(112,110,'SALES_COST','Product Costing','item','form','form_costing.php'),
+  R(113,110,'SALES_QUOT','Quotation','item','form','form_quotation.php'),
+  R(114,110,'SALES_SO','Customer Order','item','form','form_customer_order.php'),
+  R(115,110,'SALES_PLAN','Plan Delivery','item','form','form_plan_delivery.php'),
+  R(116,110,'SALES_DO','Delivery Order','item','form','form_delivery_order.php'),
+  R(180,1,'SALES_MON','Monitoring & Laporan','group'),
+  R(181,180,'SALES_GRID_SO','Daftar Sales Order','item','grid','grid_so.php'),
+  R(182,180,'SALES_MON_ORD','Monitoring Order','item','grid','grid_monitoring_order.php'),
+  R(183,180,'SALES_RPT','Laporan Penjualan','item','report','rpt_sales.php'),
+  // --- PROCUREMENT ---
+  R(210,2,'PROC_TRX','Transaksi','group'),
+  R(211,210,'PROC_PR','Purchase Requisition (PR)','item','form','form_pr.php'),
+  R(212,210,'PROC_PQ','Purchase Quotation','item','form','form_purchase_quotation.php'),
+  R(213,210,'PROC_PO','Purchase Order','item','form','form_po.php'),
+  R(214,210,'PROC_RCV','Purchase Receive','item','form','form_purchase_receive.php'),
+  R(215,210,'PROC_RET','Purchase Return','item','form','form_purchase_return.php'),
+  R(280,2,'PROC_MON','Monitoring','group'),
+  R(281,280,'PROC_MON_PR','Monitoring PR','item','grid','grid_monitoring_pr.php'),
+  R(282,280,'PROC_MON_PO','Monitoring PO','item','grid','grid_monitoring_po.php'),
+  // --- INVENTORY ---
+  R(310,3,'INV_TRX','Transaksi','group'),
+  R(311,310,'INV_MOVE','Mutasi / Transfer Stok','item','form','form_stock_move.php'),
+  R(312,310,'INV_ADJ','Penyesuaian Stok (Opname)','item','form','form_stock_adj.php'),
+  R(380,3,'INV_RPT','Stok & Laporan','group'),
+  R(381,380,'INV_RAW','Stok Bahan Baku','item','grid','grid_stock_raw.php'),
+  R(382,380,'INV_FG','Stok Barang Jadi','item','grid','grid_stock_fg.php'),
+  R(383,380,'INV_CARD','Kartu Stok','item','report','rpt_stock_card.php'),
+  R(384,380,'INV_HIST','Riwayat Mutasi','item','grid','grid_stock_history.php'),
+  // --- PRODUCTION ---
+  R(410,4,'PROD_MASTER','Master','group'),
+  R(411,410,'PROD_CARD','Master Card','item','form','form_master_card.php'),
+  R(412,410,'PROD_LAYOUT','Layout','item','form','form_layout.php'),
+  R(420,4,'PROD_PLAN','Planning','group'),
+  R(421,420,'PROD_MPS','MPS (Master Production Schedule)','item','form','form_mps.php'),
+  R(422,420,'PROD_MRP','MRP (Material Requirement Planning)','item','form','form_mrp.php'),
+  R(430,4,'PROD_MTN','Maintenance','group'),
+  R(431,430,'PROD_MTN_SCH','Schedule Maintenance','item','form','form_maintenance_schedule.php'),
+  R(432,430,'PROD_MTN_PREV','Preventive Maintenance','item','form','form_maintenance_preventive.php'),
+  R(440,4,'PROD_OUT','Output','group'),
+  R(441,440,'PROD_OUTPUT','Production Output','item','form','form_production_output.php'),
+  R(442,440,'PROD_MON_WO','Monitoring Work Order','item','grid','grid_monitoring_wo.php'),
+  // --- MASTER DATA (item langsung, tanpa grup) ---
+  R(511,5,'MD_CUST','Master Customer','item','form','form_customer.php'),
+  R(512,5,'MD_SUPP','Master Supplier','item','form','form_supplier.php'),
+  R(513,5,'MD_PROD','Master Produk','item','form','form_product.php'),
+  R(514,5,'MD_RAW','Master Bahan Baku','item','form','form_material.php'),
+  R(515,5,'MD_UOM','Master Satuan (UoM)','item','form','form_uom.php'),
+  R(516,5,'MD_WH','Master Gudang','item','form','form_warehouse.php'),
+  // --- FINANCE & ACCOUNTING ---
+  R(610,6,'FIN','Finance','group'),
+  R(611,610,'FIN_CASH','Kasir (Kas/Bank)','item','form','form_cashier.php'),
+  R(612,610,'FIN_AR','Piutang (AR)','item','form','form_ar.php'),
+  R(613,610,'FIN_AP','Hutang (AP)','item','form','form_ap.php'),
+  R(620,6,'ACC','Accounting','group'),
+  R(621,620,'ACC_JRN','Jurnal','item','form','form_journal.php'),
+  R(622,620,'ACC_GL','Buku Besar','item','grid','grid_gl.php'),
+  R(623,620,'ACC_BS','Neraca','item','report','rpt_balance_sheet.php'),
+  R(624,620,'ACC_PL','Laba Rugi','item','report','rpt_income_stmt.php'),
+  // --- SETUP (item langsung) ---
+  R(911,9,'SET_USER','Pengguna','item','grid','security.html?tab=users'),
+  R(912,9,'SET_GROUP','Grup','item','grid','security.html?tab=groups'),
+  R(913,9,'SET_PERM','Hak Akses Grup','item','grid','security.html?tab=perms'),
+  R(914,9,'SET_LANG','Bahasa','item','form','security.html?tab=lang'),
+  R(915,9,'SET_THEME','Tema','item','form','security.html?tab=theme'),
+  R(916,9,'SET_MENU','Susunan Menu','item','grid','grid_app_menu.php')
+];
+// HOME: landing shell, BUKAN baris tabel.
+const HOME={code:'HOME',label:'Home',icon:'fa-solid fa-house'};
+
+// ---- builder dari ROWS (bentuk pohon by parent_id) ----
+const kids=pid=>ROWS.filter(r=>r.pid===pid);
+const modules=ROWS.filter(r=>r.mt==='module');
+const items=ROWS.filter(r=>r.mt==='item');
+const lc=s=>s.toLowerCase();
+const typeIcon=t=>t==='grid'?'fa-solid fa-table-list':t==='report'?'fa-solid fa-chart-column':'fa-solid fa-pen-to-square';
+const iconOf=r=> r.icon || typeIcon(r.ot);            // <- ikon dari kolom, fallback tipe
+function modLabelOf(r){let c=r;while(c.pid!=null)c=ROWS.find(x=>x.id===c.pid);return c.label;}
+const FLAT=items.map(r=>({code:r.code,label:r.label,type:r.ot,target:r.tg,icon:r.icon,mod:modLabelOf(r)}));
+function findItem(code){return FLAT.find(x=>x.code===code);}
+
+// ===== Mega menu: ikon + nama modul (dari ROWS) =====
+const mega=document.getElementById('mega');
+mega.innerHTML=`<button class="mega-item" data-mod="HOME"><span class="mi"><i class="${HOME.icon}"></i></span>${HOME.label}</button>`
+  + modules.map(m=>`<button class="mega-item" data-mod="${m.code}"><span class="mi"><i class="${m.icon||''}"></i></span>${m.label}</button>`).join('');
+mega.querySelectorAll('.mega-item').forEach(b=>b.addEventListener('click',()=>selectModule(b.dataset.mod)));
+
+// ===== Sidebar kontekstual (dibangun dari ROWS) =====
+let activeMod='HOME', activeTabCode=null;
+const modTitle=document.getElementById('modTitle'), sideNav=document.getElementById('sideNav');
+function selectModule(code){
+  activeMod=code;
+  mega.querySelectorAll('.mega-item').forEach(b=>b.classList.toggle('active',b.dataset.mod===code));
+  if(code==='HOME'){
+    modTitle.innerHTML=`<span class="ic"><i class="${HOME.icon}"></i></span><span class="lbl">HOME</span>`;
+    sideNav.innerHTML=`<div class="side-hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>`;
+    showHome(); return;
+  }
+  const m=modules.find(x=>x.code===code);
+  modTitle.innerHTML=`<span class="ic"><i class="${m.icon||''}"></i></span><span class="lbl">${m.label.toUpperCase()}</span>`;
+  let html='';
+  kids(m.id).forEach(c=>{
+    if(c.mt==='group'){ html+=`<div class="side-cap">${c.label}</div>`; kids(c.id).forEach(it=>html+=leaf(it)); }
+    else html+=leaf(c);           // item langsung di bawah modul
+  });
+  sideNav.innerHTML=html; markActiveLeaf();
+}
+function leaf(it){return `<button class="leaf" data-code="${it.code}" title="${it.label}"><span class="lic"><i class="${iconOf(it)}"></i></span><span class="lbl">${it.label}</span></button>`;}
+function markActiveLeaf(){sideNav.querySelectorAll('.leaf').forEach(l=>l.classList.toggle('active',l.dataset.code===activeTabCode));}
+sideNav.addEventListener('click',e=>{const el=e.target.closest('[data-code]');if(el)openTab(el.dataset.code);});
+
+// ===== Tab MDI =====
+const tabbar=document.getElementById('tabbar'), content=document.getElementById('content');
+const openTabs=new Map();
+function openTab(code){
+  const it=findItem(code); if(!it)return;
+  if(openTabs.has(code)){activate(code);return;}
+  const ic=it.icon||typeIcon(it.type);
+  const tab=document.createElement('div');tab.className='tab';tab.dataset.code=code;
+  tab.innerHTML=`<span><i class="${ic}"></i></span><span class="tlbl">${it.label}</span><button class="tx" title="Tutup">×</button>`;
+  tab.addEventListener('click',ev=>{if(ev.target.classList.contains('tx')){ev.stopPropagation();closeTab(code);}else activate(code);});
+  tabbar.appendChild(tab);
+  const pane=document.createElement('div');pane.className='pane';pane.dataset.code=code;
+  if(it.target&&it.target.indexOf('.html')>-1)pane.classList.add('framed');
+  pane.innerHTML=paneHTML(it);
+  content.appendChild(pane);
+  openTabs.set(code,{tab,pane});
+  activate(code);
+}
+function activate(code){
+  document.getElementById('homePane').classList.remove('active');
+  activeTabCode=code;
+  openTabs.forEach((v,c)=>{const on=c===code;v.tab.classList.toggle('active',on);v.pane.classList.toggle('active',on);});
+  markActiveLeaf();
+}
+function closeTab(code){
+  const t=openTabs.get(code);if(!t)return;
+  const wasActive=t.tab.classList.contains('active');
+  t.tab.remove();t.pane.remove();openTabs.delete(code);
+  if(wasActive){const last=[...openTabs.keys()].pop();last?activate(last):showHome();}
+}
+function showHome(){
+  activeTabCode=null;
+  openTabs.forEach(v=>{v.tab.classList.remove('active');v.pane.classList.remove('active');});
+  document.getElementById('homePane').classList.add('active'); markActiveLeaf();
+}
+function paneHTML(it){
+  if(it.target && it.target.indexOf('.html')>-1){ return `<iframe src="${it.target}" title="${it.label}"></iframe>`; }
+  const note=`<div class="am-note">Pada aplikasi nyata frame ini memuat <code>&lt;iframe src="${it.target}"&gt;</code>. Di mockup ditampilkan placeholder.</div>`;
+  const today=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'2-digit',year:'numeric'});
+  if(it.type==='form'){
+    return `<div class="app-mock"><div class="am-head"><h2>FORM — ${it.label}</h2><span class="date">${today}</span></div>${note}
+      <div class="am-form">
+        <div class="f"><label>Nomor</label><input value="(auto)"></div>
+        <div class="f"><label>Tanggal</label><input value="${today}"></div>
+        <div class="f full"><label>Keterangan</label><input placeholder="Isi keterangan…"></div>
+        <div class="f"><label>Referensi</label><input placeholder="—"></div>
+        <div class="f"><label>Status</label><input value="Draft" readonly></div>
+        <div class="am-actions"><button class="am-btn g">Simpan</button><button class="am-btn n">Batal</button></div>
+      </div></div>`;
+  }
+  const rows=[['2600393','13/07/2026','GEPREK ANANE','409.590.000','YUNA PUJI','wait','Pending'],
+    ['2600394','13/07/2026','PT. SARANA JAYA','187.967.400','ENI KURNIATI','wait','Pending'],
+    ['2600392','05/06/2026','A-37','0','HERI','ok','Confirmed'],
+    ['2600391','30/03/2026','AGUNG DWI S.','0','DITA','ok','Confirmed'],
+    ['15424','06/03/2026','PT. PENDAWA JAYA','9.875.000','CARRIJ S.','wait','Pending']];
+  return `<div class="app-mock"><div class="am-head"><h2>${it.type==='report'?'REPORT':'DAFTAR'} — ${it.label}</h2><span class="date">${today}</span></div>
+    <div class="am-tools"><span class="am-search">🔎 Quick search</span>
+      <button class="am-btn g">＋ New</button><button class="am-btn n">▥ Columns</button>
+      <button class="am-btn n">⇅ Sorting</button><button class="am-btn n">⬇ Export</button>
+      <button class="am-btn g">🔍 Search</button></div>${note}
+    <table class="am-tbl"><thead><tr><th>No Order</th><th>Tanggal</th><th>Customer</th><th>Grand Total</th><th>Sales</th><th>Status</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td style="text-align:right">${r[3]}</td><td>${r[4]}</td><td><span class="am-pill ${r[5]}">${r[6]}</span></td></tr>`).join('')}</tbody></table></div>`;
+}
+
+// Home pane
+const homePane=document.createElement('div');homePane.className='pane active';homePane.id='homePane';
+homePane.innerHTML=`<div class="home"><div class="hero"></div><h1>Selamat datang, Budi 👋</h1>
+  <p>Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar. Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.</p>
+  <div class="hint">Ctrl+K cari cepat · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>⤒</kbd> sembunyikan top bar.</div></div>`;
+content.appendChild(homePane);
+
+// Language — dipindah ke user menu (lihat skrip user menu di bawah)
+
+// Command palette
+const palOv=document.getElementById('palOv'),palIn=document.getElementById('palIn'),palList=document.getElementById('palList');
+let pres=[],psel=0;
+function openPalette(){palOv.classList.add('open');palIn.value='';prender('');palIn.focus();}
+function closePalette(){palOv.classList.remove('open');}
+palOv.addEventListener('click',e=>{if(e.target===palOv)closePalette();});
+function prender(q){q=q.trim();const toks=lc(q).split(/\s+/).filter(Boolean);
+  pres=q?FLAT.filter(o=>{const h=lc(o.label+' '+o.mod);return toks.every(t=>h.includes(t));}):FLAT.slice(0,7);
+  palList.innerHTML=pres.length?pres.map(o=>`<div class="pal-row" data-code="${o.code}"><span class="lic"><i class="${o.icon||typeIcon(o.type)}"></i></span><div><div class="nm">${o.label}</div><div class="mm">${o.mod}</div></div></div>`).join(''):`<div class="pal-empty">Tak ada yang cocok dengan “${q}”.</div>`;
+  psel=0;phi();}
+function phi(){[...palList.querySelectorAll('.pal-row')].forEach((r,i)=>r.classList.toggle('sel',i===psel));}
+palIn.addEventListener('input',e=>prender(e.target.value));
+palIn.addEventListener('keydown',e=>{
+  if(e.key==='ArrowDown'){e.preventDefault();psel=Math.min(psel+1,pres.length-1);phi();}
+  else if(e.key==='ArrowUp'){e.preventDefault();psel=Math.max(psel-1,0);phi();}
+  else if(e.key==='Enter'){if(pres[psel]){openTab(pres[psel].code);closePalette();}}
+  else if(e.key==='Escape')closePalette();});
+palList.addEventListener('click',e=>{const el=e.target.closest('[data-code]');if(el){openTab(el.dataset.code);closePalette();}});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();palOv.classList.contains('open')?closePalette():openPalette();}
+  else if(e.key==='Escape')closePalette();});
+
+selectModule('HOME');
+</script>
+<script>
+// ===== Popover (user menu + bell) =====
+function fillUserMenu(){document.getElementById('userMenu').innerHTML=`
+  <div class="um-head"><span class="um-av"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
+    <div><div class="um-name">Budi Santoso</div><div class="um-mail">budi.santoso@telasih.co.id</div><span class="um-role">Administrator</span></div></div>
+  <div class="um-list">
+    <div class="um-cap">Pesan &amp; info</div>
+    <button class="um-item" data-act="chat"><i class="fa-solid fa-comment-dots"></i> Chat<span class="um-count" id="umChat">2</span></button>
+    <button class="um-item" data-act="notif"><i class="fa-solid fa-bell"></i> Notifikasi<span class="um-count" id="umNotif">3</span></button>
+    <button class="um-item" data-act="ai"><i class="fa-solid fa-wand-magic-sparkles"></i> Asisten AI</button>
+    <div class="um-sep"></div>
+    <div class="um-cap">Akun</div>
+    <button class="um-item" data-act="edit"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
+    <button class="um-item" data-act="pass"><i class="fa-solid fa-key"></i> Ubah password</button>
+    <button class="um-item" data-act="setup"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
+    <button class="um-item" data-act="activity"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
+    <button class="um-item" data-act="help"><i class="fa-solid fa-circle-question"></i> Bantuan &amp; dukungan</button>
+    <div class="um-item" style="cursor:default"><i class="fa-solid fa-globe"></i> Bahasa<span class="um-langs"><button class="um-flag active" data-lang="id">🇮🇩</button><button class="um-flag" data-lang="en">🇬🇧</button></span></div>
+    <div class="um-sep"></div>
+    <a class="um-item danger" href="login.html"><i class="fa-solid fa-right-from-bracket"></i> Keluar aplikasi</a>
+  </div>`;}
+function fillNotif(){document.getElementById('notifList').innerHTML=`
+  <div class="nz"><span class="dotc" style="background:#2f6fed"></span><div><div class="nt">PO baru menunggu approval</div><div class="ns">Procurement · 5 menit lalu</div></div></div>
+  <div class="nz"><span class="dotc" style="background:#e5a324"></span><div><div class="nt">Stok Bahan A di bawah minimum</div><div class="ns">Inventory · 1 jam lalu</div></div></div>
+  <div class="nz"><span class="dotc" style="background:#22b07d"></span><div><div class="nt">Invoice #2600393 lunas</div><div class="ns">Finance · kemarin</div></div></div>`;}
+fillUserMenu();fillNotif();
+
+function closeAllPops(){document.querySelectorAll('.pop-menu.open').forEach(p=>p.classList.remove('open'));}
+const userMenu=document.getElementById('userMenu');
+document.getElementById('avatarBtn').addEventListener('click',e=>{e.stopPropagation();const was=userMenu.classList.contains('open');closeAllPops();if(!was)userMenu.classList.add('open');});
+document.addEventListener('click',closeAllPops);
+userMenu.addEventListener('click',e=>e.stopPropagation());
+let chatCount=2, notifCount=3;
+function refreshCounts(){
+  const c=document.getElementById('umChat'), n=document.getElementById('umNotif');
+  if(c){c.textContent=chatCount;c.style.display=chatCount?'':'none';}
+  if(n){n.textContent=notifCount;n.style.display=notifCount?'':'none';}
+  document.getElementById('avDot').classList.toggle('hide',!(chatCount||notifCount));
+}
+refreshCounts();
+
+// user menu aksi
+userMenu.addEventListener('click',e=>{
+  const fl=e.target.closest('[data-lang]');
+  if(fl){userMenu.querySelectorAll('.um-flag').forEach(x=>x.classList.remove('active'));fl.classList.add('active');toast('Bahasa: '+(fl.dataset.lang==='id'?'Indonesia':'English'));return;}
+  const b=e.target.closest('[data-act]');if(!b)return;closeAllPops();
+  const a=b.dataset.act;
+  if(a==='chat'){openDrawer('chatDrawer');chatCount=0;refreshCounts();}
+  else if(a==='notif')openDrawer('notifDrawer');
+  else if(a==='ai')openDrawer('aiDrawer');
+  else if(a==='edit')openMov('mEdit');
+  else if(a==='pass')openMov('mPass');
+  else if(a==='setup')openTab('SET_USER');           // buka security.html di frame
+  else if(a==='activity')openTab('SET_USER');         // demo: arahkan ke audit login (sec_login_attempt)
+  else if(a==='help')toast('Bantuan & dukungan — segera (tiket ke tim dev / sys_support_tickets).');
+});
+function toast(m){let t=document.getElementById('_t');if(!t){t=document.createElement('div');t.id='_t';t.style.cssText='position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#2f3a5e;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;z-index:130;transition:opacity .25s';document.body.appendChild(t);}t.textContent=m;t.style.opacity='1';clearTimeout(t._h);t._h=setTimeout(()=>t.style.opacity='0',2200);}
+
+// ===== Modal =====
+function openMov(id){document.getElementById(id).classList.add('on');}
+document.querySelectorAll('[data-mclose]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.mclose).classList.remove('on')));
+document.querySelectorAll('.mov').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('on');}));
+
+// ===== Drawer (chat / AI) =====
+const backdrop=document.getElementById('backdrop');
+function openDrawer(id){closeAllPops();document.querySelectorAll('.drawer.on').forEach(d=>d.classList.remove('on'));document.getElementById(id).classList.add('on');backdrop.classList.add('on');}
+function closeDrawer(id){document.getElementById(id).classList.remove('on');backdrop.classList.remove('on');}
+backdrop.addEventListener('click',()=>{document.querySelectorAll('.drawer.on').forEach(d=>d.classList.remove('on'));backdrop.classList.remove('on');});
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeDrawer(b.dataset.close)));
+document.getElementById('markReadAll').addEventListener('click',()=>{notifCount=0;refreshCounts();document.querySelectorAll('#notifList .dotc').forEach(d=>d.style.background='#cfd6e6');toast('Semua notifikasi ditandai terbaca.');});
+
+// ---- Chat (mock; PRODUKSI: sys_chat_*) ----
+const convos=[
+ {name:'Rina Wijaya',sub:'Sales',msgs:[{me:false,t:'Pak, PO dari PT Sarana sudah masuk?'},{me:true,t:'Sudah, saya cek dulu ya.'}]},
+ {name:'Grup Gudang',sub:'3 anggota',msgs:[{me:false,t:'Stok Bahan A tinggal 200 kg.'},{me:false,t:'Perlu PR baru?'}]},
+ {name:'Andi (Finance)',sub:'Finance',msgs:[{me:false,t:'Invoice #2600393 sudah dibayar.'},{me:true,t:'Noted, terima kasih.'}]}
+];
+let curC=0;
+function renderChatList(){document.getElementById('chatList').innerHTML=convos.map((c,i)=>`<div class="cl-item ${i===curC?'active':''}" data-c="${i}"><b>${c.name}</b><span>${c.sub}</span></div>`).join('');}
+function renderMsgs(){document.getElementById('msgs').innerHTML=convos[curC].msgs.map(m=>`<div class="msg ${m.me?'me':'them'}">${m.t}</div>`).join('');const m=document.getElementById('msgs');m.scrollTop=m.scrollHeight;}
+document.getElementById('chatList').addEventListener('click',e=>{const el=e.target.closest('[data-c]');if(el){curC=+el.dataset.c;renderChatList();renderMsgs();}});
+function sendChat(){const inp=document.getElementById('chatInput');if(!inp.value.trim())return;convos[curC].msgs.push({me:true,t:inp.value.trim()});inp.value='';renderMsgs();}
+document.getElementById('chatSend').addEventListener('click',sendChat);
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+renderChatList();renderMsgs();
+
+// ---- AI (pratinjau; memetakan ke registry menu) ----
+function addAi(role,txt){const b=document.getElementById('aiBody');const d=document.createElement('div');d.className='ai-msg '+role;d.textContent=txt;b.appendChild(d);b.scrollTop=b.scrollHeight;}
+function askAi(q){q=q.trim();if(!q)return;addAi('me',q);
+  const toks=q.toLowerCase().split(/\s+/).filter(t=>t.length>2);
+  const hit=FLAT.find(o=>{const h=(o.label+' '+o.mod).toLowerCase();return toks.some(t=>h.includes(t));});
+  if(hit){addAi('bot','Baik, saya buka “'+hit.label+'” untuk Anda.');setTimeout(()=>{openTab(hit.code);closeDrawer('aiDrawer');},650);}
+  else addAi('bot','Saya belum menemukan objek yang cocok. Sebut nama form/grid, mis. “quotation”, “purchase order”, atau “daftar produk”.');
+}
+document.getElementById('aiSend').addEventListener('click',()=>{const i=document.getElementById('aiInput');askAi(i.value);i.value='';});
+document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter'){askAi(e.target.value);e.target.value='';}});
+document.getElementById('aiBody').addEventListener('click',e=>{const c=e.target.closest('[data-ai]');if(c)askAi(c.dataset.ai);});
+</script>
+</body>
+</html>

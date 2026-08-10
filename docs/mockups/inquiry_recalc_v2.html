@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Inkuiri RECALC (harga ulang)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 74px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:50}
+header h1{font-size:15px;font-weight:700}header .sub{font-size:11px;color:#aeb8d8}
+.tag{font-size:10px;font-weight:800;padding:3px 10px;border-radius:8px}
+.tag.b{background:#c47a2c;color:#fff}.tag.st{background:#dce7ff;color:#1a4bb8}
+.back{margin-left:auto;background:#43508a;color:#cfd6ef;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer}
+.wrap{max-width:1040px;margin:16px auto;padding:0 16px;display:flex;flex-direction:column;gap:14px}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;overflow:hidden}
+.card>h3{margin:0;padding:9px 14px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:13px;color:#2c3e69;display:flex;align-items:center;gap:8px}
+.pad{padding:14px}
+label{font-size:11px;color:#667;font-weight:700;display:block;margin-bottom:3px}
+input,select{padding:7px 9px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;width:100%}
+input:disabled{background:#eef0f3;color:#8a94a6}
+.row{display:grid;gap:12px}.c3{grid-template-columns:1fr 1fr 1fr}
+.note{padding:9px 12px;border-radius:7px;font-size:11.5px;margin:0 14px 12px;line-height:1.5}
+.note.o{background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}
+.note.b{background:#e8f4ff;border:1px solid #b8d9f5;color:#1560a8}
+.trace{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f8fafc;border:1px solid #dde3ec;border-radius:8px;padding:11px 13px;margin:0 14px 12px;font-size:11.5px}
+.trace .node{background:#fff;border:1px solid #cfd7e3;border-radius:7px;padding:5px 10px}.trace .node b{color:#2c3e69}
+.trace .ar{color:#b9c2d0;font-size:15px}.trace .node.co{border-color:#22a06b;background:#f0faf5}
+/* locked reuse */
+.lockbar{display:flex;align-items:center;gap:8px;background:#f4f6fa;border:1px solid #dde3ec;border-radius:8px;padding:9px 13px;margin:0 14px 12px;font-size:11.5px;color:#556}
+.lockbadge{font-size:10px;font-weight:700;color:#fff;background:#8a94a6;padding:2px 8px;border-radius:8px}
+.reuse{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #dde3ec;border-radius:8px;overflow:hidden;margin:0 14px 12px}
+.reuse .k{padding:9px 12px;border-right:1px solid #eef1f5;background:#fbfcfe}
+.reuse .k:last-child{border-right:none}
+.reuse .k label{font-size:9px;color:#8a94a6;text-transform:uppercase}
+.reuse .k .v{font-size:12.5px;margin-top:2px}.reuse .k .v.mono{font-family:ui-monospace,monospace}
+.reuse .k .rz{font-size:9px;color:#22a06b;font-weight:700;margin-top:2px}
+/* price refresh table */
+.pt{margin:0 14px 12px;border:1px solid #dde3ec;border-radius:8px;overflow:hidden}
+.pt .h{background:#eef3fb;padding:7px 12px;font-size:11px;font-weight:700;color:#2c3e69}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#fafbfd;color:#8a94a6;text-align:left;padding:6px 12px;font-size:10px;text-transform:uppercase;border-bottom:1px solid #eef1f5}
+td{padding:7px 12px;border-bottom:1px solid #f4f6f9}.mono{font-family:ui-monospace,monospace}
+.up{color:#c0392b;font-weight:700}.dn{color:#177a4b;font-weight:700}
+.redact{display:inline-block;background:repeating-linear-gradient(45deg,#dfe4ec,#dfe4ec 4px,#eef1f5 4px,#eef1f5 8px);color:transparent;border-radius:4px;padding:2px 20px}
+.actionbar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #d9dfe8;padding:11px 20px;display:flex;gap:10px;align-items:center;z-index:60;box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+.btn{border:none;padding:9px 18px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600}
+.btn.g{background:#e6eaf0;color:#333}.btn.s{background:#22a06b;color:#fff}
+@media(max-width:760px){.reuse{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header>
+  <div><h1>Inkuiri Produk — RECALC</h1><div class="sub">harga dihitung ulang · spec & layout terkunci</div></div>
+  <span class="tag b">SISI B · SALES</span><span class="tag st">DRAFT</span>
+  <button class="back">← Batal</button>
+</header>
+
+<div class="wrap">
+
+  <!-- TRACE -->
+  <div class="card">
+    <h3>1️⃣ Produk Asal & Jejak Relasi</h3>
+    <div class="trace">
+      <span class="node"><b>Master baku:</b> PRD-2024-0417 (v-baku)</span><span class="ar">→</span>
+      <span class="node"><b>RECALC:</b> INQ-RC-2026-0233</span><span class="ar">→</span>
+      <span class="node co"><b>Untuk CO baru:</b> repeat order</span>
+    </div>
+    <div class="note o">RECALC = <b>repeat order harga baru</b>. Spec, dimensi, artwork, warna, <b>dan LAYOUT/imposisi TIDAK berubah</b> — semua <b>di-reuse dari master baku</b>. Yang di-refresh hanya <b>harga bahan terkini</b> (fluktuasi) atau substitusi setara.</div>
+    <div class="pad row c3">
+      <div><label>Customer</label><input value="PT. Sinar Kemasan Abadi" disabled></div>
+      <div><label>Produk</label><input value="Inner Box Vitamin C 30's" disabled></div>
+      <div><label>Qty Order (PCS)</label><input value="75.000"></div>
+    </div>
+  </div>
+
+  <!-- REUSE -->
+  <div class="card">
+    <h3>2️⃣ Spec & Layout (reuse dari baku) <span style="margin-left:auto;font-weight:400;color:#8a94a6;font-size:11px">read-only</span></h3>
+    <div class="lockbar"><span class="lockbadge">🔒 TERKUNCI</span> Untuk mengubah salah satu ini, gunakan <b>REVISE</b>, bukan RECALC.</div>
+    <div class="reuse">
+      <div class="k"><label>Dimensi</label><div class="v mono">8×4×12 cm</div><div class="rz">✓ reuse</div></div>
+      <div class="k"><label>Dieline / Pisau</label><div class="v mono">DL-STE-8412</div><div class="rz">✓ reuse</div></div>
+      <div class="k"><label>Imposisi (UP)</label><div class="v mono">24 up · 64×48</div><div class="rz">✓ reuse</div></div>
+      <div class="k"><label>Warna</label><div class="v mono">4/0 CMYK</div><div class="rz">✓ reuse</div></div>
+    </div>
+    <div class="reuse" style="margin-top:0">
+      <div class="k"><label>Artwork</label><div class="v mono">v2 (Halal)</div><div class="rz">✓ reuse</div></div>
+      <div class="k"><label>Material Layer</label><div class="v">Duplex 350 + SF E</div><div class="rz">✓ reuse</div></div>
+      <div class="k"><label>Proses</label><div class="v" style="font-size:11px">10 langkah baku</div><div class="rz">✓ reuse</div></div>
+      <div class="k"><label>Pack</label><div class="v mono">25/pack</div><div class="rz">✓ reuse</div></div>
+    </div>
+  </div>
+
+  <!-- PRICE REFRESH -->
+  <div class="card">
+    <h3>3️⃣ Refresh Harga Bahan <span style="margin-left:auto;font-weight:400;color:#8a94a6;font-size:11px">yang berubah hanya ini</span></h3>
+    <div class="note b">Harga bahan ditarik terkini dari <span style="font-family:monospace">mat_raw.avg_unitprice</span>. Struktur & kuantitas bahan identik — hanya <b>unit price</b> yang diperbarui.</div>
+    <div class="pt">
+      <div class="h">Perbandingan harga bahan (baku → sekarang)</div>
+      <table>
+        <thead><tr><th>Material</th><th>Harga Baku</th><th>Harga Kini</th><th>Δ</th></tr></thead>
+        <tbody>
+          <tr><td>Duplex 350gsm</td><td class="mono">Rp 12.800/kg</td><td class="mono">Rp 13.500/kg</td><td class="up">▲ +5,5%</td></tr>
+          <tr><td>SF E-Flute (M125/K125)</td><td class="mono">Rp 8.200/kg</td><td class="mono">Rp 8.050/kg</td><td class="dn">▼ −1,8%</td></tr>
+          <tr><td>Tinta CMYK</td><td class="mono">Rp 95.000/kg</td><td class="mono">Rp 95.000/kg</td><td class="mono" style="color:#8a94a6">0%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pt">
+      <div class="h">💰 Ringkasan (Sisi B — harga jual saja)</div>
+      <table>
+        <tbody>
+          <tr><td style="width:55%">HPP / COGS</td><td class="mono"><span class="redact">&nbsp;</span></td></tr>
+          <tr><td>Harga Jual baku (v-baku)</td><td class="mono">Rp 1.850/pcs</td></tr>
+          <tr><td><b>Harga Jual RECALC (menunggu publish)</b></td><td><b style="color:#177a4b;font-family:monospace">Rp ••••</b> <span style="font-size:10px;color:#8a94a6">± naik tipis krn Duplex</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="actionbar">
+  <button class="btn g">💾 Simpan Draft</button>
+  <span style="font-size:11px;color:#8a94a6;margin-left:6px">Layout reuse · Doc <b>INQ-RC-2026-0233</b></span>
+  <button class="btn s" style="margin-left:auto">➜ Submit ke Costing</button>
+</div>
+</body></html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  INQUIRY IMPOSITION — ENGINE  ·  PETA DATA UNTUK DEVELOPER
+================================================================================
+  FUNGSI  : Hitung imposition (berapa UP di plano) dari bentangan flat vs ukuran plano.
+            Metode: grid tegak / grid putar / campur (rotasi sebagian) → pilih terbaik.
+            Output: up, efisiensi %, waste, + SARAN plano terbaik dari beberapa ukuran.
+  POLA    : engine suggests, officer confirms (Product Designer bisa override).
+
+  ── READ ──────────────────────────────────────────────────────────────────────
+   i_inquiry_part        : bentangan flat 1-up (flat_width, flat_height) dari dieline DSL
+   m_plano_size (BARU)   : master ukuran plano tersedia (untuk saran plano terbaik)
+   m_machine             : area cetak maks mesin (batas plano)
+
+  ── WRITE ─────────────────────────────────────────────────────────────────────
+   i_inquiry_layout      : hasil imposition (plano dipilih, up, orientasi, efisiensi)
+                           → mengalir ke costing (cut/plano, isi/lembar)
+================================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Imposition Engine</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 40px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}header .sub{font-size:12px;opacity:.75}
+header .back{margin-left:auto;background:#43508a;color:#cfd6ef;border:none;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none}
+.wrap{max-width:1180px;margin:16px auto;padding:0 16px}
+.layout{display:grid;grid-template-columns:320px 1fr;gap:14px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;overflow:hidden;margin-bottom:14px}
+.card>h3{margin:0;padding:9px 13px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:12.5px;color:#2c3e69;font-weight:700}
+.card .body{padding:13px}
+.f{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+label{font-size:11px;color:#667;font-weight:600}
+input,select{padding:6px 8px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;width:100%;background:#fff}
+input:read-only{background:#eef0f3;color:#667}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.calc{background:#f0f7f4;color:#0e5c38;font-weight:700}
+/* stage plano */
+.stage{background:#fbfcfd;border:1px solid #dde3ec;border-radius:8px;padding:16px;display:flex;align-items:center;justify-content:center;min-height:340px}
+.plano{position:relative;background:#fff;border:2px solid #2c3e69;border-radius:2px}
+.gripper{position:absolute;top:0;left:0;right:0;background:repeating-linear-gradient(45deg,#e9edf3,#e9edf3 4px,#f4f6fa 4px,#f4f6fa 8px);border-bottom:1px dashed #a9b4c4;display:flex;align-items:center;justify-content:center;font-size:7px;color:#8a94a6}
+.up{position:absolute;border:1px solid #2c7be5;background:rgba(44,123,229,.10);display:flex;align-items:center;justify-content:center;font-size:8px;color:#1560a8;font-weight:700}
+.up.rot{background:rgba(124,92,214,.12);border-color:#7c5cd6;color:#5b3fa0}
+/* result cards */
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.rc{background:#f8fafc;border:1px solid #e2e7ee;border-radius:8px;padding:10px 12px;text-align:center}
+.rc.best{background:#f3fbf7;border-color:#22a06b;box-shadow:0 0 0 2px #c6e5d5}
+.rc .k{font-size:9.5px;color:#8a94a6;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.rc .v{font-size:20px;font-weight:800;color:#2c3e69;margin-top:2px}
+.rc.best .v{color:#0e5c38}
+.rc .s{font-size:10px;color:#8a94a6;margin-top:1px}
+/* opsi plano */
+.planopt{width:100%;border-collapse:collapse;font-size:12px}
+.planopt th{font-size:9.5px;color:#8a94a6;font-weight:700;text-transform:uppercase;text-align:right;padding:6px 8px;border-bottom:1px solid #e2e7ee}
+.planopt th:first-child{text-align:left}
+.planopt td{padding:7px 8px;text-align:right;border-bottom:1px solid #eef1f5}
+.planopt td:first-child{text-align:left;font-weight:600;color:#2c3e69}
+.planopt tr.best{background:#f3fbf7}
+.planopt tr.best td:first-child::after{content:' ★';color:#e0a800}
+.planopt .pick{cursor:pointer;color:#2c7be5;font-weight:600}
+.eff{font-weight:700}.eff.hi{color:#0e8a4f}.eff.mid{color:#8a5a00}.eff.lo{color:#c0392b}
+.note{font-size:11.5px;padding:8px 11px;border-radius:6px;line-height:1.5;margin-top:10px}
+.note.b{background:#e8f4ff;border:1px solid #b8d9f5;color:#1560a8}
+.leg{display:flex;gap:14px;font-size:10.5px;color:#556;margin-top:8px;flex-wrap:wrap}
+.leg span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:14px;height:10px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body>
+<header>
+  <b>📐 Imposition Engine</b>
+  <span class="sub">hitung up · efisiensi · saran plano</span>
+  <a class="back" href="inquiry_hub.html">← Menu</a>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+
+    <!-- KIRI: input -->
+    <div>
+      <div class="card">
+        <h3>📦 Bentangan Flat (1 up)</h3>
+        <div class="body">
+          <div class="row2">
+            <div class="f"><label>Flat W (mm)</label><input type="number" id="fw" value="222" onchange="run()"></div>
+            <div class="f"><label>Flat H (mm)</label><input type="number" id="fh" value="184" onchange="run()"></div>
+          </div>
+          <div class="f"><label>Gap antar-up (mm)</label><input type="number" id="gap" value="3" onchange="run()"></div>
+          <div class="hint" style="font-size:10.5px;color:#8a94a6">Dari dieline DSL (i_inquiry_part.flat). Gripper & margin dihitung otomatis.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📄 Plano</h3>
+        <div class="body">
+          <div class="row2">
+            <div class="f"><label>Plano W (mm)</label><input type="number" id="pw" value="890" onchange="run()"></div>
+            <div class="f"><label>Plano H (mm)</label><input type="number" id="ph" value="1250" onchange="run()"></div>
+          </div>
+          <div class="row2">
+            <div class="f"><label>Gripper (mm)</label><input type="number" id="grip" value="12" onchange="run()"></div>
+            <div class="f"><label>Margin tepi (mm)</label><input type="number" id="marg" value="8" onchange="run()"></div>
+          </div>
+          <div class="f"><label>Metode terpilih</label><input id="method" class="calc" readonly></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>💡 Saran Plano Terbaik</h3>
+        <div class="body" style="padding:8px">
+          <table class="planopt">
+            <thead><tr><th>Plano</th><th>Up</th><th>Efisiensi</th><th></th></tr></thead>
+            <tbody id="planSuggest"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- KANAN: hasil + visual -->
+    <div>
+      <div class="card">
+        <h3>🎯 Hasil Imposition</h3>
+        <div class="body">
+          <div class="res">
+            <div class="rc best"><div class="k">Total UP / plano</div><div class="v" id="rUp">—</div><div class="s" id="rGrid">—</div></div>
+            <div class="rc"><div class="k">Efisiensi</div><div class="v" id="rEff">—</div><div class="s">area kepakai</div></div>
+            <div class="rc"><div class="k">Waste</div><div class="v" id="rWaste">—</div><div class="s">sisa plano</div></div>
+          </div>
+          <div class="stage"><div class="plano" id="plano"></div></div>
+          <div class="leg">
+            <span><span class="sw" style="background:rgba(44,123,229,.3);border:1px solid #2c7be5"></span> tegak</span>
+            <span><span class="sw" style="background:rgba(124,92,214,.3);border:1px solid #7c5cd6"></span> diputar 90°</span>
+            <span><span class="sw" style="background:repeating-linear-gradient(45deg,#e9edf3,#e9edf3 3px,#f4f6fa 3px,#f4f6fa 6px)"></span> gripper</span>
+          </div>
+          <div class="note b" id="engineNote"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* =============================================================================
+ * IMPOSITION ENGINE
+ * Metode: grid tegak, grid putar, campur (baris utama + sisa diputar) → pilih max up.
+ * ============================================================================= */
+
+// hitung grid sederhana: berapa muat (dimensi item vs area)
+function gridCount(areaW, areaH, itemW, itemH, gap){
+  if(itemW<=0||itemH<=0) return {cols:0,rows:0,n:0};
+  var cols = Math.floor((areaW + gap) / (itemW + gap));
+  var rows = Math.floor((areaH + gap) / (itemH + gap));
+  return {cols:Math.max(0,cols), rows:Math.max(0,rows), n:Math.max(0,cols)*Math.max(0,rows)};
+}
+
+// engine utama: coba tegak, putar, campur
+function impose(pw, ph, fw, fh, gap, grip, marg){
+  var areaW = pw - 2*marg;
+  var areaH = ph - grip - 2*marg;   // gripper makan tinggi
+
+  // 1) semua tegak
+  var up = gridCount(areaW, areaH, fw, fh, gap);
+  // 2) semua putar 90°
+  var rot = gridCount(areaW, areaH, fh, fw, gap);
+
+  var best, method, layout;
+  if(up.n >= rot.n){ best=up.n; method='Tegak'; layout={type:'grid',rot:false,g:up,iw:fw,ih:fh}; }
+  else { best=rot.n; method='Putar 90°'; layout={type:'grid',rot:true,g:rot,iw:fh,ih:fw}; }
+
+  // 3) CAMPUR: isi grid utama (tegak), lalu sisa lebar/tinggi diisi yg diputar
+  //    coba: baris tegak penuh + kolom sisa diputar
+  var mainCols = Math.floor((areaW+gap)/(fw+gap));
+  var usedW = mainCols*(fw+gap)-gap;
+  var restW = areaW - usedW - gap;
+  var mainRows = Math.floor((areaH+gap)/(fh+gap));
+  var mixMain = mainCols*mainRows;
+  // sisa kolom kanan diisi item diputar (fh lebar, fw tinggi)
+  var rotCols = Math.floor((restW+gap)/(fh+gap));
+  var rotRows = Math.floor((areaH+gap)/(fw+gap));
+  var mixRot = Math.max(0,rotCols)*Math.max(0,rotRows);
+  var mixTotal = mixMain + mixRot;
+  if(mixTotal > best && mixRot>0){
+    best=mixTotal; method='Campur (tegak+putar)';
+    layout={type:'mix', main:{cols:mainCols,rows:mainRows,iw:fw,ih:fh},
+            rot:{cols:rotCols,rows:rotRows,iw:fh,ih:fw,offX:usedW+gap}};
+  }
+
+  var areaTot = areaW*areaH;
+  var used = best * fw * fh;
+  var eff = areaTot>0 ? (used/areaTot*100) : 0;
+  return {up:best, method:method, eff:eff, waste:100-eff, layout:layout,
+          areaW:areaW, areaH:areaH};
+}
+
+/* master plano untuk saran */
+var PLANOS = [
+  {name:'65×100', w:650, h:1000},
+  {name:'79×109', w:790, h:1090},
+  {name:'89×125', w:890, h:1250},
+  {name:'72×102', w:720, h:1020},
+  {name:'61×86',  w:610, h:860}
+];
+
+function draw(res, pw, ph, grip, marg){
+  var box=document.getElementById('plano');
+  var maxW=440, maxH=300;
+  var sc=Math.min(maxW/pw, maxH/ph);
+  var W=pw*sc, H=ph*sc;
+  box.style.width=W+'px'; box.style.height=H+'px';
+  var gsc=grip*sc, msc=marg*sc;
+  var h='<div class="gripper" style="height:'+gsc+'px">gripper</div>';
+  var L=res.layout, ox=msc, oy=gsc+msc, g=(+document.getElementById('gap').value)*sc;
+
+  function cell(x,y,w,hh,rot,label){
+    return '<div class="up'+(rot?' rot':'')+'" style="left:'+x+'px;top:'+y+'px;width:'+(w-1)+'px;height:'+(hh-1)+'px">'+label+'</div>';
+  }
+  var n=0;
+  if(L.type==='grid'){
+    var iw=L.iw*sc, ih=L.ih*sc;
+    for(var r=0;r<L.g.rows;r++)for(var c=0;c<L.g.cols;c++){
+      n++; h+=cell(ox+c*(iw+g), oy+r*(ih+g), iw, ih, L.rot, n);
+    }
+  } else { // mix
+    var mw=L.main.iw*sc, mh=L.main.ih*sc;
+    for(var r=0;r<L.main.rows;r++)for(var c=0;c<L.main.cols;c++){
+      n++; h+=cell(ox+c*(mw+g), oy+r*(mh+g), mw, mh, false, n);
+    }
+    var rw=L.rot.iw*sc, rh=L.rot.ih*sc, rox=ox+L.rot.offX*sc;
+    for(var r2=0;r2<L.rot.rows;r2++)for(var c2=0;c2<L.rot.cols;c2++){
+      n++; h+=cell(rox+c2*(rw+g), oy+r2*(rh+g), rw, rh, true, n);
+    }
+  }
+  box.innerHTML=h;
+}
+
+function effClass(e){return e>=75?'hi':e>=55?'mid':'lo';}
+
+function run(){
+  var fw=+val('fw'),fh=+val('fh'),gap=+val('gap');
+  var pw=+val('pw'),ph=+val('ph'),grip=+val('grip'),marg=+val('marg');
+  var res=impose(pw,ph,fw,fh,gap,grip,marg);
+
+  document.getElementById('rUp').textContent=res.up;
+  document.getElementById('rGrid').textContent=res.method;
+  document.getElementById('method').value=res.method;
+  var ec=document.getElementById('rEff'); ec.textContent=res.eff.toFixed(0)+'%';
+  ec.className='v'; ec.style.color=res.eff>=75?'#0e8a4f':res.eff>=55?'#8a5a00':'#c0392b';
+  document.getElementById('rWaste').textContent=res.waste.toFixed(0)+'%';
+  draw(res,pw,ph,grip,marg);
+
+  document.getElementById('engineNote').innerHTML=
+    '💡 Engine mencoba <b>tegak</b>, <b>putar 90°</b>, dan <b>campur</b> → memilih UP terbanyak: <b>'
+    +res.method+' = '+res.up+' up</b> (efisiensi '+res.eff.toFixed(0)+'%). '
+    +'Officer (Product Designer) dapat override bila perlu pertimbangan arah serat/grain.';
+
+  // saran plano
+  var sug=PLANOS.map(function(p){
+    var r=impose(p.w,p.h,fw,fh,gap,grip,marg);
+    return {name:p.name, up:r.up, eff:r.eff};
+  }).sort(function(a,b){return b.up-a.up || b.eff-a.eff;});
+  var bestUp=sug[0].up;
+  document.getElementById('planSuggest').innerHTML=sug.map(function(s){
+    return '<tr class="'+(s.up===bestUp?'best':'')+'">'
+      +'<td>'+s.name+'</td><td>'+s.up+'</td>'
+      +'<td class="eff '+effClass(s.eff)+'">'+s.eff.toFixed(0)+'%</td>'
+      +'<td><span class="pick" onclick="pickPlano('+s.name.split('×')[0]*10+','+s.name.split('×')[1]*10+')">pilih</span></td></tr>';
+  }).join('');
+}
+function pickPlano(w,h){document.getElementById('pw').value=w;document.getElementById('ph').value=h;run();}
+function val(id){return document.getElementById(id).value||0;}
+
+run();
+</script>
+</body>
+</html>

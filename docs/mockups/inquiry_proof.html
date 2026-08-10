@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  INQUIRY PROOF (Prove Warna)  ·  PETA DATA
+  KONSEP: Prove berversi (v1,v2,v3). Approval FISIK (ttd basah) → MULAI due-date
+          = +14 hari kerja (Tier 1 aturan 7). Prove↔Inquiry 1:1.
+  READ : i_inquiry, i_inquiry_prove_log (versi), m_holidays (kalkulasi due-date)
+  WRITE: i_inquiry_prove_log (versi baru), i_inquiry (snapshot + due_date saat approved)
+================================================================================
+-->
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prove Warna — Telasih Makmur</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 40px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}.sub{font-size:12px;opacity:.75}
+.back{margin-left:auto;background:#43508a;color:#cfd6ef;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none}
+.wrap{max-width:1040px;margin:16px auto;padding:0 16px}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;margin-bottom:14px;overflow:hidden}
+.card>h3{margin:0;padding:9px 14px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:13px;color:#2c3e69;display:flex;gap:8px;align-items:center}
+.card .body{padding:14px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px}.f{display:flex;flex-direction:column;gap:3px}
+label{font-size:11px;color:#667;font-weight:600}input,select{padding:6px 8px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;background:#fff}
+input:read-only{background:#eef0f3;color:#667}
+.note{font-size:12px;padding:9px 12px;border-radius:6px;line-height:1.5;margin-bottom:12px}
+.note.o{background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}.note.g{background:#f0f7f4;border:1px solid #c6e5d5;color:#177a4b}
+/* versi timeline */
+.ver{display:flex;gap:10px;margin-bottom:10px}
+.vitem{flex:1;border:1.5px solid #cfd7e3;border-radius:8px;padding:10px 12px;background:#fff;position:relative}
+.vitem.done{border-color:#22a06b;background:#f3fbf7}.vitem.active{border-color:#2c7be5;background:#f4f9ff;box-shadow:0 0 0 2px #cfe0ff}
+.vitem .vn{font-size:13px;font-weight:800;color:#2c3e69}.vitem .vs{font-size:10.5px;color:#8a94a6;margin-top:2px}
+.vitem .vb{font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px;position:absolute;top:9px;right:9px}
+.vb.ok{background:#d6f2e2;color:#177a4b}.vb.rej{background:#fdecec;color:#c0392b}.vb.now{background:#dce7ff;color:#1560a8}
+.due{background:#0d5c46;color:#fff;border-radius:8px;padding:13px 16px;display:flex;align-items:center;gap:14px;margin-top:6px}
+.due .big{font-size:22px;font-weight:800}.due .lb{font-size:11px;opacity:.85}
+.btn{border:none;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600}
+.btn.p{background:#2c7be5;color:#fff}.btn.s{background:#22a06b;color:#fff}.btn.g{background:#e6eaf0;color:#333}.btn.d{background:#e55353;color:#fff}
+.hint{font-size:10.5px;color:#8a94a6;margin-top:2px}
+.up{border:2px dashed #c3ccd9;border-radius:8px;padding:20px;text-align:center;color:#8a94a6;font-size:12px;cursor:pointer}.up:hover{border-color:#2c7be5}
+@media(max-width:700px){.grid{grid-template-columns:1fr}.ver{flex-direction:column}}
+</style></head><body>
+<header><b>🎨 Prove Warna</b><span class="sub">IQ2600042 · Kemasan Teh Celup</span><a class="back" href="inquiry_hub.html">← Menu</a></header>
+<div class="wrap">
+  <div class="note o">🎨 <b>Prove warna berversi.</b> Approval <b>FISIK</b> (tanda tangan basah customer) memulai hitungan <b>due-date = 14 hari kerja</b>. Bukan dari PO, bukan dari mockup.</div>
+
+  <div class="card">
+    <h3>📌 Riwayat Versi Prove</h3>
+    <div class="body">
+      <div class="ver">
+        <div class="vitem done"><span class="vb rej">REJECTED</span><div class="vn">v1</div><div class="vs">10 Jul · warna terlalu gelap</div></div>
+        <div class="vitem done"><span class="vb rej">REJECTED</span><div class="vn">v2</div><div class="vs">15 Jul · magenta shift</div></div>
+        <div class="vitem active"><span class="vb now">CURRENT</span><div class="vn">v3</div><div class="vs">20 Jul · menunggu ttd customer</div></div>
+      </div>
+      <div class="up">📎 Upload file proof v3 (PDF) — mis. DS003479_proof_v3.pdf</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>✍️ Approval Fisik (v3)</h3>
+    <div class="body">
+      <div class="grid">
+        <div class="f"><label>Tanggal ttd fisik customer</label><input type="date" id="signdate" value="2026-07-22" onchange="calcDue()"></div>
+        <div class="f"><label>Nama penandatangan</label><input placeholder="Bpk. Andi (customer)"></div>
+        <div class="f"><label>Status</label><select id="pstat" onchange="calcDue()"><option value="wait">Menunggu ttd</option><option value="ok">✔ Disetujui (ttd basah)</option></select></div>
+      </div>
+      <div class="note g" style="margin-top:10px">✅ Approval fisik = titik mulai due-date. Snapshot versi tersimpan di <code>i_inquiry_prove_log</code>; due-date ditulis ke <code>i_inquiry</code>.</div>
+      <div class="due" id="dueBox" style="display:none">
+        <div>⏱️</div>
+        <div><div class="lb">DUE-DATE PRODUKSI (14 hari kerja dari ttd)</div><div class="big" id="dueDate">—</div></div>
+        <div style="margin-left:auto;text-align:right"><div class="lb">Dihitung Sen–Sab − libur (m_holidays)</div></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="btn g" onclick="location.href='inquiry_hub.html'">Batal</button>
+        <button class="btn p" onclick="alert('Tambah versi v4 (bila revisi warna lagi)')">＋ Versi Baru</button>
+        <button class="btn s" onclick="approve()">✅ Approve Fisik → Mulai Due-Date</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function addWorkdays(start,n){ // Sen-Sab, skip Minggu (libur nasional diabaikan di mock)
+  var d=new Date(start),added=0;
+  while(added<n){d.setDate(d.getDate()+1); if(d.getDay()!==0) added++;}
+  return d;
+}
+function calcDue(){
+  var ok=document.getElementById('pstat').value==='ok';
+  document.getElementById('dueBox').style.display=ok?'flex':'none';
+  if(ok){
+    var s=new Date(document.getElementById('signdate').value);
+    var due=addWorkdays(s,14);
+    document.getElementById('dueDate').textContent=due.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  }
+}
+function approve(){document.getElementById('pstat').value='ok';calcDue();alert('Prove v3 di-approve fisik. Due-date dihitung & ditulis ke inquiry.');}
+</script>
+</body></html>

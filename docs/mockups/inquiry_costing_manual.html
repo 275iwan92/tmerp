@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  INQUIRY COSTING MANUAL (CROSS-CHECK)  ·  PETA DATA
+  FUNGSI: Officer hitung manual (template+default) → BANDINGKAN vs hasil engine.
+          Bila beda → investigasi faktor biaya yg engine belum tangkap (Tier 2 §10B.4).
+  READ : m_part_template, m_hpp_constants, i_costing (engine result)
+  WRITE: i_costing (bila manual jadi acuan) + notes selisih
+================================================================================
+-->
+<html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Costing Manual — Cross-Check</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 40px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}.sub{font-size:12px;opacity:.75}
+.back{margin-left:auto;background:#43508a;color:#cfd6ef;padding:6px 14px;border-radius:6px;font-size:12px;text-decoration:none}
+.wrap{max-width:1080px;margin:16px auto;padding:0 16px}
+.note{font-size:12px;padding:9px 12px;border-radius:6px;line-height:1.5;margin-bottom:12px;background:#e8f4ff;border:1px solid #b8d9f5;color:#1560a8}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;margin-bottom:14px;overflow:hidden}
+.card>h3{margin:0;padding:9px 14px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:13px;color:#2c3e69}
+.card .body{padding:14px}
+.tmpl{display:flex;gap:10px;align-items:flex-end;margin-bottom:6px}
+.f{display:flex;flex-direction:column;gap:3px}label{font-size:11px;color:#667;font-weight:600}
+input,select{padding:7px 9px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;background:#fff}
+.btn{border:none;padding:8px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600}
+.btn.p{background:#2c7be5;color:#fff}.btn.s{background:#22a06b;color:#fff}.btn.g{background:#e6eaf0;color:#333}
+/* cross-check table */
+.cc{width:100%;border-collapse:collapse;font-size:12.5px}
+.cc th{font-size:10px;color:#8a94a6;font-weight:700;text-transform:uppercase;padding:8px 10px;border-bottom:2px solid #e2e7ee;text-align:right}
+.cc th:first-child{text-align:left}
+.cc th.eng{color:#1560a8}.cc th.man{color:#8a5a00}.cc th.diff{color:#556}
+.cc td{padding:7px 10px;border-bottom:1px solid #eef1f5;text-align:right;font-variant-numeric:tabular-nums}
+.cc td:first-child{text-align:left;font-weight:600;color:#2c3e69}
+.cc .eng{color:#1560a8;background:#f4f8ff}
+.cc .man input{width:100px;text-align:right;padding:4px 6px;font-size:12px}
+.cc .diff{font-weight:700}
+.cc .diff.ok{color:#0e8a4f}.cc .diff.warn{color:#c0392b}
+.cc tr.total td{border-top:2px solid #2c3e69;font-weight:800;font-size:14px;padding-top:10px}
+.cc tr.total .eng{color:#1560a8}.cc tr.total td:first-child{color:#2c3e69}
+.verdict{margin-top:12px;padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600}
+.verdict.match{background:#f0f7f4;border:1px solid #c6e5d5;color:#177a4b}
+.verdict.diff{background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}
+.hint{font-size:10.5px;color:#8a94a6;margin-top:2px}
+</style></head><body>
+<header><b>🧮 Costing Manual — Cross-Check</b><span class="sub">engine vs manual</span><a class="back" href="inquiry_costing_hub.html">← Hub</a></header>
+<div class="wrap">
+  <div class="note">🎯 <b>Cross-check:</b> hitung manual sendiri (mulai dari template + default), lalu bandingkan dengan hasil engine. Selisih → investigasi faktor biaya yang engine belum tangkap (setup khusus, kondisi mesin).</div>
+
+  <div class="card">
+    <h3>🗂️ Template Part & Referensi</h3>
+    <div class="body">
+      <div class="tmpl">
+        <div class="f" style="flex:1"><label>Ketik nama part → auto-fill template</label><input id="tmpl" value="NS40 DC" placeholder="mis. NS40 DC..."></div>
+        <div class="f"><label>Part type</label><select><option>DC</option><option>DC+SF</option><option>DC+SHEET</option><option>KRAFT</option><option>SHEET</option></select></div>
+        <button class="btn g" onclick="alert('Auto-fill default dari m_part_template + m_hpp_constants')">Muat Default</button>
+      </div>
+      <div class="hint">Default dari <b>m_part_template</b> (plano, warna, ongkos) + <b>m_hpp_constants</b> (KNIFE_RATE, PLATE_PER_COLOR). Officer isi sesedikit mungkin.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚖️ Perbandingan HPP — Engine vs Manual <span style="font-weight:400;color:#889;font-size:11px">· tier UTAMA 50.000 pcs</span></h3>
+    <div class="body">
+      <table class="cc">
+        <thead><tr><th>Komponen Biaya /pc</th><th class="eng">Engine</th><th class="man">Manual</th><th class="diff">Selisih</th></tr></thead>
+        <tbody>
+          <tr><td>Bahan (paper)</td><td class="eng">620</td><td class="man"><input value="620"></td><td class="diff ok">0</td></tr>
+          <tr><td>Cetak</td><td class="eng">185</td><td class="man"><input value="185"></td><td class="diff ok">0</td></tr>
+          <tr><td>Tooling (film+plate+pisau)</td><td class="eng">142</td><td class="man"><input value="168"></td><td class="diff warn">+26</td></tr>
+          <tr><td>Coating</td><td class="eng">95</td><td class="man"><input value="95"></td><td class="diff ok">0</td></tr>
+          <tr><td>Plong</td><td class="eng">88</td><td class="man"><input value="88"></td><td class="diff ok">0</td></tr>
+          <tr><td>Lem</td><td class="eng">60</td><td class="man"><input value="60"></td><td class="diff ok">0</td></tr>
+          <tr><td>Kupas + QC + Packing</td><td class="eng">240</td><td class="man"><input value="240"></td><td class="diff ok">0</td></tr>
+          <tr class="total"><td>TOTAL HPP /pc</td><td class="eng">1.430</td><td class="man">1.456</td><td class="diff warn">+26</td></tr>
+        </tbody>
+      </table>
+      <div class="verdict diff">⚠️ Selisih Rp 26/pc pada <b>Tooling</b>. Manual lebih tinggi — periksa: apakah ada setup pisau khusus / plate tambahan yang engine belum hitung? Investigasi sebelum publish.</div>
+      <div class="f" style="margin-top:12px"><label>Catatan investigasi selisih</label><input placeholder="mis. pisau custom bentuk non-standar +Rp26, belum di master rate"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button class="btn g" onclick="location.href='inquiry_costing_hub.html'">Batal</button>
+        <button class="btn s">💾 Simpan Cross-Check</button>
+        <button class="btn p">✔ Jadikan Manual Acuan</button>
+      </div>
+    </div>
+  </div>
+</div></body></html>

@@ -1,0 +1,1427 @@
+<?php
+
+use App\Models\Master\CustCustomer;
+use App\Models\Master\MatRaw;
+use App\Models\Master\ProdType;
+use App\Models\Master\ProdTypeSize;
+use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\IqpPart;
+use App\Models\Sdi\IqpPartMaterial;
+use App\Models\Sdi\IqpTier;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+
+new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
+{
+    #[Url]
+    public ?int $id = null;
+
+    #[Url]
+    public string $mode = 'NEW';
+
+    public ?IqpInquiry $inquiry = null;
+
+    public bool $readOnly = false;
+
+    public string $inquiry_no = '';
+
+    public string $inquiry_date = '';
+
+    public string $source = 'EMAIL';
+
+    public string $pic_sales = '';
+
+    public string $custQuery = '';
+
+    public ?int $customer_id = null;
+
+    public string $customer_name = '';
+
+    public bool $is_prospect = false;
+
+    public string $prospect_name = '';
+
+    public ?string $deadline_quotation = null;
+
+    public string $product_draft_name = '';
+
+    public string $sales_note = '';
+
+    public string $material_source = 'OWN';
+
+    public string $tax_scheme = 'PPN';
+
+    public bool $pph_applicable = false;
+
+    public string $cust_material_spec = '';
+
+    public ?string $cust_material_eta = null;
+
+    public string $sub_state = 'DRAFT';
+
+    public bool $is_confirmed = false;
+
+    public bool $is_cancelled = false;
+
+    public bool $showCancelForm = false;
+
+    public string $cancel_reason = '';
+
+    /** @var array<int, array{id: ?int, qty: string, is_primary: bool, discount_item_type: string, discount_item_value: string}> */
+    public array $tiers = [];
+
+    /** @var array<int, array{id: ?int, part_name: string, part_type: string, type_code: string, qty_per_sku: string, dims: array, flat_manual: bool, flat_w: string, flat_h: string, flat_area: string, cfg_color: string, cfg_ink: string, materials: array}> */
+    public array $parts = [];
+
+    public ?string $flash = null;
+
+    public function mount(): void
+    {
+        $this->mode = strtoupper($this->mode ?: 'NEW');
+
+        if ($this->id) {
+            $this->inquiry = IqpInquiry::with([
+                'customer',
+                'tiers' => fn ($q) => $q->orderBy('tier_seq'),
+                'parts' => fn ($q) => $q->orderBy('part_seq'),
+                'parts.materials' => fn ($q) => $q->orderBy('layer_seq'),
+                'parts.materials.rawMaterial',
+            ])->findOrFail($this->id);
+            $this->fillFromInquiry();
+        } else {
+            $this->inquiry_date = now()->toDateString();
+            $this->addTier();
+            $this->addPart();
+        }
+    }
+
+    protected function fillFromInquiry(): void
+    {
+        $inq = $this->inquiry;
+
+        $this->mode = $inq->inquiry_type;
+        $this->inquiry_no = $inq->inquiry_no;
+        $this->inquiry_date = optional($inq->inquiry_date)->toDateString() ?? '';
+        $this->source = $inq->source ?? 'EMAIL';
+        $this->pic_sales = $inq->pic_sales ?? '';
+        $this->customer_id = $inq->customer_id;
+        $this->customer_name = $inq->customer?->customer_name ?? '';
+        $this->is_prospect = (bool) $inq->is_prospect;
+        $this->prospect_name = $inq->prospect_name ?? '';
+        $this->deadline_quotation = optional($inq->deadline_quotation)->toDateString();
+        $this->product_draft_name = $inq->product_draft_name;
+        $this->sales_note = $inq->sales_note ?? '';
+        $this->material_source = $inq->material_source;
+        $this->tax_scheme = $inq->tax_scheme;
+        $this->pph_applicable = (bool) $inq->pph_applicable;
+        $this->cust_material_spec = $inq->cust_material_spec ?? '';
+        $this->cust_material_eta = optional($inq->cust_material_eta)->toDateString();
+        $this->sub_state = $inq->sub_state;
+        $this->is_confirmed = (bool) $inq->is_confirmed;
+        $this->is_cancelled = (bool) $inq->is_cancelled;
+
+        // Tier 2 §11.2: begitu is_confirmed=1 form terkunci total (CONFIRMED/DONE/CANCELLED
+        // semuanya turunan dari is_confirmed), bukan berdasar teks sub_state (itu label monitoring).
+        $this->readOnly = $this->is_confirmed;
+
+        $this->tiers = $inq->tiers->map(fn (IqpTier $t) => [
+            'id' => $t->id_tier,
+            'qty' => $t->qty !== null ? rtrim(rtrim((string) $t->qty, '0'), '.') : '',
+            'is_primary' => (bool) $t->is_primary,
+            'discount_item_type' => $t->discount_item_type ?? '',
+            'discount_item_value' => $t->discount_item_value !== null ? rtrim(rtrim((string) $t->discount_item_value, '0'), '.') : '',
+        ])->values()->all();
+
+        if (empty($this->tiers)) {
+            $this->addTier();
+        }
+
+        $this->parts = $inq->parts->map(fn (IqpPart $p) => [
+            'id' => $p->id_part,
+            'part_name' => $p->part_name,
+            'part_type' => $p->part_type ?? 'DC',
+            'type_code' => $p->dieline_spec['type_code'] ?? '',
+            'qty_per_sku' => $p->qty_per_sku !== null ? rtrim(rtrim((string) $p->qty_per_sku, '0'), '.') : '1',
+            'dims' => $p->dieline_spec['dims'] ?? [],
+            // Tidak ada kolom flat_manual di DDL (Tier 3A LOCKED) — heuristik: tipe tanpa
+            // dieline_spec dianggap manual (sama seperti mockup memaksa manual saat !t.spec).
+            'flat_manual' => empty($p->dieline_spec['elements'] ?? null),
+            'flat_w' => $p->flat_w !== null ? rtrim(rtrim((string) $p->flat_w, '0'), '.') : '',
+            'flat_h' => $p->flat_h !== null ? rtrim(rtrim((string) $p->flat_h, '0'), '.') : '',
+            'flat_area' => $p->flat_area !== null ? rtrim(rtrim((string) $p->flat_area, '0'), '.') : '',
+            'dims_version' => 0,
+            'cfg_color' => $p->cfg_color ?? '4/4',
+            'cfg_ink' => $p->cfg_ink ?? '',
+            'materials' => $p->materials->map(fn (IqpPartMaterial $m) => [
+                'id' => $m->id_part_material,
+                'rawmat_id' => $m->rawmat_id,
+                'display_name' => $m->rawmat_name ?? '',
+                'brand' => $m->rawMaterial?->brand ?? '',
+                'category' => $m->rawMaterial?->category1 ?? '',
+                'gram_weight' => $m->gram_weight,
+                'size_p' => $m->size_p,
+                'size_l' => $m->size_l,
+                'query' => '',
+                'is_primary' => (bool) $m->is_primary,
+            ])->values()->all(),
+        ])->values()->all();
+
+        if (empty($this->parts)) {
+            $this->addPart();
+        }
+
+        foreach ($this->parts as $i => $part) {
+            if (empty($part['materials'])) {
+                $this->parts[$i]['materials'] = [$this->blankMaterialRow(true)];
+            }
+        }
+    }
+
+    #[Computed]
+    public function customerResults()
+    {
+        if ($this->is_prospect || $this->customer_id || mb_strlen($this->custQuery) < 2) {
+            return collect();
+        }
+
+        return CustCustomer::query()
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->where('customer_name', 'like', "%{$this->custQuery}%")
+                    ->orWhere('customer_code', 'like', "%{$this->custQuery}%");
+            })
+            ->orderBy('customer_name')
+            ->limit(8)
+            ->get();
+    }
+
+    // Escape dulu baru bungkus potongan yang cocok dengan <mark> — jangan pernah
+    // interpolasi $query mentah ke output HTML (celah XSS).
+    public function highlightMatch(string $text, string $query): string
+    {
+        if ($query === '') {
+            return e($text);
+        }
+
+        $pos = mb_stripos($text, $query);
+
+        if ($pos === false) {
+            return e($text);
+        }
+
+        $before = mb_substr($text, 0, $pos);
+        $match = mb_substr($text, $pos, mb_strlen($query));
+        $after = mb_substr($text, $pos + mb_strlen($query));
+
+        return e($before).'<mark>'.e($match).'</mark>'.e($after);
+    }
+
+    public function selectCustomer(int $customerId): void
+    {
+        $customer = CustCustomer::find($customerId);
+
+        if (! $customer) {
+            return;
+        }
+
+        $this->customer_id = $customer->id_customer;
+        $this->customer_name = $customer->customer_name;
+        $this->custQuery = '';
+    }
+
+    public function clearCustomer(): void
+    {
+        $this->customer_id = null;
+        $this->customer_name = '';
+        $this->custQuery = '';
+    }
+
+    // Tombol toggle (bukan <select>) sengaja dipakai untuk properti dua/tiga-pilihan ini:
+    // Livewire v4 tidak konsisten mensinkronkan `selected`/nilai <select> saat elemen itu
+    // ikut ter-morph dalam re-render komponen full-page — class CSS pada <button> selalu benar.
+    public function setProspect(bool $value): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->is_prospect = $value;
+
+        if ($value) {
+            $this->clearCustomer();
+        } else {
+            $this->prospect_name = '';
+        }
+    }
+
+    // job_nature diturunkan dari material_source (Tier1 §5.2) — bukan pilihan bebas user.
+    public function jobNature(): string
+    {
+        return $this->material_source === 'CUSTOMER' ? 'JASA' : 'PRODUCT';
+    }
+
+    public function statusPillClass(): string
+    {
+        return match ($this->sub_state) {
+            'DRAFT' => 'draft',
+            'WAITING_COST', 'SUBMITTED', 'PRICE_CALCULATED' => 'submit',
+            'PRICE_APPROVED' => 'priceok',
+            'QUOTED' => 'quoted',
+            'PROVING', 'PROVE_APPROVED' => 'proving',
+            'CONVERTED' => 'ok',
+            'CANCELLED', 'LOST' => 'cancelled',
+            default => 'draft',
+        };
+    }
+
+    public function setMaterialSource(string $value): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->material_source = $value;
+
+        // Default sensible: JASA (bahan dari customer) biasanya kena PPh23 — tetap bisa diubah manual.
+        $this->pph_applicable = $value === 'CUSTOMER';
+    }
+
+    public function setTaxScheme(string $value): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->tax_scheme = $value;
+    }
+
+    public function setPph(bool $value): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->pph_applicable = $value;
+    }
+
+    // ================= QTY TIER (Tier1 §2.4/§3.4.2 — "tier qty, pilih UTAMA") =================
+
+    public function addTier(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->tiers[] = [
+            'id' => null,
+            'qty' => '',
+            'is_primary' => count($this->tiers) === 0,
+            'discount_item_type' => '',
+            'discount_item_value' => '',
+        ];
+    }
+
+    public function removeTier(int $index): void
+    {
+        if ($this->readOnly || count($this->tiers) <= 1 || ! isset($this->tiers[$index])) {
+            return;
+        }
+
+        $wasPrimary = $this->tiers[$index]['is_primary'];
+
+        unset($this->tiers[$index]);
+        $this->tiers = array_values($this->tiers);
+
+        // Invarian "tepat 1 UTAMA" dijaga di client juga, bukan cuma dicek saat simpan.
+        if ($wasPrimary) {
+            $this->tiers[0]['is_primary'] = true;
+        }
+    }
+
+    public function setPrimaryTier(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->tiers[$index])) {
+            return;
+        }
+
+        foreach ($this->tiers as $i => $tier) {
+            $this->tiers[$i]['is_primary'] = ($i === $index);
+        }
+    }
+
+    public function setTierDiscountType(int $index, string $type): void
+    {
+        if ($this->readOnly || ! isset($this->tiers[$index])) {
+            return;
+        }
+
+        $this->tiers[$index]['discount_item_type'] = $type;
+
+        if ($type === '') {
+            $this->tiers[$index]['discount_item_value'] = '';
+        }
+    }
+
+    // ================= PART & DIELINE (Tier1 §5.3/§5.11 — F19 dieline_spec DSL) =================
+
+    #[Computed]
+    public function productTypeOptions(): array
+    {
+        return ProdType::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->with([
+                'params' => fn ($q) => $q->where('is_active', true)->orderBy('seq'),
+                'sizes' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')->with('values'),
+            ])
+            ->get()
+            ->mapWithKeys(fn (ProdType $t) => [
+                $t->type_code => [
+                    'name' => $t->type_name,
+                    'spec' => $t->dieline_spec,
+                    'params' => $t->params->map(fn ($p) => [
+                        'key' => $p->param_key,
+                        'label' => $p->param_label,
+                        'uom' => $p->unit,
+                        'type' => $p->param_type,
+                        'options' => $p->option_json ?? [],
+                        'default' => $p->param_type === 'ENUM' ? ($p->default_str ?? '') : (float) $p->default_value,
+                    ])->values()->all(),
+                    'sizes' => $t->sizes->map(fn ($s) => [
+                        'id' => $s->id_type_size,
+                        'label' => $s->size_label,
+                        'values' => $s->values->mapWithKeys(fn ($v) => [
+                            $v->param_key => $v->value_num !== null ? (float) $v->value_num : $v->value_str,
+                        ])->all(),
+                    ])->values()->all(),
+                ],
+            ])
+            ->all();
+    }
+
+    // State awal Alpine (dielinePart) per baris part — dims dipaksa jadi object walau
+    // kosong supaya @js() tidak encode jadi [] (array) di JS, melainkan {}.
+    public function partAlpineInit(int $i): array
+    {
+        $p = $this->parts[$i];
+
+        return [
+            'typeCode' => $p['type_code'] ?? '',
+            'dims' => empty($p['dims']) ? (object) [] : $p['dims'],
+            'flatManual' => (bool) ($p['flat_manual'] ?? false),
+        ];
+    }
+
+    public function addPart(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->parts[] = [
+            'id' => null,
+            'part_name' => '',
+            'part_type' => 'DC',
+            'type_code' => '',
+            'qty_per_sku' => '1',
+            'dims' => [],
+            'flat_manual' => false,
+            'flat_w' => '',
+            'flat_h' => '',
+            'flat_area' => '',
+            'dims_version' => 0,
+            'cfg_color' => '4/4',
+            'cfg_ink' => '',
+            'materials' => [$this->blankMaterialRow(true)],
+        ];
+    }
+
+    protected function blankMaterialRow(bool $isPrimary = false): array
+    {
+        return [
+            'id' => null,
+            'rawmat_id' => null,
+            'display_name' => '',
+            'brand' => '',
+            'category' => '',
+            'gram_weight' => null,
+            'size_p' => null,
+            'size_l' => null,
+            'query' => '',
+            'is_primary' => $isPrimary,
+        ];
+    }
+
+    public function removePart(int $index): void
+    {
+        if ($this->readOnly || count($this->parts) <= 1 || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        unset($this->parts[$index]);
+        $this->parts = array_values($this->parts);
+    }
+
+    // Ganti tipe produk part: reset dims ke default prod_type_param milik tipe baru.
+    // dims_version dinaikkan supaya wire:key blok dieline berubah -> Livewire mem-
+    // buat ulang elemennya -> Alpine dielinePart re-init dari data server terbaru
+    // (bukan cuma di-morph, yang akan menyisakan state Alpine lama/basi).
+    public function selectPartType(int $index, string $typeCode): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        $this->parts[$index]['type_code'] = $typeCode;
+        $this->parts[$index]['dims'] = [];
+        $this->parts[$index]['flat_w'] = '';
+        $this->parts[$index]['flat_h'] = '';
+        $this->parts[$index]['flat_area'] = '';
+        $this->parts[$index]['dims_version'] = ($this->parts[$index]['dims_version'] ?? 0) + 1;
+
+        if ($typeCode === '') {
+            return;
+        }
+
+        $type = ProdType::with(['params' => fn ($q) => $q->where('is_active', true)])->find($typeCode);
+
+        if (! $type) {
+            return;
+        }
+
+        $this->parts[$index]['flat_manual'] = empty($type->dieline_spec['elements'] ?? null);
+
+        foreach ($type->params as $param) {
+            $this->parts[$index]['dims'][$param->param_key] = $param->param_type === 'ENUM'
+                ? (string) ($param->default_str ?? '')
+                : (string) ($param->default_value ?? '');
+        }
+    }
+
+    public function applySizePreset(int $index, string $sizeId): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index]) || $sizeId === '') {
+            return;
+        }
+
+        $size = ProdTypeSize::with('values')->find($sizeId);
+
+        if (! $size || $size->type_code !== $this->parts[$index]['type_code']) {
+            return;
+        }
+
+        foreach ($size->values as $val) {
+            $this->parts[$index]['dims'][$val->param_key] = $val->value_num !== null
+                ? (string) $val->value_num
+                : (string) ($val->value_str ?? '');
+        }
+
+        $this->parts[$index]['dims_version'] = ($this->parts[$index]['dims_version'] ?? 0) + 1;
+    }
+
+    // ================= WARNA / CETAK (iqp_part.cfg_color/cfg_ink) =================
+
+    // Turunan tampilan saja (front/back/total/side) dari notasi "sisiA/sisiB" — tidak
+    // ada kolom terpisah di DDL, murni bantu baca untuk user (selaras mockup E8).
+    public function colorBreakdown(?string $code): ?array
+    {
+        if (! $code || ! preg_match('/^(\d+)\/(\d+)$/', trim($code), $m)) {
+            return null;
+        }
+
+        $front = (int) $m[1];
+        $back = (int) $m[2];
+
+        return [
+            'front' => $front,
+            'back' => $back,
+            'total' => $front + $back,
+            'side' => $back > 0 ? '2SIDE' : '1SIDE',
+        ];
+    }
+
+    // ================= BAHAN / MATERIAL per part (iqp_part_material, Tier1 §5.11) =================
+
+    public function addMaterialRow(int $partIndex): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex])) {
+            return;
+        }
+
+        $this->parts[$partIndex]['materials'][] = $this->blankMaterialRow(count($this->parts[$partIndex]['materials']) === 0);
+    }
+
+    public function removeMaterialRow(int $partIndex, int $matIndex): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$matIndex])) {
+            return;
+        }
+
+        if (count($this->parts[$partIndex]['materials']) <= 1) {
+            return;
+        }
+
+        $wasPrimary = $this->parts[$partIndex]['materials'][$matIndex]['is_primary'];
+
+        unset($this->parts[$partIndex]['materials'][$matIndex]);
+        $this->parts[$partIndex]['materials'] = array_values($this->parts[$partIndex]['materials']);
+
+        if ($wasPrimary && ! empty($this->parts[$partIndex]['materials'])) {
+            $this->parts[$partIndex]['materials'][0]['is_primary'] = true;
+        }
+    }
+
+    public function setMaterialPrimary(int $partIndex, int $matIndex): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$matIndex])) {
+            return;
+        }
+
+        foreach ($this->parts[$partIndex]['materials'] as $j => $row) {
+            $this->parts[$partIndex]['materials'][$j]['is_primary'] = ($j === $matIndex);
+        }
+    }
+
+    public function materialResults(int $partIndex, int $matIndex)
+    {
+        $row = $this->parts[$partIndex]['materials'][$matIndex] ?? null;
+
+        if (! $row || $row['rawmat_id'] || mb_strlen($row['query']) < 2) {
+            return collect();
+        }
+
+        return MatRaw::query()
+            ->where('is_active', true)
+            ->where(function ($q) use ($row) {
+                $q->where('material_name', 'like', "%{$row['query']}%")
+                    ->orWhere('material_code', 'like', "%{$row['query']}%");
+            })
+            ->orderBy('material_name')
+            ->limit(8)
+            ->get();
+    }
+
+    public function selectMaterial(int $partIndex, int $matIndex, int $rawmatId): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$matIndex])) {
+            return;
+        }
+
+        $material = MatRaw::find($rawmatId);
+
+        if (! $material) {
+            return;
+        }
+
+        $this->parts[$partIndex]['materials'][$matIndex]['rawmat_id'] = $material->id_material;
+        $this->parts[$partIndex]['materials'][$matIndex]['display_name'] = $material->material_name;
+        $this->parts[$partIndex]['materials'][$matIndex]['brand'] = $material->brand ?? '';
+        $this->parts[$partIndex]['materials'][$matIndex]['category'] = $material->category1 ?? '';
+        $this->parts[$partIndex]['materials'][$matIndex]['gram_weight'] = $material->gram_weight;
+        $this->parts[$partIndex]['materials'][$matIndex]['size_p'] = $material->cm_length;
+        $this->parts[$partIndex]['materials'][$matIndex]['size_l'] = $material->cm_width;
+        $this->parts[$partIndex]['materials'][$matIndex]['query'] = '';
+    }
+
+    public function clearMaterialRow(int $partIndex, int $matIndex): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$matIndex])) {
+            return;
+        }
+
+        $id = $this->parts[$partIndex]['materials'][$matIndex]['id'];
+        $isPrimary = $this->parts[$partIndex]['materials'][$matIndex]['is_primary'];
+        $this->parts[$partIndex]['materials'][$matIndex] = $this->blankMaterialRow($isPrimary);
+        $this->parts[$partIndex]['materials'][$matIndex]['id'] = $id;
+    }
+
+    // ================= SIMPAN / STATE (Tier2 §11 Form Standard & State) =================
+
+    protected function headerRules(): array
+    {
+        $rules = [
+            'inquiry_date' => ['required', 'date'],
+            'source' => ['required', 'in:EMAIL,WA,PHONE,VISIT,MARKETPLACE'],
+            'pic_sales' => ['nullable', 'string', 'max:100'],
+            'deadline_quotation' => ['nullable', 'date', 'after_or_equal:inquiry_date'],
+            'product_draft_name' => ['required', 'string', 'max:150', 'regex:~^[^/@#%"\']+$~'],
+            'sales_note' => ['nullable', 'string'],
+            'material_source' => ['required', 'in:OWN,CUSTOMER'],
+            'tax_scheme' => ['required', 'in:PPN,NON_PPN'],
+            'cust_material_spec' => ['nullable', 'string', 'required_if:material_source,CUSTOMER'],
+            'cust_material_eta' => ['nullable', 'date'],
+        ];
+
+        // CLAUDE.md §2: FK lintas-DB divalidasi di aplikasi (exists:conn.table,col), bukan constraint DB.
+        $rules[$this->is_prospect ? 'prospect_name' : 'customer_id'] = $this->is_prospect
+            ? ['required', 'string', 'max:150']
+            : ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'];
+
+        return $rules;
+    }
+
+    protected function assertTierInvariant(): void
+    {
+        if (count($this->tiers) === 0) {
+            throw ValidationException::withMessages(['tiers' => 'Minimal 1 baris tier qty diperlukan.']);
+        }
+
+        $primaryCount = collect($this->tiers)->where('is_primary', true)->count();
+
+        if ($primaryCount !== 1) {
+            throw ValidationException::withMessages([
+                'tiers' => 'Harus tepat 1 tier UTAMA (saat ini: '.$primaryCount.').',
+            ]);
+        }
+
+        foreach ($this->tiers as $i => $tier) {
+            if ($tier['qty'] === '' || ! is_numeric($tier['qty']) || (float) $tier['qty'] <= 0) {
+                throw ValidationException::withMessages([
+                    'tiers' => 'Qty tier baris '.($i + 1).' wajib diisi angka lebih besar dari 0.',
+                ]);
+            }
+        }
+    }
+
+    protected function headerAttributes(): array
+    {
+        $isCustomerMaterial = $this->material_source === 'CUSTOMER';
+
+        return [
+            'inquiry_date' => $this->inquiry_date,
+            'source' => $this->source,
+            'pic_sales' => $this->pic_sales ?: null,
+            'customer_id' => $this->is_prospect ? null : $this->customer_id,
+            'is_prospect' => $this->is_prospect,
+            'prospect_name' => $this->is_prospect ? $this->prospect_name : null,
+            'deadline_quotation' => $this->deadline_quotation ?: null,
+            'product_draft_name' => $this->product_draft_name,
+            'sales_note' => $this->sales_note ?: null,
+            'material_source' => $this->material_source,
+            'job_nature' => $this->jobNature(),
+            'tax_scheme' => $this->tax_scheme,
+            'pph_applicable' => $this->pph_applicable,
+            'cust_material_spec' => $isCustomerMaterial ? ($this->cust_material_spec ?: null) : null,
+            'cust_material_eta' => $isCustomerMaterial ? ($this->cust_material_eta ?: null) : null,
+            'updated_by' => Auth::user()->login,
+        ];
+    }
+
+    protected function persistTiers(): void
+    {
+        $keepIds = [];
+
+        foreach ($this->tiers as $index => $row) {
+            $data = [
+                'tier_seq' => $index + 1,
+                'qty' => $row['qty'],
+                'is_primary' => $row['is_primary'],
+                'discount_item_type' => $row['discount_item_type'] ?: null,
+                'discount_item_value' => $row['discount_item_value'] !== '' ? $row['discount_item_value'] : null,
+                'updated_by' => Auth::user()->login,
+            ];
+
+            if ($row['id']) {
+                IqpTier::whereKey($row['id'])->update($data);
+                $keepIds[] = $row['id'];
+            } else {
+                $data['created_by'] = Auth::user()->login;
+                $tier = $this->inquiry->tiers()->create($data);
+                $this->tiers[$index]['id'] = $tier->id_tier;
+                $keepIds[] = $tier->id_tier;
+            }
+        }
+
+        $this->inquiry->tiers()->whereNotIn('id_tier', $keepIds)->delete();
+    }
+
+    protected function persistParts(): void
+    {
+        $keepIds = [];
+
+        foreach ($this->parts as $index => $row) {
+            // Snapshot dieline (Tier1 §5.3): DSL asli prod_type.dieline_spec + dims yang
+            // dipakai user, dibekukan ke iqp_part.dieline_spec — bukan re-join ke prod_type.
+            $dielineSpec = null;
+
+            if (! empty($row['type_code'])) {
+                $type = ProdType::find($row['type_code']);
+
+                if ($type && $type->dieline_spec) {
+                    $dielineSpec = $type->dieline_spec;
+                    $dielineSpec['dims'] = $row['dims'] ?? [];
+                    $dielineSpec['type_code'] = $row['type_code'];
+                }
+            }
+
+            $data = [
+                'part_seq' => $index + 1,
+                'part_name' => $row['part_name'] !== '' ? $row['part_name'] : 'Part '.($index + 1),
+                'part_type' => $row['part_type'] ?: null,
+                'qty_per_sku' => $row['qty_per_sku'] !== '' ? $row['qty_per_sku'] : 1,
+                'cfg_color' => $row['cfg_color'] !== '' ? $row['cfg_color'] : null,
+                'cfg_ink' => $row['cfg_ink'] !== '' ? $row['cfg_ink'] : null,
+                'dieline_spec' => $dielineSpec,
+                'flat_w' => $row['flat_w'] !== '' ? $row['flat_w'] : null,
+                'flat_h' => $row['flat_h'] !== '' ? $row['flat_h'] : null,
+                'flat_area' => $row['flat_area'] !== '' ? $row['flat_area'] : null,
+                'updated_by' => Auth::user()->login,
+            ];
+
+            if ($row['id']) {
+                $part = IqpPart::findOrFail($row['id']);
+                $part->update($data);
+                $keepIds[] = $row['id'];
+            } else {
+                $data['created_by'] = Auth::user()->login;
+                $part = $this->inquiry->parts()->create($data);
+                $this->parts[$index]['id'] = $part->id_part;
+                $keepIds[] = $part->id_part;
+            }
+
+            $this->persistPartMaterials($part, $index);
+        }
+
+        $this->inquiry->parts()->whereNotIn('id_part', $keepIds)->delete();
+    }
+
+    protected function persistPartMaterials(IqpPart $part, int $partIndex): void
+    {
+        $keepIds = [];
+
+        foreach ($this->parts[$partIndex]['materials'] as $matIndex => $row) {
+            if (! $row['rawmat_id'] && $row['display_name'] === '') {
+                continue;
+            }
+
+            $data = [
+                'layer_seq' => $matIndex + 1,
+                'rawmat_id' => $row['rawmat_id'] ?: null,
+                'rawmat_name' => $row['display_name'] !== '' ? $row['display_name'] : null,
+                'gram_weight' => $row['gram_weight'] ?: null,
+                'size_p' => $row['size_p'] ?: null,
+                'size_l' => $row['size_l'] ?: null,
+                'is_primary' => $row['is_primary'],
+                // B1 (Tier1 §6.2): granularitas per-layer belum diputuskan, ikut flag header dulu.
+                'material_source' => $this->material_source,
+                'updated_by' => Auth::user()->login,
+            ];
+
+            if ($row['id']) {
+                IqpPartMaterial::whereKey($row['id'])->update($data);
+                $keepIds[] = $row['id'];
+            } else {
+                $data['created_by'] = Auth::user()->login;
+                $material = $part->materials()->create($data);
+                $this->parts[$partIndex]['materials'][$matIndex]['id'] = $material->id_part_material;
+                $keepIds[] = $material->id_part_material;
+            }
+        }
+
+        $part->materials()->whereNotIn('id_part_material', $keepIds)->delete();
+    }
+
+    protected function persist(): void
+    {
+        $this->validate($this->headerRules());
+        $this->assertTierInvariant();
+
+        DB::connection('tm2sdi')->transaction(function () {
+            $attributes = $this->headerAttributes();
+
+            if ($this->inquiry) {
+                $this->inquiry->update($attributes);
+            } else {
+                $attributes['inquiry_type'] = $this->mode;
+                $attributes['created_by'] = Auth::user()->login;
+
+                // Penomoran LOCKED per Tier1 §2.4: IQ + YY + NNNNN, counter reset tiap tahun.
+                $prefix = 'IQ'.now()->format('y');
+
+                $last = IqpInquiry::where('inquiry_no', 'like', "{$prefix}%")
+                    ->lockForUpdate()
+                    ->orderByDesc('inquiry_no')
+                    ->value('inquiry_no');
+
+                $seq = $last ? ((int) substr($last, 4)) + 1 : 1;
+                $attributes['inquiry_no'] = $prefix.str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
+
+                // refresh() wajib: kolom ber-DEFAULT DB (sub_state, revision_no, dst) belum
+                // terisi di instance in-memory setelah create() tanpa query ulang.
+                $this->inquiry = IqpInquiry::create($attributes)->refresh();
+
+                $this->id = $this->inquiry->id_inquiry;
+                $this->inquiry_no = $this->inquiry->inquiry_no;
+            }
+
+            $this->persistTiers();
+            $this->persistParts();
+        });
+
+        $this->sub_state = $this->inquiry->sub_state;
+    }
+
+    public function save(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->persist();
+
+        $this->flash = 'Tersimpan sebagai '.$this->inquiry_no.' ('.$this->sub_state.').';
+    }
+
+    public function confirm(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->persist();
+
+        $this->inquiry->update([
+            'is_confirmed' => true,
+            'sub_state' => 'SUBMITTED',
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->is_confirmed = true;
+        $this->readOnly = true;
+        $this->sub_state = 'SUBMITTED';
+        $this->flash = 'Inkuiri '.$this->inquiry_no.' dikonfirmasi — status SUBMITTED, form terkunci.';
+    }
+
+    public function openCancelForm(): void
+    {
+        $this->showCancelForm = true;
+    }
+
+    public function dismissCancelForm(): void
+    {
+        $this->showCancelForm = false;
+        $this->cancel_reason = '';
+    }
+
+    public function cancel(): void
+    {
+        if (! $this->is_confirmed || $this->is_cancelled) {
+            return;
+        }
+
+        $this->validate(['cancel_reason' => ['required', 'string', 'max:255']]);
+
+        $this->inquiry->update([
+            'is_cancelled' => true,
+            'cancel_reason' => $this->cancel_reason,
+            'sub_state' => 'CANCELLED',
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->is_cancelled = true;
+        $this->sub_state = 'CANCELLED';
+        $this->showCancelForm = false;
+        $this->flash = 'Inkuiri '.$this->inquiry_no.' dibatalkan.';
+    }
+};
+?>
+
+<div>
+    <header class="app-header">
+        <b>{{ $mode === 'NEW' ? '✨ Inkuiri Produk Baru' : ($mode === 'RECALC' ? '🔁 Hitung Ulang Harga' : '✏️ Ubah Spesifikasi') }}</b>
+        <span class="pill {{ strtolower($mode) }}">{{ $mode }}</span>
+        <span class="sub">{{ $inquiry_no ?: 'belum tersimpan' }} · {{ $sub_state }}</span>
+        <a class="back" href="{{ route('inquiry.hub') }}">← Menu Utama</a>
+    </header>
+
+    <div class="wrap">
+
+        @if ($flash)
+            <div class="note g">✅ {{ $flash }}</div>
+        @endif
+
+        @if ($readOnly)
+            <div class="note o">🔒 Inkuiri ini sudah dikonfirmasi (status <b>{{ $sub_state }}</b>) — dibuka lihat-saja, tidak bisa diedit.</div>
+        @else
+            <div class="note y">
+                👤 <b>Sales Officer</b> — isi header, tier qty, part &amp; dieline di bawah. Bahan/coating
+                dan costing akan menyusul di iterasi berikutnya.
+            </div>
+        @endif
+
+        <div class="card">
+            <div class="toolbar">
+                <button type="button" class="btn p" wire:click="save" @if($readOnly) disabled @endif wire:loading.attr="disabled">
+                    💾 Simpan
+                </button>
+                @unless($is_confirmed)
+                    <button type="button" class="btn s" wire:click="confirm" wire:loading.attr="disabled">
+                        ✅ Confirm
+                    </button>
+                @endunless
+                @if($is_confirmed && ! $is_cancelled)
+                    <button type="button" class="btn d" wire:click="openCancelForm">
+                        ✖ Batalkan
+                    </button>
+                @endif
+                <div style="margin-left:auto"></div>
+                <span class="pill {{ $this->statusPillClass() }}">{{ $sub_state }}</span>
+            </div>
+
+            @if ($showCancelForm)
+                <div class="body" style="background:#fff4e5;border-bottom:1px solid #ffd9a0">
+                    <div class="f" style="margin-bottom:8px">
+                        <label>Alasan Pembatalan *</label>
+                        <textarea wire:model="cancel_reason" rows="2" placeholder="Wajib diisi — tercatat di riwayat"></textarea>
+                        @error('cancel_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    </div>
+                    <div style="display:flex;gap:8px">
+                        <button type="button" class="btn d xs" wire:click="cancel">Ya, batalkan inkuiri</button>
+                        <button type="button" class="btn g xs" wire:click="dismissCancelForm">Batal</button>
+                    </div>
+                </div>
+            @endif
+
+            <div class="body">
+                <div class="sec-title">Header Inkuiri</div>
+                <div class="grid">
+                    <div class="f">
+                        <label>No. Inkuiri (auto)</label>
+                        <input type="text" value="{{ $inquiry_no ?: 'belum tersimpan' }}" readonly>
+                    </div>
+                    <div class="f">
+                        <label>Tanggal</label>
+                        <input type="date" wire:model="inquiry_date" @if($readOnly) disabled @endif>
+                        @error('inquiry_date') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="f">
+                        <label>Sumber</label>
+                        <select wire:model="source" x-data x-effect="$el.value = @js($source)" @if($readOnly) disabled @endif>
+                            @foreach (['EMAIL', 'WA', 'PHONE', 'VISIT', 'MARKETPLACE'] as $opt)
+                                <option value="{{ $opt }}" @selected($source === $opt)>{{ $opt }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="f">
+                        <label>PIC Sales</label>
+                        <input type="text" wire:model="pic_sales" placeholder="Nama PIC Sales" @if($readOnly) disabled @endif>
+                    </div>
+
+                    <div class="f col2">
+                        <label>Prospek?</label>
+                        <div style="display:flex;gap:6px">
+                            <button type="button" class="btn xs {{ ! $is_prospect ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setProspect(false)" @if($readOnly) disabled @endif>Tidak — customer terdaftar</button>
+                            <button type="button" class="btn xs {{ $is_prospect ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setProspect(true)" @if($readOnly) disabled @endif>Ya — belum terdaftar</button>
+                        </div>
+                    </div>
+                    <div class="f col2">
+                        <label>Deadline Quotation <span class="hint" style="font-weight:400">(min. +14 hari kerja)</span></label>
+                        <input type="date" wire:model="deadline_quotation" @if($readOnly) disabled @endif>
+                        @error('deadline_quotation') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    </div>
+
+                    @if ($is_prospect)
+                        <div class="f col2">
+                            <label>Nama Calon Customer</label>
+                            <input type="text" wire:model="prospect_name" placeholder="Nama prospek…" @if($readOnly) disabled @endif>
+                            @error('prospect_name') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                        </div>
+                    @elseif ($customer_id)
+                        <div class="f col2">
+                            <label>Customer</label>
+                            <div style="display:flex;gap:6px;align-items:center">
+                                <input type="text" value="{{ $customer_name }}" readonly class="cust-ok">
+                                @unless($readOnly)
+                                    <button type="button" class="btn g xs" wire:click="clearCustomer">Ganti</button>
+                                @endunless
+                            </div>
+                        </div>
+                    @else
+                        <div class="f col2 ac-wrap">
+                            <label>Customer / Calon Customer</label>
+                            <input type="text" wire:model.live.debounce.400ms="custQuery" autocomplete="off"
+                                   placeholder="Ketik nama / kode customer…" @if($readOnly) disabled @endif>
+                            @error('customer_id') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                            @if ($custQuery && mb_strlen($custQuery) >= 2)
+                                <div class="ac-box on">
+                                    @forelse ($this->customerResults as $c)
+                                        <div class="ac-i" wire:click="selectCustomer({{ $c->id_customer }})">
+                                            <b>{!! $this->highlightMatch($c->customer_name, $custQuery) !!}</b>
+                                            <span class="cd">{{ $c->customer_code }}</span>
+                                        </div>
+                                    @empty
+                                        <div class="ac-none">Tidak ditemukan.</div>
+                                    @endforelse
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+
+                    <div class="f col2">
+                        <label>Nama Produk (draft)</label>
+                        <input type="text" wire:model="product_draft_name" maxlength="150"
+                               placeholder="mis. Box Kosmetik Serum 30ml" @if($readOnly) disabled @endif>
+                        <div class="hint">Nama sementara selama quotation. Karakter khusus (/@#%"';) tidak diperbolehkan.</div>
+                        @error('product_draft_name') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    </div>
+                    <div class="f col2">
+                        <label>Catatan Sales</label>
+                        <textarea wire:model="sales_note" rows="2" placeholder="opsional" @if($readOnly) disabled @endif></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Sifat Order &amp; Pajak <span style="font-weight:400;color:#889">(menentukan struktur biaya &amp; pajak)</span></h3>
+            <div class="body">
+                <div class="grid">
+                    <div class="f">
+                        <label>Sumber Bahan</label>
+                        <div style="display:flex;gap:6px">
+                            <button type="button" class="btn xs {{ $material_source === 'OWN' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setMaterialSource('OWN')" @if($readOnly) disabled @endif>Perusahaan (OWN)</button>
+                            <button type="button" class="btn xs {{ $material_source === 'CUSTOMER' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setMaterialSource('CUSTOMER')" @if($readOnly) disabled @endif>Customer sediakan</button>
+                        </div>
+                        <div class="hint">{{ $material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA.' }}</div>
+                    </div>
+                    <div class="f">
+                        <label>Jenis Pekerjaan</label>
+                        <input type="text" value="{{ $this->jobNature() }}" readonly>
+                        <div class="hint">Otomatis dari sumber bahan (PRODUCT / JASA).</div>
+                    </div>
+                    <div class="f">
+                        <label>Skema PPN</label>
+                        <div style="display:flex;gap:6px">
+                            <button type="button" class="btn xs {{ $tax_scheme === 'PPN' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setTaxScheme('PPN')" @if($readOnly) disabled @endif>PPN</button>
+                            <button type="button" class="btn xs {{ $tax_scheme === 'NON_PPN' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setTaxScheme('NON_PPN')" @if($readOnly) disabled @endif>NON_PPN</button>
+                        </div>
+                    </div>
+                    <div class="f">
+                        <label>PPh23 (jasa)</label>
+                        <div style="display:flex;gap:6px">
+                            <button type="button" class="btn xs {{ ! $pph_applicable ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setPph(false)" @if($readOnly || $this->jobNature() !== 'JASA') disabled @endif>Tidak</button>
+                            <button type="button" class="btn xs {{ $pph_applicable ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setPph(true)" @if($readOnly || $this->jobNature() !== 'JASA') disabled @endif>Ya</button>
+                        </div>
+                        <div class="hint">Hanya relevan bila Jenis Pekerjaan = JASA.</div>
+                    </div>
+                </div>
+
+                @if ($material_source === 'CUSTOMER')
+                    <div style="margin-top:6px">
+                        <div class="sec-title">Spesifikasi Bahan Customer <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">(wajib bila bahan dari customer)</span></div>
+                        <div class="grid two">
+                            <div class="f col2">
+                                <label>Deskripsi bahan customer *</label>
+                                <input type="text" wire:model="cust_material_spec"
+                                       placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" @if($readOnly) disabled @endif>
+                                @error('cust_material_spec') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="f">
+                                <label>ETA bahan tiba</label>
+                                <input type="date" wire:model="cust_material_eta" @if($readOnly) disabled @endif>
+                            </div>
+                        </div>
+                        <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling &amp; spoilage dihitung Costing.</div>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Qty Order Berjenjang <span style="font-weight:400;color:#889">(Costing hitung HPP per tier — tepat 1 UTAMA)</span></h3>
+            <div class="body">
+                @error('tiers')
+                    <div class="note o">{{ $message }}</div>
+                @enderror
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:44px">Seq</th>
+                            <th>Qty (pcs)</th>
+                            <th style="width:120px">Utama</th>
+                            <th style="width:190px">Diskon Item</th>
+                            <th style="width:40px"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($tiers as $i => $tier)
+                            <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
+                                <td>{{ $i + 1 }}</td>
+                                <td>
+                                    <input type="number" step="1" min="0" wire:model.blur="tiers.{{ $i }}.qty"
+                                           placeholder="mis. 10000" @if($readOnly) disabled @endif>
+                                </td>
+                                <td style="text-align:center">
+                                    <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}"
+                                            wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
+                                        {{ $tier['is_primary'] ? '✓ Utama' : 'Jadikan Utama' }}
+                                    </button>
+                                </td>
+                                <td>
+                                    <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">
+                                        <button type="button" class="btn xs {{ $tier['discount_item_type'] === '' ? 'p' : 'g' }}"
+                                                wire:click="setTierDiscountType({{ $i }}, '')" @if($readOnly) disabled @endif>—</button>
+                                        <button type="button" class="btn xs {{ $tier['discount_item_type'] === 'PERCENT' ? 'p' : 'g' }}"
+                                                wire:click="setTierDiscountType({{ $i }}, 'PERCENT')" @if($readOnly) disabled @endif>%</button>
+                                        <button type="button" class="btn xs {{ $tier['discount_item_type'] === 'AMOUNT' ? 'p' : 'g' }}"
+                                                wire:click="setTierDiscountType({{ $i }}, 'AMOUNT')" @if($readOnly) disabled @endif>Rp</button>
+                                        @if ($tier['discount_item_type'])
+                                            <input type="number" step="0.01" min="0" wire:model.blur="tiers.{{ $i }}.discount_item_value"
+                                                   placeholder="0" style="width:80px" @if($readOnly) disabled @endif>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
+                                            @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
+                    ＋ Tambah Tier
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Part &amp; Dieline <span style="font-weight:400;color:#889">(dimensi produk &amp; preview dieline live)</span></h3>
+            <div class="body">
+                @foreach ($parts as $i => $part)
+                    <div class="partcard" wire:key="part-{{ $part['id'] ?? 'new-'.$i }}">
+                        <div class="parthd">
+                            <span class="pnm">{{ $part['part_name'] !== '' ? $part['part_name'] : 'Part '.($i + 1) }}</span>
+                            @if (count($parts) > 1)
+                                <button type="button" class="btn d xs" style="margin-left:auto" wire:click="removePart({{ $i }})" @if($readOnly) disabled @endif>✕ hapus part</button>
+                            @endif
+                        </div>
+                        <div class="partbody">
+                            <div class="grid" style="margin-bottom:8px">
+                                <div class="f">
+                                    <label>Nama Part</label>
+                                    <input type="text" wire:model.blur="parts.{{ $i }}.part_name" placeholder="mis. Body" @if($readOnly) disabled @endif>
+                                </div>
+                                <div class="f">
+                                    <label>Tipe Part</label>
+                                    <select wire:model="parts.{{ $i }}.part_type" x-data x-effect="$el.value = @js($part['part_type'])" @if($readOnly) disabled @endif>
+                                        @foreach ([['DC', 'Paper'], ['DC+SHEET', 'Paper + Sheet'], ['DC+SF', 'Paper + SF'], ['SHEET', 'Sheet'], ['KRAFT', 'Kraft']] as [$code, $label])
+                                            <option value="{{ $code }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="f">
+                                    <label>Qty per Set</label>
+                                    <input type="number" min="0" step="0.01" wire:model.blur="parts.{{ $i }}.qty_per_sku" @if($readOnly) disabled @endif>
+                                </div>
+                            </div>
+
+                            @php($typeOptions = $this->productTypeOptions)
+                            @php($selectedType = $typeOptions[$part['type_code']] ?? null)
+                            <div class="flx"
+                                 wire:key="dieline-{{ $i }}-{{ $part['dims_version'] ?? 0 }}"
+                                 x-data="dielinePart(@js($typeOptions), @js($this->partAlpineInit($i)))"
+                                 data-index="{{ $i }}">
+                                <div style="flex:1">
+                                    <div class="ptype-box">
+                                        <div style="flex:1">
+                                            <label>Tipe Produk</label>
+                                            <select wire:change="selectPartType({{ $i }}, $event.target.value)" @if($readOnly) disabled @endif>
+                                                <option value="">— pilih tipe produk —</option>
+                                                @foreach ($typeOptions as $code => $t)
+                                                    <option value="{{ $code }}" @selected($part['type_code'] === $code)>{{ $t['name'] }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        @if ($selectedType && ! empty($selectedType['sizes']))
+                                            <div class="f size-pick" style="width:220px">
+                                                <label>⭐ Ukuran Pasaran</label>
+                                                <select wire:change="applySizePreset({{ $i }}, $event.target.value)" @if($readOnly) disabled @endif>
+                                                    <option value="">— pilih ukuran umum —</option>
+                                                    @foreach ($selectedType['sizes'] as $size)
+                                                        <option value="{{ $size['id'] }}">{{ $size['label'] }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    <div class="sec-title">Dimensi</div>
+                                    <div class="grid">
+                                        @forelse ($selectedType['params'] ?? [] as $param)
+                                            <div class="f">
+                                                <label>{{ $param['label'] }}{{ $param['uom'] ? ' ('.$param['uom'].')' : '' }}</label>
+                                                @if ($param['type'] === 'ENUM')
+                                                    <select wire:model.blur="parts.{{ $i }}.dims.{{ $param['key'] }}"
+                                                            x-data x-effect="$el.value = @js($part['dims'][$param['key']] ?? '')"
+                                                            x-on:change="onDim('{{ $param['key'] }}', $event.target.value)" @if($readOnly) disabled @endif>
+                                                        @foreach ($param['options'] as $opt)
+                                                            <option value="{{ $opt['c'] }}">{{ $opt['l'] }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                @else
+                                                    <input type="number" step="0.01" wire:model.blur="parts.{{ $i }}.dims.{{ $param['key'] }}"
+                                                           x-on:input="onDim('{{ $param['key'] }}', $event.target.value)" @if($readOnly) disabled @endif>
+                                                @endif
+                                            </div>
+                                        @empty
+                                            <div class="hint" style="grid-column:span 4">Pilih tipe produk dulu.</div>
+                                        @endforelse
+                                    </div>
+                                    @if ($selectedType && empty($selectedType['spec']))
+                                        <div class="nospec">⚠️ Tipe ini belum punya <code>dieline_spec</code>. Isi Flat manual.</div>
+                                    @endif
+
+                                    <div class="sec-title">Bentangan (Flat) — dipakai Costing</div>
+                                    <div class="grid">
+                                        <div class="f">
+                                            <label>Flat Width (mm)</label>
+                                            <input type="number" step="0.01" wire:model="parts.{{ $i }}.flat_w" x-ref="fw"
+                                                   :readonly="!flatManual" x-on:input="onFlatManualInput()" @if($readOnly) disabled @endif>
+                                        </div>
+                                        <div class="f">
+                                            <label>Flat Height (mm)</label>
+                                            <input type="number" step="0.01" wire:model="parts.{{ $i }}.flat_h" x-ref="fh"
+                                                   :readonly="!flatManual" x-on:input="onFlatManualInput()" @if($readOnly) disabled @endif>
+                                        </div>
+                                        <div class="f">
+                                            <label>Flat Area (mm²)</label>
+                                            <input type="text" wire:model="parts.{{ $i }}.flat_area" x-ref="fa" readonly>
+                                        </div>
+                                        <div class="f">
+                                            <label>Manual?</label>
+                                            <div style="display:flex;gap:6px">
+                                                <button type="button" class="btn xs" :class="!flatManual ? 'p' : 'g'" style="flex:1" @click="toggleManual(false)" @if($readOnly) disabled @endif>Auto</button>
+                                                <button type="button" class="btn xs" :class="flatManual ? 'p' : 'g'" style="flex:1" @click="toggleManual(true)" @if($readOnly) disabled @endif>Manual</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="sec-title">Bahan (Material)</div>
+                                    <div class="hint" style="margin-bottom:6px">Pilih dari master bahan baku — brand &amp; jenis bahan otomatis terisi.</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width:36px">Lyr</th>
+                                                <th>Bahan (ketik untuk cari)</th>
+                                                <th style="width:100px">Brand</th>
+                                                <th style="width:120px">Jenis Bahan</th>
+                                                <th style="width:80px">Utama</th>
+                                                <th style="width:36px"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($part['materials'] as $j => $mat)
+                                                <tr wire:key="mat-{{ $i }}-{{ $mat['id'] ?? 'new-'.$j }}">
+                                                    <td>{{ $j + 1 }}</td>
+                                                    <td>
+                                                        @if ($mat['rawmat_id'])
+                                                            <div style="display:flex;gap:6px;align-items:center">
+                                                                <input type="text" value="{{ $mat['display_name'] }}" readonly class="cust-ok">
+                                                                @unless($readOnly)
+                                                                    <button type="button" class="btn g xs" wire:click="clearMaterialRow({{ $i }}, {{ $j }})">Ganti</button>
+                                                                @endunless
+                                                            </div>
+                                                        @else
+                                                            <div class="ac-wrap">
+                                                                <input type="text" wire:model.live.debounce.400ms="parts.{{ $i }}.materials.{{ $j }}.query"
+                                                                       autocomplete="off" placeholder="ketik kode/nama bahan…" @if($readOnly) disabled @endif>
+                                                                @if (mb_strlen($mat['query'] ?? '') >= 2)
+                                                                    <div class="ac-box on">
+                                                                        @forelse ($this->materialResults($i, $j) as $m)
+                                                                            <div class="ac-i" wire:click="selectMaterial({{ $i }}, {{ $j }}, {{ $m->id_material }})">
+                                                                                <b>{!! $this->highlightMatch($m->material_name, $mat['query']) !!}</b>
+                                                                                <span class="cd">{{ $m->material_code }}</span>
+                                                                            </div>
+                                                                        @empty
+                                                                            <div class="ac-none">Bahan tak ditemukan.</div>
+                                                                        @endforelse
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td><input type="text" value="{{ $mat['brand'] }}" readonly placeholder="—" style="background:#f7f8fa" title="Brand dari master bahan"></td>
+                                                    <td><input type="text" value="{{ $mat['category'] }}" readonly placeholder="—" style="background:#f7f8fa" title="Jenis bahan dari master"></td>
+                                                    <td style="text-align:center">
+                                                        <button type="button" class="btn xs {{ $mat['is_primary'] ? 'p' : 'g' }}"
+                                                                wire:click="setMaterialPrimary({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>
+                                                            {{ $mat['is_primary'] ? '✓' : '—' }}
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn d xs" wire:click="removeMaterialRow({{ $i }}, {{ $j }})"
+                                                                @if($readOnly || count($part['materials']) <= 1) disabled @endif>✕</button>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addMaterialRow({{ $i }})" @if($readOnly) disabled @endif>
+                                        ＋ Tambah Bahan
+                                    </button>
+
+                                    <div class="sec-title">Cetak / Warna</div>
+                                    <div class="grid">
+                                        <div class="f">
+                                            <label>Notasi Warna</label>
+                                            <select wire:model="parts.{{ $i }}.cfg_color" x-data x-effect="$el.value = @js($part['cfg_color'])" @if($readOnly) disabled @endif>
+                                                @foreach (['4/4', '4/1', '4/0', '2/0', '1/1', '1/0'] as $opt)
+                                                    <option value="{{ $opt }}" @selected($part['cfg_color'] === $opt)>{{ $opt }}</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="hint">Format sisiA/sisiB (4/4, 4/0, 4/1)</div>
+                                        </div>
+                                        <div class="f col3">
+                                            <label>Turunan (otomatis)</label>
+                                            @php($cb = $this->colorBreakdown($part['cfg_color']))
+                                            <div class="derived">
+                                                @if ($cb)
+                                                    <span>front: <b>{{ $cb['front'] }}</b></span>
+                                                    <span>back: <b>{{ $cb['back'] }}</b></span>
+                                                    <span>total: <b>{{ $cb['total'] }}</b></span>
+                                                    <span>side: <b>{{ $cb['side'] }}</b></span>
+                                                @else
+                                                    <span class="hint">&nbsp;</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="f col2">
+                                            <label>Catatan Warna (Pantone)</label>
+                                            <input type="text" wire:model.blur="parts.{{ $i }}.cfg_ink"
+                                                   placeholder="mis. Pantone 485 C" @if($readOnly) disabled @endif>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="width:360px;flex-shrink:0">
+                                    <label style="font-size:11px;color:#667;font-weight:600">Preview Dieline (live)</label>
+                                    <div class="dcut" x-ref="preview"></div>
+                                    <div class="legend">🔴 potong &nbsp; 🟢 lipat &nbsp; ⚪ overflow &nbsp; 🔵 lubang/jilid</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+
+                <button type="button" class="btn g" wire:click="addPart" @if($readOnly) disabled @endif>
+                    ＋ Tambah Part
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>

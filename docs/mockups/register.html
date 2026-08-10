@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar Akun — TELASIH MAKMUR ERP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{--navy:#1f2742;--navy-2:#2c3860;--bg:#eef1f6;--border:#e3e7f0;--ink:#3a4568;--ink-strong:#2f3a5e;--muted:#9aa3bd;--accent:#2f6fed;--accent-2:#255bd4;--danger:#d0453f;--ok:#2e9e5b;--wa:#25d366}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden}
+  .wrap{display:flex;height:100vh}
+  .hero{flex:1;position:relative;overflow:hidden;background:linear-gradient(150deg,var(--navy),var(--navy-2));min-width:0}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+  .hero img.on{opacity:1}
+  .hero .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,25,46,.55),rgba(18,25,46,.12) 34%,rgba(18,25,46,.78))}
+  .hero .brand{position:absolute;top:26px;left:32px;display:flex;align-items:center;gap:12px;color:#fff;z-index:2}
+  .logo-badge{width:42px;height:42px;border-radius:12px;background:conic-gradient(from 200deg,#ff5f6d,#ffc371,#2f6fed,#8a5cf6,#ff5f6d)}
+  .brand b{font-size:18px;letter-spacing:.4px;display:block;line-height:1.1}
+  .brand span{font-size:10px;letter-spacing:2px;color:#b7c0dd;text-transform:uppercase}
+  .clock{position:absolute;top:28px;right:32px;text-align:right;color:#dbe1f2;z-index:2}
+  .clock .t{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px}
+  .clock .d{font-size:12.5px;color:#aeb7d6;margin-top:2px;text-transform:capitalize}
+  .quote{position:absolute;left:36px;right:36px;bottom:36px;color:#fff;z-index:2}
+  .quote .qi{font-size:34px;color:rgba(255,255,255,.35);font-family:Georgia,serif;line-height:1}
+  .quote .q{font-size:20px;font-style:italic;line-height:1.55;max-width:600px;margin-top:4px}
+  .quote .a{margin-top:10px;color:#c7cfe8;font-weight:600;font-size:14px}
+  .quote .a::before{content:"— "}
+
+  .panel{width:520px;max-width:46vw;flex-shrink:0;display:flex;flex-direction:column;padding:18px 40px 26px;overflow-y:auto}
+  .langbar{display:flex;justify-content:flex-end;gap:8px;flex-shrink:0}
+  .flag{background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:6px 11px;font-size:16px;cursor:pointer;line-height:1}
+  .flag.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,111,237,.12)}
+  .formwrap{flex:1;display:flex;align-items:center;justify-content:center;padding:12px 0}
+  .card{width:100%;max-width:420px}
+  .card h2{font-size:22px;color:var(--ink-strong);font-weight:700;margin-bottom:5px}
+  .card .sub{color:var(--muted);font-size:13.5px;margin-bottom:12px}
+  .approval{display:flex;gap:9px;background:#eef4fd;border:1px solid #d5e3fb;border-radius:10px;padding:10px 12px;font-size:12px;color:#3a5a9b;margin-bottom:18px}
+  .approval i{margin-top:1px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .field{margin-bottom:13px}.field.full{grid-column:1/-1}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:5px}
+  .req{color:var(--danger)}
+  .ig{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:9px;background:#fff}
+  .ig:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,111,237,.12)}
+  .ig .lead{color:var(--muted);padding:0 10px;font-size:13px}
+  .ig input,.ig select{flex:1;min-width:0;border:none;outline:none;background:none;padding:10px 10px 10px 0;font-size:13.5px;color:var(--ink-strong)}
+  .ig select{padding-left:10px;cursor:pointer}
+  .ig input[readonly]{color:var(--muted)}
+  .ig .eye{background:none;border:none;color:var(--muted);cursor:pointer;padding:0 11px}
+  .ig .vbtn{border:none;background:#eef2fb;color:var(--accent);font-size:12px;font-weight:700;padding:0 12px;align-self:stretch;cursor:pointer;white-space:nowrap;border-left:1px solid var(--border)}
+  .ig .vbtn:hover{background:#e2e9fa}
+  .ig .vbtn.wa{background:#e6f8ee;color:#128a3e}
+  .ig.ok{border-color:var(--ok)}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+  .hint.bad{color:var(--danger)}.hint.ok{color:var(--ok)}
+  .badge-ok{color:var(--ok);font-size:12px;font-weight:700;padding:0 11px;display:flex;align-items:center;gap:5px;white-space:nowrap}
+  .otp-row{display:none;margin-top:8px}
+  .otp-row.show{display:block}
+  .btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px}
+  .btn:hover{background:var(--accent-2)}
+  .back{display:inline-flex;align-items:center;gap:7px;margin-top:16px;color:var(--accent);text-decoration:none;font-size:14px;font-weight:600}
+  .back:hover{text-decoration:underline}
+  .alert{display:none;background:#fdeceb;color:var(--danger);border:1px solid #f6cfcd;border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:14px}
+  .alert.show{display:block}
+  .done{display:none;text-align:center;padding:12px 0}
+  .done.show{display:block}
+  .done .circle{width:66px;height:66px;border-radius:50%;background:#e6f6ee;color:var(--ok);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 18px}
+  .done h3{font-size:20px;color:var(--ink-strong);margin-bottom:10px}
+  .done p{color:var(--muted);font-size:14px;line-height:1.6;max-width:340px;margin:0 auto}
+  .formbox.hidden{display:none}
+  @media(max-width:900px){.hero{display:none}.panel{width:100%;max-width:none}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <img id="heroImg" alt="">
+    <div class="veil"></div>
+    <div class="brand"><span class="logo-badge"></span><div><b>TELASIH MAKMUR</b><span>packaging solution</span></div></div>
+    <div class="clock"><div class="t" id="ck">--:--:--</div><div class="d" id="cd">—</div></div>
+    <div class="quote"><div class="qi">&#8220;</div><div class="q" id="qText">—</div><div class="a" id="qAuthor">—</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="langbar">
+      <button class="flag active" data-lang="id" title="Bahasa Indonesia">🇮🇩</button>
+      <button class="flag" data-lang="en" title="English">🇬🇧</button>
+    </div>
+    <div class="formwrap">
+      <div class="card">
+        <div class="formbox" id="formbox">
+          <h2 data-i18n="heading">Daftar akun</h2>
+          <p class="sub" data-i18n="sub">Buat akun baru untuk mengakses aplikasi.</p>
+          <div class="approval"><i class="fa-solid fa-circle-info"></i><span data-i18n="approval">Akun baru harus disetujui admin. Grup & hak akses ditentukan admin saat persetujuan.</span></div>
+          <div class="alert" id="alert"></div>
+
+          <div class="field full">
+            <label data-i18n="f_type">Daftar sebagai <span class="req">*</span></label>
+            <div class="ig"><i class="fa-solid fa-user-tag lead"></i>
+              <select id="ptype">
+                <option value="customer" data-i18n="opt_cust">Customer</option>
+                <option value="supplier" data-i18n="opt_supp">Supplier</option>
+                <option value="internal" data-i18n="opt_int">Internal User</option>
+              </select></div>
+          </div>
+
+          <div class="field full"><label data-i18n="f_name">Nama lengkap <span class="req">*</span></label>
+            <div class="ig"><i class="fa-solid fa-id-card lead"></i><input id="name" placeholder="Andi Pratama"></div></div>
+
+          <div class="field full"><label data-i18n="f_email">Email <span class="req">*</span></label>
+            <div class="ig" id="emailIg"><i class="fa-solid fa-envelope lead"></i><input id="email" type="email" placeholder="andi@perusahaan.com">
+              <button class="vbtn" id="vEmail" data-i18n="verify">Verifikasi</button></div>
+            <div class="hint" id="hEmail" data-i18n="email_note">Kami cek keabsahan email (bukan email palsu) lalu kirim tautan verifikasi.</div></div>
+
+          <div class="field full"><label data-i18n="f_user">Username (otomatis dari email)</label>
+            <div class="ig"><i class="fa-solid fa-at lead"></i><input id="user" readonly placeholder="terisi dari email"></div></div>
+
+          <div class="field full"><label data-i18n="f_wa">No. WhatsApp aktif <span class="req">*</span></label>
+            <div class="ig" id="waIg"><i class="fa-brands fa-whatsapp lead" style="color:var(--wa)"></i><input id="wa" placeholder="08xxxxxxxxxx">
+              <button class="vbtn wa" id="vWa" data-i18n="send_otp">Kirim OTP</button></div>
+            <div class="otp-row" id="otpRow">
+              <div class="ig" style="margin-top:8px"><i class="fa-solid fa-key lead"></i><input id="otp" inputmode="numeric" placeholder="Kode OTP dari WhatsApp">
+                <button class="vbtn" id="vOtp" data-i18n="verify">Verifikasi</button></div>
+            </div>
+            <div class="hint" id="hWa" data-i18n="wa_note">Nomor harus punya WhatsApp — kode OTP dikirim ke sana untuk memastikan aktif.</div></div>
+
+          <div class="field full"><label id="lblId">NIK (No. KTP) <span class="req">*</span></label>
+            <div class="ig"><i class="fa-solid fa-address-card lead"></i><input id="idno" inputmode="numeric" placeholder="16 digit"></div>
+            <div class="hint" id="hId"></div></div>
+
+          <div class="grid2">
+            <div class="field"><label data-i18n="f_pass">Password <span class="req">*</span></label>
+              <div class="ig"><i class="fa-solid fa-lock lead"></i><input id="pass" type="password" placeholder="Min. 8 karakter"><button class="eye" id="eye" type="button"><i class="fa-solid fa-eye"></i></button></div>
+              <div class="hint" id="hPass" data-i18n="pass_note">Min. 8 karakter, kombinasi huruf & angka.</div></div>
+            <div class="field"><label data-i18n="f_conf">Konfirmasi <span class="req">*</span></label>
+              <div class="ig"><i class="fa-solid fa-lock lead"></i><input id="conf" type="password" placeholder="Ulangi password"></div>
+              <div class="hint" id="hConf"></div></div>
+          </div>
+
+          <button class="btn" id="submit" data-i18n="submit">Kirim pendaftaran</button>
+          <a class="back" href="login.html" id="back"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="back">Kembali ke halaman masuk</span></a>
+        </div>
+
+        <div class="done" id="done">
+          <div class="circle"><i class="fa-solid fa-check"></i></div>
+          <h3 data-i18n="d_head">Pendaftaran terkirim</h3>
+          <p data-i18n="d_body">Akun Anda menunggu persetujuan admin. Setelah disetujui, Anda bisa masuk memakai email dan password ini.</p>
+          <a class="back" href="login.html" id="back2"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="back">Kembali ke halaman masuk</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const T={
+ id:{heading:'Daftar akun',sub:'Buat akun baru untuk mengakses aplikasi.',approval:'Akun baru harus disetujui admin. Grup & hak akses ditentukan admin saat persetujuan.',
+   f_type:'Daftar sebagai',opt_cust:'Customer',opt_supp:'Supplier',opt_int:'Internal User',f_name:'Nama lengkap',
+   f_email:'Email',verify:'Verifikasi',email_note:'Kami cek keabsahan email (bukan email palsu) lalu kirim tautan verifikasi.',
+   f_user:'Username (otomatis dari email)',f_wa:'No. WhatsApp aktif',send_otp:'Kirim OTP',
+   wa_note:'Nomor harus punya WhatsApp — kode OTP dikirim ke sana untuk memastikan aktif.',
+   f_pass:'Password',f_conf:'Konfirmasi',pass_note:'Min. 8 karakter, kombinasi huruf & angka.',
+   submit:'Kirim pendaftaran',back:'Kembali ke halaman masuk',d_head:'Pendaftaran terkirim',
+   d_body:'Akun Anda menunggu persetujuan admin. Setelah disetujui, Anda bisa masuk memakai email dan password ini.',
+   nik:'NIK (No. KTP)',nrp:'NRP (No. Induk Pegawai)',nik_bad:'NIK harus 16 digit angka.',nik_ok:'Format NIK valid.',nrp_bad:'NRP wajib diisi.',
+   email_ok:'Email terverifikasi.',email_bad:'Format email tidak valid.',email_sent:'Tautan verifikasi dikirim (demo: langsung terverifikasi).',
+   otp_sent:'OTP dikirim ke WhatsApp (demo: masukkan angka apa saja).',wa_ok:'WhatsApp terverifikasi.',wa_bad:'Masukkan nomor WhatsApp dulu.',otp_bad:'Kode OTP belum benar.',
+   c_len:'Min. 8 karakter.',c_weak:'Tambahkan huruf & angka.',c_ok:'Password kuat.',m_match:'Password cocok.',m_bad:'Password belum cocok.',
+   need_verify:'Verifikasi email dan WhatsApp dulu sebelum mengirim.',need_fill:'Lengkapi semua field wajib (*).'},
+ en:{heading:'Create account',sub:'Create a new account to access the app.',approval:'New accounts require admin approval. Group & permissions are set by the admin on approval.',
+   f_type:'Register as',opt_cust:'Customer',opt_supp:'Supplier',opt_int:'Internal User',f_name:'Full name',
+   f_email:'Email',verify:'Verify',email_note:'We check the email is real (not fake) then send a verification link.',
+   f_user:'Username (auto from email)',f_wa:'Active WhatsApp number',send_otp:'Send OTP',
+   wa_note:'The number must have WhatsApp — an OTP is sent there to confirm it is active.',
+   f_pass:'Password',f_conf:'Confirm',pass_note:'Min. 8 chars, mix of letters & numbers.',
+   submit:'Submit registration',back:'Back to sign in',d_head:'Registration submitted',
+   d_body:'Your account is awaiting admin approval. Once approved, you can sign in with this email and password.',
+   nik:'NIK (ID card no.)',nrp:'Employee ID (NRP)',nik_bad:'NIK must be 16 digits.',nik_ok:'Valid NIK format.',nrp_bad:'Employee ID is required.',
+   email_ok:'Email verified.',email_bad:'Invalid email format.',email_sent:'Verification link sent (demo: auto-verified).',
+   otp_sent:'OTP sent to WhatsApp (demo: enter any digits).',wa_ok:'WhatsApp verified.',wa_bad:'Enter a WhatsApp number first.',otp_bad:'OTP code is not correct yet.',
+   c_len:'Min. 8 characters.',c_weak:'Add letters & numbers.',c_ok:'Strong password.',m_match:'Passwords match.',m_bad:'Passwords do not match yet.',
+   need_verify:'Verify email and WhatsApp before submitting.',need_fill:'Complete all required (*) fields.'}
+};
+let lang=(new URLSearchParams(location.search).get('lang'))||'id';
+let emailVerified=false, waVerified=false;
+
+function applyLang(){document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[lang][k])el.textContent=T[lang][k];});
+  document.querySelectorAll('.flag').forEach(f=>f.classList.toggle('active',f.dataset.lang===lang));
+  document.getElementById('back').href='login.html?lang='+lang;document.getElementById('back2').href='login.html?lang='+lang;
+  updateIdLabel();tick();}
+document.querySelectorAll('.flag').forEach(f=>f.addEventListener('click',()=>{lang=f.dataset.lang;applyLang();}));
+
+function tick(){const now=new Date(),loc=lang==='id'?'id-ID':'en-US';
+  document.getElementById('ck').textContent=now.toLocaleTimeString(loc,{hour12:false});
+  document.getElementById('cd').textContent=now.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+setInterval(tick,1000);
+
+// Hero image — MOCKUP: 2 contoh JPEG offset printing (Wikimedia Commons).
+// PRODUKSI: SELECT image_url FROM sys_login_hero WHERE is_active=1 ORDER BY RAND() LIMIT 1;
+const HERO=[
+  'https://upload.wikimedia.org/wikipedia/commons/e/ea/Offset_press_4_color.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/e/ed/Offset_printing_press.jpg'
+];
+(function(){const img=document.getElementById('heroImg');img.onload=()=>img.classList.add('on');img.src=HERO[Math.floor(Math.random()*HERO.length)];})();
+const QUOTES=[{t:'Cara memulai adalah berhenti bicara dan mulai melakukan.',a:'Walt Disney'},{t:'Disiplin adalah jembatan antara tujuan dan pencapaian.',a:'Jim Rohn'},{t:'Fokus pada progres, bukan kesempurnaan.',a:'Anonim'}];
+(function(){const q=QUOTES[Math.floor(Math.random()*QUOTES.length)];document.getElementById('qText').textContent=q.t;document.getElementById('qAuthor').textContent=q.a;})();
+
+// ---- Username otomatis dari email ----
+const email=document.getElementById('email'), user=document.getElementById('user');
+email.addEventListener('input',()=>{
+  const local=(email.value.split('@')[0]||'').toLowerCase().replace(/[^a-z0-9._-]/g,'');
+  user.value=local;  // PRODUKSI: server pastikan unik; jika bentrok, tambah sufiks angka.
+  emailVerified=false; document.getElementById('emailIg').classList.remove('ok'); resetVBtn('vEmail','verify');
+});
+function resetVBtn(id,key){const b=document.getElementById(id);if(b){b.textContent=T[lang][key];b.style.display='';}}
+
+// ---- Verifikasi email (demo) ----
+// PRODUKSI: cek MX/deliverability (bukan email palsu) lalu kirim tautan/kode verifikasi.
+document.getElementById('vEmail').addEventListener('click',()=>{
+  const h=document.getElementById('hEmail'), ig=document.getElementById('emailIg');
+  const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
+  if(!ok){h.textContent=T[lang].email_bad;h.className='hint bad';return;}
+  h.textContent=T[lang].email_sent;h.className='hint ok';
+  emailVerified=true; ig.classList.add('ok');
+  document.getElementById('vEmail').outerHTML=`<span class="badge-ok"><i class="fa-solid fa-circle-check"></i>${T[lang].email_ok.replace('.','')}</span>`;
+});
+
+// ---- Verifikasi WhatsApp OTP (demo) ----
+// PRODUKSI: kirim OTP via WhatsApp gateway (mis. Cloud API / vendor) ke nomor tsb.
+document.getElementById('vWa').addEventListener('click',()=>{
+  const wa=document.getElementById('wa'), h=document.getElementById('hWa');
+  if(!wa.value.replace(/\D/g,'')){h.textContent=T[lang].wa_bad;h.className='hint bad';return;}
+  document.getElementById('otpRow').classList.add('show');
+  h.textContent=T[lang].otp_sent;h.className='hint ok';
+});
+document.getElementById('vOtp').addEventListener('click',()=>{
+  const otp=document.getElementById('otp').value.replace(/\D/g,''), h=document.getElementById('hWa'), ig=document.getElementById('waIg');
+  if(otp.length<4){h.textContent=T[lang].otp_bad;h.className='hint bad';return;}
+  waVerified=true; ig.classList.add('ok'); h.textContent=T[lang].wa_ok;h.className='hint ok';
+  document.getElementById('otpRow').classList.remove('show');
+  document.getElementById('vWa').outerHTML=`<span class="badge-ok"><i class="fa-solid fa-circle-check"></i>OK</span>`;
+});
+
+// ---- NIK / NRP dinamis sesuai tipe pendaftar ----
+const ptype=document.getElementById('ptype'), idno=document.getElementById('idno');
+function isInternal(){return ptype.value==='internal';}
+function updateIdLabel(){
+  document.getElementById('lblId').innerHTML=(isInternal()?T[lang].nrp:T[lang].nik)+' <span class="req">*</span>';
+  idno.placeholder=isInternal()?'—':'16 digit';
+  chkId();
+}
+ptype.addEventListener('change',updateIdLabel);
+idno.addEventListener('input',chkId);
+function chkId(){const h=document.getElementById('hId');
+  if(!idno.value){h.textContent='';h.className='hint';return;}
+  if(isInternal()){h.textContent='';h.className='hint';return;} // NRP: format bebas
+  const d=idno.value.replace(/\D/g,'');
+  const ok=d.length===16;
+  h.textContent=ok?T[lang].nik_ok:T[lang].nik_bad;h.className='hint '+(ok?'ok':'bad');
+}
+
+// ---- Password ----
+const pass=document.getElementById('pass'),conf=document.getElementById('conf');
+document.getElementById('eye').addEventListener('click',function(){const s=pass.type==='password';pass.type=s?'text':'password';this.innerHTML=`<i class="fa-solid fa-eye${s?'-slash':''}"></i>`;});
+function chkPass(){const h=document.getElementById('hPass');
+  if(!pass.value){h.textContent=T[lang].pass_note;h.className='hint';}
+  else if(pass.value.length<8){h.textContent=T[lang].c_len;h.className='hint bad';}
+  else if(!(/[a-zA-Z]/.test(pass.value)&&/[0-9]/.test(pass.value))){h.textContent=T[lang].c_weak;h.className='hint bad';}
+  else{h.textContent=T[lang].c_ok;h.className='hint ok';}
+  chkConf();}
+function chkConf(){const h=document.getElementById('hConf');
+  if(!conf.value){h.textContent='';h.className='hint';return;}
+  const m=conf.value===pass.value;h.textContent=m?T[lang].m_match:T[lang].m_bad;h.className='hint '+(m?'ok':'bad');}
+pass.addEventListener('input',chkPass);conf.addEventListener('input',chkConf);
+
+// ---- Submit ----
+document.getElementById('submit').addEventListener('click',()=>{
+  const al=document.getElementById('alert');
+  const name=document.getElementById('name').value.trim();
+  const idOk=isInternal()? !!idno.value.trim() : idno.value.replace(/\D/g,'').length===16;
+  const passOk=pass.value.length>=8 && /[a-zA-Z]/.test(pass.value)&&/[0-9]/.test(pass.value) && conf.value===pass.value;
+  if(!name||!email.value||!user.value||!document.getElementById('wa').value||!idOk||!passOk){
+    al.textContent=T[lang].need_fill;al.classList.add('show');return;}
+  if(!emailVerified||!waVerified){al.textContent=T[lang].need_verify;al.classList.add('show');return;}
+  al.classList.remove('show');
+  // PRODUKSI: INSERT INTO sec_user (login,email,name,phone,pswd,reg_type,nik_nrp,is_active) VALUES (...,0)
+  //   is_active=0 (pending) · reg_type=customer/supplier/internal · TANPA grup (admin set sec_user_group saat approve)
+  //   + notifikasi admin (sys_notifications). Simpan flag email_verified & wa_verified.
+  document.getElementById('formbox').classList.add('hidden');
+  document.getElementById('done').classList.add('show');
+});
+applyLang();
+</script>
+</body>
+</html>

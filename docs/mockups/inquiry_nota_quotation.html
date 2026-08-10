@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  INQUIRY NOTA QUOTATION — DOKUMEN CETAK  ·  PETA DATA
+================================================================================
+  FUNGSI : Cetak resmi quotation multi-item untuk customer (A4). Warna hijau (dok cetak).
+  READ   : quotation (header) + quotation_line (multi-item) + m_customer + m_company
+  WRITE  : — (read-only, dokumen output)
+================================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quotation QT2600007 — PT. Telasih Makmur</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#e8ecef;font-family:'Segoe UI',system-ui,Arial,sans-serif;color:#1a1d21;padding:18px 0}
+.bar{width:210mm;margin:0 auto 12px;display:flex;gap:8px}
+.bar button{border:none;padding:8px 16px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600}
+.bar .pr{background:#0d5c46;color:#fff}.bar .sc{background:#fff;color:#1a1d21;border:1px solid #ccc}
+.page{width:210mm;min-height:297mm;background:#fff;margin:0 auto;padding:16mm 15mm;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.kop{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #0d5c46;padding-bottom:11px}
+.kop .logo{width:52px;height:52px;border-radius:9px;background:#0d5c46;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+.kop-l{display:flex;gap:11px;align-items:center}
+.co-name{font-size:16pt;font-weight:800;color:#0d5c46;letter-spacing:-.3px}
+.co-addr{font-size:8pt;color:#666;line-height:1.4;margin-top:2px}
+.kop-r{text-align:right}
+.kop-r .ttl{font-size:19pt;font-weight:800;color:#0d5c46;letter-spacing:1px}
+.kop-r .meta{font-size:8pt;color:#555;margin-top:3px;line-height:1.5}
+.parties{display:grid;grid-template-columns:1.3fr 1fr;margin-top:12px;border:1px solid #d4d8dd;border-radius:6px;overflow:hidden}
+.party{padding:9px 12px}.party+.party{border-left:1px solid #d4d8dd}
+.party .lb{font-size:6.8pt;font-weight:700;color:#0d5c46;text-transform:uppercase;letter-spacing:.5px}
+.party .nm{font-size:10.5pt;font-weight:700;margin-top:2px}
+.party .dt{font-size:8pt;color:#4b5158;line-height:1.5;margin-top:2px}
+.valid{margin-top:10px;background:#f0f7f4;border:1px solid #c6e5d5;border-radius:6px;padding:8px 13px;font-size:8.4pt;color:#0e5c38;display:flex;align-items:center;gap:8px}
+table.items{width:100%;border-collapse:collapse;font-size:8.6pt;margin-top:12px;border:1px solid #d4d8dd}
+table.items th{background:#0d5c46;color:#fff;font-size:7pt;letter-spacing:.4px;padding:7px 8px;text-transform:uppercase;text-align:right}
+table.items th:first-child,table.items th.l{text-align:left}
+table.items td{padding:8px;border-bottom:1px solid #eceff2;text-align:right;vertical-align:top}
+table.items td.l{text-align:left}
+table.items tr:last-child td{border-bottom:none}
+.items .pn{font-weight:700;font-size:9pt;color:#1a1d21}
+.items .meta{font-size:7.4pt;color:#8a94a6;margin-top:1px;font-family:ui-monospace,monospace}
+.items .svc{display:inline-block;font-size:6.4pt;font-weight:700;background:#e6e0f5;color:#5b3fa0;padding:1px 5px;border-radius:6px;margin-left:5px}
+.sumwrap{display:flex;justify-content:flex-end;margin-top:12px}
+.sum{width:74mm;font-size:9pt}
+.sum .r{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #eceff2}
+.sum .r.minus{color:#a12626}
+.sum .r.dpp{background:#f0f7f4;font-weight:800;padding:6px 10px;margin:2px 0;border-radius:4px}
+.sum .r.grand{border-top:2px solid #0d5c46;border-bottom:none;padding-top:8px;font-weight:800;font-size:11.5pt;color:#0d5c46}
+.terms{margin-top:16px;font-size:7.6pt;color:#555;line-height:1.6}
+.terms .h{font-weight:700;color:#0d5c46;font-size:8pt;margin-bottom:3px}
+.sign{display:flex;justify-content:flex-end;margin-top:20px}
+.sign .box{text-align:center;font-size:8.4pt;width:60mm}
+.sign .line{border-bottom:1px solid #1a1d21;height:44px;margin-bottom:5px}
+@media print{body{background:#fff;padding:0}.bar{display:none}.page{box-shadow:none;margin:0}}
+</style>
+</head>
+<body>
+<div class="bar">
+  <button class="pr" onclick="window.print()">🖨️ Cetak / PDF</button>
+  <button class="sc" onclick="window.close()">Tutup</button>
+</div>
+
+<div class="page">
+  <div class="kop">
+    <div class="kop-l">
+      <div class="logo">TM</div>
+      <div>
+        <div class="co-name">PT. TELASIH MAKMUR</div>
+        <div class="co-addr">Offset Printing &amp; Packaging<br>Jl. Industri Raya No. 88, Bekasi · (021) 555-0888 · info@telasihmakmur.co.id</div>
+      </div>
+    </div>
+    <div class="kop-r">
+      <div class="ttl">QUOTATION</div>
+      <div class="meta">No. <b>QT2600007</b><br>Tanggal: 8 Agustus 2026<br>Halaman 1/1</div>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <div class="lb">Kepada</div>
+      <div class="nm">PT Sinar Kemasan Nusantara</div>
+      <div class="dt">UP. Bpk. Andi Wijaya (Purchasing)<br>Jl. Cikarang Industri Blok C-12, Bekasi<br>Telp: (021) 890-1234</div>
+    </div>
+    <div class="party">
+      <div class="lb">Sales / PIC</div>
+      <div class="nm">Ibu Rina Kartika</div>
+      <div class="dt">Sales Executive<br>rina@telasihmakmur.co.id<br>0812-3456-7890</div>
+    </div>
+  </div>
+
+  <div class="valid">📅 Penawaran berlaku sampai <b>22 Agustus 2026</b> · Harga belum termasuk pajak kecuali dinyatakan.</div>
+
+  <table class="items">
+    <thead><tr>
+      <th class="l" style="width:46%">Deskripsi</th>
+      <th>Qty</th><th>Harga /pc</th><th>Diskon</th><th>Jumlah (Rp)</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td class="l"><div class="pn">Kemasan Teh Celup Premium</div><div class="meta">IQ2600042 · 3 part · Art Carton 310gsm</div></td>
+        <td>50.000</td><td>1.900</td><td>—</td><td>95.000.000</td>
+      </tr>
+      <tr>
+        <td class="l"><div class="pn">Box Snack Isi 12 <span class="svc">JASA</span></div><div class="meta">IQ2600048 · jasa cetak (bahan customer)</div></td>
+        <td>30.000</td><td>950</td><td>—</td><td>28.500.000</td>
+      </tr>
+      <tr>
+        <td class="l"><div class="pn">Sleeve Promo Lebaran</div><div class="meta">IQ2600050 · 1 part · Art Carton 260gsm</div></td>
+        <td>20.000</td><td>1.240</td><td>5%</td><td>23.560.000</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="sumwrap">
+    <div class="sum">
+      <div class="r"><span>Subtotal</span><span>147.060.000</span></div>
+      <div class="r minus"><span>Diskon dokumen 2%</span><span>− 2.941.200</span></div>
+      <div class="r"><span>Biaya trucking</span><span>+ 1.500.000</span></div>
+      <div class="r dpp"><span>DPP</span><span>145.618.800</span></div>
+      <div class="r"><span>PPN 11%</span><span>+ 16.018.068</span></div>
+      <div class="r grand"><span>TOTAL</span><span>161.636.868</span></div>
+    </div>
+  </div>
+
+  <div class="terms">
+    <div class="h">Syarat &amp; Ketentuan</div>
+    1. Harga dapat berubah bila spesifikasi/kuantitas berubah.<br>
+    2. Due-date produksi dihitung 14 hari kerja sejak persetujuan prove warna (tanda tangan basah).<br>
+    3. Pembayaran sesuai term yang disepakati; PPh 23 atas komponen jasa dipotong oleh pemesan.<br>
+    4. Penawaran ini menjadi dasar Customer Order (1 quotation → 1 CO).
+  </div>
+
+  <div class="sign">
+    <div class="box"><div style="margin-bottom:5px">Hormat kami,</div><div class="line"></div>PT. Telasih Makmur</div>
+  </div>
+</div>
+</body>
+</html>

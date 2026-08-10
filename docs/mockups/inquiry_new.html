@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  INQUIRY — NEW  ·  PETA DATA UNTUK DEVELOPER
+================================================================================
+  MODE      : NEW (inkuiri baru, tanpa parent). inquiry_type='NEW'.
+  FORM STATE: DRAFT (stat_confirm=0) → CONFIRMED (stat_confirm=1) → CANCELLED (stat_cancel=1) / DONE(approved)
+
+  ── READ (sumber; dropdown/autocomplete/preview) ──────────────────────────────
+   m_product_type            : tipe produk (Galeri), style, ptd, dieline_spec (DSL)
+   m_product_type_param      : parameter dimensi per tipe (P,L,T,glue,tuck,dust…)
+   m_product_type_size       : ukuran pasaran (auto-fill dimensi)
+   m_product_type_size_val   : nilai ukuran pasaran
+   m_customer                : autocomplete customer / prospek (is_prospect)
+   m_raw_material            : master bahan (autocomplete; gramasi, ukuran, brand)
+   m_pantone                 : warna Pantone (autocomplete; code, hex, cmyk)
+   m_dieline_template        : template flap (opsional; saat ini kosong)
+   m_holiday                 : hari libur (kalkulasi deadline +14 hari kerja)
+   m_sales / m_user          : PIC Sales
+   m_discount_qty_rule       : aturan diskon qty (occasional, referensi)
+
+  ── WRITE (tujuan simpan; saat Save/Confirm) ──────────────────────────────────
+   i_inquiry                 : HEADER — doc_no, doc_date, inquiry_type='NEW',
+                               product_type_code, is_prospect, customer_id/name,
+                               product_name, qty_order_pcs, qty_tier_count,
+                               target_price, ppn_exempt(+reason→di v2 non_ppn),
+                               valid_until, inquiry_source, required_date, notes,
+                               pic_sales, stat_submit/stat_cancel/stat_closed,
+                               create_by/update_by/create_log/update_log
+                               [v2 kolom baru: job_nature, material_source,
+                                tax_scheme, pph_applicable, disc_amount]
+   i_inquiry_qty_tier        : tier qty (qty_pcs, is_primary, target_price,
+                               [v2: disc_item], notes)
+   i_inquiry_part            : part (parts_name, part_type, qty_per_set,
+                               flat_width/height/area, color_notation, dims)
+   i_inquiry_part_material   : bahan per part (per layer: rawmat_id, gram, size…)
+   i_inquiry_coating         : finishing/coating per part
+   i_inquiry_layout          : preview dieline / flat (dari dieline_spec)
+   i_inquiry_design*         : (bila alur design; material/process/link)
+
+  CATATAN: NEW tidak menulis parent_*. Costing → i_inquiry_costing (MTO, tahap Costing).
+================================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Inkuiri Produk Baru</title>
+<style>
+/* ===== style bersama (embedded, dari layout Att.2) ===== */
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 40px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}
+header .sub{font-size:12px;opacity:.75}
+header .back{margin-left:auto;background:#43508a;color:#cfd6ef;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;text-decoration:none}
+.wrap{max-width:1180px;margin:18px auto;padding:0 16px}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;margin-bottom:14px;overflow:hidden}
+.card>h3{margin:0;padding:9px 14px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:13px;color:#2c3e69;display:flex;align-items:center;gap:8px}
+.card .body{padding:14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px}
+.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}
+.f{display:flex;flex-direction:column;gap:3px}
+.f.col2{grid-column:span 2}.f.col3{grid-column:span 3}.f.col4{grid-column:span 4}
+label{font-size:11px;color:#667;font-weight:600}
+input,select,textarea{padding:6px 8px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;background:#fff;width:100%;font-family:inherit}
+input:read-only,select:disabled,input:disabled,textarea:read-only{background:#eef0f3;color:#667;cursor:not-allowed}
+.toolbar{display:flex;gap:8px;padding:10px 14px;background:#fbfcfe;border-bottom:1px solid #e2e7ee;align-items:center;flex-wrap:wrap}
+.btn{border:none;padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit}
+.btn.p{background:#2c7be5;color:#fff}.btn.g{background:#e6eaf0;color:#333}.btn.s{background:#22a06b;color:#fff}
+.btn.d{background:#e55353;color:#fff}.btn.o{background:#fff;color:#2c7be5;border:1px solid #2c7be5}
+.btn.xs{padding:3px 9px;font-size:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{border:1px solid #e2e7ee;padding:6px 8px;text-align:left}
+th{background:#f4f6fa;color:#556;font-weight:600}
+td input,td select{padding:4px 6px;font-size:12px}
+.pill{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block}
+.pill.new{background:#d8ecff;color:#1560a8}.pill.ok{background:#d6f2e2;color:#177a4b}
+.pill.pri{background:#ffe0b2;color:#8a4b00}
+.hint{font-size:10.5px;color:#8a94a6;margin-top:2px}
+.sec-title{font-size:11px;font-weight:700;color:#556;text-transform:uppercase;letter-spacing:.4px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #e8ecf2}
+.sec-title:first-child{margin-top:0}
+.note{font-size:12px;padding:9px 12px;border-radius:6px;margin-bottom:12px;line-height:1.5}
+.note.y{background:#fff7db;border:1px solid #e7d48a;color:#6b5605}
+.note.b{background:#e8f4ff;border:1px solid #b8d9f5;color:#1560a8}
+.note.o{background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}
+.note.g{background:#f0f7f4;border:1px solid #c6e5d5;color:#177a4b}
+.dcut{width:100%;height:280px;background:#0d0d0d;border-radius:6px}
+.flx{display:flex;gap:14px;align-items:flex-start}
+.legend{font-size:11px;color:#889;margin-top:6px}
+.nospec{background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00;padding:8px 10px;border-radius:6px;font-size:11.5px;margin-top:8px}
+.derived{background:#f0f7f4;border:1px solid #c6e5d5;border-radius:6px;padding:8px 10px;font-size:12px;color:#177a4b;display:flex;gap:16px;flex-wrap:wrap}
+.derived b{color:#0e5c38}
+/* part card (multi-part) */
+.partcard{border:1px solid #d9dfe8;border-radius:8px;margin-bottom:12px;overflow:hidden}
+.parthd{display:flex;align-items:center;gap:10px;padding:9px 13px;background:#eef2f8;border-bottom:1px solid #dde3ec;cursor:pointer}
+.parthd .pnm{font-weight:700;color:#2c3e69;font-size:13px}
+.parthd .pmeta{font-size:11px;color:#8a94a6}
+.parthd .toggle{margin-left:auto;color:#8a94a6;font-size:12px}
+.partbody{padding:13px}
+.partbody.collapsed{display:none}
+.ptype-box{display:flex;gap:12px;align-items:center;background:#f8fafc;border:1px solid #dde3ec;border-radius:8px;padding:10px;margin-bottom:12px}
+.ptype-thumb{width:64px;height:64px;border-radius:6px;background:#e9edf3;border:1px solid #cfd7e3;display:flex;align-items:center;justify-content:center;font-size:9px;color:#8a94a6;text-align:center;flex-shrink:0;overflow:hidden}
+.size-pick{background:#eef5ff;border:1px solid #c3d8f5;border-radius:6px;padding:6px 8px}
+/* autocomplete customer */
+.ac-wrap{position:relative}
+.ac-box{display:none;position:absolute;top:100%;left:0;right:0;z-index:60;background:#fff;border:1px solid #c7cfda;border-top:none;border-radius:0 0 6px 6px;max-height:240px;overflow:auto;box-shadow:0 6px 16px rgba(20,26,40,.14)}
+.ac-box.on{display:block}
+.ac-i{padding:6px 10px;cursor:pointer;font-size:12.5px;border-bottom:1px solid #f0f3f7;line-height:1.35}
+.ac-i:last-child{border-bottom:none}
+.ac-i:hover,.ac-i.sel{background:#eef5ff}
+.ac-i b{color:#2c3e69}.ac-i .cd{font-size:10.5px;color:#8a94a6;font-family:ui-monospace,monospace}
+.ac-i mark{background:#ffe9a8;color:inherit;padding:0}
+.ac-more{padding:5px 10px;font-size:10.5px;color:#8a94a6;background:#fafbfd;text-align:center}
+.ac-none{padding:8px 10px;font-size:12px;color:#8a94a6}
+.cust-ok{color:#177a4b !important}
+/* galeri modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(20,26,40,.55);z-index:100;padding:24px;overflow:auto}
+.modal.on{display:block}
+.modal-in{max-width:1080px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden}
+.modal-hd{padding:12px 16px;background:#2c3e69;color:#fff;display:flex;align-items:center;gap:12px}
+.modal-hd b{font-size:14px}.modal-hd .x{margin-left:auto;cursor:pointer;font-size:20px;line-height:1}
+.catbar{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid #e2e7ee;flex-wrap:wrap;background:#fbfcfe}
+.catbar button{border:1px solid #cfd7e3;background:#fff;padding:5px 12px;border-radius:14px;font-size:12px;cursor:pointer}
+.catbar button.on{background:#2c7be5;color:#fff;border-color:#2c7be5}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding:14px;max-height:56vh;overflow:auto}
+.gcard{border:1px solid #dde3ec;border-radius:8px;padding:8px;cursor:pointer;background:#fff}
+.gcard:hover{border-color:#2c7be5;box-shadow:0 2px 8px rgba(44,123,229,.16)}
+.gcard.sel{border-color:#22a06b;box-shadow:0 0 0 2px #b7e4cd}
+.gcard .ph{height:82px;background:#eef1f5;border:1px dashed #c3ccd9;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#93a0b3;font-size:9px;margin-bottom:6px;text-align:center;padding:4px;overflow:hidden}
+.gcard .nm{font-size:11.5px;font-weight:600;color:#2c3e69;line-height:1.25}
+.gcard .ds{font-size:10px;color:#8a94a6;margin-top:2px;line-height:1.3}
+/* toast hasil simpan */
+.toast{position:fixed;right:18px;bottom:18px;z-index:200;max-width:340px;padding:12px 16px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(20,26,40,.2);display:none}
+.toast.on{display:block}
+.toast.ok{background:#e6f7ef;border:1px solid #a9dfc4;color:#177a4b}
+.toast.err{background:#fdecec;border:1px solid #f3b8b8;color:#a12626}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}.grid.three{grid-template-columns:repeat(2,1fr)}.f.col3,.f.col4{grid-column:span 2}.flx{flex-direction:column}.flx>div[style*="width:360px"]{width:100% !important}}
+@media (max-width:680px){.grid,.grid.two,.grid.three{grid-template-columns:1fr}.f.col2,.f.col3,.f.col4{grid-column:span 1}header{flex-wrap:wrap;gap:8px}header .back{margin-left:0}}
+</style>
+</head>
+<body>
+<header>
+  <b>✨ Inkuiri Produk Baru</b>
+  <span class="pill new">NEW</span>
+  <span class="sub" id="hdrDoc">IQ2607-DRAFT · draft</span>
+  <a class="back" href="inquiry_hub.html">← Menu Utama</a>
+</header>
+
+<div class="wrap">
+
+  <div class="note y">
+    👤 <b>Sales Officer</b> — pilih tipe produk lalu <b>Ukuran Pasaran</b>, dimensi terisi
+    otomatis & dieline langsung tergambar. Bisa tambah part (Body, Lid, Partisi…).
+  </div>
+
+  <!-- ================= HEADER INKUIRI ================= -->
+  <div class="card">
+    <div class="toolbar">
+      <button class="btn g" onclick="resetAll()">＋ Baru</button>
+      <button class="btn p" id="btnSave" onclick="saveInquiry()">💾 Simpan</button>
+      <button class="btn s" id="btnConfirm" onclick="confirmInquiry()">✅ Confirm</button>
+      <button class="btn d" id="btnCancel" onclick="cancelInquiry()" style="display:none">✖ Cancel</button>
+      <span style="width:1px;height:22px;background:#dde3ec;margin:0 4px"></span>
+      <input id="findDoc" placeholder="Buka no. inkuiri…" style="width:150px;padding:6px 8px;border:1px solid #c7cfda;border-radius:6px;font-size:12.5px"
+             onkeydown="if(event.key==='Enter')openByDoc()">
+      <button class="btn o xs" onclick="openByDoc()">🔍 Buka</button>
+      <div style="margin-left:auto"></div>
+      <span class="pill new" id="modePill">DRAFT</span>
+    </div>
+    <div class="body">
+      <div class="sec-title">Header Inkuiri</div>
+      <div class="grid">
+        <div class="f"><label>No. Inkuiri (auto)</label><input id="h_docno" value="IQ2607-DRAFT" readonly></div>
+        <div class="f"><label>Tanggal</label><input id="h_date" type="date"></div>
+        <div class="f"><label>Sumber</label>
+          <select id="h_source"><option>EMAIL</option><option>WA</option><option>PHONE</option><option>VISIT</option><option>MARKETPLACE</option></select></div>
+        <div class="f"><label>PIC Sales</label>
+          <select id="h_pic"></select></div>
+
+        <div class="f col2 ac-wrap"><label>Customer / Calon Customer</label>
+          <input id="cust_txt" autocomplete="off" placeholder="Ketik nama / kode customer…"
+                 oninput="custFind(this.value)" onfocus="custFind(this.value)" onblur="custBlur()" onkeydown="custKey(event)">
+          <input type="hidden" id="cust_id">
+          <div id="cust_box" class="ac-box"></div>
+          <div class="hint" id="cust_hint">&nbsp;</div></div>
+        <div class="f"><label>Prospek?</label>
+          <select id="h_prospect" onchange="onProspectChange()">
+            <option value="0">Tidak</option>
+            <option value="1">Ya (belum terdaftar)</option></select></div>
+        <div class="f"><label>Deadline Quotation <span class="hint" style="font-weight:400">(min. +14 hari kerja)</span></label>
+          <input id="h_deadline" type="date"></div>
+
+        <div class="f col2"><label>Nama Produk (draft)</label>
+          <input id="h_prodname" maxlength="150" placeholder="mis. Box Kosmetik Serum 30ml"
+                 oninput="sanitizeProdName(this)">
+          <div class="hint">Nama sementara selama quotation — bisa diubah setelah PO customer terbit. Karakter khusus (/@#%\"';) tidak diperbolehkan.</div></div>
+        <div class="f col2"><label>Catatan Sales</label>
+          <textarea id="h_notes" rows="2" placeholder="opsional" style="resize:vertical;min-height:38px"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= SIFAT ORDER & PAJAK (v2 — Tier 1 F4,F5,F9) ================= -->
+  <div class="card">
+    <h3>Sifat Order & Pajak <span style="font-weight:400;color:#889">(menentukan struktur biaya & pajak)</span></h3>
+    <div class="body">
+      <div class="grid">
+        <div class="f"><label>Sumber Bahan</label>
+          <select id="h_matsrc" onchange="onMatSrc()">
+            <option value="OWN">Perusahaan (OWN) → CO Product</option>
+            <option value="CUSTOMER">Customer sediakan → CO Jasa</option>
+          </select>
+          <div class="hint" id="matsrcHint">Bahan dari perusahaan → order bersifat PRODUCT.</div>
+        </div>
+        <div class="f"><label>Jenis Pekerjaan</label>
+          <input id="h_jobnature" value="PRODUCT" readonly>
+          <div class="hint">Otomatis dari sumber bahan (PRODUCT / JASA).</div>
+        </div>
+        <div class="f"><label>Skema PPN</label>
+          <select id="h_tax" onchange="onTax()">
+            <option value="PPN">PPN 11%</option>
+            <option value="NON_PPN">Non-PPN (include harga)</option>
+          </select>
+        </div>
+        <div class="f"><label>PPh 23 (jasa)</label>
+          <input id="h_pph" value="—" readonly>
+          <div class="hint">Jasa → PPh 23 2% (dipotong customer).</div>
+        </div>
+      </div>
+      <!-- panel bahan customer, muncul bila material_source=CUSTOMER -->
+      <div id="custMatPanel" style="display:none;margin-top:6px">
+        <div class="sec-title">Spesifikasi Bahan Customer <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">(wajib bila bahan dari customer)</span></div>
+        <div class="grid two">
+          <div class="f col2"><label>Deskripsi bahan customer *</label>
+            <input id="h_custmat" placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim"></div>
+          <div class="f"><label>ETA bahan tiba</label><input id="h_custmat_eta" type="date"></div>
+          <div class="f"><label>Handling fee (info)</label><input value="dihitung Costing" readonly></div>
+        </div>
+        <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling & spoilage dihitung Costing.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QTY TIER ================= -->
+  <div class="card">
+    <h3>Qty Order Berjenjang <span style="font-weight:400;color:#889">(Costing hitung HPP per tier)</span></h3>
+    <div class="body">
+      <table id="tierTbl">
+        <thead><tr><th style="width:50px">Seq</th><th>Qty (pcs)</th><th style="width:70px">Utama</th><th>Target Harga /pcs</th><th style="width:110px">Diskon Item</th><th>Catatan</th><th style="width:44px"></th></tr></thead>
+        <tbody id="tierBody"></tbody>
+      </table>
+      <button class="btn g" style="margin-top:8px" onclick="addTier()">＋ Tambah Tier</button>
+    </div>
+  </div>
+
+  <!-- ================= PARTS (multi-part) ================= -->
+  <div class="card">
+    <h3>Detail Part <span style="font-weight:400;color:#889">(bisa &gt;1: Body, Lid, Partisi…)</span>
+      <span style="margin-left:auto"><button class="btn g xs" onclick="addPart()">＋ Part</button></span></h3>
+    <div class="body">
+      <div id="partsWrap"></div>
+    </div>
+  </div>
+
+  <!-- ================= TOOLING (v2 — Tier 1 F6) ================= -->
+  <div class="card">
+    <h3>Status Tooling <span style="font-weight:400;color:#889">(plat/pisau/film — cek aus saat repeat order)</span></h3>
+    <div class="body">
+      <div class="note b" style="margin-bottom:10px" id="toolingNote">
+        🔧 Untuk produk BARU: tooling (plat cetak, pisau/matras, film) dibuat pertama kali → biaya tooling masuk sebagai <b>line terpisah</b>.
+        Untuk repeat order: sistem cek status aus dari <code>m_tooling_asset</code>.
+      </div>
+      <table id="toolingTbl" style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr>
+          <th style="text-align:left;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px;text-transform:uppercase">Jenis</th>
+          <th style="text-align:left;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px">Status</th>
+          <th style="text-align:left;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px">Umur (impresi)</th>
+          <th style="text-align:right;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px">Biaya baru (line)</th>
+        </tr></thead>
+        <tbody id="toolingBody"></tbody>
+      </table>
+      <div class="hint" style="margin-top:6px">Impresi dihitung per lembar plano. Aus (≥100%) atau tidak ada → biaya tooling baru jadi line terpisah, tidak disembunyikan di harga/pc.</div>
+    </div>
+  </div>
+
+  <!-- ================= ESTIMASI KECEPATAN (v2 — Tier 1 F15) ================= -->
+  <div class="card">
+    <h3>Estimasi Kecepatan & Janji Kirim <span style="font-weight:400;color:#889">(dari histori produk sejenis)</span></h3>
+    <div class="body">
+      <div class="grid">
+        <div class="f"><label>Estimasi kecepatan</label><input id="est_speed" value="2.400 pcs/jam" readonly>
+          <div class="hint">Dari histori produk sejenis (tipe+finishing+luas+gramatur mirip).</div></div>
+        <div class="f"><label>Estimasi lama kerja</label><input id="est_days" value="≈ 9 hari kerja" readonly></div>
+        <div class="f"><label>Override (Costing/Design/Sales)</label><input id="est_override" placeholder="isi bila override, tercatat"></div>
+        <div class="f"><label>Status vs due-date</label><input id="est_status" value="✓ ≤ due-date (aman)" readonly></div>
+      </div>
+      <div class="note o" style="margin-top:8px" id="est_warn" style="display:none">
+        ⚠️ Bila estimasi > due-date: order ditandai <b>warna khusus</b> & butuh verifikasi Operational Manager + PPIC (non-aplikasi). Aplikasi tidak memblok.
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DISKON DOKUMEN (v2 — Tier 1 F10) ================= -->
+  <div class="card">
+    <h3>Diskon Dokumen <span style="font-weight:400;color:#889">(level dokumen — dibawa ke Customer Order)</span></h3>
+    <div class="body">
+      <div class="grid">
+        <div class="f"><label>Diskon Amount</label>
+          <input id="h_disc_amount" placeholder="mis. 2% atau 500000">
+          <div class="hint">Diskon dokumen tetap (fix di inkuiri).</div>
+        </div>
+        <div class="f col2"><label>Catatan diskon qty (occasional)</label>
+          <input id="h_disc_qty_note" placeholder="mis. diskon 3% bila total ≥ 5 ton — aturan di m_discount_qty_rule">
+          <div class="hint">Diskon qty aktif otomatis saat tonase lewat ambang (dikelola terpisah).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= BIAYA EKSTERNAL (v2 — Tier 1 F13) ================= -->
+  <div class="card">
+    <h3>Biaya Eksternal / Pihak Ketiga <span style="font-weight:400;color:#889">(bila sudah ditentukan sejak awal)</span></h3>
+    <div class="body">
+      <div class="note b" style="margin-bottom:10px">
+        🚚 Biaya pihak ketiga yang sudah pasti (trucking, ekspedisi, jasa luar) bisa dicatat sejak inkuiri → mengalir ke quotation &amp; CO. Masuk DPP (kena PPN).
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead><tr>
+          <th style="text-align:left;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px">Deskripsi</th>
+          <th style="text-align:left;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px;width:130px">Jenis</th>
+          <th style="text-align:right;font-size:10px;color:#8a94a6;font-weight:700;padding:6px 8px;width:130px">Jumlah (Rp)</th>
+          <th style="width:40px"></th>
+        </tr></thead>
+        <tbody id="extBody"></tbody>
+      </table>
+      <button class="btn g xs" style="margin-top:6px" onclick="addExt()">＋ Tambah Biaya</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= GALERI TIPE PRODUK ================= -->
+<div class="modal" id="gal">
+  <div class="modal-in">
+    <div class="modal-hd"><b>🖼️ Pilih Tipe Produk</b>
+      <span style="font-size:12px;opacity:.85">Galeri m_product_type</span>
+      <span class="x" onclick="closeGal()">×</span></div>
+    <div class="catbar" id="catbar"></div>
+    <div class="gal" id="galBody"></div>
+  </div>
+</div>
+
+<!-- ================= POPUP PROSPEK BARU (#4) ================= -->
+<div class="modal" id="prospekModal">
+  <div class="modal-in" style="max-width:560px">
+    <div class="modal-hd"><b>🆕 Daftar Prospek Baru</b>
+      <span style="font-size:12px;opacity:.85">→ m_customer (is_prospect)</span>
+      <span class="x" onclick="closeProspek()">×</span></div>
+    <div style="padding:16px">
+      <div class="note b" style="margin-bottom:14px">
+        Prospek disimpan ke master customer dgn kode <b>PRS</b>+bulan+urut, lalu langsung
+        terpilih pada inkuiri ini.
+      </div>
+      <div class="grid two">
+        <div class="f col2"><label>Nama Prospek *</label><input id="pr_name" placeholder="mis. PT Calon Sukses"></div>
+        <div class="f col2"><label>Alamat</label><textarea id="pr_addr" rows="2" style="resize:vertical" placeholder="alamat lengkap"></textarea></div>
+        <div class="f col2 ac-wrap"><label>Area / Kota</label>
+          <input id="pr_area_txt" autocomplete="off" placeholder="Ketik min. 2 huruf nama kota…"
+                 oninput="areaFind(this.value)" onblur="areaBlur()">
+          <input type="hidden" id="pr_area_id">
+          <div id="pr_area_box" class="ac-box"></div>
+          <div class="hint" id="pr_area_hint">&nbsp;</div></div>
+        <div class="f"><label>Nama Kontak</label><input id="pr_contact" placeholder="opsional"></div>
+        <div class="f"><label>Telepon</label><input id="pr_phone" placeholder="opsional"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
+        <button class="btn g" onclick="closeProspek()">Batal</button>
+        <button class="btn p" id="pr_save" onclick="saveProspek()">💾 Simpan Prospek</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =============================================================================
+ * TMDieline — renderer dieline dari DSL m_product_type.dieline_spec (embedded)
+ * Diambil verbatim dari versi teruji (Att.1). Tidak ada geometri hardcode.
+ * ============================================================================= */
+(function (root) {
+'use strict';
+var STROKE = { CUT:'#ff3b3b', CREASE:'#00e676', BLEED:'#888', HOLE:'#4da3ff' };
+var DASH   = { BLEED:'5 3' };
+var ALIAS = {
+  A:'product_length',  B:'product_width',   C:'product_height',
+  D:'diameter',        LH:'lid_height',     G:'glue_flap',
+  TT:'top_tuck_flap',  DF:'dust_flap',      BT:'bottom_tuck_flap',
+  P:'overflow_margin'
+};
+var FN = Object.assign(Object.create(null), {
+  max: Math.max, min: Math.min, abs: Math.abs,
+  sqrt: Math.sqrt, round: Math.round, floor: Math.floor, ceil: Math.ceil
+});
+var PREC = { '+':1, '-':1, '*':2, '/':2, 'u-':3 };
+var tokenize = function(s){
+  var t=[],i=0,re=/\s*([A-Za-z_][A-Za-z_0-9]*|\d+(?:\.\d+)?|[-+*/(),])/g,m;
+  re.lastIndex=0;
+  while((m=re.exec(s))!==null){
+    if(m.index!==i)throw new Error('token tak dikenal: '+s.slice(i));
+    t.push(m[1]);i=re.lastIndex;
+  }
+  if(i!==s.length&&s.slice(i).trim()!=='')throw new Error('sisa tak terparse: '+s.slice(i));
+  return t;
+}
+var toRPN = function(tokens){
+  var out=[],ops=[],prev=null,argc=[];
+  for(var i=0;i<tokens.length;i++){
+    var tk=tokens[ i];
+    if(/^\d/.test(tk)){out.push({n:parseFloat(tk)});}
+    else if(/^[A-Za-z_]/.test(tk)){
+      if(tokens[i+1]==='('){ops.push({f:tk});argc.push(1);}
+      else out.push({v:tk});
+    }
+    else if(tk===','){
+      while(ops.length&&ops[ops.length-1].o!=='(')out.push(ops.pop());
+      if(argc.length)argc[argc.length-1]++;
+    }
+    else if(tk==='('){ops.push({o:'('});}
+    else if(tk===')'){
+      while(ops.length&&ops[ops.length-1].o!=='(')out.push(ops.pop());
+      ops.pop();
+      if(ops.length&&ops[ops.length-1].f){var fo=ops.pop();fo.a=argc.pop();out.push(fo);}
+    }
+    else{
+      var op=tk;
+      if(op==='-'&&(prev===null||prev==='('||prev===','||/^[-+*/]$/.test(prev)))op='u-';
+      while(ops.length){
+        var top=ops[ops.length-1];
+        if(top.o&&top.o!=='('&&PREC[top.o]>=PREC[ op])out.push(ops.pop());
+        else break;
+      }
+      ops.push({o:op});
+    }
+    prev=tk;
+  }
+  while(ops.length)out.push(ops.pop());
+  return out;
+}
+var _cache=Object.create(null);
+var evalExpr = function(expr,scope){
+  if(typeof expr==='number')return expr;
+  if(expr===null||expr===undefined||expr==='')return 0;
+  var key=String(expr);
+  var rpn=_cache[ key]||(_cache[ key]=toRPN(tokenize(key)));
+  var st=[];
+  for(var i=0;i<rpn.length;i++){
+    var t=rpn[ i];
+    if('n' in t)st.push(t.n);
+    else if('v' in t){
+      if(t.v==='PI')st.push(Math.PI);
+      else{var val=Object.prototype.hasOwnProperty.call(scope,t.v)?scope[t.v]:0;
+        st.push(typeof val==='number'&&isFinite(val)?val:0);}
+    }
+    else if(t.f){
+      var fn=FN[t.f];
+      if(typeof fn!=='function')throw new Error('fungsi tak dikenal: '+t.f);
+      var args=st.splice(Math.max(0,st.length-(t.a||1)));
+      st.push(fn.apply(null,args));
+    }
+    else if(t.o==='u-')st.push(-st.pop());
+    else{var b=st.pop(),a=st.pop();
+      st.push(t.o==='+'?a+b:t.o==='-'?a-b:t.o==='*'?a*b:(b===0?0:a/b));}
+  }
+  var r=st.pop();
+  return(typeof r==='number'&&isFinite(r))?r:0;
+}
+var buildScope = function(spec,dims){
+  var s=Object.create(null),k;
+  for(k in dims)if(dims.hasOwnProperty(k)){var n=parseFloat(dims[ k]);s[ k]=isNaN(n)?0:n;}
+  for(k in ALIAS)s[ k]=s[ALIAS[ k]]||0;
+  if(spec&&spec.vars){for(k in spec.vars)if(spec.vars.hasOwnProperty(k)){
+    try{s[ k]=evalExpr(spec.vars[ k],s);}catch(e){s[ k]=0;}}}
+  return s;
+}
+var attr = function(k){var c=STROKE[ k]||STROKE.CUT,d=DASH[ k];
+  return 'fill="none" stroke="'+c+'" stroke-width="1"'+(d?' stroke-dasharray="'+d+'"':'');}
+var nf = function(v){return(Math.round(v*100)/100);}
+var draw_line = function(e,S){return '<line x1="'+nf(evalExpr(e.x1,S))+'" y1="'+nf(evalExpr(e.y1,S))+'" x2="'+nf(evalExpr(e.x2,S))+'" y2="'+nf(evalExpr(e.y2,S))+'" '+attr(e.k)+'/>';};
+var draw_rect = function(e,S){return '<rect x="'+nf(evalExpr(e.x,S))+'" y="'+nf(evalExpr(e.y,S))+'" width="'+nf(evalExpr(e.w,S))+'" height="'+nf(evalExpr(e.h,S))+'" rx="1" '+attr(e.k)+'/>';};
+var draw_circle = function(e,S){return '<circle cx="'+nf(evalExpr(e.cx,S))+'" cy="'+nf(evalExpr(e.cy,S))+'" r="'+nf(evalExpr(e.r,S))+'" '+attr(e.k)+'/>';};
+var draw_tuck = function(e,S){
+    var a=evalExpr(e.a,S),b=evalExpr(e.b,S),y=evalExpr(e.y,S),h=evalExpr(e.h,S);
+    if(h<=0||b<=a)return '';
+    var up=(e.dir!=='down'),yy=up?y-h:y+h,r=Math.min(8,(b-a)/6);
+    var s=up?-1:1,d='M'+nf(a)+','+nf(y)+' L'+nf(a)+','+nf(yy-s*r)+' Q'+nf(a)+','+nf(yy)+' '+nf(a+r)+','+nf(yy)+' L'+nf(b-r)+','+nf(yy)+' Q'+nf(b)+','+nf(yy)+' '+nf(b)+','+nf(yy-s*r)+' L'+nf(b)+','+nf(y);
+    return '<path d="'+d+'" '+attr(e.k)+'/>';};
+var draw_dust = function(e,S){
+    var a=evalExpr(e.a,S),b=evalExpr(e.b,S),y=evalExpr(e.y,S),h=evalExpr(e.h,S);
+    if(h<=0||b<=a)return '';
+    var up=(e.dir!=='down'),yy=up?y-h:y+h,i=Math.min(h,(b-a)/3);
+    var d='M'+nf(a)+','+nf(y)+' L'+nf(a+i)+','+nf(yy)+' L'+nf(b-i)+','+nf(yy)+' L'+nf(b)+','+nf(y);
+    return '<path d="'+d+'" '+attr(e.k)+'/>';};
+var draw_glue = function(e,S){
+    var x0=evalExpr(e.x0,S),x1=evalExpr(e.x1,S),yT=evalExpr(e.yT,S),yB=evalExpr(e.yB,S),g=evalExpr(e.g,S);
+    if(x1<=x0)return '';
+    var d='M'+nf(x1)+','+nf(yT)+' L'+nf(x0)+','+nf(yT+g)+' L'+nf(x0)+','+nf(yB-g)+' L'+nf(x1)+','+nf(yB);
+    return '<path d="'+d+'" '+attr(e.k)+'/>';};
+var draw_bleed = function(e,S){
+    var p=evalExpr(e.p,S);if(p<=0)return '';
+    var W=S.__W,H=S.__H;
+    return '<rect x="'+nf(-p)+'" y="'+nf(-p)+'" width="'+nf(W+2*p)+'" height="'+nf(H+2*p)+'" '+attr(e.k||'BLEED')+'/>';};
+var draw_foldlines = function(e,S){
+    var n=Math.round(evalExpr(e.n,S)),w=evalExpr(e.w,S),h=evalExpr(e.h,S),o='';
+    if(n<1||w<=0)return '';
+    for(var i=1;i<=n;i++){var x=w*i/(n+1);
+      o+='<line x1="'+nf(x)+'" y1="0" x2="'+nf(x)+'" y2="'+nf(h)+'" '+attr(e.k||'CREASE')+' stroke-dasharray="5 3"/>';}
+    return o;};
+var draw_holes = function(e,S){
+    var n=Math.round(evalExpr(e.n,S)),w=evalExpr(e.w,S),y=evalExpr(e.y,S),r=evalExpr(e.r,S),o='';
+    if(n<1||w<=0)return '';
+    for(var i=0;i<n;i++){o+='<circle cx="'+nf(w*(i+0.5)/n)+'" cy="'+nf(y)+'" r="'+nf(r)+'" '+attr(e.k||'HOLE')+'/>';}
+    return o;};
+var draw_text = function(e,S){return '<text x="'+nf(evalExpr(e.x,S))+'" y="'+nf(evalExpr(e.y,S))+'" fill="#9aa" font-size="11" text-anchor="middle">'+esc(e.s)+'</text>';};
+var DRAW=Object.assign(Object.create(null),{
+  line:draw_line, rect:draw_rect, circle:draw_circle, tuck:draw_tuck, dust:draw_dust, glue:draw_glue, bleed:draw_bleed, foldlines:draw_foldlines, holes:draw_holes, text:draw_text
+});
+var esc = function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ c];});}
+var placeholder = function(msg){return '<div style="color:#889;font-size:12px;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px">'+msg+'</div>';}
+var flat = function(spec,dims){
+  if(!spec||!spec.flat)return{w:0,h:0,area:0};
+  var S=buildScope(spec,dims),w=0,h=0;
+  try{w=evalExpr(spec.flat.w,S);}catch(e1){w=0;}
+  try{h=evalExpr(spec.flat.h,S);}catch(e2){h=0;}
+  w=Math.round(w*100)/100;h=Math.round(h*100)/100;
+  return{w:w,h:h,area:Math.round(w*h*100)/100};
+}
+var svg = function(spec,dims){
+  if(!spec||!spec.elements)return null;
+  var S=buildScope(spec,dims),W=0,H=0;
+  try{W=evalExpr(spec.canvas?spec.canvas.w:'W',S);}catch(e1){W=0;}
+  try{H=evalExpr(spec.canvas?spec.canvas.h:'H',S);}catch(e2){H=0;}
+  if(!(W>0)||!(H>0))return null;
+  S.__W=W;S.__H=H;
+  var body='';
+  for(var i=0;i<spec.elements.length;i++){
+    var e=spec.elements[ i],fn=DRAW[e.t];
+    if(typeof fn!=='function')continue;
+    try{body+=fn(e,S);}catch(err){}
+  }
+  var M=Math.max(24,(W+H)/16);
+  return '<svg width="100%" height="100%" viewBox="'+nf(-M)+' '+nf(-M)+' '+nf(W+2*M)+' '+nf(H+2*M)+'" xmlns="http://www.w3.org/2000/svg">'+body+'</svg>';
+}
+var render = function(el,spec,dims){
+  if(!el)return;
+  if(!spec){el.innerHTML=placeholder('Tipe ini belum punya<br>spesifikasi dieline');return;}
+  var s=svg(spec,dims);
+  el.innerHTML=s||placeholder('Pilih ukuran / isi dimensi<br>untuk melihat dieline');
+}
+root.TMDieline={render:render,svg:svg,flat:flat,eval:evalExpr,scope:buildScope,STROKE:STROKE};
+})(typeof window!=='undefined'?window:this);
+</script>
+
+<script>
+/* =============================================================================
+ * DUMMY DATA — menggantikan query PHP (m_product_type, param, size, customer…)
+ * Cukup untuk mendemokan UI: 1 tipe ber-dieline (CARD_BOX) + beberapa tanpa spec.
+ * ============================================================================= */
+const PT = {
+  CARD_BOX: {
+    n:'Card Box (Tuck End)', c:'FOLDING_CARTON', s:'Straight Tuck', style:'STE',
+    d:'Box lipat tuck atas-bawah. Dieline live dari dimensi P×L×T.',
+    photo:'', gen:'', multi:0, ecma:'A20.20.01.01', ptd:'DC',
+    p:[
+      {col:'product_length', lbl:'Panjang (P)', u:'mm', type:'NUM', opt:null, dv:80,  ds:'', req:1},
+      {col:'product_width',  lbl:'Lebar (L)',   u:'mm', type:'NUM', opt:null, dv:50,  ds:'', req:1},
+      {col:'product_height', lbl:'Tinggi (T)',  u:'mm', type:'NUM', opt:null, dv:120, ds:'', req:1},
+      {col:'glue_flap',      lbl:'Glue Flap',   u:'mm', type:'NUM', opt:null, dv:15,  ds:'', req:0},
+      {col:'top_tuck_flap',  lbl:'Tuck Atas',   u:'mm', type:'NUM', opt:null, dv:35,  ds:'', req:0},
+      {col:'dust_flap',      lbl:'Dust Flap',   u:'mm', type:'NUM', opt:null, dv:40,  ds:'', req:0}
+    ],
+    // dieline_spec DSL — versi ringkas Card Box tuck (cukup utk preview live)
+    spec:{
+      vars:{
+        W:'2*(A+B)+G', H:'C+2*TT',
+        x1:'G', x2:'G+A', x3:'G+A+B', x4:'G+2*A+B', x5:'G+2*(A+B)',
+        yTop:'TT', yBot:'TT+C'
+      },
+      canvas:{w:'W', h:'H'},
+      flat:{w:'W', h:'H'},
+      elements:[
+        {t:'rect', k:'CUT',    x:'x1', y:'yTop', w:'x5-x1', h:'C'},
+        {t:'line', k:'CREASE', x1:'x2', y1:'yTop', x2:'x2', y2:'yBot'},
+        {t:'line', k:'CREASE', x1:'x3', y1:'yTop', x2:'x3', y2:'yBot'},
+        {t:'line', k:'CREASE', x1:'x4', y1:'yTop', x2:'x4', y2:'yBot'},
+        {t:'line', k:'CREASE', x1:'x1', y1:'yTop', x2:'x5', y2:'yTop'},
+        {t:'line', k:'CREASE', x1:'x1', y1:'yBot', x2:'x5', y2:'yBot'},
+        {t:'glue', k:'CUT', x0:'0',  x1:'G',  yT:'yTop', yB:'yBot', g:'8'},
+        {t:'tuck', k:'CUT', a:'x1', b:'x2', y:'yTop', h:'TT', dir:'up'},
+        {t:'tuck', k:'CUT', a:'x3', b:'x4', y:'yTop', h:'TT', dir:'up'},
+        {t:'tuck', k:'CUT', a:'x1', b:'x2', y:'yBot', h:'TT', dir:'down'},
+        {t:'tuck', k:'CUT', a:'x3', b:'x4', y:'yBot', h:'TT', dir:'down'},
+        {t:'dust', k:'CUT', a:'x2', b:'x3', y:'yTop', h:'DF*0.7', dir:'up'},
+        {t:'dust', k:'CUT', a:'x4', b:'x5', y:'yTop', h:'DF*0.7', dir:'up'},
+        {t:'dust', k:'CUT', a:'x2', b:'x3', y:'yBot', h:'DF*0.7', dir:'down'},
+        {t:'dust', k:'CUT', a:'x4', b:'x5', y:'yBot', h:'DF*0.7', dir:'down'}
+      ]
+    }
+  },
+  PAPER_BAG: { n:'Paper Bag', c:'BAG', s:'Twist Handle', style:'', d:'Tas kertas — dieline menyusul.', photo:'', gen:'', multi:0, ecma:'', ptd:'DC',
+    p:[{col:'product_length',lbl:'Lebar',u:'mm',type:'NUM',opt:null,dv:250,ds:'',req:1},
+       {col:'product_height',lbl:'Tinggi',u:'mm',type:'NUM',opt:null,dv:350,ds:'',req:1},
+       {col:'product_width',lbl:'Gusset',u:'mm',type:'NUM',opt:null,dv:100,ds:'',req:0}], spec:null },
+  SF_BOX: { n:'Corrugated Box (SF)', c:'CORRUGATED', s:'RSC', style:'', d:'Box gelombang single face — dieline menyusul.', photo:'', gen:'', multi:1, ecma:'', ptd:'DC+SF',
+    p:[{col:'product_length',lbl:'Panjang',u:'mm',type:'NUM',opt:null,dv:300,ds:'',req:1},
+       {col:'product_width',lbl:'Lebar',u:'mm',type:'NUM',opt:null,dv:200,ds:'',req:1},
+       {col:'product_height',lbl:'Tinggi',u:'mm',type:'NUM',opt:null,dv:150,ds:'',req:1}], spec:null },
+  LABEL: { n:'Label / Stiker', c:'LABEL', s:'Die-cut', style:'', d:'Label stiker — dieline menyusul.', photo:'', gen:'', multi:0, ecma:'', ptd:'SHEET',
+    p:[{col:'product_length',lbl:'Panjang',u:'mm',type:'NUM',opt:null,dv:60,ds:'',req:1},
+       {col:'product_width',lbl:'Lebar',u:'mm',type:'NUM',opt:null,dv:40,ds:'',req:1}], spec:null },
+  SLEEVE:  { n:'Cup Sleeve', c:'FOLDING_CARTON', s:'Sleeve', style:'', d:'Sleeve gelas — dieline menyusul.', photo:'', gen:'', multi:0, ecma:'', ptd:'DC', p:[{col:'product_length',lbl:'Keliling',u:'mm',type:'NUM',opt:null,dv:230,ds:'',req:1},{col:'product_height',lbl:'Tinggi',u:'mm',type:'NUM',opt:null,dv:55,ds:'',req:1}], spec:null },
+  HANGTAG: { n:'Hang Tag', c:'CARD', s:'2 sisi', style:'', d:'Hang tag karton — dieline menyusul.', photo:'', gen:'', multi:0, ecma:'', ptd:'DC', p:[{col:'product_length',lbl:'Panjang',u:'mm',type:'NUM',opt:null,dv:90,ds:'',req:1},{col:'product_width',lbl:'Lebar',u:'mm',type:'NUM',opt:null,dv:50,ds:'',req:1}], spec:null },
+  POUCH:   { n:'Standing Pouch', c:'FLEXIBLE', s:'Doypack', style:'', d:'Pouch fleksibel — dieline menyusul.', photo:'', gen:'', multi:0, ecma:'', ptd:'SHEET', p:[{col:'product_length',lbl:'Lebar',u:'mm',type:'NUM',opt:null,dv:130,ds:'',req:1},{col:'product_height',lbl:'Tinggi',u:'mm',type:'NUM',opt:null,dv:200,ds:'',req:1}], spec:null }
+};
+
+const SIZES = {
+  CARD_BOX: [
+    {n:'Kecil — 60×40×100', v:{product_length:60,  product_width:40, product_height:100}},
+    {n:'Sedang — 80×50×120',v:{product_length:80,  product_width:50, product_height:120}},
+    {n:'Besar — 100×70×150',v:{product_length:100, product_width:70, product_height:150}}
+  ]
+};
+
+const CATS  = ['SEMUA','FOLDING_CARTON','CORRUGATED','BAG','LABEL','CARD','FLEXIBLE'];
+const CUST  = [
+  {i:11, c:'CUST0011', n:'CV. Sinar Kemasan'},
+  {i:12, c:'CUST0012', n:'PT. Boga Rasa'},
+  {i:13, c:'CUST0013', n:'Toko Manis Jaya'},
+  {i:14, c:'CUST0014', n:'Kopi Kenangan Kita'},
+  {i:15, c:'CUST0015', n:'UD. Berkah Snack'}
+];
+const TPL   = {};   // m_dieline_template belum ada (kosong, sesuai versi asli)
+const SALES = [ {i:1,n:'Rani S.'}, {i:2,n:'Dodi H.'}, {i:3,n:'Budi P.'} ];
+/* Dummy pantone & material utk autocomplete (menggantikan self-POST server) */
+const PANTONE = [
+  {code:'485 C', name:'Merah', hex:'#DA291C'},
+  {code:'286 C', name:'Biru',  hex:'#0033A0'},
+  {code:'354 C', name:'Hijau', hex:'#00B140'},
+  {code:'116 C', name:'Kuning',hex:'#FFCD00'},
+  {code:'Black C',name:'Hitam', hex:'#101820'}
+];
+const MATERIAL = [
+  {id:101, code:'DPX-310', name:'Duplex 310 gsm — 79 X 109 CM', gram:310, thick:0.42, cat:'DUPLEX', pl:79, pw:109, brand:'IK', stext:'79 X 109 CM'},
+  {id:102, code:'ART-260', name:'Art Carton 260 gsm — 65 X 100 CM', gram:260, thick:0.30, cat:'ART_CARTON', pl:65, pw:100, brand:'APP', stext:'65 X 100 CM'},
+  {id:103, code:'IVR-230', name:'Ivory 230 gsm — 79 X 109 CM', gram:230, thick:0.28, cat:'IVORY', pl:79, pw:109, brand:'Spectra', stext:'79 X 109 CM'},
+  {id:104, code:'KRF-125', name:'Kraft 125 gsm — 90 X 120 CM', gram:125, thick:0.18, cat:'KRAFT', pl:90, pw:120, brand:'Lokal', stext:'90 X 120 CM'}
+];
+const AREA = [
+  {id:1, label:'Jakarta Selatan, DKI Jakarta (Indonesia)'},
+  {id:2, label:'Bandung, Jawa Barat (Indonesia)'},
+  {id:3, label:'Surabaya, Jawa Timur (Indonesia)'},
+  {id:4, label:'Bekasi, Jawa Barat (Indonesia)'}
+];
+const LK  = {};   // lookup m_ref_param_option kosong → JS pakai LK_FALLBACK
+const FIN = [
+  {c:'UV', l:'UV Varnish'}, {c:'WB', l:'Water-Based Varnish'},
+  {c:'LAMGLOSS', l:'Laminasi Glossy'}, {c:'LAMDOFF', l:'Laminasi Doff'},
+  {c:'SPOTUV', l:'Spot UV'}, {c:'EMBOSS', l:'Emboss'}, {c:'HOTPRINT', l:'Hot Print'}
+];
+const FIRST = 'CARD_BOX';
+const LOADED = null;   // mode create (mockup default). doc_no dari URL hanya ditampilkan.
+
+/* Tampilkan doc_no dari query (jika dibuka via HUB) sebagai konteks header. */
+(function(){
+  const q=new URLSearchParams(location.search).get('doc_no');
+  if(q){ const h=document.getElementById('hdrDoc'); if(h)h.textContent=q+' · draft (mock)'; }
+})();
+
+/* ---------- STATE MULTI-PART ---------- */
+let parts = [];
+let partIdx = 0;
+let curCat = 'SEMUA';
+let galTargetUid = null;
+
+/* ---------- STATE TIER ---------- */
+let tiers = [
+  {q:500,  pri:0, tp:'', n:''},
+  {q:1000, pri:0, tp:'', n:''},
+  {q:5000, pri:1, tp:'', n:'paling diharapkan'},
+];
+
+/* ===== util ===== */
+var esc = function(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ c]));}
+var hl = function(s,q){if(!q)return esc(s);const i=s.toLowerCase().indexOf(q.toLowerCase());if(i<0)return esc(s);return esc(s.slice(0,i))+'<mark>'+esc(s.slice(i,i+q.length))+'</mark>'+esc(s.slice(i+q.length));}
+var el = function(id){return document.getElementById(id);}
+var toast = function(msg,ok){const t=el('toast');t.className='toast on '+(ok?'ok':'err');t.innerHTML=msg;clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),ok?4000:7000);}
+
+/* =============================================================================
+ * E1 — AUTOCOMPLETE CUSTOMER (client-side, filter dari CUST)
+ * ============================================================================= */
+let acList=[], acIdx=-1;
+var custFind = function(q){
+  q=(q||'').trim();const box=el('cust_box');const lq=q.toLowerCase();
+  acList=!q?CUST.slice(0,20):CUST.filter(c=>c.n.toLowerCase().includes(lq)||c.c.toLowerCase().includes(lq));
+  acIdx=-1;
+  if(!acList.length){box.innerHTML='<div class="ac-none">Tidak ditemukan — bisa lanjut sebagai <b>prospek baru</b></div>';box.classList.add('on');custSet(null);return;}
+  const show=acList.slice(0,20);
+  box.innerHTML=show.map((c,i)=>`<div class="ac-i" data-i="${i}" onmousedown="custPick(${i})"><b>${hl(c.n,q)}</b><br><span class="cd">${hl(c.c,q)}</span></div>`).join('')
+    +(acList.length>20?`<div class="ac-more">+${acList.length-20} lagi — ketik lebih spesifik</div>`:'');
+  box.classList.add('on');
+  const ex=acList.find(c=>c.n.toLowerCase()===lq||c.c.toLowerCase()===lq);
+  custSet(ex||null);
+}
+var custPick = function(i){const c=acList[ i];if(!c)return;el('cust_txt').value=c.n;custSet(c);el('cust_box').classList.remove('on');}
+var custSet = function(c){const h=el('cust_hint');el('cust_id').value=c?c.i:'';h.className='hint'+(c?' cust-ok':'');h.innerHTML=c?`✔ ${esc(c.c)} · customer_id <b>${c.i}</b>`:'&nbsp;';}
+var custKey = function(e){
+  const box=el('cust_box');if(!box.classList.contains('on'))return;
+  const n=Math.min(acList.length,20);
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();acIdx=(acIdx+(e.key==='ArrowDown'?1:-1)+n)%n;
+    box.querySelectorAll('.ac-i').forEach((el2,i)=>el2.classList.toggle('sel',i===acIdx));
+    const s=box.querySelector('.ac-i.sel');if(s)s.scrollIntoView({block:'nearest'});}
+  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();custPick(acIdx);}
+  else if(e.key==='Escape'){box.classList.remove('on');}
+}
+var custBlur = function(){setTimeout(()=>el('cust_box').classList.remove('on'),150);}
+
+/* E1f — SANITASI NAMA PRODUK */
+var sanitizeProdName = function(inp){
+  const clean=inp.value.replace(/[^A-Za-z0-9 \-.,()&+×xX]/g,'');
+  if(clean!==inp.value){
+    const pos=inp.selectionStart-1;
+    inp.value=clean;
+    try{inp.setSelectionRange(pos,pos);}catch(e){}
+  }
+}
+
+/* E1b — PIC SALES */
+var buildPic = function(){
+  const sel=el('h_pic');
+  if(!SALES.length){sel.innerHTML='<option value="">(belum ada data sales)</option>';return;}
+  sel.innerHTML='<option value="">— pilih PIC —</option>'+
+    SALES.map(s=>`<option value="${esc(s.n)}" data-id="${s.i}">${esc(s.n)}</option>`).join('');
+}
+
+/* E1c — DEADLINE = +14 HARI KERJA */
+var addWorkdays = function(dateStr, n){
+  const d=new Date(dateStr+'T00:00:00');
+  let added=0;
+  while(added<n){
+    d.setDate(d.getDate()+1);
+    const wd=d.getDay();
+    if(wd!==0 && wd!==6) added++;
+  }
+  return d.toISOString().slice(0,10);
+}
+var recalcDeadline = function(){
+  const t=el('h_date').value; if(!t)return;
+  const minD=addWorkdays(t,14);
+  const dl=el('h_deadline');
+  dl.min=minD;
+  if(!dl.value || dl.value<minD) dl.value=minD;
+}
+
+/* E1d — AUTOCOMPLETE AREA (client-side dari AREA) */
+var areaFind = function(q){
+  q=(q||'').trim();const box=el('pr_area_box');
+  el('pr_area_id').value='';el('pr_area_hint').innerHTML='&nbsp;';el('pr_area_hint').className='hint';
+  if(q.length<2){box.classList.remove('on');return;}
+  const rows=AREA.filter(a=>a.label.toLowerCase().includes(q.toLowerCase()));
+  if(!rows.length){box.innerHTML='<div class="ac-none">Area tak ditemukan</div>';box.classList.add('on');return;}
+  box.innerHTML=rows.map(a=>`<div class="ac-i" onmousedown="areaPick(${a.id},'${esc(a.label).replace(/'/g,"\\'")}')"><b>${esc(a.label)}</b></div>`).join('');
+  box.classList.add('on');
+}
+var areaPick = function(id,label){
+  el('pr_area_txt').value=label;el('pr_area_id').value=id;
+  el('pr_area_hint').className='hint cust-ok';el('pr_area_hint').innerHTML=`✔ id_area <b>${id}</b>`;
+  el('pr_area_box').classList.remove('on');
+}
+var areaBlur = function(){setTimeout(()=>el('pr_area_box').classList.remove('on'),150);}
+
+/* E1e — POPUP PROSPEK (client-side, simulasi INSERT) */
+var onProspectChange = function(){ if(el('h_prospect').value==='1') openProspek(); }
+var openProspek = function(){
+  el('pr_name').value=el('cust_txt').value||'';
+  el('pr_addr').value='';el('pr_area_txt').value='';el('pr_area_id').value='';
+  el('pr_contact').value='';el('pr_phone').value='';el('pr_area_hint').innerHTML='&nbsp;';
+  el('prospekModal').classList.add('on');
+}
+var closeProspek = function(){
+  el('prospekModal').classList.remove('on');
+  if(!el('cust_id').value) el('h_prospect').value='0';
+}
+let prospekSeq = 1;
+var saveProspek = function(){
+  const name=el('pr_name').value.trim();
+  if(!name){toast('⚠ Nama prospek wajib diisi',false);return;}
+  // simulasi: buat kode & id lokal
+  const now=new Date();
+  const code='PRS'+String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,'0')+String(prospekSeq++).padStart(4,'0');
+  const cid=9000+prospekSeq;
+  el('cust_txt').value=name;
+  el('cust_id').value=cid;
+  const h=el('cust_hint');h.className='hint cust-ok';
+  h.innerHTML=`✔ ${esc(code)} · prospek baru · customer_id <b>${cid}</b>`;
+  toast(`✔ Prospek tersimpan — <b>${esc(code)}</b> (mock)`,true);
+  el('prospekModal').classList.remove('on');
+}
+
+/* =============================================================================
+ * E2 — QTY TIER
+ * ============================================================================= */
+var renderTier = function(){
+  el('tierBody').innerHTML=tiers.map((t,i)=>`<tr>
+    <td>${i+1}</td>
+    <td><input type="number" value="${t.q}" onchange="tiers[${i}].q=this.value"></td>
+    <td style="text-align:center"><input type="radio" name="pri" ${t.pri?'checked':''} onchange="setPri(${i})"></td>
+    <td><input type="number" value="${t.tp}" placeholder="opsional" onchange="tiers[${i}].tp=this.value"></td>
+    <td><input value="${esc(t.dsc||'')}" placeholder="mis. 5% / 100" onchange="tiers[${i}].dsc=this.value"></td>
+    <td><input value="${esc(t.n)}" onchange="tiers[${i}].n=this.value"></td>
+    <td><button class="btn d xs" onclick="delTier(${i})">✕</button></td></tr>`).join('');
+}
+var addTier = function(){tiers.push({q:'',pri:0,tp:'',dsc:'',n:''});renderTier();}
+var delTier = function(i){if(tiers.length<=1)return;tiers.splice(i,1);if(!tiers.some(t=>t.pri))tiers[0].pri=1;renderTier();}
+var setPri = function(i){tiers.forEach((t,j)=>t.pri=(i===j?1:0));renderTier();}
+
+/* =============================================================================
+ * E3 — GALERI TIPE PRODUK (per part)
+ * ============================================================================= */
+var openGal = function(uid){galTargetUid=uid;renderCat();renderGal();el('gal').classList.add('on');}
+var closeGal = function(){el('gal').classList.remove('on');galTargetUid=null;}
+var renderCat = function(){el('catbar').innerHTML=CATS.map(c=>`<button class="${c===curCat?'on':''}" onclick="setCat('${c}')">${c==='SEMUA'?'Semua':c.replace(/_/g,' ')}</button>`).join('');}
+var setCat = function(c){curCat=c;renderCat();renderGal();}
+
+var renderGal = function(){
+  const p=parts.find(x=>x.uid===galTargetUid);
+  const curType=p?p.type:'';
+  el('galBody').innerHTML=Object.entries(PT).filter(([k,v])=>curCat==='SEMUA'||v.c===curCat)
+    .map(([k,v])=>{
+      return `<div class="gcard ${k===curType?'sel':''}">
+        <div class="ph" onclick="pickType('${k}')">${k}</div>
+        <div class="nm" onclick="pickType('${k}')">${esc(v.n)}</div>
+        <div class="ds" onclick="pickType('${k}')">${esc(v.s||'')}${v.spec?'':' · <span style="color:#c0392b">no dieline</span>'}</div>
+      </div>`;
+    }).join('');
+}
+
+var pickType = function(k){
+  const p=parts.find(x=>x.uid===galTargetUid);if(!p)return;
+  p.type=k;
+  if(PT[ k].ptd)p.partType=PT[ k].ptd;
+  p.tpl='';
+  closeGal();
+  applyType(p.uid);
+}
+
+/* =============================================================================
+ * E4 — RENDER SATU PART CARD
+ * ============================================================================= */
+const PART_TYPES = [
+  {c:'DC',       l:'Paper',         multi:0, roles:['PAPER']},
+  {c:'DC+SHEET', l:'Paper + Sheet', multi:1, roles:['PAPER','SHEET']},
+  {c:'DC+SF',    l:'Paper + SF',    multi:1, roles:['PAPER','SF']},
+  {c:'SHEET',    l:'Sheet',         multi:0, roles:['SHEET']},
+  {c:'KRAFT',    l:'Kraft',         multi:0, roles:['KRAFT']},
+];
+const LK_FALLBACK = {
+  material_role: [
+    {c:'PAPER',l:'Paper'},{c:'SF',l:'SF (Single Face)'},{c:'SHEET',l:'Sheet'},
+    {c:'LINER',l:'Liner'},{c:'KRAFT',l:'Kraft'},{c:'OTHER',l:'Lainnya'}
+  ],
+  color_notation: [
+    {c:'4/4',l:'4/4'},{c:'4/1',l:'4/1'},{c:'4/0',l:'4/0'},
+    {c:'2/0',l:'2/0'},{c:'1/1',l:'1/1'},{c:'1/0',l:'1/0'}
+  ],
+  coating_side: [
+    {c:'SIDE_A',l:'Depan (Side A)'},{c:'SIDE_B',l:'Belakang (Side B)'},{c:'BOTH',l:'Dua Sisi'}
+  ],
+  coating_coverage: [
+    {c:'FULL',l:'Full'},{c:'SPOT',l:'Spot'},{c:'AREA',l:'Area'}
+  ],
+  flute_type: [
+    {c:'B',l:'B Flute'},{c:'E',l:'E Flute'},{c:'F',l:'F Flute'},{c:'BE',l:'BE (Double)'}
+  ]
+};
+var lkOpts = function(group){
+  return (LK && LK[ group] && LK[ group].length) ? LK[ group] : (LK_FALLBACK[ group]||[]);
+}
+var lkOptions = function(group, selected){
+  return lkOpts(group).map(o=>`<option value="${esc(o.c)}" ${o.c===selected?'selected':''}>${esc(o.l)}</option>`).join('');
+}
+const ptMeta = (c)=>PART_TYPES.find(x=>x.c===c)||PART_TYPES[0];
+
+var renderParts = function(){
+  el('partsWrap').innerHTML = parts.map(p=>partCardHtml(p)).join('');
+  parts.forEach(p=>{ buildDimFields(p.uid); buildTplSelect(p.uid); renderCoatings(p.uid); renderMats(p.uid); calcPart(p.uid); });
+}
+
+var partCardHtml = function(p){
+  const t=PT[p.type];
+  const tnm=t?t.n:'(pilih tipe)';
+  const meta=t?`${t.c}${t.s?' · '+t.s:''}`:'belum ada tipe';
+  return `<div class="partcard" id="pc_${p.uid}">
+    <div class="parthd" onclick="togglePart(${p.uid})">
+      <span class="pnm">${esc(p.name)}</span>
+      <span class="pmeta">— ${esc(tnm)} · <span id="pm_${p.uid}">${esc(meta)}</span></span>
+      <span class="toggle">${p.collapsed?'▸ buka':'▾ tutup'}</span>
+      ${parts.length>1?`<button class="btn d xs" onclick="event.stopPropagation();delPart(${p.uid})">✕ hapus part</button>`:''}
+    </div>
+    <div class="partbody ${p.collapsed?'collapsed':''}" id="pb_${p.uid}">
+
+      <div class="grid" style="margin-bottom:8px">
+        <div class="f"><label>Nama Part</label><input value="${esc(p.name)}" oninput="setPart(${p.uid},'name',this.value);el('pcnm_${p.uid}')&&(el('pcnm_${p.uid}').textContent=this.value)"></div>
+        <div class="f"><label>Tipe Part</label>
+          <select onchange="setPart(${p.uid},'partType',this.value)">
+            ${PART_TYPES.map(x=>`<option value="${x.c}" ${x.c===p.partType?'selected':''}>${x.l}</option>`).join('')}</select></div>
+        <div class="f"><label>Qty per Set</label><input type="number" value="${p.qtyPerSet||1}" min="0" step="0.01" oninput="setPart(${p.uid},'qtyPerSet',this.value)"></div>
+        <div class="f"><label>Template Dieline</label>
+          <select id="tpl_${p.uid}" onchange="onTpl(${p.uid},this.value)"></select>
+          <div class="hint">auto-fill flap (menyusul saat katalog siap)</div></div>
+      </div>
+
+      <div class="ptype-box">
+        <div class="ptype-thumb" id="th_${p.uid}">${p.type||'—'}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#2c3e69" id="tnm_${p.uid}">${esc(tnm)}</div>
+          <div class="hint" id="tnote_${p.uid}">${t?esc(t.d||''):''}</div>
+        </div>
+        <div class="f size-pick" style="width:220px">
+          <label>⭐ Ukuran Pasaran</label>
+          <select id="sz_${p.uid}" onchange="fillPreset(${p.uid})"></select>
+        </div>
+        <button class="btn p" onclick="openGal(${p.uid})">🖼️ Galeri</button>
+      </div>
+
+      <div class="flx">
+        <div style="flex:1">
+          <div class="sec-title">Dimensi <span id="dh_${p.uid}" style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6"></span></div>
+          <div class="grid" id="dg_${p.uid}"></div>
+          <div id="fw_warn_${p.uid}"></div>
+
+          <div class="sec-title">Bentangan (Flat) — dipakai Costing</div>
+          <div class="grid">
+            <div class="f"><label>Flat Width (mm)</label><input id="fw_${p.uid}" oninput="onFlatManual(${p.uid})"></div>
+            <div class="f"><label>Flat Height (mm)</label><input id="fh_${p.uid}" oninput="onFlatManual(${p.uid})"></div>
+            <div class="f"><label>Flat Area (mm²)</label><input id="fa_${p.uid}" readonly></div>
+            <div class="f"><label>Manual?</label>
+              <select id="fm_${p.uid}" onchange="calcPart(${p.uid})">
+                <option value="0">Auto (hitung sistem)</option>
+                <option value="1">Manual (isi sendiri)</option></select></div>
+          </div>
+
+          <div class="sec-title">Bahan (Material)
+            <button class="btn o xs" style="float:right;font-weight:600" onclick="openMasterBahan()" title="Buka master bahan baku">🔗 Master Bahan</button>
+          </div>
+          <div class="hint" style="margin-bottom:6px">Pilih dari master — nama sudah memuat gramasi &amp; ukuran. Jenis &amp; brand dari m_raw_material.</div>
+          <table><thead><tr>
+            <th style="width:40px">Lyr</th><th>Bahan (ketik untuk cari)</th>
+            <th style="width:100px">Brand</th><th style="width:120px">Jenis Bahan</th>
+            <th style="width:160px">Catatan</th><th style="width:40px"></th>
+          </tr></thead>
+            <tbody id="mt_${p.uid}"></tbody></table>
+          <button class="btn g xs" style="margin-top:6px" onclick="addMat(${p.uid})">＋ Tambah Bahan</button>
+
+          <div class="fileup" style="margin-top:10px;padding:10px;border:1px dashed #c7cfda;border-radius:8px;background:#fbfcfe">
+            <label style="font-size:11px;color:#667;font-weight:600;text-transform:uppercase;letter-spacing:.4px">File Cetak (Artwork Layer Paper)</label>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+              <input type="file" id="pf_${p.uid}" accept=".ai,.pdf,.eps,.svg,.cdr,.png,.jpg,.jpeg,.tif,.tiff" style="display:none" onchange="uploadPartFile(${p.uid},'print',this)">
+              <button class="btn g xs" onclick="el('pf_${p.uid}').click()">⬆ Pilih File Cetak</button>
+              <span id="pfn_${p.uid}" style="font-size:12px;color:#556">${p.printName?esc(p.printName):'<span style=\"color:#9aa4b2\">belum ada file (vektor/bitmap)</span>'}</span>
+              ${p.printName?`<button class="btn d xs" onclick="clearPartFile(${p.uid},'print')">✕</button>`:''}
+            </div>
+          </div>
+
+          <div class="sec-title">Cetak / Warna</div>
+          <div class="grid">
+            <div class="f"><label>Notasi Warna</label>
+              <select id="cn_${p.uid}" onchange="parseColor(${p.uid})">${lkOptions('color_notation',p.colorNot||'4/4')}</select>
+              <div class="hint">Format sisiA/sisiB (4/4, 4/0, 4/1)</div></div>
+            <div class="f col3"><label>Turunan (otomatis)</label><div class="derived" id="cd_${p.uid}"></div></div>
+            <div class="f col2" style="position:relative"><label>Catatan Warna (Pantone)</label>
+              <input id="cnote_${p.uid}" value="${esc(p.colorNotes||'')}" autocomplete="off" placeholder="ketik/cari Pantone (mis. 485 atau Merah)…"
+                oninput="pantoneFind(${p.uid},this.value)" onfocus="pantoneFind(${p.uid},this.value)"
+                onblur="setTimeout(()=>pantoneHide(${p.uid}),180)">
+              <div class="ac" id="pn_${p.uid}" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:40;background:#fff;border:1px solid #c7cfda;border-radius:6px;max-height:260px;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.12)"></div>
+              <div class="hint">Boleh pilih dari daftar atau ketik warna lain</div></div>
+            <div class="f col2"><label>Spesifikasi Tambahan</label><input id="spec_${p.uid}" value="${esc(p.specNotes||'')}" placeholder="opsional" oninput="setPart(${p.uid},'specNotes',this.value)"></div>
+          </div>
+
+          <div class="sec-title">Finishing / Coating</div>
+          <table><thead><tr><th>Jenis</th><th style="width:150px">Sisi</th><th style="width:110px">Cakupan</th><th style="width:90px">%</th><th>Catatan</th><th style="width:44px"></th></tr></thead>
+            <tbody id="co_${p.uid}"></tbody></table>
+          <button class="btn g xs" style="margin-top:6px" onclick="addCoating(${p.uid})">＋ Tambah Finishing</button>
+        </div>
+
+        <div style="width:360px;flex-shrink:0">
+          <label style="font-size:11px;color:#667;font-weight:600">Preview Dieline (live)</label>
+          <div id="dc_${p.uid}" class="dcut"></div>
+          <div class="legend">🔴 potong &nbsp; 🟢 lipat &nbsp; ⚪ overflow &nbsp; 🔵 lubang/jilid</div>
+          <div class="fileup" style="margin-top:10px;padding:10px;border:1px dashed #c7cfda;border-radius:8px;background:#fbfcfe">
+            <label style="font-size:11px;color:#667;font-weight:600;text-transform:uppercase;letter-spacing:.4px">File Diecut (Dieline / Pisau)</label>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap">
+              <input type="file" id="df_${p.uid}" accept=".ai,.pdf,.eps,.svg,.cdr,.dxf" style="display:none" onchange="uploadPartFile(${p.uid},'diecut',this)">
+              <button class="btn g xs" onclick="el('df_${p.uid}').click()">⬆ Pilih File Diecut</button>
+              <span id="dfn_${p.uid}" style="font-size:12px;color:#556">${p.diecutName?esc(p.diecutName):'<span style=\"color:#9aa4b2\">belum ada file (vektor)</span>'}</span>
+              ${p.diecutName?`<button class="btn d xs" onclick="clearPartFile(${p.uid},'diecut')">✕</button>`:''}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =============================================================================
+ * E5 — FIELD DIMENSI DINAMIS
+ * ============================================================================= */
+var buildDimFields = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const t=PT[p.type];const g=el('dg_'+uid);if(!g)return;
+  if(!t||!t.p||!t.p.length){g.innerHTML='<div class="hint" style="grid-column:span 4">Pilih tipe produk dulu (tombol Galeri).</div>';el('dh_'+uid).textContent='';return;}
+  g.innerHTML=t.p.map(pr=>fieldHtml(uid,pr)).join('');
+  el('dh_'+uid).textContent=`— ${t.p.length} field aktif · ${t.s||t.c}`;
+  t.p.forEach(pr=>{const e=el(`d_${uid}_${pr.col}`);if(e&&p.dims[pr.col]!=null)e.value=p.dims[pr.col];});
+}
+var fieldHtml = function(uid,pr){
+  const id=`d_${uid}_${pr.col}`;const u=(pr.u&&pr.u!=='x')?' ('+pr.u+')':'';
+  if(pr.type==='ENUM'&&pr.opt){
+    return `<div class="f"><label>${esc(pr.lbl)}</label>
+      <select id="${id}" onchange="onDim(${uid},'${pr.col}',this.value)">
+        ${pr.opt.map(o=>`<option value="${o.c}" ${o.c===pr.ds?'selected':''}>${esc(o.l)}</option>`).join('')}</select></div>`;
+  }
+  const dv=(pr.dv!=null?pr.dv:'');
+  return `<div class="f"><label>${esc(pr.lbl)}${u}</label>
+    <input id="${id}" type="number" step="0.01" value="${dv}" oninput="onDim(${uid},'${pr.col}',this.value)"></div>`;
+}
+var onDim = function(uid,col,val){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  p.dims[ col]=val;calcPart(uid);
+}
+
+/* =============================================================================
+ * E6 — PRESET UKURAN PASARAN
+ * ============================================================================= */
+var buildSizeSelect = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const arr=SIZES[p.type]||[];const sel=el('sz_'+uid);if(!sel)return;
+  sel.innerHTML='<option value="-1">— pilih ukuran umum —</option>'+arr.map((s,i)=>`<option value="${i}">${esc(s.n)}</option>`).join('');
+  sel.disabled=arr.length===0;
+}
+var fillPreset = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const i=+el('sz_'+uid).value;if(i<0)return;
+  const s=(SIZES[p.type]||[])[ i];if(!s)return;
+  for(const k in s.v){p.dims[ k]=s.v[ k];const e=el(`d_${uid}_${k}`);if(e)e.value=s.v[ k];}
+  calcPart(uid);
+}
+
+/* =============================================================================
+ * E7 — TEMPLATE DIELINE (kosong)
+ * ============================================================================= */
+var buildTplSelect = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const arr=TPL[p.type]||[];const sel=el('tpl_'+uid);if(!sel)return;
+  sel.innerHTML='<option value="">— tanpa template —</option>'+arr.map(t=>`<option value="${t.code}" ${t.code===p.tpl?'selected':''}>${esc(t.name||t.code)}</option>`).join('');
+  sel.disabled=arr.length===0;
+}
+var onTpl = function(uid,code){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  p.tpl=code;
+}
+
+/* =============================================================================
+ * E8 — NOTASI WARNA
+ * ============================================================================= */
+var parseColor = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const s=(el('cn_'+uid).value||'').trim();p.colorNot=s;
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})$/),box=el('cd_'+uid);
+  if(!m){box.style.background='#fff4e5';box.style.borderColor='#ffd9a0';box.innerHTML='<span style="color:#a5680d">⚠ Format salah — gunakan 4/4, 4/0, 4/1</span>';p.colorFront=0;p.colorBack=0;return;}
+  const f=+m[1],b=+m[2];p.colorFront=f;p.colorBack=b;
+  box.style.background='#f0f7f4';box.style.borderColor='#c6e5d5';
+  box.innerHTML=`<span>front: <b>${f}</b></span><span>back: <b>${b}</b></span><span>total: <b>${f+b}</b></span><span>side: <b>${b>0?'2SIDE':'1SIDE'}</b></span>`;
+}
+
+/* =============================================================================
+ * E9 — FINISHING / COATING per part
+ * ============================================================================= */
+var renderCoatings = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const tb=el('co_'+uid);if(!tb)return;
+  tb.innerHTML=p.coatings.map((c,i)=>`<tr>
+    <td><select onchange="p_co(${uid},${i},'type',this.value)">
+      <option value="">— pilih finishing —</option>
+      ${FIN.map(f=>`<option value="${esc(f.l)}" ${f.l===c.type?'selected':''}>${esc(f.l)}</option>`).join('')}
+      ${(c.type && !FIN.some(f=>f.l===c.type))?`<option value="${esc(c.type)}" selected>${esc(c.type)} (lama)</option>`:''}
+    </select></td>
+    <td><select onchange="p_co(${uid},${i},'side',this.value)">${lkOptions('coating_side',c.side)}</select></td>
+    <td><select onchange="p_co(${uid},${i},'cov',this.value);renderCoatings(${uid})">${lkOptions('coating_coverage',c.cov)}</select></td>
+    <td><input type="number" value="${c.pct||''}" ${c.cov==='FULL'?'disabled':''} placeholder="${c.cov==='FULL'?'—':'%'}" oninput="p_co(${uid},${i},'pct',this.value)"></td>
+    <td><textarea rows="1" style="width:100%;resize:vertical;min-height:32px;font-family:inherit;font-size:12.5px" oninput="p_co(${uid},${i},'notes',this.value)">${esc(c.notes||'')}</textarea></td>
+    <td><button class="btn d xs" onclick="delCoating(${uid},${i})">✕</button></td></tr>`).join('');
+}
+var addCoating = function(uid){const p=parts.find(x=>x.uid===uid);p.coatings.push({type:'',side:'SIDE_A',cov:'FULL',pct:'',notes:''});renderCoatings(uid);}
+var delCoating = function(uid,i){const p=parts.find(x=>x.uid===uid);p.coatings.splice(i,1);renderCoatings(uid);}
+var p_co = function(uid,i,k,v){const p=parts.find(x=>x.uid===uid);if(p&&p.coatings[ i])p.coatings[ i][ k]=v;}
+
+/* =============================================================================
+ * E9b — TABEL MATERIAL per part
+ * ============================================================================= */
+var renderMats = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const tb=el('mt_'+uid);if(!tb)return;
+  if(!p.mats||!p.mats.length)p.mats=[blankMat('PAPER',1)];
+  tb.innerHTML=p.mats.map((m,i)=>`<tr>
+    <td style="text-align:center;vertical-align:top;padding-top:12px">${i+1}</td>
+    <td style="position:relative;vertical-align:top">
+      <textarea id="mq_${uid}_${i}" rows="2" autocomplete="off"
+        style="width:100%;resize:vertical;min-height:44px;line-height:1.3;font-family:inherit;font-size:12.5px"
+        placeholder="ketik kode/nama bahan…"
+        oninput="matFind(${uid},${i},this.value)"
+        onblur="setTimeout(()=>matBoxHide(${uid},${i}),180)">${esc(m.name||m.code||'')}</textarea>
+      <div class="ac" id="mb_${uid}_${i}" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:40;background:#fff;border:1px solid #c7cfda;border-radius:6px;max-height:320px;min-width:360px;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.12)"></div>
+    </td>
+    <td style="vertical-align:top">
+      <div style="display:flex;gap:4px;align-items:center">
+        <input value="${esc(m.brand||'')}" readonly placeholder="—" style="background:#f7f8fa;flex:1" title="Brand (penentu kualitas)">
+        ${m.mid?`<button class="btn o xs" style="padding:4px 7px" onclick="editMaster(${m.mid})" title="Edit bahan ini di master">✏️</button>`:''}
+      </div>
+    </td>
+    <td style="vertical-align:top"><input value="${esc(m.cat||'')}" readonly placeholder="—" style="background:#f7f8fa" title="Jenis bahan dari master"></td>
+    <td style="vertical-align:top"><textarea rows="1" style="width:100%;resize:vertical;min-height:32px;font-family:inherit;font-size:12.5px" oninput="p_mt(${uid},${i},'notes',this.value)">${esc(m.notes||'')}</textarea></td>
+    <td style="vertical-align:top">${p.mats.length>1?`<button class="btn d xs" onclick="delMat(${uid},${i})">✕</button>`:''}</td>
+  </tr>`).join('');
+}
+var addMat = function(uid){const p=parts.find(x=>x.uid===uid);if(!p)return;
+  p.mats.push(blankMat('OTHER',p.mats.length+1));renderMats(uid);}
+var delMat = function(uid,i){const p=parts.find(x=>x.uid===uid);if(!p||p.mats.length<=1)return;
+  p.mats.splice(i,1);p.mats.forEach((m,j)=>m.seq=j+1);renderMats(uid);}
+var p_mt = function(uid,i,k,v){const p=parts.find(x=>x.uid===uid);if(p&&p.mats[ i])p.mats[ i][ k]=v;}
+var matBoxHide = function(uid,i){const b=el('mb_'+uid+'_'+i);if(b)b.style.display='none';}
+
+var openMasterBahan = function(){ toast('🔗 (mock) membuka master bahan baku',true); }
+var editMaster = function(mid){ toast('✏️ (mock) edit bahan id '+mid+' di master',true); }
+
+/* ---- Upload file cetak / diecut per part — client-side (tanpa upload nyata) ---- */
+var uploadPartFile = function(uid,kind,inp){
+  const p=parts.find(x=>x.uid===uid);if(!p||!inp.files||!inp.files[0])return;
+  const f=inp.files[0];
+  if(kind==='print'){p.printPath='(mock)';p.printName=f.name;}
+  else{p.diecutPath='(mock)';p.diecutName=f.name;}
+  renderParts();
+  inp.value='';
+}
+var clearPartFile = function(uid,kind){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  if(kind==='print'){p.printPath='';p.printName='';}
+  else{p.diecutPath='';p.diecutName='';}
+  renderParts();
+}
+
+/* ---- Pantone autocomplete — client-side dari PANTONE ---- */
+var pantoneHide = function(uid){const b=el('pn_'+uid);if(b)b.style.display='none';}
+var pantoneFind = function(uid,q){
+  const p=parts.find(x=>x.uid===uid);if(p)p.colorNotes=q;
+  const box=el('pn_'+uid);if(!box)return;
+  const lq=(q||'').toLowerCase();
+  const rows=!lq?PANTONE:PANTONE.filter(c=>c.code.toLowerCase().includes(lq)||c.name.toLowerCase().includes(lq));
+  if(!rows.length){box.style.display='none';return;}
+  box.innerHTML=rows.map(c=>`<div class="ac-i" style="padding:7px 10px;cursor:pointer;border-bottom:1px solid #f0f3f7;display:flex;align-items:center;gap:8px"
+      onmousedown="pantonePick(${uid},'${esc(c.code).replace(/'/g,"\\'")}')">
+    <span style="width:16px;height:16px;border-radius:3px;border:1px solid #ccc;background:${c.hex||'#fff'};flex-shrink:0"></span>
+    <span><b style="font-size:12px">${esc(c.code)}</b> <span style="color:#8a94a6;font-size:11px">· ${esc(c.name)}</span></span></div>`).join('');
+  box.style.display='block';
+}
+var pantonePick = function(uid,code){
+  const p=parts.find(x=>x.uid===uid);if(p)p.colorNotes=code;
+  const inp=el('cnote_'+uid);if(inp)inp.value=code;
+  pantoneHide(uid);
+}
+
+/* ---- Material autocomplete — client-side dari MATERIAL ---- */
+var matResults = {};
+var matFind = function(uid,i,q){
+  const p=parts.find(x=>x.uid===uid);if(p&&p.mats[ i]){p.mats[ i].name=q;p.mats[ i].mid='';p.mats[ i].code='';}
+  const key=uid+'_'+i;
+  const box=el('mb_'+uid+'_'+i);if(!box)return;
+  if((q||'').trim().length<2){box.style.display='none';return;}
+  const lq=q.toLowerCase();
+  const rows=MATERIAL.filter(m=>m.code.toLowerCase().includes(lq)||m.name.toLowerCase().includes(lq));
+  if(!rows.length){box.innerHTML='<div class="ac-none" style="padding:8px;color:#8a94a6;font-size:12px">Bahan tak ditemukan</div>';box.style.display='block';return;}
+  matResults[ key]=rows;
+  box.innerHTML=rows.map((m,ri)=>`<div class="ac-i" style="padding:8px 10px;cursor:pointer;border-bottom:1px solid #f0f3f7;line-height:1.35"
+      onmousedown="matPick(${uid},${i},${ri})">
+    <b style="font-size:12.5px;white-space:normal;word-break:break-word;display:block">${esc(m.name)}</b>
+    <div style="font-size:11px;color:#8a94a6;white-space:normal">${esc(m.code)}${m.gram?(' · '+m.gram+' gsm'):''}${m.cat?(' · '+esc(m.cat)):''}${m.stext?(' · '+esc(m.stext)):''}</div></div>`).join('');
+  box.style.display='block';
+}
+var matPick = function(uid,i,ri){
+  const p=parts.find(x=>x.uid===uid);if(!p||!p.mats[ i])return;
+  const key=uid+'_'+i;
+  const src=matResults[ key];if(!src||!src[ ri])return;
+  const s=src[ ri];
+  const m=p.mats[ i];
+  m.mid=s.id; m.code=s.code; m.name=s.name;
+  m.gram=s.gram||''; m.thick=s.thick||'';
+  m.planoL=s.pl||''; m.planoW=s.pw||''; m.sizeText=s.stext||'';
+  m.brand=s.brand||'';
+  m.cat=s.cat||''; m.role=s.cat||'OTHER';
+  matBoxHide(uid,i); renderMats(uid);
+}
+
+/* =============================================================================
+ * E10 — HITUNG FLAT + GAMBAR DIELINE (live)
+ * ============================================================================= */
+var onFlatManual = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  if(el('fm_'+uid).value==='1'){p.fw=el('fw_'+uid).value;p.fh=el('fh_'+uid).value;
+    el('fa_'+uid).value=((+p.fw||0)*(+p.fh||0)).toFixed(2);}
+}
+var calcPart = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const t=PT[p.type];const manual=el('fm_'+uid)&&el('fm_'+uid).value==='1';p.flatManual=manual?1:0;
+  const efw=el('fw_'+uid),efh=el('fh_'+uid),efa=el('fa_'+uid);
+  if(efw){efw.readOnly=!manual;} if(efh){efh.readOnly=!manual;}
+
+  if(!manual && t && t.spec){
+    const f=TMDieline.flat(t.spec,p.dims);
+    if(efw)efw.value=f.w||''; if(efh)efh.value=f.h||'';
+    p.fw=f.w||'';p.fh=f.h||'';
+  } else if(manual){
+    p.fw=efw?efw.value:'';p.fh=efh?efh.value:'';
+  }
+  const W=+(p.fw||0),H=+(p.fh||0);
+  if(efa)efa.value=(W*H).toFixed(2);
+  p.flatArea=(W*H);
+
+  const warn=el('fw_warn_'+uid);
+  if(warn){warn.innerHTML=(t&&!t.spec)?`<div class="nospec">⚠️ <b>${esc(t.n)}</b> belum punya <code>dieline_spec</code>. Isi Flat manual.</div>`:'';}
+  if(t&&!t.spec&&el('fm_'+uid)&&el('fm_'+uid).value!=='1'){el('fm_'+uid).value='1';}
+
+  const pm=el('pm_'+uid);if(pm&&t)pm.textContent=`${t.c}${t.s?' · '+t.s:''}`;
+
+  drawPart(uid);
+}
+var drawPart = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const spec=PT[p.type]?PT[p.type].spec:null;
+  TMDieline.render(el('dc_'+uid),spec,p.dims);
+}
+
+var applyType = function(uid){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  const t=PT[p.type];p.dims={};
+  if(t&&t.p)t.p.forEach(pr=>{if(pr.type!=='ENUM'&&pr.dv!=null)p.dims[pr.col]=pr.dv;else if(pr.type==='ENUM')p.dims[pr.col]=pr.ds;});
+  renderParts();
+}
+
+/* =============================================================================
+ * E11 — TAMBAH / HAPUS / TOGGLE PART
+ * ============================================================================= */
+var newPart = function(type){
+  partIdx++;
+  const t=PT[ type];const dims={};
+  if(t&&t.p)t.p.forEach(pr=>{if(pr.type!=='ENUM'&&pr.dv!=null)dims[pr.col]=pr.dv;else if(pr.type==='ENUM')dims[pr.col]=pr.ds;});
+  return {uid:partIdx,type:type,name:parts.length===0?'Body':('Part '+(parts.length+1)),
+    partType:(t&&t.ptd)?t.ptd:'DC',qtyPerSet:1,dims:dims,flatManual:0,fw:'',fh:'',flatArea:0,
+    colorNot:'4/4',colorFront:4,colorBack:4,colorNotes:'',specNotes:'',
+    tpl:'',coatings:[{type:'',side:'SIDE_A',cov:'FULL',pct:'',notes:''}],
+    mats:defaultMats((t&&t.ptd)?t.ptd:'DC'),
+    printPath:'',printName:'',diecutPath:'',diecutName:'',collapsed:false};
+}
+var defaultMats = function(pt){
+  const roles=ptMeta(pt).roles;
+  return roles.map((r,i)=>({mid:'',code:'',name:'',gram:'',thick:'',planoL:'',planoW:'',sizeText:'',brand:'',cat:'',role:r,notes:'',seq:i+1}));
+}
+var blankMat = function(role,seq){return {mid:'',code:'',name:'',gram:'',thick:'',planoL:'',planoW:'',sizeText:'',brand:'',cat:'',role:role||'OTHER',notes:'',seq:seq||1};}
+var addPart = function(){parts.push(newPart(FIRST));renderParts();}
+var delPart = function(uid){if(parts.length<=1)return;parts=parts.filter(p=>p.uid!==uid);renderParts();}
+var togglePart = function(uid){const p=parts.find(x=>x.uid===uid);p.collapsed=!p.collapsed;
+  el('pb_'+uid).classList.toggle('collapsed',p.collapsed);
+  el('pc_'+uid).querySelector('.toggle').textContent=p.collapsed?'▸ buka':'▾ tutup';}
+var setPart = function(uid,k,v){
+  const p=parts.find(x=>x.uid===uid);if(!p)return;
+  p[ k]=v;
+  if(k==='partType'){
+    const belumIsi = !p.mats || p.mats.every(m=>!m.mid && !m.name);
+    if(belumIsi){ p.mats=defaultMats(v); renderMats(uid); }
+  }
+}
+
+var afterRender = function(){
+  parts.forEach(p=>{buildSizeSelect(p.uid);parseColor(p.uid);
+    if(el('fm_'+p.uid))el('fm_'+p.uid).value=p.flatManual?'1':'0';
+    calcPart(p.uid);
+  });
+}
+const _renderPartsRaw=renderParts;
+renderParts=function(){_renderPartsRaw();afterRender();};
+
+/* =============================================================================
+ * E12 — SIMPAN (mock: kumpulkan payload, validasi, tampilkan hasil di toast)
+ * ============================================================================= */
+var collectPayload = function(){
+  const custId=el('cust_id').value;
+  const prospect=el('h_prospect').value==='1'?1:0;
+  const header={
+    doc_date:el('h_date').value, inquiry_source:el('h_source').value,
+    customer_id:custId||null, customer_name:el('cust_txt').value||null,
+    is_prospect:prospect, pic_sales:el('h_pic').value||null,
+    product_name:el('h_prodname').value||null, required_date:el('h_deadline').value||null,
+    notes:el('h_notes').value||null, product_type_code:parts.length?parts[0].type:null,
+    /* v2 — sifat order & pajak (Tier 1 F4,F5,F9) */
+    material_source:el('h_matsrc').value, job_nature:el('h_jobnature').value,
+    tax_scheme:el('h_tax').value, pph_applicable:(el('h_jobnature').value==='JASA')?1:0,
+    cust_material_spec:el('h_custmat')?el('h_custmat').value||null:null,
+    cust_material_eta:el('h_custmat_eta')?el('h_custmat_eta').value||null:null,
+    /* v2 — diskon dokumen (Tier 1 F10) */
+    disc_amount:el('h_disc_amount')?el('h_disc_amount').value||null:null,
+    disc_qty_note:el('h_disc_qty_note')?el('h_disc_qty_note').value||null:null
+  };
+  const outParts=parts.map(p=>({
+    part_name:p.name,part_type:p.partType,product_type_code:p.type,
+    qty_per_set:p.qtyPerSet||1, flat_width:p.fw||null,flat_height:p.fh||null,flat_area_mm2:p.flatArea||null,
+    color_notation:p.colorNot||null,color_front:p.colorFront||0,color_back:p.colorBack||0,
+    dims:p.dims,
+    coatings:p.coatings.filter(c=>c.type&&c.type.trim()),
+    mats:(p.mats||[]).filter(m=>m.mid)
+  }));
+  const outTiers=tiers.filter(t=>t.q&&(+t.q>0)).map(t=>({qty_pcs:t.q,is_primary:t.pri?1:0,target_price:t.tp||null,disc_item:t.dsc||null,notes:t.n||null}));
+  return {header:header,parts:outParts,tiers:outTiers};
+}
+var validate = function(pl){
+  if(!pl.header.product_type_code)return 'Pilih tipe produk (minimal 1 part).';
+  if(!pl.header.customer_name && !pl.header.is_prospect)return 'Isi customer atau tandai sebagai prospek.';
+  const t=el('h_date').value;
+  if(t && pl.header.required_date && pl.header.required_date<addWorkdays(t,14))
+    return 'Deadline minimal 14 hari kerja dari tanggal order.';
+  if(!pl.parts.length)return 'Minimal 1 part.';
+  if(!pl.tiers.length)return 'Minimal 1 qty tier.';
+  if(!pl.tiers.some(t=>t.is_primary))return 'Tandai 1 qty tier sebagai utama.';
+  const qs=pl.tiers.map(t=>+t.qty_pcs);if(new Set(qs).size!==qs.length)return 'Qty tier tidak boleh duplikat.';
+  /* v2 — bahan customer wajib spec bila JASA */
+  if(pl.header.material_source==='CUSTOMER' && !pl.header.cust_material_spec)
+    return 'Bahan dari customer → spesifikasi bahan customer wajib diisi.';
+  return null;
+}
+var saveInquiry = function(){
+  const pl=collectPayload();
+  const err=validate(pl);
+  if(err){toast('⚠ '+err,false);return;}
+  // mock: buat nomor dummy & tampilkan ringkasan
+  const now=new Date();
+  const docno='IQ'+String(now.getFullYear()).slice(2)+String(now.getMonth()+1).padStart(2,'0')+'-'+String(Math.floor(Math.random()*9000+1000));
+  el('h_docno').value=docno;
+  el('hdrDoc').textContent=docno+' · tersimpan (mock)';
+  toast(`✔ Tersimpan (mock) — <b>${docno}</b> · ${pl.parts.length} part · ${pl.tiers.length} tier`,true);
+  console.log('PAYLOAD (mock):',pl);
+}
+
+var resetAll = function(){
+  if(!confirm('Kosongkan form dan mulai inkuiri baru?'))return;
+  window.location.href=window.location.href.split('?')[0];
+}
+var openByDoc = function(){
+  const d=(el('findDoc').value||'').trim();
+  if(!d){toast('⚠ Ketik no. inkuiri dulu',false);return;}
+  window.location.href=window.location.href.split('?')[0]+'?doc_no='+encodeURIComponent(d);
+}
+
+/* =============================================================================
+ * E12b — SIFAT ORDER & PAJAK (v2 — Tier 1 F4,F5,F9) + TOOLING/EKSTERNAL
+ * ============================================================================= */
+
+/* F6 — TOOLING: dummy status (produk baru → semua "baru dibuat") */
+var TOOLING = [
+  {jenis:'Plat cetak (CTP)', status:'BARU', umur:'0 / 150.000', biaya:'2.400.000'},
+  {jenis:'Pisau/Matras (pond)', status:'BARU', umur:'0 / 300.000', biaya:'1.800.000'},
+  {jenis:'Film', status:'BARU', umur:'—', biaya:'450.000'}
+];
+var renderTooling = function(){
+  var b=el('toolingBody'); if(!b)return;
+  b.innerHTML=TOOLING.map(function(t){
+    var col=t.status==='AUS'?'#c0392b':t.status==='BARU'?'#1560a8':'#177a4b';
+    return '<tr>'
+      +'<td style="padding:6px 8px;font-weight:600;color:#2c3e69">'+t.jenis+'</td>'
+      +'<td style="padding:6px 8px"><span style="font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:9px;background:#eef2f8;color:'+col+'">'+t.status+'</span></td>'
+      +'<td style="padding:6px 8px;color:#556">'+t.umur+'</td>'
+      +'<td style="padding:6px 8px;text-align:right;font-weight:700;color:#0e5c38">Rp '+t.biaya+'</td></tr>';
+  }).join('');
+};
+
+/* F13 — BIAYA EKSTERNAL */
+var extRows=[{desc:'',jenis:'Trucking',amt:''}];
+var renderExt=function(){
+  var b=el('extBody'); if(!b)return;
+  b.innerHTML=extRows.map(function(r,i){
+    return '<tr>'
+      +'<td style="padding:4px 8px"><input value="'+esc(r.desc)+'" placeholder="mis. trucking ke gudang customer" onchange="extRows['+i+'].desc=this.value"></td>'
+      +'<td style="padding:4px 8px"><select onchange="extRows['+i+'].jenis=this.value"><option'+(r.jenis==='Trucking'?' selected':'')+'>Trucking</option><option'+(r.jenis==='Ekspedisi'?' selected':'')+'>Ekspedisi</option><option'+(r.jenis==='Jasa Luar'?' selected':'')+'>Jasa Luar</option><option'+(r.jenis==='Lainnya'?' selected':'')+'>Lainnya</option></select></td>'
+      +'<td style="padding:4px 8px"><input type="number" value="'+esc(r.amt)+'" placeholder="0" onchange="extRows['+i+'].amt=this.value" style="text-align:right"></td>'
+      +'<td style="padding:4px 8px;text-align:center"><button class="btn d xs" onclick="delExt('+i+')">✕</button></td></tr>';
+  }).join('');
+};
+var addExt=function(){extRows.push({desc:'',jenis:'Trucking',amt:''});renderExt();};
+var delExt=function(i){if(extRows.length<=1){extRows=[{desc:'',jenis:'Trucking',amt:''}];}else{extRows.splice(i,1);}renderExt();};
+
+var onMatSrc = function(){
+  const src=el('h_matsrc').value;
+  const isJasa=(src==='CUSTOMER');
+  el('h_jobnature').value=isJasa?'JASA':'PRODUCT';
+  el('matsrcHint').textContent=isJasa
+    ? 'Bahan dari customer → order bersifat JASA (material HPP = 0 + handling).'
+    : 'Bahan dari perusahaan → order bersifat PRODUCT.';
+  el('custMatPanel').style.display=isJasa?'block':'none';
+  onTax();
+}
+var onTax = function(){
+  const isJasa=(el('h_jobnature').value==='JASA');
+  // PPh 23 hanya relevan utk komponen jasa
+  el('h_pph').value=isJasa?'PPh 23 2% (jasa, dipotong customer)':'—';
+}
+
+/* =============================================================================
+ * E12c — FORM STATE (v2 — Tier 2 §3): DRAFT → CONFIRMED → CANCELLED
+ * ============================================================================= */
+let inqState='DRAFT';   // DRAFT | CONFIRMED | CANCELLED
+var applyState = function(){
+  const draft=(inqState==='DRAFT');
+  el('modePill').textContent=inqState;
+  el('modePill').className='pill '+(inqState==='DRAFT'?'new':inqState==='CONFIRMED'?'pri':'draft');
+  // DRAFT: Save+Confirm terlihat, Cancel sembunyi, form editable
+  // CONFIRMED: Save+Confirm sembunyi, Cancel terlihat, form locked
+  el('btnSave').style.display=draft?'':'none';
+  el('btnConfirm').style.display=draft?'':'none';
+  el('btnCancel').style.display=(inqState==='CONFIRMED')?'':'none';
+  // lock semua input di wrap saat tidak draft (kecuali tombol Baru/Buka & Cancel agar user tak terjebak)
+  document.querySelectorAll('.wrap input,.wrap select,.wrap textarea,.wrap button.btn')
+    .forEach(e=>{
+      if(e.id==='findDoc') return;                 // pencarian tetap jalan
+      if(e.getAttribute('onclick')==='resetAll()') return;  // tombol Baru tetap aktif
+      e.disabled=!draft;
+    });
+}
+var confirmInquiry = function(){
+  const pl=collectPayload();
+  const err=validate(pl);
+  if(err){toast('⚠ '+err,false);return;}
+  if(!confirm('Confirm inkuiri? Setelah confirm, data terkunci (read-only). Batalkan hanya lewat Cancel.'))return;
+  inqState='CONFIRMED';   // stat_confirm=1
+  applyState();
+  toast('✅ Inkuiri di-CONFIRM — data terkunci (stat_confirm=1)',true);
+}
+var cancelInquiry = function(){
+  if(!confirm('Batalkan (Cancel) inkuiri ini? Record tetap tersimpan dengan status CANCELLED.'))return;
+  inqState='CANCELLED';   // stat_cancel=1 (hanya bisa setelah confirmed)
+  applyState();
+  toast('✖ Inkuiri CANCELLED (stat_cancel=1)',true);
+}
+
+/* =============================================================================
+ * E13 — INIT
+ * ============================================================================= */
+el('h_date').value=new Date().toISOString().slice(0,10);
+buildPic();
+recalcDeadline();
+el('h_date').addEventListener('change',recalcDeadline);
+
+parts=[newPart(FIRST)];
+renderTier();
+renderParts();
+onMatSrc();      /* v2 — set job_nature awal & panel bahan customer */
+renderTooling(); /* v2 — F6 tooling */
+renderExt();     /* v2 — F13 biaya eksternal */
+applyState();    /* v2 — set tampilan tombol sesuai state DRAFT */
+</script>
+</body>
+</html>

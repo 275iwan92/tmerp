@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  INQUIRY NOTA RECALC  ·  PETA DATA (dokumen internal ringkas per inquiry)
+  READ : i_inquiry (tipe=RECALC), i_inquiry_qty_tier, i_inquiry_part, i_costing (harga)
+  WRITE: — (read-only, output cetak internal)
+  Nota RECALC: hitung ulang harga, spec sama
+================================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Nota Inquiry IQ2607-0042</title>
+<style>
+:root{
+  --ink:#1a1d21; --muted:#6b7280; --line:#d4d8dd; --line2:#eceff2;
+  --accent:#0d5c46; --accent-soft:#eaf3f0; --warn:#8a5a00; --gold:#9a7b18;
+  --danger:#a3241f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#8e959c;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+     font-size:10pt;color:var(--ink);padding:24px 0;
+     -webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.page{width:210mm;min-height:297mm;margin:0 auto 18px;background:#fff;
+      padding:12mm 12mm 18mm;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+
+.bar{width:210mm;margin:0 auto 12px;display:flex;gap:8px;align-items:center}
+.bar button{border:0;border-radius:5px;padding:8px 16px;font-size:9.5pt;font-weight:600;
+            cursor:pointer;font-family:inherit}
+.bar .pr{background:var(--accent);color:#fff}
+.bar .sc{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.bar .info{color:#fff;font-size:8.5pt;margin-left:auto;opacity:.9}
+
+.kop{display:flex;justify-content:space-between;align-items:flex-start;
+     border-bottom:2.5px solid var(--accent);padding-bottom:7px}
+.logo{width:42px;height:42px;border-radius:7px;background:var(--accent);color:#fff;
+      display:flex;align-items:center;justify-content:center;font-weight:700;
+      font-size:14pt;letter-spacing:-1px;flex:0 0 auto}
+.kop-l{display:flex;gap:10px;align-items:center}
+.co-name{font-size:13pt;font-weight:700;letter-spacing:-.3px;line-height:1.1}
+.co-addr{font-size:7.2pt;color:var(--muted);line-height:1.4;margin-top:2px}
+.kop-r{text-align:right}
+.doc-title{font-size:11.5pt;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.doc-no{font-size:14pt;font-weight:700;font-family:Consolas,monospace;
+        letter-spacing:-.5px;margin-top:1px}
+.doc-meta{font-size:7.6pt;color:var(--muted);margin-top:2px;line-height:1.45}
+.badge{display:inline-block;padding:1.5px 7px;border-radius:20px;font-size:6.8pt;
+       font-weight:700;letter-spacing:.6px;vertical-align:2px}
+.b-new{background:var(--accent-soft);color:var(--accent);border:1px solid #b8d8ce}
+.b-recalc{background:#e2e0ff;color:#4b3fa8;border:1px solid #c4bef0}
+.b-revise{background:#ffe0b2;color:#8a4b00;border:1px solid #ffcf8a}
+.b-prospect{background:#fff5e0;color:var(--warn);border:1px solid #f0d9a8}
+.b-cancel{background:#fdeaea;color:var(--danger);border:1px solid #f0bdbb}
+
+.parties{display:grid;grid-template-columns:1.25fr 1fr .85fr;margin-top:8px;
+         border:1px solid var(--line)}
+.party{padding:6px 9px}
+.party+.party{border-left:1px solid var(--line)}
+.party h4{font-size:6.6pt;letter-spacing:1px;color:var(--muted);font-weight:700;margin-bottom:2px}
+.party .nm{font-size:10pt;font-weight:600;line-height:1.25}
+.party .dt{font-size:7.6pt;color:#4b5158;line-height:1.5;margin-top:1px}
+
+.sec{margin-top:10px}
+.sec-h{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.sec-h .n{width:15px;height:15px;border-radius:3px;background:var(--accent);color:#fff;
+          font-size:7.6pt;font-weight:700;display:flex;align-items:center;
+          justify-content:center;flex:0 0 auto}
+.sec-h h3{font-size:8.6pt;font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+.sec-h .rule{flex:1;height:1px;background:var(--line)}
+.sec-h .hint{font-size:7pt;color:var(--muted);font-weight:400;letter-spacing:0}
+
+.pricing{display:grid;grid-template-columns:66mm 1fr;border:1.5px solid var(--accent);
+         page-break-inside:avoid}
+.hero{background:var(--accent);color:#fff;padding:9px 11px;display:flex;
+      flex-direction:column;justify-content:center}
+.hero .lbl{font-size:6.8pt;letter-spacing:1.2px;opacity:.82;font-weight:600}
+.hero .qty{font-size:12pt;font-weight:600;margin-top:1px;line-height:1.15}
+.hero .qty span{font-size:8pt;opacity:.8;font-weight:400}
+.hero .amt{font-size:24pt;font-weight:700;letter-spacing:-1.2px;line-height:1;
+           margin-top:6px;font-variant-numeric:tabular-nums}
+.hero .amt small{font-size:10pt;font-weight:600;letter-spacing:0;opacity:.85}
+.hero .excl{font-size:8pt;opacity:.85;margin-top:3px;font-variant-numeric:tabular-nums}
+.hero .unit{font-size:7.2pt;opacity:.78;margin-top:2px;line-height:1.35}
+.hero .tot{margin-top:7px;padding-top:6px;border-top:1px solid rgba(255,255,255,.3);
+           font-size:8.2pt;line-height:1.45}
+.hero .tot b{font-size:10pt;font-variant-numeric:tabular-nums}
+.hero .dlt{font-size:7.2pt;opacity:.85;display:block;margin-top:1px}
+
+.tiers{display:flex;flex-direction:column}
+table.tt{width:100%;border-collapse:collapse;font-size:8.2pt}
+table.tt th{background:#f5f7f8;color:var(--muted);font-size:6.6pt;letter-spacing:.5px;
+            padding:4px 7px;text-align:right;font-weight:700;border-bottom:1px solid var(--line)}
+table.tt th:first-child{text-align:left}
+table.tt td{padding:4px 7px;border-bottom:1px solid var(--line2);text-align:right;
+            font-variant-numeric:tabular-nums}
+table.tt td:first-child{text-align:left;color:var(--muted);font-size:7.6pt}
+table.tt td.q{font-weight:600;color:var(--ink)}
+table.tt td.p{font-weight:700}
+table.tt tr.cur td{background:var(--accent-soft)}
+table.tt tr.cur td:first-child{color:var(--accent);font-weight:700}
+table.tt tr.best td.p{color:var(--gold)}
+.tier-foot{padding:4px 7px;font-size:6.9pt;color:var(--muted);line-height:1.5;
+           border-top:1px solid var(--line);margin-top:auto}
+
+.nopr{border:1.5px dashed var(--warn);background:#fffbf2;padding:10px 12px;
+      page-break-inside:avoid}
+.nopr .t{font-size:10.5pt;font-weight:700;color:var(--warn)}
+.nopr .d{font-size:8.4pt;color:#5f4a1c;line-height:1.55;margin-top:3px}
+
+.part{border:1px solid var(--line);margin-bottom:6px;page-break-inside:avoid}
+.part-h{background:#f5f7f8;border-bottom:1px solid var(--line);padding:4px 8px;
+        display:flex;justify-content:space-between;align-items:center;gap:8px}
+.part-h .t{font-size:8.8pt;font-weight:700}
+.part-h .t small{font-weight:400;color:var(--muted);font-size:7.6pt}
+.part-h .tag{font-size:6.8pt;background:#fff;border:1px solid var(--line);
+             padding:1px 5px;border-radius:3px;color:#4b5158;font-weight:600;
+             white-space:nowrap;flex:0 0 auto}
+.part-b{display:grid;grid-template-columns:1fr 1fr 34mm}
+.part-col{padding:5px 8px}
+.part-col+.part-col{border-left:1px solid var(--line2)}
+.part-dl{border-left:1px solid var(--line2);padding:4px;display:flex;
+         flex-direction:column;align-items:center;justify-content:center;background:#fcfdfd}
+.part-dl svg{width:100%;height:auto;max-height:26mm}
+.dl-cap{font-size:6pt;color:var(--muted);margin-top:2px;text-align:center;line-height:1.3}
+.dl-none{font-size:6.4pt;color:#aab0b6;text-align:center;line-height:1.4;padding:8px 2px}
+
+table.spec{width:100%;border-collapse:collapse;font-size:7.9pt}
+table.spec td{padding:1.6px 0;vertical-align:top}
+table.spec td.k{color:var(--muted);width:42%;padding-right:5px}
+table.spec td.v{font-weight:600}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.box{border:1px solid var(--line);padding:6px 8px;font-size:7.9pt;line-height:1.55}
+.box h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:3px}
+ol.terms{margin-left:13px;font-size:7.9pt;line-height:1.6}
+ol.terms li{margin-bottom:1px}
+
+.confirm{border:1.5px solid var(--accent);margin-top:10px;page-break-inside:avoid}
+.confirm-h{background:var(--accent);color:#fff;padding:4px 9px;font-size:7.8pt;
+           font-weight:700;letter-spacing:.8px}
+.confirm-b{padding:7px 9px;font-size:8pt;line-height:1.55}
+.sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;text-align:center}
+.sign div{font-size:7.8pt}
+.sign .line{border-bottom:1px solid var(--ink);height:40px;margin-bottom:3px}
+.sign .rol{font-weight:700}
+.sign .sub{font-size:6.8pt;color:var(--muted)}
+
+.foot{position:absolute;bottom:8mm;left:12mm;right:12mm;border-top:1px solid var(--line);
+      padding-top:4px;font-size:6.6pt;color:var(--muted);display:flex;
+      justify-content:space-between;gap:10px}
+
+@media print{
+  body{background:#fff;padding:0}
+  .bar{display:none}
+  .page{box-shadow:none;margin:0;width:auto;min-height:auto;padding:11mm 11mm 16mm}
+  @page{size:A4 portrait;margin:0}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <button class="pr" onclick="window.print()">Cetak / Simpan PDF</button>
+  <button class="sc" onclick="window.close()">Tutup</button>
+  <span class="info">IQ2607-0042 · 3 part · 4 jenjang qty</span>
+</div>
+
+<!-- ================= HALAMAN 1 ================= -->
+<div class="page">
+
+  <!-- KOP -->
+  <div class="kop">
+    <div class="kop-l">
+      <div class="logo">TM</div>
+      <div>
+        <div class="co-name">PT TRIMITRA MANDIRI</div>
+        <div class="co-addr">
+          Kawasan Industri Jababeka Blok C-12, Cikarang, Bekasi 17530<br>
+          Telp (021) 8983-xxxx  ·  sales@trimitra.co.id  ·  NPWP 01.234.567.8-901.000
+        </div>
+      </div>
+    </div>
+    <div class="kop-r">
+      <div class="doc-title">NOTA INQUIRY</div>
+      <div class="doc-no">IQ2607-0042</div>
+      <div class="doc-meta">
+        23 Juli 2026 · Rev. 01
+        <span class="badge b-recalc">RECALC</span>
+        <br>
+        Berlaku s/d 22 Agustus 2026
+      </div>
+    </div>
+  </div>
+
+  <!-- PARA PIHAK -->
+  <div class="parties">
+    <div class="party">
+      <h4>KEPADA YTH.</h4>
+      <div class="nm">PT Sinar Kemasan Nusantara</div>
+      <div class="dt">
+        Jl. Raya Narogong KM 12, Bantargebang, Kota Bekasi<br>
+        UP. Bpk. Andi Wijaya · 0812-3456-7890
+      </div>
+    </div>
+    <div class="party">
+      <h4>PRODUK</h4>
+      <div class="nm">Kemasan Teh Celup Premium</div>
+      <div class="dt">
+        1 set = 1 box + 1 inner tray · 3 part<br>
+        Deadline quotation: 26 Juli 2026
+      </div>
+    </div>
+    <div class="party">
+      <h4>PIC SALES</h4>
+      <div class="nm">Rina Kartika</div>
+      <div class="dt">
+        Sumber: Referral<br>
+        Mata uang: IDR
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 1. HARGA ============ -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">1</span><h3>Penawaran Harga</h3>
+      <span class="rule"></span>
+      <span class="hint">per pcs · IDR · PPN 11%</span>
+    </div>
+
+    <div class="pricing">
+      <div class="hero">
+        <div class="lbl">TIER YANG DIMINTA</div>
+        <div class="qty">50.000 <span>pcs</span></div>
+        <div class="amt"><small>Rp</small> 2.109</div>
+        <div class="excl">excl. PPN &nbsp;Rp 1.900</div>
+        <div class="unit">harga incl. PPN per pcs · 1 set = 1 box + 1 inner tray</div>
+        <div class="tot">
+          Nilai order &nbsp;<b>Rp 105.450.000</b>
+          <span class="dlt">Target customer Rp 2.000 — selisih Rp 100 di bawah target</span>
+        </div>
+      </div>
+
+      <div class="tiers">
+        <table class="tt">
+          <thead>
+            <tr>
+              <th style="width:20%">Jenjang</th>
+              <th>Qty (pcs)</th>
+              <th>Target</th>
+              <th>Harga excl.</th>
+              <th>Harga incl.</th>
+              <th style="width:23%">Nilai Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tier 1</td>
+              <td class="q">10.000</td>
+              <td>2.400</td>
+              <td>2.350</td>
+              <td class="p">2.609</td>
+              <td>26.085.000</td>
+            </tr>
+            <tr>
+              <td>Tier 2</td>
+              <td class="q">25.000</td>
+              <td>2.150</td>
+              <td>2.075</td>
+              <td class="p">2.303</td>
+              <td>57.581.250</td>
+            </tr>
+            <tr class="cur">
+              <td>Tier 3 &#9733;</td>
+              <td class="q">50.000</td>
+              <td>2.000</td>
+              <td>1.900</td>
+              <td class="p">2.109</td>
+              <td>105.450.000</td>
+            </tr>
+            <tr class="best">
+              <td>Tier 4</td>
+              <td class="q">100.000</td>
+              <td>1.750</td>
+              <td>1.680</td>
+              <td class="p">1.865</td>
+              <td>186.480.000</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="tier-foot">
+          &#9733; tier utama yang diminta customer.
+          · <span style="color:var(--gold);font-weight:700">Harga terbaik pada 100.000 pcs</span> — hemat Rp 220/pc (excl. PPN) dibanding tier utama.
+          <br>Harga berbasis spesifikasi Bagian 2. Perubahan material, gramatur, jumlah warna,
+          atau finishing akan mengubah harga.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2. SPESIFIKASI ============ -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">2</span><h3>Spesifikasi Produk</h3>
+      <span class="rule"></span>
+      <span class="hint">dieline ukuran penuh di halaman 2</span>
+    </div>
+
+    <!-- PART 1 -->
+    <div class="part">
+      <div class="part-h">
+        <div class="t">Part 1 — Outer Box <small>/ Reverse Tuck End · ECMA A6420</small></div>
+        <div class="tag">1 pc / set</div>
+      </div>
+      <div class="part-b">
+        <div class="part-col">
+          <table class="spec">
+            <tr><td class="k">Dimensi P×L×T</td><td class="v">65 × 40 × 120 mm</td></tr>
+            <tr><td class="k">Lidah lem</td><td class="v">12 mm</td></tr>
+            <tr><td class="k">Bentangan flat</td><td class="v">222 × 184 mm</td></tr>
+            <tr><td class="k">Luas flat</td><td class="v">0,041 m²</td></tr>
+          </table>
+        </div>
+        <div class="part-col">
+          <table class="spec">
+            <tr><td class="k">Material</td><td class="v">Art Carton 310 gsm</td></tr>
+            <tr><td class="k">Warna</td><td class="v">CMYK+2 PMS <span style="font-weight:400;color:var(--muted)">(6 depan, polos belakang)</span></td></tr>
+            <tr><td class="k">Finishing</td><td class="v">Laminasi doff — depan, full; UV spot — depan, spot 15%</td></tr>
+            <tr><td class="k">Catatan</td><td class="v" style="font-weight:400">Emboss logo di panel depan. Warna korporat PMS 342 C.</td></tr>
+          </table>
+        </div>
+        <div class="part-dl">
+          <div class="dl-mini" data-part="1"></div>
+          <div class="dl-cap">Reverse Tuck End</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PART 2 -->
+    <div class="part">
+      <div class="part-h">
+        <div class="t">Part 2 — Inner Tray <small>/ Straight Tuck End · ECMA A6412</small></div>
+        <div class="tag">1 pc / set</div>
+      </div>
+      <div class="part-b">
+        <div class="part-col">
+          <table class="spec">
+            <tr><td class="k">Dimensi P×L×T</td><td class="v">60 × 36 × 30 mm</td></tr>
+            <tr><td class="k">Bentangan flat</td><td class="v">198 × 96 mm</td></tr>
+            <tr><td class="k">Luas flat</td><td class="v">0,019 m²</td></tr>
+          </table>
+        </div>
+        <div class="part-col">
+          <table class="spec">
+            <tr><td class="k">Material</td><td class="v">Duplex 250 gsm</td></tr>
+            <tr><td class="k">Warna</td><td class="v">1 warna <span style="font-weight:400;color:var(--muted)">(1 depan, polos belakang)</span></td></tr>
+            <tr><td class="k">Finishing</td><td class="v">Varnish WB — depan, full</td></tr>
+          </table>
+        </div>
+        <div class="part-dl">
+          <div class="dl-mini" data-part="2"></div>
+          <div class="dl-cap">Straight Tuck End</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PART 3 -->
+    <div class="part">
+      <div class="part-h">
+        <div class="t">Part 3 — Sleeve <small>/ Open Sleeve · ECMA A9001</small></div>
+        <div class="tag">1 pc / set</div>
+      </div>
+      <div class="part-b">
+        <div class="part-col">
+          <table class="spec">
+            <tr><td class="k">Dimensi P×L×T</td><td class="v">67 × 42 × 45 mm</td></tr>
+            <tr><td class="k">Lidah lem</td><td class="v">10 mm</td></tr>
+            <tr><td class="k">Bentangan flat</td><td class="v">228 × 55 mm</td></tr>
+            <tr><td class="k">Luas flat</td><td class="v">0,013 m²</td></tr>
+          </table>
+        </div>
+        <div class="part-col">
+          <table class="spec">
+            <tr><td class="k">Material</td><td class="v">Art Carton 260 gsm</td></tr>
+            <tr><td class="k">Warna</td><td class="v">CMYK <span style="font-weight:400;color:var(--muted)">(4 depan, polos belakang)</span></td></tr>
+            <tr><td class="k">Finishing</td><td class="v">Laminasi glossy — depan, full</td></tr>
+          </table>
+        </div>
+        <div class="part-dl">
+          <div class="dl-mini" data-part="3"></div>
+          <div class="dl-cap">Open Sleeve</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 3. CATATAN ============ -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">3</span><h3>Catatan</h3><span class="rule"></span></div>
+    <div class="two">
+      <div class="box">
+        <h5>CATATAN SALES</h5>
+        Customer meminta mock-up fisik sebelum mass production. Sampel akan dikirim H+3 setelah nota disetujui. Mohon konfirmasi warna korporat via digital proof.
+      </div>
+      <div class="box">
+        <h5>STATUS LAYOUT / ARTWORK</h5>
+        <b>HAS_LAYOUT</b> — Customer sudah memiliki file layout/artwork.
+        <br><span style="color:var(--muted)">Lampiran: artwork_teh_celup_v3.pdf</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>IQ2607-0042 · PT Sinar Kemasan Nusantara ·
+          dicetak 23/07/2026 14:22 · syarat &amp; konfirmasi di halaman 2</span>
+    <span>Halaman 1 dari 2</span>
+  </div>
+</div>
+
+<!-- ================= HALAMAN 2 ================= -->
+<div class="page">
+
+  <!-- 4. DIELINE BESAR -->
+  <div class="sec" style="margin-top:0">
+    <div class="sec-h"><span class="n">4</span><h3>Dieline Ukuran Penuh</h3>
+      <span class="rule"></span>
+      <span class="hint">skematik, tidak berskala · —— potong · - - - rill/lipat</span>
+    </div>
+    <div class="two">
+      <div class="box" style="padding:9px">
+        <h5>PART 1 — OUTER BOX</h5>
+        <div class="dl-big" data-part="1"></div>
+        <div style="font-size:7.4pt;color:var(--muted);margin-top:4px">
+          Bentangan 222 × 184 mm · Art Carton 310 gsm
+        </div>
+      </div>
+      <div class="box" style="padding:9px">
+        <h5>PART 2 — INNER TRAY</h5>
+        <div class="dl-big" data-part="2"></div>
+        <div style="font-size:7.4pt;color:var(--muted);margin-top:4px">
+          Bentangan 198 × 96 mm · Duplex 250 gsm
+        </div>
+      </div>
+      <div class="box" style="padding:9px">
+        <h5>PART 3 — SLEEVE</h5>
+        <div class="dl-big" data-part="3"></div>
+        <div style="font-size:7.4pt;color:var(--muted);margin-top:4px">
+          Bentangan 228 × 55 mm · Art Carton 260 gsm
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. SYARAT -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">5</span><h3>Syarat &amp; Ketentuan</h3><span class="rule"></span></div>
+    <ol class="terms">
+      <li>Harga berlaku 30 hari sejak tanggal nota ini diterbitkan.</li>
+      <li>Toleransi jumlah pengiriman ±5% dari qty order (standar industri percetakan).</li>
+      <li>Lead time produksi 12–15 hari kerja setelah artwork final &amp; digital proof disetujui.</li>
+      <li>Biaya pisau/matras (die) Rp 900.000 dan biaya plat Rp 90.000 per warna, dibebankan satu kali di order pertama.</li>
+      <li>Pembayaran: 30 hari setelah tanggal faktur (customer terdaftar) / DP 50% untuk order pertama.</li>
+      <li>Harga belum termasuk biaya pengiriman kecuali disebutkan lain.</li>
+      <li>Perubahan spesifikasi setelah nota disetujui dapat mengubah harga dan lead time.</li>
+    </ol>
+  </div>
+
+  <!-- 6. KONFIRMASI -->
+  <div class="confirm">
+    <div class="confirm-h">KONFIRMASI CUSTOMER</div>
+    <div class="confirm-b">
+      Mohon periksa harga (Bagian 1) dan spesifikasi (Bagian 2) pada halaman 1. Bila telah sesuai,
+      tandatangani kolom di bawah dan kirim kembali ke PIC Sales.
+      <b>Bila ada koreksi, tuliskan langsung pada dokumen ini</b> — kami akan terbitkan revisi.
+      <div style="margin-top:6px">
+        <label>&#9744; <b>SESUAI</b> — lanjutkan ke penawaran resmi (quotation), qty tier:
+          &nbsp;&#9744; 10.000 &nbsp; &#9744; 25.000 &nbsp; &#9744; 50.000 &nbsp; &#9744; 100.000
+        </label><br>
+        <label>&#9744; Perlu <b>REVISI</b> — catatan:
+          <span style="border-bottom:1px dotted #999;display:inline-block;width:56%">&nbsp;</span>
+        </label>
+      </div>
+      <div class="sign">
+        <div><div class="line"></div><div class="rol">Customer</div>
+             <div class="sub">Nama jelas, jabatan &amp; stempel</div></div>
+        <div><div class="line"></div><div class="rol">Sales</div>
+             <div class="sub">Rina Kartika</div></div>
+        <div><div class="line"></div><div class="rol">Mengetahui</div>
+             <div class="sub">Sales Manager</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>IQ2607-0042 · Dokumen dibuat otomatis oleh sistem TMSDI —
+          sah tanpa tanda tangan basah pihak penerbit.</span>
+    <span>Halaman 2 dari 2</span>
+  </div>
+</div>
+
+<script>
+var PARTDATA = [
+  {seq:1, fw:222, fh:184, len:65,  wid:40, hgt:120, glue:12, style:"Reverse Tuck End", pcode:"RTE"},
+  {seq:2, fw:198, fh:96,  len:60,  wid:36, hgt:30,  glue:0,  style:"Straight Tuck End", pcode:"STE"},
+  {seq:3, fw:228, fh:55,  len:67,  wid:42, hgt:45,  glue:10, style:"Open Sleeve", pcode:"SLEEVE"}
+];
+
+var buildDieline = function (part, big) {
+    var fw = parseFloat(part.fw) || 0;
+    var fh = parseFloat(part.fh) || 0;
+    if (fw <= 0 || fh <= 0) {
+        return '<div class="dl-none">Dieline belum tersedia<br>(bentangan flat kosong)</div>';
+    }
+
+    var VW = 320, VH = Math.max(120, Math.round(320 * fh / fw));
+    if (VH > 260) { VH = 260; }
+
+    var pad = 18;
+    var bx = pad, by = Math.round(VH * 0.26);
+    var bw = VW - pad * 2, bh = Math.round(VH * 0.48);
+
+    var L = parseFloat(part.len) || 0;
+    var W = parseFloat(part.wid) || 0;
+    var style = (part.style || '') + ' ' + (part.pcode || '');
+    style = style.toUpperCase();
+    var isTuck = (style.indexOf('TUCK') >= 0 || style.indexOf('RTE') >= 0 ||
+                  style.indexOf('STE') >= 0 || style.indexOf('BOX') >= 0);
+
+    var sw = big ? 2.2 : 3.0;
+    var dw = big ? 1.1 : 1.6;
+    var out = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" xmlns="http://www.w3.org/2000/svg" ' +
+              'style="width:100%;height:auto">';
+
+    out += '<g fill="none" stroke="#1a1d21" stroke-width="' + sw + '" stroke-linejoin="round">';
+    out += '<path d="M' + bx + ' ' + by + ' H' + (bx + bw) + ' V' + (by + bh) + ' H' + bx + ' Z"/>';
+
+    var panels = [];
+    if (L > 0 && W > 0) {
+        var tot = (L + W) * 2;
+        panels = [W / tot, L / tot, W / tot, L / tot];
+    } else {
+        panels = [0.25, 0.25, 0.25, 0.25];
+    }
+
+    var xs = [];
+    var acc = bx;
+    for (var pi = 0; pi < panels.length; pi++) {
+        acc += panels[ pi] * bw;
+        xs.push(Math.round(acc));
+    }
+
+    if (isTuck) {
+        var t1 = bx, t2 = xs[0];
+        var th = Math.round(VH * 0.18);
+        out += '<path d="M' + t1 + ' ' + by + ' L' + t1 + ' ' + (by - th) +
+               ' H' + t2 + ' L' + t2 + ' ' + by + '"/>';
+        var b1 = xs[0], b2 = xs[1];
+        out += '<path d="M' + b1 + ' ' + (by + bh) + ' L' + b1 + ' ' + (by + bh + th) +
+               ' H' + b2 + ' L' + b2 + ' ' + (by + bh) + '"/>';
+    }
+    out += '</g>';
+
+    out += '<g stroke="#0d5c46" stroke-width="' + dw + '" stroke-dasharray="' +
+           (big ? '5,3.5' : '6,4') + '" fill="none">';
+    for (var xi = 0; xi < xs.length - 1; xi++) {
+        out += '<path d="M' + xs[ xi] + ' ' + by + ' V' + (by + bh) + '"/>';
+    }
+    if (big) {
+        out += '<path d="M' + bx + ' ' + by + ' H' + (bx + bw) + '"/>';
+        out += '<path d="M' + bx + ' ' + (by + bh) + ' H' + (bx + bw) + '"/>';
+    }
+    out += '</g>';
+
+    if (big && L > 0 && W > 0) {
+        var lbl = [W, L, W, L];
+        var prev = bx;
+        for (var li = 0; li < xs.length; li++) {
+            var mid = Math.round((prev + xs[ li]) / 2);
+            out += '<text x="' + mid + '" y="' + (by + bh / 2 + 4) +
+                   '" font-size="10" text-anchor="middle" fill="#6b7280">' +
+                   Math.round(lbl[ li]) + '</text>';
+            prev = xs[ li];
+        }
+        var gl = parseFloat(part.glue) || 0;
+        if (gl > 0) {
+            out += '<text x="' + (bx + bw - 8) + '" y="' + (by + bh / 2) +
+                   '" font-size="8" text-anchor="middle" fill="#9aa1a8" transform="rotate(-90 ' +
+                   (bx + bw - 8) + ' ' + (by + bh / 2) + ')">lem ' + Math.round(gl) + '</text>';
+        }
+    }
+
+    out += '</svg>';
+    return out;
+};
+
+var renderAll = function () {
+    var mini = document.querySelectorAll('.dl-mini');
+    var bigs = document.querySelectorAll('.dl-big');
+    for (var mi = 0; mi < mini.length; mi++) {
+        var sq = mini[ mi].getAttribute('data-part');
+        for (var pj = 0; pj < PARTDATA.length; pj++) {
+            if (String(PARTDATA[ pj].seq) === String(sq)) {
+                mini[ mi].innerHTML = buildDieline(PARTDATA[ pj], false);
+            }
+        }
+    }
+    for (var bi = 0; bi < bigs.length; bi++) {
+        var sq2 = bigs[ bi].getAttribute('data-part');
+        for (var pk = 0; pk < PARTDATA.length; pk++) {
+            if (String(PARTDATA[ pk].seq) === String(sq2)) {
+                bigs[ bi].innerHTML = buildDieline(PARTDATA[ pk], true);
+            }
+        }
+    }
+};
+
+renderAll();
+</script>
+
+</body>
+</html>

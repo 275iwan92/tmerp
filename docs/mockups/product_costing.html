@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Product Costing (HPP)</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 60px}
+header{background:#2c3e69;color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}
+header .sub{font-size:12px;opacity:.75;font-family:ui-monospace,monospace}
+header .back{margin-left:auto;background:#43508a;color:#cfd6ef;border:none;padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;text-decoration:none}
+.classline{background:#7a1f2b;color:#ffd9de;font-size:11px;text-align:center;padding:4px;font-weight:600;letter-spacing:.4px}
+.wrap{max-width:1180px;margin:18px auto;padding:0 16px}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:8px;margin-bottom:14px;overflow:hidden}
+.card>h3{margin:0;padding:9px 14px;background:#f4f6fa;border-bottom:1px solid #e2e7ee;font-size:13px;color:#2c3e69;display:flex;align-items:center;gap:8px}
+.card>h3 .r{margin-left:auto;font-size:11px;color:#8a94a6;font-weight:400;font-family:ui-monospace,monospace}
+.card .body{padding:14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px}
+.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}
+.f{display:flex;flex-direction:column;gap:3px}
+.f.col2{grid-column:span 2}.f.col3{grid-column:span 3}.f.col4{grid-column:span 4}
+label{font-size:11px;color:#667;font-weight:600}
+input,select,textarea{padding:6px 8px;border:1px solid #c7cfda;border-radius:5px;font-size:13px;background:#fff;width:100%;font-family:inherit}
+input:read-only,select:disabled,input:disabled,textarea:read-only{background:#eef0f3;color:#667;cursor:not-allowed}
+input.calc{background:#f0f7f4;border-color:#c6e5d5;color:#0e5c38;font-family:ui-monospace,monospace;font-weight:600}
+.toolbar{display:flex;gap:8px;padding:10px 14px;background:#fbfcfe;border-bottom:1px solid #e2e7ee;align-items:center;flex-wrap:wrap}
+.btn{border:none;padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;font-family:inherit}
+.btn.p{background:#2c7be5;color:#fff}.btn.g{background:#e6eaf0;color:#333}.btn.s{background:#22a06b;color:#fff}
+.btn.d{background:#e55353;color:#fff}.btn.o{background:#fff;color:#2c7be5;border:1px solid #2c7be5}
+.btn.xs{padding:3px 9px;font-size:11px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{border:1px solid #e2e7ee;padding:6px 8px;text-align:left}
+th{background:#f4f6fa;color:#556;font-weight:600}
+td.num,th.num{text-align:right;font-family:ui-monospace,monospace}
+td input,td select{padding:4px 6px;font-size:12px}
+.pill{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block}
+.pill.new{background:#d8ecff;color:#1560a8}.pill.ok{background:#d6f2e2;color:#177a4b}
+.pill.pri{background:#ffe0b2;color:#8a4b00}.pill.draft{background:#e6eaf0;color:#556}
+.pill.calc{background:#e0edff;color:#1560a8}.pill.pend{background:#fff0d6;color:#8a4b00}
+.pill.pub{background:#d6f2e2;color:#177a4b}.pill.fail{background:#fdecec;color:#a12626}
+.hint{font-size:10.5px;color:#8a94a6;margin-top:2px}
+.sec-title{font-size:11px;font-weight:700;color:#556;text-transform:uppercase;letter-spacing:.4px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid #e8ecf2;display:flex;align-items:center;gap:8px}
+.sec-title:first-child{margin-top:0}
+.sec-title .tag{font-size:9.5px;padding:1px 7px;border-radius:8px;font-weight:700;letter-spacing:.3px}
+.tag.mat{background:#e7f0ff;color:#1560a8}.tag.proc{background:#fff2e0;color:#8a4b00}
+.tag.tool{background:#f0e7ff;color:#5a2b8a}.tag.coat{background:#e0f5ee;color:#0e6b47}
+.note{font-size:12px;padding:9px 12px;border-radius:6px;margin-bottom:12px;line-height:1.5}
+.note.y{background:#fff7db;border:1px solid #e7d48a;color:#6b5605}
+.note.b{background:#e8f4ff;border:1px solid #b8d9f5;color:#1560a8}
+.note.g{background:#f0f7f4;border:1px solid #c6e5d5;color:#177a4b}
+.note.r{background:#fdecec;border:1px solid #f3b8b8;color:#a12626}
+/* part card */
+.partcard{border:1px solid #d9dfe8;border-radius:8px;margin-bottom:12px;overflow:hidden}
+.parthd{display:flex;align-items:center;gap:10px;padding:9px 13px;background:#eef2f8;border-bottom:1px solid #dde3ec;cursor:pointer}
+.parthd .pnm{font-weight:700;color:#2c3e69;font-size:13px}
+.parthd .pmeta{font-size:11px;color:#8a94a6;font-family:ui-monospace,monospace}
+.parthd .ppc{margin-left:auto;font-size:12px;font-weight:700;color:#0e5c38;font-family:ui-monospace,monospace}
+.parthd .toggle{color:#8a94a6;font-size:12px;width:16px;text-align:center}
+.partbody{padding:13px}
+.partbody.collapsed{display:none}
+/* bucket total strip inside part */
+.bucketrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.bkt{flex:1;min-width:120px;background:#f8fafc;border:1px solid #e2e7ee;border-radius:7px;padding:8px 10px}
+.bkt .bl{font-size:10px;color:#8a94a6;font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.bkt .bv{font-size:15px;font-weight:700;color:#2c3e69;font-family:ui-monospace,monospace;margin-top:2px}
+.bkt.sum{background:#eef4ff;border-color:#c3d8f5}.bkt.sum .bv{color:#1560a8}
+/* engine result ladder */
+.ladder{background:#fff;border:1px solid #d9dfe8;border-radius:8px;overflow:hidden}
+.ladder .lr{display:flex;align-items:center;gap:12px;padding:9px 14px;border-bottom:1px solid #eef1f5;font-size:13px}
+.ladder .lr:last-child{border-bottom:none}
+.ladder .lr .op{font-size:11px;color:#8a94a6;font-family:ui-monospace,monospace;width:150px;flex-shrink:0}
+.ladder .lr .ll{flex:1;color:#445;font-weight:600}
+.ladder .lr .lv{font-family:ui-monospace,monospace;font-weight:700;color:#2c3e69;font-size:14px;text-align:right;min-width:120px}
+.ladder .lr.step-hpp{background:#f8fafc}
+.ladder .lr.step-fin{background:#f0f7f4}
+.ladder .lr.step-fin .lv{color:#0e5c38;font-size:16px}
+.ladder .lr.excl .lv{color:#1560a8}
+/* mini formula tooltip */
+.fx{font-size:10px;color:#8a94a6;font-family:ui-monospace,monospace;font-style:italic}
+/* margin/tolerance param panel */
+.parampanel{background:#fbf9f4;border:1px solid #e8ddc4;border-radius:8px;padding:12px}
+.parampanel .ph{font-size:11px;font-weight:700;color:#8a5a00;text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+/* tier margin table */
+.tiertbl td input{width:70px}
+.tiertbl .primary{background:#fff8ec}
+/* toast */
+.toast{position:fixed;right:18px;bottom:18px;z-index:200;max-width:360px;padding:12px 16px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(20,26,40,.2);display:none}
+.toast.on{display:block}
+.toast.ok{background:#e6f7ef;border:1px solid #a9dfc4;color:#177a4b}
+.toast.err{background:#fdecec;border:1px solid #f3b8b8;color:#a12626}
+/* sticky action bar */
+.actionbar{position:sticky;bottom:0;z-index:40;background:#fff;border-top:1px solid #d9dfe8;padding:11px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 -4px 14px rgba(20,26,40,.06)}
+.actionbar .abhint{font-size:11.5px;color:#8a94a6;max-width:460px;line-height:1.4}
+.actionbar .sp{margin-left:auto}
+.statusline{display:flex;align-items:center;gap:8px;font-size:12px;color:#556}
+.coating-tbl input{width:auto}
+.addlayer{font-size:11px;color:#2c7be5;cursor:pointer;font-weight:600;padding:4px 0;display:inline-block}
+.addlayer:hover{text-decoration:underline}
+.del{color:#e55353;cursor:pointer;font-weight:700;font-size:14px}
+@media (max-width:980px){.grid{grid-template-columns:repeat(2,1fr)}.grid.three{grid-template-columns:repeat(2,1fr)}.f.col3,.f.col4{grid-column:span 2}.ladder .lr .op{display:none}}
+@media (max-width:680px){.grid,.grid.two,.grid.three{grid-template-columns:1fr}.f.col2,.f.col3,.f.col4{grid-column:span 1}header{flex-wrap:wrap;gap:8px}header .back{margin-left:0}.bucketrow{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="classline">🔒 COSTING ROOM · SISI A — Rahasia Dagang (Costing Officer + Direksi). Sales BUTA harga sampai Direksi approve.</div>
+<header>
+  <b>🧮 Product Costing — HPP</b>
+  <span class="pill new" id="hdrType">NEW</span>
+  <span class="pill draft" id="hdrStat">DRAFT</span>
+  <span class="sub" id="hdrDoc">HPP2607-DRAFT · dari IQ2607-0148</span>
+  <a class="back" href="#">← Inquiry</a>
+</header>
+
+<div class="wrap">
+
+  <div class="note b">
+    👤 <b>Costing Officer</b> — engine menghitung HPP <b>per tier qty</b>. Bahan/proses/coating konstan lintas tier;
+    hanya tooling &amp; harga akhir yang berbeda per tier. Isi part → <b>Hitung</b> → set margin/toleransi → <b>Submit ke Direksi</b>.
+  </div>
+
+  <!-- ===== HEADER COSTING ===== -->
+  <div class="card">
+    <div class="toolbar">
+      <button class="btn g" onclick="toast('Dokumen costing baru','ok')">＋ Baru</button>
+      <button class="btn p" onclick="toast('Draft costing tersimpan','ok')">💾 Simpan draft</button>
+      <span style="width:1px;height:22px;background:#dde3ec;margin:0 4px"></span>
+      <span class="statusline">Sumber: <b>Inquiry IQ2607-0148</b> · Customer <b>PT. Sari Rasa</b> · Produk <b>Inner Box Snack 12×8×5</b></span>
+    </div>
+    <div class="body">
+      <div class="sec-title">Identitas Dokumen</div>
+      <div class="grid">
+        <div class="f"><label>No. HPP</label><input value="HPP2607-DRAFT" readonly></div>
+        <div class="f"><label>Tanggal</label><input type="date" value="2026-07-31"></div>
+        <div class="f"><label>Tipe kalkulasi</label>
+          <select id="calcType" onchange="onType()"><option value="NEW">NEW — Produk baru</option><option value="RECALC">RECALC — Hitung ulang (spec tetap)</option><option value="REVISE">REVISE — Ubah spec</option></select>
+          <span class="hint">Diset sekali, tak berubah. RECALC/REVISE wajib pilih produk induk.</span>
+        </div>
+        <div class="f"><label>Revisi ke-</label><input value="0" readonly></div>
+        <div class="f col2"><label>Customer / calon</label><input value="PT. Sari Rasa (calon)" readonly></div>
+        <div class="f col2"><label>Produk</label><input value="Inner Box Snack 12×8×5" readonly></div>
+        <div class="f"><label>Konfigurasi part</label><select disabled><option>2 Part — Inner + Label</option></select></div>
+        <div class="f"><label>Dim P×L×T (mm)</label><input value="120 × 80 × 50" readonly></div>
+        <div class="f"><label>Lidah lem (mm)</label><input value="15" readonly></div>
+        <div class="f col3"><label>Catatan costing</label><input placeholder="Asumsi khusus, sumber harga, dll…"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TIER SELECTOR ===== -->
+  <div class="card">
+    <h3>📊 Tier Qty — engine hitung per tier <span class="r">tier UTAMA = acuan quotation</span></h3>
+    <div class="body">
+      <p class="hint" style="margin-bottom:8px">Breakpoint dari input Sales (bukan m_product.qty_limit). Pilih tier yang sedang dihitung; hasil di-snapshot per tier.</p>
+      <table class="tiertbl">
+        <thead><tr><th style="width:36px">#</th><th class="num">Qty (pcs)</th><th style="width:70px;text-align:center">UTAMA</th><th style="width:110px;text-align:center">Sedang dihitung</th><th style="text-align:right">HPP/pc (excl)</th><th style="text-align:right">Harga/pc (excl)</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="num">5.000</td><td style="text-align:center">○</td><td style="text-align:center"><input type="radio" name="activeTier"></td><td class="num" style="color:#8a94a6">—</td><td class="num" style="color:#8a94a6">—</td></tr>
+          <tr class="primary"><td class="num">2</td><td class="num">10.000</td><td style="text-align:center"><span class="pill pri">UTAMA</span></td><td style="text-align:center"><input type="radio" name="activeTier" checked></td><td class="num" id="tierHpp">—</td><td class="num" id="tierPrice">—</td></tr>
+          <tr><td class="num">3</td><td class="num">20.000</td><td style="text-align:center">○</td><td style="text-align:center"><input type="radio" name="activeTier"></td><td class="num" style="color:#8a94a6">—</td><td class="num" style="color:#8a94a6">—</td></tr>
+        </tbody>
+      </table>
+      <p class="hint" style="margin-top:6px">Menghitung tier: <b>10.000 pcs (UTAMA)</b>. Margin boleh beda antar tier — qty besar bisa ditipiskan.</p>
+    </div>
+  </div>
+
+  <!-- ===== PART 1 ===== -->
+  <div class="card">
+    <h3>🧩 Part &amp; Kalkulasi HPP <span class="r">i_inquiry_costing_part · i = input, c = hasil</span></h3>
+    <div class="body">
+
+      <div class="partcard">
+        <div class="parthd" onclick="tog(this)">
+          <span class="toggle">▾</span>
+          <span class="pnm">Part 1 — Inner Box</span>
+          <span class="pmeta">DC · 4/4 warna · Art Carton 310gsm</span>
+          <span class="ppc">HPP/pc: Rp 612,40</span>
+        </div>
+        <div class="partbody">
+
+          <div class="sec-title"><span class="tag mat">MATERIAL</span> Bahan &amp; ukuran</div>
+          <div class="grid">
+            <div class="f"><label>Jenis part</label><select><option>DC (Die-Cut)</option><option>DC+SF</option><option>DC+SHEET</option><option>KRAFT</option><option>SHEET</option></select></div>
+            <div class="f"><label>Gramatur / kertas</label><select><option>Art Carton 310 gsm</option><option>Duplex 350 gsm</option></select></div>
+            <div class="f"><label>Plano P × L (cm)</label><input value="79 × 109"></div>
+            <div class="f"><label>Cut / plano</label><input value="4" type="number"></div>
+            <div class="f"><label>Isi per LB</label><input value="2" type="number"></div>
+            <div class="f"><label>Jumlah warna</label><input value="4" type="number"></div>
+            <div class="f"><label>DC% override</label><input placeholder="auto dari gramatur"></div>
+            <div class="f"><label class="calc-lbl">c_paper_cost/pc</label><input class="calc" value="Rp 214,80" readonly></div>
+          </div>
+
+          <div class="sec-title"><span class="tag coat">COATING</span> Layer coating (multi, berurutan) <span class="fx" style="margin-left:auto">COATING dulu → baru laminasi</span></div>
+          <table class="coating-tbl">
+            <thead><tr><th style="width:40%">Jenis coating</th><th class="num">Index</th><th style="width:130px">Uk cetak (P×L cm)</th><th class="num">cost/pc</th><th style="width:36px"></th></tr></thead>
+            <tbody>
+              <tr><td>Varnish WB (1 sisi)</td><td class="num">0,0180</td><td>39,5 × 27,5</td><td class="num">Rp 9,78</td><td><span class="del" onclick="toast('Layer dihapus','ok')">✕</span></td></tr>
+              <tr><td>UV Spot</td><td class="num">0,0240</td><td>39,5 × 27,5</td><td class="num">Rp 13,04</td><td><span class="del" onclick="toast('Layer dihapus','ok')">✕</span></td></tr>
+            </tbody>
+            <tfoot><tr><td colspan="3" style="text-align:right;font-weight:600;color:#556">c_total_coating/pc</td><td class="num" style="font-weight:700;color:#0e5c38">Rp 22,82</td><td></td></tr></tfoot>
+          </table>
+          <span class="addlayer" onclick="toast('Tambah layer coating','ok')">＋ Tambah layer coating</span>
+
+          <div class="sec-title"><span class="tag proc">PROSES</span> Ongkos proses (per pcs, Rp)</div>
+          <div class="grid three">
+            <div class="f"><label>Cetak / RIM</label><input value="120000"></div>
+            <div class="f"><label>Plong / LB</label><input value="800"></div>
+            <div class="f"><label>Lem / pc</label><input value="45"></div>
+            <div class="f"><label>Laminasi / pc</label><input value="0"></div>
+            <div class="f"><label>Kupas / pc</label><input value="12"></div>
+            <div class="f"><label>QC + Packing / pc</label><input value="20"></div>
+            <div class="f col3"><label class="calc-lbl">c_process_cost/pc</label><input class="calc" value="Rp 318,90" readonly></div>
+          </div>
+
+          <div class="sec-title"><span class="tag tool">TOOLING</span> Film · Plate · Pisau (amortisasi per pcs)</div>
+          <div class="grid">
+            <div class="f"><label>Film faktor</label><input value="0,25"></div>
+            <div class="f"><label>Plate / warna</label><input value="90000"></div>
+            <div class="f"><label>Pisau rate</label><input value="900000"></div>
+            <div class="f"><label>Pisau faktor</label><input value="0,25"></div>
+            <div class="f"><label class="calc-lbl">c_film/pc</label><input class="calc" value="Rp 18,20" readonly></div>
+            <div class="f"><label class="calc-lbl">c_plate/pc</label><input class="calc" value="Rp 18,00" readonly></div>
+            <div class="f"><label class="calc-lbl">c_knife/pc</label><input class="calc" value="Rp 19,68" readonly></div>
+            <div class="f"><label class="calc-lbl">c_tooling/pc</label><input class="calc" value="Rp 55,88" readonly></div>
+          </div>
+
+          <div class="bucketrow">
+            <div class="bkt"><div class="bl">Material</div><div class="bv">214,80</div></div>
+            <div class="bkt"><div class="bl">Proses</div><div class="bv">318,90</div></div>
+            <div class="bkt"><div class="bl">Coating</div><div class="bv">22,82</div></div>
+            <div class="bkt"><div class="bl">Tooling</div><div class="bv">55,88</div></div>
+            <div class="bkt sum"><div class="bl">HPP/pc part</div><div class="bv">612,40</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PART 2 collapsed -->
+      <div class="partcard">
+        <div class="parthd" onclick="tog(this)">
+          <span class="toggle">▸</span>
+          <span class="pnm">Part 2 — Label</span>
+          <span class="pmeta">SHEET · 4/0 warna · Sticker Chromo</span>
+          <span class="ppc">HPP/pc: Rp 87,60</span>
+        </div>
+        <div class="partbody collapsed">
+          <div class="note y" style="margin:0">Klik untuk mengembangkan detail Part 2. Struktur identik: Material → Coating → Proses → Tooling.</div>
+        </div>
+      </div>
+
+      <button class="btn o" onclick="toast('Part baru ditambahkan','ok')">＋ Tambah part</button>
+    </div>
+  </div>
+
+  <!-- ===== ENGINE + MARGIN ===== -->
+  <div class="card">
+    <h3>⚙️ Engine Kalkulasi — HPP → Harga <span class="r">tier UTAMA · 10.000 pcs</span></h3>
+    <div class="body">
+      <div class="grid two" style="align-items:start">
+
+        <div>
+          <div class="parampanel">
+            <div class="ph">📐 Parameter harga <span class="fx">di-snapshot saat publish</span></div>
+            <div class="grid two" style="gap:8px 10px">
+              <div class="f"><label>Toleransi produksi %</label><input value="3,0"></div>
+              <div class="f"><label>Rounding</label><select><option>NEAREST</option><option>UP</option><option>DOWN</option></select></div>
+              <div class="f"><label>Margin %</label><input value="30,0"></div>
+              <div class="f"><label>Step rounding</label><input value="10"></div>
+              <div class="f"><label>PPN</label><select><option>Include 11%</option><option>Exclude</option></select></div>
+              <div class="f"><label>Currency</label><input value="IDR" readonly></div>
+            </div>
+            <p class="hint" style="margin-top:8px">Margin = <b>mark-up on price</b>: HPP ÷ (1−margin%). 30% pada 700 → 700÷0,70 = 1.000.</p>
+          </div>
+          <button class="btn s" style="width:100%;margin-top:10px;padding:10px" onclick="runEngine()">▶ Hitung HPP tier ini</button>
+        </div>
+
+        <div class="ladder" id="ladder">
+          <div class="lr step-hpp"><span class="op">Σ mat+proc+fin</span><span class="ll">Total HPP / pc</span><span class="lv" id="lHpp">Rp 700,00</span></div>
+          <div class="lr"><span class="op">× (1 + 3%)</span><span class="ll">+ Toleransi produksi</span><span class="lv" id="lTol">Rp 721,00</span></div>
+          <div class="lr"><span class="op">round NEAREST 10</span><span class="ll">Pembulatan</span><span class="lv" id="lRnd">Rp 720,00</span></div>
+          <div class="lr excl"><span class="op">÷ (1 − 30%)</span><span class="ll">After margin (harga jual excl PPN)</span><span class="lv" id="lMrg">Rp 1.028,57</span></div>
+          <div class="lr"><span class="op">× (1 + 11%)</span><span class="ll">After PPN (incl)</span><span class="lv" id="lPpn">Rp 1.141,71</span></div>
+          <div class="lr step-fin"><span class="op">= price_per_pcs</span><span class="ll">Harga jual acuan quotation</span><span class="lv" id="lFin">Rp 1.028,57</span></div>
+        </div>
+
+      </div>
+      <div class="note g" id="engineNote" style="margin-top:12px;margin-bottom:0">
+        ✔ Kalkulasi berhasil · <b>doc_status = CALCULATED</b> · published_flag = 0 (Sales belum lihat). Ulang untuk tier 5.000 &amp; 20.000 sebelum submit.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== ACTION BAR ===== -->
+<div class="actionbar">
+  <span class="pill calc" id="barStat">CALCULATED</span>
+  <span class="abhint" id="barHint">Sudah dihitung untuk tier UTAMA. Submit ke Direksi untuk approval — approve = publish harga ke Sales (Sisi B terbuka).</span>
+  <span class="sp"></span>
+  <button class="btn d" onclick="toast('Butuh alasan pembatalan','err')">Batalkan</button>
+  <button class="btn s" id="btnSubmit" onclick="submitDireksi()">Submit ke Direksi →</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function tog(el){
+  var b=el.parentElement.querySelector('.partbody');
+  var t=el.querySelector('.toggle');
+  b.classList.toggle('collapsed');
+  t.textContent=b.classList.contains('collapsed')?'▸':'▾';
+}
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast on '+(type||'ok');
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('on')},2600);
+}
+function onType(){
+  var v=document.getElementById('calcType').value;
+  var p=document.getElementById('hdrType');
+  p.textContent=v;p.className='pill '+(v==='NEW'?'new':'pri');
+  toast('Tipe: '+v+(v==='NEW'?' — imposisi baru wajib':' — dari m_product'),'ok');
+}
+function runEngine(){
+  // demo: nilai sudah terisi; hanya sinkronkan tier & status
+  document.getElementById('tierHpp').textContent='Rp 700,00';
+  document.getElementById('tierPrice').textContent='Rp 1.028,57';
+  document.getElementById('barStat').textContent='CALCULATED';
+  document.getElementById('barStat').className='pill calc';
+  document.getElementById('hdrStat').textContent='CALCULATED';
+  document.getElementById('hdrStat').className='pill calc';
+  toast('HPP tier UTAMA dihitung: Rp 1.028,57 /pc (excl PPN)','ok');
+}
+function submitDireksi(){
+  document.getElementById('barStat').textContent='PENDING_APPROVAL';
+  document.getElementById('barStat').className='pill pend';
+  document.getElementById('hdrStat').textContent='PENDING';
+  document.getElementById('hdrStat').className='pill pend';
+  document.getElementById('barHint').textContent='Menunggu approval Direksi. Harga masih terkunci dari Sales sampai di-publish.';
+  document.getElementById('btnSubmit').disabled=true;
+  document.getElementById('engineNote').className='note b';
+  document.getElementById('engineNote').innerHTML='⏳ Terkirim ke Direksi · <b>doc_status = PENDING_APPROVAL</b>. Direksi meninjau margin/toleransi tiap tier lalu approve = publish.';
+  toast('Terkirim ke Direksi untuk approval','ok');
+}
+</script>
+</body>
+</html>

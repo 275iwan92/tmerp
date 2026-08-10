@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masuk — TELASIH MAKMUR ERP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root{--navy:#1f2742;--navy-2:#2c3860;--bg:#eef1f6;--border:#e3e7f0;--ink:#3a4568;--ink-strong:#2f3a5e;--muted:#9aa3bd;--accent:#2f6fed;--accent-2:#255bd4;--danger:#d0453f;--pw:15vw}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden}
+  body.resizing{user-select:none;cursor:col-resize}
+  .wrap{display:flex;height:100vh}
+
+  /* Hero (mengisi sisa, ~85%) */
+  .hero{flex:1;position:relative;overflow:hidden;background:linear-gradient(150deg,var(--navy),var(--navy-2));min-width:0}
+  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s}
+  .hero img.on{opacity:1}
+  .hero .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,25,46,.55),rgba(18,25,46,.1) 34%,rgba(18,25,46,.8))}
+  .hero .brand{position:absolute;top:26px;left:32px;display:flex;align-items:center;gap:12px;color:#fff;z-index:2}
+  .logo-badge{width:42px;height:42px;border-radius:12px;background:conic-gradient(from 200deg,#ff5f6d,#ffc371,#2f6fed,#8a5cf6,#ff5f6d)}
+  .brand b{font-size:18px;letter-spacing:.4px;display:block;line-height:1.1}
+  .brand span{font-size:10px;letter-spacing:2px;color:#b7c0dd;text-transform:uppercase}
+  .clock{position:absolute;top:28px;right:32px;text-align:right;color:#dbe1f2;z-index:2}
+  .clock .t{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px}
+  .clock .d{font-size:13px;color:#aeb7d6;margin-top:2px;text-transform:capitalize}
+  .quote{position:absolute;left:36px;right:36px;bottom:36px;color:#fff;z-index:2}
+  .quote .qi{font-size:34px;color:rgba(255,255,255,.35);font-family:Georgia,serif;line-height:1}
+  .quote .q{font-size:21px;font-style:italic;line-height:1.55;max-width:620px;margin-top:4px}
+  .quote .a{margin-top:10px;color:#c7cfe8;font-weight:600;font-size:14px}
+  .quote .a::before{content:"— "}
+
+  /* Grip pelebar */
+  .grip{width:8px;background:var(--border);cursor:col-resize;flex-shrink:0;position:relative;transition:background .15s}
+  .grip:hover{background:#cdd4e4}
+  .grip::before{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:3px;height:36px;border-radius:3px;background:#aeb6ce}
+
+  /* Panel login (default 15%, bisa 15%–40%) */
+  .panel{width:var(--pw);min-width:240px;max-width:40vw;flex-shrink:0;display:flex;flex-direction:column;padding:18px 22px 26px;overflow-y:auto}
+  .langbar{display:flex;justify-content:flex-end;gap:7px}
+  .flag{background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:5px 10px;font-size:16px;cursor:pointer;line-height:1}
+  .flag.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,111,237,.12)}
+  .formwrap{flex:1;display:flex;align-items:center;justify-content:center}
+  .card{width:100%;max-width:340px}
+  .card h2{font-size:23px;color:var(--ink-strong);font-weight:700;margin-bottom:5px}
+  .card .sub{color:var(--muted);font-size:13.5px;margin-bottom:24px;line-height:1.5}
+  .alert{display:none;background:#fdeceb;color:var(--danger);border:1px solid #f6cfcd;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:16px}
+  .alert.show{display:block}
+  .field{margin-bottom:15px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+  .ig{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:9px;background:#fff;transition:border-color .15s,box-shadow .15s}
+  .ig:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,111,237,.12)}
+  .ig .fa-solid{color:var(--muted);padding:0 11px;font-size:13px}
+  .ig input{flex:1;min-width:0;border:none;outline:none;background:none;padding:11px 10px 11px 0;font-size:14px;color:var(--ink-strong)}
+  .ig .eye{background:none;border:none;color:var(--muted);cursor:pointer;padding:0 12px}
+  .row{display:flex;justify-content:flex-end;margin:-2px 0 20px}
+  .row a{color:var(--accent);text-decoration:none;font-weight:600;font-size:13px}
+  .row a:hover{text-decoration:underline}
+  .btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:12px;font-size:15px;font-weight:700;cursor:pointer}
+  .btn:hover{background:var(--accent-2)}
+  .divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:20px 0}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--border)}
+  .reg{text-align:center;font-size:13.5px;color:var(--ink)}
+  .reg a{color:var(--accent);text-decoration:none;font-weight:700}
+  .reg a:hover{text-decoration:underline}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#2f3a5e;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .25s;z-index:99}
+  .toast.show{opacity:1}
+  @media(max-width:860px){.hero,.grip{display:none}.panel{width:100%;max-width:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <img id="heroImg" alt="">
+    <div class="veil"></div>
+    <div class="brand"><span class="logo-badge"></span><div><b>TELASIH MAKMUR</b><span>packaging solution</span></div></div>
+    <div class="clock"><div class="t" id="ck">--:--:--</div><div class="d" id="cd">—</div></div>
+    <div class="quote"><div class="qi">&#8220;</div><div class="q" id="qText">—</div><div class="a" id="qAuthor">—</div></div>
+  </div>
+
+  <div class="grip" id="grip" title="Tarik untuk melebarkan"></div>
+
+  <div class="panel" id="panel">
+    <div class="langbar">
+      <button class="flag active" data-lang="id" title="Bahasa Indonesia">🇮🇩</button>
+      <button class="flag" data-lang="en" title="English">🇬🇧</button>
+    </div>
+    <div class="formwrap">
+      <div class="card">
+        <h2 data-i18n="heading">Masuk</h2>
+        <p class="sub" data-i18n="sub">Gunakan akun terdaftar untuk mengakses aplikasi.</p>
+        <div class="alert" id="alert"></div>
+        <div class="field">
+          <label data-i18n="l_login">Username atau email</label>
+          <div class="ig" id="wrapU"><i class="fa-solid fa-user"></i><input id="user" autocomplete="username"></div>
+        </div>
+        <div class="field">
+          <label data-i18n="l_pass">Password</label>
+          <div class="ig" id="wrapP"><i class="fa-solid fa-lock"></i><input id="pass" type="password" autocomplete="current-password"><button class="eye" id="eye" type="button"><i class="fa-solid fa-eye"></i></button></div>
+        </div>
+        <div class="row"><a href="forgot-password.html" id="forgot" data-i18n="forgot">Lupa password?</a></div>
+        <button class="btn" id="masuk" data-i18n="btn">Masuk</button>
+        <div class="divider"><span data-i18n="or">atau</span></div>
+        <div class="reg"><span data-i18n="no_acc">Belum punya akun?</span> <a href="register.html" id="regLink" data-i18n="reg">Daftar</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const T={
+ id:{heading:'Masuk',sub:'Gunakan akun terdaftar untuk mengakses aplikasi.',l_login:'Username atau email',l_pass:'Password',forgot:'Lupa password?',btn:'Masuk',or:'atau',no_acc:'Belum punya akun?',reg:'Daftar',err_empty:'Isi username/email dan password.',err_wrong:'Username atau password salah.'},
+ en:{heading:'Sign in',sub:'Use your registered account to access the app.',l_login:'Username or email',l_pass:'Password',forgot:'Forgot password?',btn:'Sign in',or:'or',no_acc:"Don't have an account?",reg:'Register',err_empty:'Enter your username/email and password.',err_wrong:'Incorrect username or password.'}
+};
+let lang=(new URLSearchParams(location.search).get('lang'))||'id';
+function applyLang(){document.documentElement.lang=lang;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[lang][k])el.textContent=T[lang][k];});
+  document.querySelectorAll('.flag').forEach(f=>f.classList.toggle('active',f.dataset.lang===lang));
+  document.getElementById('forgot').href='forgot-password.html?lang='+lang;
+  document.getElementById('regLink').href='register.html?lang='+lang;tick();}
+document.querySelectorAll('.flag').forEach(f=>f.addEventListener('click',()=>{lang=f.dataset.lang;applyLang();}));
+
+function tick(){const now=new Date(),loc=lang==='id'?'id-ID':'en-US';
+  document.getElementById('ck').textContent=now.toLocaleTimeString(loc,{hour12:false});
+  document.getElementById('cd').textContent=now.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
+setInterval(tick,1000);
+
+// Hero image — MOCKUP: 2 contoh JPEG offset printing (Wikimedia Commons, lisensi bebas).
+// PRODUKSI: ambil dari TABEL  ->  sys_login_hero
+//   SELECT image_url FROM sys_login_hero WHERE is_active=1 ORDER BY RAND() LIMIT 1;
+//   CREATE TABLE sys_login_hero (id INT AUTO_INCREMENT PRIMARY KEY, image_url VARCHAR(500) NOT NULL,
+//     caption VARCHAR(200) NULL, sort_order INT DEFAULT 0, is_active TINYINT(1) DEFAULT 1);
+const HERO=[
+  'https://upload.wikimedia.org/wikipedia/commons/e/ea/Offset_press_4_color.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/e/ed/Offset_printing_press.jpg'
+];
+(function(){const img=document.getElementById('heroImg');img.onload=()=>img.classList.add('on');img.src=HERO[Math.floor(Math.random()*HERO.length)];})();
+// Quote acak — PRODUKSI: SELECT quote_text, author FROM sys_quotes WHERE is_active=1 ORDER BY RAND() LIMIT 1;
+const QUOTES=[{t:'Cara memulai adalah berhenti bicara dan mulai melakukan.',a:'Walt Disney'},{t:'Kesuksesan adalah hasil dari persiapan, kerja keras, dan belajar dari kegagalan.',a:'Colin Powell'},{t:'Disiplin adalah jembatan antara tujuan dan pencapaian.',a:'Jim Rohn'},{t:'Fokus pada progres, bukan kesempurnaan.',a:'Anonim'}];
+(function(){const q=QUOTES[Math.floor(Math.random()*QUOTES.length)];document.getElementById('qText').textContent=q.t;document.getElementById('qAuthor').textContent=q.a;})();
+
+// ---- Grip: lebarkan panel 15%–40% ----
+const grip=document.getElementById('grip'),panel=document.getElementById('panel');
+let dragging=false;
+grip.addEventListener('mousedown',e=>{dragging=true;document.body.classList.add('resizing');e.preventDefault();});
+window.addEventListener('mousemove',e=>{
+  if(!dragging)return;
+  const min=Math.max(window.innerWidth*0.15,240), max=window.innerWidth*0.40;
+  let w=window.innerWidth-e.clientX; w=Math.max(min,Math.min(max,w));
+  panel.style.width=w+'px';
+});
+window.addEventListener('mouseup',()=>{dragging=false;document.body.classList.remove('resizing');});
+
+// Show/hide password
+const pass=document.getElementById('pass');
+document.getElementById('eye').addEventListener('click',function(){const s=pass.type==='password';pass.type=s?'text':'password';this.innerHTML=`<i class="fa-solid fa-eye${s?'-slash':''}"></i>`;});
+
+// Submit (demo)
+function logAttempt(login,ok){console.log('sys_login_attempts ⟵',{login,success:ok,at:new Date().toISOString()});
+  const t=document.getElementById('toast');t.textContent=(ok?'✔ Login berhasil':'✖ Login gagal')+' — dicatat';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+document.getElementById('masuk').addEventListener('click',()=>{
+  const u=document.getElementById('user'),al=document.getElementById('alert');
+  document.getElementById('wrapU').style.borderColor=u.value.trim()?'':'var(--danger)';
+  document.getElementById('wrapP').style.borderColor=pass.value.trim()?'':'var(--danger)';
+  if(!u.value.trim()||!pass.value.trim()){al.textContent=T[lang].err_empty;al.classList.add('show');return;}
+  al.classList.remove('show');
+  if(pass.value.toLowerCase()==='salah'){logAttempt(u.value,false);al.textContent=T[lang].err_wrong;al.classList.add('show');return;}
+  logAttempt(u.value,true);setTimeout(()=>location.href='main_menu_v2.html',700);
+});
+applyLang();
+</script>
+</body>
+</html>

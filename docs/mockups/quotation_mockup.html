@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>Quotation QUO2607-0031</title>
+<style>
+:root{
+  --ink:#1a1d21; --muted:#6b7280; --line:#d4d8dd; --line2:#eceff2;
+  --accent:#0d5c46; --accent-soft:#eaf3f0; --warn:#8a5a00; --gold:#9a7b18;
+  --danger:#a3241f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#8e959c;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+     font-size:10pt;color:var(--ink);padding:24px 0;
+     -webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.page{width:210mm;min-height:297mm;margin:0 auto 18px;background:#fff;
+      padding:12mm 12mm 18mm;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+
+.bar{width:210mm;margin:0 auto 12px;display:flex;gap:8px;align-items:center}
+.bar button{border:0;border-radius:5px;padding:8px 16px;font-size:9.5pt;font-weight:600;
+            cursor:pointer;font-family:inherit}
+.bar .pr{background:var(--accent);color:#fff}
+.bar .sc{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.bar .info{color:#fff;font-size:8.5pt;margin-left:auto;opacity:.9}
+
+/* ---------- KOP ---------- */
+.kop{display:flex;justify-content:space-between;align-items:flex-start;
+     border-bottom:2.5px solid var(--accent);padding-bottom:7px}
+.logo{width:42px;height:42px;border-radius:7px;background:var(--accent);color:#fff;
+      display:flex;align-items:center;justify-content:center;font-weight:700;
+      font-size:14pt;letter-spacing:-1px;flex:0 0 auto}
+.kop-l{display:flex;gap:10px;align-items:center}
+.co-name{font-size:13pt;font-weight:700;letter-spacing:-.3px;line-height:1.1}
+.co-addr{font-size:7.2pt;color:var(--muted);line-height:1.4;margin-top:2px}
+.kop-r{text-align:right}
+.doc-title{font-size:11.5pt;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.doc-no{font-size:14pt;font-weight:700;font-family:Consolas,monospace;
+        letter-spacing:-.5px;margin-top:1px}
+.doc-meta{font-size:7.6pt;color:var(--muted);margin-top:2px;line-height:1.45}
+.doc-meta .ref{color:var(--accent);font-weight:600}
+
+/* ---------- VALID-UNTIL STRIP ---------- */
+.valid{display:flex;align-items:stretch;margin-top:9px;border:1.5px solid var(--accent)}
+.valid .v-main{flex:1;background:var(--accent);color:#fff;padding:6px 12px;
+               display:flex;align-items:center;gap:10px}
+.valid .v-main .ic{font-size:15pt;line-height:1}
+.valid .v-main .txt{line-height:1.25}
+.valid .v-main .txt b{font-size:11pt;font-weight:700}
+.valid .v-main .txt small{display:block;font-size:6.8pt;letter-spacing:.6px;
+                          opacity:.82;font-weight:600;text-transform:uppercase}
+.valid .v-side{flex:0 0 auto;padding:6px 12px;display:flex;flex-direction:column;
+               justify-content:center;text-align:right;background:var(--accent-soft)}
+.valid .v-side .k{font-size:6.6pt;letter-spacing:.6px;color:var(--accent);
+                  font-weight:700;text-transform:uppercase}
+.valid .v-side .d{font-size:9pt;font-weight:600;color:var(--ink)}
+
+/* ---------- PARA PIHAK ---------- */
+.parties{display:grid;grid-template-columns:1.2fr 1fr;margin-top:9px;border:1px solid var(--line)}
+.party{padding:6px 9px}
+.party+.party{border-left:1px solid var(--line)}
+.party h4{font-size:6.6pt;letter-spacing:1px;color:var(--muted);font-weight:700;margin-bottom:2px}
+.party .nm{font-size:10pt;font-weight:600;line-height:1.25}
+.party .dt{font-size:7.6pt;color:#4b5158;line-height:1.55;margin-top:2px}
+.party .dt b{color:var(--ink)}
+
+/* ---------- SECTION ---------- */
+.sec{margin-top:10px}
+.sec-h{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.sec-h .n{width:15px;height:15px;border-radius:3px;background:var(--accent);color:#fff;
+          font-size:7.6pt;font-weight:700;display:flex;align-items:center;
+          justify-content:center;flex:0 0 auto}
+.sec-h h3{font-size:8.6pt;font-weight:700;letter-spacing:.7px;text-transform:uppercase}
+.sec-h .rule{flex:1;height:1px;background:var(--line)}
+.sec-h .hint{font-size:7pt;color:var(--muted);font-weight:400;letter-spacing:0}
+
+/* ---------- ITEM TABLE ---------- */
+table.items{width:100%;border-collapse:collapse;font-size:8.4pt;border:1px solid var(--line)}
+table.items th{background:var(--accent);color:#fff;font-size:6.8pt;letter-spacing:.5px;
+               padding:5px 8px;text-align:right;font-weight:700}
+table.items th:first-child{text-align:left}
+table.items th.desc{text-align:left;width:44%}
+table.items td{padding:6px 8px;border-bottom:1px solid var(--line2);text-align:right;
+               vertical-align:top;font-variant-numeric:tabular-nums}
+table.items td.desc{text-align:left}
+table.items td.desc .nm{font-weight:700;font-size:8.8pt}
+table.items td.desc .sp{color:var(--muted);font-size:7.4pt;line-height:1.5;margin-top:2px}
+table.items td.q{font-weight:600}
+table.items td.amt{font-weight:700}
+table.items tr.main td{background:var(--accent-soft)}
+
+/* ---------- TOTALS ---------- */
+.totwrap{display:grid;grid-template-columns:1fr 78mm;gap:10px;margin-top:8px}
+.tot-note{border:1px solid var(--line);padding:7px 9px;font-size:7.6pt;line-height:1.55}
+.tot-note h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:3px}
+.tot-note .ppn{display:inline-block;margin-top:3px;padding:1.5px 7px;border-radius:3px;
+               background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:7.4pt}
+table.tot{width:100%;border-collapse:collapse;font-size:8.6pt}
+table.tot td{padding:4px 9px;font-variant-numeric:tabular-nums}
+table.tot td.k{color:var(--muted);text-align:left}
+table.tot td.v{text-align:right;font-weight:600}
+table.tot tr.sub td{border-bottom:1px solid var(--line2)}
+table.tot tr.grand td{background:var(--accent);color:#fff;font-weight:700;font-size:11pt;
+                      padding:7px 9px}
+table.tot tr.grand td.k{color:#fff;letter-spacing:.5px}
+
+/* ---------- ALT TIER ---------- */
+.alt{margin-top:8px;border:1px dashed var(--line);padding:6px 9px}
+.alt h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:4px}
+table.alt-t{width:100%;border-collapse:collapse;font-size:8pt}
+table.alt-t th{color:var(--muted);font-size:6.6pt;letter-spacing:.4px;padding:3px 7px;
+               text-align:right;font-weight:700;border-bottom:1px solid var(--line)}
+table.alt-t th:first-child{text-align:left}
+table.alt-t td{padding:3px 7px;text-align:right;border-bottom:1px solid var(--line2);
+               font-variant-numeric:tabular-nums}
+table.alt-t td:first-child{text-align:left;color:var(--muted)}
+table.alt-t td.p{font-weight:700}
+table.alt-t tr.best td.p{color:var(--gold)}
+.alt .cap{font-size:6.9pt;color:var(--muted);margin-top:4px;line-height:1.5}
+
+/* ---------- TERMS & PAYMENT ---------- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+.box{border:1px solid var(--line);padding:6px 9px;font-size:7.7pt;line-height:1.6}
+.box h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:4px}
+ol.terms{margin-left:13px;font-size:7.7pt;line-height:1.65}
+ol.terms li{margin-bottom:1.5px}
+.pay-row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;
+         border-bottom:1px dotted var(--line2)}
+.pay-row:last-child{border-bottom:0}
+.pay-row .k{color:var(--muted)}
+.pay-row .v{font-weight:600;text-align:right}
+.bank{margin-top:5px;padding:5px 7px;background:var(--accent-soft);border-radius:4px;
+      font-size:7.6pt;line-height:1.6}
+.bank b{font-size:8.4pt}
+
+/* ---------- SIGN ---------- */
+.sign-wrap{margin-top:10px;border:1.5px solid var(--accent);page-break-inside:avoid}
+.sign-h{background:var(--accent);color:#fff;padding:4px 9px;font-size:7.8pt;
+        font-weight:700;letter-spacing:.8px}
+.sign-b{padding:9px}
+.sign-intro{font-size:7.8pt;line-height:1.55;color:#4b5158;margin-bottom:8px}
+.sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center}
+.sign .cell .rol{font-size:7.4pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.sign .cell .co{font-size:6.8pt;color:var(--muted);margin-bottom:2px}
+.sign .cell .line{border-bottom:1px solid var(--ink);height:44px;margin-bottom:3px}
+.sign .cell .nm{font-size:7.8pt;font-weight:600}
+.sign .cell .sub{font-size:6.6pt;color:var(--muted)}
+
+.foot{position:absolute;bottom:8mm;left:12mm;right:12mm;border-top:1px solid var(--line);
+      padding-top:4px;font-size:6.6pt;color:var(--muted);display:flex;
+      justify-content:space-between;gap:10px}
+
+@media print{
+  body{background:#fff;padding:0}
+  .bar{display:none}
+  .page{box-shadow:none;margin:0;width:auto;min-height:auto;padding:11mm 11mm 16mm}
+  @page{size:A4 portrait;margin:0}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <button class="pr" onclick="window.print()">Cetak / Simpan PDF</button>
+  <button class="sc" onclick="window.close()">Tutup</button>
+  <span class="info">QUO2607-0031 · ref IQ2607-0042 · berlaku s/d 22 Agustus 2026</span>
+</div>
+
+<div class="page">
+
+  <!-- KOP -->
+  <div class="kop">
+    <div class="kop-l">
+      <div class="logo">TM</div>
+      <div>
+        <div class="co-name">PT TRIMITRA MANDIRI</div>
+        <div class="co-addr">
+          Kawasan Industri Jababeka Blok C-12, Cikarang, Bekasi 17530<br>
+          Telp (021) 8983-xxxx  ·  sales@trimitra.co.id  ·  NPWP 01.234.567.8-901.000
+        </div>
+      </div>
+    </div>
+    <div class="kop-r">
+      <div class="doc-title">QUOTATION</div>
+      <div class="doc-no">QUO2607-0031</div>
+      <div class="doc-meta">
+        Tanggal 25 Juli 2026 · Rev. 00<br>
+        Ref. Inquiry <span class="ref">IQ2607-0042</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALID UNTIL -->
+  <div class="valid">
+    <div class="v-main">
+      <span class="ic">&#9200;</span>
+      <span class="txt">
+        <small>Penawaran berlaku sampai</small>
+        <b>22 Agustus 2026</b>
+      </span>
+    </div>
+    <div class="v-side">
+      <span class="k">Masa Berlaku</span>
+      <span class="d">30 hari kalender</span>
+    </div>
+  </div>
+
+  <!-- PARA PIHAK -->
+  <div class="parties">
+    <div class="party">
+      <h4>KEPADA YTH.</h4>
+      <div class="nm">PT Sinar Kemasan Nusantara</div>
+      <div class="dt">
+        Jl. Raya Narogong KM 12, Bantargebang, Kota Bekasi 17151<br>
+        UP. <b>Bpk. Andi Wijaya</b> (Purchasing) · 0812-3456-7890<br>
+        NPWP 02.345.678.9-012.000
+      </div>
+    </div>
+    <div class="party">
+      <h4>PENAWARAN DISIAPKAN OLEH</h4>
+      <div class="nm">Rina Kartika</div>
+      <div class="dt">
+        Sales Executive · rina.k@trimitra.co.id<br>
+        Telp langsung (021) 8983-xxxx ext. 214<br>
+        Mata uang penawaran: <b>IDR</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. ITEM -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">1</span><h3>Rincian Penawaran</h3>
+      <span class="rule"></span>
+      <span class="hint">harga per pcs</span>
+    </div>
+    <table class="items">
+      <thead>
+        <tr>
+          <th class="desc">Deskripsi Produk</th>
+          <th>Qty (pcs)</th>
+          <th>Harga Satuan</th>
+          <th>Jumlah</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="main">
+          <td class="desc">
+            <div class="nm">Kemasan Teh Celup Premium — 1 set (3 part)</div>
+            <div class="sp">
+              Part 1 · Outer Box (Reverse Tuck End), Art Carton 310 gsm, CMYK+2 PMS, laminasi doff + UV spot, emboss logo<br>
+              Part 2 · Inner Tray (Straight Tuck End), Duplex 250 gsm, 1 warna, varnish WB<br>
+              Part 3 · Sleeve (Open Sleeve), Art Carton 260 gsm, CMYK, laminasi glossy
+            </div>
+          </td>
+          <td class="q">50.000</td>
+          <td>1.900</td>
+          <td class="amt">95.000.000</td>
+        </tr>
+        <tr>
+          <td class="desc">
+            <div class="nm">Biaya pisau/matras (die) — sekali</div>
+            <div class="sp">3 pisau: outer box, inner tray, sleeve. Dibebankan satu kali di order pertama.</div>
+          </td>
+          <td class="q">1 set</td>
+          <td>900.000</td>
+          <td class="amt">900.000</td>
+        </tr>
+        <tr>
+          <td class="desc">
+            <div class="nm">Biaya plat cetak — sekali</div>
+            <div class="sp">11 plat (6+1+4 warna). Rp 90.000 / warna. Dibebankan satu kali di order pertama.</div>
+          </td>
+          <td class="q">11 plat</td>
+          <td>90.000</td>
+          <td class="amt">990.000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- TOTALS -->
+    <div class="totwrap">
+      <div class="tot-note">
+        <h5>KETERANGAN HARGA</h5>
+        Seluruh harga di atas <b>belum termasuk PPN</b> (harga <b>exclusive</b> PPN 11%).
+        PPN dihitung atas total sebelum pajak dan ditampilkan terpisah di kolom kanan.
+        <br><span class="ppn">Harga EXCLUSIVE PPN — PPN ditambahkan</span>
+        <div style="margin-top:5px;color:var(--muted)">
+          Toleransi kuantitas ±5% (standar industri percetakan). Kelebihan/kekurangan dalam
+          rentang toleransi ditagihkan sesuai jumlah aktual terkirim.
+        </div>
+      </div>
+      <table class="tot">
+        <tr class="sub"><td class="k">Subtotal produk</td><td class="v">95.000.000</td></tr>
+        <tr class="sub"><td class="k">Biaya tooling (die + plat)</td><td class="v">1.890.000</td></tr>
+        <tr class="sub"><td class="k">Dasar Pengenaan Pajak (DPP)</td><td class="v">96.890.000</td></tr>
+        <tr class="sub"><td class="k">PPN 11%</td><td class="v">10.657.900</td></tr>
+        <tr class="grand"><td class="k">GRAND TOTAL</td><td class="v">Rp 107.547.900</td></tr>
+      </table>
+    </div>
+
+    <!-- ALT TIER -->
+    <div class="alt">
+      <h5>ALTERNATIF KUANTITAS (harga satuan excl. PPN, di luar tooling)</h5>
+      <table class="alt-t">
+        <thead>
+          <tr>
+            <th style="width:34%">Opsi Qty</th>
+            <th>Qty (pcs)</th>
+            <th>Harga Satuan</th>
+            <th>Subtotal Produk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Alternatif hemat</td>
+            <td>25.000</td>
+            <td class="p">2.075</td>
+            <td>51.875.000</td>
+          </tr>
+          <tr>
+            <td>Alternatif volume</td>
+            <td>100.000</td>
+            <td class="p">1.680</td>
+            <td>168.000.000</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="cap">
+        Qty utama penawaran ini <b>50.000 pcs @ Rp 1.900</b>. Menaikkan ke 100.000 pcs
+        menurunkan harga satuan Rp 220/pc. Biaya tooling tetap dibebankan satu kali,
+        tidak berubah antar opsi. Untuk memilih opsi lain, hubungi PIC Sales sebelum masa berlaku berakhir.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. TERMIN & PEMBAYARAN -->
+  <div class="sec">
+    <div class="sec-h"><span class="n">2</span><h3>Termin &amp; Pembayaran</h3><span class="rule"></span></div>
+    <div class="two">
+      <div class="box">
+        <h5>TERMIN PEMBAYARAN</h5>
+        <div class="pay-row"><span class="k">Down payment</span><span class="v">50% saat PO</span></div>
+        <div class="pay-row"><span class="k">Pelunasan</span><span class="v">50% sebelum kirim</span></div>
+        <div class="pay-row"><span class="k">Termin faktur (terdaftar)</span><span class="v">30 hari</span></div>
+        <div class="pay-row"><span class="k">Lead time produksi</span><span class="v">12–15 hari kerja</span></div>
+        <div class="pay-row"><span class="k">Mulai dihitung</span><span class="v">setelah proof disetujui</span></div>
+        <div class="bank">
+          <b>Transfer ke:</b><br>
+          Bank BCA KCU Cikarang · a.n. PT Trimitra Mandiri<br>
+          No. Rek. <b>1234-567-890</b> · Pembayaran dianggap sah setelah dana efektif diterima.
+        </div>
+      </div>
+      <div class="box">
+        <h5>SYARAT &amp; KETENTUAN</h5>
+        <ol class="terms">
+          <li>Penawaran berlaku sampai tanggal yang tertera pada strip masa berlaku di atas.</li>
+          <li>Harga <b>exclusive PPN 11%</b>; PPN ditambahkan sesuai kolom Grand Total.</li>
+          <li>Lead time 12–15 hari kerja terhitung setelah artwork final &amp; digital proof (warna) disetujui.</li>
+          <li>Perubahan spesifikasi (material, gramatur, jumlah warna, finishing) dapat mengubah harga &amp; lead time.</li>
+          <li>Toleransi pengiriman ±5% dari qty order, ditagih sesuai jumlah aktual.</li>
+          <li>Biaya tooling (die + plat) dibebankan satu kali dan tidak dikembalikan.</li>
+          <li>Harga belum termasuk ongkos kirim kecuali disebutkan lain.</li>
+          <li>Penawaran ini menjadi mengikat setelah PO customer diterbitkan &amp; DP diterima.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. PENGESAHAN -->
+  <div class="sign-wrap">
+    <div class="sign-h">PENGESAHAN &amp; PERSETUJUAN</div>
+    <div class="sign-b">
+      <div class="sign-intro">
+        Penawaran ini diterbitkan secara resmi oleh PT Trimitra Mandiri. Untuk melanjutkan ke
+        pesanan produksi, mohon terbitkan Purchase Order dengan mengacu nomor quotation
+        <b>QUO2607-0031</b>, atau tandatangani kolom persetujuan customer di bawah dan kirim
+        kembali sebelum masa berlaku berakhir.
+      </div>
+      <div class="sign">
+        <div class="cell">
+          <div class="co">Hormat kami, PT Trimitra Mandiri</div>
+          <div class="line"></div>
+          <div class="rol">Direksi</div>
+          <div class="nm">( ................................. )</div>
+          <div class="sub">Authorized signatory &amp; stempel</div>
+        </div>
+        <div class="cell">
+          <div class="co">PT Trimitra Mandiri</div>
+          <div class="line"></div>
+          <div class="rol">Disiapkan</div>
+          <div class="nm">Rina Kartika</div>
+          <div class="sub">Sales Executive</div>
+        </div>
+        <div class="cell">
+          <div class="co">Disetujui oleh customer</div>
+          <div class="line"></div>
+          <div class="rol">Customer</div>
+          <div class="nm">( ................................. )</div>
+          <div class="sub">Nama jelas, jabatan &amp; stempel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>QUO2607-0031 · ref IQ2607-0042 · PT Sinar Kemasan Nusantara ·
+          dicetak 25/07/2026 10:14 · dokumen sah terbit sistem TMSDI</span>
+    <span>Halaman 1 dari 1</span>
+  </div>
+</div>
+
+</body>
+</html>
