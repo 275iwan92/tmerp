@@ -4,10 +4,12 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\MatRaw;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeSize;
+use App\Models\Sdi\IqpExternalCost;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sdi\IqpPartMaterial;
 use App\Models\Sdi\IqpTier;
+use App\Models\Sdi\IqpTooling;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -62,6 +64,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public ?string $cust_material_eta = null;
 
+    public string $discount_doc_type = '';
+
+    public string $discount_doc_value = '';
+
+    public string $discount_qty_value = '';
+
+    public string $discount_qty_min_ton = '';
+
     public string $sub_state = 'DRAFT';
 
     public bool $is_confirmed = false;
@@ -78,6 +88,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     /** @var array<int, array{id: ?int, part_name: string, part_type: string, type_code: string, qty_per_sku: string, dims: array, flat_manual: bool, flat_w: string, flat_h: string, flat_area: string, cfg_color: string, cfg_ink: string, materials: array}> */
     public array $parts = [];
 
+    /** @var array<int, array{id: ?int, tooling_kind: string, tooling_status: string, is_new_charge: bool, cost: string, remark: string}> */
+    public array $toolings = [];
+
+    /** @var array<int, array{id: ?int, cost_kind: string, description: string, amount: string, tax_treatment: string}> */
+    public array $externalCosts = [];
+
     public ?string $flash = null;
 
     public function mount(): void
@@ -91,6 +107,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'parts' => fn ($q) => $q->orderBy('part_seq'),
                 'parts.materials' => fn ($q) => $q->orderBy('layer_seq'),
                 'parts.materials.rawMaterial',
+                'toolings',
+                'externalCosts',
             ])->findOrFail($this->id);
             $this->fillFromInquiry();
         } else {
@@ -121,6 +139,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->pph_applicable = (bool) $inq->pph_applicable;
         $this->cust_material_spec = $inq->cust_material_spec ?? '';
         $this->cust_material_eta = optional($inq->cust_material_eta)->toDateString();
+        $this->discount_doc_type = $inq->discount_doc_type ?? '';
+        $this->discount_doc_value = $inq->discount_doc_value !== null ? rtrim(rtrim((string) $inq->discount_doc_value, '0'), '.') : '';
+        $this->discount_qty_value = $inq->discount_qty_value !== null ? rtrim(rtrim((string) $inq->discount_qty_value, '0'), '.') : '';
+        $this->discount_qty_min_ton = $inq->discount_qty_min_ton !== null ? rtrim(rtrim((string) $inq->discount_qty_min_ton, '0'), '.') : '';
         $this->sub_state = $inq->sub_state;
         $this->is_confirmed = (bool) $inq->is_confirmed;
         $this->is_cancelled = (bool) $inq->is_cancelled;
@@ -180,6 +202,23 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 $this->parts[$i]['materials'] = [$this->blankMaterialRow(true)];
             }
         }
+
+        $this->toolings = $inq->toolings->map(fn (IqpTooling $t) => [
+            'id' => $t->id_tooling,
+            'tooling_kind' => $t->tooling_kind,
+            'tooling_status' => $t->tooling_status,
+            'is_new_charge' => (bool) $t->is_new_charge,
+            'cost' => $t->cost !== null ? rtrim(rtrim((string) $t->cost, '0'), '.') : '0',
+            'remark' => $t->remark ?? '',
+        ])->values()->all();
+
+        $this->externalCosts = $inq->externalCosts->map(fn (IqpExternalCost $c) => [
+            'id' => $c->id_external_cost,
+            'cost_kind' => $c->cost_kind,
+            'description' => $c->description ?? '',
+            'amount' => $c->amount !== null ? rtrim(rtrim((string) $c->amount, '0'), '.') : '0',
+            'tax_treatment' => $c->tax_treatment,
+        ])->values()->all();
     }
 
     #[Computed]
@@ -307,6 +346,21 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         $this->pph_applicable = $value;
+    }
+
+    // ================= DISKON DOKUMEN (iqp_inquiry.discount_doc_*, Tier1 F10) =================
+
+    public function setDiscountDocType(string $type): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->discount_doc_type = $type;
+
+        if ($type === '') {
+            $this->discount_doc_value = '';
+        }
     }
 
     // ================= QTY TIER (Tier1 §2.4/§3.4.2 — "tier qty, pilih UTAMA") =================
@@ -640,6 +694,86 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->parts[$partIndex]['materials'][$matIndex]['id'] = $id;
     }
 
+    // ================= TOOLING (iqp_tooling, Tier1 F6) =================
+    // tooling_asset_id (reuse m_tooling_asset) tak diisi UI — master belum digarap
+    // Tier 3A (lihat CLAUDE.md §5 GAP #2); baris tooling diinput manual dulu.
+
+    protected function blankToolingRow(): array
+    {
+        return [
+            'id' => null,
+            'tooling_kind' => 'PLATE',
+            'tooling_status' => 'ADA',
+            'is_new_charge' => false,
+            'cost' => '0',
+            'remark' => '',
+        ];
+    }
+
+    public function addTooling(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->toolings[] = $this->blankToolingRow();
+    }
+
+    public function removeTooling(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->toolings[$index])) {
+            return;
+        }
+
+        unset($this->toolings[$index]);
+        $this->toolings = array_values($this->toolings);
+    }
+
+    public function setToolingNewCharge(int $index, bool $value): void
+    {
+        if ($this->readOnly || ! isset($this->toolings[$index])) {
+            return;
+        }
+
+        $this->toolings[$index]['is_new_charge'] = $value;
+
+        if (! $value) {
+            $this->toolings[$index]['cost'] = '0';
+        }
+    }
+
+    // ================= BIAYA EKSTERNAL (iqp_external_cost, Tier1 F13) =================
+
+    protected function blankExternalCostRow(): array
+    {
+        return [
+            'id' => null,
+            'cost_kind' => 'TRUCKING',
+            'description' => '',
+            'amount' => '0',
+            'tax_treatment' => 'TAXABLE',
+        ];
+    }
+
+    public function addExternalCost(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->externalCosts[] = $this->blankExternalCostRow();
+    }
+
+    public function removeExternalCost(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->externalCosts[$index])) {
+            return;
+        }
+
+        unset($this->externalCosts[$index]);
+        $this->externalCosts = array_values($this->externalCosts);
+    }
+
     // ================= SIMPAN / STATE (Tier2 §11 Form Standard & State) =================
 
     protected function headerRules(): array
@@ -655,6 +789,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'tax_scheme' => ['required', 'in:PPN,NON_PPN'],
             'cust_material_spec' => ['nullable', 'string', 'required_if:material_source,CUSTOMER'],
             'cust_material_eta' => ['nullable', 'date'],
+            'discount_doc_type' => ['nullable', 'in:PERCENT,AMOUNT'],
+            'discount_doc_value' => ['nullable', 'numeric', 'min:0', 'required_if:discount_doc_type,PERCENT,AMOUNT'],
+            'discount_qty_value' => ['nullable', 'numeric', 'min:0'],
+            'discount_qty_min_ton' => ['nullable', 'numeric', 'min:0'],
         ];
 
         // CLAUDE.md §2: FK lintas-DB divalidasi di aplikasi (exists:conn.table,col), bukan constraint DB.
@@ -708,6 +846,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'pph_applicable' => $this->pph_applicable,
             'cust_material_spec' => $isCustomerMaterial ? ($this->cust_material_spec ?: null) : null,
             'cust_material_eta' => $isCustomerMaterial ? ($this->cust_material_eta ?: null) : null,
+            'discount_doc_type' => $this->discount_doc_type ?: null,
+            'discount_doc_value' => $this->discount_doc_type && $this->discount_doc_value !== '' ? $this->discount_doc_value : null,
+            'discount_qty_value' => $this->discount_qty_value !== '' ? $this->discount_qty_value : null,
+            'discount_qty_min_ton' => $this->discount_qty_min_ton !== '' ? $this->discount_qty_min_ton : null,
             'updated_by' => Auth::user()->login,
         ];
     }
@@ -790,6 +932,61 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->inquiry->parts()->whereNotIn('id_part', $keepIds)->delete();
     }
 
+    protected function persistToolings(): void
+    {
+        $keepIds = [];
+
+        foreach ($this->toolings as $index => $row) {
+            $data = [
+                'tooling_kind' => $row['tooling_kind'],
+                'tooling_status' => $row['tooling_status'],
+                'is_new_charge' => $row['is_new_charge'],
+                'cost' => $row['is_new_charge'] && $row['cost'] !== '' ? $row['cost'] : 0,
+                'remark' => $row['remark'] !== '' ? $row['remark'] : null,
+                'updated_by' => Auth::user()->login,
+            ];
+
+            if ($row['id']) {
+                IqpTooling::whereKey($row['id'])->update($data);
+                $keepIds[] = $row['id'];
+            } else {
+                $data['created_by'] = Auth::user()->login;
+                $tooling = $this->inquiry->toolings()->create($data);
+                $this->toolings[$index]['id'] = $tooling->id_tooling;
+                $keepIds[] = $tooling->id_tooling;
+            }
+        }
+
+        $this->inquiry->toolings()->whereNotIn('id_tooling', $keepIds)->delete();
+    }
+
+    protected function persistExternalCosts(): void
+    {
+        $keepIds = [];
+
+        foreach ($this->externalCosts as $index => $row) {
+            $data = [
+                'cost_kind' => $row['cost_kind'],
+                'description' => $row['description'] !== '' ? $row['description'] : null,
+                'amount' => $row['amount'] !== '' ? $row['amount'] : 0,
+                'tax_treatment' => $row['tax_treatment'],
+                'updated_by' => Auth::user()->login,
+            ];
+
+            if ($row['id']) {
+                IqpExternalCost::whereKey($row['id'])->update($data);
+                $keepIds[] = $row['id'];
+            } else {
+                $data['created_by'] = Auth::user()->login;
+                $cost = $this->inquiry->externalCosts()->create($data);
+                $this->externalCosts[$index]['id'] = $cost->id_external_cost;
+                $keepIds[] = $cost->id_external_cost;
+            }
+        }
+
+        $this->inquiry->externalCosts()->whereNotIn('id_external_cost', $keepIds)->delete();
+    }
+
     protected function persistPartMaterials(IqpPart $part, int $partIndex): void
     {
         $keepIds = [];
@@ -861,6 +1058,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
             $this->persistTiers();
             $this->persistParts();
+            $this->persistToolings();
+            $this->persistExternalCosts();
         });
 
         $this->sub_state = $this->inquiry->sub_state;
@@ -949,8 +1148,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             <div class="note o">🔒 Inkuiri ini sudah dikonfirmasi (status <b>{{ $sub_state }}</b>) — dibuka lihat-saja, tidak bisa diedit.</div>
         @else
             <div class="note y">
-                👤 <b>Sales Officer</b> — isi header, tier qty, part &amp; dieline di bawah. Bahan/coating
-                dan costing akan menyusul di iterasi berikutnya.
+                👤 <b>Sales Officer</b> — isi header, tier qty, part &amp; dieline, tooling, diskon, dan biaya
+                eksternal di bawah. Costing (HPP) &amp; estimasi kecepatan akan menyusul di iterasi berikutnya.
             </div>
         @endif
 
@@ -1419,6 +1618,163 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
                 <button type="button" class="btn g" wire:click="addPart" @if($readOnly) disabled @endif>
                     ＋ Tambah Part
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Status Tooling <span style="font-weight:400;color:#889">(plat/pisau/film — cek aus saat repeat order)</span></h3>
+            <div class="body">
+                <div class="note b" style="margin-bottom:10px">
+                    🔧 Tooling baru (plat cetak, pisau/matras, film) → biaya masuk sebagai line terpisah. Master aset
+                    tooling (cek otomatis aus) menyusul di iterasi berikutnya — isi manual dulu.
+                </div>
+                @if (empty($toolings))
+                    <div class="hint">Belum ada baris tooling.</div>
+                @else
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:140px">Jenis</th>
+                                <th style="width:150px">Status</th>
+                                <th style="width:110px">Biaya Baru?</th>
+                                <th style="width:140px">Biaya (Rp)</th>
+                                <th>Catatan</th>
+                                <th style="width:36px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($toolings as $i => $t)
+                                <tr wire:key="tool-{{ $t['id'] ?? 'new-'.$i }}">
+                                    <td>
+                                        <select wire:model="toolings.{{ $i }}.tooling_kind" x-data x-effect="$el.value = @js($t['tooling_kind'])" @if($readOnly) disabled @endif>
+                                            @foreach (['PLATE' => 'Plat cetak', 'PISAU' => 'Pisau/matras', 'MATRAS' => 'Matras', 'FILM' => 'Film'] as $code => $label)
+                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select wire:model="toolings.{{ $i }}.tooling_status" x-data x-effect="$el.value = @js($t['tooling_status'])" @if($readOnly) disabled @endif>
+                                            @foreach (['ADA' => 'Ada', 'ADA_WARNING' => 'Ada (warning)', 'AUS' => 'Aus', 'TIDAK_ADA' => 'Tidak ada'] as $code => $label)
+                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <button type="button" class="btn xs {{ $t['is_new_charge'] ? 'p' : 'g' }}"
+                                                wire:click="setToolingNewCharge({{ $i }}, {{ $t['is_new_charge'] ? 'false' : 'true' }})" @if($readOnly) disabled @endif>
+                                            {{ $t['is_new_charge'] ? 'Ya' : 'Tidak' }}
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0" wire:model.blur="toolings.{{ $i }}.cost"
+                                               @if(! $t['is_new_charge']) readonly @endif @if($readOnly) disabled @endif>
+                                    </td>
+                                    <td>
+                                        <input type="text" wire:model.blur="toolings.{{ $i }}.remark" placeholder="opsional" @if($readOnly) disabled @endif>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn d xs" wire:click="removeTooling({{ $i }})" @if($readOnly) disabled @endif>✕</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+                <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addTooling" @if($readOnly) disabled @endif>
+                    ＋ Tambah Tooling
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Diskon Dokumen <span style="font-weight:400;color:#889">(level dokumen — dibawa ke Customer Order)</span></h3>
+            <div class="body">
+                <div class="grid">
+                    <div class="f">
+                        <label>Diskon Dokumen</label>
+                        <div style="display:flex;gap:6px">
+                            <button type="button" class="btn xs {{ $discount_doc_type === '' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setDiscountDocType('')" @if($readOnly) disabled @endif>—</button>
+                            <button type="button" class="btn xs {{ $discount_doc_type === 'PERCENT' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setDiscountDocType('PERCENT')" @if($readOnly) disabled @endif>%</button>
+                            <button type="button" class="btn xs {{ $discount_doc_type === 'AMOUNT' ? 'p' : 'g' }}" style="flex:1"
+                                    wire:click="setDiscountDocType('AMOUNT')" @if($readOnly) disabled @endif>Rp</button>
+                        </div>
+                    </div>
+                    @if ($discount_doc_type)
+                        <div class="f">
+                            <label>Nilai Diskon {{ $discount_doc_type === 'PERCENT' ? '(%)' : '(Rp)' }}</label>
+                            <input type="number" step="0.01" min="0" wire:model.blur="discount_doc_value" @if($readOnly) disabled @endif>
+                            @error('discount_doc_value') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                        </div>
+                    @endif
+                    <div class="f">
+                        <label>Diskon Qty (%) <span style="font-weight:400;color:#889">(occasional)</span></label>
+                        <input type="number" step="0.01" min="0" wire:model.blur="discount_qty_value" placeholder="mis. 3" @if($readOnly) disabled @endif>
+                    </div>
+                    <div class="f">
+                        <label>Ambang Tonase (ton)</label>
+                        <input type="number" step="0.01" min="0" wire:model.blur="discount_qty_min_ton" placeholder="mis. 5" @if($readOnly) disabled @endif>
+                        <div class="hint">Diskon qty aktif otomatis saat tonase total ≥ ambang ini (aturan detail menyusul).</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Biaya Eksternal / Pihak Ketiga <span style="font-weight:400;color:#889">(bila sudah ditentukan sejak awal)</span></h3>
+            <div class="body">
+                <div class="note b" style="margin-bottom:10px">
+                    🚚 Biaya pihak ketiga yang sudah pasti (trucking, ekspedisi, jasa luar) dicatat sejak inkuiri →
+                    mengalir ke quotation &amp; CO.
+                </div>
+                @if (empty($externalCosts))
+                    <div class="hint">Belum ada baris biaya eksternal.</div>
+                @else
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Deskripsi</th>
+                                <th style="width:140px">Jenis</th>
+                                <th style="width:140px">Jumlah (Rp)</th>
+                                <th style="width:170px">Perlakuan Pajak</th>
+                                <th style="width:36px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($externalCosts as $i => $c)
+                                <tr wire:key="ext-{{ $c['id'] ?? 'new-'.$i }}">
+                                    <td>
+                                        <input type="text" wire:model.blur="externalCosts.{{ $i }}.description"
+                                               placeholder="mis. trucking ke gudang customer" @if($readOnly) disabled @endif>
+                                    </td>
+                                    <td>
+                                        <select wire:model="externalCosts.{{ $i }}.cost_kind" x-data x-effect="$el.value = @js($c['cost_kind'])" @if($readOnly) disabled @endif>
+                                            @foreach (['TRUCKING' => 'Trucking', 'EKSPEDISI' => 'Ekspedisi', 'JASA_LUAR' => 'Jasa Luar', 'LAINNYA' => 'Lainnya'] as $code => $label)
+                                                <option value="{{ $code }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="number" step="0.01" min="0" wire:model.blur="externalCosts.{{ $i }}.amount" @if($readOnly) disabled @endif>
+                                    </td>
+                                    <td>
+                                        <select wire:model="externalCosts.{{ $i }}.tax_treatment" x-data x-effect="$el.value = @js($c['tax_treatment'])" @if($readOnly) disabled @endif>
+                                            <option value="TAXABLE">Taxable (masuk DPP)</option>
+                                            <option value="REIMBURSEMENT">Reimbursement</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn d xs" wire:click="removeExternalCost({{ $i }})" @if($readOnly) disabled @endif>✕</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+                <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addExternalCost" @if($readOnly) disabled @endif>
+                    ＋ Tambah Biaya
                 </button>
             </div>
         </div>
