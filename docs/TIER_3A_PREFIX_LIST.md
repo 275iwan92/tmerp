@@ -24,14 +24,12 @@ Pendekatan ALL-NEW · nama English · prefix per **domain data** (bukan per pema
 | `sup_`  | Supplier | sup_supplier, sup_sheet_supplier, sup_contact |
 | `emp_`  | Employee (data orang) | emp_employee, emp_contract, emp_family, emp_document, emp_bank_account, emp_shift |
 | `org_`  | Organisasi/perusahaan (struktur) | org_company, org_division, org_department, org_position, org_level |
-| `geo_`  | Geografis/wilayah | geo_country, geo_region, geo_city, geo_district, geo_village* |
+| `geo_`  | Geografis/wilayah | geo_country, geo_region, geo_city, geo_district, geo_village |
 | `fin_`  | Finance (uang transaksional) | fin_currency, fin_currency_rate, fin_payment_term, fin_tax_scheme |
 | `sys_`  | Sistem/parameter | sys_constant, (nanti: sys_config, sys_sequence, sys_setting) |
 | `ref_`  | Reference/lookup generik lintas-domain | ref_status, ref_yes_no, ref_calc_type (yang tak punya domain induk) |
 
 > Lookup **ber-domain** nempel ke induknya (mis. `iqp_type`, `prod_coating_type`), BUKAN ke `ref_`. `ref_` hanya untuk lookup generik tanpa domain induk. Prefix `lkp_` **dihapus**.
-
-\* `geo_village` opsional (5-level, aktif bila diputuskan).
 
 ---
 

@@ -20,5 +20,14 @@ Route::middleware('auth')->group(function () {
         Route::livewire('/inquiry/revise', 'pages::inquiry.revise')->name('inquiry.revise');
     });
 
+    Route::middleware('module:HPP')->group(function () {
+        Route::livewire('/inquiry/{inquiry}/costing', 'pages::inquiry.costing')->name('inquiry.costing');
+    });
+
     Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
+
+    Route::middleware('module:MASTER')->group(function () {
+        Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
+        Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
+    });
 });

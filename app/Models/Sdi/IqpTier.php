@@ -43,8 +43,8 @@ class IqpTier extends Model
         return $this->belongsTo(IqpInquiry::class, 'inquiry_id', 'id_inquiry');
     }
 
-    public function costingDetails(): HasMany
+    public function costingPriceTiers(): HasMany
     {
-        return $this->hasMany(IqpCostingDetail::class, 'tier_id', 'id_tier');
+        return $this->hasMany(IqpCostingPriceTier::class, 'tier_id', 'id_tier');
     }
 }

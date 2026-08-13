@@ -53,9 +53,4 @@ class IqpPart extends Model
     {
         return $this->hasMany(IqpPartProcess::class, 'part_id', 'id_part');
     }
-
-    public function costingDetails(): HasMany
-    {
-        return $this->hasMany(IqpCostingDetail::class, 'part_id', 'id_part');
-    }
 }

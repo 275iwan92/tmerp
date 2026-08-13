@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<!--
+═══════════════════════════════════════════════════════════════════════
+MOCKUP · MASTER SATUAN (UOM) + KONVERSI · TMERP  (v4)
+Perubahan dari v3:
+  - Tab "Tabel Konversi" DIHAPUS. Satu layar: List Satuan (kiri) + Panel
+    Konversi (kanan, muncul setelah pilih satuan & klik "Konversi").
+  - List Satuan: tombol "+ Satuan Baru" (toolbar) & "✎ Edit" per baris
+    terpilih (toolbar) — tetap seperti v3.
+  - Panel Konversi kini scoped ke satuan terpilih: tombol "+ Konversi
+    Baru" (prefill src = satuan terpilih) dan "✎ Edit" per-baris untuk
+    tiap pasangan konversi yang melibatkan satuan itu (searah atau
+    kebalikannya). Tak perlu keluar ke panel/tab lain.
+  - Contoh use-case built-in di data dummy: IK16 (1 ikat = 16 pcs) dan
+    konversi 1 PLASTIK = 20 IK16 — mensimulasikan kasus packing custom.
+DATA MAP (real impl):
+  uom_unit(uom_code,uom_name,dimension[DELTA],is_base[DELTA],is_active)
+  uom_conversion(uom_src,uom_dst,conversion_value,is_active)  · 1 src = nilai × dst
+Panel "Konversi" = gabungan (a) tabel konversi mentah yang relevan ke
+satuan terpilih, DAN (b) turunan-ke-semua-satuan-se-dimensi via faktor-
+ke-basis, ditampilkan sebagai dua seksi dalam satu panel.
+Satuan SPEC (GSM, WARNA) tak boleh dikonversi.
+═══════════════════════════════════════════════════════════════════════
+-->
+<html lang="id">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TELASIH MAKMUR — Master Satuan (UOM)</title>
+<style>
+:root{--navy:#2c3e69;--accent:#2f6fed}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,Segoe UI,Arial,sans-serif}
+body{background:#eef1f5;color:#233;padding:0 0 40px}
+header{background:var(--navy);color:#fff;padding:11px 18px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+header b{font-size:15px}header .sub{font-size:12px;opacity:.75}
+.sp{flex:1}
+.wrap{width:100%;padding:16px 22px}
+.btn{border:none;padding:7px 14px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600}
+.btn.p{background:var(--accent);color:#fff}.btn.g{background:#e6eaf0;color:#333}
+.btn.o{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.btn.d{background:#fdeceb;color:#c0392b}
+.btn.xs{padding:4px 10px;font-size:11px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.grid2{display:grid;grid-template-columns:1fr 420px;gap:14px;align-items:start}
+.card{background:#fff;border:1px solid #d9dfe8;border-radius:10px;overflow:hidden}
+.toolbar{display:flex;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid #e2e7ee;flex-wrap:wrap;background:#f8fafc}
+.toolbar input,.toolbar select{padding:7px 10px;border:1px solid #c7cfda;border-radius:6px;font-size:13px;background:#fff}
+.toolbar input{min-width:200px}
+.qtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.qtbl th,.qtbl td{border-bottom:1px solid #eef1f5;padding:8px 12px;text-align:left}
+.qtbl th{background:#fafbfd;color:#667;font-weight:600;position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.3px;z-index:1}
+.qtbl tbody tr{cursor:pointer}
+.qtbl tbody tr:hover{background:#f7faff}
+.qtbl tbody tr.sel{background:#eef5ff;box-shadow:inset 3px 0 0 var(--accent)}
+.qwrap{max-height:60vh;overflow:auto}
+.code{font-family:ui-monospace,monospace;font-weight:700;color:var(--navy)}
+.num{text-align:right;font-family:ui-monospace,monospace}
+.dim{font-size:10px;font-weight:700;padding:2px 8px;border-radius:9px}
+.d-PANJANG{background:#e0ecff;color:#1560a8}.d-LUAS{background:#e2e0ff;color:#4b3fa8}
+.d-MASSA{background:#ffe0b2;color:#8a4b00}.d-VOLUME{background:#d6f2e2;color:#177a4b}
+.d-JUMLAH{background:#fde3ec;color:#a01a54}.d-WAKTU{background:#dcefe9;color:#0c6b57}
+.d-SPEC{background:#e8ebf0;color:#556}
+.pill{font-size:10px;padding:2px 8px;border-radius:9px;font-weight:600}
+.pill.on{background:#d6f2e2;color:#177a4b}.pill.off{background:#f0d6d6;color:#a33}
+.base{font-size:14px;color:#e0a800}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:#667;padding:8px 14px;border-top:1px solid #eef1f5;background:#fafbfd}
+.legend b{color:var(--navy)}
+.cnt{font-size:11px;color:#8a94a6;margin-left:6px}
+.note{font-size:12px;padding:9px 12px;border-radius:6px;margin-bottom:12px;line-height:1.5;background:#fff4e5;border:1px solid #ffd9a0;color:#8a4b00}
+/* panel konversi kanan */
+.cvhd{padding:12px 14px;background:var(--navy);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cvhd .x{margin-left:auto;cursor:pointer;opacity:.8}
+.cvhd .btn{margin-left:auto}
+.cvsec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#8a94a6;padding:10px 14px 4px}
+.cvbd{padding:0 0 6px}
+.cvrow{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid #f0f3f7;font-size:13px}
+.cvrow:last-child{border-bottom:none}
+.cvrow .from{font-family:ui-monospace,monospace;font-weight:700;color:var(--navy);min-width:60px}
+.cvrow .eq{color:#8a94a6}
+.cvrow .val{font-family:ui-monospace,monospace;font-weight:700;color:#177a4b;text-align:right}
+.cvrow .to{font-family:ui-monospace,monospace;color:#556;min-width:44px}
+.cvrow .ded{margin-left:auto;display:flex;gap:6px}
+.cvempty{padding:22px 14px;text-align:center;color:#8a94a6;font-size:12.5px;line-height:1.6}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+
+/* ── modal ── */
+.ovl{display:none;position:fixed;inset:0;background:rgba(20,26,40,.45);z-index:100;align-items:center;justify-content:center}
+.ovl.on{display:flex}
+.modal{background:#fff;border-radius:12px;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden}
+.mhd{background:var(--navy);color:#fff;padding:13px 16px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.mhd .x{margin-left:auto;cursor:pointer;opacity:.85;font-size:16px}
+.mbd{padding:16px;display:flex;flex-direction:column;gap:12px}
+.frow{display:flex;flex-direction:column;gap:4px}
+.frow label{font-size:12px;font-weight:600;color:#556}
+.frow input,.frow select{padding:8px 10px;border:1px solid #c7cfda;border-radius:6px;font-size:13px}
+.frow input:disabled{background:#f2f4f7;color:#8a94a6}
+.frow .hint{font-size:11px;color:#8a94a6}
+.frow2{display:flex;gap:10px}
+.frow2 .frow{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;color:#334}
+.mft{padding:12px 16px;border-top:1px solid #eef1f5;display:flex;gap:8px;justify-content:flex-end;background:#fafbfd}
+.err{font-size:12px;color:#c0392b;background:#fdeceb;border:1px solid #f5c6c1;border-radius:6px;padding:8px 10px;display:none}
+.err.on{display:block}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#233047;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.on{opacity:1}
+</style></head>
+<body>
+<header>
+  <b>TELASIH MAKMUR</b><span class="sub">Master Data · Satuan (UOM) &amp; Konversi</span>
+  <span class="sp"></span>
+  <button class="btn p xs" onclick="openUomModal('new')">+ Satuan Baru</button>
+</header>
+
+<div class="wrap">
+  <div class="note">🔒 Konversi hanya sah <b>dalam satu dimensi</b>. Satuan <b>SPEC</b> (GSM, WARNA) tak dikonversi. Contoh: <b>IK16</b> = 1 ikat isi 16 pcs, lalu <b>1 PLASTIK = 20 IK16</b> — pilih satuan di kiri, klik <b>🔁 Konversi</b>, lalu <b>+ Konversi Baru</b> di panel kanan.</div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="toolbar">
+        <input id="su" placeholder="Cari kode / nama…" oninput="renderU()">
+        <select id="fdim" onchange="renderU()">
+          <option value="">Semua dimensi</option>
+          <option>PANJANG</option><option>LUAS</option><option>MASSA</option>
+          <option>VOLUME</option><option>JUMLAH</option><option>WAKTU</option><option>SPEC</option>
+        </select>
+        <label class="chk" style="font-size:12px"><input type="checkbox" id="fUhideInactive" onchange="renderU()"> Sembunyikan nonaktif</label>
+        <span class="sp"></span>
+        <button class="btn o xs" id="bConv" disabled onclick="showConv()">🔁 Konversi</button>
+        <button class="btn g xs" id="bEdit" disabled onclick="editSel()">✎ Edit</button>
+      </div>
+      <div class="qwrap">
+        <table class="qtbl"><thead><tr>
+          <th style="width:110px">Kode</th><th>Nama Satuan</th>
+          <th style="width:120px">Dimensi</th><th style="width:60px">Dasar</th>
+          <th style="width:80px">Status</th>
+        </tr></thead><tbody id="tu"></tbody></table>
+      </div>
+      <div class="legend">
+        <span><b>Cara pakai:</b> klik baris → tombol <b>Konversi</b> / <b>Edit</b> aktif. <span class="cnt" id="cu"></span></span>
+        <span><b>⭐</b> = satuan dasar dimensi.</span>
+      </div>
+    </div>
+
+    <!-- kartu konversi kanan -->
+    <div class="card" id="cvcard">
+      <div class="cvhd">
+        <span>Konversi <span id="cvunit">—</span></span>
+        <button class="btn o xs" id="bConvNew" disabled onclick="openConvModal('new')">+ Konversi Baru</button>
+        <span class="x" onclick="closeConv()">✕</span>
+      </div>
+      <div class="toolbar" style="padding:8px 14px">
+        <label class="chk" style="font-size:12px"><input type="checkbox" id="fChideInactive" onchange="showConv()"> Sembunyikan konversi nonaktif</label>
+      </div>
+      <div class="cvbd" id="cvbody">
+        <div class="cvempty">Pilih satuan di kiri lalu klik <b>🔁 Konversi</b> untuk melihat &amp; mengelola konversinya.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: SATUAN (add/edit) ══ -->
+<div class="ovl" id="ovlU">
+  <div class="modal">
+    <div class="mhd"><span id="mhdU">Satuan Baru</span><span class="x" onclick="closeUomModal()">✕</span></div>
+    <div class="mbd">
+      <div class="err" id="errU"></div>
+      <div class="frow2">
+        <div class="frow">
+          <label>Kode Satuan *</label>
+          <input id="fUcode" maxlength="10" placeholder="mis. IK16" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="frow">
+          <label>Dimensi *</label>
+          <select id="fUdim">
+            <option value="">— pilih —</option>
+            <option>PANJANG</option><option>LUAS</option><option>MASSA</option>
+            <option>VOLUME</option><option>JUMLAH</option><option>WAKTU</option><option>SPEC</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <label>Nama Satuan *</label>
+        <input id="fUname" placeholder="mis. Ikat isi 16 pcs">
+      </div>
+      <div class="chk"><input type="checkbox" id="fUbase"> Jadikan satuan <b>dasar</b> untuk dimensi ini (hanya 1 dasar per dimensi — dasar lama otomatis dilepas)</div>
+      <div class="chk"><input type="checkbox" id="fUactive" checked> Aktif</div>
+      <div class="hint">Dimensi <b>SPEC</b> tidak bisa punya satuan dasar / dikonversi. Setelah satuan tersimpan, atur konversinya lewat panel <b>🔁 Konversi</b>.</div>
+    </div>
+    <div class="mft">
+      <button class="btn g xs" onclick="closeUomModal()">Batal</button>
+      <button class="btn p xs" onclick="saveUom()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: KONVERSI (add/edit) ══ -->
+<div class="ovl" id="ovlC">
+  <div class="modal">
+    <div class="mhd"><span id="mhdC">Konversi Baru</span><span class="x" onclick="closeConvModal()">✕</span></div>
+    <div class="mbd">
+      <div class="err" id="errC"></div>
+      <div class="frow2">
+        <div class="frow">
+          <label>Dari (src) *</label>
+          <select id="fCsrc" onchange="syncDimHintC()"></select>
+        </div>
+        <div class="frow">
+          <label>Ke (dst) *</label>
+          <select id="fCdst" onchange="syncDimHintC()"></select>
+        </div>
+      </div>
+      <div class="frow">
+        <label>Nilai konversi * <span class="hint" id="hintC">(1 src = n × dst)</span></label>
+        <input id="fCval" type="number" step="any" min="0" placeholder="mis. 20">
+      </div>
+      <div class="chk"><input type="checkbox" id="fCactive" checked> Aktif</div>
+    </div>
+    <div class="mft">
+      <button class="btn g xs" onclick="closeConvModal()">Batal</button>
+      <button class="btn p xs" onclick="saveConv()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── state in-memory (mensimulasikan tabel DB — hilang saat reload) ──
+let U=[
+ ['MM','Milimeter','PANJANG',1,1],['CM','Sentimeter','PANJANG',0,1],['M','Meter','PANJANG',0,1],['INCH','Inci','PANJANG',0,1],['KM','Kilometer','PANJANG',0,1],
+ ['MM2','Milimeter persegi','LUAS',1,1],['CM2','Sentimeter persegi','LUAS',0,1],['M2','Meter persegi','LUAS',0,1],
+ ['MG','Miligram','MASSA',0,1],['GR','Gram','MASSA',1,1],['KG','Kilogram','MASSA',0,1],['KW','Kuintal','MASSA',0,1],['TON','Ton','MASSA',0,1],
+ ['ML','Mililiter','VOLUME',1,1],['L','Liter','VOLUME',0,1],['M3','Meter kubik','VOLUME',0,1],['GALON','Galon','VOLUME',0,1],['DRUM','Drum (200 L)','VOLUME',0,1],
+ ['PCS','Buah / Pieces','JUMLAH',1,1],['LBR','Lembar','JUMLAH',0,1],['SET','Set','JUMLAH',0,1],['PSG','Pasang','JUMLAH',0,1],
+ ['LUSIN','Lusin (12)','JUMLAH',0,1],['KODI','Kodi (20)','JUMLAH',0,1],['GROS','Gros (144)','JUMLAH',0,1],['RIM','Rim (500 lembar)','JUMLAH',0,1],
+ ['PLANO','Lembar Plano','JUMLAH',0,1],['UP','Up (naik cetak)','JUMLAH',0,1],['EKS','Eksemplar','JUMLAH',0,1],['PAK','Pak','JUMLAH',0,1],
+ ['BOX','Box / Dus','JUMLAH',0,1],['KARTON','Karton','JUMLAH',0,1],['BAL','Bal','JUMLAH',0,1],['ROLL','Rol / Gulungan','JUMLAH',0,1],['PALET','Palet','JUMLAH',0,1],
+ ['MNT','Menit','WAKTU',1,1],['JAM','Jam','WAKTU',0,1],['HARI','Hari','WAKTU',0,1],
+ ['GSM','Gramatur (g/m²)','SPEC',0,1],['WARNA','Warna cetak','SPEC',0,1],['PLATE','Plat cetak','SPEC',0,1],['FILM','Film','SPEC',0,1],
+ // contoh use-case custom packing (skenario dari user):
+ ['IK16','Ikat isi 16 pcs','JUMLAH',0,1],['PLASTIK','Plastik kemasan','JUMLAH',0,1],
+];
+// index kolom U: [0]code [1]name [2]dim [3]is_base [4]is_active
+
+let C=[
+ ['CM','MM',10,1],['M','CM',100,1],['M','MM',1000,1],['INCH','MM',25.4,1],['KM','M',1000,1],
+ ['CM2','MM2',100,1],['M2','CM2',10000,1],['M2','MM2',1000000,1],
+ ['GR','MG',1000,1],['KG','GR',1000,1],['KW','KG',100,1],['TON','KG',1000,1],['TON','KW',10,1],
+ ['L','ML',1000,1],['M3','L',1000,1],['GALON','L',3.785412,1],['DRUM','L',200,1],
+ ['LUSIN','PCS',12,1],['KODI','PCS',20,1],['GROS','PCS',144,1],['GROS','LUSIN',12,1],['RIM','LBR',500,1],
+ ['JAM','MNT',60,1],['HARI','JAM',24,1],
+ // contoh use-case custom packing:
+ ['IK16','PCS',16,1],['PLASTIK','IK16',20,1],
+];
+// index kolom C: [0]src [1]dst [2]value [3]is_active
+
+const info=c=>U.find(u=>u[0]===c);
+const dimOf=c=>(info(c)||[,,'—'])[2];
+const nameOf=c=>(info(c)||[,''])[1];
+const fmt=n=>(+n).toLocaleString('id-ID',{maximumFractionDigits:6});
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toast._h);toast._h=setTimeout(()=>t.classList.remove('on'),2200);}
+
+// ── faktor-ke-basis per satuan (BFS pada graf konversi, dua arah) ──
+let factor={};
+function rebuildFactors(){
+ factor={};
+ const adj={}; U.forEach(u=>adj[u[0]]=[]);
+ C.filter(c=>c[3]).forEach(([s,d,v])=>{ if(adj[s]&&adj[d]){adj[s].push([d,v]); adj[d].push([s,1/v]);} });
+ U.filter(u=>u[3]===1).forEach(b=>{
+   factor[b[0]]=1; const st=[b[0]];
+   while(st.length){const cur=st.pop();
+     adj[cur].forEach(([nx,v])=>{ if(factor[nx]===undefined){factor[nx]=factor[cur]*v; st.push(nx);} });
+   }
+ });
+}
+rebuildFactors();
+
+let sel=null;
+
+function pick(code){ sel=code;
+ document.querySelectorAll('#tu tr').forEach(tr=>tr.classList.toggle('sel',tr.dataset.c===code));
+ const spec=dimOf(code)==='SPEC';
+ bConv.disabled=spec; bEdit.disabled=false;
+}
+function editSel(){ if(sel) openUomModal('edit', sel); }
+
+function renderU(){
+ const q=su.value.toLowerCase(),fd=fdim.value,hideInactive=fUhideInactive.checked;
+ const rows=U.filter(r=>(!fd||r[2]===fd)&&(!hideInactive||r[4])&&(r[0]+r[1]).toLowerCase().includes(q));
+ tu.innerHTML=rows.map(r=>`<tr data-c="${r[0]}" class="${r[0]===sel?'sel':''}" onclick="pick('${r[0]}')">
+   <td class="code">${r[0]}</td><td>${r[1]}</td>
+   <td><span class="dim d-${r[2]}">${r[2]}</span></td>
+   <td>${r[3]?'<span class="base">⭐</span>':''}</td>
+   <td><span class="pill ${r[4]?'on':'off'}">${r[4]?'AKTIF':'NONAKTIF'}</span></td></tr>`).join('')
+   ||`<tr><td colspan="5" style="text-align:center;color:#8a94a6;padding:26px">Tidak ada.</td></tr>`;
+ cu.textContent=rows.length+' dari '+U.length+' satuan';
+}
+
+// ══════════════════ PANEL KONVERSI (kanan) ══════════════════
+function showConv(){
+ if(!sel) return;
+ const dim=dimOf(sel), fSrc=factor[sel];
+ cvunit.textContent=sel+' · '+nameOf(sel);
+ bConvNew.disabled = (dim==='SPEC');
+
+ if(dim==='SPEC'){
+   cvbody.innerHTML=`<div class="cvempty"><b>${sel}</b> satuan SPEC/atribut — tak punya konversi.</div>`; return;
+ }
+
+ let html='';
+
+ // seksi 1: pasangan konversi mentah yang melibatkan satuan ini (editable)
+ const hideInactive=fChideInactive.checked;
+ let pairs=C.map((c,i)=>({c,i})).filter(({c})=>c[0]===sel||c[1]===sel);
+ const totalPairs=pairs.length;
+ if(hideInactive) pairs=pairs.filter(({c})=>c[3]);
+ html+='<div class="cvsec-title">Konversi Langsung</div>';
+ if(pairs.length){
+   html+=pairs.map(({c,i})=>`<div class="cvrow">
+     <span class="from">${c[0]}</span><span class="eq">→</span><span class="to">${c[1]}</span>
+     <span class="val">1 ${c[0]} = ${fmt(c[2])} ${c[1]}</span>
+     ${c[3]?'':'<span class="pill off">NONAKTIF</span>'}
+     <span class="ded">
+       <button class="btn g xs" onclick="openConvModal('edit',${i})">Edit</button>
+       <button class="btn ${c[3]?'d':'o'} xs" onclick="toggleConvActive(${i})">${c[3]?'Nonaktifkan':'Aktifkan'}</button>
+     </span></div>`).join('');
+ } else if(totalPairs){
+   html+=`<div class="cvempty">Semua konversi untuk <b>${sel}</b> nonaktif (disembunyikan). Matikan filter untuk lihat.</div>`;
+ } else {
+   html+=`<div class="cvempty">Belum ada pasangan konversi langsung untuk <b>${sel}</b>. Klik <b>+ Konversi Baru</b> di atas.</div>`;
+ }
+
+ // seksi 2: turunan ke semua satuan se-dimensi (read-only, hasil hitung via basis)
+ if(fSrc!==undefined){
+   const rows=U.filter(u=>u[2]===dim && u[0]!==sel && factor[u[0]]!==undefined)
+     .map(u=>[u[0], fSrc/factor[u[0]]])
+     .sort((a,b)=>a[1]-b[1]);
+   if(rows.length){
+     html+='<div class="cvsec-title">Turunan ke Semua Satuan se-Dimensi</div>';
+     html+=rows.map(([to,val])=>`<div class="cvrow">
+       <span class="from">1 ${sel}</span><span class="eq">=</span>
+       <span class="val">${fmt(val)}</span><span class="to">${to}</span></div>`).join('');
+   }
+ }
+
+ cvbody.innerHTML=html;
+}
+function closeConv(){ cvunit.textContent='—'; bConvNew.disabled=true;
+ cvbody.innerHTML='<div class="cvempty">Pilih satuan di kiri lalu klik <b>🔁 Konversi</b>.</div>'; }
+
+// ══════════════════ MODAL SATUAN ══════════════════
+let uomMode='new', uomEditCode=null;
+function openUomModal(mode, code){
+ uomMode=mode; uomEditCode=code||null;
+ errU.classList.remove('on'); errU.textContent='';
+ if(mode==='edit' && code){
+   const u=info(code);
+   mhdU.textContent='Edit Satuan · '+code;
+   fUcode.value=u[0]; fUcode.disabled=true; // kode = key, tak diubah saat edit
+   fUdim.value=u[2];
+   fUname.value=u[1];
+   fUbase.checked=!!u[3];
+   fUactive.checked=!!u[4];
+ } else {
+   mhdU.textContent='Satuan Baru';
+   fUcode.value=''; fUcode.disabled=false;
+   fUdim.value=''; fUname.value='';
+   fUbase.checked=false; fUactive.checked=true;
+ }
+ ovlU.classList.add('on');
+}
+function closeUomModal(){ ovlU.classList.remove('on'); }
+function saveUom(){
+ const code=fUcode.value.trim().toUpperCase();
+ const dim=fUdim.value;
+ const name=fUname.value.trim();
+ const isBase=fUbase.checked?1:0;
+ const isActive=fUactive.checked?1:0;
+ if(!code||!dim||!name){ return showErrU('Kode, Dimensi, dan Nama wajib diisi.'); }
+ if(dim==='SPEC' && isBase){ return showErrU('Dimensi SPEC tidak boleh punya satuan dasar.'); }
+ if(uomMode==='new' && info(code)){ return showErrU('Kode "'+code+'" sudah dipakai.'); }
+
+ if(uomMode==='new'){
+   U.push([code,name,dim,isBase,isActive]);
+ } else {
+   const u=info(uomEditCode);
+   u[1]=name; u[2]=dim; u[3]=isBase; u[4]=isActive;
+ }
+ if(isBase){
+   U.forEach(u=>{ if(u[2]===dim && u[0]!==code) u[3]=0; });
+ }
+ rebuildFactors();
+ closeUomModal();
+ sel=code; renderU(); pick(code);
+ toast((uomMode==='new'?'Satuan "'+code+'" ditambahkan. Atur konversinya lewat panel 🔁 Konversi.':'Satuan "'+code+'" diperbarui.'));
+}
+function showErrU(msg){ errU.textContent=msg; errU.classList.add('on'); }
+
+// ══════════════════ MODAL KONVERSI ══════════════════
+let convMode='new', convEditIdx=null;
+function fillConvSelects(prefSrc){
+ const opts=U.filter(u=>u[2]!=='SPEC').map(u=>`<option value="${u[0]}">${u[0]} — ${u[1]}</option>`).join('');
+ fCsrc.innerHTML=opts; fCdst.innerHTML=opts;
+ if(prefSrc) fCsrc.value=prefSrc;
+}
+function syncDimHintC(){
+ const ds=dimOf(fCsrc.value), dd=dimOf(fCdst.value);
+ hintC.textContent = ds && dd ? (ds===dd ? `(1 ${fCsrc.value} = n × ${fCdst.value}, dimensi ${ds})` : `⚠ dimensi beda: ${ds} vs ${dd}`) : '(1 src = n × dst)';
+}
+function openConvModal(mode, idx){
+ convMode=mode; convEditIdx=(idx===undefined?null:idx);
+ errC.classList.remove('on'); errC.textContent='';
+ if(mode==='edit' && idx!==undefined){
+   const c=C[idx];
+   fillConvSelects();
+   mhdC.textContent='Edit Konversi · '+c[0]+' → '+c[1];
+   fCsrc.value=c[0]; fCdst.value=c[1]; fCval.value=c[2]; fCactive.checked=!!c[3];
+ } else {
+   // new: prefill src = satuan yang lagi dipilih di panel kanan (konteks)
+   fillConvSelects(sel);
+   mhdC.textContent='Konversi Baru · dari '+(sel||'—');
+   // pilih dst pertama yang beda dari src & sedimensi
+   const dimSel=dimOf(sel);
+   const cand=U.find(u=>u[2]===dimSel && u[0]!==sel && u[2]!=='SPEC');
+   fCdst.value = cand ? cand[0] : (fCdst.options[1]?fCdst.options[1].value:fCdst.value);
+   fCval.value=''; fCactive.checked=true;
+ }
+ syncDimHintC();
+ ovlC.classList.add('on');
+}
+function closeConvModal(){ ovlC.classList.remove('on'); }
+function saveConv(){
+ const src=fCsrc.value, dst=fCdst.value;
+ const val=parseFloat(fCval.value);
+ const isActive=fCactive.checked?1:0;
+ if(!src||!dst){ return showErrC('Pilih satuan asal dan tujuan.'); }
+ if(src===dst){ return showErrC('Satuan asal dan tujuan tidak boleh sama.'); }
+ if(dimOf(src)!==dimOf(dst)){ return showErrC('Dimensi berbeda ('+dimOf(src)+' vs '+dimOf(dst)+') — konversi tidak sah.'); }
+ if(!val || val<=0){ return showErrC('Nilai konversi harus angka > 0.'); }
+ const dupIdx=C.findIndex((c,i)=>c[0]===src&&c[1]===dst&&i!==convEditIdx);
+ if(dupIdx!==-1){ return showErrC('Pasangan '+src+' → '+dst+' sudah ada. Edit baris tersebut, jangan buat baru.'); }
+
+ if(convMode==='new'){
+   C.push([src,dst,val,isActive]);
+ } else {
+   const c=C[convEditIdx]; c[0]=src; c[1]=dst; c[2]=val; c[3]=isActive;
+ }
+ rebuildFactors();
+ closeConvModal();
+ showConv();
+ toast(convMode==='new'?'Konversi ditambahkan.':'Konversi diperbarui.');
+}
+function showErrC(msg){ errC.textContent=msg; errC.classList.add('on'); }
+function toggleConvActive(idx){
+ const c=C[idx];
+ c[3]=c[3]?0:1;
+ rebuildFactors();
+ showConv();
+ toast('Konversi '+c[0]+' → '+c[1]+(c[3]?' diaktifkan.':' dinonaktifkan.'));
+}
+
+// tutup modal via klik overlay / Esc
+[ovlU,ovlC].forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('on'); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ ovlU.classList.remove('on'); ovlC.classList.remove('on'); } });
+
+renderU();
+</script>
+</body></html>

@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Models\Master;
+
+use Illuminate\Database\Eloquent\Model;
+
+class SysConstant extends Model
+{
+    protected $connection = 'tm2mst';
+
+    protected $table = 'sys_constant';
+
+    protected $primaryKey = 'id_constant';
+
+    protected $fillable = [
+        'constant_key',
+        'constant_group',
+        'constant_number',
+        'constant_text',
+        'description',
+        'is_active',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected $casts = [
+        'constant_number' => 'decimal:6',
+        'is_active' => 'boolean',
+    ];
+
+    public static function number(string $key, float $default = 0.0): float
+    {
+        return (float) (static::query()->where('constant_key', $key)->where('is_active', true)->value('constant_number') ?? $default);
+    }
+}

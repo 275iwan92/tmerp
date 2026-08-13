@@ -138,56 +138,63 @@ CREATE TABLE `geo_district` (
   COMMENT='Master kecamatan (Level 3). Diisi via import resmi, bukan input manual';
 
 -- ============================================================
--- 6. geo_village  (Level 4 — kelurahan/desa) — OPSIONAL (5-level)
---    Aktifkan hanya bila keputusan pending #1 = "5-level". ~80rb+ baris.
+-- 6. geo_village  (Level 4 — kelurahan/desa)
+--    PENDING #1 DIPUTUSKAN (lihat FIX_MASTER_CUSTOMER_NAV_ADDRESS.md §B.1): 5-level.
 -- ============================================================
--- DROP TABLE IF EXISTS `geo_village`;
--- CREATE TABLE `geo_village` (
---   `id_village`    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
---   `district_id`   BIGINT UNSIGNED NOT NULL             COMMENT 'FK -> geo_district',
---   `village_code`  VARCHAR(20)     NULL DEFAULT NULL,
---   `village_name`  VARCHAR(100)    NOT NULL             COMMENT 'Nama kelurahan/desa',
---   `post_code`     VARCHAR(20)     NULL DEFAULT NULL,
---   `is_active`     TINYINT(1)      NOT NULL DEFAULT 1,
---   `created_at`    TIMESTAMP       NULL DEFAULT CURRENT_TIMESTAMP,
---   `updated_at`    TIMESTAMP       NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
---   `created_by`    VARCHAR(100)    NULL DEFAULT NULL,
---   `updated_by`    VARCHAR(100)    NULL DEFAULT NULL,
---   PRIMARY KEY (`id_village`) USING BTREE,
---   INDEX `idx_village_district` (`district_id` ASC) USING BTREE,
---   UNIQUE INDEX `uq_village_district_name` (`district_id` ASC, `village_name` ASC) USING BTREE,
---   CONSTRAINT `fk_village_district` FOREIGN KEY (`district_id`)
---       REFERENCES `geo_district` (`id_district`) ON DELETE RESTRICT ON UPDATE CASCADE
--- ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci
---   COMMENT='Master kelurahan/desa (Level 4, opsional 5-level)';
+DROP TABLE IF EXISTS `geo_village`;
+CREATE TABLE `geo_village` (
+  `id_village`    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `district_id`   BIGINT UNSIGNED NOT NULL             COMMENT 'FK -> geo_district',
+  `village_code`  VARCHAR(20)     NULL DEFAULT NULL,
+  `village_name`  VARCHAR(100)    NOT NULL             COMMENT 'Nama kelurahan/desa',
+  `post_code`     VARCHAR(20)     NULL DEFAULT NULL,
+  `is_active`     TINYINT(1)      NOT NULL DEFAULT 1,
+  `created_at`    TIMESTAMP       NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    TIMESTAMP       NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by`    VARCHAR(100)    NULL DEFAULT NULL,
+  `updated_by`    VARCHAR(100)    NULL DEFAULT NULL,
+  PRIMARY KEY (`id_village`) USING BTREE,
+  INDEX `idx_village_district` (`district_id` ASC) USING BTREE,
+  UNIQUE INDEX `uq_village_district_name` (`district_id` ASC, `village_name` ASC) USING BTREE,
+  CONSTRAINT `fk_village_district` FOREIGN KEY (`district_id`)
+      REFERENCES `geo_district` (`id_district`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  COMMENT='Master kelurahan/desa (Level 4)';
 
 -- ============================================================
--- 7. VIEW v_geo_full_address
---    Dropdown "1x pilih ID = alamat lengkap".
---    Grain = kecamatan; kota tanpa kecamatan tetap tampil (LEFT JOIN).
+-- 7. VIEW v_geo_full_address (v2 — 5-level + postal_code)
+--    Dropdown "1x pilih ID = alamat lengkap". Format label: koma, detail->umum
+--    (village, district, city, region, country). Grain tersempit yang tersedia
+--    tetap tampil via LEFT JOIN berjenjang (district/village boleh kosong,
+--    penting utk data luar negeri yang cuma sampai city).
 -- ============================================================
 DROP VIEW IF EXISTS `v_geo_full_address`;
 CREATE VIEW `v_geo_full_address` AS
 SELECT
+  v.id_village,
   d.id_district,
   c.id_city,
   r.id_region,
   ct.id_country,
-  CONCAT(
-    ct.country_name, ' > ',
-    r.region_name, ' > ',
-    COALESCE(CONCAT(c.city_type, ' '), ''), c.city_name,
-    IF(d.district_name IS NULL, '', CONCAT(' > ', d.district_name))
-  ) AS full_label,                 -- "INDONESIA > JAWA TIMUR > KOTA Malang > Klojen"
+  CONCAT_WS(', ',
+    v.village_name,
+    d.district_name,
+    CONCAT_WS(' ', c.city_type, c.city_name),
+    r.region_name,
+    ct.country_name
+  ) AS full_label,        -- "Kauman, Klojen, KOTA Malang, JAWA TIMUR, INDONESIA"
+  COALESCE(v.post_code, d.post_code, c.post_code) AS postal_code,
   ct.country_name,
   r.region_name,
   c.city_type,
   c.city_name,
-  d.district_name
+  d.district_name,
+  v.village_name
 FROM `geo_city` c
 JOIN `geo_region`  r  ON r.id_region   = c.region_id
 JOIN `geo_country` ct ON ct.id_country = r.country_id
-LEFT JOIN `geo_district` d ON d.city_id = c.id_city;
+LEFT JOIN `geo_district` d ON d.city_id = c.id_city
+LEFT JOIN `geo_village`  v ON v.district_id = d.id_district;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

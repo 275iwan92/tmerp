@@ -1,0 +1,105 @@
+# ═══════════════════════════════════════════════════════════════════
+# GLOBAL_RULES.yaml — ATURAN UNIVERSAL SEMUA MODUL (jarang berubah)
+# TMERP · PT. Telasih Makmur · Laravel + Livewire
+# Modul MENUNJUK ke file ini, TIDAK menyalin. Khas-modul → <MODUL>_RULES.yaml
+# ═══════════════════════════════════════════════════════════════════
+
+meta:
+  scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE). Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
+  bahasa: "Jawab Bahasa Indonesia. Singkat-padat-jelas. Bahas konsep sebelum kode. Baca file PENUH sebelum dokumentasi."
+
+# ═══════════════════════════════════════════════════════════════════
+# MODUL ERP — SCOPE 10 MINGGU (Finance/GL/AP/cashier & HR DIKELUARKAN;
+# Invoicing/Billing tetap masuk sebagai AR-lite, bukan bagian GL)
+# Urutan = urutan dependensi eksekusi.
+# ═══════════════════════════════════════════════════════════════════
+modules:
+  "01_sales":
+    desc: "Inquiry, Quotation, Sales Order/CO"
+    submodules: ["inquiry_product", "imposition_routing", "product_costing", "sales_quotation", "customer_order_sales_order", "sales_delivery_plan", "submit_to_production"]
+  "02_inventory":
+    desc: "Master item & pergerakan stok — fondasi untuk MRP"
+    submodules: ["item_master", "stock_movement", "stock_adjustment", "stock_opname"]
+  "03_production":
+    desc: "Perencanaan & eksekusi produksi (konsumen Routing/BOP dari Sales)"
+    submodules: ["mps", "mrp", "capacity_planning", "production_order_work_order", "bop_execution", "production_output"]
+  "04_procurement":
+    desc: "Dipicu MRP"
+    submodules: ["purchase_requisition", "purchase_order", "receiving_goods_receipt"]
+  "05_dispatch":
+    desc: "Distribusi & pengiriman"
+    submodules: ["picking_packing", "delivery_order", "delivery_note", "shipment_cross_co"]
+  "06_invoicing_billing":
+    desc: "AR-lite — invoice dari CO/DN + status tagih/bayar. BUKAN General Ledger/AP/cashier."
+    submodules: ["invoice_generation", "billing_status", "ar_aging_basic"]
+  "07_lookup":
+    desc: "Data referensi lintas modul"
+    submodules: ["global_reference", "lookup", "parameter"]
+  "08_security":
+    desc: "Akses & audit"
+    submodules: ["user_role_management", "notification", "audit_trail", "opening_app_auth_shell"]
+
+modules_excluded:
+  finance_accounting: "Cashier, AP, General Ledger, jurnal, period close — DI LUAR scope 10 minggu."
+  hr: "Recruitment, Time Attendance, Payroll — ditunda, di luar jalur kritis order-to-cash."
+
+stack:
+  app: "Laravel + Livewire + Alpine + Tailwind (compiled via Vite; CDN hanya untuk mockup, BUKAN produksi)"
+  env: "Laravel Herd (Windows), MySQL 8"
+  repo: "275iwan92/tmerp · path C:\\Users\\iwanp\\Herd\\tmerp · branch main (Claude Code otonom: auto/dev)"
+  databases: "10 DB terpisah tm2*: tm2sys tm2mst tm2sdi tm2pur tm2inv tm2prd tm2acc tm2hrm tm2hrr tm2pyr"
+
+db_conventions:
+  naming: "tabel/field English; prosa Indonesia"
+  types: "money DECIMAL(18,4); dim mm DECIMAL(10,2)"
+  columns: "i_=input(boleh DEFAULT); c_=computed(TANPA DEFAULT); turunan di VIEW v1_"
+  fk_cross_db: "LOGICAL (Eloquent), BUKAN constraint MySQL — aman untuk referensi lintas tm2*"
+  snapshot: "semua data transaksional pakai snapshot pattern (freeze nilai saat confirmed)"
+  audit: "created_by/at + updated_by/at di tiap tabel transaksi"
+
+doc_types:
+  NEW: "dokumen baru"
+  RECALC: "hitung ulang, spec/isi tetap"
+  REVISE: "spec berubah = COPY-RECORD (revision_no+1; versi lama is_cancelled=1 cancel_reason=SUPERSEDED). TIDAK edit confirmed"
+  immutable: "tipe ditetapkan sekali"
+
+authority_chain:
+  urutan: "Inquiry (spec) → Imposition+Routing (Product Designer) → Master Card (print terkontrol) → Costing (harga) → Quotation/CO → Production"
+  prinsip: "Tiap tahap MENGUNCI ke tahap berikut. Hilir tak boleh ubah milik hulu (read-only/terkunci); perubahan = REVISE di hulu."
+  engine_pattern: "untuk semua engine (Imposition, Scheduling, Costing, Route Planning): 'engine suggests, officer confirms'"
+
+process_order:
+  pre: "FILM → PISAU/MATRAS → PLATE (per warna/sisi: 4/4=8, 4/0=4)"
+  floor: "1.BELAH PLANO → 2.CETAK → 3.COATING(WB/UV/varnish, multi-layer) → 4.LAMINASI(titik MERGE duplex+corrugated/SF) → 5.PLONG/diecut → 6.LEM → 7.KUPAS → 8.PACKING → 9.KIRIM"
+  koreksi_kritis: "COATING DULU baru LAMINASI"
+
+ui_conventions:
+  tokens: "navy #2c3e69 (--navy) ; accent #2f6fed (--accent)"
+  layout_mode: "FULL-PAGE (w-full+padding) untuk layar OPERASIONAL (grid/costing/inquiry); TERPUSAT (max-width) untuk FORM/AUTH/NOTA/dokumen"
+  layout_pelajaran: "JANGAN pakai class `container` Tailwind (penyebab bug margin melebar di Edge). max-width/mx-auto BOLEH untuk mode terpusat — pilih sadar, bukan dilarang total"
+  layouts_wajib: "layouts.guest (auth), layouts.shell (menu), layouts.app"
+  badge_system: "🔒 locked(abu) / ◆ selector-harga(kuning) / ⚙ engine(ungu) / = hasil(hijau)"
+  mockup_arti: "'HTML/CSS mockup' = replikasi struktur layar EXISTING + dummy data (BUKAN desain baru)"
+  sisi_visibilitas: "Sisi A (internal/Direksi, angka sensitif visible) vs Sisi B (eksternal/Sales, redacted sampai published)"
+
+# ═══════════════════════════════════════════════════════════════════
+# STANDAR GRID/LIST BERVOLUME BESAR (semua modul — wajib, bukan opsional)
+# ═══════════════════════════════════════════════════════════════════
+grid_performance:
+  pagination: "WAJIB server-side (Livewire WithPagination trait), BUKAN load semua lalu potong di client. 20-50 baris/halaman, gaya page-number klasik (bukan infinite scroll) — cocok untuk data administratif/transaksional"
+  search_filter: "WAJIB jadi WHERE clause di query (server-side). DILARANG filter array/JS di browser — itu berarti seluruh data tetap ke-load duluan sebelum difilter, sama saja tak berguna"
+  indexing: "kolom yang sering dicari/di-sort (name, code, kota, status, FK) WAJIB diindex sebelum data mencapai ribuan baris — hindari full table scan"
+  berlaku_untuk: "semua grid administratif: Customer, Item Master, PO/PR, Inquiry Hub, dll — bukan cuma satu modul"
+
+tier_docs:
+  tier1: "business requirements"
+  tier2: "Part A happy path / Part B special cases / Part C state-form-button"
+  tier3: "DDL + VIEW + migrasi (3A ideal, 3B pragmatis bila perlu)"
+  tier4: "per-screen spec + binding table (field→kolom)"
+  sumber_kebenaran_rumus: "kode + test regresi (BUKAN dokumen). Dokumen = spec/keputusan"
+
+workflow:
+  fix_vs_design: "FIX-type → Claude Code langsung. Design/concept → dibahas di chat."
+  state_update: "update <MODUL>_STATE.yaml tiap ada keputusan baru"
+  ownership: "Jo pegang setting/upload/commit; Claude hanya tulis file (tak bisa akses setting/memori project)"
+  isolasi: "memori terisolasi per-project; lintas-project TIDAK terbaca (batas desain, tak bisa ditembus)"

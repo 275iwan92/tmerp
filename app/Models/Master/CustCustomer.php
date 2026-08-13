@@ -4,6 +4,7 @@ namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class CustCustomer extends Model
 {
@@ -21,6 +22,8 @@ class CustCustomer extends Model
         'contact_name',
         'default_address',
         'default_area_id',
+        'default_area_level',
+        'postal_code',
         'email',
         'phone',
         'website',
@@ -46,6 +49,28 @@ class CustCustomer extends Model
     public function products(): HasMany
     {
         return $this->hasMany(ProdProduct::class, 'customer_id', 'id_customer');
+    }
+
+    // default_area_id bisa merujuk geo_city/geo_district/geo_village tergantung
+    // default_area_level (lihat FIX_MASTER_CUSTOMER_NAV_ADDRESS.md §B.2c) — bukan
+    // relasi BelongsTo tunggal. Resolve label lewat v_geo_full_address, di-filter
+    // supaya baris yang cocok konsisten dgn level yang tersimpan (village kosong
+    // utk level DISTRICT, district kosong utk level CITY — lihat catatan grain).
+    public function addressLabel(): ?string
+    {
+        if (! $this->default_area_id || ! $this->default_area_level) {
+            return null;
+        }
+
+        $query = DB::connection('tm2mst')->table('v_geo_full_address');
+
+        $query = match ($this->default_area_level) {
+            'VILLAGE' => $query->where('id_village', $this->default_area_id),
+            'DISTRICT' => $query->where('id_district', $this->default_area_id)->whereNull('id_village'),
+            'CITY' => $query->where('id_city', $this->default_area_id)->whereNull('id_district'),
+        };
+
+        return $query->value('full_label');
     }
 
     // Tidak ada relasi balik ke iqp_inquiry (tm2sdi) di sini secara sengaja:

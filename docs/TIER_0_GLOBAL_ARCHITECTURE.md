@@ -10,10 +10,10 @@ Sistem berjalan dalam **transisi bertahap** dari ScriptCase ke Laravel:
 
 | | Versi 1 (existing) | Versi 2 (baru) |
 |---|---|---|
-| Platform | ScriptCase | Laravel 13 |
+| Platform | ScriptCase (LEGACY-ONLY, tak dikembangkan lagi) | Laravel 13 |
 | Database | `tm*` (tm2mst, tm2sdi, …) | **`tm2*` (tm2mst, tm2sdi, …)** |
 | Skema | existing / Tier 3B (campur ID) | **Tier 3A all-new (English, snake_case)** |
-| Server | Produksi `103.79.247.146:23306` | Lokal dev → produksi saat cutover |
+| Server dev | Produksi lama `103.79.247.146:23306` | Lokal (Laravel Herd/Windows) → target deploy **Ubuntu 22 + Docker** (image dari GitHub `275iwan92/tmerp`) |
 | Status akhir | **dipensiunkan** setelah migrasi | **menjadi satu-satunya yang hidup** |
 
 **Alur transisi:** dev Laravel di `tm2*` (lokal) → selesai per modul → migrasi data `tm*` → `tm2*` via script transformasi → cutover modul → `tm*` lama dipensiunkan.
@@ -43,22 +43,25 @@ Sistem berjalan dalam **transisi bertahap** dari ScriptCase ke Laravel:
 
 ## 2. PETA 10 DATABASE
 
-| # | Connection | Database | Modul | Fungsi | Peran |
-|---|-----------|----------|-------|--------|-------|
-| 1 | `conn_tm2sys` | **tm2sys** | Security & Notification | User, role, hak akses, audit trail, notifikasi | Infrastruktur |
-| 2 | `conn_tm2mst` | **tm2mst** | Master / Lookup Data | Data induk & referensi global | **Single Source** |
-| 3 | `conn_tm2sdi` | **tm2sdi** | Sales & Distribution | Inquiry → Quotation → SO, Costing, Dispatch, DO | Transaksi inti |
-| 4 | `conn_tm2pur` | **tm2pur** | Procurement | PR → PO → Receiving | Transaksi |
-| 5 | `conn_tm2inv` | **tm2inv** | Inventory | Item stock, movement, adjustment | Transaksi |
-| 6 | `conn_tm2prd` | **tm2prd** | Production | Planning, scheduling, capacity, output | Transaksi |
-| 7 | `conn_tm2acc` | **tm2acc** | Finance & Accounting | Cashier, AP/AR, General Ledger | Transaksi |
-| 8 | `conn_tm2hrm` | **tm2hrm** | HR (Master) | Kepegawaian, data karyawan | Master + Transaksi |
-| 9 | `conn_tm2hrr` | **tm2hrr** | HR Recruitment | Rekrut & seleksi | Transaksi |
-| 10 | `conn_tm2pyr` | **tm2pyr** | Payroll | Penggajian | Transaksi |
+> ⚠️ **Status vs SCOPE 10 MINGGU (lihat GLOBAL_START_HERE.md):** peta ini infrastruktur penuh (10 DB tetap disiapkan). Tapi modul di baris 7–10 **DI LUAR jalur kerja aktif** — DB-nya boleh dibuat, tapi tak dikembangkan sampai scope aktif (order-to-cash tanpa Finance/HR) selesai.
+
+| # | Connection | Database | Modul | Fungsi | Peran | Status scope 10 minggu |
+|---|-----------|----------|-------|--------|-------|-------|
+| 1 | `conn_tm2sys` | **tm2sys** | Security & Notification | User, role, hak akses, audit trail, notifikasi | Infrastruktur | 🟡 aktif (opening_app/auth/shell) |
+| 2 | `conn_tm2mst` | **tm2mst** | Master / Lookup Data | Data induk & referensi global | **Single Source** | 🟢 aktif |
+| 3 | `conn_tm2sdi` | **tm2sdi** | Sales & Distribution | Inquiry → Quotation → SO, Costing, Dispatch, DO | Transaksi inti | 🟢 aktif (spine) |
+| 4 | `conn_tm2pur` | **tm2pur** | Procurement | PR → PO → Receiving | Transaksi | 🟢 aktif |
+| 5 | `conn_tm2inv` | **tm2inv** | Inventory | Item stock, movement, adjustment | Transaksi | 🟢 aktif |
+| 6 | `conn_tm2prd` | **tm2prd** | Production | Planning, scheduling, capacity, output (MPS/MRP) | Transaksi | 🟢 aktif |
+| 7 | `conn_tm2acc` | **tm2acc** | Finance & Accounting | Cashier, AP/AR, General Ledger | Transaksi | ⚪ **DI LUAR scope 10 minggu** — kecuali Invoicing/Billing (AR-lite), yang tetap aktif dan ditempatkan di `tm2sdi`/`tm2acc` sesuai keputusan implementasi nanti |
+| 8 | `conn_tm2hrm` | **tm2hrm** | HR (Master) | Kepegawaian, data karyawan | Master + Transaksi | ⚪ **ditunda** |
+| 9 | `conn_tm2hrr` | **tm2hrr** | HR Recruitment | Rekrut & seleksi | Transaksi | ⚪ **ditunda** |
+| 10 | `conn_tm2pyr` | **tm2pyr** | Payroll | Penggajian | Transaksi | ⚪ **ditunda** |
 
 **Catatan penempatan khusus (LOCKED):**
 - `i_inquiry_costing` (MTO costing) → **tm2sdi** (menyatu dengan alur Sales/Inquiry)
 - `i_stock_costing` (MTS costing) → **tm2inv** (menyatu dengan stok, tanpa party/inquiry linkage)
+- **Invoicing/Billing (AR-lite)** — belum ada baris DB resmi; perlu keputusan: tabel invoice di `tm2sdi` (dekat CO/DN) atau `tm2acc` (dekat domain finance meski GL-nya sendiri belum dibangun). Catat di `<MODUL>_STATE` saat diputuskan.
 
 ---
 
@@ -130,6 +133,7 @@ DB_HRR=tm2hrr
 DB_PYR=tm2pyr
 ```
 > Saat scale: cukup tambah `DB_HOST_INV=ip-server-lain` per koneksi, tanpa ubah kode.
+> Saat deploy ke Ubuntu 22 + Docker: nilai-nilai ini pindah ke `.env` container / docker-compose secrets — struktur 10-koneksi tak berubah.
 
 ### 5.2 `config/database.php` — pola tiap koneksi
 ```php
@@ -170,16 +174,22 @@ Schema::connection('tm2inv')->create('stock_movement', function($t){ ... });
 
 ---
 
-## 6. URUTAN PEMBANGUNAN (ROADMAP)
+## 6. URUTAN PEMBANGUNAN (ROADMAP — selaras scope 10 minggu)
 
-| Fase | Aktivitas | DB terlibat |
-|------|-----------|-------------|
-| **0** ✅ | Environment (Laravel, Git, MySQL, Claude Code) | — |
-| **1** | Setup 10 database + 10 koneksi Laravel | semua |
-| **2** | Modul **Master** (`tm2mst`) — fondasi semua modul | tm2mst |
-| **3** | Modul **Security** (`tm2sys`) — user/role/akses | tm2sys |
-| **4** | Modul **Sales/Inquiry** (`tm2sdi`) — transaksi inti pertama | tm2sdi + view tm2mst |
-| **5** | Modul lain menyusul sesuai prioritas bisnis | — |
+| Fase | Aktivitas | DB terlibat | Minggu (acuan) |
+|------|-----------|-------------|-------|
+| **0** ✅ | Environment (Laravel, Git, MySQL, Claude Code) | — | — |
+| **1** | Setup 10 database + 10 koneksi Laravel | semua | awal |
+| **2** | Modul **Master** (`tm2mst`) — fondasi semua modul | tm2mst | paralel W1–2 |
+| **3** | Modul **Security** (`tm2sys`) — user/role/akses | tm2sys | paralel W1–2 |
+| **4** | Modul **Sales/Inquiry** (`tm2sdi`) — transaksi inti pertama | tm2sdi + view tm2mst | W1–2 |
+| **5** | Inventory | tm2inv | W3–4 |
+| **6** | Production (MPS/MRP) | tm2prd | W5–6 |
+| **7** | Procurement | tm2pur | W7 |
+| **8** | Dispatch | tm2sdi | W8 |
+| **9** | Invoicing/Billing (AR-lite) | tm2sdi/tm2acc (TBD) | W9 |
+| **10** | Integrasi, regresi, deploy Ubuntu 22 + Docker | semua | W10 |
+| — | Finance penuh (GL/AP/cashier), HR | tm2acc, tm2hrm/hrr/pyr | **di luar scope 10 minggu** |
 
 > **Kenapa Master & Security dulu?** Semua modul transaksi bergantung pada keduanya (data induk + hak akses). Membangun Sales sebelum Master = menulis VIEW ke tabel yang belum ada.
 
@@ -200,7 +210,9 @@ File SQL menunjukkan server produksi **aktif**:
 
 ## 8. YANG PERLU DIKOREKSI/DIKONFIRMASI
 
-1. **HR terpecah 3 DB** (`tm2hrm`/`tm2hrr`/`tm2pyr`) — apakah recruitment & payroll cukup mandiri untuk DB terpisah, atau lebih baik 1 DB `tmhr` dengan skema terpisah?
+1. **HR terpecah 3 DB** (`tm2hrm`/`tm2hrr`/`tm2pyr`) — **ditunda** (di luar scope 10 minggu), keputusan struktur DB dibahas saat HR digarap.
 2. **tm2sys vs tm2mst** — notifikasi & audit trail di `tm2sys`; apakah lookup/parameter global (bukan master bisnis) juga di `tm2mst` atau di `tm2sys`?
 3. **Costing MTS** (`i_stock_costing`) di `tm2inv` — konfirmasi apakah butuh VIEW balik ke `tm2sdi` untuk HPP engine yang sama.
 4. **Baseline data lokal** — impor `.sql` produksi ke lokal, atau mulai struktur bersih ikut Tier 3?
+5. **BARU — lokasi tabel Invoicing/Billing** — `tm2sdi` (dekat CO/DN) vs `tm2acc` (dekat domain finance) — putuskan sebelum W9.
+6. **BARU — target deploy Ubuntu 22 + Docker** — Dockerfile/compose belum ditulis; susun saat Fase 10 (integrasi) mendekat, bukan di akhir mendadak.

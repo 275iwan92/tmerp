@@ -52,6 +52,8 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     {
         return [
             'SALES_INQ' => route('inquiry.hub'),
+            'MD_CUST' => route('master.customer'),
+            'MD_UOM' => route('master.uom'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
