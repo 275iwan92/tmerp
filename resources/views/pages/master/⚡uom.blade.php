@@ -110,9 +110,11 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             if (! isset($adjacency[$c->uom_src], $adjacency[$c->uom_dst])) {
                 continue;
             }
+            // uom_src/uom_dst berarti "1 src = value dst" -> factor(base-unit per 1 unit)
+            // dari src ke dst dibagi value, dari dst ke src dikali value.
             $value = (float) $c->conversion_value;
-            $adjacency[$c->uom_src][] = [$c->uom_dst, $value];
-            $adjacency[$c->uom_dst][] = [$c->uom_src, $value > 0 ? 1 / $value : 0];
+            $adjacency[$c->uom_src][] = [$c->uom_dst, $value > 0 ? 1 / $value : 0];
+            $adjacency[$c->uom_dst][] = [$c->uom_src, $value];
         }
 
         $factor = [];
