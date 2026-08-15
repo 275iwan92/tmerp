@@ -146,11 +146,10 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         return $this->accessibleModules()->has($moduleCode);
     }
 
-    // Gate link "Setup" — BRIEF §3.3: is_admin=1 (atau akses modul security bila
-    // suatu saat modul SECURITY didaftarkan di sec_module; belum ada di seed saat ini).
+    // Gate link "Setup" — BRIEF §3.3: is_admin=1 atau akses modul SETUP.
     public function canSetup(): bool
     {
-        return (bool) $this->is_admin || $this->canAccessModule('SECURITY');
+        return (bool) $this->is_admin || $this->canAccessModule('SETUP');
     }
 
     // module_code sys_app_menu (SALES/PROC/INV/PROD/MDATA/FINACC/SETUP) yang boleh

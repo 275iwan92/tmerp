@@ -71,7 +71,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $user = SecUser::findOrFail($userId);
-        $user->update(['active' => ! $user->active]);
+        $user->update(['is_active' => ! $user->is_active]);
         unset($this->users);
     }
 
@@ -272,10 +272,10 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                     <td>{{ $u->login }}</td>
                                     <td>{{ $u->name }}</td>
                                     <td>{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' (Admin)' : '' }}</td>
-                                    <td><span class="pill {{ $u->active ? 'on' : 'off' }}">{{ $u->active ? 'Aktif' : 'Nonaktif' }}</span></td>
+                                    <td><span class="pill {{ $u->is_active ? 'on' : 'off' }}">{{ $u->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
                                     <td>
                                         @if ($u->id_user !== Auth::id())
-                                            <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                            <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                                         @else
                                             <span class="note">(akun Anda)</span>
                                         @endif

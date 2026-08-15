@@ -1,4 +1,15 @@
 -- ============================================================
+-- !! OBSOLETE — JANGAN dipakai sebagai acuan taksonomi sec_module/sec_user !!
+-- Skema aktual ada di docs/tm2sys.sql (dump live). File ini adalah draft awal
+-- yang sudah menyimpang dari implementasi: sec_module di sini pakai kode
+-- INQUIRY/HPP/PROOF/MASTER/PRODUKSI/FINANCE, sedangkan skema aktual pakai
+-- SALES/PROC/INV/PROD/MDATA/FINACC/SETUP/COSTING (lihat migration
+-- 2026_08_15_000001_consolidate_setup_security_and_add_costing_module.php
+-- untuk riwayat bug yang timbul akibat dokumen ini dijadikan acuan).
+-- sec_user di sini juga tidak punya kolom registrasi (reg_type/id_type/
+-- approval_status/email_verified*/wa_verified*/theme_code) yang sudah ada
+-- di skema aktual. Dibiarkan di /docs untuk riwayat desain awal saja.
+-- ============================================================
 -- TIER 3A — SECURITY (Modul 9) — adopsi ScriptCase + modifikasi permission
 -- ERP Cetak Offset & Packaging — PT. Telasih Makmur
 -- Skema: tm2sys · Prefix: sec_ (security)
