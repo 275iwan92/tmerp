@@ -167,12 +167,6 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 ?>
 
 <div>
-    <header class="app-header">
-        <b>📦 TELASIH MAKMUR — Sistem Inquiry</b>
-        <span class="sub">hub · pemilih jenis inkuiri</span>
-        <a class="back" href="{{ route('menu') }}">← Menu Utama</a>
-    </header>
-
     <div class="hub">
         <h1>Mau buat inkuiri apa?</h1>
         <p class="lead">Pilih jenisnya dulu — atau buka kembali inkuiri yang sudah tersimpan di bawah.</p>

@@ -189,34 +189,8 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<div class="secpage" x-data="{ ddOpen: false }">
-    <header>
-        <div class="brand"><span class="logo">📦</span> TELASIH MAKMUR</div>
-        <span class="htitle">Setup &amp; Security</span>
-        <a href="{{ route('menu') }}" class="back">← Menu utama</a>
-        <div class="sp-spacer"></div>
-        <div class="user" @click.outside="ddOpen = false">
-            <button type="button" class="avatar-btn" @click="ddOpen = !ddOpen">
-                <span class="avatar"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
-                {{ Auth::user()->name ?: 'Pengguna' }} ▾
-            </button>
-            <div class="dropdown" :class="{ open: ddOpen }">
-                <div class="dd-list">
-                    <a href="{{ route('menu') }}" class="dd-item"><span>🏠</span> Menu utama</a>
-                    <button type="button" class="dd-item exit" wire:click="logout"><span>↩︎</span> Keluar aplikasi</button>
-                </div>
-            </div>
-        </div>
-    </header>
-
+<div class="secpage">
     <div class="shell">
-        <aside class="side">
-            <div class="cap">Keamanan</div>
-            <button type="button" class="nav-item {{ $activePanel === 'users' ? 'active' : '' }}" wire:click="setPanel('users')"><span class="i">👤</span><span class="t">Pengguna</span></button>
-            <button type="button" class="nav-item {{ $activePanel === 'groups' ? 'active' : '' }}" wire:click="setPanel('groups')"><span class="i">👥</span><span class="t">Grup</span></button>
-            <button type="button" class="nav-item {{ $activePanel === 'perms' ? 'active' : '' }}" wire:click="setPanel('perms')"><span class="i">🔐</span><span class="t">Hak Akses Grup</span></button>
-        </aside>
-
         <div class="content">
             {{-- 1. Pengguna --}}
             <section class="panel {{ $activePanel === 'users' ? 'active' : '' }}">

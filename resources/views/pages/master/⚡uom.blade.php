@@ -383,15 +383,13 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 ?>
 
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📏 TELASIH MAKMUR — Master Satuan (UoM) &amp; Konversi</b>
-        <span class="text-xs text-white/75">tm2mst.uom_unit &amp; uom_conversion</span>
-        <span class="flex-1"></span>
-        <button type="button" wire:click="openUnitModal('new')" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Satuan Baru</button>
-        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu Utama</a>
-    </header>
-
     <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <div class="flex items-center gap-3.5 mb-3.5">
+            <h1 class="text-lg font-bold text-navy">📏 Master Satuan (UoM) &amp; Konversi</h1>
+            <span class="text-xs text-muted">tm2mst.uom_unit &amp; uom_conversion</span>
+            <span class="flex-1"></span>
+            <button type="button" wire:click="openUnitModal('new')" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Satuan Baru</button>
+        </div>
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
             🔒 Konversi hanya sah <b>dalam satu dimensi</b>. Satuan <b>SPEC</b> (GSM, WARNA, dsb.) tak dikonversi.

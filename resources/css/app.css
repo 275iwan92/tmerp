@@ -649,14 +649,14 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .secpage .dd-item { @apply flex items-center gap-2.5 w-full bg-transparent border-none text-left px-3 py-2.5 rounded-lg cursor-pointer text-sm text-[var(--sp-ink)] no-underline; font-family: inherit; }
 .secpage .dd-item:hover { @apply bg-[#f2f5fb]; }
 .secpage .dd-item.exit { @apply text-[var(--sp-danger)]; }
-.secpage .shell { @apply flex; min-height: calc(100vh - 60px); }
+.secpage .shell { @apply flex; min-height: 100vh; }
 .secpage .side { @apply w-[250px] bg-white border-r border-[var(--sp-border)] py-4.5 px-3 flex-shrink-0; }
 .secpage .side .cap { @apply text-[11px] tracking-[.8px] uppercase text-[var(--sp-muted)] pt-2 px-3 pb-2.5 font-bold; }
 .secpage .nav-item { @apply flex items-center gap-[11px] w-full bg-transparent border-none text-left px-3 py-2.5 rounded-[9px] cursor-pointer text-sm text-[var(--sp-ink)] mb-0.5; font-family: inherit; }
 .secpage .nav-item:hover { @apply bg-[#f2f5fb]; }
 .secpage .nav-item.active { @apply bg-[#eaf0fe] text-[var(--sp-blue)] font-bold; }
 .secpage .nav-item .i { @apply w-5 text-center; }
-.secpage .content { @apply flex-1 py-[30px] px-[34px] max-w-[1000px]; }
+.secpage .content { @apply flex-1 py-[30px] px-[34px] max-w-[1000px] mx-auto; }
 .secpage .panel { @apply hidden; }
 .secpage .panel.active { @apply block; }
 .secpage .panel h1 { @apply text-[22px] text-[var(--sp-ink-strong)] mb-1.5; }

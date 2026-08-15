@@ -220,11 +220,6 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div>
-    <header class="bg-[#2c3e69] text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📇 TELASIH MAKMUR — Master Customer</b>
-        <span class="text-xs text-white/75">tm2mst.cust_customer</span>
-        <a href="{{ route('menu') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu Utama</a>
-    </header>
 
     <div class="max-w-[1180px] mx-auto my-5 px-4">
 
