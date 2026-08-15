@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Nota CO — TMERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif}
+  .doc{background:#fff;color:#111;border:1px solid #e2e8f0;margin:0 auto 8mm auto;box-sizing:border-box}
+  .doc-a4{width:210mm;min-height:297mm;padding:12mm}
+  .doc-a5{width:210mm;min-height:148mm;padding:7mm}
+  table{border-collapse:collapse;width:100%}
+  th,td{border:1px solid #cbd5e1;padding:3px 5px;vertical-align:top}
+  .hdr-line{border-bottom:2px solid #111}
+  .a4 table{font-size:11px}
+  .a5 table{font-size:8.5px}
+  .a5 th,.a5 td{padding:2px 4px}
+  .sumtbl td{border:none;padding:1px 4px}
+  @media print{
+    .no-print{display:none!important}
+    body{background:#fff}
+    .doc{border:none;box-shadow:none;page-break-after:always;margin:0 auto}
+    .doc:last-child{page-break-after:auto}
+  }
+</style>
+</head>
+<body class="bg-slate-100 text-sm">
+
+<div class="no-print sticky top-0 bg-white border-b shadow-sm z-10 p-3 flex flex-wrap items-center gap-3 justify-center text-xs">
+  <span class="font-semibold text-slate-700">Nota CO — Preview:</span>
+  <div class="flex gap-1.5 items-center">
+    <span class="text-slate-500">Ukuran:</span>
+    <button onclick="setMode('a4')" id="btn-a4" class="px-3 py-1.5 rounded-lg border font-medium">A4 potrait</button>
+    <button onclick="setMode('a5')" id="btn-a5" class="px-3 py-1.5 rounded-lg border font-medium">A5 landscape</button>
+  </div>
+  <div class="flex gap-1.5 items-center">
+    <span class="text-slate-500">Harga:</span>
+    <button onclick="setPrice(true)" id="btn-with" class="px-3 py-1.5 rounded-lg border font-medium">Dengan Harga</button>
+    <button onclick="setPrice(false)" id="btn-without" class="px-3 py-1.5 rounded-lg border font-medium">Tanpa Harga</button>
+  </div>
+  <div class="flex gap-1.5 items-center">
+    <span class="text-slate-500">Jumlah item:</span>
+    <input id="itemCount" type="number" value="18" min="1" max="80" class="w-16 border rounded px-2 py-1" onchange="setCount(this.value)">
+  </div>
+  <button onclick="window.print()" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-semibold">🖨 Cetak</button>
+  <div id="capinfo" class="w-full text-center text-slate-500 pt-1"></div>
+</div>
+
+<style id="pagesize">@page{size:A4;margin:0}</style>
+<div id="pages" class="py-6"></div>
+
+<script>
+const CAP = { a4: 40, a5: 14 };   // batas atas pencarian
+const HARD_CAP_A5 = 11;           // permintaan: A5 maksimal ~10-11 baris
+
+const NAMES = ["Box Snack Kaysindo 200g","Sleeve Teh Celup 25s","Jasa Cetak Kemasan (bahan customer)",
+"Pouch Kopi Sachet 10g","Box Biskuit Family Pack","Label Botol Saus 250ml","Karton Master Box 12in1",
+"Sleeve Cup Es Krim 90ml","Box Obat Herbal 30 Tab","Pouch Bumbu Instan 15g","Hang Tag Baju Kids",
+"Box Parcel Lebaran","Sleeve Mie Instan Cup","Karton Divider Botol Kaca","Box Kosmetik Sabun Batang",
+"Pouch Snack Kentang 50g","Label Kemasan Madu 500ml","Box Sepatu Anak","Sleeve Kaleng Susu Kental",
+"Karton Duplex Mainan Edukasi","Box Roti Tawar 400g","Pouch Teh Herbal Celup"];
+
+const SPECS = [
+"230x160x60mm, DC 350gsm, UV varnish, cetak 4/0",
+"180x60mm, art paper 210gsm, cetak 4/1 +1 PMS 032C",
+"200x140mm, bahan customer, cetak 4/0",
+"120x80mm, laminasi metalize, cetak 4/4",
+"300x200x80mm, DC 400gsm, cetak 2/0 +1 PMS 286C",
+"70x40mm, chromo 150gsm, cetak 4/0",
+"400x300x250mm, corrugated B-flute, cetak 1/0",
+"90x50mm, art paper 190gsm, cetak 4/4",
+"150x100x50mm, DC 300gsm, matte, cetak 4/0 +1 PMS 355C",
+"110x90mm, laminasi doff, cetak 4/1",
+"60x30mm, art carton 250gsm, cetak 3/0 +1 PMS 021C"];
+
+function genItems(n){
+  const arr=[];
+  for(let i=0;i<n;i++){
+    const qty = 3000 + (i*770 % 47000);
+    const harga = 150 + (i*37 % 1200);
+    const partial = (i % 5 === 0);
+    arr.push({
+      no:i+1, name:NAMES[i%NAMES.length], spec:SPECS[i%SPECS.length],
+      isJasa:(i%7===2), qty, harga, disk:(i%4===0)?'2%':'–', subtotal:qty*harga,
+      delivery: partial
+        ? {label:'05 & 15 Sep 26', note:Math.round(qty*0.6).toLocaleString('id')+'/'+Math.round(qty*0.4).toLocaleString('id')}
+        : {label:(5+(i%20))+' Sep 26', note:null}
+    });
+  }
+  return arr;
+}
+
+let paper='a4', withPrice=true, itemCount=18;
+let ITEMS = genItems(itemCount);
+const fmt = n => n.toLocaleString('id');
+
+function mmToPx(mm){
+  const el=document.createElement('div');
+  el.style.cssText='position:absolute;visibility:hidden;height:'+mm+'mm';
+  document.body.appendChild(el);
+  const px=el.getBoundingClientRect().height;
+  document.body.removeChild(el);
+  return px;
+}
+
+function renderPage(pageItems, pageIdx, totalPages, withSummary){
+  const docClass = paper==='a4' ? 'doc-a4' : 'doc-a5';
+  const sizeClass = paper==='a4' ? 'a4' : 'a5';
+  const rows = pageItems.map(it => `
+    <tr>
+      <td class="text-center">${it.no}</td>
+      <td>${it.name}</td>
+      <td>${it.spec}</td>
+      <td class="text-center">${it.delivery.label}${it.delivery.note?'<br><span style="font-size:7.5px;color:#94a3b8">('+it.delivery.note+')</span>':''}</td>
+      <td class="text-right">${fmt(it.qty)}</td>
+      <td class="price-col text-right">${fmt(it.harga)}</td>
+      <td class="price-col text-right">${it.disk}</td>
+      <td class="price-col text-right">${fmt(it.subtotal)}</td>
+    </tr>`).join('');
+
+  let tail;
+  if(withSummary){
+    const subtotal = ITEMS.reduce((s,it)=>s+it.subtotal,0);
+    const dpp = Math.round(subtotal*0.985);
+    const ppn = Math.round(dpp*0.11);
+    const total = dpp+ppn;
+    const pph = Math.round(ITEMS.filter(i=>i.isJasa).reduce((s,it)=>s+it.subtotal,0)*0.02);
+    const sigH = paper==='a4' ? (withPrice?46:78) : (withPrice?26:52);
+    tail = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-top:${withPrice?'6px':(paper==='a4'?'22px':'14px')}">
+      <div style="display:flex;gap:18px;text-align:center;font-size:${paper==='a4'?'11px':'8px'};flex:1">
+        <div style="flex:1"><div style="height:${sigH}px"></div><div style="border-top:1px solid #111;padding-top:2px">Dibuat — Sales</div></div>
+        <div style="flex:1"><div style="height:${sigH}px"></div><div style="border-top:1px solid #111;padding-top:2px">Diketahui — Ops Mgr</div></div>
+        <div style="flex:1"><div style="height:${sigH}px"></div><div style="border-top:1px solid #111;padding-top:2px">Disetujui — Customer</div></div>
+      </div>
+      <table class="sumtbl price-col" style="width:${paper==='a4'?'250px':'200px'};font-size:${paper==='a4'?'11px':'8.5px'}">
+        <tr><td style="color:#64748b">Subtotal</td><td class="text-right">${fmt(subtotal)}</td></tr>
+        <tr><td style="color:#64748b">Diskon</td><td class="text-right">(${fmt(subtotal-dpp)})</td></tr>
+        <tr style="font-weight:600"><td>DPP</td><td class="text-right">${fmt(dpp)}</td></tr>
+        <tr><td style="color:#64748b">PPN 11%</td><td class="text-right">${fmt(ppn)}</td></tr>
+        <tr style="font-weight:700"><td>Total Tagihan</td><td class="text-right">${fmt(total)}</td></tr>
+        <tr style="color:#7c3aed"><td>PPh 23 (jasa)</td><td class="text-right">(${fmt(pph)})</td></tr>
+        <tr style="font-weight:700;color:#047857;border-top:1px solid #cbd5e1"><td>Net Diterima</td><td class="text-right">${fmt(total-pph)}</td></tr>
+      </table>
+    </div>`;
+  } else {
+    tail = `<div class="text-right italic" style="font-size:${paper==='a4'?'10px':'8px'};color:#94a3b8;margin-top:4px">— bersambung ke halaman ${pageIdx+2} —</div>`;
+  }
+
+  return `
+  <div class="doc ${docClass} ${sizeClass} shadow-sm">
+    <div class="hdr-line pb-1 mb-2 flex justify-between items-start">
+      <div>
+        <div class="font-bold" style="font-size:${paper==='a4'?'17px':'12px'}">PT. TELASIH MAKMUR</div>
+        <div style="font-size:8px;color:#64748b">Jl. Industri Raya No.12, Malang, Jawa Timur</div>
+      </div>
+      <div class="text-right">
+        <div class="font-bold" style="font-size:${paper==='a4'?'17px':'12px'}">NOTA CUSTOMER ORDER</div>
+        <div style="font-size:9px">No. CO2600011 · Hal ${pageIdx+1}/${totalPages} · 15 Agu 2026</div>
+      </div>
+    </div>
+    <div style="font-size:9px;margin-bottom:5px">
+      <b>PT Kaysindo Snackindo</b> — Gudang Pusat, Malang &nbsp;|&nbsp; Ref QT2600007 &nbsp;|&nbsp; PO/TLM/VIII/2026-041
+    </div>
+    <table>
+      <thead>
+        <tr class="bg-slate-100">
+          <th>No</th><th>Nama Produk</th><th>Spesifikasi (bahan · finishing · warna)</th><th>Tgl Kirim</th><th>Qty</th>
+          <th class="price-col">Harga/pc</th><th class="price-col">Disk.</th><th class="price-col">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${tail}
+  </div>`;
+}
+
+// ukur: apakah N baris (dengan/tanpa ringkasan) muat dalam 1 halaman fisik?
+function fits(n, withSummary, targetPx){
+  const holder=document.createElement('div');
+  holder.style.cssText='position:fixed;left:-9999px;top:0;visibility:hidden;';
+  holder.innerHTML = renderPage(ITEMS.slice(0,n), 0, withSummary?1:2, withSummary);
+  document.body.appendChild(holder);
+  const el = holder.firstElementChild;
+  el.style.minHeight='auto';
+  el.querySelectorAll('.price-col').forEach(x=> x.style.display = withPrice?'':'none');
+  const h = el.scrollHeight;
+  document.body.removeChild(holder);
+  return h <= targetPx;
+}
+
+function maxRows(withSummary){
+  const targetPx = mmToPx(paper==='a4' ? 297 : 148);
+  const cap = paper==='a5' ? Math.min(CAP.a5, HARD_CAP_A5) : CAP.a4;
+  let best = 0;
+  for(let n=1; n<=cap; n++){
+    if(fits(n, withSummary, targetPx)) best=n; else break;
+  }
+  return Math.max(best, 1);
+}
+
+function paginate(total, perPage, perLastPage){
+  // cukup 1 halaman?
+  if(total <= perLastPage) return [total];
+  const pages=[];
+  let sisa = total;
+  while(sisa > perLastPage){
+    const ambil = Math.min(perPage, sisa - perLastPage > 0 ? perPage : perPage);
+    pages.push(ambil);
+    sisa -= ambil;
+    if(sisa <= perLastPage) break;
+  }
+  if(sisa > 0) pages.push(sisa);
+  return pages;
+}
+
+function render(){
+  const perPage     = maxRows(false); // halaman lanjutan: tanpa ringkasan
+  const perLastPage = maxRows(true);  // halaman terakhir: ringkasan+ttd ikut, tak boleh terpenggal
+
+  const counts = paginate(ITEMS.length, perPage, perLastPage);
+  let idx=0, html='';
+  counts.forEach((c,i)=>{
+    html += renderPage(ITEMS.slice(idx, idx+c), i, counts.length, i===counts.length-1);
+    idx += c;
+  });
+  document.getElementById('pages').innerHTML = html;
+  document.getElementById('pagesize').textContent='@page{size:'+(paper==='a4'?'A4':'A5 landscape')+';margin:0}';
+  document.querySelectorAll('.price-col').forEach(el=> el.style.display = withPrice?'':'none');
+
+  document.getElementById('capinfo').innerHTML =
+    `<b>Hasil ukur (${paper.toUpperCase()}${paper==='a5'?' landscape':' potrait'}, ${withPrice?'dengan':'tanpa'} harga):</b> ` +
+    `halaman biasa <b>${perPage}</b> baris · halaman terakhir (ada total+ttd) <b>${perLastPage}</b> baris ` +
+    `→ ${ITEMS.length} item terbagi ${counts.length} halaman [${counts.join(' + ')}]`;
+
+  document.getElementById('btn-a4').className='px-3 py-1.5 rounded-lg border font-medium '+(paper==='a4'?'bg-slate-800 text-white':'');
+  document.getElementById('btn-a5').className='px-3 py-1.5 rounded-lg border font-medium '+(paper==='a5'?'bg-slate-800 text-white':'');
+  document.getElementById('btn-with').className='px-3 py-1.5 rounded-lg border font-medium '+(withPrice?'bg-emerald-600 text-white':'');
+  document.getElementById('btn-without').className='px-3 py-1.5 rounded-lg border font-medium '+(!withPrice?'bg-emerald-600 text-white':'');
+}
+function setMode(p){ paper=p; render(); }
+function setPrice(v){ withPrice=v; render(); }
+function setCount(v){ itemCount=Math.max(1,parseInt(v)||1); ITEMS=genItems(itemCount); render(); }
+render();
+</script>
+</body>
+</html>

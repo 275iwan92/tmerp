@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Rencana Pengiriman — Hub Lintas CO — TMERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px}
+  .badge-planned{background:#dbeafe;color:#1e40af}
+  .badge-shipped{background:#dcfce7;color:#166534}
+</style>
+</head>
+<body class="text-sm text-slate-800">
+<div class="max-w-7xl mx-auto p-6 space-y-4">
+
+  <div>
+    <h1 class="text-lg font-bold">Rencana Pengiriman — Semua Customer Order</h1>
+    <p class="text-xs text-slate-500">Hub lintas-CO: seluruh baris rencana kirim dari semua CO aktif dalam satu layar. Qty/harga item tetap fix dari Inquiry — di sini hanya atur logistik & tanggal kirim.</p>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="card p-3 flex flex-wrap gap-3 items-center">
+    <input id="q" oninput="onFilter()" placeholder="Cari No CO / Customer / Produk..." class="border rounded-lg px-3 py-1.5 text-xs w-72">
+    <select id="fStatus" onchange="onFilter()" class="border rounded-lg px-2 py-1.5 text-xs">
+      <option value="">Semua Status</option>
+      <option value="PLANNED">PLANNED</option>
+      <option value="SHIPPED">SHIPPED</option>
+    </select>
+    <select id="fLate" onchange="onFilter()" class="border rounded-lg px-2 py-1.5 text-xs">
+      <option value="">Semua Tanggal</option>
+      <option value="late">⚠ Lewat Due Date saja</option>
+    </select>
+
+    <div id="mergeToolbarIdle">
+      <button onclick="startMergeMode()" class="px-3 py-1.5 rounded-lg border text-xs font-medium text-purple-700 border-purple-300 hover:bg-purple-50">🔗 Gabung Baris</button>
+    </div>
+    <div id="mergeToolbarActive" class="hidden flex gap-2 items-center bg-purple-50 border border-purple-200 rounded-lg px-3 py-1.5">
+      <span class="text-xs text-purple-700 font-medium">Mode Gabung: centang baris yang mau digabung (harus produk & CO sama)</span>
+      <span class="text-xs text-purple-900 font-bold" id="mergeSelCount">0 dipilih</span>
+      <button onclick="confirmMergeMulti()" class="px-3 py-1 rounded-lg bg-purple-600 text-white text-xs font-semibold">OK, Gabungkan</button>
+      <button onclick="cancelMergeMode()" class="px-3 py-1 rounded-lg border text-xs">Batal</button>
+    </div>
+
+    <span class="text-xs text-slate-400 ml-auto" id="countInfo"></span>
+  </div>
+
+  <!-- BALANCE ALERT (kalau ada item yg belum seimbang) -->
+  <div id="globalAlert"></div>
+
+  <!-- TABLE -->
+  <div class="card p-4">
+    <table class="w-full text-xs border-collapse">
+      <thead>
+        <tr class="bg-slate-50 text-slate-500 border-b" id="theadRow">
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <!-- SPLIT / PINDAH TANGGAL MODAL -->
+    <div id="splitForm" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center" onclick="if(event.target===this) cancelForms()">
+      <div class="bg-white rounded-xl shadow-xl p-5 w-[440px]" onclick="event.stopPropagation()">
+        <div class="text-sm font-semibold text-blue-800 mb-1">
+          Baris <span id="splitLabel"></span>
+        </div>
+        <div class="text-xs text-slate-500 mb-3">Qty tersedia: <span id="splitAvail" class="font-bold text-slate-700"></span> pcs</div>
+        <div class="space-y-3">
+          <div>
+            <label class="text-xs text-slate-500">Qty pecah <span class="text-slate-400">(kosongkan = hanya pindah tanggal, tidak pecah)</span></label>
+            <input id="splitQty" type="number" oninput="updateSplitButtonLabel()" placeholder="kosong" class="border rounded px-2 py-1.5 mt-1 w-full text-xs">
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">Tanggal baru</label>
+            <input id="splitDate" type="date" class="border rounded px-2 py-1.5 mt-1 w-full text-xs">
+          </div>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-3" id="splitHint">Qty kosong → tanggal baris ini langsung diubah, tanpa membuat baris baru.</p>
+        <div class="flex justify-end gap-2 mt-4">
+          <button onclick="cancelForms()" class="px-3 py-1.5 border rounded-lg text-xs">Batal</button>
+          <button onclick="confirmSplit()" id="splitConfirmBtn" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold">Pindah Tanggal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="flex justify-between items-center mt-4 text-xs text-slate-500">
+      <span id="pageInfo"></span>
+      <div class="flex items-center gap-1">
+        <button onclick="prevPage()" class="px-2 py-1 border rounded hover:bg-slate-50">‹ Prev</button>
+        <span id="pageNum" class="px-2.5 py-1 border rounded bg-slate-800 text-white"></span>
+        <button onclick="nextPage()" class="px-2 py-1 border rounded hover:bg-slate-50">Next ›</button>
+        <select id="pageSize" onchange="onFilter()" class="border rounded px-1.5 py-1 ml-2">
+          <option value="8">8 / halaman</option>
+          <option value="15" selected>15 / halaman</option>
+          <option value="30">30 / halaman</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-xs text-slate-400">
+    Aturan: baris hanya bisa di-<b>Split</b> atau <b>Gabung</b> selama status <b>PLANNED</b> (belum ada Surat Jalan/DO). Setelah DO terbit, baris terkunci.
+    Baris rencana pengiriman tidak bisa dihapus — hanya bisa dipecah, dipindah tanggal, atau digabung kembali.
+    ⚠ Tanggal lewat due date = peringatan saja (mis. keterlambatan bahan baku), tidak diblok sistem.
+  </div>
+</div>
+
+<script>
+// ==================== SEED DATA (lintas banyak CO) ====================
+const CO_SOURCE = [
+  { co:'CO2600011', customer:'PT Kaysindo Snackindo', items:[
+    { key:'i1', name:'Box Snack Kaysindo 200g', qty:10000, due:'2026-09-20' },
+    { key:'i2', name:'Sleeve Teh Celup 25s', qty:25000, due:'2026-09-15' },
+    { key:'i3', name:'Jasa Cetak Kemasan (bahan customer)', qty:5000, due:'2026-09-25' },
+  ]},
+  { co:'CO2600012', customer:'CV Bumi Snack Sejahtera', items:[
+    { key:'i4', name:'Pouch Kopi Sachet 10g', qty:50000, due:'2026-09-18' },
+    { key:'i5', name:'Box Biskuit Family Pack', qty:8000, due:'2026-09-22' },
+  ]},
+  { co:'CO2600013', customer:'PT Herbal Alam Nusantara', items:[
+    { key:'i6', name:'Box Obat Herbal 30 Tab', qty:6000, due:'2026-09-19' },
+  ]},
+  { co:'CO2600014', customer:'UD Roti Enak Sentosa', items:[
+    { key:'i7', name:'Box Roti Tawar 400g', qty:15000, due:'2026-09-21' },
+    { key:'i8', name:'Label Botol Saus 250ml', qty:20000, due:'2026-09-17' },
+  ]},
+  { co:'CO2600015', customer:'PT Kaysindo Snackindo', items:[
+    { key:'i9', name:'Karton Master Box 12in1', qty:4000, due:'2026-09-26' },
+  ]},
+];
+
+// flat array (bukan nested) — ini INTI perubahannya: semua item semua CO jadi satu list
+let PLAN_ROWS = [];
+let rowIdSeq = 1;
+
+function seedAll(){
+  PLAN_ROWS = [];
+  rowIdSeq = 1;
+  CO_SOURCE.forEach(coEntry=>{
+    coEntry.items.forEach(item=>{
+      PLAN_ROWS.push({
+        id: rowIdSeq++,
+        itemKey: item.key,
+        co: coEntry.co,
+        customer: coEntry.customer,
+        product: item.name,
+        itemQtyTotal: item.qty,
+        itemDue: item.due,
+        seq: 1,
+        qty: item.qty,
+        date: item.due,
+        status: 'PLANNED',
+        origin: 'DEFAULT (auto, full qty @ due date)',
+        splitFrom: null
+      });
+    });
+  });
+}
+seedAll();
+
+let filtered = [];
+let page = 1;
+let splitTargetId = null;
+let mergeMode = false;
+let selectedIds = new Set();
+
+// ==================== ALGORITMA INTI (per itemKey, lintas baris di array flat) ====================
+function rowsOfItem(itemKey){ return PLAN_ROWS.filter(r=>r.itemKey===itemKey); }
+function nextSeqFor(itemKey){ const rs=rowsOfItem(itemKey); return rs.length? Math.max(...rs.map(r=>r.seq))+1 : 1; }
+
+function assertBalance(itemKey){
+  const rs = rowsOfItem(itemKey);
+  const total = rs.reduce((s,r)=>s+r.qty,0);
+  if(total !== rs[0].itemQtyTotal) throw new Error('INVARIANT PECAH: total ('+total+') != qty item ('+rs[0].itemQtyTotal+')');
+}
+
+function moveDate(rowId, newDate){
+  const row = PLAN_ROWS.find(r=>r.id===rowId);
+  if(!row) throw new Error('Baris tidak ditemukan');
+  if(row.status!=='PLANNED') throw new Error('Hanya baris PLANNED yang bisa diubah tanggalnya');
+  if(!newDate) throw new Error('Tanggal wajib diisi');
+  row.date = newDate; // tak menyentuh qty, tak membuat baris baru
+}
+
+function splitRow(rowId, newQty, newDate){
+  const row = PLAN_ROWS.find(r=>r.id===rowId);
+  if(!row) throw new Error('Baris tidak ditemukan');
+  if(row.status!=='PLANNED') throw new Error('Hanya baris PLANNED yang bisa dipecah');
+  if(!newQty || newQty<=0 || newQty>=row.qty) throw new Error('Qty pecah harus > 0 dan < qty baris asal');
+  if(!newDate) throw new Error('Tanggal wajib diisi');
+
+  row.qty -= newQty;
+  PLAN_ROWS.push({
+    id: rowIdSeq++,
+    itemKey: row.itemKey, co: row.co, customer: row.customer, product: row.product,
+    itemQtyTotal: row.itemQtyTotal, itemDue: row.itemDue,
+    seq: nextSeqFor(row.itemKey),
+    qty: newQty, date: newDate, status:'PLANNED',
+    origin: 'SPLIT dari seq#'+row.seq, splitFrom: row.seq
+  });
+  assertBalance(row.itemKey);
+}
+
+function mergeMultiple(ids){
+  if(ids.length < 2) throw new Error('Pilih minimal 2 baris untuk digabung');
+  const rows = ids.map(id => PLAN_ROWS.find(r=>r.id===id));
+  if(rows.some(r=>!r)) throw new Error('Baris tidak ditemukan');
+  const itemKey = rows[0].itemKey;
+  if(rows.some(r=>r.itemKey!==itemKey)) throw new Error('Hanya bisa gabung baris dari produk & CO yang sama');
+  if(rows.some(r=>r.status!=='PLANNED')) throw new Error('Hanya baris PLANNED yang bisa digabung');
+
+  // target = baris dgn tanggal paling awal (tanggal kirim tercepat dipertahankan)
+  rows.sort((a,b)=> a.date.localeCompare(b.date));
+  const target = rows[0];
+  const rest = rows.slice(1);
+  target.qty += rest.reduce((s,r)=>s+r.qty, 0);
+  const restIds = new Set(rest.map(r=>r.id));
+  PLAN_ROWS = PLAN_ROWS.filter(r => !restIds.has(r.id));
+  assertBalance(itemKey);
+}
+
+// ==================== UI ====================
+function fmt(n){ return n.toLocaleString('id'); }
+function fmtDate(d){ const [y,m,day]=d.split('-'); return day+'/'+m+'/'+y; }
+
+function applyFilter(){
+  const q = document.getElementById('q').value.toLowerCase().trim();
+  const st = document.getElementById('fStatus').value;
+  const late = document.getElementById('fLate').value;
+  filtered = PLAN_ROWS.filter(r=>{
+    if(q && !(r.co.toLowerCase().includes(q) || r.customer.toLowerCase().includes(q) || r.product.toLowerCase().includes(q))) return false;
+    if(st && r.status!==st) return false;
+    if(late==='late' && !(r.date>r.itemDue)) return false;
+    return true;
+  }).sort((a,b)=> a.co.localeCompare(b.co) || a.product.localeCompare(b.product) || a.date.localeCompare(b.date));
+}
+
+function onFilter(){ page=1; render(); }
+
+function pageSize(){ return parseInt(document.getElementById('pageSize').value); }
+function prevPage(){ if(page>1){ page--; render(); } }
+function nextPage(){ const totalPages=Math.max(1,Math.ceil(filtered.length/pageSize())); if(page<totalPages){ page++; render(); } }
+
+function render(){
+  applyFilter();
+  const ps = pageSize();
+  const totalPages = Math.max(1, Math.ceil(filtered.length/ps));
+  if(page>totalPages) page=totalPages;
+  const slice = filtered.slice((page-1)*ps, page*ps);
+
+  document.getElementById('countInfo').textContent = `${filtered.length} baris (dari ${PLAN_ROWS.length} total, ${new Set(PLAN_ROWS.map(r=>r.co)).size} CO)`;
+  document.getElementById('pageInfo').textContent = `Menampilkan ${slice.length ? (page-1)*ps+1 : 0}–${(page-1)*ps+slice.length} dari ${filtered.length} baris`;
+  document.getElementById('pageNum').textContent = `${page} / ${totalPages}`;
+
+  document.getElementById('theadRow').innerHTML = `
+    ${mergeMode ? '<th class="p-2 w-8"></th>' : ''}
+    <th class="text-left p-2">No CO</th>
+    <th class="text-left p-2">Customer</th>
+    <th class="text-left p-2">Produk</th>
+    <th class="text-right p-2">Qty Kirim</th>
+    <th class="text-left p-2">Tgl Rencana Kirim</th>
+    <th class="text-center p-2">Status</th>
+    <th class="text-left p-2">Asal</th>
+    ${mergeMode ? '' : '<th class="text-center p-2">Aksi</th>'}
+  `;
+
+  document.getElementById('rows').innerHTML = slice.map(r=>{
+    const badgeClass = r.status==='PLANNED' ? 'badge-planned' : 'badge-shipped';
+    const late = r.date > r.itemDue;
+    const siblingCount = rowsOfItem(r.itemKey).length;
+    const checkboxCell = mergeMode
+      ? `<td class="p-2 text-center">${r.status==='PLANNED' ? `<input type="checkbox" ${selectedIds.has(r.id)?'checked':''} onchange="toggleSelect(${r.id})">` : ''}</td>`
+      : '';
+    const actionCell = mergeMode ? '' : `
+      <td class="p-2 text-center whitespace-nowrap space-x-1">
+        ${r.status==='PLANNED' ? `<button onclick="openSplit(${r.id})" class="text-blue-600 hover:underline">Split</button>` : ''}
+      </td>`;
+    return `
+    <tr class="border-b hover:bg-slate-50 ${mergeMode && selectedIds.has(r.id) ? 'bg-purple-50' : ''}">
+      ${checkboxCell}
+      <td class="p-2 font-medium text-slate-600">${r.co}</td>
+      <td class="p-2">${r.customer}</td>
+      <td class="p-2">${r.product}${siblingCount>1?` <span class="text-slate-400 text-[10px]">(seq #${r.seq}/${siblingCount})</span>`:''}</td>
+      <td class="p-2 text-right font-medium">${fmt(r.qty)} pcs</td>
+      <td class="p-2">${fmtDate(r.date)}${late?' <span class="text-red-500" title="lewat due date '+fmtDate(r.itemDue)+'">⚠</span>':''}</td>
+      <td class="p-2 text-center"><span class="${badgeClass} px-2 py-0.5 rounded-full font-semibold text-[10px]">${r.status}</span></td>
+      <td class="p-2 text-slate-400 text-[11px]">${r.origin}</td>
+      ${actionCell}
+    </tr>`;
+  }).join('');
+
+  // global alert: cek semua item seimbang (harusnya selalu true krn invariant, tapi ditampilkan sbg jaminan)
+  const groups = {};
+  PLAN_ROWS.forEach(r=>{ groups[r.itemKey]=groups[r.itemKey]||{total:0,expect:r.itemQtyTotal}; groups[r.itemKey].total+=r.qty; });
+  const unbalanced = Object.values(groups).filter(g=>g.total!==g.expect);
+  document.getElementById('globalAlert').innerHTML = unbalanced.length
+    ? `<div class="rounded-lg p-3 text-xs font-medium bg-red-50 text-red-700 border border-red-200">⚠ ${unbalanced.length} item tidak seimbang — cek data</div>`
+    : '';
+}
+
+function openSplit(rowId){
+  cancelForms();
+  splitTargetId = rowId;
+  const row = PLAN_ROWS.find(r=>r.id===rowId);
+  document.getElementById('splitForm').classList.remove('hidden');
+  document.getElementById('splitLabel').textContent = `${row.co} — ${row.product} (seq #${row.seq})`;
+  document.getElementById('splitAvail').textContent = fmt(row.qty);
+  document.getElementById('splitQty').value='';
+  document.getElementById('splitDate').value=row.date;
+  updateSplitButtonLabel();
+}
+function startMergeMode(){
+  mergeMode = true;
+  selectedIds = new Set();
+  document.getElementById('mergeToolbarIdle').classList.add('hidden');
+  document.getElementById('mergeToolbarActive').classList.remove('hidden');
+  render();
+}
+function cancelMergeMode(){
+  mergeMode = false;
+  selectedIds = new Set();
+  document.getElementById('mergeToolbarIdle').classList.remove('hidden');
+  document.getElementById('mergeToolbarActive').classList.add('hidden');
+  render();
+}
+function toggleSelect(rowId){
+  if(selectedIds.has(rowId)) selectedIds.delete(rowId); else selectedIds.add(rowId);
+  document.getElementById('mergeSelCount').textContent = selectedIds.size + ' dipilih';
+  // re-render baris saja biar highlight kecentang update, tanpa reset scroll checkbox lain
+  render();
+}
+function confirmMergeMulti(){
+  try{
+    mergeMultiple(Array.from(selectedIds));
+    cancelMergeMode();
+  }catch(e){ alert(e.message); }
+}
+
+function cancelForms(){
+  splitTargetId=null;
+  document.getElementById('splitForm').classList.add('hidden');
+}
+function updateSplitButtonLabel(){
+  const qtyVal = document.getElementById('splitQty').value;
+  const isMoveOnly = qtyVal==='' || parseInt(qtyVal)===0;
+  document.getElementById('splitConfirmBtn').textContent = isMoveOnly ? 'Pindah Tanggal' : 'Pecah jadi Baris Baru';
+  document.getElementById('splitHint').textContent = isMoveOnly
+    ? 'Qty kosong → tanggal baris ini langsung diubah, tanpa membuat baris baru.'
+    : 'Qty diisi → baris ini berkurang, baris baru terbentuk dengan qty & tanggal yang diinput.';
+}
+
+function confirmSplit(){
+  const qtyRaw = document.getElementById('splitQty').value;
+  const date = document.getElementById('splitDate').value;
+  try{
+    if(qtyRaw===''){
+      moveDate(splitTargetId, date);
+    } else {
+      splitRow(splitTargetId, parseInt(qtyRaw), date);
+    }
+    cancelForms(); render();
+  }catch(e){ alert(e.message); }
+}
+
+render();
+</script>
+</body>
+</html>
