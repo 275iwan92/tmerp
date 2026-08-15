@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 // login.html (Tier 4) sekarang menerima username ATAU email di kolom yang sama
-// — label diperbarui, submit() ⚡login.blade.php ikut dicocokkan (lookup
+// — label diperbarui, submit() login.blade.php ikut dicocokkan (lookup
 // login OR email).
 return new class extends Migration
 {

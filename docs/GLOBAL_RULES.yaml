@@ -57,6 +57,10 @@ db_conventions:
   snapshot: "semua data transaksional pakai snapshot pattern (freeze nilai saat confirmed)"
   audit: "created_by/at + updated_by/at di tiap tabel transaksi"
 
+file_naming:
+  ascii_only: "DILARANG karakter emoji/non-ASCII di nama file & folder di seluruh project (kode maupun docs). Alasan: 2026-08-15 — 12 file Livewire SFC pakai prefix ⚡ (mengira wajib utk Livewire v4 single-file component); ternyata cek vendor/livewire/livewire/src/Finder/Finder.php membuktikan ⚡ HANYA salah satu varian opsional (pattern 'singleFileWithZap'), pattern 'singleFile' polos tanpa prefix SAMA validnya dan dicoba sebagai fallback. Semua 12 file di-rename ke ASCII biasa (git mv, history terjaga) tanpa masalah — lihat komit 'Rename Livewire SFC ⚡-prefixed files to ASCII'."
+  emoji_in_ui: "Emoji BOLEH dipakai di dalam KONTEN halaman (label tombol, badge, heading) — larangan ini HANYA untuk nama file/folder di filesystem, bukan teks yang dirender."
+
 doc_types:
   NEW: "dokumen baru"
   RECALC: "hitung ulang, spec/isi tetap"

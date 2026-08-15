@@ -98,7 +98,7 @@ class IqpInquiry extends Model
     }
 
     // Sumber "produk existing" untuk RECALC/REVISE saat ini = inkuiri tersimpan lain
-    // (belum ada modul prod_product terpisah, lihat komentar ⚡hub.blade.php).
+    // (belum ada modul prod_product terpisah, lihat komentar hub.blade.php).
     public function parentInquiry(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_product_id', 'id_inquiry');
@@ -112,7 +112,7 @@ class IqpInquiry extends Model
     }
 
     // Penomoran LOCKED Tier1 §2.4: IQ+YY+NNNNN, counter reset tiap tahun. Sama
-    // dengan logika ⚡form.blade.php persist() — dipakai juga oleh layar RECALC/REVISE.
+    // dengan logika form.blade.php persist() — dipakai juga oleh layar RECALC/REVISE.
     public static function nextInquiryNo(): string
     {
         $prefix = 'IQ'.now()->format('y');

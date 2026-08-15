@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 // Gap B-OA5 / Tier 3B-S3 (docs/TIER_3_OPENING_APP.md §5) — hero login dirujuk
 // mockup tapi belum bertabel. Seed pakai 2 URL Wikimedia (offset press, lisensi
-// bebas) yang sebelumnya hardcode di Alpine init() ⚡login.blade.php — sekarang
+// bebas) yang sebelumnya hardcode di Alpine init() login.blade.php — sekarang
 // jadi data, sejalan quote (sys_quotes) yang sudah lebih dulu server-driven.
 return new class extends Migration
 {

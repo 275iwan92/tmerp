@@ -49,6 +49,11 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 
 ## 3. KONVENSI PENAMAAN (LOCKED)
 
+### File & folder
+- **DILARANG emoji/karakter non-ASCII di nama file atau folder** — di seluruh project, kode
+  maupun docs. Emoji tetap boleh di **konten** (label tombol, badge, heading di dalam halaman).
+  Rinci: `docs/GLOBAL_RULES.yaml → file_naming`.
+
 ### Prefix tabel per domain
 **Master (tm2mst):**
 `cust_` customer · `prod_` product & proses · `mat_` material & harga bahan ·
