@@ -170,7 +170,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ## REKAP STATUS
 | Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
-| 1 Sales (Inquiry/Quotation/CO) | 10 | 7 | 2 |
+| 1 Sales (Inquiry/Quotation/CO) | 12 | 6 | 1 |
 | 2 Inventory | 0 | 0 | 7 |
 | 3 Production | 0 | 2 | 9 |
 | 4 Procurement | 0 | 3 | 6 |
@@ -182,7 +182,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**20 item live**, **13 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup sama sekali** (Inventory/Production inti/Procurement inti/Dispatch/Invoicing masih kosong total).
+**22 item live**, **12 item punya mockup HTML tapi belum diimplementasi Livewire**, **46 item belum punya mockup sama sekali** (Inventory/Production inti/Procurement inti/Dispatch/Invoicing masih kosong total).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).
