@@ -1,9 +1,0 @@
-<svg viewBox="0 0 800 1000" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#2c3e69"/>
-<stop offset="100%" stop-color="#1a2340"/>
-</linearGradient>
-</defs>
-<rect width="800" height="1000" fill="url(#bg)"/>
-<circle cx="300" cy="380" r="90" fill="#00aeef" opacity="0.75"/><circle cx="360" cy="380" r="90" fill="#ec008c" opacity="0.75"/><circle cx="420" cy="380" r="90" fill="#fff200" opacity="0.75"/><circle cx="480" cy="380" r="90" fill="#231f20" opacity="0.75"/><text x="60" y="920" font-family="Arial,sans-serif" font-size="30" fill="#f4f1ea" font-weight="bold">Cetak Warna Presisi Tinggi</text></svg>

@@ -158,6 +158,18 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         $this->quotation->update(['doc_status' => 'PUBLISHED', 'updated_by' => Auth::user()->login]);
         unset($this->quotation);
     }
+
+    // "1 CO = 1 Quotation" (keputusan user 2026-08-20) -- lihat App\Services\Sales\CoOrderBuilder.
+    public function createOrOpenCo()
+    {
+        $order = \App\Services\Sales\CoOrderBuilder::findOrCreateFromQuotation($this->quotation);
+
+        if (! $order) {
+            return;
+        }
+
+        return $this->redirect(route('co.entry', ['order' => $order->id_order]));
+    }
 };
 ?>
 
@@ -351,7 +363,11 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                         Terbitkan Quotation
                     </button>
                 @else
-                    <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5">✓ Sudah diterbitkan — isi terkunci</div>
+                    <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5 mb-2.5">✓ Sudah diterbitkan — isi terkunci</div>
+                    <button type="button" wire:click="createOrOpenCo"
+                        class="w-full px-4 py-2.5 rounded text-xs font-bold bg-[#22a06b] text-white cursor-pointer">
+                        📦 Buat Customer Order
+                    </button>
                 @endif
             </div>
 

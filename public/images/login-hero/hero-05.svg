@@ -1,9 +1,0 @@
-<svg viewBox="0 0 800 1000" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-<stop offset="0%" stop-color="#2c3e69"/>
-<stop offset="100%" stop-color="#2a3d68"/>
-</linearGradient>
-</defs>
-<rect width="800" height="1000" fill="url(#bg)"/>
-<rect x="150" y="550" width="220" height="180" rx="10" fill="#e8a33d" opacity="0.85"/><rect x="420" y="480" width="220" height="250" rx="10" fill="#2f6fed" opacity="0.85"/><rect x="150" y="580" width="220" height="12" fill="#2c3e69" opacity="0.4"/><rect x="420" y="520" width="220" height="12" fill="#2c3e69" opacity="0.4"/><text x="60" y="920" font-family="Arial,sans-serif" font-size="30" fill="#f4f1ea" font-weight="bold">Finishing &amp; Packing</text></svg>

@@ -218,6 +218,16 @@ class IqpInquiry extends Model
         return $this->hasMany(QuoQuotationItem::class, 'inquiry_id', 'id_inquiry');
     }
 
-    // co_id -> co_order: modul belum digarap (Tier 3A catatan "FK PENDING").
-    // Tambahkan relasi setelah model co_ dibuat.
+    // CO terakhir yang menyerap inquiry ini (convenience lookup) -- sumber kebenaran
+    // baris per-CO tetap co_order_item.inquiry_id (1 inquiry bisa tersebar di banyak
+    // co_order_item kalau di-split beberapa CO, jarang tapi mungkin).
+    public function lastCo(): BelongsTo
+    {
+        return $this->belongsTo(CoOrder::class, 'co_id', 'id_order');
+    }
+
+    public function coOrderItems(): HasMany
+    {
+        return $this->hasMany(CoOrderItem::class, 'inquiry_id', 'id_inquiry');
+    }
 }

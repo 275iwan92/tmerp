@@ -29,6 +29,9 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/quotation', 'pages::quotation.list')->name('quotation.list');
             Route::livewire('/quotation/{quotation}/edit', 'pages::quotation.entry')->name('quotation.entry');
             Route::livewire('/quotation/{quotation}/print', 'pages::quotation.print')->name('quotation.print');
+
+            Route::livewire('/co', 'pages::co.list')->name('co.list');
+            Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
         });
 
         Route::middleware('module:COSTING')->group(function () {
