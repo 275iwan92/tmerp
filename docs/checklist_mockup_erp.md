@@ -78,11 +78,12 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ### 4.1 Purchase Requisition (PR)
 - ✅ [G] PR List/Hub — *mockup_purchase_requisition.html* → `pur.pr.list` (filter no./item/status, "+ PR Baru" via picker departemen)
 - ✅ [F] PR Entry — *mockup_purchase_requisition.html* → `pur.pr.entry` (item picker 5-level kategori→jenis→gramatur→ukuran→merk dari `doc_rmprefix1..5` + `m_raw_material` riil 5893 item, baris MASTER_ITEM/FREE_TEXT, submit → Flow Engine). **Diverifikasi via migration+tinker functional test, BELUM diverifikasi visual browser** (login otomatis via browser ditolak — kategori "entering credentials", lihat `PROC_STATE.yaml`). Jo perlu cek tampilan sendiri sebelum ditandai matang.
-- 🟡 [G] PR Approval Center — *mockup_pr_approval_center.html* — layar berikutnya (menyusul, `FlowEngineService::approve()/reject()` belum ada)
+- ✅ [G] PR Approval Center — *mockup_pr_approval_center.html* → `pur.pr.approval` (antrian per posisi jabatan user login termasuk PLT, approve/reject via `FlowEngineService`, riwayat `flow_log`; diuji tuntas via tinker: single-step <50jt, reject, dan eskalasi multi-step ke Direksi ≥50jt — semua benar)
 - ⬜ [P] PR Print (Nota Permintaan Pembelian) — belum digarap
 ### 4.2 Purchase Order (PO)
-- ⬜ [F] PO Entry — belum digarap (PROC_TIER_4 §3, menyusul setelah PR Approval)
-- ⬜ [G] PO Approval Center — *mockup_po_approval_center.html* — mockup ada, belum digarap
+- ✅ [G] PO List — `pur.po.list` (filter no./item/status, "+ PO Baru" via picker supplier)
+- ✅ [F] PO Entry — `pur.po.entry` (tarik alokasi `pr_line_alloc` APPROVED lintas-PR ke satu PO per supplier via `PoBuilderService`, kelas RAW/INDIRECT/SERVICE otomatis dari `doc_rmprefix1.stock_class`, harga/diskon per baris editable, ringkasan DPP/PPN/PPh23/Net Payable, submit → Flow Engine). Diuji tuntas via tinker (tarik 2 alokasi lintas-PR, edit harga, submit → benar). **Belum diverifikasi visual browser** (sama seperti PR, lihat `PROC_STATE.yaml`)
+- 🟡 [G] PO Approval Center — *mockup_po_approval_center.html* — mockup ada, belum digarap (menyusul, di luar urutan yang diminta Jo saat ini)
 - ⬜ [P] PO Print (dokumen eksternal ke supplier) — belum digarap
 ### 4.3 Purchase Quotation (PQ) — kondisional, boleh dilewati
 - ⬜ [F][G] PQ Entry + Perbandingan — belum digarap
@@ -181,7 +182,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 1 Sales (Inquiry/Quotation/CO) | 12 | 6 | 1 |
 | 2 Inventory | 0 | 0 | 7 |
 | 3 Production | 0 | 2 | 9 |
-| 4 Procurement | 2 | 2 | 8 |
+| 4 Procurement | 5 | 1 | 7 |
 | 5 Dispatch | 0 | 0 | 9 |
 | 6 Invoicing/Billing (AR-lite) | 0 | 0 | 7 |
 | 7 HR | 4 | 0 | 3 |
@@ -190,7 +191,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**24 item live**, **11 item punya mockup HTML tapi belum diimplementasi Livewire**, **48 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap tapi baru PR List+Entry yang live).
+**27 item live**, **10 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

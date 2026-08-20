@@ -172,6 +172,18 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         return (bool) $this->is_admin || $this->canAccessModule('SETUP');
     }
 
+    // employee_id -> tm2mst.emp_employee (LOGICAL, lintas-DB) -- dipakai Flow
+    // Engine utk resolusi "posisi user login ini" saat menyusun antrian approval
+    // (PrApproval, dst). Query terpisah, bukan join, sesuai CLAUDE.md §2.
+    public function currentPositionId(): ?int
+    {
+        if (! $this->employee_id) {
+            return null;
+        }
+
+        return \App\Models\Master\EmpEmployee::where('employee_id', $this->employee_id)->value('position_id');
+    }
+
     // module_code sys_app_menu (SALES/PROC/INV/PROD/MDATA/FINACC/SETUP) yang boleh
     // dilihat user ini di mega menu — dari sys_app_menu.required_object -> sec_module.
     // Baris tanpa required_object (harusnya tak ada di level module, lihat

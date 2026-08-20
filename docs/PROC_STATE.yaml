@@ -14,10 +14,30 @@ status_umum: >
   sejak awal (bukan approval ad-hoc). PR Entry (List + Form, App\Models\Pur\*, route
   /purchasing/pr, module gate PROC) hidup: header, item picker 5-level (kategori->jenis->
   gramatur->ukuran->merk lalu daftar m_raw_material cocok), baris MASTER_ITEM/FREE_TEXT,
-  submit -> FlowEngineService -> flow_log. Diverifikasi via migration run + tinker functional
-  test (cascading picker query benar, create->line->submit->flow_log tercatat) -- BELUM
-  diverifikasi visual di browser sungguhan (lihat catatan di bawah).
-  PQ, PO, PV, PRT, Purchase Invoice masih 🟡 spec-only, belum diimplementasi.
+  submit -> FlowEngineService -> flow_log. PR Approval Center (route /purchasing/pr-approval)
+  JUGA sudah hidup 2026-08-21: antrian per posisi jabatan user login (+ resolusi PLT),
+  approve/reject dgn FlowEngineService::approve()/reject() (chaining multi-step: step
+  berikutnya yang match otomatis jadi pending baru, atau flow selesai bila tak ada lagi).
+  SecUser::currentPositionId() ditambahkan (employee_id -> tm2mst.emp_employee.position_id,
+  logical cross-DB) sbg dasar resolusi "posisi user login ini".
+  Diverifikasi via migration run + tinker functional test end-to-end: cascading picker query
+  benar (PYJ31 Ivory 300gr 79x109 persis contoh mockup), create->line->submit->flow_log benar,
+  approve single-step (<50jt langsung final), reject (alasan tercatat), DAN eskalasi
+  multi-step (>=50jt: Manajer Operasional approve -> otomatis jadi pending baru di Direksi) --
+  semua lolos.
+  PO Entry (List + Form, route /purchasing/po) JUGA hidup 2026-08-21: tarik `pr_line_alloc`
+  APPROVED lintas-PR ke satu PO per supplier (PoBuilderService, anti-M:N 1 alokasi=1 po_line
+  via UNIQUE uq_po_alloc), kelas RAW/INDIRECT/SERVICE otomatis dari doc_rmprefix1.stock_class,
+  harga/diskon per baris editable (PQ belum ada jadi harga awal dari PR i_est_price, manual),
+  ringkasan pajak (DPP/PPN 11%/PPh23 2% baris SERVICE saja/Net Payable dari sys_constant),
+  submit -> FlowEngineService (flow_config PO: step1 Manajer Operasional, step2 Direksi >=100jt,
+  sama pola PR). flow_config_step.status_to_reject PO dikoreksi ke REJECTED (bukan DRAFT seperti
+  draf awal disalin dari PR) krn status enum PO tak punya REVISION_NEEDED (Tier3 §4 C-1).
+  Diverifikasi via tinker: tarik 2 alokasi lintas-PR ke 1 PO, edit harga, hitung pajak, submit
+  -> semua benar (DPP 11.5jt -> PPN 1.265jt -> Grand 12.765jt, PPh23=0 krn tak ada baris SERVICE).
+  BELUM diverifikasi visual di browser sungguhan utk KETIGA layar (PR Entry/Approval/PO Entry)
+  -- lihat catatan di bawah.
+  PQ, PO Approval, PV, PRT, Purchase Invoice masih 🟡 spec-only/belum diimplementasi.
   Dua struktur legacy dibaca penuh: m_raw_material.sql + doc_rmprefix1.sql (SUDAH diberikan
   user & di-import); tminv_20260722_2018_sd.sql (rm_stock/rm_stock_d/rm_stockcard/sfg_*/fg_*)
   BELUM diberikan -- prasyarat keras utk PV, belum jadi blocker karena PV belum dikerjakan.
@@ -59,16 +79,22 @@ artefak_selesai:
   - "Migration 2026_08_20_000016  # pr_requisition/pr_line/pr_line_alloc (tm2pur)"
   - "Migration 2026_08_20_000017  # grant DIREKSI akses sec_module PROC (kosong sebelumnya)"
   - "App\\Models\\Master\\{DocRmprefix1..5,MRawMaterial,FlowConfig,FlowConfigStep,FlowPositionActing,FlowLog}"
-  - "App\\Models\\Pur\\{PrRequisition,PrLine,PrLineAlloc}"
-  - "App\\Services\\Flow\\FlowEngineService  # submit() + resolveActingUser() + history(); approve()/reject() menyusul saat PR Approval dibangun"
-  - "resources/views/pages/pur/pr/{index,entry}.blade.php  # route pur.pr.list / pur.pr.entry, gate module:PROC"
+  - "App\\Models\\Pur\\{PrRequisition,PrLine,PrLineAlloc,PoOrder,PoLine}"
+  - "App\\Services\\Flow\\FlowEngineService  # submit()+approve()+reject()+pendingForUser()+resolveActingUser()+history() -- lengkap, generik lintas modul"
+  - "App\\Services\\Pur\\PrAllocationService  # createDefaultAllocationsForPr() (auto full-alloc saat PR final APPROVED) + split() (belum ada UI panel)"
+  - "App\\Services\\Pur\\PoBuilderService  # findOrCreateDraft(supplierId) + addAllocation(po, alloc) -- 1 alokasi = 1 po_line (UNIQUE uq_po_alloc)"
+  - "App\\Models\\Sys\\SecUser::currentPositionId()  # resolusi jabatan user login (employee_id -> emp_employee.position_id, logical cross-DB)"
+  - "resources/views/pages/pur/pr/{index,entry,approval}.blade.php  # route pur.pr.list / pur.pr.entry / pur.pr.approval, gate module:PROC"
+  - "resources/views/pages/pur/po/{index,entry}.blade.php  # route pur.po.list / pur.po.entry, gate module:PROC"
+  - "Migration 2026_08_21_000001  # po_order/po_line/po_import_doc (tm2pur)"
+  - "Migration 2026_08_21_000002  # flow_config PO (step1 Manajer Operasional, step2 Direksi >=100jt)"
 
 next_step:
-  - "SELESAI 2026-08-20/21: fondasi (legacy import, Flow Engine, sys_constant) + PR Entry (List+Form)"
-  - "BELUM diverifikasi visual di browser -- login via browser automation ditolak (masuk kategori 'entering credentials', prohibited per safety rules). Jo perlu buka /purchasing/pr sendiri utk cek tampilan; logika (query picker, create/submit, flow_log) sudah diverifikasi via tinker functional test."
-  - "Lanjut sesuai urutan yang diminta Jo: PR Approval (layar PrApproval, FlowEngineService::approve()/reject() belum ada) -> lalu PO Entry"
-  - "PO Entry butuh: PROC-SUPPLIER-MASTER (cek ulang -- lihat catatan resolved di bawah), Supplier picker di form"
-  - "PQ (Purchase Quotation) di-skip dulu sesuai urutan Jo (PR -> PR Approval -> PO); PO Entry Tier4 §3 Bagian 1 mengambil pr_line_alloc APPROVED langsung, PQ opsional/boleh menyusul"
+  - "SELESAI 2026-08-20/21: fondasi (legacy import, Flow Engine, sys_constant) + PR Entry + PR Approval Center + PO Entry (List+Form) -- urutan yang diminta Jo (PR entry -> PR approval -> PO entry) SELESAI"
+  - "BELUM diverifikasi visual di browser utk KETIGA layar (PR Entry, PR Approval, PO Entry) -- login via browser automation ditolak (masuk kategori 'entering credentials', prohibited per safety rules). Jo perlu buka /purchasing/pr, /purchasing/pr-approval, /purchasing/po sendiri utk cek tampilan; logika sudah diverifikasi tuntas via tinker functional test (termasuk tarik alokasi lintas-PR ke 1 PO, hitung pajak, submit)."
+  - "Dummy Manajer Operasional dibuat utk uji fungsional: emp_employee 'DUMMY-MGROPS' (employee_id=6, position_id=6) + sec_user 'dummy_mgrops' (id_user=38) -- password acak/tak diketahui siapapun, TIDAK bisa dipakai login sungguhan. Kalau mau user approval sungguhan, ganti/hapus dummy ini dan assign posisi ke karyawan riil (juga posisi Direksi -- belum ada dummy user utk step2, cuma diuji langsung lewat FlowEngineService tanpa lewat pendingForUser())."
+  - "GAP DITEMUKAN & DITUTUP 2026-08-21: PR Approval final -> PrAllocationService::createDefaultAllocationsForPr() otomatis bikin 1 alokasi penuh per baris (PROC_TIER_3 §3.1 'baris tak dipecah = 1 alokasi penuh'), supaya PO Entry selalu punya sumber tanpa memaksa split manual dulu. Panel 'Split Alokasi' manual (Tier4 §2.2, pecah ke >1 supplier) BELUM ada UI-nya -- PrAllocationService::split() sudah ada tapi belum dipanggil dari layar manapun."
+  - "BELUM: PO Approval Center (mockup ada, layar approval terpisah spt PR), PQ (opsional, boleh di-skip terus), PV+QC+posting stok (butuh tminv_20260722_2018_sd.sql yang belum diberikan), PRT, Purchase Invoice, Nota semua dokumen, Pembelian Kontan."
 
 open_items:
   - id: PROC-SUPPLIER-MASTER

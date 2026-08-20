@@ -74,7 +74,9 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧾 Purchase Requisition</b>
         <span class="text-xs text-white/75">Permintaan pembelian: hasil MRP (auto) maupun manual (ad-hoc)</span>
-        <a href="{{ route('menu') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
+        <a href="{{ route('pur.po.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">📦 Purchase Order</a>
+        <a href="{{ route('pur.pr.approval') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">✅ Approval Center</a>
+        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
