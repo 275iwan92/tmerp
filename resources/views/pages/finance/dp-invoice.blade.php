@@ -21,9 +21,10 @@ use Livewire\Component;
 // (4) — event 3 (invoice final per shipment) milik modul Delivery Order yang
 // belum ada, jadi Alokasi diuji dengan invoice final yang di-insert manual.
 // Referensi SO/CO mockup ("tm2sdi.sales_orders") DISESUAIKAN jadi input
-// manual (customer + nilai kontrak + no. referensi teks) karena tabel
-// co_order/sales_order tm2sdi belum dibangun — co_id tetap disimpan
-// logis-opsional untuk saat modul itu ada nanti.
+// manual (customer + nilai kontrak + no. referensi teks co_reference) --
+// tm2sdi.co_order SEKARANG SUDAH ADA (2026-08-20, lihat SALES_STATE.yaml)
+// tapi field ini BELUM di-rewiring ke co_id asli (masih co_reference bebas
+// teks); kolom co_id tetap disimpan logis-opsional utk rewiring sesi lain.
 new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Component
 {
     public bool $showEntryModal = false;
