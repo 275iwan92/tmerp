@@ -28,13 +28,13 @@ keputusan_terkunci:
   B: "1 CO = 1 Quotation (co_order.quotation_id UNIQUE) -- cocok persis TIER_1 §3.4.2 baris 'Quotation -> CO : 1:1'"
   C: "Item CO = snapshot quo_quotation_item, TERKUNCI (kecuali due_date) -- cocok TIER_1 §3.4.3 poin 3 'qty/harga/diskon item = snapshot, fix'"
   D: "Tooling di-split per jenis (PISAU+MATRAS=die, PLATE, FILM) jadi BARIS TERPISAH di quotation/CO, bukan 1 baris gabung -- sesuai mockup_sales_quotation_letter_print.html"
-  E: "Nomor dokumen: IQ+YY+NNNNN (inquiry), QUO+YY+NNNNN (quotation), CO+YY+NNNNN (customer order) -- lihat deviasi #1 di bawah, TIER_1 §2.4 sebut prefix QT bukan QUO"
+  E: "Nomor dokumen: IQ+YY+NNNNN (inquiry), QUO+YY+NNNNN (quotation), CO+YY+NNNNN (customer order) -- QUO dikonfirmasi user 2026-08-20 sbg prefix resmi, TIER_1 §2.4 sudah dikoreksi"
   F: "Quotation resmi (print) HANYA terbit nomor kalau costing published_flag=1 (Sisi A/B, CLAUDE.md §4) -- lihat deviasi #2, TIER_2 §3.4 bilang tombol convert 'selalu aktif' walau belum published"
   G: "PPh 23 (jasa) = 2% dari nilai baris SERVICE, dipotong di level CO (asumsi rate standar Indonesia, belum ada konfirmasi user/dokumen resmi)"
   H: "Shipment Location (CO) pakai App\\Livewire\\AddressPicker existing, bukan komponen baru -- 5 level kelurahan..negara, fallback otomatis ke level lebih kasar kalau data sedetail itu tak ada"
 
 deviasi_dari_tier1_locked:
-  - "#1 PREFIX QUOTATION: TIER_1_INQUIRY_v2_1.md §2.4 mengunci prefix 'QT' (contoh QT2600001). Yang dibangun pakai 'QUO' (QUO2600001), mengikuti literal contoh di mockup_sales_quotation_entry.html & mockup_sales_quotation_letter_print.html (kedua mockup terbaru, dari user langsung, konsisten pakai QUO). BELUM DIPUTUSKAN mana yang menang -- nomor bersifat 'immutable setelah terbit' (§2.4) jadi ini perlu keputusan SEKARANG sebelum ada data produksi, ganti prefix nanti = breaking change. Perlu tanya user."
+  - "#1 PREFIX QUOTATION -- RESOLVED 2026-08-20: user memutuskan pakai 'QUO' (kode & mockup menang), TIER_1_INQUIRY_v2_1.md §2.4 sudah dikoreksi (semula draf sebut 'QT'). Tidak ada lagi konflik."
   - "#2 GATE PUBLISH vs TOMBOL SELALU AKTIF: TIER_2_INQUIRY_v3.md §3.4 pseudo-code convert_to_quotation() bilang tombol 'selalu aktif; bila harga belum published, quotation tetap bisa dibuat sbg draft, baris harga menunggu publish'. Yang dibangun LEBIH KETAT: App\\Services\\Sales\\QuotationBuilder::addInquiry() me-return null (tak menambah apapun) kalau costing belum published_flag=1 -- alasan saat itu: TIDAK mau baris quotation dgn harga kosong/0 yang bisa membingungkan. Bisa direvisi supaya cocok dgn desain terkunci (izinkan baris draft tanpa harga, isi otomatis pas costing publish) kalau user mau."
   - "#3 GUARD LOKASI KIRIM: TIER_1 §3.4.3 poin 6 'inquiry hanya bisa masuk quotation bila customer & lokasi kirim SAMA'. Yang dibangun cuma guard CUSTOMER (App\\Services\\Sales\\QuotationBuilder / quotation.entry availableInquiries() filter customer_id saja) -- TIDAK ada guard lokasi kirim, karena iqp_inquiry belum punya field lokasi kirim sama sekali (lokasi kirim baru muncul di co_order.ship_area_id/level, level CO bukan level inquiry/quotation). Kalau guard ini mau ditegakkan, perlu tambah field lokasi kirim di iqp_inquiry dulu."
   - "#4 TEMPAT TOMBOL 'TAMBAHKAN KE QUOTATION': TIER_1 F21 & TIER_2 §3.4 menaruh tombol convert di 'tiap layar inquiry' (new/recalc/revise). Yang dibangun menaruhnya di Costing (setelah published), bukan di layar Inquiry -- alasan: baris quotation butuh harga (price_per_pcs) yang cuma ada di costing published, jadi menaruh tombol di Inquiry (sebelum costing ada) akan sering gagal/kosong."
@@ -54,7 +54,6 @@ artefak_selesai:
 
 next_step:
   - "SELESAI 2026-08-20: Imposition Engine, Nota Inquiry, Quotation (redesain multi-inquiry), Customer Order (dari nol)"
-  - "Perlu keputusan user: deviasi #1 (prefix QT vs QUO) sebelum ada data produksi asli"
   - "Menyusul (checklist masih 🟡, mockup ada): Delivery Plan (co_delivery_plan_mockup.html -- overlap dgn tab Delivery di CO Entry, perlu klarifikasi scope), Nota CO print (nota_co_mockup.html), Nota Quotation varian (inquiry_nota_quotation.html), Prove Warna (inquiry_proof.html, F8 di TIER_1 juga masih belum)"
   - "Materialisasi Master Product (TIER_1 §5, trigger PO_RECEIVED / setara CONFIRM CO) BELUM diimplementasi -- Confirm CO cuma ubah doc_status, tidak auto-insert m_product/part_of_product. m_product itu sendiri juga belum ada modelnya."
 

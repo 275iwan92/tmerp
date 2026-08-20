@@ -74,7 +74,7 @@ Nomor dokumen mengikuti pola tunggal agar **nyambung dari Inquiry sampai CO** da
 | Dokumen | Prefix | Contoh | Keterangan |
 |---|---|---|---|
 | Inquiry | `IQ` | `IQ2600001` | counter reset tiap tahun |
-| Quotation | `QT` | `QT2600001` | — |
+| Quotation | `QUO` | `QUO2600001` | diputuskan 2026-08-20 (semula draf §2.4 sebut `QT`, dikoreksi mengikuti implementasi & mockup — lihat SALES_STATE.yaml) |
 | Customer Order | `CO` | `CO2600001` | pola acuan (sudah berjalan) |
 
 **Aturan:**
@@ -179,7 +179,7 @@ Sales terbit INKUIRI (+ tier qty, pilih UTAMA)
 
 ```text
 IQ2600001 (Teh Celup)  ─┐
-IQ2600002 (Box Snack)  ─┼─► QT2600007 ──1:1──► CO2600011
+IQ2600002 (Box Snack)  ─┼─► QUO2600007 ──1:1──► CO2600011
 IQ2600003 (Sleeve)     ─┘   (3 baris)          (3 item)
    3 inquiry              1 quotation          1 customer order
    3 proof (1:1)          konsolidasi          eksekusi
@@ -192,8 +192,8 @@ IQ2600003 (Sleeve)     ─┘   (3 baris)          (3 item)
 > QT di atas, gate publish lebih ketat dari §3.4/TIER_2 §3.4, guard konsolidasi cuma
 > customer tanpa lokasi kirim, tooling jadi baris terpisah tak disebut di §3.4.2). Detail
 > lengkap + status tiap deviasi: lihat `SALES_STATE.yaml → deviasi_dari_tier1_locked`.
-> **Prefix QT vs QUO belum diputuskan** — perlu keputusan sebelum ada data quotation asli
-> karena nomor immutable setelah terbit (§2.4).
+> **Prefix Quotation DIPUTUSKAN 2026-08-20: `QUO`** (bukan `QT` seperti draf awal §2.4) —
+> tabel §2.4 di atas sudah dikoreksi mengikuti keputusan ini.
 
 ---
 
