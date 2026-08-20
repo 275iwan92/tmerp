@@ -2,6 +2,7 @@
 
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
+use App\Models\Sys\SysAppMenuColor;
 use App\Models\Sys\SysChatConversation;
 use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
@@ -52,6 +53,13 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     {
         return [
             'SALES_INQ' => route('inquiry.hub'),
+            // Costing/Imposition/Nota/Quotation butuh {inquiry} spesifik (dokumen
+            // per-record, bukan layar berdiri sendiri) -> arahkan ke Inquiry Hub,
+            // user pilih inquiry dulu baru masuk ke sub-dokumennya dari sana.
+            'SALES_COST' => route('inquiry.hub'),
+            'SALES_IMPO' => route('inquiry.hub'),
+            'SALES_NOTA' => route('inquiry.hub'),
+            'SALES_QUOT' => route('inquiry.hub'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_UOM' => route('master.uom'),
@@ -91,8 +99,29 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             ->groupBy('parent_id');
 
         $routes = $this->itemRoutes();
+        $statusColors = SysAppMenuColor::all()->keyBy('status_code');
 
-        $build = function (SysAppMenu $node) use (&$build, $children, $routes) {
+        // module_status_system (GLOBAL_RULES.yaml): item bawa status_code sendiri
+        // dari DB; module/group DERIVE dari anak-anaknya (worst-case menang) --
+        // TIDAK disimpan sendiri, supaya "Sales" langsung kelihatan abu kalau ADA
+        // satu submenu yang belum dibangun, tanpa perlu expand satu-satu.
+        $deriveStatus = function (array $childStatuses): string {
+            if (empty($childStatuses) || in_array('NOT_BUILT', $childStatuses, true)) {
+                return 'NOT_BUILT';
+            }
+
+            return in_array('READY_FOR_QC', $childStatuses, true) ? 'READY_FOR_QC' : 'LOCKED';
+        };
+
+        $build = function (SysAppMenu $node) use (&$build, $children, $routes, $statusColors, $deriveStatus) {
+            $builtChildren = ($children->get($node->id) ?? collect())->map($build)->values()->all();
+
+            $statusCode = $node->menu_type === 'item'
+                ? ($node->status_code ?: 'NOT_BUILT')
+                : $deriveStatus(array_column($builtChildren, 'statusCode'));
+
+            $color = $statusColors->get($statusCode);
+
             return [
                 'id' => $node->id,
                 'code' => $node->code,
@@ -101,7 +130,11 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 'menuType' => $node->menu_type,
                 'objectType' => $node->object_type,
                 'url' => $routes[$node->code] ?? null,
-                'children' => ($children->get($node->id) ?? collect())->map($build)->values()->all(),
+                'statusCode' => $statusCode,
+                'statusColor' => $color->color_hex ?? '#9ca3af',
+                'statusLabel' => $color->label ?? 'Belum Tersedia',
+                'isClickable' => (bool) ($color->is_clickable ?? false),
+                'children' => $builtChildren,
             ];
         };
 
@@ -142,6 +175,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                         'icon' => $n['icon'],
                         'objectType' => $n['objectType'],
                         'url' => $n['url'],
+                        'statusCode' => $n['statusCode'],
+                        'statusColor' => $n['statusColor'],
+                        'statusLabel' => $n['statusLabel'],
+                        'isClickable' => $n['isClickable'],
                         'mod' => $mod,
                     ];
                 }
@@ -379,9 +416,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                         <div class="side-cap" x-text="grp.label"></div>
                     </template>
                     <template x-for="it in (grp.menuType === 'group' ? grp.children : [grp])" :key="it.id">
-                        <button type="button" class="leaf" :class="{ active: activeTabCode === it.code }" @click="openTab(it.code)">
+                        <button type="button" class="leaf" :class="{ active: activeTabCode === it.code, 'not-built': !it.isClickable }" :title="it.statusLabel" @click="openTab(it.code)">
                             <span class="lic"><i :class="it.icon || 'fa-solid fa-file-lines'"></i></span>
                             <span class="lbl" x-text="it.label"></span>
+                            <span class="status-dot" :style="{ background: it.statusColor }"></span>
                         </button>
                     </template>
                 </div>
@@ -397,8 +435,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                     <span class="mi"><i class="fa-solid fa-house"></i></span> Home
                 </button>
                 <template x-for="m in menuTree" :key="m.id">
-                    <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" @click="selectModule(m.code)">
+                    <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="m.statusLabel" @click="selectModule(m.code)">
                         <span class="mi"><i :class="m.icon"></i></span> <span x-text="m.label"></span>
+                        <span class="status-dot" :style="{ background: m.statusColor }"></span>
                     </button>
                 </template>
             </nav>

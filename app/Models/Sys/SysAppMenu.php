@@ -36,12 +36,30 @@ class SysAppMenu extends Model
         'sort_order',
         'is_active',
         'required_object',
+        'status_code',
+        'status_note',
+        'status_updated_by',
+        'status_updated_at',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'status_updated_at' => 'datetime',
     ];
+
+    // Claude Code SENDIRI yang boleh panggil ini (module_status_system, GLOBAL_RULES.yaml)
+    // -- setiap kali 1 komponen/mockup selesai dibangun. TIDAK PERNAH promosikan ke LOCKED;
+    // hanya user yang boleh set LOCKED (lewat instruksi eksplisit atau Navicat manual).
+    public function markReadyForQc(?string $note = null): void
+    {
+        $this->update([
+            'status_code' => 'READY_FOR_QC',
+            'status_note' => $note,
+            'status_updated_by' => 'claude_code',
+            'status_updated_at' => now(),
+        ]);
+    }
 
     public function parent(): BelongsTo
     {

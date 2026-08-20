@@ -5,8 +5,9 @@
 # ═══════════════════════════════════════════════════════════════════
 
 meta:
-  scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE). Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
+  scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE) — CATATAN 2026-08-20: user sudah kerjakan Finance & HR di luar urutan/scope awal (lihat modules_excluded + modul 09-11), jadi 'terkunci' di sini artinya urutan prioritas Sales-dulu, BUKAN larangan mutlak menyentuh modul lain kalau user minta. Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
   bahasa: "Jawab Bahasa Indonesia. Singkat-padat-jelas. Bahas konsep sebelum kode. Baca file PENUH sebelum dokumentasi."
+  peta_status: "checklist_mockup_erp.md (per-item) DAN warna menu di shell (per-DB, lihat module_status_system) adalah DUA representasi peta status yang sama — WAJIB diupdate BARENGAN tiap ada perubahan status suatu form/grid, jangan cuma salah satu."
 
 # ═══════════════════════════════════════════════════════════════════
 # MODUL ERP — SCOPE 10 MINGGU (Finance/GL/AP/cashier & HR DIKELUARKAN;
@@ -38,10 +39,19 @@ modules:
   "08_security":
     desc: "Akses & audit"
     submodules: ["user_role_management", "notification", "audit_trail", "opening_app_auth_shell"]
+  "09_master_data":
+    desc: "Master data lintas-modul, dipisah dari Sales sejak redesign v2 (2026-08-18/19)"
+    submodules: ["customer_master", "supplier_master", "uom_master"]
+  "10_finance_accounting":
+    desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.finance_accounting) — COA, Journal, Voucher, Invoice, DP Invoice sudah live"
+    submodules: ["chart_of_account", "journal_voucher", "invoice", "dp_invoice"]
+  "11_hr":
+    desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.hr) — Employee, struktur organisasi, Shift Roster, Self-Service sudah live"
+    submodules: ["employee_master", "org_structure", "shift_roster", "self_service"]
 
 modules_excluded:
-  finance_accounting: "Cashier, AP, General Ledger, jurnal, period close — DI LUAR scope 10 minggu."
-  hr: "Recruitment, Time Attendance, Payroll — ditunda, di luar jalur kritis order-to-cash."
+  finance_accounting: "Cashier, AP, Trial Balance, period close — MASIH di luar scope. CATATAN 2026-08-20: rencana awal 'seluruh Finance/GL di luar scope' sudah TIDAK berlaku — COA, Journal, Voucher, Invoice, DP Invoice sudah dibangun & live (lihat modul 10_finance_accounting di bawah, atas inisiatif user, bukan keputusan sepihak Claude Code). Baris ini sekarang cuma berlaku utk sisa yang benar-benar belum dibangun."
+  hr: "Recruitment, Time Attendance, Payroll — MASIH ditunda. CATATAN 2026-08-20: rencana awal 'seluruh HR ditunda' sudah TIDAK berlaku — Master Employee, struktur organisasi, Shift Roster, Self-Service sudah dibangun & live (lihat modul 11_hr di bawah). Baris ini sekarang cuma berlaku utk sisa yang benar-benar belum dibangun."
 
 stack:
   app: "Laravel + Livewire + Alpine + Tailwind (compiled via Vite; CDN hanya untuk mockup, BUKAN produksi)"

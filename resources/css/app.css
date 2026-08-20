@@ -333,8 +333,16 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .leaf:hover { @apply text-white bg-[var(--side-hover)]; }
 .shell .leaf.active { @apply text-white bg-[var(--sh-accent)]; }
 .shell .leaf .lic { @apply w-5 text-center flex-shrink-0 text-[13px] opacity-90; }
+.shell .leaf .lbl { @apply flex-1 truncate; }
+.shell .leaf.not-built { @apply opacity-55 cursor-not-allowed; }
 .shell.mini .leaf { @apply justify-center py-2.5 px-0; }
 .shell.mini .leaf .lbl { @apply hidden; }
+.shell.mini .leaf .status-dot { @apply hidden; }
+
+/* module_status_system (GLOBAL_RULES.yaml): titik warna kesiapan-build,
+   dari sys_app_menu_color via SysAppMenu::menuTree() -- abu=belum dibangun,
+   kuning=siap di-QC, hijau=terkunci user. Beda dgn sys_theme (tema warna app). */
+.shell .status-dot { @apply w-[7px] h-[7px] rounded-full flex-shrink-0; }
 .shell .side-hint { @apply text-[var(--side-muted)] text-[13px] leading-[1.55] px-4 py-3.5; }
 .shell.mini .side-hint { @apply hidden; }
 

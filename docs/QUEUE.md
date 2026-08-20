@@ -12,8 +12,10 @@
 ---
 
 - [ ] 1. Work on all mockups that are print-out type (nota, quotation, CO, DO/DN, Master Card, etc). Check color consistency/palette against the TMERP palette (`--navy: #2c3e69`, `--accent: #2f6fed`) across all these print-out files — if any are inconsistent, align them to the same palette.
+      Note (2026-08-20): Nota Inquiry ✅ and Quotation ✅ done (both use their own print palette `--accent:#0d5c46` etc., NOT `--navy`/`--accent` TMERP tokens — these are print documents meant to look like formal paper documents, not app screens, so the "align to TMERP palette" instruction doesn't cleanly apply here; flagging for user call rather than silently forcing navy/blue onto a print letterhead). Still not done: CO print, DO/DN print, Master Card print — no mockup exists yet for any of these (see checklist_mockup_erp.md).
 
-- [ ] 2. Add DB migration per `module_status_system` in GLOBAL_RULES.yaml: ALTER `tm2sys.sys_app_menu` (add `status_code`/`status_note`/`status_updated_by`/`status_updated_at`) + CREATE `tm2sys.sys_app_menu_color` (seeded with NOT_BUILT/READY_FOR_QC/LOCKED). Wire `layouts.shell` to JOIN these tables so menu color/clickability is read from DB, not hardcoded. Audit which menus have no form/grid built yet — those stay `status_code='NOT_BUILT'` (default), shown disabled/gray.
+- [x] 2. Add DB migration per `module_status_system` in GLOBAL_RULES.yaml: ALTER `tm2sys.sys_app_menu` (add `status_code`/`status_note`/`status_updated_by`/`status_updated_at`) + CREATE `tm2sys.sys_app_menu_color` (seeded with NOT_BUILT/READY_FOR_QC/LOCKED). Wire `layouts.shell` to JOIN these tables so menu color/clickability is read from DB, not hardcoded. Audit which menus have no form/grid built yet — those stay `status_code='NOT_BUILT'` (default), shown disabled/gray.
+      Note (2026-08-20): done via migration `2026_08_20_000006_add_module_status_system.php`. Wired into `main-menu.blade.php` `menuTree()`/`flatItems()` (not `layouts.shell` directly — that layout is just the HTML shell; the actual menu tree/Alpine data lives in `pages::main-menu`). Module/group status is DERIVED (worst-case of children), not stored. `app-shell.js` `openTab()` now blocks non-clickable (NOT_BUILT) items with a toast instead of opening the old fake-placeholder pane. Backfilled `READY_FOR_QC` for all 18 codes with a real Laravel route today (`SysAppMenu::markReadyForQc()` helper added for future use — call it right after finishing + pushing each new item, per rule #4). Added 2 new menu rows (`SALES_IMPO`, `SALES_NOTA`) that didn't exist before Imposition/Nota were built. Tested end-to-end in browser: gray items don't open (toast fires, no tab), yellow items open normally, module-level dot correctly shows gray the moment ANY child is unbuilt.
 
 - [ ] 3. Check that everything consistently uses Livewire + Alpine.js + Tailwind (no loose jQuery/vanilla JS or custom CSS outside Tailwind unless truly necessary). Make sure every section/code block has a clear comment explaining its purpose, for easy tracing.
 
@@ -36,4 +38,6 @@
 ---
 
 ## Completed history
-(empty)
+
+- 2026-08-20 — Item #2 (module_status_system): migration + menu wiring + click-gating, tested in browser. Commit: "Add module_status_system: menu status colors + gating (QUEUE #2)".
+- 2026-08-20 — Catch-up commit `80a6f9f` for all unpushed work from 2026-08-18 through 2026-08-20 (Master Data v2, Finance, HRM, Sales printouts incl. Imposition/Nota/Quotation) — user chose one combined commit over splitting by feature, since prior sessions jumped between areas non-sequentially.
