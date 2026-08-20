@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<!--
+================================================================================
+  TMERP · IMPOSITION — GRID (list) + FORM (engine)          mockup, bukan produksi
+================================================================================
+  POLA UI  : ERP kelas Odoo/SAP Fiori/D365 — control panel + facet filter +
+             list beragregat  ·  form: statusbar stage + smart button + notebook tab.
+             Shell tunggal, panel-switching (grid <-> form), TIDAK reload halaman.
+
+  MODEL ENGINE (KOREKSI dari mockup lama):
+     TAHAP 1  BELAH PLANO  : plano -> n lembar cetak (cut/plano)
+                             constraint = area cetak maks MESIN
+     TAHAP 2  STEP-AND-REPEAT : nesting bentangan di lembar cetak (isi/lembar)
+                             metode: tegak / putar 90 / campur ; opsi kunci arah serat
+     UP/plano = cut x isi
+  Pola otoritas: engine suggests, officer confirms (Product Designer boleh override).
+
+  -- READ ----------------------------------------------------------------------
+   iqp_part        : flat_w, flat_h  (bentangan dari dieline_spec DSL)   [LOCKED]
+   mat_plano_size  : master ukuran plano tersedia          (BARU - perlu DDL)
+   m_machine       : max_print_w / max_print_h per mesin   (BARU - perlu DDL)
+
+  -- WRITE ---------------------------------------------------------------------
+   iqp_layout      : plano_width_mm, plano_height_mm, cut_per_plano, isi_per_sheet,
+                     up_count(=cut*isi), print_w_mm, print_h_mm, orientation,
+                     efficiency_pct, method, machine_id, grain_lock, status
+   -> snapshot ke  iqp_costing_part.i_cut_per_plano  &  .i_isi_per_lb
+   -> tercetak di  m_card (ukuran cetak, UP, plano)
+  CATATAN: nama kolom DB HANYA di komentar ini, TIDAK pernah tampil di layar.
+================================================================================
+-->
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TMERP — Imposition</title>
+<style>
+:root{
+  --navy:#2c3e69; --navy-d:#22314f; --accent:#2f6fed; --accent-w:#eaf1ff;
+  --line:#dfe4ec; --line-s:#eef1f6; --bg:#f4f6f9; --pap:#fff;
+  --ink:#1f2733; --ink-2:#5b6675; --ink-3:#8a94a6;
+  --ok:#0e8a4f; --ok-bg:#eaf7f0; --warn:#8a5a00; --warn-bg:#fdf5e4;
+  --bad:#c0392b; --bad-bg:#fdecea; --lock:#6b7280; --lock-bg:#eef0f3;
+  --eng:#6b46c1; --eng-bg:#f2edfd;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:13px/1.45 system-ui,"Segoe UI",Inter,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+button,input,select{font:inherit;color:inherit}
+.hide{display:none!important}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ═══ APP BAR ═══════════════════════════════════════════════ */
+.appbar{background:var(--navy);color:#fff;height:44px;display:flex;align-items:center;gap:14px;padding:0 14px;position:sticky;top:0;z-index:60}
+.appbar .brand{font-weight:700;font-size:13.5px;letter-spacing:.2px;display:flex;align-items:center;gap:7px}
+.appbar .brand small{font-weight:400;opacity:.6;font-size:11px}
+.appbar nav{display:flex;gap:2px;margin-left:8px}
+.appbar nav a{color:#c9d3ea;text-decoration:none;font-size:12.5px;padding:5px 10px;border-radius:5px}
+.appbar nav a.on{background:var(--navy-d);color:#fff;font-weight:600}
+.appbar .spacer{flex:1}
+.appbar .who{display:flex;align-items:center;gap:8px;font-size:12px;color:#c9d3ea}
+.avatar{width:24px;height:24px;border-radius:50%;background:#4a5c8f;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#fff}
+
+/* ═══ CONTROL PANEL (breadcrumb + search + view switch) ═════ */
+.cp{background:var(--pap);border-bottom:1px solid var(--line);position:sticky;top:44px;z-index:50}
+.cp .l1{display:flex;align-items:center;gap:10px;padding:8px 14px 0}
+.crumb{font-size:11.5px;color:var(--ink-3)}
+.crumb b{color:var(--navy)}
+.cp h1{font-size:15px;color:var(--navy);font-weight:700;margin-right:4px}
+.cp .l2{display:flex;align-items:center;gap:8px;padding:8px 14px 9px;flex-wrap:wrap}
+.searchbox{flex:1;min-width:240px;display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:#fff;flex-wrap:wrap}
+.searchbox input{border:0;outline:0;flex:1;min-width:110px;font-size:12.5px;padding:2px}
+.facet{display:inline-flex;align-items:center;gap:5px;background:var(--accent-w);color:#1b4fc4;border:1px solid #cddffb;border-radius:4px;padding:1px 6px;font-size:11px;font-weight:600}
+.facet i{cursor:pointer;font-style:normal;opacity:.6}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 11px;font-size:12.5px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:#c3ccda;background:#fafbfd}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn.go{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:600}
+.btn.eng{background:var(--eng);border-color:var(--eng);color:#fff;font-weight:600}
+.btn.warn{border-color:#e3b4ad;color:var(--bad);background:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{padding:3px 8px;font-size:11.5px}
+.vsw{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.vsw button{border:0;background:#fff;padding:5px 9px;cursor:pointer;font-size:12.5px;color:var(--ink-2);border-right:1px solid var(--line-s)}
+.vsw button:last-child{border-right:0}
+.vsw button.on{background:var(--navy);color:#fff}
+.pager{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.pager button{border:1px solid var(--line);background:#fff;border-radius:4px;width:22px;height:22px;cursor:pointer;line-height:1}
+
+/* ═══ GRID LAYOUT ═══════════════════════════════════════════ */
+.gridwrap{display:grid;grid-template-columns:212px 1fr;gap:0;align-items:start}
+@media(max-width:980px){.gridwrap{grid-template-columns:1fr}.side{display:none}}
+.side{background:var(--pap);border-right:1px solid var(--line);min-height:calc(100vh - 44px);padding:10px 0}
+.side h4{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-3);padding:9px 14px 4px;font-weight:700}
+.side a{display:flex;justify-content:space-between;align-items:center;padding:5px 14px;font-size:12.5px;color:var(--ink-2);text-decoration:none;cursor:pointer;border-left:2px solid transparent}
+.side a:hover{background:var(--line-s)}
+.side a.on{background:var(--accent-w);color:#1b4fc4;font-weight:600;border-left-color:var(--accent)}
+.side a span{font-size:10.5px;color:var(--ink-3);background:var(--line-s);border-radius:9px;padding:0 6px}
+.gridmain{padding:0}
+
+/* batch bar */
+.batch{display:flex;align-items:center;gap:9px;background:#1f2b45;color:#fff;padding:6px 14px;font-size:12.5px}
+.batch b{background:#3c4c74;border-radius:4px;padding:1px 7px}
+.batch .btn{background:transparent;border-color:#4a5c8f;color:#dbe3f5}
+.batch .btn:hover{background:#2c3a5c}
+
+/* tabel */
+table.list{width:100%;border-collapse:collapse;background:var(--pap);font-size:12.5px}
+table.list thead th{position:sticky;top:97px;z-index:20;background:#f7f9fc;border-bottom:1px solid var(--line);border-top:1px solid var(--line);
+  font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);font-weight:700;padding:7px 9px;text-align:left;white-space:nowrap;cursor:pointer;user-select:none}
+table.list thead th.num,table.list td.num{text-align:right}
+table.list thead th.ctr,table.list td.ctr{text-align:center}
+table.list th .sort{opacity:.35;font-size:9px}
+table.list th.sorted .sort{opacity:1;color:var(--accent)}
+table.list td{padding:6px 9px;border-bottom:1px solid var(--line-s);white-space:nowrap}
+table.list tbody tr:hover{background:#f8fbff;cursor:pointer}
+table.list tbody tr.sel{background:var(--accent-w)}
+tr.grp td{background:#eef1f6;font-weight:700;color:var(--navy);font-size:11.5px;border-bottom:1px solid var(--line);cursor:default}
+tr.grp .agg{font-weight:600;color:var(--ink-2);font-size:11px}
+tr.grp:hover{background:#eef1f6}
+tfoot td{background:#f7f9fc;border-top:1px solid var(--line);font-weight:700;color:var(--navy);padding:7px 9px;font-size:12px}
+.docno{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.sub{display:block;font-size:10.5px;color:var(--ink-3);font-weight:400}
+
+/* badge & bar */
+.bdg{display:inline-flex;align-items:center;gap:4px;border-radius:11px;padding:1px 8px;font-size:10.5px;font-weight:700;white-space:nowrap;border:1px solid transparent}
+.bdg.draft{background:var(--lock-bg);color:var(--lock);border-color:#dcdfe4}
+.bdg.calc{background:var(--eng-bg);color:var(--eng);border-color:#ddd0f7}
+.bdg.ver{background:var(--warn-bg);color:var(--warn);border-color:#f0dfb5}
+.bdg.lock{background:var(--ok-bg);color:var(--ok);border-color:#bfe4cf}
+.bdg.rej{background:var(--bad-bg);color:var(--bad);border-color:#f2c7c1}
+.bar{display:inline-block;width:56px;height:6px;border-radius:3px;background:var(--line-s);overflow:hidden;vertical-align:middle;margin-right:6px}
+.bar i{display:block;height:100%}
+.e-hi{color:var(--ok)}.e-mid{color:var(--warn)}.e-lo{color:var(--bad)}
+.b-hi{background:var(--ok)}.b-mid{background:#e0a800}.b-lo{background:var(--bad)}
+
+/* ═══ FORM ══════════════════════════════════════════════════ */
+.formwrap{padding:0 0 60px}
+.fhead{background:var(--pap);border-bottom:1px solid var(--line);padding:10px 16px 0}
+.fhead .top{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.fhead h2{font-size:19px;color:var(--navy);font-weight:700;letter-spacing:.2px}
+.fhead .chips{display:flex;gap:6px;margin-top:5px;flex-wrap:wrap}
+.chip{font-size:10.5px;border:1px solid var(--line);border-radius:4px;padding:1px 7px;color:var(--ink-2);background:#fafbfd}
+.chip.lk{background:var(--lock-bg);border-color:#dcdfe4;color:var(--lock);font-weight:600}
+/* statusbar stage (Odoo style) */
+.stages{display:flex;margin-left:auto;flex-wrap:wrap}
+.stg{position:relative;background:#eef1f6;color:var(--ink-3);font-size:11px;font-weight:700;padding:5px 15px 5px 21px;margin-left:-9px;clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 50%,100% 100%,9px 100%,100% 50%);text-transform:uppercase;letter-spacing:.3px}
+.stg:first-child{margin-left:0;padding-left:14px;clip-path:polygon(0 0,100% 0,calc(100% - 9px) 50%,100% 100%,0 100%)}
+.stg.done{background:#dbe6f8;color:#3a5893}
+.stg.now{background:var(--navy);color:#fff}
+/* smart buttons */
+.smart{display:flex;gap:8px;margin:10px 0 0;flex-wrap:wrap}
+.sbtn{border:1px solid var(--line);border-radius:6px;background:#fff;padding:5px 12px;display:flex;flex-direction:column;line-height:1.25;cursor:pointer;min-width:96px}
+.sbtn b{font-size:13px;color:var(--navy)}
+.sbtn span{font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.3px}
+.sbtn:hover{border-color:var(--accent);background:var(--accent-w)}
+.actionbar{display:flex;gap:7px;padding:9px 16px;background:var(--pap);border-bottom:1px solid var(--line);position:sticky;top:44px;z-index:45;flex-wrap:wrap;align-items:center}
+.actionbar .hint{font-size:11.5px;color:var(--ink-3);margin-left:auto}
+
+.body2{display:grid;grid-template-columns:322px 1fr;gap:14px;padding:14px 16px}
+@media(max-width:1040px){.body2{grid-template-columns:1fr}}
+.card{background:var(--pap);border:1px solid var(--line);border-radius:7px;margin-bottom:12px;overflow:hidden}
+.card>h3{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--navy);font-weight:700;background:#f7f9fc;border-bottom:1px solid var(--line);padding:7px 12px;display:flex;align-items:center;gap:7px}
+.card>h3 .tag{margin-left:auto;font-size:9.5px;letter-spacing:.2px;border-radius:3px;padding:1px 6px;font-weight:700}
+.tag.lk{background:var(--lock-bg);color:var(--lock)}
+.tag.en{background:var(--eng-bg);color:var(--eng)}
+.tag.ed{background:var(--accent-w);color:#1b4fc4}
+.card .in{padding:11px 12px}
+.f{display:flex;flex-direction:column;gap:3px;margin-bottom:9px}
+.f>label{font-size:10.5px;color:var(--ink-2);font-weight:600;display:flex;align-items:center;gap:5px}
+.f input,.f select{border:1px solid #ccd4df;border-radius:5px;padding:5px 7px;font-size:12.5px;width:100%;background:#fff}
+.f input:focus,.f select:focus{outline:2px solid var(--accent-w);border-color:var(--accent)}
+.f input[readonly]{background:repeating-linear-gradient(45deg,#f1f3f6,#f1f3f6 5px,#e9ecf1 5px,#e9ecf1 10px);color:var(--ink-2);cursor:not-allowed}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.hint2{font-size:10.5px;color:var(--ink-3);line-height:1.45}
+.chkline{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);margin-bottom:8px}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:12px}
+@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--pap);border:1px solid var(--line);border-radius:7px;padding:9px 11px}
+.kpi.hero{background:linear-gradient(180deg,#f4f9f6,#fff);border-color:#bfe4cf}
+.kpi .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);font-weight:700}
+.kpi .v{font-size:22px;font-weight:800;color:var(--navy);line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi.hero .v{color:var(--ok)}
+.kpi .s{font-size:10.5px;color:var(--ink-3)}
+
+/* notebook */
+.nb{background:var(--pap);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.nbtabs{display:flex;border-bottom:1px solid var(--line);background:#f7f9fc;overflow:auto}
+.nbtabs button{border:0;background:transparent;padding:8px 14px;font-size:12.5px;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.nbtabs button.on{color:var(--navy);font-weight:700;border-bottom-color:var(--accent);background:#fff}
+.nbpane{padding:13px}
+
+/* kanvas */
+.stage2{background:#fbfcfe;border:1px solid var(--line-s);border-radius:6px;padding:16px;display:flex;justify-content:center;align-items:center;min-height:330px}
+.plano{position:relative;background:#fff;border:2px solid var(--navy);box-shadow:0 1px 5px rgba(20,30,60,.12)}
+.sheet{position:absolute;border:1px dashed #c0392b;background:rgba(255,255,255,.01)}
+.sheet .grip{position:absolute;left:0;right:0;top:0;background:repeating-linear-gradient(45deg,#e7ebf2,#e7ebf2 3px,#f3f5f9 3px,#f3f5f9 6px);border-bottom:1px dashed #a9b4c4}
+.up{position:absolute;border:1px solid var(--accent);background:rgba(47,111,237,.11);display:grid;place-items:center;font-size:7.5px;color:#1b4fc4;font-weight:700;overflow:hidden}
+.up.rot{border-color:#7c5cd6;background:rgba(124,92,214,.13);color:#5b3fa0}
+.leg{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--ink-2);margin-top:9px}
+.leg span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:14px;height:9px;border-radius:2px;display:inline-block}
+.note{font-size:11.5px;line-height:1.55;border-radius:6px;padding:9px 11px;margin-top:10px}
+.note.eng{background:var(--eng-bg);border:1px solid #ddd0f7;color:#4b2f92}
+.note.bad{background:var(--bad-bg);border:1px solid #f2c7c1;color:#8f2a1e}
+.note.ok{background:var(--ok-bg);border:1px solid #bfe4cf;color:#0b5c37}
+
+table.mini{width:100%;border-collapse:collapse;font-size:12px}
+table.mini th{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-3);font-weight:700;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+table.mini th:first-child{text-align:left}
+table.mini td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line-s);font-variant-numeric:tabular-nums}
+table.mini td:first-child{text-align:left;font-weight:600;color:var(--navy)}
+table.mini tr.best{background:#f2fbf6}
+table.mini tr.best td:first-child::after{content:' ★';color:#e0a800}
+table.mini tr:hover{background:#f8fbff}
+.pick{color:var(--accent);font-weight:600;cursor:pointer}
+.contract td:first-child{font-weight:600}
+.contract .to{color:var(--ink-2);font-weight:400;text-align:left}
+/* log */
+.log{list-style:none;font-size:12px}
+.log li{display:flex;gap:9px;padding:7px 0;border-bottom:1px solid var(--line-s)}
+.log .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:5px;flex:none}
+.log .t{color:var(--ink-3);font-size:10.5px}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ APP BAR (shell tunggal) ═══════════════ -->
+<div class="appbar">
+  <div class="brand">▦ TMERP <small>PT. Telasih Makmur</small></div>
+  <nav>
+    <a>Inquiry</a><a class="on">Imposition</a><a>Master Card</a><a>Costing</a><a>Quotation</a><a>CO</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="who">Product Designer <div class="avatar">RD</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     VIEW 1 — GRID / LIST
+     ═══════════════════════════════════════════════════════════ -->
+<div id="viewGrid">
+  <div class="cp">
+    <div class="l1">
+      <div class="crumb">Sales › Product Designer › <b>Imposition</b></div>
+    </div>
+    <div class="l1" style="padding-bottom:2px">
+      <h1>Imposition</h1>
+      <button class="btn pri" onclick="openForm()">＋ Baru</button>
+      <button class="btn">⇪ Impor</button>
+      <button class="btn">⚙ Aksi ▾</button>
+    </div>
+    <div class="l2">
+      <div class="searchbox">
+        <span style="color:var(--ink-3)">🔎</span>
+        <span class="facet">Status: Perlu Verifikasi <i onclick="this.parentNode.remove()">✕</i></span>
+        <span class="facet">Grup: Status <i onclick="this.parentNode.remove()">✕</i></span>
+        <input placeholder="Cari no. imposition, inquiry, customer, produk…">
+      </div>
+      <button class="btn">⛃ Filter ▾</button>
+      <button class="btn">Σ Group By ▾</button>
+      <button class="btn">★ Favorit ▾</button>
+      <div class="vsw">
+        <button class="on" title="List">☰</button><button title="Kanban">▦</button><button title="Grafik">📊</button>
+      </div>
+      <div class="pager"><b>1–9</b> / 128 <button>‹</button><button>›</button></div>
+    </div>
+  </div>
+
+  <div class="gridwrap">
+    <!-- facet rail -->
+    <aside class="side">
+      <h4>Status</h4>
+      <a class="on">Semua <span>128</span></a>
+      <a>Draft <span>14</span></a>
+      <a>Dihitung <span>31</span></a>
+      <a>Perlu verifikasi <span>9</span></a>
+      <a>Terkunci ke Costing <span>68</span></a>
+      <a>Ditolak / Revisi <span>6</span></a>
+      <h4>Mesin cetak</h4>
+      <a>SM 102 (72×102) <span>54</span></a>
+      <a>SM 74 (52×74) <span>39</span></a>
+      <a>GTO 52 (36×52) <span>22</span></a>
+      <a>Digital B2 (33×48) <span>13</span></a>
+      <h4>Efisiensi</h4>
+      <a>≥ 80% — baik <span>71</span></a>
+      <a>60–79% — sedang <span>42</span></a>
+      <a>&lt; 60% — perlu tinjau <span>15</span></a>
+      <h4>Designer</h4>
+      <a>Rudi D. <span>46</span></a>
+      <a>Sari W. <span>38</span></a>
+      <a>Bagus P. <span>44</span></a>
+    </aside>
+
+    <main class="gridmain">
+      <div class="batch" id="batchBar" style="display:none">
+        <b id="batchN">0</b> baris terpilih
+        <button class="btn sm">⚙ Hitung Ulang</button>
+        <button class="btn sm">✓ Verifikasi</button>
+        <button class="btn sm">🔒 Kunci ke Costing</button>
+        <button class="btn sm">⇩ Ekspor</button>
+        <span style="margin-left:auto;cursor:pointer;opacity:.7" onclick="clearSel()">✕ batal pilih</span>
+      </div>
+
+      <table class="list">
+        <thead>
+          <tr>
+            <th style="width:28px" class="ctr"><input type="checkbox" onclick="selAll(this)"></th>
+            <th>No. Imposition <span class="sort">▲▼</span></th>
+            <th>Inquiry / Customer</th>
+            <th>Produk · Part</th>
+            <th class="num">Bentangan (mm)</th>
+            <th>Plano</th>
+            <th>Mesin</th>
+            <th class="num">Cut</th>
+            <th class="num">Isi/lbr</th>
+            <th class="num sorted">UP/plano <span class="sort">▼</span></th>
+            <th class="num">Efisiensi</th>
+            <th>Metode</th>
+            <th>Status</th>
+            <th>Designer</th>
+          </tr>
+        </thead>
+        <tbody id="listBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="7">9 baris · agregat halaman</td>
+            <td class="num">—</td><td class="num">—</td>
+            <td class="num">Σ 214</td><td class="num">Ø 78%</td>
+            <td colspan="3"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     VIEW 2 — FORM / ENGINE
+     ═══════════════════════════════════════════════════════════ -->
+<div id="viewForm" class="hide">
+  <div class="fhead">
+    <div class="l1" style="padding:0 0 6px"><div class="crumb">Sales › Product Designer › <a style="cursor:pointer;color:var(--accent)" onclick="openGrid()">Imposition</a> › <b>IMP-2608-0031</b></div></div>
+    <div class="top">
+      <div>
+        <h2>IMP-2608-0031</h2>
+        <div class="chips">
+          <span class="chip lk">🔒 IQ-2608-0117</span>
+          <span class="chip lk">🔒 Part 1/2 — Body</span>
+          <span class="chip">Rev 0 · NEW</span>
+          <span class="chip">PT Sumber Rejeki Pangan</span>
+          <span class="chip">Inner Box Ayam Goreng</span>
+        </div>
+      </div>
+      <div class="stages">
+        <div class="stg done">Draft</div>
+        <div class="stg now">Dihitung</div>
+        <div class="stg">Diverifikasi</div>
+        <div class="stg">Terkunci</div>
+      </div>
+    </div>
+    <div class="smart">
+      <div class="sbtn"><b>2</b><span>Part inquiry</span></div>
+      <div class="sbtn"><b>1</b><span>Dieline</span></div>
+      <div class="sbtn"><b>3</b><span>Riwayat run</span></div>
+      <div class="sbtn"><b>—</b><span>Costing</span></div>
+      <div class="sbtn"><b>—</b><span>Master Card</span></div>
+    </div>
+  </div>
+
+  <div class="actionbar">
+    <button class="btn eng" onclick="run()">⚙ Jalankan Engine</button>
+    <button class="btn" onclick="run()">↻ Hitung Ulang</button>
+    <button class="btn go">✓ Verifikasi Layout</button>
+    <button class="btn" disabled>🔒 Kunci ke Costing</button>
+    <button class="btn">🖨 Cetak Lembar Layout</button>
+    <button class="btn warn">✕ Batalkan</button>
+    <button class="btn" onclick="openGrid()">← Kembali ke daftar</button>
+    <span class="hint">Kunci ke Costing aktif setelah layout diverifikasi.</span>
+  </div>
+
+  <div class="body2">
+    <!-- KOLOM KIRI: INPUT -->
+    <div>
+      <div class="card">
+        <h3>📦 Bentangan Flat (1 up) <span class="tag lk">DARI DIELINE</span></h3>
+        <div class="in">
+          <div class="r2">
+            <div class="f"><label>Flat W (mm)</label><input id="fw" value="222" readonly></div>
+            <div class="f"><label>Flat H (mm)</label><input id="fh" value="184" readonly></div>
+          </div>
+          <div class="r2">
+            <div class="f"><label>Bleed (mm)</label><input type="number" id="bleed" value="0" onchange="run()"></div>
+            <div class="f"><label>Gap antar-up (mm)</label><input type="number" id="gap" value="3" onchange="run()"></div>
+          </div>
+          <div class="hint2">Bentangan terkunci dari dieline inquiry. Perubahan bentangan = REVISE di Inquiry, bukan di sini.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🖨 Mesin &amp; Belah Plano <span class="tag ed">DAPAT DIUBAH</span></h3>
+        <div class="in">
+          <div class="f"><label>Mesin cetak</label>
+            <select id="mach" onchange="run()">
+              <option value="0">SM 102 — area cetak maks 720 × 1020</option>
+              <option value="1" selected>SM 74 — area cetak maks 520 × 740</option>
+              <option value="2">GTO 52 — area cetak maks 360 × 520</option>
+              <option value="3">Digital B2 — area cetak maks 330 × 480</option>
+            </select>
+          </div>
+          <div class="f"><label>Batas belah (cut maks / plano)</label>
+            <select id="maxcut" onchange="run()">
+              <option>2</option><option selected>4</option><option>6</option><option>8</option>
+            </select>
+          </div>
+          <div class="chkline"><input type="checkbox" id="grain" onchange="run()"> <label for="grain" style="font-weight:600">Kunci arah serat (larang rotasi 90°)</label></div>
+          <div class="hint2">Belah plano = proses lantai #1. Lembar hasil belah wajib ≤ area cetak mesin.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📄 Plano <span class="tag ed">DAPAT DIUBAH</span></h3>
+        <div class="in">
+          <div class="r2">
+            <div class="f"><label>Plano W (mm)</label><input type="number" id="pw" value="790" onchange="run()"></div>
+            <div class="f"><label>Plano H (mm)</label><input type="number" id="ph" value="1090" onchange="run()"></div>
+          </div>
+          <div class="r2">
+            <div class="f"><label>Gripper (mm)</label><input type="number" id="grip" value="12" onchange="run()"></div>
+            <div class="f"><label>Margin tepi (mm)</label><input type="number" id="marg" value="8" onchange="run()"></div>
+          </div>
+          <div class="f"><label>Ukuran cetak hasil belah</label><input id="printsize" readonly></div>
+          <div class="f"><label>Metode nesting terpilih</label><input id="method" readonly></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KOLOM KANAN: HASIL -->
+    <div>
+      <div class="kpis">
+        <div class="kpi hero"><div class="k">UP / plano</div><div class="v" id="kUp">—</div><div class="s" id="kUpS">cut × isi</div></div>
+        <div class="kpi"><div class="k">Cut / plano</div><div class="v" id="kCut">—</div><div class="s">belah plano</div></div>
+        <div class="kpi"><div class="k">Isi / lembar</div><div class="v" id="kIsi">—</div><div class="s">up per lembar cetak</div></div>
+        <div class="kpi"><div class="k">Efisiensi</div><div class="v" id="kEff">—</div><div class="s">area plano kepakai</div></div>
+        <div class="kpi"><div class="k">Waste</div><div class="v" id="kWaste">—</div><div class="s" id="kWasteS">sisa plano</div></div>
+      </div>
+
+      <div class="nb">
+        <div class="nbtabs">
+          <button class="on" onclick="tab(this,'t1')">Layout &amp; Kanvas</button>
+          <button onclick="tab(this,'t2')">Saran Plano</button>
+          <button onclick="tab(this,'t3')">Alternatif Belah</button>
+          <button onclick="tab(this,'t4')">Kontrak ke Costing</button>
+          <button onclick="tab(this,'t5')">Catatan &amp; Log</button>
+        </div>
+
+        <div class="nbpane" id="t1">
+          <div class="stage2"><div class="plano" id="plano"></div></div>
+          <div class="leg">
+            <span><span class="sw" style="background:rgba(47,111,237,.3);border:1px solid var(--accent)"></span> up tegak</span>
+            <span><span class="sw" style="background:rgba(124,92,214,.3);border:1px solid #7c5cd6"></span> up diputar 90°</span>
+            <span><span class="sw" style="background:repeating-linear-gradient(45deg,#e7ebf2,#e7ebf2 3px,#f3f5f9 3px,#f3f5f9 6px)"></span> gripper</span>
+            <span><span class="sw" style="border:1px dashed #c0392b"></span> garis belah plano</span>
+          </div>
+          <div class="note eng" id="engNote"></div>
+          <div id="engWarn"></div>
+        </div>
+
+        <div class="nbpane hide" id="t2">
+          <table class="mini">
+            <thead><tr><th>Plano</th><th>Cut</th><th>Isi/lbr</th><th>UP/plano</th><th>Efisiensi</th><th>Sisa (mm)</th><th></th></tr></thead>
+            <tbody id="planoSug"></tbody>
+          </table>
+          <div class="hint2" style="margin-top:9px">Peringkat: UP/plano tertinggi → efisiensi. Plano yang lembar belahnya tidak muat mesin otomatis dibuang.</div>
+        </div>
+
+        <div class="nbpane hide" id="t3">
+          <table class="mini">
+            <thead><tr><th>Pola belah</th><th>Ukuran cetak</th><th>Isi/lbr</th><th>UP/plano</th><th>Eff. lembar</th><th>Eff. plano</th><th></th></tr></thead>
+            <tbody id="cutAlt"></tbody>
+          </table>
+          <div class="hint2" style="margin-top:9px">Officer boleh memilih pola belah non-optimal bila ada pertimbangan arah serat, kapasitas mesin potong, atau standar stok lembar.</div>
+        </div>
+
+        <div class="nbpane hide" id="t4">
+          <!-- BINDING (kolom DB sengaja tidak ditampilkan; lihat komentar header file) -->
+          <table class="mini contract">
+            <thead><tr><th>Nilai terkunci dari Imposition</th><th class="to">Dipakai di</th><th>Nilai</th></tr></thead>
+            <tbody id="contract"></tbody>
+          </table>
+          <div class="note ok" style="margin-top:11px">Setelah <b>Kunci ke Costing</b>, nilai di atas menjadi read-only di layar Costing dan tercetak di Master Card. Mengubahnya = buat revisi Imposition, bukan edit di hilir.</div>
+        </div>
+
+        <div class="nbpane hide" id="t5">
+          <div class="f"><label>Catatan designer</label><input placeholder="mis. arah serat wajib sejajar sisi panjang — permintaan QC"></div>
+          <ul class="log">
+            <li><span class="dot"></span><div><b>Engine dijalankan</b> — usulan 79×109, belah 2, isi 8, UP 16 (eff 82%)<div class="t">Rudi D. · hari ini 09:41</div></div></li>
+            <li><span class="dot" style="background:var(--warn)"></span><div><b>Override officer</b> — plano diganti dari 65×100 ke 79×109<div class="t">Rudi D. · hari ini 09:38</div></div></li>
+            <li><span class="dot" style="background:var(--lock)"></span><div><b>Imposition dibuat</b> dari inquiry IQ-2608-0117 part Body<div class="t">Sistem · hari ini 09:30</div></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+ * MASTER (dummy — nanti dari mat_plano_size & m_machine)
+ * ═══════════════════════════════════════════════════════════════ */
+var MACHINES=[
+ {code:'SM 102', w:720, h:1020},
+ {code:'SM 74',  w:520, h:740},
+ {code:'GTO 52', w:360, h:520},
+ {code:'Digital B2', w:330, h:480}
+];
+var PLANOS=[
+ {name:'61×86',  w:610, h:860},
+ {name:'65×100', w:650, h:1000},
+ {name:'72×102', w:720, h:1020},
+ {name:'79×109', w:790, h:1090},
+ {name:'89×125', w:890, h:1250}
+];
+
+/* ═══ TAHAP 2 — nesting di 1 lembar cetak ═══════════════════════ */
+function grid(aW,aH,iW,iH,gap){
+  if(iW<=0||iH<=0) return {c:0,r:0,n:0};
+  var c=Math.floor((aW+gap)/(iW+gap)), r=Math.floor((aH+gap)/(iH+gap));
+  c=Math.max(0,c); r=Math.max(0,r); return {c:c,r:r,n:c*r};
+}
+function nest(sW,sH,fw,fh,gap,grip,marg,grainLock){
+  var aW=sW-2*marg, aH=sH-grip-2*marg;               // gripper memakan tinggi lembar
+  var A=grid(aW,aH,fw,fh,gap);                        // semua tegak
+  var B=grainLock?{c:0,r:0,n:0}:grid(aW,aH,fh,fw,gap);// semua diputar
+  var best,method,L;
+  if(A.n>=B.n){best=A.n;method='Tegak';L={t:'g',rot:false,g:A,iw:fw,ih:fh};}
+  else       {best=B.n;method='Putar 90°';L={t:'g',rot:true, g:B,iw:fh,ih:fw};}
+  if(!grainLock){                                     // campur: kolom sisa kanan diputar
+    var mc=Math.floor((aW+gap)/(fw+gap)), used=mc*(fw+gap)-gap, rest=aW-used-gap;
+    var mr=Math.floor((aH+gap)/(fh+gap));
+    var rc=Math.floor((rest+gap)/(fh+gap)), rr=Math.floor((aH+gap)/(fw+gap));
+    var tot=mc*mr+Math.max(0,rc)*Math.max(0,rr);
+    if(rc>0&&rr>0&&tot>best){
+      best=tot;method='Campur (tegak+putar)';
+      L={t:'m',main:{c:mc,r:mr,iw:fw,ih:fh},rot:{c:rc,r:rr,iw:fh,ih:fw,offX:used+gap}};
+    }
+  }
+  return {n:best,method:method,L:L,aW:aW,aH:aH};
+}
+
+/* ═══ TAHAP 1 — belah plano, dibatasi area cetak mesin ══════════ */
+function fitsMachine(w,h,m){return (w<=m.w&&h<=m.h)||(h<=m.w&&w<=m.h);}
+function impose(pw,ph,fw,fh,gap,grip,marg,mach,maxCut,grainLock){
+  var out=[], seen={};
+  for(var nx=1;nx<=4;nx++)for(var ny=1;ny<=4;ny++){
+    var cut=nx*ny; if(cut>maxCut) continue;
+    var sw=pw/nx, sh=ph/ny;
+    if(!fitsMachine(sw,sh,mach)) continue;
+    var k=nx+'x'+ny; if(seen[k])continue; seen[k]=1;
+    // lembar boleh masuk mesin dalam 2 orientasi umpan → ambil yang lebih banyak isi
+    var o1=nest(sw,sh,fw,fh,gap,grip,marg,grainLock);
+    var o2=nest(sh,sw,fw,fh,gap,grip,marg,grainLock);
+    var feedRot = (o2.n>o1.n);
+    var o = feedRot?o2:o1;
+    var sW = feedRot?sh:sw, sH = feedRot?sw:sh;
+    if(o.n<=0) continue;
+    var up=cut*o.n;
+    out.push({nx:nx,ny:ny,cut:cut,sw:sw,sh:sh,sW:sW,sH:sH,feedRot:feedRot,
+      isi:o.n,up:up,method:o.method,L:o.L,
+      effSheet:o.n*fw*fh/(sw*sh)*100, effPlano:up*fw*fh/(pw*ph)*100});
+  }
+  out.sort(function(a,b){return b.up-a.up || b.effPlano-a.effPlano || a.cut-b.cut;});
+  return out;
+}
+
+/* ═══ KANVAS ═══════════════════════════════════════════════════ */
+function draw(best,pw,ph,grip,marg,gap){
+  var box=document.getElementById('plano');
+  if(!best){box.style.width='260px';box.style.height='180px';box.innerHTML='<div style="display:grid;place-items:center;height:100%;color:#c0392b;font-size:11.5px;text-align:center;padding:10px">Tidak ada pola belah yang muat mesin.<br>Ubah mesin, plano, atau batas belah.</div>';return;}
+  var maxW=470,maxH=310, sc=Math.min(maxW/pw,maxH/ph);
+  box.style.width=(pw*sc)+'px'; box.style.height=(ph*sc)+'px';
+  var h='', n=0, g=gap*sc, gs=grip*sc, ms=marg*sc;
+  for(var iy=0;iy<best.ny;iy++)for(var ix=0;ix<best.nx;ix++){
+    var sx=ix*best.sw*sc, sy=iy*best.sh*sc, sw=best.sw*sc, sh=best.sh*sc;
+    h+='<div class="sheet" style="left:'+sx+'px;top:'+sy+'px;width:'+sw+'px;height:'+sh+'px">';
+    h+='<div class="grip" style="height:'+gs+'px"></div>';
+    var L=best.L, ox=ms, oy=gs+ms;
+    // kanvas menggambar lembar pada orientasi umpan; bila feedRot, sumbu ditukar (disederhanakan: gambar grid apa adanya)
+    function cell(x,y,w,hh,rot){n++;return '<div class="up'+(rot?' rot':'')+'" style="left:'+x+'px;top:'+y+'px;width:'+Math.max(2,w-1)+'px;height:'+Math.max(2,hh-1)+'px">'+n+'</div>';}
+    if(L.t==='g'){
+      var iw=L.iw*sc, ih=L.ih*sc;
+      for(var r=0;r<L.g.r;r++)for(var c=0;c<L.g.c;c++) h+=cell(ox+c*(iw+g),oy+r*(ih+g),iw,ih,L.rot);
+    }else{
+      var mw=L.main.iw*sc, mh=L.main.ih*sc;
+      for(var r2=0;r2<L.main.r;r2++)for(var c2=0;c2<L.main.c;c2++) h+=cell(ox+c2*(mw+g),oy+r2*(mh+g),mw,mh,false);
+      var rw=L.rot.iw*sc, rh=L.rot.ih*sc, rox=ox+L.rot.offX*sc;
+      for(var r3=0;r3<L.rot.r;r3++)for(var c3=0;c3<L.rot.c;c3++) h+=cell(rox+c3*(rw+g),oy+r3*(rh+g),rw,rh,true);
+    }
+    h+='</div>';
+  }
+  box.innerHTML=h;
+}
+
+/* ═══ RENDER ═══════════════════════════════════════════════════ */
+function v(id){return +document.getElementById(id).value||0;}
+function eCls(e){return e>=75?'hi':e>=55?'mid':'lo';}
+function run(){
+  var fw=v('fw')+2*v('bleed'), fh=v('fh')+2*v('bleed');
+  var gap=v('gap'), pw=v('pw'), ph=v('ph'), grip=v('grip'), marg=v('marg');
+  var mach=MACHINES[+document.getElementById('mach').value];
+  var maxCut=+document.getElementById('maxcut').value;
+  var gl=document.getElementById('grain').checked;
+
+  var opts=impose(pw,ph,fw,fh,gap,grip,marg,mach,maxCut,gl);
+  var b=opts[0]||null;
+
+  document.getElementById('kUp').textContent   = b? b.up : '—';
+  document.getElementById('kUpS').textContent  = b? (b.cut+' cut × '+b.isi+' isi') : 'cut × isi';
+  document.getElementById('kCut').textContent  = b? b.cut : '—';
+  document.getElementById('kIsi').textContent  = b? b.isi : '—';
+  var ke=document.getElementById('kEff');
+  ke.textContent = b? b.effPlano.toFixed(0)+'%' : '—';
+  ke.style.color = b? (b.effPlano>=75?'var(--ok)':b.effPlano>=55?'var(--warn)':'var(--bad)') : '';
+  document.getElementById('kWaste').textContent = b? (100-b.effPlano).toFixed(0)+'%' : '—';
+  document.getElementById('printsize').value = b? (b.sw.toFixed(0)+' × '+b.sh.toFixed(0)+' mm  ('+b.nx+'×'+b.ny+' belah)') : 'tidak ada yang muat mesin';
+  document.getElementById('method').value    = b? b.method+(b.feedRot?' · umpan diputar':'') : '—';
+
+  draw(b,pw,ph,grip,marg,gap);
+
+  document.getElementById('engNote').innerHTML = b
+    ? '⚙ <b>Engine</b> menguji '+opts.length+' pola belah × 3 metode nesting → terpilih <b>belah '+b.nx+'×'+b.ny+' ('+b.cut+' cut)</b>, lembar cetak <b>'+b.sw.toFixed(0)+'×'+b.sh.toFixed(0)+' mm</b>, nesting <b>'+b.method+'</b> = <b>'+b.isi+' isi/lembar</b> → <b>'+b.up+' up/plano</b> (efisiensi plano '+b.effPlano.toFixed(0)+'%, lembar '+b.effSheet.toFixed(0)+'%). Officer dapat override untuk pertimbangan arah serat/grain, kapasitas potong, atau standar stok lembar.'
+    : '⚙ <b>Engine</b> tidak menemukan pola belah yang muat area cetak '+mach.code+' ('+mach.w+'×'+mach.h+' mm) dengan batas belah '+maxCut+'.';
+  document.getElementById('engWarn').innerHTML =
+    (b && b.effPlano<60) ? '<div class="note bad">⚠ Efisiensi plano di bawah 60% — waste tinggi. Cek tab <b>Saran Plano</b> sebelum verifikasi.</div>' :
+    (!b ? '<div class="note bad">⚠ Tidak ada solusi. Naikkan batas belah, ganti mesin, atau pilih plano lebih kecil.</div>' : '');
+
+  /* tab: saran plano */
+  var sug=PLANOS.map(function(p){
+    var o=impose(p.w,p.h,fw,fh,gap,grip,marg,mach,maxCut,gl)[0];
+    return {name:p.name,w:p.w,h:p.h,o:o};
+  }).sort(function(a,b2){
+    var A=a.o?a.o.up:-1, B=b2.o?b2.o.up:-1;
+    return B-A || ((b2.o?b2.o.effPlano:0)-(a.o?a.o.effPlano:0));
+  });
+  var bu=sug[0].o?sug[0].o.up:-1;
+  document.getElementById('planoSug').innerHTML=sug.map(function(s){
+    if(!s.o) return '<tr><td>'+s.name+'</td><td colspan="5" style="text-align:left;color:var(--bad);font-size:11.5px">tidak muat area cetak '+mach.code+'</td><td></td></tr>';
+    var sisaW=(s.w-s.o.nx*s.o.sw).toFixed(0), sisa=(100-s.o.effPlano).toFixed(0);
+    return '<tr class="'+(s.o.up===bu?'best':'')+'">'
+      +'<td>'+s.name+'</td><td>'+s.o.cut+'</td><td>'+s.o.isi+'</td><td><b>'+s.o.up+'</b></td>'
+      +'<td class="e-'+eCls(s.o.effPlano)+'"><b>'+s.o.effPlano.toFixed(0)+'%</b></td>'
+      +'<td>'+sisa+'% area</td>'
+      +'<td><span class="pick" onclick="pick('+s.w+','+s.h+')">pilih</span></td></tr>';
+  }).join('');
+
+  /* tab: alternatif belah */
+  document.getElementById('cutAlt').innerHTML = opts.length? opts.slice(0,8).map(function(o,i){
+    return '<tr class="'+(i===0?'best':'')+'">'
+      +'<td>'+o.nx+' × '+o.ny+' = '+o.cut+' cut</td>'
+      +'<td>'+o.sw.toFixed(0)+'×'+o.sh.toFixed(0)+'</td><td>'+o.isi+'</td><td><b>'+o.up+'</b></td>'
+      +'<td class="e-'+eCls(o.effSheet)+'">'+o.effSheet.toFixed(0)+'%</td>'
+      +'<td class="e-'+eCls(o.effPlano)+'">'+o.effPlano.toFixed(0)+'%</td>'
+      +'<td><span class="pick">pakai ini</span></td></tr>';
+  }).join('') : '<tr><td colspan="7" style="text-align:left;color:var(--bad)">tidak ada pola belah yang muat mesin</td></tr>';
+
+  /* tab: kontrak ke costing */
+  document.getElementById('contract').innerHTML = b? [
+    ['Ukuran plano','Costing · biaya bahan  ·  Master Card', pw+' × '+ph+' mm'],
+    ['Cut per plano','Costing · pembagi biaya kertas', b.cut],
+    ['Isi per lembar','Costing · pembagi biaya kertas &amp; coating', b.isi],
+    ['UP per plano','Master Card · lembar layout', b.up],
+    ['Ukuran cetak','Costing · ongkos cetak  ·  Master Card', b.sw.toFixed(0)+' × '+b.sh.toFixed(0)+' mm'],
+    ['Orientasi / metode','Master Card · instruksi lantai', b.method+(b.feedRot?' · umpan diputar':'')],
+    ['Mesin cetak','Routing / BOP · langkah CETAK', mach.code],
+    ['Efisiensi plano','Info tinjauan (tidak masuk rumus)', b.effPlano.toFixed(1)+'%']
+  ].map(function(r){return '<tr><td>'+r[0]+'</td><td class="to">'+r[1]+'</td><td><b>'+r[2]+'</b></td></tr>';}).join('')
+   : '<tr><td colspan="3" style="text-align:left;color:var(--bad)">belum ada hasil — jalankan engine</td></tr>';
+}
+function pick(w,h){document.getElementById('pw').value=w;document.getElementById('ph').value=h;run();tab(document.querySelectorAll('.nbtabs button')[0],'t1');}
+function tab(btn,id){
+  document.querySelectorAll('.nbtabs button').forEach(function(b){b.classList.remove('on')});
+  btn.classList.add('on');
+  ['t1','t2','t3','t4','t5'].forEach(function(t){document.getElementById(t).classList.toggle('hide',t!==id)});
+}
+
+/* ═══ GRID: data dummy + interaksi ═════════════════════════════ */
+var ROWS=[
+ {g:'Perlu verifikasi'},
+ {no:'IMP-2608-0031',iq:'IQ-2608-0117',cust:'PT Sumber Rejeki Pangan',prod:'Inner Box Ayam Goreng',part:'Body',flat:'222 × 184',plano:'79×109',mach:'SM 74',cut:2,isi:8,up:16,eff:82,m:'Campur',st:['calc','Dihitung'],d:'Rudi D.'},
+ {no:'IMP-2608-0029',iq:'IQ-2608-0114',cust:'CV Berkah Snack',prod:'Sleeve Kue Lapis',part:'Body',flat:'318 × 96',plano:'65×100',mach:'SM 74',cut:2,isi:9,up:18,eff:76,m:'Tegak',st:['ver','Perlu verifikasi'],d:'Sari W.'},
+ {no:'IMP-2608-0027',iq:'IQ-2608-0110',cust:'PT Anugerah Kosmetik',prod:'Folding Box Serum 30ml',part:'Lid',flat:'146 × 212',plano:'72×102',mach:'GTO 52',cut:4,isi:6,up:24,eff:58,m:'Putar 90°',st:['ver','Perlu verifikasi'],d:'Bagus P.'},
+ {g:'Terkunci ke Costing'},
+ {no:'IMP-2608-0024',iq:'IQ-2608-0103',cust:'PT Sumber Rejeki Pangan',prod:'Outer Karton 12s',part:'Body',flat:'640 × 420',plano:'89×125',mach:'SM 102',cut:2,isi:2,up:4,eff:88,m:'Tegak',st:['lock','Terkunci'],d:'Rudi D.'},
+ {no:'IMP-2608-0021',iq:'IQ-2608-0099',cust:'CV Mitra Farma',prod:'Box Tablet 10 strip',part:'Body',flat:'104 × 168',plano:'65×100',mach:'GTO 52',cut:4,isi:12,up:48,eff:91,m:'Campur',st:['lock','Terkunci'],d:'Sari W.'},
+ {no:'IMP-2608-0018',iq:'IQ-2608-0094',cust:'PT Anugerah Kosmetik',prod:'Label Botol Toner',part:'Sheet',flat:'88 × 132',plano:'61×86',mach:'Digital B2',cut:2,isi:16,up:32,eff:86,m:'Tegak',st:['lock','Terkunci'],d:'Bagus P.'},
+ {g:'Draft / Revisi'},
+ {no:'IMP-2608-0016',iq:'IQ-2608-0091',cust:'CV Berkah Snack',prod:'Paper Bag M',part:'Body',flat:'520 × 380',plano:'79×109',mach:'SM 102',cut:1,isi:3,up:3,eff:63,m:'Putar 90°',st:['draft','Draft'],d:'Rudi D.'},
+ {no:'IMP-2608-0012',iq:'IQ-2608-0088',cust:'PT Mandiri Beverage',prod:'Wrap Around 6s',part:'Body',flat:'742 × 288',plano:'89×125',mach:'SM 102',cut:1,isi:4,up:4,eff:71,m:'Tegak',st:['rej','Revisi'],d:'Sari W.'}
+];
+function bcls(e){return e>=75?'b-hi':e>=55?'b-mid':'b-lo';}
+document.getElementById('listBody').innerHTML=ROWS.map(function(r){
+  if(r.g) return '<tr class="grp"><td colspan="9">▾ '+r.g+'</td><td class="num agg">Σ</td><td class="num agg">Ø</td><td colspan="3"></td></tr>';
+  return '<tr onclick="openForm()">'
+   +'<td class="ctr" onclick="event.stopPropagation()"><input type="checkbox" onclick="cnt()"></td>'
+   +'<td><span class="docno">'+r.no+'</span></td>'
+   +'<td>'+r.iq+'<span class="sub">'+r.cust+'</span></td>'
+   +'<td>'+r.prod+'<span class="sub">part: '+r.part+'</span></td>'
+   +'<td class="num mono">'+r.flat+'</td><td>'+r.plano+'</td><td>'+r.mach+'</td>'
+   +'<td class="num mono">'+r.cut+'</td><td class="num mono">'+r.isi+'</td>'
+   +'<td class="num mono"><b>'+r.up+'</b></td>'
+   +'<td class="num"><span class="bar"><i class="'+bcls(r.eff)+'" style="width:'+r.eff+'%"></i></span><span class="e-'+eCls(r.eff)+' mono"><b>'+r.eff+'%</b></span></td>'
+   +'<td>'+r.m+'</td>'
+   +'<td><span class="bdg '+r.st[0]+'">'+r.st[1]+'</span></td>'
+   +'<td>'+r.d+'</td></tr>';
+}).join('');
+function cnt(){
+  var n=document.querySelectorAll('#listBody input:checked').length;
+  document.getElementById('batchBar').style.display=n?'flex':'none';
+  document.getElementById('batchN').textContent=n;
+  document.querySelectorAll('#listBody tr').forEach(function(tr){
+    var c=tr.querySelector('input'); if(c) tr.classList.toggle('sel',c.checked);
+  });
+}
+function selAll(cb){document.querySelectorAll('#listBody input').forEach(function(c){c.checked=cb.checked});cnt();}
+function clearSel(){document.querySelectorAll('#listBody input,thead input').forEach(function(c){c.checked=false});cnt();}
+function openForm(){document.getElementById('viewGrid').classList.add('hide');document.getElementById('viewForm').classList.remove('hide');window.scrollTo(0,0);run();}
+function openGrid(){document.getElementById('viewForm').classList.add('hide');document.getElementById('viewGrid').classList.remove('hide');window.scrollTo(0,0);}
+
+run();
+</script>
+</body>
+</html>
