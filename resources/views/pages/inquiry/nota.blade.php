@@ -89,14 +89,10 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                 'cfg_color' => $part->cfg_color,
                 'cfg_ink' => $part->cfg_ink,
                 'processes' => $part->processes->sortBy('step_seq')->pluck('process_name')->filter()->implode(', '),
-                // JS dieline renderer (docs/mockups/nota_inquiry_mockup.html) butuh fw/fh/len/wid/hgt/glue/style.
-                'fw' => (float) $part->flat_w,
-                'fh' => (float) $part->flat_h,
-                'len' => $dims['product_length'] ?? 0,
-                'wid' => $dims['product_width'] ?? 0,
-                'hgt' => $dims['product_height'] ?? 0,
-                'glue' => $dims['glue_flap'] ?? 0,
-                'style' => ($part->dieline_spec['type_code'] ?? '').' '.($part->part_type ?? ''),
+                // spec+dims mentah -> dirender window.TMDieline.render() (resources/js/tmdieline.js),
+                // renderer DSL yang sama dipakai Inquiry New (dieline-part.js), bukan reimplementasi lokal.
+                'spec' => $part->dieline_spec,
+                'dims' => $dims,
             ];
         })->values()->all();
     }
@@ -514,6 +510,11 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                  flex-direction:column;align-items:center;justify-content:center;background:#fcfdfd}
         .nota-wrap.bw .part-dl{background:none}
         .nota-wrap .part-dl svg{width:100%;height:auto;max-height:26mm}
+        /* TMDieline (resources/js/tmdieline.js) pakai warna cut/crease tetap
+           (merah/hijau) -- desaturate di mode hemat-tinta, jangan ubah modul
+           JS bersama (dipakai juga Inquiry New yg butuh warna asli). */
+        .nota-wrap.bw .part-dl svg,
+        .nota-wrap.bw .dl-big svg{filter:grayscale(1)}
         .nota-wrap .dl-cap{font-size:6pt;color:var(--muted);margin-top:2px;text-align:center;line-height:1.3}
         .nota-wrap .dl-none{font-size:6.4pt;color:#aab0b6;text-align:center;line-height:1.4;padding:8px 2px}
 
@@ -553,120 +554,37 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
     </style>
 
     <script>
+        // Render dieline pakai window.TMDieline (resources/js/tmdieline.js) -- DSL
+        // interpreter yang sama dipakai Inquiry New (lihat dieline-part.js), bukan
+        // reimplementasi lokal. spec/dims = snapshot asli iqp_part.dieline_spec,
+        // jadi crease/tuck/glue-flap di sini presisi sesuai desain, bukan tebakan
+        // kotak generik dari nama part_type.
         (function () {
             var scriptEl = document.currentScript;
             var PARTDATA = @json($this->partsData);
 
-            var buildDieline = function (part, big) {
-                var fw = parseFloat(part.fw) || 0;
-                var fh = parseFloat(part.fh) || 0;
-                if (fw <= 0 || fh <= 0) {
-                    return '<div class="dl-none">Dieline belum tersedia<br>(bentangan flat kosong)</div>';
-                }
-
-                var VW = 320, VH = Math.max(120, Math.round(320 * fh / fw));
-                if (VH > 260) { VH = 260; }
-
-                var pad = 18;
-                var bx = pad, by = Math.round(VH * 0.26);
-                var bw = VW - pad * 2, bh = Math.round(VH * 0.48);
-
-                var L = parseFloat(part.len) || 0;
-                var W = parseFloat(part.wid) || 0;
-                var style = (part.style || '').toUpperCase();
-                var isTuck = (style.indexOf('TUCK') >= 0 || style.indexOf('RTE') >= 0 ||
-                              style.indexOf('STE') >= 0 || style.indexOf('BOX') >= 0 || style.indexOf('CARD') >= 0);
-
-                var sw = big ? 2.2 : 3.0;
-                var dw = big ? 1.1 : 1.6;
-                var out = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" xmlns="http://www.w3.org/2000/svg" ' +
-                          'style="width:100%;height:auto">';
-
-                out += '<g fill="none" stroke="currentColor" stroke-width="' + sw + '" stroke-linejoin="round">';
-                out += '<path d="M' + bx + ' ' + by + ' H' + (bx + bw) + ' V' + (by + bh) + ' H' + bx + ' Z"/>';
-
-                var panels = [];
-                if (L > 0 && W > 0) {
-                    var tot = (L + W) * 2;
-                    panels = [W / tot, L / tot, W / tot, L / tot];
-                } else {
-                    panels = [0.25, 0.25, 0.25, 0.25];
-                }
-
-                var xs = [];
-                var acc = bx;
-                for (var pi = 0; pi < panels.length; pi++) {
-                    acc += panels[pi] * bw;
-                    xs.push(Math.round(acc));
-                }
-
-                if (isTuck) {
-                    var t1 = bx, t2 = xs[0];
-                    var th = Math.round(VH * 0.18);
-                    out += '<path d="M' + t1 + ' ' + by + ' L' + t1 + ' ' + (by - th) +
-                           ' H' + t2 + ' L' + t2 + ' ' + by + '"/>';
-                    var b1 = xs[0], b2 = xs[1];
-                    out += '<path d="M' + b1 + ' ' + (by + bh) + ' L' + b1 + ' ' + (by + bh + th) +
-                           ' H' + b2 + ' L' + b2 + ' ' + (by + bh) + '"/>';
-                }
-                out += '</g>';
-
-                out += '<g stroke="var(--accent)" stroke-width="' + dw + '" stroke-dasharray="' +
-                       (big ? '5,3.5' : '6,4') + '" fill="none">';
-                for (var xi = 0; xi < xs.length - 1; xi++) {
-                    out += '<path d="M' + xs[xi] + ' ' + by + ' V' + (by + bh) + '"/>';
-                }
-                if (big) {
-                    out += '<path d="M' + bx + ' ' + by + ' H' + (bx + bw) + '"/>';
-                    out += '<path d="M' + bx + ' ' + (by + bh) + ' H' + (bx + bw) + '"/>';
-                }
-                out += '</g>';
-
-                if (big && L > 0 && W > 0) {
-                    var lbl = [W, L, W, L];
-                    var prev = bx;
-                    for (var li = 0; li < xs.length; li++) {
-                        var mid = Math.round((prev + xs[li]) / 2);
-                        out += '<text x="' + mid + '" y="' + (by + bh / 2 + 4) +
-                               '" font-size="10" text-anchor="middle" fill="currentColor" opacity="0.6">' +
-                               Math.round(lbl[li]) + '</text>';
-                        prev = xs[li];
-                    }
-                    var gl = parseFloat(part.glue) || 0;
-                    if (gl > 0) {
-                        out += '<text x="' + (bx + bw - 8) + '" y="' + (by + bh / 2) +
-                               '" font-size="8" text-anchor="middle" fill="currentColor" opacity="0.5" transform="rotate(-90 ' +
-                               (bx + bw - 8) + ' ' + (by + bh / 2) + ')">lem ' + Math.round(gl) + '</text>';
-                    }
-                }
-
-                out += '</svg>';
-                return out;
-            };
-
             var renderAll = function () {
                 var root = scriptEl.closest('.nota-wrap');
-                var mini = root.querySelectorAll('.dl-mini');
-                var bigs = root.querySelectorAll('.dl-big');
-                for (var mi = 0; mi < mini.length; mi++) {
-                    var sq = mini[mi].getAttribute('data-part');
-                    for (var pj = 0; pj < PARTDATA.length; pj++) {
-                        if (String(PARTDATA[pj].seq) === String(sq)) {
-                            mini[mi].innerHTML = buildDieline(PARTDATA[pj], false);
+
+                ['dl-mini', 'dl-big'].forEach(function (cls) {
+                    root.querySelectorAll('.' + cls).forEach(function (el) {
+                        var seq = el.getAttribute('data-part');
+                        var part = PARTDATA.find(function (p) { return String(p.seq) === String(seq); });
+                        if (part) {
+                            window.TMDieline.render(el, part.spec, part.dims);
                         }
-                    }
-                }
-                for (var bi = 0; bi < bigs.length; bi++) {
-                    var sq2 = bigs[bi].getAttribute('data-part');
-                    for (var pk = 0; pk < PARTDATA.length; pk++) {
-                        if (String(PARTDATA[pk].seq) === String(sq2)) {
-                            bigs[bi].innerHTML = buildDieline(PARTDATA[pk], true);
-                        }
-                    }
-                }
+                    });
+                });
             };
 
-            renderAll();
+            // window.TMDieline datang dari app.js (Vite, dimuat sbg <script type="module">
+            // di <head> -- otomatis deferred). Skrip inline ini jalan lebih dulu saat parsing,
+            // jadi tunggu module deferred selesai (DOMContentLoaded) sebelum panggil TMDieline.
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', renderAll);
+            } else {
+                renderAll();
+            }
         })();
     </script>
 </div>
