@@ -22,15 +22,17 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - 🟡 [D] Product Costing Engine (HPP) — *product_costing.html* — belum digarap (lihat GAP #2 CLAUDE.md §5: rate versioned coating/film/sheet)
 
 ### 1.2 Quotation
-- ✅ [P] Quotation resmi (print) — *quotation_mockup.html* → `inquiry.quotation` (selesai 2026-08-20; tabel baru `quo_quotation` — header tipis, nomor QUO+YY+NNNNN auto-terbit HANYA kalau costing sudah `published_flag=1`; bank tujuan transfer dari `sys_constant` BANK_*, bukan angka karangan)
-- 🟡 [P] Nota Quotation — *inquiry_nota_quotation.html* — idem, belum digarap (varian print beda dari quotation resmi di atas)
-- ⬜ [F] Quotation Entry/Edit — *inquiry_quotation.html* — belum digarap (CRUD/revisi manual, beda dari header auto-generate di atas)
-- ⬜ [G] Quotation List — belum ada mockup
+> ⚠️ **Redesain 2026-08-20**: Quotation semula 1:1 per inquiry (versi kemarin) — dirombak total jadi 1 Quotation = N inquiry + N baris jasa/tooling per customer yang sama, sesuai `mockup_sales_quotation_entry.html` (terbaru) + `mockup_sales_quotation_letter_print.html`. Tabel `quo_quotation.inquiry_id` (unique) diganti `customer_id`; tabel baru `quo_quotation_item`.
+- ✅ [G] Quotation List — *mockup_sales_quotation_entry.html* (panel grid) → `quotation.list` (filter no./customer, badge status, "+ Quotation Baru" via picker customer)
+- ✅ [F] Quotation Entry/Edit — *mockup_sales_quotation_entry.html* (panel form) → `quotation.entry` (tarik inquiry published multi-kali dari customer sama, harga/qty/diskon per baris editable, baris bebas, auto-split tooling jadi baris die & plat terpisah, Terbitkan mengunci dokumen)
+- ✅ [P] Quotation resmi (print) — *mockup_sales_quotation_letter_print.html* → `quotation.print` (palet navy/accent TMERP dikoreksi dari draf hijau kemarin; kolom Ref per baris; panel Alternatif Kuantitas dari produk utama; bank dari `sys_constant` BANK_*, bukan karangan). Disambung dari Entry via tombol "🖨️ Preview Cetak" (tab baru) dan dari Costing via "+ Tambahkan ke Quotation" (`App\Services\Sales\QuotationBuilder`).
+- 🟡 [P] Nota Quotation — *inquiry_nota_quotation.html* — varian print beda, belum digarap
 
 ### 1.3 Sales Order (Customer Order)
-- 🟡 [F] CO Entry — *co_entry_mockup.html* — mockup selesai, belum ada Livewire
-- 🟡 [F] Delivery Plan — *co_delivery_plan_mockup.html* — idem
-- 🟡 [P] Nota CO (print) — *nota_co_mockup.html* — idem
+> Sedang jalan — lihat `mockup_co_entry.html` (versi terbaru 20 Agustus, superseded *co_entry_mockup.html* lama). Perlu skema `co_order` baru dari nol (belum ada Tier doc), plus sambung ke `fin_invoice.co_id`/`fin_voucher_line.co_id` yang sudah live di Finance (saat ini masih teks bebas).
+- 🟡 [F] CO Entry — *mockup_co_entry.html* — desain dikonfirmasi (Shipment Location pakai `AddressPicker` existing, geo 5 level fleksibel), implementasi belum mulai
+- 🟡 [F] Delivery Plan — *co_delivery_plan_mockup.html* — belum digarap
+- 🟡 [P] Nota CO (print) — *nota_co_mockup.html* — belum digarap
 - ⬜ [G] Sales Order List — belum ada mockup
 
 ---
@@ -168,7 +170,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ## REKAP STATUS
 | Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
-| 1 Sales (Inquiry/Quotation/CO) | 8 | 7 | 4 |
+| 1 Sales (Inquiry/Quotation/CO) | 10 | 7 | 2 |
 | 2 Inventory | 0 | 0 | 7 |
 | 3 Production | 0 | 2 | 9 |
 | 4 Procurement | 0 | 3 | 6 |
@@ -180,7 +182,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**18 item live**, **13 item punya mockup HTML tapi belum diimplementasi Livewire**, **49 item belum punya mockup sama sekali** (Inventory/Production inti/Procurement inti/Dispatch/Invoicing masih kosong total).
+**20 item live**, **13 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup sama sekali** (Inventory/Production inti/Procurement inti/Dispatch/Invoicing masih kosong total).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

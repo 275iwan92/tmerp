@@ -53,13 +53,15 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     {
         return [
             'SALES_INQ' => route('inquiry.hub'),
-            // Costing/Imposition/Nota/Quotation butuh {inquiry} spesifik (dokumen
-            // per-record, bukan layar berdiri sendiri) -> arahkan ke Inquiry Hub,
-            // user pilih inquiry dulu baru masuk ke sub-dokumennya dari sana.
+            // Costing/Imposition/Nota butuh {inquiry} spesifik (dokumen per-record,
+            // bukan layar berdiri sendiri) -> arahkan ke Inquiry Hub, user pilih
+            // inquiry dulu baru masuk ke sub-dokumennya dari sana.
             'SALES_COST' => route('inquiry.hub'),
             'SALES_IMPO' => route('inquiry.hub'),
             'SALES_NOTA' => route('inquiry.hub'),
-            'SALES_QUOT' => route('inquiry.hub'),
+            // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi
+            // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
+            'SALES_QUOT' => route('quotation.list'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_UOM' => route('master.uom'),

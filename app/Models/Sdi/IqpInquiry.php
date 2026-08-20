@@ -49,7 +49,6 @@ class IqpInquiry extends Model
         'prove_approved_date',
         'due_date',
         'design_number',
-        'quotation_id',
         'co_id',
         'sub_state',
         'is_confirmed',
@@ -211,9 +210,12 @@ class IqpInquiry extends Model
         return $this->hasOne(IqpCosting::class, 'inquiry_id', 'id_inquiry');
     }
 
-    public function quotation(): HasOne
+    // Traceability ke Quotation sekarang lewat quo_quotation_item.inquiry_id
+    // (1 inquiry bisa muncul di banyak baris quotation berbeda -- lihat migration
+    // 2026_08_20_000007_redesign_quotation_multi_inquiry.php).
+    public function quotationItems(): HasMany
     {
-        return $this->hasOne(QuoQuotation::class, 'inquiry_id', 'id_inquiry');
+        return $this->hasMany(QuoQuotationItem::class, 'inquiry_id', 'id_inquiry');
     }
 
     // co_id -> co_order: modul belum digarap (Tier 3A catatan "FK PENDING").

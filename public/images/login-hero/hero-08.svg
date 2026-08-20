@@ -1,0 +1,9 @@
+<svg viewBox="0 0 800 1000" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#1e2c4d"/>
+<stop offset="100%" stop-color="#2c3e69"/>
+</linearGradient>
+</defs>
+<rect width="800" height="1000" fill="url(#bg)"/>
+<circle cx="280" cy="380" r="55" fill="#5c8ff2" opacity="0.85"/><rect x="210" y="440" width="140" height="130" rx="20" fill="#5c8ff2" opacity="0.6"/><circle cx="400" cy="380" r="55" fill="#e8a33d" opacity="0.85"/><rect x="330" y="440" width="140" height="130" rx="20" fill="#e8a33d" opacity="0.6"/><circle cx="520" cy="380" r="55" fill="#5c8ff2" opacity="0.85"/><rect x="450" y="440" width="140" height="130" rx="20" fill="#5c8ff2" opacity="0.6"/><text x="60" y="920" font-family="Arial,sans-serif" font-size="30" fill="#f4f1ea" font-weight="bold">Tim Produksi Telasih Makmur</text></svg>

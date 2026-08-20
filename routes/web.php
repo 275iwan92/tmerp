@@ -25,7 +25,10 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/inquiry/revise', 'pages::inquiry.revise')->name('inquiry.revise');
             Route::livewire('/inquiry/{inquiry}/imposition', 'pages::inquiry.imposition')->name('inquiry.imposition');
             Route::livewire('/inquiry/{inquiry}/nota', 'pages::inquiry.nota')->name('inquiry.nota');
-            Route::livewire('/inquiry/{inquiry}/quotation', 'pages::inquiry.quotation')->name('inquiry.quotation');
+
+            Route::livewire('/quotation', 'pages::quotation.list')->name('quotation.list');
+            Route::livewire('/quotation/{quotation}/edit', 'pages::quotation.entry')->name('quotation.entry');
+            Route::livewire('/quotation/{quotation}/print', 'pages::quotation.print')->name('quotation.print');
         });
 
         Route::middleware('module:COSTING')->group(function () {

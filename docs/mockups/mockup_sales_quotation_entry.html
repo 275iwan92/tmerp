@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Quotation — TMERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9; height:100vh; overflow:hidden;}
+  .badge-inquiry{background:#e0f2fe;color:#0369a1}
+  .locked{background:#f8fafc;color:#64748b}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:8px}
+  .panel{display:none}
+  .panel.active{display:flex;flex-direction:column;height:100%}
+  tr.rowclick{cursor:pointer}
+  tr.rowclick:hover{background:#f8fafc}
+  .st-draft{background:#fef3c7;color:#92400e}
+  .st-sent{background:#dbeafe;color:#1d4ed8}
+  .st-approved{background:#dcfce7;color:#15803d}
+  .st-expired{background:#f1f5f9;color:#64748b}
+</style>
+</head>
+<body class="text-xs text-slate-800 flex flex-col h-screen">
+
+<div class="max-w-7xl w-full mx-auto p-4 flex flex-col h-full justify-between space-y-3">
+
+  <!-- ============================================================ -->
+  <!-- PANEL 1: GRID / LIST (Quotation Hub)                          -->
+  <!-- ============================================================ -->
+  <div id="panel-grid" class="panel active">
+
+    <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-3">
+      <div>
+        <h1 class="text-sm font-bold text-slate-800">Sales — Quotation List</h1>
+        <p class="text-[10px] text-slate-500">Modul Sales · Daftar Quotation (konsolidasi multi-inquiry per customer)</p>
+      </div>
+      <button onclick="showPanel('form')" class="px-3 py-1.5 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700">＋ Quotation Baru</button>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="card p-2.5 mb-3 flex items-center gap-2">
+      <input type="text" placeholder="Cari No. Quotation / Customer / Ref Inquiry..." class="border rounded px-2 py-1 text-xs flex-1">
+      <select class="border rounded px-2 py-1 text-xs bg-white">
+        <option>Semua Status</option>
+        <option>Draft</option>
+        <option>Terkirim</option>
+        <option>Disetujui</option>
+        <option>Kadaluarsa</option>
+      </select>
+      <input type="date" class="border rounded px-2 py-1 text-xs">
+      <span class="text-slate-400">s/d</span>
+      <input type="date" class="border rounded px-2 py-1 text-xs">
+      <button class="px-3 py-1 rounded border border-slate-300 text-slate-600 font-medium hover:bg-slate-50">Filter</button>
+    </div>
+
+    <!-- GRID -->
+    <div class="card flex-1 overflow-y-auto">
+      <table class="w-full text-xs border-collapse">
+        <thead class="sticky top-0 bg-slate-50 z-10">
+          <tr class="text-slate-500 border-b">
+            <th class="text-left p-2">No. Quotation</th>
+            <th class="text-left p-2">Tanggal</th>
+            <th class="text-left p-2">Customer</th>
+            <th class="text-center p-2">Ref Inquiry</th>
+            <th class="text-right p-2">Grand Total</th>
+            <th class="text-left p-2">Berlaku s/d</th>
+            <th class="text-center p-2">Status</th>
+            <th class="text-center p-2">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b rowclick" onclick="showPanel('form')">
+            <td class="p-2 font-mono font-bold text-blue-600">QUO2607-0031</td>
+            <td class="p-2">25 Jul 2026</td>
+            <td class="p-2">PT. Sinar Kemasan Nusantara</td>
+            <td class="p-2 text-center"><span class="badge-inquiry px-1.5 py-0.5 rounded text-[10px] font-medium">2 inquiry</span></td>
+            <td class="p-2 text-right font-semibold">107.547.900</td>
+            <td class="p-2">25 Agu 2026</td>
+            <td class="p-2 text-center"><span class="st-draft px-2 py-0.5 rounded-full text-[10px] font-semibold">● DRAFT</span></td>
+            <td class="p-2 text-center" onclick="event.stopPropagation()">
+              <button onclick="showPanel('form')" class="hover:text-blue-600" title="Edit">✏️</button>
+              <button class="hover:text-red-600" title="Hapus">🗑️</button>
+            </td>
+          </tr>
+          <tr class="border-b rowclick" onclick="showPanel('form')">
+            <td class="p-2 font-mono font-bold text-blue-600">QUO2607-0028</td>
+            <td class="p-2">18 Jul 2026</td>
+            <td class="p-2">CV. Boga Rasa Indonesia</td>
+            <td class="p-2 text-center"><span class="badge-inquiry px-1.5 py-0.5 rounded text-[10px] font-medium">1 inquiry</span></td>
+            <td class="p-2 text-right font-semibold">42.300.000</td>
+            <td class="p-2">17 Agu 2026</td>
+            <td class="p-2 text-center"><span class="st-sent px-2 py-0.5 rounded-full text-[10px] font-semibold">● TERKIRIM</span></td>
+            <td class="p-2 text-center" onclick="event.stopPropagation()">
+              <button onclick="showPanel('form')" class="hover:text-blue-600" title="Edit">✏️</button>
+              <button class="hover:text-red-600" title="Hapus">🗑️</button>
+            </td>
+          </tr>
+          <tr class="border-b rowclick" onclick="showPanel('form')">
+            <td class="p-2 font-mono font-bold text-blue-600">QUO2607-0019</td>
+            <td class="p-2">05 Jul 2026</td>
+            <td class="p-2">PT. Anugerah Snack Sejahtera</td>
+            <td class="p-2 text-center"><span class="badge-inquiry px-1.5 py-0.5 rounded text-[10px] font-medium">3 inquiry</span></td>
+            <td class="p-2 text-right font-semibold">215.800.000</td>
+            <td class="p-2">04 Agu 2026</td>
+            <td class="p-2 text-center"><span class="st-approved px-2 py-0.5 rounded-full text-[10px] font-semibold">● DISETUJUI</span></td>
+            <td class="p-2 text-center" onclick="event.stopPropagation()">
+              <button onclick="showPanel('form')" class="hover:text-blue-600" title="Lihat">👁️</button>
+            </td>
+          </tr>
+          <tr class="border-b rowclick opacity-60" onclick="showPanel('form')">
+            <td class="p-2 font-mono font-bold text-blue-600">QUO2606-0087</td>
+            <td class="p-2">02 Jun 2026</td>
+            <td class="p-2">PT. Kemasindo Perkasa</td>
+            <td class="p-2 text-center"><span class="badge-inquiry px-1.5 py-0.5 rounded text-[10px] font-medium">1 inquiry</span></td>
+            <td class="p-2 text-right font-semibold">18.400.000</td>
+            <td class="p-2">02 Jul 2026</td>
+            <td class="p-2 text-center"><span class="st-expired px-2 py-0.5 rounded-full text-[10px] font-semibold">● KADALUARSA</span></td>
+            <td class="p-2 text-center" onclick="event.stopPropagation()">
+              <button onclick="showPanel('form')" class="hover:text-blue-600" title="Lihat">👁️</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-between items-center text-[10px] text-slate-400 px-1 pt-1">
+      <span>Menampilkan 4 dari 31 quotation</span>
+      <div class="flex gap-1">
+        <button class="px-2 py-1 border rounded">‹ Prev</button>
+        <button class="px-2 py-1 border rounded bg-blue-600 text-white">1</button>
+        <button class="px-2 py-1 border rounded">2</button>
+        <button class="px-2 py-1 border rounded">3</button>
+        <button class="px-2 py-1 border rounded">Next ›</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PANEL 2: FORM ENTRY (Multi-Inquiry)                           -->
+  <!-- ============================================================ -->
+  <div id="panel-form" class="panel">
+
+    <!-- TOP HEADER -->
+    <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 shadow-sm mb-3">
+      <div class="flex items-center gap-2">
+        <button onclick="showPanel('grid')" class="text-slate-400 hover:text-slate-700 text-base leading-none" title="Kembali ke List">←</button>
+        <div>
+          <h1 class="text-sm font-bold text-slate-800">Sales Quotation — Entry (Multi-Inquiry)</h1>
+          <p class="text-[10px] text-slate-500">Modul Sales · Konsolidasi Multi-Inquiry Menjadi 1 Dokumen Penawaran Resmi</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">● DRAFT</span>
+        <div class="flex gap-2">
+          <button class="px-3 py-1 rounded border border-slate-300 text-slate-600 font-medium hover:bg-slate-50">Simpan Draft</button>
+          <button onclick="alert('Membuka print view: quotation_letter_print.html')" class="px-3 py-1 rounded border border-slate-300 text-slate-600 font-medium hover:bg-slate-50">🖨️ Preview Cetak</button>
+          <button class="px-3 py-1 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700">Terbitkan Quotation</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN GRID CONTENT -->
+    <div class="grid grid-cols-12 gap-3 flex-1 overflow-hidden">
+
+      <!-- LEFT COLUMN -->
+      <div class="col-span-8 flex flex-col space-y-3 overflow-y-auto pr-1">
+
+        <!-- HEADER DOKUMEN -->
+        <div class="card p-3">
+          <h2 class="font-semibold text-slate-700 mb-2 text-xs">Header Quotation</h2>
+          <div class="grid grid-cols-4 gap-2">
+            <div>
+              <label class="text-[10px] text-slate-500">No. Quotation</label>
+              <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="QUO2607-0031" readonly>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500">Quotation Date</label>
+              <input type="date" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="2026-07-25">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500">Valid Until</label>
+              <input type="date" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="2026-08-25">
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500">Termin Pembayaran</label>
+              <select class="w-full border rounded px-1.5 py-1 text-xs mt-0.5 bg-white">
+                <option>DP 50% / Pelunasan</option>
+                <option>Net 30 Hari</option>
+              </select>
+            </div>
+            <div class="col-span-2">
+              <label class="text-[10px] text-slate-500">Customer</label>
+              <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="PT. Sinar Kemasan Nusantara (CUST0011)" readonly>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500">Skema Pajak</label>
+              <select class="w-full border rounded px-1.5 py-1 text-xs mt-0.5 bg-white">
+                <option>Exclusive PPN 11%</option>
+                <option>Inclusive PPN 11%</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500">Mata Uang</label>
+              <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="IDR" readonly>
+            </div>
+          </div>
+        </div>
+
+        <!-- UNIFIED TABS / MULTI-INQUIRY GRID -->
+        <div class="card p-3">
+          <!-- Tab Navigation & Action -->
+          <div class="flex justify-between items-center border-b border-slate-200 mb-3 pb-1.5">
+            <div class="flex gap-2">
+              <span class="font-semibold text-xs text-slate-700 py-1">Daftar Inquiry Terkonsolidasi</span>
+            </div>
+            <div>
+              <button onclick="alert('Membuka modal lookup inquiry untuk ditarik ke quotation ini')" class="text-[10px] bg-blue-600 text-white px-2.5 py-1 rounded font-medium hover:bg-blue-700">＋ Tarik Inquiry Lain</button>
+            </div>
+          </div>
+
+          <!-- Inquiry Lines Table -->
+          <div class="tab-content">
+            <table class="w-full text-xs border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 border-b">
+                  <th class="text-left p-1.5">Ref. Inquiry</th>
+                  <th class="text-left p-1.5">Deskripsi Produk & Spesifikasi</th>
+                  <th class="text-right p-1.5">Qty (Pcs)</th>
+                  <th class="text-right p-1.5">Harga Satuan</th>
+                  <th class="text-right p-1.5">Diskon Item</th>
+                  <th class="text-right p-1.5">Subtotal</th>
+                  <th class="text-center p-1.5">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b hover:bg-slate-50">
+                  <td class="p-1.5 font-mono font-bold text-blue-600">IQ2607-0042</td>
+                  <td class="p-1.5">
+                    <div class="font-medium text-slate-800">Kemasan Teh Celup Premium (1 Set - 3 Part)</div>
+                    <div class="text-[10px] text-slate-400">Art Carton 310gsm, CMYK+2 PMS, Laminasi Doff + Spot UV.</div>
+                  </td>
+                  <td class="p-1.5 text-right font-semibold">50.000</td>
+                  <td class="p-1.5 text-right"><input class="border rounded px-1 py-0.5 text-xs w-20 text-right" value="1.900"></td>
+                  <td class="p-1.5 text-right"><input class="border rounded px-1 py-0.5 text-xs w-14 text-right" value="0"></td>
+                  <td class="p-1.5 text-right font-semibold">95.000.000</td>
+                  <td class="p-1.5 text-center">
+                    <button class="text-slate-500 hover:text-red-600" title="Hapus Baris">✕</button>
+                  </td>
+                </tr>
+                <tr class="border-b hover:bg-slate-50">
+                  <td class="p-1.5 font-mono font-bold text-blue-600">IQ2607-0045</td>
+                  <td class="p-1.5">
+                    <div class="font-medium text-slate-800">Biaya Tooling & Plat Cetak (Sekali Buat)</div>
+                    <div class="text-[10px] text-slate-400">3 Pisau Matras Diecut + 11 Plat CTP.</div>
+                  </td>
+                  <td class="p-1.5 text-right font-semibold">1 Set</td>
+                  <td class="p-1.5 text-right"><input class="border rounded px-1 py-0.5 text-xs w-20 text-right" value="1.890.000"></td>
+                  <td class="p-1.5 text-right"><input class="border rounded px-1 py-0.5 text-xs w-14 text-right" value="0"></td>
+                  <td class="p-1.5 text-right font-semibold">1.890.000</td>
+                  <td class="p-1.5 text-center">
+                    <button class="text-slate-500 hover:text-red-600" title="Hapus Baris">✕</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-[10px] text-slate-400 mt-2 italic">*Catatan: 1 dokumen Quotation ini merangkum multi-inquiry dari customer yang sama. Harga satuan dapat disesuaikan langsung (*inline editing*).</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="col-span-4 flex flex-col space-y-3 overflow-y-auto">
+
+        <!-- ALTERNATIVE QUANTITY TIERS -->
+        <div class="card p-3">
+          <h2 class="font-semibold text-slate-700 mb-2 text-xs">Alternatif Qty Tiers (Info)</h2>
+          <div class="text-[11px] text-slate-600 space-y-1 bg-slate-50 p-2 rounded border">
+            <div class="flex justify-between"><span>Tier 25.000 pcs:</span><span class="font-semibold">Rp 2.075 /pc</span></div>
+            <div class="flex justify-between"><span>Tier 100.000 pcs:</span><span class="font-semibold">Rp 1.680 /pc</span></div>
+            <p class="text-[10px] text-slate-400 pt-1 border-t">Opsi alternatif kuantitas diambil otomatis dari kalkulasi master tier inquiry utama.</p>
+          </div>
+        </div>
+
+        <!-- TAX & SUMMARY -->
+        <div class="card p-3">
+          <h2 class="font-semibold text-slate-700 mb-2 text-xs">Summary & Perhitungan Pajak</h2>
+          <div class="space-y-1 text-xs">
+            <div class="flex justify-between"><span class="text-slate-500">Subtotal Produk & Layanan</span><span>96.890.000</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Diskon Dokumen Keseluruhan</span><span>0</span></div>
+            <div class="flex justify-between font-semibold border-t pt-1"><span>Dasar Pengenaan Pajak (DPP)</span><span>96.890.000</span></div>
+            <div class="flex justify-between"><span class="text-slate-500">VAT 11% (PPN)</span><span>10.657.900</span></div>
+            <div class="flex justify-between font-bold text-blue-700 border-t pt-1 text-xs"><span>Grand Total Quotation</span><span>107.547.900</span></div>
+          </div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="card p-3">
+          <label class="text-[10px] text-slate-500">Syarat & Ketentuan / Catatan Quotation</label>
+          <textarea class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" rows="3" placeholder="Tuliskan syarat khusus yang akan tercetak di bagian bawah dokumen PDF quotation...">Harga belum termasuk ongkos kirim. Toleransi jumlah pengiriman ±5%.</textarea>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Panel-switching (grid ↔ form) via state toggle — TIDAK re-render shell.
+  function showPanel(name){
+    document.getElementById('panel-grid').classList.remove('active');
+    document.getElementById('panel-form').classList.remove('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+</script>
+
+</body>
+</html>

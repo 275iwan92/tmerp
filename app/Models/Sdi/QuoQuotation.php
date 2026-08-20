@@ -2,8 +2,10 @@
 
 namespace App\Models\Sdi;
 
+use App\Models\Master\CustCustomer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QuoQuotation extends Model
 {
@@ -15,10 +17,15 @@ class QuoQuotation extends Model
 
     protected $fillable = [
         'quotation_no',
-        'inquiry_id',
+        'customer_id',
         'revision_no',
         'issued_date',
         'valid_until',
+        'payment_term',
+        'tax_scheme',
+        'currency_code',
+        'notes',
+        'doc_status',
         'issued_by',
         'created_by',
         'updated_by',
@@ -30,9 +37,35 @@ class QuoQuotation extends Model
         'valid_until' => 'date',
     ];
 
-    public function inquiry(): BelongsTo
+    // customer_id -> cust_customer (tm2mst): FK lintas-DB, relasi logis.
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(IqpInquiry::class, 'inquiry_id', 'id_inquiry');
+        return $this->belongsTo(CustCustomer::class, 'customer_id', 'id_customer');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(QuoQuotationItem::class, 'quotation_id', 'id_quotation')->orderBy('line_seq');
+    }
+
+    // Dipakai bersama oleh Quotation Entry (builder) & Quotation Print (dokumen resmi)
+    // supaya perhitungan pajak selalu konsisten di 2 layar itu.
+    public function totals(): array
+    {
+        $subtotal = (float) $this->items->sum('subtotal');
+        $ppnPct = 11.0;
+
+        if ($this->tax_scheme === 'INCL') {
+            $dpp = round($subtotal / (1 + $ppnPct / 100), 2);
+            $ppn = round($subtotal - $dpp, 2);
+            $grand = $subtotal;
+        } else {
+            $dpp = $subtotal;
+            $ppn = round($dpp * $ppnPct / 100, 2);
+            $grand = $dpp + $ppn;
+        }
+
+        return ['subtotal' => $subtotal, 'dpp' => $dpp, 'ppn' => $ppn, 'ppn_pct' => $ppnPct, 'grand' => $grand];
     }
 
     // Penomoran selaras pola IqpInquiry::nextInquiryNo(): QUO+YY+NNNNN, counter reset tiap tahun.

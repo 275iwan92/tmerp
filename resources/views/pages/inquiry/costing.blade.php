@@ -262,6 +262,23 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         $costing->update(['doc_status' => 'PENDING_APPROVAL']);
         unset($this->costing);
     }
+
+    // "+ Tambahkan ke Quotation" -- tempel inquiry ini (kalau sudah published) ke
+    // draft Quotation customer yang sedang berjalan (bikin baru kalau belum ada),
+    // lalu pindah ke Quotation Entry. Lihat App\Services\Sales\QuotationBuilder.
+    public function addToQuotation()
+    {
+        $inquiry = $this->costing->inquiry;
+
+        if (! $inquiry || ! $inquiry->customer_id) {
+            return;
+        }
+
+        $quotation = \App\Services\Sales\QuotationBuilder::findOrCreateDraft($inquiry->customer_id);
+        \App\Services\Sales\QuotationBuilder::addInquiry($quotation, $inquiry);
+
+        return $this->redirect(route('quotation.entry', ['quotation' => $quotation->id_quotation]));
+    }
 };
 ?>
 
@@ -269,7 +286,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧮 TELASIH MAKMUR — Costing (HPP)</b>
         <span class="text-xs text-white/75">{{ $this->costing->inquiry?->inquiry_no ?? '—' }} · {{ $this->costing->inquiry?->product_draft_name }}</span>
-        <a href="{{ route('inquiry.quotation', ['inquiry' => $this->inquiryId]) }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Quotation</a>
+        <button type="button" wire:click="addToQuotation" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">＋ Tambahkan ke Quotation</button>
         <a href="{{ route('inquiry.nota', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Nota</a>
         <a href="{{ route('inquiry.imposition', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Imposition</a>
         <a href="{{ route('inquiry.hub') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Inquiry Hub</a>
