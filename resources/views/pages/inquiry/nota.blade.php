@@ -130,8 +130,19 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                 <div class="doc-meta">
                     {{ $this->inquiry->inquiry_date?->translatedFormat('d F Y') }}
                     @if ($this->inquiry->revision_no > 0) · Rev. {{ str_pad($this->inquiry->revision_no, 2, '0', STR_PAD_LEFT) }} @endif
-                    <span class="badge">{{ $this->inquiry->is_cancelled ? 'CANCELLED' : $this->inquiry->inquiry_type }}</span>
-                    @if ($this->inquiry->is_prospect) <span class="badge">PROSPECT</span> @endif
+                    @php
+                        // Badge per tipe dokumen (inquiry_nota_new/recalc/revise.html mockup) --
+                        // ketiga mockup itu TERNYATA sama persis strukturnya, beda cuma warna
+                        // badge tipe (hijau/ungu/oranye) -- bukan 3 layar terpisah.
+                        $typeBadgeClass = match (true) {
+                            $this->inquiry->is_cancelled => 'b-cancel',
+                            $this->inquiry->inquiry_type === 'RECALC' => 'b-recalc',
+                            $this->inquiry->inquiry_type === 'REVISE' => 'b-revise',
+                            default => 'b-new',
+                        };
+                    @endphp
+                    <span class="badge {{ $typeBadgeClass }}">{{ $this->inquiry->is_cancelled ? 'CANCELLED' : $this->inquiry->inquiry_type }}</span>
+                    @if ($this->inquiry->is_prospect) <span class="badge b-prospect">PROSPECT</span> @endif
                     <br>
                     @if ($this->inquiry->deadline_quotation) Berlaku s/d {{ $this->inquiry->deadline_quotation->translatedFormat('d F Y') }} @endif
                 </div>
@@ -423,6 +434,13 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
         .nota-wrap .badge{display:inline-block;padding:1.5px 7px;border-radius:20px;font-size:6.8pt;
                font-weight:700;letter-spacing:.6px;vertical-align:2px;background:var(--accent-soft);color:var(--accent);border:1px solid var(--line)}
         .nota-wrap.bw .badge{border:1px solid var(--ink);background:none;color:var(--ink)}
+        {{-- Warna per tipe dokumen (inquiry_nota_new/recalc/revise.html) -- .bw di atas
+             tetap menang (hitam-putih) krn urutan cascade, ini hanya utk mode warna. --}}
+        .nota-wrap .b-new{background:var(--accent-soft);color:var(--accent);border-color:#b8d8ce}
+        .nota-wrap .b-recalc{background:#e2e0ff;color:#4b3fa8;border-color:#c4bef0}
+        .nota-wrap .b-revise{background:#ffe0b2;color:#8a4b00;border-color:#ffcf8a}
+        .nota-wrap .b-prospect{background:#fff5e0;color:var(--warn);border-color:#f0d9a8}
+        .nota-wrap .b-cancel{background:#fdeaea;color:var(--danger);border-color:#f0bdbb}
 
         .nota-wrap .parties{display:grid;grid-template-columns:1.25fr 1fr .85fr;margin-top:8px;
                  border:1px solid var(--line)}

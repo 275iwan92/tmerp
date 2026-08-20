@@ -16,7 +16,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ✅ [D] Imposition Engine — *inquiry_imposition.html* → `inquiry.imposition` (selesai 2026-08-20; tabel baru `iqp_layout` + `m_plano_size`, auto-fill ke Costing saat confirm)
 - ✅ [D] Costing Hub — *inquiry_costing_hub.html* → `inquiry.costing`
 - ✅ [P] Nota Inquiry (warna + hemat tinta) — *nota_inquiry_mockup.html* + *_bw.html* → `inquiry.nota` (selesai 2026-08-20; satu Livewire, toggle `?bw=` bukan dua file terpisah; harga tersembunyi otomatis kalau `costing.published_flag` masih 0, sesuai Sisi A/B CLAUDE.md §4)
-- 🟡 [P] Nota Inquiry NEW/RECALC/REVISE — *inquiry_nota_new/recalc/revise.html* — varian per tipe dokumen, belum digarap (beda dari nota generik yang sudah live)
+- ✅ [P] Nota Inquiry NEW/RECALC/REVISE — *inquiry_nota_new/recalc/revise.html* → `inquiry.nota` (badge tipe dokumen berwarna: NEW hijau/RECALC ungu/REVISE oranye/PROSPECT amber/CANCELLED merah, sesuai `inquiry_type`. Dicek: ketiga mockup ternyata BUKAN dokumen berbeda struktur — isi/section identik, cuma beda warna badge — jadi bukan 3 layar terpisah, cukup satu Livewire yang sudah live dgn badge dinamis. Diverifikasi lewat data dummy IQ2600003 RECALC & IQ2600004 REVISE)
 - ⬜ [F] Prove Warna — *inquiry_proof.html* — log versi v1/v2/v3, belum digarap
 - 🟡 [D] Costing Manual Cross-Check — *inquiry_costing_manual.html* — beda dari Costing Hub yang sudah live, belum digarap
 - 🟡 [D] Product Costing Engine (HPP) — *product_costing.html* — belum digarap (lihat GAP #2 CLAUDE.md §5: rate versioned coating/film/sheet)
@@ -179,7 +179,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ## REKAP STATUS
 | Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
-| 1 Sales (Inquiry/Quotation/CO) | 12 | 6 | 1 |
+| 1 Sales (Inquiry/Quotation/CO) | 13 | 5 | 1 |
 | 2 Inventory | 0 | 0 | 7 |
 | 3 Production | 0 | 2 | 9 |
 | 4 Procurement | 5 | 1 | 7 |
@@ -191,7 +191,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**28 item live**, **9 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live; Notification Center kini juga live).
+**29 item live**, **8 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live; Notification Center & Nota Inquiry per-tipe kini juga live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).
