@@ -62,6 +62,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
             'SALES_QUOT' => route('quotation.list'),
+            'SALES_SO' => route('co.list'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_UOM' => route('master.uom'),
