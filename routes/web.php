@@ -45,6 +45,9 @@ Route::middleware('auth')->group(function () {
         // "linked employee" ditangani di dalam komponen (TIER_1_HRM.md §5.1).
         Route::livewire('/self-service', 'pages::self-service.index')->name('self-service.index');
 
+        // Personal, bukan modul administratif -- sama pola dgn self-service (tanpa module: gate).
+        Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
+
         Route::middleware('module:MDATA')->group(function () {
             Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');

@@ -156,7 +156,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 
 ## MODUL 9 — SECURITY & NOTIFICATION
 - ✅ [F][G] User & Role Management — *security.html* → `security.index` (grup, permission per modul, user list jadi satu layar)
-- 🟡 [G] Notification Center — ada widget notifikasi di main-menu, belum ada layar tersendiri
+- ✅ [G] Notification Center — `notifications.index` (grid penuh: cari, filter tipe, hanya-belum-dibaca, klik baris = tandai terbaca + buka `link` tujuan; drawer bel di main-menu dapat tautan "Lihat semua notifikasi →" ke layar ini, dan drawer itu sendiri diperbaiki supaya klik notifikasi ber-link benar-benar navigasi, bukan cuma tandai terbaca). Ditemukan 17 notifikasi riil "Pendaftaran baru menunggu approval" yang sudah menumpuk belum dibaca sejak sebelum sesi ini — lihat pesan ke Jo.
 - ⬜ [G] Audit Trail Viewer — belum ada mockup
 
 ---
@@ -187,11 +187,11 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 6 Invoicing/Billing (AR-lite) | 0 | 0 | 7 |
 | 7 HR | 4 | 0 | 3 |
 | 8 Lookup | 0 | 0 | 3 |
-| 9 Security | 1 | 1 | 1 |
+| 9 Security | 2 | 0 | 1 |
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**27 item live**, **10 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live).
+**28 item live**, **9 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live; Notification Center kini juga live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

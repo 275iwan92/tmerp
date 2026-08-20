@@ -287,10 +287,15 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         return SysNotification::forUser(Auth::user()->login)->where('is_read', false)->count();
     }
 
-    public function markNotifRead(int $id): void
+    public function markNotifRead(int $id)
     {
-        SysNotification::whereKey($id)->update(['is_read' => true]);
+        $notif = SysNotification::findOrFail($id);
+        $notif->update(['is_read' => true]);
         unset($this->notifications, $this->unreadNotifCount);
+
+        if ($notif->link) {
+            return $this->redirect($notif->link);
+        }
     }
 
     public function markAllNotifRead(): void
@@ -563,6 +568,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             @empty
                 <div class="side-hint" style="color:var(--sh-muted)">Belum ada notifikasi.</div>
             @endforelse
+        </div>
+        <div style="padding:8px 12px;text-align:center;border-top:1px solid var(--sh-border)">
+            <a href="{{ route('notifications.index') }}" style="font-size:12px;color:var(--sh-accent);font-weight:600;text-decoration:none">Lihat semua notifikasi →</a>
         </div>
     </aside>
 
