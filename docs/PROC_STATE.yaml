@@ -1,0 +1,119 @@
+# ═══════════════════════════════════════════════════════════════════
+# PROC_STATE.yaml — PROGRESS MODUL 04 PROCUREMENT
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Procurement.
+# ═══════════════════════════════════════════════════════════════════
+modul: "04_procurement"
+db: tm2pur
+fase: "1 — PR / PQ / PO / PV / PRT + Purchase Invoice (tanpa posting GL)"
+status_umum: >
+  SPEC SELESAI (2026-08-20). IMPLEMENTASI DIMULAI 2026-08-20/21: fondasi + PR Entry hidup.
+  Legacy doc_rmprefix1..5 (555 baris) & m_raw_material (5893 baris) di-import APA ADANYA dari
+  dump asli user (database/legacy/*.sql) -- FK ke m_uom lama DIHAPUS (tabel tak pernah ada di
+  TMERP, diganti logical ref ke uom_unit). Flow Engine generik (flow_config/flow_config_step/
+  flow_position_acting/flow_log, TIER_1/2/3_FLOW_ENGINE.md) DIBANGUN di tm2mst dan dipakai PR
+  sejak awal (bukan approval ad-hoc). PR Entry (List + Form, App\Models\Pur\*, route
+  /purchasing/pr, module gate PROC) hidup: header, item picker 5-level (kategori->jenis->
+  gramatur->ukuran->merk lalu daftar m_raw_material cocok), baris MASTER_ITEM/FREE_TEXT,
+  submit -> FlowEngineService -> flow_log. Diverifikasi via migration run + tinker functional
+  test (cascading picker query benar, create->line->submit->flow_log tercatat) -- BELUM
+  diverifikasi visual di browser sungguhan (lihat catatan di bawah).
+  PQ, PO, PV, PRT, Purchase Invoice masih 🟡 spec-only, belum diimplementasi.
+  Dua struktur legacy dibaca penuh: m_raw_material.sql + doc_rmprefix1.sql (SUDAH diberikan
+  user & di-import); tminv_20260722_2018_sd.sql (rm_stock/rm_stock_d/rm_stockcard/sfg_*/fg_*)
+  BELUM diberikan -- prasyarat keras utk PV, belum jadi blocker karena PV belum dikerjakan.
+
+keputusan_terkunci:
+  A_anti_m2m: "pr_line -> pr_line_alloc -> po_line (1:1, dijaga UNIQUE uq_po_alloc). Konsolidasi di HEADER po_order, bukan di baris."
+  B_prefix: "pr_ requisition | pq_ | po_ | pv_ | prt_ return (prt_ karena pr_ sudah terpakai)"
+  C_adopsi_legacy_inventory: "rm_stock/rm_stock_d/rm_stockcard + sfg_*/fg_* dipakai apa adanya; PV TIDAK membuat tabel stok baru"
+  D_dual_uom_pv: "sisi beli (tutup PO/tagihan) + sisi stok (masuk gudang) INDEPENDEN; conversion_to_stock = nilai awal, boleh ditimpa (kasus 3 truk pasir)"
+  E_qc_dua_gerbang: "QC qty + QC kualitas; hanya c_qty_accepted masuk stok; POST diblokir bila ada PENDING"
+  F_toleransi: "per item via m_raw_material.tol_purchase (kolom SUDAH ADA), fallback sys_constant RECEIVE_TOLERANCE_PCT=5; di luar batas wajib override+alasan"
+  G_pajak_di_sys_constant: "PPN & PPh23 di sys_constant — BUKAN membuat fin_tax_scheme baru (keputusan Jo, membatalkan blocker FIN-TAX-SCHEME untuk modul ini)"
+  H_pajak_per_baris: "PPN atas seluruh DPP; PPh23 hanya baris SERVICE; diskon di level baris"
+  I_dua_jalur_item: "MASTER_ITEM (picker 5 level) atau FREE_TEXT (mesin/laptop/jasa tak terdaftar — tidak dipaksa masuk hirarki kategori)"
+  J_beban_overhead: "diturunkan dari klasifikasi akun COA, bukan picker terpisah"
+  K_purchase_invoice: "pakai fin_invoice (tm2acc) yang sudah polymorphic AR+AP; TIDAK membuat tabel pi_*; SUPPLIER_DP dari PO, SUPPLIER_BILL dari PV; alokasi via fin_dp_allocation"
+  L_fin_invoice_line: "DELTA WAJIB — fin_invoice header-only, perlu rincian baris untuk Sales MAUPUN Purchase"
+  M_costing_method: "AVG/FIFO/LIFO PER ITEM; FIFO/LIFO butuh inv_stock_layer; stockcard tetap ringkasan"
+  N_snapshot_kurs: "i_fx_rate dibekukan saat PO APPROVED; currency INDEPENDEN dari po_type (supplier lokal boleh USD)"
+  O_po_kontan: "i_procure_type='CASH' — auto-generate PO(APPROVED)+PV(POSTED); approval jadi NOTIFY_ONLY"
+  P_layar_terpisah: "PO Entry dan PO Approval dua layar berbeda, sama-sama detail; Approve/Reject tak pernah di layar entry"
+  Q_sisi_visibilitas: "layar gudang TIDAK query kolom harga sama sekali; nilai tetap tersimpan di pv_line"
+  R_revise: "PR & PO copy-record; PV & PRT tanpa REVISE (fisik). RECALC tidak relevan."
+  S_import_defer: "po_import_doc struktur siap tapi INACTIVE; BM/PPN impor/PPh22 tidak dihitung (jarang impor)"
+  T_cost_tracking: "co_line_id menetes PR->alloc->PO->PV untuk biaya material riil per Customer Order"
+
+artefak_selesai:
+  - PROC_TIER_1.md      # konsep, scope, rantai dokumen, aktor, nota
+  - PROC_TIER_2.md      # business logic Part A/B/C (happy path, 13 kasus khusus, state-form-button)
+  - PROC_TIER_3.md      # DDL 12 tabel tm2pur + delta 4 DB + 4 VIEW + seed flow & sys_constant
+  - PROC_TIER_4.md      # 12 layar Livewire + nota + checklist wiring
+  - PROC_RULES.yaml
+  - PROC_STATE.yaml
+  - database/legacy/doc_rmprefix.sql, database/legacy/m_raw_material.sql   # dump asli user, sumber import
+  - "Migration 2026_08_20_000010..000011  # doc_rmprefix1..5 + m_raw_material, create+import data apa adanya"
+  - "Migration 2026_08_20_000012..000013  # delta stock_class/default_coa_account_id/costing_method/is_fx_sensitive/prefix5_id + seed sys_constant (PPN/PPH23_JASA/RECEIVE_TOLERANCE_PCT)"
+  - "Migration 2026_08_20_000014  # flow_config/flow_config_step/flow_position_acting/flow_log (tm2mst) -- DDL_FLOW_ENGINE.sql diimplementasi"
+  - "Migration 2026_08_20_000015  # org_position placeholder (Manajer Operasional/Direksi/Purchasing Officer) + flow_config PR (2 step approval + 1 AUTO close)"
+  - "Migration 2026_08_20_000016  # pr_requisition/pr_line/pr_line_alloc (tm2pur)"
+  - "Migration 2026_08_20_000017  # grant DIREKSI akses sec_module PROC (kosong sebelumnya)"
+  - "App\\Models\\Master\\{DocRmprefix1..5,MRawMaterial,FlowConfig,FlowConfigStep,FlowPositionActing,FlowLog}"
+  - "App\\Models\\Pur\\{PrRequisition,PrLine,PrLineAlloc}"
+  - "App\\Services\\Flow\\FlowEngineService  # submit() + resolveActingUser() + history(); approve()/reject() menyusul saat PR Approval dibangun"
+  - "resources/views/pages/pur/pr/{index,entry}.blade.php  # route pur.pr.list / pur.pr.entry, gate module:PROC"
+
+next_step:
+  - "SELESAI 2026-08-20/21: fondasi (legacy import, Flow Engine, sys_constant) + PR Entry (List+Form)"
+  - "BELUM diverifikasi visual di browser -- login via browser automation ditolak (masuk kategori 'entering credentials', prohibited per safety rules). Jo perlu buka /purchasing/pr sendiri utk cek tampilan; logika (query picker, create/submit, flow_log) sudah diverifikasi via tinker functional test."
+  - "Lanjut sesuai urutan yang diminta Jo: PR Approval (layar PrApproval, FlowEngineService::approve()/reject() belum ada) -> lalu PO Entry"
+  - "PO Entry butuh: PROC-SUPPLIER-MASTER (cek ulang -- lihat catatan resolved di bawah), Supplier picker di form"
+  - "PQ (Purchase Quotation) di-skip dulu sesuai urutan Jo (PR -> PR Approval -> PO); PO Entry Tier4 §3 Bagian 1 mengambil pr_line_alloc APPROVED langsung, PQ opsional/boleh menyusul"
+
+open_items:
+  - id: PROC-SUPPLIER-MASTER
+    prioritas: TINGGI
+    isi: "RESOLVED 2026-08-20 (koreksi): sup_supplier Livewire TERNYATA SUDAH live (route master.supplier, SupSupplier model) sejak sebelum sesi ini -- catatan lama di sini salah. Bukan blocker utk PO Entry."
+  - id: PROC-FIN-INVOICE-STRUCT
+    prioritas: TINGGI
+    isi: "Verifikasi DDL AKTUAL fin_invoice sebelum ALTER: nama PK (invoice_id?), keberadaan enum SUPPLIER_BILL/SUPPLIER_DP (FIN_STATE mencatat enum sudah terpasang langsung di MySQL, dan PK fin_dp_allocation ternyata allocation_id bukan dp_allocation_id draf). JANGAN ALTER tanpa cek. Belum relevan sampai Purchase Invoice dikerjakan."
+  - id: PROC-SYSCONST-COL
+    prioritas: SELESAI
+    isi: "RESOLVED 2026-08-20: kolom asli constant_key/constant_group/constant_number/constant_text/description/is_active (dicek langsung ke DB, migration 2026_08_19_000004 sbg acuan). Seed PPN/PPH23_JASA/RECEIVE_TOLERANCE_PCT sudah pakai kolom ini (migration 000013)."
+  - id: PROC-FLOW-POSITION
+    prioritas: SEDANG
+    isi: "RESOLVED SEBAGIAN 2026-08-20: org_position hanya berisi 5 posisi lantai produksi, tak ada jabatan manajerial -- dibuat 3 posisi placeholder (Manajer Operasional/Direksi/Purchasing Officer, dept ADMIN, migration 000015). 'Kepala Departemen' di draf Tier3 §9 disederhanakan jadi approval TERPUSAT (bukan per-departemen, krn flow_config_step.position_id tunggal) -- PR step1=Manajer Operasional (semua nilai), step2=Direksi (>=50jt). BELUM ada user riil ditugaskan ke posisi ini -- perlu Jo assign lewat HRM/Security kalau mau PR Approval screen (langkah berikut) benar-benar bisa di-approve oleh seseorang."
+  - id: PROC-WAREHOUSE-MASTER
+    prioritas: SEDANG
+    isi: "m_warehouse / m_wh_loc: konfirmasi tabel & id. PV butuh warehouse_id & location_id; legacy rm_stock sudah punya kolomnya."
+  - id: PROC-COSTING-ENGINE
+    prioritas: SEDANG
+    isi: "inv_stock_layer & konsumsi FIFO/LIFO sisi OUT adalah milik modul Inventory (belum dibangun). Procurement hanya MENGISI layer saat IN. Perlu INV_TIER tersendiri."
+  - id: PROC-ITEMCODE-GEN
+    prioritas: SEDANG
+    isi: "material_code: auto-generate dari rangkaian doc_rmprefix1..5 (prefix5_id) ATAU tetap manual seperti legacy (GZ00726 — pola lama tidak selalu mengikuti 5 hirarki)? Belum diputuskan."
+  - id: PROC-STOCKCLASS-SEED
+    prioritas: SEDANG
+    isi: "Pemetaan stock_class + default_coa_account_id untuk tiap baris doc_rmprefix1 (Paper=RAW, Jasa=SERVICE, ATK/Sparepart=INDIRECT, dst) belum di-seed — butuh review Jo per kategori."
+  - id: PROC-PPN-RATE
+    prioritas: SEDANG
+    isi: "Tarif PPN di-seed 11% dan PPh23 jasa 2% — perlu konfirmasi Jo apakah sudah sesuai kondisi saat ini."
+  - id: PROC-SFG-FG-SCOPE
+    prioritas: RENDAH
+    isi: "PV fase ini hanya menyentuh rm_* (bahan baku). Penerimaan yang memengaruhi sfg_/fg_ (mis. subkon) belum dirancang."
+  - id: PROC-AP-POSTING
+    prioritas: RENDAH
+    isi: "Posting GL dari PI/PV menunggu fase-2 Finance (FIN_RULES.integrasi.keputusan_A). Hook source_* sudah disiapkan."
+  - id: PROC-IMPORT-TAX
+    prioritas: RENDAH
+    isi: "Bila impor mulai rutin: aktifkan po_import_doc + hitung BM/PPN impor/PPh22 (butuh layer PIB). Daftar dokumen impor di Tier 1 §referensi perlu diverifikasi ke PPJK/forwarder karena regulasi sering berubah."
+
+catatan:
+  - "DEVIASI format doc_no: PROC_TIER_2 §A-1.1 tulis 'PR/YY/#####' (pakai slash), tapi diimplementasikan TANPA slash (PR2600001) mengikuti pola nomor dokumen yang SUDAH berjalan system-wide (IQ2600001, QUO2600001, CO2600001 -- lihat SALES_STATE.yaml). Sama seperti keputusan QUO vs QT kemarin: konsistensi lintas-modul menang atas teks draf Tier yang kemungkinan typo/belum disamakan. PrRequisition::nextDocNo() pola identik QuoQuotation/CoOrder."
+  - "i_department_id (pr_requisition, NOT NULL sesuai Tier3 §2) dipilih via picker SEBELUM baris PR dibuat (PrIndex::createNew(departmentId)), bukan diisi belakangan di form -- konsisten dgn pola QuotationBuilder::findOrCreateDraft(customerId)/CoOrderBuilder::findOrCreateFromQuotation yang juga mewajibkan parent id di awal, bukan nullable-sampai-diisi."
+  - "BELUM diverifikasi visual di browser sungguhan -- percobaan login via browser automation (mengisi field password) DITOLAK oleh classifier keamanan (masuk kategori 'entering credentials into any field', prohibited). Verifikasi yang SUDAH dilakukan: migration jalan bersih, Blade compile bersih (view:cache), functional test end-to-end via tinker (cascading picker query benar-benar mengembalikan PYJ31 'Ivory 300gr 79x109' persis sesuai contoh mockup_purchase_requisition.html; create->line->submit->flow_log tercatat benar termasuk resolusi step Manajer Operasional). Jo perlu buka /purchasing/pr sendiri di browser utk cek tampilan/UX sebelum ditandai READY_FOR_QC."
+  - "Struktur legacy yang dibaca penuh: tminv_20260722_2018_sd.sql (13 tabel, pola stat_confirm->trigger stockcard) dan m_raw_material.sql + doc_rmprefix1.sql (5 level pembentuk kode item)."
+  - "Jejak legacy yang menegaskan desain: rm_stock.notes='Auto dari p_receive: 26SPB00xxx' dan rm_stock_d.reference_name='tmpur.p_receive_d' — pola penanda sumber ini DIPERTAHANKAN di TMERP (diganti 'tm2pur.pv_line')."
+  - "Istilah SPB (Surat Penerimaan Barang) diambil dari penomoran legacy agar pengguna lama tidak bingung."
+  - "Urutan proses produksi (COATING->LAMINASI) tak berdampak di Procurement."
+  - "Kasus penguji yang harus lolos saat implementasi: (1) 3 truk pasir — sisi beli 3 TRUK, sisi stok total KG hasil timbang berbeda per truk; (2) split 10.000 lembar ke 2 supplier lalu konsolidasi lintas PR; (3) beli mesin/laptop lewat FREE_TEXT tanpa masuk hirarki kategori; (4) penerimaan 7,2% di luar toleransi 5% => wajib override."

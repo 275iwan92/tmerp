@@ -58,6 +58,11 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/finance/dp-invoice', 'pages::finance.dp-invoice')->name('finance.dp-invoice');
         });
 
+        Route::middleware('module:PROC')->group(function () {
+            Route::livewire('/purchasing/pr', 'pages::pur.pr.index')->name('pur.pr.list');
+            Route::livewire('/purchasing/pr/{pr}/edit', 'pages::pur.pr.entry')->name('pur.pr.entry');
+        });
+
         Route::middleware('module:HRM')->group(function () {
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');

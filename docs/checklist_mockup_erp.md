@@ -71,19 +71,27 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ---
 
 ## MODUL 4 — PROCUREMENT
-*(dipicu MRP)*
-### 4.1 Purchase Requisition
-- 🟡 [F] PR Entry — *mockup_purchase_requisition.html* — mockup ada, belum digarap
-- 🟡 [G] PR Approval Center — *mockup_pr_approval_center.html* — idem
-- ⬜ [P] PR Print — belum ada mockup
-### 4.2 Purchase Order
-- 🟡 [G] PO Approval Center — *mockup_po_approval_center.html* — mockup ada, belum digarap
-- ⬜ [F] PO Entry — belum ada mockup
-- ⬜ [P] Purchase Order (cetak ke supplier) — belum ada mockup
-### 4.3 Receiving
-- ⬜ [F] Goods Receipt Entry (terhadap PO)
-- ⬜ [G] Receiving List
-- ⬜ [P] Receiving Note / GRN
+> ⚠️ **Spec dirombak total 2026-08-20**: `PROC_TIER_1..4.md` + `PROC_STATE.yaml` + `PROC_RULES.yaml`
+> sekarang jadi acuan (bukan lagi mockup HTML mentah) — rantai penuh PR→PQ→PO→PV→PRT→Purchase
+> Invoice, approval via Flow Engine generik, split-alokasi anti-M:N. Lihat `PROC_STATE.yaml`
+> untuk status detail & open items per sub-modul.
+### 4.1 Purchase Requisition (PR)
+- ✅ [G] PR List/Hub — *mockup_purchase_requisition.html* → `pur.pr.list` (filter no./item/status, "+ PR Baru" via picker departemen)
+- ✅ [F] PR Entry — *mockup_purchase_requisition.html* → `pur.pr.entry` (item picker 5-level kategori→jenis→gramatur→ukuran→merk dari `doc_rmprefix1..5` + `m_raw_material` riil 5893 item, baris MASTER_ITEM/FREE_TEXT, submit → Flow Engine). **Diverifikasi via migration+tinker functional test, BELUM diverifikasi visual browser** (login otomatis via browser ditolak — kategori "entering credentials", lihat `PROC_STATE.yaml`). Jo perlu cek tampilan sendiri sebelum ditandai matang.
+- 🟡 [G] PR Approval Center — *mockup_pr_approval_center.html* — layar berikutnya (menyusul, `FlowEngineService::approve()/reject()` belum ada)
+- ⬜ [P] PR Print (Nota Permintaan Pembelian) — belum digarap
+### 4.2 Purchase Order (PO)
+- ⬜ [F] PO Entry — belum digarap (PROC_TIER_4 §3, menyusul setelah PR Approval)
+- ⬜ [G] PO Approval Center — *mockup_po_approval_center.html* — mockup ada, belum digarap
+- ⬜ [P] PO Print (dokumen eksternal ke supplier) — belum digarap
+### 4.3 Purchase Quotation (PQ) — kondisional, boleh dilewati
+- ⬜ [F][G] PQ Entry + Perbandingan — belum digarap
+### 4.4 Purchase Receive (PV) / Purchase Return (PRT)
+- ⬜ [F] PV Entry (Sisi B, dual-UOM, QC 2 gerbang) — belum digarap, butuh `tminv_20260722_2018_sd.sql` (rm_stock/rm_stock_d/rm_stockcard) yang belum diberikan user
+- ⬜ [D] PV Monitor (Sisi A) — belum digarap
+- ⬜ [F] PRT (Purchase Return) — belum digarap
+### 4.5 Purchase Invoice — pakai `fin_invoice`/`fin_invoice_line` (tm2acc), bukan tabel baru
+- ⬜ [F] Purchase Invoice (SUPPLIER_DP/SUPPLIER_BILL) — belum digarap, butuh `fin_invoice_line` (delta wajib, belum dibuat)
 
 ---
 
@@ -173,7 +181,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 1 Sales (Inquiry/Quotation/CO) | 12 | 6 | 1 |
 | 2 Inventory | 0 | 0 | 7 |
 | 3 Production | 0 | 2 | 9 |
-| 4 Procurement | 0 | 3 | 6 |
+| 4 Procurement | 2 | 2 | 8 |
 | 5 Dispatch | 0 | 0 | 9 |
 | 6 Invoicing/Billing (AR-lite) | 0 | 0 | 7 |
 | 7 HR | 4 | 0 | 3 |
@@ -182,7 +190,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**22 item live**, **12 item punya mockup HTML tapi belum diimplementasi Livewire**, **46 item belum punya mockup sama sekali** (Inventory/Production inti/Procurement inti/Dispatch/Invoicing masih kosong total).
+**24 item live**, **11 item punya mockup HTML tapi belum diimplementasi Livewire**, **48 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap tapi baru PR List+Entry yang live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

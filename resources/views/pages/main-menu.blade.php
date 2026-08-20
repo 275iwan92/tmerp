@@ -63,6 +63,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
             'SALES_QUOT' => route('quotation.list'),
             'SALES_SO' => route('co.list'),
+            'PROC_PR' => route('pur.pr.list'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_UOM' => route('master.uom'),
