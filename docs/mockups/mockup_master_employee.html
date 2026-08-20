@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP HR Master - Fixed Event Delegation Edit Simulation</title>
+    <style>
+        :root {
+            --primary-navy: #1e293b;
+            --brand-blue: #2563eb;
+            --brand-hover: #1d4ed8;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --border-focus: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
+        body { background-color: var(--bg-main); color: var(--text-main); font-size: 13px; line-height: 1.5; padding: 16px; }
+
+        .erp-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover { background-color: #f1f5f9; }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background-color: var(--brand-blue); color: #ffffff; border-color: var(--brand-blue); }
+        .btn-primary:hover { background-color: var(--brand-hover); }
+        .btn-danger { color: var(--danger); border-color: #fca5a5; }
+        .btn-danger:hover { background-color: #fef2f2; }
+        .btn-success { background-color: var(--success); color: #ffffff; border-color: var(--success); }
+        .btn-sm { padding: 3px 8px; font-size: 11px; }
+
+        /* Badges */
+        .badge-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+        .badge-active-emp { background-color: #dcfce7; color: #15803d; }
+        .badge-borongan { background-color: #fef3c7; color: #b45309; }
+        .badge-staff { background-color: #dbeafe; color: #1e40af; }
+        .badge-sp1 { background-color: #fee2e2; color: #991b1b; }
+        .badge-clean { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+
+        /* GRID STYLES */
+        #grid_m_employee { display: block; }
+
+        .grid-header-bar {
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .grid-title-area h2 { font-size: 18px; font-weight: 700; color: #0f172a; }
+        .grid-title-area p { font-size: 12px; color: var(--text-muted); }
+
+        .grid-summary-strip {
+            display: flex;
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        .summary-item { padding: 10px 20px; border-right: 1px solid var(--border-color); flex: 1; min-width: 130px; }
+        .summary-item:last-child { border-right: none; }
+        .summary-num { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .summary-lbl { font-size: 11px; color: var(--text-muted); }
+
+        .filter-toolbar {
+            padding: 12px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box { position: relative; flex: 1; min-width: 260px; }
+        .search-input { width: 100%; padding: 7px 12px 7px 32px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; outline: none; }
+        .search-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; }
+        .filter-select { padding: 7px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; outline: none; background-color: #ffffff; }
+
+        .table-wrapper { overflow-x: auto; }
+        .master-grid-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+        
+        .master-grid-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .master-grid-table th.sortable-th { cursor: pointer; user-select: none; transition: background-color 0.2s; }
+        .master-grid-table th.sortable-th:hover { background-color: #e2e8f0; color: var(--brand-blue); }
+        .sort-btn-indicator { display: inline-block; margin-left: 6px; font-size: 10px; padding: 2px 5px; background: #ffffff; border: 1px solid var(--border-color); border-radius: 3px; color: var(--text-muted); font-weight: 700; }
+
+        .master-grid-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .master-grid-table tr.data-row { cursor: pointer; transition: background-color 0.15s; }
+        .master-grid-table tr.data-row:hover { background-color: #e2e8f0; }
+
+        .emp-cell-info { display: flex; align-items: center; gap: 10px; }
+        .emp-photo-grid { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #cbd5e1; flex-shrink: 0; }
+        .mini-avatar-emp { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #334155); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid #cbd5e1; }
+
+        .emp-name-title { font-weight: 700; color: #0f172a; }
+        .emp-sub-info { font-size: 11px; color: var(--text-muted); }
+        
+        .pagination-bar { padding: 10px 20px; background-color: #ffffff; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border-color); }
+        .pagination-controls { display: flex; align-items: center; gap: 4px; }
+
+        /* FORM STYLES */
+        #form_m_employee { display: none; }
+
+        .action-bar { background-color: #f8fafc; padding: 10px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .employee-header-card { background-color: #ffffff; border-bottom: 1px solid var(--border-color); }
+        .header-main-content { padding: 16px 20px; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+        .header-identity-side { display: flex; gap: 16px; align-items: flex-start; }
+
+        .photo-container-form { position: relative; width: 64px; height: 64px; flex-shrink: 0; }
+        .emp-photo-large { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #ffffff; box-shadow: 0 3px 8px rgba(30, 41, 59, 0.2); outline: 1px solid var(--border-color); }
+        .avatar-box-emp { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #2563eb); color: #ffffff; font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 3px 8px rgba(30, 41, 59, 0.2); text-transform: uppercase; border: 3px solid #ffffff; outline: 1px solid var(--border-color); }
+
+        .identity-details { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+        .name-and-badges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        .header-name-input { font-size: 18px; font-weight: 700; color: #0f172a; border: 1px solid transparent; border-radius: 4px; padding: 2px 6px; margin-left: -6px; outline: none; width: 100%; max-width: 420px; transition: all 0.2s; background: transparent; }
+        .header-name-input:hover { border-color: var(--border-color); background-color: #f8fafc; }
+        .header-name-input:focus { border-color: var(--border-focus); background-color: #ffffff; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+        .meta-inline { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        .emp-cards-grid { display: grid; grid-template-columns: repeat(2, 175px); gap: 8px; }
+        .mini-card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px; }
+        .mini-card-title { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+        .mini-card-value { font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .kpi-strip-bar { display: flex; background-color: #ffffff; border-top: 1px solid var(--border-color); overflow-x: auto; }
+        .kpi-item { flex: 1; min-width: 120px; padding: 8px 16px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; }
+        .kpi-item:last-child { border-right: none; }
+        .kpi-value { font-size: 15px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+        .kpi-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+
+        .form-body { padding: 20px 24px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-weight: 600; font-size: 11px; color: #334155; }
+        .form-control { width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; background-color: #ffffff; outline: none; }
+        .form-control:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+        .tabs-header { display: flex; border-bottom: 2px solid var(--border-color); gap: 4px; overflow-x: auto; background-color: #ffffff; padding: 0 20px; }
+        .tab-btn { padding: 10px 16px; border: none; background: none; font-weight: 600; font-size: 12px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .tab-btn.active { color: var(--brand-blue); border-bottom-color: var(--brand-blue); }
+
+        .tab-content { display: none; padding: 16px 20px; }
+        .tab-content.active { display: block; }
+        .section-header-title { font-size: 12px; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-color); }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; }
+        .data-table th { background-color: #f8fafc; font-weight: 600; color: #334155; }
+
+        .warning-box-alert { background-color: #fef2f2; border-left: 4px solid var(--danger); padding: 10px 14px; font-size: 12px; color: #991b1b; margin-bottom: 14px; border-radius: 2px; }
+
+        .timeline { position: relative; padding-left: 18px; margin-top: 8px; border-left: 2px solid var(--border-color); }
+        .timeline-item { position: relative; margin-bottom: 16px; padding-left: 12px; }
+        .timeline-item::before { content: ''; position: absolute; left: -19px; top: 3px; width: 8px; height: 8px; border-radius: 50%; background-color: var(--brand-blue); border: 2px solid #ffffff; }
+        .timeline-date { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+        .timeline-title { font-size: 12px; font-weight: 700; color: var(--text-main); margin: 2px 0; }
+        .timeline-desc { font-size: 11px; color: #475569; }
+
+        @media (max-width: 900px) {
+            .header-main-content { grid-template-columns: 1fr; }
+            .emp-cards-grid { grid-template-columns: repeat(2, 1fr); }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="erp-container">
+
+    <!-- VIEW 1: GRID_M_EMPLOYEE -->
+    <div id="grid_m_employee">
+        <div class="grid-header-bar">
+            <div class="grid-title-area">
+                <h2>Employee Master Directory</h2>
+                <p>Klik tombol <b>Edit</b> atau lakukan <b>Double-Click (2x)</b> pada baris mana saja untuk menguji mode edit.</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" type="button" id="btn_add_new">
+                    <span>➕ Add New Employee</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid-summary-strip">
+            <div class="summary-item"><div class="summary-num" id="stat_total">3</div><div class="summary-lbl">Total Headcount</div></div>
+            <div class="summary-item"><div class="summary-num" style="color: var(--success);" id="stat_clean">2</div><div class="summary-lbl">Clean / No SP</div></div>
+            <div class="summary-item"><div class="summary-num" style="color: var(--warning);" id="stat_verbal">1</div><div class="summary-lbl">Verbal Warnings</div></div>
+            <div class="summary-item"><div class="summary-num" style="color: var(--danger);" id="stat_sp1">1</div><div class="summary-lbl">Active SP 1</div></div>
+            <div class="summary-item"><div class="summary-num" style="color: var(--brand-blue);">98.2%</div><div class="summary-lbl">Avg Attendance Rate</div></div>
+        </div>
+
+        <div class="filter-toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="emp_search_input" class="search-input" placeholder="Search NIK, KTP, NPWP, No KK, employee name, or department...">
+            </div>
+            <select id="filter_type" class="filter-select">
+                <option value="ALL">All Employment Types</option>
+                <option value="Operator Borongan">Operator Borongan</option>
+                <option value="Staff Bulanan">Staff Bulanan</option>
+            </select>
+            <select id="filter_sp" class="filter-select">
+                <option value="ALL">All Discipline Status</option>
+                <option value="Clean">Clean (No SP)</option>
+                <option value="Active SP 1">Active SP 1</option>
+            </select>
+            <button class="btn" id="btn_reset_filter">Reset Filter</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table class="master-grid-table" id="empMasterTable">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"><input type="checkbox"></th>
+                        <th class="sortable-th" id="th_sort_nik">
+                            NIK Employee <span class="sort-btn-indicator" id="sort_icon_1">↕ A/D</span>
+                        </th>
+                        <th class="sortable-th" id="th_sort_name">
+                            Employee Name & Position <span class="sort-btn-indicator" id="sort_icon_2">↕ A/D</span>
+                        </th>
+                        <th>Key Identification (KTP / NPWP / KK)</th>
+                        <th class="sortable-th" id="th_sort_dept">
+                            Department <span class="sort-btn-indicator" id="sort_icon_4">↕ A/D</span>
+                        </th>
+                        <th>Discipline Status</th>
+                        <th>Attendance Log</th>
+                        <th>Sisa Cuti</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="empTableBody">
+                    <!-- Dynamic Rows Rendered by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-bar">
+            <div>Showing <b id="lbl_showing_count">1 - 3</b> of <b id="lbl_total_count">3</b> employees</div>
+            <div class="pagination-controls">
+                <span style="margin-right: 8px;">Rows per page:</span>
+                <select class="filter-select" style="padding: 3px 6px; margin-right: 12px;">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>50</option>
+                </select>
+                <button class="btn btn-sm" disabled>❮ Prev</button>
+                <button class="btn btn-sm btn-primary">1</button>
+                <button class="btn btn-sm" disabled>Next ❯</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- VIEW 2: FORM_M_EMPLOYEE -->
+    <div id="form_m_employee">
+        <div class="action-bar">
+            <div class="action-buttons">
+                <button class="btn" type="button" id="btn_back_grid">← Back to Directory</button>
+                <button class="btn btn-primary" type="button" id="btn_save_master">💾 Save Changes to Grid</button>
+                <button class="btn" type="button" id="btn_cancel_form">Cancel</button>
+                <button class="btn btn-danger" type="button" id="btn_add_verbal">⚠️ Add Verbal Warning (+1)</button>
+            </div>
+        </div>
+
+        <div class="employee-header-card">
+            <div class="header-main-content">
+                <div class="header-identity-side">
+                    <div class="photo-container-form" id="photo_wrapper">
+                        <img id="form_emp_photo" src="" class="emp-photo-large" alt="Employee Photo" style="display:none;">
+                        <div id="form_emp_initials" class="avatar-box-emp" style="display:none;">BS</div>
+                    </div>
+                    <div class="identity-details">
+                        <div class="name-and-badges">
+                            <input type="text" id="emp_full_name" class="header-name-input" value="Budi Santoso" placeholder="Type employee name...">
+                            <span class="badge-tag badge-borongan" id="emp_type_badge">Operator Borongan</span>
+                            <span class="badge-tag badge-clean" id="emp_sp_badge">Verbal Warning: 2/6</span>
+                        </div>
+
+                        <div class="meta-inline">
+                            <span>NIK: <b id="lbl_emp_nik">EMP-2026-0012</b></span>
+                            <span>•</span>
+                            <span>KTP: <b id="lbl_emp_ktp">3275081203880004</b></span>
+                            <span>•</span>
+                            <span>NPWP: <b id="lbl_emp_npwp">71.234.567.8-012.000</b></span>
+                            <span>•</span>
+                            <span>KK: <b id="lbl_emp_kk">3275080101150009</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="emp-cards-grid">
+                    <div class="mini-card">
+                        <div class="mini-card-title">Verbal Warning Counter</div>
+                        <div class="mini-card-value" style="color: var(--warning);" id="card_verbal_count">2 / 6 Times (Clean)</div>
+                    </div>
+                    <div class="mini-card">
+                        <div class="mini-card-title">Surat Peringatan Status</div>
+                        <div class="mini-card-value" style="color: var(--success);" id="card_sp_status">NO SP ACTIVE</div>
+                    </div>
+                    <div class="mini-card">
+                        <div class="mini-card-title">Sisa Cuti Tahunan</div>
+                        <div class="mini-card-value" style="color: var(--brand-blue);" id="card_sisa_cuti">12 Hari Hari Ini</div>
+                    </div>
+                    <div class="mini-card">
+                        <div class="mini-card-title">Attendance (Bulan Ini)</div>
+                        <div class="mini-card-value" id="card_attendance_summary">2x Late / 0 Absent</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-strip-bar">
+                <div class="kpi-item"><div class="kpi-value" id="kpi_val_1">104%</div><div class="kpi-label" id="kpi_lbl_1">Monthly Output Yield</div></div>
+                <div class="kpi-item"><div class="kpi-value">98.4%</div><div class="kpi-label">Attendance %</div></div>
+                <div class="kpi-item"><div class="kpi-value" id="kpi_val_sp" style="color: var(--success);">0 SP</div><div class="kpi-label">Discipline Escalate</div></div>
+                <div class="kpi-item"><div class="kpi-value">12 Days</div><div class="kpi-label">Annual Leave Left</div></div>
+            </div>
+        </div>
+
+        <div id="sp_warning_banner" class="warning-box-alert" style="display: none;">
+            <b>⚠️ PERHATIAN SANKSI DISIPLIN AKTIF:</b> Karyawan ini telah mencapai <b>6x Verbal Warning</b> dan terbit <b>Surat Peringatan 1 (SP 1)</b>.
+        </div>
+
+        <div class="tabs-header" id="tabsHeaderNav">
+            <button type="button" class="tab-btn active" data-tab="tab-emp-overview">Overview & Identity</button>
+            <button type="button" class="tab-btn" data-tab="tab-emp-job">Job Alignment</button>
+            <button type="button" class="tab-btn" data-tab="tab-emp-education">Education & Certs</button>
+            <button type="button" class="tab-btn" data-tab="tab-emp-family">Family Member (KK)</button>
+            <button type="button" class="tab-btn" data-tab="tab-emp-career">Career & Salary Movement</button>
+            <button type="button" class="tab-btn" data-tab="tab-emp-performance">KPI, Attendance & SP Log</button>
+            <button type="button" class="tab-btn" data-tab="tab-emp-history">Historical Audit Trail</button>
+        </div>
+
+        <form id="employeeDetailForm">
+            <!-- TAB 1: OVERVIEW & KEY IDENTIFIERS -->
+            <div id="tab-emp-overview" class="tab-content active">
+                <div class="section-header-title">Key Government Identifiers & Demographics</div>
+                <div class="grid-4" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label for="emp_nik">NIK Karyawan *</label>
+                        <input type="text" id="emp_nik" class="form-control" value="EMP-2026-0012">
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_ktp">Nomor KTP (16 Digit) *</label>
+                        <input type="text" id="emp_ktp" class="form-control" value="3275081203880004">
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_npwp">Nomor NPWP *</label>
+                        <input type="text" id="emp_npwp" class="form-control" value="71.234.567.8-012.000">
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_kk">Nomor Kartu Keluarga (KK) *</label>
+                        <input type="text" id="emp_kk" class="form-control" value="3275080101150009">
+                    </div>
+                </div>
+
+                <div class="grid-4" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label for="emp_gender">Gender *</label>
+                        <select id="emp_gender" class="form-control">
+                            <option value="Male">Male (Laki-laki)</option>
+                            <option value="Female">Female (Perempuan)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_blood">Golongan Darah *</label>
+                        <select id="emp_blood" class="form-control">
+                            <option value="A+">A+</option>
+                            <option value="B+">B+</option>
+                            <option value="AB+">AB+</option>
+                            <option value="O+">O+</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_pob">Kota Tempat Lahir *</label>
+                        <select id="emp_pob" class="form-control">
+                            <option value="Surabaya">Surabaya</option>
+                            <option value="Jakarta">Jakarta</option>
+                            <option value="Bekasi">Bekasi</option>
+                            <option value="Pasuruan">Pasuruan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_dob">Tanggal Lahir *</label>
+                        <input type="date" id="emp_dob" class="form-control" value="1988-03-12">
+                    </div>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label for="emp_photo_url">URL Foto Karyawan (Kosongkan jika tanpa foto)</label>
+                        <input type="text" id="emp_photo_url" class="form-control" placeholder="https://...">
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_phone">Nomor Telepon / WA</label>
+                        <input type="text" id="emp_phone" class="form-control" value="+62 812-3456-7890">
+                    </div>
+                    <div class="form-group">
+                        <label for="emp_system_type">Skema Karyawan</label>
+                        <select id="emp_system_type" class="form-control">
+                            <option value="Operator Borongan">Operator Borongan</option>
+                            <option value="Staff Bulanan">Staff Bulanan</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: JOB ALIGNMENT & DISCIPLINE -->
+            <div id="tab-emp-job" class="tab-content">
+                <div class="section-header-title">Organizational Structure & Discipline</div>
+                <div class="grid-3" style="margin-bottom: 12px;">
+                    <div class="form-group"><label>Department</label><input type="text" id="emp_dept" class="form-control" value="Production - Press"></div>
+                    <div class="form-group"><label>Jabatan / Position</label><input type="text" id="emp_role" class="form-control" value="Senior Heidelberg Operator"></div>
+                    <div class="form-group"><label>Direct Supervisor</label><input type="text" class="form-control" value="Hendra Kusuma (Production Mgr)"></div>
+                </div>
+                <div class="grid-3">
+                    <div class="form-group"><label>Verbal Warning Counter (0-6)</label><input type="number" id="input_verbal_count" class="form-control" value="2" min="0" max="6"></div>
+                    <div class="form-group"><label>Surat Peringatan Status</label><input type="text" id="input_sp_status" class="form-control" value="Clean / No SP" readonly></div>
+                    <div class="form-group"><label>Shift Assignment</label><input type="text" class="form-control" value="Shift 1 (07:00 - 15:00)"></div>
+                </div>
+            </div>
+
+            <!-- TAB 3: EDUCATION & CERTIFICATIONS -->
+            <div id="tab-emp-education" class="tab-content">
+                <div class="section-header-title">Riwayat Pendidikan Formal</div>
+                <table class="data-table" style="margin-bottom: 16px;">
+                    <thead>
+                        <tr><th>Tingkat</th><th>Nama Sekolah / Universitas</th><th>Jurusan</th><th>Tahun Lulus</th><th>IPK / Nilai</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>D3 / Poltek</td><td>Politeknik Negeri Media Kreatif</td><td>Teknik Grafika</td><td>2010</td><td>3.45</td></tr>
+                        <tr><td>SMA / SMK</td><td>SMKN 1 Grafika Surabaya</td><td>Percetakan Offset</td><td>2007</td><td>8.20</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TAB 4: FAMILY MEMBER -->
+            <div id="tab-emp-family" class="tab-content">
+                <div class="section-header-title">Data Anggota Keluarga (Sesuai KK: <span id="lbl_tab_kk">3275080101150009</span>)</div>
+                <table class="data-table" style="margin-bottom: 16px;">
+                    <thead>
+                        <tr><th>Nama Anggota Keluarga</th><th>Hubungan</th><th>NIK KTP</th><th>Tanggal Lahir</th><th>Status BPJS</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Siti Aminah</td><td>Istri (Spouse)</td><td>3275084504900002</td><td>15 Apr 1990</td><td><span class="badge-tag badge-active-emp">Tanggungan</span></td></tr>
+                        <tr><td>Leo Santoso</td><td>Anak Ke-1</td><td>3275081010180005</td><td>10 Oct 2018</td><td><span class="badge-tag badge-active-emp">Tanggungan</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TAB 5: CAREER & SALARY MOVEMENT -->
+            <div id="tab-emp-career" class="tab-content">
+                <div class="section-header-title">Riwayat Promosi, Jabatan & Penyesuaian Gaji</div>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Tanggal Efektif</th><th>Jabatan</th><th>Grade</th><th>Tipe Perubahan</th><th>Kenaikan (%)</th><th>No. SK</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>01 Jan 2026</td><td>Senior Heidelberg Operator</td><td>Grade P3</td><td>Promosi & Adjustment</td><td>+ 8.5 %</td><td>SK-HRD-2026-0012</td></tr>
+                        <tr><td>01 Mar 2022</td><td>Junior Press Operator</td><td>Grade P2</td><td>New Hire</td><td>Base Standard</td><td>SK-HRD-2022-0411</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TAB 6: PERFORMANCE & SP LOG -->
+            <div id="tab-emp-performance" class="tab-content">
+                <div class="section-header-title">Log Rekapitulasi Sanksi Disiplin (Verbal & SP)</div>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Tanggal</th><th>Tipe Sanksi</th><th>Verbal Hit</th><th>Alasan Violations</th><th>Penerbit</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>12 Mar 2026</td><td>Verbal Warning #1</td><td>1 / 6</td><td>Terlambat shift 15 menit</td><td>Hendra Kusuma</td><td><span class="badge-tag badge-clean">Expired</span></td></tr>
+                        <tr><td>18 May 2026</td><td>Verbal Warning #2</td><td>2 / 6</td><td>Abaikan APD Press Room</td><td>Hendra Kusuma</td><td><span class="badge-tag badge-borongan">Active Track</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- TAB 7: HISTORICAL AUDIT TRAIL -->
+            <div id="tab-emp-history" class="tab-content">
+                <div class="section-header-title">System Audit Trail Lifecycle</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">12 May 2026 • 10:15 WIB</div>
+                        <div class="timeline-title">Verbal Warning #2 Recorded</div>
+                        <div class="timeline-desc">Added by Production Manager.</div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+(function() {
+    // Database Scope
+    let empDatabase = [
+        {
+            nik: 'EMP-2026-0012',
+            name: 'Budi Santoso',
+            role: 'Senior Heidelberg Operator',
+            dept: 'Production - Press',
+            systemType: 'Operator Borongan',
+            ktp: '3275081203880004',
+            npwp: '71.234.567.8-012.000',
+            kk: '3275080101150009',
+            gender: 'Male',
+            blood: 'O+',
+            pob: 'Surabaya',
+            dob: '1988-03-12',
+            photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+            verbalCount: 2,
+            spStatus: 'Clean / No SP',
+            attendance: '2x Late / 0 Absent',
+            sisaCuti: '12 Hari',
+            output: '104% (1.25M Pcs)'
+        },
+        {
+            nik: 'EMP-2026-0045',
+            name: 'Dewi Rahmawati',
+            role: 'Prepress Planning Specialist',
+            dept: 'Prepress & CTP',
+            systemType: 'Staff Bulanan',
+            ktp: '3174095205910002',
+            npwp: '82.456.789.1-015.000',
+            kk: '3174091208180003',
+            gender: 'Female',
+            blood: 'A+',
+            pob: 'Jakarta',
+            dob: '1991-05-22',
+            photoUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80',
+            verbalCount: 6,
+            spStatus: 'SP 1 ACTIVE',
+            attendance: '6x Late / 1 Absent',
+            sisaCuti: '5 Hari',
+            output: 'KPI Score: 82.0%'
+        },
+        {
+            nik: 'EMP-2026-0089',
+            name: 'Agus Setiawan',
+            role: 'Quality Control Inspector',
+            dept: 'Quality Control',
+            systemType: 'Staff Bulanan',
+            ktp: '3578012407920001',
+            npwp: '91.112.334.5-099.000',
+            kk: '3578011005190007',
+            gender: 'Male',
+            blood: 'B+',
+            pob: 'Bekasi',
+            dob: '1992-07-24',
+            photoUrl: '', // Uses Initials "AS"
+            verbalCount: 0,
+            spStatus: 'Clean / No SP',
+            attendance: '0x Late / 0 Absent',
+            sisaCuti: '8 Hari',
+            output: 'KPI Score: 94.5%'
+        }
+    ];
+
+    let currentEditingIndex = null;
+    let currentSortColumn = -1;
+    let isAscending = true;
+
+    // Core Data Render Function with Strict Event Listener Binding
+    function renderGridTable() {
+        const tableBody = document.getElementById('empTableBody');
+        if(!tableBody) return;
+        
+        tableBody.innerHTML = '';
+
+        empDatabase.forEach((emp, index) => {
+            const tr = document.createElement('tr');
+            tr.className = 'data-row';
+
+            // Photo or Initials Generator
+            let avatarHtml = '';
+            if (emp.photoUrl) {
+                avatarHtml = `<img src="${emp.photoUrl}" class="emp-photo-grid" alt="${emp.name}">`;
+            } else {
+                const words = emp.name.split(' ').filter(w => w.length > 0);
+                let init = '??';
+                if (words.length >= 2) init = (words[0][0] + words[1][0]).toUpperCase();
+                else if (words.length === 1) init = words[0].substring(0,2).toUpperCase();
+                avatarHtml = `<div class="mini-avatar-emp">${init}</div>`;
+            }
+
+            // Discipline Status Badge
+            let badgeHtml = '';
+            if (emp.verbalCount >= 6 || (emp.spStatus && emp.spStatus.includes('SP 1'))) {
+                badgeHtml = `<span class="badge-tag badge-sp1">⚠ Active SP 1 (${emp.verbalCount}x Verbal)</span>`;
+            } else {
+                badgeHtml = `<span class="badge-tag badge-clean">Verbal: ${emp.verbalCount}/6 (Clean)</span>`;
+            }
+
+            tr.innerHTML = `
+                <td><input type="checkbox"></td>
+                <td><b>${emp.nik}</b></td>
+                <td>
+                    <div class="emp-cell-info">
+                        ${avatarHtml}
+                        <div>
+                            <div class="emp-name-title">${emp.name}</div>
+                            <div class="emp-sub-info">${emp.role} • ${emp.systemType}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div style="font-size: 11px;">KTP: <b>${emp.ktp}</b></div>
+                    <div class="emp-sub-info">NPWP: ${emp.npwp} | KK: ${emp.kk}</div>
+                </td>
+                <td>${emp.dept}</td>
+                <td>${badgeHtml}</td>
+                <td>${emp.attendance}</td>
+                <td>${emp.sisaCuti}</td>
+                <td style="text-align: right;">
+                    <button class="btn btn-sm btn-primary btn-edit-action" type="button">Edit</button>
+                </td>
+            `;
+
+            // Explicit Pure JS Double-Click Listener on Row
+            tr.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                openEditForm(index);
+            });
+
+            // Explicit Pure JS Click Listener on Edit Button
+            const editBtn = tr.querySelector('.btn-edit-action');
+            if (editBtn) {
+                editBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openEditForm(index);
+                });
+            }
+
+            tableBody.appendChild(tr);
+        });
+
+        updateSummaryCounters();
+        filterEmpTable();
+    }
+
+    function updateSummaryCounters() {
+        document.getElementById('stat_total').innerText = empDatabase.length;
+        document.getElementById('lbl_total_count').innerText = empDatabase.length;
+        document.getElementById('lbl_showing_count').innerText = `1 - ${empDatabase.length}`;
+        
+        const sp1Count = empDatabase.filter(e => e.verbalCount >= 6 || (e.spStatus && e.spStatus.includes('SP 1'))).length;
+        const verbalCount = empDatabase.filter(e => e.verbalCount > 0 && e.verbalCount < 6).length;
+        const cleanCount = empDatabase.filter(e => e.verbalCount === 0 && (!e.spStatus || !e.spStatus.includes('SP 1'))).length;
+
+        document.getElementById('stat_clean').innerText = cleanCount;
+        document.getElementById('stat_verbal').innerText = verbalCount;
+        document.getElementById('stat_sp1').innerText = sp1Count;
+    }
+
+    function openEditForm(index) {
+        currentEditingIndex = index;
+        const emp = empDatabase[index];
+
+        document.getElementById('emp_full_name').value = emp.name;
+        document.getElementById('emp_nik').value = emp.nik;
+        document.getElementById('lbl_emp_nik').innerText = emp.nik;
+        document.getElementById('emp_role').value = emp.role;
+        document.getElementById('lbl_emp_role').innerText = emp.role;
+        document.getElementById('emp_dept').value = emp.dept;
+
+        document.getElementById('emp_ktp').value = emp.ktp;
+        document.getElementById('lbl_emp_ktp').innerText = emp.ktp;
+        document.getElementById('emp_npwp').value = emp.npwp;
+        document.getElementById('lbl_emp_npwp').innerText = emp.npwp;
+        document.getElementById('emp_kk').value = emp.kk;
+        document.getElementById('lbl_emp_kk').innerText = emp.kk;
+        document.getElementById('lbl_tab_kk').innerText = emp.kk;
+
+        document.getElementById('emp_gender').value = emp.gender;
+        document.getElementById('emp_blood').value = emp.blood;
+        document.getElementById('emp_pob').value = emp.pob;
+        document.getElementById('emp_dob').value = emp.dob;
+        document.getElementById('emp_photo_url').value = emp.photoUrl;
+
+        document.getElementById('input_verbal_count').value = emp.verbalCount;
+        document.getElementById('emp_system_type').value = emp.systemType;
+        document.getElementById('emp_type_badge').innerText = emp.systemType;
+
+        document.getElementById('card_sisa_cuti').innerText = emp.sisaCuti;
+        document.getElementById('card_attendance_summary').innerText = emp.attendance;
+        document.getElementById('kpi_val_1').innerText = emp.output;
+
+        updateWarningRule();
+        updatePhotoPreview();
+
+        document.getElementById('grid_m_employee').style.display = 'none';
+        document.getElementById('form_m_employee').style.display = 'block';
+    }
+
+    function openNewForm() {
+        currentEditingIndex = null;
+
+        document.getElementById('emp_full_name').value = 'Karyawan Baru';
+        document.getElementById('emp_nik').value = 'EMP-2026-NEW';
+        document.getElementById('lbl_emp_nik').innerText = 'EMP-2026-NEW';
+        document.getElementById('emp_photo_url').value = '';
+        document.getElementById('emp_role').value = 'Operator Press';
+        document.getElementById('emp_dept').value = 'Production - Press';
+        document.getElementById('emp_ktp').value = '3275000000000000';
+        document.getElementById('emp_npwp').value = '00.000.000.0-000.000';
+        document.getElementById('emp_kk').value = '3275000000000000';
+        document.getElementById('input_verbal_count').value = 0;
+
+        updateWarningRule();
+        updatePhotoPreview();
+
+        document.getElementById('grid_m_employee').style.display = 'none';
+        document.getElementById('form_m_employee').style.display = 'block';
+    }
+
+    function saveChanges() {
+        const name = document.getElementById('emp_full_name').value.trim();
+        const nik = document.getElementById('emp_nik').value.trim();
+        const role = document.getElementById('emp_role').value.trim();
+        const dept = document.getElementById('emp_dept').value.trim();
+        const ktp = document.getElementById('emp_ktp').value.trim();
+        const npwp = document.getElementById('emp_npwp').value.trim();
+        const kk = document.getElementById('emp_kk').value.trim();
+        const gender = document.getElementById('emp_gender').value;
+        const blood = document.getElementById('emp_blood').value;
+        const pob = document.getElementById('emp_pob').value;
+        const dob = document.getElementById('emp_dob').value;
+        const photoUrl = document.getElementById('emp_photo_url').value.trim();
+        const verbalCount = parseInt(document.getElementById('input_verbal_count').value) || 0;
+        const systemType = document.getElementById('emp_system_type').value;
+        const spStatus = verbalCount >= 6 ? 'SP 1 ACTIVE' : 'Clean / No SP';
+
+        if (currentEditingIndex !== null) {
+            empDatabase[currentEditingIndex] = {
+                ...empDatabase[currentEditingIndex],
+                name, nik, role, dept, ktp, npwp, kk, gender, blood, pob, dob, photoUrl, verbalCount, spStatus, systemType
+            };
+            alert(`✅ PERUBAHAN DISIMPAN:\nData karyawan "${name}" (${nik}) berhasil diubah di Grid!`);
+        } else {
+            empDatabase.push({
+                nik, name, role, dept, systemType, ktp, npwp, kk, gender, blood, pob, dob, photoUrl, verbalCount, spStatus,
+                attendance: '0x Late / 0 Absent',
+                sisaCuti: '12 Hari',
+                output: 'New Entry'
+            });
+            alert(`✅ KARYAWAN BARU DITAMBAHKAN:\n"${name}" berhasil dimasukkan ke Grid!`);
+        }
+
+        renderGridTable();
+        showDirectory();
+    }
+
+    function showDirectory() {
+        document.getElementById('grid_m_employee').style.display = 'block';
+        document.getElementById('form_m_employee').style.display = 'none';
+    }
+
+    function updateWarningRule() {
+        const count = parseInt(document.getElementById('input_verbal_count').value) || 0;
+        const spStatusInput = document.getElementById('input_sp_status');
+        const spCard = document.getElementById('card_sp_status');
+        const verbalCard = document.getElementById('card_verbal_count');
+        const spBadge = document.getElementById('emp_sp_badge');
+        const banner = document.getElementById('sp_warning_banner');
+        const kpiSp = document.getElementById('kpi_val_sp');
+
+        verbalCard.innerText = `${count} / 6 Times`;
+
+        if (count >= 6) {
+            spStatusInput.value = 'SP 1 ACTIVE (6x Verbal Reached)';
+            spCard.innerText = 'SP 1 ACTIVE';
+            spCard.style.color = 'var(--danger)';
+            spBadge.className = 'badge-tag badge-sp1';
+            spBadge.innerText = '⚠️ Active SP 1';
+            banner.style.display = 'block';
+            kpiSp.innerText = 'SP 1 Active';
+            kpiSp.style.color = 'var(--danger)';
+        } else {
+            spStatusInput.value = 'Clean / No SP';
+            spCard.innerText = 'NO SP ACTIVE';
+            spCard.style.color = 'var(--success)';
+            spBadge.className = 'badge-tag badge-clean';
+            spBadge.innerText = `Verbal Warning: ${count}/6`;
+            banner.style.display = 'none';
+            kpiSp.innerText = '0 SP';
+            kpiSp.style.color = 'var(--success)';
+        }
+    }
+
+    function updatePhotoPreview() {
+        const url = document.getElementById('emp_photo_url').value.trim();
+        const imgEle = document.getElementById('form_emp_photo');
+        const initEle = document.getElementById('form_emp_initials');
+
+        if (url) {
+            imgEle.src = url;
+            imgEle.style.display = 'block';
+            initEle.style.display = 'none';
+        } else {
+            imgEle.style.display = 'none';
+            initEle.style.display = 'flex';
+            updateEmpAvatarInitials();
+        }
+    }
+
+    function updateEmpAvatarInitials() {
+        const nameVal = document.getElementById('emp_full_name').value.trim();
+        if (!nameVal) {
+            document.getElementById('form_emp_initials').innerText = '??';
+            return;
+        }
+        const words = nameVal.split(' ').filter(w => w.length > 0);
+        if (words.length >= 2) {
+            document.getElementById('form_emp_initials').innerText = (words[0][0] + words[1][0]).toUpperCase();
+        } else if (words.length === 1) {
+            document.getElementById('form_emp_initials').innerText = words[0].substring(0, 2).toUpperCase();
+        }
+    }
+
+    function filterEmpTable() {
+        const searchVal = document.getElementById('emp_search_input').value.toLowerCase();
+        const typeVal = document.getElementById('filter_type').value;
+        const spVal = document.getElementById('filter_sp').value;
+
+        const table = document.getElementById('empMasterTable');
+        const trs = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < trs.length; i++) {
+            const tr = trs[i];
+            const textContent = tr.innerText.toLowerCase();
+            const typeText = tr.cells[2].innerText;
+            const spText = tr.cells[5].innerText;
+
+            let matchesSearch = textContent.indexOf(searchVal) > -1;
+            let matchesType = (typeVal === 'ALL') || (typeText.indexOf(typeVal) > -1);
+            let matchesSp = (spVal === 'ALL') || (spText.indexOf(spVal) > -1);
+
+            if (matchesSearch && matchesType && matchesSp) {
+                tr.style.display = '';
+            } else {
+                tr.style.display = 'none';
+            }
+        }
+    }
+
+    function sortTableByColumn(colIndex) {
+        if (currentSortColumn === colIndex) {
+            isAscending = !isAscending;
+        } else {
+            currentSortColumn = colIndex;
+            isAscending = true;
+        }
+
+        empDatabase.sort((a, b) => {
+            let valA = colIndex === 1 ? a.nik : (colIndex === 2 ? a.name : a.dept);
+            let valB = colIndex === 1 ? b.nik : (colIndex === 2 ? b.name : b.dept);
+
+            if (valA.toLowerCase() < valB.toLowerCase()) return isAscending ? -1 : 1;
+            if (valA.toLowerCase() > valB.toLowerCase()) return isAscending ? 1 : -1;
+            return 0;
+        });
+
+        renderGridTable();
+
+        [1, 2, 4].forEach(idx => {
+            const iconSpan = document.getElementById(`sort_icon_${idx}`);
+            if (iconSpan) {
+                if (idx === colIndex) {
+                    iconSpan.innerText = isAscending ? '▲ A' : '▼ D';
+                    iconSpan.style.color = 'var(--brand-blue)';
+                } else {
+                    iconSpan.innerText = '↕ A/D';
+                    iconSpan.style.color = 'var(--text-muted)';
+                }
+            }
+        });
+    }
+
+    // Attach All Event Listeners After DOM Ready
+    function initEvents() {
+        // Form Controls & Buttons
+        document.getElementById('btn_add_new').addEventListener('click', openNewForm);
+        document.getElementById('btn_back_grid').addEventListener('click', showDirectory);
+        document.getElementById('btn_cancel_form').addEventListener('click', showDirectory);
+        document.getElementById('btn_save_master').addEventListener('click', saveChanges);
+        
+        document.getElementById('btn_add_verbal').addEventListener('click', function() {
+            const countInput = document.getElementById('input_verbal_count');
+            const current = parseInt(countInput.value) || 0;
+            const updated = current + 1;
+            countInput.value = updated;
+            updateWarningRule();
+
+            if (updated >= 6) {
+                alert(`⚠️ WARN: Verbal Warning ke-${updated}. Ambang batas 6x tercapai, SP 1 Otomatis Terbit!`);
+            } else {
+                alert(`Verbal Warning ditambahkan (${updated}/6).`);
+            }
+        });
+
+        // Search & Filter Listeners
+        document.getElementById('emp_search_input').addEventListener('keyup', filterEmpTable);
+        document.getElementById('filter_type').addEventListener('change', filterEmpTable);
+        document.getElementById('filter_sp').addEventListener('change', filterEmpTable);
+        document.getElementById('btn_reset_filter').addEventListener('click', function() {
+            document.getElementById('emp_search_input').value = '';
+            document.getElementById('filter_type').value = 'ALL';
+            document.getElementById('filter_sp').value = 'ALL';
+            filterEmpTable();
+        });
+
+        // Inputs Real-time Binding
+        document.getElementById('emp_full_name').addEventListener('input', updateEmpAvatarInitials);
+        document.getElementById('emp_photo_url').addEventListener('change', updatePhotoPreview);
+        document.getElementById('input_verbal_count').addEventListener('change', updateWarningRule);
+        
+        document.getElementById('emp_ktp').addEventListener('input', function() {
+            document.getElementById('lbl_emp_ktp').innerText = this.value;
+        });
+        document.getElementById('emp_npwp').addEventListener('input', function() {
+            document.getElementById('lbl_emp_npwp').innerText = this.value;
+        });
+        document.getElementById('emp_kk').addEventListener('input', function() {
+            document.getElementById('lbl_emp_kk').innerText = this.value;
+            document.getElementById('lbl_tab_kk').innerText = this.value;
+        });
+        document.getElementById('emp_system_type').addEventListener('change', function() {
+            document.getElementById('emp_type_badge').innerText = this.value;
+        });
+
+        // Column Header Sorting Listeners
+        document.getElementById('th_sort_nik').addEventListener('click', () => sortTableByColumn(1));
+        document.getElementById('th_sort_name').addEventListener('click', () => sortTableByColumn(2));
+        document.getElementById('th_sort_dept').addEventListener('click', () => sortTableByColumn(4));
+
+        // Tab Navigation Event Delegation
+        document.getElementById('tabsHeaderNav').addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('tab-btn')) {
+                const targetTab = e.target.getAttribute('data-tab');
+                
+                document.querySelectorAll('#tabsHeaderNav .tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('#employeeDetailForm .tab-content').forEach(content => content.classList.remove('active'));
+
+                e.target.classList.add('active');
+                const contentNode = document.getElementById(targetTab);
+                if (contentNode) contentNode.classList.add('active');
+            }
+        });
+
+        // Initial Data Render
+        renderGridTable();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initEvents);
+    } else {
+        initEvents();
+    }
+})();
+</script>
+
+</body>
+</html>

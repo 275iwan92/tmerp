@@ -4,6 +4,8 @@ use App\Models\Sys\SecGroup;
 use App\Models\Sys\SecGroupPermission;
 use App\Models\Sys\SecModule;
 use App\Models\Sys\SecUser;
+use App\Services\Migration\VendorMigrationService;
+use App\Services\Security\PasswordResetService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
@@ -75,6 +77,21 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
         unset($this->users);
     }
 
+    // Password default yang baru saja di-reset — ditampilkan SEKALI di layar
+    // (session, bukan disimpan di properti Livewire supaya tak ikut di-dehydrate
+    // ke request berikutnya). SECURITY_default_password_spec.md §0/§4.
+    public ?int $revealUserId = null;
+
+    public function resetPassword(int $userId): void
+    {
+        $user = SecUser::findOrFail($userId);
+        $plain = app(PasswordResetService::class)->reset($user);
+
+        session()->flash('resetPlain_'.$userId, $plain);
+        $this->revealUserId = $userId;
+        unset($this->users);
+    }
+
     // ================= GRUP =================
     public string $g_code = '';
 
@@ -120,7 +137,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
     {
         $this->permGroupId = SecGroup::query()->orderBy('group_name')->value('id_group');
 
-        if (! in_array($this->activePanel, ['users', 'groups', 'perms'], true)) {
+        if (! in_array($this->activePanel, ['users', 'groups', 'perms', 'migration'], true)) {
             $this->activePanel = 'users';
         }
     }
@@ -173,9 +190,25 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
     public function setPanel(string $panel): void
     {
-        if (in_array($panel, ['users', 'groups', 'perms'], true)) {
+        if (in_array($panel, ['users', 'groups', 'perms', 'migration'], true)) {
             $this->activePanel = $panel;
         }
+    }
+
+    // ================= MIGRASI DATA LEGACY =================
+    // Engine baca tm2old.mst_vendor* (dump ScriptCase V1, diimpor manual oleh
+    // Jo) -> tulis cust_customer/sup_supplier tm2mst. Idempotent, aman diklik
+    // ulang. Laporan hasil TIDAK disimpan ke session — cukup properti Livewire
+    // biasa (hilang saat reload halaman, itu memang yang diharapkan).
+    public ?array $migrationReport = null;
+
+    public bool $migrationRunning = false;
+
+    public function runVendorMigration(): void
+    {
+        $this->migrationRunning = true;
+        $this->migrationReport = app(VendorMigrationService::class)->run(Auth::user()->login);
+        $this->migrationRunning = false;
     }
 
     public function logout()
@@ -239,7 +272,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 <div class="box">
                     <h3>Daftar pengguna</h3>
                     <table>
-                        <thead><tr><th>Username</th><th>Nama</th><th>Grup</th><th>Status</th><th>Aksi</th></tr></thead>
+                        <thead><tr><th>Username</th><th>Nama</th><th>Grup</th><th>Status</th><th>Password</th><th>Aksi</th></tr></thead>
                         <tbody>
                             @foreach ($this->users as $u)
                                 <tr wire:key="user-{{ $u->id_user }}">
@@ -248,6 +281,16 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                     <td>{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' (Admin)' : '' }}</td>
                                     <td><span class="pill {{ $u->is_active ? 'on' : 'off' }}">{{ $u->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
                                     <td>
+                                        @if (session()->has('resetPlain_'.$u->id_user))
+                                            <span class="note" style="color:var(--sp-ok)">Baru: <code>{{ session('resetPlain_'.$u->id_user) }}</code></span>
+                                        @elseif ($u->must_change_password)
+                                            <span class="pill off">Wajib ganti</span>
+                                        @else
+                                            <span class="note">—</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <button type="button" class="link-act" wire:click="resetPassword({{ $u->id_user }})" wire:confirm="Reset password {{ $u->login }} ke password baru?">Reset password</button>
                                         @if ($u->id_user !== Auth::id())
                                             <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                                         @else
@@ -362,6 +405,58 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         </tbody>
                     </table>
                     <p class="note">Readonly = Akses menyala, Input mati. Mematikan Akses otomatis mematikan Input/Approve/Export (BRIEF §4).</p>
+                </div>
+            </section>
+
+            {{-- 4. Migrasi Data Legacy --}}
+            <section class="panel {{ $activePanel === 'migration' ? 'active' : '' }}">
+                <h1>Migrasi Data Legacy</h1>
+                <p class="desc">Tarik data lama (ScriptCase V1) dari staging <code>tm2old</code> ke Master Customer &amp; Master Supplier. Aman dijalankan berulang kali — data yang sudah ada akan diperbarui, bukan diduplikasi.</p>
+
+                <div class="box">
+                    <h3>tm2old.mst_vendor → cust_customer &amp; sup_supplier</h3>
+                    <p class="note">Sumber: <code>mst_vendor</code> (1.160 baris), <code>mst_vendor_bank</code>, <code>mst_vendor_customer_category</code>, <code>mst_vendor_supplier_category</code>. Baris dengan <code>as_customer=1</code> masuk Master Customer, <code>as_supplier=1</code> masuk Master Supplier — vendor bisa masuk keduanya.</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runVendorMigration" wire:loading.attr="disabled"
+                            wire:confirm="Jalankan migrasi data dari tm2old.mst_vendor sekarang?">
+                            <span wire:loading.remove wire:target="runVendorMigration">▶ Jalankan Migrasi</span>
+                            <span wire:loading wire:target="runVendorMigration">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($migrationReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <table>
+                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Kategori customer / supplier</td><td>{{ $migrationReport['categories']['cust'] }} / {{ $migrationReport['categories']['sup'] }} kode</td></tr>
+                                    <tr><td>Master Customer</td><td>{{ $migrationReport['customers']['created'] }} baru, {{ $migrationReport['customers']['updated'] }} diperbarui</td></tr>
+                                    <tr><td>Master Supplier</td><td>{{ $migrationReport['suppliers']['created'] }} baru, {{ $migrationReport['suppliers']['updated'] }} diperbarui</td></tr>
+                                    <tr><td>Rekening bank</td><td>{{ $migrationReport['banks']['cust'] }} customer, {{ $migrationReport['banks']['sup'] }} supplier{{ $migrationReport['banks']['skipped'] ? ', '.$migrationReport['banks']['skipped'].' dilewati (vendor tak ketemu)' : '' }}</td></tr>
+                                    <tr><td>Kota cocok otomatis</td><td>{{ $migrationReport['city']['matched'] }} baris</td></tr>
+                                </tbody>
+                            </table>
+
+                            @if (! empty($migrationReport['city']['unmatched']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($migrationReport['city']['unmatched']) }} nama kota tidak cocok ke <code>geo_city</code> (dibiarkan kosong, isi manual di Master Customer/Supplier):</p>
+                                    <p class="note">{{ implode(', ', array_map(fn ($name, $cnt) => "{$name} ({$cnt})", array_keys($migrationReport['city']['unmatched']), $migrationReport['city']['unmatched'])) }}</p>
+                                </div>
+                            @endif
+
+                            @if (! empty($migrationReport['errors']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($migrationReport['errors']) }} baris gagal diproses:</p>
+                                    <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
+                                        @foreach ($migrationReport['errors'] as $err)
+                                            <li>{{ $err }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </section>
         </div>

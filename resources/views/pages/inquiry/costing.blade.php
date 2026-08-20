@@ -8,6 +8,8 @@ use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPartCoating;
 use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\IqpLayout;
+use App\Models\Sdi\IqpPart;
 use App\Services\Costing\CostingEngine;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -114,6 +116,44 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         IqpCostingPart::create($data);
 
         unset($this->costing);
+    }
+
+    // Tambah part dari iqp_part (Inquiry) — auto-fill plano/cut dari Imposition
+    // yang sudah confirmed, kalau ada (lihat inquiry/imposition.blade.php confirm()).
+    public function addPartFromInquiry(int $inquiryPartId): void
+    {
+        $costing = $this->costing;
+        $iqpPart = IqpPart::where('inquiry_id', $this->inquiryId)->findOrFail($inquiryPartId);
+        $layout = IqpLayout::where('part_id', $iqpPart->id_part)->where('is_confirmed', true)->first();
+
+        $data = [
+            'costing_id' => $costing->id_costing,
+            'part_id' => $iqpPart->id_part,
+            'no_urut' => $costing->parts()->count() + 1,
+            'part_name' => $iqpPart->part_name,
+            'part_type_code' => 'DC',
+            'qty_per_set' => $iqpPart->qty_per_sku ?: 1,
+            'i_cut_per_plano' => $layout->up_count ?? 1,
+            'i_isi_per_lb' => 1,
+            'i_jumlah_warna' => 4,
+            'created_by' => Auth::user()->login,
+            'updated_by' => Auth::user()->login,
+        ];
+
+        if ($layout) {
+            $data['i_panjang_plano_cm'] = round($layout->plano_w_mm / 10, 4);
+            $data['i_lebar_plano_cm'] = round($layout->plano_h_mm / 10, 4);
+        }
+
+        IqpCostingPart::create($data);
+
+        unset($this->costing);
+    }
+
+    #[Computed]
+    public function inquiryParts()
+    {
+        return IqpPart::where('inquiry_id', $this->inquiryId)->orderBy('part_seq')->get();
     }
 
     public function removePart(int $partId): void
@@ -229,7 +269,10 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧮 TELASIH MAKMUR — Costing (HPP)</b>
         <span class="text-xs text-white/75">{{ $this->costing->inquiry?->inquiry_no ?? '—' }} · {{ $this->costing->inquiry?->product_draft_name }}</span>
-        <a href="{{ route('inquiry.hub') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Inquiry Hub</a>
+        <a href="{{ route('inquiry.quotation', ['inquiry' => $this->inquiryId]) }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Quotation</a>
+        <a href="{{ route('inquiry.nota', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Nota</a>
+        <a href="{{ route('inquiry.imposition', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Imposition</a>
+        <a href="{{ route('inquiry.hub') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Inquiry Hub</a>
     </header>
 
     <div class="max-w-[1180px] mx-auto my-5 px-4">
@@ -267,9 +310,20 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
                 <h3 class="text-xs text-navy uppercase font-bold">Part</h3>
-                <div class="flex gap-1.5">
+                <div class="flex gap-1.5 items-center">
                     <button type="button" wire:click="addPart('DC')" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Part DC</button>
                     <button type="button" wire:click="addPart('SHEET_DIGITAL')" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Part Sheet</button>
+                    @if ($this->inquiryParts->isNotEmpty())
+                        <select id="add-from-part-{{ $this->costingId }}" class="text-[11px] px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-navy">
+                            <option value="">— dari part inquiry —</option>
+                            @foreach ($this->inquiryParts as $ip)
+                                <option value="{{ $ip->id_part }}">{{ $ip->part_name ?: 'Part #'.$ip->part_seq }}{{ $ip->layout?->is_confirmed ? ' ✓' : '' }}</option>
+                            @endforeach
+                        </select>
+                        <button type="button"
+                            @click="const s=document.getElementById('add-from-part-{{ $this->costingId }}'); if(s.value){ $wire.addPartFromInquiry(parseInt(s.value)); s.value=''; }"
+                            class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋</button>
+                    @endif
                 </div>
             </div>
 

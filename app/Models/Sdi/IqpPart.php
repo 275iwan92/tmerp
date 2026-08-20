@@ -5,6 +5,7 @@ namespace App\Models\Sdi;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class IqpPart extends Model
 {
@@ -52,5 +53,10 @@ class IqpPart extends Model
     public function processes(): HasMany
     {
         return $this->hasMany(IqpPartProcess::class, 'part_id', 'id_part');
+    }
+
+    public function layout(): HasOne
+    {
+        return $this->hasOne(IqpLayout::class, 'part_id', 'id_part');
     }
 }

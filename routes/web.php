@@ -11,23 +11,50 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::livewire('/menu', 'pages::main-menu')->name('menu');
+    // Di luar force.password: halaman paksa-ganti-password sendiri, tak boleh
+    // ikut digate olehnya (redirect loop) — SECURITY_default_password_spec.md §6.
+    Route::livewire('/password/change', 'pages::auth.password-change')->name('password.change');
 
-    Route::middleware('module:SALES')->group(function () {
-        Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');
-        Route::livewire('/inquiry/new', 'pages::inquiry.form')->name('inquiry.form');
-        Route::livewire('/inquiry/recalc', 'pages::inquiry.recalc')->name('inquiry.recalc');
-        Route::livewire('/inquiry/revise', 'pages::inquiry.revise')->name('inquiry.revise');
-    });
+    Route::middleware('force.password')->group(function () {
+        Route::livewire('/menu', 'pages::main-menu')->name('menu');
 
-    Route::middleware('module:COSTING')->group(function () {
-        Route::livewire('/inquiry/{inquiry}/costing', 'pages::inquiry.costing')->name('inquiry.costing');
-    });
+        Route::middleware('module:SALES')->group(function () {
+            Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');
+            Route::livewire('/inquiry/new', 'pages::inquiry.form')->name('inquiry.form');
+            Route::livewire('/inquiry/recalc', 'pages::inquiry.recalc')->name('inquiry.recalc');
+            Route::livewire('/inquiry/revise', 'pages::inquiry.revise')->name('inquiry.revise');
+            Route::livewire('/inquiry/{inquiry}/imposition', 'pages::inquiry.imposition')->name('inquiry.imposition');
+            Route::livewire('/inquiry/{inquiry}/nota', 'pages::inquiry.nota')->name('inquiry.nota');
+            Route::livewire('/inquiry/{inquiry}/quotation', 'pages::inquiry.quotation')->name('inquiry.quotation');
+        });
 
-    Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
+        Route::middleware('module:COSTING')->group(function () {
+            Route::livewire('/inquiry/{inquiry}/costing', 'pages::inquiry.costing')->name('inquiry.costing');
+        });
 
-    Route::middleware('module:MDATA')->group(function () {
-        Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
-        Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
+        Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
+
+        // Portal self-service karyawan — bukan modul HR administratif (tanpa
+        // module: gate), tapi personal & hanya milik akun sendiri. Guard
+        // "linked employee" ditangani di dalam komponen (TIER_1_HRM.md §5.1).
+        Route::livewire('/self-service', 'pages::self-service.index')->name('self-service.index');
+
+        Route::middleware('module:MDATA')->group(function () {
+            Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
+            Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
+            Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
+            Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
+            Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
+        });
+
+        Route::middleware('module:FINACC')->group(function () {
+            Route::livewire('/finance/coa', 'pages::finance.coa')->name('finance.coa');
+            Route::livewire('/finance/dp-invoice', 'pages::finance.dp-invoice')->name('finance.dp-invoice');
+        });
+
+        Route::middleware('module:HRM')->group(function () {
+            Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
+            Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
+        });
     });
 });

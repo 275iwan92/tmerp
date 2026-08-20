@@ -1,0 +1,45 @@
+# ═══════════════════════════════════════════════════════════════════
+# FIN_STATE.yaml — PROGRESS MODUL 06 FINANCE & ACCOUNTING
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Finance.
+# ═══════════════════════════════════════════════════════════════════
+modul: "06_finance"
+db: tm2acc
+fase: "1 — GL inti (COA, Voucher, AR/AP subledger, laporan dasar)"
+status_umum: "COA + DOWN PAYMENT JALAN (2026-08-19) — 7 tabel + 4 view tm2acc ter-migrate, seed jurnal/cost-center/COA (54 akun termasuk 143 Uang Muka Pembelian & 232 Uang Muka Penjualan dari FINANCE_DOWN_PAYMENT_TIER_1-4.md). Livewire Master COA (/finance/coa) & DP Invoice (/finance/dp-invoice, Event 1 Terbitkan + Event 2 Catat Pembayaran + Event 4 Alokasi ke invoice final) hidup & teruji terhadap sample tie-out dokumen (Rp55,5jt DP -> alokasi 22,2jt -> sisa 33,3jt, persis). fin_dp_allocation + enum invoice_type CUSTOMER_DP/SUPPLIER_DP TERNYATA sudah diterapkan langsung di MySQL sebelum sesi ini (PK asli allocation_id, bukan dp_allocation_id draf dokumen) — migration 2026_08_19_000020 dibuat idempotent supaya tidak bentrok. Referensi SO/CO mockup diganti input manual (customer + nilai kontrak + no. referensi teks) karena tm2sdi.co_order belum dibangun. Event 3 (invoice final per shipment, milik modul Delivery Order) & PURCHASE DP (cermin) belum digarap. Voucher/Jurnal UI generik & AR/AP UI belum digarap."
+
+keputusan_terkunci:
+  A: "GL terintegrasi BERTAHAP via polymorphic source_type/source_id (fase-1 manual)"
+  B: "COGS PERPETUAL — jurnal HPP saat KIRIM dari snapshot Costing V2"
+  C: "Cost center TERKONTROL (fin_cost_center FK), bukan free-text"
+  D: "Mockup = struktur COA asal, RECOLOR navy, FULL-PAGE, shell menu Finance"
+  hapus_business_partners: "partner = ref logical ke cust_customer/sup_supplier; recon-map di fin_partner_account"
+  tax_rate: "tax_scheme_code → tm2mst.fin_tax_scheme (bukan hardcode di nama akun)"
+  money: "DECIMAL(18,4)"
+
+artefak_selesai:
+  - TIER_3A_FINANCE.sql   # DDL + VIEW v1_ + seed (journal, cost_center, COA 50+ akun)
+  - master_coa_mockup.html
+  - FIN_TIER_1.md
+  - FIN_TIER_2.md
+  - FIN_TIER_4.md
+  - FIN_RULES.yaml
+  - FIN_STATE.yaml
+
+next_step:
+  - "SELESAI: wiring checklist FIN_TIER_4 §7 (model App\\Models\\Acc\\*, Livewire pages::finance.coa, menu ACC_COA, FinanceMasterSeeder) — 2026-08-19"
+  - "Menyusul: layar Voucher/Jurnal (fin_voucher+fin_voucher_line, validasi balance & recon-partner), AR/AP (fin_invoice), Trial Balance report"
+  - "Permission FINACC baru di-grant ke DIREKSI (belum ada grup Finance/Costing dedicated, lihat open_items)"
+
+open_items:
+  - "fin_tax_scheme di tm2mst: konfirmasi SUDAH ada / perlu dibuat + nilai rate (PPN 11/12%, PPh22/23)"
+  - "Nomor voucher/invoice: format & generator (sys_sequence?) — belum ditetapkan (DP invoice pakai skema sendiri INV-DP-{YYYY}-{MM}-{seq}/VCH-{journal}-{YYYYMM}-{seq} sementara, lihat dp-invoice.blade.php)"
+  - "tm2sdi.co_order belum dibangun — DP invoice co_id kosong, referensi SO/CO cuma teks manual di fin_voucher.reference_no. Perlu wiring ulang begitu modul CO ada."
+  - "Alokasi DP (Event 4) hanya bisa diuji manual (insert fin_invoice CUSTOMER_INVOICE lewat SQL) karena belum ada layar/modul yang menerbitkan invoice final (Event 3, milik Delivery Order) — event 3 & PURCHASE DP cermin (§2B-5) belum digarap."
+  - "org_department id: konfirmasi tabel & id untuk mapping cost center non-produksi"
+  - "REVISE POSTED: copy-record vs jurnal pembalik akuntansi — pilih untuk fase-2"
+  - "Multi-currency USD (kurs/revaluation) — ditunda fase-2"
+  - "Auto-posting Sales(CO/DO)/Procurement(PO/Receiving) — fase-2 (hook source_* sudah siap)"
+
+catatan:
+  - "COA seed diadaptasi dari referensi industri cetak (FBB/Duplex/Kraft, tooling pond, subkon finishing)"
+  - "Urutan proses produksi (COATING→LAMINASI) tak berdampak di GL; hanya struktur komponen HPP"

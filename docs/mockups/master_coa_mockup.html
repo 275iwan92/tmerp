@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMERP · Master Chart of Accounts</title>
+<style>
+  :root{
+    --navy:#2c3e69; --navy-2:#34406b; --accent:#2f6fed; --accent-2:#2c7be5;
+    --bg:#f4f6fb; --card:#ffffff; --text:#1f2740; --muted:#6b7488;
+    --border:#d8deeb; --focus:#2f6fed;
+    --ok:#16a34a; --warn:#d97706; --danger:#dc2626;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:var(--font)}
+  body{background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+
+  /* ===== SHELL (layouts.shell) ===== */
+  .shell{display:flex;min-height:100vh;width:100%}
+  .sidebar{width:230px;flex:0 0 230px;background:var(--navy);color:#dfe6f5}
+  .brand{padding:16px 18px;font-weight:800;font-size:15px;color:#fff;border-bottom:1px solid rgba(255,255,255,.12)}
+  .brand small{display:block;font-weight:500;font-size:11px;color:#9fb0d8;margin-top:2px}
+  .nav-group{padding:10px 12px 4px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#8fa0cc}
+  .nav a{display:block;padding:8px 18px;color:#c7d1ea;text-decoration:none;font-size:13px;border-left:3px solid transparent}
+  .nav a:hover{background:var(--navy-2);color:#fff}
+  .nav a.active{background:var(--navy-2);color:#fff;border-left-color:var(--accent);font-weight:600}
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:52px;background:var(--card);border-bottom:1px solid var(--border);
+    display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+  .crumb{font-size:12px;color:var(--muted)}
+  .crumb b{color:var(--navy)}
+  .user{font-size:12px;color:var(--muted)}
+
+  /* ===== CONTENT (FULL-PAGE: w-full + padding, TANPA container) ===== */
+  .content{width:100%;padding:18px 20px;flex:1}
+  .page-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+  .page-title{font-size:18px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px}
+  .page-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .tag{display:inline-block;padding:2px 9px;border-radius:4px;font-size:11px;font-weight:700;
+    background:#e5edff;color:var(--accent-2);border:1px solid #c7d8fb}
+
+  .btn{padding:7px 14px;border-radius:5px;font-weight:600;font-size:12px;cursor:pointer;
+    border:1px solid var(--border);background:#fff;color:var(--text)}
+  .btn:hover{background:#eef2fb}
+  .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent-2)}
+
+  /* metrics */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+  .metric{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+  .metric .t{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700}
+  .metric .v{font-size:17px;font-weight:800;color:var(--navy);margin-top:2px}
+
+  /* card + toolbar */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .toolbar{padding:11px 16px;background:#f7f9fe;border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .fld{padding:6px 11px;border:1px solid var(--border);border-radius:5px;font-size:12px;outline:none;background:#fff}
+  .fld:focus{border-color:var(--focus);box-shadow:0 0 0 2px rgba(47,111,237,.15)}
+  .search{display:flex;gap:8px;align-items:center}
+
+  /* table */
+  .tbl-wrap{overflow-x:auto}
+  table.qtbl{width:100%;border-collapse:collapse;font-size:12px}
+  .qtbl th,.qtbl td{border-bottom:1px solid var(--border);padding:9px 14px;text-align:left}
+  .qtbl th{background:#f7f9fe;font-weight:700;color:var(--navy);position:sticky;top:0;z-index:5}
+  .lvl-1{background:#eef2fb;font-weight:800;color:var(--navy);text-transform:uppercase}
+  .lvl-2{font-weight:700;color:#2a3352}
+  .lvl-2 td:first-child{padding-left:28px!important}
+  .lvl-3 td:first-child{padding-left:48px!important}
+
+  .badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase}
+  .b-debit{background:#dff0ff;color:#1d5fa8}
+  .b-credit{background:#fdeecf;color:#8a5a12}
+  .b-recon{background:#e5edff;color:#2c3e69;border:1px solid #c7d8fb}
+  .b-tax{background:#eef1f7;color:#475069;border:1px solid var(--border)}
+  .b-cc{background:#e8f7ee;color:#166534;border:1px solid #bfe6cd}
+  .b-header{background:#eef1f7;color:#6b7488;border:1px solid var(--border)}
+  .link{color:var(--accent);font-weight:600;text-decoration:none;cursor:pointer}
+  .link:hover{text-decoration:underline}
+
+  @media(max-width:900px){
+    .sidebar{display:none}
+    .metrics{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- SIDEBAR (menu existing + Finance aktif) -->
+  <aside class="sidebar">
+    <div class="brand">TMERP<small>PT. Telasih Makmur</small></div>
+    <div class="nav">
+      <div class="nav-group">Operasional</div>
+      <a href="#">Sales / Inquiry</a>
+      <a href="#">Procurement</a>
+      <a href="#">Inventory</a>
+      <a href="#">Production</a>
+      <a href="#">Dispatch</a>
+      <div class="nav-group">Finance &amp; Accounting</div>
+      <a href="#" class="active">Master COA</a>
+      <a href="#">Cost Center</a>
+      <a href="#">Voucher / Jurnal</a>
+      <a href="#">AR / AP</a>
+      <a href="#">Trial Balance</a>
+      <div class="nav-group">Sistem</div>
+      <a href="#">Lookup Data</a>
+      <a href="#">Security</a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="crumb">Finance &amp; Accounting / <b>Master Chart of Accounts</b></div>
+      <div class="user">Wiwik · Costing</div>
+    </div>
+
+    <div class="content">
+      <div class="page-head">
+        <div>
+          <div class="page-title">Master Chart of Accounts (COA)
+            <span class="tag">Offset Printing &amp; Packaging</span></div>
+          <div class="page-sub">Bagan akun manufaktur cetak, tooling matris &amp; subkontraktor · DB <code>tm2acc</code> · tabel <code>fin_account</code></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary">+ Tambah Akun GL</button>
+          <button class="btn">Import Excel</button>
+          <button class="btn">Export PDF / CSV</button>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric"><div class="t">Total Akun Aktif</div><div class="v">54 Akun GL</div></div>
+        <div class="metric"><div class="t">Akun Rekonsiliasi (AR/AP)</div><div class="v" style="color:var(--accent-2)">5 Terkunci</div></div>
+        <div class="metric"><div class="t">Akun HPP Produksi (COGS)</div><div class="v">6 Akun</div></div>
+        <div class="metric"><div class="t">Persediaan &amp; Tooling</div><div class="v" style="color:var(--ok)">5 Stok</div></div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <div class="search">
+            <input id="q" class="fld" style="width:280px" placeholder="Cari kode / nama akun..." onkeyup="flt()">
+            <select id="ty" class="fld" onchange="flt()">
+              <option value="">Semua Kategori</option>
+              <option value="ASSET">ASET</option>
+              <option value="LIABILITY">KEWAJIBAN</option>
+              <option value="EQUITY">EKUITAS</option>
+              <option value="REVENUE">PENDAPATAN</option>
+              <option value="COGS">HPP (COGS)</option>
+              <option value="EXPENSE">BEBAN OPERASIONAL</option>
+            </select>
+          </div>
+          <div>
+            <button class="btn" onclick="tog(true)">Ekspansi Semua</button>
+            <button class="btn" onclick="tog(false)">Ciutkan Header</button>
+          </div>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="qtbl" id="t">
+            <thead><tr>
+              <th style="width:130px">Kode</th><th>Nama Akun</th>
+              <th style="width:110px">Tipe</th><th style="width:95px">Saldo</th>
+              <th style="width:190px">Recon &amp; Tagging</th>
+              <th style="width:150px">Default Cost Center</th>
+              <th style="width:80px;text-align:center">Aksi</th>
+            </tr></thead>
+            <tbody>
+              <tr class="lvl-1" data-ty="ASSET"><td>100000</td><td>ASET (ASSETS)</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-2" data-ty="ASSET"><td>110000</td><td>ASET LANCAR</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>111100</td><td>Kas Operasional Pabrik</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Kas kecil produksi</td><td><span class="badge b-cc">CC-FINANCE</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>111200</td><td>Bank BCA - Rekening Utama IDR</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Kas &amp; bank operasional</td><td><span class="badge b-cc">CC-FINANCE</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>112100</td><td>Piutang Usaha - Customer Lokal</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-recon">RECON AR</span></td><td><span class="badge b-cc">CC-SALES</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>112200</td><td>Piutang Usaha - Customer Ekspor</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-recon">RECON AR</span></td><td><span class="badge b-cc">CC-SALES</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>113100</td><td>Persediaan BB - Kertas &amp; Board (FBB/Duplex/Kraft)</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Stok plano &amp; roll</td><td><span class="badge b-cc">CC-WH-PAPER</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>113200</td><td>Persediaan BB - Tinta, Varnish &amp; Chemical</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Tinta, solvent, UV coating</td><td><span class="badge b-cc">CC-WH-INK</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>113300</td><td>Persediaan Tooling - Pisau Pond &amp; Deboss</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Matris cetak customer</td><td><span class="badge b-cc">CC-TOOLING</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>113400</td><td>Persediaan WIP (Cetak &amp; Finishing)</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Work order in progress</td><td><span class="badge b-cc">CC-PRODUCTION</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>113500</td><td>Persediaan Barang Jadi (Packaging Box)</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Kemasan siap kirim</td><td><span class="badge b-cc">CC-WH-FG</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>114100</td><td>PPN Masukan (Input VAT)</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-tax">PPN_IN</span></td><td><span class="badge b-cc">CC-TAX</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>114200</td><td>UM PPh Pasal 22 - Pembelian Kertas Mill</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-tax">PPH22</span></td><td><span class="badge b-cc">CC-TAX</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-2" data-ty="ASSET"><td>120000</td><td>ASET TETAP PABRIK</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>121100</td><td>Mesin Cetak Offset</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Mesin cetak utama</td><td><span class="badge b-cc">CC-PROD-PRINT</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="ASSET"><td>121200</td><td>Mesin Finishing (Die-Cutter/Folder Gluer)</td><td>ASSET</td><td><span class="badge b-debit">DEBIT</span></td><td>Mesin pond &amp; lem box</td><td><span class="badge b-cc">CC-PROD-FINISH</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+
+              <tr class="lvl-1" data-ty="LIABILITY"><td>200000</td><td>KEWAJIBAN (LIABILITIES)</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-2" data-ty="LIABILITY"><td>210000</td><td>KEWAJIBAN JANGKA PENDEK</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-3" data-ty="LIABILITY"><td>211100</td><td>Hutang Dagang - Supplier Kertas &amp; Board</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-recon">RECON AP</span></td><td><span class="badge b-cc">CC-PURCHASING</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="LIABILITY"><td>211200</td><td>Hutang Dagang - Supplier Tinta &amp; Chemical</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-recon">RECON AP</span></td><td><span class="badge b-cc">CC-PURCHASING</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="LIABILITY"><td>211300</td><td>Hutang Jasa Subkon Finishing (Laminasi/UV)</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-recon">RECON AP</span></td><td><span class="badge b-cc">CC-PURCHASING</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="LIABILITY"><td>212100</td><td>Hutang PPN Keluaran (Output VAT)</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-tax">PPN_OUT</span></td><td><span class="badge b-cc">CC-TAX</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="LIABILITY"><td>212200</td><td>Hutang PPh Pasal 23 (Jasa Subkon)</td><td>LIABILITY</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-tax">PPH23</span></td><td><span class="badge b-cc">CC-TAX</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+
+              <tr class="lvl-1" data-ty="REVENUE"><td>400000</td><td>PENDAPATAN (REVENUE)</td><td>REVENUE</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-3" data-ty="REVENUE"><td>411000</td><td>Penjualan Packaging - Food Grade Box</td><td>REVENUE</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-tax">PPN_OUT</span></td><td><span class="badge b-cc">CC-SALES</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="REVENUE"><td>412000</td><td>Penjualan Packaging - Non-Food/Commercial</td><td>REVENUE</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-tax">PPN_OUT</span></td><td><span class="badge b-cc">CC-SALES</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="REVENUE"><td>413000</td><td>Pendapatan Jasa Maklon / Subkon</td><td>REVENUE</td><td><span class="badge b-credit">KREDIT</span></td><td><span class="badge b-tax">PPN_OUT</span></td><td><span class="badge b-cc">CC-SALES</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+
+              <tr class="lvl-1" data-ty="COGS"><td>500000</td><td>BEBAN POKOK PENJUALAN (COGS)</td><td>COGS</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-3" data-ty="COGS"><td>511000</td><td>HPP - Bahan Baku Kertas &amp; Board</td><td>COGS</td><td><span class="badge b-debit">DEBIT</span></td><td>Biaya kertas utama</td><td><span class="badge b-cc">CC-PROD-PRINT</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="COGS"><td>512000</td><td>HPP - Tinta, Varnish &amp; Chemical</td><td>COGS</td><td><span class="badge b-debit">DEBIT</span></td><td>Biaya tinta &amp; varnish</td><td><span class="badge b-cc">CC-PROD-PRINT</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="COGS"><td>513000</td><td>HPP - Jasa Subkon Finishing External</td><td>COGS</td><td><span class="badge b-debit">DEBIT</span></td><td>Maklon foil / laminasi</td><td><span class="badge b-cc">CC-PROD-FINISH</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="COGS"><td>514000</td><td>HPP - Tenaga Kerja Langsung</td><td>COGS</td><td><span class="badge b-debit">DEBIT</span></td><td>Upah operator mesin</td><td><span class="badge b-cc">CC-PRODUCTION</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+
+              <tr class="lvl-1" data-ty="EXPENSE"><td>600000</td><td>BEBAN OPERASIONAL (EXPENSES)</td><td>EXPENSE</td><td><span class="badge b-debit">DEBIT</span></td><td><span class="badge b-header">Header</span></td><td>-</td><td style="text-align:center">-</td></tr>
+              <tr class="lvl-3" data-ty="EXPENSE"><td>612000</td><td>Beban QC &amp; Lab Warna (Delta E)</td><td>EXPENSE</td><td><span class="badge b-debit">DEBIT</span></td><td>Uji spectrophotometer</td><td><span class="badge b-cc">CC-QC-LAB</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="EXPENSE"><td>613000</td><td>Beban Amortisasi Pelat CTP &amp; Artwork</td><td>EXPENSE</td><td><span class="badge b-debit">DEBIT</span></td><td>Prepress &amp; output CTP</td><td><span class="badge b-cc">CC-PREPRESS</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+              <tr class="lvl-3" data-ty="EXPENSE"><td>615000</td><td>Beban Kerugian Kertas Rusak (Waste)</td><td>EXPENSE</td><td><span class="badge b-debit">DEBIT</span></td><td>Spoilage &gt; standar</td><td><span class="badge b-cc">CC-PROD-PRINT</span></td><td style="text-align:center"><a class="link">Edit</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function flt(){
+  const q=document.getElementById('q').value.toLowerCase();
+  const ty=document.getElementById('ty').value;
+  document.querySelectorAll('#t tbody tr').forEach(r=>{
+    const c=r.cells[0].textContent.toLowerCase(), n=r.cells[1].textContent.toLowerCase();
+    const okS=c.includes(q)||n.includes(q), okT=(ty==='')||(r.dataset.ty===ty);
+    r.style.display=(okS&&okT)?'':'none';
+  });
+}
+function tog(exp){document.querySelectorAll('.lvl-3').forEach(r=>r.style.display=exp?'':'none');}
+</script>
+</body>
+</html>

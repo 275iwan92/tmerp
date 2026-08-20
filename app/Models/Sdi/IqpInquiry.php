@@ -211,6 +211,11 @@ class IqpInquiry extends Model
         return $this->hasOne(IqpCosting::class, 'inquiry_id', 'id_inquiry');
     }
 
-    // quotation_id -> quo_quotation, co_id -> co_order: modul belum digarap (Tier 3A
-    // catatan "FK PENDING"). Tambahkan relasi setelah model quo_/co_ dibuat.
+    public function quotation(): HasOne
+    {
+        return $this->hasOne(QuoQuotation::class, 'inquiry_id', 'id_inquiry');
+    }
+
+    // co_id -> co_order: modul belum digarap (Tier 3A catatan "FK PENDING").
+    // Tambahkan relasi setelah model co_ dibuat.
 }

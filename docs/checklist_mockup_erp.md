@@ -1,6 +1,7 @@
 # MASTER CHECKLIST MOCKUP — ERP PT Telasih Makmur
-**Peta kerja UI: Form Entry · Grid/List · Print-out** — scope 10 minggu (lihat GLOBAL_START_HERE.md).
-Status: ✅ selesai · 🟡 sebagian/perlu revisi · ⬜ belum
+**Peta kerja UI: Form Entry · Grid/List · Print-out.**
+Status: ✅ **live di app** (ada route Livewire + teruji) · 🟡 mockup HTML sudah jadi tapi **belum** diimplementasi Livewire · ⬜ belum ada mockup sama sekali.
+*(Diperbarui 2026-08-20 — cross-check langsung ke `routes/web.php` + `resources/views/pages/`, bukan asumsi. Versi sebelumnya sudah usang: sempat menandai Security/HRM ⬜ padahal sudah live, dan Nota/Quotation ✅ padahal cuma mockup HTML-nya yang selesai, belum ada Livewire-nya.)*
 
 Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokumen · **[D]** Dashboard/report
 
@@ -8,25 +9,29 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 
 ## MODUL 1 — SALES
 ### 1.1 Inquiry
-- ✅ [G] Inquiry Hub (list + filter) — *inquiry_hub.html*
-- ✅ [F] Inquiry New/Entry — *inquiry_new.html*
-- 🟡 [F] Inquiry Edit — REVISE/RECALC (perlu varian dari New)
-- ✅ [P] Nota Inquiry — *nota_inquiry_mockup.html*
-- ✅ [P] Nota Inquiry B&W hemat tinta — *nota_inquiry_mockup_bw.html*
-- ⬜ [F] Prove Warna — log versi v1/v2/v3
-- ⬜ [F] Imposition — sub-engine (DRAFT→VERIFIED)
-- ⬜ [D] Product Costing Engine — *product_costing.html* (🟡 ada, perlu cek final)
+- ✅ [G] Inquiry Hub (list + filter) — *inquiry_hub.html* → `inquiry.hub`
+- ✅ [F] Inquiry New/Entry — *inquiry_new.html* → `inquiry.form`
+- ✅ [F] Inquiry Edit RECALC — *inquiry_recalc_v2.html* → `inquiry.recalc`
+- ✅ [F] Inquiry Edit REVISE — *inquiry_revise_v2.html* → `inquiry.revise`
+- ✅ [D] Imposition Engine — *inquiry_imposition.html* → `inquiry.imposition` (selesai 2026-08-20; tabel baru `iqp_layout` + `m_plano_size`, auto-fill ke Costing saat confirm)
+- ✅ [D] Costing Hub — *inquiry_costing_hub.html* → `inquiry.costing`
+- ✅ [P] Nota Inquiry (warna + hemat tinta) — *nota_inquiry_mockup.html* + *_bw.html* → `inquiry.nota` (selesai 2026-08-20; satu Livewire, toggle `?bw=` bukan dua file terpisah; harga tersembunyi otomatis kalau `costing.published_flag` masih 0, sesuai Sisi A/B CLAUDE.md §4)
+- 🟡 [P] Nota Inquiry NEW/RECALC/REVISE — *inquiry_nota_new/recalc/revise.html* — varian per tipe dokumen, belum digarap (beda dari nota generik yang sudah live)
+- ⬜ [F] Prove Warna — *inquiry_proof.html* — log versi v1/v2/v3, belum digarap
+- 🟡 [D] Costing Manual Cross-Check — *inquiry_costing_manual.html* — beda dari Costing Hub yang sudah live, belum digarap
+- 🟡 [D] Product Costing Engine (HPP) — *product_costing.html* — belum digarap (lihat GAP #2 CLAUDE.md §5: rate versioned coating/film/sheet)
 
 ### 1.2 Quotation
-- ✅ [P] Quotation resmi — *quotation_mockup.html*
-- ⬜ [F] Quotation Entry/Edit
-- ⬜ [G] Quotation List
-- ⬜ [P] Quotation B&W hemat tinta
+- ✅ [P] Quotation resmi (print) — *quotation_mockup.html* → `inquiry.quotation` (selesai 2026-08-20; tabel baru `quo_quotation` — header tipis, nomor QUO+YY+NNNNN auto-terbit HANYA kalau costing sudah `published_flag=1`; bank tujuan transfer dari `sys_constant` BANK_*, bukan angka karangan)
+- 🟡 [P] Nota Quotation — *inquiry_nota_quotation.html* — idem, belum digarap (varian print beda dari quotation resmi di atas)
+- ⬜ [F] Quotation Entry/Edit — *inquiry_quotation.html* — belum digarap (CRUD/revisi manual, beda dari header auto-generate di atas)
+- ⬜ [G] Quotation List — belum ada mockup
 
 ### 1.3 Sales Order (Customer Order)
-- ⬜ [F] Sales Order Entry
-- ⬜ [G] Sales Order List
-- ⬜ [P] Sales Order Confirmation (cetak)
+- 🟡 [F] CO Entry — *co_entry_mockup.html* — mockup selesai, belum ada Livewire
+- 🟡 [F] Delivery Plan — *co_delivery_plan_mockup.html* — idem
+- 🟡 [P] Nota CO (print) — *nota_co_mockup.html* — idem
+- ⬜ [G] Sales Order List — belum ada mockup
 
 ---
 
@@ -47,7 +52,8 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 
 ## MODUL 3 — PRODUCTION
 ### 3.1 MPS/MRP & Planning
-- 🟡 [D] Production Capacity Engine (HTML+CSS sudah dibuat — cek lokasi file)
+- 🟡 [D] Forecast Engine — *forecast_engine.html* — mockup ada, belum digarap
+- 🟡 [D] Flow Engine (workflow/state-machine) — *mockup_flow_engine.html* — mockup ada, belum digarap
 - ⬜ [F] MPS Entry
 - ⬜ [F] MRP Run / Requirement Explosion → feed Procurement
 - ⬜ [F] Production Order / Lot Entry
@@ -65,13 +71,13 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ## MODUL 4 — PROCUREMENT
 *(dipicu MRP)*
 ### 4.1 Purchase Requisition
-- ⬜ [F] PR Entry
-- ⬜ [G] PR List + approval status
-- ⬜ [P] PR Print
+- 🟡 [F] PR Entry — *mockup_purchase_requisition.html* — mockup ada, belum digarap
+- 🟡 [G] PR Approval Center — *mockup_pr_approval_center.html* — idem
+- ⬜ [P] PR Print — belum ada mockup
 ### 4.2 Purchase Order
-- ⬜ [F] PO Entry
-- ⬜ [G] PO List
-- ⬜ [P] Purchase Order (cetak ke supplier)
+- 🟡 [G] PO Approval Center — *mockup_po_approval_center.html* — mockup ada, belum digarap
+- ⬜ [F] PO Entry — belum ada mockup
+- ⬜ [P] Purchase Order (cetak ke supplier) — belum ada mockup
 ### 4.3 Receiving
 - ⬜ [F] Goods Receipt Entry (terhadap PO)
 - ⬜ [G] Receiving List
@@ -118,11 +124,15 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 
 ---
 
-## MODUL 7 — HUMAN RESOURCE ⚪ DITUNDA (di luar scope 10 minggu)
-> Tidak dikerjakan sampai spine order-to-cash selesai. Daftar dipertahankan sebagai referensi masa depan, bukan task aktif.
-- ⬜ [F] Applicant Entry / Recruitment Pipeline
-- ⬜ [G] Attendance Sheet / Dashboard
-- ⬜ [F] Payroll Run Entry, Slip Gaji, Payroll Summary
+## MODUL 7 — HUMAN RESOURCE
+> ⚠️ Sudah **tidak ditunda** — HRM digarap paralel di luar urutan asli dokumen ini (lihat memory `project_hrm_module_status`). Master Employee, Machine/Shift, dan Self-Service sudah live.
+- ✅ [F][G] Master Employee — *mockup_master_employee.html* → `hrm.employee`
+- ✅ [D] Shift Roster — *mockup_shift_roster_v2.html* → `hrm.shift-roster`
+- ✅ [F] Personal Data Self-Service — *mockup_personal_data_self_service.html* → `self-service.index`
+- ✅ [G] Master Mesin & Shift (Produksi) — *mockup_master_produksi.html* → `master.machine` + `master.shift`
+- ⬜ [F] Applicant Entry / Recruitment Pipeline — belum ada mockup
+- ⬜ [G] Attendance Sheet / Dashboard — belum ada mockup
+- ⬜ [F] Payroll Run Entry, Slip Gaji, Payroll Summary — belum ada mockup
 
 ---
 
@@ -134,25 +144,43 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ---
 
 ## MODUL 9 — SECURITY & NOTIFICATION
-- ⬜ [F] User & Role Management
-- ⬜ [G] User List + role matrix
-- ⬜ [G] Notification Center
-- ⬜ [G] Audit Trail Viewer
+- ✅ [F][G] User & Role Management — *security.html* → `security.index` (grup, permission per modul, user list jadi satu layar)
+- 🟡 [G] Notification Center — ada widget notifikasi di main-menu, belum ada layar tersendiri
+- ⬜ [G] Audit Trail Viewer — belum ada mockup
 
 ---
 
-## REKAP STATUS (scope 10 minggu aktif)
-| Modul | Selesai | Sebagian | Belum |
+## MODUL 10 — MASTER DATA
+> Tidak ada di dokumen asli ini (checklist lama ditulis sebelum modul Master Data dipisah dari Sales). Sudah live duluan dari beberapa modul lain di atas.
+- ✅ [F][G] Customer — *mockup_master_customer.html* → `master.customer` (v2: grid+form bersatu, lihat memory `project_customer_master_v2_status`)
+- ✅ [F][G] Supplier — *mockup_master_customer.html* (varian) → `master.supplier`
+- ✅ [F][G] UoM — *mockup_master_uom_v4.html* → `master.uom`
+
+---
+
+## MODUL 11 — FINANCE & ACCOUNTING
+> ⚠️ **Kontradiksi dengan Modul 6 di bawah** (yang bilang "GL/Journal/COA di luar scope 10 minggu") — pada praktiknya COA sudah dibangun & live. Perlu keputusan user: apakah catatan "di luar scope" di Modul 6 mau direvisi, atau COA yang sekarang live dianggap pengecualian scoped-in. Belum saya ubah sepihak.
+- ✅ [G] Chart of Account — *master_coa_mockup.html* → `finance.coa`
+- ✅ [F] DP Invoice — *mockup_down_payment.html* → `finance.dp-invoice` (Event 1/2/4 teruji, lihat memory `project_dp_invoice_status`)
+
+---
+
+## REKAP STATUS
+| Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
-| 1 Sales | 5 | 3 | 8 |
-| 2 Inventory | 0 | 0 | 8 |
-| 3 Production | 0 | 1 | 8 |
-| 4 Procurement | 0 | 0 | 9 |
-| 5 Dispatch | 0 | 0 | 10 |
+| 1 Sales (Inquiry/Quotation/CO) | 8 | 7 | 4 |
+| 2 Inventory | 0 | 0 | 7 |
+| 3 Production | 0 | 2 | 9 |
+| 4 Procurement | 0 | 3 | 6 |
+| 5 Dispatch | 0 | 0 | 9 |
 | 6 Invoicing/Billing (AR-lite) | 0 | 0 | 7 |
-| 7 HR | — | — | ⚪ ditunda, tak dihitung |
+| 7 HR | 4 | 0 | 3 |
 | 8 Lookup | 0 | 0 | 3 |
-| 9 Security | 0 | 0 | 4 |
+| 9 Security | 1 | 1 | 1 |
+| 10 Master Data | 3 | 0 | 0 |
+| 11 Finance & Accounting | 2 | 0 | 0 |
+
+**18 item live**, **13 item punya mockup HTML tapi belum diimplementasi Livewire**, **49 item belum punya mockup sama sekali** (Inventory/Production inti/Procurement inti/Dispatch/Invoicing masih kosong total).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

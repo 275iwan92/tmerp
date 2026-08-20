@@ -17,5 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(SecUserSeeder::class);
         $this->call(IqpTypeSeeder::class);
         $this->call(SysAppMenuSeeder::class);
+        $this->call(FinanceMasterSeeder::class);
+        $this->call(HrmMasterSeeder::class);
     }
 }

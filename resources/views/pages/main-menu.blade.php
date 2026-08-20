@@ -53,10 +53,18 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         return [
             'SALES_INQ' => route('inquiry.hub'),
             'MD_CUST' => route('master.customer'),
+            'MD_SUPP' => route('master.supplier'),
             'MD_UOM' => route('master.uom'),
+            'MD_MACHINE' => route('master.machine'),
+            'MD_SHIFT' => route('master.shift'),
+            'ACC_COA' => route('finance.coa'),
+            'FIN_DP' => route('finance.dp-invoice'),
+            'HRM_EMPLOYEE' => route('hrm.employee'),
+            'HRM_ROSTER' => route('hrm.shift-roster'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
+            'SET_MIGRATION' => route('security.index', ['tab' => 'migration']),
         ];
     }
 
@@ -441,6 +449,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                         <div class="um-cap">Akun</div>
                         <button type="button" class="um-item" @click="ddOpen = false; profileOpen = true"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
                         <button type="button" class="um-item" @click="ddOpen = false; passwordOpen = true"><i class="fa-solid fa-key"></i> Ubah password</button>
+                        @if (Auth::user()->employee_id)
+                            <a href="{{ route('self-service.index') }}" class="um-item"><i class="fa-solid fa-id-card"></i> Portal Karyawan</a>
+                        @endif
                         @if (Auth::user()->canSetup())
                             <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
                         @endif

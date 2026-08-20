@@ -82,7 +82,7 @@ ui_conventions:
   layout_mode: "FULL-PAGE (w-full+padding) untuk layar OPERASIONAL (grid/costing/inquiry); TERPUSAT (max-width) untuk FORM/AUTH/NOTA/dokumen"
   layout_pelajaran: "JANGAN pakai class `container` Tailwind (penyebab bug margin melebar di Edge). max-width/mx-auto BOLEH untuk mode terpusat — pilih sadar, bukan dilarang total"
   layouts_wajib: "layouts.guest (auth), layouts.shell (menu), layouts.app"
-  badge_system: "🔒 locked(abu) / ◆ selector-harga(kuning) / ⚙ engine(ungu) / = hasil(hijau)"
+  badge_system: "🔒 locked(abu) / ◆ selector-harga(kuning) / ⚙ engine(ungu) / = hasil(hijau) — INI badge di dalam FORM/field. Beda dengan warna MENU di shell, yang ikut module_status_system: abu=NOT_BUILT, kuning/oranye=READY_FOR_QC, hijau=LOCKED."
   mockup_arti: "'HTML/CSS mockup' = replikasi struktur layar EXISTING + dummy data (BUKAN desain baru)"
   sisi_visibilitas: "Sisi A (internal/Direksi, angka sensitif visible) vs Sisi B (eksternal/Sales, redacted sampai published)"
 
@@ -107,3 +107,68 @@ workflow:
   state_update: "update <MODUL>_STATE.yaml tiap ada keputusan baru"
   ownership: "Jo pegang setting/upload/commit; Claude hanya tulis file (tak bisa akses setting/memori project)"
   isolasi: "memori terisolasi per-project; lintas-project TIDAK terbaca (batas desain, tak bisa ditembus)"
+
+# ═══════════════════════════════════════════════════════════════════
+# SISTEM STATUS MODUL (WAJIB — 3 tingkat, tercermin di warna menu)
+# ═══════════════════════════════════════════════════════════════════
+module_status_system:
+  tujuan: "Satu sistem status dipakai bareng untuk (a) proteksi delete otomatis Claude Code, dan (b) warna menu di UI shell — supaya user tahu dari tampilan menu, mana yang siap di-QC, mana yang belum dikerjakan sama sekali."
+  penyimpanan: "DI DATABASE, kolom tambahan di tabel tm2sys.sys_app_menu (SUDAH ADA, dipakai layouts.shell — kolom existing: id, parent_id, code, label, trans_key, icon, menu_type[module/group/item], object_type[form/grid/report/dashboard/link], target, target_kind, sort_order, is_active, required_object, created_at). JANGAN bikin tabel baru untuk data menu — hanya ALTER tambah kolom status."
+
+  ddl_tambahan: |
+    -- Migration: tambah kolom status ke tm2sys.sys_app_menu (tabel SUDAH ADA, JANGAN diganti nama/struktur existing)
+    ALTER TABLE tm2sys.sys_app_menu
+      ADD COLUMN status_code ENUM('NOT_BUILT','READY_FOR_QC','LOCKED')
+        NOT NULL DEFAULT 'NOT_BUILT'
+        COMMENT 'i_ = status kesiapan menu (hanya relevan utk menu_type=item), lihat module_status_system di GLOBAL_RULES.yaml',
+      ADD COLUMN status_note VARCHAR(255) NULL
+        COMMENT 'i_ = catatan singkat opsional, mis. alasan revisi/QC gagal',
+      ADD COLUMN status_updated_by VARCHAR(100) NULL,
+      ADD COLUMN status_updated_at DATETIME NULL,
+      ADD INDEX idx_sys_app_menu_status (status_code);
+
+    -- module/group (menu_type != 'item') TIDAK perlu status_code sendiri — statusnya derived
+    -- dari agregat status children-nya (lihat 'derivasi_status_parent' di bawah), bukan disimpan.
+
+    -- Tabel konfigurasi warna TERPISAH (bukan hardcode di kode/CSS) —
+    -- supaya warna bisa diubah tanpa deploy, sejalan prinsip data-driven.
+    CREATE TABLE tm2sys.sys_app_menu_color (
+      status_code    VARCHAR(20) PRIMARY KEY,   -- NOT_BUILT / READY_FOR_QC / LOCKED
+      color_hex      VARCHAR(7)  NOT NULL,      -- '#9ca3af' dst
+      label          VARCHAR(50) NOT NULL,      -- teks badge, mis. 'Belum Tersedia' / 'Siap di-QC' / 'OK'
+      is_clickable   TINYINT(1)  NOT NULL DEFAULT 1,
+      updated_by     VARCHAR(100) NULL,
+      updated_at     DATETIME    NULL
+    );
+
+    INSERT INTO tm2sys.sys_app_menu_color (status_code, color_hex, label, is_clickable) VALUES
+      ('NOT_BUILT',     '#9ca3af', 'Belum Tersedia', 0),
+      ('READY_FOR_QC',  '#f59e0b', 'Siap di-QC',      1),
+      ('LOCKED',        '#16a34a', 'OK',              1);
+
+  derivasi_status_parent: "Untuk baris menu_type='module'/'group' (bukan 'item'), warna menu di shell dihitung, BUKAN disimpan di status_code sendiri: kalau SEMUA item-anak LOCKED -> tampil hijau; kalau ADA yang NOT_BUILT -> tampil abu (worst-case); selain itu -> kuning/oranye. Gunanya supaya user langsung lihat dari menu induk (mis. 'Sales') progress keseluruhan tanpa expand satu-satu."
+
+  catatan_object_type: "required_object di sys_app_menu SUDAH menunjuk ke sec_module.module_code (hak akses) — TIDAK dipakai untuk status_code ini, dua hal beda (akses vs kesiapan-build). target (mis. 'form_costing.php') dipakai Claude Code sebagai acuan file Livewire/Blade komponen yang harus dicek/di-update statusnya."
+
+  tingkat:
+    NOT_BUILT:
+      arti: "Menu/tabel sudah ada di DB tapi form/grid belum dibuat sama sekali"
+      siapa_nandai: "default value kolom (belum pernah di-UPDATE oleh siapa pun)"
+      warna_menu: "baca dari tm2sys.sys_app_menu_color WHERE status_code='NOT_BUILT' (default abu, is_clickable=0)"
+      boleh_diubah_dihapus: "bebas, Claude Code kerjakan tanpa tanya"
+
+    READY_FOR_QC:
+      arti: "Claude Code SUDAH selesai membangun (mockup/komponen/modul) dan menandai sendiri sebagai 'siap direview user'"
+      siapa_nandai: "Claude Code UPDATE tm2sys.sys_app_menu.status_code='READY_FOR_QC' SENDIRI, otomatis, setiap kali selesai satu mockup/komponen (tanpa nunggu perintah user) — SEJALAN dengan QUEUE #4 (push tiap 1 mockup selesai) dan QUEUE #6 (lanjut otomatis). Isi status_updated_by='claude_code', status_updated_at=NOW()."
+      warna_menu: "baca dari tm2sys.sys_app_menu_color WHERE status_code='READY_FOR_QC' (default kuning/oranye, is_clickable=1)"
+      boleh_diubah_dihapus: "bebas oleh Claude Code (masih tahap develop, belum dikonfirmasi user) — termasuk rewrite total kalau ternyata salah"
+
+    LOCKED:
+      arti: "User (Telma/Jo) sudah QC dan konfirmasi OK — final"
+      siapa_nandai: "HANYA user yang mengubah status_code menjadi 'LOCKED' (lewat instruksi eksplisit ke Claude Code sebutkan menu mana, atau Navicat manual). Claude Code TIDAK BOLEH UPDATE status_code ke LOCKED atas inisiatif sendiri."
+      warna_menu: "baca dari tm2sys.sys_app_menu_color WHERE status_code='LOCKED' (default hijau, is_clickable=1)"
+      boleh_diubah_dihapus: "DILARANG tanpa konfirmasi eksplisit user — satu-satunya pengecualian dari prinsip kerja otonom 'jangan tanya-tanya' (QUEUE #7). File terkait menu berstatus LOCKED = jangan dihapus/rewrite tanpa tanya."
+
+  alur: "NOT_BUILT → (Claude Code bangun) → READY_FOR_QC → (user review & OK) → LOCKED. Kalau user QC dan MENOLAK (belum OK), status_code tetap READY_FOR_QC, Claude Code revisi lagi bebas sampai user promosikan ke LOCKED."
+
+  menu_shell_binding: "layouts.shell WAJIB JOIN tm2sys.sys_app_menu ke tm2sys.sys_app_menu_color (untuk item) + derivasi_status_parent (untuk module/group) saat render menu — warna & is_clickable ikut data DB secara real, BUKAN hardcode Tailwind class per status di Blade."

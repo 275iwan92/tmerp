@@ -3,16 +3,38 @@
 namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 
 class CustCustomer extends Model
 {
+    // Status pipeline (redesign UI 2026-08-19) — urutan tetap, dipakai untuk
+    // render step action-bar. Label Indonesia, kode di kolom tetap Inggris.
+    public const APPROVAL_STATUSES = [
+        'DRAFT' => 'Draft',
+        'CREDIT_CHECK' => 'Credit Check',
+        'APPROVED' => 'Approved / Active',
+        'BLOCKED' => 'Blocked',
+    ];
+
     protected $connection = 'tm2mst';
 
     protected $table = 'cust_customer';
 
     protected $primaryKey = 'id_customer';
+
+    public const CREDIT_RATINGS = [
+        'A' => 'A — Low Risk',
+        'B' => 'B — Medium Risk',
+        'C' => 'C — High Risk',
+    ];
+
+    public const KYC_STATUSES = [
+        'PENDING' => 'Menunggu Verifikasi',
+        'APPROVED' => 'Terverifikasi',
+        'REJECTED' => 'Ditolak',
+    ];
 
     protected $fillable = [
         'customer_code',
@@ -36,6 +58,39 @@ class CustCustomer extends Model
         'is_active',
         'created_by',
         'updated_by',
+        'legacy_vendor_code',
+        'nickname',
+        'alias_code',
+        'category',
+        'is_blacklisted',
+        'approval_status',
+        'phone_2',
+        'fax',
+        'tax_purchase_value',
+        'tax_service_value',
+        'note',
+        'trade_name',
+        'parent_group',
+        'industry_category',
+        'primary_product',
+        'secondary_product',
+        'default_substrate',
+        'color_standard',
+        'proofing_method',
+        'artwork_approval',
+        'retained_sample',
+        'barcode_verification',
+        'finishing_preference',
+        'die_owner',
+        'packing_instruction',
+        'quality_notes',
+        'sales_division_id',
+        'price_list_code',
+        'tax_profile',
+        'credit_check_enabled',
+        'credit_rating',
+        'tax_validated',
+        'kyc_status',
     ];
 
     protected $casts = [
@@ -43,12 +98,47 @@ class CustCustomer extends Model
         'current_balance' => 'decimal:2',
         'is_prospect' => 'boolean',
         'is_active' => 'boolean',
+        'is_blacklisted' => 'boolean',
+        'tax_purchase_value' => 'decimal:2',
+        'tax_service_value' => 'decimal:2',
+        'credit_check_enabled' => 'boolean',
+        'tax_validated' => 'boolean',
     ];
 
     // Same-DB (tm2mst): FK fisik product.customer_id -> cust_customer.id_customer.
     public function products(): HasMany
     {
         return $this->hasMany(ProdProduct::class, 'customer_id', 'id_customer');
+    }
+
+    public function banks(): HasMany
+    {
+        return $this->hasMany(CustCustomerBank::class, 'customer_id', 'id_customer');
+    }
+
+    public function branches(): HasMany
+    {
+        return $this->hasMany(CustCustomerBranch::class, 'customer_id', 'id_customer');
+    }
+
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(CustCustomerContact::class, 'customer_id', 'id_customer');
+    }
+
+    public function paymentTerm(): BelongsTo
+    {
+        return $this->belongsTo(FinPaymentTerm::class, 'payment_term', 'payment_term_code');
+    }
+
+    public function categoryRef(): BelongsTo
+    {
+        return $this->belongsTo(CustCategory::class, 'category', 'category_code');
+    }
+
+    public function salesDivision(): BelongsTo
+    {
+        return $this->belongsTo(OrgDivision::class, 'sales_division_id', 'division_id');
     }
 
     // default_area_id bisa merujuk geo_city/geo_district/geo_village tergantung

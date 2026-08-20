@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Customer Master - Grid & Form</title>
+    <style>
+        :root {
+            --primary-navy: #1e293b;
+            --brand-blue: #2563eb;
+            --brand-hover: #1d4ed8;
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --border-focus: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-family); }
+        body { background-color: var(--bg-main); color: var(--text-main); font-size: 13px; line-height: 1.5; padding: 16px; }
+
+        .erp-container {
+            max-width: 1380px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* Common Buttons */
+        .btn {
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-main);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover { background-color: #f1f5f9; }
+        .btn:active { transform: translateY(1px); }
+        .btn-primary { background-color: var(--brand-blue); color: #ffffff; border-color: var(--brand-blue); }
+        .btn-primary:hover { background-color: var(--brand-hover); }
+        .btn-danger { color: var(--danger); border-color: #fca5a5; }
+        .btn-danger:hover { background-color: #fef2f2; }
+        .btn-success { background-color: var(--success); color: #ffffff; border-color: var(--success); }
+        .btn-sm { padding: 3px 8px; font-size: 11px; }
+
+        /* Status Badges */
+        .badge-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 12px; white-space: nowrap; }
+        .badge-active-cust { background-color: #dcfce7; color: #15803d; }
+        .badge-blocked-cust { background-color: #fee2e2; color: #991b1b; }
+        .badge-draft-cust { background-color: #fef3c7; color: #b45309; }
+
+        /* ==========================================
+           1. GRID_M_CUSTOMER STYLES
+           ========================================== */
+        #grid_m_customer { display: block; }
+
+        .grid-header-bar {
+            padding: 16px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .grid-title-area h2 { font-size: 18px; font-weight: 700; color: #0f172a; }
+        .grid-title-area p { font-size: 12px; color: var(--text-muted); }
+
+        .grid-summary-strip {
+            display: flex;
+            background-color: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-item {
+            padding: 10px 20px;
+            border-right: 1px solid var(--border-color);
+            flex: 1;
+        }
+
+        .summary-item:last-child { border-right: none; }
+        .summary-num { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .summary-lbl { font-size: 11px; color: var(--text-muted); }
+
+        /* Search & Filter Toolbar */
+        .filter-toolbar {
+            padding: 12px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 7px 12px 7px 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .search-input:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .filter-select {
+            padding: 7px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            outline: none;
+            background-color: #ffffff;
+        }
+
+        /* Master Data Table */
+        .table-wrapper { overflow-x: auto; }
+        .master-grid-table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
+
+        .master-grid-table th {
+            background-color: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        .master-grid-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .master-grid-table tr.data-row {
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+
+        .master-grid-table tr.data-row:hover { background-color: #f1f5f9; }
+
+        .cust-cell-info { display: flex; align-items: center; gap: 10px; }
+        .mini-avatar {
+            width: 32px; height: 32px; border-radius: 6px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff; font-weight: 700; font-size: 12px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        .cust-name-title { font-weight: 700; color: #0f172a; }
+        .cust-sub-info { font-size: 11px; color: var(--text-muted); }
+
+        .pagination-bar {
+            padding: 10px 20px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ==========================================
+           2. FORM_M_CUSTOMER STYLES
+           ========================================== */
+        #form_m_customer { display: none; }
+
+        .action-bar {
+            background-color: #f8fafc;
+            padding: 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .action-buttons { display: flex; gap: 8px; }
+
+        .status-pipeline {
+            display: flex;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .status-step {
+            padding: 4px 12px;
+            background: #ffffff;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 11px;
+            border-right: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .status-step:last-child { border-right: none; }
+        .status-step.active { background-color: #dbeafe; color: #1e40af; font-weight: 700; }
+        .status-step.blocked { background-color: #fee2e2; color: #991b1b; font-weight: 700; }
+
+        .customer-header-card { background-color: #ffffff; border-bottom: 1px solid var(--border-color); }
+        .header-main-content { padding: 16px 20px; display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+        .header-identity-side { display: flex; gap: 14px; align-items: flex-start; }
+
+        .avatar-box {
+            width: 48px; height: 48px; border-radius: 8px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff; font-size: 18px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25); text-transform: uppercase;
+        }
+
+        .identity-details { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+        .name-and-badges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+        .header-name-input {
+            font-size: 18px; font-weight: 700; color: #0f172a;
+            border: 1px solid transparent; border-radius: 4px; padding: 2px 6px; margin-left: -6px;
+            outline: none; width: 100%; max-width: 460px; transition: all 0.2s; background: transparent;
+        }
+
+        .header-name-input:hover { border-color: var(--border-color); background-color: #f8fafc; }
+        .header-name-input:focus { border-color: var(--border-focus); background-color: #ffffff; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+        .meta-inline { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .category-radio-inline { display: flex; gap: 12px; font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px; }
+        .category-radio-inline label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+        .financial-cards-grid { display: grid; grid-template-columns: repeat(2, 160px); gap: 8px; }
+        .mini-card { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 10px; }
+        .mini-card-title { font-size: 10px; color: var(--text-muted); font-weight: 500; }
+        .mini-card-value { font-size: 13px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .kpi-strip-bar { display: flex; background-color: #ffffff; border-top: 1px solid var(--border-color); overflow-x: auto; }
+        .kpi-item { flex: 1; min-width: 100px; padding: 8px 16px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; }
+        .kpi-item:last-child { border-right: none; }
+        .kpi-value { font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.2; }
+        .kpi-label { font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+
+        /* Form Body & Grid */
+        .form-body { padding: 20px 24px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .form-group { margin-bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { font-weight: 600; font-size: 11px; color: #334155; }
+        .form-control { width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px; background-color: #ffffff; outline: none; }
+        .form-control:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+        .form-control[readonly] { background-color: #f8fafc; color: var(--text-muted); cursor: not-allowed; }
+
+        .info-banner { background-color: #f0fdf4; border-left: 4px solid var(--success); padding: 8px 12px; font-size: 11px; color: #166534; margin-bottom: 14px; border-radius: 2px; }
+
+        .tabs-header { display: flex; border-bottom: 2px solid var(--border-color); gap: 4px; overflow-x: auto; background-color: #ffffff; padding: 0 20px; }
+        .tab-btn { padding: 10px 16px; border: none; background: none; font-weight: 600; font-size: 12px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+        .tab-btn.active { color: var(--brand-blue); border-bottom-color: var(--brand-blue); }
+
+        .tab-content { display: none; padding: 16px 20px; }
+        .tab-content.active { display: block; }
+        .section-header-title { font-size: 12px; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; padding-bottom: 4px; border-bottom: 1px dashed var(--border-color); }
+
+        .data-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+        .data-table th, .data-table td { border: 1px solid var(--border-color); padding: 6px 10px; text-align: left; }
+        .data-table th { background-color: #f8fafc; font-weight: 600; color: #334155; }
+
+        .timeline { position: relative; padding-left: 18px; margin-top: 8px; border-left: 2px solid var(--border-color); }
+        .timeline-item { position: relative; margin-bottom: 16px; padding-left: 12px; }
+        .timeline-item::before { content: ''; position: absolute; left: -19px; top: 3px; width: 8px; height: 8px; border-radius: 50%; background-color: var(--brand-blue); border: 2px solid #ffffff; }
+        .timeline-date { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+        .timeline-title { font-size: 12px; font-weight: 700; color: var(--text-main); margin: 2px 0; }
+        .timeline-desc { font-size: 11px; color: #475569; }
+
+        /* Modal Auth */
+        .modal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(15, 23, 42, 0.6); display: none; justify-content: center; align-items: center; z-index: 9999; backdrop-filter: blur(2px); }
+        .modal-card { background: #ffffff; width: 100%; max-width: 420px; border-radius: 8px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); border: 1px solid var(--border-color); overflow: hidden; }
+        .modal-header { background: var(--primary-navy); color: #ffffff; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 16px; }
+        .modal-footer { padding: 10px 18px; background: #f8fafc; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 8px; }
+
+        /* Print Layout */
+        #printTemplate { display: none; }
+        @media print {
+            body { padding: 0; margin: 0; background-color: #ffffff; color: #000000; font-family: Arial, Helvetica, sans-serif; }
+            .erp-container, .modal-overlay, .action-bar, #grid_m_customer { display: none !important; }
+            #printTemplate { display: block !important; width: 100%; padding: 10mm; box-sizing: border-box; }
+            .nota-header { display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; }
+            .company-info h2 { font-size: 16px; text-transform: uppercase; margin-bottom: 2px; }
+            .company-info p { font-size: 10px; color: #444; }
+            .doc-title { text-align: right; }
+            .doc-title h1 { font-size: 18px; margin-bottom: 4px; color: #1e293b; }
+            .doc-badge { display: inline-block; padding: 3px 8px; font-size: 10px; font-weight: bold; border-radius: 3px; border: 1px solid #000; }
+            .badge-active { background-color: #e6fffa; color: #047857; border-color: #047857; }
+            .badge-blocked { background-color: #ffe4e6; color: #be123c; border-color: #be123c; }
+            .nota-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+            .nota-box { border: 1px solid #000; border-radius: 4px; padding: 8px; }
+            .nota-box-title { font-size: 11px; font-weight: bold; background-color: #f1f5f9; padding: 4px 6px; margin: -8px -8px 8px -8px; border-bottom: 1px solid #000; text-transform: uppercase; }
+            .nota-table-info { width: 100%; border-collapse: collapse; font-size: 10px; }
+            .nota-table-info td { padding: 3px 4px; vertical-align: top; }
+            .nota-table-info td.lbl { width: 40%; font-weight: bold; color: #333; }
+            .nota-table-data { width: 100%; border-collapse: collapse; font-size: 10px; margin-top: 6px; }
+            .nota-table-data th, .nota-table-data td { border: 1px solid #000; padding: 5px 6px; text-align: left; }
+            .nota-signatures { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; page-break-inside: avoid; }
+            .sig-box { border: 1px dashed #666; padding: 8px; height: 90px; display: flex; flex-direction: column; justify-content: space-between; }
+            .sig-title { font-size: 10px; font-weight: bold; color: #333; }
+            .sig-name { font-size: 10px; font-weight: bold; border-top: 1px solid #000; padding-top: 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="erp-container">
+
+    <!-- ==========================================
+         VIEW 1: GRID_M_CUSTOMER (DATA DIRECTORY)
+         ========================================== -->
+    <div id="grid_m_customer">
+        <div class="grid-header-bar">
+            <div class="grid-title-area">
+                <h2>Customer Master Directory</h2>
+                <p>Kelola seluruh database pelanggan, limit kredit, dan spesifikasi cetak offset & packaging</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" type="button" onclick="openFormNew()">
+                    <span>➕ Add New Customer</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid-summary-strip">
+            <div class="summary-item">
+                <div class="summary-num">148</div>
+                <div class="summary-lbl">Total Customers</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-num" style="color: var(--success);">135</div>
+                <div class="summary-lbl">Active Accounts</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-num" style="color: var(--danger);">8</div>
+                <div class="summary-lbl">Credit Blocked</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-num" style="color: var(--warning);">5</div>
+                <div class="summary-lbl">Draft / Onboarding</div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-toolbar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="grid_search_input" class="search-input" placeholder="Search customer name, BP ID, NPWP, or KAM..." onkeyup="filterTable()">
+            </div>
+            <select id="filter_category" class="filter-select" onchange="filterTable()">
+                <option value="ALL">All Categories</option>
+                <option value="Organization">Organization</option>
+                <option value="Person">Person</option>
+            </select>
+            <select id="filter_status" class="filter-select" onchange="filterTable()">
+                <option value="ALL">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Blocked">Blocked</option>
+                <option value="Draft">Draft</option>
+            </select>
+            <button class="btn" onclick="resetFilters()">Reset Filter</button>
+        </div>
+
+        <!-- Master Grid Table -->
+        <div class="table-wrapper">
+            <table class="master-grid-table" id="custMasterTable">
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"><input type="checkbox"></th>
+                        <th>Business Partner ID</th>
+                        <th>Customer Name / Group</th>
+                        <th>Category</th>
+                        <th>Industry</th>
+                        <th>Credit Limit</th>
+                        <th>Key Account Manager</th>
+                        <th>Status</th>
+                        <th style="text-align: right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Row 1 -->
+                    <tr class="data-row" ondblclick="editCustomerRow('PT Nutri Food Healthcare Indonesia Tbk', 'BP-CUST-2026-9041', '01.987.654.3-012.000', 'NutriFood Group Tbk', 'FMCG - Food & Beverage Packaging', 'Andi Wijaya (Senior Packaging Consultant)', 'Rp 1.500.000.000', 'Active')">
+                        <td><input type="checkbox"></td>
+                        <td><b>BP-CUST-2026-9041</b></td>
+                        <td>
+                            <div class="cust-cell-info">
+                                <div class="mini-avatar">NF</div>
+                                <div>
+                                    <div class="cust-name-title">PT Nutri Food Healthcare Indonesia Tbk</div>
+                                    <div class="cust-sub-info">CUS-000184 • NutriFood Group Tbk</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Organization</td>
+                        <td>FMCG - Packaging</td>
+                        <td><b>Rp 1.500.000.000</b></td>
+                        <td>Andi Wijaya</td>
+                        <td><span class="badge-tag badge-active-cust">Active</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm btn-primary" onclick="editCustomerRow('PT Nutri Food Healthcare Indonesia Tbk', 'BP-CUST-2026-9041', '01.987.654.3-012.000', 'NutriFood Group Tbk', 'FMCG - Food & Beverage Packaging', 'Andi Wijaya (Senior Packaging Consultant)', 'Rp 1.500.000.000', 'Active')">Edit</button>
+                        </td>
+                    </tr>
+
+                    <!-- Row 2 -->
+                    <tr class="data-row" ondblclick="editCustomerRow('PT Sinar Maju Packaging', 'BP-CUST-2026-1022', '02.345.678.9-012.000', 'Sinar Maju Group', 'Paperboard Folding Carton', 'Rina Wulandari', 'Rp 500.000.000', 'Active')">
+                        <td><input type="checkbox"></td>
+                        <td><b>BP-CUST-2026-1022</b></td>
+                        <td>
+                            <div class="cust-cell-info">
+                                <div class="mini-avatar" style="background: linear-gradient(135deg, #10b981, #059669);">SM</div>
+                                <div>
+                                    <div class="cust-name-title">PT Sinar Maju Packaging</div>
+                                    <div class="cust-sub-info">CUS-000185 • Sinar Maju Group</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Organization</td>
+                        <td>Folding Carton</td>
+                        <td><b>Rp 500.000.000</b></td>
+                        <td>Rina Wulandari</td>
+                        <td><span class="badge-tag badge-active-cust">Active</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm btn-primary" onclick="editCustomerRow('PT Sinar Maju Packaging', 'BP-CUST-2026-1022', '02.345.678.9-012.000', 'Sinar Maju Group', 'Paperboard Folding Carton', 'Rina Wulandari', 'Rp 500.000.000', 'Active')">Edit</button>
+                        </td>
+                    </tr>
+
+                    <!-- Row 3 -->
+                    <tr class="data-row" ondblclick="editCustomerRow('CV Kalbe Farma Trading', 'BP-CUST-2026-4011', '03.111.222.4-099.000', 'Kalbe Group', 'Pharma & Medical Box', 'Budi Santoso', 'Rp 750.000.000', 'Blocked')">
+                        <td><input type="checkbox"></td>
+                        <td><b>BP-CUST-2026-4011</b></td>
+                        <td>
+                            <div class="cust-cell-info">
+                                <div class="mini-avatar" style="background: linear-gradient(135deg, #ef4444, #dc2626);">KF</div>
+                                <div>
+                                    <div class="cust-name-title">CV Kalbe Farma Trading</div>
+                                    <div class="cust-sub-info">CUS-000186 • Kalbe Group</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Organization</td>
+                        <td>Pharma Box</td>
+                        <td><b>Rp 750.000.000</b></td>
+                        <td>Budi Santoso</td>
+                        <td><span class="badge-tag badge-blocked-cust">Blocked</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm btn-primary" onclick="editCustomerRow('CV Kalbe Farma Trading', 'BP-CUST-2026-4011', '03.111.222.4-099.000', 'Kalbe Group', 'Pharma & Medical Box', 'Budi Santoso', 'Rp 750.000.000', 'Blocked')">Edit</button>
+                        </td>
+                    </tr>
+
+                    <!-- Row 4 -->
+                    <tr class="data-row" ondblclick="editCustomerRow('Indah Luxury Cosmetics', 'BP-CUST-2026-8802', '05.666.777.1-011.000', 'Indah Group', 'Cosmetics & Foil Box', 'Rina Wulandari', 'Rp 250.000.000', 'Active')">
+                        <td><input type="checkbox"></td>
+                        <td><b>BP-CUST-2026-8802</b></td>
+                        <td>
+                            <div class="cust-cell-info">
+                                <div class="mini-avatar" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9);">IL</div>
+                                <div>
+                                    <div class="cust-name-title">Indah Luxury Cosmetics</div>
+                                    <div class="cust-sub-info">CUS-000187 • Indah Group</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>Organization</td>
+                        <td>Cosmetics Box</td>
+                        <td><b>Rp 250.000.000</b></td>
+                        <td>Rina Wulandari</td>
+                        <td><span class="badge-tag badge-active-cust">Active</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn btn-sm btn-primary" onclick="editCustomerRow('Indah Luxury Cosmetics', 'BP-CUST-2026-8802', '05.666.777.1-011.000', 'Indah Group', 'Cosmetics & Foil Box', 'Rina Wulandari', 'Rp 250.000.000', 'Active')">Edit</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-bar">
+            <div>Showing <b>1 - 4</b> of <b>148</b> customers</div>
+            <div style="display: flex; gap: 4px;">
+                <button class="btn btn-sm" disabled>Previous</button>
+                <button class="btn btn-sm btn-primary">1</button>
+                <button class="btn btn-sm">2</button>
+                <button class="btn btn-sm">3</button>
+                <button class="btn btn-sm">Next</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         VIEW 2: FORM_M_CUSTOMER (DETAIL FORM)
+         ========================================== -->
+    <div id="form_m_customer">
+        <!-- Top Action Bar -->
+        <div class="action-bar">
+            <div class="action-buttons">
+                <button class="btn" type="button" onclick="showGridDirectory()">← Back to Directory</button>
+                <button class="btn btn-primary" type="button" onclick="saveCustomerMaster()">Save Customer Master</button>
+                <button class="btn" type="button" onclick="showGridDirectory()">Cancel</button>
+                <button class="btn" type="button" onclick="printSpecSheet()">🖨️ Print Spec Sheet (PDF Nota)</button>
+                <button class="btn btn-danger" id="btnHoldToggle" type="button" onclick="handleHoldOrUnblock()">Hold Orders (Kredit)</button>
+            </div>
+            <div class="status-pipeline">
+                <div class="status-step" id="step-draft">Draft</div>
+                <div class="status-step" id="step-credit">Credit Check</div>
+                <div class="status-step active" id="step-approved">Approved / Active</div>
+                <div class="status-step" id="step-blocked">Blocked</div>
+            </div>
+        </div>
+
+        <!-- UNIFIED COMPACT HEADER CARD -->
+        <div class="customer-header-card">
+            <div class="header-main-content">
+                <div class="header-identity-side">
+                    <div class="avatar-box" id="avatar_initials">NF</div>
+                    <div class="identity-details">
+                        <div class="name-and-badges">
+                            <input type="text" id="customer_name" class="header-name-input" value="PT Nutri Food Healthcare Indonesia Tbk" placeholder="Type customer name..." oninput="updateAvatarInitials()">
+                            <span class="badge-tag badge-active-cust" id="header_badge_status">Active customer</span>
+                            <span class="badge-tag badge-buyer">Packaging buyer</span>
+                            <span class="badge-tag badge-credit-mon">Credit monitored</span>
+                        </div>
+
+                        <div class="meta-inline">
+                            <span><b>CUS-000184</b></span>
+                            <span>•</span>
+                            <span>Tax ID: <b id="lbl_tax_id">01.987.654.3-012.000</b></span>
+                            <span>•</span>
+                            <span>Group: <b id="lbl_group_name">NutriFood Group Tbk</b></span>
+                            <span>•</span>
+                            <span>Owner: <b id="lbl_kam_name">Andi Wijaya - Key Account</b></span>
+                        </div>
+
+                        <div class="category-radio-inline">
+                            <label><input type="radio" name="bp_category" value="org" checked> Organization (Company / Brand Owner)</label>
+                            <label><input type="radio" name="bp_category" value="person"> Person (Individual / Broker)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="financial-cards-grid">
+                    <div class="mini-card">
+                        <div class="mini-card-title">Credit limit</div>
+                        <div class="mini-card-value" id="card_credit_limit">Rp 1.500.000.000</div>
+                    </div>
+                    <div class="mini-card">
+                        <div class="mini-card-title">Remaining credit</div>
+                        <div class="mini-card-value" style="color: var(--brand-blue);">Rp 650.000.000</div>
+                    </div>
+                    <div class="mini-card">
+                        <div class="mini-card-title">Payment terms</div>
+                        <div class="mini-card-value">Net 60, invoice date</div>
+                    </div>
+                    <div class="mini-card">
+                        <div class="mini-card-title">Last order</div>
+                        <div class="mini-card-value">Folding carton, 12 Aug 2026</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="kpi-strip-bar">
+                <div class="kpi-item"><div class="kpi-value">42</div><div class="kpi-label">Quotations</div></div>
+                <div class="kpi-item"><div class="kpi-value">31</div><div class="kpi-label">Sales orders</div></div>
+                <div class="kpi-item"><div class="kpi-value">18</div><div class="kpi-label">Job tickets</div></div>
+                <div class="kpi-item"><div class="kpi-value">7</div><div class="kpi-label">Open invoices</div></div>
+                <div class="kpi-item"><div class="kpi-value">3</div><div class="kpi-label">Artwork pending</div></div>
+                <div class="kpi-item"><div class="kpi-value" style="color: var(--success);">96%</div><div class="kpi-label">On-time payment</div></div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Header -->
+        <div class="tabs-header">
+            <button type="button" class="tab-btn active" onclick="switchTab(event, 'tab-overview')">Overview</button>
+            <button type="button" class="tab-btn" onclick="switchTab(event, 'tab-printing-specs')">Printing Specs</button>
+            <button type="button" class="tab-btn" onclick="switchTab(event, 'tab-sales-finance')">Sales & Finance</button>
+            <button type="button" class="tab-btn" onclick="switchTab(event, 'tab-sites-contacts')">Sites & Contacts</button>
+            <button type="button" class="tab-btn" onclick="switchTab(event, 'tab-governance')">Governance</button>
+            <button type="button" class="tab-btn" onclick="switchTab(event, 'tab-history')">History & Audit Trail</button>
+        </div>
+
+        <form id="customerDetailForm">
+            <!-- TAB 1: OVERVIEW -->
+            <div id="tab-overview" class="tab-content active">
+                <div class="section-header-title">General customer identity & profile</div>
+                <div class="grid-4" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label for="sap_bp_id">Business Partner ID (SAP/Oracle)</label>
+                        <input type="text" id="sap_bp_id" class="form-control" value="BP-CUST-2026-9041" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="tax_num">NPWP / SPPKP (16 Digit)</label>
+                        <input type="text" id="tax_num" class="form-control" value="01.987.654.3-012.000">
+                    </div>
+                    <div class="form-group">
+                        <label for="trade_name">Trade name / Brand name</label>
+                        <input type="text" id="trade_name" class="form-control" value="NutriFood Healthcare">
+                    </div>
+                    <div class="form-group">
+                        <label for="parent_group">Parent / customer group</label>
+                        <input type="text" id="parent_group" class="form-control" value="NutriFood Group Tbk">
+                    </div>
+                </div>
+
+                <div class="grid-4" style="margin-bottom: 12px;">
+                    <div class="form-group">
+                        <label for="industry_type">Industry category</label>
+                        <input type="text" id="industry_type" class="form-control" value="FMCG - Food & Beverage Packaging">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_since">Customer since</label>
+                        <input type="text" id="cust_since" class="form-control" value="15 Mar 2022">
+                    </div>
+                    <div class="form-group">
+                        <label for="brand_manager">Account manager</label>
+                        <input type="text" id="brand_manager" class="form-control" value="Andi Wijaya (Senior Packaging Consultant)">
+                    </div>
+                    <div class="form-group">
+                        <label for="cust_status">Current status</label>
+                        <input type="text" id="cust_status" class="form-control" value="Active" readonly style="color: var(--success); font-weight: 700;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="internal_notes">Internal notes & key operational preferences</label>
+                    <textarea id="internal_notes" class="form-control" rows="3">Customer prioritizes color consistency, delivery reliability, and quick quotation turnaround. Requires retained samples for every approved packaging job.</textarea>
+                </div>
+            </div>
+
+            <!-- TAB 2: PRINTING SPECS -->
+            <div id="tab-printing-specs" class="tab-content">
+                <div class="info-banner">
+                    Printing-specific fields live in the customer master because they affect quotation assumptions, artwork proofing, production routing, delivery labels, and quality acceptance.
+                </div>
+
+                <div class="grid-4">
+                    <div class="form-group"><label for="primary_prod">Primary product family</label><input type="text" id="primary_prod" class="form-control" value="Folding carton"></div>
+                    <div class="form-group"><label for="secondary_prod">Secondary product</label><input type="text" id="secondary_prod" class="form-control" value="Paper sleeve, insert card"></div>
+                    <div class="form-group"><label for="default_substrate">Default substrate</label><input type="text" id="default_substrate" class="form-control" value="Ivory board 350 gsm"></div>
+                    <div class="form-group"><label for="color_std">Color standard</label><input type="text" id="color_std" class="form-control" value="Pantone + Delta E <= 1.5"></div>
+                </div>
+
+                <div class="grid-4">
+                    <div class="form-group"><label for="proofing_method">Proofing method</label><input type="text" id="proofing_method" class="form-control" value="Wet proof on-machine approval"></div>
+                    <div class="form-group"><label for="artwork_approval">Artwork approval</label><input type="text" id="artwork_approval" class="form-control" value="Customer portal + email sign-off"></div>
+                    <div class="form-group"><label for="retained_sample">Retained sample</label><input type="text" id="retained_sample" class="form-control" value="3 pcs / SKU / revision"></div>
+                    <div class="form-group"><label for="barcode_verif">Barcode verification</label><input type="text" id="barcode_verif" class="form-control" value="Grade A (ANSI Standard) required"></div>
+                </div>
+
+                <div class="grid-3">
+                    <div class="form-group"><label for="finishing_pref">Finishing preference</label><input type="text" id="finishing_pref" class="form-control" value="Water-based Varnish Food Grade / UV Selective Satin"></div>
+                    <div class="form-group"><label for="die_owner">Die-cut library owner</label><input type="text" id="die_owner" class="form-control" value="Customer-owned die"></div>
+                    <div class="form-group"><label for="packing_instr">Packing instruction</label><input type="text" id="packing_instr" class="form-control" value="Pallet Kayu ISPM-15 + Stretch Film Plastic"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="quality_notes">Quality notes & reject criteria</label>
+                    <textarea id="quality_notes" class="form-control" rows="3">Reject criteria: visible scumming, registration shift above 0.2 mm, carton crack on folding line, unreadable barcode, color outside approved proof.</textarea>
+                </div>
+            </div>
+
+            <!-- TAB 3: SALES & FINANCE -->
+            <div id="tab-sales-finance" class="tab-content">
+                <div class="grid-2">
+                    <div>
+                        <div class="section-header-title">Sales area and pricing</div>
+                        <div class="grid-3">
+                            <div class="form-group"><label for="sales_org">Sales organization</label><input type="text" id="sales_org" class="form-control" value="SO100 - Cikarang Packaging"></div>
+                            <div class="form-group"><label for="dist_chan">Distribution channel</label><input type="text" id="dist_chan" class="form-control" value="Direct B2B Corporate"></div>
+                            <div class="form-group"><label for="division">Division</label><input type="text" id="division" class="form-control" value="Offset Printing"></div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group"><label for="price_list">Price list matrix</label><input type="text" id="price_list" class="form-control" value="PL-VOL-2026 Tiering"></div>
+                            <div class="form-group"><label for="tax_profile">Default tax profile</label><input type="text" id="tax_profile" class="form-control" value="PPN 11% - domestic taxable"></div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="section-header-title">Credit and AR profile</div>
+                        <div class="grid-2">
+                            <div class="form-group"><label for="credit_check">Credit checking</label><input type="text" id="credit_check" class="form-control" value="Enabled"></div>
+                            <div class="form-group"><label for="credit_rating">Credit rating</label><input type="text" id="credit_rating" class="form-control" value="Low Risk (Class A)"></div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group"><label for="credit_limit">Credit limit</label><input type="text" id="credit_limit" class="form-control" value="Rp 1.500.000.000"></div>
+                            <div class="form-group"><label for="pay_terms">Payment terms</label><input type="text" id="pay_terms" class="form-control" value="NET 60 Hari Setelah BAST"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SITES & CONTACTS -->
+            <div id="tab-sites-contacts" class="tab-content">
+                <div class="grid-2">
+                    <div>
+                        <div class="section-header-title">Customer sites</div>
+                        <table class="data-table">
+                            <thead><tr><th>Site</th><th>Use</th><th>Address</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Head Office</td><td>Billing</td><td>Gedung HQ, Rasuna Said, Jakarta Selatan</td><td><span class="badge-tag badge-active-cust">Active</span></td></tr>
+                                <tr><td>Liquid Filling Plant</td><td>Ship-to</td><td>Kawasan Industri Jababeka 2, Cikarang</td><td><span class="badge-tag badge-active-cust">Active</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="section-header-title">Contacts and partner functions</div>
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>Role</th><th>Contact Email</th></tr></thead>
+                            <tbody>
+                                <tr><td>Andi Prasetyo</td><td>Buyer</td><td>packaging.procurement@nutrifood.co.id</td></tr>
+                                <tr><td>Maya Kartika</td><td>Artwork PIC</td><td>artwork.qc@nutrifood.co.id</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: GOVERNANCE -->
+            <div id="tab-governance" class="tab-content">
+                <div class="section-header-title">Governance & Audit</div>
+                <div class="grid-4" style="margin-bottom: 12px;">
+                    <div class="form-group"><label>Tax validation</label><input type="text" class="form-control" value="NPWP verified" readonly></div>
+                    <div class="form-group"><label>KYC status</label><input type="text" class="form-control" value="Approved" readonly></div>
+                </div>
+            </div>
+
+            <!-- TAB 6: HISTORY & TIMELINE -->
+            <div id="tab-history" class="tab-content">
+                <div class="section-header-title">Customer journey & lifecycle timeline</div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-date">12 Aug 2026 • 14:20 WIB</div>
+                        <div class="timeline-title">Drop-Ship Location Updated</div>
+                        <div class="timeline-desc">Added new plant location <b>Powder Plant Pasuruan</b>.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-date">15 Mar 2022 • 08:30 WIB</div>
+                        <div class="timeline-title">Customer Master Created</div>
+                        <div class="timeline-desc">Initial Business Partner registration completed.</div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<!-- PRINT TEMPLATE (NOTA) -->
+<div id="printTemplate">
+    <div class="nota-header">
+        <div class="company-info">
+            <h2>PT OFFSET PACKAGING UTAMA</h2>
+            <p>Kawasan Industri Cikarang Block B2-4, Bekasi | Telp: (021) 898-9000</p>
+        </div>
+        <div class="doc-title">
+            <h1>MASTER DATA CUSTOMER</h1>
+            <div class="doc-badge badge-active" id="p_status_badge">STATUS: APPROVED / ACTIVE</div>
+        </div>
+    </div>
+
+    <div class="nota-grid">
+        <div class="nota-box">
+            <div class="nota-box-title">1. General Customer Identity</div>
+            <table class="nota-table-info">
+                <tr><td class="lbl">Nama Pelanggan</td><td>: <b id="p_cust_name">-</b></td></tr>
+                <tr><td class="lbl">Business Partner ID</td><td>: <span id="p_bp_id">-</span></td></tr>
+                <tr><td class="lbl">NPWP / SPPKP</td><td>: <span id="p_tax_num">-</span></td></tr>
+            </table>
+        </div>
+        <div class="nota-box">
+            <div class="nota-box-title">2. Financial & Credit Terms</div>
+            <table class="nota-table-info">
+                <tr><td class="lbl">Credit Limit</td><td>: <b id="p_credit_limit">-</b></td></tr>
+                <tr><td class="lbl">Payment Terms</td><td>: <span id="p_pay_terms">-</span></td></tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL AUTHORIZE UNBLOCK -->
+<div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3>🔒 Otorisasi Unblock Customer</h3>
+            <button type="button" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;" onclick="closeAuthModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="admin_user">Username Admin / Finance Manager *</label>
+                <input type="text" id="admin_user" class="form-control" value="admin_finance">
+            </div>
+            <div class="form-group">
+                <label for="auth_code">Authorization Code / Manager PIN *</label>
+                <input type="password" id="auth_code" class="form-control" placeholder="Gunakan PIN: 8888">
+            </div>
+            <div class="form-group">
+                <label for="unblock_reason">Alasan Unblock (Audit Trail) *</label>
+                <textarea id="unblock_reason" class="form-control" rows="3" placeholder="Alasan unblock..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn" onclick="closeAuthModal()">Batal</button>
+            <button type="button" class="btn btn-success" onclick="processUnblock()">Verifikasi & Release Block</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isBlocked = false;
+
+    // View Navigation Switches
+    function showGridDirectory() {
+        document.getElementById('grid_m_customer').style.display = 'block';
+        document.getElementById('form_m_customer').style.display = 'none';
+    }
+
+    function openFormNew() {
+        document.getElementById('customer_name').value = 'New Customer Entity';
+        document.getElementById('sap_bp_id').value = 'BP-CUST-2026-NEW';
+        document.getElementById('tax_num').value = '';
+        document.getElementById('parent_group').value = '';
+        document.getElementById('credit_limit').value = 'Rp 0';
+        document.getElementById('card_credit_limit').innerText = 'Rp 0';
+        updateAvatarInitials();
+
+        document.getElementById('grid_m_customer').style.display = 'none';
+        document.getElementById('form_m_customer').style.display = 'block';
+    }
+
+    function editCustomerRow(name, bpId, taxNum, parentGroup, industry, kam, creditLimit, status) {
+        document.getElementById('customer_name').value = name;
+        document.getElementById('sap_bp_id').value = bpId;
+        document.getElementById('tax_num').value = taxNum;
+        document.getElementById('lbl_tax_id').innerText = taxNum;
+        document.getElementById('parent_group').value = parentGroup;
+        document.getElementById('lbl_group_name').innerText = parentGroup;
+        document.getElementById('industry_type').value = industry;
+        document.getElementById('brand_manager').value = kam;
+        document.getElementById('lbl_kam_name').innerText = kam;
+        document.getElementById('credit_limit').value = creditLimit;
+        document.getElementById('card_credit_limit').innerText = creditLimit;
+
+        // Status setup
+        const statusInput = document.getElementById('cust_status');
+        const badge = document.getElementById('header_badge_status');
+        statusInput.value = status;
+
+        if(status === 'Blocked') {
+            statusInput.style.color = 'var(--danger)';
+            badge.className = 'badge-tag badge-blocked-cust';
+            badge.innerText = 'Blocked customer';
+            applyBlockStatus();
+        } else {
+            statusInput.style.color = 'var(--success)';
+            badge.className = 'badge-tag badge-active-cust';
+            badge.innerText = 'Active customer';
+            resetActiveStatus();
+        }
+
+        updateAvatarInitials();
+
+        // Switch to Form view
+        document.getElementById('grid_m_customer').style.display = 'none';
+        document.getElementById('form_m_customer').style.display = 'block';
+    }
+
+    // Avatar Initials
+    function updateAvatarInitials() {
+        const nameVal = document.getElementById('customer_name').value.trim();
+        if (!nameVal) {
+            document.getElementById('avatar_initials').innerText = '??';
+            return;
+        }
+        const cleanName = nameVal.replace(/^(PT|CV|UD|TBK)\b/i, '').trim();
+        const words = cleanName.split(' ').filter(w => w.length > 0);
+
+        if (words.length >= 2) {
+            document.getElementById('avatar_initials').innerText = (words[0][0] + words[1][0]).toUpperCase();
+        } else if (words.length === 1) {
+            document.getElementById('avatar_initials').innerText = words[0].substring(0, 2).toUpperCase();
+        } else {
+            document.getElementById('avatar_initials').innerText = nameVal.substring(0, 2).toUpperCase();
+        }
+    }
+
+    // Filter Table Realtime
+    function filterTable() {
+        const searchVal = document.getElementById('grid_search_input').value.toLowerCase();
+        const catVal = document.getElementById('filter_category').value;
+        const statusVal = document.getElementById('filter_status').value;
+
+        const table = document.getElementById('custMasterTable');
+        const trs = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < trs.length; i++) {
+            const tr = trs[i];
+            const textContent = tr.innerText.toLowerCase();
+            const categoryText = tr.cells[3].innerText;
+            const statusText = tr.cells[7].innerText;
+
+            let matchesSearch = textContent.indexOf(searchVal) > -1;
+            let matchesCategory = (catVal === 'ALL') || (categoryText.indexOf(catVal) > -1);
+            let matchesStatus = (statusVal === 'ALL') || (statusText.indexOf(statusVal) > -1);
+
+            if (matchesSearch && matchesCategory && matchesStatus) {
+                tr.style.display = '';
+            } else {
+                tr.style.display = 'none';
+            }
+        }
+    }
+
+    function resetFilters() {
+        document.getElementById('grid_search_input').value = '';
+        document.getElementById('filter_category').value = 'ALL';
+        document.getElementById('filter_status').value = 'ALL';
+        filterTable();
+    }
+
+    // Tabs Switcher
+    function switchTab(event, tabId) {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabBtns.forEach(btn => btn.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    // Unblock & Hold Modal Handler
+    function handleHoldOrUnblock() {
+        if (!isBlocked) {
+            if (confirm('Apakah Anda yakin ingin memblokir pelanggan ini?')) {
+                applyBlockStatus();
+            }
+        } else {
+            openAuthModal();
+        }
+    }
+
+    function applyBlockStatus() {
+        isBlocked = true;
+        const steps = document.querySelectorAll('.status-step');
+        steps.forEach(s => s.classList.remove('active', 'blocked'));
+        document.getElementById('step-blocked').classList.add('blocked');
+
+        const btn = document.getElementById('btnHoldToggle');
+        btn.innerText = '🔓 Unblock Customer (Admin Auth)';
+        btn.className = 'btn btn-success';
+    }
+
+    function resetActiveStatus() {
+        isBlocked = false;
+        const steps = document.querySelectorAll('.status-step');
+        steps.forEach(s => s.classList.remove('active', 'blocked'));
+        document.getElementById('step-approved').classList.add('active');
+
+        const btn = document.getElementById('btnHoldToggle');
+        btn.innerText = 'Hold Orders (Kredit)';
+        btn.className = 'btn btn-danger';
+    }
+
+    function openAuthModal() {
+        document.getElementById('authModal').style.display = 'flex';
+        document.getElementById('auth_code').focus();
+    }
+
+    function closeAuthModal() {
+        document.getElementById('authModal').style.display = 'none';
+        document.getElementById('auth_code').value = '';
+        document.getElementById('unblock_reason').value = '';
+    }
+
+    function processUnblock() {
+        const authCode = document.getElementById('auth_code').value.trim();
+        if (authCode === '8888' || authCode === 'AUTH2026') {
+            resetActiveStatus();
+            document.getElementById('cust_status').value = 'Active';
+            document.getElementById('cust_status').style.color = 'var(--success)';
+            document.getElementById('header_badge_status').className = 'badge-tag badge-active-cust';
+            document.getElementById('header_badge_status').innerText = 'Active customer';
+            closeAuthModal();
+            alert('SUCCESS: Customer berhasil di-unblock!');
+        } else {
+            alert('GAGAL: Authorization PIN salah!');
+        }
+    }
+
+    function saveCustomerMaster() {
+        alert('Data Customer Master berhasil disimpan!');
+        showGridDirectory();
+    }
+
+    function printSpecSheet() {
+        document.getElementById('p_cust_name').innerText = document.getElementById('customer_name').value;
+        document.getElementById('p_bp_id').innerText = document.getElementById('sap_bp_id').value;
+        document.getElementById('p_tax_num').innerText = document.getElementById('tax_num').value;
+        document.getElementById('p_credit_limit').innerText = document.getElementById('credit_limit').value;
+        document.getElementById('p_pay_terms').innerText = document.getElementById('pay_terms').value;
+        window.print();
+    }
+</script>
+
+</body>
+</html>

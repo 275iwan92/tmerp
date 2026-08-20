@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TMERP Flow Engine — PT. Telasih Makmur (Revised)</title>
+  <style>
+    /* CSS Variables & Global Reset */
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      
+      /* Badge Palette (Tier 4 §5) */
+      --amber-bg: #fef3c7;
+      --amber-text: #92400e;
+      --green-bg: #dcfce7;
+      --green-text: #166534;
+      --red-bg: #ffe4e6;
+      --red-text: #9f1239;
+      --blue-bg: #e0f2fe;
+      --blue-text: #075985;
+      --gray-bg: #f1f5f9;
+      --gray-text: #475569;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* Layout Structure */
+    .sidebar { width: 260px; background: #1e293b; color: #f8fafc; display: flex; flex-direction: column; flex-shrink: 0; }
+    .sidebar-header { padding: 20px; border-bottom: 1px solid #334155; font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
+    .sidebar-menu { list-style: none; padding: 15px 0; flex: 1; }
+    .sidebar-menu li a { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; color: #94a3b8; text-decoration: none; font-size: 0.88rem; transition: all 0.2s; cursor: pointer; }
+    .sidebar-menu li.active a, .sidebar-menu li a:hover { background: #334155; color: #ffffff; border-left: 4px solid var(--primary); }
+    .menu-badge { background: #ef4444; color: white; border-radius: 12px; padding: 2px 8px; font-size: 0.75rem; font-weight: bold; }
+
+    .main-wrapper { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar { height: 60px; background: white; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 25px; }
+    .user-profile { display: flex; align-items: center; gap: 12px; font-size: 0.88rem; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem; }
+
+    .content-area { flex: 1; padding: 25px; overflow-y: auto; }
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* UI Cards & Components */
+    .card { background: white; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+    .card-title { font-size: 1.05rem; font-weight: 600; color: var(--text-main); }
+
+    /* Badges (Tier 4 §5) */
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600; }
+    .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-green { background: var(--green-bg); color: var(--green-text); }
+    .badge-red { background: var(--red-bg); color: var(--red-text); }
+    .badge-blue { background: var(--blue-bg); color: var(--blue-text); }
+    .badge-gray { background: var(--gray-bg); color: var(--gray-text); }
+
+    /* Buttons & Inputs */
+    .btn { padding: 8px 16px; border-radius: 6px; font-size: 0.88rem; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-danger { background: #dc2626; color: white; }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-outline { background: white; border-color: var(--border-color); color: var(--text-main); }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    .form-group { margin-bottom: 15px; }
+    .form-label { display: block; font-size: 0.83rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
+    .form-control { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.88rem; outline: none; }
+    .form-control:focus { border-color: var(--primary); }
+    .form-control:disabled { background-color: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+    textarea.form-control { resize: vertical; min-height: 70px; }
+
+    /* Grid System */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; }
+    .grid-split { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+
+    /* Flow History Log Timeline (Tier 4 §3 & §6 Component) */
+    .flow-history-container { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; }
+    .flow-timeline { position: relative; padding-left: 20px; margin-left: 10px; border-left: 2px solid var(--border-color); }
+    .timeline-item { position: relative; margin-bottom: 18px; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .timeline-dot { position: absolute; left: -27px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: white; border: 2px solid var(--border-color); }
+    .timeline-dot.done { background: #22c55e; border-color: #22c55e; }
+    .timeline-dot.pending { background: #ffffff; border-color: #94a3b8; }
+    .timeline-dot.rejected { background: #ef4444; border-color: #ef4444; }
+    .timeline-content { font-size: 0.85rem; }
+    .timeline-action { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .timeline-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+    .timeline-notes { background: #ffffff; border-left: 3px solid #cbd5e1; padding: 6px 10px; margin-top: 6px; font-size: 0.82rem; font-style: italic; border-radius: 0 4px 4px 0; color: #334155; }
+
+    /* Config Step Card (Tier 4 §1) */
+    .step-card { border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; background: #ffffff; margin-bottom: 12px; }
+    .step-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold; margin-bottom: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+    .step-validation-success { color: #16a34a; font-size: 0.8rem; text-align: center; font-weight: 600; margin: 8px 0; display: flex; align-items: center; justify-content: center; gap: 4px; }
+
+    /* Tables */
+    .table-custom { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .table-custom th, .table-custom td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .table-custom th { background: #f8fafc; font-weight: 600; color: var(--text-muted); }
+
+    /* Inbox Document Card */
+    .inbox-item { border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; background: white; }
+    .inbox-item:hover, .inbox-item.active { border-color: var(--primary); background: #f0f7ff; }
+    .inbox-title { font-weight: 600; font-size: 0.9rem; display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .inbox-sub { font-size: 0.8rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span>⚙️ Flow Engine</span>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="active" onclick="switchTab('inbox-view', this)">
+        <a>
+          <span>📥 Approval Saya</span>
+          <span class="menu-badge">3</span>
+        </a>
+      </li>
+      <li onclick="switchTab('config-view', this)">
+        <a>
+          <span>🛠️ Setup Flow Config</span>
+        </a>
+      </li>
+      <li onclick="switchTab('plt-view', this)">
+        <a>
+          <span>👥 Kelola PLT (Acting)</span>
+        </a>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- MAIN CONTENT WRAPPER -->
+  <div class="main-wrapper">
+    
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div style="font-weight: 600; font-size: 0.95rem; color: var(--text-muted);">
+        ERP Cetak Offset & Packaging — PT. Telasih Makmur
+      </div>
+      <div class="user-profile">
+        <div class="avatar">BS</div>
+        <div>
+          <div style="font-weight: 600;">Budi Santoso</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Kepala PPIC &bull; <span class="badge badge-blue">🔁 PLT Direksi</span></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT AREA -->
+    <main class="content-area">
+
+      <!-- VIEW 1: APPROVAL INBOX & DETAIL (Tier 4 §2 & §3) -->
+      <section id="inbox-view" class="view-section active">
+        <div class="grid-split">
+          
+          <!-- INBOX LIST -->
+          <div>
+            <div class="card" style="padding: 15px;">
+              <div class="card-header" style="margin-bottom: 10px;">
+                <span class="card-title">Antrian Approval</span>
+                <span class="badge badge-amber">3 Dokumen</span>
+              </div>
+
+              <!-- Item 1 (Selected & Fixed threshold >= 50JT) -->
+              <div class="inbox-item active">
+                <div class="inbox-title">
+                  <span>[PR] PR2600041</span>
+                  <span style="color: var(--primary);">Rp 62.500.000</span>
+                </div>
+                <div class="inbox-sub" style="margin-bottom: 6px;">Bahan Baku Offset — Kertas Duplex 350gsm</div>
+                <div class="inbox-sub">Diajukan oleh: Budi Santoso &bull; 18 Agu 2026</div>
+              </div>
+
+              <!-- Item 2 (PLT Case) -->
+              <div class="inbox-item">
+                <div class="inbox-title">
+                  <span>[PO] PO2600055</span>
+                  <span style="color: var(--primary);">Rp 65.000.000</span>
+                </div>
+                <div class="inbox-sub" style="margin-bottom: 6px;">PT Kertas Nusantara Utama</div>
+                <div style="margin-top: 4px;">
+                  <span class="badge badge-blue">🔁 PLT Direksi (s.d. 25 Agu)</span>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="inbox-item">
+                <div class="inbox-title">
+                  <span>[AD] AD2600012</span>
+                  <span style="color: var(--text-muted);">—</span>
+                </div>
+                <div class="inbox-sub" style="margin-bottom: 6px;">Stock Adjustment Gudang B</div>
+                <div class="inbox-sub">Diajukan oleh: Sinta (Gudang) &bull; 16 Agu 2026</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DOCUMENT DETAIL & FLOW ACTION PANEL -->
+          <div>
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <span class="card-title">PR2600041 — Purchase Requisition</span>
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Divisi: Offset Printing &bull; SBU Utama</div>
+                </div>
+                <span class="badge badge-amber">Menunggu Approval (Step 2)</span>
+              </div>
+
+              <!-- Document Summary Embed (Fixed Nilai Rp 62.500.000) -->
+              <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 20px; font-size: 0.88rem;">
+                <div class="grid-3" style="margin-bottom: 8px;">
+                  <div><span style="color: var(--text-muted);">Nilai Pengajuan:</span><br><strong style="color: var(--primary);">Rp 62.500.000</strong></div>
+                  <div><span style="color: var(--text-muted);">Pemohon:</span><br>Budi Santoso (PPIC)</div>
+                  <div><span style="color: var(--text-muted);">Tanggal:</span><br>18 Agustus 2026</div>
+                </div>
+                <div><span style="color: var(--text-muted);">Keterangan:</span> Bahan baku cetak kemasan box karton lot CO2600011</div>
+              </div>
+
+              <!-- EMBEDDED COMPONENT: <FlowActionBar> (Tier 4 §6) -->
+              <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; background: #fff; margin-bottom: 20px;">
+                <div style="font-size: 0.8rem; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 10px;">
+                  🧩 Component: &lt;FlowActionBar doc="PR" docId="41" /&gt;
+                </div>
+                
+                <div style="font-size: 0.88rem; margin-bottom: 12px;">
+                  <strong>Step Aktif:</strong> Step 2 dari 2 — <em>Menyetujui (Direksi)</em>
+                  <div style="font-size: 0.78rem; color: #166534; background: #dcfce7; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-left: 8px;">
+                    ✓ Nilai Rp 62.500.000 &ge; Rp 50.000.000 (Step 2 Direksi Aktif)
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Catatan Approval / Alasan Penolakan <span style="color: red;">*</span></label>
+                  <textarea class="form-control" placeholder="Tuliskan catatan persetujuan atau alasan spesifik jika menolak dokumen ini..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                  <button class="btn btn-danger">✕ Tolak Dokumen</button>
+                  <button class="btn btn-primary">✓ Setujui Dokumen</button>
+                </div>
+              </div>
+
+              <!-- EMBEDDED COMPONENT: <FlowHistoryLog> (Tier 4 §3 & §6) -->
+              <div style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; background: #fff;">
+                <div style="font-size: 0.8rem; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-bottom: 10px;">
+                  🧩 Component: &lt;FlowHistoryLog doc="PR" docId="41" /&gt;
+                </div>
+
+                <div class="flow-history-container">
+                  <div style="font-weight: 600; font-size: 0.88rem; margin-bottom: 12px;">Riwayat Transisi Status</div>
+                  
+                  <div class="flow-timeline">
+                    <!-- Step 1 (Completed) -->
+                    <div class="timeline-item">
+                      <div class="timeline-dot done"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-action">
+                          <span>SUBMITTED</span>
+                          <span class="badge badge-gray">action = SUBMITTED</span>
+                        </div>
+                        <div class="timeline-meta">Oleh: Budi Santoso (PPIC) &bull; 18 Agu 2026, 09:12 WIB</div>
+                      </div>
+                    </div>
+
+                    <!-- Step 2 (Completed via PLT) -->
+                    <div class="timeline-item">
+                      <div class="timeline-dot done"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-action">
+                          <span>APPROVED — Mengetahui</span>
+                          <span class="badge badge-blue">🔁 PLT</span>
+                        </div>
+                        <div class="timeline-meta">Oleh: Rudi Hartono (PLT Kepala PPIC) &bull; 18 Agu 2026, 14:30 WIB</div>
+                        <div class="timeline-notes">"OK, jumlah sesuai spesifikasi pesanan CO2600011."</div>
+                      </div>
+                    </div>
+
+                    <!-- Step 3 (Pending Current) -->
+                    <div class="timeline-item">
+                      <div class="timeline-dot pending"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-action" style="color: var(--text-muted);">
+                          <span>PENDING — Menyetujui</span>
+                        </div>
+                        <div class="timeline-meta">Aktor: Direksi (Min. Nilai &ge; Rp 50.000.000)</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- VIEW 2: SETUP FLOW CONFIG ADMIN (Tier 4 §1 — Revised & Dynamic) -->
+      <section id="config-view" class="view-section">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Setup Flow Config (Admin Engine)</span>
+            <button class="btn btn-primary">+ Tambah Step</button>
+          </div>
+
+          <!-- Module & Scope Selector Header -->
+          <div class="grid-2" style="margin-bottom: 20px;">
+            <div class="form-group">
+              <label class="form-label">Modul Dokumen (module_code)</label>
+              <select class="form-control">
+                <option value="PR" selected>PR — Purchase Requisition</option>
+                <option value="PO">PO — Purchase Order</option>
+                <option value="PV">PV — Purchase Receive / Goods Receipt</option>
+                <option value="CO">CO — Customer Order</option>
+                <option value="DO">DO — Delivery Order</option>
+                <option value="DN">DN — Delivery Note</option>
+                <option value="OP">OP — Stock Opname</option>
+                <option value="AD">AD — Stock Adjustment</option>
+                <option value="HR" disabled>HR — Human Resource (Ditunda / Deferred)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Divisi / SBU Scope (CV Telasih Makmur Group)</label>
+              <select class="form-control">
+                <option value="">(Semua Divisi / CV Induk)</option>
+                <option value="1" selected>Offset Printing</option>
+                <option value="2">Digital Printing</option>
+                <option value="3">Indostry</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- STEP LIST -->
+          <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; margin-bottom: 20px;">
+            <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 12px;">Rangkaian Step Flow PR</div>
+
+            <!-- STEP 1 CARD -->
+            <div class="step-card" id="step-card-1">
+              <div class="step-header">
+                <span>STEP 1 &bull; Konfigurasi Transisi Status</span>
+                <span class="badge badge-gray">step_no = 1</span>
+              </div>
+              
+              <div class="grid-4">
+                <div class="form-group">
+                  <label class="form-label">Tipe Step (step_type)</label>
+                  <select class="form-control step-type-select" onchange="handleStepTypeChange(this, 1)">
+                    <option value="APPROVAL" selected>APPROVAL (Butuh Persetujuan)</option>
+                    <option value="AUTO">AUTO (Otomatis Sistem)</option>
+                    <option value="NOTIFY_ONLY">NOTIFY_ONLY (Informasi)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status From &rarr; Status To</label>
+                  <input type="text" class="form-control" value="SUBMITTED → PENDING_L2" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Min Amount (Rp)</label>
+                  <input type="number" class="form-control" value="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Max Amount (Rp)</label>
+                  <input type="number" class="form-control" value="" placeholder="NULL (Unlimited)">
+                </div>
+              </div>
+
+              <div class="grid-3">
+                <div class="form-group position-group">
+                  <label class="form-label">Jabatan Penanggung Jawab (org_position)</label>
+                  <select class="form-control position-select">
+                    <option value="104" selected>Kepala PPIC (org_position: 104)</option>
+                    <option value="102">Manager Purchasing</option>
+                    <option value="101">Direksi</option>
+                  </select>
+                </div>
+                <div class="form-group reject-group">
+                  <label class="form-label">Status Jika Ditolak (status_to_reject)</label>
+                  <input type="text" class="form-control reject-input" value="DRAFT">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Label Cetak Dokumen</label>
+                  <input type="text" class="form-control" value="Mengetahui">
+                </div>
+              </div>
+            </div>
+
+            <!-- AUTO-VALIDATION INDICATOR -->
+            <div class="step-validation-success">
+              ✓ Validasi Rantai Status: status_to Step 1 (PENDING_L2) == status_from Step 2 (PENDING_L2)
+            </div>
+
+            <!-- STEP 2 CARD -->
+            <div class="step-card" id="step-card-2">
+              <div class="step-header">
+                <span>STEP 2 &bull; Konfigurasi Transisi Status</span>
+                <span class="badge badge-gray">step_no = 2</span>
+              </div>
+              
+              <div class="grid-4">
+                <div class="form-group">
+                  <label class="form-label">Tipe Step (step_type)</label>
+                  <select class="form-control step-type-select" onchange="handleStepTypeChange(this, 2)">
+                    <option value="APPROVAL" selected>APPROVAL (Butuh Persetujuan)</option>
+                    <option value="AUTO">AUTO (Otomatis Sistem)</option>
+                    <option value="NOTIFY_ONLY">NOTIFY_ONLY (Informasi)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Status From &rarr; Status To</label>
+                  <input type="text" class="form-control" value="PENDING_L2 → APPROVED" readonly>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Min Amount (Rp)</label>
+                  <input type="number" class="form-control" value="50000000" placeholder="0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Max Amount (Rp)</label>
+                  <input type="number" class="form-control" value="" placeholder="NULL (Unlimited)">
+                </div>
+              </div>
+
+              <div class="grid-3">
+                <div class="form-group position-group">
+                  <label class="form-label">Jabatan Penanggung Jawab (org_position)</label>
+                  <select class="form-control position-select">
+                    <option value="101" selected>Direksi (org_position: 101)</option>
+                    <option value="104">Kepala PPIC</option>
+                  </select>
+                </div>
+                <div class="form-group reject-group">
+                  <label class="form-label">Status Jika Ditolak (status_to_reject)</label>
+                  <input type="text" class="form-control reject-input" value="DRAFT">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Label Cetak Dokumen</label>
+                  <input type="text" class="form-control" value="Menyetujui">
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style="display: flex; justify-content: space-between;">
+            <button class="btn btn-danger">Nonaktifkan Config Ini</button>
+            <button class="btn btn-primary">💾 Simpan Konfigurasi Flow</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: MANAJEMEN PLT / PEJABAT SEMENTARA (Tier 4 §4) -->
+      <section id="plt-view" class="view-section">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="card-title">Penunjukan Pejabat Sementara (PLT / Acting Position)</span>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Penetapan PLT berlaku otomatis untuk seluruh modul yang menggunakan posisi jabatan terkait.</div>
+            </div>
+            <button class="btn btn-primary">+ Penunjukan PLT Baru</button>
+          </div>
+
+          <table class="table-custom">
+            <thead>
+              <tr>
+                <th>Jabatan Utama</th>
+                <th>Pejabat Sementara (PLT)</th>
+                <th>Rentang Tanggal</th>
+                <th>Alasan / Catatan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Kepala PPIC (Offset Printing)</strong></td>
+                <td>Rudi Hartono</td>
+                <td>20 Agu 2026 – 25 Agu 2026</td>
+                <td>Sakit / Rawat Inap</td>
+                <td><span class="badge badge-green">Aktif</span></td>
+                <td><button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.78rem;">Batalkan Lebih Awal</button></td>
+              </tr>
+              <tr>
+                <td><strong>Direksi Utama</strong></td>
+                <td>Wiwik (Purchasing Manager)</td>
+                <td>17 Agu 2026 – 25 Agu 2026</td>
+                <td>Dinas Luar Negeri / Pameran Packaging</td>
+                <td><span class="badge badge-green">Aktif</span></td>
+                <td><button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.78rem;">Batalkan Lebih Awal</button></td>
+              </tr>
+              <tr style="opacity: 0.6;">
+                <td><strong>Manager Finance</strong></td>
+                <td>Sinta Pertiwi</td>
+                <td>01 Jul 2026 – 10 Jul 2026</td>
+                <td>Cuti Tahunan</td>
+                <td><span class="badge badge-gray">Selesai</span></td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- JS TAB TOGGLE & DYNAMIC STEP TYPE HANDLER -->
+  <script>
+    function switchTab(viewId, element) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.sidebar-menu li').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(viewId).classList.add('active');
+      element.classList.add('active');
+    }
+
+    // Dynamic Step Type Behavior Handler (Rule Tier 2 §5 & §6)
+    function handleStepTypeChange(selectElem, stepNo) {
+      const stepCard = document.getElementById(`step-card-${stepNo}`);
+      const posSelect = stepCard.querySelector('.position-select');
+      const rejectInput = stepCard.querySelector('.reject-input');
+      const stepType = selectElem.value;
+
+      if (stepType === 'AUTO') {
+        // Rule: step_type=AUTO wajib position_id = NULL
+        posSelect.disabled = true;
+        posSelect.innerHTML = `<option value="">(NULL — Transisi Otomatis Sistem)</option>`;
+        rejectInput.disabled = true;
+        rejectInput.value = '—';
+      } else if (stepType === 'NOTIFY_ONLY') {
+        // Rule: NOTIFY_ONLY butuh penerima notifikasi, tapi penolakan tidak berlaku
+        posSelect.disabled = false;
+        posSelect.innerHTML = `
+          <option value="104">Kepala PPIC</option>
+          <option value="101" selected>Direksi</option>
+        `;
+        rejectInput.disabled = true;
+        rejectInput.value = 'NULL (Tidak Bisa Ditolak)';
+      } else {
+        // Rule: APPROVAL wajib punya position_id & status_to_reject aktif
+        posSelect.disabled = false;
+        posSelect.innerHTML = `
+          <option value="104">Kepala PPIC (org_position: 104)</option>
+          <option value="102">Manager Purchasing</option>
+          <option value="101" ${stepNo === 2 ? 'selected' : ''}>Direksi (org_position: 101)</option>
+        `;
+        rejectInput.disabled = false;
+        rejectInput.value = 'DRAFT';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Self-Service Karyawan — TMERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #0f172a;
+    --primary-light: #1e293b;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --accent-soft: #eff6ff;
+    
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --border: #e2e8f0;
+    --border-strong: #cbd5e1;
+    
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #94a3b8;
+    
+    --amber-bg: #fef3c7; --amber-text: #92400e; --amber-border: #fde68a;
+    --blue-bg: #dbeafe;  --blue-text: #1e40af;  --blue-border: #bfdbfe;
+    --purple-bg: #f3e8ff;--purple-text: #6b21a8;--purple-border: #e9d5ff;
+    --red-bg: #fee2e2;   --red-text: #991b1b;   --red-border: #fca5a5;
+    --green-bg: #dcfce7; --green-text: #166534; --green-border: #86efac;
+    
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-page); color: var(--text-main); font-size: 13.5px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+
+  /* TOPBAR */
+  .topbar {
+    background: var(--primary);
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: var(--shadow-md);
+  }
+  .topbar .brand { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+  .topbar .brand-badge { background: rgba(255,255,255,0.15); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+  .topbar .whoami { font-size: 12.5px; display: flex; align-items: center; gap: 10px; color: #e2e8f0; }
+  .topbar .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; border: 2px solid rgba(255,255,255,0.2); }
+
+  /* MAIN CONTAINER LAYOUT */
+  .layout-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+
+  /* USER HERO PROFILE CARD */
+  .profile-hero {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .hero-user { display: flex; align-items: center; gap: 16px; }
+  .hero-avatar-wrapper { position: relative; }
+  .hero-avatar {
+    width: 68px; height: 68px; border-radius: 50%; background: #e2e8f0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: var(--primary);
+    border: 3px solid #fff; box-shadow: var(--shadow-md);
+    background-size: cover; background-position: center;
+  }
+  .status-indicator { width: 14px; height: 14px; background: #10b981; border: 2.5px solid #fff; border-radius: 50%; position: absolute; bottom: 2px; right: 2px; }
+  .hero-details h1 { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 2px; }
+  .hero-meta { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .hero-meta span { display: flex; align-items: center; gap: 4px; }
+  .hero-stats { display: flex; gap: 16px; border-left: 1px solid var(--border); padding-left: 20px; }
+  .stat-pill { text-align: center; }
+  .stat-pill .val { font-size: 16px; font-weight: 700; color: var(--primary); }
+  .stat-pill .lbl { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+
+  /* TABS NAVIGATION */
+  .nav-tabs-wrapper {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 6px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+    white-space: nowrap;
+    position: sticky;
+    top: 60px;
+    z-index: 30;
+  }
+  .tabs-flex { display: flex; gap: 4px; }
+  .tab-btn {
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-btn:hover { background: var(--bg-page); color: var(--text-main); }
+  .tab-btn.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: var(--shadow-sm); }
+
+  /* PAGES & GRID LAYOUT */
+  .page { display: none; }
+  .page.active { display: block; }
+  .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-full { grid-column: 1 / -1; }
+
+  @media (max-width: 868px) {
+    .grid-2col { grid-template-columns: 1fr; }
+    .hero-stats { border-left: none; padding-left: 0; border-top: 1px solid var(--border); pt: 12px; width: 100%; justify-content: space-around; }
+  }
+
+  /* CARD STYLING */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s ease;
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .card h2 { font-size: 14px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  .card h2 .hint { font-size: 11px; font-weight: 400; color: var(--text-muted); display: block; margin-top: 2px; }
+
+  /* FIELD ROW STYLING */
+  .field-row {
+    display: grid;
+    grid-template-columns: 140px 1fr auto;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 13px;
+    border-bottom: 1px solid #f8fafc;
+    align-items: center;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-row .lbl { color: var(--text-muted); font-size: 12px; font-weight: 500; }
+  .field-row .val { color: var(--text-main); font-weight: 500; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid var(--border-strong);
+    background: #fff;
+    color: var(--text-main);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .btn:hover { background: #f8fafc; border-color: var(--text-muted); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-block { width: 100%; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; border-radius: 5px; }
+  .btn-subtle-blue { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--blue-border); }
+  .btn-subtle-blue:hover { background: #dbeafe; }
+  .btn-outline-red { background: #fff; border-color: var(--red-border); color: var(--red-text); }
+  .btn-outline-red:hover { background: var(--red-bg); }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    line-height: 1.4;
+  }
+  .badge.pending { background: var(--amber-bg); color: var(--amber-text); border: 1px solid var(--amber-border); }
+  .badge.approved { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+  .badge.rejected { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
+  .badge.hr { background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); }
+  .badge.self { background: var(--blue-bg); color: var(--blue-text); border: 1px solid var(--blue-border); }
+  .badge.company { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+  .badge.pribadi { background: #f1f5f9; color: var(--text-muted); border: 1px solid var(--border); }
+  .badge.bonding { background: var(--purple-bg); color: var(--purple-text); border: 1px solid var(--purple-border); }
+  .badge.paid { background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-border); }
+  .badge.unpaid { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
+  .badge.meninggal { background: #f1f5f9; color: var(--text-muted); text-decoration: line-through; }
+
+  /* TABLES */
+  .table-responsive { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left; }
+  th, td { padding: 10px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; background: #f8fafc; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+
+  /* UPLOAD ROW & NOTE BOX */
+  .upload-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f8fafc; }
+  .upload-row:last-child { border-bottom: none; }
+  .upload-row .icon { width: 36px; height: 36px; border-radius: var(--radius-sm); background: #f1f5f9; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .upload-row .info { flex: 1; }
+  .upload-row .info .t { font-size: 13px; font-weight: 600; color: var(--text-main); }
+  .upload-row .info .s { font-size: 11.5px; color: var(--text-muted); }
+
+  .note-box {
+    font-size: 12px;
+    color: #334155;
+    background: #f0f9ff;
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .note-box.warn { background: #fffbeb; border-left-color: #f59e0b; color: #78350f; }
+  .note-box.danger { background: #fef2f2; border-left-color: #ef4444; color: #991b1b; }
+
+  /* FORMS */
+  input, select, textarea {
+    width: 100%;
+    padding: 8px 11px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-main);
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+  label.flabel { font-size: 12px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 5px; }
+  .fgroup { margin-bottom: 14px; }
+  .frow2 { display: flex; gap: 10px; }
+  .frow2 .fgroup { flex: 1; }
+
+  /* MODALS */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(3px);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-overlay .box {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    max-width: 440px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    animation: modalSlide 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes modalSlide { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-overlay h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; color: var(--primary); }
+  .modal-overlay .fieldname { font-size: 12px; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* DIGITAL BADGE CARD STYLING */
+  .badge-card {
+    width: 100%;
+    max-width: 330px;
+    height: 200px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #fff;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .badge-topbar {
+    height: 48px;
+    background: rgba(255,255,255,0.05);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .badge-topbar .company { font-size: 12px; font-weight: 700; letter-spacing: 0.5px; color: #38bdf8; }
+  .badge-body { display: flex; gap: 14px; padding: 16px; }
+  .badge-photo {
+    width: 70px; height: 90px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.2);
+    background-size: cover; background-position: center;
+  }
+  .badge-info .nm { font-size: 15px; font-weight: 700; color: #fff; }
+  .badge-info .rl { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
+  .badge-info .cd { font-size: 12px; color: #38bdf8; font-weight: 700; margin-top: 10px; font-family: monospace; letter-spacing: 1px; }
+
+  /* SCHEDULE ITEM */
+  .schedule-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f8fafc; font-size: 12.5px; }
+  .schedule-item:last-child { border-bottom: none; }
+  .schedule-item .dt { width: 70px; font-weight: 600; color: var(--primary); }
+  .schedule-item .shift-pill { padding: 3px 9px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+
+  /* LEAVE STATS */
+  .leave-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .leave-stat { background: #f8fafc; border-radius: var(--radius-md); padding: 12px; text-align: center; border: 1px solid var(--border); }
+  .leave-stat .num { font-size: 20px; font-weight: 700; color: var(--primary); }
+  .leave-stat .lbl { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; font-weight: 600; }
+
+  /* LEAVE CALENDAR CUSTOM */
+  .cal-wrap { margin-top: 10px; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; background: #fff; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: 700; color: var(--primary); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-dow { font-size: 10px; text-align: center; color: var(--text-muted); font-weight: 700; padding-bottom: 4px; }
+  .cal-cell { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11.5px; border-radius: 6px; cursor: default; user-select: none; }
+  .cal-cell.empty { visibility: hidden; }
+  .cal-cell.disabled { color: #cbd5e1; background: #f8fafc; text-decoration: line-through; }
+  .cal-cell.holiday { color: var(--red-text); background: var(--red-bg); text-decoration: line-through; font-weight: 500; }
+  .cal-cell.selectable { color: var(--text-main); background: #f1f5f9; cursor: pointer; font-weight: 600; }
+  .cal-cell.selectable:hover { background: var(--blue-bg); color: var(--accent); }
+  .cal-cell.selected { background: var(--accent) !important; color: #fff !important; }
+  .cal-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: 10.5px; color: var(--text-muted); }
+  .cal-legend span { display: flex; align-items: center; gap: 4px; }
+  .cal-dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    TMERP <span class="brand-badge">Self-Service Karyawan</span>
+  </div>
+  <div class="whoami">
+    <div class="avatar">BS</div>
+    <div><b>Budi Santoso</b> &middot; <span style="opacity:0.8">TM-00001</span></div>
+  </div>
+</div>
+
+<div class="layout-container">
+
+  <!-- PROFILE HERO SUMMARY CARD -->
+  <div class="profile-hero">
+    <div class="hero-user">
+      <div class="hero-avatar-wrapper">
+        <div class="hero-avatar">BS</div>
+        <div class="status-indicator" title="Status: Aktif Work"></div>
+      </div>
+      <div class="hero-details">
+        <h1>Budi Santoso <span class="badge approved" style="font-size:11px;vertical-align:middle;margin-left:6px">Karyawan Tetap</span></h1>
+        <div class="hero-meta">
+          <span>&#128188; Operator Cetak</span> &bull;
+          <span>&#127970; Offset Printing</span> &bull;
+          <span>&#128070; Shift 1 (Pagi)</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-pill">
+        <div class="val" id="heroSaldoCuti">7 Hari</div>
+        <div class="lbl">Sisa Cuti</div>
+      </div>
+      <div class="stat-pill">
+        <div class="val">100%</div>
+        <div class="lbl">Presensi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION TABS -->
+  <div class="nav-tabs-wrapper">
+    <div class="tabs-flex">
+      <button class="tab-btn active" data-tab="profil">&#128100; Data Saya</button>
+      <button class="tab-btn" data-tab="keluarga">&#128106; Keluarga &amp; Status</button>
+      <button class="tab-btn" data-tab="dokumen">&#128196; Dokumen &amp; Pendidikan</button>
+      <button class="tab-btn" data-tab="cuti">&#128197; Cuti/Sakit/Izin</button>
+      <button class="tab-btn" data-tab="izinkeluar">&#128682; Izin Keluar</button>
+      <button class="tab-btn" data-tab="tukarshift">&#128257; Tukar Shift</button>
+      <button class="tab-btn" data-tab="jadwal">&#128045; Jadwal Saya</button>
+      <button class="tab-btn" data-tab="badge">&#127380; Kartu Pengenal</button>
+    </div>
+  </div>
+
+  <!-- ============ TAB 1: DATA SAYA ============ -->
+  <div class="page active" id="page-profil">
+    <div class="note-box">
+      <b>SOP Pembaruan Data:</b> Informasi di bawah bersifat <i>read-only</i>. Jika terdapat kesalahan entri, silakan klik tombol <b>"Ajukan Koreksi"</b>. Perubahan data baru aktif setelah mendapat verifikasi dari Tim HR.
+    </div>
+
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>Profil Utama</h2>
+        </div>
+        <div class="field-row"><div class="lbl">Nama Lengkap</div><div class="val">Budi Santoso</div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('Nama Lengkap','Budi Santoso')">Ajukan Koreksi</button></div>
+        <div class="field-row"><div class="lbl">Tanggal Lahir</div><div class="val">12 Mei 1990 <span class="badge pending" style="margin-left:4px">HR Approval</span></div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('Tanggal Lahir','12 Mei 1990')">Ajukan Koreksi</button></div>
+        <div class="field-row"><div class="lbl">NIK KTP</div><div class="val">3573xxxxxxxxxxxx</div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('NIK KTP','3573xxxxxxxxxxxx')">Ajukan Koreksi</button></div>
+        <div class="field-row"><div class="lbl">Agama</div><div class="val">Islam</div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('Agama','Islam')">Ajukan Koreksi</button></div>
+        <div class="field-row"><div class="lbl">Telepon / WA</div><div class="val">0812xxxxxxxx</div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('Telepon','0812xxxxxxxx')">Ajukan Koreksi</button></div>
+        <div class="field-row"><div class="lbl">Posisi</div><div class="val">Operator Cetak</div><span class="badge hr">Hanya HR</span></div>
+        <div class="field-row"><div class="lbl">Divisi</div><div class="val">Offset Printing</div><span class="badge hr">Hanya HR</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Alamat &amp; Domisili <span class="hint">Alamat KTP dan Tinggal Terpisah</span></h2>
+        </div>
+        <div class="field-row"><div class="lbl">Alamat KTP</div><div class="val">Ds. Sukamaju RT02/04, Kec. Pakis, Kab. Malang</div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('Alamat KTP','Ds. Sukamaju RT02/04, Kec. Pakis, Kab. Malang')">Ajukan Koreksi</button></div>
+        <div class="field-row"><div class="lbl">Alamat Domisili</div><div class="val">Kauman, Klojen, Kota Malang</div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('Alamat Domisili','Kauman, Klojen, Kota Malang')">Ajukan Koreksi</button></div>
+
+        <div style="margin-top:20px;">
+          <div class="card-header">
+            <h2>BPJS &amp; Jaminan Sosial</h2>
+          </div>
+          <div class="field-row"><div class="lbl">BPJS Kesehatan</div><div class="val">0001234567890 &middot; Kelas II <span class="badge approved" style="margin-left:4px">Aktif</span></div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('No. BPJS Kesehatan','0001234567890')">Ajukan Koreksi</button></div>
+          <div class="field-row"><div class="lbl">BPJS TK</div><div class="val">51xxxxxxxxxx <span class="badge approved" style="margin-left:4px">Aktif</span></div><button class="btn btn-subtle-blue btn-sm" onclick="openCorrection('No. BPJS Ketenagakerjaan','51xxxxxxxxxx')">Ajukan Koreksi</button></div>
+          <div class="note-box" style="margin-top:10px;margin-bottom:0;font-size:11px">
+            Program aktif: JKK, JKM, JHT, JP, JKP. Potongan resmi iuran karyawan (Kesehatan 1%, JHT 2%, JP 1%) tercantum lengkap pada slip gaji bulanan.
+          </div>
+        </div>
+      </div>
+
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Riwayat Pengajuan Koreksi Data Profil</h2>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Field Data</th><th>Nilai Pengajuan Baru</th><th>Status Review HR</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Alamat Domisili</td><td>Jl. Kauman No. 15, Malang</td><td><span class="badge pending">Menunggu Approval</span></td></tr>
+              <tr><td>Telepon</td><td>081234567889</td><td><span class="badge approved">Disetujui &amp; Diperbarui</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card grid-full" style="border-color: var(--red-border); background: #fff5f5;">
+        <div class="card-header" style="border-bottom-color: var(--red-border);">
+          <h2 style="color: var(--red-text)">Pengunduran Diri (Resign)</h2>
+        </div>
+        <div style="font-size:12px; color: var(--text-muted); margin-bottom: 12px">
+          Prosedur resign resmi sesuai ketentuan kontrak kerja. Setelah diajukan, atasan dan Tim HR akan menghubungi Anda untuk proses serah terima tugas (handover) serta exit interview.
+        </div>
+        <button class="btn btn-outline-red" onclick="openResignModal()">Ajukan Form Pengunduran Diri</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 2: KELUARGA & STATUS ============ -->
+  <div class="page" id="page-keluarga">
+    <div class="grid-2col">
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Anggota Keluarga Terdaftar</h2>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="openFamilyModal('lahir')">+ Ajukan Kelahiran</button>
+            <button class="btn btn-sm" onclick="openFamilyModal('meninggal')">Tandai Meninggal Dunia</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Hubungan</th><th>Nama Lengkap</th><th>Tanggal Lahir</th><th>Status Kepesertaan</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><b>ISTRI</b></td><td>Ratna Wulandari</td><td>20 Agu 1992</td><td><span class="badge approved">Tanggungan (Hidup)</span></td></tr>
+              <tr><td><b>ANAK</b></td><td>Arka Santoso</td><td>15 Mar 2018</td><td><span class="badge approved">Tanggungan (Hidup)</span></td></tr>
+              <tr><td><b>AYAH</b></td><td>Slamet Riyadi</td><td>02 Jan 1960</td><td><span class="badge meninggal">Meninggal — 03 Mei 2024</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note-box" style="margin-top:12px;margin-bottom:0">
+          Catatan: Anggota keluarga yang dilaporkan meninggal dunia <b>tidak dihapus</b> dari histori sistem demi keakuratan rekaman tunjangan &amp; klaim masa lalu.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Status Pernikahan</h2>
+        </div>
+        <div class="field-row"><div class="lbl">Status Saat Ini</div><div class="val">Menikah</div><button class="btn btn-subtle-blue btn-sm" onclick="openFamilyModal('nikah')">Ajukan Perubahan</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Rekening Bank Penggajian (Payroll)</h2>
+        </div>
+        <div class="field-row"><div class="lbl">Bank / No. Rek</div><div class="val">BCA — 1234567890</div><button class="btn btn-subtle-blue btn-sm" onclick="openFamilyModal('rekening')">Ajukan Ganti Rekening</button></div>
+      </div>
+
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Kontak Darurat (Emergency Contact)</h2>
+        </div>
+        <div class="field-row"><div class="lbl">Nama Kontak</div><div class="val">Ratna Wulandari (Istri)</div><button class="btn btn-subtle-blue btn-sm" onclick="openFamilyModal('kontak')">Edit Kontak</button></div>
+        <div class="field-row"><div class="lbl">Nomor Telepon</div><div class="val">0813xxxxxxxx</div><div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 3: DOKUMEN & PENDIDIKAN ============ -->
+  <div class="page" id="page-dokumen">
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>Dokumen Identitas Diri</h2>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#128196;</div>
+          <div class="info"><div class="t">NPWP</div><div class="s">09.123.xxx.x-xxx.000 &middot; <span class="badge self">Mandiri</span></div></div>
+          <button class="btn btn-sm" onclick="openDocUploadModal('NPWP','ganti')">Ganti</button>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#128196;</div>
+          <div class="info"><div class="t">SIM C</div><div class="s">Masa Berlaku: 12 Feb 2028</div></div>
+          <button class="btn btn-sm" onclick="openDocUploadModal('SIM C','ganti')">Ganti</button>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#128196;</div>
+          <div class="info"><div class="t">Kartu Keluarga (KK)</div><div class="s" style="color:var(--red-text)">Belum ada file diunggah</div></div>
+          <button class="btn btn-primary btn-sm" onclick="openDocUploadModal('Kartu Keluarga','upload')">Upload</button>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#128196;</div>
+          <div class="info"><div class="t">Paspor</div><div class="s">Berlaku s/d 04 Nov 2026 &middot; <span style="color:var(--red-text);font-weight:600">Segera Kadaluarsa</span></div></div>
+          <button class="btn btn-sm" onclick="openDocUploadModal('Paspor','perpanjangan')">Perpanjang</button>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#128274;</div>
+          <div class="info"><div class="t">KTP Elektronik</div><div class="s">Diverifikasi oleh <span class="badge hr">HR Master</span> (Kunci Sistem)</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Keterampilan &amp; Sertifikasi Vokasi</h2>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#127942;</div>
+          <div class="info"><div class="t">K3 Dasar Operasional</div><div class="s">Lulus Sertifikasi 2024 &middot; sertifikat_k3.pdf</div></div>
+          <button class="btn btn-sm" onclick="openDocUploadModal('Sertifikat K3','ganti')">Edit</button>
+        </div>
+        <div class="upload-row">
+          <div class="icon">&#127942;</div>
+          <div class="info"><div class="t">Operator Forklift</div><div class="s">Tingkat Dasar &middot; Belum upload sertifikat</div></div>
+          <button class="btn btn-sm" onclick="openDocUploadModal('Sertifikat Forklift','upload')">Upload</button>
+        </div>
+        <button class="btn btn-block" style="margin-top:12px" onclick="openDocUploadModal('Keterampilan Baru','upload')">+ Tambah Keterampilan Baru</button>
+      </div>
+
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Riwayat Pelatihan &amp; Pengembangan <span class="hint">Diperhitungkan HR dalam Nilai Investasi SDM</span></h2>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Nama Kegiatan / Pelatihan</th><th>Tanggal</th><th>Investasi Biaya</th><th>Skema Pembiayaan</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sertifikasi K3 Dasar Industri</td><td>14 Feb 2025</td><td>Rp 1.500.000</td><td><span class="badge company">Perusahaan</span></td></tr>
+              <tr><td>Seminar Cetak Digital &amp; Packaging Terkini</td><td>02 Nov 2024</td><td>Rp 350.000</td><td><span class="badge pribadi">Pribadi</span></td></tr>
+              <tr><td>Pelatihan Mesin Offest Heidelberg Speedmaster</td><td>20 Jun 2024</td><td>Rp 4.200.000</td><td><span class="badge company">Perusahaan</span> <span class="badge bonding">Ikatan Dinas</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn btn-block" style="margin-top:12px" onclick="openEduModal()">+ Tambah Riwayat Pelatihan Baru</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 4: CUTI / SAKIT / IZIN ============ -->
+  <div class="page" id="page-cuti">
+    <div class="grid-2col">
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Ringkasan Saldo Cuti Tahunan — 2026</h2>
+          <button class="btn btn-sm" onclick="toggleSaldoDemo()" id="btnToggleSaldo">Demo: Set Saldo 0 Hari</button>
+        </div>
+        <div class="leave-stats">
+          <div class="leave-stat"><div class="num">12</div><div class="lbl">Hak Cuti Tahun Ini</div></div>
+          <div class="leave-stat"><div class="num" id="terpakaiCuti" style="color:var(--amber-text)">5</div><div class="lbl">Terpakai</div></div>
+          <div class="leave-stat"><div class="num" id="saldoSisaCuti" style="color:var(--green-text)">7</div><div class="lbl">Sisa Saldo</div></div>
+        </div>
+      </div>
+
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Form Pengajuan Absensi &amp; Meninggalkan Tugas</h2>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Jenis Pengajuan</label>
+          <select id="jenisPengajuan" onchange="switchJenisPengajuan()">
+            <option value="cuti">Cuti Tahunan (Dibayar)</option>
+            <option value="sakit">Sakit</option>
+            <option value="izin" id="optIzin">Izin (Non-Sakit)</option>
+            <option value="khusus">Cuti Khusus (Pernikahan, Duka, Dll)</option>
+          </select>
+        </div>
+
+        <!-- BLOK CUTI -->
+        <div id="blokCuti">
+          <div class="note-box">
+            Ketentuan Cuti: Pengajuan diajukan minimal <b>H+7</b> dari hari ini (18 Agu 2026). Maksimal pengambilan berturut-turut adalah <b>3 hari kerja</b>. Hari libur/Minggu tidak menghitung cuti.
+          </div>
+          <div class="cal-wrap">
+            <div class="cal-head"><span>&#9664;</span><span>September 2026</span><span>&#9654;</span></div>
+            <div class="cal-grid">
+              <div class="cal-dow">S</div><div class="cal-dow">S</div><div class="cal-dow">R</div><div class="cal-dow">K</div><div class="cal-dow">J</div><div class="cal-dow">S</div><div class="cal-dow">M</div>
+              <div class="cal-cell empty"></div>
+              <div class="cal-cell disabled" title="Batasan H+7">1</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">2</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">3</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">4</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">5</div>
+              <div class="cal-cell holiday" title="Libur Nasional">6</div>
+              <div class="cal-cell holiday" title="Hari Minggu">7</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">8</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">9</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">10</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">11</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">12</div>
+              <div class="cal-cell selectable" onclick="toggleCalCell(this)">13</div>
+              <div class="cal-cell holiday" title="Hari Minggu">14</div>
+            </div>
+            <div class="cal-legend">
+              <span><span class="cal-dot" style="background:var(--accent)"></span>Dipilih</span>
+              <span><span class="cal-dot" style="background:#f1f5f9;border:1px solid #cbd5e1"></span>Tersedia</span>
+              <span><span class="cal-dot" style="background:#f8fafc"></span>Sebelum H+7</span>
+              <span><span class="cal-dot" style="background:var(--red-bg)"></span>Tanggal Merah / Minggu</span>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:10px">Total Hari Cuti Dipilih: <b id="calSelectedCount" style="color:var(--primary)">0</b> Hari (Maksimal 3 Hari)</div>
+          <div class="fgroup" style="margin-top:12px">
+            <label class="flabel">Surat Permohonan Cuti (Syarat Administrasi)</label>
+            <input type="file" accept="image/*,.pdf">
+          </div>
+        </div>
+
+        <!-- BLOK SAKIT -->
+        <div id="blokSakit" style="display:none">
+          <div class="note-box warn">
+            Wajib melaporkan ketidakhadiran kepada Atasan &amp; HRD paling lambat pukul <b>07:30 WIB</b> pada hari ketidakhadiran.
+          </div>
+          <div class="frow2">
+            <div class="fgroup"><label class="flabel">Dari Tanggal</label><input type="date"></div>
+            <div class="fgroup"><label class="flabel">Sampai Tanggal</label><input type="date"></div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Jam Pelaporan Telepon/WA ke HRD</label>
+            <input type="time" id="jamLaporSakit" onchange="checkJamLaporSakit()">
+            <div id="warningJamLapor" style="display:none;color:var(--red-text);font-size:11px;margin-top:4px;font-weight:600">&#9888; Pelaporan melewati batas 07:30 WIB — Sistem mencatat potensi review keterlambatan HR</div>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-main);margin-bottom:12px;cursor:pointer">
+            <input type="checkbox" id="chkPesertaJKN" onchange="toggleJknMode()" style="width:auto">
+            Saya berobat menggunakan Aplikasi JKN (Faskes 1) — Cukup upload 1 screenshot riwayat berobat
+          </label>
+          <div id="dokumenSakitNormal">
+            <div class="fgroup">
+              <label class="flabel">1. Surat Keterangan Dokter (SKD Original)</label>
+              <input type="file" accept="image/*,.pdf">
+            </div>
+            <div class="fgroup">
+              <label class="flabel">2. Kwitansi Berobat / Resep Obat Resmi</label>
+              <input type="file" accept="image/*,.pdf">
+            </div>
+          </div>
+          <div id="dokumenSakitJkn" style="display:none">
+            <div class="fgroup">
+              <label class="flabel">Screenshot Riwayat Pelayanan Aplikasi Mobile JKN</label>
+              <input type="file" accept="image/*">
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOK IZIN -->
+        <div id="blokIzin" style="display:none">
+          <div class="note-box warn" id="izinLockedNote">
+            Sesuai SOP, pengajuan <b>Izin Non-Sakit</b> terkunci karena Anda masih memiliki sisa Saldo Cuti Tahunan (<b id="izinLockedSisa">7</b> hari). Ketidakhadiran wajib dipotong dari saldo cuti terlebih dahulu.
+          </div>
+          <div id="izinFormUnlocked" style="display:none">
+            <div class="fgroup">
+              <label class="flabel">Sifat Izin</label>
+              <select id="sifatIzin" onchange="switchSifatIzin()">
+                <option value="terjadwal">Terjadwal (Diajukan Min. H-7)</option>
+                <option value="mendadak">Mendadak (Darurat/Musibah)</option>
+              </select>
+            </div>
+            <div id="izinTerjadwalNote" class="note-box">Pengajuan Izin Terjadwal wajib diserahkan minimal <b>H-7</b> sebelum hari-H.</div>
+            <div id="izinMendadakBlok" style="display:none">
+              <div class="fgroup">
+                <label class="flabel">Kategori Keperluan Mendadak</label>
+                <select id="izinCategory" onchange="switchIzinCategory()">
+                  <option value="MUSIBAH">Musibah Keluarga / Kecelakaan / Bencana</option>
+                  <option value="INSTANSI_RESMI">Keperluan Instansi Pemerintah Resmi</option>
+                  <option value="KEPENGURUSAN_MUSIBAH">Kepengurusan Duka / Musibah</option>
+                </select>
+              </div>
+              <div id="izinInstansiFields" style="display:none">
+                <div class="frow2">
+                  <div class="fgroup">
+                    <label class="flabel">Untuk Keperluan</label>
+                    <select><option>Diri Sendiri</option><option>Suami/Istri</option><option>Anak Kandung</option><option>Orang Tua Kandung</option></select>
+                  </div>
+                  <div class="fgroup">
+                    <label class="flabel">Instansi Tujuan</label>
+                    <select><option>BPJS / Rumah Sakit</option><option>Kepolisian</option><option>Sekolah / Perguruan Tinggi</option><option>Pengadilan / Kelurahan</option></select>
+                  </div>
+                </div>
+              </div>
+              <div class="fgroup">
+                <label class="flabel">Upload Lampiran Bukti Kejadian / Surat Instansi</label>
+                <input type="file" accept="image/*,.pdf">
+              </div>
+            </div>
+            <div class="frow2">
+              <div class="fgroup"><label class="flabel">Dari Tanggal</label><input type="date"></div>
+              <div class="fgroup"><label class="flabel">Sampai Tanggal</label><input type="date"></div>
+            </div>
+            <div class="note-box danger">Izin bersifat Unpaid (Tidak Dipotong Saldo Cuti, namun Tidak Menerima Upah Hadir). Maksimal 3 hari berturut-turut.</div>
+          </div>
+        </div>
+
+        <!-- BLOK CUTI KHUSUS -->
+        <div id="blokKhusus" style="display:none">
+          <div class="note-box">Cuti Khusus adalah hak cuti dibayar diluar saldo cuti tahunan sesuai Peraturan Perusahaan (PP).</div>
+          <div class="fgroup">
+            <label class="flabel">Jenis Peristiwa Khusus</label>
+            <select>
+              <option>Pernikahan Karyawan (3 Hari)</option>
+              <option>Pernikahan Anak Karyawan (2 Hari)</option>
+              <option>Istri Melahirkan / Keguguran (2 Hari)</option>
+              <option>Keluarga Inti Meninggal Dunia (2 Hari)</option>
+              <option>Khitanan / Baptisan Anak (2 Hari)</option>
+            </select>
+          </div>
+          <div class="frow2">
+            <div class="fgroup"><label class="flabel">Dari Tanggal</label><input type="date"></div>
+            <div class="fgroup"><label class="flabel">Sampai Tanggal</label><input type="date"></div>
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Upload Bukti Pendukung (Surat Nikah/Kelahiran/Kematian)</label>
+            <input type="file" accept="image/*,.pdf">
+          </div>
+        </div>
+
+        <div class="fgroup"><label class="flabel">Keterangan / Alasan Pengajuan</label><textarea rows="2" placeholder="Tuliskan penjelasan singkat mengenai pengajuan ini..."></textarea></div>
+        <button class="btn btn-primary btn-block">Kirimkan Pengajuan Absensi</button>
+      </div>
+
+      <div class="card grid-full">
+        <div class="card-header">
+          <h2>Riwayat Permohonan Absensi Saya</h2>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Jenis Pengajuan</th><th>Tanggal Pelaksanaan</th><th>Status Gaji</th><th>Status Approval</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Sakit Berobat</td><td>15–16 Agu 2026</td><td><span class="badge paid">Dibayar</span></td><td><span class="badge pending">Menunggu Approval HR</span></td></tr>
+              <tr><td>Sakit Tanpa SKD <span class="badge" style="background:#fff3bf;color:#8f6b00">&rarr; Konversi Izin</span></td><td>02 Mar 2026</td><td><span class="badge unpaid">Unpaid</span></td><td><span class="badge approved">Dikonversi Otomatis</span></td></tr>
+              <tr><td>Cuti Tahunan</td><td>10–12 Jun 2026</td><td><span class="badge paid">Dibayar</span></td><td><span class="badge approved">Disetujui Atasan &amp; HR</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 5: IZIN KELUAR AREA ============ -->
+  <div class="page" id="page-izinkeluar">
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>Form Permohonan Izin Keluar Area Kerja</h2>
+        </div>
+        <div class="note-box warn">
+          Wajib mendapatkan persetujuan digital dari <b>Atasan Langsung DAN HRD</b> sebelum meninggalkan area pabrik.
+        </div>
+        <div class="fgroup"><label class="flabel">Tanggal Pelaksanaan</label><input type="date"></div>
+        <div class="frow2">
+          <div class="fgroup"><label class="flabel">Rencana Jam Keluar</label><input type="time"></div>
+          <div class="fgroup"><label class="flabel">Rencana Jam Kembali</label><input type="time"></div>
+        </div>
+        <div class="fgroup"><label class="flabel">Keperluan Keluar Area</label><textarea rows="3" placeholder="Sebutkan alasan atau lokasi tujuan keluar area pabrik..."></textarea></div>
+        <button class="btn btn-primary btn-block">Kirim Surat Izin Keluar</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Riwayat Izin Keluar Area</h2>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Tanggal</th><th>Jam Out-In</th><th>Atasan</th><th>HRD</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>15 Agu 2026</td><td>10:00 - 11:00</td><td><span class="badge approved">Disetujui</span></td><td><span class="badge approved">Disetujui</span></td></tr>
+              <tr><td>18 Agu 2026</td><td>14:00 - 15:30</td><td><span class="badge approved">Disetujui</span></td><td><span class="badge pending">Menunggu</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 6: TUKAR SHIFT ============ -->
+  <div class="page" id="page-tukarshift">
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>Form Permohonan Tukar Shift</h2>
+        </div>
+        <div class="note-box warn">
+          Batas waktu pengajuan maksimal <b>H-1</b> sebelum jadwal kerja. Harus disetujui oleh <b>Rekan Tukar</b> dan dipublikasi oleh <b>Tim PPIC/Produksi</b>.
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Jadwal Asal Saya</label>
+          <select>
+            <option>Senin, 24 Agu — Shift 1 (Cetak Heidelberg 1)</option>
+            <option>Selasa, 25 Agu — Shift 1 (Cetak Heidelberg 1)</option>
+          </select>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Rekan Pengganti (Target Tukar)</label>
+          <select>
+            <option>Siti Aminah — Selasa, 25 Agu (Shift 2)</option>
+            <option>Rudi Hartono — Rabu, 26 Agu (Shift 2)</option>
+          </select>
+        </div>
+        <div class="fgroup"><label class="flabel">Alasan Pertukaran</label><textarea rows="2" placeholder="Jelaskan alasan tukar shift..."></textarea></div>
+        <button class="btn btn-primary btn-block">Ajukan Permohonan Tukar</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Riwayat Tukar Shift</h2>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr><th>Tanggal Kerja</th><th>Ditukar Dengan</th><th>Status Approval</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>18 Agu 2026</td><td>Joko Purnomo</td><td><span class="badge pending">Menunggu Rekan</span></td></tr>
+              <tr><td>02 Agu 2026</td><td>Dewi Lestari</td><td><span class="badge approved">Disetujui PPIC</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 7: JADWAL SAYA ============ -->
+  <div class="page" id="page-jadwal">
+    <div class="card">
+      <div class="card-header">
+        <h2>Jadwal Kerja Resmi Dipublikasi — Minggu Ini (10–16 Agu 2026)</h2>
+        <span class="badge approved">Published by PPIC</span>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Senin, 10</div>
+        <span class="shift-pill" style="background:var(--amber-bg);color:var(--amber-text)">Shift 1 (07.00 - 15.00)</span>
+        <div style="flex:1"></div>
+        <div style="font-size:12px;color:var(--text-muted)">Stasiun: Unit Cetak Heidelberg 1</div>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Selasa, 11</div>
+        <span class="shift-pill" style="background:var(--amber-bg);color:var(--amber-text)">Shift 1 (07.00 - 15.00)</span>
+        <div style="flex:1"></div>
+        <div style="font-size:11px;color:var(--red-text);font-weight:700">+ Lembur 2 Jam</div>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Rabu, 12</div>
+        <div style="color:var(--text-muted);font-weight:500">Off / Libur Shift</div>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Kamis, 13</div>
+        <div style="color:var(--text-muted);font-weight:500">Off / Libur Shift</div>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Jumat, 14</div>
+        <span class="shift-pill" style="background:var(--amber-bg);color:var(--amber-text)">Shift 1 (07.00 - 15.00)</span>
+        <div style="flex:1"></div>
+        <div style="font-size:12px;color:var(--text-muted)">Stasiun: Unit Cetak Heidelberg 1</div>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Sabtu, 15</div>
+        <span class="shift-pill" style="background:var(--amber-bg);color:var(--amber-text)">Shift 1 (07.00 - 15.00)</span>
+        <div style="flex:1"></div>
+        <div style="font-size:12px;color:var(--text-muted)">Stasiun: Unit Cetak Heidelberg 1</div>
+      </div>
+      <div class="schedule-item">
+        <div class="dt">Minggu, 16</div>
+        <span class="shift-pill" style="background:var(--amber-bg);color:var(--amber-text)">Shift 1 (07.00 - 15.00)</span>
+        <div style="flex:1"></div>
+        <div style="font-size:11px;color:var(--red-text);font-weight:700">+ Lembur Hari Libur</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 8: KARTU PENGENAL (BADGE) ============ -->
+  <div class="page" id="page-badge">
+    <div class="grid-2col">
+      <div class="card">
+        <div class="card-header">
+          <h2>Visual Kartu ID Karyawan Digital</h2>
+        </div>
+        <div class="badge-card">
+          <div class="badge-topbar">
+            <div class="company">CV TELASIH MAKMUR</div>
+            <div style="font-size:10px;opacity:0.7">TMERP DIGITAL ID</div>
+          </div>
+          <div class="badge-body">
+            <div class="badge-photo" id="badgeCardPhotoPreview">Pas Foto</div>
+            <div class="badge-info">
+              <div class="nm">Budi Santoso</div>
+              <div class="rl">Operator Cetak</div>
+              <div class="rl" style="opacity:0.8">Offset Printing</div>
+              <div class="cd">TM-00001</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2>Ajukan Pembaruan Foto Kartu ID</h2>
+        </div>
+        <div class="note-box warn">
+          <b>Standardisasi Foto ID Karyawan:</b>
+          <ul style="margin-top:4px;padding-left:16px;line-height:1.6">
+            <li>Format Pas Foto Portrait <b>4 &times; 6 cm</b> (Rasio 2:3)</li>
+            <li>Resolusi minimal <b>600 &times; 900 piksel</b></li>
+            <li>Latar belakang polos terang (Putih / Biru Muda)</li>
+            <li>Pakaian seragam/rapi, wajah menghadap lurus ke depan</li>
+          </ul>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="openBadgePhotoModal()">Upload Foto ID Baru</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL IMPLEMENTATION -->
+
+<!-- MODAL UPLOAD FOTO BADGE -->
+<div id="badgePhotoModal" class="modal-overlay">
+  <div class="box">
+    <h3>Upload Foto ID Card Baru</h3>
+    <div class="fieldname">Foto akan di-review oleh HRD sebelum dicetak ulang pada kartu fisik.</div>
+    <div id="badgePhotoPreview" style="width:110px;height:150px;background:#f1f5f9;border:2px dashed var(--border-strong);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);margin:0 auto 14px;background-size:cover;background-position:center;">
+      Preview 4x6
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Pilih File Foto Baru</label>
+      <input type="file" accept="image/*" onchange="previewBadgePhoto(event)">
+    </div>
+    <div id="badgePhotoWarn" style="display:none" class="note-box warn"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" style="flex:1" onclick="closeModal('badgePhotoModal')">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitGeneric('badgePhotoModal','Foto baru berhasil dikirim ke HRD untuk verifikasi.')">Kirim Foto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KOREKSI DATA -->
+<div id="correctionModal" class="modal-overlay">
+  <div class="box">
+    <h3>Ajukan Koreksi Data</h3>
+    <div class="fieldname">Field: <b id="corrFieldName">-</b></div>
+    <div class="fgroup"><label class="flabel">Nilai Terdata Saat Ini</label><input id="corrOldVal" disabled></div>
+    <div class="fgroup"><label class="flabel">Pengajuan Nilai Baru</label><input id="corrNewVal" placeholder="Masukkan data yang benar"></div>
+    <div class="fgroup"><label class="flabel">Alasan/Catatan Koreksi</label><textarea rows="2" placeholder="Sebutkan alasan perubahan..."></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" style="flex:1" onclick="closeModal('correctionModal')">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitGeneric('correctionModal','Pengajuan koreksi terkirim ke HRD.')">Kirim Pengajuan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL KELUARGA / DOKUMEN GENERIK -->
+<div id="familyModal" class="modal-overlay">
+  <div class="box">
+    <h3 id="familyModalTitle">Ajukan Perubahan</h3>
+    <div id="familyModalBody" style="margin-top:12px"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="flex:1" onclick="closeModal('familyModal')">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitGeneric('familyModal','Pengajuan keluarga/status berhasil terkirim.')">Kirim Pengajuan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL UPLOAD DOKUMEN -->
+<div id="docUploadModal" class="modal-overlay">
+  <div class="box">
+    <h3 id="docUploadTitle">Upload Dokumen Identitas</h3>
+    <div class="fieldname" id="docUploadSub">Format yang didukung: JPG, PNG, PDF. Maksimal 5 MB.</div>
+    <div id="docUploadPreview" style="width:100%;height:120px;background:#f8fafc;border:2px dashed var(--border-strong);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-muted);margin-bottom:12px">Belum ada file dipilih</div>
+    <div class="fgroup">
+      <input type="file" accept="image/*,.pdf" onchange="previewDocUpload(event)">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" style="flex:1" onclick="closeModal('docUploadModal')">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitDocUpload()">Simpan &amp; Upload</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PELATIHAN/PENDIDIKAN -->
+<div id="eduModal" class="modal-overlay">
+  <div class="box">
+    <h3>Tambah Riwayat Pelatihan</h3>
+    <div class="fgroup"><label class="flabel">Nama Pelatihan / Sertifikasi</label><input placeholder="Contoh: Sertifikasi K3 Kemnaker"></div>
+    <div class="frow2">
+      <div class="fgroup"><label class="flabel">Tanggal Pelaksanaan</label><input type="date"></div>
+      <div class="fgroup"><label class="flabel">Biaya (Rp)</label><input type="number" placeholder="0"></div>
+    </div>
+    <div class="fgroup"><label class="flabel">Biaya Ditanggung Oleh</label><select><option>Pribadi</option><option>Perusahaan</option></select></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" style="flex:1" onclick="closeModal('eduModal')">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="submitGeneric('eduModal','Riwayat pelatihan berhasil disimpan.')">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESIGN -->
+<div id="resignModal" class="modal-overlay">
+  <div class="box">
+    <h3 style="color:var(--red-text)">Pengajuan Pengunduran Diri (Resign)</h3>
+    <div class="fieldname">Mohon perhatikan periode <i>one-month notice</i> sesuai peraturan perusahaan.</div>
+    <div class="fgroup"><label class="flabel">Tanggal Efektif Resign</label><input type="date"></div>
+    <div class="fgroup"><label class="flabel">Alasan Utama Pengunduran Diri</label><textarea rows="3" placeholder="Tuliskan alasan Anda..."></textarea></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" style="flex:1" onclick="closeModal('resignModal')">Batal</button>
+      <button class="btn btn-outline-red" style="flex:1" onclick="submitGeneric('resignModal','Form pengunduran diri terkirim ke HRD.')">Kirim Pengajuan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// NAVIGATION TAB SWITCHING
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('page-' + btn.dataset.tab).classList.add('active');
+  };
+});
+
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function submitGeneric(id, msg) { alert(msg); closeModal(id); }
+
+// MODAL KOREKSI
+function openCorrection(field, oldVal) {
+  document.getElementById('corrFieldName').textContent = field;
+  document.getElementById('corrOldVal').value = oldVal;
+  document.getElementById('corrNewVal').value = '';
+  document.getElementById('correctionModal').style.display = 'flex';
+}
+
+// DYNAMIC FAMILY MODAL FORMS
+const familyForms = {
+  lahir: { title: 'Ajukan Kelahiran Anak Baru', body: `
+    <div class="fgroup"><label class="flabel">Nama Lengkap Anak</label><input placeholder="Nama sesuai akta"></div>
+    <div class="fgroup"><label class="flabel">Tanggal Lahir</label><input type="date"></div>
+    <div class="fgroup"><label class="flabel">Upload Akta Kelahiran / Surat Keterangan Lahir</label><input type="file"></div>` },
+  meninggal: { title: 'Tandai Anggota Keluarga Meninggal', body: `
+    <div class="fgroup"><label class="flabel">Pilih Anggota Keluarga</label><select><option>Ratna Wulandari (Istri)</option><option>Arka Santoso (Anak)</option></select></div>
+    <div class="fgroup"><label class="flabel">Tanggal Meninggal Dunia</label><input type="date"></div>
+    <div class="fgroup"><label class="flabel">Upload Surat Kematian</label><input type="file"></div>` },
+  nikah: { title: 'Ajukan Perubahan Status Pernikahan', body: `
+    <div class="fgroup"><label class="flabel">Status Baru</label><select><option>Menikah</option><option>Cerai Resmi</option></select></div>
+    <div class="fgroup"><label class="flabel">Upload Buku Nikah / Surat Cerai</label><input type="file"></div>` },
+  rekening: { title: 'Ajukan Perubahan Rekening Bank Payroll', body: `
+    <div class="fgroup"><label class="flabel">Nama Bank</label><input placeholder="Contoh: BCA / Mandiri"></div>
+    <div class="fgroup"><label class="flabel">Nomor Rekening Baru</label><input placeholder="Nomor rekening"></div>` },
+  kontak: { title: 'Edit Kontak Darurat', body: `
+    <div class="fgroup"><label class="flabel">Nama Kontak</label><input value="Ratna Wulandari"></div>
+    <div class="fgroup"><label class="flabel">Hubungan</label><input value="Istri"></div>
+    <div class="fgroup"><label class="flabel">Nomor Telepon</label><input value="0813xxxxxxxx"></div>` }
+};
+
+function openFamilyModal(type) {
+  const f = familyForms[type];
+  document.getElementById('familyModalTitle').textContent = f.title;
+  document.getElementById('familyModalBody').innerHTML = f.body;
+  document.getElementById('familyModal').style.display = 'flex';
+}
+
+function openEduModal() { document.getElementById('eduModal').style.display = 'flex'; }
+function openResignModal() { document.getElementById('resignModal').style.display = 'flex'; }
+
+// DOKUMEN UPLOAD LOGIC
+let currentDocName = '';
+function openDocUploadModal(docName, mode) {
+  currentDocName = docName;
+  document.getElementById('docUploadTitle').textContent = 'Upload / Perbarui — ' + docName;
+  document.getElementById('docUploadPreview').style.backgroundImage = '';
+  document.getElementById('docUploadPreview').textContent = 'Belum ada file dipilih';
+  document.getElementById('docUploadModal').style.display = 'flex';
+}
+
+function previewDocUpload(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('docUploadPreview');
+  if (file.type.startsWith('image/')) {
+    const url = URL.createObjectURL(file);
+    preview.style.backgroundImage = `url(${url})`;
+    preview.style.backgroundSize = 'contain';
+    preview.style.backgroundRepeat = 'no-repeat';
+    preview.textContent = '';
+  } else {
+    preview.style.backgroundImage = '';
+    preview.textContent = 'File Dokumen: ' + file.name;
+  }
+}
+
+function submitDocUpload() {
+  alert('Dokumen ' + currentDocName + ' berhasil diupload untuk verifikasi.');
+  closeModal('docUploadModal');
+}
+
+// BADGE PHOTO LOGIC & VALIDATION
+function openBadgePhotoModal() {
+  document.getElementById('badgePhotoPreview').style.backgroundImage = '';
+  document.getElementById('badgePhotoPreview').textContent = 'Preview 4x6';
+  document.getElementById('badgePhotoWarn').style.display = 'none';
+  document.getElementById('badgePhotoModal').style.display = 'flex';
+}
+
+function previewBadgePhoto(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = function() {
+    const preview = document.getElementById('badgePhotoPreview');
+    preview.style.backgroundImage = `url(${url})`;
+    preview.textContent = '';
+    
+    // Update live preview in card
+    document.getElementById('badgeCardPhotoPreview').style.backgroundImage = `url(${url})`;
+    document.getElementById('badgeCardPhotoPreview').textContent = '';
+
+    const warn = document.getElementById('badgePhotoWarn');
+    const minW = 600, minH = 900;
+    const ratio = img.width / img.height;
+    const isRatioOk = Math.abs(ratio - (2/3)) < 0.08;
+
+    if (img.width < minW || img.height < minH || !isRatioOk) {
+      warn.innerHTML = `<b>Peringatan Kualitas Foto:</b> Ukuran file Anda (${img.width}&times;${img.height}px) belum memenuhi standar disarankan (Min. 600x900px, Rasio 2:3). Hasil cetak mungkin kurang maksimal.`;
+      warn.style.display = 'block';
+    } else {
+      warn.style.display = 'none';
+    }
+  };
+  img.src = url;
+}
+
+// CUTI / SAKIT / IZIN LOGIC
+function switchJenisPengajuan() {
+  const v = document.getElementById('jenisPengajuan').value;
+  document.getElementById('blokCuti').style.display = v === 'cuti' ? 'block' : 'none';
+  document.getElementById('blokSakit').style.display = v === 'sakit' ? 'block' : 'none';
+  document.getElementById('blokIzin').style.display = v === 'izin' ? 'block' : 'none';
+  document.getElementById('blokKhusus').style.display = v === 'khusus' ? 'block' : 'none';
+}
+
+let saldoCutiSisa = 7;
+function refreshIzinLockState() {
+  const optIzin = document.getElementById('optIzin');
+  const lockedNote = document.getElementById('izinLockedNote');
+  const unlockedForm = document.getElementById('izinFormUnlocked');
+  document.getElementById('izinLockedSisa').textContent = saldoCutiSisa;
+  
+  if (saldoCutiSisa > 0) {
+    optIzin.disabled = true;
+    optIzin.textContent = 'Izin (Terkunci — Sisa Cuti ' + saldoCutiSisa + ' Hari)';
+    lockedNote.style.display = 'block';
+    unlockedForm.style.display = 'none';
+  } else {
+    optIzin.disabled = false;
+    optIzin.textContent = 'Izin (Non-Sakit)';
+    lockedNote.style.display = 'none';
+    unlockedForm.style.display = 'block';
+  }
+}
+
+function toggleSaldoDemo() {
+  saldoCutiSisa = saldoCutiSisa > 0 ? 0 : 7;
+  document.getElementById('saldoSisaCuti').textContent = saldoCutiSisa;
+  document.getElementById('terpakaiCuti').textContent = 12 - saldoCutiSisa;
+  document.getElementById('heroSaldoCuti').textContent = saldoCutiSisa + ' Hari';
+  document.getElementById('btnToggleSaldo').textContent = saldoCutiSisa > 0 ? 'Demo: Set Saldo 0 Hari' : 'Demo: Kembalikan Saldo 7 Hari';
+  refreshIzinLockState();
+  if (saldoCutiSisa > 0 && document.getElementById('jenisPengajuan').value === 'izin') {
+    document.getElementById('jenisPengajuan').value = 'cuti';
+    switchJenisPengajuan();
+  }
+}
+
+function checkJamLaporSakit() {
+  const val = document.getElementById('jamLaporSakit').value;
+  const warn = document.getElementById('warningJamLapor');
+  if (!val) { warn.style.display = 'none'; return; }
+  const [h, m] = val.split(':').map(Number);
+  warn.style.display = (h * 60 + m > 7 * 60 + 30) ? 'block' : 'none';
+}
+
+function toggleJknMode() {
+  const isJkn = document.getElementById('chkPesertaJKN').checked;
+  document.getElementById('dokumenSakitNormal').style.display = isJkn ? 'none' : 'block';
+  document.getElementById('dokumenSakitJkn').style.display = isJkn ? 'block' : 'none';
+}
+
+function switchSifatIzin() {
+  const v = document.getElementById('sifatIzin').value;
+  document.getElementById('izinTerjadwalNote').style.display = v === 'terjadwal' ? 'block' : 'none';
+  document.getElementById('izinMendadakBlok').style.display = v === 'mendadak' ? 'block' : 'none';
+}
+
+function switchIzinCategory() {
+  const v = document.getElementById('izinCategory').value;
+  document.getElementById('izinInstansiFields').style.display = v === 'INSTANSI_RESMI' ? 'block' : 'none';
+}
+
+// CALENDAR MULTI-SELECT
+let calSelected = [];
+function toggleCalCell(el) {
+  const idx = calSelected.indexOf(el);
+  if (idx > -1) {
+    calSelected.splice(idx, 1);
+    el.classList.remove('selected');
+  } else {
+    if (calSelected.length >= 3) { alert('Maksimal pengajuan cuti berturut-turut adalah 3 hari kerja.'); return; }
+    calSelected.push(el);
+    el.classList.add('selected');
+  }
+  document.getElementById('calSelectedCount').textContent = calSelected.length;
+}
+
+// INITIALIZATION
+refreshIzinLockState();
+</script>
+</body>
+</html>

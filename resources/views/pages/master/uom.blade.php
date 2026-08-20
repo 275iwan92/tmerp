@@ -396,7 +396,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             Pilih satuan di kiri, klik <b>🔁 Konversi</b>, lalu <b>+ Konversi Baru</b> di panel kanan.
         </div>
 
-        <div class="grid grid-cols-1 {{ $conversionPanelOpen ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-1' }} gap-3.5 items-start">
+        <div class="[display:grid] grid-cols-1 {{ $conversionPanelOpen ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-1' }} gap-3.5 items-start">
 
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">

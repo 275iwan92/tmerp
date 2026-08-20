@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>CO Entry — TMERP</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9; height:100vh; overflow:hidden;}
+  .badge-product{background:#dbeafe;color:#1e40af}
+  .badge-service{background:#ede9fe;color:#5b21b6}
+  .locked{background:#f8fafc;color:#64748b}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:8px}
+</style>
+</head>
+<body class="text-xs text-slate-800 flex flex-col h-screen">
+
+<div class="max-w-7xl w-full mx-auto p-4 flex flex-col h-full justify-between space-y-3">
+
+  <!-- TOP HEADER -->
+  <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+    <div>
+      <h1 class="text-sm font-bold text-slate-800">Customer Order — Entry</h1>
+      <p class="text-[10px] text-slate-500">Modul Sales · Stage 3 · rakit CO dari 1 Quotation (1:1)</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">● DRAFT</span>
+      <div class="flex gap-2">
+        <button class="px-3 py-1 rounded border border-slate-300 text-slate-600 font-medium hover:bg-slate-50">Simpan Draft</button>
+        <button class="px-3 py-1 rounded bg-emerald-600 text-white font-semibold hover:bg-emerald-700">Confirm CO</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID CONTENT -->
+  <div class="grid grid-cols-12 gap-3 flex-1 overflow-hidden">
+    
+    <!-- LEFT COLUMN -->
+    <div class="col-span-8 flex flex-col space-y-3 overflow-y-auto pr-1">
+      
+      <!-- HEADER DOKUMEN -->
+      <div class="card p-3">
+        <h2 class="font-semibold text-slate-700 mb-2 text-xs">Header Dokumen</h2>
+        <div class="grid grid-cols-4 gap-2">
+          <div>
+            <label class="text-[10px] text-slate-500">No. CO</label>
+            <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="CO2600011" readonly>
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">CO Date</label>
+            <input type="date" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="2026-08-15">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">Ref. Quotation</label>
+            <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="QT2600007" readonly>
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">Cust. PO No.</label>
+            <input class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" placeholder="PO/TLM/VIII/2026-041">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">Customer</label>
+            <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="PT Kaysindo Snackindo" readonly>
+          </div>
+          <div class="col-span-2">
+            <label class="text-[10px] text-slate-500">Shipment Location</label>
+            <button type="button" onclick="openAddressPicker()" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5 bg-white text-left flex items-center justify-between hover:border-blue-400 group">
+              <span id="shipAddrSummary" class="truncate text-slate-800">Gudang Pusat — Jl. Raden Intan No.12, Kel. Arjosari, Kec. Blimbing, Kota Malang, Jawa Timur</span>
+              <span class="text-blue-600 text-[10px] font-medium ml-2 shrink-0">Ubah ▾</span>
+            </button>
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">PO File</label>
+            <input type="file" class="w-full border rounded px-1 py-0.5 mt-0.5 bg-white text-[10px]">
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">Order Type</label>
+            <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="Mixed (PRODUCT + SERVICE)" readonly>
+          </div>
+        </div>
+      </div>
+
+      <!-- UNIFIED TABS -->
+      <div class="card p-3">
+        <!-- Tab Navigation & Column Toggle -->
+        <div class="flex justify-between items-center border-b border-slate-200 mb-3">
+          <div class="flex gap-2">
+            <button onclick="switchTab('product')" id="btn-product" class="px-3 py-1.5 font-semibold text-xs border-b-2 border-blue-600 text-blue-600 focus:outline-none">Product</button>
+            <button onclick="switchTab('delivery')" id="btn-delivery" class="px-3 py-1.5 font-semibold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none">Delivery</button>
+            <button onclick="switchTab('eksternal')" id="btn-eksternal" class="px-3 py-1.5 font-semibold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none">External Cost</button>
+            <button onclick="switchTab('history')" id="btn-history" class="px-3 py-1.5 font-semibold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none">History Flow</button>
+          </div>
+          <!-- Toggle Column Button -->
+          <div class="pb-1">
+            <button onclick="toggleDiscColumn()" id="btn-toggle-disc" class="text-[10px] bg-slate-100 border border-slate-300 text-slate-600 px-2 py-1 rounded hover:bg-slate-200">⚙️ Toggle Disc Col</button>
+          </div>
+        </div>
+
+        <!-- Tab 1: Product -->
+        <div id="content-product" class="tab-content">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-[10px] text-slate-400 font-normal">— snapshot Quotation FIX</span>
+            <button class="text-[10px] bg-blue-600 text-white px-2.5 py-1 rounded font-medium hover:bg-blue-700">+ Add Item</button>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 border-b">
+                <th class="text-left p-1.5">Product</th>
+                <th class="text-center p-1.5">Type</th>
+                <th class="text-right p-1.5">Qty</th>
+                <th class="text-right p-1.5">Price/pc</th>
+                <th class="text-right p-1.5 col-disc">Disc</th>
+                <th class="text-right p-1.5">Subtotal</th>
+                <th class="text-center p-1.5">Due Date</th>
+                <th class="text-center p-1.5">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b hover:bg-slate-50">
+                <td class="p-1.5 font-medium">
+                  <button onclick="openModal('Box Snack Kaysindo 200g', '4/4 Color (Full Color CMYK)', 'Body & Cap')" class="text-blue-600 hover:underline text-left font-medium">Box Snack Kaysindo 200g</button>
+                </td>
+                <td class="p-1.5 text-center"><span class="badge-product px-2 py-0.5 rounded-full font-bold text-[10px]">P</span></td>
+                <td class="p-1.5 text-right">10.000</td>
+                <td class="p-1.5 text-right">1.250</td>
+                <td class="p-1.5 text-right col-disc">2%</td>
+                <td class="p-1.5 text-right font-semibold">12.250.000</td>
+                <td class="p-1.5 text-center"><input type="date" class="border rounded px-1 py-0.5 text-[10px]" value="2026-09-05"></td>
+                <td class="p-1.5 text-center">
+                  <button onclick="openModal('Box Snack Kaysindo 200g', '4/4 Color (Full Color CMYK)', 'Body & Cap')" class="text-slate-500 hover:text-blue-600" title="View Details">👁</button>
+                  <button class="text-slate-500 hover:text-red-600 ml-1.5" title="Delete">✕</button>
+                </td>
+              </tr>
+              <tr class="border-b hover:bg-slate-50">
+                <td class="p-1.5 font-medium">
+                  <button onclick="openModal('Sleeve Teh Celup 25s', '1/0 Color (Black)', 'Single Sleeve')" class="text-blue-600 hover:underline text-left font-medium">Sleeve Teh Celup 25s</button>
+                </td>
+                <td class="p-1.5 text-center"><span class="badge-product px-2 py-0.5 rounded-full font-bold text-[10px]">P</span></td>
+                <td class="p-1.5 text-right">25.000</td>
+                <td class="p-1.5 text-right">340</td>
+                <td class="p-1.5 text-right col-disc">–</td>
+                <td class="p-1.5 text-right font-semibold">8.500.000</td>
+                <td class="p-1.5 text-center"><input type="date" class="border rounded px-1 py-0.5 text-[10px]" value="2026-09-05"></td>
+                <td class="p-1.5 text-center">
+                  <button onclick="openModal('Sleeve Teh Celup 25s', '1/0 Color (Black)', 'Single Sleeve')" class="text-slate-500 hover:text-blue-600" title="View Details">👁</button>
+                  <button class="text-slate-500 hover:text-red-600 ml-1.5" title="Delete">✕</button>
+                </td>
+              </tr>
+              <tr class="border-b hover:bg-slate-50">
+                <td class="p-1.5 font-medium">
+                  <button onclick="openModal('Jasa Cetak Kemasan', 'N/A (External Material)', 'Finishing Service')" class="text-blue-600 hover:underline text-left font-medium">Jasa Cetak Kemasan</button>
+                </td>
+                <td class="p-1.5 text-center"><span class="badge-service px-2 py-0.5 rounded-full font-bold text-[10px]">S</span></td>
+                <td class="p-1.5 text-right">5.000</td>
+                <td class="p-1.5 text-right">610</td>
+                <td class="p-1.5 text-right col-disc">–</td>
+                <td class="p-1.5 text-right font-semibold">3.050.000</td>
+                <td class="p-1.5 text-center"><input type="date" class="border rounded px-1 py-0.5 text-[10px]" value="2026-09-10"></td>
+                <td class="p-1.5 text-center">
+                  <button onclick="openModal('Jasa Cetak Kemasan', 'N/A (External Material)', 'Finishing Service')" class="text-slate-500 hover:text-blue-600" title="View Details">👁</button>
+                  <button class="text-slate-500 hover:text-red-600 ml-1.5" title="Delete">✕</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="text-[10px] text-slate-400 mt-2 italic">*Note: Type **P** = Product (Physical Item), **S** = Service (Jasa). Click product name for configuration details.</p>
+        </div>
+
+        <!-- Tab 2: Delivery -->
+        <div id="content-delivery" class="tab-content hidden">
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 border-b">
+                <th class="text-left p-1.5">Product</th>
+                <th class="text-left p-1.5">Shipment Type</th>
+                <th class="text-left p-1.5">Ship Date</th>
+                <th class="text-right p-1.5">Ship Qty</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b">
+                <td class="p-1.5">Box Snack Kaysindo 200g</td>
+                <td class="p-1.5"><select class="border rounded px-1 py-0.5 text-xs"><option>FULL</option><option selected>PARTIAL</option></select></td>
+                <td class="p-1.5"><input type="date" class="border rounded px-1 py-0.5 text-xs" value="2026-09-05"></td>
+                <td class="p-1.5 text-right"><input class="border rounded px-1 py-0.5 text-xs w-20 text-right" value="6.000"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 3: External Cost -->
+        <div id="content-eksternal" class="tab-content hidden">
+          <div class="flex justify-end mb-1">
+            <button class="text-[10px] text-blue-600 font-medium">+ Add Row</button>
+          </div>
+          <table class="w-full text-xs border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 border-b">
+                <th class="text-left p-1.5">Category</th>
+                <th class="text-left p-1.5">Description</th>
+                <th class="text-right p-1.5">Nominal</th>
+                <th class="text-center p-1.5">Tax Treatment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b">
+                <td class="p-1.5"><select class="border rounded px-1 py-0.5 text-xs"><option>Trucking</option><option>Expedition</option></select></td>
+                <td class="p-1.5"><input class="border rounded px-1 py-0.5 text-xs w-full" value="Trucking Malang–Sidoarjo"></td>
+                <td class="p-1.5 text-right"><input class="border rounded px-1 py-0.5 text-xs w-24 text-right" value="450.000"></td>
+                <td class="p-1.5 text-center"><select class="border rounded px-1 py-0.5 text-xs"><option selected>Taxable</option><option>Reimbursement</option></select></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Tab 4: History Flow -->
+        <div id="content-history" class="tab-content hidden">
+          <div class="space-y-2 py-1">
+            <div class="flex items-center justify-between border-b pb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-blue-100 text-blue-700 font-semibold rounded text-[10px]">Inquiry</span>
+                <span class="text-slate-600">IQ2600001 — PT Kaysindo Snackindo</span>
+              </div>
+              <span class="text-[10px] text-slate-400">10 Agu 2026</span>
+            </div>
+            <div class="flex items-center justify-between border-b pb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-purple-100 text-purple-700 font-semibold rounded text-[10px]">Quotation</span>
+                <span class="text-slate-600">QT2600007 (Approved)</span>
+              </div>
+              <span class="text-[10px] text-slate-400">12 Agu 2026</span>
+            </div>
+            <div class="flex items-center justify-between pb-1">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 bg-amber-100 text-amber-700 font-semibold rounded text-[10px]">Customer Order</span>
+                <span class="text-slate-800 font-semibold">CO2600011 (Current Active Draft)</span>
+              </div>
+              <span class="text-[10px] text-emerald-600 font-medium">In Progress</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="col-span-4 flex flex-col space-y-3 overflow-y-auto">
+      
+      <!-- DOC DISCOUNT -->
+      <div class="card p-3">
+        <h2 class="font-semibold text-slate-700 mb-2 text-xs">Document Discount</h2>
+        <div class="space-y-2">
+          <div>
+            <label class="text-[10px] text-slate-500">Disc. Amount (fix from IQ)</label>
+            <input class="locked w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="2% (from IQ)" readonly>
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500">Disc. Qty <span class="text-emerald-700 font-semibold">[ACTIVE]</span></label>
+            <input class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" value="1% (Σ tonase 8.4t)">
+          </div>
+        </div>
+      </div>
+
+      <!-- TAX & SUMMARY -->
+      <div class="card p-3">
+        <h2 class="font-semibold text-slate-700 mb-2 text-xs">Summary & Tax</h2>
+        <div class="space-y-1 text-xs">
+          <div class="flex justify-between"><span class="text-slate-500">Item Subtotal</span><span>23.800.000</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">− Total Discounts</span><span>(716.100)</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">+ External Cost</span><span>450.000</span></div>
+          <div class="flex justify-between font-semibold border-t pt-1"><span>DPP</span><span>23.303.061</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">VAT 11% (PPN)</span><span>2.563.337</span></div>
+          <div class="flex justify-between font-semibold"><span>Total Billing</span><span>25.866.398</span></div>
+          <div class="flex justify-between text-purple-600"><span>WHT 23 (PPh Service)</span><span>(61.000)</span></div>
+          <div class="flex justify-between font-bold text-emerald-700 border-t pt-1 text-xs"><span>Net Receivable</span><span>25.805.398</span></div>
+        </div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="card p-3">
+        <label class="text-[10px] text-slate-500">Order Notes</label>
+        <textarea class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" rows="2" placeholder="Internal notes for Ops/PPIC..."></textarea>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL POPUP PRODUCT DETAIL -->
+<div id="productModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-5 max-w-md w-full mx-4 shadow-xl">
+    <div class="flex justify-between items-center mb-3 border-b pb-2">
+      <h3 class="font-bold text-sm text-slate-800" id="modalProductName">Product Configuration</h3>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">✕</button>
+    </div>
+    <div class="space-y-3 text-xs">
+      <div>
+        <label class="text-[10px] text-slate-500 font-semibold uppercase">Color Configuration</label>
+        <p class="text-slate-800 bg-slate-50 p-2 rounded border mt-0.5" id="modalColorConfig">-</p>
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-500 font-semibold uppercase">Product Parts / Components</label>
+        <p class="text-slate-800 bg-slate-50 p-2 rounded border mt-0.5" id="modalParts">-</p>
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-500 font-semibold uppercase">Finishing Notes</label>
+        <p class="text-slate-800 bg-slate-50 p-2 rounded border mt-0.5">Lamination Glossy, Die-cut Standard.</p>
+      </div>
+    </div>
+    <div class="flex justify-end mt-4">
+      <button onclick="closeModal()" class="px-3 py-1.5 bg-slate-800 text-white rounded text-xs hover:bg-slate-900">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ADDRESS PICKER (simulasi v_geo_full_address) -->
+<div id="addressModal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-5 w-[560px] shadow-xl">
+    <div class="flex justify-between items-center mb-3 border-b pb-2">
+      <div>
+        <h3 class="font-bold text-sm text-slate-800">Pilih Shipment Location</h3>
+        <p class="text-[10px] text-slate-400">PT Kaysindo Snackindo · sumber: geo master (kelurahan → kecamatan → kota → provinsi)</p>
+      </div>
+      <button onclick="closeAddressPicker()" class="text-slate-400 hover:text-slate-600 font-bold text-base">✕</button>
+    </div>
+
+    <!-- Sub-tab: Alamat Tersimpan / Alamat Baru -->
+    <div class="flex gap-2 mb-3">
+      <button onclick="switchAddrTab('saved')" id="addrtab-saved" class="px-2.5 py-1 text-[11px] font-semibold rounded border-b-2 border-blue-600 text-blue-600">Alamat Tersimpan</button>
+      <button onclick="switchAddrTab('new')" id="addrtab-new" class="px-2.5 py-1 text-[11px] font-semibold rounded border-b-2 border-transparent text-slate-500 hover:text-slate-700">+ Alamat Baru</button>
+    </div>
+
+    <!-- Panel: Saved addresses -->
+    <div id="addrpanel-saved" class="space-y-2">
+      <label class="flex items-start gap-2 border rounded p-2 cursor-pointer hover:bg-slate-50" onclick="pickSavedAddress(this,'Gudang Pusat','Jl. Raden Intan No.12, Kel. Arjosari, Kec. Blimbing, Kota Malang, Jawa Timur')">
+        <input type="radio" name="savedAddr" checked class="mt-0.5">
+        <div class="text-xs">
+          <p class="font-semibold text-slate-800">Gudang Pusat <span class="text-[10px] font-normal text-slate-400">(default)</span></p>
+          <p class="text-slate-500 text-[11px]">Jl. Raden Intan No.12, Kel. Arjosari, Kec. Blimbing, Kota Malang, Jawa Timur</p>
+        </div>
+      </label>
+      <label class="flex items-start gap-2 border rounded p-2 cursor-pointer hover:bg-slate-50" onclick="pickSavedAddress(this,'Cabang Sidoarjo','Jl. Jenggolo No.45, Kel. Pucang, Kec. Sidoarjo, Kab. Sidoarjo, Jawa Timur')">
+        <input type="radio" name="savedAddr" class="mt-0.5">
+        <div class="text-xs">
+          <p class="font-semibold text-slate-800">Cabang Sidoarjo</p>
+          <p class="text-slate-500 text-[11px]">Jl. Jenggolo No.45, Kel. Pucang, Kec. Sidoarjo, Kab. Sidoarjo, Jawa Timur</p>
+        </div>
+      </label>
+    </div>
+
+    <!-- Panel: New address (cascading geo picker) -->
+    <div id="addrpanel-new" class="hidden space-y-2">
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[10px] text-slate-500">Provinsi</label>
+          <select id="geoProvinsi" onchange="cascadeGeo('kota')" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5">
+            <option value="">— pilih —</option>
+            <option value="jatim">Jawa Timur</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-500">Kota / Kabupaten</label>
+          <select id="geoKota" onchange="cascadeGeo('kec')" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" disabled>
+            <option value="">— pilih provinsi dulu —</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-500">Kecamatan</label>
+          <select id="geoKec" onchange="cascadeGeo('kel')" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" disabled>
+            <option value="">— pilih kota dulu —</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] text-slate-500">Kelurahan</label>
+          <select id="geoKel" onchange="cascadeGeo('done')" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" disabled>
+            <option value="">— pilih kecamatan dulu —</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-500">Label Lokasi</label>
+        <input id="geoLabel" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" placeholder="mis. Gudang Kedua, Site Proyek Rungkut">
+      </div>
+      <div>
+        <label class="text-[10px] text-slate-500">Detail Alamat (jalan, no., RT/RW, patokan)</label>
+        <input id="geoDetail" class="w-full border rounded px-1.5 py-1 text-xs mt-0.5" placeholder="Jl. ..., No. ...">
+      </div>
+      <div class="bg-slate-50 border rounded p-2 text-[11px] text-slate-500">
+        Preview: <span id="geoPreview" class="text-slate-700 font-medium">—</span>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-4 border-t pt-3">
+      <button onclick="closeAddressPicker()" class="px-3 py-1.5 border border-slate-300 rounded text-xs text-slate-600 hover:bg-slate-50">Batal</button>
+      <button onclick="confirmNewAddress()" id="btnUseNewAddr" class="hidden px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-semibold hover:bg-blue-700">Gunakan Alamat Ini</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPT CONTROLS -->
+<script>
+  // Tab Switcher
+  function switchTab(target) {
+    const tabs = ['product', 'delivery', 'eksternal', 'history'];
+    tabs.forEach(tab => {
+      const content = document.getElementById('content-' + tab);
+      const btn = document.getElementById('btn-' + tab);
+      if (tab === target) {
+        content.classList.remove('hidden');
+        btn.className = "px-3 py-1.5 font-semibold text-xs border-b-2 border-blue-600 text-blue-600 focus:outline-none";
+      } else {
+        content.classList.add('hidden');
+        btn.className = "px-3 py-1.5 font-semibold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 focus:outline-none";
+      }
+    });
+  }
+
+  // Toggle Show/Hide Disc Column
+  let isDiscVisible = true;
+  function toggleDiscColumn() {
+    isDiscVisible = !isDiscVisible;
+    const cols = document.querySelectorAll('.col-disc');
+    cols.forEach(el => {
+      if (isDiscVisible) {
+        el.style.display = '';
+      } else {
+        el.style.display = 'none';
+      }
+    });
+    const btn = document.getElementById('btn-toggle-disc');
+    btn.innerText = isDiscVisible ? "⚙️ Hide Disc Col" : "⚙️ Show Disc Col";
+  }
+
+  // Modal Functions
+  function openModal(name, color, parts) {
+    document.getElementById('modalProductName').innerText = name + " — Details";
+    document.getElementById('modalColorConfig').innerText = color;
+    document.getElementById('modalParts').innerText = parts;
+    document.getElementById('productModal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('productModal').classList.add('hidden');
+  }
+
+  // ===== Address Picker (simulasi v_geo_full_address) =====
+  // Simulasi struktur geo master: provinsi -> kota -> kecamatan -> kelurahan
+  const GEO_DATA = {
+    jatim: {
+      label: 'Jawa Timur',
+      kota: {
+        malang: { label: 'Kota Malang', kec: {
+          blimbing: { label: 'Kec. Blimbing', kel: ['Arjosari', 'Purwodadi', 'Polowijen'] },
+          klojen:   { label: 'Kec. Klojen',   kel: ['Kauman', 'Klojen', 'Oro-oro Dowo'] }
+        }},
+        sidoarjo: { label: 'Kab. Sidoarjo', kec: {
+          sidoarjo_kec: { label: 'Kec. Sidoarjo', kel: ['Pucang', 'Sidokare', 'Lemahputro'] },
+          waru:         { label: 'Kec. Waru', kel: ['Ngingas', 'Kureksari', 'Wadungasri'] }
+        }}
+      }
+    }
+  };
+
+  function openAddressPicker() {
+    document.getElementById('addressModal').classList.remove('hidden');
+    switchAddrTab('saved');
+  }
+  function closeAddressPicker() {
+    document.getElementById('addressModal').classList.add('hidden');
+  }
+
+  function switchAddrTab(tab) {
+    const panels = ['saved', 'new'];
+    panels.forEach(p => {
+      document.getElementById('addrpanel-' + p).classList.toggle('hidden', p !== tab);
+      const btn = document.getElementById('addrtab-' + p);
+      btn.className = p === tab
+        ? "px-2.5 py-1 text-[11px] font-semibold rounded border-b-2 border-blue-600 text-blue-600"
+        : "px-2.5 py-1 text-[11px] font-semibold rounded border-b-2 border-transparent text-slate-500 hover:text-slate-700";
+    });
+    document.getElementById('btnUseNewAddr').classList.toggle('hidden', tab !== 'new');
+  }
+
+  function pickSavedAddress(el, label, fullAddr) {
+    document.querySelectorAll('input[name="savedAddr"]').forEach(r => r.checked = false);
+    el.querySelector('input[type=radio]').checked = true;
+    document.getElementById('shipAddrSummary').innerText = label + ' — ' + fullAddr;
+    closeAddressPicker();
+  }
+
+  // Cascading dropdown: provinsi -> kota -> kecamatan -> kelurahan
+  function cascadeGeo(level) {
+    const selProvinsi = document.getElementById('geoProvinsi');
+    const selKota = document.getElementById('geoKota');
+    const selKec = document.getElementById('geoKec');
+    const selKel = document.getElementById('geoKel');
+
+    if (level === 'kota') {
+      selKota.innerHTML = '<option value="">— pilih —</option>';
+      selKec.innerHTML = '<option value="">— pilih kota dulu —</option>';
+      selKel.innerHTML = '<option value="">— pilih kecamatan dulu —</option>';
+      selKec.disabled = true; selKel.disabled = true;
+      const prov = GEO_DATA[selProvinsi.value];
+      if (!prov) { selKota.disabled = true; updateGeoPreview(); return; }
+      selKota.disabled = false;
+      Object.entries(prov.kota).forEach(([key, k]) => {
+        selKota.innerHTML += `<option value="${key}">${k.label}</option>`;
+      });
+    }
+    if (level === 'kec') {
+      selKec.innerHTML = '<option value="">— pilih —</option>';
+      selKel.innerHTML = '<option value="">— pilih kecamatan dulu —</option>';
+      selKel.disabled = true;
+      const kota = GEO_DATA[selProvinsi.value]?.kota[selKota.value];
+      if (!kota) { selKec.disabled = true; updateGeoPreview(); return; }
+      selKec.disabled = false;
+      Object.entries(kota.kec).forEach(([key, kc]) => {
+        selKec.innerHTML += `<option value="${key}">${kc.label}</option>`;
+      });
+    }
+    if (level === 'kel') {
+      selKel.innerHTML = '<option value="">— pilih —</option>';
+      const kec = GEO_DATA[selProvinsi.value]?.kota[selKota.value]?.kec[selKec.value];
+      if (!kec) { selKel.disabled = true; updateGeoPreview(); return; }
+      selKel.disabled = false;
+      kec.kel.forEach(kel => {
+        selKel.innerHTML += `<option value="${kel}">Kel. ${kel}</option>`;
+      });
+    }
+    updateGeoPreview();
+  }
+
+  function updateGeoPreview() {
+    const prov = document.getElementById('geoProvinsi');
+    const kota = document.getElementById('geoKota');
+    const kec = document.getElementById('geoKec');
+    const kel = document.getElementById('geoKel');
+    const detail = document.getElementById('geoDetail').value;
+
+    const parts = [];
+    if (detail) parts.push(detail);
+    if (kel.value) parts.push('Kel. ' + kel.value);
+    if (kec.value) parts.push(kec.options[kec.selectedIndex].text);
+    if (kota.value) parts.push(kota.options[kota.selectedIndex].text);
+    if (prov.value) parts.push(prov.options[prov.selectedIndex].text);
+
+    document.getElementById('geoPreview').innerText = parts.length ? parts.join(', ') : '—';
+  }
+  document.addEventListener('input', (e) => {
+    if (e.target && (e.target.id === 'geoDetail' || e.target.id === 'geoLabel')) updateGeoPreview();
+  });
+
+  function confirmNewAddress() {
+    const kel = document.getElementById('geoKel');
+    if (!kel.value) { alert('Lengkapi Provinsi → Kota → Kecamatan → Kelurahan dulu.'); return; }
+    const label = document.getElementById('geoLabel').value || 'Lokasi Baru';
+    const preview = document.getElementById('geoPreview').innerText;
+    document.getElementById('shipAddrSummary').innerText = label + ' — ' + preview;
+    closeAddressPicker();
+  }
+</script>
+
+</body>
+</html>

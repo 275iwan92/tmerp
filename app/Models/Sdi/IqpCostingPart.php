@@ -16,6 +16,7 @@ class IqpCostingPart extends Model
 
     protected $fillable = [
         'costing_id',
+        'part_id',
         'no_urut',
         'part_name',
         'part_type_code',
@@ -135,6 +136,11 @@ class IqpCostingPart extends Model
     public function costing(): BelongsTo
     {
         return $this->belongsTo(IqpCosting::class, 'costing_id', 'id_costing');
+    }
+
+    public function inquiryPart(): BelongsTo
+    {
+        return $this->belongsTo(IqpPart::class, 'part_id', 'id_part');
     }
 
     public function coatings(): HasMany

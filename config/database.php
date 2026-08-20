@@ -202,6 +202,30 @@ return [
             'engine' => 'InnoDB',
         ],
 
+        // tm2old — BUKAN salah satu dari 10 database modul (bukan module DB
+        // fungsional). Ini staging/karantina untuk dump mentah sistem lama
+        // (ScriptCase V1: mst_vendor, master item lama, dsb) yang diimpor apa
+        // adanya oleh user (mis. via mysql/phpMyAdmin), di luar migration
+        // Laravel — tabelnya tidak fixed-schema, jadi tidak ada migration untuk
+        // isi tm2old sendiri. Dipakai sebagai SUMBER baca-saja oleh engine
+        // migrasi data (mis. Master Customer/Supplier) sebelum ditransformasi
+        // masuk ke tm2mst. Lihat CLAUDE.md §2.
+        'tm2old' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_OLD', 'tm2old'),
+            'username' => env('DB_USERNAME', 'tm2user'),
+            'password' => env('DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => 'InnoDB',
+        ],
+
         // SQLite bawaan — biarkan bila ingin fallback testing cepat.
         'sqlite' => [
             'driver' => 'sqlite',

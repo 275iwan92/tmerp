@@ -32,4 +32,9 @@ class SysConstant extends Model
     {
         return (float) (static::query()->where('constant_key', $key)->where('is_active', true)->value('constant_number') ?? $default);
     }
+
+    public static function text(string $key, ?string $default = null): ?string
+    {
+        return static::query()->where('constant_key', $key)->where('is_active', true)->value('constant_text') ?? $default;
+    }
 }

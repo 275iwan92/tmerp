@@ -65,7 +65,8 @@ header.app-header .back { @apply ml-auto bg-[#43508a] text-[#cfd6ef] border-none
 .f.col3 { @apply col-span-3; }
 .f.col4 { @apply col-span-4; }
 label { @apply text-[11px] text-[#667] font-semibold; }
-input, select, textarea { @apply px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] bg-white w-full; font-family: inherit; }
+input:not([type="checkbox"]):not([type="radio"]), select, textarea { @apply px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] bg-white w-full; font-family: inherit; }
+input[type="checkbox"], input[type="radio"] { @apply w-auto cursor-pointer; }
 input:read-only, select:disabled, input:disabled, textarea:read-only { @apply bg-[#eef0f3] text-[#667] cursor-not-allowed; }
 .sec-title { @apply text-[11px] font-bold text-[#556] uppercase tracking-[.4px] mt-3.5 mb-1.5 pb-1 border-b border-[#e8ecf2]; }
 .sec-title:first-child { @apply mt-0; }

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup Modern — Jadwal Shift & Alokasi Mesin TMERP</title>
+
+<!--
+================================================================================
+  TMERP WORKFORCE & MACHINE SCHEDULING SYSTEM (TIER 4 ERP MOCKUP)
+  Benchmarked against: SAP S/4HANA, Oracle HCM, MS Dynamics 365, & Odoo Planning
+================================================================================
+
+  [1] ANALISIS BENCHMARK ERP INTERNASIONAL:
+  ------------------------------------------------------------------------------
+  - SAP S/4HANA (Production Roster & Shift Planning):
+    * Fokus pada visual feedback instan saat dragging untuk mencegah Human Error.
+    * Pemisahan tegas antara status DRAFT (PPIC) dan CONFIRMED (Published to HR/Self-Service).
+  - Oracle Fusion HCM (Workforce Management):
+    * Menggunakan Live Metrics Summary di atas grid untuk memantau beban kerja secara real-time.
+  - Microsoft Dynamics 365 Supply Chain & HR:
+    * Interaksi dua arah (Grid <-> Pool) via drag & drop untuk efisiensi eksekusi pengguna.
+  - Odoo Planning & Workstation Management:
+    * UI Clean, modern, micro-animation, dan pencarian cepat pegawai di pool.
+
+  [2] INTEGRASI DATABASE & SKEMA MYSQL 8 (Untuk Implementasi Scriptcase 9):
+  ------------------------------------------------------------------------------
+  Tabel Utama yang Terlibat:
+  1. `emp_employee`: Master data pegawai (Filter `division_id`, `is_active = 1`).
+  2. `prod_machine`: Master lini mesin (Filter `division_id`, `status = 'ACTIVE'`).
+  3. `emp_shift`: Master shift & jam kerja (`shift_id`, `shift_name`, `start_time`, `end_time`).
+  4. `emp_shift_roster_batch`: Header status publish.
+     - Column: `id`, `division_id`, `date_from`, `date_to`, `status` ('DRAFT'/'CONFIRMED'),
+               `confirmed_by`, `confirmed_at`, `created_by`, `created_at`.
+  5. `emp_shift_roster`: Detail transaksi penugasan shift & mesin.
+     - Column: `id`, `batch_id`, `employee_id`, `machine_id` (NULL jika non-mesin),
+               `shift_id`, `roster_date`, `division_id`, `is_overtime` (T/F),
+               `assigned_by_role` ('PPIC'/'HR').
+
+  [3] HIGHLIGHT FITUR UX DRAG & DROP DALAM MOCKUP INI:
+  ------------------------------------------------------------------------------
+  - Visual Dropzone: Highlight warna hijau/merah pada sel target saat dragover.
+  - Two-Way Dragging: Drag dari Pool -> Cell, dan Drag dari Cell -> Pool untuk membatalkan.
+  - Filter Instant: Filter pencarian nama di Pool Pegawai secara real-time.
+  - Live Counter: Indikator real-time Total Assigned, OT Count, dan Conflict Warnings.
+================================================================================
+-->
+
+<style>
+  :root {
+    --navy-dark: #1b2559;
+    --navy-main: #2b3674;
+    --accent: #4318ff;
+    --accent-hover: #3311db;
+    --bg-page: #f4f7fe;
+    --bg-card: #ffffff;
+    --border: #e9edf7;
+    --border-strong: #c3cbdc;
+    --text-primary: #2b3674;
+    --text-secondary: #a3edd9;
+    --text-dark-gray: #707ebe;
+    --text-muted: #a3aed0;
+    
+    --green-bg: #e6f9f0; --green-text: #05cd99; --green-border: #05cd99;
+    --amber-bg: #fff8e7; --amber-text: #ffb800; --amber-border: #ffb800;
+    --red-bg: #ffe8e8;   --red-text: #ee5d50;   --red-border: #ee5d50;
+    --blue-bg: #f4f7fe;  --blue-text: #4318ff;  --blue-border: #4318ff;
+    --purple-bg: #f1eefc;--purple-text: #6c5dd3;
+
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg-page); color: var(--text-primary);
+    font-family: var(--font-family); padding: 24px; line-height: 1.5;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; }
+
+  /* Header Title */
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  h1 { font-size: 22px; font-weight: 700; color: var(--navy-dark); margin: 0 0 4px; }
+  .subtitle { font-size: 13px; color: var(--text-dark-gray); margin: 0; }
+
+  /* Metrics Summary Bar */
+  .metrics-bar {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px;
+  }
+  .metric-card {
+    background: var(--bg-card); padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(112, 126, 190, 0.06);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .metric-info .lbl { font-size: 11px; color: var(--text-dark-gray); font-weight: 600; text-transform: uppercase; }
+  .metric-info .val { font-size: 20px; font-weight: 700; color: var(--navy-dark); margin-top: 2px; }
+  .metric-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+  /* Tab Navigation */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+  .tab-btn {
+    padding: 10px 20px; font-size: 13px; font-weight: 600; border: none; background: none;
+    color: var(--text-dark-gray); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .tab-btn:hover { color: var(--accent); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Card & Toolbar */
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(112, 126, 190, 0.05);
+  }
+  .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .spacer { flex: 1; }
+  .badge-role {
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .badge-role.ppic { background: var(--purple-bg); color: var(--purple-text); }
+  .badge-role.hr { background: var(--blue-bg); color: var(--blue-text); }
+  
+  .period-picker { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dark-gray); font-weight: 600; }
+  .period-picker input[type="date"] {
+    padding: 6px 10px; border: 1px solid var(--border-strong); border-radius: 8px; font-size: 12px; color: var(--navy-dark); outline: none;
+  }
+
+  /* Machine Selection Tabs */
+  .machine-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .machine-tabs button {
+    padding: 8px 16px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-strong);
+    background: #fff; color: var(--text-dark-gray); border-radius: 8px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .machine-tabs button:hover { background: var(--bg-page); }
+  .machine-tabs button.active { background: var(--navy-main); border-color: var(--navy-main); color: #fff; box-shadow: 0 3px 8px rgba(43, 54, 116, 0.2); }
+
+  /* Table Grid */
+  .table-responsive { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; background: #fff; }
+  th, td { border: 1px solid var(--border); padding: 8px; text-align: center; vertical-align: top; }
+  th { background: #f8fafc; font-weight: 700; color: var(--navy-dark); font-size: 11px; text-transform: uppercase; }
+  th.row-head, td.row-head { text-align: left; color: var(--navy-dark); font-weight: 600; width: 150px; background: #f8fafc; }
+
+  /* Drag Drop Slots */
+  .slot {
+    min-height: 52px; border-radius: 8px; border: 1.5px dashed var(--border-strong);
+    background: #fafbfc; transition: all 0.2s ease; padding: 4px; display: flex; flex-direction: column; gap: 4px;
+  }
+  /* Active Drag Over Target Highlights */
+  .slot.drag-over { background: #eef2ff !important; border-color: var(--accent) !important; border-style: solid !important; }
+  .slot.drag-over-conflict { background: var(--red-bg) !important; border-color: var(--red-text) !important; }
+  .slot.filled { border-style: solid; border-color: var(--border); background: #fff; }
+  .slot.conflict { outline: 2px solid var(--red-text); outline-offset: -2px; }
+  .slot.conflict-soft { outline: 2px solid var(--amber-text); outline-offset: -2px; }
+
+  /* Employee Chips */
+  .chip-multi { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+  .chip-wrap { display: flex; align-items: center; gap: 4px; width: 100%; }
+  .chip {
+    padding: 6px 10px; background: var(--blue-bg); color: var(--blue-text); border-radius: 6px;
+    font-size: 11px; font-weight: 600; cursor: grab; user-select: none; display: flex; justify-content: space-between; align-items: center; flex: 1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: transform 0.1s;
+  }
+  .chip:active { cursor: grabbing; transform: scale(0.98); }
+  .chip.busy-badge { background: var(--red-bg); color: var(--red-text); }
+  .chip.busy-badge-soft { background: var(--amber-bg); color: var(--amber-text); }
+  .chip-remove {
+    margin-left: 6px; cursor: pointer; font-weight: bold; font-size: 12px; opacity: 0.6; padding: 0 2px;
+  }
+  .chip-remove:hover { opacity: 1; }
+
+  /* Overtime Toggle Button on Chip */
+  .ot-btn {
+    width: 18px; height: 18px; font-size: 9px; font-weight: 800; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+    transition: all 0.15s; border: none;
+  }
+  .ot-btn.off { background: var(--border-strong); color: #fff; }
+  .ot-btn.on { background: var(--red-text); color: #fff; box-shadow: 0 2px 4px rgba(238, 93, 80, 0.3); }
+
+  /* Pool Section */
+  .pool-container {
+    margin-top: 16px; background: #f8fafc; border: 1.5px dashed var(--border-strong); border-radius: 10px; padding: 14px;
+    transition: background 0.2s;
+  }
+  .pool-container.drag-over-pool { background: var(--green-bg); border-color: var(--green-border); }
+  .pool-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .pool-title { font-size: 12px; font-weight: 700; color: var(--navy-dark); text-transform: uppercase; }
+  .pool-search {
+    padding: 5px 10px; font-size: 12px; border: 1px solid var(--border-strong); border-radius: 6px; width: 200px; outline: none;
+  }
+  .pool { display: flex; gap: 8px; flex-wrap: wrap; min-height: 42px; }
+
+  /* Action Buttons */
+  .btn {
+    padding: 8px 16px; font-size: 12px; font-weight: 600; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+    display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-success { background: var(--green-text); color: #fff; }
+  .btn-success:hover { opacity: 0.9; }
+  .btn-outline { background: #fff; border-color: var(--border-strong); color: var(--navy-dark); }
+  .btn-outline:hover { background: var(--bg-page); }
+
+  /* Note Box */
+  .note-box {
+    font-size: 12px; color: var(--text-dark-gray); background: var(--bg-page);
+    border-left: 4px solid var(--accent); padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 16px;
+  }
+
+  /* HR Grid Styling */
+  .grid-shift-cell {
+    min-height: 28px; font-weight: 700; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .grid-shift-cell.s0 { background: transparent; color: var(--text-muted); font-weight: 400; }
+  .grid-shift-cell.s1 { background: var(--amber-bg); color: var(--amber-text); }
+  .grid-shift-cell.s2 { background: var(--blue-bg); color: var(--blue-text); }
+  .grid-shift-cell.s3 { background: var(--purple-bg); color: var(--purple-text); }
+  .ot-mark {
+    position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 2px; background: var(--border-strong); cursor: pointer;
+  }
+  .ot-mark.on { background: var(--red-text); }
+  .emp-tag { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-top: 3px; }
+  .emp-tag.probation { background: var(--amber-bg); color: var(--amber-text); }
+  .emp-tag.borongan { background: var(--purple-bg); color: var(--purple-text); }
+  .emp-tag.dirumahkan { background: var(--red-bg); color: var(--red-text); }
+  .emp-tag.pkl { background: var(--blue-bg); color: var(--blue-text); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div>
+      <h1>TMERP — Shift Roster & Machine Allocation</h1>
+      <p class="subtitle">Modul Roster Pegawai Tier 4 · Offset Printing & Group SBU</p>
+    </div>
+  </div>
+
+  <!-- Real-time Live Metrics Summary Bar (Inspired by Oracle HCM / SAP) -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-info">
+        <div class="lbl">Total Terjadwal</div>
+        <div class="val" id="metricAssigned">0</div>
+      </div>
+      <div class="metric-icon" style="background:var(--blue-bg); color:var(--blue-text);">👤</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-info">
+        <div class="lbl">Jumlah Lembur (OT)</div>
+        <div class="val" id="metricOvertime">0</div>
+      </div>
+      <div class="metric-icon" style="background:var(--red-bg); color:var(--red-text);">⏱️</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-info">
+        <div class="lbl">Potensi Bentrok</div>
+        <div class="val" id="metricConflicts">0</div>
+      </div>
+      <div class="metric-icon" style="background:var(--amber-bg); color:var(--amber-text);">⚠️</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-info">
+        <div class="lbl">Pegawai di Pool</div>
+        <div class="val" id="metricPoolCount">0</div>
+      </div>
+      <div class="metric-icon" style="background:var(--purple-bg); color:var(--purple-text);">📋</div>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="ppic">Papan PPIC — Offset Printing (Penugasan Mesin)</button>
+    <button class="tab-btn" data-tab="hr">Grid HR — Indostry (Shift Non-Mesin)</button>
+  </div>
+
+  <!-- ================= TAB PPIC ================= -->
+  <div class="panel active" id="panel-ppic">
+    <div class="card">
+      <!-- Toolbar Controls -->
+      <div class="toolbar">
+        <span class="badge-role ppic">PPIC Mode</span>
+        <span id="batchStatusBadge" class="badge-role" style="background:var(--amber-bg); color:var(--amber-text);">DRAFT</span>
+        
+        <div class="period-picker">
+          <span>Periode:</span>
+          <input type="date" id="dateFrom" value="2026-08-10">
+          <span>s/d</span>
+          <input type="date" id="dateTo" value="2026-08-16">
+        </div>
+
+        <div class="spacer"></div>
+
+        <button class="btn btn-outline" id="btnSaveDraft" onclick="saveDraft()">💾 Simpan Draft</button>
+        <button class="btn btn-success" id="btnConfirm" onclick="confirmBatch()">✓ Publish & Confirm</button>
+        <button class="btn btn-outline" id="btnUnlock" onclick="unlockBatch()" style="display:none; color:var(--red-text);">🔓 Buka Kunci (Revisi)</button>
+      </div>
+
+      <div class="note-box" id="batchNote">
+        <b>Tips Drag & Drop ERP:</b> Seret nama pegawai dari <i>Pool</i> ke dalam sel jadwal. Slot target akan menyorot hijau secara otomatis. Untuk membatalkan penugasan, seret kembali chip nama pegawai dari tabel ke kotak <i>Pool Pegawai</i>.
+      </div>
+
+      <!-- Machine Tab Switches -->
+      <div class="machine-tabs" id="machineTabs"></div>
+
+      <!-- Main Interactive Board Table -->
+      <div class="table-responsive">
+        <table id="board"></table>
+      </div>
+
+      <!-- Drag & Drop Pool Section -->
+      <div class="pool-container" id="poolContainer" ondragover="handlePoolDragOver(event)" ondragleave="handlePoolDragLeave(event)" ondrop="handlePoolDrop(event)">
+        <div class="pool-header">
+          <div class="pool-title">Pool Pegawai (Tersedia untuk Dialokasikan)</div>
+          <input type="text" id="poolSearch" class="pool-search" placeholder="🔍 Cari nama pegawai..." onkeyup="filterPool()">
+        </div>
+        <div class="pool" id="pool"></div>
+      </div>
+
+      <!-- Legend -->
+      <div style="display:flex; gap:16px; margin-top:14px; font-size:11px; color:var(--text-dark-gray);">
+        <span>🟢 <b>Dropzone Hijau:</b> Slot Valid/Aman</span>
+        <span>🟡 <b>Peringatan Oranye:</b> Dobel shift pada hari yang sama</span>
+        <span>🔴 <b>Bentrok Merah:</b> Pegawai ditugaskan di 2 mesin berbeda pada shift yang sama</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TAB HR ================= -->
+  <div class="panel" id="panel-hr">
+    <div class="card">
+      <div class="toolbar">
+        <span class="badge-role hr">HR Mode</span>
+        <span style="font-size:13px; font-weight:700;">Divisi Indostry</span>
+        <div class="spacer"></div>
+        <span style="font-size:12px; color:var(--text-dark-gray);">Siklus Shift: Klik pada sel untuk mengubah shift secara fleksibel.</span>
+      </div>
+
+      <div class="table-responsive">
+        <table id="hrGrid"></table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================= GLOBAL STATE & DATA MOCKUP ================= */
+const machines = ['Cetak 1 (Komori)', 'Cetak 2 (Heidelberg)', 'Coating UV', 'Laminasi High-Speed'];
+const days = ['Sen 10', 'Sel 11', 'Rab 12', 'Kam 13', 'Jum 14', 'Sab 15', 'Ming 16'];
+const shifts = [
+  { id: 1, name: 'Shift 1 (Pagi)', jam: '05:00–13:15' },
+  { id: 2, name: 'Shift 2 (Siang)', jam: '13:15–21:15' },
+  { id: 3, name: 'Shift 3 (Malam)', jam: '21:15–05:00' }
+];
+
+let currentMachine = 0;
+const rosterEmployees = ['Siti Aminah', 'Joko Purnomo', 'Rudi Hartono', 'Dewi Lestari', 'Ahmad Fauzi', 'Bagus Nugroho', 'Wawan Setiadi', 'Lina Marlina'];
+
+let assign = {};    // Key: machine|day|shift -> Array of employee names
+let otAssign = {};  // Key: machine|day|shift::empName -> boolean (Lembur)
+let batchStatus = 'DRAFT';
+
+/* ---------- TAB SWITCHING ---------- */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  };
+});
+
+/* ---------- HELPER FUNCTIONS ---------- */
+function slotKey(m, d, s) { return m + '|' + d + '|' + s; }
+
+function checkConflict(name, day, shift, excludeKey) {
+  let hard = false, soft = false;
+  Object.entries(assign).forEach(([key, arr]) => {
+    if (key === excludeKey || !arr.includes(name)) return;
+    const [, kd, ks] = key.split('|');
+    if (kd !== day) return;
+    if (ks === shift) hard = true; // Bentrok fisik (Mesin beda, shift sama, hari sama)
+    else soft = true;             // Dobel shift pada hari yang sama
+  });
+  return { hard, soft };
+}
+
+/* ---------- RENDER METRICS SUMMARY ---------- */
+function updateMetrics() {
+  let totalAssigned = 0;
+  let totalOT = Object.values(otAssign).filter(Boolean).length;
+  let conflictSet = new Set();
+
+  Object.entries(assign).forEach(([key, arr]) => {
+    totalAssigned += arr.length;
+    const [, day, shift] = key.split('|');
+    arr.forEach(name => {
+      const { hard, soft } = checkConflict(name, day, shift, key);
+      if (hard || soft) conflictSet.add(name + '-' + day);
+    });
+  });
+
+  document.getElementById('metricAssigned').textContent = totalAssigned;
+  document.getElementById('metricOvertime').textContent = totalOT;
+  document.getElementById('metricConflicts').textContent = conflictSet.size;
+  document.getElementById('metricPoolCount').textContent = rosterEmployees.length;
+}
+
+/* ---------- RENDER MACHINE TABS ---------- */
+function renderMachineTabs() {
+  const el = document.getElementById('machineTabs');
+  el.innerHTML = '';
+  machines.forEach((m, i) => {
+    const b = document.createElement('button');
+    b.textContent = m;
+    if (i === currentMachine) b.classList.add('active');
+    b.onclick = () => { currentMachine = i; renderMachineTabs(); renderBoard(); };
+    el.appendChild(b);
+  });
+}
+
+/* ---------- CHIP CREATION & DRAG HANDLING ---------- */
+function createChip(name, isFromBoard = false, boardKey = '') {
+  const wrap = document.createElement('div');
+  wrap.className = 'chip-wrap';
+
+  const c = document.createElement('div');
+  c.className = 'chip';
+  c.draggable = true;
+  c.ondragstart = (e) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify({ name, fromKey: boardKey }));
+  };
+
+  const nameSpan = document.createElement('span');
+  nameSpan.textContent = name;
+  c.appendChild(nameSpan);
+
+  if (isFromBoard) {
+    const { hard, soft } = checkConflict(name, boardKey.split('|')[1], boardKey.split('|')[2], boardKey);
+    if (hard) c.classList.add('busy-badge');
+    else if (soft) c.classList.add('busy-badge-soft');
+
+    // Remove icon
+    const removeBtn = document.createElement('span');
+    removeBtn.className = 'chip-remove';
+    removeBtn.innerHTML = '×';
+    removeBtn.title = 'Lepas penugasan';
+    removeBtn.onclick = (e) => {
+      e.stopPropagation();
+      assign[boardKey] = assign[boardKey].filter(n => n !== name);
+      delete otAssign[boardKey + '::' + name];
+      renderBoard();
+    };
+    c.appendChild(removeBtn);
+  }
+
+  wrap.appendChild(c);
+
+  // Overtime Toggle Button if inside Board Slot
+  if (isFromBoard) {
+    const otKey = boardKey + '::' + name;
+    const isOt = !!otAssign[otKey];
+    const otBtn = document.createElement('button');
+    otBtn.className = 'ot-btn ' + (isOt ? 'on' : 'off');
+    otBtn.textContent = 'L';
+    otBtn.title = isOt ? 'Lembur Aktif (Klik untuk batalkan)' : 'Tandai Lembur';
+    otBtn.onclick = (e) => {
+      e.stopPropagation();
+      otAssign[otKey] = !otAssign[otKey];
+      renderBoard();
+    };
+    wrap.appendChild(otBtn);
+  }
+
+  return wrap;
+}
+
+/* ---------- RENDER POOL ---------- */
+function renderPool() {
+  const p = document.getElementById('pool');
+  p.innerHTML = '';
+  rosterEmployees.forEach(name => {
+    p.appendChild(createChip(name, false));
+  });
+  updateMetrics();
+}
+
+function filterPool() {
+  const query = document.getElementById('poolSearch').value.toLowerCase();
+  document.querySelectorAll('#pool .chip-wrap').forEach(el => {
+    const txt = el.textContent.toLowerCase();
+    el.style.display = txt.includes(query) ? 'flex' : 'none';
+  });
+}
+
+/* ---------- RENDER MAIN BOARD GRID ---------- */
+function renderBoard() {
+  const t = document.getElementById('board');
+  const m = machines[currentMachine];
+
+  let html = '<tr><th class="row-head">Shift / Jam</th>';
+  days.forEach(d => { html += `<th>${d}</th>`; });
+  html += '</tr>';
+
+  shifts.forEach(s => {
+    html += `<tr><td class="row-head"><div>${s.name}</div><div style="font-size:10px; color:var(--text-dark-gray);">${s.jam}</div></td>`;
+    days.forEach(d => {
+      const key = slotKey(m, d, s.name);
+      html += `<td ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${key}')">
+        <div class="slot" id="slot-${key}" data-key="${key}"></div>
+      </td>`;
+    });
+    html += '</tr>';
+  });
+  t.innerHTML = html;
+
+  // Populate slots with chips
+  document.querySelectorAll('.slot').forEach(slot => {
+    const key = slot.getAttribute('data-key');
+    const occupants = assign[key] || [];
+
+    if (occupants.length) {
+      slot.classList.add('filled');
+      const wrap = document.createElement('div');
+      wrap.className = 'chip-multi';
+
+      occupants.forEach(name => {
+        wrap.appendChild(createChip(name, true, key));
+      });
+      slot.appendChild(wrap);
+    }
+  });
+
+  updateMetrics();
+}
+
+/* ---------- INTERACTIVE DRAG & DROP HANDLERS ---------- */
+function handleDragOver(e) {
+  e.preventDefault();
+  const slot = e.currentTarget.querySelector('.slot');
+  if (slot) slot.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  const slot = e.currentTarget.querySelector('.slot');
+  if (slot) slot.classList.remove('drag-over', 'drag-over-conflict');
+}
+
+function handleDrop(e, key) {
+  e.preventDefault();
+  const slot = e.currentTarget.querySelector('.slot');
+  if (slot) slot.classList.remove('drag-over', 'drag-over-conflict');
+
+  const dataRaw = e.dataTransfer.getData('text/plain');
+  if (!dataRaw) return;
+  const { name, fromKey } = JSON.parse(dataRaw);
+
+  // If moving from another cell
+  if (fromKey && assign[fromKey]) {
+    assign[fromKey] = assign[fromKey].filter(n => n !== name);
+    if (otAssign[fromKey + '::' + name]) {
+      delete otAssign[fromKey + '::' + name];
+      otAssign[key + '::' + name] = true;
+    }
+  }
+
+  if (!assign[key]) assign[key] = [];
+  if (!assign[key].includes(name)) assign[key].push(name);
+
+  renderBoard();
+}
+
+/* Dragging back to Pool to Remove Assignment */
+function handlePoolDragOver(e) { e.preventDefault(); document.getElementById('poolContainer').classList.add('drag-over-pool'); }
+function handlePoolDragLeave(e) { document.getElementById('poolContainer').classList.remove('drag-over-pool'); }
+function handlePoolDrop(e) {
+  e.preventDefault();
+  document.getElementById('poolContainer').classList.remove('drag-over-pool');
+  const dataRaw = e.dataTransfer.getData('text/plain');
+  if (!dataRaw) return;
+  const { name, fromKey } = JSON.parse(dataRaw);
+
+  if (fromKey && assign[fromKey]) {
+    assign[fromKey] = assign[fromKey].filter(n => n !== name);
+    delete otAssign[fromKey + '::' + name];
+    renderBoard();
+  }
+}
+
+/* ---------- BATCH LOCK / PUBLISH ACTIONS ---------- */
+function updateBatchUI() {
+  const badge = document.getElementById('batchStatusBadge');
+  const board = document.getElementById('board');
+  const poolContainer = document.getElementById('poolContainer');
+
+  if (batchStatus === 'CONFIRMED') {
+    badge.textContent = 'CONFIRMED & PUBLISHED';
+    badge.style.background = 'var(--green-bg)'; badge.style.color = 'var(--green-text)';
+    document.getElementById('btnConfirm').style.display = 'none';
+    document.getElementById('btnUnlock').style.display = 'inline-flex';
+    document.getElementById('btnSaveDraft').disabled = true;
+    board.style.pointerEvents = 'none'; board.style.opacity = '0.8';
+    poolContainer.style.pointerEvents = 'none'; poolContainer.style.opacity = '0.5';
+  } else {
+    badge.textContent = 'DRAFT';
+    badge.style.background = 'var(--amber-bg)'; badge.style.color = 'var(--amber-text)';
+    document.getElementById('btnConfirm').style.display = 'inline-flex';
+    document.getElementById('btnUnlock').style.display = 'none';
+    document.getElementById('btnSaveDraft').disabled = false;
+    board.style.pointerEvents = ''; board.style.opacity = '1';
+    poolContainer.style.pointerEvents = ''; poolContainer.style.opacity = '1';
+  }
+}
+
+function saveDraft() { alert('Draft roster berhasil disimpan ke database!'); }
+function confirmBatch() { batchStatus = 'CONFIRMED'; updateBatchUI(); alert('Roster berhasil di-publish ke HR & Self-Service Karyawan!'); }
+function unlockBatch() { batchStatus = 'DRAFT'; updateBatchUI(); }
+
+/* ---------- HR GRID LOGIC (INDOSTRY) ---------- */
+const hrEmployees = [
+  { name: 'Nurul Hidayah', tag: null },
+  { name: 'Yanto Prasetyo', tag: null },
+  { name: 'Melinda Wijaya', tag: 'PROBATION' },
+  { name: 'Sugeng Riyadi', tag: 'BORONGAN' },
+  { name: 'Hendra Kusuma', tag: 'DIRUMAHKAN' }
+];
+let hrState = {};
+
+function renderHrGrid() {
+  const t = document.getElementById('hrGrid');
+  let html = '<tr><th style="text-align:left">Nama Pegawai</th>';
+  days.forEach(d => { html += `<th>${d}</th>`; });
+  html += '</tr>';
+
+  hrEmployees.forEach((e, ei) => {
+    html += `<tr><td class="row-head">
+      <div>${e.name}</div>
+      ${e.tag ? `<span class="emp-tag ${e.tag.toLowerCase()}">${e.tag}</span>` : ''}
+    </td>`;
+    days.forEach((d, di) => {
+      const key = ei + '-' + di;
+      const val = hrState[key] || 0;
+      html += `<td style="position:relative; cursor:pointer;" onclick="cycleHrShift(${ei}, ${di})">
+        <div class="grid-shift-cell s${val}">${val === 0 ? '–' : 'S' + val}</div>
+      </td>`;
+    });
+    html += '</tr>';
+  });
+  t.innerHTML = html;
+}
+
+function cycleHrShift(ei, di) {
+  const key = ei + '-' + di;
+  hrState[key] = ((hrState[key] || 0) + 1) % 4;
+  renderHrGrid();
+}
+
+/* ---------- INITIALIZATION ---------- */
+renderMachineTabs();
+renderPool();
+
+// Dummy initial data for preview
+assign[slotKey('Cetak 1 (Komori)', 'Sen 10', 'Shift 1 (Pagi)')] = ['Siti Aminah', 'Joko Purnomo'];
+assign[slotKey('Cetak 1 (Komori)', 'Sel 11', 'Shift 1 (Pagi)')] = ['Siti Aminah'];
+otAssign[slotKey('Cetak 1 (Komori)', 'Sel 11', 'Shift 1 (Pagi)') + '::Siti Aminah'] = true;
+
+renderBoard();
+renderHrGrid();
+updateBatchUI();
+</script>
+</body>
+</html>

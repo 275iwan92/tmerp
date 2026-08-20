@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>TMERP — Purchase Requisition</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f1f5f9}
+  .tab-btn.active{background:#0f172a;color:#fff}
+  ::-webkit-scrollbar{height:8px;width:8px}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  @media print{
+    .no-print{display:none!important}
+    .print-area{box-shadow:none!important;margin:0!important}
+    body{background:#fff}
+  }
+</style>
+</head>
+<body class="text-slate-800">
+
+<!-- ============ NAV TAB (mockup only, bukan shell final) ============ -->
+<div class="no-print sticky top-0 z-30 bg-slate-900 text-white px-4 py-2 flex items-center gap-2 text-sm">
+  <span class="font-bold text-amber-400 mr-2">TMERP</span>
+  <span class="text-slate-400">Procurement</span>
+  <span class="text-slate-500">/</span>
+  <span>Purchase Requisition</span>
+  <div class="ml-auto flex gap-1">
+    <button onclick="showView('list')" id="tab-list" class="tab-btn active px-3 py-1.5 rounded text-xs font-semibold">PR List</button>
+    <button onclick="showView('entry')" id="tab-entry" class="tab-btn px-3 py-1.5 rounded text-xs font-semibold">PR Entry</button>
+    <button onclick="showView('print')" id="tab-print" class="tab-btn px-3 py-1.5 rounded text-xs font-semibold">Print Preview</button>
+  </div>
+</div>
+
+<!-- =================================================================== -->
+<!-- VIEW 1 — PR LIST / HUB                                              -->
+<!-- =================================================================== -->
+<div id="view-list" class="p-6 max-w-[1500px] mx-auto">
+
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-xl font-bold">Purchase Requisition — Hub</h1>
+      <p class="text-sm text-slate-500">Permintaan pembelian: hasil MRP (auto) maupun manual (ad-hoc)</p>
+    </div>
+    <button onclick="showView('entry')" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-slate-700">+ PR Baru (Manual)</button>
+  </div>
+
+  <!-- KPI strip -->
+  <div class="grid grid-cols-5 gap-3 mb-4">
+    <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+      <p class="text-xs text-slate-500">Menunggu Approval</p>
+      <p class="text-2xl font-bold text-amber-600">7</p>
+    </div>
+    <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+      <p class="text-xs text-slate-500">Disetujui (blm jadi PO)</p>
+      <p class="text-2xl font-bold text-emerald-600">4</p>
+    </div>
+    <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+      <p class="text-xs text-slate-500">Dari MRP (auto)</p>
+      <p class="text-2xl font-bold text-blue-600">9</p>
+    </div>
+    <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+      <p class="text-xs text-slate-500">Manual / Ad-hoc</p>
+      <p class="text-2xl font-bold text-slate-600">3</p>
+    </div>
+    <div class="bg-white rounded-xl p-3 shadow-sm border border-slate-200">
+      <p class="text-xs text-slate-500">Ditolak</p>
+      <p class="text-2xl font-bold text-rose-600">1</p>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="bg-white rounded-xl border border-slate-200 p-3 mb-3 flex flex-wrap gap-2 items-center text-sm">
+    <input placeholder="Cari No. PR / Item..." class="border border-slate-300 rounded-lg px-3 py-1.5 w-56">
+    <select class="border border-slate-300 rounded-lg px-3 py-1.5">
+      <option>Semua Status</option>
+      <option>Draft</option>
+      <option>Menunggu Approval</option>
+      <option>Disetujui</option>
+      <option>Ditolak</option>
+      <option>Sudah jadi PO</option>
+    </select>
+    <select class="border border-slate-300 rounded-lg px-3 py-1.5">
+      <option>Semua Sumber</option>
+      <option>MRP (Auto)</option>
+      <option>Manual</option>
+    </select>
+    <select class="border border-slate-300 rounded-lg px-3 py-1.5">
+      <option>Semua Divisi</option>
+      <option>Offset Printing</option>
+      <option>Digital Printing</option>
+      <option>Indostry</option>
+    </select>
+    <select class="border border-slate-300 rounded-lg px-3 py-1.5">
+      <option>Semua Kategori</option>
+      <option>Bahan Baku</option>
+      <option>Sparepart Mesin</option>
+      <option>Consumable</option>
+      <option>Jasa Outsource</option>
+    </select>
+    <input type="date" class="border border-slate-300 rounded-lg px-3 py-1.5">
+    <span class="text-slate-400">s/d</span>
+    <input type="date" class="border border-slate-300 rounded-lg px-3 py-1.5">
+    <button class="ml-auto bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg text-slate-700 font-medium">Filter</button>
+  </div>
+
+  <!-- Grid -->
+  <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="text-left px-3 py-2">No. PR</th>
+          <th class="text-left px-3 py-2">Tanggal</th>
+          <th class="text-left px-3 py-2">Sumber</th>
+          <th class="text-left px-3 py-2">Divisi</th>
+          <th class="text-left px-3 py-2">Kategori Dominan</th>
+          <th class="text-left px-3 py-2">Pemohon</th>
+          <th class="text-left px-3 py-2">Dibutuhkan</th>
+          <th class="text-right px-3 py-2">Est. Nilai</th>
+          <th class="text-left px-3 py-2">Status</th>
+          <th class="text-left px-3 py-2">Ref. Terkait</th>
+          <th class="px-3 py-2"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        <tr class="hover:bg-slate-50 cursor-pointer" onclick="showView('entry')">
+          <td class="px-3 py-2.5 font-semibold text-slate-800">PR2600041</td>
+          <td class="px-3 py-2.5 text-slate-500">18 Agu 2026</td>
+          <td class="px-3 py-2.5"><span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">MRP AUTO</span></td>
+          <td class="px-3 py-2.5">Offset Printing</td>
+          <td class="px-3 py-2.5">Bahan Baku</td>
+          <td class="px-3 py-2.5">Budi (PPIC)</td>
+          <td class="px-3 py-2.5 text-rose-600 font-medium">22 Agu 2026</td>
+          <td class="px-3 py-2.5 text-right font-mono">42.500.000</td>
+          <td class="px-3 py-2.5"><span class="bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded">Menunggu Approval</span></td>
+          <td class="px-3 py-2.5 text-slate-500 text-xs">MRP#0087 · PO2600055 (lot)</td>
+          <td class="px-3 py-2.5 text-slate-300">›</td>
+        </tr>
+        <tr class="hover:bg-slate-50 cursor-pointer">
+          <td class="px-3 py-2.5 font-semibold text-slate-800">PR2600040</td>
+          <td class="px-3 py-2.5 text-slate-500">17 Agu 2026</td>
+          <td class="px-3 py-2.5"><span class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded">MANUAL</span></td>
+          <td class="px-3 py-2.5">Indostry</td>
+          <td class="px-3 py-2.5">Sparepart Mesin</td>
+          <td class="px-3 py-2.5">Andi (Maintenance)</td>
+          <td class="px-3 py-2.5">25 Agu 2026</td>
+          <td class="px-3 py-2.5 text-right font-mono">8.750.000</td>
+          <td class="px-3 py-2.5"><span class="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded">Disetujui</span></td>
+          <td class="px-3 py-2.5 text-slate-400 text-xs">—</td>
+          <td class="px-3 py-2.5 text-slate-300">›</td>
+        </tr>
+        <tr class="hover:bg-slate-50 cursor-pointer">
+          <td class="px-3 py-2.5 font-semibold text-slate-800">PR2600039</td>
+          <td class="px-3 py-2.5 text-slate-500">17 Agu 2026</td>
+          <td class="px-3 py-2.5"><span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">MRP AUTO</span></td>
+          <td class="px-3 py-2.5">Offset Printing</td>
+          <td class="px-3 py-2.5">Jasa Outsource</td>
+          <td class="px-3 py-2.5">Sinta (PPIC)</td>
+          <td class="px-3 py-2.5">20 Agu 2026</td>
+          <td class="px-3 py-2.5 text-right font-mono">15.200.000</td>
+          <td class="px-3 py-2.5"><span class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded">Sudah jadi PO</span></td>
+          <td class="px-3 py-2.5 text-slate-500 text-xs">PO2600054</td>
+          <td class="px-3 py-2.5 text-slate-300">›</td>
+        </tr>
+        <tr class="hover:bg-slate-50 cursor-pointer">
+          <td class="px-3 py-2.5 font-semibold text-slate-800">PR2600038</td>
+          <td class="px-3 py-2.5 text-slate-500">16 Agu 2026</td>
+          <td class="px-3 py-2.5"><span class="bg-slate-100 text-slate-600 text-xs font-semibold px-2 py-0.5 rounded">MANUAL</span></td>
+          <td class="px-3 py-2.5">Digital Printing</td>
+          <td class="px-3 py-2.5">Consumable</td>
+          <td class="px-3 py-2.5">Rini (Admin)</td>
+          <td class="px-3 py-2.5">19 Agu 2026</td>
+          <td class="px-3 py-2.5 text-right font-mono">2.100.000</td>
+          <td class="px-3 py-2.5"><span class="bg-rose-50 text-rose-700 text-xs font-semibold px-2 py-0.5 rounded">Ditolak</span></td>
+          <td class="px-3 py-2.5 text-slate-400 text-xs">—</td>
+          <td class="px-3 py-2.5 text-slate-300">›</td>
+        </tr>
+        <tr class="hover:bg-slate-50 cursor-pointer">
+          <td class="px-3 py-2.5 font-semibold text-slate-400">PR2600037</td>
+          <td class="px-3 py-2.5 text-slate-400">15 Agu 2026</td>
+          <td class="px-3 py-2.5"><span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">MRP AUTO</span></td>
+          <td class="px-3 py-2.5 text-slate-400">Offset Printing</td>
+          <td class="px-3 py-2.5 text-slate-400">Bahan Baku</td>
+          <td class="px-3 py-2.5 text-slate-400">System (MRP)</td>
+          <td class="px-3 py-2.5 text-slate-400">18 Agu 2026</td>
+          <td class="px-3 py-2.5 text-right font-mono text-slate-400">31.000.000</td>
+          <td class="px-3 py-2.5"><span class="bg-slate-100 text-slate-500 text-xs font-semibold px-2 py-0.5 rounded">Draft</span></td>
+          <td class="px-3 py-2.5 text-slate-400 text-xs">MRP#0085</td>
+          <td class="px-3 py-2.5 text-slate-300">›</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs text-slate-400 mt-2">Menampilkan 5 dari 24 PR. Klik baris untuk buka detail/approval.</p>
+</div>
+
+
+<!-- =================================================================== -->
+<!-- VIEW 2 — PR ENTRY / DETAIL                                          -->
+<!-- =================================================================== -->
+<div id="view-entry" class="hidden p-6 max-w-[1500px] mx-auto">
+
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-xl font-bold">Purchase Requisition — PR2600041</h1>
+      <p class="text-sm text-slate-500 flex items-center gap-2">
+        <span class="bg-blue-50 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">Sumber: MRP AUTO — Run #0087</span>
+        <span class="bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded">Status: Menunggu Approval</span>
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button class="border border-slate-300 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-50">Simpan Draft</button>
+      <button class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-slate-700">Ajukan Approval</button>
+    </div>
+  </div>
+
+  <!-- Approval progress (pola D365/SAP release strategy) -->
+  <div class="bg-white rounded-xl border border-slate-200 p-4 mb-4 shadow-sm">
+    <p class="text-xs font-semibold text-slate-500 uppercase mb-3">Alur Approval (berjenjang berdasar nilai)</p>
+    <div class="flex items-center text-sm">
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold">✓</div>
+        <span class="text-xs mt-1 text-slate-600">Dibuat</span>
+        <span class="text-[10px] text-slate-400">Budi · 18 Agu</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-emerald-400 mx-1"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold animate-pulse">2</div>
+        <span class="text-xs mt-1 text-slate-600">Kepala PPIC</span>
+        <span class="text-[10px] text-amber-600">Menunggu (≤ 50 jt)</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-slate-200 mx-1"></div>
+      <div class="flex flex-col items-center opacity-40">
+        <div class="w-8 h-8 rounded-full bg-slate-300 text-white flex items-center justify-center font-bold">3</div>
+        <span class="text-xs mt-1 text-slate-600">Direksi</span>
+        <span class="text-[10px] text-slate-400">Trigger jika &gt; 50 jt</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-slate-200 mx-1"></div>
+      <div class="flex flex-col items-center opacity-40">
+        <div class="w-8 h-8 rounded-full bg-slate-300 text-white flex items-center justify-center font-bold">4</div>
+        <span class="text-xs mt-1 text-slate-600">→ Convert PO</span>
+      </div>
+    </div>
+    <p class="text-[11px] text-slate-400 mt-3">*Threshold nilai & approver matrix placeholder — final menyusul dari modul Security/Role.</p>
+  </div>
+
+  <!-- Header form -->
+  <div class="bg-white rounded-xl border border-slate-200 p-5 mb-4 shadow-sm">
+    <p class="text-xs font-semibold text-slate-500 uppercase mb-3">Informasi Umum</p>
+    <div class="grid grid-cols-4 gap-4 text-sm">
+      <div>
+        <label class="text-xs text-slate-500">No. PR</label>
+        <input value="PR2600041" disabled class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2 mt-1 font-mono">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Tanggal PR</label>
+        <input type="date" value="2026-08-18" class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Divisi (SBU)</label>
+        <select class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1">
+          <option>Offset Printing</option>
+          <option>Digital Printing</option>
+          <option>Indostry</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Pemohon</label>
+        <input value="Budi Santoso (PPIC)" disabled class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2 mt-1">
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-500">Sumber PR</label>
+        <input value="MRP Auto — Run #0087" disabled class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2 mt-1 text-blue-700 font-medium">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Prioritas</label>
+        <select class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1">
+          <option>Normal</option>
+          <option class="text-rose-600">Urgent — produksi terhambat</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Referensi Produksi</label>
+        <input value="Production Order PO-LOT-0231 (CO2600011)" disabled class="w-full border border-slate-200 bg-slate-50 rounded-lg px-3 py-2 mt-1 text-xs">
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Tgl Dibutuhkan (paling awal)</label>
+        <input type="date" value="2026-08-22" class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1 text-rose-600 font-medium">
+      </div>
+    </div>
+    <div class="mt-3">
+      <label class="text-xs text-slate-500">Catatan / Justifikasi</label>
+      <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 mt-1 text-sm" rows="2">Stok kertas HVS 210gr di bawah reorder point untuk memenuhi lot produksi CO2600011 (Box Snack, qty 50.000 pcs).</textarea>
+    </div>
+  </div>
+
+  <!-- Item lines -->
+  <div class="bg-white rounded-xl border border-slate-200 shadow-sm mb-4">
+    <div class="flex items-center justify-between px-5 pt-4">
+      <p class="text-xs font-semibold text-slate-500 uppercase">Item Permintaan</p>
+      <button class="text-xs font-semibold text-blue-600 hover:underline">+ Tambah Baris Manual</button>
+    </div>
+    <div class="overflow-x-auto px-5 pb-4 mt-2">
+      <table class="w-full text-sm min-w-[1300px]">
+        <thead class="text-xs text-slate-500 uppercase border-b border-slate-200">
+          <tr>
+            <th class="text-left py-2 pr-2">#</th>
+            <th class="text-left py-2 pr-2">Kategori</th>
+            <th class="text-left py-2 pr-2">Kode / Nama Item</th>
+            <th class="text-left py-2 pr-2">Spesifikasi</th>
+            <th class="text-right py-2 pr-2">Qty</th>
+            <th class="text-left py-2 pr-2">UoM</th>
+            <th class="text-left py-2 pr-2">Gudang Tujuan</th>
+            <th class="text-left py-2 pr-2">Akun Biaya</th>
+            <th class="text-right py-2 pr-2">Est. Harga/Unit</th>
+            <th class="text-right py-2 pr-2">Est. Subtotal</th>
+            <th class="text-left py-2 pr-2">Referensi MRP</th>
+            <th class="text-left py-2 pr-2">Supplier Disarankan</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr>
+            <td class="py-2 pr-2 text-slate-400">1</td>
+            <td class="py-2 pr-2"><span class="bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded">Bahan Baku</span></td>
+            <td class="py-2 pr-2 font-medium">RM-KRT-0012<br><span class="text-xs text-slate-400">Kertas HVS 210gr</span></td>
+            <td class="py-2 pr-2 text-xs text-slate-500">Plano 79x109, brightness 92</td>
+            <td class="py-2 pr-2 text-right font-mono">1.500</td>
+            <td class="py-2 pr-2">Rim</td>
+            <td class="py-2 pr-2 text-xs">Gudang Bahan Baku — Offset</td>
+            <td class="py-2 pr-2 text-xs">RM-STOCK</td>
+            <td class="py-2 pr-2 text-right font-mono">21.500</td>
+            <td class="py-2 pr-2 text-right font-mono font-semibold">32.250.000</td>
+            <td class="py-2 pr-2 text-xs text-blue-600">MRP#0087-L1</td>
+            <td class="py-2 pr-2 text-xs">
+              <select class="border border-slate-300 rounded px-2 py-1 text-xs w-full">
+                <option>PT Kertas Nusantara (histori terbaik)</option>
+                <option>CV Sumber Kertas</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td class="py-2 pr-2 text-slate-400">2</td>
+            <td class="py-2 pr-2"><span class="bg-amber-50 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded">Bahan Baku</span></td>
+            <td class="py-2 pr-2 font-medium">RM-TNT-0044<br><span class="text-xs text-slate-400">Tinta Offset Cyan</span></td>
+            <td class="py-2 pr-2 text-xs text-slate-500">Toyo, 5kg/kaleng</td>
+            <td class="py-2 pr-2 text-right font-mono">6</td>
+            <td class="py-2 pr-2">Kaleng</td>
+            <td class="py-2 pr-2 text-xs">Gudang Bahan Baku — Offset</td>
+            <td class="py-2 pr-2 text-xs">RM-STOCK</td>
+            <td class="py-2 pr-2 text-right font-mono">1.375.000</td>
+            <td class="py-2 pr-2 text-right font-mono font-semibold">8.250.000</td>
+            <td class="py-2 pr-2 text-xs text-blue-600">MRP#0087-L2</td>
+            <td class="py-2 pr-2 text-xs">
+              <select class="border border-slate-300 rounded px-2 py-1 text-xs w-full">
+                <option>PT Tinta Warna Prima</option>
+              </select>
+            </td>
+          </tr>
+          <tr class="bg-slate-50/50">
+            <td class="py-2 pr-2 text-slate-400">3</td>
+            <td class="py-2 pr-2"><span class="bg-purple-50 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded">Jasa Outsource</span></td>
+            <td class="py-2 pr-2 font-medium">SVC-LAM-002<br><span class="text-xs text-slate-400">Jasa Laminasi Doff (outsource)</span></td>
+            <td class="py-2 pr-2 text-xs text-slate-500">Kapasitas internal penuh minggu ini</td>
+            <td class="py-2 pr-2 text-right font-mono">50.000</td>
+            <td class="py-2 pr-2">Pcs</td>
+            <td class="py-2 pr-2 text-xs text-slate-400">— (jasa, no gudang)</td>
+            <td class="py-2 pr-2 text-xs">COGS-OUTSOURCE</td>
+            <td class="py-2 pr-2 text-right font-mono">40</td>
+            <td class="py-2 pr-2 text-right font-mono font-semibold">2.000.000</td>
+            <td class="py-2 pr-2 text-xs text-slate-400">Manual (ditambahkan officer)</td>
+            <td class="py-2 pr-2 text-xs">
+              <select class="border border-slate-300 rounded px-2 py-1 text-xs w-full">
+                <option>CV Mitra Laminasi Jaya</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="border-t-2 border-slate-200 font-bold">
+            <td colspan="9" class="py-2 text-right pr-3">Total Estimasi</td>
+            <td class="py-2 text-right pr-2 font-mono">42.500.000</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p class="text-[11px] text-slate-400 px-5 pb-3">Baris dengan referensi MRP bersifat <b>read-only pada qty/spesifikasi</b> (hasil kalkulasi kebutuhan) — hanya supplier &amp; catatan yang dapat diedit. Baris manual bebas diedit penuh.</p>
+  </div>
+
+  <!-- Grouping note -> PO -->
+  <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800 flex items-start gap-2">
+    <span class="font-bold">i</span>
+    <p>Setelah <b>Disetujui</b>, baris PR akan dikelompokkan otomatis per supplier disarankan saat proses <b>Convert to PO</b> — satu PR bisa pecah jadi beberapa PO bila supplier berbeda per item.</p>
+  </div>
+
+</div>
+
+
+<!-- =================================================================== -->
+<!-- VIEW 3 — PRINT-OUT PR                                               -->
+<!-- =================================================================== -->
+<div id="view-print" class="hidden p-6">
+  <div class="no-print flex justify-center mb-3">
+    <button onclick="window.print()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow">🖨️ Cetak / Simpan PDF</button>
+  </div>
+
+  <div class="print-area bg-white shadow-lg mx-auto p-10" style="width:210mm;min-height:297mm">
+    <div class="flex justify-between items-start border-b-2 border-slate-800 pb-4 mb-4">
+      <div>
+        <p class="font-bold text-lg">CV TELASIH MAKMUR GROUP</p>
+        <p class="text-xs text-slate-500">Divisi: Offset Printing</p>
+        <p class="text-xs text-slate-500">Jl. Industri Raya No. 45, Surabaya</p>
+      </div>
+      <div class="text-right">
+        <p class="font-bold text-xl tracking-wide">PURCHASE REQUISITION</p>
+        <p class="text-sm font-mono">No: PR2600041</p>
+        <p class="text-xs text-slate-500">Tanggal: 18 Agustus 2026</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+      <div>
+        <p><span class="text-slate-500 inline-block w-32">Pemohon</span>: Budi Santoso (PPIC)</p>
+        <p><span class="text-slate-500 inline-block w-32">Divisi</span>: Offset Printing</p>
+        <p><span class="text-slate-500 inline-block w-32">Sumber</span>: MRP Auto — Run #0087</p>
+      </div>
+      <div>
+        <p><span class="text-slate-500 inline-block w-32">Prioritas</span>: Normal</p>
+        <p><span class="text-slate-500 inline-block w-32">Dibutuhkan</span>: 22 Agustus 2026</p>
+        <p><span class="text-slate-500 inline-block w-32">Ref. Produksi</span>: PO-LOT-0231 / CO2600011</p>
+      </div>
+    </div>
+
+    <table class="w-full text-xs border border-slate-300 border-collapse mb-4">
+      <thead>
+        <tr class="bg-slate-100">
+          <th class="border border-slate-300 px-2 py-1.5">No</th>
+          <th class="border border-slate-300 px-2 py-1.5 text-left">Kode</th>
+          <th class="border border-slate-300 px-2 py-1.5 text-left">Nama Item / Jasa</th>
+          <th class="border border-slate-300 px-2 py-1.5 text-left">Spesifikasi</th>
+          <th class="border border-slate-300 px-2 py-1.5 text-right">Qty</th>
+          <th class="border border-slate-300 px-2 py-1.5">UoM</th>
+          <th class="border border-slate-300 px-2 py-1.5 text-right">Est. Harga</th>
+          <th class="border border-slate-300 px-2 py-1.5 text-right">Est. Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border border-slate-300 px-2 py-1.5 text-center">1</td>
+          <td class="border border-slate-300 px-2 py-1.5 font-mono">RM-KRT-0012</td>
+          <td class="border border-slate-300 px-2 py-1.5">Kertas HVS 210gr</td>
+          <td class="border border-slate-300 px-2 py-1.5">Plano 79x109, brightness 92</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">1.500</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-center">Rim</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">21.500</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">32.250.000</td>
+        </tr>
+        <tr>
+          <td class="border border-slate-300 px-2 py-1.5 text-center">2</td>
+          <td class="border border-slate-300 px-2 py-1.5 font-mono">RM-TNT-0044</td>
+          <td class="border border-slate-300 px-2 py-1.5">Tinta Offset Cyan</td>
+          <td class="border border-slate-300 px-2 py-1.5">Toyo, 5kg/kaleng</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">6</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-center">Kaleng</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">1.375.000</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">8.250.000</td>
+        </tr>
+        <tr>
+          <td class="border border-slate-300 px-2 py-1.5 text-center">3</td>
+          <td class="border border-slate-300 px-2 py-1.5 font-mono">SVC-LAM-002</td>
+          <td class="border border-slate-300 px-2 py-1.5">Jasa Laminasi Doff (outsource)</td>
+          <td class="border border-slate-300 px-2 py-1.5">Kapasitas internal penuh</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">50.000</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-center">Pcs</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">40</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">2.000.000</td>
+        </tr>
+        <tr class="font-bold bg-slate-50">
+          <td colspan="7" class="border border-slate-300 px-2 py-1.5 text-right">TOTAL ESTIMASI</td>
+          <td class="border border-slate-300 px-2 py-1.5 text-right">42.500.000</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="text-xs text-slate-600 mb-8">Catatan: Stok kertas HVS 210gr di bawah reorder point untuk memenuhi lot produksi CO2600011 (Box Snack, qty 50.000 pcs).</p>
+
+    <div class="grid grid-cols-3 gap-6 text-center text-xs mt-16">
+      <div>
+        <p class="mb-14">Dibuat oleh,</p>
+        <p class="border-t border-slate-400 pt-1 font-semibold">Budi Santoso</p>
+        <p class="text-slate-500">PPIC</p>
+      </div>
+      <div>
+        <p class="mb-14">Diperiksa oleh,</p>
+        <p class="border-t border-slate-400 pt-1 font-semibold">___________________</p>
+        <p class="text-slate-500">Kepala PPIC</p>
+      </div>
+      <div>
+        <p class="mb-14">Disetujui oleh,</p>
+        <p class="border-t border-slate-400 pt-1 font-semibold">___________________</p>
+        <p class="text-slate-500">Direksi (bila &gt; Rp 50 jt)</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showView(v){
+  ['list','entry','print'].forEach(x=>{
+    document.getElementById('view-'+x).classList.toggle('hidden', x!==v);
+    document.getElementById('tab-'+x).classList.toggle('active', x===v);
+  });
+}
+</script>
+</body>
+</html>

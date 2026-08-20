@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup — Master Produksi (Mesin &amp; Shift) TMERP</title>
+<style>
+  :root{
+    --navy:#2c3e69; --accent:#2f6fed;
+    --bg-page:#f3f4f8; --bg-card:#fff;
+    --border:#e0e2e9; --border-strong:#c7cad6;
+    --text-primary:#1c2333; --text-secondary:#6b7080; --text-muted:#9a9fb0;
+    --green-bg:#e2f4e6; --green-text:#1e7d3a;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg-page);color:var(--text-primary);}
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{width:220px;background:var(--navy);color:#fff;flex-shrink:0;padding:18px 0;}
+  .sidebar .brand{font-size:14px;font-weight:700;padding:0 18px 16px;border-bottom:1px solid rgba(255,255,255,.15);margin-bottom:10px;}
+  .sidebar .brand small{display:block;font-weight:400;font-size:11px;opacity:.7;margin-top:2px;}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;cursor:pointer;color:rgba(255,255,255,.75);border-left:3px solid transparent;}
+  .nav-item:hover{background:rgba(255,255,255,.06);}
+  .nav-item.active{background:rgba(255,255,255,.1);border-left-color:var(--accent);color:#fff;font-weight:500;}
+  .nav-group{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:rgba(255,255,255,.4);padding:14px 18px 4px;}
+  .scope-note{margin:14px 18px 0;padding:10px;background:rgba(255,255,255,.08);border-radius:6px;font-size:10.5px;line-height:1.5;color:rgba(255,255,255,.7);}
+
+  .main{flex:1;padding:24px 28px;min-width:0;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .page-head{display:flex;align-items:center;margin-bottom:16px;}
+  .page-head h1{font-size:18px;font-weight:600;margin:0;color:var(--navy);}
+  .page-head .sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+  .page-head .spacer{flex:1;}
+
+  .btn{padding:7px 12px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--text-primary);border-radius:6px;cursor:pointer;}
+  .btn-primary{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .btn-sm{padding:4px 10px;font-size:11px;}
+
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;}
+  .toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .toolbar select{padding:6px 10px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;}
+  th{color:var(--text-secondary);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.02em;}
+  th.action-col,td.action-col{text-align:right;width:130px;}
+
+  .badge{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:5px;}
+  .badge.active{background:var(--green-bg);color:var(--green-text);}
+  .badge.inactive{background:#eee;color:var(--text-muted);}
+
+  .note-box{font-size:12px;color:var(--text-secondary);background:var(--bg-page);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;margin-bottom:16px;}
+  tr.clickable{cursor:pointer;}
+  tr.clickable:hover{background:var(--bg-page);}
+
+  .ibtn{width:30px;height:30px;padding:0;border:1px solid var(--border-strong);background:#fff;border-radius:7px;cursor:pointer;font-size:14px;line-height:1;color:var(--text-secondary);}
+  .ibtn:hover{background:var(--bg-page);color:var(--text-primary);}
+  .ibtn-danger:hover{background:var(--red-bg);color:var(--red-text);border-color:var(--red-text);}
+
+  #shiftModal,#machineModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);align-items:center;justify-content:center;z-index:50;padding:20px;}
+  #shiftModal .box,#machineModal .box{background:#fff;border-radius:14px;padding:22px 24px;max-width:720px;width:100%;max-height:94vh;overflow-x:hidden;overflow-y:auto;}
+  #shiftModal h3,#machineModal h3{font-size:16px;}
+  .fgroup2{margin-bottom:8px;}
+  .fgroup2 label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;}
+  .fgroup2 input,.fgroup2 select{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:inherit;}
+  .daytable{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+  .daytable th,.daytable td{padding:4px 5px;border-bottom:1px solid var(--border);text-align:left;}
+  .daytable th{font-size:10px;color:var(--text-secondary);text-transform:uppercase;font-weight:600;}
+  .daytable th:first-child,.daytable td:first-child{width:70px;}
+  .daytable th:last-child,.daytable td:last-child{width:44px;text-align:center;}
+  .daytable input[type=time]{width:100%;padding:6px;border:1px solid var(--border-strong);border-radius:6px;font-size:12px;font-family:inherit;}
+  .daytable td:first-child{font-weight:600;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="sidebar">
+    <div class="brand">TMERP<small>Master Produksi</small></div>
+    <div class="nav-group">Produksi</div>
+    <div class="nav-item active" data-page="machine">Master Mesin</div>
+    <div class="nav-item" data-page="shift">Master Shift</div>
+    <div class="scope-note">
+      File ini khusus master domain Produksi/PPIC (bukan HR). Master Employee,
+      Struktur Organisasi, dan approval kepegawaian ada di file terpisah
+      (mockup_master_employee_hr.html).
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="page active" id="page-machine">
+      <div class="page-head"><div><h1>Master Mesin</h1><div class="sub">Referensi mesin/lini produksi per SBU — dipakai board PPIC saat assignment shift</div></div><div class="spacer"></div><button class="btn btn-primary" onclick="openMachineModal('','Tambah Mesin Baru',true)">+ Tambah Mesin</button></div>
+      <div class="note-box">Hanya <b>Offset Printing</b> yang menggunakan assignment mesin presisi (banyak lini). Digital Printing &amp; Indostry tidak butuh entri di sini — pakai grid shift sederhana tanpa mesin.</div>
+      <div class="card">
+        <div class="toolbar"><select><option>Offset Printing</option></select></div>
+        <table>
+          <tr><th>Kode</th><th>Nama Mesin</th><th>Jenis</th><th>Merk/Model</th><th>Status</th><th class="action-col">Aksi</th></tr>
+          <tr class="clickable" onclick="openMachineModal('CETAK-01','Cetak 1')"><td>CETAK-01</td><td>Cetak 1</td><td>Cetak</td><td>Heidelberg SM 74</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openMachineModal('CETAK-01','Cetak 1')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDeleteMachine('Cetak 1')">&#128465;</button></td></tr>
+          <tr class="clickable" onclick="openMachineModal('CETAK-02','Cetak 2')"><td>CETAK-02</td><td>Cetak 2</td><td>Cetak</td><td>Komori L528</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openMachineModal('CETAK-02','Cetak 2')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDeleteMachine('Cetak 2')">&#128465;</button></td></tr>
+          <tr class="clickable" onclick="openMachineModal('COAT-01','Coating')"><td>COAT-01</td><td>Coating</td><td>Coating</td><td>Tec Lighter TL-104</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openMachineModal('COAT-01','Coating')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDeleteMachine('Coating')">&#128465;</button></td></tr>
+          <tr class="clickable" onclick="openMachineModal('LAM-01','Laminasi')"><td>LAM-01</td><td>Laminasi</td><td>Laminasi</td><td>GMP Saturn 540</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openMachineModal('LAM-01','Laminasi')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDeleteMachine('Laminasi')">&#128465;</button></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="page" id="page-shift">
+      <div class="page-head"><div><h1>Master Shift</h1><div class="sub">Definisi pola jam shift — bisa beda jam per hari + jam istirahat, per departemen</div></div><div class="spacer"></div><button class="btn btn-primary" onclick="openShiftModal('Tambah Shift Baru','',true)">+ Tambah Shift</button></div>
+      <div class="note-box">Direplikasi dari struktur legacy (<code>m_shifts</code> + <code>m_shifts_details</code>): 1 shift = 1 header + jam kerja per hari (Senin-Minggu bisa beda), lengkap jam istirahat. Klik baris untuk buka &amp; edit detail jamnya.</div>
+
+      <div class="card">
+        <table>
+          <tr><th>Nama Shift</th><th>Departemen</th><th>Ringkasan Jam</th><th>Status</th><th class="action-col">Aksi</th></tr>
+          <tr class="clickable" onclick="openShiftModal('TM Production Shift 1','Produksi — Offset Printing')"><td>TM Production Shift 1</td><td>Produksi — Offset Printing</td><td style="color:var(--text-secondary)">05:00–13:15 (Sen–Sab)</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openShiftModal('TM Production Shift 1','Produksi — Offset Printing')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDelete('TM Production Shift 1')">&#128465;</button></td></tr>
+          <tr class="clickable" onclick="openShiftModal('TM Production Shift 2','Produksi — Offset Printing')"><td>TM Production Shift 2</td><td>Produksi — Offset Printing</td><td style="color:var(--text-secondary)">13:15–21:15 (Sen–Sab)</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openShiftModal('TM Production Shift 2','Produksi — Offset Printing')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDelete('TM Production Shift 2')">&#128465;</button></td></tr>
+          <tr class="clickable" onclick="openShiftModal('Security Shift 3','Security (shared)')"><td>Security Shift 3</td><td>Security (shared, company)</td><td style="color:var(--text-secondary)">11:30–21:30 (tiap hari)</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openShiftModal('Security Shift 3','Security (shared)')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDelete('Security Shift 3')">&#128465;</button></td></tr>
+          <tr class="clickable" onclick="openShiftModal('TDP Production Long Shift 1','Produksi — Digital Printing')"><td>TDP Production Long Shift 1</td><td>Produksi — Digital Printing</td><td style="color:var(--text-muted)">Jam belum diisi</td><td><span class="badge active">Aktif</span></td>
+            <td class="action-col"><button class="ibtn" title="Edit" onclick="event.stopPropagation();openShiftModal('TDP Production Long Shift 1','Produksi — Digital Printing')">&#9998;</button> <button class="ibtn ibtn-danger" title="Hapus" onclick="event.stopPropagation();confirmDelete('TDP Production Long Shift 1')">&#128465;</button></td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DETAIL SHIFT (editable) -->
+<div id="shiftModal">
+  <div class="box">
+    <div style="display:flex;align-items:center;margin-bottom:4px">
+      <h3 id="shiftModalTitle" style="margin:0;font-size:16px">TM Production Shift 1</h3>
+      <div style="flex:1"></div>
+      <button class="ibtn" title="Tutup" onclick="closeShiftModal()">&#10005;</button>
+    </div>
+    <div id="shiftModalDept" style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Produksi — Offset Printing</div>
+
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:1">
+        <label>Nama Shift</label>
+        <input type="text" value="TM Production Shift 1">
+      </div>
+      <div class="fgroup2" style="flex:1">
+        <label>Departemen</label>
+        <select><option>Produksi — Offset Printing</option><option>Produksi — Digital Printing</option><option>Security (shared)</option><option>Staff/Admin (shared)</option></select>
+      </div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;margin:12px 0 4px;color:var(--navy)">Jam Kerja per Hari</div>
+    <table class="daytable">
+      <tr><th>Hari</th><th>Masuk</th><th>Ist. Mulai</th><th>Ist. Selesai</th><th>Pulang</th><th></th></tr>
+      <tr><td>Senin</td><td><input type="time" value="05:00"></td><td><input type="time" value="09:30"></td><td><input type="time" value="10:00"></td><td><input type="time" value="13:15"></td><td><button class="ibtn ibtn-danger" title="Kosongkan hari ini">&#128465;</button></td></tr>
+      <tr><td>Selasa</td><td><input type="time" value="05:00"></td><td><input type="time" value="09:30"></td><td><input type="time" value="10:00"></td><td><input type="time" value="13:15"></td><td><button class="ibtn ibtn-danger" title="Kosongkan hari ini">&#128465;</button></td></tr>
+      <tr><td>Rabu</td><td><input type="time" value="05:00"></td><td><input type="time" value="09:30"></td><td><input type="time" value="10:00"></td><td><input type="time" value="13:15"></td><td><button class="ibtn ibtn-danger" title="Kosongkan hari ini">&#128465;</button></td></tr>
+      <tr><td>Kamis</td><td><input type="time" value="05:00"></td><td><input type="time" value="09:30"></td><td><input type="time" value="10:00"></td><td><input type="time" value="13:15"></td><td><button class="ibtn ibtn-danger" title="Kosongkan hari ini">&#128465;</button></td></tr>
+      <tr><td>Jumat</td><td><input type="time" value="05:00"></td><td><input type="time" value="09:30"></td><td><input type="time" value="10:00"></td><td><input type="time" value="13:15"></td><td><button class="ibtn ibtn-danger" title="Kosongkan hari ini">&#128465;</button></td></tr>
+      <tr><td>Sabtu</td><td><input type="time" value="05:00"></td><td><input type="time" value="09:30"></td><td><input type="time" value="10:00"></td><td><input type="time" value="13:15"></td><td><button class="ibtn ibtn-danger" title="Kosongkan hari ini">&#128465;</button></td></tr>
+      <tr><td style="color:var(--text-muted)">Minggu</td><td colspan="4" style="color:var(--text-muted);font-size:11px;text-align:center">Tidak beroperasi</td><td><button class="ibtn" title="Isi jam hari ini">&#43;</button></td></tr>
+    </table>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="flex:1" onclick="closeShiftModal()">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveShift()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.onclick=()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('page-'+item.dataset.page).classList.add('active');
+  };
+});
+function openShiftModal(name, dept, isNew){
+  var box = document.querySelector('#shiftModal .box');
+  document.getElementById('shiftModalTitle').textContent = isNew ? 'Tambah Shift Baru' : name;
+  document.getElementById('shiftModalDept').textContent = isNew ? 'Isi data shift baru' : dept;
+  // kosongkan/isi field teks
+  box.querySelector('input[type=text]').value = isNew ? '' : name;
+  if(isNew){ box.querySelectorAll('.daytable input[type=time]').forEach(function(i){ i.value=''; }); }
+  document.getElementById('shiftModal').style.display='flex';
+}
+function closeShiftModal(){ document.getElementById('shiftModal').style.display='none'; }
+function saveShift(){ alert('Shift tersimpan (demo).'); closeShiftModal(); }
+function confirmDelete(name){ if(confirm('Hapus shift "'+name+'"?')) alert('Terhapus (demo).'); }
+</script>
+<!-- MODAL DETAIL MESIN (editable) -->
+<div id="machineModal">
+  <div class="box">
+    <div style="display:flex;align-items:center;margin-bottom:14px">
+      <h3 id="machineModalTitle" style="margin:0;font-size:16px">Cetak 1</h3>
+      <div style="flex:1"></div>
+      <button class="ibtn" title="Tutup" onclick="closeMachineModal()">&#10005;</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;margin:0 0 6px;color:var(--navy)">Identitas</div>
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:1"><label>Kode Mesin</label><input type="text" value="CETAK-01"></div>
+      <div class="fgroup2" style="flex:2"><label>Nama Mesin</label><input type="text" value="Cetak 1"></div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:1"><label>Jenis Mesin</label>
+        <select><option>Cetak</option><option>Coating</option><option>Laminasi</option><option>Potong</option><option>Lainnya</option></select>
+      </div>
+      <div class="fgroup2" style="flex:1"><label>Divisi (SBU)</label>
+        <select><option>Offset Printing</option><option>Digital Printing</option><option>Indostry</option></select>
+      </div>
+    </div>
+
+    <div style="font-size:12px;font-weight:600;margin:12px 0 6px;color:var(--navy)">Aset</div>
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:2"><label>Merk / Model</label><input type="text" value="Heidelberg SM 74"></div>
+      <div class="fgroup2" style="flex:1"><label>Tahun</label><input type="text" value="2015"></div>
+    </div>
+    <div class="fgroup2"><label>Nomor Seri Aset</label><input type="text" value="SM74-2015-0231"></div>
+
+    <div style="font-size:12px;font-weight:600;margin:12px 0 6px;color:var(--navy)">Spesifikasi Teknis</div>
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:1"><label>Max Ukuran Kertas</label><input type="text" value="52 × 74 cm"></div>
+      <div class="fgroup2" style="flex:1"><label>Jumlah Warna / Unit</label><input type="text" value="4 warna"></div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:1"><label>Kecepatan Max (sheet/jam)</label><input type="text" value="15.000"></div>
+      <div class="fgroup2" style="flex:1"><label>Kapasitas per Shift</label><input type="text" value="± 100.000 sheet"></div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <div class="fgroup2" style="flex:1"><label>Gramatur Min (gsm)</label><input type="text" value="60"></div>
+      <div class="fgroup2" style="flex:1"><label>Gramatur Max (gsm)</label><input type="text" value="350"></div>
+    </div>
+    <div class="fgroup2"><label>Catatan</label><textarea rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:13px;font-family:inherit" placeholder="Catatan tambahan (mis. keterbatasan, perawatan khusus)"></textarea></div>
+
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn" style="flex:1" onclick="closeMachineModal()">Batal</button>
+      <button class="btn btn-primary" style="flex:1" onclick="saveMachine()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openMachineModal(code, name, isNew){
+  var box = document.querySelector('#machineModal .box');
+  document.getElementById('machineModalTitle').textContent = isNew ? 'Tambah Mesin Baru' : name;
+  if(isNew){ box.querySelectorAll('input[type=text], textarea').forEach(function(i){ i.value=''; }); }
+  document.getElementById('machineModal').style.display='flex';
+}
+function closeMachineModal(){ document.getElementById('machineModal').style.display='none'; }
+function saveMachine(){ alert('Mesin tersimpan (demo).'); closeMachineModal(); }
+function confirmDeleteMachine(name){ if(confirm('Hapus mesin "'+name+'"?')) alert('Terhapus (demo).'); }
+</script>
+
+</body>
+</html>

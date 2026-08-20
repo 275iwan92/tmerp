@@ -3,10 +3,12 @@
 namespace App\Models\Sys;
 
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Crypt;
 
 // Model autentikasi UTAMA aplikasi (bukan tabel `users` bawaan Laravel — sudah
 // dibuang, lihat CLEANUP_tm2sys.sql). config/auth.php provider 'users' diarahkan
@@ -37,21 +39,39 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'is_active',
         'created_by',
         'updated_by',
+        'default_password',
+        'must_change_password',
+        'approval_status',
+        'theme_code',
+        'pswd_last_updated',
     ];
 
     protected $hidden = [
         'pswd',
         'mfa',
         'activation_code',
+        'default_password',
     ];
 
     protected $casts = [
         'active' => 'boolean',
         'is_admin' => 'boolean',
         'is_active' => 'boolean',
+        'must_change_password' => 'boolean',
         'mfa_last_updated' => 'datetime',
         'pswd_last_updated' => 'datetime',
     ];
+
+    // SECURITY_default_password_spec.md §4 — SET/GET plaintext, tersimpan
+    // ciphertext (Crypt::encryptString, key=APP_KEY). Admin baca lewat layar
+    // app (accessor auto-decrypt), bukan lewat SQL/serialisasi (lihat $hidden).
+    protected function defaultPassword(): Attribute
+    {
+        return Attribute::make(
+            get: fn (?string $value) => $value ? Crypt::decryptString($value) : null,
+            set: fn (?string $value) => $value ? Crypt::encryptString($value) : null,
+        );
+    }
 
     // Authenticatable default membaca kolom `password` — kolom kita `pswd`.
     public function getAuthPassword(): ?string
