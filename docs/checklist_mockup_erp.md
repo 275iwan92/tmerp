@@ -29,11 +29,11 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - 🟡 [P] Nota Quotation — *inquiry_nota_quotation.html* — varian print beda, belum digarap
 
 ### 1.3 Sales Order (Customer Order)
-> Sedang jalan — lihat `mockup_co_entry.html` (versi terbaru 20 Agustus, superseded *co_entry_mockup.html* lama). Perlu skema `co_order` baru dari nol (belum ada Tier doc), plus sambung ke `fin_invoice.co_id`/`fin_voucher_line.co_id` yang sudah live di Finance (saat ini masih teks bebas).
-- 🟡 [F] CO Entry — *mockup_co_entry.html* — desain dikonfirmasi (Shipment Location pakai `AddressPicker` existing, geo 5 level fleksibel), implementasi belum mulai
-- 🟡 [F] Delivery Plan — *co_delivery_plan_mockup.html* — belum digarap
+> Skema `co_order` dibangun dari nol 2026-08-20 (tidak ada Tier doc sebelumnya) berdasarkan `mockup_co_entry.html` (versi terbaru 20 Agustus, superseded *co_entry_mockup.html* lama). "1 CO = 1 Quotation" (keputusan user) — item CO adalah snapshot dari `quo_quotation_item` saat CO pertama dibuat.
+- ✅ [G] Sales Order List — *mockup_co_entry.html* (implisit) → `co.list` (filter no. CO/customer, kolom Net Receivable)
+- ✅ [F] CO Entry — *mockup_co_entry.html* → `co.entry` (4 tab: Product/Delivery/External Cost/History Flow; item snapshot Quotation terkunci kecuali Due Date; Shipment Location pakai `AddressPicker` existing; diskon dokumen+qty dari `iqp_inquiry`; PPN 11% + PPh 23 2% jasa; `co_order_item.line_kind` P/S; dipicu tombol "Buat Customer Order" di Quotation setelah PUBLISHED via `App\Services\Sales\CoOrderBuilder`)
+- 🟡 [F] Delivery Plan — *co_delivery_plan_mockup.html* — belum digarap (catatan: tab "Delivery" di CO Entry sudah cover jadwal kirim per baris produk; mockup terpisah ini mungkin dashboard konsolidasi lintas-CO, perlu klarifikasi scope kalau mau dilanjut)
 - 🟡 [P] Nota CO (print) — *nota_co_mockup.html* — belum digarap
-- ⬜ [G] Sales Order List — belum ada mockup
 
 ---
 
