@@ -185,6 +185,16 @@ IQ2600003 (Sleeve)     ─┘   (3 baris)          (3 item)
    3 proof (1:1)          konsolidasi          eksekusi
 ```
 
+> **📌 Status implementasi (2026-08-20)** — §3.4 di atas SUDAH DIBANGUN (quo_quotation
+> many-to-one + co_order 1:1), tapi baru ditemukan/dibaca SETELAH implementasi selesai
+> (dibangun independen dari mockup_sales_quotation_entry.html + keputusan langsung user,
+> bukan dari section ini). Struktur inti cocok; ada beberapa deviasi nyata (prefix QUO vs
+> QT di atas, gate publish lebih ketat dari §3.4/TIER_2 §3.4, guard konsolidasi cuma
+> customer tanpa lokasi kirim, tooling jadi baris terpisah tak disebut di §3.4.2). Detail
+> lengkap + status tiap deviasi: lihat `SALES_STATE.yaml → deviasi_dari_tier1_locked`.
+> **Prefix QT vs QUO belum diputuskan** — perlu keputusan sebelum ada data quotation asli
+> karena nomor immutable setelah terbit (§2.4).
+
 ---
 
 ## SECTION 4 — CRITICAL POINT & ATURAN PENDUKUNG

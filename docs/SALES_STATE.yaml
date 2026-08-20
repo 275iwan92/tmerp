@@ -1,0 +1,70 @@
+# ═══════════════════════════════════════════════════════════════════
+# SALES_STATE.yaml — PROGRESS MODUL 01 SALES (Inquiry → Imposition →
+# Costing → Nota → Quotation → Customer Order)
+# Pasangan: SALES_FLOW_inquiry_lifecycle.md (§0 doc itu sudah menyebut file
+# ini sebagai pasangannya sejak 2026-08-14, baru dibuat sekarang 2026-08-20).
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Sales.
+# ═══════════════════════════════════════════════════════════════════
+modul: "01_sales"
+db: tm2sdi (+ tm2mst utk master, FK logis lintas-DB)
+fase: "Spine order-to-cash Sales LENGKAP sampai CO — Inquiry, Imposition, Costing, Nota, Quotation, Customer Order semua live & teruji 2026-08-20"
+status_umum: >
+  Rantai penuh Inquiry -> Imposition -> Costing -> Nota -> Quotation -> Customer Order
+  hidup & teruji end-to-end (2026-08-19/20). Imposition Engine (iqp_layout + m_plano_size)
+  auto-fill ke Costing saat confirm. Nota Inquiry (mode warna/hemat-tinta) & Quotation resmi
+  (print, palet navy/accent dikoreksi dari draf hijau) keduanya respect Sisi A/B (harga
+  disembunyikan kalau costing belum published_flag=1). Quotation DIROMBAK TOTAL 2026-08-20
+  dari desain draf-pertama (1:1 per inquiry) jadi many-to-one per customer (quo_quotation +
+  quo_quotation_item) -- BARU SETELAH pekerjaan itu selesai, ditemukan bahwa
+  TIER_1_INQUIRY_v2_1.md §3.4 & TIER_2_INQUIRY_v3.md §3.4 SUDAH mengunci desain many-to-one
+  ini dari awal (independen, tidak dibaca dulu sebelum membangun) -- hasil akhirnya cocok di
+  struktur inti tapi ada beberapa deviasi nyata, lihat deviasi_dari_tier1_locked di bawah.
+  Customer Order (co_order) dibangun dari nol 2026-08-20 -- SATU-SATUNYA sub-modul session ini
+  yang TIDAK ADA di TIER_1/TIER_2 sama sekali sampai section relasi (§3.4), jadi desain co_order
+  murni dari mockup_co_entry.html + keputusan langsung user.
+
+keputusan_terkunci:
+  A: "1 Quotation = N inquiry (customer sama) + N baris jasa/tooling bebas -- BUKAN 1:1 per inquiry (keputusan user 2026-08-20, cocok dgn TIER_1 §3.4.1 many-to-one)"
+  B: "1 CO = 1 Quotation (co_order.quotation_id UNIQUE) -- cocok persis TIER_1 §3.4.2 baris 'Quotation -> CO : 1:1'"
+  C: "Item CO = snapshot quo_quotation_item, TERKUNCI (kecuali due_date) -- cocok TIER_1 §3.4.3 poin 3 'qty/harga/diskon item = snapshot, fix'"
+  D: "Tooling di-split per jenis (PISAU+MATRAS=die, PLATE, FILM) jadi BARIS TERPISAH di quotation/CO, bukan 1 baris gabung -- sesuai mockup_sales_quotation_letter_print.html"
+  E: "Nomor dokumen: IQ+YY+NNNNN (inquiry), QUO+YY+NNNNN (quotation), CO+YY+NNNNN (customer order) -- lihat deviasi #1 di bawah, TIER_1 §2.4 sebut prefix QT bukan QUO"
+  F: "Quotation resmi (print) HANYA terbit nomor kalau costing published_flag=1 (Sisi A/B, CLAUDE.md §4) -- lihat deviasi #2, TIER_2 §3.4 bilang tombol convert 'selalu aktif' walau belum published"
+  G: "PPh 23 (jasa) = 2% dari nilai baris SERVICE, dipotong di level CO (asumsi rate standar Indonesia, belum ada konfirmasi user/dokumen resmi)"
+  H: "Shipment Location (CO) pakai App\\Livewire\\AddressPicker existing, bukan komponen baru -- 5 level kelurahan..negara, fallback otomatis ke level lebih kasar kalau data sedetail itu tak ada"
+
+deviasi_dari_tier1_locked:
+  - "#1 PREFIX QUOTATION: TIER_1_INQUIRY_v2_1.md §2.4 mengunci prefix 'QT' (contoh QT2600001). Yang dibangun pakai 'QUO' (QUO2600001), mengikuti literal contoh di mockup_sales_quotation_entry.html & mockup_sales_quotation_letter_print.html (kedua mockup terbaru, dari user langsung, konsisten pakai QUO). BELUM DIPUTUSKAN mana yang menang -- nomor bersifat 'immutable setelah terbit' (§2.4) jadi ini perlu keputusan SEKARANG sebelum ada data produksi, ganti prefix nanti = breaking change. Perlu tanya user."
+  - "#2 GATE PUBLISH vs TOMBOL SELALU AKTIF: TIER_2_INQUIRY_v3.md §3.4 pseudo-code convert_to_quotation() bilang tombol 'selalu aktif; bila harga belum published, quotation tetap bisa dibuat sbg draft, baris harga menunggu publish'. Yang dibangun LEBIH KETAT: App\\Services\\Sales\\QuotationBuilder::addInquiry() me-return null (tak menambah apapun) kalau costing belum published_flag=1 -- alasan saat itu: TIDAK mau baris quotation dgn harga kosong/0 yang bisa membingungkan. Bisa direvisi supaya cocok dgn desain terkunci (izinkan baris draft tanpa harga, isi otomatis pas costing publish) kalau user mau."
+  - "#3 GUARD LOKASI KIRIM: TIER_1 §3.4.3 poin 6 'inquiry hanya bisa masuk quotation bila customer & lokasi kirim SAMA'. Yang dibangun cuma guard CUSTOMER (App\\Services\\Sales\\QuotationBuilder / quotation.entry availableInquiries() filter customer_id saja) -- TIDAK ada guard lokasi kirim, karena iqp_inquiry belum punya field lokasi kirim sama sekali (lokasi kirim baru muncul di co_order.ship_area_id/level, level CO bukan level inquiry/quotation). Kalau guard ini mau ditegakkan, perlu tambah field lokasi kirim di iqp_inquiry dulu."
+  - "#4 TEMPAT TOMBOL 'TAMBAHKAN KE QUOTATION': TIER_1 F21 & TIER_2 §3.4 menaruh tombol convert di 'tiap layar inquiry' (new/recalc/revise). Yang dibangun menaruhnya di Costing (setelah published), bukan di layar Inquiry -- alasan: baris quotation butuh harga (price_per_pcs) yang cuma ada di costing published, jadi menaruh tombol di Inquiry (sebelum costing ada) akan sering gagal/kosong."
+  - "#5 TOOLING SEBAGAI BARIS TERPISAH per jenis: tidak disebut sama sekali di TIER_1/TIER_2 relasi model (§3.4.2 cuma bilang '1 inquiry : 1 quotation-line') -- yang dibangun 1 inquiry bisa menyumbang 2-4 baris (1 produk + sampai 3 tooling: die/plate/film) kalau ada tooling is_new_charge. Ini nurut mockup_sales_quotation_letter_print.html yang eksplisit menampilkan baris terpisah, TIER_1/2 belum diupdate mengikuti pola ini."
+
+artefak_selesai:
+  - "Migration 2026_08_20_000007_redesign_quotation_multi_inquiry.php  # quo_quotation (customer_id) + quo_quotation_item baru"
+  - "Migration 2026_08_20_000008_create_co_order_tables.php  # co_order + co_order_item + co_order_delivery + co_order_external_cost, BARU dari nol"
+  - "App\\Services\\Sales\\QuotationBuilder.php  # findOrCreateDraft + addInquiry (idempotent, auto-split tooling)"
+  - "App\\Services\\Sales\\CoOrderBuilder.php  # findOrCreateFromQuotation (gated PUBLISHED)"
+  - "App\\Services\\Inquiry\\TierPricingResolver.php  # dipakai bersama Nota + Quotation Print"
+  - "resources/views/pages/quotation/{list,entry,print}.blade.php"
+  - "resources/views/pages/co/{list,entry}.blade.php"
+  - "resources/views/pages/inquiry/{imposition,nota}.blade.php"
+  - "mockup_sales_quotation_entry.html, mockup_sales_quotation_letter_print.html, mockup_co_entry.html"
+  - "checklist_mockup_erp.md  # Sales 12 live / 6 mockup-blm-digarap / 1 blm-ada-mockup per 2026-08-20"
+
+next_step:
+  - "SELESAI 2026-08-20: Imposition Engine, Nota Inquiry, Quotation (redesain multi-inquiry), Customer Order (dari nol)"
+  - "Perlu keputusan user: deviasi #1 (prefix QT vs QUO) sebelum ada data produksi asli"
+  - "Menyusul (checklist masih 🟡, mockup ada): Delivery Plan (co_delivery_plan_mockup.html -- overlap dgn tab Delivery di CO Entry, perlu klarifikasi scope), Nota CO print (nota_co_mockup.html), Nota Quotation varian (inquiry_nota_quotation.html), Prove Warna (inquiry_proof.html, F8 di TIER_1 juga masih belum)"
+  - "Materialisasi Master Product (TIER_1 §5, trigger PO_RECEIVED / setara CONFIRM CO) BELUM diimplementasi -- Confirm CO cuma ubah doc_status, tidak auto-insert m_product/part_of_product. m_product itu sendiri juga belum ada modelnya."
+
+open_items:
+  - "co_order baru dibangun -- fin_invoice.co_id & fin_voucher_line.co_id di Finance (lihat FIN_STATE.yaml) masih manual teks, BELUM di-rewiring ke FK asli meski tabelnya sekarang ada. Perlu sesi terpisah utk itu, di luar scope hari ini."
+  - "sys_user_menu belum di-wire ke dropdown profil sungguhan (lihat QUEUE.md #9, ditunda ke sesi malam/senggang atas permintaan user)."
+  - "Quotation Entry tidak punya 'Alternatif Qty Tiers' info panel (skip di v1, print view PUNYA panel ini utk produk utama) -- kalau mau simetris, tambahkan juga ke Entry."
+  - "PPh 23 2% (keputusan_terkunci G) adalah ASUMSI rate standar, bukan konfirmasi user/dokumen -- kalau salah, gampang diubah (satu baris di CoOrder::totals())."
+  - "Order Type CO (Product Only/Service Only/Mixed) dihitung otomatis dari line_kind, tidak ada di TIER_1/2 sbg konsep -- murni turunan dari mockup_co_entry.html."
+
+catatan:
+  - "TIER_1_INQUIRY_v2_1.md §3.4 & TIER_2_INQUIRY_v3.md §3.4/§3.95 SUDAH mengunci desain many-to-one Quotation + 1:1 CO ini SEBELUM sesi 2026-08-20 -- ditemukan SETELAH implementasi selesai (baca dokumen ini dulu di sesi berikutnya sebelum mulai kerja modul Sales, supaya tidak terulang membangun tanpa cek Tier doc dulu)."
+  - "Baik Nota Inquiry maupun Quotation print membangun ulang App\\Services\\Inquiry\\TierPricingResolver -- kalau ada perubahan rumus tier/harga, cek pemakaiannya di kedua layar itu."

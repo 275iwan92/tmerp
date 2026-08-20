@@ -107,6 +107,12 @@ FUNCTION convert_to_quotation(inquiry_id):
     # Quotation → CO one-to-one (Tier 1 §3.4)
 ```
 > **Perilaku tombol (keputusan):** selalu aktif. Bila harga belum published, quotation tetap bisa dibuat sbg draft, tapi baris harga menunggu publish. Konsolidasi banyak inquiry ke satu quotation = inti many-to-one.
+>
+> **📌 Status implementasi (2026-08-20):** dibangun dgn gate LEBIH KETAT dari spec di atas —
+> `App\Services\Sales\QuotationBuilder::addInquiry()` menolak (return null, tak ada baris
+> ditambah) kalau costing belum `published_flag=1`, bukan "selalu aktif + baris nunggu
+> publish" seperti pseudo-code ini. Tombolnya juga ditaruh di layar Costing (bukan "tiap
+> layar inquiry"). Lihat `SALES_STATE.yaml → deviasi_dari_tier1_locked #2, #4`.
 
 ---
 ---

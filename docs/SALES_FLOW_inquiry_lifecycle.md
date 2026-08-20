@@ -3,7 +3,7 @@
 > Khas modul 01_Sales. Menunjuk `GLOBAL_RULES.yaml` (rantai otoritas, doc_types) &
 > `SALES_RULES.yaml` (lock/selector, imposition, master card). TIDAK menyalin — hanya
 > menajamkan alur end-to-end + koreksi pemahaman.
-> Status: **koreksi pemahaman** (Jo, 2026-08-14). Pasangan: `SALES_STATE.yaml`.
+> Status: **koreksi pemahaman** (Jo, 2026-08-14). Pasangan: `SALES_STATE.yaml` (dibuat 2026-08-20, baca itu untuk status build terkini).
 
 ---
 
@@ -93,6 +93,14 @@ DRAFT
 Cabang: quotation ditolak/menggantung → berhenti di `QUOTED` (tak pernah `MATERIALIZED`).
 
 ---
+
+> **📌 Status implementasi (2026-08-20):** langkah 8-12 (Quotation → PO → Customer Order)
+> sekarang punya kode nyata — lihat `SALES_STATE.yaml`. **Belum diimplementasi:** §5 di
+> bawah (materialisasi Master Product saat PO_RECEIVED) — Confirm CO cuma mengubah
+> `co_order.doc_status`, tidak auto-insert `m_product`/`part_of_product` (model itu sendiri
+> belum ada). "PO diterima" langkah 11 kira-kira setara dengan proses Confirm CO
+> (`co_order.customer_po_no` menyimpan nomor PO customer), tapi trigger materialisasi di §5
+> belum menyala.
 
 ## 5. Materialisasi Master Product (aturan)
 
