@@ -117,10 +117,16 @@ transaksi = `iqp_costing`, ikut inquiry).
 - Mockup Tier 4 (HTML/CSS) — acuan UI: `inquiry_new/recalc/revise.html`,
   `inquiry_costing_*.html`, `inquiry_proof.html`, `inquiry_quotation.html`,
   `product_costing.html`, `*_nota_*.html`.
-- `GRID_UI_STANDARD.md` — **wajib dibaca sebelum bikin/ubah grid Master apa pun**:
-  tanpa header halaman, kotak statistik pastel, kolom identitas avatar+nama+kode,
-  klik 2x buka detail, kolom Aksi 2 ikon (Edit+toggle aktif), toolbar satu baris,
-  tombol "+ New Record", tanpa tombol Hapus di grid.
+- `GRID_UI_STANDARD.md` — **wajib dibaca sebelum bikin/ubah grid apa pun**
+  (Master maupun worklist/transaksi): tanpa header halaman, kotak statistik
+  pastel, kolom identitas avatar+nama+kode, klik 2x buka detail, toolbar
+  minimal. Kolom Aksi: grid Master = Edit+Toggle-aktif; grid non-Master =
+  Buka + Confirm kondisional (tidak pernah toggle aktif/nonaktif).
+- `SIDEBAR_MENU_STANDARD.md` — **wajib dibaca sebelum menata menu
+  `sys_app_menu`/sidebar modul apa pun**: selalu ada grup input & grup
+  "Laporan" (label ringkas, tanpa kata "Laporan" berulang di item-nya),
+  nama item laporan ikut `#[Title]` layar aslinya, grup sidebar otomatis
+  collapsible (tak perlu kerjaan tambahan).
 
 ---
 
