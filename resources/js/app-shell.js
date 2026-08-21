@@ -62,6 +62,14 @@ document.addEventListener('alpine:init', () => {
             if (code === 'HOME') this.showHome();
         },
 
+        // Label topbar dipersingkat -- nama modul asli (dari sys_app_menu.label,
+        // dipakai juga di sidebar/command palette) tetap utuh, cuma tampilan
+        // tab di topbar yang dipendekkan supaya baris modul muat tanpa scroll.
+        topLabel(code, label) {
+            const short = { HRM: 'HR', FINACC: 'FA' };
+            return short[code] || label;
+        },
+
         findItem(code) {
             return this.flat.find((x) => x.code === code);
         },

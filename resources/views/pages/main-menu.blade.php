@@ -408,8 +408,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
 
     <aside>
         <div class="side-head">
-            <span class="logo-badge"></span>
-            <span class="logo-txt"><b>TELASIH MAKMUR</b><br><span>packaging solution</span></span>
+            <button type="button" class="logo-home" @click="selectModule('HOME')" title="Kembali ke Home">
+                <span class="logo-badge"></span>
+                <span class="logo-txt"><b>TELASIH MAKMUR</b><br><span>packaging solution</span></span>
+            </button>
             <button type="button" class="side-collapse" @click="mini = !mini" title="Ciutkan sidebar (mini)">⊟</button>
         </div>
         <div class="mod-title">
@@ -446,12 +448,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         <header class="topbar">
             <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="Sembunyikan sidebar">☰</button>
             <nav class="mega">
-                <button type="button" class="mega-item" :class="{ active: activeMod === 'HOME' }" @click="selectModule('HOME')">
-                    <span class="mi"><i class="fa-solid fa-house"></i></span> Home
-                </button>
                 <template x-for="m in menuTree" :key="m.id">
-                    <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="m.statusLabel" @click="selectModule(m.code)">
-                        <span class="mi"><i :class="m.icon"></i></span> <span x-text="m.label"></span>
+                    <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="m.label + (m.statusLabel ? ' — '+m.statusLabel : '')" @click="selectModule(m.code)">
+                        <span class="mi"><i :class="m.icon"></i></span> <span x-text="topLabel(m.code, m.label)"></span>
                         <span class="status-dot" :style="{ background: m.statusColor }"></span>
                     </button>
                 </template>

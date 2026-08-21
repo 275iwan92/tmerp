@@ -315,6 +315,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell.mini aside { @apply w-[66px]; }
 .shell.nosidebar aside { @apply w-0; }
 .shell .side-head { @apply flex items-center gap-2.5 px-3.5 flex-shrink-0; height: var(--topbar-h); background: rgba(0, 0, 0, .18); }
+.shell .logo-home { @apply flex items-center gap-2.5 bg-transparent border-none p-0 cursor-pointer text-left min-w-0; }
 .shell .logo-badge { @apply w-[34px] h-[34px] rounded-[9px] flex-shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
 .shell .logo-txt { @apply overflow-hidden whitespace-nowrap; line-height: 1.05; }
 .shell .logo-txt b { @apply text-[15px] tracking-[.4px] text-white; }
