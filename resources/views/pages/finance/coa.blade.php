@@ -18,10 +18,6 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
 
     public string $search = '';
 
-    public string $filterType = '';
-
-    public bool $hideInactive = false;
-
     public bool $showDetail = true; // false = ciutkan baris lvl-3 (postable), header tetap tampil
 
     public bool $showModal = false;
@@ -57,8 +53,6 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('account_code', 'like', "%{$this->search}%")
                 ->orWhere('account_name', 'like', "%{$this->search}%")))
-            ->when($this->filterType !== '', fn ($q) => $q->where('account_type', $this->filterType))
-            ->when($this->hideInactive, fn ($q) => $q->where('is_active', true))
             ->orderBy('account_code')
             ->get();
     }
@@ -140,6 +134,16 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
     public function toggleDetail(): void
     {
         $this->showDetail = ! $this->showDetail;
+    }
+
+    public function toggleActive(int $accountId): void
+    {
+        $a = FinAccount::findOrFail($accountId);
+        $a->is_active = ! $a->is_active;
+        $a->updated_by = Auth::user()->login;
+        $a->save();
+
+        unset($this->accounts, $this->metricTotalActive, $this->metricTotalRecon, $this->metricTotalCogs, $this->metricTotalPersediaan);
     }
 
     public function openModal(string $mode, ?int $id = null): void
@@ -243,63 +247,55 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
 
 <div>
     <div class="w-full px-5 py-4.5">
-        <div class="flex justify-between items-start flex-wrap gap-3 mb-3.5">
-            <div>
-                <h1 class="text-lg font-bold text-navy flex items-center gap-2">Master Chart of Accounts (COA)
-                    <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold bg-[#e5edff] text-[#2c7be5] border border-[#c7d8fb]">Offset Printing &amp; Packaging</span>
-                </h1>
-                <div class="text-xs text-muted mt-0.5">Bagan akun manufaktur cetak, tooling matris &amp; subkontraktor · DB <code>tm2acc</code> · tabel <code>fin_account</code></div>
-            </div>
-            <button type="button" wire:click="openModal('new')" class="bg-accent text-white text-xs px-3.5 py-2 rounded-md font-semibold cursor-pointer hover:brightness-110">+ Tambah Akun GL</button>
-        </div>
 
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Total Akun Aktif</div>
-                <div class="text-[17px] font-extrabold text-navy mt-0.5">{{ $this->metricTotalActive }} Akun GL</div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Akun Aktif</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotalActive }}</p>
             </div>
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Akun Rekonsiliasi (AR/AP)</div>
-                <div class="text-[17px] font-extrabold text-accent mt-0.5">{{ $this->metricTotalRecon }} Terkunci</div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
+                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Akun Rekonsiliasi (AR/AP)</p>
+                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->metricTotalRecon }}</p>
+                <p class="text-[10px] text-[#6b4fa0]/70">TERKUNCI</p>
             </div>
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Akun HPP Produksi (COGS)</div>
-                <div class="text-[17px] font-extrabold text-navy mt-0.5">{{ $this->metricTotalCogs }} Akun</div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Akun HPP Produksi (COGS)</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->metricTotalCogs }}</p>
             </div>
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Persediaan &amp; Tooling</div>
-                <div class="text-[17px] font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricTotalPersediaan }} Stok</div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Persediaan &amp; Tooling</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricTotalPersediaan }}</p>
             </div>
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex gap-2 items-center px-3.5 py-3 border-b border-[#e2e7ee] flex-wrap bg-[#f8fafc]">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama akun…" class="min-w-[240px] px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                <select wire:model.live="filterType" class="px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                    <option value="">Semua Kategori</option>
-                    @foreach ($accountTypes as $t)
-                        <option value="{{ $t }}">{{ $this->accountTypeLabel($t) }}</option>
-                    @endforeach
-                </select>
-                <label class="flex items-center gap-1.5 text-xs cursor-pointer">
-                    <input type="checkbox" wire:model.live="hideInactive"> Sembunyikan nonaktif
-                </label>
+            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama akun…"
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
                 <span class="flex-1"></span>
-                <button type="button" wire:click="toggleDetail" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white text-accent border border-accent">{{ $showDetail ? 'Ciutkan Header' : 'Ekspansi Semua' }}</button>
-                <span class="text-[11px] text-muted">{{ $this->accounts->count() }} baris</span>
+                <button type="button" wire:click="openModal('new')"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>
 
             <div class="max-h-[70vh] overflow-auto">
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Kode</th>
+                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">
+                                <button type="button" wire:click="toggleDetail" title="{{ $showDetail ? 'Ciutkan baris akun postable' : 'Tampilkan semua baris' }}"
+                                    class="inline-flex items-center gap-1 cursor-pointer bg-transparent border-none text-navy text-[11px] uppercase tracking-wide font-bold p-0">
+                                    <span>{{ $showDetail ? '▾' : '▸' }}</span> Kode
+                                </button>
+                            </th>
                             <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Nama Akun</th>
                             <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tipe</th>
                             <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[95px]">Saldo</th>
                             <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">Recon &amp; Tagging</th>
                             <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Default Cost Center</th>
-                            <th class="text-center px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                            <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -313,7 +309,12 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                     default => 'hover:bg-[#f7faff]',
                                 } }}">
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5] font-mono {{ $a->tree_level == 3 ? 'pl-[42px]' : ($a->tree_level == 2 ? 'pl-6' : '') }}">{{ $a->account_code }}</td>
-                                <td class="px-3.5 py-2 border-b border-[#eef1f5]">{{ $a->account_name }}</td>
+                                <td class="px-3.5 py-2 border-b border-[#eef1f5]">
+                                    {{ $a->account_name }}
+                                    @if (! $a->is_active)
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef0f3] text-[#8a8f98] ml-1 align-middle">NONAKTIF</span>
+                                    @endif
+                                </td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">{{ $a->account_type }}</td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase {{ $a->normal_balance === 'DEBIT' ? 'bg-[#dff0ff] text-[#1d5fa8]' : 'bg-[#fdeecf] text-[#8a5a12]' }}">{{ $a->normal_balance === 'DEBIT' ? 'DEBIT' : 'KREDIT' }}</span>
@@ -332,9 +333,11 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                         —
                                     @endif
                                 </td>
-                                <td class="px-3.5 py-2 border-b border-[#eef1f5] text-center">
+                                <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     @if ($a->is_postable)
-                                        <button type="button" wire:click="openModal('edit', {{ $a->account_id }})" class="text-accent font-semibold cursor-pointer hover:underline">Edit</button>
+                                        <button type="button" wire:click="openModal('edit', {{ $a->account_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                        <button type="button" wire:click="toggleActive({{ $a->account_id }})" wire:confirm="{{ $a->is_active ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $a->account_code }}?"
+                                            title="{{ $a->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $a->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                     @else
                                         —
                                     @endif
