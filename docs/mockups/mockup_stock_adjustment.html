@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TMERP — Stock Adjustment &amp; Opname</title>
+<link rel="stylesheet" href="tmerp_inv.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">TMERP <span>CV Telasih Makmur Group</span></div>
+  <div class="spacer"></div>
+  <div class="user">Staff Gudang — Rina&nbsp;&nbsp;|&nbsp;&nbsp;Gudang Bahan Baku</div>
+</div>
+
+<nav class="modnav">
+  <a href="mockup_stock_in.html">Stock In</a>
+  <a href="mockup_stock_out.html">Stock Out</a>
+  <a href="mockup_stock_adjustment.html" class="active">Stock Adjustment</a>
+  <a href="mockup_stock_return.html">Return from Production</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ==================== PANEL 1 : GRID ==================== -->
+<div id="pGrid" class="panel show">
+
+  <div class="kpis">
+    <div class="kpi"><div class="lab">Menunggu persetujuan</div><div class="val" style="color:var(--warn)">5</div></div>
+    <div class="kpi"><div class="lab">Disetujui bulan ini</div><div class="val pos">18</div></div>
+    <div class="kpi"><div class="lab">Nilai selisih kurang</div><div class="val neg">−Rp 4,2 jt</div></div>
+    <div class="kpi"><div class="lab">Nilai selisih lebih</div><div class="val pos">+Rp 1,1 jt</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <h2>Stock Adjustment &amp; Stock Opname</h2>
+      <span class="sub">rm_stock / sfg_stock / fg_stock · doc_cat = AD · qty bertanda (+/−)</span>
+      <div class="spacer"></div>
+      <div class="btnbar">
+        <button class="btn" onclick="alert('Export Excel (mockup)')">Export</button>
+        <button class="btn" onclick="openForm('opname')">+ Stock Opname</button>
+        <button class="btn btn-primary" onclick="openForm('new')">+ Adjustment Baru</button>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="filters">
+        <div class="f">
+          <label class="fl">Kelas Stok</label>
+          <select class="fc"><option>Semua</option><option selected>Bahan Baku (RM)</option><option>Setengah Jadi (SFG)</option><option>Barang Jadi (FG)</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Jenis</label>
+          <select class="fc"><option>Semua</option><option>Adjustment (AD)</option><option>Stock Opname (OP)</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Gudang</label>
+          <select class="fc"><option>Semua Gudang</option><option selected>GD-01 Bahan Baku</option><option>GD-02 Barang Jadi</option><option>GD-03 Tinta &amp; Kimia</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Status Persetujuan</label>
+          <select class="fc"><option>Semua</option><option>Draft</option><option>Menunggu Level 1</option><option>Menunggu Level 2</option><option>Disetujui</option><option>Ditolak</option></select>
+        </div>
+        <div class="f"><label class="fl">Dari Tanggal</label><input type="date" class="fc" value="2026-08-01"></div>
+        <div class="f"><label class="fl">Sampai</label><input type="date" class="fc" value="2026-08-21"></div>
+        <div class="f wide"><label class="fl">Cari</label><input class="fc" placeholder="No. dokumen / material / alasan…"></div>
+        <button class="btn btn-navy">Cari</button>
+        <button class="btn">Reset</button>
+      </div>
+    </div>
+
+    <div class="tbl-scroll">
+      <table class="tbl grid-rows">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th style="width:122px">No. Dokumen</th>
+            <th style="width:92px">Tanggal</th>
+            <th style="width:64px" class="ctr">Jenis</th>
+            <th style="width:56px" class="ctr">Kelas</th>
+            <th style="width:128px">Gudang</th>
+            <th>Alasan</th>
+            <th style="width:58px" class="ctr">Baris</th>
+            <th style="width:92px" class="num">Selisih +</th>
+            <th style="width:92px" class="num">Selisih −</th>
+            <th style="width:118px" class="num val-col">Nilai Selisih</th>
+            <th style="width:136px" class="ctr">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ondblclick="openForm('wait')">
+            <td class="ctr">1</td><td><b>ADJ/26/00023</b></td><td>21/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">OP</span></td><td class="ctr">RM</td>
+            <td>GD-01 Bahan Baku</td><td>Opname mingguan rak R1–R3</td>
+            <td class="ctr">14</td><td class="num pos">+120,00</td><td class="num neg">−340,00</td>
+            <td class="num val-col neg">−1.240.000</td>
+            <td class="ctr"><span class="bdg bdg-wait">Menunggu Lvl 1</span></td>
+          </tr>
+          <tr ondblclick="openForm('wait')">
+            <td class="ctr">2</td><td><b>ADJ/26/00022</b></td><td>20/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">AD</span></td><td class="ctr">RM</td>
+            <td>GD-03 Tinta &amp; Kimia</td><td>Tinta mengering di kaleng — tidak layak pakai</td>
+            <td class="ctr">2</td><td class="num zero">0,00</td><td class="num neg">−8,00</td>
+            <td class="num val-col neg">−688.000</td>
+            <td class="ctr"><span class="bdg bdg-wait">Menunggu Lvl 2 <span class="bdg bdg-plt">PLT</span></span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">3</td><td><b>ADJ/26/00021</b></td><td>19/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">AD</span></td><td class="ctr">FG</td>
+            <td>GD-02 Barang Jadi</td><td>Box penyok kena air hujan saat bongkar muat</td>
+            <td class="ctr">1</td><td class="num zero">0,00</td><td class="num neg">−450,00</td>
+            <td class="num val-col neg">−1.575.000</td>
+            <td class="ctr"><span class="bdg bdg-ok">Disetujui</span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">4</td><td><b>ADJ/26/00020</b></td><td>18/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">OP</span></td><td class="ctr">RM</td>
+            <td>GD-01 Bahan Baku</td><td>Opname bulanan Juli — penyesuaian akhir</td>
+            <td class="ctr">27</td><td class="num pos">+880,00</td><td class="num neg">−615,00</td>
+            <td class="num val-col pos">+1.104.000</td>
+            <td class="ctr"><span class="bdg bdg-ok">Disetujui</span></td>
+          </tr>
+          <tr ondblclick="openForm('draft')">
+            <td class="ctr">5</td><td><b>ADJ/26/00019</b></td><td>18/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">AD</span></td><td class="ctr">RM</td>
+            <td>GD-01 Bahan Baku</td><td>Salah input lot pada IN/26/00036</td>
+            <td class="ctr">2</td><td class="num pos">+200,00</td><td class="num neg">−200,00</td>
+            <td class="num val-col zero">0</td>
+            <td class="ctr"><span class="bdg bdg-draft">Draft</span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">6</td><td><b>ADJ/26/00018</b></td><td>15/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">AD</span></td><td class="ctr">RM</td>
+            <td>GD-01 Bahan Baku</td><td>Selisih besar tanpa bukti fisik</td>
+            <td class="ctr">3</td><td class="num zero">0,00</td><td class="num neg">−2.400,00</td>
+            <td class="num val-col neg">−12.480.000</td>
+            <td class="ctr"><span class="bdg bdg-cancel">Ditolak Lvl 2</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hint-dbl">
+      Klik ganda pada baris untuk membuka dokumen. &nbsp;·&nbsp;
+      <label class="switch"><input type="checkbox" onchange="toggleValue(this.checked)"> Tampilkan kolom nilai</label>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PANEL 2 : FORM ==================== -->
+<div id="pForm" class="panel">
+
+  <div class="flowbar">
+    <div class="step done"><span class="dot"></span> Draft</div><span class="arw">→</span>
+    <div class="step done"><span class="dot"></span> Diajukan</div><span class="arw">→</span>
+    <div class="step cur"><span class="dot"></span> Persetujuan Lvl 1 — Kepala Gudang</div><span class="arw">→</span>
+    <div class="step"><span class="dot"></span> Persetujuan Lvl 2 — Manajer Operasional</div><span class="arw">→</span>
+    <div class="step"><span class="dot"></span> Posting ke Kartu Stok</div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <button class="btn btn-sm" onclick="backToGrid()">← Kembali ke daftar</button>
+      <h2 style="margin-left:6px" id="fTitle">Stock Opname — ADJ/26/00023</h2>
+      <span class="bdg bdg-wait" id="fStatus">Menunggu Persetujuan Lvl 1</span>
+      <div class="spacer"></div>
+      <div class="btnbar" id="fActions">
+        <button class="btn" onclick="alert('Simpan draft (mockup)')">Simpan Draft</button>
+        <button class="btn btn-primary" onclick="alert('Ajukan persetujuan (mockup)')">Ajukan Persetujuan</button>
+        <button class="btn btn-danger" onclick="alert('Batalkan dokumen (mockup)')">Batalkan</button>
+        <button class="btn" onclick="alert('Cetak Berita Acara Opname (mockup)')">Cetak Berita Acara</button>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="note warn">
+        <b>Penyesuaian mengubah saldo stok tanpa transaksi fisik masuk/keluar.</b> Karena itu dokumen ini wajib melalui
+        persetujuan berjenjang dan baru menyentuh <code>rm_stockcard.qty_adj</code> setelah level terakhir menyetujui.
+        Isi <b>qty hasil hitung fisik</b> — selisih dihitung sistem, jangan diisi manual.
+      </div>
+
+      <div class="grid-f g4">
+        <div><label class="fl">No. Dokumen</label><input class="fc" value="ADJ/26/00023" readonly></div>
+        <div><label class="fl">Tanggal Dokumen <span class="req">*</span></label><input type="date" class="fc" value="2026-08-21"></div>
+        <div>
+          <label class="fl">Jenis Dokumen <span class="req">*</span></label>
+          <select class="fc" id="selKind" onchange="switchKind()">
+            <option value="OP" selected>Stock Opname (hitung fisik terjadwal)</option>
+            <option value="AD">Adjustment (koreksi kejadian tunggal)</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">Kelas Stok <span class="req">*</span></label>
+          <select class="fc">
+            <option selected>Bahan Baku (RM)</option>
+            <option>Setengah Jadi (SFG)</option>
+            <option>Barang Jadi (FG)</option>
+          </select>
+        </div>
+
+        <div><label class="fl">Gudang <span class="req">*</span></label>
+          <select class="fc"><option selected>GD-01 Bahan Baku</option><option>GD-02 Barang Jadi</option><option>GD-03 Tinta &amp; Kimia</option></select></div>
+        <div><label class="fl">Cakupan Lokasi</label>
+          <select class="fc"><option selected>Rak R1 – R3</option><option>Seluruh gudang</option><option>Lokasi tertentu…</option></select></div>
+        <div>
+          <label class="fl">Alasan Penyesuaian <span class="req">*</span></label>
+          <select class="fc">
+            <option selected>Opname terjadwal</option>
+            <option>Barang rusak / tidak layak pakai</option>
+            <option>Susut alami (evaporasi, serap lembap)</option>
+            <option>Salah input dokumen sebelumnya</option>
+            <option>Barang hilang</option>
+            <option>Temuan barang tak tercatat</option>
+          </select>
+        </div>
+        <div><label class="fl">Diajukan oleh</label><input class="fc" value="Rina — Staff Gudang" readonly></div>
+      </div>
+
+      <div class="grid-f g4" id="boxOpname" style="margin-top:11px">
+        <div><label class="fl">Petugas Opname <span class="req">*</span></label><input class="fc" value="Lucy, Comel, Rina"></div>
+        <div><label class="fl">Mulai Hitung <span class="req">*</span></label><input type="datetime-local" class="fc" value="2026-08-21T07:00"></div>
+        <div><label class="fl">Selesai Hitung <span class="req">*</span></label><input type="datetime-local" class="fc" value="2026-08-21T10:30"></div>
+        <div><label class="fl">Saksi / Penyelia</label><input class="fc" value="Budi — Kepala Gudang"></div>
+      </div>
+
+      <div class="grid-f g2" style="margin-top:11px">
+        <div><label class="fl">Catatan / Kronologi <span class="req">*</span></label>
+          <textarea class="fc">Opname mingguan rak R1–R3. Selisih kurang terbesar pada Art Paper 230gr, diduga sisa potongan belum dikembalikan dari bagian belah.</textarea></div>
+        <div><label class="fl">Bukti Foto / Berita Acara <span class="req">*</span></label>
+          <input type="file" class="fc" multiple>
+          <div style="margin-top:6px;font-size:11.5px;color:var(--txt-l)">Lampiran wajib bila nilai selisih melebihi batas kewenangan Kepala Gudang.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="card">
+    <div class="card-h">
+      <h2>Rincian Hasil Hitung Fisik</h2>
+      <span class="sub">rm_stock_d — qty tersimpan bertanda (+/−)</span>
+      <div class="spacer"></div>
+      <label class="switch"><input type="checkbox" onchange="toggleValue(this.checked)"> Tampilkan nilai</label>
+      <button class="btn btn-sm" onclick="alert('Tarik saldo sistem per lokasi dari v_rm_onhand (mockup)')">Tarik Saldo Sistem</button>
+      <button class="btn btn-sm btn-primary" onclick="addRow()">+ Tambah Baris</button>
+    </div>
+    <div class="card-b nopad">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th>Material</th>
+            <th style="width:104px">Lot</th>
+            <th style="width:116px">Lokasi</th>
+            <th style="width:60px">UOM</th>
+            <th style="width:106px" class="num">Saldo Sistem</th>
+            <th style="width:106px" class="num">Hitung Fisik <span class="req">*</span></th>
+            <th style="width:100px" class="num">Selisih</th>
+            <th style="width:118px" class="num val-col">Nilai Selisih</th>
+            <th style="width:160px">Alasan Baris</th>
+            <th style="width:40px" class="ctr"></th>
+          </tr>
+        </thead>
+        <tbody id="detBody">
+          <tr>
+            <td class="ctr">1</td>
+            <td>RM-KRT-0004 · Art Paper 230gr 79×109</td>
+            <td>AP-2605</td><td>R1-C3-S1</td><td>LBR</td>
+            <td class="num sys">330,00</td>
+            <td><input class="ti num phy" value="130,00" oninput="calcRow(this)"></td>
+            <td class="num dif neg">−200,00</td>
+            <td class="num val-col neg">−1.040.000</td>
+            <td><input class="ti" value="Sisa potongan belum kembali"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">2</td>
+            <td>RM-KRT-0009 · Duplex 350gr 79×109</td>
+            <td>DPX-2607</td><td>R3-C1-S2</td><td>LBR</td>
+            <td class="num sys">12.100,00</td>
+            <td><input class="ti num phy" value="12.220,00" oninput="calcRow(this)"></td>
+            <td class="num dif pos">+120,00</td>
+            <td class="num val-col pos">+624.000</td>
+            <td><input class="ti" value="Temuan sisa lot lama"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">3</td>
+            <td>RM-KRT-0007 · Art Carton 240gr 79×109</td>
+            <td>AC-2604</td><td>R1-C3-S2</td><td>LBR</td>
+            <td class="num sys">3.840,00</td>
+            <td><input class="ti num phy" value="3.700,00" oninput="calcRow(this)"></td>
+            <td class="num dif neg">−140,00</td>
+            <td class="num val-col neg">−824.000</td>
+            <td><input class="ti" value="Rusak lembap, dibuang"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">4</td>
+            <td>RM-TNT-0021 · Tinta Offset Cyan</td>
+            <td>TY-2608-A</td><td>R1-C2-S3</td><td>KG</td>
+            <td class="num sys">136,00</td>
+            <td><input class="ti num phy" value="136,00" oninput="calcRow(this)"></td>
+            <td class="num dif zero">0,00</td>
+            <td class="num val-col zero">0</td>
+            <td><input class="ti" placeholder="—"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5">Total <span id="rowCount">4</span> baris · <span id="difCount">3</span> baris berselisih</td>
+            <td class="num">16.406,00</td>
+            <td class="num">16.186,00</td>
+            <td class="num"><b class="neg" id="totDif">−220,00</b></td>
+            <td class="num val-col neg">−1.240.000</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="hint-dbl">
+      Baris dengan selisih 0 tetap disimpan sebagai bukti sudah dihitung, tetapi <b>dilewati trigger</b> (tidak membuat baris kartu stok).
+      Selisih kurang dicatat sebagai <code>qty_adj</code> negatif, selisih lebih positif.
+    </div>
+  </div>
+
+  <!-- APPROVAL -->
+  <div class="card">
+    <div class="card-h"><h2>Persetujuan</h2><span class="sub">flow_config · module_code = AD</span></div>
+    <div class="card-b">
+      <div class="note">
+        Anda login sebagai <b>Staff Gudang</b> — tombol persetujuan tidak tersedia di layar ini.
+        Persetujuan dilakukan pada <b>layar Approval Center</b> yang terpisah dari layar entri.
+      </div>
+      <table class="tbl">
+        <thead><tr><th style="width:56px" class="ctr">Level</th><th>Jabatan Penyetuju</th><th>Pelaksana</th><th style="width:140px">Batas Kewenangan Nilai</th><th style="width:160px" class="ctr">Status</th><th style="width:130px">Waktu</th></tr></thead>
+        <tbody>
+          <tr><td class="ctr">1</td><td>Kepala Gudang</td><td>Budi Santoso</td><td class="num">s/d Rp 5.000.000</td>
+              <td class="ctr"><span class="bdg bdg-wait">Menunggu</span></td><td>—</td></tr>
+          <tr><td class="ctr">2</td><td>Manajer Operasional</td><td>Arinda W. <span class="bdg bdg-plt">🔁 PLT</span></td><td class="num">tanpa batas</td>
+              <td class="ctr"><span class="bdg bdg-draft">Belum giliran</span></td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="card">
+    <div class="tabs">
+      <button class="active" onclick="tab(this,'tab1')">Riwayat Dokumen</button>
+      <button onclick="tab(this,'tab2')">Dampak Kartu Stok</button>
+    </div>
+    <div id="tab1" class="tabpane show">
+      <ul class="log">
+        <li class="done"><span class="who">Rina — Staff Gudang</span> <span class="when">21/08/2026 10:42</span>
+          <div class="what">Dokumen dibuat, saldo sistem ditarik untuk 14 baris lokasi R1–R3.</div></li>
+        <li class="done"><span class="who">Rina — Staff Gudang</span> <span class="when">21/08/2026 11:05</span>
+          <div class="what">Diajukan untuk persetujuan. Nilai selisih bersih −Rp 1.240.000.</div></li>
+        <li class="cur"><span class="who">Budi Santoso — Kepala Gudang</span> <span class="when">—</span>
+          <div class="what">Menunggu persetujuan Level 1.</div></li>
+      </ul>
+    </div>
+    <div id="tab2" class="tabpane">
+      <div class="note warn">Pratinjau — baris berikut dibuat di <code>rm_stockcard</code> setelah persetujuan level terakhir.</div>
+      <table class="tbl">
+        <thead><tr><th>Material</th><th>Lokasi</th><th class="ctr">Tipe</th>
+          <th class="num">Saldo Awal</th><th class="num">Penyesuaian</th><th class="num">Saldo Akhir</th></tr></thead>
+        <tbody>
+          <tr><td>Art Paper 230gr 79×109</td><td>R1-C3-S1</td><td class="ctr"><span class="bdg bdg-info">AD</span></td>
+              <td class="num">330,00</td><td class="num neg">−200,00</td><td class="num"><b>130,00</b></td></tr>
+          <tr><td>Duplex 350gr 79×109</td><td>R3-C1-S2</td><td class="ctr"><span class="bdg bdg-info">AD</span></td>
+              <td class="num">12.100,00</td><td class="num pos">+120,00</td><td class="num"><b>12.220,00</b></td></tr>
+          <tr><td>Art Carton 240gr 79×109</td><td>R1-C3-S2</td><td class="ctr"><span class="bdg bdg-info">AD</span></td>
+              <td class="num">3.840,00</td><td class="num neg">−140,00</td><td class="num"><b>3.700,00</b></td></tr>
+          <tr><td colspan="6" style="color:var(--txt-l)">Tinta Offset Cyan — selisih 0, tidak menghasilkan baris kartu stok.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function openForm(mode){
+  document.getElementById('pGrid').classList.remove('show');
+  document.getElementById('pForm').classList.add('show');
+  var st=document.getElementById('fStatus'), ac=document.getElementById('fActions');
+  if(mode==='new'){
+    document.getElementById('fTitle').textContent='Stock Adjustment — Dokumen Baru';
+    document.getElementById('selKind').value='AD'; switchKind();
+    st.className='bdg bdg-draft'; st.textContent='Draft (belum disimpan)';
+  }else if(mode==='opname'){
+    document.getElementById('fTitle').textContent='Stock Opname — Dokumen Baru';
+    document.getElementById('selKind').value='OP'; switchKind();
+    st.className='bdg bdg-draft'; st.textContent='Draft (belum disimpan)';
+  }else if(mode==='view'){
+    document.getElementById('fTitle').textContent='Stock Adjustment — ADJ/26/00021';
+    st.className='bdg bdg-ok'; st.textContent='Disetujui &amp; diposting';
+    ac.innerHTML='<button class="btn" onclick="alert(\'Cetak (mockup)\')">Cetak Berita Acara</button>';
+  }
+  window.scrollTo(0,0);
+}
+function backToGrid(){
+  document.getElementById('pForm').classList.remove('show');
+  document.getElementById('pGrid').classList.add('show');
+  window.scrollTo(0,0);
+}
+function switchKind(){
+  var v=document.getElementById('selKind').value;
+  document.getElementById('boxOpname').style.display = (v==='OP') ? 'grid' : 'none';
+}
+function parseNum(s){ return parseFloat(String(s).replace(/\./g,'').replace(',','.'))||0; }
+function fmt(n){ return (n>0?'+':n<0?'−':'')+Math.abs(n).toLocaleString('id-ID',{minimumFractionDigits:2}); }
+function calcRow(inp){
+  var tr=inp.closest('tr');
+  var sys=parseNum(tr.querySelector('.sys').textContent);
+  var phy=parseNum(inp.value);
+  var d=phy-sys, cell=tr.querySelector('.dif');
+  cell.textContent = d===0 ? '0,00' : fmt(d);
+  cell.className='num dif '+(d>0?'pos':d<0?'neg':'zero');
+  recalc();
+}
+function recalc(){
+  var rows=document.getElementById('detBody').rows, tot=0, cnt=0;
+  for(var i=0;i<rows.length;i++){
+    var s=rows[i].querySelector('.sys'), p=rows[i].querySelector('.phy');
+    if(!s||!p) continue;
+    var d=parseNum(p.value)-parseNum(s.textContent);
+    tot+=d; if(d!==0) cnt++;
+  }
+  document.getElementById('rowCount').textContent=rows.length;
+  document.getElementById('difCount').textContent=cnt;
+  var el=document.getElementById('totDif');
+  el.textContent = tot===0 ? '0,00' : fmt(tot);
+  el.className = tot>0?'pos':tot<0?'neg':'zero';
+}
+function addRow(){
+  var tb=document.getElementById('detBody'), n=tb.rows.length+1;
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td class="ctr">'+n+'</td>'+
+    '<td><input class="ti" placeholder="Ketik kode / nama material…"></td>'+
+    '<td><input class="ti" placeholder="Lot"></td>'+
+    '<td><select class="ti"><option>R1-C3-S1</option><option>R3-C1-S2</option></select></td>'+
+    '<td>—</td>'+
+    '<td class="num sys">0,00</td>'+
+    '<td><input class="ti num phy" value="0,00" oninput="calcRow(this)"></td>'+
+    '<td class="num dif zero">0,00</td>'+
+    '<td class="num val-col zero">0</td>'+
+    '<td><input class="ti"></td>'+
+    '<td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>';
+  tb.appendChild(tr); recalc();
+}
+function delRow(b){
+  b.closest('tr').remove();
+  var rows=document.getElementById('detBody').rows;
+  for(var i=0;i<rows.length;i++) rows[i].cells[0].textContent=i+1;
+  recalc();
+}
+function toggleValue(on){ document.body.classList.toggle('show-value',on); }
+function tab(btn,id){
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.card').querySelectorAll('.tabpane').forEach(p=>p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+switchKind();
+</script>
+</body>
+</html>

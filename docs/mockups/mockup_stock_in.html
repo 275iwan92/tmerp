@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TMERP — Stock In (Penerimaan Stok)</title>
+<link rel="stylesheet" href="tmerp_inv.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">TMERP <span>CV Telasih Makmur Group</span></div>
+  <div class="spacer"></div>
+  <div class="user">Staff Gudang — Rina&nbsp;&nbsp;|&nbsp;&nbsp;Gudang Bahan Baku</div>
+</div>
+
+<nav class="modnav">
+  <a href="mockup_stock_in.html" class="active">Stock In</a>
+  <a href="mockup_stock_out.html">Stock Out</a>
+  <a href="mockup_stock_adjustment.html">Stock Adjustment</a>
+  <a href="mockup_stock_return.html">Return from Production</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ==================== PANEL 1 : GRID ==================== -->
+<div id="pGrid" class="panel show">
+
+  <div class="kpis">
+    <div class="kpi"><div class="lab">Draft belum dikonfirmasi</div><div class="val">6</div></div>
+    <div class="kpi"><div class="lab">Dikonfirmasi bulan ini</div><div class="val pos">42</div></div>
+    <div class="kpi"><div class="lab">Auto dari Penerimaan (PV)</div><div class="val">31</div></div>
+    <div class="kpi"><div class="lab">Input manual</div><div class="val">11</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <h2>Stock In — Penerimaan Stok</h2>
+      <span class="sub">rm_stock / sfg_stock / fg_stock · doc_type = 1 (IN)</span>
+      <div class="spacer"></div>
+      <div class="btnbar">
+        <button class="btn" onclick="alert('Export Excel (mockup)')">Export</button>
+        <button class="btn btn-primary" onclick="openForm('new')">+ Stock In Baru</button>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="filters">
+        <div class="f">
+          <label class="fl">Kelas Stok</label>
+          <select class="fc" onchange="filterClass(this.value)">
+            <option value="ALL">Semua</option>
+            <option value="RM" selected>Bahan Baku (RM)</option>
+            <option value="SFG">Setengah Jadi (SFG)</option>
+            <option value="FG">Barang Jadi (FG)</option>
+          </select>
+        </div>
+        <div class="f">
+          <label class="fl">Gudang</label>
+          <select class="fc"><option>Semua Gudang</option><option selected>GD-01 Bahan Baku</option><option>GD-02 Barang Jadi</option><option>GD-03 Tinta &amp; Kimia</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Kategori Dokumen</label>
+          <select class="fc"><option>Semua</option><option>STOCK — Penerimaan normal</option><option>BB — Saldo awal</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Status</label>
+          <select class="fc"><option>Semua</option><option>Draft</option><option>Dikonfirmasi</option><option>Dibatalkan</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Dari Tanggal</label>
+          <input type="date" class="fc" value="2026-08-01">
+        </div>
+        <div class="f">
+          <label class="fl">Sampai</label>
+          <input type="date" class="fc" value="2026-08-21">
+        </div>
+        <div class="f wide">
+          <label class="fl">Cari</label>
+          <input type="text" class="fc" placeholder="No. dokumen / no. referensi / material…">
+        </div>
+        <button class="btn btn-navy">Cari</button>
+        <button class="btn">Reset</button>
+      </div>
+    </div>
+
+    <div class="tbl-scroll">
+      <table class="tbl grid-rows">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th style="width:120px">No. Dokumen</th>
+            <th style="width:92px">Tanggal</th>
+            <th style="width:56px" class="ctr">Kelas</th>
+            <th style="width:74px" class="ctr">Kategori</th>
+            <th style="width:130px">Gudang</th>
+            <th style="width:118px">Sumber</th>
+            <th>Ringkasan Item</th>
+            <th style="width:58px" class="ctr">Baris</th>
+            <th style="width:96px" class="num">Total Qty</th>
+            <th style="width:118px" class="num val-col">Nilai (Rp)</th>
+            <th style="width:104px" class="ctr">Status</th>
+            <th style="width:88px">Dibuat oleh</th>
+          </tr>
+        </thead>
+        <tbody id="gridBody">
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">1</td><td><b>IN/26/00042</b></td><td>21/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">RM</span></td><td class="ctr">STOCK</td>
+            <td>GD-01 Bahan Baku</td><td>PV/26/00118</td>
+            <td>Art Paper 230gr 79×109; Ivory 310gr 79×109 (+2 lainnya)</td>
+            <td class="ctr">4</td><td class="num">12.400,00</td><td class="num val-col">86.420.000</td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td><td>sistem</td>
+          </tr>
+          <tr ondblclick="openForm('draft')">
+            <td class="ctr">2</td><td><b>IN/26/00041</b></td><td>20/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">RM</span></td><td class="ctr">STOCK</td>
+            <td>GD-03 Tinta &amp; Kimia</td><td>Manual</td>
+            <td>Tinta Offset Cyan; Tinta Offset Magenta</td>
+            <td class="ctr">2</td><td class="num">48,00</td><td class="num val-col">4.128.000</td>
+            <td class="ctr"><span class="bdg bdg-draft">Draft</span></td><td>rina</td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">3</td><td><b>IN/26/00040</b></td><td>20/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">FG</span></td><td class="ctr">STOCK</td>
+            <td>GD-02 Barang Jadi</td><td>WO/26/00311</td>
+            <td>Box Obat Herbal 12×6×18 — hasil produksi</td>
+            <td class="ctr">1</td><td class="num">25.000,00</td><td class="num val-col">—</td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td><td>sistem</td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">4</td><td><b>IN/26/00039</b></td><td>19/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">RM</span></td><td class="ctr">STOCK</td>
+            <td>GD-01 Bahan Baku</td><td>PV/26/00115</td>
+            <td>Duplex 350gr 79×109</td>
+            <td class="ctr">1</td><td class="num">8.000,00</td><td class="num val-col">41.600.000</td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td><td>sistem</td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">5</td><td><b>IN/26/00038</b></td><td>18/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">SFG</span></td><td class="ctr">STOCK</td>
+            <td>GD-04 WIP</td><td>WO/26/00305</td>
+            <td>Badan Box Kosmetik — setelah plong</td>
+            <td class="ctr">1</td><td class="num">18.500,00</td><td class="num val-col">—</td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td><td>sistem</td>
+          </tr>
+          <tr ondblclick="openForm('draft')">
+            <td class="ctr">6</td><td><b>IN/26/00037</b></td><td>18/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">RM</span></td><td class="ctr">BB</td>
+            <td>GD-01 Bahan Baku</td><td>Saldo Awal</td>
+            <td>Saldo awal periode Agustus — 12 material</td>
+            <td class="ctr">12</td><td class="num">96.320,00</td><td class="num val-col">512.870.000</td>
+            <td class="ctr"><span class="bdg bdg-draft">Draft</span></td><td>rina</td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">7</td><td><b>IN/26/00036</b></td><td>17/08/2026</td>
+            <td class="ctr"><span class="bdg bdg-info">RM</span></td><td class="ctr">STOCK</td>
+            <td>GD-01 Bahan Baku</td><td>PV/26/00112</td>
+            <td>Art Carton 260gr 65×100 (+1 lainnya)</td>
+            <td class="ctr">2</td><td class="num">6.200,00</td><td class="num val-col">28.520.000</td>
+            <td class="ctr"><span class="bdg bdg-cancel">Dibatalkan</span></td><td>rina</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="8">Total halaman ini</td>
+            <td class="ctr">23</td>
+            <td class="num">166.420,00</td>
+            <td class="num val-col">673.538.000</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="hint-dbl">
+      Klik ganda pada baris untuk membuka dokumen. &nbsp;·&nbsp;
+      <label class="switch"><input type="checkbox" onchange="toggleValue(this.checked)"> Tampilkan kolom nilai (hanya Manajer Operasional &amp; Accounting)</label>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PANEL 2 : FORM ==================== -->
+<div id="pForm" class="panel">
+
+  <div class="card">
+    <div class="card-h">
+      <button class="btn btn-sm" onclick="backToGrid()">← Kembali ke daftar</button>
+      <h2 style="margin-left:6px" id="fTitle">Stock In — IN/26/00041</h2>
+      <span class="bdg bdg-draft" id="fStatus">Draft</span>
+      <div class="spacer"></div>
+      <div class="btnbar" id="fActions">
+        <button class="btn" onclick="alert('Simpan draft (mockup)')">Simpan Draft</button>
+        <button class="btn btn-ok" onclick="confirmDoc()">Konfirmasi &amp; Posting</button>
+        <button class="btn btn-danger" onclick="alert('Batalkan dokumen (mockup)')">Batalkan</button>
+        <button class="btn" onclick="alert('Cetak Bukti Terima Barang (mockup)')">Cetak</button>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="note">
+        <b>Efek posting:</b> saat dikonfirmasi, trigger <code>trg_rm_stock_confirm</code> otomatis membuat baris
+        <code>rm_stockcard</code> dengan <code>qty_in = qty</code> dan <code>qty_eb = saldo sebelumnya + qty</code>.
+        Setelah dikonfirmasi dokumen <b>tidak bisa diedit</b> — koreksi harus lewat Stock Adjustment.
+      </div>
+
+      <div class="grid-f g4">
+        <div>
+          <label class="fl">No. Dokumen</label>
+          <input class="fc" value="IN/26/00041" readonly>
+        </div>
+        <div>
+          <label class="fl">Tanggal Dokumen <span class="req">*</span></label>
+          <input type="date" class="fc" value="2026-08-20">
+        </div>
+        <div>
+          <label class="fl">Kelas Stok <span class="req">*</span></label>
+          <select class="fc" id="selClass" onchange="switchClass()">
+            <option value="RM" selected>Bahan Baku (RM) — rm_stock</option>
+            <option value="SFG">Setengah Jadi (SFG) — sfg_stock</option>
+            <option value="FG">Barang Jadi (FG) — fg_stock</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">Kategori Dokumen <span class="req">*</span></label>
+          <select class="fc">
+            <option value="STOCK" selected>STOCK — Penerimaan normal</option>
+            <option value="BB">BB — Saldo awal periode</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="fl">Sumber Dokumen <span class="req">*</span></label>
+          <select class="fc" id="selSource" onchange="switchSource()">
+            <option value="MANUAL" selected>Manual (tanpa dokumen sumber)</option>
+            <option value="PV">Penerimaan Barang (PV) — otomatis</option>
+            <option value="WO">Hasil Produksi (WO) — otomatis</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">No. Referensi Sumber</label>
+          <input class="fc" id="txtRef" placeholder="— tidak ada —" disabled>
+        </div>
+        <div>
+          <label class="fl">Gudang <span class="req">*</span></label>
+          <select class="fc">
+            <option>GD-01 Bahan Baku</option>
+            <option selected>GD-03 Tinta &amp; Kimia</option>
+            <option>GD-02 Barang Jadi</option>
+            <option>GD-04 WIP</option>
+          </select>
+        </div>
+        <div>
+          <label class="fl">Diterima oleh</label>
+          <input class="fc" value="Rina — Staff Gudang" readonly>
+        </div>
+      </div>
+
+      <div class="grid-f g2" style="margin-top:11px">
+        <div>
+          <label class="fl">Catatan</label>
+          <textarea class="fc" placeholder="Contoh: pembelian langsung tanpa PO, disetujui Manajer Operasional 20/08.">Pembelian tunai tinta — approval lisan Manajer Operasional.</textarea>
+        </div>
+        <div>
+          <label class="fl">Lampiran (nota / surat jalan supplier)</label>
+          <input type="file" class="fc">
+          <div style="margin-top:6px;font-size:11.5px;color:var(--txt-l)">Wajib diisi bila Sumber = Manual.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="card">
+    <div class="card-h">
+      <h2>Rincian Barang Masuk</h2>
+      <span class="sub">rm_stock_d</span>
+      <div class="spacer"></div>
+      <label class="switch"><input type="checkbox" onchange="toggleValue(this.checked)"> Tampilkan nilai</label>
+      <button class="btn btn-sm btn-primary" onclick="addRow()">+ Tambah Baris</button>
+      <button class="btn btn-sm" onclick="alert('Pilih material dari master (mockup)')">Cari Material</button>
+    </div>
+    <div class="card-b nopad">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th style="width:110px">Kode</th>
+            <th>Nama Material</th>
+            <th style="width:112px">Lot / Batch</th>
+            <th style="width:150px">Lokasi Simpan</th>
+            <th style="width:100px" class="num">Qty <span class="req">*</span></th>
+            <th style="width:72px">UOM</th>
+            <th style="width:112px" class="num val-col">Harga Satuan</th>
+            <th style="width:120px" class="num val-col">Nilai</th>
+            <th style="width:150px">Keterangan</th>
+            <th style="width:40px" class="ctr"></th>
+          </tr>
+        </thead>
+        <tbody id="detBody">
+          <tr>
+            <td class="ctr">1</td>
+            <td>RM-TNT-0021</td>
+            <td>Tinta Offset Cyan — Toyo Hyplus</td>
+            <td><input class="ti" value="TY-2608-A"></td>
+            <td><select class="ti"><option selected>R1-C2-S3</option><option>R1-C2-S4</option><option>R2-C1-S1</option></select></td>
+            <td><input class="ti num" value="24,00" onchange="calcTotal()"></td>
+            <td>KG</td>
+            <td class="num val-col"><input class="ti num" value="86.000"></td>
+            <td class="num val-col">2.064.000</td>
+            <td><input class="ti" placeholder="—"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">2</td>
+            <td>RM-TNT-0022</td>
+            <td>Tinta Offset Magenta — Toyo Hyplus</td>
+            <td><input class="ti" value="TY-2608-B"></td>
+            <td><select class="ti"><option selected>R1-C2-S3</option><option>R1-C2-S4</option><option>R2-C1-S1</option></select></td>
+            <td><input class="ti num" value="24,00" onchange="calcTotal()"></td>
+            <td>KG</td>
+            <td class="num val-col"><input class="ti num" value="86.000"></td>
+            <td class="num val-col">2.064.000</td>
+            <td><input class="ti" placeholder="—"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5">Total <span id="rowCount">2</span> baris</td>
+            <td class="num" id="totQty">48,00</td>
+            <td></td>
+            <td class="val-col"></td>
+            <td class="num val-col">4.128.000</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="hint-dbl">
+      Kolom harga hanya tampil untuk peran Manajer Operasional &amp; Accounting — layar gudang tidak menarik kolom harga sama sekali dari query.
+      Harga perolehan diproses engine AVG/FIFO/LIFO sesuai <code>m_raw_material.costing_method</code>.
+    </div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="card">
+    <div class="tabs">
+      <button class="active" onclick="tab(this,'tab1')">Riwayat Dokumen</button>
+      <button onclick="tab(this,'tab2')">Dampak Kartu Stok</button>
+    </div>
+    <div id="tab1" class="tabpane show">
+      <ul class="log">
+        <li class="done"><span class="who">Rina — Staff Gudang</span> <span class="when">20/08/2026 09:14</span>
+          <div class="what">Dokumen dibuat (Draft), sumber Manual.</div></li>
+        <li class="cur"><span class="who">Menunggu</span> <span class="when">—</span>
+          <div class="what">Konfirmasi &amp; posting ke kartu stok oleh Staff Gudang.</div></li>
+      </ul>
+    </div>
+    <div id="tab2" class="tabpane">
+      <div class="note warn">Pratinjau — baris berikut akan dibuat di <code>rm_stockcard</code> setelah dokumen dikonfirmasi.</div>
+      <table class="tbl">
+        <thead><tr>
+          <th>Material</th><th>Lokasi</th><th>Lot</th><th class="ctr">Tipe</th>
+          <th class="num">Saldo Awal</th><th class="num">Masuk</th><th class="num">Keluar</th><th class="num">Saldo Akhir</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>Tinta Offset Cyan</td><td>R1-C2-S3</td><td>TY-2608-A</td><td class="ctr"><span class="bdg bdg-ok">IN</span></td>
+              <td class="num">112,00</td><td class="num pos">24,00</td><td class="num zero">0,00</td><td class="num"><b>136,00</b></td></tr>
+          <tr><td>Tinta Offset Magenta</td><td>R1-C2-S3</td><td>TY-2608-B</td><td class="ctr"><span class="bdg bdg-ok">IN</span></td>
+              <td class="num">98,00</td><td class="num pos">24,00</td><td class="num zero">0,00</td><td class="num"><b>122,00</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function openForm(mode){
+  document.getElementById('pGrid').classList.remove('show');
+  document.getElementById('pForm').classList.add('show');
+  var st=document.getElementById('fStatus'), ac=document.getElementById('fActions');
+  if(mode==='new'){
+    document.getElementById('fTitle').textContent='Stock In — Dokumen Baru';
+    st.className='bdg bdg-draft'; st.textContent='Draft (belum disimpan)';
+  }else if(mode==='view'){
+    document.getElementById('fTitle').textContent='Stock In — IN/26/00042';
+    st.className='bdg bdg-ok'; st.textContent='Dikonfirmasi';
+    ac.innerHTML='<button class="btn" onclick="alert(\'Cetak (mockup)\')">Cetak</button>'+
+                 '<button class="btn btn-danger" onclick="alert(\'Dokumen terkonfirmasi hanya bisa dikoreksi lewat Stock Adjustment.\')">Koreksi</button>';
+  }
+  window.scrollTo(0,0);
+}
+function backToGrid(){
+  document.getElementById('pForm').classList.remove('show');
+  document.getElementById('pGrid').classList.add('show');
+  window.scrollTo(0,0);
+}
+function confirmDoc(){
+  if(confirm('Konfirmasi dokumen? Setelah diposting, kartu stok terbentuk dan dokumen tidak bisa diedit.')){
+    var st=document.getElementById('fStatus');
+    st.className='bdg bdg-ok'; st.textContent='Dikonfirmasi';
+    document.getElementById('fActions').innerHTML='<button class="btn" onclick="alert(\'Cetak (mockup)\')">Cetak</button>';
+  }
+}
+function switchSource(){
+  var v=document.getElementById('selSource').value, r=document.getElementById('txtRef');
+  if(v==='MANUAL'){ r.value=''; r.placeholder='— tidak ada —'; r.disabled=true; }
+  else if(v==='PV'){ r.value='PV/26/00118'; r.disabled=true; }
+  else { r.value='WO/26/00311'; r.disabled=true; }
+}
+function switchClass(){
+  var v=document.getElementById('selClass').value;
+  alert('Kelas stok diubah ke '+v+'. Daftar item pada rincian akan di-reset ke master '+
+        (v==='RM'?'Bahan Baku (m_raw_material)':v==='SFG'?'Komponen Produk (m_product_parts)':'Produk Jadi (m_product)')+'.');
+}
+function addRow(){
+  var tb=document.getElementById('detBody'), n=tb.rows.length+1;
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td class="ctr">'+n+'</td>'+
+    '<td><input class="ti" placeholder="Kode…"></td>'+
+    '<td><input class="ti" placeholder="Ketik nama material…"></td>'+
+    '<td><input class="ti" placeholder="Lot"></td>'+
+    '<td><select class="ti"><option>R1-C2-S3</option><option>R2-C1-S1</option></select></td>'+
+    '<td><input class="ti num" value="0,00" onchange="calcTotal()"></td>'+
+    '<td>—</td>'+
+    '<td class="num val-col"><input class="ti num" value="0"></td>'+
+    '<td class="num val-col">0</td>'+
+    '<td><input class="ti"></td>'+
+    '<td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>';
+  tb.appendChild(tr); calcTotal();
+}
+function delRow(b){ b.closest('tr').remove(); renumber(); calcTotal(); }
+function renumber(){
+  var rows=document.getElementById('detBody').rows;
+  for(var i=0;i<rows.length;i++) rows[i].cells[0].textContent=i+1;
+}
+function calcTotal(){
+  var rows=document.getElementById('detBody').rows, t=0;
+  for(var i=0;i<rows.length;i++){
+    var el=rows[i].querySelector('input.num');
+    if(el) t+=parseFloat(el.value.replace(/\./g,'').replace(',','.'))||0;
+  }
+  document.getElementById('rowCount').textContent=rows.length;
+  document.getElementById('totQty').textContent=t.toLocaleString('id-ID',{minimumFractionDigits:2});
+}
+function toggleValue(on){ document.body.classList.toggle('show-value',on); }
+function tab(btn,id){
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.card').querySelectorAll('.tabpane').forEach(p=>p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+function filterClass(v){ /* mockup: filter grid */ }
+</script>
+</body>
+</html>

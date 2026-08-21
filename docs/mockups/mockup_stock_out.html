@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TMERP — Stock Out (Pengeluaran Bahan ke Produksi)</title>
+<link rel="stylesheet" href="tmerp_inv.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">TMERP <span>CV Telasih Makmur Group</span></div>
+  <div class="spacer"></div>
+  <div class="user">Staff Gudang — Rina&nbsp;&nbsp;|&nbsp;&nbsp;Gudang Bahan Baku</div>
+</div>
+
+<nav class="modnav">
+  <a href="mockup_stock_in.html">Stock In</a>
+  <a href="mockup_stock_out.html" class="active">Stock Out</a>
+  <a href="mockup_stock_adjustment.html">Stock Adjustment</a>
+  <a href="mockup_stock_return.html">Return from Production</a>
+</nav>
+
+<div class="wrap">
+
+<!-- ==================== PANEL 1 : GRID ==================== -->
+<div id="pGrid" class="panel show">
+
+  <div class="kpis">
+    <div class="kpi"><div class="lab">Permintaan belum dilayani</div><div class="val">9</div></div>
+    <div class="kpi"><div class="lab">Draft menunggu konfirmasi</div><div class="val">4</div></div>
+    <div class="kpi"><div class="lab">Dikeluarkan bulan ini</div><div class="val pos">57</div></div>
+    <div class="kpi"><div class="lab">Baris pakai substitusi</div><div class="val neg">12</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <h2>Stock Out — Pengeluaran Bahan Baku ke Produksi</h2>
+      <span class="sub">rm_stock · doc_type = -1 (OUT) · doc_cat = STOCK</span>
+      <div class="spacer"></div>
+      <div class="btnbar">
+        <button class="btn" onclick="alert('Export Excel (mockup)')">Export</button>
+        <button class="btn btn-primary" onclick="openForm('new')">+ Stock Out Baru</button>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="note">
+        Layar ini <b>khusus bahan baku (RM)</b> yang keluar ke Work Order. Barang jadi yang keluar ke pelanggan
+        diproses lewat <b>Delivery Note</b> di modul Dispatch — jangan dipakai di sini agar ledger FG tidak terisi dua kali.
+      </div>
+      <div class="filters">
+        <div class="f">
+          <label class="fl">Gudang</label>
+          <select class="fc"><option>Semua Gudang</option><option selected>GD-01 Bahan Baku</option><option>GD-03 Tinta &amp; Kimia</option></select>
+        </div>
+        <div class="f wide">
+          <label class="fl">Work Order</label>
+          <input class="fc" placeholder="No. WO / No. CO / Nama produk…">
+        </div>
+        <div class="f">
+          <label class="fl">Status</label>
+          <select class="fc"><option>Semua</option><option>Draft</option><option>Dikonfirmasi</option><option>Dibatalkan</option></select>
+        </div>
+        <div class="f">
+          <label class="fl">Kelengkapan</label>
+          <select class="fc"><option>Semua</option><option>Terpenuhi penuh</option><option>Ada substitusi</option><option>Ada kekurangan → PR</option></select>
+        </div>
+        <div class="f"><label class="fl">Dari Tanggal</label><input type="date" class="fc" value="2026-08-01"></div>
+        <div class="f"><label class="fl">Sampai</label><input type="date" class="fc" value="2026-08-21"></div>
+        <button class="btn btn-navy">Cari</button>
+        <button class="btn">Reset</button>
+      </div>
+    </div>
+
+    <div class="tbl-scroll">
+      <table class="tbl grid-rows">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th style="width:122px">No. Dokumen</th>
+            <th style="width:92px">Tanggal</th>
+            <th style="width:118px">No. WO</th>
+            <th style="width:112px">No. CO</th>
+            <th>Produk / Pelanggan</th>
+            <th style="width:128px">Gudang</th>
+            <th style="width:58px" class="ctr">Baris</th>
+            <th style="width:100px" class="num">Total Keluar</th>
+            <th style="width:112px" class="ctr">Kelengkapan</th>
+            <th style="width:104px" class="ctr">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ondblclick="openForm('draft')">
+            <td class="ctr">1</td><td><b>OUT/26/00057</b></td><td>21/08/2026</td>
+            <td>WO/26/00318</td><td>CO/26/00204</td>
+            <td>Box Obat Herbal 12×6×18 — PT Sido Jaya</td>
+            <td>GD-01 Bahan Baku</td><td class="ctr">3</td><td class="num">200,00</td>
+            <td class="ctr"><span class="bdg bdg-warn" style="background:var(--warn-bg);color:var(--warn)">Ada substitusi</span></td>
+            <td class="ctr"><span class="bdg bdg-draft">Draft</span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">2</td><td><b>OUT/26/00056</b></td><td>20/08/2026</td>
+            <td>WO/26/00317</td><td>CO/26/00203</td>
+            <td>Label Botol Kosmetik 8×12 — CV Ayu Lestari</td>
+            <td>GD-01 Bahan Baku</td><td class="ctr">2</td><td class="num">4.800,00</td>
+            <td class="ctr"><span class="bdg bdg-ok">Penuh</span></td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">3</td><td><b>OUT/26/00055</b></td><td>20/08/2026</td>
+            <td>WO/26/00316</td><td>CO/26/00201</td>
+            <td>Inner Box Sepatu 30×20×11 — PT Langkah Maju</td>
+            <td>GD-01 Bahan Baku</td><td class="ctr">4</td><td class="num">12.100,00</td>
+            <td class="ctr"><span class="bdg bdg-cancel">Kurang → PR</span></td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">4</td><td><b>OUT/26/00054</b></td><td>19/08/2026</td>
+            <td>WO/26/00314</td><td>CO/26/00199</td>
+            <td>Hangtag Baju 5×9 — PT Busana Prima</td>
+            <td>GD-03 Tinta &amp; Kimia</td><td class="ctr">2</td><td class="num">36,00</td>
+            <td class="ctr"><span class="bdg bdg-ok">Penuh</span></td>
+            <td class="ctr"><span class="bdg bdg-ok">Dikonfirmasi</span></td>
+          </tr>
+          <tr ondblclick="openForm('view')">
+            <td class="ctr">5</td><td><b>OUT/26/00053</b></td><td>18/08/2026</td>
+            <td>WO/26/00311</td><td>CO/26/00196</td>
+            <td>Box Obat Herbal 12×6×18 — PT Sido Jaya</td>
+            <td>GD-01 Bahan Baku</td><td class="ctr">3</td><td class="num">9.400,00</td>
+            <td class="ctr"><span class="bdg bdg-ok">Penuh</span></td>
+            <td class="ctr"><span class="bdg bdg-cancel">Dibatalkan</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hint-dbl">Klik ganda pada baris untuk membuka dokumen.</div>
+  </div>
+</div>
+
+<!-- ==================== PANEL 2 : FORM ==================== -->
+<div id="pForm" class="panel">
+
+  <div class="card">
+    <div class="card-h">
+      <button class="btn btn-sm" onclick="backToGrid()">← Kembali ke daftar</button>
+      <h2 style="margin-left:6px" id="fTitle">Stock Out — OUT/26/00057</h2>
+      <span class="bdg bdg-draft" id="fStatus">Draft</span>
+      <div class="spacer"></div>
+      <div class="btnbar" id="fActions">
+        <button class="btn" onclick="alert('Simpan draft (mockup)')">Simpan Draft</button>
+        <button class="btn btn-ok" onclick="confirmDoc()">Konfirmasi &amp; Posting</button>
+        <button class="btn btn-danger" onclick="alert('Batalkan dokumen (mockup)')">Batalkan</button>
+        <button class="btn" onclick="alert('Cetak Bon Pengeluaran Barang (mockup)')">Cetak Bon</button>
+      </div>
+    </div>
+
+    <div class="card-b">
+      <div class="grid-f g4">
+        <div><label class="fl">No. Dokumen</label><input class="fc" value="OUT/26/00057" readonly></div>
+        <div><label class="fl">Tanggal Dokumen <span class="req">*</span></label><input type="date" class="fc" value="2026-08-21"></div>
+        <div>
+          <label class="fl">No. Work Order <span class="req">*</span></label>
+          <div style="display:flex;gap:5px">
+            <input class="fc" value="WO/26/00318" readonly>
+            <button class="btn btn-sm" onclick="openWo()">Pilih</button>
+          </div>
+        </div>
+        <div><label class="fl">Gudang <span class="req">*</span></label>
+          <select class="fc"><option selected>GD-01 Bahan Baku</option><option>GD-03 Tinta &amp; Kimia</option></select></div>
+
+        <div><label class="fl fld-lock">No. Customer Order</label><input class="fc" value="CO/26/00204" readonly></div>
+        <div><label class="fl fld-lock">Pelanggan</label><input class="fc" value="PT Sido Jaya Herbal" readonly></div>
+        <div><label class="fl fld-lock">Produk</label><input class="fc" value="Box Obat Herbal 12×6×18 cm" readonly></div>
+        <div><label class="fl fld-lock">Qty Order</label><input class="fc" value="25.000 PCS" readonly></div>
+
+        <div><label class="fl">Diserahkan kepada <span class="req">*</span></label>
+          <select class="fc"><option selected>Bagian Cetak — Operator Mesin 1</option><option>Bagian Plong</option><option>Bagian Lem &amp; Packing</option></select></div>
+        <div><label class="fl">Proses Tujuan</label>
+          <select class="fc"><option selected>CETAK</option><option>BELAH</option><option>COATING</option><option>LAMINASI</option><option>PLONG</option><option>LEM</option><option>PACKING</option></select></div>
+        <div style="grid-column:span 2"><label class="fl">Catatan</label>
+          <input class="fc" placeholder="Contoh: Art paper 230gr habis, disubstitusi Art carton 240gr atas persetujuan PPIC."></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="card">
+    <div class="card-h">
+      <h2>Rincian Kebutuhan &amp; Pengeluaran</h2>
+      <span class="sub">rm_stock_d — baris anak = substitusi / pembelian</span>
+      <div class="spacer"></div>
+      <button class="btn btn-sm" onclick="alert('Tarik ulang kebutuhan dari prd_wo_material (mockup)')">Tarik Kebutuhan dari WO</button>
+      <button class="btn btn-sm btn-primary" onclick="alert('Buat PR untuk baris kekurangan (mockup)')">Buat PR dari Kekurangan</button>
+    </div>
+    <div class="card-b nopad">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th>Material</th>
+            <th style="width:104px">Lot</th>
+            <th style="width:118px">Lokasi</th>
+            <th style="width:92px" class="num">Kebutuhan</th>
+            <th style="width:92px" class="num">Tersedia</th>
+            <th style="width:88px" class="num">Dibooking</th>
+            <th style="width:98px" class="num">Qty Keluar <span class="req">*</span></th>
+            <th style="width:62px">UOM</th>
+            <th style="width:126px" class="ctr">Aksi</th>
+            <th style="width:150px">Keterangan</th>
+            <th style="width:40px" class="ctr"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- baris 1 : terpenuhi penuh -->
+          <tr>
+            <td class="ctr">1</td>
+            <td>RM-KRT-0009 · Duplex 350gr 79×109</td>
+            <td><input class="ti" value="DPX-2607"></td>
+            <td><select class="ti"><option selected>R3-C1-S2</option><option>R3-C1-S3</option></select></td>
+            <td class="num">8.400,00</td>
+            <td class="num pos">12.100,00</td>
+            <td class="num">8.400,00</td>
+            <td><input class="ti num" value="8.400,00"></td>
+            <td>LBR</td>
+            <td class="ctr"><span class="bdg bdg-ok">ISSUE</span></td>
+            <td><input class="ti" placeholder="—"></td>
+            <td class="ctr"><button class="btn btn-sm" onclick="alert('Tambah baris substitusi (mockup)')">↳</button></td>
+          </tr>
+
+          <!-- baris 2 : kurang, ditutup substitusi -->
+          <tr>
+            <td class="ctr">2</td>
+            <td>RM-KRT-0004 · Art Paper 230gr 79×109</td>
+            <td><input class="ti" value="AP-2605"></td>
+            <td><select class="ti"><option selected>R1-C3-S1</option></select></td>
+            <td class="num">200,00</td>
+            <td class="num neg">130,00</td>
+            <td class="num">130,00</td>
+            <td><input class="ti num" value="130,00"></td>
+            <td>LBR</td>
+            <td class="ctr"><span class="bdg bdg-ok">ISSUE</span></td>
+            <td><input class="ti" value="Kurang 70 lbr"></td>
+            <td class="ctr"><button class="btn btn-sm" onclick="alert('Tambah baris substitusi (mockup)')">↳</button></td>
+          </tr>
+          <tr class="child">
+            <td class="ctr">2a</td>
+            <td>RM-KRT-0007 · Art Carton 240gr 79×109 <span class="bdg bdg-info">pengganti</span></td>
+            <td><input class="ti" value="AC-2604"></td>
+            <td><select class="ti"><option selected>R1-C3-S2</option></select></td>
+            <td class="num zero">—</td>
+            <td class="num pos">3.840,00</td>
+            <td class="num">60,00</td>
+            <td><input class="ti num" value="60,00"></td>
+            <td>LBR</td>
+            <td class="ctr"><span class="bdg" style="background:#f3e8f7;color:#7b3fa0">SUBSTITUTE</span></td>
+            <td><input class="ti" value="Rasio 1:1, disetujui PPIC"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+          <tr class="child">
+            <td class="ctr">2b</td>
+            <td>RM-KRT-0004 · Art Paper 230gr 79×109 <span class="bdg bdg-cancel">perlu dibeli</span></td>
+            <td><input class="ti" placeholder="—" disabled></td>
+            <td><select class="ti" disabled><option>—</option></select></td>
+            <td class="num zero">—</td>
+            <td class="num zero">0,00</td>
+            <td class="num zero">—</td>
+            <td><input class="ti num" value="10,00"></td>
+            <td>LBR</td>
+            <td class="ctr"><span class="bdg bdg-cancel">PURCHASE</span></td>
+            <td><input class="ti" value="Masuk PR/26/00088"></td>
+            <td class="ctr"><button class="btn btn-sm btn-danger" onclick="delRow(this)">×</button></td>
+          </tr>
+
+          <!-- baris 3 : tinta -->
+          <tr>
+            <td class="ctr">3</td>
+            <td>RM-TNT-0021 · Tinta Offset Cyan</td>
+            <td><input class="ti" value="TY-2608-A"></td>
+            <td><select class="ti"><option selected>R1-C2-S3</option></select></td>
+            <td class="num">10,00</td>
+            <td class="num pos">136,00</td>
+            <td class="num">10,00</td>
+            <td><input class="ti num" value="10,00"></td>
+            <td>KG</td>
+            <td class="ctr"><span class="bdg bdg-ok">ISSUE</span></td>
+            <td><input class="ti" placeholder="—"></td>
+            <td class="ctr"><button class="btn btn-sm" onclick="alert('Tambah baris substitusi (mockup)')">↳</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4">3 baris kebutuhan · 1 substitusi · 1 pembelian</td>
+            <td class="num">8.610,00</td>
+            <td colspan="2"></td>
+            <td class="num"><b>8.600,00</b></td>
+            <td colspan="4"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="hint-dbl">
+      Baris <code>PURCHASE</code> <b>tidak memotong stok</b> — trigger melewatinya dan hanya menjadi pemicu Purchase Requisition.
+      Baris <code>ISSUE</code> dan <code>SUBSTITUTE</code> memotong <code>rm_stockcard.qty_out</code> saat dikonfirmasi.
+    </div>
+  </div>
+
+  <!-- RIWAYAT -->
+  <div class="card">
+    <div class="tabs">
+      <button class="active" onclick="tab(this,'tab1')">Riwayat Dokumen</button>
+      <button onclick="tab(this,'tab2')">Dampak Kartu Stok</button>
+      <button onclick="tab(this,'tab3')">Ketersediaan &amp; Booking</button>
+    </div>
+    <div id="tab1" class="tabpane show">
+      <ul class="log">
+        <li class="done"><span class="who">Sistem</span> <span class="when">21/08/2026 07:40</span>
+          <div class="what">Kebutuhan ditarik otomatis dari WO/26/00318 (prd_wo_material), 3 baris.</div></li>
+        <li class="done"><span class="who">Rina — Staff Gudang</span> <span class="when">21/08/2026 08:05</span>
+          <div class="what">Baris 2 kekurangan 70 LBR — ditambahkan substitusi Art Carton 240gr 60 LBR.</div></li>
+        <li class="cur"><span class="who">Menunggu</span> <span class="when">—</span>
+          <div class="what">Konfirmasi &amp; posting oleh Staff Gudang.</div></li>
+      </ul>
+    </div>
+    <div id="tab2" class="tabpane">
+      <div class="note warn">Pratinjau — akan dibuat di <code>rm_stockcard</code> setelah dikonfirmasi.</div>
+      <table class="tbl">
+        <thead><tr><th>Material</th><th>Lokasi</th><th class="ctr">Tipe</th>
+          <th class="num">Saldo Awal</th><th class="num">Masuk</th><th class="num">Keluar</th><th class="num">Saldo Akhir</th></tr></thead>
+        <tbody>
+          <tr><td>Duplex 350gr 79×109</td><td>R3-C1-S2</td><td class="ctr"><span class="bdg bdg-cancel">OUT</span></td>
+              <td class="num">12.100,00</td><td class="num zero">0,00</td><td class="num neg">8.400,00</td><td class="num"><b>3.700,00</b></td></tr>
+          <tr><td>Art Paper 230gr 79×109</td><td>R1-C3-S1</td><td class="ctr"><span class="bdg bdg-cancel">OUT</span></td>
+              <td class="num">130,00</td><td class="num zero">0,00</td><td class="num neg">130,00</td><td class="num"><b>0,00</b></td></tr>
+          <tr><td>Art Carton 240gr 79×109</td><td>R1-C3-S2</td><td class="ctr"><span class="bdg bdg-cancel">OUT</span></td>
+              <td class="num">3.840,00</td><td class="num zero">0,00</td><td class="num neg">60,00</td><td class="num"><b>3.780,00</b></td></tr>
+          <tr><td>Tinta Offset Cyan</td><td>R1-C2-S3</td><td class="ctr"><span class="bdg bdg-cancel">OUT</span></td>
+              <td class="num">136,00</td><td class="num zero">0,00</td><td class="num neg">10,00</td><td class="num"><b>126,00</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="tab3" class="tabpane">
+      <table class="tbl">
+        <thead><tr><th>Material</th><th>Lokasi</th><th class="num">Fisik (on hand)</th>
+          <th class="num">Dibooking WO lain</th><th class="num">Bebas dipakai</th><th>Booking terkait</th></tr></thead>
+        <tbody>
+          <tr><td>Duplex 350gr 79×109</td><td>R3-C1-S2</td><td class="num">12.100,00</td><td class="num">0,00</td><td class="num pos">12.100,00</td><td>—</td></tr>
+          <tr><td>Art Paper 230gr 79×109</td><td>R1-C3-S1</td><td class="num">330,00</td><td class="num">200,00</td><td class="num neg">130,00</td><td>BK/26/00071 (WO/26/00316)</td></tr>
+          <tr><td>Art Carton 240gr 79×109</td><td>R1-C3-S2</td><td class="num">3.840,00</td><td class="num">0,00</td><td class="num pos">3.840,00</td><td>—</td></tr>
+          <tr><td>Tinta Offset Cyan</td><td>R1-C2-S3</td><td class="num">136,00</td><td class="num">0,00</td><td class="num pos">136,00</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div class="note" style="margin-top:11px">Sumber: <code>v_rm_available</code> — bebas dipakai = fisik − booking terbuka (<code>rm_booking_d</code>).</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL PILIH WO -->
+<div class="modal-bg" id="mWo">
+  <div class="modal">
+    <div class="modal-h"><h3>Pilih Work Order</h3><button class="x" onclick="closeWo()">×</button></div>
+    <div class="modal-b">
+      <div class="filters" style="margin-bottom:11px">
+        <div class="f wide"><label class="fl">Cari</label><input class="fc" placeholder="No. WO / produk / pelanggan…"></div>
+        <div class="f"><label class="fl">Status WO</label><select class="fc"><option selected>Dirilis</option><option>Semua</option></select></div>
+        <button class="btn btn-navy">Cari</button>
+      </div>
+      <table class="tbl grid-rows">
+        <thead><tr><th>No. WO</th><th>No. CO</th><th>Produk</th><th>Pelanggan</th><th class="num">Qty</th><th>Jatuh Tempo</th></tr></thead>
+        <tbody>
+          <tr ondblclick="pickWo()"><td><b>WO/26/00318</b></td><td>CO/26/00204</td><td>Box Obat Herbal 12×6×18</td><td>PT Sido Jaya Herbal</td><td class="num">25.000</td><td>29/08/2026</td></tr>
+          <tr ondblclick="pickWo()"><td><b>WO/26/00319</b></td><td>CO/26/00205</td><td>Sleeve Mie Instan</td><td>PT Boga Rasa</td><td class="num">60.000</td><td>02/09/2026</td></tr>
+          <tr ondblclick="pickWo()"><td><b>WO/26/00320</b></td><td>CO/26/00206</td><td>Label Botol Kosmetik 8×12</td><td>CV Ayu Lestari</td><td class="num">18.000</td><td>03/09/2026</td></tr>
+        </tbody>
+      </table>
+      <div class="hint-dbl">Klik ganda untuk memilih. Kebutuhan bahan akan ditarik otomatis dari WO.</div>
+    </div>
+    <div class="modal-f"><button class="btn" onclick="closeWo()">Batal</button><button class="btn btn-primary" onclick="pickWo()">Pilih</button></div>
+  </div>
+</div>
+
+<script>
+function openForm(mode){
+  document.getElementById('pGrid').classList.remove('show');
+  document.getElementById('pForm').classList.add('show');
+  var st=document.getElementById('fStatus'), ac=document.getElementById('fActions');
+  if(mode==='new'){
+    document.getElementById('fTitle').textContent='Stock Out — Dokumen Baru';
+    st.className='bdg bdg-draft'; st.textContent='Draft (belum disimpan)';
+  }else if(mode==='view'){
+    document.getElementById('fTitle').textContent='Stock Out — OUT/26/00056';
+    st.className='bdg bdg-ok'; st.textContent='Dikonfirmasi';
+    ac.innerHTML='<button class="btn" onclick="alert(\'Cetak Bon (mockup)\')">Cetak Bon</button>'+
+                 '<button class="btn btn-danger" onclick="alert(\'Dokumen terkonfirmasi hanya bisa dikoreksi lewat Stock Adjustment atau Return from Production.\')">Koreksi</button>';
+  }
+  window.scrollTo(0,0);
+}
+function backToGrid(){
+  document.getElementById('pForm').classList.remove('show');
+  document.getElementById('pGrid').classList.add('show');
+  window.scrollTo(0,0);
+}
+function confirmDoc(){
+  if(confirm('Konfirmasi pengeluaran? Stok akan dipotong dan dokumen tidak bisa diedit lagi.')){
+    var st=document.getElementById('fStatus');
+    st.className='bdg bdg-ok'; st.textContent='Dikonfirmasi';
+    document.getElementById('fActions').innerHTML='<button class="btn" onclick="alert(\'Cetak Bon (mockup)\')">Cetak Bon</button>';
+  }
+}
+function delRow(b){ b.closest('tr').remove(); }
+function openWo(){ document.getElementById('mWo').classList.add('show'); }
+function closeWo(){ document.getElementById('mWo').classList.remove('show'); }
+function pickWo(){ closeWo(); alert('WO dipilih. Kebutuhan bahan ditarik ulang dari prd_wo_material (mockup).'); }
+function tab(btn,id){
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.card').querySelectorAll('.tabpane').forEach(p=>p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+</script>
+</body>
+</html>

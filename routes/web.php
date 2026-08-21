@@ -89,6 +89,9 @@ Route::middleware('auth')->group(function () {
             // SIDEBAR_MENU_STANDARD.md §5. {material?} tetap opsional utk deep-link.
             Route::livewire('/inventory/print/stock-card/{category}/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
             Route::livewire('/inventory/print/master-stock/{category}', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
+
+            // INV_TIER_4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
+            Route::livewire('/inventory/stock-in/{category}', 'pages::inventory.stock-in')->name('inv.stock-in.index');
         });
 
         Route::middleware('module:HRM')->group(function () {
