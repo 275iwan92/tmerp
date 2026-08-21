@@ -16,19 +16,47 @@ transaksi, semua grid pakai bahasa desain yang sama (tanpa header halaman, kotak
 statistik pastel, kolom identitas avatar+nama+kode, toolbar minimal, ikon Aksi).
 
 **Perbedaan grid Master vs grid Worklist/Transaksi** (bukan soal gaya visual —
-itu sama — tapi soal makna toolbar & kolom Aksi, karena worklist tidak
-menciptakan record baru dari grid-nya):
-- Toolbar grid Master = search + "+ New Record" (§6). Toolbar grid Worklist =
-  **search saja**, tanpa tombol di kanan (tidak ada yang bisa "dibuat baru" dari
-  daftar inquiry/dokumen transaksi — recordnya lahir dari alur lain).
-- Kolom Aksi grid Master = 2 ikon wajib (✎ Edit, ⏻ Toggle-aktif). Kolom Aksi
-  grid Worklist = **1 ikon** (↗ Buka) yang mengarah ke layar per-record yang
-  sudah ada — tidak ada konsep aktif/nonaktif untuk sebuah dokumen transaksi.
+itu sama — tapi soal makna toolbar & kolom Aksi, karena worklist tidak selalu
+menciptakan record baru dari grid-nya, dan dokumen transaksi tidak punya konsep
+aktif/nonaktif seperti master data):
+
+- **Toolbar**: grid Master = search + "+ New Record" (§6), selalu ada tombol
+  tambah karena Master selalu bisa dibuat langsung dari grid. Grid Worklist
+  **tergantung apakah record-nya memang lahir dari grid ini**:
+  - Kalau ya (mis. **Quotation** — dibuat via picker customer di grid ini
+    sendiri) → tetap pakai "+ New Record" seperti Master.
+  - Kalau tidak (mis. **Imposition/Costing** worklist — sumbernya Inquiry yang
+    sudah confirmed; **Customer Order** — lahir dari Quotation yang sudah
+    PUBLISHED) → toolbar **search saja**, tanpa tombol apa pun di kanan.
+    Kalau perlu, taruh SATU baris catatan pastel (bukan kontrol interaktif)
+    yang menjelaskan dari mana record-nya lahir — contoh: grid CO punya
+    catatan "CO dibuat dari Quotation yang sudah PUBLISHED...".
+- **Kolom Aksi**:
+  - Grid Master = 2 ikon wajib (✎ Edit, ⏻ Toggle-aktif) — §5, tidak berubah.
+  - **Grid non-Master (worklist/transaksi) TIDAK PERNAH pakai ⏻ Toggle-aktif**
+    (tidak ada makna "nonaktifkan" untuk sebuah dokumen transaksi). Sebagai
+    gantinya:
+    - **↗ Buka** — selalu ada, ikon tunggal ke layar per-record (detail/entry/
+      print), sama urutan/posisi kiri seperti ✎ Edit di grid Master.
+    - **✓ Confirm** — ikon kedua, **muncul kondisional** hanya saat baris ada
+      di status "pra-konfirmasi" (mis. `doc_status === 'DRAFT'`) DAN punya
+      minimal 1 item/baris (guard, jangan biarkan confirm dokumen kosong).
+      Warna hijau (`text-[#16a34a] hover:bg-[#e9f9ef]`), `wire:confirm` dialog
+      sebelum eksekusi (pola sama seperti `wire:confirm` di toggle-aktif Master).
+      Method-nya langsung ubah `doc_status` ke status berikutnya (mis.
+      DRAFT→PUBLISHED di Quotation, DRAFT→CONFIRMED di Customer Order) — tidak
+      perlu re-hitung apa pun di sini, cuma transisi status.
+    - Kalau grid-nya murni read/navigate tanpa status yang bisa dikonfirmasi
+      (mis. worklist Imposition/Costing — statusnya berasal dari layar lain,
+      bukan field langsung di baris ini) → cukup ↗ Buka saja, tidak ada ✓ Confirm.
+  - Contoh implementasi rujukan: `resources/views/pages/quotation/list.blade.php`
+    (`confirmQuotation()`) dan `resources/views/pages/co/list.blade.php`
+    (`confirmOrder()`).
 - Kolom identitas (avatar+nama+kode, §3) & interaksi klik-2x-buka (§4) berlaku
-  SAMA persis di kedua jenis grid.
-- Badge status (mis. `sub_state`/`doc_status` pada Inquiry) pakai palet pastel
-  §2 yang sama, dipetakan manual per state ke salah satu dari 5 warna baku —
-  bukan bikin warna baru per status.
+  SAMA persis di semua jenis grid (Master maupun Worklist/Transaksi).
+- Badge status (mis. `sub_state`/`doc_status` pada Inquiry/Quotation/CO) pakai
+  palet pastel §2 yang sama, dipetakan manual per state ke salah satu dari 5
+  warna baku — bukan bikin warna baru per status.
 - Filter/dropdown/checkbox toolbar **tetap dilarang** di grid Worklist juga,
   sama seperti grid Master (§6) — contoh nyata: worklist Imposition tadinya
   punya checkbox "Tampilkan RECALC", dihapus; worklist Costing tadinya punya
@@ -36,7 +64,8 @@ menciptakan record baru dari grid-nya):
   ditampilkan sebagai badge informatif di kolom, bukan kontrol toolbar baru.
 
 Referensi implementasi acuan untuk grid Worklist: `resources/views/pages/inquiry/imposition-list.blade.php`
-dan `costing-list.blade.php`.
+dan `costing-list.blade.php` (murni ↗ Buka, tanpa Confirm); `resources/views/pages/quotation/list.blade.php`
+dan `resources/views/pages/co/list.blade.php` (↗ Buka + ✓ Confirm kondisional, plus "+ New Record" khusus Quotation).
 
 ---
 

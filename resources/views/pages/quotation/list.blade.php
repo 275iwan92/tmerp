@@ -9,6 +9,12 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
+// Grid transaksi TETAP boleh punya "+ New Record" (di sini "+ Quotation Baru"
+// via picker customer) karena Quotation memang dibuat dari grid ini -- beda
+// dari Imposition/Costing worklist yang recordnya lahir di layar lain.
+// Kolom Aksi non-master: bukan Edit+Toggle-aktif (§5), tapi ↗ Buka + ✓ Confirm
+// (DRAFT->PUBLISHED langsung dari grid, sesuai instruksi user 2026-08-22).
 new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
@@ -70,6 +76,29 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('quotation.entry', ['quotation' => $quotation->id_quotation]));
     }
 
+    public function openQuotation(int $id)
+    {
+        $status = QuoQuotation::whereKey($id)->value('doc_status');
+
+        return $this->redirect(route($status === 'DRAFT' ? 'quotation.entry' : 'quotation.print', ['quotation' => $id]));
+    }
+
+    // Bukan master data -- tidak ada konsep aktif/nonaktif, jadi kolom Aksi
+    // ganti "toggle" jadi CONFIRM (DRAFT -> PUBLISHED) langsung dari grid.
+    public function confirmQuotation(int $id): void
+    {
+        $q = QuoQuotation::with('items')->findOrFail($id);
+        if ($q->doc_status !== 'DRAFT' || $q->items->isEmpty()) {
+            return;
+        }
+
+        $q->doc_status = 'PUBLISHED';
+        $q->updated_by = Auth::user()->login;
+        $q->save();
+
+        unset($this->quotations);
+    }
+
     #[Computed]
     public function grandTotals(): array
     {
@@ -83,54 +112,120 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
             ->pluck('subtotal_sum', 'quotation_id')
             ->all();
     }
+
+    #[Computed]
+    public function statTotal(): int
+    {
+        return QuoQuotation::count();
+    }
+
+    #[Computed]
+    public function statDraft(): int
+    {
+        return QuoQuotation::where('doc_status', 'DRAFT')->count();
+    }
+
+    #[Computed]
+    public function statPublished(): int
+    {
+        return QuoQuotation::where('doc_status', 'PUBLISHED')->count();
+    }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📄 Daftar Quotation</b>
-        <a href="{{ route('inquiry.hub') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Inquiry Hub</a>
-    </header>
+    <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <div class="grid grid-cols-3 gap-3 mb-3.5">
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Quotation</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statDraft }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Published</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statPublished }}</p>
+            </div>
+        </div>
 
-    <div class="max-w-[1180px] mx-auto my-5 px-4">
-        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. quotation / customer..." class="w-72 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                <button type="button" wire:click="openPicker" class="text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5 cursor-pointer">＋ Quotation Baru</button>
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. quotation / customer…"
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <span class="flex-1"></span>
+                <button type="button" wire:click="openPicker"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>
 
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="bg-[#f4f5f8]">
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">No. Quotation</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Customer</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tanggal</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Status</th>
-                        <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Nilai (excl PPN)</th>
-                        <th class="px-3 py-2 border-b border-[#d7dbe2]"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($this->quotations as $q)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="quo-{{ $q->id_quotation }}">
-                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $q->quotation_no }}</td>
-                            <td class="px-3 py-2">{{ $q->customer?->customer_name ?? '—' }}</td>
-                            <td class="px-3 py-2">{{ $q->issued_date?->translatedFormat('d M Y') }}</td>
-                            <td class="px-3 py-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $q->doc_status === 'PUBLISHED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $q->doc_status }}</span>
-                            </td>
-                            <td class="px-3 py-2 text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
-                            <td class="px-3 py-2 text-right">
-                                <a href="{{ route($q->doc_status === 'DRAFT' ? 'quotation.entry' : 'quotation.print', ['quotation' => $q->id_quotation]) }}" class="text-accent font-semibold no-underline">Buka →</a>
-                            </td>
+            <div class="max-h-[65vh] overflow-auto">
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Quotation</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Nilai (excl PPN)</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="6" class="text-center py-8 text-muted">Belum ada quotation.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->quotations as $q)
+                            <tr wire:key="quo-{{ $q->id_quotation }}" wire:dblclick="openQuotation({{ $q->id_quotation }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($q->id_quotation) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($q->customer?->customer_name ?: $q->quotation_no) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $q->customer?->customer_name ?? '—' }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $q->quotation_no }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $q->issued_date?->translatedFormat('d M Y') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $q->doc_status === 'PUBLISHED' ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $q->doc_status }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <button type="button" wire:click.stop="openQuotation({{ $q->id_quotation }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    @if ($q->doc_status === 'DRAFT')
+                                        <button type="button" wire:click.stop="confirmQuotation({{ $q->id_quotation }})" wire:confirm="Publish quotation {{ $q->quotation_no }}? Harga akan terkunci." title="Confirm / Publish" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-[#16a34a] hover:bg-[#e9f9ef] cursor-pointer">✓</button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Belum ada quotation.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="px-4 py-3 border-t border-[#eef1f5]">
+            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
                 {{ $this->quotations->links() }}
             </div>
         </div>

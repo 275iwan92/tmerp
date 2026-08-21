@@ -149,7 +149,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Inkuiri</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Customer</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Produk</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Tipe</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Status</th>
                             <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Progres Part</th>
@@ -161,14 +161,15 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                             <tr wire:key="imp-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Imposition">
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($row->product_draft_name ?: $row->inquiry_no) }}</div>
+                                        @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($custName) }}</div>
                                         <div>
-                                            <div class="font-semibold text-[13px]">{{ $row->product_draft_name ?: '—' }}</div>
+                                            <div class="font-semibold text-[13px]">{{ $custName }}</div>
                                             <div class="text-[11px] text-muted font-mono">{{ $row->inquiry_no ?: '—' }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->product_draft_name ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->typeBadgeClass($row->inquiry_type) }}">{{ $row->inquiry_type }}</span>
                                 </td>

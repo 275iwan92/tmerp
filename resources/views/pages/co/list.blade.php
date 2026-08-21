@@ -1,11 +1,17 @@
 <?php
 
 use App\Models\Sdi\CoOrder;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
+// Tidak ada "+ New Record" -- CO lahir dari Quotation yang sudah PUBLISHED
+// (tombol "Buat Customer Order" di layar Quotation), bukan dibuat dari grid ini.
+// Kolom Aksi non-master: bukan Edit+Toggle-aktif (§5), tapi ↗ Buka + ✓ Confirm
+// (DRAFT->CONFIRMED langsung dari grid, sesuai instruksi user 2026-08-22).
 new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
@@ -36,57 +42,144 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
         return $orders->mapWithKeys(fn ($o) => [$o->id_order => $o->totals()['net_receivable']])->all();
     }
+
+    #[Computed]
+    public function statTotal(): int
+    {
+        return CoOrder::count();
+    }
+
+    #[Computed]
+    public function statDraft(): int
+    {
+        return CoOrder::where('doc_status', 'DRAFT')->count();
+    }
+
+    #[Computed]
+    public function statConfirmed(): int
+    {
+        return CoOrder::where('doc_status', 'CONFIRMED')->count();
+    }
+
+    public function openOrder(int $id)
+    {
+        return $this->redirect(route('co.entry', ['order' => $id]));
+    }
+
+    // Bukan master data -- tidak ada konsep aktif/nonaktif, jadi kolom Aksi
+    // ganti "toggle" jadi CONFIRM (DRAFT -> CONFIRMED) langsung dari grid.
+    public function confirmOrder(int $id): void
+    {
+        $o = CoOrder::with('items')->findOrFail($id);
+        if ($o->doc_status !== 'DRAFT' || $o->items->isEmpty()) {
+            return;
+        }
+
+        $o->doc_status = 'CONFIRMED';
+        $o->updated_by = Auth::user()->login;
+        $o->save();
+
+        unset($this->orders);
+    }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📦 Daftar Customer Order</b>
-        <a href="{{ route('quotation.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Daftar Quotation</a>
-        <a href="{{ route('inquiry.hub') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Inquiry Hub</a>
-    </header>
+    <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <div class="grid grid-cols-3 gap-3 mb-3.5">
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Customer Order</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statDraft }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Confirmed</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statConfirmed }}</p>
+            </div>
+        </div>
 
-    <div class="max-w-[1180px] mx-auto my-5 px-4">
-        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer..." class="w-72 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                <span class="text-[10.5px] text-muted">CO dibuat dari Quotation yang sudah diterbitkan — buka Quotation, klik "Buat Customer Order".</span>
+        <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fef6e7] border border-[#f5e0b3] text-[#8a4b00]">
+            CO dibuat dari Quotation yang sudah <b>PUBLISHED</b> — buka Quotation, klik "Buat Customer Order". Tidak ada "+ New Record" di sini.
+        </div>
+
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer…"
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
             </div>
 
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="bg-[#f4f5f8]">
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">No. CO</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Ref. Quotation</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Customer</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tanggal</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Status</th>
-                        <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Net Receivable</th>
-                        <th class="px-3 py-2 border-b border-[#d7dbe2]"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($this->orders as $o)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="co-{{ $o->id_order }}">
-                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $o->co_no }}</td>
-                            <td class="px-3 py-2 font-mono text-muted">{{ $o->quotation?->quotation_no }}</td>
-                            <td class="px-3 py-2">{{ $o->quotation?->customer?->customer_name ?? '—' }}</td>
-                            <td class="px-3 py-2">{{ $o->co_date?->translatedFormat('d M Y') }}</td>
-                            <td class="px-3 py-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $o->doc_status === 'CONFIRMED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $o->doc_status }}</span>
-                            </td>
-                            <td class="px-3 py-2 text-right font-semibold">{{ number_format($this->grandTotals[$o->id_order] ?? 0, 0, ',', '.') }}</td>
-                            <td class="px-3 py-2 text-right">
-                                <a href="{{ route('co.entry', ['order' => $o->id_order]) }}" class="text-accent font-semibold no-underline">Buka →</a>
-                            </td>
+            <div class="max-h-[65vh] overflow-auto">
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer Order</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Ref. Quotation</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Net Receivable</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="7" class="text-center py-8 text-muted">Belum ada Customer Order.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->orders as $o)
+                            <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($o->id_order) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($o->quotation?->customer?->customer_name ?: $o->co_no) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $o->quotation?->customer?->customer_name ?? '—' }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $o->co_no }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-muted">{{ $o->quotation?->quotation_no }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $o->co_date?->translatedFormat('d M Y') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $o->doc_status === 'CONFIRMED' ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $o->doc_status }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$o->id_order] ?? 0, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <button type="button" wire:click.stop="openOrder({{ $o->id_order }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    @if ($o->doc_status === 'DRAFT')
+                                        <button type="button" wire:click.stop="confirmOrder({{ $o->id_order }})" wire:confirm="Confirm CO {{ $o->co_no }}?" title="Confirm" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-[#16a34a] hover:bg-[#e9f9ef] cursor-pointer">✓</button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Belum ada Customer Order.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="px-4 py-3 border-t border-[#eef1f5]">
+            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
                 {{ $this->orders->links() }}
             </div>
         </div>
