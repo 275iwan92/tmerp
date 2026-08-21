@@ -40,8 +40,11 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ## MODUL 2 — INVENTORY
 *(urutan dependensi: sebelum Production, karena MRP butuh item_master)*
 ### 2.1 Item Master
-- ⬜ [F] Item Entry
-- ⬜ [G] Item List/Catalog
+> Dibangun 2026-08-21 dari `mockup_master_rawmaterial.html` + `ITEM_MASTER_DELTA.md` (dokumen
+> user), atas `m_raw_material` yang sudah diisi 5.893 baris riil sejak PR Entry. Route
+> `/master/raw-material` (menu `MD_RAW` yang sudah pre-seeded, sebelumnya belum ditautkan).
+- ✅ [G] Item List/Catalog — `master.raw-material.list` (stats card total/material/jasa/stok kritis, filter tipe & kategori, cari kode/nama/HS code)
+- ✅ [F] Item Entry — `master.raw-material.create` / `.edit` (5 tab: Kategori+kode-auto dari `doc_rmprefix1..5`, Spesifikasi & QC, UOM & Pengadaan, Stok & Lokasi, Akuntansi GL langsung ke `fin_account`/`fin_cost_center`/`fin_profit_center` baru). Kategori terkunci setelah dibuat (kode ikut kombinasi itu). **Belum diverifikasi visual browser**, logika diverifikasi via tinker (generate kode, cek tabrakan, create+reload seluruh field termasuk costing_method STANDARD baru)
 ### 2.2 Stock Movement
 - ⬜ [G] Stock Movement Ledger (kartu stok)
 - ⬜ [P] Kartu Stok print
@@ -180,7 +183,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
 | 1 Sales (Inquiry/Quotation/CO) | 13 | 5 | 1 |
-| 2 Inventory | 0 | 0 | 7 |
+| 2 Inventory | 2 | 0 | 5 |
 | 3 Production | 0 | 2 | 9 |
 | 4 Procurement | 5 | 1 | 7 |
 | 5 Dispatch | 0 | 0 | 9 |
@@ -191,7 +194,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**29 item live**, **8 item punya mockup HTML tapi belum diimplementasi Livewire**, **47 item belum punya mockup/spec-layar sama sekali** (Inventory/Production inti/Dispatch/Invoicing masih kosong total; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live; Notification Center & Nota Inquiry per-tipe kini juga live).
+**31 item live**, **8 item punya mockup HTML tapi belum diimplementasi Livewire**, **45 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Item Master; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live; Notification Center & Nota Inquiry per-tipe kini juga live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

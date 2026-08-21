@@ -1,0 +1,148 @@
+<?php
+
+use App\Models\Master\MRawMaterial;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Component
+{
+    use WithPagination;
+
+    public string $search = '';
+
+    public string $typeFilter = '';
+
+    public string $categoryFilter = '';
+
+    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    #[Computed]
+    public function items()
+    {
+        return MRawMaterial::when($this->search !== '', function ($q) {
+                $term = $this->search;
+                $q->where(function ($qq) use ($term) {
+                    $qq->where('material_code', 'like', "%{$term}%")
+                        ->orWhere('material_name', 'like', "%{$term}%")
+                        ->orWhere('hs_code', 'like', "%{$term}%");
+                });
+            })
+            ->when($this->typeFilter !== '', fn ($q) => $q->where('item_type', $this->typeFilter))
+            ->when($this->categoryFilter !== '', fn ($q) => $q->where('category1', $this->categoryFilter))
+            ->orderBy('material_name')
+            ->paginate(25);
+    }
+
+    #[Computed]
+    public function categories()
+    {
+        return MRawMaterial::query()->distinct()->orderBy('category1')->pluck('category1')->filter();
+    }
+
+    #[Computed]
+    public function stats(): array
+    {
+        return [
+            'total' => MRawMaterial::count(),
+            'material' => MRawMaterial::where('item_type', 'MATERIAL')->count(),
+            'non_material' => MRawMaterial::whereIn('item_type', ['SERVICE', 'FREE_SAMPLE'])->count(),
+            'low_stock' => MRawMaterial::whereNotNull('reorder_point')->whereColumn('cur_stock', '<=', 'reorder_point')->count(),
+        ];
+    }
+};
+?>
+
+<div>
+    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
+        <b class="text-[15px]">📦 Master Item Bahan Baku</b>
+        <span class="text-xs text-white/75">Lookup Data / Inventory » Master » m_raw_material</span>
+        <a href="{{ route('master.raw-material.create') }}" class="ml-auto bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">＋ Item Baru</a>
+        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
+    </header>
+
+    <div class="max-w-[1500px] mx-auto my-5 px-4">
+
+        {{-- STATS --}}
+        <div class="grid grid-cols-4 gap-3 mb-4">
+            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-accent">
+                <p class="text-[10px] font-bold text-muted uppercase">Total Master Item</p>
+                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['total']) }}</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#1f8a4c]">
+                <p class="text-[10px] font-bold text-muted uppercase">Bahan Baku (Stok)</p>
+                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['material']) }}</p>
+                <p class="text-[10px] text-muted">MATERIAL</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-accent">
+                <p class="text-[10px] font-bold text-muted uppercase">Jasa / Sample</p>
+                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['non_material']) }}</p>
+                <p class="text-[10px] text-muted">SERVICE / FREE_SAMPLE</p>
+            </div>
+            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#a3241f]">
+                <p class="text-[10px] font-bold text-muted uppercase">Stok Kritis</p>
+                <p class="text-xl font-extrabold text-[#a3241f]">{{ number_format($this->stats['low_stock']) }}</p>
+                <p class="text-[10px] text-muted">≤ Reorder Point</p>
+            </div>
+        </div>
+
+        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
+            <div class="flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex-wrap">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Cari kode, nama, HS code..." class="w-72 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                <select wire:model.live="typeFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <option value="">Semua Tipe</option>
+                    <option value="MATERIAL">MATERIAL</option>
+                    <option value="SERVICE">SERVICE</option>
+                    <option value="FREE_SAMPLE">FREE_SAMPLE</option>
+                </select>
+                <select wire:model.live="categoryFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <option value="">Semua Kategori</option>
+                    @foreach ($this->categories as $c)
+                        <option value="{{ $c }}">{{ $c }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-[#f4f5f8]">
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Kode</th>
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Nama Item</th>
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tipe</th>
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Kategori</th>
+                            <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Gramatur</th>
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">UoM</th>
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Metode</th>
+                            <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Stok</th>
+                            <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Harga Rata²</th>
+                            <th class="px-3 py-2 border-b border-[#d7dbe2]"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->items as $m)
+                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="mat-{{ $m->material_id }}" onclick="window.location='{{ route('master.raw-material.edit', ['material' => $m->material_id]) }}'">
+                                <td class="px-3 py-2 font-mono font-bold text-accent">{{ $m->material_code }}</td>
+                                <td class="px-3 py-2">{{ $m->material_name }}</td>
+                                <td class="px-3 py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#eef1f5] text-[#4b5568]">{{ $m->item_type }}</span></td>
+                                <td class="px-3 py-2 text-[10.5px]">{{ $m->category1 }} @if($m->category2) » {{ $m->category2 }} @endif</td>
+                                <td class="px-3 py-2 text-right">{{ $m->gram_weight ? $m->gram_weight.' gsm' : '—' }}</td>
+                                <td class="px-3 py-2 font-bold">{{ $m->uom_stock }}</td>
+                                <td class="px-3 py-2 font-mono text-[10.5px]">{{ $m->costing_method }}</td>
+                                <td class="px-3 py-2 text-right {{ $m->reorder_point && $m->cur_stock <= $m->reorder_point ? 'text-[#a3241f] font-bold' : '' }}">{{ number_format((float) $m->cur_stock, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 text-right font-mono">{{ number_format((float) $m->avg_unitprice, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 text-right text-accent font-semibold">Buka →</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="10" class="text-center py-8 text-muted">Tidak ada item cocok.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="px-4 py-3 border-t border-[#eef1f5]">
+                {{ $this->items->links() }}
+            </div>
+        </div>
+    </div>
+</div>

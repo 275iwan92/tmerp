@@ -54,6 +54,10 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
             Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
+
+            Route::livewire('/master/raw-material', 'pages::master.raw-material.index')->name('master.raw-material.list');
+            Route::livewire('/master/raw-material/create', 'pages::master.raw-material.entry')->name('master.raw-material.create');
+            Route::livewire('/master/raw-material/{material}/edit', 'pages::master.raw-material.entry')->name('master.raw-material.edit');
         });
 
         Route::middleware('module:FINACC')->group(function () {

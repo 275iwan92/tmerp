@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMERP — Master Item Bahan Baku (m_raw_material)</title>
+<style>
+    :root {
+        --navy: #2c3e69;
+        --accent: #2f6fed;
+        --accent-hover: #2555c7;
+        --bg-gray: #f1f5f9;
+        --border-color: #cbd5e1;
+        --text-main: #0f172a;
+        --tab-active: #ffffff;
+        --tab-inactive: #e2e8f0;
+        --danger: #dc2626;
+        --success: #059669;
+        --lock-bg: #e2e8f0; --lock-fg:#475569;
+        --sel-bg:#fef9c3; --sel-fg:#854d0e;
+        --eng-bg:#ede9fe; --eng-fg:#5b21b6;
+        --res-bg:#dcfce7; --res-fg:#166534;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-gray); color: var(--text-main); font-size: 12px; }
+
+    /* FULL-PAGE — bukan container/max-width (aturan TMERP: penyebab bug margin Edge) */
+    .app-shell { width: 100%; padding: 12px 16px; }
+    .app-panel { width: 100%; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; }
+
+    .app-header { background: var(--navy); color: #fff; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 20; }
+    .app-header .crumb { font-size: 10px; opacity: .75; margin-top: 2px; }
+    .app-header h1 { font-size: 15px; font-weight: 600; display:flex; align-items:center; gap:8px; }
+
+    .btn { padding: 6px 12px; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+    .btn[disabled] { opacity:.4; cursor:not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; } .btn-primary:hover{ background:var(--accent-hover);}
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-secondary { background: #475569; color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--border-color); color: #334155; }
+
+    /* Badge system TMERP: locked/selector/engine/result */
+    .badge { font-size:9px; font-weight:700; padding:2px 6px; border-radius:3px; text-transform:uppercase; display:inline-block; }
+    .badge-lock { background:var(--lock-bg); color:var(--lock-fg); }
+    .badge-sel  { background:var(--sel-bg);  color:var(--sel-fg); }
+    .badge-eng  { background:var(--eng-bg);  color:var(--eng-fg); }
+    .badge-res  { background:var(--res-bg);  color:var(--res-fg); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; background: #f8fafc; border-bottom: 1px solid var(--border-color); }
+    .stat-card { background: #fff; border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; border-left: 4px solid var(--accent); }
+    .stat-card.alert { border-left-color: var(--danger); }
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card .stat-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .stat-card .stat-value { font-size: 20px; font-weight: 800; }
+    .stat-card .stat-sub { font-size: 10px; color: #94a3b8; }
+
+    .grid-container-view { padding: 15px; }
+    .grid-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px; }
+    .toolbar-left { display:flex; gap:6px; }
+    .grid-search { width: 300px; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 11px; }
+
+    /* pola .qtbl */
+    .qtbl-wrap { border: 1px solid var(--border-color); border-radius: 6px; overflow-x:auto; max-height: 460px; overflow-y:auto; }
+    .qtbl { width:100%; border-collapse: collapse; font-size: 11px; text-align:left; }
+    .qtbl th { background:#f1f5f9; color:#334155; font-weight:700; padding:8px 10px; border-bottom:2px solid var(--border-color); position:sticky; top:0; }
+    .qtbl td { padding:8px 10px; border-bottom:1px solid var(--border-color); white-space:nowrap; }
+    .qtbl tbody tr { cursor:pointer; }
+    .qtbl tbody tr:hover { background:#f8fafc; }
+    .qtbl tbody tr.row-selected { background:#eef2ff; outline:2px solid var(--accent); outline-offset:-2px; }
+
+    .edit-container-view { display:none; }
+    .edit-toolbar { padding:10px 15px; background:#f8fafc; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; }
+    .edit-mode-badge { font-weight:700; padding:3px 8px; border-radius:4px; font-size:10px; text-transform:uppercase; }
+    .badge-add { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .badge-edit { background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; }
+
+    .material-title-bar { padding:12px 15px; background:#fff; border-bottom:1px solid var(--border-color); display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:12px; }
+    .form-group { display:flex; flex-direction:column; gap:3px; }
+    .form-group label { font-weight:600; font-size:10px; color:#475569; text-transform:uppercase; display:flex; align-items:center; gap:5px; }
+    .form-control { padding:6px 8px; border:1px solid var(--border-color); border-radius:4px; font-size:11px; width:100%; }
+    .form-control[readonly] { background:#f8fafc; cursor:not-allowed; font-weight:600; }
+
+    .tabs { display:flex; background: var(--tab-inactive); border-bottom:1px solid var(--border-color); flex-wrap:wrap; }
+    .tab-btn { padding:8px 16px; border:none; background:transparent; cursor:pointer; font-weight:600; font-size:11px; color:#475569; border-right:1px solid var(--border-color); }
+    .tab-btn.active { background: var(--tab-active); color: var(--accent); border-bottom:2px solid var(--accent); }
+    .tab-content { display:none; padding:15px; }
+    .tab-content.active { display:block; }
+
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+    .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+
+    .panel { border:1px solid var(--border-color); border-radius:4px; padding:12px; margin-bottom:12px; background:#fafafa; }
+    .panel-title { font-weight:700; font-size:10px; margin-bottom:10px; color: var(--accent); text-transform:uppercase; border-bottom:1px solid #e2e8f0; padding-bottom:4px; display:flex; justify-content:space-between; }
+    .hint { font-size:10px; color:#64748b; margin-top:6px; }
+    .warn-fx { font-size:10px; color:#b45309; background:#fffbeb; border:1px solid #fde68a; padding:4px 8px; border-radius:4px; margin-top:6px; display:none; }
+
+    .console-output { background: var(--navy); color:#7dd3fc; padding:10px; border-radius:4px; font-family:monospace; font-size:10px; margin:15px; max-height:90px; overflow-y:auto; }
+
+    #printSheet { display:none; }
+    @media print {
+        @page { size: A4 portrait; margin: 8mm; }
+        body { background:#fff; padding:0; color:#000; font-size:10pt; }
+        .app-shell, #gridView, #editView { display:none !important; }
+        #printSheet { display:block !important; width:100%; }
+        .print-header { display:flex; justify-content:space-between; border-bottom:2px solid #000; padding-bottom:8px; margin-bottom:12px; }
+        .print-header h2 { font-size:14pt; text-transform:uppercase; }
+        .print-badge { background:#eee; border:1px solid #333; padding:2px 6px; font-weight:bold; font-family:monospace; }
+        .print-table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:9pt; }
+        .print-table th, .print-table td { border:1px solid #000; padding:4px 6px; vertical-align:top; }
+        .print-table th { background:#f0f0f0 !important; text-transform:uppercase; font-size:8pt; }
+        .print-section-title { font-size:9pt; font-weight:bold; text-transform:uppercase; background:#e2e2e2; padding:3px 6px; border:1px solid #000; border-bottom:none; margin-top:8px; }
+        .print-signatures { margin-top:25px; display:grid; grid-template-columns:repeat(3,1fr); text-align:center; font-size:8pt; }
+        .print-sig-box { height:50px; }
+    }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+<div class="app-panel">
+    <div class="app-header">
+        <div>
+            <h1>📦 Master Item Bahan Baku</h1>
+            <div class="crumb">Lookup Data / Inventory &raquo; Master &raquo; m_raw_material</div>
+        </div>
+        <div id="headerGridActions">
+            <button class="btn btn-primary" onclick="openFormAddMode()">+ Item Baru</button>
+        </div>
+    </div>
+
+    <!-- VIEW 1: GRID -->
+    <div id="gridView">
+        <div class="stats-grid">
+            <div class="stat-card"><span class="stat-title">Total Master Item</span><span class="stat-value" id="statTotalItems">0</span><span class="stat-sub">Terdaftar</span></div>
+            <div class="stat-card success"><span class="stat-title">Bahan Baku (Stok)</span><span class="stat-value" id="statRawMaterials">0</span><span class="stat-sub">MATERIAL</span></div>
+            <div class="stat-card"><span class="stat-title">Jasa / Sample</span><span class="stat-value" id="statNonRawMaterials">0</span><span class="stat-sub">SERVICE / FREE_SAMPLE</span></div>
+            <div class="stat-card alert"><span class="stat-title">Stok Kritis</span><span class="stat-value" id="statLowStock">0</span><span class="stat-sub" style="color:var(--danger);">≤ Reorder Point</span></div>
+        </div>
+
+        <div class="grid-container-view">
+            <div class="grid-toolbar">
+                <div class="toolbar-left">
+                    <button class="btn btn-outline" id="btnEdit" disabled onclick="editSelected()">✎ Edit</button>
+                    <button class="btn btn-outline" id="btnDetail" disabled onclick="editSelected(true)">🔍 Detail</button>
+                </div>
+                <input type="text" id="searchInput" class="grid-search" placeholder="🔍 Cari kode, nama, HS code, kategori..." onkeyup="filterGrid()">
+            </div>
+            <div class="qtbl-wrap">
+                <table class="qtbl">
+                    <thead><tr>
+                        <th style="width:40px;">ID</th><th style="width:100px;">Kode Item</th><th>Nama Item</th>
+                        <th style="width:80px;">Tipe</th><th style="width:130px;">Kategori</th>
+                        <th style="width:70px;">Gramatur</th><th style="width:90px;">Dimensi</th>
+                        <th style="width:60px;">UOM</th><th style="width:70px;">Metode</th>
+                        <th style="width:80px;">Stok</th><th style="width:100px;">Harga Rata²</th>
+                    </tr></thead>
+                    <tbody id="gridTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: FORM -->
+    <div id="editView" class="edit-container-view">
+        <div class="edit-toolbar">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="btn btn-outline" onclick="backToGrid()">← Kembali</button>
+                <span id="editModeBadge" class="edit-mode-badge badge-edit">MODE EDIT</span>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button id="btnDelete" class="btn btn-danger" onclick="deleteCurrentRecord()">🗑 Hapus</button>
+                <button class="btn btn-secondary" onclick="triggerPrintProcess()">🖨 Cetak</button>
+                <button class="btn btn-success" onclick="saveData()">💾 Simpan</button>
+            </div>
+        </div>
+
+        <div class="material-title-bar">
+            <div class="form-group"><label>Nama Item</label><input type="text" id="material_name" class="form-control" placeholder="mis. Art Carton 210gr 65x100 GOLDEN"></div>
+            <div class="form-group"><label><span class="badge badge-lock">🔒</span> Kode Item</label><input type="text" id="material_code" class="form-control" readonly placeholder="Auto dari hirarki kategori"></div>
+            <div class="form-group"><label>Tipe Item</label>
+                <select id="item_type" class="form-control" onchange="toggleFxWarn()">
+                    <option value="MATERIAL">MATERIAL (Bahan Baku / Stok)</option>
+                    <option value="SERVICE">SERVICE (Jasa)</option>
+                    <option value="FREE_SAMPLE">FREE_SAMPLE (Contoh dari supplier)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Dapat Dibeli (PO)</label>
+                <select id="purchasable" class="form-control"><option value="1">Ya</option><option value="0">Tidak</option></select>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-category', this)">1. Kategori</button>
+            <button class="tab-btn" onclick="switchTab('tab-specs', this)">2. Spesifikasi & QC</button>
+            <button class="tab-btn" onclick="switchTab('tab-uom', this)">3. UOM & Pengadaan</button>
+            <button class="tab-btn" onclick="switchTab('tab-inventory', this)">4. Stok & Lokasi</button>
+            <button class="tab-btn" onclick="switchTab('tab-accounting', this)">5. Akuntansi (GL)</button>
+        </div>
+
+        <form id="materialForm">
+            <!-- TAB 1 -->
+            <div id="tab-category" class="tab-content active">
+                <div class="panel">
+                    <div class="panel-title">Hirarki Pembentuk Kode Item <span class="badge badge-sel">◆ pilih</span></div>
+                    <div class="grid-5">
+                        <div class="form-group"><label>Kategori</label>
+                            <select id="category1" class="form-control" onchange="generatePrefixCode()">
+                                <option value="Paper" data-prefix="P">Paper (P)</option>
+                                <option value="Board" data-prefix="B">Board (B)</option>
+                                <option value="Chemical" data-prefix="C">Chemical (C)</option>
+                                <option value="Jasa" data-prefix="J">Jasa (J)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Jenis</label>
+                            <select id="category2" class="form-control" onchange="generatePrefixCode()">
+                                <option value="Art carton" data-prefix="C">Art carton (C)</option>
+                                <option value="Art Paper" data-prefix="A">Art Paper (A)</option>
+                                <option value="Duplex" data-prefix="D">Duplex (D)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Gramatur/Spec</label>
+                            <select id="category3" class="form-control" onchange="generatePrefixCode()">
+                                <option value="210gr" data-prefix="E">210gr (E)</option>
+                                <option value="150gr" data-prefix="B">150gr (B)</option>
+                                <option value="300gr" data-prefix="J">300gr (J)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Ukuran Plano</label>
+                            <select id="category4" class="form-control" onchange="generatePrefixCode()">
+                                <option value="65 X 100 CM" data-prefix="002">65 X 100 CM (002)</option>
+                                <option value="79 X 109 CM" data-prefix="001">79 X 109 CM (001)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Merek</label>
+                            <select id="category5" class="form-control" onchange="generatePrefixCode()">
+                                <option value="GOLDEN" data-prefix="002">GOLDEN (002)</option>
+                                <option value="FOENIX" data-prefix="001">FOENIX (001)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="hint">⚙ Mockup ini pakai opsi contoh saja — layar sungguhan mengambil cascading langsung dari <code>doc_rmprefix1..5</code> (bisa puluhan/ratusan baris per level). Kode = rangkaian prefix1..5, prefix4 &amp; prefix5 masing-masing 3 digit.</div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Kepabeanan & Kode Legacy</div>
+                    <div class="grid-3">
+                        <div class="form-group"><label>Kode HS (`hs_code`)</label><input type="text" id="hs_code" class="form-control" placeholder="4810.13.00"></div>
+                        <div class="form-group"><label>Kode Lama (`old_material_code`)</label><input type="text" id="old_material_code" class="form-control"></div>
+                        <div class="form-group"><label>Nama Lama (`old_material_name`)</label><input type="text" id="old_material_name" class="form-control"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2 -->
+            <div id="tab-specs" class="tab-content">
+                <div class="panel">
+                    <div class="panel-title">Dimensi & Fisik <span style="font-weight:400; text-transform:none; color:#94a3b8;">(kosongkan bila bukan kertas/board)</span></div>
+                    <div class="grid-3">
+                        <div class="form-group"><label>Gramatur (gsm)</label><input type="number" id="gram_weight" class="form-control" value="210"></div>
+                        <div class="form-group"><label>Panjang Plano (cm)</label><input type="number" step="0.0001" id="cm_length" class="form-control" value="100.0000"></div>
+                        <div class="form-group"><label>Lebar Plano (cm)</label><input type="number" step="0.0001" id="cm_width" class="form-control" value="65.0000"></div>
+                        <div class="form-group"><label>Ketebalan (mm)</label><input type="number" step="0.0001" id="mm_thickness" class="form-control" value="0.2300"></div>
+                        <div class="form-group"><label>Merek Pabrik</label><input type="text" id="brand" class="form-control" value="GOLDEN"></div>
+                        <div class="form-group"><label>Warna</label><input type="text" id="color" class="form-control" value="WHITE"></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">QC & Masa Simpan</div>
+                    <div class="grid-3">
+                        <div class="form-group"><label>Wajib QC Saat Terima</label>
+                            <select id="qc_required" class="form-control"><option value="1">Ya — cek lab GSM/kelembaban</option><option value="0">Tidak — langsung ke stok</option></select>
+                            <div class="hint">Menyalakan gerbang QC kualitas di layar PV.</div>
+                        </div>
+                        <div class="form-group"><label>Masa Simpan (hari)</label><input type="number" id="shelf_life_days" class="form-control" value="365"></div>
+                        <div class="form-group"><label>Batas Kelembaban (%)</label><input type="number" step="0.1" id="moisture_pct" class="form-control" value="6.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3 -->
+            <div id="tab-uom" class="tab-content">
+                <div class="panel">
+                    <div class="panel-title">Satuan & Konversi</div>
+                    <div class="grid-3">
+                        <div class="form-group"><label>UOM Stok</label><select id="uom_stock" class="form-control"><option>LBR</option><option>KG</option><option>ROLL</option></select></div>
+                        <div class="form-group"><label>UOM Beli (PO)</label><select id="uom_purchase" class="form-control"><option>PACK</option><option>RIM</option><option>LBR</option><option>TRUK</option></select></div>
+                        <div class="form-group"><label>UOM Pemakaian</label><select id="uom_usage" class="form-control"><option>LBR</option><option>PCS</option></select></div>
+                    </div>
+                    <div class="grid-2" style="margin-top:10px;">
+                        <div class="form-group"><label>Konversi Beli → Stok</label><input type="number" step="0.000001" id="conversion_to_stock" class="form-control" value="500.000000">
+                            <div class="hint">⚠ Nilai AWAL saja — di PV selalu boleh ditimpa manual (barang curah spt pasir/truk).</div>
+                        </div>
+                        <div class="form-group"><label>Konversi Stok → Pakai</label><input type="number" step="0.000001" id="conversion_to_usage" class="form-control" value="1.000000"></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Parameter Pengadaan</div>
+                    <div class="grid-4">
+                        <div class="form-group"><label>Lead Time (hari)</label><input type="number" id="lead_time_days" class="form-control" value="14"></div>
+                        <div class="form-group"><label>Toleransi Terima (%)</label><input type="number" step="0.1" id="tol_purchase" class="form-control" value="5.0"></div>
+                        <div class="form-group"><label>Pajak Masukan</label>
+                            <select id="purchase_tax_code" class="form-control"><option value="PPN">PPN (sys_constant)</option><option value="NON_PPN">Non-PPN</option></select>
+                        </div>
+                        <div class="form-group"><label>Supplier Saran</label><select id="suggest_supplier_id" class="form-control"><option value="">— pilih —</option><option value="SUP-01">CV Kertas Makmur</option><option value="SUP-02">PT Bohui Indonesia</option></select></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Metode Harga Perolehan <span class="badge badge-eng">⚙ engine</span></div>
+                    <div class="grid-2">
+                        <div class="form-group"><label>Costing Method</label>
+                            <select id="costing_method" class="form-control">
+                                <option value="AVG">AVG — Moving Average</option>
+                                <option value="FIFO">FIFO</option>
+                                <option value="LIFO">LIFO</option>
+                                <option value="STANDARD">STANDARD — harga tetap</option>
+                            </select>
+                            <div class="hint">Menggantikan konsep Price Control V/S — satu kolom, tak ada duplikasi.</div>
+                        </div>
+                        <div class="form-group"><label>Sensitif Kurs</label>
+                            <select id="is_fx_sensitive" class="form-control" onchange="toggleFxWarn()"><option value="0">Tidak</option><option value="1">Ya</option></select>
+                            <div id="fxWarnHint" class="warn-fx">⚠ Item ini akan ditandai di layar PR/PQ: "harga mengikuti kurs — cek penawaran terbaru."</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4 -->
+            <div id="tab-inventory" class="tab-content">
+                <div class="panel">
+                    <div class="panel-title">Batas Persediaan</div>
+                    <div class="grid-4">
+                        <div class="form-group"><label>Min Stock</label><input type="number" id="min_stock" class="form-control" value="1000"></div>
+                        <div class="form-group"><label>Safety Stock</label><input type="number" id="safety_stock" class="form-control" value="500"></div>
+                        <div class="form-group"><label>Reorder Point</label><input type="number" id="reorder_point" class="form-control" value="1500"></div>
+                        <div class="form-group"><label>Max Stock</label><input type="number" id="max_stock" class="form-control" value="10000"></div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Lokasi & Saldo <span class="badge badge-res">= hasil</span></div>
+                    <div class="grid-3">
+                        <div class="form-group"><label>Default Lokasi Gudang</label>
+                            <select id="def_location_id" class="form-control"><option value="101">Gudang Kertas Plano - Rak A1</option><option value="102">Gudang Kertas Plano - Rak A2</option><option value="201">Gudang Kimia & Tinta</option></select>
+                        </div>
+                        <div class="form-group"><label><span class="badge badge-lock">🔒</span> Stok On-Hand</label><input type="number" id="cur_stock" class="form-control" readonly value="4500"></div>
+                        <div class="form-group"><label><span class="badge badge-lock">🔒</span> Harga Rata² Bergerak</label><input type="number" id="avg_unitprice" class="form-control" readonly value="1250"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5 -->
+            <div id="tab-accounting" class="tab-content">
+                <div class="panel">
+                    <div class="panel-title">Linkage ke Chart of Account (langsung ke fin_account, tanpa lapisan penentu-akun)</div>
+                    <div class="grid-3">
+                        <div class="form-group"><label>Label Klasifikasi (opsional)</label><input type="text" id="valuation_class" class="form-control" placeholder="mis. Raw Material - Kertas">
+                            <div class="hint">Cuma label laporan — BUKAN penentu akun (beda dari BKLAS/OBYC SAP).</div>
+                        </div>
+                        <div class="form-group"><label>Akun Aset Persediaan</label>
+                            <select id="stock_asset_account_id" class="form-control"><option value="">— default kategori —</option><option value="113100">113100 - Persediaan Kertas Plano</option><option value="113200">113200 - Persediaan Kimia & Tinta</option></select>
+                        </div>
+                        <div class="form-group"><label>Akun HPP / Beban Pakai</label>
+                            <select id="cogs_account_id" class="form-control"><option value="">— default kategori —</option><option value="511100">511100 - Beban Bahan Baku Utama</option><option value="511200">511200 - Beban Bahan Penolong</option></select>
+                        </div>
+                    </div>
+                    <div class="grid-3" style="margin-top:10px;">
+                        <div class="form-group"><label>Akun Kliring GR/IR</label>
+                            <select id="gr_ir_account_id" class="form-control"><option value="">— default kategori —</option><option value="211200">211200 - Hutang Belum Ditagih (GR/IR)</option></select>
+                            <div class="hint">Terpakai saat PV posting (barang masuk, faktur belum ada).</div>
+                        </div>
+                        <div class="form-group"><label>Cost Center Default</label>
+                            <select id="cost_center_id" class="form-control"><option value="">— tak ada default —</option><option value="CC-PROD-OFFSET">CC-PROD-OFFSET (Mesin Offset)</option><option value="CC-PROD-PACKAGING">CC-PROD-PACKAGING (Finishing Die-cut)</option></select>
+                        </div>
+                        <div class="form-group"><label>Profit Center</label>
+                            <select id="profit_center_id" class="form-control"><option value="">— tak ada default —</option><option value="PC-PACKAGING">PC-PACKAGING</option><option value="PC-COMMERCIAL">PC-COMMERCIAL</option></select>
+                            <div class="hint">Tabel <code>fin_profit_center</code> baru — belum ada padanan legacy.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div id="jsonConsole" class="console-output">Siap. Lakukan perubahan lalu klik "Simpan" atau "Cetak".</div>
+    </div>
+</div>
+</div>
+
+<!-- PRINT SHEET -->
+<div id="printSheet">
+    <div class="print-header">
+        <div><h2>Lembar Spesifikasi Master Item</h2><div style="font-size:8pt;">PT. TELASIH MAKMUR — TMERP</div></div>
+        <div style="font-size:8pt; text-align:right;"><div>Kode Item: <span id="p_code" class="print-badge">-</span></div><div>Tgl Cetak: <span id="p_print_date">-</span></div></div>
+    </div>
+    <div class="print-section-title">1. Identitas & Klasifikasi</div>
+    <table class="print-table">
+        <tr><th style="width:20%;">Nama Item</th><td id="p_name" colspan="3" style="font-weight:bold;">-</td><th style="width:15%;">Tipe</th><td id="p_item_type">-</td></tr>
+        <tr><th>Hirarki Kategori</th><td id="p_categories" colspan="3">-</td><th>Kode HS</th><td id="p_hs_code">-</td></tr>
+        <tr><th>Kode Lama</th><td id="p_old_code">-</td><th>Nama Lama</th><td id="p_old_name" colspan="3">-</td></tr>
+    </table>
+    <div class="print-section-title">2. Spesifikasi Fisik & QC</div>
+    <table class="print-table">
+        <tr><th style="width:16%;">Gramatur</th><td id="p_gram">-</td><th style="width:16%;">Dimensi</th><td id="p_dim">-</td><th style="width:16%;">Tebal</th><td id="p_thickness">-</td></tr>
+        <tr><th>Merek</th><td id="p_brand">-</td><th>Warna</th><td id="p_color">-</td><th>Wajib QC</th><td id="p_qc">-</td></tr>
+    </table>
+    <div class="print-section-title">3. UOM, Konversi & Parameter Stok</div>
+    <table class="print-table">
+        <tr><th style="width:16%;">UOM Stok/Pakai</th><td id="p_uom_stock">-</td><th style="width:16%;">UOM Beli</th><td id="p_uom_purchase">-</td><th style="width:16%;">Rasio Beli→Stok</th><td id="p_conv">-</td></tr>
+        <tr><th>Min/Max Stock</th><td id="p_min_max">-</td><th>Reorder Point</th><td id="p_rop">-</td><th>Lead Time</th><td id="p_lead_time">-</td></tr>
+    </table>
+    <div class="print-section-title">4. Integrasi Akuntansi (GL)</div>
+    <table class="print-table">
+        <tr><th style="width:20%;">Metode Harga</th><td id="p_val_class">-</td><th style="width:20%;">Akun Persediaan</th><td id="p_acc_asset">-</td></tr>
+        <tr><th>Akun HPP</th><td id="p_acc_cogs">-</td><th>Cost/Profit Center</th><td id="p_cc">-</td></tr>
+    </table>
+    <div class="print-signatures">
+        <div><div>Dibuat Oleh</div><div class="print-sig-box"></div><div>( ................... )</div></div>
+        <div><div>Diperiksa (QC/Cost)</div><div class="print-sig-box"></div><div>( ................... )</div></div>
+        <div><div>Disetujui (Manajer)</div><div class="print-sig-box"></div><div>( ................... )</div></div>
+    </div>
+</div>
+
+<script>
+let simulatedDB = [
+    { material_id:1, material_code:"PCE002002", material_name:"Paper Art carton 210gr 65x100 CM GOLDEN",
+      item_type:"MATERIAL", category1:"Paper", category2:"Art carton", category3:"210gr", category4:"65 X 100 CM", category5:"GOLDEN",
+      hs_code:"4810.13.00", old_material_code:"ARTCARTON21065100GOLDCOIN", old_material_name:"AC 210 GR GOLDEN COIN 65 X 100 CM",
+      gram_weight:210, cm_length:100, cm_width:65, mm_thickness:0.23, brand:"GOLDEN", color:"WHITE",
+      qc_required:1, shelf_life_days:365, moisture_pct:6.5,
+      uom_stock:"LBR", uom_purchase:"PACK", uom_usage:"LBR", conversion_to_stock:500, conversion_to_usage:1,
+      purchasable:1, lead_time_days:14, tol_purchase:5.0, purchase_tax_code:"PPN", suggest_supplier_id:"SUP-01",
+      costing_method:"AVG", is_fx_sensitive:0,
+      min_stock:1000, safety_stock:500, reorder_point:1500, max_stock:10000, def_location_id:"101", cur_stock:4500, avg_unitprice:1250,
+      valuation_class:"Raw Material - Kertas", stock_asset_account_id:"113100", cogs_account_id:"511100", gr_ir_account_id:"211200", cost_center_id:"CC-PROD-OFFSET", profit_center_id:"PC-PACKAGING" },
+    { material_id:2, material_code:"PAB001001", material_name:"Paper Art Paper 150gr 79x109 CM FOENIX",
+      item_type:"MATERIAL", category1:"Paper", category2:"Art Paper", category3:"150gr", category4:"79 X 109 CM", category5:"FOENIX",
+      hs_code:"4810.13.00", old_material_code:"AP15079109FOENIX", old_material_name:"ART PAPER 150 GR FOENIX 79 X 109 CM",
+      gram_weight:150, cm_length:109, cm_width:79, mm_thickness:0.15, brand:"FOENIX", color:"WHITE",
+      qc_required:0, shelf_life_days:365, moisture_pct:6.0,
+      uom_stock:"LBR", uom_purchase:"RIM", uom_usage:"LBR", conversion_to_stock:500, conversion_to_usage:1,
+      purchasable:1, lead_time_days:7, tol_purchase:5.0, purchase_tax_code:"PPN", suggest_supplier_id:"SUP-02",
+      costing_method:"AVG", is_fx_sensitive:1,
+      min_stock:3000, safety_stock:1000, reorder_point:4000, max_stock:20000, def_location_id:"102", cur_stock:1200, avg_unitprice:980,
+      valuation_class:"Raw Material - Kertas", stock_asset_account_id:"113100", cogs_account_id:"511100", gr_ir_account_id:"211200", cost_center_id:"CC-PROD-OFFSET", profit_center_id:"PC-COMMERCIAL" }
+];
+
+let activeEditId = null;
+let selectedRowId = null;
+
+function updateStatistics(){
+    document.getElementById('statTotalItems').innerText = simulatedDB.length;
+    document.getElementById('statRawMaterials').innerText = simulatedDB.filter(d=>d.item_type==='MATERIAL').length;
+    document.getElementById('statNonRawMaterials').innerText = simulatedDB.filter(d=>d.item_type!=='MATERIAL').length;
+    document.getElementById('statLowStock').innerText = simulatedDB.filter(d=>d.cur_stock<=d.reorder_point).length;
+}
+
+function renderGrid(dataList=null){
+    const tbody = document.getElementById('gridTbody');
+    tbody.innerHTML = '';
+    const list = dataList || simulatedDB;
+    list.forEach(item=>{
+        const tr = document.createElement('tr');
+        if(item.material_id === selectedRowId) tr.classList.add('row-selected');
+        tr.onclick = () => selectRow(item.material_id);
+        tr.ondblclick = () => openFormEditMode(item.material_id);
+        tr.innerHTML = `
+            <td><b>${item.material_id}</b></td>
+            <td><span style="color:var(--accent); font-weight:bold;">${item.material_code}</span></td>
+            <td>${item.material_name}</td>
+            <td><span style="background:#e2e8f0; padding:2px 5px; border-radius:3px;">${item.item_type}</span></td>
+            <td>${item.category1} &raquo; ${item.category2}</td>
+            <td>${item.gram_weight ? item.gram_weight+' gsm' : '-'}</td>
+            <td>${item.cm_length ? item.cm_length+' x '+item.cm_width : '-'}</td>
+            <td><b>${item.uom_stock}</b></td>
+            <td><span style="font-family:monospace;">${item.costing_method}</span></td>
+            <td style="${item.cur_stock<=item.reorder_point?'color:red;font-weight:bold;':''}">${item.cur_stock.toLocaleString()}</td>
+            <td>Rp ${item.avg_unitprice.toLocaleString()}</td>`;
+        tbody.appendChild(tr);
+    });
+    updateStatistics();
+}
+
+function selectRow(id){
+    selectedRowId = id;
+    document.getElementById('btnEdit').disabled = false;
+    document.getElementById('btnDetail').disabled = false;
+    renderGrid();
+}
+function editSelected(){ if(selectedRowId) openFormEditMode(selectedRowId); }
+
+function openFormAddMode(){
+    activeEditId = null;
+    document.getElementById('materialForm').reset();
+    document.getElementById('editModeBadge').innerText = 'MODE TAMBAH';
+    document.getElementById('editModeBadge').className = 'edit-mode-badge badge-add';
+    document.getElementById('btnDelete').style.display = 'none';
+    generatePrefixCode(); toggleFxWarn();
+    document.getElementById('gridView').style.display='none';
+    document.getElementById('headerGridActions').style.display='none';
+    document.getElementById('editView').style.display='block';
+    document.getElementById('jsonConsole').innerText = '[TAMBAH] Form kosong.';
+}
+
+function openFormEditMode(id){
+    activeEditId = id;
+    const r = simulatedDB.find(x=>x.material_id===id);
+    if(!r) return;
+    document.getElementById('editModeBadge').innerText = `MODE EDIT (#${id})`;
+    document.getElementById('editModeBadge').className = 'edit-mode-badge badge-edit';
+    document.getElementById('btnDelete').style.display = 'inline-flex';
+    const fields = ['material_name','material_code','item_type','purchasable','category1','category2','category3','category4','category5',
+        'hs_code','old_material_code','old_material_name','gram_weight','cm_length','cm_width','mm_thickness','brand','color',
+        'qc_required','shelf_life_days','moisture_pct','uom_stock','uom_purchase','uom_usage','conversion_to_stock','conversion_to_usage',
+        'lead_time_days','tol_purchase','purchase_tax_code','suggest_supplier_id','costing_method','is_fx_sensitive',
+        'min_stock','safety_stock','reorder_point','max_stock','def_location_id','cur_stock','avg_unitprice',
+        'valuation_class','stock_asset_account_id','cogs_account_id','gr_ir_account_id','cost_center_id','profit_center_id'];
+    fields.forEach(f=>{ const el=document.getElementById(f); if(el && r[f]!==undefined) el.value = r[f]; });
+    toggleFxWarn();
+    document.getElementById('gridView').style.display='none';
+    document.getElementById('headerGridActions').style.display='none';
+    document.getElementById('editView').style.display='block';
+    document.getElementById('jsonConsole').innerText = `[EDIT] Record #${id} (${r.material_code}) dimuat.`;
+}
+
+function backToGrid(){
+    document.getElementById('editView').style.display='none';
+    document.getElementById('gridView').style.display='block';
+    document.getElementById('headerGridActions').style.display='block';
+    renderGrid();
+}
+
+function toggleFxWarn(){
+    const fx = document.getElementById('is_fx_sensitive');
+    const hint = document.getElementById('fxWarnHint');
+    if(fx && hint) hint.style.display = fx.value==='1' ? 'block' : 'none';
+}
+
+function triggerPrintProcess(){
+    const g = id => document.getElementById(id).value;
+    document.getElementById('p_code').innerText = g('material_code')||'-';
+    document.getElementById('p_print_date').innerText = new Date().toLocaleDateString('id-ID');
+    document.getElementById('p_name').innerText = g('material_name')||'-';
+    document.getElementById('p_item_type').innerText = g('item_type');
+    document.getElementById('p_categories').innerText = `${g('category1')} > ${g('category2')} > ${g('category3')} > ${g('category4')} > ${g('category5')}`;
+    document.getElementById('p_hs_code').innerText = g('hs_code')||'-';
+    document.getElementById('p_old_code').innerText = g('old_material_code')||'-';
+    document.getElementById('p_old_name').innerText = g('old_material_name')||'-';
+    document.getElementById('p_gram').innerText = g('gram_weight')+' gsm';
+    document.getElementById('p_dim').innerText = g('cm_length')+' x '+g('cm_width')+' cm';
+    document.getElementById('p_thickness').innerText = g('mm_thickness')+' mm';
+    document.getElementById('p_brand').innerText = g('brand')||'-';
+    document.getElementById('p_color').innerText = g('color')||'-';
+    document.getElementById('p_qc').innerText = g('qc_required')==='1' ? 'YA' : 'TIDAK';
+    document.getElementById('p_uom_stock').innerText = g('uom_stock');
+    document.getElementById('p_uom_purchase').innerText = g('uom_purchase');
+    document.getElementById('p_conv').innerText = `1 ${g('uom_purchase')} = ${g('conversion_to_stock')} ${g('uom_stock')}`;
+    document.getElementById('p_min_max').innerText = `${g('min_stock')} / ${g('max_stock')}`;
+    document.getElementById('p_rop').innerText = g('reorder_point');
+    document.getElementById('p_lead_time').innerText = g('lead_time_days')+' hari';
+    document.getElementById('p_val_class').innerText = g('costing_method') + (g('valuation_class') ? ' — '+g('valuation_class') : '');
+    document.getElementById('p_acc_asset').innerText = g('stock_asset_account_id')||'(default kategori)';
+    document.getElementById('p_acc_cogs').innerText = g('cogs_account_id')||'(default kategori)';
+    document.getElementById('p_cc').innerText = `${g('cost_center_id')||'-'} / ${g('profit_center_id')||'-'}`;
+    window.print();
+}
+
+function saveData(){
+    const ids = ['material_code','material_name','item_type','category1','category2','category3','category4','category5',
+        'hs_code','old_material_code','old_material_name','brand','color','uom_stock','uom_purchase','uom_usage',
+        'purchase_tax_code','suggest_supplier_id','costing_method','def_location_id','valuation_class',
+        'stock_asset_account_id','cogs_account_id','gr_ir_account_id','cost_center_id','profit_center_id'];
+    const nums = ['gram_weight','cm_length','cm_width','mm_thickness','shelf_life_days','moisture_pct',
+        'conversion_to_stock','conversion_to_usage','lead_time_days','tol_purchase','min_stock','safety_stock',
+        'reorder_point','max_stock','cur_stock','avg_unitprice'];
+    const flags = ['purchasable','qc_required','is_fx_sensitive'];
+    const data = { material_id: activeEditId || simulatedDB.length+1 };
+    ids.forEach(f=>data[f]=document.getElementById(f).value);
+    nums.forEach(f=>data[f]=parseFloat(document.getElementById(f).value)||0);
+    flags.forEach(f=>data[f]=parseInt(document.getElementById(f).value));
+
+    if(activeEditId){
+        const idx = simulatedDB.findIndex(r=>r.material_id===activeEditId);
+        simulatedDB[idx] = data;
+        alert(`Item #${activeEditId} diperbarui.`);
+    } else {
+        simulatedDB.push(data);
+        alert('Item baru ditambahkan.');
+    }
+    backToGrid();
+}
+
+function deleteCurrentRecord(){
+    if(!activeEditId) return;
+    if(confirm(`Hapus permanen item #${activeEditId}?`)){
+        simulatedDB = simulatedDB.filter(r=>r.material_id!==activeEditId);
+        selectedRowId = null;
+        alert('Item dihapus.');
+        backToGrid();
+    }
+}
+
+function generatePrefixCode(){
+    const ids = ['category1','category2','category3','category4','category5'];
+    let prefix = '';
+    ids.forEach(id=>{
+        const el = document.getElementById(id);
+        prefix += el.options[el.selectedIndex].dataset.prefix;
+    });
+    document.getElementById('material_code').value = prefix;
+}
+
+function filterGrid(){
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderGrid(simulatedDB.filter(i =>
+        i.material_code.toLowerCase().includes(q) ||
+        i.material_name.toLowerCase().includes(q) ||
+        i.category1.toLowerCase().includes(q) ||
+        (i.hs_code && i.hs_code.toLowerCase().includes(q))
+    ));
+}
+
+function switchTab(tabId, btn){
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+}
+
+window.onload = () => renderGrid();
+</script>
+</body>
+</html>
