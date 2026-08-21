@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TMERP — Penerimaan Barang (SPB) · v3 compact</title>
+<style>
+:root{
+  --navy:#2c3e69; --navy-700:#243456; --navy-050:#eef1f7;
+  --accent:#2f6fed; --accent-050:#eaf1fe;
+  --ink:#1f2937; --muted:#6b7280; --line:#e2e6ee; --bg:#f5f7fb; --white:#fff;
+  --ok:#16a34a; --ok-bg:#e8f7ee; --warn:#f59e0b; --warn-bg:#fef4e2;
+  --dang:#dc2626; --dang-bg:#fdecec; --info:#0ea5e9; --info-bg:#e6f6fe;
+  --gray:#9ca3af; --gray-bg:#f1f2f5; --purple:#7c3aed;
+  --r:8px; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:13px;line-height:1.45}
+h1,h2,h3,h4{margin:0;font-weight:600}
+button{font-family:inherit;font-size:13px;cursor:pointer}
+input,select{font-family:inherit;font-size:13px;color:var(--ink)}
+code{font-family:ui-monospace,Consolas,monospace;font-size:11px}
+
+/* ═════ TOPBAR ═════ */
+.topbar{position:sticky;top:0;z-index:50;background:var(--navy);color:#fff;box-shadow:var(--shadow)}
+.topbar-in{padding:9px 18px;display:flex;align-items:center;gap:14px}
+.brand{font-weight:700;letter-spacing:.4px;font-size:14px}
+.brand span{opacity:.65;font-weight:400}
+.crumb{font-size:12px;opacity:.85}
+.crumb b{font-weight:600;opacity:1}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px}
+.side-b{background:#3b4f7d;border:1px solid #55689a;padding:3px 9px;border-radius:99px;font-size:11px}
+.user-chip{background:#1e2c4c;padding:4px 10px;border-radius:99px}
+
+.page{padding:14px 18px 50px}
+.card{background:var(--white);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.card+.card{margin-top:12px}
+.card-h{padding:9px 13px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.card-h h2{font-size:13px;color:var(--navy)}
+.card-h .sub{font-size:11px;color:var(--muted)}
+.card-b{padding:13px}
+.right{margin-left:auto}
+
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:5px 11px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:#c9d2e4;background:#fafbfe}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#255fd6}
+.btn-navy{background:var(--navy);border-color:var(--navy);color:#fff}
+.btn-dang{border-color:#f3c2c2;color:var(--dang);background:#fff}
+.btn:disabled,.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn-sm{padding:3px 9px;font-size:12px}
+.btn-xs{padding:2px 7px;font-size:11px;border-radius:5px}
+
+/* ═════ INFOLET / TILE (pola Odoo Inventory Overview + Oracle Infolet + D365 workspace tile) ═════ */
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;cursor:pointer;
+      box-shadow:var(--shadow);transition:.12s;position:relative;overflow:hidden}
+.tile:hover{border-color:#c3cee6;transform:translateY(-1px);box-shadow:0 4px 10px rgba(16,24,40,.08)}
+.tile.act{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-050)}
+.tile .bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gray)}
+.tile.t-blue .bar{background:var(--accent)} .tile.t-red .bar{background:var(--dang)}
+.tile.t-amber .bar{background:var(--warn)} .tile.t-green .bar{background:var(--ok)}
+.tile.t-purple .bar{background:var(--purple)} .tile.t-cyan .bar{background:var(--info)}
+.tile .lbl{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px;padding-left:6px}
+.tile .val{font-size:23px;font-weight:700;color:var(--navy);line-height:1.2;padding-left:6px;font-variant-numeric:tabular-nums}
+.tile.t-red .val{color:var(--dang)} .tile.t-amber .val{color:#b45309}
+.tile .sub{font-size:11px;color:var(--muted);padding-left:6px}
+.tile .sub b{color:var(--ink)}
+
+/* ═════ TAB HITUNGAN (pola SAP Fiori IconTabBar) ═════ */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);padding:0 13px;flex-wrap:wrap}
+.tab{padding:8px 12px;font-size:12.5px;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;display:flex;gap:6px;align-items:center}
+.tab:hover{color:var(--ink);background:#fafbfe}
+.tab.act{color:var(--navy);font-weight:600;border-bottom-color:var(--accent)}
+.tab .cnt{background:var(--gray-bg);color:#4b5563;border-radius:99px;padding:0 7px;font-size:11px;font-weight:600}
+.tab.act .cnt{background:var(--accent);color:#fff}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:3px}
+.f label{font-size:11px;color:var(--muted)}
+.f input,.f select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fff;min-width:125px}
+.f.wide input{min-width:250px}
+
+/* ═════ GRID ═════ */
+.qtbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.qtbl thead th{background:var(--navy-050);color:var(--navy);text-align:left;font-weight:600;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.qtbl tbody td{padding:7px 10px;border-bottom:1px solid #eef0f5;vertical-align:middle}
+.qtbl tbody tr{cursor:pointer;user-select:none}
+.qtbl tbody tr:hover{background:#f8fafd}
+.qtbl tbody tr.sel{background:var(--accent-050);box-shadow:inset 3px 0 0 var(--accent)}
+.qtbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.qtbl .ctr{text-align:center}
+.mono{font-variant-numeric:tabular-nums}
+.doc{font-weight:600;color:var(--navy)}
+
+.bdg{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-draft{background:var(--gray-bg);color:#4b5563}
+.b-qc{background:var(--warn-bg);color:#92400e}
+.b-post{background:var(--ok-bg);color:#15803d}
+.b-cancel{background:var(--dang-bg);color:#991b1b}
+.b-info{background:var(--info-bg);color:#075985}
+.b-lock{background:#f1f2f5;color:#4b5563}
+.b-po{background:#ede9fe;color:#5b21b6;font-family:ui-monospace,Consolas,monospace}
+.b-multi{background:#fff1f2;color:#9f1239}
+.b-res{background:var(--ok-bg);color:#15803d}
+.flag{color:var(--warn);font-weight:700}
+
+.pager{display:flex;align-items:center;gap:6px;padding:9px 13px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.pg{border:1px solid var(--line);background:#fff;border-radius:5px;padding:3px 9px;color:var(--ink)}
+.pg.act{background:var(--navy);border-color:var(--navy);color:#fff;font-weight:600}
+.hintbar{font-size:11.5px;color:var(--muted);padding:7px 13px;background:#fafbfe;border-top:1px solid var(--line);display:flex;gap:16px;flex-wrap:wrap}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:10.5px;font-family:inherit}
+
+/* ═════ FORM — header ringkas (pola FastTab D365 / Fiori collapsible) ═════ */
+.hdr-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld label{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.fld input,.fld select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fff;width:100%}
+.fld input[readonly]{background:#f6f7fa;color:#4b5563}
+.collapse-h{cursor:pointer;user-select:none}
+.chev{transition:.15s;display:inline-block}
+.chev.open{transform:rotate(90deg)}
+
+/* ═════ FORM — TABEL BARIS RINGKAS (pola MIGO item table / Oracle Receipts / Odoo editable list) ═════ */
+.ltbl{width:100%;border-collapse:collapse;font-size:12px}
+.ltbl thead th{position:sticky;top:0;z-index:6;background:var(--navy-050);color:var(--navy);font-weight:600;
+  padding:6px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;font-size:11px}
+.ltbl thead th.num{text-align:right}
+.ltbl thead th.ctr{text-align:center}
+.ltbl tbody td{padding:2px 6px;border-bottom:1px solid #f0f2f7;white-space:nowrap;height:33px}
+.ltbl tbody tr.lrow:hover{background:#f9fbff}
+.ltbl tbody tr.lrow.cur{background:var(--accent-050)}
+.ltbl .num{text-align:right}
+.ltbl .ctr{text-align:center}
+.ltbl input.cell{border:1px solid transparent;background:transparent;border-radius:4px;padding:3px 5px;width:100%;
+  text-align:right;font-variant-numeric:tabular-nums}
+.ltbl input.cell:hover{border-color:var(--line);background:#fff}
+.ltbl input.cell:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px var(--accent-050)}
+.ltbl input.cell.txt{text-align:left}
+.ltbl select.cell{border:1px solid transparent;background:transparent;border-radius:4px;padding:2px 3px;font-size:11.5px}
+.ltbl select.cell:hover{border-color:var(--line);background:#fff}
+.ltbl select.cell:focus{outline:none;border-color:var(--accent);background:#fff}
+.w-qty{width:82px}.w-uom{width:46px}.w-lot{width:110px}.w-loc{width:88px}.w-qc{width:96px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.d-ok{background:var(--ok)}.d-warn{background:var(--warn)}.d-pend{background:var(--gray)}.d-bad{background:var(--dang)}
+.pogrp td{background:#f6f8fd;font-size:11px;color:var(--navy);font-weight:600;padding:4px 8px;height:26px}
+.pogrp{cursor:default}
+.exp{cursor:pointer;color:var(--muted);font-size:11px;padding:0 3px}
+.exp:hover{color:var(--accent)}
+.drawer td{background:#fbfcfe;padding:10px 12px!important;white-space:normal;height:auto}
+.drawer-in{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:14px;font-size:11.5px}
+.dsec h5{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:5px}
+.dline{display:flex;gap:6px;align-items:center;margin-bottom:4px}
+.dline .k{color:var(--muted);min-width:96px}
+.tol-in{border:1px solid #f0d9a8;background:var(--warn-bg);border-radius:6px;padding:8px 10px}
+.tol-in.done{border-color:#bfe3cb;background:var(--ok-bg)}
+.tol-in h5{color:#92400e}
+.tol-in.done h5{color:#15803d}
+.sisa{font-size:11px;color:var(--muted)}
+
+/* bulk bar (pola Oracle Express Receipt / Cascade + Odoo "Set quantities") */
+.bulk{display:flex;gap:6px;align-items:center;padding:7px 13px;background:#fafbfe;border-bottom:1px solid var(--line);flex-wrap:wrap;font-size:12px}
+.bulk .grp{display:flex;gap:6px;align-items:center;padding-right:10px;border-right:1px solid var(--line)}
+.bulk .grp:last-of-type{border-right:0}
+
+.actionbar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--line);padding:8px 13px;display:flex;align-items:center;gap:8px;box-shadow:0 -2px 6px rgba(16,24,40,.05);border-radius:0 0 var(--r) var(--r);flex-wrap:wrap}
+.blockers{font-size:11.5px;color:#92400e;background:var(--warn-bg);border:1px solid #f0d9a8;padding:5px 9px;border-radius:6px}
+.blockers.clear{color:#15803d;background:var(--ok-bg);border-color:#bfe3cb}
+.stat{font-size:11.5px;color:var(--muted);display:flex;gap:12px}
+.stat b{color:var(--ink)}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:flex-start;justify-content:center;padding:44px 20px;z-index:60}
+.modal.open{display:flex}
+.modal-in{background:#fff;border-radius:10px;width:min(1120px,100%);box-shadow:0 20px 40px rgba(0,0,0,.25);overflow:hidden}
+.modal-h{padding:11px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.modal-h h3{font-size:14px;color:var(--navy)}
+.modal-b{max-height:54vh;overflow:auto}
+.modal-f{padding:9px 15px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.steps{display:flex;gap:6px;align-items:center;font-size:11.5px}
+.step{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.step .n{width:19px;height:19px;border-radius:50%;background:var(--gray-bg);color:#4b5563;display:grid;place-items:center;font-size:10.5px;font-weight:700}
+.step.act{color:var(--navy);font-weight:600}
+.step.act .n{background:var(--accent);color:#fff}
+.step.done .n{background:var(--ok);color:#fff}
+.grp-row td{background:#f7f9fd;font-weight:600;color:var(--navy);font-size:12px}
+.grp-row{cursor:default!important}
+.valbar{font-size:11.5px;padding:5px 9px;border-radius:6px;flex:1}
+.valbar.ok{background:var(--ok-bg);color:#15803d;border:1px solid #bfe3cb}
+.valbar.bad{background:var(--dang-bg);color:#991b1b;border:1px solid #f3c2c2}
+
+.toast{position:fixed;right:18px;bottom:18px;background:var(--navy);color:#fff;padding:9px 13px;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,.2);display:none;z-index:80;font-size:12.5px}
+.toast.show{display:block}
+.banner{border:1px solid #dbe4f7;background:var(--accent-050);color:#1e3a8a;border-radius:var(--r);padding:8px 11px;font-size:11.5px;display:flex;gap:8px;align-items:flex-start}
+.banner.warn{border-color:#f0d9a8;background:var(--warn-bg);color:#92400e}
+@media(max-width:1500px){.tiles{grid-template-columns:repeat(3,1fr)}.hdr-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}.drawer-in{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">TMERP <span>· PT. Telasih Makmur</span></div>
+    <div class="crumb">Pembelian &nbsp;›&nbsp; <b id="crumbLast">Penerimaan Barang (SPB)</b></div>
+    <div class="topbar-right">
+      <span class="side-b" title="Layar gudang: kolom harga TIDAK di-query">🔒 Sisi B — tanpa nilai/harga</span>
+      <span class="user-chip">Petugas Gudang · Bahan Baku</span>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+
+<!-- ═══════════════════ PANEL 1 — GRID ═══════════════════ -->
+<section id="panelGrid">
+
+  <!-- ── INFOLET / TILE ── -->
+  <div class="tiles" style="margin-bottom:12px">
+    <div class="tile t-blue act" onclick="tilePO(this,'PO menunggu diterima')">
+      <div class="bar"></div>
+      <div class="lbl">📦 PO menunggu diterima</div>
+      <div class="val">9</div>
+      <div class="sub"><b>21</b> baris terbuka · 5 supplier</div>
+    </div>
+    <div class="tile t-red" onclick="tilePO(this,'Terlambat kirim')">
+      <div class="bar"></div>
+      <div class="lbl">⏰ Terlambat kirim</div>
+      <div class="val">3</div>
+      <div class="sub">PO lewat tgl kirim · terlama <b>7 hari</b></div>
+    </div>
+    <div class="tile t-cyan" onclick="tilePO(this,'Dijadwalkan datang hari ini')">
+      <div class="bar"></div>
+      <div class="lbl">🚚 Dijadwalkan hari ini</div>
+      <div class="val">2</div>
+      <div class="sub"><b>6</b> baris · GD-BB, GD-CHM</div>
+    </div>
+    <div class="tile t-amber" onclick="tile(this,'QC_PENDING')">
+      <div class="bar"></div>
+      <div class="lbl">🔬 SPB menunggu QC</div>
+      <div class="val">4</div>
+      <div class="sub"><b>2</b> menginap &gt; 24 jam</div>
+    </div>
+    <div class="tile t-purple" onclick="tile(this,'FLAG_TOL')">
+      <div class="bar"></div>
+      <div class="lbl">⚠ Toleransi perlu override</div>
+      <div class="val">3</div>
+      <div class="sub">baris menahan POST</div>
+    </div>
+    <div class="tile t-green" onclick="tile(this,'POSTED')">
+      <div class="bar"></div>
+      <div class="lbl">✔ Terposting bulan ini</div>
+      <div class="val">38</div>
+      <div class="sub"><b>96</b> baris · bln lalu 31 <span style="color:var(--ok)">▲23%</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">
+      <h2>Penerimaan Barang / Surat Penerimaan Barang (SPB)</h2>
+      <span class="sub">tm2pur.pv_receipt · route /purchasing/pv</span>
+      <div class="right" style="display:flex;gap:8px">
+        <button class="btn" onclick="toast('Membuka Monitor Penerimaan (Sisi A) — butuh hak PV.can_view_cost')">📊 Monitor Penerimaan</button>
+        <button class="btn btn-primary" onclick="openPicker()">＋ Terima Barang</button>
+      </div>
+    </div>
+
+    <!-- tab hitungan -->
+    <div class="tabs">
+      <div class="tab" data-filter="ALL"        onclick="tab(this)">Semua <span class="cnt">63</span></div>
+      <div class="tab" data-filter="DRAFT"      onclick="tab(this)">Draf <span class="cnt">2</span></div>
+      <div class="tab act" data-filter="QC_PENDING" onclick="tab(this)">Menunggu QC <span class="cnt">4</span></div>
+      <div class="tab" data-filter="POSTED"     onclick="tab(this)">Terposting <span class="cnt">55</span></div>
+      <div class="tab" data-filter="CANCELLED"  onclick="tab(this)">Dibatalkan <span class="cnt">2</span></div>
+      <div class="tab" data-filter="FLAG_TOL"   onclick="tab(this)">⚠ Perlu override <span class="cnt">3</span></div>
+    </div>
+    </div>
+
+    <div class="card-b" style="padding-bottom:9px">
+      <div class="filters">
+        <div class="f wide"><label>Pencarian (No SPB / No PO / Surat Jalan / Item)</label><input type="text" placeholder="Enter — WHERE di server, menembus pv_line.c_po_doc_no"></div>
+        <div class="f"><label>Supplier</label><select><option>Semua</option><option>PT Cakra Kertas Nusantara</option><option>PT Surya Papirus</option><option>CV Tinta Prima</option></select></div>
+        <div class="f"><label>Gudang</label><select><option>Semua</option><option>GD-BB</option><option>GD-CHM</option><option>GD-SPR</option></select></div>
+        <div class="f"><label>Dari</label><input type="date" value="2026-08-01"></div>
+        <div class="f"><label>s/d</label><input type="date" value="2026-08-21"></div>
+        <div class="f"><label>&nbsp;</label><button class="btn btn-navy btn-sm">Terapkan</button></div>
+      </div>
+
+      <div id="chipBar" style="display:none;gap:6px;margin-top:9px;align-items:center;flex-wrap:wrap">
+        <span class="sisa">Filter aktif:</span>
+        <span class="bdg b-info" id="chipTxt"></span>
+        <button class="btn btn-xs" onclick="clearFilter()">✕ bersihkan</button>
+      </div>
+
+      <div style="display:flex;gap:7px;margin-top:10px;align-items:center">
+        <button class="btn btn-sm" id="btnDetail" disabled onclick="openForm()">🔍 Detail</button>
+        <button class="btn btn-sm" id="btnEdit" disabled onclick="openForm()">✏️ Edit</button>
+        <button class="btn btn-sm btn-dang" id="btnDel" disabled onclick="toast('Hapus hanya untuk DRAFT')">🗑️ Hapus</button>
+        <button class="btn btn-sm" id="btnPrint" disabled onclick="toast('Membuka nota_pv_spb.html')">🖨️ Cetak SPB</button>
+        <span class="sisa right" id="selInfo">Klik baris untuk memilih · <b>klik ganda</b> untuk membuka.</span>
+      </div>
+    </div>
+
+    <div style="overflow:auto">
+      <table class="qtbl">
+        <thead><tr>
+          <th style="width:30px"></th><th>No SPB</th><th>Tanggal</th><th>PO Terkait</th><th>Supplier</th>
+          <th>Gudang</th><th>Surat Jalan</th><th class="ctr">Baris</th><th class="ctr">QC</th><th class="ctr">Tanda</th><th>Status</th>
+        </tr></thead>
+        <tbody id="gridBody">
+          <tr data-no="SPB/26/00058" data-st="QC_PENDING" data-flag="tol" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00058</td><td class="mono">21-08-2026</td>
+            <td><span class="bdg b-multi">2 PO</span> <span class="sisa">00031, 00035</span></td>
+            <td>PT Cakra Kertas Nusantara</td><td>GD-BB</td><td class="mono">SJ-CKN/8/1142 +1</td>
+            <td class="ctr">4</td><td class="ctr"><span class="bdg b-qc">1 pending</span></td>
+            <td class="ctr"><span class="flag" title="Melampaui toleransi">⚠</span></td>
+            <td><span class="bdg b-qc">QC_PENDING</span></td>
+          </tr>
+          <tr data-no="SPB/26/00057" data-st="POSTED" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00057</td><td class="mono">20-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00029</span></td>
+            <td>PT Surya Papirus</td><td>GD-BB</td><td class="mono">SJ-2026-8871</td>
+            <td class="ctr">2</td><td class="ctr"><span class="bdg b-post">selesai</span></td><td class="ctr">—</td>
+            <td><span class="bdg b-post">POSTED</span></td>
+          </tr>
+          <tr data-no="SPB/26/00056" data-st="POSTED" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00056</td><td class="mono">20-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00030</span></td>
+            <td>CV Tinta Prima</td><td>GD-BB</td><td class="mono">0088/SJ/VIII</td>
+            <td class="ctr">4</td><td class="ctr"><span class="bdg b-post">selesai</span></td>
+            <td class="ctr"><span class="bdg b-info" title="1 KLG ditolak → NRB/26/00007">NRB</span></td>
+            <td><span class="bdg b-post">POSTED</span></td>
+          </tr>
+          <tr data-no="SPB/26/00055" data-st="POSTED" data-flag="tol" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00055</td><td class="mono">19-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00028</span></td>
+            <td>PT Cakra Kertas Nusantara</td><td>GD-BB</td><td class="mono">SJ-CKN/8/1129</td>
+            <td class="ctr">1</td><td class="ctr"><span class="bdg b-post">selesai</span></td>
+            <td class="ctr"><span class="bdg b-info" title="Sisa ditutup toleransi">tol</span></td>
+            <td><span class="bdg b-post">POSTED</span></td>
+          </tr>
+          <tr data-no="SPB/26/00054" data-st="QC_PENDING" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00054</td><td class="mono">19-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00027</span></td>
+            <td>PT Anugerah Chemical</td><td>GD-CHM</td><td class="mono">AC/SJ/2608</td>
+            <td class="ctr">2</td><td class="ctr"><span class="bdg b-qc">2 pending</span></td><td class="ctr">—</td>
+            <td><span class="bdg b-qc">QC_PENDING</span></td>
+          </tr>
+          <tr data-no="SPB/26/00053" data-st="DRAFT" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00053</td><td class="mono">18-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00026</span></td>
+            <td>PT Mitra Sparepart</td><td>GD-SPR</td><td class="mono">MS-4471</td>
+            <td class="ctr">3</td><td class="ctr">—</td><td class="ctr">—</td>
+            <td><span class="bdg b-draft">DRAFT</span></td>
+          </tr>
+          <tr data-no="SPB/26/00052" data-st="POSTED" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00052</td><td class="mono">18-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00025</span></td>
+            <td>PT Surya Papirus</td><td>GD-BB</td><td class="mono">SJ-2026-8840</td>
+            <td class="ctr">2</td><td class="ctr"><span class="bdg b-post">selesai</span></td><td class="ctr">—</td>
+            <td><span class="bdg b-post">POSTED</span></td>
+          </tr>
+          <tr data-no="SPB/26/00051" data-st="CANCELLED" onclick="pick(this)" ondblclick="openForm()">
+            <td class="ctr"><input type="radio" name="rowsel" onclick="event.stopPropagation();pick(this.closest('tr'))"></td>
+            <td class="doc">SPB/26/00051</td><td class="mono">15-08-2026</td>
+            <td><span class="bdg b-po">PO/26/00024</span></td>
+            <td>CV Grafika Plate</td><td>GD-BB</td><td class="mono">GP/VIII/117</td>
+            <td class="ctr">1</td><td class="ctr">—</td><td class="ctr">—</td>
+            <td><span class="bdg b-cancel">CANCELLED</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hintbar">
+      <span><kbd>klik</kbd> pilih baris</span>
+      <span><kbd>klik ganda</kbd> buka detail</span>
+      <span><kbd>Enter</kbd> buka baris terpilih</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd> pindah baris</span>
+      <span>Angka pada kartu &amp; tab dihitung <b>server-side</b> (satu query agregat, bukan menghitung koleksi).</span>
+    </div>
+
+    <div class="pager">
+      <span id="pagerTxt">Menampilkan 1–8 dari 63 dokumen</span>
+      <span class="right" style="display:flex;gap:6px;align-items:center">
+        <button class="pg">‹</button><button class="pg act">1</button><button class="pg">2</button>
+        <button class="pg">3</button><span>…</span><button class="pg">8</button><button class="pg">›</button>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PANEL 2 — FORM ═══════════════════ -->
+<section id="panelForm" hidden>
+
+  <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap">
+    <button class="btn btn-sm" onclick="closeForm()">← Daftar</button>
+    <h1 style="font-size:15px;color:var(--navy)">SPB/26/00058</h1>
+    <span class="bdg b-qc" id="hdrStatus">QC_PENDING</span>
+    <span class="bdg b-lock">🔒 Sisi B</span>
+    <span class="bdg b-multi">2 PO</span>
+    <span class="right sisa">PT Cakra Kertas Nusantara · GD-BB · 21-08-2026</span>
+  </div>
+
+  <!-- HEADER RINGKAS — bisa dilipat (FastTab) -->
+  <div class="card">
+    <div class="card-h collapse-h" onclick="toggleHdr()">
+      <span class="chev open" id="chevHdr">▶</span>
+      <h2>Header Penerimaan</h2>
+      <span class="sub" id="hdrSummary">PT Cakra Kertas Nusantara · GD-BB · SJ-CKN/8/1142 +1 · L 9182 UZ</span>
+      <span class="right sisa">klik untuk melipat — beri ruang lebih untuk baris</span>
+    </div>
+    <div class="card-b" id="hdrBody">
+      <div class="hdr-grid">
+        <div class="fld"><label>No SPB <span class="bdg b-info">⚙</span></label><input value="SPB/26/00058" readonly></div>
+        <div class="fld"><label>Tanggal Terima</label><input type="date" value="2026-08-21"></div>
+        <div class="fld"><label>Supplier <span class="bdg b-lock">🔒</span></label><input value="PT Cakra Kertas Nusantara" readonly></div>
+        <div class="fld"><label>Gudang <span class="bdg b-lock">🔒</span></label><input value="GD-BB · Bahan Baku" readonly></div>
+        <div class="fld"><label>Surat Jalan Utama</label><input value="SJ-CKN/8/1142, SJ-CKN/8/1143"></div>
+        <div class="fld"><label>No Kendaraan</label><input value="L 9182 UZ"></div>
+        <div class="fld" style="grid-column:span 4"><label>Catatan</label><input value="Satu muatan berisi 2 PO. Bongkar pukul 09.10, pengawas gudang: Sdr. Ari"></div>
+        <div class="fld" style="grid-column:span 2"><label>PO tercakup</label>
+          <div style="display:flex;gap:5px;align-items:center;padding-top:4px;flex-wrap:wrap">
+            <span class="bdg b-po">PO/26/00031</span><span class="bdg b-po">PO/26/00035</span>
+            <button class="btn btn-xs" onclick="openPicker(true)">＋ PO lain</button>
+          </div>
+        </div>
+      </div>
+      <div class="banner warn" style="margin-top:10px">
+        <span>⚠️</span><span><b>PV-V11:</b> 2 termin pembayaran berbeda (30 hari vs 21 hari). Peringatan saja — dokumen tetap boleh diteruskan.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARIS — TABEL RINGKAS -->
+  <div class="card">
+    <div class="card-h">
+      <h2>Baris Penerimaan</h2>
+      <span class="sub" id="lineCount">4 baris · 2 PO</span>
+      <div class="right" style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="simulate()">▦ Simulasi 20 baris</button>
+        <button class="btn btn-sm" onclick="openPicker(true)">＋ Tambah Baris</button>
+      </div>
+    </div>
+
+    <!-- aksi massal: pola Oracle Express Receipt / Cascade + Odoo Set quantities -->
+    <div class="bulk">
+      <div class="grp">
+        <input type="checkbox" id="chkAll" onclick="checkAll(this)"><label for="chkAll" style="font-size:11.5px;color:var(--muted)"><span id="selCount">0</span> terpilih</label>
+      </div>
+      <div class="grp">
+        <span style="font-size:11px;color:var(--muted)">Massal:</span>
+        <button class="btn btn-xs" onclick="bulkFill()">⤓ Isi = Sisa PO</button>
+        <button class="btn btn-xs" onclick="bulkQc('PASS')">✔ QC PASS</button>
+        <button class="btn btn-xs" onclick="bulkLoc()">📍 Set Lokasi</button>
+        <button class="btn btn-xs" onclick="bulkLot()">🏷️ Set Lot</button>
+        <button class="btn btn-xs btn-dang" onclick="bulkDel()">✕ Buang Baris</button>
+      </div>
+      <div class="grp">
+        <span style="font-size:11px;color:var(--muted)">Tampilkan:</span>
+        <select class="btn btn-xs" style="padding:3px 6px" onchange="filterRows(this.value)">
+          <option value="all">Semua baris</option>
+          <option value="pend">Hanya belum QC</option>
+          <option value="warn">Hanya bermasalah</option>
+        </select>
+      </div>
+      <span class="right sisa">Kolom qty dapat diketik langsung · <kbd>Tab</kbd> pindah sel · <kbd>⌄</kbd> buka detail baris</span>
+    </div>
+
+    <div style="max-height:calc(100vh - 340px);overflow:auto">
+      <table class="ltbl">
+        <thead><tr>
+          <th style="width:28px"></th>
+          <th style="width:22px"></th>
+          <th style="width:30px">#</th>
+          <th style="width:96px">Kode</th>
+          <th>Nama Barang</th>
+          <th class="num" style="width:78px">Sisa PO</th>
+          <th class="num" style="width:82px">Qty Beli</th>
+          <th class="ctr" style="width:46px">UOM</th>
+          <th class="num" style="width:82px">Qty Stok</th>
+          <th class="ctr" style="width:46px">UOM</th>
+          <th class="ctr" style="width:96px">QC</th>
+          <th class="num" style="width:82px">Diterima</th>
+          <th class="num" style="width:74px">Ditolak</th>
+          <th style="width:110px">Lot</th>
+          <th style="width:88px">Lokasi</th>
+          <th class="ctr" style="width:34px">⌄</th>
+        </tr></thead>
+        <tbody id="lineBody">
+
+          <tr class="pogrp"><td colspan="16">▾ PO/26/00031 · 14-08-2026 · SJ-CKN/8/1142 · termin 30 hari · <b>3 baris</b></td></tr>
+
+          <!-- BARIS 1 -->
+          <tr class="lrow" data-r="1" data-state="pend" onclick="cur(this)">
+            <td class="ctr"><input type="checkbox" onclick="event.stopPropagation();cnt()"></td>
+            <td class="ctr"><span class="dot d-pend" id="dot1" title="Belum di-QC"></span></td>
+            <td class="ctr mono">1</td>
+            <td class="mono">PYJ31</td>
+            <td>Kertas Ivory 300gr 79×109</td>
+            <td class="num mono">8.000</td>
+            <td><input class="cell" value="5.000"></td>
+            <td class="ctr sisa">LBR</td>
+            <td><input class="cell" value="5.000"></td>
+            <td class="ctr sisa">LBR</td>
+            <td class="ctr"><select class="cell w-qc" id="qc1" onchange="setQc(1,this.value)">
+              <option value="PENDING">— pending —</option><option value="PASS">PASS</option>
+              <option value="PARTIAL">PARTIAL</option><option value="FAIL">FAIL</option></select></td>
+            <td><input class="cell" id="acc1" value=""></td>
+            <td><input class="cell" id="rej1" value=""></td>
+            <td><input class="cell txt" value="IVR-2608-A"></td>
+            <td><input class="cell txt" value="RAK-A/01"></td>
+            <td class="ctr"><span class="exp" onclick="event.stopPropagation();drawer(1)">⌄</span></td>
+          </tr>
+          <tr class="drawer" id="dw1" hidden><td colspan="16">
+            <div class="drawer-in">
+              <div class="dsec">
+                <h5>Konversi Satuan</h5>
+                <div class="dline"><span class="k">Konversi master</span><b>1 LBR / LBR</b></div>
+                <div class="dline"><span class="k">Konversi nyata</span><b>1,000000</b></div>
+                <div class="dline"><input type="checkbox" id="mn1"><label for="mn1">Timbang / hitung manual</label></div>
+                <div class="dline"><span class="k">Surat jalan baris</span><input class="cell txt" style="border-color:var(--line);max-width:150px" value="SJ-CKN/8/1142"></div>
+              </div>
+              <div class="dsec">
+                <h5>Selisih terhadap PO</h5>
+                <div class="dline"><span class="k">Sisa PO</span><b>8.000 LBR</b></div>
+                <div class="dline"><span class="k">Diterima</span><b>5.000 LBR</b></div>
+                <div class="dline"><span class="k">Selisih</span><b style="color:var(--info)">−37,5%</b></div>
+                <div class="sisa">Penerimaan bertahap — sisa 3.000 LBR tetap terbuka, bukan pelanggaran toleransi (batas 5%).</div>
+              </div>
+              <div class="dsec">
+                <h5>Catatan QC</h5>
+                <input class="cell txt" style="border-color:var(--line)" placeholder="mis. warna & gramatur sesuai contoh">
+                <div class="sisa" style="margin-top:6px">Diterima + Ditolak wajib = Qty Stok (5.000).</div>
+              </div>
+            </div>
+          </td></tr>
+
+          <!-- BARIS 2 -->
+          <tr class="lrow" data-r="2" data-state="warn" onclick="cur(this)">
+            <td class="ctr"><input type="checkbox" onclick="event.stopPropagation();cnt()"></td>
+            <td class="ctr"><span class="dot d-warn" id="dot2" title="Toleransi terlampaui"></span></td>
+            <td class="ctr mono">2</td>
+            <td class="mono">PYA21</td>
+            <td>Art Paper 150gr 65×100 <span class="flag" title="+7,2% vs toleransi 5%">⚠</span></td>
+            <td class="num mono">5.000</td>
+            <td><input class="cell" value="5.360" style="color:#b45309;font-weight:600"></td>
+            <td class="ctr sisa">LBR</td>
+            <td><input class="cell" value="5.360"></td>
+            <td class="ctr sisa">LBR</td>
+            <td class="ctr"><select class="cell w-qc"><option>PENDING</option><option selected>PARTIAL</option><option>PASS</option><option>FAIL</option></select></td>
+            <td><input class="cell" value="5.240"></td>
+            <td><input class="cell" value="120" style="color:var(--dang)"></td>
+            <td><input class="cell txt" value="AP150-2608-B"></td>
+            <td><input class="cell txt" value="RAK-B/04"></td>
+            <td class="ctr"><span class="exp" onclick="event.stopPropagation();drawer(2)">⌄</span></td>
+          </tr>
+          <tr class="drawer" id="dw2"><td colspan="16">
+            <div class="drawer-in">
+              <div class="dsec">
+                <h5>Konversi Satuan</h5>
+                <div class="dline"><span class="k">Konversi master</span><b>1 LBR / LBR</b></div>
+                <div class="dline"><input type="checkbox" id="mn2"><label for="mn2">Timbang / hitung manual</label></div>
+                <div class="dline"><span class="k">Surat jalan baris</span><input class="cell txt" style="border-color:var(--line);max-width:150px" value="SJ-CKN/8/1142"></div>
+                <div class="dline"><span class="k">Catatan QC</span></div>
+                <input class="cell txt" style="border-color:var(--line)" value="120 lbr tepi sobek & kotor — kandidat retur (NRB)">
+              </div>
+              <div class="dsec">
+                <h5>Selisih terhadap PO</h5>
+                <div class="dline"><span class="k">Sisa PO</span><b>5.000 LBR</b></div>
+                <div class="dline"><span class="k">Diterima</span><b>5.360 LBR</b></div>
+                <div class="dline"><span class="k">Selisih</span><b style="color:#b45309">+7,2%</b> <span class="sisa">(batas 5%)</span></div>
+                <div class="dline"><span class="k">QC</span>5.240 + 120 = 5.360 <span class="bdg b-res" style="margin-left:5px">cocok</span></div>
+              </div>
+              <div class="dsec">
+                <div class="tol-in" id="tolBox">
+                  <h5 id="tolTitle">⚠ TOLERANSI TERLAMPAUI — MENAHAN POST</h5>
+                  <input class="cell txt" id="tolReason" style="border-color:#e6c98a;background:#fff;margin-bottom:6px"
+                         value="Kelebihan kirim diterima, harga per lembar tetap sesuai PO — konfirmasi supplier via WA 21/08.">
+                  <div style="display:flex;gap:6px;align-items:center">
+                    <span class="sisa">Manajer Operasional</span>
+                    <button class="btn btn-xs btn-navy right" id="btnOverride" onclick="doOverride()">Override</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </td></tr>
+
+          <!-- BARIS 3 -->
+          <tr class="lrow" data-r="3" data-state="ok" onclick="cur(this)">
+            <td class="ctr"><input type="checkbox" onclick="event.stopPropagation();cnt()"></td>
+            <td class="ctr"><span class="dot d-ok" title="Siap"></span></td>
+            <td class="ctr mono">3</td>
+            <td class="mono">CFS41</td>
+            <td>Fountain Solution (drum 200 L) <span class="bdg b-info" style="font-size:10px" title="Konversi ditimpa manual">≠konv</span></td>
+            <td class="num mono">4</td>
+            <td><input class="cell" value="4"></td>
+            <td class="ctr sisa">DRUM</td>
+            <td><input class="cell" value="792"></td>
+            <td class="ctr sisa">LTR</td>
+            <td class="ctr"><select class="cell w-qc"><option>PENDING</option><option selected>PASS</option><option>PARTIAL</option><option>FAIL</option></select></td>
+            <td><input class="cell" value="792"></td>
+            <td><input class="cell" value="0"></td>
+            <td><input class="cell txt" value="FS-2608-D4"></td>
+            <td><input class="cell txt" value="CHM-01"></td>
+            <td class="ctr"><span class="exp" onclick="event.stopPropagation();drawer(3)">⌄</span></td>
+          </tr>
+          <tr class="drawer" id="dw3" hidden><td colspan="16">
+            <div class="drawer-in">
+              <div class="dsec">
+                <h5>Konversi Satuan — ditimpa manual</h5>
+                <div class="dline"><span class="k">Konversi master</span>200 LTR / DRUM → estimasi <b>800 LTR</b></div>
+                <div class="dline"><span class="k">Konversi nyata</span><b style="color:var(--purple)">198 LTR / DRUM</b> → 792 LTR</div>
+                <div class="dline"><input type="checkbox" id="mn3" checked><label for="mn3"><b>Timbang / ukur manual</b></label></div>
+                <div class="sisa">Tersimpan di <code>c_conv_used</code> &amp; <code>is_conv_manual=1</code>.</div>
+              </div>
+              <div class="dsec">
+                <h5>Selisih terhadap PO</h5>
+                <div class="dline"><span class="k">Sisa PO</span><b>4 DRUM</b></div>
+                <div class="dline"><span class="k">Diterima</span><b>4 DRUM</b></div>
+                <div class="dline"><span class="k">Selisih</span><b style="color:var(--ok)">0%</b> — baris PO tertutup penuh</div>
+              </div>
+              <div class="dsec">
+                <h5>Catatan QC</h5>
+                <input class="cell txt" style="border-color:var(--line)" value="Segel drum utuh, pH sesuai spesifikasi">
+              </div>
+            </div>
+          </td></tr>
+
+          <tr class="pogrp"><td colspan="16">▾ PO/26/00035 · 18-08-2026 · SJ-CKN/8/1143 · termin 21 hari · <b>1 baris</b></td></tr>
+
+          <!-- BARIS 4 -->
+          <tr class="lrow" data-r="4" data-state="ok" onclick="cur(this)">
+            <td class="ctr"><input type="checkbox" onclick="event.stopPropagation();cnt()"></td>
+            <td class="ctr"><span class="dot d-ok" title="Siap"></span></td>
+            <td class="ctr mono">4</td>
+            <td class="mono">PYA12</td>
+            <td>Art Paper 120gr 65×100</td>
+            <td class="num mono">4.000</td>
+            <td><input class="cell" value="4.000"></td>
+            <td class="ctr sisa">LBR</td>
+            <td><input class="cell" value="4.000"></td>
+            <td class="ctr sisa">LBR</td>
+            <td class="ctr"><select class="cell w-qc"><option>PENDING</option><option selected>PASS</option><option>PARTIAL</option><option>FAIL</option></select></td>
+            <td><input class="cell" value="4.000"></td>
+            <td><input class="cell" value="0"></td>
+            <td><input class="cell txt" value="AP120-2608-C"></td>
+            <td><input class="cell txt" value="RAK-B/04"></td>
+            <td class="ctr"><span class="exp" onclick="event.stopPropagation();drawer(4)">⌄</span></td>
+          </tr>
+          <tr class="drawer" id="dw4" hidden><td colspan="16">
+            <div class="drawer-in">
+              <div class="dsec">
+                <h5>Konversi Satuan</h5>
+                <div class="dline"><span class="k">Konversi master</span><b>1 LBR / LBR</b></div>
+                <div class="dline"><span class="k">Surat jalan baris</span><input class="cell txt" style="border-color:var(--line);max-width:150px" value="SJ-CKN/8/1143"></div>
+                <div class="sisa">SJ berbeda dari header — diperbolehkan (PV-07).</div>
+              </div>
+              <div class="dsec">
+                <h5>Selisih terhadap PO</h5>
+                <div class="dline"><span class="k">Selisih</span><b style="color:var(--ok)">0%</b></div>
+                <div class="sisa">Baris PO/26/00035 #1 tertutup penuh. Baris #2 (Ivory 250gr, 2.000 LBR) belum dikirim.</div>
+              </div>
+              <div class="dsec">
+                <h5>Catatan QC</h5>
+                <input class="cell txt" style="border-color:var(--line)" value="Sesuai contoh, kemasan utuh">
+              </div>
+            </div>
+          </td></tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actionbar">
+      <button class="btn btn-sm">💾 Simpan</button>
+      <button class="btn btn-sm btn-dang">🗑️ Hapus</button>
+      <div class="stat">
+        <span>Baris: <b id="stLine">4</b></span>
+        <span>PO: <b>2</b></span>
+        <span>Siap: <b id="stOk" style="color:var(--ok)">2</b></span>
+        <span>Belum QC: <b id="stPend" style="color:var(--muted)">1</b></span>
+        <span>Bermasalah: <b id="stWarn" style="color:var(--warn)">1</b></span>
+      </div>
+      <div class="blockers" id="blockers"><b>POST terkunci</b> — baris 1 belum di-QC · baris 2 toleransi belum di-override</div>
+      <button class="btn btn-primary right" id="btnPost" disabled onclick="doPost()">📦 POST ke Stok</button>
+    </div>
+  </div>
+
+  <div class="card" id="afterPost" hidden>
+    <div class="card-h"><h2>Hasil Posting</h2><span class="sub">PvPostingService — satu transaksi, dua PO direkalkulasi</span></div>
+    <div class="card-b" style="font-size:12.5px">
+      <div style="display:flex;gap:7px;margin-bottom:9px">
+        <button class="btn btn-sm btn-navy" onclick="toast('Membuka nota_pv_spb.html')">🖨️ Cetak SPB</button>
+        <button class="btn btn-sm" onclick="toast('Membuka Retur Pembelian — 120 LBR terisi otomatis')">↩️ Buat Retur</button>
+      </div>
+      <ul style="margin:0;padding-left:17px;color:var(--muted)">
+        <li>SATU <code>rm_stock</code> berisi 4 <code>rm_stock_d</code>, meski barisnya dari 2 PO.</li>
+        <li><b>PV-08:</b> PO/26/00031 → PARTIALLY_RECEIVED (sisa 3.000 LBR); PO/26/00035 → PARTIALLY_RECEIVED (baris 2 belum kirim).</li>
+        <li>Baris jasa PO/26/00031 #4 tidak menghalangi status RECEIVED (<code>is_receivable=0</code>, PV-09).</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ═══════════ MODAL 2 LANGKAH ═══════════ -->
+<div class="modal" id="picker">
+  <div class="modal-in">
+    <div class="modal-h">
+      <h3>Terima Barang</h3>
+      <div class="steps">
+        <span class="step act" id="st1"><span class="n">1</span> Pilih Supplier</span><span>›</span>
+        <span class="step" id="st2"><span class="n">2</span> Pilih Baris PO Terbuka</span>
+      </div>
+      <button class="btn btn-sm right" onclick="closePicker()">✕</button>
+    </div>
+
+    <div class="modal-b" id="step1">
+      <table class="qtbl">
+        <thead><tr><th style="width:30px"></th><th>Supplier</th><th class="ctr">PO Terbuka</th><th class="ctr">Baris</th><th class="ctr">Terlambat</th><th>PO Terlama</th><th>Kirim Terdekat</th></tr></thead>
+        <tbody>
+          <tr onclick="pickSup(this)" ondblclick="gotoStep(2)"><td class="ctr"><input type="radio" name="sup" checked></td>
+            <td><b>PT Cakra Kertas Nusantara</b></td><td class="ctr">2</td><td class="ctr">5</td><td class="ctr">—</td><td class="mono">14-08-2026</td><td class="mono">24-08-2026</td></tr>
+          <tr onclick="pickSup(this)" ondblclick="gotoStep(2)"><td class="ctr"><input type="radio" name="sup"></td>
+            <td>PT Surya Papirus</td><td class="ctr">1</td><td class="ctr">2</td><td class="ctr">—</td><td class="mono">17-08-2026</td><td class="mono">26-08-2026</td></tr>
+          <tr onclick="pickSup(this)" ondblclick="gotoStep(2)"><td class="ctr"><input type="radio" name="sup"></td>
+            <td>PT Anugerah Chemical</td><td class="ctr">1</td><td class="ctr">2</td><td class="ctr"><span class="bdg b-cancel">2 hari</span></td><td class="mono">12-08-2026</td><td class="mono">19-08-2026</td></tr>
+          <tr onclick="pickSup(this)" ondblclick="gotoStep(2)"><td class="ctr"><input type="radio" name="sup"></td>
+            <td>PT Mitra Sparepart</td><td class="ctr">1</td><td class="ctr">3</td><td class="ctr"><span class="bdg b-cancel">5 hari</span></td><td class="mono">08-08-2026</td><td class="mono">16-08-2026</td></tr>
+          <tr onclick="pickSup(this)" ondblclick="gotoStep(2)"><td class="ctr"><input type="radio" name="sup"></td>
+            <td>CV Grafika Plate</td><td class="ctr">1</td><td class="ctr">1</td><td class="ctr"><span class="bdg b-cancel">7 hari</span></td><td class="mono">06-08-2026</td><td class="mono">14-08-2026</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:7px 15px;font-size:11.5px;color:var(--muted)">sumber <code>v1_pv_supplier_worklist</code> · klik ganda = langsung ke Langkah 2</div>
+    </div>
+
+    <div class="modal-b" id="step2" hidden>
+      <div style="padding:9px 15px;display:flex;gap:8px;align-items:flex-end;border-bottom:1px solid var(--line)">
+        <div class="f"><label>Supplier</label><input value="PT Cakra Kertas Nusantara" readonly style="min-width:230px;background:#f6f7fa"></div>
+        <div class="f"><label>Cari barang / No PO</label><input placeholder="PYA12, Ivory, PO/26/00035 …"></div>
+        <div class="f"><label>&nbsp;</label><label style="display:flex;gap:5px;align-items:center;font-size:12px;padding:6px 0"><input type="checkbox" style="min-width:auto"> hanya jatuh tempo ≤ hari ini</label></div>
+      </div>
+      <table class="qtbl">
+        <thead><tr>
+          <th style="width:30px"><input type="checkbox" checked onclick="wlAll(this)"></th><th>Baris</th><th>Kode</th><th>Nama Barang</th><th>Gudang</th>
+          <th class="num">Qty PO</th><th class="num">Diterima</th><th class="num">Sisa</th><th>UOM</th><th>Tgl Kirim</th><th class="ctr">Tol</th>
+        </tr></thead>
+        <tbody id="wlBody">
+          <tr class="grp-row" data-po="PO/26/00031"><td colspan="11">PO/26/00031 · 14-08-2026 · termin 30 hari</td></tr>
+          <tr onclick="tick(this)"><td class="ctr"><input type="checkbox" checked onclick="event.stopPropagation();count()"></td><td class="mono">1</td><td class="mono">PYJ31</td>
+            <td>Kertas Ivory 300gr 79×109</td><td>GD-BB</td><td class="num mono">8.000</td><td class="num mono">0</td><td class="num mono"><b>8.000</b></td><td>LBR</td><td class="mono">25-08-2026</td><td class="ctr">5%</td></tr>
+          <tr onclick="tick(this)"><td class="ctr"><input type="checkbox" checked onclick="event.stopPropagation();count()"></td><td class="mono">2</td><td class="mono">PYA21</td>
+            <td>Art Paper 150gr 65×100</td><td>GD-BB</td><td class="num mono">5.000</td><td class="num mono">0</td><td class="num mono"><b>5.000</b></td><td>LBR</td><td class="mono">25-08-2026</td><td class="ctr">5%</td></tr>
+          <tr onclick="tick(this)"><td class="ctr"><input type="checkbox" checked onclick="event.stopPropagation();count()"></td><td class="mono">3</td><td class="mono">CFS41</td>
+            <td>Fountain Solution (drum 200 L)</td><td>GD-BB</td><td class="num mono">4</td><td class="num mono">0</td><td class="num mono"><b>4</b></td><td>DRUM</td><td class="mono">25-08-2026</td><td class="ctr">3%</td></tr>
+          <tr class="grp-row" data-po="PO/26/00035"><td colspan="11">PO/26/00035 · 18-08-2026 · termin 21 hari <span class="bdg b-qc" style="margin-left:6px">termin berbeda</span></td></tr>
+          <tr onclick="tick(this)"><td class="ctr"><input type="checkbox" checked onclick="event.stopPropagation();count()"></td><td class="mono">1</td><td class="mono">PYA12</td>
+            <td>Art Paper 120gr 65×100</td><td>GD-BB</td><td class="num mono">4.000</td><td class="num mono">0</td><td class="num mono"><b>4.000</b></td><td>LBR</td><td class="mono">24-08-2026</td><td class="ctr">5%</td></tr>
+          <tr onclick="tick(this)"><td class="ctr"><input type="checkbox" onclick="event.stopPropagation();count()"></td><td class="mono">2</td><td class="mono">PYJ25</td>
+            <td>Kertas Ivory 250gr 79×109</td><td>GD-BB</td><td class="num mono">2.000</td><td class="num mono">0</td><td class="num mono"><b>2.000</b></td><td>LBR</td><td class="mono">24-08-2026</td><td class="ctr">5%</td></tr>
+        </tbody>
+      </table>
+      <div style="padding:7px 15px;font-size:11.5px;color:var(--muted)">
+        <code>v1_po_outstanding</code> difilter supplier · <b>baris jasa PO/26/00031 #4 tidak muncul</b> (<code>is_receivable=0</code>, PV-09)
+      </div>
+    </div>
+
+    <div class="modal-f">
+      <div class="valbar ok" id="valbar">✔ 4 baris dari 2 PO · satu supplier · satu gudang · satu mata uang — PV-02, PV-03, PV-04 terpenuhi</div>
+      <button class="btn btn-sm" id="btnBack" hidden onclick="gotoStep(1)">‹ Kembali</button>
+      <button class="btn btn-sm" onclick="closePicker()">Batal</button>
+      <button class="btn btn-sm btn-primary" id="btnNext" onclick="gotoStep(2)">Lanjut ›</button>
+      <button class="btn btn-sm btn-primary" id="btnCreate" hidden onclick="closePicker();openForm()">Buat SPB</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── panel ── */
+function openForm(){panelGrid.hidden=true;panelForm.hidden=false;crumbLast.textContent='Penerimaan Barang › SPB/26/00058';window.scrollTo({top:0});}
+function closeForm(){panelForm.hidden=true;panelGrid.hidden=false;crumbLast.textContent='Penerimaan Barang (SPB)';window.scrollTo({top:0});}
+function toggleHdr(){const b=hdrBody,c=chevHdr;b.hidden=!b.hidden;c.classList.toggle('open',!b.hidden);}
+
+/* ── tile & tab: BENAR-BENAR memfilter tabel di bawahnya ──
+   Di Livewire nyata ini bukan filter DOM: klik tile/tab men-set properti
+   $statusFilter lalu memicu query ulang + resetPage(). Di mockup disimulasikan
+   dengan menyembunyikan baris, dan hitungan pager ikut diperbarui. */
+const LBL={ALL:'Semua dokumen',DRAFT:'Draf',QC_PENDING:'Menunggu QC',
+           POSTED:'Terposting',CANCELLED:'Dibatalkan',FLAG_TOL:'Perlu override toleransi'};
+const TOT={ALL:63,DRAFT:2,QC_PENDING:4,POSTED:55,CANCELLED:2,FLAG_TOL:3};
+let curFilter='QC_PENDING';
+
+function applyFilter(v){
+  curFilter=v;
+  /* sinkronkan tab */
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('act',t.dataset.filter===v));
+  /* sinkronkan tile domain-SPB */
+  document.querySelectorAll('.tile').forEach(t=>t.classList.remove('act'));
+  const map={QC_PENDING:3,FLAG_TOL:4,POSTED:5};
+  if(map[v]!==undefined)document.querySelectorAll('.tile')[map[v]].classList.add('act');
+  /* filter baris */
+  let shown=0;
+  document.querySelectorAll('#gridBody tr').forEach(r=>{
+    const cocok = (v==='ALL') || (v==='FLAG_TOL' ? r.dataset.flag==='tol' : r.dataset.st===v);
+    r.hidden=!cocok; if(cocok)shown++;
+  });
+  /* bersihkan pilihan bila baris terpilih ikut tersembunyi */
+  if(curRow&&curRow.hidden){
+    curRow.classList.remove('sel');curRow=null;
+    ['btnDetail','btnEdit','btnDel','btnPrint'].forEach(id=>document.getElementById(id).disabled=true);
+    selInfo.innerHTML='Klik baris untuk memilih · <b>klik ganda</b> untuk membuka.';
+  }
+  /* pager + chip */
+  pagerTxt.textContent = shown===0
+    ? 'Tidak ada dokumen yang cocok dengan filter ini'
+    : 'Menampilkan 1–'+shown+' dari '+TOT[v]+' dokumen';
+  chipBar.style.display = (v==='ALL') ? 'none' : 'flex';
+  chipTxt.textContent = LBL[v];
+}
+function tab(el){applyFilter(el.dataset.filter);}
+function tile(el,v){applyFilter(v);
+  toast('Filter diterapkan: '+LBL[v]+' — angka pada kartu adalah tautan filter (pola Odoo Inventory Overview)');}
+function tilePO(el,label){
+  /* Tiga kartu pertama berbicara tentang PO, BUKAN SPB — memfilter daftar SPB
+     dengan angka PO akan menyesatkan. Maka kartu ini membuka worklist penerimaan. */
+  document.querySelectorAll('.tile').forEach(t=>t.classList.remove('act'));el.classList.add('act');
+  toast(label+' — kartu ini berdomain PO, bukan SPB. Membuka worklist penerimaan.');
+  setTimeout(()=>openPicker(),450);
+}
+function clearFilter(){applyFilter('ALL');}
+
+/* ── grid: klik pilih, klik-ganda buka ── */
+let curRow=null;
+function pick(tr){
+  document.querySelectorAll('#gridBody tr').forEach(r=>r.classList.remove('sel'));
+  tr.classList.add('sel');tr.querySelector('input[type=radio]').checked=true;curRow=tr;
+  const st=tr.dataset.st;
+  btnDetail.disabled=false;
+  btnEdit.disabled=(st==='POSTED'||st==='CANCELLED');
+  btnDel.disabled=(st!=='DRAFT');
+  btnPrint.disabled=(st!=='POSTED');
+  selInfo.innerHTML='Terpilih: <b>'+tr.dataset.no+'</b> ('+st+') — <b>klik ganda</b> atau <kbd>Enter</kbd> untuk membuka';
+}
+document.addEventListener('keydown',e=>{
+  if(!panelGrid||panelGrid.hidden)return;
+  const rows=[...document.querySelectorAll('#gridBody tr')];
+  if(e.key==='Enter'&&curRow){openForm();e.preventDefault();}
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    let i=curRow?rows.indexOf(curRow):-1;
+    i=e.key==='ArrowDown'?Math.min(i+1,rows.length-1):Math.max(i-1,0);
+    pick(rows[i]);rows[i].scrollIntoView({block:'nearest'});e.preventDefault();
+  }
+});
+
+/* ── modal ── */
+let fromForm=false;
+function openPicker(add){fromForm=!!add;picker.classList.add('open');gotoStep(add?2:1);}
+function closePicker(){picker.classList.remove('open');}
+function gotoStep(n){step1.hidden=(n===2);step2.hidden=(n===1);
+  st1.className='step '+(n===2?'done':'act');st2.className='step '+(n===2?'act':'');
+  btnNext.hidden=(n===2);btnCreate.hidden=(n===1);btnBack.hidden=(n===1||fromForm);
+  btnCreate.textContent=fromForm?'Tambahkan ke SPB':'Buat SPB';if(n===2)count();}
+function pickSup(tr){tr.querySelector('input').checked=true;}
+function tick(tr){const c=tr.querySelector('input[type=checkbox]');c.checked=!c.checked;count();}
+function wlAll(el){document.querySelectorAll('#wlBody tr:not(.grp-row) input').forEach(i=>i.checked=el.checked);count();}
+function count(){
+  let cur='',sel=0;const pos=new Set();
+  document.querySelectorAll('#wlBody tr').forEach(r=>{
+    if(r.classList.contains('grp-row')){cur=r.dataset.po;return;}
+    if(r.querySelector('input').checked){sel++;pos.add(cur);}});
+  if(sel===0){valbar.className='valbar bad';valbar.textContent='✕ Belum ada baris terpilih.';btnCreate.disabled=true;return;}
+  btnCreate.disabled=false;valbar.className='valbar ok';
+  valbar.textContent='✔ '+sel+' baris dari '+pos.size+' PO · satu supplier · satu gudang · satu mata uang — PV-02, PV-03, PV-04 terpenuhi';
+}
+
+/* ── baris form ── */
+function cur(tr){document.querySelectorAll('.lrow').forEach(r=>r.classList.remove('cur'));tr.classList.add('cur');}
+function drawer(n){const d=document.getElementById('dw'+n);d.hidden=!d.hidden;}
+function cnt(){const n=document.querySelectorAll('#lineBody .lrow input[type=checkbox]:checked').length;selCount.textContent=n;}
+function checkAll(el){document.querySelectorAll('#lineBody .lrow input[type=checkbox]').forEach(i=>i.checked=el.checked);cnt();}
+function bulkFill(){const rows=[...document.querySelectorAll('#lineBody .lrow')].filter(r=>r.querySelector('input[type=checkbox]').checked);
+  if(!rows.length){toast('Centang dulu baris yang mau diisi.');return;}
+  rows.forEach(r=>{const sisa=r.children[5].textContent.trim();r.querySelectorAll('input.cell')[0].value=sisa;r.querySelectorAll('input.cell')[1].value=sisa;});
+  toast(rows.length+' baris diisi sesuai sisa PO (pola Express Receipt / Oracle EBS)');}
+function bulkQc(v){const rows=[...document.querySelectorAll('#lineBody .lrow')].filter(r=>r.querySelector('input[type=checkbox]').checked);
+  if(!rows.length){toast('Centang dulu barisnya.');return;}
+  rows.forEach(r=>{const s=r.querySelector('select.w-qc');if(s){s.value=v;}
+    const ins=r.querySelectorAll('input.cell');ins[2].value=ins[1].value;ins[3].value='0';
+    if(r.dataset.r==='1'){setQc(1,'PASS');}});
+  toast(rows.length+' baris di-set QC '+v);}
+function bulkLoc(){toast('Modal set lokasi massal — pola Cascade (Oracle) / Detailed Operations (Odoo)');}
+function bulkLot(){toast('Modal set lot massal — nomor lot berurutan otomatis');}
+function bulkDel(){toast('Baris terpilih dibuang dari SPB (baris PO kembali terbuka di worklist)');}
+function filterRows(v){
+  document.querySelectorAll('#lineBody .lrow').forEach(r=>{
+    const s=r.dataset.state;
+    r.hidden=(v==='pend'&&s!=='pend')||(v==='warn'&&s!=='warn');
+    const d=document.getElementById('dw'+r.dataset.r);if(d&&r.hidden)d.hidden=true;});
+  document.querySelectorAll('.pogrp').forEach(g=>g.hidden=(v!=='all'));
+}
+
+/* ── gerbang POST ── */
+const S={qc1:false,tol:false};
+function setQc(n,v){
+  if(n!==1)return;
+  if(v==='PENDING'){S.qc1=false;dot1.className='dot d-pend';}
+  else{
+    const q=document.querySelector('.lrow[data-r="1"] input.cell').value;
+    if(v==='PASS'){acc1.value=q;rej1.value='0';dot1.className='dot d-ok';}
+    if(v==='PARTIAL'){acc1.value='4.900';rej1.value='100';dot1.className='dot d-warn';}
+    if(v==='FAIL'){acc1.value='0';rej1.value=q;dot1.className='dot d-bad';}
+    S.qc1=true;
+  }
+  refresh();
+}
+function doOverride(){
+  if(!tolReason.value.trim()){toast('Alasan override wajib diisi.');return;}
+  tolBox.classList.add('done');
+  tolTitle.textContent='✔ DI-OVERRIDE — Manajer Operasional, 21-08-2026 10:24';
+  btnOverride.disabled=true;dot2.className='dot d-ok';
+  document.querySelector('.lrow[data-r="2"]').dataset.state='ok';
+  S.tol=true;refresh();
+}
+function refresh(){
+  const rows=[...document.querySelectorAll('#lineBody .lrow')];
+  const ok=rows.filter(r=>r.dataset.state==='ok').length;
+  const pend=rows.filter(r=>r.dataset.state==='pend').length-(S.qc1?1:0);
+  const warn=rows.filter(r=>r.dataset.state==='warn').length;
+  stLine.textContent=rows.length;stOk.textContent=ok+(S.qc1?1:0);
+  stPend.textContent=Math.max(pend,0);stWarn.textContent=warn;
+  if(S.qc1&&S.tol){
+    blockers.className='blockers clear';
+    blockers.innerHTML='<b>✔ Semua gerbang lolos</b> — '+rows.length+' baris siap, 2 PO akan direkalkulasi';
+    btnPost.disabled=false;
+  }else{
+    blockers.className='blockers';
+    const a=[];if(!S.qc1)a.push('baris 1 belum di-QC');if(!S.tol)a.push('baris 2 toleransi belum di-override');
+    blockers.innerHTML='<b>POST terkunci</b> — '+a.join(' · ');
+    btnPost.disabled=true;
+  }
+}
+function doPost(){
+  hdrStatus.className='bdg b-post';hdrStatus.textContent='POSTED';
+  afterPost.hidden=false;btnPost.disabled=true;
+  toast('SPB/26/00058 di-POST — PO/26/00031 & PO/26/00035 menjadi PARTIALLY_RECEIVED');
+  afterPost.scrollIntoView({behavior:'smooth'});
+}
+
+/* ── simulasi kepadatan 20 baris ── */
+let simulated=false;
+const NAMA=[['PYJ25','Kertas Ivory 250gr 79×109','LBR'],['PDX35','Kertas Duplex 350gr 79×109','LBR'],
+ ['PKR12','Kertas Kraft 125gr 79×109','LBR'],['PYA12','Art Paper 120gr 65×100','LBR'],
+ ['TCM11','Tinta Offset Cyan (kaleng 1 kg)','KLG'],['TMG11','Tinta Offset Magenta (kaleng 1 kg)','KLG'],
+ ['TYL11','Tinta Offset Yellow (kaleng 1 kg)','KLG'],['TBK11','Tinta Offset Black (kaleng 1 kg)','KLG'],
+ ['CVW21','Varnish Water Based (drum 200 L)','DRUM'],['CIP31','Alkohol IPA (drum 200 L)','DRUM'],
+ ['PLT11','Plate CTP 745×605','LBR'],['PYJ31','Kertas Ivory 300gr 65×100','LBR'],
+ ['PDX25','Kertas Duplex 250gr 79×109','LBR'],['PKR15','Kertas Kraft 150gr 79×109','LBR'],
+ ['CGL11','Lem Panas (sak 25 kg)','SAK'],['CBL21','Blanket Offset SM74','PCS']];
+function simulate(){
+  if(simulated){toast('Sudah dalam mode simulasi 20 baris.');return;}
+  simulated=true;const tb=lineBody;let n=4;
+  NAMA.forEach(([kode,nama,uom])=>{
+    n++;const q=(Math.floor(Math.random()*40)+8)*100;
+    const tr=document.createElement('tr');
+    tr.className='lrow';tr.dataset.r=n;tr.dataset.state='ok';tr.setAttribute('onclick','cur(this)');
+    tr.innerHTML='<td class="ctr"><input type="checkbox" onclick="event.stopPropagation();cnt()"></td>'+
+      '<td class="ctr"><span class="dot d-ok"></span></td><td class="ctr mono">'+n+'</td>'+
+      '<td class="mono">'+kode+'</td><td>'+nama+'</td>'+
+      '<td class="num mono">'+q.toLocaleString('id-ID')+'</td>'+
+      '<td><input class="cell" value="'+q.toLocaleString('id-ID')+'"></td><td class="ctr sisa">'+uom+'</td>'+
+      '<td><input class="cell" value="'+q.toLocaleString('id-ID')+'"></td><td class="ctr sisa">'+uom+'</td>'+
+      '<td class="ctr"><select class="cell w-qc"><option>PENDING</option><option selected>PASS</option><option>PARTIAL</option><option>FAIL</option></select></td>'+
+      '<td><input class="cell" value="'+q.toLocaleString('id-ID')+'"></td><td><input class="cell" value="0"></td>'+
+      '<td><input class="cell txt" value="'+kode+'-2608"></td><td><input class="cell txt" value="RAK-A/01"></td>'+
+      '<td class="ctr"><span class="exp">⌄</span></td>';
+    tb.appendChild(tr);
+  });
+  lineCount.textContent='20 baris · 3 PO';
+  refresh();
+  toast('Mode simulasi: 20 baris. Perhatikan seluruh baris tetap muat tanpa scroll horizontal — tinggi baris 33px.');
+}
+
+let tt;function toast(m){const e=document.getElementById('toast');e.textContent=m;e.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('show'),3600);}
+refresh();cnt();applyFilter('QC_PENDING');
+</script>
+</body>
+</html>

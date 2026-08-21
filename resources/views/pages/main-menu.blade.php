@@ -65,6 +65,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'SALES_SO' => route('co.list'),
             'PROC_PR' => route('pur.pr.list'),
             'PROC_PO' => route('pur.po.list'),
+            'PROC_RCV' => route('pur.pv.list'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_RAW' => route('master.raw-material.list'),

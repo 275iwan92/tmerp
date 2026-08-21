@@ -6,7 +6,9 @@ modul: "04_procurement"
 db: tm2pur
 fase: "1 — PR / PQ / PO / PV / PRT + Purchase Invoice (tanpa posting GL)"
 status_umum: >
-  SPEC SELESAI (2026-08-20). IMPLEMENTASI DIMULAI 2026-08-20/21: fondasi + PR Entry hidup.
+  SPEC SELESAI (2026-08-20). IMPLEMENTASI: spine PR->PR Approval->PO->PV hidup penuh
+  2026-08-20/21 (di luar urutan resmi yg diminta Jo, PV ikut dikerjakan krn dokumennya
+  sudah diberikan). Fondasi dulu:
   Legacy doc_rmprefix1..5 (555 baris) & m_raw_material (5893 baris) di-import APA ADANYA dari
   dump asli user (database/legacy/*.sql) -- FK ke m_uom lama DIHAPUS (tabel tak pernah ada di
   TMERP, diganti logical ref ke uom_unit). Flow Engine generik (flow_config/flow_config_step/
@@ -35,12 +37,36 @@ status_umum: >
   draf awal disalin dari PR) krn status enum PO tak punya REVISION_NEEDED (Tier3 §4 C-1).
   Diverifikasi via tinker: tarik 2 alokasi lintas-PR ke 1 PO, edit harga, hitung pajak, submit
   -> semua benar (DPP 11.5jt -> PPN 1.265jt -> Grand 12.765jt, PPh23=0 krn tak ada baris SERVICE).
-  BELUM diverifikasi visual di browser sungguhan utk KETIGA layar (PR Entry/Approval/PO Entry)
-  -- lihat catatan di bawah.
-  PQ, PO Approval, PV, PRT, Purchase Invoice masih 🟡 spec-only/belum diimplementasi.
+  PV (Purchase Receive/SPB) JUGA hidup 2026-08-21, dirombak total oleh DELTA_PROC_PV_MULTIPO.md
+  (dokumen user, KEPUTUSAN TERKUNCI, benchmark SAP/Oracle/Odoo/D365): satu SPB boleh menampung
+  BANYAK PO dari SATU supplier sekaligus -- referensi PO pindah dari header (dihapus) ke baris
+  (pv_line.po_line_id + snapshot c_po_id/c_po_doc_no/c_po_line_no). PENTING: skema fisik yang
+  dibangun BUKAN salinan `PATCH_DDL_PV_MULTIPO.sql` dari user -- patch itu mengasumsikan kolom
+  snapshot penuh (c_supplier_name, c_department_name, c_coa_code, c_amount_words, dst di
+  po_order/po_line) yang TIDAK ADA di skema saya (gaya minimal-FK, PROC_TIER_3 asli), dan
+  prasyaratnya (DDL_PROCUREMENT_tm2pur.sql, SEED_PROC_DUMMY.sql) tidak ada di project ini sama
+  sekali. Aturan bisnis PV-01..PV-11 DIADOPSI PENUH; kolom fisik dibangun ulang menyesuaikan
+  konvensi tm2pur yang sudah berjalan. Fitur: picker 2-langkah supplier->worklist lintas-PO
+  (PvBuilderService::supplierWorklist()/openLinesForSupplier(), ala Oracle Find Expected
+  Receipts), dual-UOM, QC 2 gerbang, toleransi+override per baris, "+ Tambah Baris dari PO
+  Lain", rekalkulasi PER PO yang tersentuh saat POST (PV-08, PvPostingService::recalcPo()
+  dipanggil utk SETIAP po_id distinct, bukan asumsi 1 PO). po_line.is_receivable ditambahkan
+  (PV-09) -- baris SERVICE otomatis tak pernah muncul di worklist PV.
+  KETERBATASAN SADAR: PvPostingService::post() BELUM menulis rm_stock/rm_stock_d -- dump legacy
+  tminv_20260722_2018_sd.sql masih belum diberikan user. Status PV->POSTED dan rekalkulasi
+  po_line/po_order per-PO (PV-08) tetap benar & teruji; yang tertunda HANYA pergerakan stok
+  fisik. Titik sambungnya ditandai TODO eksplisit di kode.
+  Diverifikasi tuntas via tinker: (a) 1 SPB dari 1 PO normal -> POST -> PO jadi RECEIVED; (b)
+  toleransi terlampaui (8% vs batas 5%) -> POST terblokir -> override -> POST sukses; (c) KASUS
+  UTAMA PV-01: 2 PO BERBEDA ditarik ke SATU SPB sekaligus (c_po_count=2), POST merekalkulasi
+  KEDUA PO secara independen dgn benar -- semua lolos.
+  BELUM diverifikasi visual di browser sungguhan utk SEMUA layar (PR/PR Approval/PO/PV) --
+  lihat catatan di bawah.
+  PQ, PO Approval, PRT, Purchase Invoice masih 🟡 spec-only/belum diimplementasi.
   Dua struktur legacy dibaca penuh: m_raw_material.sql + doc_rmprefix1.sql (SUDAH diberikan
   user & di-import); tminv_20260722_2018_sd.sql (rm_stock/rm_stock_d/rm_stockcard/sfg_*/fg_*)
-  BELUM diberikan -- prasyarat keras utk PV, belum jadi blocker karena PV belum dikerjakan.
+  MASIH BELUM diberikan -- sekarang BENAR-BENAR jadi blocker (PV sudah dikerjakan, cuma posting
+  stok fisiknya yang tertunda).
 
 keputusan_terkunci:
   A_anti_m2m: "pr_line -> pr_line_alloc -> po_line (1:1, dijaga UNIQUE uq_po_alloc). Konsolidasi di HEADER po_order, bukan di baris."
@@ -63,6 +89,7 @@ keputusan_terkunci:
   R_revise: "PR & PO copy-record; PV & PRT tanpa REVISE (fisik). RECALC tidak relevan."
   S_import_defer: "po_import_doc struktur siap tapi INACTIVE; BM/PPN impor/PPh22 tidak dihitung (jarang impor)"
   T_cost_tracking: "co_line_id menetes PR->alloc->PO->PV untuk biaya material riil per Customer Order"
+  W_pv_multi_po_supplier_driven: "DELTA_PROC_PV_MULTIPO.md, PV-01..PV-11 (2026-08-21) -- 1 SPB : N PO (satu supplier), referensi PO di BARIS bukan header, supplier+gudang jadi kunci dokumen (hard block), mata uang harus sama (hard block), termin/tgl kirim boleh beda (warning saja), 1 nomor SPB utk seluruh dokumen, SJ boleh >1 (header+per-baris), rekalkulasi PER PO yang tersentuh saat POST (bukan asumsi 1 PO), baris SERVICE tak pernah masuk PV (is_receivable=0, ditutup di layar PO). Skema fisik dibangun ULANG dari draf patch user krn patch itu asumsikan kolom snapshot & prasyarat DDL yang tak ada di project ini -- lihat status_umum utk detail deviasi."
 
 artefak_selesai:
   - PROC_TIER_1.md      # konsep, scope, rantai dokumen, aktor, nota
@@ -88,13 +115,21 @@ artefak_selesai:
   - "resources/views/pages/pur/po/{index,entry}.blade.php  # route pur.po.list / pur.po.entry, gate module:PROC"
   - "Migration 2026_08_21_000001  # po_order/po_line/po_import_doc (tm2pur)"
   - "Migration 2026_08_21_000002  # flow_config PO (step1 Manajer Operasional, step2 Direksi >=100jt)"
+  - "Migration 2026_08_21_000005  # pv_receipt/pv_line (tm2pur, desain ulang PV-01..PV-11) + po_line.is_receivable (PV-09)"
+  - "App\\Models\\Pur\\{PvReceipt,PvLine}"
+  - "App\\Services\\Pur\\PvBuilderService  # supplierWorklist()+openLinesForSupplier()+createFromLines()+addLines() -- picker 2-langkah ala Oracle Find Expected Receipts"
+  - "App\\Services\\Pur\\PvPostingService  # blockers()+post() -- rekalkulasi PER PO yang tersentuh (PV-08); rm_stock BELUM ditulis, TODO eksplisit di kode"
+  - "resources/views/pages/pur/pv/{index,entry}.blade.php  # route pur.pv.list / pur.pv.entry, gate module:PROC"
+  - "docs/DELTA_PROC_PV_MULTIPO.md, docs/PATCH_DDL_PV_MULTIPO.sql, docs/PATCH_SEED_PV_MULTIPO.sql, docs/mockups/mockup_purchase_receive.html, docs/mockups/nota_pv_spb.html  # dokumen asli user, dibaca penuh -- lihat status_umum utk deviasi skema"
 
 next_step:
-  - "SELESAI 2026-08-20/21: fondasi (legacy import, Flow Engine, sys_constant) + PR Entry + PR Approval Center + PO Entry (List+Form) -- urutan yang diminta Jo (PR entry -> PR approval -> PO entry) SELESAI"
-  - "BELUM diverifikasi visual di browser utk KETIGA layar (PR Entry, PR Approval, PO Entry) -- login via browser automation ditolak (masuk kategori 'entering credentials', prohibited per safety rules). Jo perlu buka /purchasing/pr, /purchasing/pr-approval, /purchasing/po sendiri utk cek tampilan; logika sudah diverifikasi tuntas via tinker functional test (termasuk tarik alokasi lintas-PR ke 1 PO, hitung pajak, submit)."
+  - "SELESAI 2026-08-20/21: fondasi (legacy import, Flow Engine, sys_constant) + PR Entry + PR Approval Center + PO Entry + PV Entry (List+Form semua) -- spine Procurement PR->PR Approval->PO->PV SELESAI, di luar urutan resmi yg diminta Jo (PR->PR Approval->PO) tapi PV ikut dikerjakan krn dokumen barunya sudah diberikan"
+  - "BELUM diverifikasi visual di browser utk SEMUA layar (PR Entry, PR Approval, PO Entry, PV Entry) -- login via browser automation ditolak (masuk kategori 'entering credentials', prohibited per safety rules). Jo perlu buka /purchasing/pr, /purchasing/pr-approval, /purchasing/po, /purchasing/pv sendiri utk cek tampilan; logika sudah diverifikasi tuntas via tinker functional test."
+  - "BLOCKER NYATA SEKARANG: tminv_20260722_2018_sd.sql (rm_stock/rm_stock_d/rm_stockcard) masih belum diberikan Jo. PV sudah lengkap TAPI PvPostingService::post() belum menulis stok fisik -- begitu dump tersedia, tinggal isi blok TODO yang sudah ditandai persis di lokasinya, tidak perlu bongkar ulang PV."
+  - "PO Approval Center BELUM dibangun -- PO di database ini masih terjebak di SUBMITTED (tak ada layar utk maju ke APPROVED/SENT). Test PV terpaksa memaksa status PO dummy ke SENT langsung via tinker (bukan lewat approval sungguhan) utk bisa menguji worklist PV -- catat ini supaya tak dikira PO Approval sudah ada."
   - "Dummy Manajer Operasional dibuat utk uji fungsional: emp_employee 'DUMMY-MGROPS' (employee_id=6, position_id=6) + sec_user 'dummy_mgrops' (id_user=38) -- password acak/tak diketahui siapapun, TIDAK bisa dipakai login sungguhan. Kalau mau user approval sungguhan, ganti/hapus dummy ini dan assign posisi ke karyawan riil (juga posisi Direksi -- belum ada dummy user utk step2, cuma diuji langsung lewat FlowEngineService tanpa lewat pendingForUser())."
   - "GAP DITEMUKAN & DITUTUP 2026-08-21: PR Approval final -> PrAllocationService::createDefaultAllocationsForPr() otomatis bikin 1 alokasi penuh per baris (PROC_TIER_3 §3.1 'baris tak dipecah = 1 alokasi penuh'), supaya PO Entry selalu punya sumber tanpa memaksa split manual dulu. Panel 'Split Alokasi' manual (Tier4 §2.2, pecah ke >1 supplier) BELUM ada UI-nya -- PrAllocationService::split() sudah ada tapi belum dipanggil dari layar manapun."
-  - "BELUM: PO Approval Center (mockup ada, layar approval terpisah spt PR), PQ (opsional, boleh di-skip terus), PV+QC+posting stok (butuh tminv_20260722_2018_sd.sql yang belum diberikan), PRT, Purchase Invoice, Nota semua dokumen, Pembelian Kontan."
+  - "BELUM: PO Approval Center (mockup ada, layar approval terpisah spt PR), PQ (opsional, boleh di-skip terus), PV Monitor Sisi A, Nota SPB cetak (mockup nota_pv_spb.html sudah ada), PRT, Purchase Invoice, Pembelian Kontan."
 
 open_items:
   - id: PROC-SUPPLIER-MASTER
@@ -111,7 +146,10 @@ open_items:
     isi: "RESOLVED SEBAGIAN 2026-08-20: org_position hanya berisi 5 posisi lantai produksi, tak ada jabatan manajerial -- dibuat 3 posisi placeholder (Manajer Operasional/Direksi/Purchasing Officer, dept ADMIN, migration 000015). 'Kepala Departemen' di draf Tier3 §9 disederhanakan jadi approval TERPUSAT (bukan per-departemen, krn flow_config_step.position_id tunggal) -- PR step1=Manajer Operasional (semua nilai), step2=Direksi (>=50jt). BELUM ada user riil ditugaskan ke posisi ini -- perlu Jo assign lewat HRM/Security kalau mau PR Approval screen (langkah berikut) benar-benar bisa di-approve oleh seseorang."
   - id: PROC-WAREHOUSE-MASTER
     prioritas: SEDANG
-    isi: "m_warehouse / m_wh_loc: konfirmasi tabel & id. PV butuh warehouse_id & location_id; legacy rm_stock sudah punya kolomnya."
+    isi: "m_warehouse / m_wh_loc masih belum ada. WORKAROUND diterapkan 2026-08-21: pv_receipt.i_warehouse_code & pv_line.i_location_code jadi VARCHAR bebas (bukan FK), sama pola dgn Item Master def_location_id. Perlu diganti FK asli begitu m_warehouse dibangun."
+  - id: PROC-SERVICE-RECEIPT
+    prioritas: SELESAI
+    isi: "CLOSED 2026-08-21 oleh PV-09 (DELTA_PROC_PV_MULTIPO.md): po_line.is_receivable ditambahkan (default 1, auto-0 utk i_line_class=SERVICE). Worklist PV (PvBuilderService::openLinesForSupplier) sudah filter is_receivable=1 -- baris jasa tak pernah muncul di PV. Penutupan baris jasa sendiri (tombol 'Konfirmasi Penyelesaian Jasa' di layar PO) BELUM dibangun -- PO campur barang+jasa saat ini tak akan pernah RECEIVED penuh selama baris jasa-nya ada, krn PvPostingService::recalcPo() hanya menghitung baris is_receivable=1 utk status header (jadi PO bisa RECEIVED walau baris jasa belum 'selesai' scr eksplisit -- perlu tombol itu kalau mau menutup baris jasa scr resmi)."
   - id: PROC-COSTING-ENGINE
     prioritas: SEDANG
     isi: "inv_stock_layer & konsumsi FIFO/LIFO sisi OUT adalah milik modul Inventory (belum dibangun). Procurement hanya MENGISI layer saat IN. Perlu INV_TIER tersendiri."
@@ -135,7 +173,8 @@ open_items:
     isi: "Bila impor mulai rutin: aktifkan po_import_doc + hitung BM/PPN impor/PPh22 (butuh layer PIB). Daftar dokumen impor di Tier 1 §referensi perlu diverifikasi ke PPJK/forwarder karena regulasi sering berubah."
 
 catatan:
-  - "DEVIASI format doc_no: PROC_TIER_2 §A-1.1 tulis 'PR/YY/#####' (pakai slash), tapi diimplementasikan TANPA slash (PR2600001) mengikuti pola nomor dokumen yang SUDAH berjalan system-wide (IQ2600001, QUO2600001, CO2600001 -- lihat SALES_STATE.yaml). Sama seperti keputusan QUO vs QT kemarin: konsistensi lintas-modul menang atas teks draf Tier yang kemungkinan typo/belum disamakan. PrRequisition::nextDocNo() pola identik QuoQuotation/CoOrder."
+  - "DEVIASI format doc_no: PROC_TIER_2 §A-1.1 tulis 'PR/YY/#####' (pakai slash), tapi diimplementasikan TANPA slash (PR2600001) mengikuti pola nomor dokumen yang SUDAH berjalan system-wide (IQ2600001, QUO2600001, CO2600001 -- lihat SALES_STATE.yaml). Sama seperti keputusan QUO vs QT kemarin: konsistensi lintas-modul menang atas teks draf Tier yang kemungkinan typo/belum disamakan. PrRequisition::nextDocNo() pola identik QuoQuotation/CoOrder. Pola sama berlaku PoOrder (PO2600001) & PvReceipt (SPB2600001) -- mockup_purchase_receive.html/nota_pv_spb.html/PATCH_SEED_PV_MULTIPO.sql semua pakai format 'SPB/26/00058' (garis miring), sengaja TIDAK diikuti demi konsistensi internal."
+  - "PATCH_DDL_PV_MULTIPO.sql & PATCH_SEED_PV_MULTIPO.sql (2026-08-21, dari user) TIDAK dieksekusi mentah -- mengasumsikan skema denormalized-snapshot (po_order.c_supplier_name/c_department_name/c_coa_code/c_amount_words, dst) yang beda total dari skema minimal-FK yang sudah dibangun sesuai PROC_TIER_3.md asli, dan prasyaratnya (DDL_PROCUREMENT_tm2pur.sql, SEED_PROC_DUMMY.sql) tak ada sama sekali di project. Aturan bisnis PV-01..PV-11 di DELTA_PROC_PV_MULTIPO.md tetap diadopsi PENUH, hanya kolom fisiknya dibangun ulang. Baca dulu status_umum & keputusan_terkunci.W_pv_multi_po_supplier_driven sebelum coba jalankan file patch itu di sesi berikutnya."
   - "i_department_id (pr_requisition, NOT NULL sesuai Tier3 §2) dipilih via picker SEBELUM baris PR dibuat (PrIndex::createNew(departmentId)), bukan diisi belakangan di form -- konsisten dgn pola QuotationBuilder::findOrCreateDraft(customerId)/CoOrderBuilder::findOrCreateFromQuotation yang juga mewajibkan parent id di awal, bukan nullable-sampai-diisi."
   - "BELUM diverifikasi visual di browser sungguhan -- percobaan login via browser automation (mengisi field password) DITOLAK oleh classifier keamanan (masuk kategori 'entering credentials into any field', prohibited). Verifikasi yang SUDAH dilakukan: migration jalan bersih, Blade compile bersih (view:cache), functional test end-to-end via tinker (cascading picker query benar-benar mengembalikan PYJ31 'Ivory 300gr 79x109' persis sesuai contoh mockup_purchase_requisition.html; create->line->submit->flow_log tercatat benar termasuk resolusi step Manajer Operasional). Jo perlu buka /purchasing/pr sendiri di browser utk cek tampilan/UX sebelum ditandai READY_FOR_QC."
   - "Struktur legacy yang dibaca penuh: tminv_20260722_2018_sd.sql (13 tabel, pola stat_confirm->trigger stockcard) dan m_raw_material.sql + doc_rmprefix1.sql (5 level pembentuk kode item)."

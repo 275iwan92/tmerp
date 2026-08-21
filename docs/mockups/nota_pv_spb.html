@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surat Penerimaan Barang — SPB/26/00058</title>
+<style>
+:root{--navy:#2c3e69;--accent:#2f6fed;--ink:#1f2937;--muted:#6b7280;--line:#d7dce7;--soft:#eef1f7}
+*{box-sizing:border-box}
+body{margin:0;background:#e9edf4;font-family:"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);font-size:12px}
+.mono{font-variant-numeric:tabular-nums}
+
+/* toolbar layar (tidak ikut tercetak) */
+.bar{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;padding:9px 16px;display:flex;gap:8px;align-items:center}
+.bar b{font-weight:600}
+.bar .sp{margin-left:auto;display:flex;gap:8px}
+.bar button{border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;padding:5px 11px;border-radius:6px;font-size:12px;cursor:pointer}
+.bar button.pri{background:#fff;color:var(--navy);border-color:#fff;font-weight:600}
+
+/* ══ mode TERPUSAT — A4 portrait ══ */
+.sheet{width:210mm;min-height:297mm;margin:16px auto;background:#fff;padding:14mm 15mm;box-shadow:0 4px 18px rgba(16,24,40,.14)}
+
+.kop{display:flex;gap:14px;align-items:flex-start;border-bottom:2.5px solid var(--navy);padding-bottom:10px}
+.logo{width:52px;height:52px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px;letter-spacing:.5px}
+.kop h1{margin:0;font-size:16px;color:var(--navy);letter-spacing:.3px}
+.kop .addr{font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+.kop .docbox{margin-left:auto;text-align:right}
+.kop .docbox .t{font-size:13.5px;font-weight:700;color:var(--navy);letter-spacing:.4px}
+.kop .docbox .s{font-size:10.5px;color:var(--muted)}
+.kop .docbox .no{font-size:15px;font-weight:700;margin-top:3px;letter-spacing:.5px}
+
+.stamp{display:inline-block;margin-top:5px;border:1.5px solid #16a34a;color:#15803d;border-radius:5px;padding:2px 9px;font-size:10.5px;font-weight:700;letter-spacing:.6px}
+
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:0 22px;margin-top:12px}
+.meta table{width:100%;border-collapse:collapse}
+.meta td{padding:2.5px 0;vertical-align:top;font-size:11.5px}
+.meta td.k{width:38%;color:var(--muted)}
+.meta td.k::after{content:":";float:right;padding-right:6px}
+
+.sec{margin-top:14px}
+.sec h3{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--navy);margin:0 0 6px;padding-bottom:3px;border-bottom:1px solid var(--line)}
+
+table.items{width:100%;border-collapse:collapse;font-size:11px}
+table.items th{background:var(--soft);color:var(--navy);border:1px solid var(--line);padding:5px 6px;font-weight:600;text-align:center;line-height:1.3}
+table.items td{border:1px solid var(--line);padding:5px 6px;vertical-align:top}
+table.items td.c{text-align:center}
+table.items td.r{text-align:right}
+.nm{font-weight:600}
+.cd{font-size:10px;color:var(--muted);font-family:ui-monospace,Consolas,monospace}
+.tick{color:#15803d;font-weight:700}
+.cross{color:#b91c1c;font-weight:700}
+
+.callout{margin-top:9px;border-left:3px solid #f59e0b;background:#fef8ec;padding:7px 10px;font-size:10.5px;line-height:1.5}
+.callout b{color:#92400e}
+.noprice{margin-top:9px;border:1px dashed var(--line);background:#fafbfd;padding:7px 10px;font-size:10.5px;color:var(--muted)}
+
+.sign{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px;page-break-inside:avoid}
+.sign .box{text-align:center}
+.sign .cap{font-size:10.5px;color:var(--muted)}
+.sign .rule{height:52px;border-bottom:1px solid var(--ink);margin:4px 8px 4px}
+.sign .who{font-size:11px;font-weight:600}
+.sign .sub{font-size:10px;color:var(--muted)}
+
+.foot{margin-top:16px;padding-top:7px;border-top:1px solid var(--line);display:flex;font-size:9.5px;color:var(--muted)}
+.foot .r{margin-left:auto}
+
+/* varian hemat tinta */
+body.bw .logo{background:#fff;color:#000;border:1.5px solid #000}
+body.bw .kop{border-bottom-color:#000}
+body.bw .kop h1,body.bw .kop .docbox .t,body.bw .sec h3{color:#000}
+body.bw table.items th{background:#fff;color:#000}
+body.bw .stamp{border-color:#000;color:#000}
+body.bw .callout{background:#fff;border-left-color:#000}
+body.bw .tick,body.bw .cross{color:#000}
+
+@media print{
+  .bar{display:none}
+  body{background:#fff}
+  .sheet{margin:0;box-shadow:none;width:auto;min-height:auto;padding:10mm 12mm}
+  @page{size:A4 portrait;margin:8mm}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <b>Pratinjau Cetak</b> — Surat Penerimaan Barang (SPB) · <span style="opacity:.75">vw_nota_pv · mode TERPUSAT A4</span>
+  <span class="sp">
+    <button onclick="document.body.classList.toggle('bw')">🖨️ Hemat tinta (B&amp;W)</button>
+    <button class="pri" onclick="window.print()">Cetak</button>
+  </span>
+</div>
+
+<div class="sheet">
+
+  <!-- ══ KOP ══ -->
+  <div class="kop">
+    <div class="logo">TM</div>
+    <div>
+      <h1>PT. TELASIH MAKMUR</h1>
+      <div class="addr">
+        Offset Printing &amp; Packaging<br>
+        Jl. Rungkut Industri III No. 42, Surabaya 60293, Jawa Timur<br>
+        Telp. (031) 8430-1188 · purchasing@telasihmakmur.co.id
+      </div>
+    </div>
+    <div class="docbox">
+      <div class="t">SURAT PENERIMAAN BARANG</div>
+      <div class="s">Goods Receipt Note</div>
+      <div class="no mono">SPB/26/00058</div>
+      <div class="stamp">TERPOSTING</div>
+    </div>
+  </div>
+
+  <!-- ══ META ══ -->
+  <div class="meta">
+    <table>
+      <tr><td class="k">Tanggal terima</td><td class="mono">21 Agustus 2026</td></tr>
+      <tr><td class="k">Pesanan Pembelian</td><td><b>2 PO</b><br>
+        <span class="mono">PO/26/00031</span> (14-08-2026) · <span class="mono">PO/26/00035</span> (18-08-2026)</td></tr>
+      <tr><td class="k">Supplier</td><td><b>PT Cakra Kertas Nusantara</b><br><span style="color:var(--muted)">Jl. Margomulyo Industri No. 88, Surabaya</span></td></tr>
+      <tr><td class="k">Penerimaan ke</td><td>1 atas masing-masing PO (bertahap — sebagian baris masih terbuka)</td></tr>
+    </table>
+    <table>
+      <tr><td class="k">Gudang penerima</td><td>GD-BB · Gudang Bahan Baku</td></tr>
+      <tr><td class="k">No. surat jalan supplier</td><td class="mono">SJ-CKN/8/1142 · SJ-CKN/8/1143</td></tr>
+      <tr><td class="k">No. kendaraan</td><td class="mono">L 9182 UZ</td></tr>
+      <tr><td class="k">Diposting</td><td class="mono">21-08-2026 10:31 · gudang.ari</td></tr>
+    </table>
+  </div>
+
+  <!-- ══ RINCIAN ══ -->
+  <div class="sec">
+    <h3>Rincian Barang Diterima</h3>
+    <table class="items">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:26px">No</th>
+          <th rowspan="2" style="width:84px">Asal PO<br><span style="font-weight:400;font-size:9.5px">/ baris</span></th>
+          <th rowspan="2">Kode &amp; Nama Barang</th>
+          <th colspan="2">Satuan Beli<br><span style="font-weight:400;font-size:9.5px">(menutup PO)</span></th>
+          <th colspan="2">Satuan Stok<br><span style="font-weight:400;font-size:9.5px">(masuk gudang)</span></th>
+          <th colspan="2">Hasil QC (satuan stok)</th>
+          <th rowspan="2" style="width:64px">Lot</th>
+          <th rowspan="2" style="width:52px">Lokasi</th>
+        </tr>
+        <tr>
+          <th style="width:48px">Qty</th><th style="width:44px">UOM</th>
+          <th style="width:52px">Qty</th><th style="width:44px">UOM</th>
+          <th style="width:56px">Diterima</th><th style="width:52px">Ditolak</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="c">1</td>
+          <td class="c mono" style="font-size:10px">PO/26/00031<br>baris 1</td>
+          <td><span class="nm">Kertas Ivory 300gr 79×109</span><br><span class="cd">PYJ31</span></td>
+          <td class="r mono">5.000</td><td class="c">LBR</td>
+          <td class="r mono">5.000</td><td class="c">LBR</td>
+          <td class="r mono tick">5.000</td><td class="r mono">—</td>
+          <td class="c mono">IVR-2608-A</td><td class="c mono">RAK-A/01</td>
+        </tr>
+        <tr>
+          <td class="c">2</td>
+          <td class="c mono" style="font-size:10px">PO/26/00031<br>baris 2</td>
+          <td><span class="nm">Art Paper 150gr 65×100</span><br><span class="cd">PYA21</span></td>
+          <td class="r mono">5.360</td><td class="c">LBR</td>
+          <td class="r mono">5.360</td><td class="c">LBR</td>
+          <td class="r mono tick">5.240</td><td class="r mono cross">120</td>
+          <td class="c mono">AP150-2608-B</td><td class="c mono">RAK-B/04</td>
+        </tr>
+        <tr>
+          <td class="c">3</td>
+          <td class="c mono" style="font-size:10px">PO/26/00031<br>baris 3</td>
+          <td><span class="nm">Fountain Solution (drum 200 L)</span><br><span class="cd">CFS41</span></td>
+          <td class="r mono">4</td><td class="c">DRUM</td>
+          <td class="r mono">792</td><td class="c">LTR</td>
+          <td class="r mono tick">792</td><td class="r mono">—</td>
+          <td class="c mono">FS-2608-D4</td><td class="c mono">CHM-01</td>
+        </tr>
+        <tr>
+          <td class="c">4</td>
+          <td class="c mono" style="font-size:10px">PO/26/00035<br>baris 1</td>
+          <td><span class="nm">Art Paper 120gr 65×100</span><br><span class="cd">PYA12</span>
+              <span class="cd">· SJ-CKN/8/1143</span></td>
+          <td class="r mono">4.000</td><td class="c">LBR</td>
+          <td class="r mono">4.000</td><td class="c">LBR</td>
+          <td class="r mono tick">4.000</td><td class="r mono">—</td>
+          <td class="c mono">AP120-2608-C</td><td class="c mono">RAK-B/04</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <b>Catatan penerimaan</b><br>
+      • Dokumen ini mencakup <b>2 PO dari satu supplier</b> dalam satu kali kedatangan (kolom “Asal PO”). Setiap baris tetap menutup baris PO-nya masing-masing.<br>
+      • Baris 2 — jumlah kirim melampaui toleransi item (+7,2% terhadap 5%). Di-<i>override</i> oleh Manajer Operasional 21-08-2026 10:24; alasan: kelebihan kirim diterima, harga per lembar tetap sesuai PO.<br>
+      • Baris 2 — 120 LBR ditolak QC (tepi sobek &amp; kotor). <b>Tidak masuk stok</b>, menjadi kandidat Retur Pembelian (NRB).<br>
+      • Baris 3 — barang curah: konversi master 200 LTR/DRUM diabaikan, dipakai hasil ukur nyata 198 LTR/DRUM.<br>
+      • Baris 4 — dikirim dengan surat jalan terpisah SJ-CKN/8/1143.<br>
+      • Sisa terbuka setelah dokumen ini: PO/26/00031 baris 1 sebanyak 3.000 LBR, dan PO/26/00035 baris 2 sebanyak 2.000 LBR.
+    </div>
+
+    <div class="noprice">
+      Dokumen ini <b>tidak memuat harga maupun nilai barang</b> sesuai kebijakan visibilitas Sisi B (layar &amp; cetakan gudang). Nilai penerimaan tersedia bagi Manajer Operasional dan Accounting pada laporan Monitor Penerimaan.<br>
+      Jejak akuntansi: jurnal penerimaan <span class="mono" style="color:var(--ink)"><b>VCH-PUR-202608-0117</b></span> · periode posting 2026-08 · dicatat bersamaan dengan pergerakan stok dalam satu transaksi.
+    </div>
+  </div>
+
+  <!-- ══ TANDA TANGAN ══ -->
+  <div class="sign">
+    <div class="box">
+      <div class="cap">Diserahkan oleh</div>
+      <div class="rule"></div>
+      <div class="who">(&nbsp;.................................&nbsp;)</div>
+      <div class="sub">Pengirim / Sopir Supplier</div>
+    </div>
+    <div class="box">
+      <div class="cap">Diterima oleh</div>
+      <div class="rule"></div>
+      <div class="who">(&nbsp;.................................&nbsp;)</div>
+      <div class="sub">Petugas Gudang Bahan Baku</div>
+    </div>
+    <div class="box">
+      <div class="cap">Diperiksa oleh</div>
+      <div class="rule"></div>
+      <div class="who">(&nbsp;.................................&nbsp;)</div>
+      <div class="sub">Quality Control</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Dicetak dari TMERP · <span class="mono">vw_nota_pv</span> · lembar 1 dari 1</span>
+    <span class="r mono">21-08-2026 10:35 · gudang.ari</span>
+  </div>
+</div>
+
+</body>
+</html>

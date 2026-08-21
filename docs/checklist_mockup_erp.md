@@ -91,8 +91,16 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ### 4.3 Purchase Quotation (PQ) — kondisional, boleh dilewati
 - ⬜ [F][G] PQ Entry + Perbandingan — belum digarap
 ### 4.4 Purchase Receive (PV) / Purchase Return (PRT)
-- ⬜ [F] PV Entry (Sisi B, dual-UOM, QC 2 gerbang) — belum digarap, butuh `tminv_20260722_2018_sd.sql` (rm_stock/rm_stock_d/rm_stockcard) yang belum diberikan user
+> Dirombak 2026-08-21 oleh `DELTA_PROC_PV_MULTIPO.md` (KEPUTUSAN TERKUNCI, benchmark SAP/Oracle/
+> Odoo/D365): satu SPB boleh menampung banyak PO dari satu supplier — referensi PO pindah dari
+> header ke baris. Skema fisik dibangun ULANG dari draf patch user (`PATCH_DDL_PV_MULTIPO.sql`
+> mengasumsikan kolom snapshot & prasyarat `DDL_PROCUREMENT_tm2pur.sql`/`SEED_PROC_DUMMY.sql`
+> yang tak ada di project ini) — aturan bisnis PV-01..PV-11 diadopsi penuh, kolom fisik
+> disesuaikan ke konvensi `po_order`/`po_line` yang sudah berjalan.
+- ✅ [G] PV List — `pur.pv.list` (filter status, badge multi-PO)
+- ✅ [F] PV Entry — `pur.pv.entry` (picker 2-langkah supplier→worklist lintas-PO ala Oracle Find Expected Receipts, dual-UOM, QC 2 gerbang, panel toleransi+override, "+ Tambah Baris dari PO Lain", rekalkulasi PER PO yang tersentuh saat POST/PV-08). Diuji tuntas via tinker: satu SPB 2 PO sekaligus, toleransi terlampaui+override, POST merekalkulasi kedua PO — semua benar. **`POST` BELUM menulis ke `rm_stock`/`rm_stock_d`** (dump legacy `tminv_20260722_2018_sd.sql` masih belum diberikan) — status PV/PO tetap benar, pergerakan stok fisik menyusul begitu dump tersedia (`PvPostingService::post()` sudah ditandai TODO persis di titiknya)
 - ⬜ [D] PV Monitor (Sisi A) — belum digarap
+- ⬜ [P] Nota SPB (cetak) — mockup `nota_pv_spb.html` sudah ada, Livewire-nya belum
 - ⬜ [F] PRT (Purchase Return) — belum digarap
 ### 4.5 Purchase Invoice — pakai `fin_invoice`/`fin_invoice_line` (tm2acc), bukan tabel baru
 - ⬜ [F] Purchase Invoice (SUPPLIER_DP/SUPPLIER_BILL) — belum digarap, butuh `fin_invoice_line` (delta wajib, belum dibuat)
@@ -185,7 +193,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 1 Sales (Inquiry/Quotation/CO) | 13 | 5 | 1 |
 | 2 Inventory | 2 | 0 | 5 |
 | 3 Production | 0 | 2 | 9 |
-| 4 Procurement | 5 | 1 | 7 |
+| 4 Procurement | 7 | 1 | 7 |
 | 5 Dispatch | 0 | 0 | 9 |
 | 6 Invoicing/Billing (AR-lite) | 0 | 0 | 7 |
 | 7 HR | 4 | 0 | 3 |
@@ -194,7 +202,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**31 item live**, **8 item punya mockup HTML tapi belum diimplementasi Livewire**, **45 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Item Master; Procurement sekarang punya spec Tier 1-4 lengkap dan PR List/Entry/Approval + PO List/Entry sudah live; Notification Center & Nota Inquiry per-tipe kini juga live).
+**33 item live**, **8 item punya mockup HTML tapi belum diimplementasi Livewire**, **45 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Item Master; Procurement spine PR→PR Approval→PO→PV sudah live penuh, hanya posting stok fisik PV yang tertunda dump legacy; Notification Center & Nota Inquiry per-tipe kini juga live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).
