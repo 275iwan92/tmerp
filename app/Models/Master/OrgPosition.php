@@ -14,6 +14,8 @@ class OrgPosition extends Model
     protected $primaryKey = 'position_id';
 
     protected $fillable = [
+        'legacy_position_id',
+        'legacy_skill_rate',
         'department_id',
         'level_id',
         'position_code',

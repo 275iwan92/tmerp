@@ -15,6 +15,7 @@ class OrgDepartment extends Model
     protected $primaryKey = 'department_id';
 
     protected $fillable = [
+        'legacy_department_id',
         'division_id',
         'company_id',
         'department_code',

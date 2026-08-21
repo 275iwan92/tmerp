@@ -102,7 +102,7 @@ transaksi = `iqp_costing`, ikut inquiry).
 
 **GAP tertunda (tambal via ALTER, non-blocking):**
 1. Estimasi kecepatan F15 (est_days/speed/override/status) — ada di mockup, belum di DDL.
-2. Rate costing versioned (coating/film/sheet) + `prod_tooling_asset` + `sys_constant` — saat costing engine digarap.
+2. ~~Rate costing versioned (coating/film/sheet)~~ — **CLOSED**: `mat_coating_rate`/`mat_sheet_rate`/`mat_grammage` + `sys_constant` sudah ada & dipakai `CostingEngine.php` (Costing Hub live di `inquiry.costing`). `product_costing.html` yang tadinya dikira gap ini ternyata duplikat Costing Hub — dibatalkan.
 3. Selaras diskon qty (mockup teks vs DDL angka).
 
 ---

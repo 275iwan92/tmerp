@@ -19,7 +19,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ✅ [P] Nota Inquiry NEW/RECALC/REVISE — *inquiry_nota_new/recalc/revise.html* → `inquiry.nota` (badge tipe dokumen berwarna: NEW hijau/RECALC ungu/REVISE oranye/PROSPECT amber/CANCELLED merah, sesuai `inquiry_type`. Dicek: ketiga mockup ternyata BUKAN dokumen berbeda struktur — isi/section identik, cuma beda warna badge — jadi bukan 3 layar terpisah, cukup satu Livewire yang sudah live dgn badge dinamis. Diverifikasi lewat data dummy IQ2600003 RECALC & IQ2600004 REVISE)
 - ⬜ [F] Prove Warna — *inquiry_proof.html* — log versi v1/v2/v3, belum digarap
 - 🟡 [D] Costing Manual Cross-Check — *inquiry_costing_manual.html* — beda dari Costing Hub yang sudah live, belum digarap
-- 🟡 [D] Product Costing Engine (HPP) — *product_costing.html* — belum digarap (lihat GAP #2 CLAUDE.md §5: rate versioned coating/film/sheet)
+- ~~🟡 [D] Product Costing Engine (HPP) — *product_costing.html*~~ — **DIBATALKAN 2026-08-21**: dicek, ternyata duplikat Costing Hub yang sudah live (`inquiry.costing` + `CostingEngine.php`) — ladder formula (HPP→Toleransi→Pembulatan→Margin→PPN) & bucket Material/Proses/Coating/Tooling identik. GAP #2 CLAUDE.md §5 (rate versioned coating/film/sheet) ternyata sudah closed sejak Costing Hub dibangun (`mat_coating_rate`/`mat_sheet_rate`/`mat_grammage` sudah ada & dipakai). Tidak perlu layar baru.
 
 ### 1.2 Quotation
 > ⚠️ **Redesain 2026-08-20**: Quotation semula 1:1 per inquiry (versi kemarin) — dirombak total jadi 1 Quotation = N inquiry + N baris jasa/tooling per customer yang sama, sesuai `mockup_sales_quotation_entry.html` (terbaru) + `mockup_sales_quotation_letter_print.html`. Tabel `quo_quotation.inquiry_id` (unique) diganti `customer_id`; tabel baru `quo_quotation_item`.
@@ -39,6 +39,27 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 
 ## MODUL 2 — INVENTORY
 *(urutan dependensi: sebelum Production, karena MRP butuh item_master)*
+### 2.0 Master Warehouse
+> Dibangun 2026-08-21 dari `mockup_master_warehouse.html`, menutup `PROC-WAREHOUSE-MASTER`
+> (`PROC_STATE.yaml`) — sebelumnya `pv_receipt.i_warehouse_code`/`pv_line.i_location_code`
+> teks bebas menunggu tabel ini. Route `/master/warehouse` (menu `MD_WH` yang sudah
+> pre-seeded, sebelumnya belum ditautkan). **Perbedaan disengaja dari mockup**, atas
+> instruksi user (deviasi boleh langsung dibangun asal ditulis):
+> 1. Mockup: 1 baris grid = 1 "gudang" yang sekaligus 1 bin (row/col/stack nempel di
+>    record gudang) — tak bisa 1 gudang punya banyak rak. **Dipisah** jadi `m_warehouse`
+>    (header) 1:N `m_wh_location` (rak/bin) — gudang fisik nyata punya banyak posisi.
+> 2. Mockup: field SKU/Nama Barang/Jumlah Stok/UoM nempel di tiap baris gudang, datanya
+>    dikarang di JS. **Tidak dibuat** — itu posisi stok transaksional (butuh ledger
+>    Inventory yang belum dibangun), bukan master data; kalau dipaksa jadi dua sumber
+>    kebenaran begitu Inventory jalan. KPI stok di mockup ikut didrop, diganti KPI
+>    struktural (jumlah gudang/lokasi).
+> 3. Kode gudang tetap input manual (bukan auto-generate) — jumlah gudang kecil, beda
+>    dari Item Master yang katalognya ribuan.
+> 4. Fitur cetak (Nota Alokasi / Rekap Semua Gudang) di mockup **belum dibangun** —
+>    diprioritaskan Form/Grid dulu sesuai instruksi standing user.
+- ✅ [G] Warehouse List — `master.warehouse.list` (stats gudang/lokasi, filter tipe, cari kode/nama)
+- ✅ [F] Warehouse Entry — `master.warehouse.create` / `.edit` (identitas+tipe gudang, repeater lokasi/bin row-col-stack dengan bin_code auto-generate & unique constraint). Diverifikasi via tinker (create, tambah bin, tabrakan bin_code diblokir, withCount). **Belum diverifikasi visual browser.**
+- ⬜ [P] Nota Alokasi / Label Rak — belum digarap (ada di mockup, sengaja ditunda)
 ### 2.1 Item Master
 > Dibangun 2026-08-21 dari `mockup_master_rawmaterial.html` + `ITEM_MASTER_DELTA.md` (dokumen
 > user), atas `m_raw_material` yang sudah diisi 5.893 baris riil sejak PR Entry. Route
@@ -148,6 +169,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 
 ## MODUL 7 — HUMAN RESOURCE
 > ⚠️ Sudah **tidak ditunda** — HRM digarap paralel di luar urutan asli dokumen ini (lihat memory `project_hrm_module_status`). Master Employee, Machine/Shift, dan Self-Service sudah live.
+> **2026-08-21**: `tm2old.emp` (485 karyawan riil) dimigrasikan via Security → Migrasi Data Legacy (`App\Services\Migration\EmployeeMigrationService`). Departemen/jabatan asli nyaris tak tercatat di sumber (cuma 1 & 5 dari 485 baris) — semua karyawan hasil migrasi sementara dibucket ke satu departemen/jabatan "Migrasi Legacy - Belum Dipetakan", **wajib di-assign ulang manual** oleh HR. Menyusul: 137 akun login (`sec_user`) dibuat untuk karyawan aktif (`EmployeeLoginProvisionService`, tombol "Buat Login Karyawan" di tab yang sama) — karyawan yang sudah keluar sengaja tidak dibuatkan akun. Detail lengkap + cara lihat password di memory `project_hrm_module_status`.
 - ✅ [F][G] Master Employee — *mockup_master_employee.html* → `hrm.employee`
 - ✅ [D] Shift Roster — *mockup_shift_roster_v2.html* → `hrm.shift-roster`
 - ✅ [F] Personal Data Self-Service — *mockup_personal_data_self_service.html* → `self-service.index`
@@ -190,8 +212,8 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ## REKAP STATUS
 | Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
-| 1 Sales (Inquiry/Quotation/CO) | 13 | 5 | 1 |
-| 2 Inventory | 2 | 0 | 5 |
+| 1 Sales (Inquiry/Quotation/CO) | 13 | 4 | 1 |
+| 2 Inventory | 4 | 0 | 6 |
 | 3 Production | 0 | 2 | 9 |
 | 4 Procurement | 8 | 0 | 7 |
 | 5 Dispatch | 0 | 0 | 9 |
@@ -202,7 +224,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**34 item live**, **7 item punya mockup HTML tapi belum diimplementasi Livewire**, **45 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Item Master; Procurement spine PR→PR Approval→PO→PO Approval→PV sudah live penuh dan bisa dijalankan ujung-ke-ujung tanpa akal-akalan, hanya posting stok fisik PV yang tertunda dump legacy; Notification Center & Nota Inquiry per-tipe kini juga live).
+**36 item live**, **6 item punya mockup HTML tapi belum diimplementasi Livewire**, **46 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Master Warehouse + Item Master; Procurement spine PR→PR Approval→PO→PO Approval→PV sudah live penuh dan bisa dijalankan ujung-ke-ujung tanpa akal-akalan, hanya posting stok fisik PV yang tertunda dump legacy; Notification Center & Nota Inquiry per-tipe kini juga live). *(Product Costing Engine (HPP) dikeluarkan dari hitungan 🟡 2026-08-21 — dibatalkan sebagai duplikat Costing Hub, lihat 1.1.)*
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

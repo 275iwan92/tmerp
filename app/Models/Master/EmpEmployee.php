@@ -16,6 +16,7 @@ class EmpEmployee extends Model
     protected $primaryKey = 'employee_id';
 
     protected $fillable = [
+        'legacy_employee_id',
         'employee_code',
         'company_id',
         'position_id',
@@ -27,6 +28,7 @@ class EmpEmployee extends Model
         'nik_ktp',
         'npwp_number',
         'religion',
+        'marital_status',
         'phone',
         'email_personal',
         'village_id_ktp',

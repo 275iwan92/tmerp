@@ -4,6 +4,8 @@ use App\Models\Sys\SecGroup;
 use App\Models\Sys\SecGroupPermission;
 use App\Models\Sys\SecModule;
 use App\Models\Sys\SecUser;
+use App\Services\Migration\EmployeeLoginProvisionService;
+use App\Services\Migration\EmployeeMigrationService;
 use App\Services\Migration\VendorMigrationService;
 use App\Services\Security\PasswordResetService;
 use Illuminate\Support\Facades\Auth;
@@ -211,6 +213,42 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
         $this->migrationRunning = false;
     }
 
+    public ?array $employeeMigrationReport = null;
+
+    public bool $employeeMigrationRunning = false;
+
+    public function runEmployeeMigration(): void
+    {
+        $this->employeeMigrationRunning = true;
+        $this->employeeMigrationReport = app(EmployeeMigrationService::class)->run(Auth::user()->login);
+        $this->employeeMigrationRunning = false;
+    }
+
+    public ?array $loginProvisionReport = null;
+
+    public bool $loginProvisionRunning = false;
+
+    public function runEmployeeLoginProvision(): void
+    {
+        $this->loginProvisionRunning = true;
+        $this->loginProvisionReport = app(EmployeeLoginProvisionService::class)->run(Auth::user()->login);
+        $this->loginProvisionRunning = false;
+        unset($this->users);
+    }
+
+    // Lihat ULANG default_password user yang sudah ada (BUKAN reset/timpa) --
+    // dipakai buat spot-check akun karyawan hasil provisioning massal, tanpa
+    // mengubah passwordnya. Reuse bucket tampilan yang sama dgn resetPassword().
+    public function revealPassword(int $userId): void
+    {
+        $user = SecUser::findOrFail($userId);
+
+        if ($user->default_password) {
+            session()->flash('resetPlain_'.$userId, $user->default_password);
+            $this->revealUserId = $userId;
+        }
+    }
+
     public function logout()
     {
         Auth::logout();
@@ -291,6 +329,9 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                     </td>
                                     <td>
                                         <button type="button" class="link-act" wire:click="resetPassword({{ $u->id_user }})" wire:confirm="Reset password {{ $u->login }} ke password baru?">Reset password</button>
+                                        @if ($u->default_password)
+                                            <button type="button" class="link-act" wire:click="revealPassword({{ $u->id_user }})">Lihat password</button>
+                                        @endif
                                         @if ($u->id_user !== Auth::id())
                                             <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                                         @else
@@ -454,6 +495,89 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                         @endforeach
                                     </ul>
                                 </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                <div class="box" style="margin-top:16px">
+                    <h3>tm2old.emp → emp_employee (+ org_department / org_position)</h3>
+                    <p class="note">Sumber: <code>emp</code> (485 baris, roster lengkap — <code>emp_history</code> 347 baris SENGAJA dilewati karena ternyata arsip duplikat penuh dari <code>emp</code>, bukan 347 orang lain), <code>emp_position</code> (49 jabatan), <code>emp_identities</code> (KTP), <code>org_department</code> legacy (20 departemen). Data personal (nama/gender/tanggal lahir/dsb) sangat tidak lengkap di sumber — TIDAK dikarang, dibiarkan kosong apa adanya.</p>
+                    <p class="note" style="color:var(--sp-danger)">⚠ Departemen/jabatan asli per karyawan nyaris tidak tercatat di legacy (cuma 1 dari 485 baris). Semua karyawan hasil migrasi ini masuk ke satu bucket sementara "Migrasi Legacy - Belum Dipetakan" — wajib di-assign ulang manual ke department/position yang benar.</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runEmployeeMigration" wire:loading.attr="disabled"
+                            wire:confirm="Jalankan migrasi data karyawan dari tm2old.emp sekarang?">
+                            <span wire:loading.remove wire:target="runEmployeeMigration">▶ Jalankan Migrasi Karyawan</span>
+                            <span wire:loading wire:target="runEmployeeMigration">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($employeeMigrationReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi karyawan selesai.</p>
+                            <table>
+                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Departemen (referensi)</td><td>{{ $employeeMigrationReport['departments']['created'] }} baru, {{ $employeeMigrationReport['departments']['updated'] }} diperbarui</td></tr>
+                                    <tr><td>Jabatan (referensi)</td><td>{{ $employeeMigrationReport['positions']['created'] }} baru, {{ $employeeMigrationReport['positions']['updated'] }} diperbarui</td></tr>
+                                    <tr><td>Karyawan</td><td>{{ $employeeMigrationReport['employees']['created'] }} baru, {{ $employeeMigrationReport['employees']['updated'] }} diperbarui</td></tr>
+                                    <tr><td>Rekening bank</td><td>{{ $employeeMigrationReport['bankAccounts']['created'] }} baru</td></tr>
+                                    <tr><td>Dokumen KTP</td><td>{{ $employeeMigrationReport['documents']['created'] }} baru</td></tr>
+                                    <tr><td>Gender tidak diketahui</td><td>{{ $employeeMigrationReport['genderUnknown'] }} karyawan (dibiarkan kosong)</td></tr>
+                                    <tr><td>Tanggal masuk tidak diketahui</td><td>{{ $employeeMigrationReport['joinDateUnknown'] }} karyawan (dibiarkan kosong)</td></tr>
+                                </tbody>
+                            </table>
+
+                            @if (! empty($employeeMigrationReport['employees']['skipped']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($employeeMigrationReport['employees']['skipped']) }} baris dilewati:</p>
+                                    <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
+                                        @foreach ($employeeMigrationReport['employees']['skipped'] as $s)
+                                            <li>{{ $s }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            @if (! empty($employeeMigrationReport['errors']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($employeeMigrationReport['errors']) }} baris gagal diproses:</p>
+                                    <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
+                                        @foreach ($employeeMigrationReport['errors'] as $err)
+                                            <li>{{ $err }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                <div class="box" style="margin-top:16px">
+                    <h3>emp_employee (aktif) → login sec_user</h3>
+                    <p class="note">Buat akun login untuk karyawan hasil migrasi di atas yang <code>is_active=1</code> (karyawan yang sudah keluar TIDAK dibuatkan akun — realistis). Username = nama depan (tabrakan ditambah angka), password acak dibuat lewat <code>PasswordResetService</code>, wajib ganti password di login pertama. Aman dijalankan berulang — karyawan yang sudah punya akun dilewati.</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runEmployeeLoginProvision" wire:loading.attr="disabled"
+                            wire:confirm="Buat akun login untuk semua karyawan aktif hasil migrasi sekarang?">
+                            <span wire:loading.remove wire:target="runEmployeeLoginProvision">▶ Buat Login Karyawan</span>
+                            <span wire:loading wire:target="runEmployeeLoginProvision">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($loginProvisionReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ {{ $loginProvisionReport['created'] }} akun baru dibuat, {{ $loginProvisionReport['skippedExisting'] }} dilewati (sudah punya akun).</p>
+
+                            @if (! empty($loginProvisionReport['sample']))
+                                <p class="note">Contoh {{ count($loginProvisionReport['sample']) }} akun pertama (sisanya bisa dicek lewat tombol "Lihat password" di Daftar Pengguna di atas):</p>
+                                <table>
+                                    <thead><tr><th>Username</th><th>Nama</th><th>Password</th></tr></thead>
+                                    <tbody>
+                                        @foreach ($loginProvisionReport['sample'] as $s)
+                                            <tr><td><code>{{ $s['login'] }}</code></td><td>{{ $s['name'] }}</td><td><code>{{ $s['password'] }}</code></td></tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             @endif
                         </div>
                     @endif

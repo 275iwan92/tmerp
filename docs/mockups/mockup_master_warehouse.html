@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP Master Gudang - Linked Stock Allocation</title>
+    <style>
+        :root {
+            --primary-color: #0f4c81;
+            --primary-hover: #0a355c;
+            --secondary-color: #6c757d;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --border-color: #dee2e6;
+            --text-color: #333333;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #17a2b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
+        .container { max-width: 1280px; margin: 0 auto; background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; }
+
+        /* Header */
+        .app-header { background-color: var(--primary-color); color: white; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+        .app-header h1 { font-size: 20px; font-weight: 600; }
+        .app-header span { font-size: 13px; opacity: 0.85; }
+
+        .view-section { padding: 24px; }
+        .hidden { display: none !important; }
+
+        /* KPI Dashboard Cards */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-left: 5px solid var(--primary-color);
+            border-radius: 6px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kpi-card.raw { border-left-color: #0d47a1; }
+        .kpi-card.fg { border-left-color: #1b5e20; }
+        .kpi-card.scrap { border-left-color: #b71c1c; }
+        .kpi-card.occupancy { border-left-color: #f57f17; }
+
+        .kpi-title { font-size: 12px; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 6px; }
+        .kpi-value { font-size: 22px; font-weight: 700; color: #212529; }
+        .kpi-subtext { font-size: 11px; color: #888; margin-top: 4px; }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; background: #f8f9fa; padding: 14px; border-radius: 6px; border: 1px solid var(--border-color);
+        }
+        .filter-group { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .form-control { padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 14px; outline: none; }
+        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.2); }
+
+        /* Buttons */
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: var(--secondary-color); color: white; }
+        .btn-secondary:hover { background-color: #5a6268; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: #218838; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary-color); color: var(--primary-color); }
+        .btn-outline:hover { background: var(--primary-color); color: white; }
+
+        /* Data Grid */
+        .table-responsive { overflow-x: auto; border: 1px solid var(--border-color); border-radius: 6px; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .data-table th, .data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: #e9ecef; color: #495057; font-weight: 600; user-select: none; }
+        .data-table tbody tr { cursor: pointer; transition: background-color 0.15s ease; }
+        .data-table tbody tr:hover { background-color: #f1f5f9; }
+
+        /* Badges */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-raw { background-color: #e3f2fd; color: #0d47a1; }
+        .badge-fg { background-color: #e8f5e9; color: #1b5e20; }
+        .badge-mix { background-color: #fff8e1; color: #f57f17; }
+        .badge-scrap { background-color: #ffebee; color: #b71c1c; }
+
+        .hint-text { font-size: 12px; color: #6c757d; margin-top: 8px; font-style: italic; }
+
+        /* Form Layout */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .form-card { background: #f8f9fa; border: 1px solid var(--border-color); border-radius: 6px; padding: 18px; }
+        .form-card h3 { font-size: 15px; margin-bottom: 14px; color: var(--primary-color); border-bottom: 2px solid #e9ecef; padding-bottom: 6px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #495057; }
+        .radio-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+        .radio-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+
+        /* Modal Print */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 30px; border-radius: 8px; max-width: 750px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .print-ticket { border: 2px dashed #333; padding: 20px; background: #fff; margin-bottom: 20px; }
+        .barcode-box { text-align: center; background: #eee; padding: 10px; letter-spacing: 4px; font-family: monospace; font-weight: bold; font-size: 18px; margin: 15px 0; border: 1px solid #ccc; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printableArea, #printableArea * { visibility: visible; }
+            #printableArea { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="app-header">
+        <div>
+            <h1>ERP Warehouse Master & Inventory Allocation</h1>
+            <span>Struktur Alokasi Row, Column, Stack & Linked Stock Items</span>
+        </div>
+        <div id="headerClock" style="font-size: 12px; font-family: monospace;"></div>
+    </header>
+
+    <!-- ==================== SCREEN 1: GRID VIEW ==================== -->
+    <section id="gridView" class="view-section">
+        
+        <!-- KPI Dashboard Cards Panel -->
+        <div class="kpi-container">
+            <div class="kpi-card raw">
+                <span class="kpi-title">Stok Bahan Baku</span>
+                <span class="kpi-value" id="kpiRawVal">0 Rim</span>
+                <span class="kpi-subtext">Kertas, Pulp, Chemical, Film</span>
+            </div>
+            <div class="kpi-card fg">
+                <span class="kpi-title">Stok Barang Jadi</span>
+                <span class="kpi-value" id="kpiFgVal">0 Box</span>
+                <span class="kpi-subtext">Produk Siap Kirim (FG)</span>
+            </div>
+            <div class="kpi-card scrap">
+                <span class="kpi-title">Barang Jelekan / Scrap</span>
+                <span class="kpi-value" id="kpiScrapVal">0 Kg</span>
+                <span class="kpi-subtext">Afval, Off-Spec, Damaged</span>
+            </div>
+            <div class="kpi-card occupancy">
+                <span class="kpi-title">Okupansi Storage Bin</span>
+                <span class="kpi-value" id="kpiOccupancyVal">0%</span>
+                <span class="kpi-subtext" id="kpiOccupancySub">0 / 0 Bin Terisi</span>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="filter-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Cari Gudang, Bin, atau Barang..." onkeyup="filterGrid()">
+                <select id="typeFilter" class="form-control" onchange="filterGrid()">
+                    <option value="">-- Semua Tipe Gudang --</option>
+                    <option value="Bahan Baku">Bahan Baku</option>
+                    <option value="Barang Jadi">Barang Jadi</option>
+                    <option value="Mix">Mix</option>
+                    <option value="Scrap">Scrap / Barang Jelekan</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline" onclick="printAllWarehousesReport()">🖨️ Cetak Semua Gudang</button>
+                <button class="btn btn-primary" onclick="openFormForCreate()">+ Tambah Gudang Baru</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Kode Gudang</th>
+                        <th>Nama Gudang</th>
+                        <th>Tipe</th>
+                        <th>Row</th>
+                        <th>Col</th>
+                        <th>Stack</th>
+                        <th>Kode Bin</th>
+                        <th>Item Tersimpan (SKU / Nama)</th>
+                        <th>Jumlah Stok</th>
+                        <th>Kapasitas Bin</th>
+                    </tr>
+                </thead>
+                <tbody id="warehouseTableBody">
+                    <!-- Data rendered via JS -->
+                </tbody>
+            </table>
+        </div>
+        <p class="hint-text">* Petunjuk: Klik 2x (double-click) pada baris data untuk membuka form edit detail alokasi & stok barang.</p>
+    </section>
+
+    <!-- ==================== SCREEN 2: FORM EDITING VIEW ==================== -->
+    <section id="formView" class="view-section hidden">
+        <div class="toolbar" style="background: white; border-bottom: 2px solid var(--primary-color);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="btn btn-secondary" onclick="showGridView()">← Kembali ke Grid</button>
+                <h2 id="formTitle" style="font-size: 18px; color: var(--primary-color);">Form Edit Master Gudang & Stok</h2>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline" id="btnPrintNota" onclick="printAllocationNota()">🖨️ Cetak Nota Alokasi</button>
+                <button class="btn btn-success" onclick="saveWarehouseData()">💾 Simpan Data</button>
+            </div>
+        </div>
+
+        <form id="warehouseForm">
+            <input type="hidden" id="formEditIndex" value="-1">
+            
+            <div class="form-grid">
+                <!-- Seksi 1: Identitas -->
+                <div class="form-card">
+                    <h3>1. Identitas & Klasifikasi Gudang</h3>
+                    <div class="form-group">
+                        <label for="inputCode">Kode Gudang</label>
+                        <input type="text" id="inputCode" class="form-control" style="width: 100%;" required placeholder="WH-RAW-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputName">Nama Gudang</label>
+                        <input type="text" id="inputName" class="form-control" style="width: 100%;" required placeholder="Gudang Bahan Baku Utama">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipe Gudang</label>
+                        <div class="radio-group">
+                            <label class="radio-item"><input type="radio" name="warehouseType" value="Bahan Baku" checked onchange="updateBinCodePreview()"> Bahan Baku (Raw Material)</label>
+                            <label class="radio-item"><input type="radio" name="warehouseType" value="Barang Jadi" onchange="updateBinCodePreview()"> Barang Jadi (Finished Goods)</label>
+                            <label class="radio-item"><input type="radio" name="warehouseType" value="Mix" onchange="updateBinCodePreview()"> Mix (Transit / Buffer)</label>
+                            <label class="radio-item"><input type="radio" name="warehouseType" value="Scrap" onchange="updateBinCodePreview()"> Barang Jelekan / Scrap</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seksi 2: Koordinat Spasial -->
+                <div class="form-card">
+                    <h3>2. Koordinat Alokasi Spasial</h3>
+                    <div class="form-group">
+                        <label for="inputRow">Row / Baris (Aisle)</label>
+                        <input type="text" id="inputRow" class="form-control" style="width: 100%;" required placeholder="R01" oninput="updateBinCodePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputColumn">Column / Sekat (Bay)</label>
+                        <input type="text" id="inputColumn" class="form-control" style="width: 100%;" required placeholder="C01" oninput="updateBinCodePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputStack">Stack / Tingkat (Tier)</label>
+                        <input type="text" id="inputStack" class="form-control" style="width: 100%;" required placeholder="S01" oninput="updateBinCodePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>Generated Bin Address Code</label>
+                        <input type="text" id="inputBinCode" class="form-control" style="width: 100%; background: #e9ecef; font-weight: bold;" readonly>
+                    </div>
+                </div>
+
+                <!-- Seksi 3: Alokasi Barang & Kuantitas -->
+                <div class="form-card">
+                    <h3>3. Stok Barang Tersimpan (Linked Item)</h3>
+                    <div class="form-group">
+                        <label for="inputItemSku">SKU / Kode Barang</label>
+                        <input type="text" id="inputItemSku" class="form-control" style="width: 100%;" placeholder="SKU-PAP-70GSM">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputItemName">Nama Barang / Material</label>
+                        <input type="text" id="inputItemName" class="form-control" style="width: 100%;" placeholder="Kertas HVS A4 70gsm">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 2;">
+                            <label for="inputItemQty">Jumlah Stok</label>
+                            <input type="number" id="inputItemQty" class="form-control" style="width: 100%;" placeholder="500">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="inputItemUom">Satuan (UoM)</label>
+                            <select id="inputItemUom" class="form-control" style="width: 100%;">
+                                <option value="Rim">Rim</option>
+                                <option value="Box">Box</option>
+                                <option value="Roll">Roll</option>
+                                <option value="Kg">Kg</option>
+                                <option value="Pcs">Pcs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputCapacity">Kapasitas Maksimal Bin (Kg)</label>
+                        <input type="number" id="inputCapacity" class="form-control" style="width: 100%;" required placeholder="2000">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<!-- ==================== PRINT MODAL DIALOG ==================== -->
+<div id="printModal" class="modal-overlay hidden">
+    <div class="modal-content">
+        <div id="printableArea">
+            <!-- Content generated dynamically -->
+        </div>
+        <div class="no-print" style="margin-top: 20px; text-align: right; display: flex; justify-content: flex-end; gap: 10px;">
+            <button class="btn btn-secondary" onclick="closePrintModal()">Tutup</button>
+            <button class="btn btn-primary" onclick="window.print()">🖨️ Cetak Sekarang</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Master Dataset dengan Linked Items & UoM
+    let warehouseData = [
+        { code: 'WH-RAW-001', name: 'Gudang Utama Bahan Baku', type: 'Bahan Baku', row: 'R01', col: 'C01', stack: 'S01', sku: 'RM-PAP-70G', itemName: 'Kertas HVS A4 70gsm Premium', qty: 1250, uom: 'Rim', capacity: 2000, status: 'Aktif' },
+        { code: 'WH-RAW-002', name: 'Gudang Bahan Pembantu', type: 'Bahan Baku', row: 'R01', col: 'C02', stack: 'S03', sku: 'RM-INK-CYN', itemName: 'Tinta Cetak Offset Cyan', qty: 450, uom: 'Kg', capacity: 1500, status: 'Aktif' },
+        { code: 'WH-FG-001', name: 'Gudang Utama Barang Jadi', type: 'Barang Jadi', row: 'R02', col: 'C01', stack: 'S01', sku: 'FG-BOK-ERP', itemName: 'Buku Agenda Custom ERP 2026', qty: 3200, uom: 'Box', capacity: 5000, status: 'Aktif' },
+        { code: 'WH-MX-001', name: 'Gudang Transit & Buffer', type: 'Mix', row: 'R03', col: 'C04', stack: 'S02', sku: 'MX-PKG-BOX', itemName: 'Karton Box Packaging Transit', qty: 800, uom: 'Pcs', capacity: 3000, status: 'Aktif' },
+        { code: 'WH-SCP-001', name: 'Area Penampungan Afval', type: 'Scrap', row: 'R09', col: 'C01', stack: 'S01', sku: 'SCP-PAP-AFV', itemName: 'Afval Potongan Kertas Rusak', qty: 350, uom: 'Kg', capacity: 500, status: 'Aktif' }
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderGridAndKPI(warehouseData);
+        updateClock();
+        setInterval(updateClock, 1000);
+    });
+
+    function updateClock() {
+        document.getElementById('headerClock').innerText = new Date().toLocaleString('id-ID');
+    }
+
+    function generateBinCode(code, row, col, stack) {
+        return `${code || 'WH'}-${row || 'R00'}-${col || 'C00'}-${stack || 'S00'}`;
+    }
+
+    function getTypeBadge(type) {
+        switch(type) {
+            case 'Bahan Baku': return '<span class="badge badge-raw">Bahan Baku</span>';
+            case 'Barang Jadi': return '<span class="badge badge-fg">Barang Jadi</span>';
+            case 'Mix': return '<span class="badge badge-mix">Mix</span>';
+            case 'Scrap': return '<span class="badge badge-scrap">Scrap</span>';
+            default: return `<span class="badge">${type}</span>`;
+        }
+    }
+
+    // Render Grid & Calculate KPI Header Statistics
+    function renderGridAndKPI(data) {
+        const tbody = document.getElementById('warehouseTableBody');
+        tbody.innerHTML = '';
+
+        let totalRaw = 0; let rawUom = 'Rim/Kg';
+        let totalFg = 0; let fgUom = 'Box';
+        let totalScrap = 0; let scrapUom = 'Kg';
+        let occupiedBins = 0;
+
+        data.forEach((item, index) => {
+            if(item.qty > 0) occupiedBins++;
+
+            // Accumulate KPI values
+            if(item.type === 'Bahan Baku') totalRaw += item.qty;
+            if(item.type === 'Barang Jadi') totalFg += item.qty;
+            if(item.type === 'Scrap') totalScrap += item.qty;
+
+            const binCode = generateBinCode(item.code, item.row, item.col, item.stack);
+            const tr = document.createElement('tr');
+            tr.title = "Double-click untuk mengedit alokasi & stok barang";
+            tr.ondblclick = () => openFormForEdit(index);
+
+            tr.innerHTML = `
+                <td><strong>${item.code}</strong></td>
+                <td>${item.name}</td>
+                <td>${getTypeBadge(item.type)}</td>
+                <td>${item.row}</td>
+                <td>${item.col}</td>
+                <td>${item.stack}</td>
+                <td><code>${binCode}</code></td>
+                <td><strong>${item.sku || '-'}</strong> <br><span style="font-size:11px; color:#666;">${item.itemName || 'Kosong'}</span></td>
+                <td><span style="color:${item.qty > 0 ? '#0d47a1':'#888'}; font-weight:bold;">${item.qty ? Number(item.qty).toLocaleString('id-ID') : 0} ${item.uom || ''}</span></td>
+                <td>${Number(item.capacity).toLocaleString('id-ID')} Kg</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        // Update KPI Cards
+        document.getElementById('kpiRawVal').innerText = `${totalRaw.toLocaleString('id-ID')} Rim/Kg`;
+        document.getElementById('kpiFgVal').innerText = `${totalFg.toLocaleString('id-ID')} Box`;
+        document.getElementById('kpiScrapVal').innerText = `${totalScrap.toLocaleString('id-ID')} Kg`;
+
+        const occupancyPct = data.length > 0 ? Math.round((occupiedBins / data.length) * 100) : 0;
+        document.getElementById('kpiOccupancyVal').innerText = `${occupancyPct}%`;
+        document.getElementById('kpiOccupancySub').innerText = `${occupiedBins} dari ${data.length} Storage Bin Terisi`;
+    }
+
+    function filterGrid() {
+        const searchVal = document.getElementById('searchInput').value.toLowerCase();
+        const typeVal = document.getElementById('typeFilter').value;
+
+        const filtered = warehouseData.filter(item => {
+            const binCode = generateBinCode(item.code, item.row, item.col, item.stack).toLowerCase();
+            const matchesSearch = item.code.toLowerCase().includes(searchVal) || 
+                                  item.name.toLowerCase().includes(searchVal) || 
+                                  (item.itemName && item.itemName.toLowerCase().includes(searchVal)) ||
+                                  (item.sku && item.sku.toLowerCase().includes(searchVal)) ||
+                                  binCode.includes(searchVal);
+            const matchesType = typeVal === '' || item.type === typeVal;
+            return matchesSearch && matchesType;
+        });
+
+        renderGridAndKPI(filtered);
+    }
+
+    function showGridView() {
+        document.getElementById('gridView').classList.remove('hidden');
+        document.getElementById('formView').classList.add('hidden');
+    }
+
+    function showFormView() {
+        document.getElementById('gridView').classList.add('hidden');
+        document.getElementById('formView').classList.remove('hidden');
+    }
+
+    function openFormForCreate() {
+        document.getElementById('formTitle').innerText = 'Tambah Master Gudang Baru';
+        document.getElementById('formEditIndex').value = '-1';
+        document.getElementById('warehouseForm').reset();
+        document.getElementById('btnPrintNota').classList.add('hidden');
+        updateBinCodePreview();
+        showFormView();
+    }
+
+    function openFormForEdit(index) {
+        const item = warehouseData[index];
+        document.getElementById('formTitle').innerText = `Edit Alokasi Gudang: ${item.code}`;
+        document.getElementById('formEditIndex').value = index;
+
+        document.getElementById('inputCode').value = item.code;
+        document.getElementById('inputName').value = item.name;
+        document.getElementById('inputRow').value = item.row;
+        document.getElementById('inputColumn').value = item.col;
+        document.getElementById('inputStack').value = item.stack;
+        document.getElementById('inputCapacity').value = item.capacity;
+
+        document.getElementById('inputItemSku').value = item.sku || '';
+        document.getElementById('inputItemName').value = item.itemName || '';
+        document.getElementById('inputItemQty').value = item.qty || 0;
+        document.getElementById('inputItemUom').value = item.uom || 'Rim';
+
+        const radios = document.getElementsByName('warehouseType');
+        radios.forEach(radio => { radio.checked = (radio.value === item.type); });
+
+        document.getElementById('btnPrintNota').classList.remove('hidden');
+        updateBinCodePreview();
+        showFormView();
+    }
+
+    function updateBinCodePreview() {
+        const code = document.getElementById('inputCode').value;
+        const row = document.getElementById('inputRow').value;
+        const col = document.getElementById('inputColumn').value;
+        const stack = document.getElementById('inputStack').value;
+        document.getElementById('inputBinCode').value = generateBinCode(code, row, col, stack);
+    }
+
+    function saveWarehouseData() {
+        const index = parseInt(document.getElementById('formEditIndex').value);
+        const code = document.getElementById('inputCode').value.trim();
+        const name = document.getElementById('inputName').value.trim();
+        const row = document.getElementById('inputRow').value.trim();
+        const col = document.getElementById('inputColumn').value.trim();
+        const stack = document.getElementById('inputStack').value.trim();
+        const capacity = document.getElementById('inputCapacity').value;
+
+        const sku = document.getElementById('inputItemSku').value.trim();
+        const itemName = document.getElementById('inputItemName').value.trim();
+        const qty = Number(document.getElementById('inputItemQty').value || 0);
+        const uom = document.getElementById('inputItemUom').value;
+
+        const radios = document.getElementsByName('warehouseType');
+        let selectedType = 'Bahan Baku';
+        radios.forEach(r => { if(r.checked) selectedType = r.value; });
+
+        if(!code || !name || !row || !col || !stack) {
+            alert('Mohon lengkapi kode, nama, dan koordinat alokasi gudang!');
+            return;
+        }
+
+        const newObj = { code, name, type: selectedType, row, col, stack, capacity: Number(capacity), sku, itemName, qty, uom, status: 'Aktif' };
+
+        if(index === -1) {
+            warehouseData.push(newObj);
+            alert('Gudang baru berhasil ditambahkan!');
+        } else {
+            warehouseData[index] = newObj;
+            alert('Alokasi & stok barang berhasil diperbarui!');
+        }
+
+        renderGridAndKPI(warehouseData);
+        showGridView();
+    }
+
+    // Print: Rekapitulasi Semua Gudang
+    function printAllWarehousesReport() {
+        const printArea = document.getElementById('printableArea');
+        let rowsHtml = '';
+
+        warehouseData.forEach((w, i) => {
+            const binCode = generateBinCode(w.code, w.row, w.col, w.stack);
+            rowsHtml += `
+                <tr>
+                    <td style="border:1px solid #ddd; padding:6px;">${i+1}</td>
+                    <td style="border:1px solid #ddd; padding:6px;"><strong>${w.code}</strong></td>
+                    <td style="border:1px solid #ddd; padding:6px;">${w.name}</td>
+                    <td style="border:1px solid #ddd; padding:6px;">${w.type}</td>
+                    <td style="border:1px solid #ddd; padding:6px;">${binCode}</td>
+                    <td style="border:1px solid #ddd; padding:6px;">${w.sku || '-'} - ${w.itemName || 'Kosong'}</td>
+                    <td style="border:1px solid #ddd; padding:6px; font-weight:bold;">${w.qty ? Number(w.qty).toLocaleString('id-ID') : 0} ${w.uom || ''}</td>
+                </tr>
+            `;
+        });
+
+        printArea.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2>LAPORAN REKAPITULASI MASTER GUDANG & LINKED STOCK</h2>
+                <p style="font-size: 12px; color: #555;">Sistem Informasi Logistics & Inventory Management ERP</p>
+                <p style="font-size: 11px; color: #777;">Tanggal: ${new Date().toLocaleDateString('id-ID')}</p>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                <thead>
+                    <tr style="background: #f2f2f2;">
+                        <th style="border: 1px solid #ddd; padding: 6px;">No</th>
+                        <th style="border: 1px solid #ddd; padding: 6px;">Kode</th>
+                        <th style="border: 1px solid #ddd; padding: 6px;">Nama Gudang</th>
+                        <th style="border: 1px solid #ddd; padding: 6px;">Tipe</th>
+                        <th style="border: 1px solid #ddd; padding: 6px;">Bin Address Code</th>
+                        <th style="border: 1px solid #ddd; padding: 6px;">Barang Tersimpan</th>
+                        <th style="border: 1px solid #ddd; padding: 6px;">Jumlah Stok</th>
+                    </tr>
+                </thead>
+                <tbody>${rowsHtml}</tbody>
+            </table>
+        `;
+        document.getElementById('printModal').classList.remove('hidden');
+    }
+
+    // Print: Nota Alokasi Tunggal
+    function printAllocationNota() {
+        const code = document.getElementById('inputCode').value;
+        const name = document.getElementById('inputName').value;
+        const row = document.getElementById('inputRow').value;
+        const col = document.getElementById('inputColumn').value;
+        const stack = document.getElementById('inputStack').value;
+        const binCode = document.getElementById('inputBinCode').value;
+
+        const sku = document.getElementById('inputItemSku').value;
+        const itemName = document.getElementById('inputItemName').value;
+        const qty = document.getElementById('inputItemQty').value;
+        const uom = document.getElementById('inputItemUom').value;
+
+        const radios = document.getElementsByName('warehouseType');
+        let type = 'Bahan Baku';
+        radios.forEach(r => { if(r.checked) type = r.value; });
+
+        document.getElementById('printableArea').innerHTML = `
+            <div class="print-ticket">
+                <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding-bottom: 8px;">
+                    <div>
+                        <h2 style="font-size: 16px;">NOTA ALOKASI PENYIMPANAN & LABEL RAK</h2>
+                        <span style="font-size: 11px;">ERP Storage Allocation Ticket</span>
+                    </div>
+                    <div style="text-align: right; font-size: 11px;">
+                        <strong>TIPE: ${type.toUpperCase()}</strong>
+                    </div>
+                </div>
+
+                <div class="barcode-box">
+                    ||||||||||||||||||||||||||||||||||||||||||||||<br>
+                    ${binCode}
+                </div>
+
+                <table style="width: 100%; font-size: 12px; line-height: 1.8;">
+                    <tr><td style="width: 40%; color: #555;">Gudang:</td><td><strong>${code} - ${name}</strong></td></tr>
+                    <tr><td style="color: #555;">Koordinat (Row-Col-Stack):</td><td><strong>Row: ${row} | Bay: ${col} | Tier: ${stack}</strong></td></tr>
+                    <tr style="border-top: 1px dashed #ccc;"><td style="color: #555;">Barang Tersimpan (SKU):</td><td><strong>${sku || '-'}</strong></td></tr>
+                    <tr><td style="color: #555;">Nama Material / Produk:</td><td><strong>${itemName || 'Bin Kosong'}</strong></td></tr>
+                    <tr><td style="color: #555;">Jumlah On-Hand Stock:</td><td><strong style="font-size:14px; color:#0d47a1;">${qty ? Number(qty).toLocaleString('id-ID') : 0} ${uom}</strong></td></tr>
+                </table>
+            </div>
+        `;
+        document.getElementById('printModal').classList.remove('hidden');
+    }
+
+    function closePrintModal() {
+        document.getElementById('printModal').classList.add('hidden');
+    }
+</script>
+
+</body>
+</html>
