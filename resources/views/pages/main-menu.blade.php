@@ -448,7 +448,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         <header class="topbar">
             <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="Sembunyikan sidebar">☰</button>
             <nav class="mega">
-                <template x-for="m in menuTree" :key="m.id">
+                {{-- SETUP sengaja tidak muncul di topbar -- khusus admin, aksesnya
+                     lewat menu profil ("Pengaturan (Setup)" di dropdown avatar). --}}
+                <template x-for="m in menuTree.filter(x => x.code !== 'SETUP')" :key="m.id">
                     <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="m.label + (m.statusLabel ? ' — '+m.statusLabel : '')" @click="selectModule(m.code)">
                         <span class="mi"><i :class="m.icon"></i></span> <span x-text="topLabel(m.code, m.label)"></span>
                         <span class="status-dot" :style="{ background: m.statusColor }"></span>
