@@ -101,7 +101,73 @@ otomatis collapsible. Tidak perlu kerjaan tambahan saat menambah grup baru.
 
 ---
 
-## 4. Checklist saat menambah/menata ulang menu modul
+## 5. Inventory — 3 kelas stok wajib ada, di Laporan MAUPUN Input
+
+Bukan cuma layar Laporan (§ di atas — Kartu Stok, Master Stok) yang wajib
+membedakan 3 kelas stok, layar **Input/transaksi Inventory juga** (Stock In,
+Stock Out, Return from Production, Stock Adjustment & Opname — semua masih
+`NOT_BUILT` per 2026-08-22, tulisan ini jadi acuan begitu digarap):
+
+1. **Bahan Baku & Bahan Pembantu** (`stock_class = 'RM'`) — master
+   `MRawMaterial` (`m_raw_material`), sumber transaksi `rm_stock`/`rm_stock_d`/`rm_stockcard`.
+2. **Barang Jadi** (`stock_class = 'FG'`) — master `ProdProduct` (`prod_product`),
+   sumber transaksi `fg_stock`/`fg_stock_d`/`fg_stockcard` (skema sudah ada,
+   0 baris — belum ada layar input yang menulis ke sana).
+3. **Barang Setengah Jadi** (`stock_class = 'SFG'`) — master `ProdPart`
+   (`prod_part`), sumber transaksi `sfg_stock`/`sfg_stock_d`/`sfg_stockcard`
+   (sama, skema ada, 0 baris).
+
+**Pola wajib**: SETIAP layar Input Inventory yang baru dibangun harus punya
+selector 3 kategori ini di awal alurnya (tombol/tab, bukan dropdown
+tersembunyi) — sama seperti yang sudah diterapkan di Kartu Stok & Master
+Stok (`resources/views/pages/inventory/print/{stock-card,master-stock}.blade.php`,
+lihat `switchCategory()` + `CATEGORY_LABELS` const, dan `tm2inv.v_inv_movement`
+yang sudah menormalkan kolom `item_id`/`item_code`/`item_name` lintas 3 kelas
+lewat `UNION ALL` — reuse view itu utk baca, tapi utk TULIS transaksi baru
+tetap ke tabel per-kelas yang sesuai (`rm_stock_d` utk RM, dst.), bukan ke view).
+
+**Jangan** bikin 3 menu/layar terpisah per kelas (mis. "Stock In Bahan Baku",
+"Stock In Barang Jadi" sendiri-sendiri) — itu 3x kerja maintain utk logic
+yang sama persis, cukup 1 layar per jenis transaksi dengan selector kelas di
+dalamnya, persis pola 2 layar Laporan yang sudah jadi.
+
+---
+
+## 6. Procurement — Purchase Receive punya 3 jenis penerimaan berbeda
+
+Ditulis 2026-08-22 dari instruksi user, **belum dibangun** — layar
+`pur.pv.list`/`pur.pv.entry` yang sudah ada (menu `PROC_RCV`, live) baru
+menangani jenis #1 saja. Catatan ini acuan scope kalau/ketika 2 jenis
+lainnya digarap:
+
+1. **Penerimaan dari PO** (sudah ada) — barang masuk dari supplier atas
+   dasar Purchase Order yang sudah di-approve. Ini yang selama ini disebut
+   "Purchase Receive" / PV / SPB (`pur.pv.*`, multi-PO per dokumen).
+2. **Penerimaan dari Customer (bahan milik customer)** — customer order
+   dengan syarat bawa bahan baku sendiri (consignment/customer-supplied
+   material — lihat juga `prod_product`/inquiry punya konsep
+   `material_source` OWN/CUSTOMER, kolom ini sudah ada di `iqp_part_material`).
+   Barang masuk BUKAN dari supplier & BUKAN atas dasar PO — dari Customer
+   Order langsung. Kemungkinan butuh dokumen & alur berbeda dari PV biasa
+   (tidak ada harga beli/PO ref, tapi tetap perlu tercatat sbg stok masuk
+   RM utk dipakai produksi job customer itu).
+3. **Penerimaan dari Subcon (barang setengah jadi kembali dari pihak
+   ketiga)** — pekerjaan yang di-outsource ke subkontraktor (mis. proses
+   finishing/laminasi/dsb. yang tidak dikerjakan sendiri), barang yang
+   kembali adalah **SFG** (`stock_class='SFG'`, bukan RM maupun FG). Ini
+   beririsan dengan kelas stok SFG di §5 di atas — penerimaan dari subcon
+   kemungkinan salah satu SUMBER transaksi yang menulis ke `sfg_stock`/`sfg_stockcard`.
+
+**Jangan gabung ketiganya jadi satu form generik "Penerimaan Barang"** —
+sumber datanya beda (PO vs Customer Order vs Subcon PO/kontrak kerja),
+validasi & dokumen pendukungnya beda, dan siapa yang bertanggung jawab atas
+barangnya juga beda (supplier vs customer vs subcontractor). Perlakukan
+sebagai 3 alur/layar terpisah di bawah grup input Procurement, bukan 3
+tab dalam satu form.
+
+---
+
+## 7. Checklist saat menambah/menata ulang menu modul
 
 - [ ] Ada minimal 1 grup input (`menu_type='group'`, isinya layar create/edit/approve).
 - [ ] Ada tepat 1 grup Laporan berlabel **"Laporan"** (bukan variasi lain,
