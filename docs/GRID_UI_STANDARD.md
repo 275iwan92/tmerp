@@ -1,15 +1,42 @@
-# GRID_UI_STANDARD.md — Acuan Tampilan Grid Master
+# GRID_UI_STANDARD.md — Acuan Tampilan Grid (Master & Worklist)
 
 > Ditulis 2026-08-21 setelah menyeragamkan 8 grid Master (Customer, Supplier, UoM,
 > Mesin, Shift, Employee, Item Bahan Baku, Warehouse) atas instruksi langsung user.
+> Diperluas 2026-08-22 ke grid worklist/transaksi (Imposition Engine, Product
+> Costing) — lihat catatan di bawah untuk perbedaan kecil toolbar/Aksi.
 > **Baca file ini dulu sebelum membuat atau mengubah layar grid apa pun** — jangan
 > menebak polanya lagi dari satu contoh, semua keputusan di bawah ini sudah final
-> dan diverifikasi lintas 8 layar berbeda.
+> dan diverifikasi lintas banyak layar berbeda.
 
 Berlaku untuk semua grid **Master Data** (Customer/Supplier/UoM/Mesin/Shift/
-Employee/Item/Warehouse, dan modul master lain yang menyusul). Grid transaksi
-(PR/PO/PV, dst) TIDAK otomatis ikut — itu domain berbeda (state dokumen, approval,
-badge status majemuk) dan belum diminta diseragamkan.
+Employee/Item/Warehouse/Produk, dan modul master lain yang menyusul) **DAN sejak
+2026-08-22 juga grid worklist/transaksi** (mis. Imposition Engine, Product
+Costing) — user menegaskan tidak ada pengecualian gaya visual antara Master dan
+transaksi, semua grid pakai bahasa desain yang sama (tanpa header halaman, kotak
+statistik pastel, kolom identitas avatar+nama+kode, toolbar minimal, ikon Aksi).
+
+**Perbedaan grid Master vs grid Worklist/Transaksi** (bukan soal gaya visual —
+itu sama — tapi soal makna toolbar & kolom Aksi, karena worklist tidak
+menciptakan record baru dari grid-nya):
+- Toolbar grid Master = search + "+ New Record" (§6). Toolbar grid Worklist =
+  **search saja**, tanpa tombol di kanan (tidak ada yang bisa "dibuat baru" dari
+  daftar inquiry/dokumen transaksi — recordnya lahir dari alur lain).
+- Kolom Aksi grid Master = 2 ikon wajib (✎ Edit, ⏻ Toggle-aktif). Kolom Aksi
+  grid Worklist = **1 ikon** (↗ Buka) yang mengarah ke layar per-record yang
+  sudah ada — tidak ada konsep aktif/nonaktif untuk sebuah dokumen transaksi.
+- Kolom identitas (avatar+nama+kode, §3) & interaksi klik-2x-buka (§4) berlaku
+  SAMA persis di kedua jenis grid.
+- Badge status (mis. `sub_state`/`doc_status` pada Inquiry) pakai palet pastel
+  §2 yang sama, dipetakan manual per state ke salah satu dari 5 warna baku —
+  bukan bikin warna baru per status.
+- Filter/dropdown/checkbox toolbar **tetap dilarang** di grid Worklist juga,
+  sama seperti grid Master (§6) — contoh nyata: worklist Imposition tadinya
+  punya checkbox "Tampilkan RECALC", dihapus; worklist Costing tadinya punya
+  dropdown status, dihapus. Kalau butuh menyaring, itu pakai search atau
+  ditampilkan sebagai badge informatif di kolom, bukan kontrol toolbar baru.
+
+Referensi implementasi acuan untuk grid Worklist: `resources/views/pages/inquiry/imposition-list.blade.php`
+dan `costing-list.blade.php`.
 
 ---
 

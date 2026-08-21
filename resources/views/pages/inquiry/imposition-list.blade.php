@@ -8,37 +8,19 @@ use Livewire\Component;
 
 // Worklist "Imposition Engine" (menu SALES_IMPO). Grid inquiry yang sudah
 // confirmed (sub_state di luar DRAFT/CANCELLED/LOST) dan punya part -- klik 2x
-// buka layar imposition per-inquiry yang SUDAH ADA (inquiry/imposition.blade.php,
-// tidak diubah di sini, cuma dituju). RECALC dikecualikan dari daftar default:
-// docs/SALES_FLOW_inquiry_lifecycle.md -- RECALC reuse layout lama via
-// IqpInquiry::cloneStructureFrom(), tidak wajib diimposisi ulang -- checkbox
-// "Tampilkan RECALC" tetap ada kalau user mau cek ulang manual.
+// (atau ikon Aksi) buka layar imposition per-inquiry yang SUDAH ADA
+// (inquiry/imposition.blade.php, tidak diubah di sini, cuma dituju).
+// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid transaksi juga
+// atas instruksi user): tanpa header halaman, kotak statistik pastel, kolom
+// identitas avatar+nama+kode, toolbar cuma search, ikon Aksi.
 new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url]
-    public string $fq = '';
-
-    #[Url]
-    public bool $showRecalc = false;
+    public string $search = '';
 
     public function open(int $id)
     {
         return redirect()->route('inquiry.imposition', ['inquiry' => $id]);
-    }
-
-    // Sama seperti hub.blade.php/form.blade.php -- pola pill status dipakai lintas layar Inquiry.
-    public function statusPillClass(string $state): string
-    {
-        return match ($state) {
-            'DRAFT' => 'draft',
-            'WAITING_COST', 'SUBMITTED', 'PRICE_CALCULATED' => 'submit',
-            'PRICE_APPROVED' => 'priceok',
-            'QUOTED' => 'quoted',
-            'PROVING', 'PROVE_APPROVED' => 'proving',
-            'CONVERTED' => 'ok',
-            'CANCELLED', 'LOST' => 'cancelled',
-            default => 'draft',
-        };
     }
 
     public function impositionProgress(IqpInquiry $inquiry): string
@@ -54,6 +36,28 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         return $inquiry->parts->isNotEmpty() && $inquiry->parts->every(fn ($p) => (bool) $p->layout?->is_confirmed);
     }
 
+    public function subStateBadgeClass(string $state): string
+    {
+        return match ($state) {
+            'DRAFT' => 'bg-[#eef0f3] text-[#8a8f98]',
+            'WAITING_COST', 'SUBMITTED', 'PRICE_CALCULATED' => 'bg-[#eaf2ff] text-[#1d4ed8]',
+            'PRICE_APPROVED', 'CONVERTED' => 'bg-[#e9f9ef] text-[#16a34a]',
+            'QUOTED' => 'bg-[#f1ecfc] text-[#6d28d9]',
+            'PROVING', 'PROVE_APPROVED' => 'bg-[#fef6e7] text-[#b45309]',
+            'CANCELLED', 'LOST' => 'bg-[#fdecec] text-[#c0392b]',
+            default => 'bg-[#eef0f3] text-[#8a8f98]',
+        };
+    }
+
+    public function typeBadgeClass(string $type): string
+    {
+        return match ($type) {
+            'RECALC' => 'bg-[#f1ecfc] text-[#6d28d9]',
+            'REVISE' => 'bg-[#fef6e7] text-[#b45309]',
+            default => 'bg-[#eaf2ff] text-[#1d4ed8]', // NEW
+        };
+    }
+
     #[Computed]
     public function inquiries()
     {
@@ -61,11 +65,10 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             ->with(['customer', 'parts.layout'])
             ->whereNotIn('sub_state', ['DRAFT', 'CANCELLED', 'LOST'])
             ->whereHas('parts')
-            ->when(! $this->showRecalc, fn ($q) => $q->where('inquiry_type', '!=', 'RECALC'))
-            ->when($this->fq !== '', function ($q) {
+            ->when($this->search !== '', function ($q) {
                 $q->where(function ($qq) {
-                    $qq->where('inquiry_no', 'like', "%{$this->fq}%")
-                        ->orWhere('product_draft_name', 'like', "%{$this->fq}%");
+                    $qq->where('inquiry_no', 'like', "%{$this->search}%")
+                        ->orWhere('product_draft_name', 'like', "%{$this->search}%");
                 });
             })
             ->orderByDesc('id_inquiry')
@@ -90,68 +93,100 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
     {
         return $this->statTotal - $this->statDone;
     }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
 <div>
-    <header class="app-header">
-        <b>🔀 Imposition Engine</b>
-        <span class="sub">Worklist inquiry siap diimposisi</span>
-        <a class="back" href="{{ route('inquiry.hub') }}">← Inquiry Hub</a>
-    </header>
-
-    <div class="wrap">
-        <div class="grid three" style="margin-bottom:14px">
-            <div class="card" style="margin-bottom:0"><div class="body">
-                <div class="hint" style="margin:0">Total Perlu Imposisi</div>
-                <div style="font-size:22px;font-weight:800;color:var(--color-navy)">{{ $this->statTotal }}</div>
-            </div></div>
-            <div class="card" style="margin-bottom:0"><div class="body">
-                <div class="hint" style="margin:0">Selesai (semua part terkonfirmasi)</div>
-                <div style="font-size:22px;font-weight:800;color:#16a34a">{{ $this->statDone }}</div>
-            </div></div>
-            <div class="card" style="margin-bottom:0"><div class="body">
-                <div class="hint" style="margin:0">Belum Selesai</div>
-                <div style="font-size:22px;font-weight:800;color:#c0392b">{{ $this->statPending }}</div>
-            </div></div>
+    <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Perlu Imposisi</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Selesai</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statDone }}</p>
+                <p class="text-[10px] text-[#2f7a52]/70">SEMUA PART TERKONFIRMASI</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Belum Selesai</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statPending }}</p>
+            </div>
         </div>
 
-        <div class="card">
-            <div class="toolbar">
-                <input type="text" wire:model.live.debounce.400ms="fq" placeholder="Cari no. inkuiri / nama produk…" style="max-width:280px">
-                <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
-                    <input type="checkbox" wire:model.live="showRecalc" style="width:auto"> Tampilkan RECALC (biasanya reuse layout lama)
-                </label>
-                <span style="margin-left:auto;font-size:11px;color:#8a94a6">{{ $this->statTotal }} inkuiri</span>
-            </div>
-            <div class="body" style="padding:0">
-                <div class="qwrap">
-                    <table class="qtbl">
-                        <thead>
-                            <tr>
-                                <th>No. Inkuiri</th><th>Customer</th><th>Produk</th>
-                                <th>Tipe</th><th>Status</th>
-                                <th style="text-align:center">Progres Part</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($this->inquiries as $row)
-                                <tr wire:key="imp-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" style="cursor:pointer" title="Klik 2x untuk buka Imposition">
-                                    <td><span class="qdoc">{{ $row->inquiry_no ?: '—' }}</span></td>
-                                    <td>{{ $row->is_prospect ? $row->prospect_name : $row->customer?->customer_name }}</td>
-                                    <td>{{ $row->product_draft_name }}</td>
-                                    <td><span class="pill {{ strtolower($row->inquiry_type) }}">{{ $row->inquiry_type }}</span></td>
-                                    <td><span class="pill {{ $this->statusPillClass($row->sub_state) }}">{{ $row->sub_state }}</span></td>
-                                    <td style="text-align:center">
-                                        <span class="pill {{ $this->isImpositionDone($row) ? 'ok' : 'submit' }}">{{ $this->impositionProgress($row) }}</span>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="6"><div class="qempty">Tidak ada inkuiri yang perlu imposisi.</div></td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. inkuiri / nama produk…"
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
+            </div>
+
+            <div class="max-h-[65vh] overflow-auto">
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Inkuiri</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Customer</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Tipe</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Status</th>
+                            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Progres Part</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->inquiries as $row)
+                            <tr wire:key="imp-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Imposition">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($row->product_draft_name ?: $row->inquiry_no) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $row->product_draft_name ?: '—' }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $row->inquiry_no ?: '—' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->typeBadgeClass($row->inquiry_type) }}">{{ $row->inquiry_type }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($row->sub_state) }}">{{ $row->sub_state }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-center">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->isImpositionDone($row) ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#eaf2ff] text-[#1d4ed8]' }}">{{ $this->impositionProgress($row) }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <button type="button" wire:click.stop="open({{ $row->id_inquiry }})" title="Buka Imposition" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada inkuiri yang perlu imposisi.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
