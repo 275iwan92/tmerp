@@ -142,21 +142,28 @@ lainnya digarap:
 
 1. **Penerimaan dari PO** (sudah ada) — barang masuk dari supplier atas
    dasar Purchase Order yang sudah di-approve. Ini yang selama ini disebut
-   "Purchase Receive" / PV / SPB (`pur.pv.*`, multi-PO per dokumen).
+   "Purchase Receive" / PV / SPB (`pur.pv.*`, multi-PO per dokumen). Masuk
+   ke stok **RM** (`stock_class='RM'`) seperti biasa.
 2. **Penerimaan dari Customer (bahan milik customer)** — customer order
    dengan syarat bawa bahan baku sendiri (consignment/customer-supplied
    material — lihat juga `prod_product`/inquiry punya konsep
    `material_source` OWN/CUSTOMER, kolom ini sudah ada di `iqp_part_material`).
    Barang masuk BUKAN dari supplier & BUKAN atas dasar PO — dari Customer
-   Order langsung. Kemungkinan butuh dokumen & alur berbeda dari PV biasa
-   (tidak ada harga beli/PO ref, tapi tetap perlu tercatat sbg stok masuk
-   RM utk dipakai produksi job customer itu).
+   Order langsung. **Masuk ke "stok khusus"** (2026-08-22, klarifikasi
+   user) — BUKAN dicampur ke pool RM umum milik perusahaan, karena bahan
+   ini secara hukum/akuntansi tetap milik customer (consignment), bukan
+   inventory perusahaan. Kemungkinan butuh `warehouse_type` atau flag
+   kepemilikan tersendiri di `m_wh_loc`/`rm_stock_d` (mis. `ownership_type`
+   OWN/CUSTOMER) supaya laporan RM tidak salah menghitungnya sebagai aset
+   sendiri — desain persis kolomnya belum diputuskan, perlu dibahas lagi
+   saat digarap, jangan diasumsikan sama dengan RM biasa.
 3. **Penerimaan dari Subcon (barang setengah jadi kembali dari pihak
    ketiga)** — pekerjaan yang di-outsource ke subkontraktor (mis. proses
    finishing/laminasi/dsb. yang tidak dikerjakan sendiri), barang yang
-   kembali adalah **SFG** (`stock_class='SFG'`, bukan RM maupun FG). Ini
-   beririsan dengan kelas stok SFG di §5 di atas — penerimaan dari subcon
-   kemungkinan salah satu SUMBER transaksi yang menulis ke `sfg_stock`/`sfg_stockcard`.
+   kembali adalah **SFG** (`stock_class='SFG'`, bukan RM maupun FG,
+   dikonfirmasi user 2026-08-22). Ini beririsan dengan kelas stok SFG di
+   §5 di atas — penerimaan dari subcon adalah salah satu SUMBER transaksi
+   yang menulis ke `sfg_stock`/`sfg_stock_d`/`sfg_stockcard`.
 
 **Jangan gabung ketiganya jadi satu form generik "Penerimaan Barang"** —
 sumber datanya beda (PO vs Customer Order vs Subcon PO/kontrak kerja),
@@ -164,6 +171,45 @@ validasi & dokumen pendukungnya beda, dan siapa yang bertanggung jawab atas
 barangnya juga beda (supplier vs customer vs subcontractor). Perlakukan
 sebagai 3 alur/layar terpisah di bawah grup input Procurement, bukan 3
 tab dalam satu form.
+
+### 6a. Alur konfirmasi: semua jenis penerimaan otomatis jadi "Stock IN" setelah confirm + approval atasan
+
+Ditegaskan user 2026-08-22: ketiga jenis penerimaan di atas (PO/Customer/Subcon)
+sama-sama berujung ke **Stock IN** secara otomatis begitu dokumennya
+di-confirm oleh pembuatnya DAN disetujui atasan (approval) — bukan proses
+manual terpisah "habis approve, baru input Stock In sendiri".
+
+**Ada referensi implementasi nyata dari sistem lama, ditemukan saat cek
+`database/legacy/tminv_20260722_2018_sd.sql`**: 3 SQL TRIGGER —
+`trg_rm_stock_confirm` (baris ~1347), `trg_fg_stock_confirm` (baris ~1278),
+`trg_sfg_stock_confirm` (baris ~1430) — masing-masing `AFTER UPDATE` pada
+`rm_stock`/`fg_stock`/`sfg_stock`. Begitu `stat_confirm` berubah dari 0→1
+(dan `stat_cancel=0`), trigger otomatis loop semua baris `*_stock_d` dokumen
+itu dan INSERT baris `*_stockcard` baru (saldo awal diambil dari stockcard
+terakhir item+lokasi yang sama, saldo akhir = saldo awal ± qty sesuai
+`doc_type`/`doc_cat` — IN/OUT/ADJ/RETURN/BB berbeda tanda).
+
+**PENTING — trigger ini TIDAK ikut ter-import ke database live** (dicek
+`SHOW TRIGGERS` di `tm2inv`, hasilnya kosong) — hanya 13 tabel dasar yang
+di-import saat migrasi Tier 3 Inventory, 12 stored procedure & 3 trigger
+legacy sengaja dilewati (lihat [[project_inventory_module_status]]). Data
+`rm_stockcard` yang sudah ada sekarang adalah hasil trigger ini yang PERNAH
+jalan di sistem lama (datanya sudah jadi/materialized, ikut ter-dump), bukan
+hasil trigger yang jalan di sistem baru.
+
+**Keputusan arsitektur saat Stock In/Out/Purchase Receive digarap**: PORT
+logika 3 trigger ini jadi **PHP Service** (mis. `App\Services\Inventory\StockConfirmService`),
+BUKAN pasang ulang trigger SQL mentah-mentah. Alasan: seluruh business logic
+lain di codebase ini (Costing, Quotation, Flow Engine approval) sudah
+konsisten hidup di `App\Services\*`, bisa di-test, di-debug, dan dipanggil
+eksplisit dari Livewire component — trigger DB tersembunyi dari kode PHP,
+menyulitkan debugging & tidak konsisten dgn pola arsitektur yang sudah
+berjalan. Logika intinya (hitung saldo berjalan per item+lokasi, insert
+baris ledger baru) bisa disalin lurus dari SQL trigger di atas ke PHP, cuma
+pemicunya diganti: bukan `AFTER UPDATE` trigger, tapi dipanggil eksplisit
+dari method "Confirm" milik masing-masing layar Stock In/Out setelah approval
+atasan selesai (kemungkinan lewat `FlowEngineService` yang sudah dipakai
+PR/PO, lihat [[project_procurement_module_status]]).
 
 ---
 
