@@ -1169,6 +1169,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     </button>
                 @endif
                 <div style="margin-left:auto"></div>
+                @if ($id)
+                    <a href="{{ route('inquiry.imposition', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🔀 Imposition</a>
+                    <a href="{{ route('inquiry.nota', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🖨 Cetak Nota</a>
+                @endif
                 <span class="pill {{ $this->statusPillClass() }}">{{ $sub_state }}</span>
             </div>
 
