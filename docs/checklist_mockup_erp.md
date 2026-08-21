@@ -86,7 +86,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ### 4.2 Purchase Order (PO)
 - ✅ [G] PO List — `pur.po.list` (filter no./item/status, "+ PO Baru" via picker supplier)
 - ✅ [F] PO Entry — `pur.po.entry` (tarik alokasi `pr_line_alloc` APPROVED lintas-PR ke satu PO per supplier via `PoBuilderService`, kelas RAW/INDIRECT/SERVICE otomatis dari `doc_rmprefix1.stock_class`, harga/diskon per baris editable, ringkasan DPP/PPN/PPh23/Net Payable, submit → Flow Engine). Diuji tuntas via tinker (tarik 2 alokasi lintas-PR, edit harga, submit → benar). **Belum diverifikasi visual browser** (sama seperti PR, lihat `PROC_STATE.yaml`)
-- 🟡 [G] PO Approval Center — *mockup_po_approval_center.html* — mockup ada, belum digarap (menyusul, di luar urutan yang diminta Jo saat ini)
+- ✅ [G] PO Approval Center — *mockup_po_approval_center.html* → `pur.po.approval` (antrian per posisi jabatan, ringkasan konsolidasi per item, detail baris, ringkasan pajak, riwayat; approve/reject via `FlowEngineService`). Tombol "📤 Kirim ke Supplier" ditambahkan di PO Entry (APPROVED→SENT, PROC_TIER_2 §C-2) — sebelumnya tak ada jalan resmi PO mencapai SENT. Diuji lewat alur SUNGGUHAN end-to-end: submit→antrian→approve→kirim→muncul di worklist PV, tanpa paksaan tinker seperti sesi sebelumnya
 - ⬜ [P] PO Print (dokumen eksternal ke supplier) — belum digarap
 ### 4.3 Purchase Quotation (PQ) — kondisional, boleh dilewati
 - ⬜ [F][G] PQ Entry + Perbandingan — belum digarap
@@ -193,7 +193,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 1 Sales (Inquiry/Quotation/CO) | 13 | 5 | 1 |
 | 2 Inventory | 2 | 0 | 5 |
 | 3 Production | 0 | 2 | 9 |
-| 4 Procurement | 7 | 1 | 7 |
+| 4 Procurement | 8 | 0 | 7 |
 | 5 Dispatch | 0 | 0 | 9 |
 | 6 Invoicing/Billing (AR-lite) | 0 | 0 | 7 |
 | 7 HR | 4 | 0 | 3 |
@@ -202,7 +202,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**33 item live**, **8 item punya mockup HTML tapi belum diimplementasi Livewire**, **45 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Item Master; Procurement spine PR→PR Approval→PO→PV sudah live penuh, hanya posting stok fisik PV yang tertunda dump legacy; Notification Center & Nota Inquiry per-tipe kini juga live).
+**34 item live**, **7 item punya mockup HTML tapi belum diimplementasi Livewire**, **45 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Item Master; Procurement spine PR→PR Approval→PO→PO Approval→PV sudah live penuh dan bisa dijalankan ujung-ke-ujung tanpa akal-akalan, hanya posting stok fisik PV yang tertunda dump legacy; Notification Center & Nota Inquiry per-tipe kini juga live).
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

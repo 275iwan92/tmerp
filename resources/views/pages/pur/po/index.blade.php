@@ -86,6 +86,7 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📦 Purchase Order</b>
         <a href="{{ route('pur.pv.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🚚 Penerimaan Barang</a>
+        <a href="{{ route('pur.po.approval') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">✅ Approval Center</a>
         <a href="{{ route('pur.pr.list') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar PR</a>
         <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">Menu</a>
     </header>

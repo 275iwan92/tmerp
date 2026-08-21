@@ -71,6 +71,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/purchasing/pr-approval', 'pages::pur.pr.approval')->name('pur.pr.approval');
             Route::livewire('/purchasing/po', 'pages::pur.po.index')->name('pur.po.list');
             Route::livewire('/purchasing/po/{po}/edit', 'pages::pur.po.entry')->name('pur.po.entry');
+            Route::livewire('/purchasing/po-approval', 'pages::pur.po.approval')->name('pur.po.approval');
             Route::livewire('/purchasing/pv', 'pages::pur.pv.index')->name('pur.pv.list');
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
         });

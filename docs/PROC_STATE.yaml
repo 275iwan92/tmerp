@@ -62,7 +62,16 @@ status_umum: >
   KEDUA PO secara independen dgn benar -- semua lolos.
   BELUM diverifikasi visual di browser sungguhan utk SEMUA layar (PR/PR Approval/PO/PV) --
   lihat catatan di bawah.
-  PQ, PO Approval, PRT, Purchase Invoice masih 🟡 spec-only/belum diimplementasi.
+  PO Approval Center JUGA dibangun 2026-08-21 (route /purchasing/po-approval), sama pola dgn
+  PR Approval (antrian per posisi + FlowEngineService::approve()/reject()), ditambah ringkasan
+  konsolidasi per item (v1_po_item_consolidated versi Eloquent, bukan VIEW SQL) & peringatan
+  CAPEX/IMPORT. Tombol "Kirim ke Supplier" (APPROVED->SENT, PROC_TIER_2 §C-2) ditambahkan di PO
+  Entry -- SEBELUM ini PO tak punya jalan resmi mencapai SENT sama sekali, PV terpaksa diuji
+  dgn status dipaksa via tinker. Diverifikasi ULANG lewat alur SUNGGUHAN end-to-end (bukan
+  paksaan lagi): submit -> masuk antrian PO Approval -> approve -> APPROVED -> Kirim ke Supplier
+  -> SENT -> PO otomatis muncul di worklist PvBuilderService -- semua benar tanpa satu pun
+  manipulasi status manual.
+  PQ, PRT, Purchase Invoice masih 🟡 spec-only/belum diimplementasi.
   Dua struktur legacy dibaca penuh: m_raw_material.sql + doc_rmprefix1.sql (SUDAH diberikan
   user & di-import); tminv_20260722_2018_sd.sql (rm_stock/rm_stock_d/rm_stockcard/sfg_*/fg_*)
   MASIH BELUM diberikan -- sekarang BENAR-BENAR jadi blocker (PV sudah dikerjakan, cuma posting
@@ -121,15 +130,17 @@ artefak_selesai:
   - "App\\Services\\Pur\\PvPostingService  # blockers()+post() -- rekalkulasi PER PO yang tersentuh (PV-08); rm_stock BELUM ditulis, TODO eksplisit di kode"
   - "resources/views/pages/pur/pv/{index,entry}.blade.php  # route pur.pv.list / pur.pv.entry, gate module:PROC"
   - "docs/DELTA_PROC_PV_MULTIPO.md, docs/PATCH_DDL_PV_MULTIPO.sql, docs/PATCH_SEED_PV_MULTIPO.sql, docs/mockups/mockup_purchase_receive.html, docs/mockups/nota_pv_spb.html  # dokumen asli user, dibaca penuh -- lihat status_umum utk deviasi skema"
+  - "resources/views/pages/pur/po/approval.blade.php  # route pur.po.approval, gate module:PROC"
+  - "PoOrder::sendToSupplier()-setara (method di PoForm entry.blade.php) -- APPROVED->SENT, satu-satunya jalan resmi PO mencapai SENT sebelum sesi ini"
 
 next_step:
   - "SELESAI 2026-08-20/21: fondasi (legacy import, Flow Engine, sys_constant) + PR Entry + PR Approval Center + PO Entry + PV Entry (List+Form semua) -- spine Procurement PR->PR Approval->PO->PV SELESAI, di luar urutan resmi yg diminta Jo (PR->PR Approval->PO) tapi PV ikut dikerjakan krn dokumen barunya sudah diberikan"
   - "BELUM diverifikasi visual di browser utk SEMUA layar (PR Entry, PR Approval, PO Entry, PV Entry) -- login via browser automation ditolak (masuk kategori 'entering credentials', prohibited per safety rules). Jo perlu buka /purchasing/pr, /purchasing/pr-approval, /purchasing/po, /purchasing/pv sendiri utk cek tampilan; logika sudah diverifikasi tuntas via tinker functional test."
   - "BLOCKER NYATA SEKARANG: tminv_20260722_2018_sd.sql (rm_stock/rm_stock_d/rm_stockcard) masih belum diberikan Jo. PV sudah lengkap TAPI PvPostingService::post() belum menulis stok fisik -- begitu dump tersedia, tinggal isi blok TODO yang sudah ditandai persis di lokasinya, tidak perlu bongkar ulang PV."
-  - "PO Approval Center BELUM dibangun -- PO di database ini masih terjebak di SUBMITTED (tak ada layar utk maju ke APPROVED/SENT). Test PV terpaksa memaksa status PO dummy ke SENT langsung via tinker (bukan lewat approval sungguhan) utk bisa menguji worklist PV -- catat ini supaya tak dikira PO Approval sudah ada."
+  - "RESOLVED 2026-08-21: PO Approval Center dibangun + tombol 'Kirim ke Supplier' -- PO sekarang bisa mencapai SENT lewat alur resmi (submit->antrian->approve->kirim), tanpa perlu paksaan status via tinker lagi. Diverifikasi ulang end-to-end."
   - "Dummy Manajer Operasional dibuat utk uji fungsional: emp_employee 'DUMMY-MGROPS' (employee_id=6, position_id=6) + sec_user 'dummy_mgrops' (id_user=38) -- password acak/tak diketahui siapapun, TIDAK bisa dipakai login sungguhan. Kalau mau user approval sungguhan, ganti/hapus dummy ini dan assign posisi ke karyawan riil (juga posisi Direksi -- belum ada dummy user utk step2, cuma diuji langsung lewat FlowEngineService tanpa lewat pendingForUser())."
   - "GAP DITEMUKAN & DITUTUP 2026-08-21: PR Approval final -> PrAllocationService::createDefaultAllocationsForPr() otomatis bikin 1 alokasi penuh per baris (PROC_TIER_3 §3.1 'baris tak dipecah = 1 alokasi penuh'), supaya PO Entry selalu punya sumber tanpa memaksa split manual dulu. Panel 'Split Alokasi' manual (Tier4 §2.2, pecah ke >1 supplier) BELUM ada UI-nya -- PrAllocationService::split() sudah ada tapi belum dipanggil dari layar manapun."
-  - "BELUM: PO Approval Center (mockup ada, layar approval terpisah spt PR), PQ (opsional, boleh di-skip terus), PV Monitor Sisi A, Nota SPB cetak (mockup nota_pv_spb.html sudah ada), PRT, Purchase Invoice, Pembelian Kontan."
+  - "BELUM: PQ (opsional, boleh di-skip terus), PV Monitor Sisi A, Nota SPB cetak (mockup nota_pv_spb.html sudah ada), PRT, Purchase Invoice, Pembelian Kontan, PO Print/Cetak, Tutup PO manual, Revise PR/PO."
 
 open_items:
   - id: PROC-SUPPLIER-MASTER

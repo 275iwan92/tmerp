@@ -139,6 +139,19 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         unset($this->po);
     }
 
+    // PROC_TIER_2 §C-2: APPROVED -> Kirim ke Supplier -> SENT (aksi manual, bukan
+    // otomatis saat approve terakhir -- officer yang menegaskan PO benar-benar
+    // sudah dikirim). Status SENT ini yang jadi syarat PO muncul di worklist PV.
+    public function sendToSupplier(): void
+    {
+        if ($this->po->status !== 'APPROVED') {
+            return;
+        }
+
+        $this->po->update(['status' => 'SENT', 'sent_at' => now(), 'updated_by' => Auth::user()->login]);
+        unset($this->po);
+    }
+
     public function delete()
     {
         if ($this->po->status !== 'DRAFT') {
@@ -314,6 +327,10 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             <div class="flex justify-end gap-2 mb-8">
                 <button type="button" wire:click="delete" wire:confirm="Hapus PO draft ini? Alokasi PR yang sudah ditarik akan dilepas kembali." class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Hapus</button>
                 <button type="button" wire:click="submit" wire:confirm="Ajukan PO ini untuk approval? Nomor dokumen akan diterbitkan." class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Ajukan Approval</button>
+            </div>
+        @elseif ($this->po->status === 'APPROVED')
+            <div class="flex justify-end gap-2 mb-8">
+                <button type="button" wire:click="sendToSupplier" wire:confirm="Tandai PO ini sudah dikirim ke supplier?" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">📤 Kirim ke Supplier</button>
             </div>
         @endif
     </div>
