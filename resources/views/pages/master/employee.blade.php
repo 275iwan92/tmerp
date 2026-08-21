@@ -285,7 +285,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->employee_code = $e->employee_code;
         $this->full_name = $e->full_name;
         $this->nickname = (string) $e->nickname;
-        $this->gender = $e->gender;
+        $this->gender = (string) $e->gender;
         $this->birth_place = (string) $e->birth_place;
         $this->birth_date = (string) ($e->birth_date?->format('Y-m-d') ?? '');
         $this->nik_ktp = (string) $e->nik_ktp;
@@ -692,10 +692,12 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Jenis Kelamin *</label>
                             <select wire:model="gender" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <option value="">— pilih —</option>
                                 @foreach ($genders as $val => $label)
                                     <option value="{{ $val }}">{{ $label }}</option>
                                 @endforeach
                             </select>
+                            @error('gender') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                         </div>
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Agama</label>
