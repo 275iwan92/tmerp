@@ -634,22 +634,20 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-t-md px-2.5 py-2 flex-wrap">
-                <div class="flex items-center gap-1.5 flex-1 max-w-[340px]">
+            <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-t-md px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.400ms="q" placeholder="Cari nama / kode / PIC..."
-                        class="flex-1 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <button type="button" wire:click="newSupplier"
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">＋ New</button>
                 <button type="button" wire:click="showDetail" @disabled(! $selectedId)
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">☰ Detail</button>
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">☰ Detail</button>
                 <button type="button" wire:click="toggleBlacklist" @disabled(! $selectedId) wire:confirm="Ubah status blokir supplier ini?"
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🚫 Blokir</button>
-                <button type="button" wire:click="deleteSupplier" @disabled(! $selectedId) wire:confirm="Hapus supplier ini? Kalau masih dipakai transaksi, akan dinonaktifkan saja."
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#f0c4c4] text-[#c0392b] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🗑 Hapus</button>
-                <div class="flex-1"></div>
-                <div class="text-xs text-[#6b7280] px-2">{{ $this->suppliers->count() }} baris</div>
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🚫 Blokir</button>
+                <span class="flex-1"></span>
+                <div class="text-xs text-[#6b7280] shrink-0">{{ $this->suppliers->count() }} baris · klik 2x untuk buka</div>
+                <button type="button" wire:click="newSupplier"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>
 
             @if ($actionMessage)

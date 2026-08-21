@@ -6,7 +6,6 @@ use App\Models\Master\CustCustomerBranch;
 use App\Models\Master\CustCustomerContact;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\OrgDivision;
-use App\Services\Master\CustomerGuardService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -742,28 +741,6 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         unset($this->customers, $this->metricActive);
     }
 
-    public function deleteCustomer(): void
-    {
-        if (! $this->selectedId) {
-            return;
-        }
-
-        $customer = CustCustomer::findOrFail($this->selectedId);
-        $reasons = app(CustomerGuardService::class)->blockingReasons($this->selectedId);
-
-        if ($reasons !== []) {
-            $customer->update(['is_active' => false, 'updated_by' => Auth::user()->login]);
-            $this->actionMessage = 'Tidak bisa dihapus — masih dipakai oleh '.implode(' & ', $reasons).'. Customer sudah dinonaktifkan sebagai gantinya.';
-        } else {
-            $customer->delete();
-            $this->selectedId = null;
-            $this->panel = 'grid';
-            $this->actionMessage = 'Customer berhasil dihapus permanen.';
-        }
-
-        unset($this->customers);
-    }
-
     // Blokir = aksi langsung (siapa saja yang boleh edit customer). Buka
     // blokir WAJIB lewat modal + alasan + akses modul Finance/Admin — ganti
     // dari modal PIN statis "8888" mockup yang cuma ilusi keamanan.
@@ -859,29 +836,27 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-t-md px-2.5 py-2 flex-wrap">
-                <div class="flex items-center gap-1.5 flex-1 max-w-[300px]">
+            <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-t-md px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.400ms="q" placeholder="Cari nama / kode / PIC..."
-                        class="flex-1 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <select wire:model.live="filterType" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                <select wire:model.live="filterType" class="w-32 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     <option value="">Semua Tipe</option>
                     <option value="local">Lokal</option>
                     <option value="import">Import</option>
                 </select>
-                <select wire:model.live="filterStatus" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                <select wire:model.live="filterStatus" class="w-40 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     <option value="">Semua Status</option>
                     @foreach (CustCustomer::APPROVAL_STATUSES as $stKey => $stLabel)
                         <option value="{{ $stKey }}">{{ $stLabel }}</option>
                     @endforeach
                 </select>
+                <span class="flex-1"></span>
+                <div class="text-xs text-[#6b7280] shrink-0">{{ $this->customers->count() }} baris · klik 2x untuk buka</div>
                 <button type="button" wire:click="newCustomer"
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">＋ New</button>
-                <button type="button" wire:click="deleteCustomer" @disabled(! $selectedId) wire:confirm="Hapus customer ini? Kalau masih dipakai transaksi, akan dinonaktifkan saja."
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#f0c4c4] text-[#c0392b] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🗑 Hapus</button>
-                <div class="flex-1"></div>
-                <div class="text-xs text-[#6b7280] px-2">{{ $this->customers->count() }} baris · klik 2x untuk buka</div>
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>
 
             @if ($actionMessage)

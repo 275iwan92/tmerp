@@ -446,23 +446,21 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-                <div class="flex gap-2 items-center px-3.5 py-3 border-b border-[#e2e7ee] flex-wrap bg-[#f8fafc]">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…" class="min-w-[200px] px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                    <select wire:model.live="filterDimension" class="px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
+                <div class="flex gap-2 items-center px-3.5 py-3 border-b border-[#e2e7ee] overflow-x-auto bg-[#f8fafc]">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…" class="w-52 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
+                    <select wire:model.live="filterDimension" class="w-36 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
                         <option value="">Semua dimensi</option>
                         @foreach ($dimensions as $d)
                             <option value="{{ $d }}">{{ $d }}</option>
                         @endforeach
                     </select>
-                    <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+                    <label class="flex items-center gap-1.5 text-xs cursor-pointer shrink-0">
                         <input type="checkbox" wire:model.live="hideInactiveUnits"> Sembunyikan nonaktif
                     </label>
                     <span class="flex-1"></span>
                     <button type="button" wire:click="openConversionPanel" @disabled(! $selectedCode || ! $this->selectedUnit || $this->selectedUnit->dimension === 'SPEC')
-                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white text-accent border border-accent disabled:opacity-40 disabled:cursor-not-allowed">🔁 Konversi</button>
-                    <button type="button" wire:click="editSelectedUnit" @disabled(! $selectedCode)
-                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[#e6eaf0] text-[#333] disabled:opacity-40 disabled:cursor-not-allowed">✎ Edit</button>
-                    <button type="button" wire:click="openUnitModal('new')" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Satuan Baru</button>
+                        class="shrink-0 px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white text-accent border border-accent disabled:opacity-40 disabled:cursor-not-allowed">🔁 Konversi</button>
+                    <button type="button" wire:click="openUnitModal('new')" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">+ New Record</button>
                 </div>
 
                 <div class="max-h-[65vh] overflow-auto">

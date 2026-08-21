@@ -87,9 +87,9 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex-wrap">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Cari kode / nama gudang..." class="w-72 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                <select wire:model.live="typeFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            <div class="flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] overflow-x-auto">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Cari kode / nama gudang..." class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                <select wire:model.live="typeFilter" class="w-44 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     <option value="">Semua Tipe</option>
                     <option value="RM">Bahan Baku</option>
                     <option value="SFG">Semi Finished Goods</option>
@@ -99,7 +99,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                     <option value="TRANSIT">Transit</option>
                 </select>
                 <span class="flex-1"></span>
-                <a href="{{ route('master.warehouse.create') }}" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">＋ Gudang Baru</a>
+                <a href="{{ route('master.warehouse.create') }}" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">+ New Record</a>
             </div>
 
             <table class="w-full text-xs border-collapse">
