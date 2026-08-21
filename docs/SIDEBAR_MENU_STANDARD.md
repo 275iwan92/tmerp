@@ -37,12 +37,22 @@ Transaksi                    <- grup input
   Stock In / Stock Out / Return from Production /
   Stock Adjustment & Opname / Persetujuan Penyesuaian
 Laporan                      <- grup laporan (2026-08-22: dulu "Stok & Laporan")
-  Kartu Stok                 <- INV_CARD, live
-  Master Stok                <- INV_RAW, live (dulu "Stok Bahan Baku", diganti — lihat §2)
-  Stok Barang Jadi           <- INV_FG, belum dibangun (placeholder abu-abu, tetap tampil)
-  Riwayat Mutasi             <- INV_HIST, belum dibangun
-  Periode Stok               <- INV_PERIOD, belum dibangun
+  Master Stok                <- INV_RAW, live, internal 3 kategori RM/FG/SFG (lihat §5)
+  Kartu Stok                 <- INV_CARD, live, internal 3 kategori RM/FG/SFG (lihat §5)
 ```
+**HANYA 2 item, titik** — `INV_FG` ("Stok Barang Jadi"), `INV_HIST` ("Riwayat
+Mutasi"), `INV_PERIOD` ("Periode Stok") di-retire (`is_active=false`,
+migration `2026_08_22_000006`) 2026-08-22 atas instruksi eksplisit user,
+**BUKAN placeholder roadmap yang dibiarkan tampil** — ini PENGECUALIAN dari
+aturan umum §7 (NOT_BUILT biasanya tetap tampil abu-abu). Alasan: begitu
+Master Stok & Kartu Stok sama-sama dapat selector 3 kategori (RM/FG/SFG,
+§5), "Stok Barang Jadi" jadi 100% redundan (fungsinya = Master Stok filter
+FG) — membiarkannya tampil sbg placeholder terpisah JUSTRU menyesatkan
+(kesannya bakal ada layar lain, padahal sudah tercakup). Kalau modul lain
+menghadapi situasi serupa (placeholder yang jadi redundan karena fitur
+sejenis sudah tercakup di layar lain), retire juga — jangan otomatis
+"biarkan abu-abu" tanpa mengecek dulu apakah placeholder itu masih
+mewakili sesuatu yang benar-benar belum ada.
 
 **Sales** (`SALES`) — contoh modul dengan input dipecah beberapa sub-grup
 karena kategorinya beda tahap alur (lihat [[project-sidebar-groups-collapsible]]):
