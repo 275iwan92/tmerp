@@ -111,35 +111,74 @@ otomatis collapsible. Tidak perlu kerjaan tambahan saat menambah grup baru.
 
 ---
 
-## 5. Inventory — 3 kelas stok wajib ada, di Laporan MAUPUN Input
+## 5. Inventory — 3 kelas stok = 3 MENU terpisah, di Laporan MAUPUN Input
 
-Bukan cuma layar Laporan (§ di atas — Kartu Stok, Master Stok) yang wajib
-membedakan 3 kelas stok, layar **Input/transaksi Inventory juga** (Stock In,
-Stock Out, Return from Production, Stock Adjustment & Opname — semua masih
-`NOT_BUILT` per 2026-08-22, tulisan ini jadi acuan begitu digarap):
+**(Direvisi 2026-08-22, sudah 2x dikoreksi user — baca versi final ini, jangan
+ikuti draft lama.)** 3 kelas stok WAJIB tercermin sbg menu terpisah di sidebar
+— bukan toggle/tab tersembunyi di dalam 1 halaman. Alasan eksplisit dari
+user: recordnya memang masuk ke TABEL FISIK yang berbeda per kelas, jadi
+strukturnya harus kelihatan di menu, bukan disembunyikan.
 
 1. **Bahan Baku & Bahan Pembantu** (`stock_class = 'RM'`) — master
    `MRawMaterial` (`m_raw_material`), sumber transaksi `rm_stock`/`rm_stock_d`/`rm_stockcard`.
 2. **Barang Jadi** (`stock_class = 'FG'`) — master `ProdProduct` (`prod_product`),
-   sumber transaksi `fg_stock`/`fg_stock_d`/`fg_stockcard` (skema sudah ada,
-   0 baris — belum ada layar input yang menulis ke sana).
+   sumber transaksi `fg_stock`/`fg_stock_d`/`fg_stockcard`.
 3. **Barang Setengah Jadi** (`stock_class = 'SFG'`) — master `ProdPart`
-   (`prod_part`), sumber transaksi `sfg_stock`/`sfg_stock_d`/`sfg_stockcard`
-   (sama, skema ada, 0 baris).
+   (`prod_part`), sumber transaksi `sfg_stock`/`sfg_stock_d`/`sfg_stockcard`.
 
-**Pola wajib**: SETIAP layar Input Inventory yang baru dibangun harus punya
-selector 3 kategori ini di awal alurnya (tombol/tab, bukan dropdown
-tersembunyi) — sama seperti yang sudah diterapkan di Kartu Stok & Master
-Stok (`resources/views/pages/inventory/print/{stock-card,master-stock}.blade.php`,
-lihat `switchCategory()` + `CATEGORY_LABELS` const, dan `tm2inv.v_inv_movement`
-yang sudah menormalkan kolom `item_id`/`item_code`/`item_name` lintas 3 kelas
-lewat `UNION ALL` — reuse view itu utk baca, tapi utk TULIS transaksi baru
-tetap ke tabel per-kelas yang sesuai (`rm_stock_d` utk RM, dst.), bukan ke view).
+### Struktur final (Inventory, sudah diterapkan 2026-08-22)
 
-**Jangan** bikin 3 menu/layar terpisah per kelas (mis. "Stock In Bahan Baku",
-"Stock In Barang Jadi" sendiri-sendiri) — itu 3x kerja maintain utk logic
-yang sama persis, cukup 1 layar per jenis transaksi dengan selector kelas di
-dalamnya, persis pola 2 layar Laporan yang sudah jadi.
+Shell cuma render 2 level (Modul → Grup → Item flat, TIDAK ada sub-grup
+bersarang — lihat `main-menu.blade.php` `sidebarGroups` loop), jadi "Input
+dibagi 3" dan "Laporan dibagi 3" masing-masing diwujudkan sbg **3 caption
+grup terpisah**, total 6 grup:
+
+```
+Input — Bahan Baku & Bahan Pembantu     <- INV_TRX_RM
+  Stock In / Stock Out / Return from Production /
+  Stock Adjustment & Opname / Persetujuan Penyesuaian   (semua NOT_BUILT)
+Input — Barang Jadi                     <- INV_TRX_FG   (5 item sama, NOT_BUILT)
+Input — Barang Setengah Jadi            <- INV_TRX_SFG  (5 item sama, NOT_BUILT)
+Laporan — Bahan Baku & Bahan Pembantu   <- INV_RPT_RM
+  Master Stok (INV_RAW_RM) / Kartu Stok (INV_CARD_RM)   (live)
+Laporan — Barang Jadi                   <- INV_RPT_FG   (Master Stok/Kartu Stok, live)
+Laporan — Barang Setengah Jadi          <- INV_RPT_SFG  (Master Stok/Kartu Stok, live)
+```
+
+**Laporan (live, pola rujukan)**: `stock-card.blade.php`/`master-stock.blade.php`
+TETAP 1 file Livewire per jenis laporan (reuse kode penuh, TIDAK di-copy 3x)
+— yang berubah cuma route-nya: `{category}` sekarang **wajib jadi segmen URL**
+(`/inventory/print/master-stock/{category}`), bukan Livewire state yang
+di-toggle via `wire:click`. 6 menu code (`INV_RAW_RM/FG/SFG`,
+`INV_CARD_RM/FG/SFG`) di `itemRoutes()` (`main-menu.blade.php`) semua
+menunjuk ke route yang sama, cuma parameter `category` beda. Tombol pilihan
+kategori di dalam halaman (untuk lompat cepat antar kelas tanpa balik ke
+sidebar) jadi `<a href="{{ route(..., ['category'=>$code]) }}">` — navigasi
+halaman penuh, BUKAN `wire:click` state change, supaya URL & isi halaman
+selalu sinkron (bisa di-bookmark, tidak nyasar kalau di-refresh).
+`v_inv_movement` (view `UNION ALL` yang menormalkan `item_id`/`item_code`/
+`item_name` lintas 3 kelas) tetap dipakai utk BACA; utk TULIS transaksi baru
+tetap ke tabel per-kelas yang sesuai (`rm_stock_d` utk RM, dst.), bukan ke view.
+
+**Input (belum dibangun, placeholder murni)**: 5 jenis transaksi (Stock In/
+Stock Out/Return from Production/Stock Adjustment & Opname/Persetujuan
+Penyesuaian) di-duplikasi jadi 15 baris `sys_app_menu` (5 × 3 kelas, semua
+`NOT_BUILT`) — BUKAN 5 layar yang di-reuse pakai route param seperti
+Laporan, karena layarnya memang belum ada sama sekali; keputusan reuse-code
+vs 3-route-param yang sama seperti Laporan baru relevan begitu Stock In/Out
+benar-benar digarap. Label sengaja disamakan lintas kelas utk sekarang (mis.
+"Return from Production" dipakai identik di RM/FG/SFG) — **exact kesesuaian
+istilah per kelas belum dikonfirmasi user** (mis. apakah "Return from
+Production" utk FG/SFG maknanya sama dgn RM, atau harus jadi "Production
+Output/Receiving" — beda konsep: RM = sisa material balik ke gudang, FG/SFG
+= barang jadi/setengah-jadi KELUAR dari produksi masuk stok). Jangan
+asumsikan label ini final saat mulai membangun — konfirmasi dulu ke user.
+
+**Kode menu**: grup pakai pola `INV_{TRX|RPT}_{RM|FG|SFG}`, item Laporan
+pakai `INV_{RAW|CARD}_{RM|FG|SFG}`, item Input pakai `INV_{RM|FG|SFG}_ITEM{n}`
+(1..5, urutan sama dgn daftar 5 jenis transaksi di atas) — migration
+`2026_08_22_000007_split_inventory_menu_by_stock_class.php` adalah rujukan
+lengkapnya kalau perlu nambah/ubah lagi.
 
 ---
 

@@ -140,18 +140,13 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50 no-print">
         <b class="text-[15px]">📋 Laporan Master Stok</b>
+        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
         <a href="{{ route('menu') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
     </header>
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
     <div class="no-print max-w-[1000px] mx-auto my-4 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4">
-            <div class="flex gap-1.5 mb-3">
-                @foreach (self::CATEGORY_LABELS as $code => $label)
-                    <a href="{{ route('inv.print.master-stock', ['category' => $code]) }}"
-                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold no-underline border {{ $category === $code ? 'bg-[#2c3e69] text-white border-[#2c3e69]' : 'bg-white text-[#556] border-[#d7dbe2] hover:bg-[#f4f6fa]' }}">{{ $label }}</a>
-                @endforeach
-            </div>
             <div class="flex flex-wrap items-end gap-3">
                 <div class="flex flex-col gap-1">
                     <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
