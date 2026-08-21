@@ -841,21 +841,21 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Total Customer</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricTotal }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Customer</p>
+                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotal }}</p>
                 </div>
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Aktif</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricActive }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
+                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricActive }}</p>
                 </div>
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Terblokir</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricBlocked }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Terblokir</p>
+                    <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->metricBlocked }}</p>
                 </div>
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Draft / Onboarding</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricDraft }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft / Onboarding</p>
+                    <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->metricDraft }}</p>
                 </div>
             </div>
 
@@ -878,12 +878,10 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 </select>
                 <button type="button" wire:click="newCustomer"
                     class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">＋ New</button>
-                <button type="button" wire:click="editCustomer" @disabled(! $selectedId)
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✎ Edit</button>
                 <button type="button" wire:click="deleteCustomer" @disabled(! $selectedId) wire:confirm="Hapus customer ini? Kalau masih dipakai transaksi, akan dinonaktifkan saja."
                     class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#f0c4c4] text-[#c0392b] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🗑 Hapus</button>
                 <div class="flex-1"></div>
-                <div class="text-xs text-[#6b7280] px-2">{{ $this->customers->count() }} baris</div>
+                <div class="text-xs text-[#6b7280] px-2">{{ $this->customers->count() }} baris · klik 2x untuk buka</div>
             </div>
 
             @if ($actionMessage)
@@ -894,7 +892,6 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
-                            <th class="w-8"></th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Customer</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Tipe</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Industri</th>
@@ -908,10 +905,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                         @forelse ($this->customers as $c)
                             <tr wire:click="selectRow({{ $c->id_customer }})" wire:dblclick="editRow({{ $c->id_customer }})"
                                 class="cursor-pointer hover:bg-[#f8f9fb] {{ $selectedId === $c->id_customer ? 'bg-[#e8f0fe]' : '' }}"
-                                title="Klik 2x untuk edit langsung">
-                                <td class="text-center px-2.5 py-2 border-b border-[#d7dbe2]">
-                                    <input type="radio" @checked($selectedId === $c->id_customer) class="scale-110">
-                                </td>
+                                title="Klik 2x untuk buka detail">
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($c->id_customer) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($c->customer_name) }}</div>
@@ -945,7 +939,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-8 text-[#8a94a6] text-sm">
+                                <td colspan="7" class="text-center py-8 text-[#8a94a6] text-sm">
                                     Belum ada data customer{{ $q ? ' untuk pencarian ini' : '' }}.
                                 </td>
                             </tr>

@@ -69,24 +69,24 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
         {{-- STATS --}}
         <div class="grid grid-cols-4 gap-3 mb-4">
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Total Master Item</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['total']) }}</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Master Item</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->stats['total']) }}</p>
             </div>
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Bahan Baku (Stok)</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['material']) }}</p>
-                <p class="text-[10px] opacity-75">MATERIAL</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Bahan Baku (Stok)</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ number_format($this->stats['material']) }}</p>
+                <p class="text-[10px] text-[#2f7a52]/70">MATERIAL</p>
             </div>
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Jasa / Sample</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['non_material']) }}</p>
-                <p class="text-[10px] opacity-75">SERVICE / FREE_SAMPLE</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
+                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Jasa / Sample</p>
+                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ number_format($this->stats['non_material']) }}</p>
+                <p class="text-[10px] text-[#6b4fa0]/70">SERVICE / FREE_SAMPLE</p>
             </div>
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Stok Kritis</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['low_stock']) }}</p>
-                <p class="text-[10px] opacity-75">≤ Reorder Point</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Stok Kritis</p>
+                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ number_format($this->stats['low_stock']) }}</p>
+                <p class="text-[10px] text-[#a3453f]/70">≤ Reorder Point</p>
             </div>
         </div>
 

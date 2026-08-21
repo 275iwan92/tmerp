@@ -616,21 +616,21 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Total Supplier</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricTotal }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Supplier</p>
+                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotal }}</p>
                 </div>
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Aktif</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricActive }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
+                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricActive }}</p>
                 </div>
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Subkontraktor</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricSubcon }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Subkontraktor</p>
+                    <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->metricSubcon }}</p>
                 </div>
-                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
-                    <p class="text-[10.5px] font-bold uppercase opacity-85">Terblokir</p>
-                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricBlocked }}</p>
+                <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
+                    <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Terblokir</p>
+                    <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->metricBlocked }}</p>
                 </div>
             </div>
 
@@ -642,8 +642,6 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 </div>
                 <button type="button" wire:click="newSupplier"
                     class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">＋ New</button>
-                <button type="button" wire:click="editSupplier" @disabled(! $selectedId)
-                    class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✎ Edit</button>
                 <button type="button" wire:click="showDetail" @disabled(! $selectedId)
                     class="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">☰ Detail</button>
                 <button type="button" wire:click="toggleBlacklist" @disabled(! $selectedId) wire:confirm="Ubah status blokir supplier ini?"
@@ -662,7 +660,6 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
-                            <th class="w-8"></th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Kode</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Nama Supplier</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Kategori</th>
@@ -676,10 +673,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                         @forelse ($this->suppliers as $s)
                             <tr wire:click="selectRow({{ $s->id_supplier }})" wire:dblclick="editRow({{ $s->id_supplier }})"
                                 class="cursor-pointer hover:bg-[#f8f9fb] {{ $selectedId === $s->id_supplier ? 'bg-[#e8f0fe]' : '' }}"
-                                title="Klik 2x untuk edit langsung">
-                                <td class="text-center px-2.5 py-2 border-b border-[#d7dbe2]">
-                                    <input type="radio" @checked($selectedId === $s->id_supplier) class="scale-110">
-                                </td>
+                                title="Klik 2x untuk buka detail">
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->supplier_code }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2] font-semibold">{{ $s->supplier_name }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->category ?: '—' }}</td>
@@ -702,7 +696,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center py-8 text-[#8a94a6] text-sm">
+                                <td colspan="7" class="text-center py-8 text-[#8a94a6] text-sm">
                                     Belum ada data supplier{{ $q ? ' untuk pencarian ini' : '' }}.
                                 </td>
                             </tr>

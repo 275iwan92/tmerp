@@ -419,21 +419,21 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Total Satuan</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ $this->statTotal }}</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Satuan</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
             </div>
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Aktif</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ $this->statActive }}</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statActive }}</p>
             </div>
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Satuan Dasar</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ $this->statBase }}</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Satuan Dasar</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statBase }}</p>
             </div>
-            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
-                <p class="text-[10.5px] font-bold uppercase opacity-85">Nonaktif</p>
-                <p class="text-xl font-extrabold mt-0.5">{{ $this->statInactive }}</p>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Nonaktif</p>
+                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statInactive }}</p>
             </div>
         </div>
 
