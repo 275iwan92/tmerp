@@ -55,6 +55,27 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
 
         unset($this->warehouses, $this->stats);
     }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 <div>
@@ -105,8 +126,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
             <table class="w-full text-xs border-collapse">
                 <thead>
                     <tr class="bg-[#f4f5f8]">
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Kode Gudang</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Nama Gudang</th>
+                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Gudang</th>
                         <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tipe</th>
                         <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Jumlah Lokasi</th>
                         <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Status</th>
@@ -115,9 +135,16 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                 </thead>
                 <tbody>
                     @forelse ($this->warehouses as $wh)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="wh-{{ $wh->id_warehouse }}">
-                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $wh->warehouse_code }}</td>
-                            <td class="px-3 py-2">{{ $wh->warehouse_name }}</td>
+                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="wh-{{ $wh->id_warehouse }}" ondblclick="window.location='{{ route('master.warehouse.edit', ['warehouse' => $wh->id_warehouse]) }}'" title="Klik 2x untuk buka detail">
+                            <td class="px-3 py-2">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($wh->id_warehouse) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($wh->warehouse_name) }}</div>
+                                    <div>
+                                        <div class="font-semibold text-[13px]">{{ $wh->warehouse_name }}</div>
+                                        <div class="text-[11px] text-muted font-mono">{{ $wh->warehouse_code }}</div>
+                                    </div>
+                                </div>
+                            </td>
                             <td class="px-3 py-2">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded
                                     {{ match ($wh->warehouse_type) {
@@ -141,7 +168,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-8 text-muted">Belum ada gudang.</td></tr>
+                        <tr><td colspan="5" class="text-center py-8 text-muted">Belum ada gudang.</td></tr>
                     @endforelse
                 </tbody>
             </table>

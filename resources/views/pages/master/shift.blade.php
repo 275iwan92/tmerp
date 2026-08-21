@@ -201,6 +201,27 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
     {
         return EmpShift::where('is_active', true)->distinct('department_id')->count('department_id');
     }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
@@ -250,16 +271,21 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
                     </thead>
                     <tbody>
                         @forelse ($this->shifts as $s)
-                            <tr wire:key="shift-{{ $s->shift_id }}" class="hover:bg-[#f7faff]">
-                                <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold text-navy">{{ $s->shift_name }}</td>
+                            <tr wire:key="shift-{{ $s->shift_id }}" wire:dblclick="openModal('edit', {{ $s->shift_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($s->shift_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($s->shift_name) }}</div>
+                                        <div class="font-semibold text-navy text-[13px]">{{ $s->shift_name }}</div>
+                                    </div>
+                                </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $s->department?->department_name ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[#667]">{{ $s->scheduleSummary() }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $s->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $s->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click="openModal('edit', {{ $s->shift_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="toggleActive({{ $s->shift_id }})" wire:confirm="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }} shift {{ $s->shift_name }}?"
+                                    <button type="button" wire:click.stop="openModal('edit', {{ $s->shift_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                    <button type="button" wire:click.stop="toggleActive({{ $s->shift_id }})" wire:confirm="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }} shift {{ $s->shift_name }}?"
                                         title="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $s->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </td>
                             </tr>

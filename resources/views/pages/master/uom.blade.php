@@ -413,6 +413,27 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
     {
         return UomUnit::where('is_active', false)->count();
     }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
@@ -467,8 +488,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Kode</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Nama Satuan</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Satuan</th>
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Dimensi</th>
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Dasar</th>
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
@@ -477,10 +497,17 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                         </thead>
                         <tbody>
                             @forelse ($this->units as $u)
-                                <tr wire:key="unit-{{ $u->id_uom }}" wire:click="selectUnit('{{ $u->uom_code }}')"
-                                    class="cursor-pointer hover:bg-[#f7faff] {{ $selectedCode === $u->uom_code ? 'bg-[#eef5ff] shadow-[inset_3px_0_0_var(--color-accent)]' : '' }}">
-                                    <td class="px-3 py-2 border-b border-[#eef1f5] font-mono font-bold text-navy">{{ $u->uom_code }}</td>
-                                    <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $u->uom_name ?: '—' }}</td>
+                                <tr wire:key="unit-{{ $u->id_uom }}" wire:click="selectUnit('{{ $u->uom_code }}')" wire:dblclick="openUnitModal('edit', '{{ $u->uom_code }}')"
+                                    class="cursor-pointer hover:bg-[#f7faff] {{ $selectedCode === $u->uom_code ? 'bg-[#eef5ff] shadow-[inset_3px_0_0_var(--color-accent)]' : '' }}" title="Klik 2x untuk buka detail">
+                                    <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($u->id_uom) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($u->uom_name ?: $u->uom_code) }}</div>
+                                            <div>
+                                                <div class="font-semibold text-[13px]">{{ $u->uom_name ?: '—' }}</div>
+                                                <div class="text-[11px] text-muted font-mono">{{ $u->uom_code }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->dimensionBadgeClass($u->dimension) }}">{{ $u->dimension ?: '—' }}</span>
                                     </td>
@@ -495,7 +522,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

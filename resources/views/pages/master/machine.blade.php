@@ -185,6 +185,27 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         unset($this->machines, $this->statTotal, $this->statActive, $this->statInactive);
     }
 
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
+
     #[Computed]
     public function statTotal(): int
     {
@@ -257,8 +278,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Kode</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Nama Mesin</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Mesin</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Jenis</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Merk/Model</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
@@ -267,22 +287,29 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                     </thead>
                     <tbody>
                         @forelse ($this->machines as $m)
-                            <tr wire:key="machine-{{ $m->machine_id }}" class="hover:bg-[#f7faff]">
-                                <td class="px-3 py-2 border-b border-[#eef1f5] font-mono font-bold text-navy">{{ $m->machine_code }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->machine_name }}</td>
+                            <tr wire:key="machine-{{ $m->machine_id }}" wire:dblclick="openModal('edit', {{ $m->machine_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($m->machine_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($m->machine_name) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $m->machine_name }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $m->machine_code }}</div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->machine_type ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->brand_model ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $m->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $m->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click="openModal('edit', {{ $m->machine_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click="toggleActive({{ $m->machine_id }})" wire:confirm="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }} mesin {{ $m->machine_name }}?"
+                                    <button type="button" wire:click.stop="openModal('edit', {{ $m->machine_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                    <button type="button" wire:click.stop="toggleActive({{ $m->machine_id }})" wire:confirm="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }} mesin {{ $m->machine_name }}?"
                                         title="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $m->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                            <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

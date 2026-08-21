@@ -404,6 +404,27 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         unset($this->employees);
     }
 
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
+
     // ============== SUB-MODAL: PENDIDIKAN ==============
     public function openEducationModal(): void
     {
@@ -596,8 +617,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Kode</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Nama &amp; Jabatan</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Employee</th>
                                 <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Departemen</th>
                                 <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Kedisiplinan</th>
                                 <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status Kerja</th>
@@ -607,11 +627,15 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         <tbody>
                             @forelse ($this->employees as $e)
                                 @php $badge = $this->disciplineBadge($e); @endphp
-                                <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]">
-                                    <td class="px-3.5 py-2 border-b border-[#eef1f5] font-mono font-bold text-navy">{{ $e->employee_code }}</td>
+                                <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]" title="Klik 2x untuk buka detail">
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
-                                        <div class="font-semibold text-[#0f172a]">{{ $e->full_name }}</div>
-                                        <div class="text-[11px] text-muted">{{ $e->position?->position_name }}</div>
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($e->employee_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($e->full_name) }}</div>
+                                            <div>
+                                                <div class="font-semibold text-[#0f172a] text-[13px]">{{ $e->full_name }}</div>
+                                                <div class="text-[11px] text-muted">{{ $e->employee_code }} @if($e->position?->position_name) · {{ $e->position->position_name }} @endif</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">{{ $e->position?->department?->department_name ?: '—' }}</td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
@@ -627,7 +651,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                                <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

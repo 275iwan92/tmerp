@@ -61,6 +61,27 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
         unset($this->items, $this->stats);
     }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
@@ -113,8 +134,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr class="bg-[#f4f5f8]">
-                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Kode</th>
-                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Nama Item</th>
+                            <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Item</th>
                             <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tipe</th>
                             <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Kategori</th>
                             <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Gramatur</th>
@@ -127,9 +147,16 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     </thead>
                     <tbody>
                         @forelse ($this->items as $m)
-                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="mat-{{ $m->material_id }}">
-                                <td class="px-3 py-2 font-mono font-bold text-accent">{{ $m->material_code }}</td>
-                                <td class="px-3 py-2">{{ $m->material_name }}</td>
+                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="mat-{{ $m->material_id }}" ondblclick="window.location='{{ route('master.raw-material.edit', ['material' => $m->material_id]) }}'" title="Klik 2x untuk buka detail">
+                                <td class="px-3 py-2">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($m->material_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($m->material_name) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $m->material_name }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $m->material_code }}</div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="px-3 py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#eef1f5] text-[#4b5568]">{{ $m->item_type }}</span></td>
                                 <td class="px-3 py-2 text-[10.5px]">{{ $m->category1 }} @if($m->category2) » {{ $m->category2 }} @endif</td>
                                 <td class="px-3 py-2 text-right">{{ $m->gram_weight ? $m->gram_weight.' gsm' : '—' }}</td>
@@ -144,7 +171,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="10" class="text-center py-8 text-muted">Tidak ada item cocok.</td></tr>
+                            <tr><td colspan="9" class="text-center py-8 text-muted">Tidak ada item cocok.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

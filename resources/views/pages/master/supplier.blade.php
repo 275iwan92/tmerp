@@ -569,6 +569,27 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         return SupSupplier::where('is_subcon', true)->count();
     }
 
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
+
     // Hapus permanen HANYA kalau tidak ada transaksi (SupplierGuardService —
     // saat ini selalu boleh, modul Purchasing belum ada; lihat komentar di
     // service-nya untuk kapan ini akan mulai memblokir).
@@ -658,8 +679,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse">
                     <thead>
                         <tr>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Kode</th>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Nama Supplier</th>
+                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Supplier</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Kategori</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Kontak PIC</th>
                             <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Termin</th>
@@ -672,8 +692,15 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                             <tr wire:click="selectRow({{ $s->id_supplier }})" wire:dblclick="editRow({{ $s->id_supplier }})"
                                 class="cursor-pointer hover:bg-[#f8f9fb] {{ $selectedId === $s->id_supplier ? 'bg-[#e8f0fe]' : '' }}"
                                 title="Klik 2x untuk buka detail">
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->supplier_code }}</td>
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2] font-semibold">{{ $s->supplier_name }}</td>
+                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($s->id_supplier) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($s->supplier_name) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $s->supplier_name }}</div>
+                                            <div class="text-[11px] text-[#6b7280]">{{ $s->supplier_code }}</div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->category ?: '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->contact_name ?: '—' }}</td>
                                 <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $s->paymentTerm?->term_label ?? '—' }}</td>
@@ -694,7 +721,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center py-8 text-[#8a94a6] text-sm">
+                                <td colspan="6" class="text-center py-8 text-[#8a94a6] text-sm">
                                     Belum ada data supplier{{ $q ? ' untuk pencarian ini' : '' }}.
                                 </td>
                             </tr>
