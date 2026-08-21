@@ -1,0 +1,213 @@
+# ═══════════════════════════════════════════════════════════════════
+# INV_RULES.yaml — ATURAN KHAS MODUL 02 INVENTORY (stock movement)
+# Menunjuk GLOBAL_RULES (tak menyalin). Baca INV_STATE dulu tiap sesi.
+# ═══════════════════════════════════════════════════════════════════
+meta:
+  db: tm2inv
+  submodul: "stock_movement · stock_adjustment · stock_opname"
+  prefix: "rm_ (bahan baku) | sfg_ (setengah jadi) | fg_ (barang jadi) | inv_ (tabel baru modul ini)"
+  status: "spec Tier 1-4 selesai 2026-08-21, implementasi belum mulai"
+  bukan_milik_modul: "item master, gudang/lokasi master, PV/GRN, Delivery Note, booking MRP, jurnal GL"
+  catatan_prefix: >
+    Tabel legacy TIDAK diganti nama (keputusan PROC-C). Tabel baru memakai prefix inv_.
+    Modul ini tidak memakai i_/c_ pada tabel legacy karena tabel induknya memakai
+    create_by/create_log — mencampur dua konvensi dalam satu tabel lebih berbahaya
+    daripada menyimpang dari konvensi global. Tabel BARU memakai konvensi global penuh.
+
+invarian:
+  satu_keluarga_empat_dokumen: >
+    Stock In / Stock Out / Adjustment+Opname / Return semuanya menulis ke keluarga tabel
+    yang sama. Pembedanya HANYA pasangan doc_type + doc_cat. Tidak boleh ada tabel
+    dokumen stok baru untuk jenis pergerakan baru.
+
+  posting_di_application_layer: >
+    INV-01. Trigger MySQL trg_*_stock_confirm DI-DROP. Posting dilakukan
+    App\Services\Inventory\StockPostingService dalam satu DB transaction.
+    Kontrak legacy dipertahankan: stat_confirm=1 berarti sudah masuk kartu stok.
+    Alasan: (a) bug double-posting terbukti di data produksi doc_id=95 -> saldo -80,
+    (b) trigger tak bisa mengisi inv_stock_layer FIFO/LIFO,
+    (c) trigger tak bisa satu transaksi dengan flow_log yang ada di database berbeda.
+
+  idempotensi_posting: >
+    UNIQUE (reference_name, reference_detail_id) di setiap *_stockcard. Panggilan posting
+    kedua GAGAL DI DATABASE, bukan sekadar dicegah di kode. Ini penambal langsung bug legacy.
+
+  kartu_stok_ireversibel: >
+    Baris *_stockcard TIDAK PERNAH di-UPDATE atau di-DELETE oleh aplikasi. Koreksi selalu
+    berupa baris baru (Adjustment atau Return). Rebuild hanya lewat sp_*_rebuild_stockcard
+    sebagai operasi pemeliharaan manual, bukan jalur aplikasi.
+
+  input_fisik_bukan_selisih: >
+    Adjustment/Opname: user mengetik qty_physical. Sistem menghitung
+    qty = qty_physical - qty_system. Kolom selisih TIDAK PERNAH bisa diedit.
+    qty_system DISNAPSHOT DAN DISIMPAN, tidak dibaca ulang saat posting — kalau dibaca
+    ulang, penyesuaian yang disetujui belakangan menghitung selisih terhadap saldo yang
+    sudah bergerak dan salah dua kali.
+
+  pemisahan_afkir_by_lokasi: >
+    INV-02. Bahan afkir tetap dicatat sebagai stok (nilai persediaan harus benar) tapi
+    disimpan di lokasi dengan m_wh_loc.is_usable=0 di gudang warehouse_type='WASTE'.
+    v_rm_available memberi qty_available=0 untuk lokasi tersebut.
+    Yang dipisah adalah TEMPATNYA, bukan flag pada barisnya — flag pada movement tidak
+    ikut ke saldo sehingga saldo tetap tercampur.
+
+  periode_terkunci: >
+    INV-03. Posting hanya ke inv_period berstatus OPEN. Backdate maksimum
+    sys_constant INV_BACKDATE_DAYS. Koreksi periode tertutup wajib lewat Adjustment
+    bertanggal periode berjalan — saldo historis tak pernah berubah retroaktif.
+
+  out_wajib_wo: >
+    Tidak ada pengeluaran bahan tanpa Work Order. Kebutuhan ditarik dari
+    tm2prd.prd_wo_material, tidak diketik ulang.
+
+  return_wajib_ref_out: >
+    Return hanya terhadap dokumen Stock Out berstatus POSTED. qty retur per baris dibatasi
+    qty_keluar - qty_returned. Bahan lebih dari yang pernah keluar BUKAN retur — itu temuan,
+    jalurnya Adjustment reason_code=FOUND.
+
+  fg_out_bukan_milik_modul: >
+    Layar Stock Out MENOLAK kelas FG di level route. Barang jadi keluar ke pelanggan
+    HANYA lewat Delivery Note (05_dispatch). Kalau dibuka, ledger FG terisi dua kali dan
+    angka pengiriman tak akan pernah cocok dengan tagihan.
+
+  purchase_tidak_menyentuh_stok: >
+    Baris rm_stock_d dengan action_type='PURCHASE' DILEWATI service posting. Baris itu
+    pemicu Purchase Requisition, bukan pergerakan stok.
+
+  tidak_ada_revise: >
+    Dokumen stok merekam KEJADIAN FISIK. Kejadian fisik tak bisa direvisi, hanya dikoreksi
+    dengan kejadian baru. Tidak ada REVISE copy-record di modul ini (beda dari PR/PO/Inquiry).
+    POSTED tak pernah diedit; CANCELLED hanya untuk dokumen yang belum diposting.
+
+  saldo_negatif_ditolak: >
+    Posting OUT yang membuat qty_eb < 0 ditolak, kecuali peran INV.can_override_stock
+    memberi alasan tertulis. Adjustment (doc_cat AD/OP) DIKECUALIKAN — mengoreksi saldo
+    negatif memang wewenangnya.
+
+  sisi_visibilitas: >
+    Sisi B (gudang) = query TIDAK menyertakan kolom harga sama sekali (bukan CSS hidden,
+    bukan @if di Blade). Sisi A (Manajer Operasional & Accounting) = nilai penuh.
+    Repository menyediakan dua metode: forWarehouse() dan forFinance().
+    Nilai SELALU tersimpan; yang diatur adalah siapa yang boleh melihat.
+
+  layar_terpisah: >
+    Layar entri Adjustment dan layar persetujuan Adjustment adalah ROUTE BERBEDA.
+    Tombol Setujui/Tolak tidak pernah dirender di layar entri, bahkan bila user punya
+    kedua hak. Mengikuti aturan global separation of concerns in approval.
+
+  approval_by_jabatan: >
+    Aktor approval menunjuk org_position, bukan username. Badge PLT (Pejabat Sementara)
+    wajib muncul KONSISTEN di FlowActionBar dan FlowHistoryLog.
+
+  nilai_mutlak_untuk_threshold: >
+    Nilai dokumen Adjustment untuk penentuan level approval = SUM(ABS(qty * unit_price)),
+    bukan neto. Penyesuaian +1000 dan -1000 bernilai nol secara neto tapi merupakan
+    dua kesalahan yang perlu ditinjau.
+
+  data_driven_rules: >
+    Seluruh ambang nilai, daftar alasan, daftar proses, dan flag perilaku tersimpan di
+    sys_constant / flow_config_step — TIDAK di-hardcode. Mengubah batas kewenangan tidak
+    boleh memerlukan deploy.
+
+konvensi_dokumen:
+  penomoran:
+    IN:  "IN/{YY}/{#####}"
+    OUT: "OUT/{YY}/{#####}"
+    ADJ: "ADJ/{YY}/{#####}"
+    OPN: "OPN/{YY}/{#####}"
+    RTP: "RTP/{YY}/{#####}"
+    catatan: >
+      Berubah dari pola legacy 26OU00014 ke pola global PREFIX/YY/#####, konsisten dengan
+      PR/PO/PV. Dokumen lama TIDAK dinomori ulang. Generator lama punya bug: dump memuat
+      26BB00005 enam kali dan 26OU00014 lima kali — unique index doc_no baru bisa dipasang
+      setelah data dibersihkan.
+
+  doc_type_cat:
+    stock_in:      { doc_type: 1,  doc_cat: "STOCK", module_code: "IN"  }
+    saldo_awal:    { doc_type: 1,  doc_cat: "BB",    module_code: "IN"  }
+    stock_out:     { doc_type: -1, doc_cat: "STOCK", module_code: "OUT" }
+    adjustment:    { doc_type: -1, doc_cat: "AD",    module_code: "AD"  }
+    opname:        { doc_type: -1, doc_cat: "OP",    module_code: "OP"  }
+    return_prod:   { doc_type: 1,  doc_cat: "RETURN",module_code: "RTP" }
+    catatan_op: >
+      OP dipisah dari AD di header agar laporan bisa membedakan hitung-fisik-terjadwal dari
+      koreksi-kejadian-tunggal, tapi pada kartu stok keduanya menghasilkan tipe AD.
+      Perbedaannya administratif, bukan akuntansi stok.
+
+  flow_status:
+    - DRAFT
+    - SUBMITTED
+    - APPROVED_L1
+    - APPROVED_L2
+    - REVISION_NEEDED
+    - POSTED
+    - CANCELLED
+  cermin_legacy: "flow_status=POSTED <=> stat_confirm=1 · flow_status=CANCELLED <=> stat_cancel=1"
+  alur:
+    stock_in_otomatis: "dibuat sistem -> POSTED"
+    stock_in_manual:   "DRAFT -> SUBMITTED -> POSTED"
+    stock_out:         "DRAFT -> POSTED"
+    return:            "DRAFT -> POSTED"
+    adjustment_opname: "DRAFT -> SUBMITTED -> APPROVED_L1 -> (APPROVED_L2) -> POSTED"
+  alasan_out_rtp_tanpa_approval: >
+    Keduanya menjejak dokumen hulu yang sudah tervalidasi (WO dirilis / Stock Out terposting).
+    Menahannya berarti menahan lantai produksi.
+
+kolom_deprecated:
+  daftar: ["stat_auth", "auth_module", "current_approval_level", "current_approval_login", "stat_confirm_plan", "doc_status"]
+  aturan: "JANGAN ditulis lagi. Fungsinya pindah ke tm2sys.flow_log + kolom flow_status. Dihapus fisik pada fase 2 setelah data lama dimigrasi."
+
+tabel_tidak_dipakai:
+  - rm_stock_d_bak    # sisa eksperimen legacy
+  - rm_stockmst       # snapshot per periode — digantikan inv_period + kartu stok
+  - fg_stockmst       # dikomentari legacy sendiri: 'BELUM TENTU TERPAKAI'
+  - v1_m_print_mst_mat # view menunjuk rm_stockmst -> DROP
+
+permission:
+  model: "mengikuti model global 4 aksi (view/create/edit/approve) + 4 hak khusus"
+  objek: ["INV_IN", "INV_OUT", "INV_ADJ", "INV_RTP", "INV_CARD", "INV_PERIOD"]
+  khusus:
+    INV.can_view_cost:      "membuka kolom nilai (Sisi A)"
+    INV.can_override_stock: "melewati blokir saldo negatif dengan alasan tertulis"
+    INV.can_manage_period:  "buka/tutup periode, buat saldo awal (doc_cat=BB)"
+  catatan: "'approve' di modul ini berarti boleh memposting/menyetujui, bukan sekadar melihat"
+
+integrasi:
+  procurement: "PV memanggil StockPostingService::postIn(); pola legacy notes='Auto dari PV: <no>' dipertahankan; reference_name='tm2pur.pv_line'"
+  production_baca:  "prd_wo (validasi rilis) · prd_wo_material (kebutuhan Stock Out) · rm_booking_d (qty tersedia)"
+  production_tulis: "output SFG/FG masuk lewat Stock In ref_doc_type='WO'; varian pemakaian dikirim balik sbg data waste riil"
+  sales_dispatch:   "FG keluar HANYA lewat Delivery Note — modul ini tidak menyentuhnya"
+  flow_engine:      "module_code IN/OUT/AD/OP/RTP di flow_config; log di flow_log (polymorphic)"
+  master:           "baca m_raw_material, m_product, m_product_parts, m_warehouse, m_wh_loc, m_uom, m_uom_conversion; tulis balik cur_stock, avg_unitprice, last_unitprice"
+  finance:          "jurnal persediaan DI LUAR scope fase ini; nilai sudah tersedia di *_stockcard.value_* untuk dipanen nanti"
+
+harga_perolehan:
+  metode: "per item via m_raw_material.costing_method (AVG default). Fallback sys_constant INV_DEFAULT_COSTING."
+  avg:  "moving average; tulis value_bb/in/out/adj/eb + avg_unitprice di kartu stok"
+  fifo_lifo: "inv_stock_layer (lapisan per lot) + inv_layer_consumption (jejak konsumsi saat OUT)"
+  retur: >
+    Retur memakai HARGA SAAT KELUAR, bukan harga pasar terbaru. AVG: avg_unitprice yang
+    berlaku pada baris OUT sumber. FIFO/LIFO: layer dikembalikan dengan unit_cost asli
+    dari inv_layer_consumption.
+  scrap: >
+    Bahan afkir dicatat dengan NILAI PENUH. Penurunan nilai barang afkir adalah keputusan
+    Accounting (penyisihan), bukan keputusan gudang.
+
+ui:
+  pola_layar: "Grid -> klik ganda -> Form. Panel-switching dalam satu route, tanpa reload."
+  layout_mode: "FULL-PAGE (w-full + padding) untuk semua layar modul ini — operasional, bukan dokumen"
+  komponen_baru: "LocationPicker (prop usableOnly) — milik modul ini, dipakai ulang modul lain"
+  komponen_dipakai_ulang: ["ItemPicker (Procurement)", "FlowActionBar", "FlowHistoryLog", "SearchableSelect"]
+  badge_kondisi: "GOOD = hijau · SCRAP = ungu · lokasi is_usable=0 diberi latar berbeda + badge 'Tidak dapat dipakai'"
+  aturan_tombol:
+    - "tombol tak berlaku DIHILANGKAN, bukan di-disable — kecuali bila alasannya perlu dijelaskan (disable + tooltip)"
+    - "posting selalu lewat dialog konfirmasi yang menyebut akibatnya"
+    - "Approve/Reject tak pernah di layar entri"
+    - "Cetak tersedia untuk POSTED dan CANCELLED; dokumen batal diberi watermark DIBATALKAN"
+
+di_luar_scope_fase_ini:
+  - "jurnal persediaan otomatis ke GL"
+  - "transfer antar gudang sebagai dokumen tersendiri (sementara: pasangan Stock Out + Stock In)"
+  - "serial number / barcode scanning"
+  - "revaluasi persediaan & penyisihan barang usang"
+  - "konsinyasi dan stok milik pelanggan"

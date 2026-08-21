@@ -47,7 +47,11 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 > instruksi user (deviasi boleh langsung dibangun asal ditulis):
 > 1. Mockup: 1 baris grid = 1 "gudang" yang sekaligus 1 bin (row/col/stack nempel di
 >    record gudang) — tak bisa 1 gudang punya banyak rak. **Dipisah** jadi `m_warehouse`
->    (header) 1:N `m_wh_location` (rak/bin) — gudang fisik nyata punya banyak posisi.
+>    (header) 1:N `m_wh_loc` (rak/bin) — gudang fisik nyata punya banyak posisi.
+>    (**Update 2026-08-21 sore**: tabel `m_wh_location` di-rename jadi `m_wh_loc` +
+>    kolom `id_wh_location`→`location_id`/`bin_code`→`location_code`, dan
+>    `warehouse_type` diperluas `RAW/FG/MIX/SCRAP`→`RM/SFG/FG/MIX/WASTE/TRANSIT` —
+>    supaya cocok dengan puluhan VIEW Inventory yang baru dibangun, lihat 2.2.)
 > 2. Mockup: field SKU/Nama Barang/Jumlah Stok/UoM nempel di tiap baris gudang, datanya
 >    dikarang di JS. **Tidak dibuat** — itu posisi stok transaksional (butuh ledger
 >    Inventory yang belum dibangun), bukan master data; kalau dipaksa jadi dua sumber
@@ -67,12 +71,40 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ✅ [G] Item List/Catalog — `master.raw-material.list` (stats card total/material/jasa/stok kritis, filter tipe & kategori, cari kode/nama/HS code)
 - ✅ [F] Item Entry — `master.raw-material.create` / `.edit` (5 tab: Kategori+kode-auto dari `doc_rmprefix1..5`, Spesifikasi & QC, UOM & Pengadaan, Stok & Lokasi, Akuntansi GL langsung ke `fin_account`/`fin_cost_center`/`fin_profit_center` baru). Kategori terkunci setelah dibuat (kode ikut kombinasi itu). **Belum diverifikasi visual browser**, logika diverifikasi via tinker (generate kode, cek tabrakan, create+reload seluruh field termasuk costing_method STANDARD baru)
 ### 2.2 Stock Movement
-- ⬜ [G] Stock Movement Ledger (kartu stok)
-- ⬜ [P] Kartu Stok print
-### 2.3 Stock Adjustment
-- ⬜ [F] Adjustment Entry
-- ⬜ [P] Adjustment Voucher
-- ⬜ [D] Stock Level Dashboard (min/max, reorder)
+> **2026-08-21**: `INV_TIER_1..4.md` + `INV_RULES.yaml` + `INV_STATE.yaml` diterima dari user
+> (spec Inventory lengkap, ditulis Telma). Dump produksi `tminv_20260722_2018_sd.sql`
+> diberikan user & diimpor (13 tabel legacy: `rm_stock*`/`sfg_stock*`/`fg_stock*`/`rm_booking*`).
+> **Tier 3 (DDL/skema) dieksekusi PENUH**: bersihkan data kotor (doc_no dobel, location_id
+> NULL, baris kartu stok duplikat bukti bug posting-ganda — semua terverifikasi persis
+> sesuai yang didiagnosis `INV_STATE.yaml`), delta kolom `flow_status`/`period_id`/dst ke
+> `rm_stock*`/`sfg_stock*`/`fg_stock*`, 3 tabel baru (`inv_period`/`inv_stock_layer`/
+> `inv_layer_consumption`), 5 VIEW (`v_rm_onhand`/`v_rm_available`/`v_rm_out_returnable`/
+> `v_inv_movement`/`v_inv_wo_reconcile`) + 2 tambahan (`v_fg_onhand`/`v_sfg_onhand`), posisi
+> "Kepala Gudang" baru dibuat (org_position), Flow Engine IN/OUT/AD/OP/RTP di-seed, menu
+> `INV_IN`/`INV_OUT`/`INV_RTP`/`INV_ADJ2`/`INV_APRV`/`INV_PERIOD` ditautkan ke grup
+> `INV_TRX`/`INV_RPT` yang **sudah pre-seeded** (ditemukan saat baru — bukan `MDATA`,
+> percobaan pertama salah taruh, sudah dikoreksi).
+> **3 penyimpangan nyata dari teks spec** (diverifikasi ke DB, bukan ditebak):
+> `sys_sequence` tidak ada sama sekali (project ini pakai pola `nextDocNo()` statis per
+> model, bukan tabel sequence — dipakai nanti saat service posting digarap);
+> `sys_constant` ada di **tm2mst** bukan tm2sys (sama kasus lama `PROC-SYSCONST-COL`);
+> produk FG/SFG adalah `tm2mst.prod_product`/`prod_part` (bukan `m_product`/`m_product_parts`
+> yang disebut teks asli — tabel itu tidak ada). Detail penuh + alasan tiap keputusan ada
+> di komentar migration `2026_08_21_00000{8,9,10,11,12}` dan memory `project_inventory_module_status`.
+> **Tier 4 (layar transaksi) BELUM digarap** — StockPostingService, Stock In/Out/Adjustment/
+> Return, dan layar approval masih kosong. Yang dibangun baru 2 layar laporan/cetak di bawah,
+> sesuai permintaan spesifik user, dari `mockup_print_stock_card.html` + `mockup_print_master_stock.html`.
+- ✅ [P] Kartu Stok — `inv.print.stock-card` (menu `INV_CARD`, pre-seeded). Pilih item + rentang tanggal, baca `v_inv_movement` (kelas RM saja — SFG/FG belum ada data riil), saldo awal dari baris pertama/qty_eb sebelum rentang. Diverifikasi query langsung ke data riil (material_id=1: 8 baris, saldo 0→50). **Belum diverifikasi visual browser.**
+- ✅ [P][G] Laporan Master Stok — `inv.print.master-stock` (menu `INV_RAW`, pre-seeded). Rentang tanggal + filter gudang, agregat per item dari `rm_stockcard` (saldo awal/masuk/keluar/penyesuaian/saldo akhir), dikelompokkan per kategori sesuai mockup, badge status vs `min_stock`. **Belum diverifikasi visual browser.**
+- ⬜ [G] Stock Movement Ledger interaktif (grid `StockCard`/`OnhandGrid` penuh sesuai `INV_TIER_4.md` §6) — layar laporan yang dibangun baru versi cetak langsung, belum ada grid filter interaktifnya
+### 2.3 Stock In / Stock Out / Return / Adjustment (Tier 4, belum digarap)
+- ⬜ [F][G] Stock In Entry + Grid
+- ⬜ [F][G] Stock Out Entry + Grid (tarik kebutuhan dari WO, substitusi/pembelian)
+- ⬜ [F][G] Return from Production Entry + Grid
+- ⬜ [F][G] Stock Adjustment & Opname Entry + Grid
+- ⬜ [G] Persetujuan Adjustment (route terpisah dari entri)
+- ⬜ [D] Period Manager (buka/tutup periode stok)
+- ⬜ Service: `StockPostingService`/`StockDocumentService`/`StockValuationService`/`StockBalanceService`/`PeriodService`, `LocationPicker` (komponen baru)
 
 ---
 
@@ -213,7 +245,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | Modul | ✅ Live | 🟡 Mockup ada, belum digarap | ⬜ Belum ada mockup |
 |---|---|---|---|
 | 1 Sales (Inquiry/Quotation/CO) | 13 | 4 | 1 |
-| 2 Inventory | 4 | 0 | 6 |
+| 2 Inventory | 6 | 0 | 8 |
 | 3 Production | 0 | 2 | 9 |
 | 4 Procurement | 8 | 0 | 7 |
 | 5 Dispatch | 0 | 0 | 9 |
@@ -224,7 +256,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 | 10 Master Data | 3 | 0 | 0 |
 | 11 Finance & Accounting | 2 | 0 | 0 |
 
-**36 item live**, **6 item punya mockup HTML tapi belum diimplementasi Livewire**, **46 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah mulai lewat Master Warehouse + Item Master; Procurement spine PR→PR Approval→PO→PO Approval→PV sudah live penuh dan bisa dijalankan ujung-ke-ujung tanpa akal-akalan, hanya posting stok fisik PV yang tertunda dump legacy; Notification Center & Nota Inquiry per-tipe kini juga live). *(Product Costing Engine (HPP) dikeluarkan dari hitungan 🟡 2026-08-21 — dibatalkan sebagai duplikat Costing Hub, lihat 1.1.)*
+**38 item live**, **6 item punya mockup HTML tapi belum diimplementasi Livewire**, **48 item belum punya mockup/spec-layar sama sekali** (Production inti/Dispatch/Invoicing masih kosong total; Inventory sudah punya fondasi skema Tier 3 penuh + 2 layar laporan/cetak, tapi mesin transaksi Tier 4 — Stock In/Out/Adjustment/Return — masih kosong; Procurement spine PR→PR Approval→PO→PO Approval→PV sudah live penuh dan bisa dijalankan ujung-ke-ujung tanpa akal-akalan, dan sejak Inventory Tier 3 jalan, blocker lama "dump tminv belum ada" untuk `PvPostingService::post()` sudah **selesai** — tinggal disambungkan; Notification Center & Nota Inquiry per-tipe kini juga live). *(Product Costing Engine (HPP) dikeluarkan dari hitungan 🟡 2026-08-21 — dibatalkan sebagai duplikat Costing Hub, lihat 1.1.)*
 
 **Prioritas alur bisnis (selaras GLOBAL_START_HERE — urutan dependensi terkunci):**
 Sales (spine) → Inventory (fondasi item untuk MRP) → Production (MPS/MRP) → Procurement (dipicu MRP) → Dispatch (DO/DN, CASE PENTING cross-CO) → Invoicing/Billing (AR-lite, penutup order-to-cash).

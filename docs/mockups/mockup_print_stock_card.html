@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kartu Stok — RM-KRT-0004 Art Paper 230gr</title>
+<style>
+  /* ==========================================================
+     TMERP — Print Nota: Kartu Stok (satu item)
+     A4 potret · font 10.5pt · margin 12mm
+     Sumber view: v_inv_movement · sp_rm_stock_card
+     ========================================================== */
+  :root{
+    --navy:#2c3e69; --accent:#2f6fed;
+    --line:#333; --line-l:#c8ccd4; --line-xl:#e9ecf1;
+    --txt:#1f2937; --txt-m:#5b6474; --txt-l:#8b94a5;
+    --neg:#b71c1c; --pos:#0f9d58; --hi:#fff7d6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#e6e9ee;color:var(--txt);font-family:"Segoe UI",Arial,Helvetica,sans-serif;font-size:10.5pt}
+
+  /* Toolbar (tak dicetak) */
+  .toolbar{
+    position:sticky;top:0;background:var(--navy);color:#fff;
+    padding:9px 16px;display:flex;gap:10px;align-items:center;z-index:5;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  .toolbar .t{font-weight:600;font-size:12pt}
+  .toolbar .spacer{flex:1}
+  .toolbar button{
+    background:var(--accent);border:none;color:#fff;padding:6px 14px;
+    border-radius:4px;cursor:pointer;font-family:inherit;font-size:10.5pt;
+  }
+  .toolbar button.alt{background:#fff;color:var(--navy)}
+  .toolbar button:hover{filter:brightness(.92)}
+
+  /* Halaman A4 */
+  .sheet{
+    background:#fff;width:210mm;min-height:297mm;margin:14px auto;
+    padding:12mm 12mm 15mm 12mm;box-shadow:0 4px 18px rgba(0,0,0,.18);
+    position:relative;
+  }
+
+  /* Header dokumen */
+  .doc-hd{display:flex;gap:12mm;padding-bottom:5mm;border-bottom:1.5px solid var(--line);align-items:flex-start}
+  .doc-hd .brand{flex:1}
+  .doc-hd .brand .co{font-size:14pt;font-weight:700;color:var(--navy);letter-spacing:.3px}
+  .doc-hd .brand .co small{font-weight:400;color:var(--txt-m);font-size:9pt;display:block;margin-top:1px}
+  .doc-hd .brand .addr{color:var(--txt-m);font-size:8.5pt;line-height:1.35;margin-top:3mm;max-width:110mm}
+  .doc-hd .doc-info{text-align:right;min-width:60mm}
+  .doc-hd .doc-info .title{font-size:15pt;font-weight:700;color:var(--navy);letter-spacing:.5px;text-transform:uppercase}
+  .doc-hd .doc-info .sub{font-size:9pt;color:var(--txt-m);margin-top:1mm}
+  .doc-hd .doc-info table{margin-left:auto;margin-top:3mm;font-size:9pt;border-collapse:collapse}
+  .doc-hd .doc-info table td{padding:1px 0}
+  .doc-hd .doc-info table td:first-child{color:var(--txt-m);padding-right:6mm;text-align:right}
+  .doc-hd .doc-info table td:last-child{font-weight:600;text-align:right}
+
+  /* Blok identitas item */
+  .item-box{
+    margin-top:4mm;border:1px solid var(--line-l);border-radius:2px;
+    padding:3mm 4mm;background:#fbfcfe;
+  }
+  .item-box .row{display:flex;gap:6mm;flex-wrap:wrap}
+  .item-box .cell{min-width:44mm;flex:1}
+  .item-box .lab{font-size:8pt;color:var(--txt-m);text-transform:uppercase;letter-spacing:.3px}
+  .item-box .val{font-size:10.5pt;font-weight:600;color:var(--navy);margin-top:.5mm}
+  .item-box .val small{font-weight:400;color:var(--txt-m);font-size:8.5pt;margin-left:4px}
+
+  /* Tabel transaksi */
+  table.led{width:100%;border-collapse:collapse;margin-top:5mm;font-size:9pt}
+  table.led thead th{
+    background:var(--navy);color:#fff;font-weight:600;text-align:left;
+    padding:5px 6px;border:1px solid var(--navy);white-space:nowrap;font-size:8.5pt;
+  }
+  table.led thead th.num{text-align:right}
+  table.led thead th.ctr{text-align:center}
+  table.led tbody td{padding:4.5px 6px;border:1px solid var(--line-xl);vertical-align:top}
+  table.led tbody td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.led tbody td.ctr{text-align:center}
+  table.led tbody td.zero{color:var(--txt-l)}
+  table.led tbody td.pos{color:var(--pos);font-weight:600}
+  table.led tbody td.neg{color:var(--neg);font-weight:600}
+  table.led tbody tr.bb td{background:var(--hi);font-weight:600}
+  table.led tbody tr.mo td{background:#fff8f8}
+  table.led tbody tr.month-brk td{
+    background:#eef1f6;font-weight:700;color:var(--navy);
+    padding:4px 6px;font-size:8.5pt;text-transform:uppercase;letter-spacing:.4px;
+  }
+  table.led tfoot td{
+    padding:6px;background:#f4f6fa;font-weight:700;border:1px solid var(--line-l);
+    font-size:9pt;
+  }
+  table.led .cell-doc{font-weight:600;color:var(--navy)}
+  table.led .cell-src{color:var(--txt-m);font-size:8.5pt;display:block;margin-top:1px}
+  .bdg-t{
+    display:inline-block;padding:1px 5px;border-radius:8px;font-size:7.5pt;font-weight:700;
+    background:#e6efff;color:var(--accent);
+  }
+  .bdg-t.out{background:#fdecec;color:var(--neg)}
+  .bdg-t.adj{background:#fdf3e2;color:#a06600}
+  .bdg-t.bb{background:#fff3d6;color:#7a4b00}
+
+  /* Ringkasan */
+  .summary{
+    margin-top:5mm;display:grid;grid-template-columns:repeat(5,1fr);gap:3mm;
+  }
+  .summary .box{
+    border:1px solid var(--line-l);padding:3mm;border-radius:2px;background:#fbfcfe;
+  }
+  .summary .lab{font-size:7.5pt;color:var(--txt-m);text-transform:uppercase;letter-spacing:.3px}
+  .summary .val{font-size:12pt;font-weight:700;color:var(--navy);margin-top:1mm;text-align:right;font-variant-numeric:tabular-nums}
+  .summary .val.neg{color:var(--neg)}
+  .summary .val.pos{color:var(--pos)}
+
+  /* Tanda tangan & footer */
+  .signs{margin-top:10mm;display:grid;grid-template-columns:repeat(3,1fr);gap:8mm}
+  .signs .s{text-align:center;font-size:9pt}
+  .signs .s .rol{color:var(--txt-m);margin-bottom:16mm}
+  .signs .s .nm{border-top:1px solid var(--txt);padding-top:1.5mm;font-weight:600}
+
+  .foot{
+    position:absolute;left:12mm;right:12mm;bottom:8mm;
+    display:flex;justify-content:space-between;
+    font-size:7.5pt;color:var(--txt-l);border-top:1px solid var(--line-xl);padding-top:2mm;
+  }
+  .page-no::after{content:"Halaman " counter(page) " dari " counter(pages)}
+
+  /* PRINT */
+  @page{size:A4 portrait;margin:0}
+  @media print{
+    body{background:#fff}
+    .toolbar{display:none}
+    .sheet{margin:0;box-shadow:none;width:auto;min-height:auto;padding:12mm 12mm 15mm 12mm}
+    table.led{page-break-inside:auto}
+    table.led tr{page-break-inside:avoid;page-break-after:auto}
+    thead{display:table-header-group}
+    tfoot{display:table-footer-group}
+    .no-print{display:none !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <span class="t">Kartu Stok — Pratinjau Cetak</span>
+  <span class="spacer"></span>
+  <button class="alt" onclick="history.back()">← Kembali</button>
+  <button onclick="window.print()">Cetak / Simpan PDF</button>
+</div>
+
+<div class="sheet">
+
+  <!-- =========== HEADER =========== -->
+  <div class="doc-hd">
+    <div class="brand">
+      <div class="co">CV TELASIH MAKMUR GROUP <small>Offset · Digital · Indostry Packaging</small></div>
+      <div class="addr">
+        Jl. Raya Rungkut Industri No. 88, Kalirungkut, Surabaya 60293 &nbsp;·&nbsp; Telp: (031) 8712345
+        &nbsp;·&nbsp; NPWP: 01.234.567.8-609.000 &nbsp;·&nbsp; Email: info@telasihmakmur.co.id
+      </div>
+    </div>
+    <div class="doc-info">
+      <div class="title">Kartu Stok</div>
+      <div class="sub">Stock Card Report</div>
+      <table>
+        <tr><td>Nomor Laporan</td><td>RPT-CARD/26/00318</td></tr>
+        <tr><td>Dicetak</td><td>21/08/2026 15:42</td></tr>
+        <tr><td>Oleh</td><td>Rina — Staff Gudang</td></tr>
+        <tr><td>Halaman</td><td><span class="page-no"></span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- =========== IDENTITAS ITEM =========== -->
+  <div class="item-box">
+    <div class="row">
+      <div class="cell">
+        <div class="lab">Kode Item</div>
+        <div class="val">RM-KRT-0004</div>
+      </div>
+      <div class="cell" style="flex:2;min-width:80mm">
+        <div class="lab">Nama Item</div>
+        <div class="val">Art Paper 230gr 79 × 109 cm <small>Kategori: Kertas Cetak · Merk Universal</small></div>
+      </div>
+      <div class="cell">
+        <div class="lab">UOM Stok</div>
+        <div class="val">LBR <small>Lembar</small></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:2mm">
+      <div class="cell">
+        <div class="lab">Gudang</div>
+        <div class="val">GD-01 Bahan Baku</div>
+      </div>
+      <div class="cell">
+        <div class="lab">Lokasi</div>
+        <div class="val">R1-C3-S1</div>
+      </div>
+      <div class="cell">
+        <div class="lab">Periode</div>
+        <div class="val">01/07/2026 &nbsp;—&nbsp; 21/08/2026</div>
+      </div>
+      <div class="cell">
+        <div class="lab">Metode Nilai</div>
+        <div class="val">AVG <small>(Moving Average)</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========== TABEL TRANSAKSI =========== -->
+  <table class="led">
+    <colgroup>
+      <col style="width:20mm">
+      <col style="width:26mm">
+      <col style="width:14mm">
+      <col style="width:28mm">
+      <col style="width:22mm">
+      <col style="width:16mm">
+      <col style="width:16mm">
+      <col style="width:16mm">
+      <col style="width:16mm">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Tanggal</th>
+        <th>No. Dokumen</th>
+        <th class="ctr">Tipe</th>
+        <th>Referensi / Keterangan</th>
+        <th>Lot</th>
+        <th class="num">Saldo Awal</th>
+        <th class="num">Qty Masuk</th>
+        <th class="num">Qty Keluar</th>
+        <th class="num">Qty Penyesuaian</th>
+      </tr>
+      <tr>
+        <th colspan="5" style="background:#22314f;font-size:8pt;font-weight:400">
+          &nbsp;— saldo akhir baris muncul di baris berikutnya sebagai saldo awal —
+        </th>
+        <th class="num" style="background:#22314f">Saldo Akhir</th>
+        <th colspan="3" style="background:#22314f"></th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- Saldo awal periode -->
+      <tr class="bb">
+        <td>01/07/2026</td>
+        <td class="cell-doc">— Saldo Awal Periode —</td>
+        <td class="ctr"><span class="bdg-t bb">BB</span></td>
+        <td>Saldo awal periode Juli 2026 (dari kartu stok Juni)</td>
+        <td>—</td>
+        <td class="num zero">0,00</td>
+        <td class="num pos">450,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+
+      <!-- Pemisah bulan -->
+      <tr class="month-brk"><td colspan="9">Juli 2026</td></tr>
+
+      <tr>
+        <td>03/07/2026</td>
+        <td class="cell-doc">IN/26/00028<span class="cell-src">Sumber: PV/26/00098</span></td>
+        <td class="ctr"><span class="bdg-t">IN</span></td>
+        <td>Penerimaan dari PT Pindo Deli · PO/26/00071</td>
+        <td>AP-2603-A</td>
+        <td class="num">450,00</td>
+        <td class="num pos">2.000,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>05/07/2026</td>
+        <td class="cell-doc">OUT/26/00034<span class="cell-src">Sumber: WO/26/00281</span></td>
+        <td class="ctr"><span class="bdg-t out">OUT</span></td>
+        <td>Bagian CETAK — Box Obat Herbal 12×6×18 · CO/26/00187</td>
+        <td>AP-2603-A</td>
+        <td class="num">2.450,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">1.100,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>09/07/2026</td>
+        <td class="cell-doc">RTP/26/00012<span class="cell-src">Sumber: OUT/26/00034</span></td>
+        <td class="ctr"><span class="bdg-t">RTP</span></td>
+        <td>Retur GOOD dari Bagian CETAK — sisa WO/26/00281</td>
+        <td>AP-2603-A</td>
+        <td class="num">1.350,00</td>
+        <td class="num pos">140,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>14/07/2026</td>
+        <td class="cell-doc">OUT/26/00041<span class="cell-src">Sumber: WO/26/00293</span></td>
+        <td class="ctr"><span class="bdg-t out">OUT</span></td>
+        <td>Bagian CETAK — Sleeve Mie Instan · CO/26/00191</td>
+        <td>AP-2603-A</td>
+        <td class="num">1.490,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">640,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>18/07/2026</td>
+        <td class="cell-doc">IN/26/00035<span class="cell-src">Sumber: PV/26/00109</span></td>
+        <td class="ctr"><span class="bdg-t">IN</span></td>
+        <td>Penerimaan dari PT Pindo Deli · PO/26/00082</td>
+        <td>AP-2605</td>
+        <td class="num">850,00</td>
+        <td class="num pos">1.500,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>25/07/2026</td>
+        <td class="cell-doc">OUT/26/00047<span class="cell-src">Sumber: WO/26/00301</span></td>
+        <td class="ctr"><span class="bdg-t out">OUT</span></td>
+        <td>Bagian BELAH — Inner Box Sepatu · CO/26/00198</td>
+        <td>AP-2605</td>
+        <td class="num">2.350,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">1.520,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>31/07/2026</td>
+        <td class="cell-doc">OPN/26/00019<span class="cell-src">Opname bulanan Juli</span></td>
+        <td class="ctr"><span class="bdg-t adj">ADJ</span></td>
+        <td>Hitung fisik akhir Juli — susut alami</td>
+        <td>AP-2605</td>
+        <td class="num">830,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">−30,00</td>
+      </tr>
+
+      <!-- Pemisah bulan -->
+      <tr class="month-brk"><td colspan="9">Agustus 2026</td></tr>
+
+      <tr>
+        <td>04/08/2026</td>
+        <td class="cell-doc">OUT/26/00050<span class="cell-src">Sumber: WO/26/00306</span></td>
+        <td class="ctr"><span class="bdg-t out">OUT</span></td>
+        <td>Bagian CETAK — Hangtag Baju · CO/26/00200</td>
+        <td>AP-2605</td>
+        <td class="num">800,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">280,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>11/08/2026</td>
+        <td class="cell-doc">IN/26/00038<span class="cell-src">Sumber: PV/26/00115</span></td>
+        <td class="ctr"><span class="bdg-t">IN</span></td>
+        <td>Penerimaan dari CV Kertas Prima · PO/26/00088</td>
+        <td>AP-2608</td>
+        <td class="num">520,00</td>
+        <td class="num pos">1.800,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>14/08/2026</td>
+        <td class="cell-doc">ADJ/26/00019<span class="cell-src">Salah input IN/26/00036</span></td>
+        <td class="ctr"><span class="bdg-t adj">ADJ</span></td>
+        <td>Koreksi: qty diterima 1.800 lbr, tercatat 2.000 lbr — kelebihan 200 lbr</td>
+        <td>AP-2608</td>
+        <td class="num">2.320,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">−200,00</td>
+      </tr>
+      <tr>
+        <td>19/08/2026</td>
+        <td class="cell-doc">OUT/26/00055<span class="cell-src">Sumber: WO/26/00316</span></td>
+        <td class="ctr"><span class="bdg-t out">OUT</span></td>
+        <td>Bagian BELAH — Inner Box Sepatu · CO/26/00201</td>
+        <td>AP-2608</td>
+        <td class="num">2.120,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">1.520,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>20/08/2026</td>
+        <td class="cell-doc">OUT/26/00057<span class="cell-src">Sumber: WO/26/00318</span></td>
+        <td class="ctr"><span class="bdg-t out">OUT</span></td>
+        <td>Bagian CETAK — Box Obat Herbal · CO/26/00204 (ISSUE 130 lbr)</td>
+        <td>AP-2608</td>
+        <td class="num">600,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num neg">130,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+      <tr>
+        <td>21/08/2026</td>
+        <td class="cell-doc">OPN/26/00023<span class="cell-src">Opname mingguan R1–R3</span></td>
+        <td class="ctr"><span class="bdg-t adj">ADJ</span></td>
+        <td>Hitung fisik: 470 lbr vs sistem 470 lbr — nol selisih (baris tidak tercatat)</td>
+        <td>AP-2608</td>
+        <td class="num">470,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+        <td class="num zero">0,00</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="5">Total pergerakan periode &nbsp;·&nbsp; 13 transaksi</td>
+        <td class="num"></td>
+        <td class="num" style="color:var(--pos)">+5.440,00</td>
+        <td class="num" style="color:var(--neg)">−5.190,00</td>
+        <td class="num" style="color:#a06600">−230,00</td>
+      </tr>
+      <tr style="background:var(--navy);color:#fff">
+        <td colspan="5" style="background:var(--navy);color:#fff;border-color:var(--navy)">
+          Saldo Akhir Periode per 21/08/2026 15:42
+        </td>
+        <td colspan="4" class="num" style="background:var(--navy);color:#fff;border-color:var(--navy);font-size:11pt">
+          <b>470,00 LBR</b>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- Ringkasan -->
+  <div class="summary">
+    <div class="box"><div class="lab">Saldo Awal</div><div class="val">450,00</div></div>
+    <div class="box"><div class="lab">Total Masuk</div><div class="val pos">+5.440,00</div></div>
+    <div class="box"><div class="lab">Total Keluar</div><div class="val neg">−5.190,00</div></div>
+    <div class="box"><div class="lab">Total Penyesuaian</div><div class="val neg">−230,00</div></div>
+    <div class="box"><div class="lab">Saldo Akhir</div><div class="val">470,00</div></div>
+  </div>
+
+  <!-- Catatan -->
+  <div style="margin-top:5mm;padding:3mm 4mm;border-left:3px solid var(--accent);background:#f8faff;font-size:8.5pt;color:var(--txt-m);line-height:1.4">
+    <b style="color:var(--navy)">Catatan:</b>
+    Laporan ini memuat pergerakan stok pada lokasi <b>R1-C3-S1 · GD-01 Bahan Baku</b> saja.
+    Baris opname dengan selisih nol tidak menghasilkan baris di kartu stok — dicantumkan pada laporan
+    ini sebagai jejak audit. Nilai satuan barang tidak ditampilkan pada varian cetakan gudang (Sisi B).
+    Sumber data: <code>v_inv_movement</code>.
+  </div>
+
+  <!-- Tanda tangan -->
+  <div class="signs">
+    <div class="s">
+      <div class="rol">Dicetak oleh<br>Staff Gudang</div>
+      <div class="nm">Rina Wulandari</div>
+    </div>
+    <div class="s">
+      <div class="rol">Diverifikasi oleh<br>Kepala Gudang</div>
+      <div class="nm">Budi Santoso</div>
+    </div>
+    <div class="s">
+      <div class="rol">Mengetahui<br>Manajer Operasional</div>
+      <div class="nm">Arinda Wijayanti</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>TMERP · Kartu Stok · RPT-CARD/26/00318</span>
+    <span class="page-no"></span>
+    <span>Dokumen terkendali — dilarang digandakan tanpa izin</span>
+  </div>
+</div>
+
+</body>
+</html>

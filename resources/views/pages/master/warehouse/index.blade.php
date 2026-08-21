@@ -39,7 +39,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
     {
         return [
             'total' => MWarehouse::count(),
-            'raw' => MWarehouse::where('warehouse_type', 'RAW')->count(),
+            'raw' => MWarehouse::where('warehouse_type', 'RM')->count(),
             'fg' => MWarehouse::where('warehouse_type', 'FG')->count(),
             'locations' => \App\Models\Master\MWhLocation::count(),
         ];
@@ -87,10 +87,12 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Cari kode / nama gudang..." class="w-72 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 <select wire:model.live="typeFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     <option value="">Semua Tipe</option>
-                    <option value="RAW">Bahan Baku</option>
+                    <option value="RM">Bahan Baku</option>
+                    <option value="SFG">Semi Finished Goods</option>
                     <option value="FG">Barang Jadi</option>
                     <option value="MIX">Mix</option>
-                    <option value="SCRAP">Scrap</option>
+                    <option value="WASTE">Afkir / Waste</option>
+                    <option value="TRANSIT">Transit</option>
                 </select>
             </div>
 
@@ -113,12 +115,14 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                             <td class="px-3 py-2">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded
                                     {{ match ($wh->warehouse_type) {
-                                        'RAW' => 'bg-[#e3f2fd] text-[#0d47a1]',
+                                        'RM' => 'bg-[#e3f2fd] text-[#0d47a1]',
+                                        'SFG' => 'bg-[#ede7f6] text-[#4527a0]',
                                         'FG' => 'bg-[#e8f5e9] text-[#1b5e20]',
                                         'MIX' => 'bg-[#fff8e1] text-[#f57f17]',
-                                        'SCRAP' => 'bg-[#ffebee] text-[#b71c1c]',
+                                        'WASTE' => 'bg-[#ffebee] text-[#b71c1c]',
+                                        'TRANSIT' => 'bg-[#e0f2f1] text-[#00695c]',
                                         default => 'bg-[#eef1f5] text-[#4b5568]',
-                                    } }}">{{ match($wh->warehouse_type) { 'RAW' => 'Bahan Baku', 'FG' => 'Barang Jadi', 'MIX' => 'Mix', 'SCRAP' => 'Scrap', default => $wh->warehouse_type } }}</span>
+                                    } }}">{{ match($wh->warehouse_type) { 'RM' => 'Bahan Baku', 'SFG' => 'Semi Finished Goods', 'FG' => 'Barang Jadi', 'MIX' => 'Mix', 'WASTE' => 'Afkir/Waste', 'TRANSIT' => 'Transit', default => $wh->warehouse_type } }}</span>
                             </td>
                             <td class="px-3 py-2 text-right font-semibold">{{ $wh->locations_count }}</td>
                             <td class="px-3 py-2">

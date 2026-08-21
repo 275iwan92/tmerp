@@ -80,6 +80,11 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
         });
 
+        Route::middleware('module:INV')->group(function () {
+            Route::livewire('/inventory/print/stock-card/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
+            Route::livewire('/inventory/print/master-stock', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
+        });
+
         Route::middleware('module:HRM')->group(function () {
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');

@@ -1,0 +1,138 @@
+# ═══════════════════════════════════════════════════════════════════
+# INV_STATE.yaml — PROGRESS MODUL 02 INVENTORY (stock movement)
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Inventory.
+# ═══════════════════════════════════════════════════════════════════
+modul: "02_inventory"
+db: tm2inv
+fase: "1 — Stock In / Stock Out / Adjustment+Opname / Return from Production + kartu stok & periode"
+status_umum: >
+  SPEC SELESAI, IMPLEMENTASI BELUM MULAI (2026-08-21). Empat mockup HTML + Tier 1-4 + RULES
+  disusun dalam satu sesi berdasarkan pembacaan penuh dump produksi tminv_20260722_2018_sd.sql
+  (13 tabel, 14 view, 12 procedure, 3 trigger). Struktur legacy rm_/sfg_/fg_ DIADOPSI apa
+  adanya sesuai keputusan PROC-C — tidak dirancang ulang. Yang berubah: eksekutor posting
+  (trigger -> service), penambahan penjaga idempotensi, pemisahan lokasi afkir, dan kunci
+  periode. Belum ada satu pun ALTER/migration dieksekusi.
+
+keputusan_terkunci:
+  INV-01_posting_service: >
+    Trigger trg_rm/sfg/fg_stock_confirm DI-DROP; posting pindah ke
+    App\Services\Inventory\StockPostingService (satu DB transaction). Kontrak legacy
+    stat_confirm=1 -> kartu stok terbentuk TETAP SAMA, hanya eksekutornya berubah.
+    Bukti pendukung: rm_stockcard #39-41 dan #42-44 di dump adalah posting GANDA untuk
+    reference_detail_id 62/63/64 yang sama (doc_id=95), membuat saldo Art Paper 180 -> 50 -> -80.
+    Trigger juga tak bisa mengisi inv_stock_layer maupun ikut transaksi lintas-DB dgn flow_log.
+  INV-02_afkir_by_lokasi: >
+    Bahan afkir dicatat sebagai stok tapi disimpan di lokasi is_usable=0 pada gudang
+    warehouse_type='WASTE'. v_rm_available memberi qty_available=0 utk lokasi tsb.
+    Kolom warehouse_type SUDAH ADA di m_warehouse; yang baru hanya m_wh_loc.is_usable [DELTA].
+    Alternatif 'flag pada baris movement' DITOLAK — flag tidak ikut ke saldo.
+  INV-03_periode: >
+    Tabel inv_period (OPEN/CLOSING/CLOSED). Posting hanya ke periode OPEN, backdate maks
+    sys_constant INV_BACKDATE_DAYS. Menutup celah legacy: pemilihan qty_bb berbasis doc_date
+    membuat posting mundur merusak seluruh qty_eb sesudahnya tanpa terdeteksi.
+  INV-04_idempotensi: "UNIQUE (reference_name, reference_detail_id) di ketiga *_stockcard. Posting kedua gagal DI DATABASE."
+  INV-05_input_fisik: >
+    Adjustment/Opname: user mengetik qty_physical, sistem menghitung selisih.
+    qty_system DISNAPSHOT DAN DISIMPAN di rm_stock_d, tidak dibaca ulang saat posting.
+    Kolom selisih tidak pernah bisa diedit.
+  INV-06_fg_out_dilarang: >
+    Layar Stock Out menolak kelas FG di level route. FG keluar HANYA lewat Delivery Note.
+    Kalau dibuka, ledger FG terisi dua kali.
+  INV-07_return_wajib_ref: >
+    Return hanya terhadap Stock Out POSTED; qty <= qty_keluar - qty_returned.
+    Kolom baru: rm_stock_d.return_condition (GOOD/SCRAP) + source_detail_id + qty_returned [DELTA].
+  INV-08_tidak_ada_revise: >
+    Dokumen stok merekam kejadian fisik -> tidak bisa direvisi, hanya dikoreksi dgn dokumen baru.
+    Berbeda dari PR/PO/Inquiry yang memakai REVISE copy-record.
+  INV-09_penomoran: >
+    Pola global PREFIX/YY/##### (IN/OUT/ADJ/OPN/RTP), menggantikan pola legacy 26OU00014.
+    Dokumen lama tidak dinomori ulang.
+  INV-10_approval_hanya_adjustment: >
+    Hanya AD/OP yang berjenjang (3 level menurut nilai MUTLAK). IN-manual 1 level.
+    OUT dan RTP tanpa approval karena menjejak dokumen hulu yang sudah tervalidasi.
+  INV-11_layar_terpisah: "Entri dan Persetujuan Adjustment adalah route berbeda; Approve/Reject tak pernah dirender di layar entri."
+  INV-12_konvensi_kolom: >
+    Kolom baru pada tabel LEGACY mengikuti pola legacy (create_by/create_log), BUKAN konvensi
+    global i_/c_/created_at. Mencampur dua konvensi dalam satu tabel lebih berbahaya daripada
+    menyimpang dari konvensi global. Tabel BARU (inv_*) memakai konvensi global penuh.
+  INV-13_harga_retur: "Retur memakai harga saat keluar (AVG: avg_unitprice baris OUT; FIFO/LIFO: unit_cost dari inv_layer_consumption). SCRAP dicatat nilai penuh."
+
+artefak_selesai:
+  - INV_TIER_1.md                    # konsep, scope, rantai dokumen, aktor, integrasi, istilah
+  - INV_TIER_2.md                    # business logic Part A/B/C (happy path, 15 kasus khusus, state-form-button)
+  - INV_TIER_3.md                    # DROP trigger + delta 3x3 tabel legacy + 3 tabel baru + delta tm2mst/tm2sys + 5 VIEW + seed flow
+  - INV_TIER_4.md                    # 8 layar Livewire + service/repository + nota + checklist wiring
+  - INV_RULES.yaml
+  - INV_STATE.yaml
+  - mockup_stock_in.html
+  - mockup_stock_out.html
+  - mockup_stock_adjustment.html
+  - mockup_stock_return.html
+  - tmerp_inv.css                    # stylesheet bersama keempat mockup
+
+next_step:
+  - "Telma/Jo: review Tier 1-4, konfirmasi 4 item [DELTA-CONFIRM] di bawah sebelum diserahkan ke Claude Code"
+  - "Eksekusi urutan INV_TIER_3 §12: DROP trigger -> delta tm2mst -> sys_constant/sequence -> bersihkan data legacy -> delta tm2inv -> tabel baru -> seed periode -> VIEW -> seed flow -> menu"
+  - "Bangun LocationPicker DULU (dipakai keempat layar) — sejajar dgn ItemPicker milik Procurement"
+  - "Urutan layar: Stock In -> Stock Out -> Return -> Adjustment/Opname -> Approval -> Kartu Stok -> Onhand -> Period Manager"
+  - "Update checklist_mockup_erp.md MODUL 2 (Stock Movement & Stock Adjustment) + warna menu shell — BARENGAN"
+  - "Update PROC_STATE.yaml: open item PROC-COSTING-ENGINE sudah terjawab (inv_stock_layer + inv_layer_consumption didefinisikan di INV_TIER_3 §7)"
+
+open_items:
+  - id: INV-DELTA-CONFIRM-THRESHOLD
+    prioritas: TINGGI
+    isi: >
+      Batas kewenangan approval Adjustment. Usulan: Kepala Gudang 0-5jt, Manajer Operasional
+      5-25jt, Direksi >25jt. Tersimpan di flow_config_step.min_amount/max_amount +
+      sys_constant INV_ADJ_LIMIT_L1/L2 sehingga bisa diubah tanpa deploy — tapi angka awal
+      butuh persetujuan Telma/Jo.
+  - id: INV-DELTA-CONFIRM-BACKDATE
+    prioritas: SEDANG
+    isi: "INV_BACKDATE_DAYS usulan 7 hari. Terlalu ketat menyulitkan gudang, terlalu longgar merusak tutup periode. Butuh angka riil dari praktik lapangan."
+  - id: INV-FLOW-POSITION
+    prioritas: TINGGI
+    isi: "position_id riil di org_position untuk Kepala Gudang / Manajer Operasional / Direksi belum ditetapkan. Seed flow_config_step tak bisa dijalankan sebelum ini."
+  - id: INV-DATA-CLEANUP
+    prioritas: TINGGI
+    isi: >
+      Sebelum unique index dipasang, data legacy WAJIB dibersihkan:
+      (a) rm_stock.doc_no duplikat — 26BB00005 x6, 26OU00014 x5;
+      (b) rm_stock_d.location_id NULL/0 — banyak baris, penyebab saldo yatim di v_rm_onhand;
+      (c) rm_stockcard duplikat reference_detail_id 62/63/64;
+      (d) rm_stockcard dgn qty_eb negatif (doc_id 28,29,30,42) — hasil bug trigger, perlu rebuild.
+      Skrip pratinjau ada di INV_TIER_3 §5.
+  - id: INV-MIGRASI-TMINV-KE-TM2INV
+    prioritas: TINGGI
+    isi: >
+      Dump acuan berasal dari skema LAMA 'tminv'. Target adalah 'tm2inv'. Belum diputuskan:
+      migrasi data historis penuh, atau mulai bersih dengan saldo awal (doc_cat=BB) per
+      1 periode go-live. Rekomendasi: MULAI BERSIH — data legacy mengandung saldo negatif
+      hasil bug trigger dan doc_no duplikat, memigrasinya berarti mewarisi kesalahan.
+      Data lama tetap disimpan read-only untuk penelusuran.
+  - id: INV-SYSCONST-COL
+    prioritas: TINGGI
+    isi: "Nama kolom sys_constant & sys_sequence aktual belum diverifikasi (isu yang sama dgn PROC-SYSCONST-COL). Seed di INV_TIER_3 §8.2 harus disesuaikan sebelum dieksekusi."
+  - id: INV-WAREHOUSE-SEED
+    prioritas: SEDANG
+    isi: "Daftar gudang & lokasi riil (m_warehouse, m_wh_loc) belum final. Seed gudang WASTE di INV_TIER_3 §8.1 memakai kode contoh GD-05/WS-01..03."
+  - id: INV-COSTING-METHOD-SEED
+    prioritas: SEDANG
+    isi: "costing_method per item belum ditetapkan. Default AVG. Kertas mungkin FIFO (fluktuasi harga + lot jelas), tinta/kimia AVG. Butuh review per kategori bersama Accounting."
+  - id: INV-TRANSFER-GUDANG
+    prioritas: RENDAH
+    isi: "Transfer antar gudang saat ini dilakukan sebagai pasangan Stock Out + Stock In (dua dokumen). Bila frekuensinya tinggi, pertimbangkan dokumen tunggal doc_cat='TRANSFER' di fase 2."
+  - id: INV-JURNAL-PERSEDIAAN
+    prioritas: RENDAH
+    isi: "Kolom value_* di *_stockcard sudah menyiapkan angka untuk jurnal persediaan, tapi posting ke GL di luar scope fase ini. Sinkronkan dengan FIN_STATE saat Finance masuk scope."
+  - id: INV-SFG-FG-DEPTH
+    prioritas: SEDANG
+    isi: >
+      Tier 1-4 ditulis dengan RM sebagai contoh utama; SFG dan FG mengikuti aturan yang sama.
+      Yang belum digali: apakah output antar-proses (mis. setelah PLONG) benar-benar perlu
+      dicatat sebagai movement SFG, atau cukup dilacak di Production tanpa menyentuh ledger stok.
+      Mencatat semuanya berarti belasan dokumen SFG per WO. Butuh keputusan bersama Production.
+
+catatan_untuk_sesi_berikutnya: >
+  Mockup memakai 'ADJ/26/00023' untuk dokumen berjenis OPNAME. Sesuai INV-09 yang benar adalah
+  'OPN/26/#####' untuk opname dan 'ADJ/26/#####' untuk adjustment. Spec Tier yang berlaku;
+  mockup akan disesuaikan saat implementasi.

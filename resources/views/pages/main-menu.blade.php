@@ -75,6 +75,8 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_SHIFT' => route('master.shift'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
+            'INV_CARD' => route('inv.print.stock-card'),
+            'INV_RAW' => route('inv.print.master-stock'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'SET_USER' => route('security.index', ['tab' => 'users']),

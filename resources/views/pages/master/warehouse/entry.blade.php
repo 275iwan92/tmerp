@@ -17,7 +17,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
     public string $warehouse_name = '';
 
-    public string $warehouse_type = 'RAW';
+    public string $warehouse_type = 'RM';
 
     public bool $is_active = true;
 
@@ -64,7 +64,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         $this->validate([
             'warehouse_code' => 'required|string|max:20|unique:tm2mst.m_warehouse,warehouse_code,'.($this->warehouseId ?: 'NULL').',id_warehouse',
             'warehouse_name' => 'required|string|max:100',
-            'warehouse_type' => 'required|in:RAW,FG,MIX,SCRAP',
+            'warehouse_type' => 'required|in:RM,SFG,FG,MIX,WASTE,TRANSIT',
         ]);
 
         $login = Auth::user()->login;
@@ -113,18 +113,22 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
         $binCode = "{$this->warehouse_code}-{$this->newRow}-{$this->newCol}-{$this->newStack}";
 
-        if (MWhLocation::where('bin_code', $binCode)->exists()) {
+        if (MWhLocation::where('location_code', $binCode)->exists()) {
             $this->formError = "Bin {$binCode} sudah ada.";
 
             return;
         }
+
+        $isWaste = $this->warehouse_type === 'WASTE';
 
         MWhLocation::create([
             'warehouse_id' => $this->warehouseId,
             'row_code' => $this->newRow,
             'col_code' => $this->newCol,
             'stack_code' => $this->newStack,
-            'bin_code' => $binCode,
+            'location_code' => $binCode,
+            'location_type' => $isWaste ? 'WASTE' : 'STORAGE',
+            'is_usable' => ! $isWaste,
             'capacity_kg' => $this->newCapacity,
             'created_by' => Auth::user()->login,
             'updated_by' => Auth::user()->login,
@@ -172,7 +176,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
             <div class="flex flex-col gap-1 mb-3">
                 <label class="text-[10px] text-muted uppercase font-semibold">Tipe Gudang</label>
                 <div class="flex gap-4">
-                    @foreach (['RAW' => 'Bahan Baku', 'FG' => 'Barang Jadi', 'MIX' => 'Mix (Transit/Buffer)', 'SCRAP' => 'Scrap / Barang Jelekan'] as $val => $label)
+                    @foreach (['RM' => 'Bahan Baku', 'SFG' => 'Semi Finished Goods', 'FG' => 'Barang Jadi', 'MIX' => 'Mix (Transit/Buffer)', 'WASTE' => 'Afkir / Waste', 'TRANSIT' => 'Transit'] as $val => $label)
                         <label class="flex items-center gap-1.5 text-xs cursor-pointer">
                             <input type="radio" wire:model="warehouse_type" value="{{ $val }}"> {{ $label }}
                         </label>
@@ -204,14 +208,14 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
                 </thead>
                 <tbody>
                     @forelse ($this->locations as $loc)
-                        <tr class="border-b border-[#eef1f5]" wire:key="loc-{{ $loc->id_wh_location }}">
+                        <tr class="border-b border-[#eef1f5]" wire:key="loc-{{ $loc->location_id }}">
                             <td class="px-3 py-2">{{ $loc->row_code }}</td>
                             <td class="px-3 py-2">{{ $loc->col_code }}</td>
                             <td class="px-3 py-2">{{ $loc->stack_code }}</td>
-                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $loc->bin_code }}</td>
+                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $loc->location_code }}</td>
                             <td class="px-3 py-2 text-right">{{ $loc->capacity_kg ? number_format((float) $loc->capacity_kg, 0, ',', '.') : '—' }}</td>
                             <td class="px-3 py-2 text-right">
-                                <button type="button" wire:click="removeLocation({{ $loc->id_wh_location }})" wire:confirm="Hapus lokasi {{ $loc->bin_code }}?" class="text-red-500 text-xs cursor-pointer">✕ Hapus</button>
+                                <button type="button" wire:click="removeLocation({{ $loc->location_id }})" wire:confirm="Hapus lokasi {{ $loc->location_code }}?" class="text-red-500 text-xs cursor-pointer">✕ Hapus</button>
                             </td>
                         </tr>
                     @empty

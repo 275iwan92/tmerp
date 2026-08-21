@@ -9,17 +9,18 @@ class MWhLocation extends Model
 {
     protected $connection = 'tm2mst';
 
-    protected $table = 'm_wh_location';
+    protected $table = 'm_wh_loc';
 
-    protected $primaryKey = 'id_wh_location';
+    protected $primaryKey = 'location_id';
 
     protected $fillable = [
-        'warehouse_id', 'row_code', 'col_code', 'stack_code', 'bin_code', 'capacity_kg', 'is_active',
-        'created_by', 'updated_by',
+        'warehouse_id', 'row_code', 'col_code', 'stack_code', 'location_code', 'location_name', 'location_type',
+        'is_usable', 'capacity_kg', 'is_active', 'created_by', 'updated_by',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_usable' => 'boolean',
         'capacity_kg' => 'decimal:2',
     ];
 

@@ -52,10 +52,13 @@ status_umum: >
   Lain", rekalkulasi PER PO yang tersentuh saat POST (PV-08, PvPostingService::recalcPo()
   dipanggil utk SETIAP po_id distinct, bukan asumsi 1 PO). po_line.is_receivable ditambahkan
   (PV-09) -- baris SERVICE otomatis tak pernah muncul di worklist PV.
-  KETERBATASAN SADAR: PvPostingService::post() BELUM menulis rm_stock/rm_stock_d -- dump legacy
-  tminv_20260722_2018_sd.sql masih belum diberikan user. Status PV->POSTED dan rekalkulasi
-  po_line/po_order per-PO (PV-08) tetap benar & teruji; yang tertunda HANYA pergerakan stok
-  fisik. Titik sambungnya ditandai TODO eksplisit di kode.
+  KETERBATASAN SADAR: PvPostingService::post() BELUM menulis rm_stock/rm_stock_d.
+  UPDATE 2026-08-21 (sore): dump tminv_20260722_2018_sd.sql SUDAH diberikan user & diimpor
+  penuh ke tm2inv (lihat INV_STATE.yaml/memory project_inventory_module_status) -- blocker
+  file SELESAI. Yang masih tertunda HANYA menyambungkan titik TODO di kode ke
+  App\Services\Inventory\StockPostingService (belum dibangun -- baru skema Tier 3-nya yang
+  jalan, Tier 4/service posting masih kosong). Status PV->POSTED dan rekalkulasi po_line/
+  po_order per-PO (PV-08) tetap benar & teruji terlepas dari ini.
   Diverifikasi tuntas via tinker: (a) 1 SPB dari 1 PO normal -> POST -> PO jadi RECEIVED; (b)
   toleransi terlampaui (8% vs batas 5%) -> POST terblokir -> override -> POST sukses; (c) KASUS
   UTAMA PV-01: 2 PO BERBEDA ditarik ke SATU SPB sekaligus (c_po_count=2), POST merekalkulasi
