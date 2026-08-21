@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/inquiry/new', 'pages::inquiry.form')->name('inquiry.form');
             Route::livewire('/inquiry/recalc', 'pages::inquiry.recalc')->name('inquiry.recalc');
             Route::livewire('/inquiry/revise', 'pages::inquiry.revise')->name('inquiry.revise');
+            Route::livewire('/inquiry/imposition', 'pages::inquiry.imposition-list')->name('inquiry.imposition.list');
             Route::livewire('/inquiry/{inquiry}/imposition', 'pages::inquiry.imposition')->name('inquiry.imposition');
             Route::livewire('/inquiry/{inquiry}/nota', 'pages::inquiry.nota')->name('inquiry.nota');
 
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::middleware('module:COSTING')->group(function () {
+            Route::livewire('/inquiry/costing', 'pages::inquiry.costing-list')->name('inquiry.costing.list');
             Route::livewire('/inquiry/{inquiry}/costing', 'pages::inquiry.costing')->name('inquiry.costing');
         });
 

@@ -53,15 +53,16 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     {
         return [
             'SALES_INQ' => route('inquiry.hub'),
-            // Imposition & Nota TIDAK LAGI menu top-level (2026-08-21) -- keduanya
-            // butuh {inquiry} spesifik (dokumen per-record), dulu sempat di-alias ke
-            // Inquiry Hub yang membuat 3 menu berbeda terasa identik/membingungkan.
-            // Sekarang reachable lewat tombol "Imposition"/"Cetak Nota" di dalam
-            // Inquiry Product itu sendiri (lihat inquiry/form.blade.php toolbar).
-            // SALES_COST juga TIDAK di-alias lagi -- Costing beda modul/permission
-            // dari Sales (Sisi A rahasia, CLAUDE.md §4), butuh worklist sendiri utk
-            // role Costing/Direksi yang belum dibangun -- dibiarkan NOT_BUILT
-            // (jujur) daripada nyasar ke layar Sales yang salah.
+            // Imposition & Product Costing (2026-08-22): masing-masing punya worklist
+            // GRID sendiri sekarang (inquiry.imposition.list / inquiry.costing.list) --
+            // dulu sempat di-alias ke Inquiry Hub yang sama persis, terlihat identik/
+            // membingungkan (3 menu -> 1 layar yang sama). Grid double-click membuka
+            // layar per-inquiry yang SUDAH ADA sebelumnya (inquiry.imposition/inquiry.costing),
+            // tidak diubah. Costing tetap module:COSTING (Sisi A rahasia, CLAUDE.md §4).
+            'SALES_IMPO' => route('inquiry.imposition.list'),
+            'SALES_COST' => route('inquiry.costing.list'),
+            // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
+            // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
             // Quotation SEKARANG per-customer (redesain 2026-08-20, bukan lagi
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
             'SALES_QUOT' => route('quotation.list'),
