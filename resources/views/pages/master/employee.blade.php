@@ -394,6 +394,16 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->showDirectory();
     }
 
+    public function toggleActive(int $id): void
+    {
+        $e = EmpEmployee::findOrFail($id);
+        $e->is_active = ! $e->is_active;
+        $e->updated_by = Auth::user()->login;
+        $e->save();
+
+        unset($this->employees);
+    }
+
     // ============== SUB-MODAL: PENDIDIKAN ==============
     public function openEducationModal(): void
     {
@@ -552,29 +562,22 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 <div>
     @if ($panel === 'grid')
         <div class="max-w-[1400px] mx-auto my-5 px-4">
-            <div class="flex items-center gap-3.5 mb-3.5">
-                <h1 class="text-lg font-bold text-navy">👥 Master Employee</h1>
-                <span class="text-xs text-muted">tm2mst.emp_employee</span>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openNew" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Tambah Employee</button>
-            </div>
-
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
-                <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[11px] text-muted uppercase font-bold">Total Headcount</div>
-                    <div class="text-[17px] font-extrabold text-navy mt-0.5">{{ $this->metricTotal }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Total Headcount</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricTotal }}</p>
                 </div>
-                <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[11px] text-muted uppercase font-bold">Clean / No SP</div>
-                    <div class="text-[17px] font-extrabold text-[#166534] mt-0.5">{{ $this->metricClean }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Clean / No SP</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricClean }}</p>
                 </div>
-                <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[11px] text-muted uppercase font-bold">Verbal Warning</div>
-                    <div class="text-[17px] font-extrabold text-[#b45309] mt-0.5">{{ $this->metricVerbal }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Verbal Warning</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricVerbal }}</p>
                 </div>
-                <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[11px] text-muted uppercase font-bold">SP Aktif</div>
-                    <div class="text-[17px] font-extrabold text-[#991b1b] mt-0.5">{{ $this->metricSp }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">SP Aktif</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricSp }}</p>
                 </div>
             </div>
 
@@ -585,7 +588,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         <input type="checkbox" wire:model.live="hideInactive"> Sembunyikan nonaktif
                     </label>
                     <span class="flex-1"></span>
-                    <span class="text-[11px] text-muted">{{ $this->employees->count() }} pegawai</span>
+                    <span class="text-[11px] text-muted mr-1">{{ $this->employees->count() }} pegawai</span>
+                    <button type="button" wire:click="openNew" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Tambah Employee</button>
                 </div>
 
                 <div class="max-h-[65vh] overflow-auto">
@@ -616,8 +620,10 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $this->workStatuses[$e->work_status] ?? $e->work_status }}</span>
                                     </td>
-                                    <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right">
-                                        <button type="button" wire:click.stop="openEdit({{ $e->employee_id }})" class="px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer bg-[#e6eaf0] text-[#333]">Edit</button>
+                                    <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                        <button type="button" wire:click.stop="openEdit({{ $e->employee_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                        <button type="button" wire:click.stop="toggleActive({{ $e->employee_id }})" wire:confirm="{{ $e->is_active ? 'Nonaktifkan' : 'Aktifkan' }} employee {{ $e->full_name }}?"
+                                            title="{{ $e->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $e->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                     </td>
                                 </tr>
                             @empty

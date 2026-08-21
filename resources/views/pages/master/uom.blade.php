@@ -379,16 +379,62 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
         unset($this->directConversions, $this->derivedConversions, $this->factorMap);
     }
+
+    public function toggleUnitActive(string $code): void
+    {
+        $u = UomUnit::where('uom_code', $code)->firstOrFail();
+        $u->is_active = ! $u->is_active;
+        $u->updated_by = Auth::user()->login;
+        $u->save();
+
+        unset($this->units, $this->statTotal, $this->statActive, $this->statInactive);
+    }
+
+    #[Computed]
+    public function statTotal(): int
+    {
+        return UomUnit::count();
+    }
+
+    #[Computed]
+    public function statActive(): int
+    {
+        return UomUnit::where('is_active', true)->count();
+    }
+
+    #[Computed]
+    public function statBase(): int
+    {
+        return UomUnit::where('is_base', true)->count();
+    }
+
+    #[Computed]
+    public function statInactive(): int
+    {
+        return UomUnit::where('is_active', false)->count();
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="flex items-center gap-3.5 mb-3.5">
-            <h1 class="text-lg font-bold text-navy">📏 Master Satuan (UoM) &amp; Konversi</h1>
-            <span class="text-xs text-muted">tm2mst.uom_unit &amp; uom_conversion</span>
-            <span class="flex-1"></span>
-            <button type="button" wire:click="openUnitModal('new')" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Satuan Baru</button>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Total Satuan</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ $this->statTotal }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Aktif</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ $this->statActive }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Satuan Dasar</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ $this->statBase }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Nonaktif</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ $this->statInactive }}</p>
+            </div>
         </div>
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
@@ -416,6 +462,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                         class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white text-accent border border-accent disabled:opacity-40 disabled:cursor-not-allowed">🔁 Konversi</button>
                     <button type="button" wire:click="editSelectedUnit" @disabled(! $selectedCode)
                         class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[#e6eaf0] text-[#333] disabled:opacity-40 disabled:cursor-not-allowed">✎ Edit</button>
+                    <button type="button" wire:click="openUnitModal('new')" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">＋ Satuan Baru</button>
                 </div>
 
                 <div class="max-h-[65vh] overflow-auto">
@@ -427,6 +474,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Dimensi</th>
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Dasar</th>
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -442,9 +490,14 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $u->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $u->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
                                     </td>
+                                    <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                        <button type="button" wire:click.stop="openUnitModal('edit', '{{ $u->uom_code }}')" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                        <button type="button" wire:click.stop="toggleUnitActive('{{ $u->uom_code }}')" wire:confirm="{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }} satuan {{ $u->uom_code }}?"
+                                            title="{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $u->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                                <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -480,10 +533,10 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                 @unless ($c->is_active)
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f0d6d6] text-[#a33]">NONAKTIF</span>
                                 @endunless
-                                <span class="ml-auto flex gap-1.5 shrink-0">
-                                    <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" class="px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer bg-[#e6eaf0] text-[#333]">Edit</button>
+                                <span class="ml-auto flex gap-0.5 shrink-0">
+                                    <button type="button" wire:click="openConvModal('edit', {{ $c->id_conversion }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
                                     <button type="button" wire:click="toggleConversionActive({{ $c->id_conversion }})" wire:confirm="{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }} konversi {{ $c->uom_src }} → {{ $c->uom_dst }}?"
-                                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold cursor-pointer {{ $c->is_active ? 'bg-[#fdeceb] text-[#c0392b]' : 'bg-white text-accent border border-accent' }}">{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                        title="{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </span>
                             </div>
                         @empty

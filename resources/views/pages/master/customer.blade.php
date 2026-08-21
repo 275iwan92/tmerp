@@ -732,6 +732,16 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         $this->panel = 'grid';
     }
 
+    public function toggleActive(int $id): void
+    {
+        $c = CustCustomer::findOrFail($id);
+        $c->is_active = ! $c->is_active;
+        $c->updated_by = Auth::user()->login;
+        $c->save();
+
+        unset($this->customers, $this->metricActive);
+    }
+
     public function deleteCustomer(): void
     {
         if (! $this->selectedId) {
@@ -830,22 +840,22 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-            <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                <div class="bg-white border border-[#d7dbe2] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[10.5px] text-[#8a94a6] uppercase font-bold">Total Customer</div>
-                    <div class="text-[17px] font-extrabold text-navy mt-0.5">{{ $this->metricTotal }}</div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Total Customer</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricTotal }}</p>
                 </div>
-                <div class="bg-white border border-[#d7dbe2] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[10.5px] text-[#8a94a6] uppercase font-bold">Aktif</div>
-                    <div class="text-[17px] font-extrabold text-[#1f8a4c] mt-0.5">{{ $this->metricActive }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Aktif</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricActive }}</p>
                 </div>
-                <div class="bg-white border border-[#d7dbe2] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[10.5px] text-[#8a94a6] uppercase font-bold">Terblokir</div>
-                    <div class="text-[17px] font-extrabold text-[#c0392b] mt-0.5">{{ $this->metricBlocked }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Terblokir</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricBlocked }}</p>
                 </div>
-                <div class="bg-white border border-[#d7dbe2] rounded-lg px-3.5 py-2.5">
-                    <div class="text-[10.5px] text-[#8a94a6] uppercase font-bold">Draft / Onboarding</div>
-                    <div class="text-[17px] font-extrabold text-[#b98900] mt-0.5">{{ $this->metricDraft }}</div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Draft / Onboarding</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricDraft }}</p>
                 </div>
             </div>
 
@@ -926,9 +936,11 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫</span>
                                     @endif
                                 </td>
-                                <td class="text-center px-1 py-2 border-b border-[#d7dbe2]">
+                                <td class="text-right px-1 py-2 border-b border-[#d7dbe2] whitespace-nowrap">
                                     <button type="button" wire:click.stop="editRow({{ $c->id_customer }})" title="Edit"
-                                        class="w-7 h-7 rounded-md border border-transparent hover:border-[#d7dbe2] hover:bg-white text-[#6b7280] hover:text-[#2f6fed] cursor-pointer">✎</button>
+                                        class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                    <button type="button" wire:click.stop="toggleActive({{ $c->id_customer }})" wire:confirm="{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }} customer {{ $c->customer_name }}?"
+                                        title="{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </td>
                             </tr>
                         @empty

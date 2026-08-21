@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Master\MRawMaterial;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -50,39 +51,42 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
             'low_stock' => MRawMaterial::whereNotNull('reorder_point')->whereColumn('cur_stock', '<=', 'reorder_point')->count(),
         ];
     }
+
+    public function toggleActive(int $materialId): void
+    {
+        $m = MRawMaterial::findOrFail($materialId);
+        $m->is_active = ! $m->is_active;
+        $m->update_by = Auth::user()->login;
+        $m->save();
+
+        unset($this->items, $this->stats);
+    }
 };
 ?>
 
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📦 Master Item Bahan Baku</b>
-        <span class="text-xs text-white/75">Lookup Data / Inventory » Master » m_raw_material</span>
-        <a href="{{ route('master.raw-material.create') }}" class="ml-auto bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">＋ Item Baru</a>
-        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
-    </header>
-
     <div class="max-w-[1500px] mx-auto my-5 px-4">
 
         {{-- STATS --}}
         <div class="grid grid-cols-4 gap-3 mb-4">
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-accent">
-                <p class="text-[10px] font-bold text-muted uppercase">Total Master Item</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['total']) }}</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Total Master Item</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['total']) }}</p>
             </div>
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#1f8a4c]">
-                <p class="text-[10px] font-bold text-muted uppercase">Bahan Baku (Stok)</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['material']) }}</p>
-                <p class="text-[10px] text-muted">MATERIAL</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Bahan Baku (Stok)</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['material']) }}</p>
+                <p class="text-[10px] opacity-75">MATERIAL</p>
             </div>
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-accent">
-                <p class="text-[10px] font-bold text-muted uppercase">Jasa / Sample</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['non_material']) }}</p>
-                <p class="text-[10px] text-muted">SERVICE / FREE_SAMPLE</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Jasa / Sample</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['non_material']) }}</p>
+                <p class="text-[10px] opacity-75">SERVICE / FREE_SAMPLE</p>
             </div>
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#a3241f]">
-                <p class="text-[10px] font-bold text-muted uppercase">Stok Kritis</p>
-                <p class="text-xl font-extrabold text-[#a3241f]">{{ number_format($this->stats['low_stock']) }}</p>
-                <p class="text-[10px] text-muted">≤ Reorder Point</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Stok Kritis</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['low_stock']) }}</p>
+                <p class="text-[10px] opacity-75">≤ Reorder Point</p>
             </div>
         </div>
 
@@ -101,6 +105,8 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                         <option value="{{ $c }}">{{ $c }}</option>
                     @endforeach
                 </select>
+                <span class="flex-1"></span>
+                <a href="{{ route('master.raw-material.create') }}" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">＋ Item Baru</a>
             </div>
 
             <div class="overflow-x-auto">
@@ -121,7 +127,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     </thead>
                     <tbody>
                         @forelse ($this->items as $m)
-                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="mat-{{ $m->material_id }}" onclick="window.location='{{ route('master.raw-material.edit', ['material' => $m->material_id]) }}'">
+                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="mat-{{ $m->material_id }}">
                                 <td class="px-3 py-2 font-mono font-bold text-accent">{{ $m->material_code }}</td>
                                 <td class="px-3 py-2">{{ $m->material_name }}</td>
                                 <td class="px-3 py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#eef1f5] text-[#4b5568]">{{ $m->item_type }}</span></td>
@@ -131,7 +137,11 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                 <td class="px-3 py-2 font-mono text-[10.5px]">{{ $m->costing_method }}</td>
                                 <td class="px-3 py-2 text-right {{ $m->reorder_point && $m->cur_stock <= $m->reorder_point ? 'text-[#a3241f] font-bold' : '' }}">{{ number_format((float) $m->cur_stock, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right font-mono">{{ number_format((float) $m->avg_unitprice, 0, ',', '.') }}</td>
-                                <td class="px-3 py-2 text-right text-accent font-semibold">Buka →</td>
+                                <td class="px-3 py-2 text-right whitespace-nowrap">
+                                    <a href="{{ route('master.raw-material.edit', ['material' => $m->material_id]) }}" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer no-underline">✎</a>
+                                    <button type="button" wire:click="toggleActive({{ $m->material_id }})" wire:confirm="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }} item {{ $m->material_name }}?"
+                                        title="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $m->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                </td>
                             </tr>
                         @empty
                             <tr><td colspan="10" class="text-center py-8 text-muted">Tidak ada item cocok.</td></tr>

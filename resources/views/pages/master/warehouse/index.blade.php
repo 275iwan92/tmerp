@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Master\MWarehouse;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -44,41 +45,44 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
             'locations' => \App\Models\Master\MWhLocation::count(),
         ];
     }
+
+    public function toggleActive(int $warehouseId): void
+    {
+        $w = MWarehouse::findOrFail($warehouseId);
+        $w->is_active = ! $w->is_active;
+        $w->updated_by = Auth::user()->login;
+        $w->save();
+
+        unset($this->warehouses, $this->stats);
+    }
 };
 ?>
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🏬 Master Gudang</b>
-        <span class="text-xs text-white/75">Lookup Data » Master » m_warehouse</span>
-        <a href="{{ route('master.warehouse.create') }}" class="ml-auto bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">＋ Gudang Baru</a>
-        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
-    </header>
-
     <div class="max-w-[1280px] mx-auto my-5 px-4">
 
         <div class="bg-amber-50 border border-amber-300 text-amber-800 text-[11px] px-3.5 py-2 rounded-md mb-4">
-            ⓘ Stok on-hand tidak ditampilkan di sini — itu posisi transaksional dari modul Inventory (belum dibangun), bukan master data. Layar ini murni struktur gudang & lokasi/bin.
+            ⓘ Stok on-hand tidak ditampilkan di sini — itu posisi transaksional dari modul Inventory, bukan master data. Layar ini murni struktur gudang & lokasi/bin.
         </div>
 
         {{-- STATS --}}
         <div class="grid grid-cols-4 gap-3 mb-4">
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-accent">
-                <p class="text-[10px] font-bold text-muted uppercase">Total Gudang</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['total']) }}</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Total Gudang</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['total']) }}</p>
             </div>
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#0d47a1]">
-                <p class="text-[10px] font-bold text-muted uppercase">Gudang Bahan Baku</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['raw']) }}</p>
-                <p class="text-[10px] text-muted">RAW</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Gudang Bahan Baku</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['raw']) }}</p>
+                <p class="text-[10px] opacity-75">RM</p>
             </div>
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#1b5e20]">
-                <p class="text-[10px] font-bold text-muted uppercase">Gudang Barang Jadi</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['fg']) }}</p>
-                <p class="text-[10px] text-muted">FG</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Gudang Barang Jadi</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['fg']) }}</p>
+                <p class="text-[10px] opacity-75">FG</p>
             </div>
-            <div class="bg-white rounded-lg p-3 border border-[#d7dbe2] border-l-4 border-l-[#f57f17]">
-                <p class="text-[10px] font-bold text-muted uppercase">Total Lokasi / Bin</p>
-                <p class="text-xl font-extrabold text-navy">{{ number_format($this->stats['locations']) }}</p>
+            <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#f59e0b] to-[#d97706]">
+                <p class="text-[10.5px] font-bold uppercase opacity-85">Total Lokasi / Bin</p>
+                <p class="text-xl font-extrabold mt-0.5">{{ number_format($this->stats['locations']) }}</p>
             </div>
         </div>
 
@@ -94,6 +98,8 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                     <option value="WASTE">Afkir / Waste</option>
                     <option value="TRANSIT">Transit</option>
                 </select>
+                <span class="flex-1"></span>
+                <a href="{{ route('master.warehouse.create') }}" class="bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">＋ Gudang Baru</a>
             </div>
 
             <table class="w-full text-xs border-collapse">
@@ -109,7 +115,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                 </thead>
                 <tbody>
                     @forelse ($this->warehouses as $wh)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="wh-{{ $wh->id_warehouse }}" onclick="window.location='{{ route('master.warehouse.edit', ['warehouse' => $wh->id_warehouse]) }}'">
+                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="wh-{{ $wh->id_warehouse }}">
                             <td class="px-3 py-2 font-mono font-bold text-accent">{{ $wh->warehouse_code }}</td>
                             <td class="px-3 py-2">{{ $wh->warehouse_name }}</td>
                             <td class="px-3 py-2">
@@ -128,7 +134,11 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                             <td class="px-3 py-2">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $wh->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fbeaea] text-[#a3241f]' }}">{{ $wh->is_active ? 'Aktif' : 'Nonaktif' }}</span>
                             </td>
-                            <td class="px-3 py-2 text-right text-accent font-semibold">Buka →</td>
+                            <td class="px-3 py-2 text-right whitespace-nowrap">
+                                <a href="{{ route('master.warehouse.edit', ['warehouse' => $wh->id_warehouse]) }}" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer no-underline">✎</a>
+                                <button type="button" wire:click="toggleActive({{ $wh->id_warehouse }})" wire:confirm="{{ $wh->is_active ? 'Nonaktifkan' : 'Aktifkan' }} gudang {{ $wh->warehouse_name }}?"
+                                    title="{{ $wh->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $wh->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                            </td>
                         </tr>
                     @empty
                         <tr><td colspan="6" class="text-center py-8 text-muted">Belum ada gudang.</td></tr>

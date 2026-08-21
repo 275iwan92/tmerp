@@ -535,6 +535,40 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         $this->panel = 'grid';
     }
 
+    public function toggleActive(int $id): void
+    {
+        $s = SupSupplier::findOrFail($id);
+        $s->is_active = ! $s->is_active;
+        $s->updated_by = Auth::user()->login;
+        $s->save();
+
+        unset($this->suppliers, $this->metricActive);
+    }
+
+    #[Computed]
+    public function metricTotal(): int
+    {
+        return SupSupplier::count();
+    }
+
+    #[Computed]
+    public function metricActive(): int
+    {
+        return SupSupplier::where('is_active', true)->count();
+    }
+
+    #[Computed]
+    public function metricBlocked(): int
+    {
+        return SupSupplier::where('is_blacklisted', true)->count();
+    }
+
+    #[Computed]
+    public function metricSubcon(): int
+    {
+        return SupSupplier::where('is_subcon', true)->count();
+    }
+
     // Hapus permanen HANYA kalau tidak ada transaksi (SupplierGuardService —
     // saat ini selalu boleh, modul Purchasing belum ada; lihat komentar di
     // service-nya untuk kapan ini akan mulai memblokir).
@@ -581,6 +615,25 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#2f6fed] to-[#1d4ed8]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Total Supplier</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricTotal }}</p>
+                </div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#22c55e] to-[#16a34a]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Aktif</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricActive }}</p>
+                </div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Subkontraktor</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricSubcon }}</p>
+                </div>
+                <div class="rounded-lg p-3.5 text-white shadow-sm bg-gradient-to-br from-[#ef4444] to-[#dc2626]">
+                    <p class="text-[10.5px] font-bold uppercase opacity-85">Terblokir</p>
+                    <p class="text-xl font-extrabold mt-0.5">{{ $this->metricBlocked }}</p>
+                </div>
+            </div>
+
             <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-t-md px-2.5 py-2 flex-wrap">
                 <div class="flex items-center gap-1.5 flex-1 max-w-[340px]">
                     <span class="text-sm">🔍</span>
@@ -640,9 +693,11 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫 Blokir</span>
                                     @endif
                                 </td>
-                                <td class="text-center px-1 py-2 border-b border-[#d7dbe2]">
+                                <td class="text-right px-1 py-2 border-b border-[#d7dbe2] whitespace-nowrap">
                                     <button type="button" wire:click.stop="editRow({{ $s->id_supplier }})" title="Edit"
-                                        class="w-7 h-7 rounded-md border border-transparent hover:border-[#d7dbe2] hover:bg-white text-[#6b7280] hover:text-[#2f6fed] cursor-pointer">✎</button>
+                                        class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
+                                    <button type="button" wire:click.stop="toggleActive({{ $s->id_supplier }})" wire:confirm="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }} supplier {{ $s->supplier_name }}?"
+                                        title="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $s->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
                                 </td>
                             </tr>
                         @empty
