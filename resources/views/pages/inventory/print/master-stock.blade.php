@@ -2,6 +2,8 @@
 
 use App\Models\Master\MRawMaterial;
 use App\Models\Master\MWarehouse;
+use App\Models\Master\ProdPart;
+use App\Models\Master\ProdProduct;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -9,12 +11,22 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 // INV_TIER_4.md §6.2 (OnhandGrid) + docs/mockups/mockup_print_master_stock.html.
-// Sumber: tm2inv.rm_stockcard dalam rentang tanggal (bukan tm2inv.v_rm_onhand --
-// itu snapshot SEKARANG saja, laporan ini butuh pecahan masuk/keluar/adj per
-// periode). Hanya item RM yang punya pergerakan di rentang yang tampil --
-// SFG/FG belum ada data riil.
+// Sumber: tm2inv.v_inv_movement (view UNION RM/SFG/FG yang sudah menormalkan
+// item_id/item_code/item_name -- lihat komentar sama di print/stock-card.blade.php)
+// dalam rentang tanggal -- bukan v_rm_onhand/v_fg_onhand/v_sfg_onhand, itu
+// snapshot SEKARANG saja, laporan ini butuh pecahan masuk/keluar/adj per
+// periode. SFG/FG masih 0 baris (Stock In/Out belum digarap) -- kalau
+// dipilih, tabel akan tampil kosong jujur, bukan dikarang.
 new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Component
 {
+    public const CATEGORY_LABELS = [
+        'RM' => 'Bahan Baku & Bahan Pembantu',
+        'SFG' => 'Barang Setengah Jadi',
+        'FG' => 'Barang Jadi',
+    ];
+
+    public string $category = 'RM';
+
     public string $dateFrom = '';
 
     public string $dateTo = '';
@@ -27,19 +39,51 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
         $this->dateTo = now()->toDateString();
     }
 
+    public function switchCategory(string $category): void
+    {
+        if (! array_key_exists($category, self::CATEGORY_LABELS) || $category === $this->category) {
+            return;
+        }
+
+        $this->category = $category;
+        unset($this->report);
+    }
+
     #[Computed]
     public function warehouses()
     {
         return MWarehouse::orderBy('warehouse_name')->get();
     }
 
-    // Kelompokkan baris rm_stockcard dalam rentang per material, lalu per
-    // material per lokasi (saldo awal/akhir adalah snapshot per-lokasi --
-    // dijumlah lintas lokasi utk baris ringkas per item).
+    // Peta item_id -> [kode, nama, kategori-grup, uom, min_stock] generik per
+    // kelas stok -- dipakai buat "menerjemahkan" baris v_inv_movement yang
+    // sudah netral kelas, tapi grouping/min_stock tetap perlu master aslinya.
+    protected function itemMeta(array $ids): array
+    {
+        return match ($this->category) {
+            'SFG' => ProdPart::whereIn('id_part', $ids)->get()->keyBy('id_part')->map(fn ($p) => [
+                'code' => $p->part_code, 'name' => $p->part_name, 'group' => 'Barang Setengah Jadi',
+                'uom' => $p->uom_stock, 'min_stock' => $p->min_stock,
+            ])->all(),
+            'FG' => ProdProduct::with('category')->whereIn('id_product', $ids)->get()->keyBy('id_product')->map(fn ($p) => [
+                'code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: 'Tanpa Kategori',
+                'uom' => $p->uom_stock, 'min_stock' => $p->min_stock,
+            ])->all(),
+            default => MRawMaterial::whereIn('material_id', $ids)->get()->keyBy('material_id')->map(fn ($m) => [
+                'code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: 'Tanpa Kategori',
+                'uom' => $m->uom_stock, 'min_stock' => $m->min_stock,
+            ])->all(),
+        };
+    }
+
+    // Kelompokkan baris v_inv_movement dalam rentang per item, lalu per item
+    // per lokasi (saldo awal/akhir adalah snapshot per-lokasi -- dijumlah
+    // lintas lokasi utk baris ringkas per item).
     #[Computed]
     public function report(): array
     {
-        $rows = DB::connection('tm2inv')->table('rm_stockcard')
+        $rows = DB::connection('tm2inv')->table('v_inv_movement')
+            ->where('stock_class', $this->category)
             ->when($this->warehouseId, fn ($q) => $q->where('warehouse_id', $this->warehouseId))
             ->whereBetween('doc_date', ["{$this->dateFrom} 00:00:00", "{$this->dateTo} 23:59:59"])
             ->orderBy('doc_date')->orderBy('doc_id')
@@ -49,45 +93,45 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
             return ['groups' => collect(), 'totals' => ['bb' => 0, 'in' => 0, 'out' => 0, 'adj' => 0, 'eb' => 0], 'itemCount' => 0];
         }
 
-        $materialIds = $rows->pluck('material_id')->unique();
-        $materials = MRawMaterial::whereIn('material_id', $materialIds)->get()->keyBy('material_id');
+        $itemIds = $rows->pluck('item_id')->unique()->all();
+        $meta = $this->itemMeta($itemIds);
         $warehouseNames = MWarehouse::whereIn('id_warehouse', $rows->pluck('warehouse_id')->unique())->pluck('warehouse_name', 'id_warehouse');
 
-        $byMaterial = $rows->groupBy('material_id')->map(function ($materialRows, $materialId) use ($materials, $warehouseNames) {
-            $byLocation = $materialRows->groupBy('location_id');
+        $byItem = $rows->groupBy('item_id')->map(function ($itemRows, $itemId) use ($meta, $warehouseNames) {
+            $byLocation = $itemRows->groupBy('location_id');
             $bb = $byLocation->sum(fn ($r) => (float) $r->first()->qty_bb);
             $eb = $byLocation->sum(fn ($r) => (float) $r->last()->qty_eb);
 
-            $m = $materials->get($materialId);
+            $m = $meta[$itemId] ?? null;
 
             return (object) [
-                'material_id' => $materialId,
-                'material_code' => $m?->material_code ?? "#{$materialId}",
-                'material_name' => $m?->material_name ?? '(item tidak ditemukan di master)',
-                'category1' => $m?->category1 ?: 'Tanpa Kategori',
-                'uom_stock' => $m?->uom_stock,
-                'min_stock' => $m?->min_stock,
-                'warehouse_names' => $materialRows->pluck('warehouse_id')->unique()->map(fn ($id) => $warehouseNames->get($id))->filter()->implode(', '),
+                'item_id' => $itemId,
+                'item_code' => $m['code'] ?? "#{$itemId}",
+                'item_name' => $m['name'] ?? '(item tidak ditemukan di master)',
+                'group' => $m['group'] ?? 'Tanpa Kategori',
+                'uom' => $m['uom'] ?? null,
+                'min_stock' => $m['min_stock'] ?? null,
+                'warehouse_names' => $itemRows->pluck('warehouse_id')->unique()->map(fn ($id) => $warehouseNames->get($id))->filter()->implode(', '),
                 'qty_bb' => $bb,
-                'qty_in' => (float) $materialRows->sum('qty_in'),
-                'qty_out' => (float) $materialRows->sum('qty_out'),
-                'qty_adj' => (float) $materialRows->sum('qty_adj'),
+                'qty_in' => (float) $itemRows->sum('qty_in'),
+                'qty_out' => (float) $itemRows->sum('qty_out'),
+                'qty_adj' => (float) $itemRows->sum('qty_adj'),
                 'qty_eb' => $eb,
             ];
         })->values();
 
-        $groups = $byMaterial->groupBy('category1')->sortKeys();
+        $groups = $byItem->groupBy('group')->sortKeys();
 
         return [
             'groups' => $groups,
             'totals' => [
-                'bb' => $byMaterial->sum('qty_bb'),
-                'in' => $byMaterial->sum('qty_in'),
-                'out' => $byMaterial->sum('qty_out'),
-                'adj' => $byMaterial->sum('qty_adj'),
-                'eb' => $byMaterial->sum('qty_eb'),
+                'bb' => $byItem->sum('qty_bb'),
+                'in' => $byItem->sum('qty_in'),
+                'out' => $byItem->sum('qty_out'),
+                'adj' => $byItem->sum('qty_adj'),
+                'eb' => $byItem->sum('qty_eb'),
             ],
-            'itemCount' => $byMaterial->count(),
+            'itemCount' => $byItem->count(),
         ];
     }
 };
@@ -100,25 +144,33 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
     <div class="no-print max-w-[1000px] mx-auto my-4 px-4">
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
-                <input type="date" wire:model.live="dateFrom" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+        <div class="bg-white border border-[#d7dbe2] rounded-md p-4">
+            <div class="flex gap-1.5 mb-3">
+                @foreach (self::CATEGORY_LABELS as $code => $label)
+                    <button type="button" wire:click="switchCategory('{{ $code }}')"
+                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer border {{ $category === $code ? 'bg-[#2c3e69] text-white border-[#2c3e69]' : 'bg-white text-[#556] border-[#d7dbe2]' }}">{{ $label }}</button>
+                @endforeach
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] text-muted uppercase font-semibold">Sampai Tanggal</label>
-                <input type="date" wire:model.live="dateTo" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
+                    <input type="date" wire:model.live="dateFrom" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Sampai Tanggal</label>
+                    <input type="date" wire:model.live="dateTo" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Gudang</label>
+                    <select wire:model.live="warehouseId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        <option value="">Semua Gudang</option>
+                        @foreach ($this->warehouses as $w)
+                            <option value="{{ $w->id_warehouse }}">{{ $w->warehouse_code }} — {{ $w->warehouse_name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">🖨️ Cetak</button>
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] text-muted uppercase font-semibold">Gudang</label>
-                <select wire:model.live="warehouseId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <option value="">Semua Gudang</option>
-                    @foreach ($this->warehouses as $w)
-                        <option value="{{ $w->id_warehouse }}">{{ $w->warehouse_code }} — {{ $w->warehouse_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">🖨️ Cetak</button>
         </div>
     </div>
 
@@ -137,7 +189,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
         <div class="border border-[#c8ccd4] rounded-sm p-2.5 bg-[#fbfcfe] mb-3 flex gap-8 flex-wrap">
             <div><div class="text-[7.5pt] text-muted uppercase">Tanggal Awal</div><div class="text-[10pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateFrom)->format('d/m/Y') }}</div></div>
             <div><div class="text-[7.5pt] text-muted uppercase">Tanggal Akhir</div><div class="text-[10pt] font-bold text-navy">{{ \Carbon\Carbon::parse($dateTo)->format('d/m/Y') }}</div></div>
-            <div><div class="text-[7.5pt] text-muted uppercase">Kelas Stok</div><div class="text-[10pt] font-bold text-navy">Bahan Baku (RM)</div></div>
+            <div><div class="text-[7.5pt] text-muted uppercase">Kelas Stok</div><div class="text-[10pt] font-bold text-navy">{{ self::CATEGORY_LABELS[$category] }}</div></div>
             <div><div class="text-[7.5pt] text-muted uppercase">Gudang</div><div class="text-[10pt] font-bold text-navy">{{ $warehouseId ? $this->warehouses->firstWhere('id_warehouse', $warehouseId)?->warehouse_name : 'Semua Gudang' }}</div></div>
         </div>
 
@@ -166,15 +218,15 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                 </tr>
             </thead>
             <tbody>
-                @forelse ($this->report['groups'] as $category => $items)
-                    <tr class="bg-[#eef1f6]"><td colspan="11" class="px-1.5 py-1 font-bold text-navy uppercase text-[8pt]">{{ $category }} · {{ $items->count() }} item</td></tr>
+                @forelse ($this->report['groups'] as $groupName => $items)
+                    <tr class="bg-[#eef1f6]"><td colspan="11" class="px-1.5 py-1 font-bold text-navy uppercase text-[8pt]">{{ $groupName }} · {{ $items->count() }} item</td></tr>
                     @foreach ($items as $i => $row)
                         <tr class="border-b border-[#eef1f5]">
                             <td class="px-1.5 py-1 border border-[#eef1f5] text-center">{{ $i + 1 }}</td>
-                            <td class="px-1.5 py-1 border border-[#eef1f5] font-mono font-bold text-accent">{{ $row->material_code }}</td>
-                            <td class="px-1.5 py-1 border border-[#eef1f5]">{{ $row->material_name }}</td>
+                            <td class="px-1.5 py-1 border border-[#eef1f5] font-mono font-bold text-accent">{{ $row->item_code }}</td>
+                            <td class="px-1.5 py-1 border border-[#eef1f5]">{{ $row->item_name }}</td>
                             <td class="px-1.5 py-1 border border-[#eef1f5]">{{ $row->warehouse_names ?: '—' }}</td>
-                            <td class="px-1.5 py-1 border border-[#eef1f5] text-center">{{ $row->uom_stock }}</td>
+                            <td class="px-1.5 py-1 border border-[#eef1f5] text-center">{{ $row->uom }}</td>
                             <td class="px-1.5 py-1 border border-[#eef1f5] text-right">{{ number_format($row->qty_bb, 2) }}</td>
                             <td class="px-1.5 py-1 border border-[#eef1f5] text-right text-[#0f9d58]">{{ number_format($row->qty_in, 2) }}</td>
                             <td class="px-1.5 py-1 border border-[#eef1f5] text-right text-[#b71c1c]">{{ number_format($row->qty_out, 2) }}</td>

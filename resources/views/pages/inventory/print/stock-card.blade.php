@@ -1,7 +1,8 @@
 <?php
 
 use App\Models\Master\MRawMaterial;
-use App\Models\Master\MWarehouse;
+use App\Models\Master\ProdPart;
+use App\Models\Master\ProdProduct;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -9,12 +10,22 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 // INV_TIER_4.md §6.1 + docs/mockups/mockup_print_stock_card.html. Sumber:
-// tm2inv.rm_stockcard (via qty_bb/qty_in/qty_out/qty_adj/qty_eb yang sudah
-// jadi snapshot per baris -- tidak dihitung ulang di sini, cukup dibaca).
-// SFG/FG belum ada data riil (0 baris) -- layar ini baru RM dulu, kelas lain
-// menyusul begitu Stock In/Out digarap dan datanya benar-benar ada.
+// tm2inv.v_inv_movement -- view UNION yang sudah menormalkan RM (rm_stockcard
+// + m_raw_material) / SFG (sfg_stockcard + prod_part) / FG (fg_stockcard +
+// prod_product) jadi kolom seragam (item_id/item_code/item_name), jadi satu
+// query generik cukup utk 3 kelas stok, tinggal ganti stock_class + sumber
+// picker item. SFG/FG masih 0 baris (Stock In/Out belum digarap) -- kalau
+// dipilih, kartu akan tampil kosong jujur, bukan dikarang.
 new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
 {
+    public const CATEGORY_LABELS = [
+        'RM' => 'Bahan Baku & Bahan Pembantu',
+        'SFG' => 'Barang Setengah Jadi',
+        'FG' => 'Barang Jadi',
+    ];
+
+    public string $category = 'RM';
+
     public ?int $materialId = null;
 
     public ?int $locationId = null;
@@ -32,10 +43,32 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
         $this->dateTo = now()->toDateString();
     }
 
-    #[Computed]
-    public function material(): ?MRawMaterial
+    public function switchCategory(string $category): void
     {
-        return $this->materialId ? MRawMaterial::find($this->materialId) : null;
+        if (! array_key_exists($category, self::CATEGORY_LABELS) || $category === $this->category) {
+            return;
+        }
+
+        $this->category = $category;
+        $this->materialId = null;
+        $this->materialSearch = '';
+        unset($this->rows, $this->material, $this->ledger);
+    }
+
+    // Item terpilih, dinormalisasi jadi bentuk seragam (code/name/uom) supaya
+    // Blade tidak perlu tahu category-nya lagi utk sekadar menampilkan header.
+    #[Computed]
+    public function material(): ?array
+    {
+        if (! $this->materialId) {
+            return null;
+        }
+
+        return match ($this->category) {
+            'SFG' => optional(ProdPart::find($this->materialId), fn ($p) => ['code' => $p->part_code, 'name' => $p->part_name, 'uom' => $p->uom_stock]),
+            'FG' => optional(ProdProduct::find($this->materialId), fn ($p) => ['code' => $p->product_code, 'name' => $p->product_name, 'uom' => $p->uom_stock]),
+            default => optional(MRawMaterial::find($this->materialId), fn ($m) => ['code' => $m->material_code, 'name' => $m->material_name, 'uom' => $m->uom_stock]),
+        };
     }
 
     #[Computed]
@@ -45,9 +78,16 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
             return collect();
         }
 
-        return MRawMaterial::where('material_code', 'like', "%{$this->materialSearch}%")
-            ->orWhere('material_name', 'like', "%{$this->materialSearch}%")
-            ->limit(15)->get();
+        $term = $this->materialSearch;
+
+        return match ($this->category) {
+            'SFG' => ProdPart::where('part_code', 'like', "%{$term}%")->orWhere('part_name', 'like', "%{$term}%")
+                ->limit(15)->get()->map(fn ($p) => ['id' => $p->id_part, 'code' => $p->part_code, 'name' => $p->part_name]),
+            'FG' => ProdProduct::where('product_code', 'like', "%{$term}%")->orWhere('product_name', 'like', "%{$term}%")
+                ->limit(15)->get()->map(fn ($p) => ['id' => $p->id_product, 'code' => $p->product_code, 'name' => $p->product_name]),
+            default => MRawMaterial::where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%")
+                ->limit(15)->get()->map(fn ($m) => ['id' => $m->material_id, 'code' => $m->material_code, 'name' => $m->material_name]),
+        };
     }
 
     public function pickMaterial(int $materialId): void
@@ -66,7 +106,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
     }
 
     // Baris kartu stok dalam rentang tanggal + saldo awal sebelum rentang
-    // (dari baris rm_stockcard terakhir sebelum $dateFrom, bukan dihitung ulang).
+    // (dari baris v_inv_movement terakhir sebelum $dateFrom, bukan dihitung ulang).
     #[Computed]
     public function ledger(): array
     {
@@ -75,7 +115,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $query = DB::connection('tm2inv')->table('v_inv_movement')
-            ->where('stock_class', 'RM')
+            ->where('stock_class', $this->category)
             ->where('item_id', $this->materialId)
             ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
             ->whereBetween('doc_date', ["{$this->dateFrom} 00:00:00", "{$this->dateTo} 23:59:59"])
@@ -84,8 +124,9 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
         $rows = $query->get();
 
         if ($rows->isEmpty()) {
-            $openingBalance = DB::connection('tm2inv')->table('rm_stockcard')
-                ->where('material_id', $this->materialId)
+            $openingBalance = DB::connection('tm2inv')->table('v_inv_movement')
+                ->where('stock_class', $this->category)
+                ->where('item_id', $this->materialId)
                 ->when($this->locationId, fn ($q) => $q->where('location_id', $this->locationId))
                 ->where('doc_date', '<', "{$this->dateFrom} 00:00:00")
                 ->orderByDesc('doc_date')->orderByDesc('doc_id')
@@ -119,32 +160,40 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
     <div class="no-print max-w-[900px] mx-auto my-4 px-4">
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 flex flex-wrap items-end gap-3">
-            <div class="flex flex-col gap-1 relative" style="min-width:260px">
-                <label class="text-[10px] text-muted uppercase font-semibold">Item (wajib)</label>
-                <input type="text" wire:model.live.debounce.300ms="materialSearch" placeholder="🔍 Cari kode / nama item..." class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                @if ($this->materialResults->isNotEmpty())
-                    <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
-                        @foreach ($this->materialResults as $m)
-                            <button type="button" wire:click="pickMaterial({{ $m->material_id }})" class="w-full text-left px-2.5 py-1.5 text-xs hover:bg-[#eef3fb] border-b border-[#eef1f5] last:border-b-0">
-                                <span class="font-mono font-bold text-accent">{{ $m->material_code }}</span> — {{ $m->material_name }}
-                            </button>
-                        @endforeach
-                    </div>
-                @endif
-                @if ($this->material)
-                    <div class="text-[11px] text-navy font-semibold mt-1">{{ $this->material->material_code }} — {{ $this->material->material_name }}</div>
-                @endif
+        <div class="bg-white border border-[#d7dbe2] rounded-md p-4">
+            <div class="flex gap-1.5 mb-3">
+                @foreach (self::CATEGORY_LABELS as $code => $label)
+                    <button type="button" wire:click="switchCategory('{{ $code }}')"
+                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer border {{ $category === $code ? 'bg-[#2c3e69] text-white border-[#2c3e69]' : 'bg-white text-[#556] border-[#d7dbe2]' }}">{{ $label }}</button>
+                @endforeach
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
-                <input type="date" wire:model.live="dateFrom" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            <div class="flex flex-wrap items-end gap-3">
+                <div class="flex flex-col gap-1 relative" style="min-width:260px">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Item (wajib)</label>
+                    <input type="text" wire:model.live.debounce.300ms="materialSearch" placeholder="🔍 Cari kode / nama item..." class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    @if ($this->materialResults->isNotEmpty())
+                        <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
+                            @foreach ($this->materialResults as $m)
+                                <button type="button" wire:click="pickMaterial({{ $m['id'] }})" class="w-full text-left px-2.5 py-1.5 text-xs hover:bg-[#eef3fb] border-b border-[#eef1f5] last:border-b-0">
+                                    <span class="font-mono font-bold text-accent">{{ $m['code'] }}</span> — {{ $m['name'] }}
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                    @if ($this->material)
+                        <div class="text-[11px] text-navy font-semibold mt-1">{{ $this->material['code'] }} — {{ $this->material['name'] }}</div>
+                    @endif
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
+                    <input type="date" wire:model.live="dateFrom" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Sampai Tanggal</label>
+                    <input type="date" wire:model.live="dateTo" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer" @disabled(! $materialId)>🖨️ Cetak</button>
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] text-muted uppercase font-semibold">Sampai Tanggal</label>
-                <input type="date" wire:model.live="dateTo" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-            </div>
-            <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer" @disabled(! $materialId)>🖨️ Cetak</button>
         </div>
     </div>
 
@@ -167,9 +216,10 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
 
             <div class="border border-[#c8ccd4] rounded-sm p-3 bg-[#fbfcfe] mb-3">
                 <div class="flex gap-6 flex-wrap">
-                    <div><div class="text-[8pt] text-muted uppercase">Kode Item</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material->material_code }}</div></div>
-                    <div class="flex-1 min-w-[200px]"><div class="text-[8pt] text-muted uppercase">Nama Item</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material->material_name }}</div></div>
-                    <div><div class="text-[8pt] text-muted uppercase">UOM Stok</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material->uom_stock }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">Kelas Stok</div><div class="text-[10.5pt] font-bold text-navy">{{ self::CATEGORY_LABELS[$category] }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">Kode Item</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['code'] }}</div></div>
+                    <div class="flex-1 min-w-[200px]"><div class="text-[8pt] text-muted uppercase">Nama Item</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['name'] }}</div></div>
+                    <div><div class="text-[8pt] text-muted uppercase">UOM Stok</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->material['uom'] }}</div></div>
                 </div>
                 <div class="flex gap-6 flex-wrap mt-2">
                     <div><div class="text-[8pt] text-muted uppercase">Lokasi</div><div class="text-[10.5pt] font-bold text-navy">{{ $this->locationName ?? 'Semua Lokasi' }}</div></div>
