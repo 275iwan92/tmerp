@@ -49,8 +49,11 @@ class ProdProduct extends Model
         return $this->belongsTo(CustCustomer::class, 'customer_id', 'id_customer');
     }
 
-    // category_id -> prod_category: FK fisik ada di DDL, tapi model ProdCategory
-    // belum dibuat (di luar scope permintaan ini). Tambahkan relasi saat modelnya digarap.
+    // Same-DB (tm2mst): FK fisik prod_product.category_id -> prod_category.id_category.
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(ProdCategory::class, 'category_id', 'id_category');
+    }
 
     // Tidak ada relasi balik ke iqp_inquiry (parent_product_id, tm2sdi) di sini secara
     // sengaja — sama seperti CustCustomer, master tetap netral. Lihat IqpInquiry::parentProduct().

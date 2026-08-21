@@ -49,6 +49,7 @@ Route::middleware('auth')->group(function () {
         Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
 
         Route::middleware('module:MDATA')->group(function () {
+            Route::livewire('/master/produk', 'pages::master.produk')->name('master.produk');
             Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
             Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
