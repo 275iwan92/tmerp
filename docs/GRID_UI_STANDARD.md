@@ -234,3 +234,7 @@ tombol aksi sekunder (Detail/Blokir/dsb.), bukan teks jumlah baris.
       checkbox, tombol sekunder, atau teks jumlah baris apa pun.
 - [ ] `colspan` baris kosong (`@empty`) disesuaikan ulang setelah kolom
       digabung/dihapus — ini yang paling sering kelewat.
+- [ ] **`npm run build` dijalankan setelah semua edit selesai.** Project ini pakai
+      Vite production build, bukan dev-server hot-reload — class Tailwind baru
+      tidak akan tampil di browser sampai di-build ulang. Lihat CLAUDE.md §7.8.
+      Jangan anggap `php -l` lolos = tampilan sudah benar, itu cuma cek syntax PHP.

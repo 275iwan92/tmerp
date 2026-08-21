@@ -135,6 +135,17 @@ transaksi = `iqp_costing`, ikut inquiry).
 5. **Iterasi kecil** — 1 layar/fitur per waktu (mulai `inquiry_new`), bukan semua sekaligus.
 6. **Validasi** ganti FK lintas-DB yang hilang (rule `exists:conn.table,col`).
 7. Bila ada keputusan desain baru, konfirmasi ke user dulu — jangan putuskan sendiri hal arsitektural.
+8. **WAJIB `npm run build` setelah ubah class Tailwind di Blade/Livewire.** Project
+   ini pakai Vite production build (`public/build/`), **bukan** `npm run dev` yang
+   hot-reload — jadi class Tailwind baru (`w-64`, dsb.) di file yang baru diedit
+   **TIDAK otomatis muncul di CSS terkompilasi**. Insiden 2026-08-21: 8 grid Master
+   diedit toolbar-nya tapi CSS terakhir di-build sehari sebelumnya → elemen
+   tampil tanpa styling sama sekali (search box selebar layar, tombol
+   "+ New Record" tak kelihatan). Jangan cuma `php -l` (itu cuma cek syntax PHP,
+   tidak cek CSS). **Checklist wajib tiap sesi yang mengubah tampilan (Blade/Volt
+   dengan class Tailwind baru):** (a) selesai edit → (b) `npm run build` → (c) baru
+   laporkan selesai / minta user cek browser. Kalau ragu apakah class-nya baru,
+   build saja — build ini murah (~2 detik) dan tidak merusak apa pun.
 
 ---
 
