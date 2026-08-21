@@ -80,8 +80,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_SHIFT' => route('master.shift'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
-            'INV_CARD' => route('inv.print.stock-card'),
-            'INV_RAW' => route('inv.print.master-stock'),
+            // 2026-08-22: Laporan Inventory dipecah 3 menu per kelas stok
+            // (RM/FG/SFG) -- 1 route param'd, 6 menu code beda category.
+            'INV_RAW_RM' => route('inv.print.master-stock', ['category' => 'RM']),
+            'INV_CARD_RM' => route('inv.print.stock-card', ['category' => 'RM']),
+            'INV_RAW_FG' => route('inv.print.master-stock', ['category' => 'FG']),
+            'INV_CARD_FG' => route('inv.print.stock-card', ['category' => 'FG']),
+            'INV_RAW_SFG' => route('inv.print.master-stock', ['category' => 'SFG']),
+            'INV_CARD_SFG' => route('inv.print.stock-card', ['category' => 'SFG']),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'SET_USER' => route('security.index', ['tab' => 'users']),

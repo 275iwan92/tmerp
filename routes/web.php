@@ -84,8 +84,11 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::middleware('module:INV')->group(function () {
-            Route::livewire('/inventory/print/stock-card/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
-            Route::livewire('/inventory/print/master-stock', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
+            // {category} = RM|FG|SFG, wajib di URL -- menu sidebar sekarang
+            // 3 entri terpisah per kelas (bukan toggle dalam halaman), lihat
+            // SIDEBAR_MENU_STANDARD.md §5. {material?} tetap opsional utk deep-link.
+            Route::livewire('/inventory/print/stock-card/{category}/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
+            Route::livewire('/inventory/print/master-stock/{category}', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
         });
 
         Route::middleware('module:HRM')->group(function () {

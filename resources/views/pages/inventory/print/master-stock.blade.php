@@ -15,8 +15,15 @@ use Livewire\Component;
 // item_id/item_code/item_name -- lihat komentar sama di print/stock-card.blade.php)
 // dalam rentang tanggal -- bukan v_rm_onhand/v_fg_onhand/v_sfg_onhand, itu
 // snapshot SEKARANG saja, laporan ini butuh pecahan masuk/keluar/adj per
-// periode. SFG/FG masih 0 baris (Stock In/Out belum digarap) -- kalau
-// dipilih, tabel akan tampil kosong jujur, bukan dikarang.
+// periode. SFG/FG masih data uji (bukan produksi sungguhan) -- Stock In/Out
+// belum digarap.
+//
+// {category} WAJIB di URL (bukan toggle dalam halaman) -- SIDEBAR_MENU_STANDARD.md
+// §5 (2026-08-22): user minta 3 kelas jadi 3 MENU terpisah (RM/FG/SFG),
+// baik utk Input maupun Laporan, karena recordnya memang masuk ke tabel
+// fisik yang beda (rm_stockcard/fg_stockcard/sfg_stockcard). Satu file
+// Livewire ini tetap dipakai bertiga (reuse kode), cuma dituju oleh 3 route
+// param berbeda -- bukan 3 file terpisah.
 new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Component
 {
     public const CATEGORY_LABELS = [
@@ -33,20 +40,14 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
 
     public ?int $warehouseId = null;
 
-    public function mount(): void
+    public function mount(string $category): void
     {
-        $this->dateFrom = now()->startOfMonth()->toDateString();
-        $this->dateTo = now()->toDateString();
-    }
-
-    public function switchCategory(string $category): void
-    {
-        if (! array_key_exists($category, self::CATEGORY_LABELS) || $category === $this->category) {
-            return;
-        }
+        $category = strtoupper($category);
+        abort_unless(array_key_exists($category, self::CATEGORY_LABELS), 404);
 
         $this->category = $category;
-        unset($this->report);
+        $this->dateFrom = now()->startOfMonth()->toDateString();
+        $this->dateTo = now()->toDateString();
     }
 
     #[Computed]
@@ -147,8 +148,8 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4">
             <div class="flex gap-1.5 mb-3">
                 @foreach (self::CATEGORY_LABELS as $code => $label)
-                    <button type="button" wire:click="switchCategory('{{ $code }}')"
-                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer border {{ $category === $code ? 'bg-[#2c3e69] text-white border-[#2c3e69]' : 'bg-white text-[#556] border-[#d7dbe2]' }}">{{ $label }}</button>
+                    <a href="{{ route('inv.print.master-stock', ['category' => $code]) }}"
+                        class="px-3 py-1.5 rounded-md text-[11px] font-semibold no-underline border {{ $category === $code ? 'bg-[#2c3e69] text-white border-[#2c3e69]' : 'bg-white text-[#556] border-[#d7dbe2] hover:bg-[#f4f6fa]' }}">{{ $label }}</a>
                 @endforeach
             </div>
             <div class="flex flex-wrap items-end gap-3">
