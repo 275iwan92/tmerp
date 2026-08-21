@@ -6,12 +6,20 @@ modul: "02_inventory"
 db: tm2inv
 fase: "1 — Stock In / Stock Out / Adjustment+Opname / Return from Production + kartu stok & periode"
 status_umum: >
-  SPEC SELESAI, IMPLEMENTASI BELUM MULAI (2026-08-21). Empat mockup HTML + Tier 1-4 + RULES
-  disusun dalam satu sesi berdasarkan pembacaan penuh dump produksi tminv_20260722_2018_sd.sql
-  (13 tabel, 14 view, 12 procedure, 3 trigger). Struktur legacy rm_/sfg_/fg_ DIADOPSI apa
-  adanya sesuai keputusan PROC-C — tidak dirancang ulang. Yang berubah: eksekutor posting
-  (trigger -> service), penambahan penjaga idempotensi, pemisahan lokasi afkir, dan kunci
-  periode. Belum ada satu pun ALTER/migration dieksekusi.
+  IMPLEMENTASI DIMULAI (2026-08-22) — Stock In (RM/FG/SFG) LIVE. Delta ALTER tm2inv/tm2mst,
+  tabel baru (inv_period/inv_stock_layer/inv_layer_consumption), VIEW (v_inv_movement dkk),
+  dan seed flow_config IN/OUT/AD/OP/RTP (lengkap dgn position_id riil Kepala Gudang/Manajer
+  Operasional/Direksi + threshold 5jt/25jt) SEMUA SUDAH TEREKSEKUSI dari sesi sebelumnya
+  (2026-08-21) -- lihat open_items di bawah, sebagian besar item TINGGI sudah teratasi walau
+  dokumen ini belum diupdate saat itu. App\Services\Inventory\StockPostingService::postDocument()
+  dibangun & diuji end-to-end via tinker (draft->posting->kartu stok, idempotensi, NULL-safe
+  cur_stock sync). App\Services\Inventory\StockDocumentService (draft/cancel/nextDocNo) juga
+  sudah ada. 10 model app/Models/Inventory/* dibangun. LocationPicker TIDAK dibangun sbg
+  komponen terpisah (next_step lama menyarankan itu) -- untuk Stock In v1, dropdown lokasi
+  inline langsung di stock-in.blade.php, cukup utk 1 layar; ekstrak jadi komponen bersama
+  kalau Stock Out/Return/Adjustment nanti butuh perilaku identik. Valuasi baru AVG bergerak
+  (moving average) -- FIFO/LIFO (inv_stock_layer) belum diimplementasikan, costing_method
+  per-item masih default AVG (INV-COSTING-METHOD-SEED masih terbuka).
 
 keputusan_terkunci:
   INV-01_posting_service: >
@@ -71,50 +79,62 @@ artefak_selesai:
   - tmerp_inv.css                    # stylesheet bersama keempat mockup
 
 next_step:
-  - "Telma/Jo: review Tier 1-4, konfirmasi 4 item [DELTA-CONFIRM] di bawah sebelum diserahkan ke Claude Code"
-  - "Eksekusi urutan INV_TIER_3 §12: DROP trigger -> delta tm2mst -> sys_constant/sequence -> bersihkan data legacy -> delta tm2inv -> tabel baru -> seed periode -> VIEW -> seed flow -> menu"
-  - "Bangun LocationPicker DULU (dipakai keempat layar) — sejajar dgn ItemPicker milik Procurement"
-  - "Urutan layar: Stock In -> Stock Out -> Return -> Adjustment/Opname -> Approval -> Kartu Stok -> Onhand -> Period Manager"
-  - "Update checklist_mockup_erp.md MODUL 2 (Stock Movement & Stock Adjustment) + warna menu shell — BARENGAN"
-  - "Update PROC_STATE.yaml: open item PROC-COSTING-ENGINE sudah terjawab (inv_stock_layer + inv_layer_consumption didefinisikan di INV_TIER_3 §7)"
+  - "[SELESAI 2026-08-22] Stock In (RM/FG/SFG) -- resources/views/pages/inventory/stock-in.blade.php, route inv.stock-in.index/{category}"
+  - "Urutan layar TERSISA: Stock Out -> Return -> Adjustment/Opname -> Approval (StockAdjApproval, route inv.stock-adj.approval, template: resources/views/pages/pur/po/approval.blade.php) -> Onhand -> Period Manager"
+  - "Stock Out: kunci FG di level route (INV-06) -- FG_ITEM2/SFG_ITEM2 boleh, RM_ITEM2 dulu (menu INV_RM_ITEM2/INV_SFG_ITEM2/INV_FG_ITEM2 -- cek ulang, FG mungkin harus TETAP NOT_BUILT selamanya sesuai INV-06, bukan sekadar 'belum digarap')"
+  - "Return: validasi ref ke Stock Out POSTED + qty <= keluar-diretur (client & server, INV-07)"
+  - "Adjustment/Opname: StockPostingService sudah generik lintas kelas & sudah menangani doc_cat AD/OP (qty signed) -- tinggal bangun layar entri + StockAdjApproval, service-nya reusable apa adanya"
+  - "PV/WO auto-post Stock In (ref_doc_type != MANUAL) belum diintegrasikan -- StockPostingService sudah generik, tinggal dipanggil dari sisi Purchase Receive/Production nanti (lihat SIDEBAR_MENU_STANDARD.md #6a utk konteks penuh)"
+  - "Update checklist_mockup_erp.md MODUL 2 (Stock Movement & Stock Adjustment) + warna menu shell — BARENGAN, belum dilakukan 2026-08-22"
+  - "Update PROC_STATE.yaml: open item PROC-COSTING-ENGINE sudah terjawab (inv_stock_layer + inv_layer_consumption didefinisikan di INV_TIER_3 §7) -- belum dicek ulang 2026-08-22"
 
 open_items:
   - id: INV-DELTA-CONFIRM-THRESHOLD
-    prioritas: TINGGI
+    prioritas: "TINGGI (implementasi selesai, sign-off bisnis belum eksplisit dikonfirmasi)"
     isi: >
-      Batas kewenangan approval Adjustment. Usulan: Kepala Gudang 0-5jt, Manajer Operasional
-      5-25jt, Direksi >25jt. Tersimpan di flow_config_step.min_amount/max_amount +
-      sys_constant INV_ADJ_LIMIT_L1/L2 sehingga bisa diubah tanpa deploy — tapi angka awal
-      butuh persetujuan Telma/Jo.
+      [UPDATE 2026-08-22] flow_config_step utk module_code AD/OP SUDAH ter-seed persis
+      sesuai usulan: Kepala Gudang (position_id=59) 0-5jt, Manajer Operasional (position_id=6)
+      5-25jt, Direksi (position_id=7) >25jt. Dicek langsung ke tm2mst.flow_config_step, bukan
+      dugaan. Yang BELUM jelas: apakah angka ini sudah benar-benar disetujui Telma/Jo secara
+      formal, atau cuma "usulan default" yang kebetulan sudah dieksekusi duluan — tanyakan
+      kalau approval Adjustment/Opname mulai dipakai sungguhan, jangan asumsikan final.
   - id: INV-DELTA-CONFIRM-BACKDATE
     prioritas: SEDANG
-    isi: "INV_BACKDATE_DAYS usulan 7 hari. Terlalu ketat menyulitkan gudang, terlalu longgar merusak tutup periode. Butuh angka riil dari praktik lapangan."
+    isi: "INV_BACKDATE_DAYS usulan 7 hari. Terlalu ketat menyulitkan gudang, terlalu longgar merusak tutup periode. Butuh angka riil dari praktik lapangan. Belum dicek apakah sudah ada di sys_constant."
   - id: INV-FLOW-POSITION
-    prioritas: TINGGI
-    isi: "position_id riil di org_position untuk Kepala Gudang / Manajer Operasional / Direksi belum ditetapkan. Seed flow_config_step tak bisa dijalankan sebelum ini."
+    prioritas: "RESOLVED 2026-08-22"
+    isi: >
+      position_id riil SUDAH ADA & terpakai di flow_config_step: Kepala Gudang=59,
+      Manajer Operasional=6, Direksi=7 (dicek langsung ke org_position + flow_config_step,
+      bukan diasumsikan). Blocker ini SUDAH TERATASI, kemungkinan besar diselesaikan
+      bersamaan sesi 2026-08-21 saat modul Inventory & Procurement lain digarap, dokumen ini
+      saja yang telat diupdate. StockPostingService/Stock In v1 tidak terhambat oleh item ini.
   - id: INV-DATA-CLEANUP
-    prioritas: TINGGI
+    prioritas: "Kemungkinan besar sudah dilakukan (belum di-cross-check ulang eksplisit 2026-08-22)"
     isi: >
       Sebelum unique index dipasang, data legacy WAJIB dibersihkan:
       (a) rm_stock.doc_no duplikat — 26BB00005 x6, 26OU00014 x5;
       (b) rm_stock_d.location_id NULL/0 — banyak baris, penyebab saldo yatim di v_rm_onhand;
       (c) rm_stockcard duplikat reference_detail_id 62/63/64;
       (d) rm_stockcard dgn qty_eb negatif (doc_id 28,29,30,42) — hasil bug trigger, perlu rebuild.
-      Skrip pratinjau ada di INV_TIER_3 §5.
+      Skrip pratinjau ada di INV_TIER_3 §5. Sesi 2026-08-21 (memory project_inventory_module_status)
+      mencatat "6 duplikat rm_stockcard dari bug double-posting dihapus" & "null location_id
+      dibackfill ke UNKNOWN-LEGACY" -- tampaknya sudah ditangani, tapi item (a)/(d) belum
+      dikonfirmasi eksplisit tuntas. Cross-check ulang sebelum memasang UNIQUE index kalau
+      belum yakin.
   - id: INV-MIGRASI-TMINV-KE-TM2INV
-    prioritas: TINGGI
+    prioritas: "RESOLVED (data sudah ada di tm2inv, keputusan sudah diambil)"
     isi: >
-      Dump acuan berasal dari skema LAMA 'tminv'. Target adalah 'tm2inv'. Belum diputuskan:
-      migrasi data historis penuh, atau mulai bersih dengan saldo awal (doc_cat=BB) per
-      1 periode go-live. Rekomendasi: MULAI BERSIH — data legacy mengandung saldo negatif
-      hasil bug trigger dan doc_no duplikat, memigrasinya berarti mewarisi kesalahan.
-      Data lama tetap disimpan read-only untuk penelusuran.
+      Sudah diputuskan & dieksekusi sesi 2026-08-21: data legacy DIIMPOR (bukan mulai bersih)
+      ke tm2inv, dengan cleanup (duplikat doc_no di-suffix -DUPn, dst — lihat
+      project_inventory_module_status). Rekomendasi "mulai bersih" di paragraf lama TIDAK
+      diambil — catatan ini dibiarkan sbg riwayat keputusan, bukan petunjuk yg masih berlaku.
   - id: INV-SYSCONST-COL
-    prioritas: TINGGI
-    isi: "Nama kolom sys_constant & sys_sequence aktual belum diverifikasi (isu yang sama dgn PROC-SYSCONST-COL). Seed di INV_TIER_3 §8.2 harus disesuaikan sebelum dieksekusi."
+    prioritas: "Kemungkinan besar sudah teratasi (belum di-cross-check ulang eksplisit 2026-08-22)"
+    isi: "Nama kolom sys_constant & sys_sequence aktual -- StockPostingService v1 TIDAK memakai sys_constant/sys_sequence sama sekali (nomor dokumen pakai pola manual MAX+1 spt modul lain, lihat StockDocumentService::nextDocNo()), jadi item ini tidak menghalangi Stock In. Masih relevan kalau nanti INV_BACKDATE_DAYS/INV_ADJ_LIMIT_L1/L2 mau dibaca dari sys_constant sungguhan, bukan hardcode di flow_config_step."
   - id: INV-WAREHOUSE-SEED
-    prioritas: SEDANG
-    isi: "Daftar gudang & lokasi riil (m_warehouse, m_wh_loc) belum final. Seed gudang WASTE di INV_TIER_3 §8.1 memakai kode contoh GD-05/WS-01..03."
+    prioritas: "RESOLVED — gudang riil sudah ada (WH-RAW-01/WH-FG-01/WH-MIX-01/WH-SCP-01), dipakai langsung di Stock In v1"
+    isi: "Daftar gudang & lokasi riil (m_warehouse, m_wh_loc) sudah final dari Master Warehouse (2026-08-21). Catatan: belum ada warehouse_type khusus SFG -- Stock In SFG demo pakai WH-MIX-01 (Transit & Buffer) sbg lokasi WIP, lihat SIDEBAR_MENU_STANDARD.md #6 poin 3."
   - id: INV-COSTING-METHOD-SEED
     prioritas: SEDANG
     isi: "costing_method per item belum ditetapkan. Default AVG. Kertas mungkin FIFO (fluktuasi harga + lot jelas), tinta/kimia AVG. Butuh review per kategori bersama Accounting."
