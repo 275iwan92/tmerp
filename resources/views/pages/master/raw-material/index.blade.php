@@ -100,10 +100,15 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
         </div>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] overflow-x-auto">
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Cari kode, nama, HS code..." class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            <div class="flex items-center gap-2 bg-white border-b border-[#d7dbe2] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode, nama, HS code..."
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
                 <span class="flex-1"></span>
-                <a href="{{ route('master.raw-material.create') }}" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">+ New Record</a>
+                <a href="{{ route('master.raw-material.create') }}"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] no-underline cursor-pointer">+ New Record</a>
             </div>
 
             <div class="overflow-x-auto">

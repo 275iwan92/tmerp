@@ -187,12 +187,32 @@ tombol aksi sekunder (Detail/Blokir/dsb.), bukan teks jumlah baris.
 
 ```html
 <div class="flex items-center gap-2 bg-white border ... px-2.5 py-2 overflow-x-auto">
-    <input type="text" wire:model.live.debounce.300ms="search" placeholder="..."
-        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+    <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-sm">🔍</span>
+        <input type="text" wire:model.live.debounce.300ms="search" placeholder="..."
+            class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+    </div>
     <span class="flex-1"></span>
-    <button type="button" wire:click="openNew" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">+ New Record</button>
+    <button type="button" wire:click="openNew"
+        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
 </div>
 ```
+
+**PENTING — jangan taruh `<input>` sebagai anak langsung dari toolbar flex row.**
+`resources/css/app.css` punya reset global `input:not([type=checkbox]):not([type=radio])
+{ ... w-full ... }` yang **unlayered** (di luar `@layer`) — di cascade CSS, aturan
+unlayered SELALU menang atas utility class Tailwind manapun (termasuk `.w-56`),
+apa pun urutan/specificity-nya. Kalau `<input>` jadi anak langsung toolbar,
+`w-56`-nya percuma, lebar sungguhan yang dipakai browser tetap `w-full` →
+search box melebar penuh, tombol "+ New Record" terdorong keluar layar
+(butuh scroll horizontal untuk terlihat — persis bug yang ditemukan user di
+Master Bahan Baku 2026-08-21). **Wajib bungkus `<input>` dalam
+`<div class="flex items-center gap-1.5 shrink-0">` bersama ikon 🔍** seperti
+contoh di atas — div pembungkus ini yang membatasi lebar visual, bukan class
+di `<input>` itu sendiri (div tanpa lebar eksplisit + flex-shrink membuat
+percentage width `<input>` di dalamnya efektif auto-sized, bukan 100% dari
+toolbar). Warna tombol "+ New Record" juga dikunci ke `bg-[#2c3e69]`
+(navy — sama seperti Customer/Supplier), bukan `bg-accent`, supaya seragam.
 
 - **`flex-wrap` DILARANG** di baris toolbar — pakai `overflow-x-auto` sebagai
   jaga-jaga di layar sangat sempit, meski dengan cuma 2 elemen ini jarang
