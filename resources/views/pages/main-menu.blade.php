@@ -433,12 +433,16 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 <div class="side-hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>
             </template>
             <template x-for="grp in sidebarGroups" :key="grp.id">
-                <div>
+                <div x-data="{ open: true }">
                     <template x-if="grp.menuType === 'group'">
-                        <div class="side-cap" x-text="grp.label"></div>
+                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                            <span class="side-cap" x-text="grp.label"></span>
+                            <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
+                        </button>
                     </template>
                     <template x-for="it in (grp.menuType === 'group' ? grp.children : [grp])" :key="it.id">
-                        <button type="button" class="leaf" :class="{ active: activeTabCode === it.code, 'not-built': !it.isClickable }" :title="it.statusLabel" @click="openTab(it.code)">
+                        <button type="button" class="leaf" x-show="grp.menuType !== 'group' || open"
+                            :class="{ active: activeTabCode === it.code, 'not-built': !it.isClickable }" :title="it.statusLabel" @click="openTab(it.code)">
                             <span class="lic"><i :class="it.icon || 'fa-solid fa-file-lines'"></i></span>
                             <span class="lbl" x-text="it.label"></span>
                             <span class="status-dot" :style="{ background: it.statusColor }"></span>

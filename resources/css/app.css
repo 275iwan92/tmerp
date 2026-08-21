@@ -330,6 +330,10 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .side-nav { @apply flex-1 overflow-y-auto pt-1 px-2 pb-3; }
 .shell .side-cap { @apply text-[10px] tracking-[.7px] uppercase text-[var(--side-muted)] pt-[11px] px-3 pb-[5px] font-bold whitespace-nowrap; }
 .shell.mini .side-cap { @apply hidden; }
+.shell .side-cap-btn { @apply flex items-center gap-1.5 w-full bg-transparent border-none text-left cursor-pointer; font-family: inherit; }
+.shell .side-cap-btn:hover .side-cap { @apply text-[#c7cee6]; }
+.shell .side-cap-btn .chev { @apply ml-auto text-[8px] opacity-70 transition-transform duration-150; }
+.shell .side-cap-btn .chev.collapsed { @apply -rotate-90; }
 .shell .leaf { @apply flex items-center gap-[11px] w-full bg-transparent border-none text-left text-[#aeb6d4] px-3 py-2.5 rounded-lg cursor-pointer text-[13.5px] whitespace-nowrap; font-family: inherit; }
 .shell .leaf:hover { @apply text-white bg-[var(--side-hover)]; }
 .shell .leaf.active { @apply text-white bg-[var(--sh-accent)]; }
