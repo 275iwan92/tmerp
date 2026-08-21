@@ -31,10 +31,6 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     #[Url]
     public string $q = '';
 
-    public string $filterType = '';
-
-    public string $filterStatus = '';
-
     public string $panel = 'grid'; // grid | form
 
     public ?int $selectedId = null;
@@ -196,8 +192,6 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 ->where('customer_name', 'like', "%{$this->q}%")
                 ->orWhere('customer_code', 'like', "%{$this->q}%")
                 ->orWhere('contact_name', 'like', "%{$this->q}%")))
-            ->when($this->filterType, fn ($q2) => $q2->where('customer_type', $this->filterType))
-            ->when($this->filterStatus, fn ($q2) => $q2->where('approval_status', $this->filterStatus))
             ->orderBy('customer_name')
             ->limit(200)
             ->get();
@@ -842,19 +836,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                     <input type="text" wire:model.live.debounce.400ms="q" placeholder="Cari nama / kode / PIC..."
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <select wire:model.live="filterType" class="w-32 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <option value="">Semua Tipe</option>
-                    <option value="local">Lokal</option>
-                    <option value="import">Import</option>
-                </select>
-                <select wire:model.live="filterStatus" class="w-40 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <option value="">Semua Status</option>
-                    @foreach (CustCustomer::APPROVAL_STATUSES as $stKey => $stLabel)
-                        <option value="{{ $stKey }}">{{ $stLabel }}</option>
-                    @endforeach
-                </select>
                 <span class="flex-1"></span>
-                <div class="text-xs text-[#6b7280] shrink-0">{{ $this->customers->count() }} baris · klik 2x untuk buka</div>
                 <button type="button" wire:click="newCustomer"
                     class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>

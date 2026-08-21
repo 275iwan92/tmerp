@@ -13,10 +13,6 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
     public string $search = '';
 
-    public string $typeFilter = '';
-
-    public string $categoryFilter = '';
-
     // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
     #[Computed]
     public function items()
@@ -29,16 +25,8 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                         ->orWhere('hs_code', 'like', "%{$term}%");
                 });
             })
-            ->when($this->typeFilter !== '', fn ($q) => $q->where('item_type', $this->typeFilter))
-            ->when($this->categoryFilter !== '', fn ($q) => $q->where('category1', $this->categoryFilter))
             ->orderBy('material_name')
             ->paginate(25);
-    }
-
-    #[Computed]
-    public function categories()
-    {
-        return MRawMaterial::query()->distinct()->orderBy('category1')->pluck('category1')->filter();
     }
 
     #[Computed]
@@ -114,18 +102,6 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <div class="flex items-center gap-2 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] overflow-x-auto">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="🔍 Cari kode, nama, HS code..." class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                <select wire:model.live="typeFilter" class="w-36 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <option value="">Semua Tipe</option>
-                    <option value="MATERIAL">MATERIAL</option>
-                    <option value="SERVICE">SERVICE</option>
-                    <option value="FREE_SAMPLE">FREE_SAMPLE</option>
-                </select>
-                <select wire:model.live="categoryFilter" class="w-40 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <option value="">Semua Kategori</option>
-                    @foreach ($this->categories as $c)
-                        <option value="{{ $c }}">{{ $c }}</option>
-                    @endforeach
-                </select>
                 <span class="flex-1"></span>
                 <a href="{{ route('master.raw-material.create') }}" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110 font-semibold">+ New Record</a>
             </div>

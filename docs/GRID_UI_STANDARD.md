@@ -124,13 +124,14 @@ yang digabung HANYA identitas nama+kode.
   terpisah, bukan modal)** pada baris = **satu-satunya** cara buka form/detail.
   Tambahkan `title="Klik 2x untuk buka detail"` dan `cursor-pointer` pada `<tr>`.
 - **Jangan** pasang kolom radio-button atau checkbox select terpisah lagi (pola
-  lama Customer/Supplier sebelum sesi ini — DIHAPUS). Kalau toolbar grid itu
-  masih punya tombol lain yang butuh "baris terpilih" (mis. Supplier punya
-  "Blokir"/"Detail"), klik tunggal (`wire:click="selectRow(...)"`) tetap boleh
-  dipertahankan untuk itu SAJA — highlight lewat class kondisional
-  (`{{ $selectedId === $row->id ? 'bg-[#e8f0fe]' : '' }}`), bukan radio glyph.
-  Kalau toolbar grid tidak butuh baris terpilih sama sekali (mayoritas grid),
-  tidak usah pasang `wire:click` select apa pun — cukup `wire:dblclick`.
+  lama Customer/Supplier sebelum sesi ini — DIHAPUS).
+- **(Update 2026-08-21)** Karena toolbar sekarang **tidak boleh punya tombol
+  aksi sekunder sama sekali** (§6 — direvisi, dulu Supplier/UoM boleh punya
+  tombol yang butuh "baris terpilih", sekarang tidak), pola `wire:click="selectRow(...)"`
+  untuk single-click-select praktis sudah tidak dipakai lagi di toolbar manapun.
+  Kalau suatu saat ada aksi per-baris yang butuh dipicu dari grid (seperti
+  UoM's Konversi), taruh sebagai **ikon tambahan di kolom Aksi (§5)**, bukan
+  tombol toolbar yang bergantung ke baris terpilih — lihat contoh UoM di §5.
 - Tombol ikon di kolom Aksi (§5) pakai `wire:click.stop`/`wire:click.stop` (atau
   event modifier setara) supaya klik ikon tidak ikut memicu select/dblclick baris.
 
@@ -164,45 +165,57 @@ yang digabung HANYA identitas nama+kode.
 - Kalau ada tombol Edit/Aksi lain yang jadi redundan setelah kolom ini + klik 2x
   ada (mis. tombol "✎ Edit" terpisah di toolbar), **hapus yang redundan** —
   jangan biarkan dua cara berbeda untuk hal yang sama.
+- **Aksi per-baris lain di luar Edit/Toggle boleh ditambah sebagai ikon ke-3+**
+  kalau memang fungsinya melekat ke satu baris tertentu (bukan filter/aksi
+  global) — mis. UoM punya ikon 🔁 "Konversi" di kolom Aksi
+  (`wire:click.stop="openConversionPanel('{{ $u->uom_code }}')"`) karena
+  tombol itu dulu di toolbar butuh "baris terpilih" dulu, sekarang toolbar
+  tidak boleh punya tombol begitu (§6) — jadi dipindah ke baris itu sendiri.
+  Taruh di kiri Edit/Toggle atau sesuai urutan kepentingan, tetap ikon polos +
+  `title` tooltip, tidak ada teks.
 
 ---
 
-## 6. Toolbar — satu baris, tidak pernah wrap ke bawah
+## 6. Toolbar — HANYA search + "+ New Record", tidak ada elemen lain
+
+**(Direvisi 2026-08-21, menggantikan versi sebelumnya yang masih mengizinkan
+filter select/checkbox/tombol sekunder di toolbar.)** User menegaskan secara
+eksplisit: toolbar grid Master **hanya boleh berisi dua elemen** — kotak
+pencarian dan tombol "+ New Record". Tidak ada elemen ketiga dalam bentuk
+apa pun: bukan filter `<select>`, bukan checkbox "sembunyikan nonaktif", bukan
+tombol aksi sekunder (Detail/Blokir/dsb.), bukan teks jumlah baris.
 
 ```html
 <div class="flex items-center gap-2 bg-white border ... px-2.5 py-2 overflow-x-auto">
     <input type="text" wire:model.live.debounce.300ms="search" placeholder="..."
         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-    <select wire:model.live="filterX" class="w-36 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">...</select>
-    <label class="flex items-center gap-1.5 text-xs cursor-pointer shrink-0">
-        <input type="checkbox" wire:model.live="hideInactive"> Sembunyikan nonaktif
-    </label>
     <span class="flex-1"></span>
-    <div class="text-xs text-muted shrink-0">{{ $count }} baris · klik 2x untuk buka</div>
     <button type="button" wire:click="openNew" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">+ New Record</button>
 </div>
 ```
 
-- **`flex-wrap` DILARANG** di baris toolbar — pakai `overflow-x-auto` (geser
-  horizontal kalau panel sempit) supaya search/filter/tombol **selalu satu
-  baris**, tidak pernah jatuh ke baris sendiri-sendiri (bug yang ditemukan user
-  di panel sempit: tiap `<select>` tanpa lebar tetap melebar penuh satu baris
-  sendirian saat wrap).
-- Setiap elemen filter (input, select, checkbox label, tombol) **wajib** punya
-  `shrink-0` + lebar eksplisit (`w-XX`) — jangan biarkan tanpa lebar di dalam
-  flex row yang bisa scroll, nanti collapse jadi 0 atau melebar tak terkontrol.
-- `<span class="flex-1"></span>` sebagai spacer mendorong sisanya (hitungan
-  baris, tombol New Record) ke kanan — hanya efektif kalau toolbar masih cukup
-  lebar; kalau overflow, urutan DOM tetap dipertahankan (scroll, bukan wrap).
+- **`flex-wrap` DILARANG** di baris toolbar — pakai `overflow-x-auto` sebagai
+  jaga-jaga di layar sangat sempit, meski dengan cuma 2 elemen ini jarang
+  kepakai lagi.
+- Search input tetap `shrink-0` + lebar eksplisit (`w-56`/`w-64`, dst.).
+- `<span class="flex-1"></span>` sebagai spacer mendorong tombol New Record
+  ke ujung kanan.
 - Tombol tambah data **SELALU** di ujung paling kanan, teksnya **SELALU**
   `+ New Record` (ASCII `+`, bahasa Inggris, sama persis di semua grid — bukan
   "+ Tambah X", bukan "+ New" saja, bukan nama entitas).
 - **Tombol Hapus (delete) DILARANG ada di toolbar grid.** Kalau grid itu
-  memang butuh aksi hapus permanen, taruh di panel form/detail (bukan grid),
-  seperti Supplier (`deleteSupplier()` dipanggil dari form, bukan grid). Kalau
-  tak ada pemanggil lain setelah tombolnya dihapus dari grid, method-nya jadi
-  dead code — hapus juga methodnya (dan import yang ikut jadi tak terpakai),
-  jangan dibiarkan menggantung.
+  memang butuh aksi hapus permanen, taruh di panel form/detail (bukan grid).
+- **Filter dropdown/checkbox yang sebelumnya ada di toolbar (tipe, kategori,
+  divisi, dimensi, sembunyikan-nonaktif, dsb.) DIHAPUS total, bukan
+  dipindahkan.** Kalau nanti user minta kemampuan filter itu kembali, itu
+  keputusan baru yang perlu ditanyakan dulu (lihat memory
+  `feedback_master_grid_ui_standard` untuk daftar filter yang hilang per grid)
+  — jangan diam-diam menambah lagi tanpa konfirmasi.
+- **Tombol yang butuh "baris terpilih" (mis. dulu Supplier's Detail/Blokir,
+  UoM's Konversi) TIDAK BOLEH lagi jadi tombol toolbar.** Kalau aksinya
+  melekat ke satu baris, pindahkan ke ikon kolom Aksi (§5) yang menerima kode
+  baris itu langsung sebagai parameter — bukan bergantung pada state
+  "baris mana yang sedang dipilih".
 
 ---
 
@@ -212,11 +225,12 @@ yang digabung HANYA identitas nama+kode.
 - [ ] Kotak statistik pastel (§2), bukan gradient/putih polos.
 - [ ] Kolom identitas = avatar + Nama tebal + Kode subtitle (§3), bukan 2 kolom
       terpisah.
-- [ ] Baris: `wire:dblclick`/`ondblclick` buka detail; radio/checkbox select
-      hanya kalau toolbar benar-benar butuh baris terpilih.
-- [ ] Kolom Aksi = persis 2 ikon (✎ Edit, ⏻ toggle), `wire:click.stop`, ada
+- [ ] Baris: `wire:dblclick`/`ondblclick` buka detail; tidak ada radio/checkbox
+      select kolom terpisah.
+- [ ] Kolom Aksi = 2 ikon wajib (✎ Edit, ⏻ toggle) + ikon tambahan kalau ada
+      aksi per-baris lain (mis. 🔁 Konversi), semua `wire:click.stop`, ada
       `title` + `wire:confirm` di toggle.
-- [ ] Toolbar satu baris (`overflow-x-auto`, tiap elemen `shrink-0` + lebar
-      tetap), tombol "+ New Record" di ujung kanan, tidak ada tombol Hapus.
+- [ ] Toolbar HANYA search + "+ New Record" (§6) — tidak ada filter select,
+      checkbox, tombol sekunder, atau teks jumlah baris apa pun.
 - [ ] `colspan` baris kosong (`@empty`) disesuaikan ulang setelah kolom
       digabung/dihapus — ini yang paling sering kelewat.

@@ -661,12 +661,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                     <input type="text" wire:model.live.debounce.400ms="q" placeholder="Cari nama / kode / PIC..."
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <button type="button" wire:click="showDetail" @disabled(! $selectedId)
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">☰ Detail</button>
-                <button type="button" wire:click="toggleBlacklist" @disabled(! $selectedId) wire:confirm="Ubah status blokir supplier ini?"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">🚫 Blokir</button>
                 <span class="flex-1"></span>
-                <div class="text-xs text-[#6b7280] shrink-0">{{ $this->suppliers->count() }} baris · klik 2x untuk buka</div>
                 <button type="button" wire:click="newSupplier"
                     class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>

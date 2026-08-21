@@ -19,10 +19,6 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
     public string $search = '';
 
-    public ?int $filterDivision = null;
-
-    public bool $hideInactive = false;
-
     public bool $showModal = false;
 
     public string $mode = 'new'; // new | edit
@@ -67,8 +63,6 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('machine_code', 'like', "%{$this->search}%")
                 ->orWhere('machine_name', 'like', "%{$this->search}%")))
-            ->when($this->filterDivision, fn ($q) => $q->where('division_id', $this->filterDivision))
-            ->when($this->hideInactive, fn ($q) => $q->where('is_active', true))
             ->orderBy('division_id')->orderBy('machine_code')
             ->get();
     }
@@ -260,17 +254,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <div class="flex gap-2 items-center px-3.5 py-3 border-b border-[#e2e7ee] overflow-x-auto bg-[#f8fafc]">
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…" class="w-56 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                <select wire:model.live="filterDivision" class="w-40 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                    <option value="">Semua divisi</option>
-                    @foreach ($this->divisionOptions as $d)
-                        <option value="{{ $d->division_id }}">{{ $d->division_name }}</option>
-                    @endforeach
-                </select>
-                <label class="flex items-center gap-1.5 text-xs cursor-pointer shrink-0">
-                    <input type="checkbox" wire:model.live="hideInactive"> Sembunyikan nonaktif
-                </label>
                 <span class="flex-1"></span>
-                <span class="text-[11px] text-muted shrink-0">{{ $this->machines->count() }} mesin</span>
                 <button type="button" wire:click="openModal('new')" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">+ New Record</button>
             </div>
 

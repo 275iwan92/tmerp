@@ -14,10 +14,6 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
     // ---- list & filter satuan ----
     public string $search = '';
 
-    public string $filterDimension = '';
-
-    public bool $hideInactiveUnits = false;
-
     public ?string $selectedCode = null;
 
     // ---- panel konversi ----
@@ -64,8 +60,6 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('uom_code', 'like', "%{$this->search}%")
                 ->orWhere('uom_name', 'like', "%{$this->search}%")))
-            ->when($this->filterDimension !== '', fn ($q) => $q->where('dimension', $this->filterDimension))
-            ->when($this->hideInactiveUnits, fn ($q) => $q->where('is_active', true))
             ->orderBy('dimension')->orderBy('uom_code')
             ->get();
     }
@@ -194,8 +188,11 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         $this->conversionPanelOpen = false;
     }
 
-    public function openConversionPanel(): void
+    public function openConversionPanel(?string $code = null): void
     {
+        if ($code) {
+            $this->selectedCode = $code;
+        }
         if (! $this->selectedCode || ! $this->selectedUnit || $this->selectedUnit->dimension === 'SPEC') {
             return;
         }
@@ -468,19 +465,8 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <div class="flex gap-2 items-center px-3.5 py-3 border-b border-[#e2e7ee] overflow-x-auto bg-[#f8fafc]">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…" class="w-52 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                    <select wire:model.live="filterDimension" class="w-36 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                        <option value="">Semua dimensi</option>
-                        @foreach ($dimensions as $d)
-                            <option value="{{ $d }}">{{ $d }}</option>
-                        @endforeach
-                    </select>
-                    <label class="flex items-center gap-1.5 text-xs cursor-pointer shrink-0">
-                        <input type="checkbox" wire:model.live="hideInactiveUnits"> Sembunyikan nonaktif
-                    </label>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…" class="w-56 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
                     <span class="flex-1"></span>
-                    <button type="button" wire:click="openConversionPanel" @disabled(! $selectedCode || ! $this->selectedUnit || $this->selectedUnit->dimension === 'SPEC')
-                        class="shrink-0 px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white text-accent border border-accent disabled:opacity-40 disabled:cursor-not-allowed">🔁 Konversi</button>
                     <button type="button" wire:click="openUnitModal('new')" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">+ New Record</button>
                 </div>
 
@@ -516,6 +502,9 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $u->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $u->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                        @if ($u->dimension !== 'SPEC')
+                                            <button type="button" wire:click.stop="openConversionPanel('{{ $u->uom_code }}')" title="Konversi" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">🔁</button>
+                                        @endif
                                         <button type="button" wire:click.stop="openUnitModal('edit', '{{ $u->uom_code }}')" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
                                         <button type="button" wire:click.stop="toggleUnitActive('{{ $u->uom_code }}')" wire:confirm="{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }} satuan {{ $u->uom_code }}?"
                                             title="{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $u->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>

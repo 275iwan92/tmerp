@@ -49,8 +49,6 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     // ---- grid & filter ----
     public string $search = '';
 
-    public bool $hideInactive = false;
-
     // ---- form fields (Overview) ----
     public string $employee_code = '';
 
@@ -162,7 +160,6 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 ->where('full_name', 'like', "%{$this->search}%")
                 ->orWhere('employee_code', 'like', "%{$this->search}%")
                 ->orWhere('nik_ktp', 'like', "%{$this->search}%")))
-            ->when($this->hideInactive, fn ($q) => $q->where('is_active', true))
             ->orderBy('full_name')
             ->get();
     }
@@ -605,11 +602,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <div class="flex gap-2 items-center px-3.5 py-3 border-b border-[#e2e7ee] overflow-x-auto bg-[#f8fafc]">
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama / NIK…" class="w-64 shrink-0 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
-                    <label class="flex items-center gap-1.5 text-xs cursor-pointer shrink-0">
-                        <input type="checkbox" wire:model.live="hideInactive"> Sembunyikan nonaktif
-                    </label>
                     <span class="flex-1"></span>
-                    <span class="text-[11px] text-muted shrink-0">{{ $this->employees->count() }} pegawai</span>
                     <button type="button" wire:click="openNew" class="shrink-0 bg-accent text-white text-xs px-3.5 py-1.5 rounded-md font-semibold cursor-pointer hover:brightness-110">+ New Record</button>
                 </div>
 
