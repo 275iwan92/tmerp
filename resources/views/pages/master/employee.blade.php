@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 // mockup_master_employee.html. TIER_1_HRM.md §10: sisi HR Admin FULL-EDITABLE
 // (tanpa workflow approval) — beda dari self-service karyawan yang selalu
@@ -24,11 +25,19 @@ use Livewire\Component;
 // tab Kedisiplinan.
 new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 {
+    use WithFileUploads;
+
     public string $panel = 'grid'; // grid | form
 
     public string $formTab = 'overview';
 
     public ?int $editingId = null;
+
+    // ---- foto profil (HR Admin full-editable, beda dari badge photo self-service
+    // yang lewat review EmpBadgePhotoRequest) ----
+    public $photo = null; // upload sementara (Livewire temp file)
+
+    public bool $showPhotoModal = false;
 
     public array $genders = ['L' => 'Laki-laki', 'P' => 'Perempuan'];
 
@@ -260,6 +269,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->resetErrorBag();
         $this->editingId = null;
         $this->formTab = 'overview';
+        $this->photo = null;
 
         $this->reset([
             'employee_code', 'full_name', 'nickname', 'birth_place', 'birth_date',
@@ -280,6 +290,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->resetErrorBag();
         $this->editingId = $id;
         $this->formTab = 'overview';
+        $this->photo = null;
 
         $e = EmpEmployee::findOrFail($id);
         $this->employee_code = $e->employee_code;
@@ -347,6 +358,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'position_id' => ['required', 'integer', 'exists:tm2mst.org_position,position_id'],
             'default_machine_id' => ['nullable', 'integer', 'exists:tm2mst.prod_machine,machine_id'],
             'default_shift_id' => ['nullable', 'integer', 'exists:tm2mst.emp_shift,shift_id'],
+            'photo' => ['nullable', 'image', 'max:5120'],
         ]);
 
         $payload = [
@@ -376,6 +388,9 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         ];
 
         if ($this->editingId) {
+            if ($this->photo) {
+                $payload['photo_path'] = $this->photo->store("hrm/{$this->editingId}/profile", 'public');
+            }
             EmpEmployee::whereKey($this->editingId)->update($payload);
         } else {
             $company = OrgCompany::query()->where('is_active', true)->firstOrFail();
@@ -385,10 +400,42 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             $employee = EmpEmployee::create($payload);
             $this->editingId = $employee->employee_id;
             $this->employee_code = $employee->employee_code;
+
+            if ($this->photo) {
+                $employee->update(['photo_path' => $this->photo->store("hrm/{$employee->employee_id}/profile", 'public')]);
+            }
+        }
+
+        $this->photo = null;
+        unset($this->currentEmployee);
+        $this->showDirectory();
+    }
+
+    public function removePhoto(): void
+    {
+        if (! $this->editingId) {
+            return;
+        }
+
+        $emp = EmpEmployee::findOrFail($this->editingId);
+        if ($emp->photo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($emp->photo_path);
+            $emp->update(['photo_path' => null, 'updated_by' => Auth::user()->login]);
         }
 
         unset($this->currentEmployee);
-        $this->showDirectory();
+    }
+
+    public function openPhotoModal(): void
+    {
+        if ($this->currentEmployee?->photo_path) {
+            $this->showPhotoModal = true;
+        }
+    }
+
+    public function closePhotoModal(): void
+    {
+        $this->showPhotoModal = false;
     }
 
     public function toggleActive(int $id): void
@@ -628,7 +675,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                 <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]" title="Klik 2x untuk buka detail">
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
-                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($e->employee_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($e->full_name) }}</div>
+                                            @if ($e->photo_path)
+                                                <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($e->photo_path) }}" class="w-8 h-8 rounded-md object-cover shrink-0 border border-[#d9dfe8]">
+                                            @else
+                                                <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($e->employee_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($e->full_name) }}</div>
+                                            @endif
                                             <div>
                                                 <div class="font-semibold text-[#0f172a] text-[13px]">{{ $e->full_name }}</div>
                                                 <div class="text-[11px] text-muted">{{ $e->employee_code }} @if($e->position?->position_name) · {{ $e->position->position_name }} @endif</div>
@@ -665,6 +716,42 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 <span class="flex-1"></span>
                 @if ($emp)
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $this->disciplineBadge($emp)['class'] }}">{{ $this->disciplineBadge($emp)['label'] }}</span>
+                @endif
+            </div>
+
+            <div class="flex items-center gap-3.5 bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-3 mb-3.5">
+                <div class="relative shrink-0">
+                    @if ($emp?->photo_path)
+                        <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($emp->photo_path) }}"
+                            wire:dblclick="openPhotoModal" title="Klik 2x untuk lihat foto penuh"
+                            class="w-[72px] h-[72px] rounded-lg object-cover border-2 border-accent cursor-pointer hover:opacity-90">
+                    @else
+                        <div class="w-[72px] h-[72px] rounded-lg bg-gradient-to-br {{ $emp ? $this->avatarGradient($emp->employee_id) : 'from-[#94a3b8] to-[#64748b]' }} text-white text-xl font-bold flex items-center justify-center">
+                            {{ $emp ? $this->avatarInitials($emp->full_name) : '＋' }}
+                        </div>
+                    @endif
+                </div>
+                <div class="flex-1 min-w-[180px]">
+                    <div class="text-[15px] font-bold text-navy">{{ $emp?->full_name ?: $full_name ?: 'Employee Baru' }}</div>
+                    <div class="text-xs text-muted mt-0.5">{{ $emp?->employee_code ?: '(kode otomatis)' }} @if($emp?->position?->position_name) · {{ $emp->position->position_name }} @endif</div>
+                    @if ($emp?->position?->department?->department_name)
+                        <div class="text-xs text-muted">{{ $emp->position->department->department_name }}</div>
+                    @endif
+                </div>
+                @if ($editingId)
+                    <div class="flex flex-col gap-1.5 shrink-0">
+                        <label class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white border border-[#c7cfda] text-center hover:bg-[#f4f6fa]">
+                            📷 {{ $emp?->photo_path ? 'Ganti Foto' : 'Unggah Foto' }}
+                            <input type="file" wire:model="photo" accept="image/*" class="hidden">
+                        </label>
+                        @if ($emp?->photo_path)
+                            <button type="button" wire:click="removePhoto" wire:confirm="Hapus foto profil?" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-white border border-[#f5c6c6] text-[#c0392b] hover:bg-[#fdecec]">Hapus Foto</button>
+                        @endif
+                        @error('photo') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
+                        @if ($photo)
+                            <span class="text-[10.5px] text-[#2f7a52]">✓ Foto baru dipilih — klik Simpan utk menerapkan.</span>
+                        @endif
+                    </div>
                 @endif
             </div>
 
@@ -1181,6 +1268,22 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- ══ MODAL: FOTO PROFIL DIPERBESAR (klik 2x foto di header form) ══ --}}
+    @if ($showPhotoModal && $emp?->photo_path)
+        <div class="fixed inset-0 bg-black/75 z-[110] flex items-center justify-center p-5" wire:click.self="closePhotoModal">
+            <div class="bg-[#111822] rounded-xl w-[560px] max-w-[92vw] shadow-2xl p-4 flex flex-col items-center relative">
+                <button type="button" wire:click="closePhotoModal" class="absolute top-3 right-3.5 text-white/70 hover:text-white text-lg cursor-pointer bg-transparent border-none">✕</button>
+                <div class="w-full rounded-lg overflow-hidden bg-black flex items-center justify-center" style="height:420px">
+                    <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($emp->photo_path) }}" class="max-w-full max-h-full object-contain">
+                </div>
+                <div class="text-center mt-3.5">
+                    <div class="text-white font-bold text-base">{{ $emp->full_name }}</div>
+                    <div class="text-[#bdc3c7] text-xs mt-0.5">{{ $emp->employee_code }} @if($emp->position?->position_name) · {{ $emp->position->position_name }} @endif</div>
+                </div>
             </div>
         </div>
     @endif
