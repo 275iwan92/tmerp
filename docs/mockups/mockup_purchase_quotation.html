@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TMERP — Purchase Quotation (PQ)</title>
+<style>
+/* ============================================================
+   TMERP UI STANDARD — Purchase Quotation
+   Mengikuti TMERP_UI_STANDARD.md (grid v2 + form 6-block)
+   ============================================================ */
+:root{
+  --navy:#2c3e69; --navy-d:#22314f; --accent:#2f6fed;
+  --ok:#0f9d58; --ok-bg:#e7f6ee; --warn:#c77700; --warn-bg:#fdf3e2;
+  --danger:#d13438; --danger-bg:#fdecec; --info:#2560d8; --info-bg:#eaf0ff;
+  --bg:#f4f6f9; --card:#fff; --line:#e5e9f0; --line-s:#eef1f6;
+  --txt:#1f2937; --txt-m:#5b6474; --txt-l:#8b94a5;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Inter,Roboto,system-ui,sans-serif;font-size:13.5px;color:var(--txt);background:var(--bg);-webkit-font-smoothing:antialiased}
+
+/* SHELL */
+.topbar{background:var(--navy);color:#fff;height:48px;display:flex;align-items:center;padding:0 20px;gap:20px;position:sticky;top:0;z-index:60}
+.topbar .brand{font-weight:700;font-size:14px;letter-spacing:.4px}
+.topbar .brand span{opacity:.6;font-weight:400;margin-left:6px;font-size:12px}
+.topbar .spacer{flex:1}
+.topbar .user{font-size:12px;opacity:.9;display:flex;align-items:center;gap:8px}
+.topbar .user .av{width:26px;height:26px;border-radius:50%;background:#3b5182;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px}
+
+.modnav{background:var(--navy-d);display:flex;gap:2px;padding:0 20px;position:sticky;top:48px;z-index:59;overflow-x:auto}
+.modnav a{color:#c3cddf;text-decoration:none;padding:10px 16px;font-size:12.5px;border-bottom:2px solid transparent;white-space:nowrap}
+.modnav a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.modnav a.active{color:#fff;border-bottom-color:var(--accent);background:rgba(47,111,237,.15)}
+
+.tabbar{background:#fff;border-bottom:1px solid var(--line);padding:0 20px;display:flex;gap:0;position:sticky;top:82px;z-index:58}
+.tabbar .t{padding:9px 14px;display:flex;align-items:center;gap:8px;background:#f0f3f7;border:1px solid var(--line);border-bottom:none;border-radius:6px 6px 0 0;font-size:12.5px;margin-right:2px;position:relative;top:1px}
+.tabbar .t.active{background:#fff;color:var(--navy);font-weight:600;z-index:2;border-bottom:1px solid #fff}
+.tabbar .t svg{width:12px;height:12px;fill:currentColor;opacity:.7}
+.tabbar .t .x{opacity:.5;cursor:pointer}
+.tabbar .t .x:hover{opacity:1}
+
+.wrap{padding:16px 20px;max-width:1700px;margin:0 auto}
+.panel{display:none}.panel.show{display:block}
+
+/* ============ GRID ============ */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.kpi{border-radius:8px;padding:16px 20px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.kpi:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.05)}
+.kpi .lab{font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:600;color:var(--txt-m)}
+.kpi .val{font-size:28px;font-weight:700;margin-top:6px;color:var(--navy);font-variant-numeric:tabular-nums}
+.kpi.k-info{background:#eef4ff}
+.kpi.k-ok{background:#eaf7ef} .kpi.k-ok .val{color:var(--ok)}
+.kpi.k-warn{background:#fdf3e2} .kpi.k-warn .val{color:var(--warn)}
+.kpi.k-danger{background:#fdecec} .kpi.k-danger .val{color:var(--danger)}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tools{padding:14px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--line);background:#fff}
+.tools .search{flex:1;max-width:360px;position:relative}
+.tools .search input{width:100%;padding:8px 12px 8px 34px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:13px}
+.tools .search::before{content:"🔍";position:absolute;left:10px;top:8px;font-size:12px;opacity:.6}
+.tools .spacer{flex:1}
+.tools .active-filters{display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px}
+.tools .active-filters .chip{background:var(--info-bg);color:var(--info);padding:3px 8px 3px 10px;border-radius:11px;display:inline-flex;align-items:center;gap:6px}
+.tools .active-filters .chip .x{cursor:pointer;font-weight:700;opacity:.7}
+.tools .active-filters .chip .x:hover{opacity:1}
+
+.filters2{padding:10px 16px;border-bottom:1px solid var(--line);background:#fafbfd;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filters2 .f{min-width:130px}
+.filters2 .f label{display:block;font-size:11px;color:var(--txt-m);margin-bottom:3px;font-weight:600}
+.filters2 .f select,.filters2 .f input{width:100%;padding:5px 8px;border:1px solid var(--line);border-radius:5px;font-size:12.5px;font-family:inherit;background:#fff}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.tbl thead th{background:#f8fafc;color:var(--txt-m);font-weight:600;font-size:11.5px;text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+table.tbl tbody td{padding:12px 14px;border-bottom:1px solid var(--line-s);vertical-align:middle}
+table.tbl tbody tr{cursor:pointer;transition:background .12s}
+table.tbl tbody tr:hover{background:#f7fafd}
+table.tbl .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.tbl .ctr{text-align:center}
+.cell-doc{display:flex;align-items:center;gap:10px}
+.cell-doc .ic{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;flex-shrink:0;font-family:Consolas,monospace}
+.cell-doc .lines .n{font-weight:600;font-size:13.5px;color:var(--txt);line-height:1.3}
+.cell-doc .lines .c{font-size:11.5px;color:var(--txt-l);margin-top:2px;font-family:Consolas,monospace}
+.row-actions{display:flex;gap:4px;justify-content:flex-end}
+.row-actions .ib{width:28px;height:28px;border-radius:6px;border:none;background:transparent;cursor:pointer;color:var(--txt-m);display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+.row-actions .ib:hover{background:#eef2f7;color:var(--navy)}
+.row-actions .ib.danger:hover{background:var(--danger-bg);color:var(--danger)}
+.row-actions .ib svg{width:14px;height:14px;fill:currentColor}
+
+/* PILL STATUS (outline utk grid, solid utk header form) */
+.pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600;line-height:1.6;white-space:nowrap;border:1px solid transparent}
+.pill-o-draft{background:#fff;color:var(--txt-m);border-color:#c8cfd8}
+.pill-o-submit{background:#fff;color:var(--warn);border-color:var(--warn)}
+.pill-o-confirm{background:#fff;color:var(--ok);border-color:var(--ok)}
+.pill-o-expired{background:#fff;color:var(--danger);border-color:var(--danger);text-decoration:line-through}
+.pill-o-cancel{background:#fff;color:var(--danger);border-color:var(--danger)}
+.pill-o-info{background:#fff;color:var(--info);border-color:var(--info)}
+.pill-s-draft{background:#e9ecf1;color:var(--txt-m)}
+.pill-s-submit{background:var(--warn-bg);color:var(--warn)}
+.pill-s-confirm{background:var(--ok-bg);color:var(--ok)}
+.pill-s-cancel{background:var(--danger-bg);color:var(--danger)}
+.pill-plt{background:#fff3d6;color:#a06600;font-weight:700}
+
+.foot{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--txt-l);border-top:1px solid var(--line-s);background:#fafbfd}
+.foot .pag{display:flex;gap:4px}
+.foot .pag button{border:1px solid var(--line);background:#fff;padding:3px 9px;border-radius:5px;cursor:pointer;font-size:12px}
+.foot .pag button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* BUTTONS */
+.btn{border:1px solid var(--line);background:#fff;color:var(--txt);padding:7px 14px;border-radius:6px;font-size:12.5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-weight:500;line-height:1.2}
+.btn:hover{background:#f6f8fc;border-color:#c8d0dd}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#2560d8;border-color:#2560d8}
+.btn-ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn-danger{background:#fff;border-color:var(--danger);color:var(--danger)}
+.btn-danger:hover{background:var(--danger-bg)}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover{background:#eef2f7}
+.btn-sm{padding:4px 10px;font-size:11.5px}
+.btn-kebab{width:32px;padding:7px;justify-content:center;position:relative}
+.kebab-menu{position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.1);min-width:200px;padding:5px;display:none;z-index:20}
+.kebab-menu.show{display:block}
+.kebab-menu button{display:block;width:100%;text-align:left;padding:7px 10px;border:none;background:none;font-size:12.5px;cursor:pointer;font-family:inherit;color:var(--txt);border-radius:4px}
+.kebab-menu button:hover{background:#f0f4f8}
+.kebab-menu button.danger{color:var(--danger)}
+.kebab-menu hr{border:none;border-top:1px solid var(--line-s);margin:4px 0}
+
+/* ============ FORM ============ */
+.form-hdr{background:#fff;border:1px solid var(--line);border-radius:8px 8px 0 0;border-bottom:none;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:82px;z-index:20}
+.form-hdr h1{font-size:16px;color:var(--navy);font-weight:600;display:flex;align-items:center;gap:9px}
+.form-hdr h1 .doc{font-family:Consolas,monospace;color:var(--navy)}
+.form-hdr .dirty{background:var(--warn-bg);color:var(--warn);font-size:11px;padding:2px 8px;border-radius:11px;font-weight:600;display:none}
+.form-hdr .dirty.show{display:inline-block;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+.form-hdr .spacer{flex:1}
+.form-hdr .actions{display:flex;gap:6px;position:relative}
+
+/* Flow bar */
+.flowbar{background:#fff;border:1px solid var(--line);border-top:none;border-bottom:none;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.flowbar .step{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--txt-m)}
+.flowbar .dot{width:14px;height:14px;border-radius:50%;background:#dde3ec;border:2px solid #dde3ec}
+.flowbar .step.done .dot{background:var(--ok);border-color:var(--ok)}
+.flowbar .step.cur .dot{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px rgba(47,111,237,.18);animation:pulse 1.8s infinite}
+.flowbar .step.done,.flowbar .step.cur{color:var(--navy);font-weight:600}
+.flowbar .arw{color:var(--txt-l);font-size:11px}
+.flowbar .step .plt{font-size:10.5px;color:#a06600;font-weight:600;margin-left:4px}
+
+/* Banner */
+.banner{padding:11px 16px;border:1px solid var(--line);border-top:none;border-bottom:none;background:var(--info-bg);color:var(--navy);font-size:12.5px;display:flex;gap:10px;align-items:flex-start;border-left:3px solid var(--accent)}
+.banner.warn{background:var(--warn-bg);color:#7a4b00;border-left-color:var(--warn)}
+.banner.danger{background:var(--danger-bg);color:#8b2226;border-left-color:var(--danger)}
+.banner b{font-weight:600}
+.banner .x{margin-left:auto;background:none;border:none;font-size:16px;cursor:pointer;opacity:.5;color:inherit;padding:0 4px}
+.banner .x:hover{opacity:1}
+
+/* Body */
+.body-tabs{background:#fff;border:1px solid var(--line);border-top:none;border-radius:0}
+.body-tabs .tabbar-in{display:flex;border-bottom:1px solid var(--line);background:#fafbfd;padding:0 12px;overflow-x:auto}
+.body-tabs .tabbar-in button{border:none;background:none;padding:11px 16px;font-size:12.5px;font-family:inherit;cursor:pointer;color:var(--txt-m);border-bottom:2px solid transparent;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.body-tabs .tabbar-in button:hover{color:var(--navy)}
+.body-tabs .tabbar-in button.active{color:var(--accent);border-bottom-color:var(--accent)}
+.body-tabs .tabbar-in button .count{background:#dde3ec;color:var(--txt-m);font-size:10.5px;padding:1px 6px;border-radius:9px;font-weight:700}
+.body-tabs .tabbar-in button.active .count{background:var(--accent);color:#fff}
+.body-tabs .pane{display:none;padding:20px}
+.body-tabs .pane.show{display:block}
+
+/* Form fields */
+.form-grid{display:grid;gap:14px 18px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.field label{display:block;font-size:11px;color:var(--txt-m);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.field label .req{color:var(--danger)}
+.field label .lock{opacity:.5;font-size:10px}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;font-family:inherit;color:var(--txt);background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,111,237,.14)}
+.field input[readonly],.field select:disabled{background:#f7f9fc;color:var(--txt-m)}
+.field textarea{resize:vertical;min-height:60px}
+.field .with-btn{display:flex;gap:4px}
+.field .with-btn input{flex:1}
+
+.section-hdr{display:flex;align-items:center;gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--line-s)}
+.section-hdr h3{font-size:13px;color:var(--navy);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.section-hdr .spacer{flex:1}
+
+/* Lines table */
+.lines{width:100%;border-collapse:collapse;font-size:12.5px}
+.lines thead th{background:#eef2f7;color:var(--navy);font-weight:600;font-size:11px;text-align:left;padding:8px 10px;border:1px solid var(--line);text-transform:uppercase;letter-spacing:.4px}
+.lines thead th.num{text-align:right}
+.lines thead th.ctr{text-align:center}
+.lines tbody td{padding:6px 10px;border:1px solid var(--line-s);vertical-align:middle}
+.lines tbody td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lines tbody td.ctr{text-align:center}
+.lines tfoot td{padding:8px 10px;background:#eef2f7;font-weight:700;border:1px solid var(--line);text-align:right;color:var(--navy)}
+.lines input.ti,.lines select.ti{width:100%;border:1px solid transparent;background:transparent;padding:4px 6px;font-size:12.5px;font-family:inherit;border-radius:4px}
+.lines input.ti:hover,.lines select.ti:hover{border-color:var(--line)}
+.lines input.ti:focus,.lines select.ti:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(47,111,237,.14)}
+.lines input.ti.num{text-align:right}
+
+/* Comparison */
+.compare{background:#fbfcfe;border:1px solid var(--line);border-radius:6px;padding:14px;margin-top:14px}
+.compare .h{font-size:12.5px;color:var(--navy);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.compare-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.compare-tbl th,.compare-tbl td{padding:6px 9px;border:1px solid var(--line);text-align:left}
+.compare-tbl th{background:#eef2f7;color:var(--navy);font-weight:600;font-size:11px}
+.compare-tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+.compare-tbl td.best{background:#eaf7ef;font-weight:700;color:var(--ok)}
+.compare-tbl td.worst{background:#fef4e6;color:#a45308}
+.badge-best{background:var(--ok);color:#fff;font-size:9.5px;padding:1px 5px;border-radius:8px;font-weight:700;margin-left:4px}
+
+/* Log */
+.log{list-style:none}
+.log li{padding:10px 0 10px 20px;border-left:2px solid var(--line);position:relative;margin-left:5px}
+.log li::before{content:"";position:absolute;left:-6px;top:14px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--line)}
+.log li.done::before{border-color:var(--ok);background:var(--ok)}
+.log li.cur::before{border-color:var(--accent);background:var(--accent)}
+.log li.rej::before{border-color:var(--danger);background:var(--danger)}
+.log .who{font-weight:600;color:var(--navy);font-size:12.5px}
+.log .when{color:var(--txt-l);font-size:11.5px;margin-left:6px}
+.log .what{color:var(--txt-m);margin-top:2px;font-size:12.5px;line-height:1.4}
+
+/* Footer sticky */
+.form-foot{background:#fff;border:1px solid var(--line);border-top:1px solid var(--line);border-radius:0 0 8px 8px;padding:11px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;bottom:0;margin-top:-1px;box-shadow:0 -2px 8px rgba(0,0,0,.03)}
+.form-foot .sum{font-size:12.5px;color:var(--txt-m)}
+.form-foot .sum b{color:var(--navy);font-weight:600}
+.form-foot .actions{display:flex;gap:8px}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(15,22,40,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:10px;width:100%;max-width:520px;max-height:86vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 15px 45px rgba(0,0,0,.25)}
+.modal-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;background:#fbfcfe}
+.modal-h h3{font-size:14px;color:var(--navy);font-weight:600;display:flex;align-items:center;gap:8px}
+.modal-h .x{margin-left:auto;border:none;background:none;font-size:19px;cursor:pointer;color:var(--txt-l)}
+.modal-b{padding:16px 18px;overflow:auto;font-size:13px;line-height:1.5}
+.modal-b p{margin-bottom:8px}
+.modal-b textarea{width:100%;min-height:80px;padding:8px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:12.5px;margin-top:6px}
+.modal-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;background:#fbfcfe}
+
+@media(max-width:1200px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}.kpis{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">TMERP <span>CV Telasih Makmur Group</span></div>
+  <div class="spacer"></div>
+  <div class="user"><span>Rian — Purchasing Officer</span><div class="av">RN</div></div>
+</div>
+
+<nav class="modnav">
+  <a href="#">Purchase Requisition</a>
+  <a href="#" class="active">Purchase Quotation</a>
+  <a href="#">Purchase Order</a>
+  <a href="#">Penerimaan Barang (PV)</a>
+  <a href="#">Purchase Return</a>
+  <a href="#">Supplier</a>
+</nav>
+
+<div class="tabbar">
+  <div class="t active">
+    <svg viewBox="0 0 12 12"><path d="M2 1h6l3 3v7H2V1zm0 1v8h8V5H7V2H2z"/></svg>
+    Purchase Quotation
+    <span class="x" title="Tutup tab">×</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ==================== GRID ==================== -->
+<div id="pGrid" class="panel show">
+
+  <div class="kpis">
+    <div class="kpi k-info"><div class="lab">Total PQ Bulan Ini</div><div class="val">142</div></div>
+    <div class="kpi k-warn"><div class="lab">Draft belum dikonfirmasi</div><div class="val">18</div></div>
+    <div class="kpi k-danger"><div class="lab">Sudah kedaluwarsa</div><div class="val">7</div></div>
+    <div class="kpi k-ok"><div class="lab">Sudah jadi PO</div><div class="val">96</div></div>
+  </div>
+
+  <div class="card">
+    <div class="tools">
+      <div class="search"><input placeholder="Cari nomor PQ, supplier, PR, atau nama material…"></div>
+      <div class="active-filters">
+        <span class="chip">Bulan: Agustus 2026 <span class="x">×</span></span>
+        <span class="chip">Status: bukan CANCELLED <span class="x">×</span></span>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 2h8v1H2zm0 3h8v1H2zm0 3h5v1H2z"/></svg> Filter Lanjut</button>
+      <button class="btn">Export</button>
+      <button class="btn btn-primary" onclick="openForm('new')">+ PQ Baru</button>
+    </div>
+
+    <div class="filters2">
+      <div class="f"><label>Supplier</label><select><option>Semua Supplier</option><option>PT Pindo Deli Pulp &amp; Paper</option><option>CV Kertas Prima</option><option>PT Toyo Ink Indonesia</option></select></div>
+      <div class="f"><label>PR Acuan</label><select><option>Semua PR</option><option>PR/26/00088</option><option>PR/26/00091</option><option>PR/26/00094</option></select></div>
+      <div class="f"><label>Mata Uang</label><select><option>Semua</option><option selected>IDR</option><option>USD</option></select></div>
+      <div class="f"><label>Status</label><select><option>Semua</option><option>Draft</option><option>Confirmed</option><option>Expired</option><option>Cancelled</option></select></div>
+      <div class="f"><label>Dari Tanggal</label><input type="date" value="2026-08-01"></div>
+      <div class="f"><label>Sampai</label><input type="date" value="2026-08-21"></div>
+    </div>
+
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>PQ / Supplier</th>
+          <th>PR Acuan</th>
+          <th>Tanggal</th>
+          <th class="num">Total (IDR)</th>
+          <th>Berlaku s/d</th>
+          <th class="ctr">Status</th>
+          <th style="width:120px" class="ctr">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="gridBody"></tbody>
+    </table>
+
+    <div class="foot">
+      <span>Menampilkan 1–10 dari 142 dokumen</span>
+      <div class="pag">
+        <button>‹</button><button class="on">1</button><button>2</button><button>3</button><button>…</button><button>15</button><button>›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FORM ==================== -->
+<div id="pForm" class="panel">
+
+  <div class="form-hdr">
+    <button class="btn btn-ghost btn-sm" onclick="backToGrid()">← Kembali</button>
+    <h1><span class="doc" id="fDoc">PQ/26/00118</span> <span class="pill pill-s-draft" id="fSt">Draft</span></h1>
+    <span class="dirty" id="fDirty">● Belum disimpan</span>
+    <div class="spacer"></div>
+    <div class="actions" id="fActions"></div>
+  </div>
+
+  <div class="flowbar">
+    <div class="step done"><span class="dot"></span> Draft</div><span class="arw">›</span>
+    <div class="step cur"><span class="dot"></span> Konfirmasi Officer <span class="plt">🔁 Rian PLT-1 hari</span></div><span class="arw">›</span>
+    <div class="step"><span class="dot"></span> Digunakan di PO</div><span class="arw">›</span>
+    <div class="step"><span class="dot"></span> Ditutup</div>
+  </div>
+
+  <div class="banner warn" id="banner">
+    <span>⚠</span>
+    <div><b>Perhatikan masa berlaku:</b> penawaran ini berlaku hingga <b>05 September 2026</b> (15 hari lagi). Item Art Paper 230gr ditandai fluktuatif — kurs mungkin sudah berubah saat PO dibuat.</div>
+    <button class="x" onclick="this.parentElement.style.display='none'">×</button>
+  </div>
+
+  <div class="body-tabs">
+    <div class="tabbar-in">
+      <button class="active" onclick="tab(this,'t-info')">Informasi Dokumen</button>
+      <button onclick="tab(this,'t-lines')">Rincian <span class="count">5</span></button>
+      <button onclick="tab(this,'t-compare')">Perbandingan Supplier <span class="count">3</span></button>
+      <button onclick="tab(this,'t-attach')">Lampiran <span class="count">2</span></button>
+      <button onclick="tab(this,'t-rel')">Terkait</button>
+      <button onclick="tab(this,'t-log')">Riwayat &amp; Diskusi</button>
+    </div>
+
+    <!-- INFO -->
+    <div id="t-info" class="pane show">
+      <div class="section-hdr"><h3>Informasi Dokumen</h3></div>
+      <div class="form-grid g4">
+        <div class="field"><label>No. PQ</label><input value="PQ/26/00118" readonly></div>
+        <div class="field"><label>Tanggal <span class="req">*</span></label><input type="date" value="2026-08-21"></div>
+        <div class="field"><label>Berlaku s/d <span class="req">*</span></label><input type="date" value="2026-09-05"></div>
+        <div class="field"><label>Officer</label><input value="Rian Hidayat" readonly></div>
+
+        <div class="field" style="grid-column:span 2"><label>Supplier <span class="req">*</span></label>
+          <div class="with-btn"><input value="PT Pindo Deli Pulp &amp; Paper" readonly><button class="btn btn-sm" onclick="openMod('supp')">Ganti</button></div>
+        </div>
+        <div class="field"><label>PR Acuan <span class="lock">(opsional)</span></label>
+          <div class="with-btn"><input value="PR/26/00088"><button class="btn btn-sm" onclick="openMod('pr')">Pilih</button></div>
+        </div>
+        <div class="field"><label>Departemen Peminta</label><input value="Produksi — Cetak Offset" readonly></div>
+
+        <div class="field"><label>Mata Uang <span class="req">*</span></label>
+          <select><option selected>IDR — Rupiah</option><option>USD — US Dollar</option><option>EUR — Euro</option><option>JPY — Yen Jepang</option></select>
+        </div>
+        <div class="field"><label>Kurs (FX Rate)</label><input value="1,000000" style="text-align:right"></div>
+        <div class="field"><label>Termin Pembayaran</label>
+          <select><option>COD (bayar tunai)</option><option>Bayar Dimuka (DP)</option><option>N/7 (7 hari setelah SPB)</option><option selected>N/30 (30 hari setelah SPB)</option><option>N/45</option><option>N/60</option></select>
+        </div>
+        <div class="field"><label>Lead Time (hari)</label><input value="7" style="text-align:right"></div>
+
+        <div class="field" style="grid-column:span 4"><label>Catatan / Syarat Khusus</label>
+          <textarea>Penawaran mengikuti harga plafon Agustus 2026. Bila jumlah pesanan &gt; 5 ton, diskon tambahan 1,5% dapat dinegosiasikan.</textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- LINES -->
+    <div id="t-lines" class="pane">
+      <div class="section-hdr">
+        <h3>Rincian Item &amp; Harga Tawar</h3>
+        <div class="spacer"></div>
+        <button class="btn btn-sm" onclick="alert('Tarik baris dari PR/26/00088 (mockup)')">Tarik Baris dari PR</button>
+        <button class="btn btn-sm btn-primary">+ Tambah Baris</button>
+      </div>
+      <table class="lines">
+        <thead>
+          <tr>
+            <th style="width:34px" class="ctr">#</th>
+            <th>Material / Deskripsi</th>
+            <th style="width:70px" class="ctr">Ref PR</th>
+            <th style="width:110px" class="num">Qty</th>
+            <th style="width:60px">UOM</th>
+            <th style="width:130px" class="num">Harga Tawar</th>
+            <th style="width:130px" class="num">Subtotal (IDR)</th>
+            <th style="width:80px" class="ctr">Lead time</th>
+            <th style="width:36px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ctr">1</td>
+            <td>Art Paper 230gr 79×109 cm <span class="pill pill-o-info" style="font-size:9.5px;padding:1px 5px">⚠ fluktuatif</span></td>
+            <td class="ctr">L-01</td>
+            <td><input class="ti num" value="5.000,00"></td>
+            <td>LBR</td>
+            <td><input class="ti num" value="5.200"></td>
+            <td class="num">26.000.000</td>
+            <td class="ctr"><input class="ti num" value="7" style="width:50px"></td>
+            <td class="ctr"><button class="btn btn-sm btn-ghost">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">2</td>
+            <td>Duplex 350gr 79×109 cm</td>
+            <td class="ctr">L-02</td>
+            <td><input class="ti num" value="8.000,00"></td>
+            <td>LBR</td>
+            <td><input class="ti num" value="5.150"></td>
+            <td class="num">41.200.000</td>
+            <td class="ctr"><input class="ti num" value="10" style="width:50px"></td>
+            <td class="ctr"><button class="btn btn-sm btn-ghost">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">3</td>
+            <td>Ivory 310gr 79×109 cm</td>
+            <td class="ctr">L-03</td>
+            <td><input class="ti num" value="2.500,00"></td>
+            <td>LBR</td>
+            <td><input class="ti num" value="6.800"></td>
+            <td class="num">17.000.000</td>
+            <td class="ctr"><input class="ti num" value="7" style="width:50px"></td>
+            <td class="ctr"><button class="btn btn-sm btn-ghost">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">4</td>
+            <td>Art Carton 260gr 65×100 cm</td>
+            <td class="ctr">L-04</td>
+            <td><input class="ti num" value="3.000,00"></td>
+            <td>LBR</td>
+            <td><input class="ti num" value="4.600"></td>
+            <td class="num">13.800.000</td>
+            <td class="ctr"><input class="ti num" value="5" style="width:50px"></td>
+            <td class="ctr"><button class="btn btn-sm btn-ghost">×</button></td>
+          </tr>
+          <tr>
+            <td class="ctr">5</td>
+            <td>HVS 80gr 65×100 cm</td>
+            <td class="ctr">L-05</td>
+            <td><input class="ti num" value="4.000,00"></td>
+            <td>LBR</td>
+            <td><input class="ti num" value="3.100"></td>
+            <td class="num">12.400.000</td>
+            <td class="ctr"><input class="ti num" value="5" style="width:50px"></td>
+            <td class="ctr"><button class="btn btn-sm btn-ghost">×</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><td colspan="6" style="text-align:left">Total 5 baris</td><td class="num">110.400.000</td><td colspan="2"></td></tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- COMPARISON -->
+    <div id="t-compare" class="pane">
+      <div class="section-hdr">
+        <h3>Perbandingan Penawaran Multi-Supplier untuk PR/26/00088</h3>
+        <div class="spacer"></div>
+        <button class="btn btn-sm">Cetak PH (Perbandingan Harga)</button>
+        <button class="btn btn-sm btn-primary">Buat PO dari Pilihan Terbaik</button>
+      </div>
+      <div class="banner" style="border:1px solid var(--line);border-left:3px solid var(--accent);margin-bottom:14px">
+        <span>ℹ</span>
+        <div>Sistem otomatis mengumpulkan 3 PQ untuk PR yang sama. Perbandingan sudah dikonversi ke IDR memakai kurs snapshot masing-masing. <b>Kolom hijau = terbaik per baris</b>, kolom kuning = paling mahal atau lead time terlama.</div>
+      </div>
+      <table class="compare-tbl">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th class="num">Qty</th>
+            <th style="min-width:180px">Pindo Deli <span class="badge-best">PILIHAN</span></th>
+            <th style="min-width:180px">CV Kertas Prima</th>
+            <th style="min-width:180px">PT Suryawan Paper</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Art Paper 230gr 79×109</b></td>
+            <td class="num">5.000 LBR</td>
+            <td class="num best">Rp 5.200 · 7 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 26.000.000</small></td>
+            <td class="num">Rp 5.400 · 10 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 27.000.000</small></td>
+            <td class="num worst">Rp 5.600 · 14 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 28.000.000</small></td>
+          </tr>
+          <tr>
+            <td><b>Duplex 350gr 79×109</b></td>
+            <td class="num">8.000 LBR</td>
+            <td class="num best">Rp 5.150 · 10 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 41.200.000</small></td>
+            <td class="num">Rp 5.300 · 7 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 42.400.000</small></td>
+            <td class="num">Rp 5.250 · 12 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 42.000.000</small></td>
+          </tr>
+          <tr>
+            <td><b>Ivory 310gr 79×109</b></td>
+            <td class="num">2.500 LBR</td>
+            <td class="num">Rp 6.800 · 7 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 17.000.000</small></td>
+            <td class="num best">Rp 6.600 · 5 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 16.500.000</small></td>
+            <td class="num worst">Rp 7.100 · 10 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 17.750.000</small></td>
+          </tr>
+          <tr>
+            <td><b>Art Carton 260gr 65×100</b></td>
+            <td class="num">3.000 LBR</td>
+            <td class="num best">Rp 4.600 · 5 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 13.800.000</small></td>
+            <td class="num">Rp 4.750 · 7 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 14.250.000</small></td>
+            <td class="num worst">Rp 4.900 · 10 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 14.700.000</small></td>
+          </tr>
+          <tr>
+            <td><b>HVS 80gr 65×100</b></td>
+            <td class="num">4.000 LBR</td>
+            <td class="num">Rp 3.100 · 5 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 12.400.000</small></td>
+            <td class="num best">Rp 3.000 · 7 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 12.000.000</small></td>
+            <td class="num">Rp 3.050 · 8 hari<br><small style="font-weight:400;color:var(--txt-m)">= Rp 12.200.000</small></td>
+          </tr>
+          <tr style="font-weight:700">
+            <td colspan="2">Total per Supplier</td>
+            <td class="num best">Rp 110.400.000</td>
+            <td class="num">Rp 112.150.000</td>
+            <td class="num worst">Rp 114.650.000</td>
+          </tr>
+          <tr style="font-weight:600;background:#fafbfd">
+            <td colspan="2">Selisih vs terbaik</td>
+            <td class="num" style="color:var(--ok)">— (dasar)</td>
+            <td class="num" style="color:var(--warn)">+ Rp 1.750.000 (+1,58%)</td>
+            <td class="num" style="color:var(--danger)">+ Rp 4.250.000 (+3,85%)</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:11px;font-size:11.5px;color:var(--txt-l)">
+        Split-award boleh: sistem mendukung "ambil Art Paper &amp; Duplex &amp; Art Carton dari Pindo Deli, Ivory &amp; HVS dari Kertas Prima" — pilih baris per baris saat konversi ke PO.
+      </div>
+    </div>
+
+    <!-- ATTACH -->
+    <div id="t-attach" class="pane">
+      <div class="section-hdr">
+        <h3>Lampiran</h3>
+        <div class="spacer"></div>
+        <button class="btn btn-sm btn-primary">+ Unggah</button>
+      </div>
+      <table class="lines">
+        <thead><tr><th style="width:34px" class="ctr">#</th><th>Nama Berkas</th><th style="width:110px">Diunggah</th><th style="width:110px" class="ctr">Ukuran</th><th style="width:120px" class="ctr">Aksi</th></tr></thead>
+        <tbody>
+          <tr><td class="ctr">1</td><td>Penawaran-Pindo-Deli-21082026.pdf</td><td>21/08/2026</td><td class="ctr">218 KB</td><td class="ctr"><button class="btn btn-sm">Lihat</button></td></tr>
+          <tr><td class="ctr">2</td><td>Sertifikat-ISO-9001-Pindo.pdf</td><td>21/08/2026</td><td class="ctr">1,4 MB</td><td class="ctr"><button class="btn btn-sm">Lihat</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- REL -->
+    <div id="t-rel" class="pane">
+      <div class="section-hdr"><h3>Dokumen Terkait</h3></div>
+      <table class="lines">
+        <thead><tr><th style="width:120px">Jenis</th><th>Nomor</th><th style="width:120px">Tanggal</th><th style="width:130px" class="ctr">Status</th></tr></thead>
+        <tbody>
+          <tr><td>Hulu — PR</td><td><b>PR/26/00088</b> — Kebutuhan cetak Agustus W3–W4</td><td>18/08/2026</td><td class="ctr"><span class="pill pill-o-confirm">Approved</span></td></tr>
+          <tr><td>Sejajar — PQ</td><td><b>PQ/26/00119</b> — CV Kertas Prima</td><td>21/08/2026</td><td class="ctr"><span class="pill pill-o-draft">Draft</span></td></tr>
+          <tr><td>Sejajar — PQ</td><td><b>PQ/26/00120</b> — PT Suryawan Paper</td><td>21/08/2026</td><td class="ctr"><span class="pill pill-o-confirm">Confirmed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- LOG -->
+    <div id="t-log" class="pane">
+      <div class="section-hdr"><h3>Riwayat Dokumen &amp; Diskusi Internal</h3></div>
+      <ul class="log">
+        <li class="done">
+          <div class="who">Rian Hidayat <span class="when">21/08/2026 09:14</span></div>
+          <div class="what">PQ dibuat dari PR/26/00088. Penawaran diterima via email dari sales Pindo Deli (email dilampirkan).</div>
+        </li>
+        <li class="done">
+          <div class="who">Rian Hidayat <span class="when">21/08/2026 10:22</span></div>
+          <div class="what">Menambah 2 baris (Art Carton &amp; HVS) di luar PR — kebutuhan sisipan dari Bagian Cetak.</div>
+        </li>
+        <li class="cur">
+          <div class="who">Menunggu konfirmasi <span class="when">—</span></div>
+          <div class="what">PQ ini siap dikonfirmasi. Setelah confirmed, harga terkunci dan bisa langsung dipakai untuk pembuatan PO.</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="form-foot">
+    <div class="sum">5 baris · <b id="footTotal">Total: Rp 110.400.000</b> · Belum PPN · Kurs IDR 1:1</div>
+    <div class="actions" id="fFootActions"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="mod">
+  <div class="modal">
+    <div class="modal-h"><h3 id="modT">Konfirmasi</h3><button class="x" onclick="closeMod()">×</button></div>
+    <div class="modal-b" id="modB"></div>
+    <div class="modal-f" id="modF"></div>
+  </div>
+</div>
+
+<script>
+// ---------- Data grid ----------
+const DATA = [
+  { doc:"PQ/26/00120", pr:"PR/26/00088", supplier:"PT Suryawan Paper", supKode:"SUR", tgl:"21/08/2026", total:114650000, valid:"05/09/2026", status:"confirm", statusLbl:"Confirmed" },
+  { doc:"PQ/26/00119", pr:"PR/26/00088", supplier:"CV Kertas Prima", supKode:"KRP", tgl:"21/08/2026", total:112150000, valid:"05/09/2026", status:"draft", statusLbl:"Draft" },
+  { doc:"PQ/26/00118", pr:"PR/26/00088", supplier:"PT Pindo Deli Pulp & Paper", supKode:"PIN", tgl:"21/08/2026", total:110400000, valid:"05/09/2026", status:"draft", statusLbl:"Draft" },
+  { doc:"PQ/26/00117", pr:"PR/26/00087", supplier:"PT Toyo Ink Indonesia", supKode:"TOY", tgl:"20/08/2026", total:28640000, valid:"04/09/2026", status:"confirm", statusLbl:"Confirmed" },
+  { doc:"PQ/26/00116", pr:"—", supplier:"PT Fuji Xerox Indonesia", supKode:"FXR", tgl:"19/08/2026", total:8400000, valid:"03/09/2026", status:"confirm", statusLbl:"Confirmed" },
+  { doc:"PQ/26/00115", pr:"PR/26/00082", supplier:"CV Kertas Prima", supKode:"KRP", tgl:"18/08/2026", total:41600000, valid:"18/08/2026", status:"expired", statusLbl:"Expired" },
+  { doc:"PQ/26/00114", pr:"PR/26/00081", supplier:"PT Suryawan Paper", supKode:"SUR", tgl:"17/08/2026", total:16800000, valid:"01/09/2026", status:"cancel", statusLbl:"Cancelled" },
+  { doc:"PQ/26/00113", pr:"PR/26/00080", supplier:"PT Pindo Deli Pulp & Paper", supKode:"PIN", tgl:"15/08/2026", total:52320000, valid:"30/08/2026", status:"confirm", statusLbl:"Confirmed" },
+];
+
+function ic(kode){
+  const palet={PIN:"#2f6fed",KRP:"#0f9d58",SUR:"#c77700",TOY:"#7b3fa0",FXR:"#d13438"};
+  return `<div class="ic" style="background:${palet[kode]||'#5b6474'}">${kode}</div>`;
+}
+function pillO(s,lbl){ return `<span class="pill pill-o-${s}">${lbl}</span>`; }
+
+function renderGrid(){
+  const tb=document.getElementById('gridBody');
+  tb.innerHTML=DATA.map(r=>`
+    <tr ondblclick="openForm('view')">
+      <td>
+        <div class="cell-doc">${ic(r.supKode)}
+          <div class="lines"><div class="n">${r.supplier}</div><div class="c">${r.doc}</div></div>
+        </div>
+      </td>
+      <td>${r.pr==="—"?'<span style="color:var(--txt-l)">tanpa PR</span>':'<span style="font-family:Consolas,monospace;color:var(--navy);font-weight:600">'+r.pr+'</span>'}</td>
+      <td>${r.tgl}</td>
+      <td class="num"><b>Rp ${r.total.toLocaleString('id-ID')}</b></td>
+      <td>${r.valid}</td>
+      <td class="ctr">${pillO(r.status,r.statusLbl)}</td>
+      <td>
+        <div class="row-actions">
+          <button class="ib" title="Buka"><svg viewBox="0 0 14 14"><path d="M2 4l5 5 5-5"/></svg>✎</button>
+          <button class="ib" title="Cetak">🖨</button>
+          <button class="ib" title="Duplikat">⎘</button>
+          <button class="ib danger" title="Batalkan">⏻</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ---------- Form actions per status ----------
+const ACTIONS = {
+  draft: {
+    header: [
+      {t:'Simpan Draft', cls:'btn', act:()=>saveDraft()},
+      {t:'Konfirmasi PQ', cls:'btn btn-primary', act:()=>confirmPQ()},
+    ],
+    kebab:[
+      {t:'Duplikat', act:()=>alert('Duplikat (mockup)')},
+      {t:'Cetak Draft', act:()=>alert('Cetak dengan watermark DRAFT')},
+      {t:'—'},
+      {t:'Hapus Draft', danger:true, act:()=>askDelete()},
+    ],
+    footPrimary: {t:'Konfirmasi PQ', cls:'btn btn-primary', act:()=>confirmPQ()}
+  },
+  confirm: {
+    header: [
+      {t:'Buat PO dari PQ ini', cls:'btn btn-primary', act:()=>alert('Konversi ke PO (mockup)')},
+      {t:'Cetak PQ', cls:'btn', act:()=>alert('Cetak (mockup)')},
+    ],
+    kebab:[
+      {t:'Duplikat', act:()=>alert('Duplikat')},
+      {t:'Kirim Email ke Supplier', act:()=>alert('Email')},
+      {t:'Riwayat lengkap', act:()=>alert('Log')},
+      {t:'—'},
+      {t:'Batalkan PQ', danger:true, act:()=>askCancel()},
+    ],
+    footPrimary: {t:'Buat PO', cls:'btn btn-primary', act:()=>alert('Konversi ke PO (mockup)')}
+  },
+  expired: {
+    header: [
+      {t:'Perbarui Penawaran', cls:'btn btn-primary', act:()=>alert('Revise + refresh kurs (mockup)')},
+      {t:'Cetak', cls:'btn'},
+    ],
+    kebab:[{t:'Duplikat'},{t:'Riwayat'}],
+    footPrimary: {t:'Perbarui', cls:'btn btn-primary'}
+  },
+  cancel: {
+    header: [{t:'Cetak', cls:'btn'}],
+    kebab:[{t:'Duplikat'},{t:'Riwayat'}],
+    footPrimary: null
+  }
+};
+
+let currentStatus='draft';
+
+function renderActions(){
+  const cfg=ACTIONS[currentStatus];
+  const hdr=document.getElementById('fActions'),ft=document.getElementById('fFootActions');
+  hdr.innerHTML=cfg.header.map((b,i)=>`<button class="${b.cls}" onclick="ACTIONS['${currentStatus}'].header[${i}].act && ACTIONS['${currentStatus}'].header[${i}].act()">${b.t}</button>`).join('')
+    + `<button class="btn btn-kebab" onclick="toggleKebab(event)" title="Lainnya">⋮
+        <div class="kebab-menu" id="kebab">
+          ${cfg.kebab.map((b,i)=>b.t==='—'?'<hr>':`<button class="${b.danger?'danger':''}" onclick="event.stopPropagation();closeKebab();ACTIONS['${currentStatus}'].kebab[${i}].act && ACTIONS['${currentStatus}'].kebab[${i}].act()">${b.t}</button>`).join('')}
+        </div>
+      </button>`;
+  ft.innerHTML = cfg.footPrimary
+    ? `<button class="${cfg.footPrimary.cls}" style="padding:9px 18px;font-size:13px" onclick="ACTIONS['${currentStatus}'].footPrimary.act && ACTIONS['${currentStatus}'].footPrimary.act()">${cfg.footPrimary.t}</button>`
+    : `<span style="color:var(--txt-l);font-size:12px">Dokumen ${currentStatus === 'cancel' ? 'dibatalkan' : 'final'} — tak ada aksi</span>`;
+}
+
+function openForm(mode){
+  document.getElementById('pGrid').classList.remove('show');
+  document.getElementById('pForm').classList.add('show');
+  const badge=document.getElementById('fSt');
+  if(mode==='new'){
+    document.getElementById('fDoc').textContent='PQ/26/(baru)';
+    currentStatus='draft'; badge.className='pill pill-s-draft'; badge.textContent='Draft';
+    document.getElementById('fDirty').classList.add('show');
+  } else {
+    document.getElementById('fDoc').textContent='PQ/26/00118';
+    currentStatus='draft'; badge.className='pill pill-s-draft'; badge.textContent='Draft';
+    document.getElementById('fDirty').classList.remove('show');
+  }
+  renderActions();
+  window.scrollTo(0,0);
+}
+function backToGrid(){
+  if(document.getElementById('fDirty').classList.contains('show')){
+    if(!confirm('Ada perubahan belum disimpan. Buang perubahan dan kembali ke daftar?')) return;
+  }
+  document.getElementById('pForm').classList.remove('show');
+  document.getElementById('pGrid').classList.add('show');
+  window.scrollTo(0,0);
+}
+function saveDraft(){
+  document.getElementById('fDirty').classList.remove('show');
+  alert('Draft tersimpan (mockup)');
+}
+function confirmPQ(){
+  openMod('Konfirmasi PQ',
+    `<p>Setelah dikonfirmasi:</p>
+     <ul style="margin:6px 0 8px 20px;color:var(--txt-m)">
+       <li>Harga dan kurs pada PQ ini akan <b>dikunci</b> — tidak bisa diedit lagi.</li>
+       <li>PQ ini <b>bisa langsung dipakai</b> untuk pembuatan Purchase Order.</li>
+       <li>Perubahan setelah ini harus lewat <b>PQ baru (Revise)</b> — versi ini tetap tersimpan sebagai jejak audit.</li>
+     </ul>
+     <p><b>Lanjutkan konfirmasi PQ/26/00118 kepada PT Pindo Deli Pulp &amp; Paper?</b></p>`,
+    [{t:'Batal',cls:'btn',act:closeMod},{t:'Ya, Konfirmasi',cls:'btn btn-primary',act:()=>{
+      closeMod(); currentStatus='confirm';
+      const b=document.getElementById('fSt'); b.className='pill pill-s-confirm'; b.textContent='Confirmed';
+      renderActions();
+      alert('PQ dikonfirmasi. Kini bisa jadi PO.');
+    }}]);
+}
+function askDelete(){
+  openMod('Hapus Draft',
+    `<p>Draft <b>PQ/26/00118</b> akan dihapus permanen. Nomor dokumen tidak dilepas kembali ke pool — nomor berikutnya tetap 00121.</p>
+     <p style="color:var(--danger)">Aksi ini <b>tidak dapat dibatalkan</b>.</p>`,
+    [{t:'Batal',cls:'btn',act:closeMod},{t:'Hapus Permanen',cls:'btn btn-danger',act:()=>{closeMod();backToGrid();alert('Draft dihapus (mockup)');}}]);
+}
+function askCancel(){
+  openMod('Batalkan PQ',
+    `<p>Alasan pembatalan (wajib, min. 10 karakter):</p>
+     <textarea placeholder="Contoh: supplier mengubah harga secara sepihak setelah konfirmasi lisan…"></textarea>
+     <p style="margin-top:8px;color:var(--txt-m)">PQ akan berstatus <b>CANCELLED</b> dan tak bisa dipakai untuk PO. Riwayat tetap tersimpan.</p>`,
+    [{t:'Tidak Jadi',cls:'btn',act:closeMod},{t:'Batalkan PQ',cls:'btn btn-danger',act:()=>{closeMod();currentStatus='cancel';const b=document.getElementById('fSt');b.className='pill pill-s-cancel';b.textContent='Cancelled';renderActions();}}]);
+}
+
+function toggleKebab(e){ e.stopPropagation(); document.getElementById('kebab').classList.toggle('show'); }
+function closeKebab(){ const k=document.getElementById('kebab'); if(k) k.classList.remove('show'); }
+document.addEventListener('click', closeKebab);
+
+function tab(btn,id){
+  btn.parentNode.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.body-tabs .pane').forEach(p=>p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+
+function openMod(title,body,foot){
+  document.getElementById('modT').textContent=title;
+  document.getElementById('modB').innerHTML=body;
+  document.getElementById('modF').innerHTML=foot.map((b,i)=>`<button class="${b.cls}" onclick="__modAct(${i})">${b.t}</button>`).join('');
+  window.__foot=foot;
+  document.getElementById('mod').classList.add('show');
+}
+function __modAct(i){ window.__foot[i].act && window.__foot[i].act(); }
+function closeMod(){ document.getElementById('mod').classList.remove('show'); }
+
+renderGrid();
+</script>
+</body>
+</html>

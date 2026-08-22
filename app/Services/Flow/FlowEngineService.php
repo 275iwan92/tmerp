@@ -157,8 +157,11 @@ class FlowEngineService
             ->groupBy('doc_id')
             ->pluck('id');
 
+        // HOLD tidak mengubah status_to (dokumen tetap di posisi yang sama),
+        // jadi tetap dianggap "pending" -- approver yang menahan tetap
+        // melihatnya di antrian sendiri sampai dia putuskan Approve/Tolak.
         return FlowLog::whereIn('flow_log_id', $latestIds)
-            ->where('action', 'SUBMITTED')
+            ->whereIn('action', ['SUBMITTED', 'HOLD'])
             ->whereIn('actor_position_id', $positionIds)
             ->orderByDesc('acted_at')
             ->get();
@@ -275,5 +278,41 @@ class FlowEngineService
         ]);
 
         return ['status' => $step->status_to_reject];
+    }
+
+    // Hold: approver belum mau memutuskan (mis. cash flow belum siap) --
+    // BUKAN approve/reject, status dokumen TIDAK berubah, dokumen tetap
+    // muncul di antrian approver yang sama utk diputuskan lagi nanti.
+    // Cuma catatan (notes wajib, divalidasi caller) yang tercatat di riwayat.
+    public function hold(string $moduleCode, int $docId, int $stepId, string $reason, float $amount): array
+    {
+        $step = FlowConfigStep::findOrFail($stepId);
+        $userId = Auth::id();
+        $login = Auth::user()->login ?? null;
+
+        $isActing = FlowPositionActing::where('position_id', $step->position_id)
+            ->where('is_active', true)
+            ->whereDate('start_date', '<=', now())
+            ->whereDate('end_date', '>=', now())
+            ->where('acting_user_id', $userId)
+            ->exists();
+
+        FlowLog::create([
+            'module_code' => $moduleCode,
+            'doc_id' => $docId,
+            'flow_config_id' => $step->flow_config_id,
+            'flow_step_id' => $step->flow_step_id,
+            'status_from' => $step->status_from,
+            'status_to' => $step->status_from,
+            'actor_position_id' => $step->position_id,
+            'actual_user_id' => $userId,
+            'is_acting' => $isActing,
+            'action' => 'HOLD',
+            'amount_snapshot' => $amount,
+            'notes' => $reason,
+            'created_by' => $login,
+        ]);
+
+        return ['status' => $step->status_from];
     }
 }

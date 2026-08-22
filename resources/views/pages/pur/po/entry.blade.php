@@ -18,6 +18,15 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
 
     public string $blockedMessage = '';
 
+    // Layar approval PO tidak lagi punya form ringkas terpisah -- approver
+    // menyetujui/menolak/menahan langsung dari form PO yang sama (field
+    // otomatis read-only krn status != DRAFT), sama seperti pola ME29N di SAP,
+    // action pane di Dynamics 365, dan approval di form PO Odoo. Lihat
+    // docs/GRID_UI_STANDARD.md & memory project_procurement_module_status.
+    public string $approvalNote = '';
+
+    public string $approvalError = '';
+
     public function mount(int $po): void
     {
         $this->poId = $po;
@@ -27,6 +36,20 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
     public function po(): PoOrder
     {
         return PoOrder::with(['lines' => fn ($q) => $q->orderBy('line_no')])->findOrFail($this->poId);
+    }
+
+    // Baris flow_log TERAKHIR utk PO ini kalau masih pending di posisi user
+    // login (SUBMITTED atau HOLD) -- null kalau bukan approver-nya / sudah diputuskan.
+    #[Computed]
+    public function pendingApproval()
+    {
+        return app(FlowEngineService::class)->pendingForUser('PO', Auth::id())->firstWhere('doc_id', $this->poId);
+    }
+
+    #[Computed]
+    public function approvalHistory()
+    {
+        return app(FlowEngineService::class)->history('PO', $this->poId);
     }
 
     #[Computed]
@@ -152,6 +175,69 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         unset($this->po);
     }
 
+    public function approveDoc(FlowEngineService $flow): void
+    {
+        $pending = $this->pendingApproval;
+
+        if (! $pending) {
+            return;
+        }
+
+        $result = $flow->approve('PO', $this->poId, $pending->flow_step_id, (float) $pending->amount_snapshot);
+
+        $this->po->update(['status' => $result['status'], 'updated_by' => Auth::user()->login]);
+
+        $this->approvalNote = '';
+        $this->approvalError = '';
+        unset($this->po, $this->pendingApproval, $this->approvalHistory);
+    }
+
+    public function rejectDoc(FlowEngineService $flow): void
+    {
+        $pending = $this->pendingApproval;
+
+        if (! $pending) {
+            return;
+        }
+
+        if (trim($this->approvalNote) === '') {
+            $this->approvalError = 'Alasan penolakan wajib diisi.';
+
+            return;
+        }
+
+        $result = $flow->reject('PO', $this->poId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
+
+        $this->po->update(['status' => $result['status'], 'updated_by' => Auth::user()->login]);
+
+        $this->approvalNote = '';
+        $this->approvalError = '';
+        unset($this->po, $this->pendingApproval, $this->approvalHistory);
+    }
+
+    // Hold: belum mau diputuskan (mis. cash flow belum siap) -- status TIDAK
+    // berubah, PO tetap SUBMITTED dan tetap di antrian approver ini sendiri.
+    public function holdDoc(FlowEngineService $flow): void
+    {
+        $pending = $this->pendingApproval;
+
+        if (! $pending) {
+            return;
+        }
+
+        if (trim($this->approvalNote) === '') {
+            $this->approvalError = 'Catatan alasan Hold wajib diisi.';
+
+            return;
+        }
+
+        $flow->hold('PO', $this->poId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
+
+        $this->approvalNote = '';
+        $this->approvalError = '';
+        unset($this->pendingApproval, $this->approvalHistory);
+    }
+
     public function delete()
     {
         if ($this->po->status !== 'DRAFT') {
@@ -187,6 +273,21 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         @if ($blockedMessage)
             <div class="bg-[#fff5e0] border border-[#e0c26a] text-[#8a5a00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ $blockedMessage }}</div>
+        @endif
+
+        @if ($this->approvalHistory->last()?->action === 'HOLD')
+            <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">
+                ⏸ Ditahan oleh {{ $this->approvalHistory->last()->created_by ?? 'sistem' }} · {{ $this->approvalHistory->last()->acted_at?->translatedFormat('d M Y, H:i') }} — "{{ $this->approvalHistory->last()->notes }}"
+            </div>
+        @endif
+
+        @if ($this->pendingApproval)
+            @if ($this->po->i_procure_type === 'CAPEX')
+                <div class="bg-[#fdf2ec] border border-[#f0c6a0] text-[#8a4b00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ Tipe pengadaan CAPEX — nilai besar, non-rutin. Periksa lebih cermat.</div>
+            @endif
+            @if ($this->po->i_po_type === 'IMPORT')
+                <div class="bg-[#eef3fb] border border-[#9cc0f0] text-[#1e3a8a] text-xs rounded-md px-4 py-2.5 mb-4">⚠ PO Import — kelengkapan dokumen impor (`po_import_doc`) masih INACTIVE fase ini, belum ada checklist.</div>
+            @endif
         @endif
 
         {{-- HEADER --}}
@@ -323,10 +424,48 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             </div>
         </div>
 
+        @if ($this->approvalHistory->isNotEmpty())
+            <div class="border border-[#eef1f5] rounded-xl p-4 bg-white mb-4">
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">Riwayat Approval</p>
+                <div class="relative pl-5 border-l-2 border-[#eef1f5] ml-1 space-y-3 text-sm">
+                    @foreach ($this->approvalHistory as $h)
+                        <div class="relative">
+                            <div class="absolute -left-[26px] top-0.5 w-3 h-3 rounded-full border-2 {{ match ($h->action) {
+                                'REJECTED' => 'bg-[#fbeaea] border-[#a3241f]',
+                                'HOLD' => 'bg-[#f1ecfc] border-[#6d28d9]',
+                                default => 'bg-[#eaf7ee] border-[#1f8a4c]',
+                            } }}"></div>
+                            <p class="font-semibold text-xs">{{ $h->action }}</p>
+                            <p class="text-[10.5px] text-muted">Oleh: {{ $h->created_by ?? 'sistem' }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' (PLT)' : '' }}</p>
+                            @if ($h->notes)
+                                <p class="text-[10.5px] {{ $h->action === 'REJECTED' ? 'text-[#a3241f]' : 'text-[#6b4fa0]' }} mt-0.5">"{{ $h->notes }}"</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         @if ($this->po->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
                 <button type="button" wire:click="delete" wire:confirm="Hapus PO draft ini? Alokasi PR yang sudah ditarik akan dilepas kembali." class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Hapus</button>
                 <button type="button" wire:click="submit" wire:confirm="Ajukan PO ini untuk approval? Nomor dokumen akan diterbitkan." class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Ajukan Approval</button>
+            </div>
+        @elseif ($this->pendingApproval)
+            <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
+                <p class="text-xs font-bold text-navy mb-2">Keputusan Approval — {{ $this->pendingApproval->pending_label ?? 'Menunggu keputusan Anda' }}</p>
+                @if ($approvalError)
+                    <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
+                @endif
+                <div class="mb-3">
+                    <label class="text-xs text-muted">Catatan <span class="text-[#a3241f]">(wajib utk Tolak / Hold)</span></label>
+                    <textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau catatan hold (mis. cash flow belum siap)..." class="w-full border border-[#d7dbe2] rounded-lg px-3 py-2 mt-1 text-sm"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" wire:click="holdDoc" wire:confirm="Tahan PO ini? Tetap di antrian Anda, diputuskan lagi nanti." class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ Hold</button>
+                    <button type="button" wire:click="rejectDoc" wire:confirm="Tolak PO ini?" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ Tolak</button>
+                    <button type="button" wire:click="approveDoc" wire:confirm="Setujui PO ini?" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ Setujui</button>
+                </div>
             </div>
         @elseif ($this->po->status === 'APPROVED')
             <div class="flex justify-end gap-2 mb-8">

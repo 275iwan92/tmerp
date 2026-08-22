@@ -6,20 +6,29 @@ modul: "02_inventory"
 db: tm2inv
 fase: "1 — Stock In / Stock Out / Adjustment+Opname / Return from Production + kartu stok & periode"
 status_umum: >
-  IMPLEMENTASI DIMULAI (2026-08-22) — Stock In (RM/FG/SFG) LIVE. Delta ALTER tm2inv/tm2mst,
-  tabel baru (inv_period/inv_stock_layer/inv_layer_consumption), VIEW (v_inv_movement dkk),
-  dan seed flow_config IN/OUT/AD/OP/RTP (lengkap dgn position_id riil Kepala Gudang/Manajer
-  Operasional/Direksi + threshold 5jt/25jt) SEMUA SUDAH TEREKSEKUSI dari sesi sebelumnya
-  (2026-08-21) -- lihat open_items di bawah, sebagian besar item TINGGI sudah teratasi walau
-  dokumen ini belum diupdate saat itu. App\Services\Inventory\StockPostingService::postDocument()
-  dibangun & diuji end-to-end via tinker (draft->posting->kartu stok, idempotensi, NULL-safe
-  cur_stock sync). App\Services\Inventory\StockDocumentService (draft/cancel/nextDocNo) juga
-  sudah ada. 10 model app/Models/Inventory/* dibangun. LocationPicker TIDAK dibangun sbg
-  komponen terpisah (next_step lama menyarankan itu) -- untuk Stock In v1, dropdown lokasi
-  inline langsung di stock-in.blade.php, cukup utk 1 layar; ekstrak jadi komponen bersama
-  kalau Stock Out/Return/Adjustment nanti butuh perilaku identik. Valuasi baru AVG bergerak
-  (moving average) -- FIFO/LIFO (inv_stock_layer) belum diimplementasikan, costing_method
-  per-item masih default AVG (INV-COSTING-METHOD-SEED masih terbuka).
+  SEMUA 4 LAYAR TRANSAKSI LIVE (2026-08-22): Stock In (RM/FG/SFG), Stock Out (RM saja --
+  lihat INV-06b), Return from Production (RM saja), Stock Adjustment & Opname (RM/FG/SFG,
+  approval berjenjang sungguhan via FlowEngineService). Delta ALTER tm2inv/tm2mst, tabel baru
+  (inv_period/inv_stock_layer/inv_layer_consumption), VIEW (v_inv_movement dkk), dan seed
+  flow_config IN/OUT/AD/OP/RTP (position_id riil Kepala Gudang/Manajer Operasional/Direksi +
+  threshold 5jt/25jt) semua tereksekusi dari sesi sebelumnya (2026-08-21).
+  App\Services\Inventory\StockPostingService::postDocument() terbukti generik lintas SEMUA
+  doc_cat (STOCK/BB/AD/OP/RETURN) & kelas (RM/FG/SFG) tanpa perubahan apapun -- Stock Out/
+  Return/Adjustment memakainya apa adanya, cuma StockDocumentService::saveDraft() + Livewire
+  form yang baru per layar. FlowEngineService.pendingForUser() diperluas (whereIn action
+  SUBMITTED+HOLD, awalnya utk Procurement Hold) -- Adjustment approval numpang perluasan itu
+  tanpa perubahan tambahan. Layar Persetujuan Adjustment (inv.stock-adj.approval) TIDAK jadi
+  queue+detail-panel seperti next_step lama menyarankan -- Approve/Reject digabung ke form
+  entri itu sendiri (pola PR/PO Approval yang dirombak hari sama, lihat PROC_STATE.yaml),
+  approval screen jadi murni grid antrian + deep-link {doc?} ke form asli. LocationPicker
+  TIDAK jadi komponen terpisah di layar manapun -- dropdown lokasi tetap inline per layar
+  (4 layar sekarang, pola stabil, ekstraksi jadi komponen bersama masih belum terbukti perlu).
+  Valuasi tetap AVG bergerak (moving average) di semua kelas -- FIFO/LIFO (inv_stock_layer)
+  belum diimplementasikan, costing_method per-item masih default AVG (INV-COSTING-METHOD-SEED
+  masih terbuka). Diuji end-to-end via tinker (transaksi 3-koneksi di-rollback): Stock In->
+  Out->Return (saldo 50->150->120->130, qty_returned akumulasi ke 10) lalu Adjustment submit
+  ->approve(final)->auto-post (130->125) + jalur reject->REVISION_NEEDED, semua benar. BELUM
+  diverifikasi visual browser (perlu login).
 
 keputusan_terkunci:
   INV-01_posting_service: >
@@ -46,6 +55,13 @@ keputusan_terkunci:
   INV-06_fg_out_dilarang: >
     Layar Stock Out menolak kelas FG di level route. FG keluar HANYA lewat Delivery Note.
     Kalau dibuka, ledger FG terisi dua kali.
+  INV-06b_out_return_rm_saja: >
+    [2026-08-22] Stock Out & Return from Production v1 DIKUNCI RM SAJA (bukan cuma "FG
+    ditolak" seperti INV-06 asalnya bilang) -- ditolak di mount() kalau category != RM.
+    Alasan: (a) FG memang dilarang eksplisit (INV-06), (b) SFG SAMA SEKALI tak disebut di
+    spec/mockup Tier 4 utk kedua layar ini -- bukan berarti SFG boleh, cuma belum ada aturan
+    yg mendefinisikannya, jadi ditolak juga sampai ada spec eksplisit. Menu INV_FG_ITEM2/3 &
+    INV_SFG_ITEM2/3 tetap NOT_BUILT dgn status_note menjelaskan ini bukan gap, tapi out-of-scope.
   INV-07_return_wajib_ref: >
     Return hanya terhadap Stock Out POSTED; qty <= qty_keluar - qty_returned.
     Kolom baru: rm_stock_d.return_condition (GOOD/SCRAP) + source_detail_id + qty_returned [DELTA].
@@ -80,12 +96,12 @@ artefak_selesai:
 
 next_step:
   - "[SELESAI 2026-08-22] Stock In (RM/FG/SFG) -- resources/views/pages/inventory/stock-in.blade.php, route inv.stock-in.index/{category}"
-  - "Urutan layar TERSISA: Stock Out -> Return -> Adjustment/Opname -> Approval (StockAdjApproval, route inv.stock-adj.approval, template: resources/views/pages/pur/po/approval.blade.php) -> Onhand -> Period Manager"
-  - "Stock Out: kunci FG di level route (INV-06) -- FG_ITEM2/SFG_ITEM2 boleh, RM_ITEM2 dulu (menu INV_RM_ITEM2/INV_SFG_ITEM2/INV_FG_ITEM2 -- cek ulang, FG mungkin harus TETAP NOT_BUILT selamanya sesuai INV-06, bukan sekadar 'belum digarap')"
-  - "Return: validasi ref ke Stock Out POSTED + qty <= keluar-diretur (client & server, INV-07)"
-  - "Adjustment/Opname: StockPostingService sudah generik lintas kelas & sudah menangani doc_cat AD/OP (qty signed) -- tinggal bangun layar entri + StockAdjApproval, service-nya reusable apa adanya"
+  - "[SELESAI 2026-08-22] Stock Out (RM saja, INV-06b) -- stock-out.blade.php, route inv.stock-out.index/{category}"
+  - "[SELESAI 2026-08-22] Return from Production (RM saja, INV-06b) -- stock-return.blade.php, route inv.stock-return.index/{category}"
+  - "[SELESAI 2026-08-22] Stock Adjustment & Opname (RM/FG/SFG) + Persetujuan -- stock-adjustment.blade.php (route inv.stock-adj.index/{category}/{doc?}) + stock-adjustment-approval.blade.php (route inv.stock-adj.approval/{category}, MURNI antrian -- Approve/Reject digabung ke form entri, bukan queue+detail-panel spt rencana lama)"
+  - "SISA: Onhand Grid interaktif, Period Manager, PV/WO auto-post ke Stock In, FIFO/LIFO valuation, permission granular (can_view_cost dkk), Outstanding PV (Procurement -- SENGAJA ditunda user, lihat memory project_outstanding_reports, baru dikerjakan SETELAH ini)"
   - "PV/WO auto-post Stock In (ref_doc_type != MANUAL) belum diintegrasikan -- StockPostingService sudah generik, tinggal dipanggil dari sisi Purchase Receive/Production nanti (lihat SIDEBAR_MENU_STANDARD.md #6a utk konteks penuh)"
-  - "Update checklist_mockup_erp.md MODUL 2 (Stock Movement & Stock Adjustment) + warna menu shell — BARENGAN, belum dilakukan 2026-08-22"
+  - "[SELESAI 2026-08-22] Update checklist_mockup_erp.md MODUL 2 -- warna menu shell belum dicek (perlu login browser)"
   - "Update PROC_STATE.yaml: open item PROC-COSTING-ENGINE sudah terjawab (inv_stock_layer + inv_layer_consumption didefinisikan di INV_TIER_3 §7) -- belum dicek ulang 2026-08-22"
 
 open_items:

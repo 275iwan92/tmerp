@@ -676,7 +676,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
                                             @if ($e->photo_path)
-                                                <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($e->photo_path) }}" class="w-8 h-8 rounded-md object-cover shrink-0 border border-[#d9dfe8]">
+                                                <img src="{{ asset('storage/'.$e->photo_path) }}" class="w-8 h-8 rounded-md object-cover shrink-0 border border-[#d9dfe8]">
                                             @else
                                                 <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($e->employee_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($e->full_name) }}</div>
                                             @endif
@@ -722,7 +722,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <div class="flex items-center gap-3.5 bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-3 mb-3.5">
                 <div class="relative shrink-0">
                     @if ($emp?->photo_path)
-                        <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($emp->photo_path) }}"
+                        <img src="{{ asset('storage/'.$emp->photo_path) }}"
                             wire:dblclick="openPhotoModal" title="Klik 2x untuk lihat foto penuh"
                             class="w-[72px] h-[72px] rounded-lg object-cover border-2 border-accent cursor-pointer hover:opacity-90">
                     @else
@@ -1278,7 +1278,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-[#111822] rounded-xl w-[560px] max-w-[92vw] shadow-2xl p-4 flex flex-col items-center relative">
                 <button type="button" wire:click="closePhotoModal" class="absolute top-3 right-3.5 text-white/70 hover:text-white text-lg cursor-pointer bg-transparent border-none">✕</button>
                 <div class="w-full rounded-lg overflow-hidden bg-black flex items-center justify-center" style="height:420px">
-                    <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($emp->photo_path) }}" class="max-w-full max-h-full object-contain">
+                    <img src="{{ asset('storage/'.$emp->photo_path) }}" class="max-w-full max-h-full object-contain">
                 </div>
                 <div class="text-center mt-3.5">
                     <div class="text-white font-bold text-base">{{ $emp->full_name }}</div>

@@ -10,6 +10,7 @@ use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrLine;
 use App\Models\Pur\PrRequisition;
 use App\Services\Flow\FlowEngineService;
+use App\Services\Pur\PrAllocationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -36,6 +37,14 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
     public string $freeUom = '';
 
+    // Layar approval PR tidak lagi punya form ringkas terpisah -- approver
+    // menyetujui/menolak/menahan langsung dari form PR yang sama (field
+    // otomatis read-only krn status != DRAFT). Lihat docs/GRID_UI_STANDARD.md
+    // & memory project_procurement_module_status.
+    public string $approvalNote = '';
+
+    public string $approvalError = '';
+
     public function mount(int $pr): void
     {
         $this->prId = $pr;
@@ -45,6 +54,20 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
     public function pr(): PrRequisition
     {
         return PrRequisition::with(['lines' => fn ($q) => $q->orderBy('line_no')])->findOrFail($this->prId);
+    }
+
+    // Baris flow_log TERAKHIR utk PR ini kalau masih pending di posisi user
+    // login (SUBMITTED atau HOLD) -- null kalau bukan approver-nya / sudah diputuskan.
+    #[Computed]
+    public function pendingApproval()
+    {
+        return app(FlowEngineService::class)->pendingForUser('PR', Auth::id())->firstWhere('doc_id', $this->prId);
+    }
+
+    #[Computed]
+    public function approvalHistory()
+    {
+        return app(FlowEngineService::class)->history('PR', $this->prId);
     }
 
     #[Computed]
@@ -292,6 +315,75 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         unset($this->pr);
     }
 
+    public function approveDoc(FlowEngineService $flow): void
+    {
+        $pending = $this->pendingApproval;
+
+        if (! $pending) {
+            return;
+        }
+
+        $result = $flow->approve('PR', $this->prId, $pending->flow_step_id, (float) $pending->amount_snapshot);
+
+        $this->pr->update(['status' => $result['status'], 'updated_by' => Auth::user()->login]);
+
+        // Flow selesai (tak ada step lanjutan) -> siapkan alokasi default per
+        // baris supaya PO Entry (ambil dari pr_line_alloc) selalu punya sumber.
+        if ($result['final']) {
+            PrAllocationService::createDefaultAllocationsForPr($this->pr);
+        }
+
+        $this->approvalNote = '';
+        $this->approvalError = '';
+        unset($this->pr, $this->pendingApproval, $this->approvalHistory);
+    }
+
+    public function rejectDoc(FlowEngineService $flow): void
+    {
+        $pending = $this->pendingApproval;
+
+        if (! $pending) {
+            return;
+        }
+
+        if (trim($this->approvalNote) === '') {
+            $this->approvalError = 'Alasan penolakan wajib diisi.';
+
+            return;
+        }
+
+        $result = $flow->reject('PR', $this->prId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
+
+        $this->pr->update(['status' => $result['status'], 'updated_by' => Auth::user()->login]);
+
+        $this->approvalNote = '';
+        $this->approvalError = '';
+        unset($this->pr, $this->pendingApproval, $this->approvalHistory);
+    }
+
+    // Hold: belum mau diputuskan -- status TIDAK berubah, PR tetap SUBMITTED
+    // dan tetap di antrian approver ini sendiri.
+    public function holdDoc(FlowEngineService $flow): void
+    {
+        $pending = $this->pendingApproval;
+
+        if (! $pending) {
+            return;
+        }
+
+        if (trim($this->approvalNote) === '') {
+            $this->approvalError = 'Catatan alasan Hold wajib diisi.';
+
+            return;
+        }
+
+        $flow->hold('PR', $this->prId, $pending->flow_step_id, $this->approvalNote, (float) $pending->amount_snapshot);
+
+        $this->approvalNote = '';
+        $this->approvalError = '';
+        unset($this->pendingApproval, $this->approvalHistory);
+    }
+
     public function delete()
     {
         if ($this->pr->status !== 'DRAFT') {
@@ -325,6 +417,12 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         @if ($blockedMessage)
             <div class="bg-[#fff5e0] border border-[#e0c26a] text-[#8a5a00] text-xs rounded-md px-4 py-2.5 mb-4">
                 ⚠ {{ $blockedMessage }}
+            </div>
+        @endif
+
+        @if ($this->approvalHistory->last()?->action === 'HOLD')
+            <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">
+                ⏸ Ditahan oleh {{ $this->approvalHistory->last()->created_by ?? 'sistem' }} · {{ $this->approvalHistory->last()->acted_at?->translatedFormat('d M Y, H:i') }} — "{{ $this->approvalHistory->last()->notes }}"
             </div>
         @endif
 
@@ -539,11 +637,49 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             </div>
         </div>
 
+        @if ($this->approvalHistory->isNotEmpty())
+            <div class="border border-[#eef1f5] rounded-xl p-4 bg-white mb-4">
+                <p class="text-[10.5px] font-bold text-muted uppercase mb-3">Riwayat Approval</p>
+                <div class="relative pl-5 border-l-2 border-[#eef1f5] ml-1 space-y-3 text-sm">
+                    @foreach ($this->approvalHistory as $h)
+                        <div class="relative">
+                            <div class="absolute -left-[26px] top-0.5 w-3 h-3 rounded-full border-2 {{ match ($h->action) {
+                                'REJECTED' => 'bg-[#fbeaea] border-[#a3241f]',
+                                'HOLD' => 'bg-[#f1ecfc] border-[#6d28d9]',
+                                default => 'bg-[#eaf7ee] border-[#1f8a4c]',
+                            } }}"></div>
+                            <p class="font-semibold text-xs">{{ $h->action }}</p>
+                            <p class="text-[10.5px] text-muted">Oleh: {{ $h->created_by ?? 'sistem' }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' (PLT)' : '' }}</p>
+                            @if ($h->notes)
+                                <p class="text-[10.5px] {{ $h->action === 'REJECTED' ? 'text-[#a3241f]' : 'text-[#6b4fa0]' }} mt-0.5">"{{ $h->notes }}"</p>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         @if ($this->pr->status === 'DRAFT')
             <div class="flex justify-end gap-2 mb-8">
                 <button type="button" wire:click="delete" wire:confirm="Hapus PR draft ini? Tindakan tidak bisa dibatalkan." class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Hapus</button>
                 <button type="button" wire:click="save" class="border border-[#d7dbe2] text-navy text-xs font-bold px-4 py-2 rounded-md">Simpan Draft</button>
                 <button type="button" wire:click="submit" wire:confirm="Ajukan PR ini untuk approval? Nomor dokumen akan diterbitkan dan baris tak bisa diedit lagi." class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Ajukan Approval</button>
+            </div>
+        @elseif ($this->pendingApproval)
+            <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white mb-8">
+                <p class="text-xs font-bold text-navy mb-2">Keputusan Approval — {{ $this->pendingApproval->pending_label ?? 'Menunggu keputusan Anda' }}</p>
+                @if ($approvalError)
+                    <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
+                @endif
+                <div class="mb-3">
+                    <label class="text-xs text-muted">Catatan <span class="text-[#a3241f]">(wajib utk Tolak / Hold)</span></label>
+                    <textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau catatan hold (mis. cash flow belum siap)..." class="w-full border border-[#d7dbe2] rounded-lg px-3 py-2 mt-1 text-sm"></textarea>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" wire:click="holdDoc" wire:confirm="Tahan PR ini? Tetap di antrian Anda, diputuskan lagi nanti." class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ Hold</button>
+                    <button type="button" wire:click="rejectDoc" wire:confirm="Tolak PR ini?" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ Tolak</button>
+                    <button type="button" wire:click="approveDoc" wire:confirm="Setujui PR ini?" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ Setujui</button>
+                </div>
             </div>
         @endif
     </div>

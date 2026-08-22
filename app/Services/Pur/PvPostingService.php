@@ -2,9 +2,12 @@
 
 namespace App\Services\Pur;
 
+use App\Models\Master\DocRmprefix1;
+use App\Models\Master\MRawMaterial;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PvReceipt;
+use App\Services\Acc\JournalPostingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -18,6 +21,18 @@ use Illuminate\Support\Facades\DB;
 // benar; yang tertunda HANYA baris rm_stock_doc_id (tetap NULL) & pergerakan
 // stok fisik. Begitu dump tersedia, tambahkan pemanggilan insert rm_stock di
 // checkAndPost() persis di titik yang ditandai TODO.
+//
+// AUTO-JURNAL PEMBELIAN (2026-08-22, riset ERP Odoo/SAP/D365/Oracle): setiap
+// baris is_stock=1 diposting Dr Persediaan (stock_asset_account_id) / Cr GR/IR
+// Clearing (gr_ir_account_id) -- BUKAN langsung Cr Hutang Usaha, krn Purchase
+// Invoice supplier belum dibangun (fin_invoice_line, PROC_TIER_3 §7.2 masih
+// TODO) -- saat modul itu ada nanti, pelunasannya Dr GR/IR / Cr Hutang Usaha,
+// pola standar 4 ERP besar itu utk celah "barang sudah masuk, tagihan belum".
+// Akun diambil dari m_raw_material per item, fallback ke doc_rmprefix1 per
+// kategori kalau item belum di-set (JournalPostingService::resolveAccount()).
+// Baris yang akun-nya (item maupun kategori) sama2 kosong DILEWATI dari jurnal
+// (bukan diblokir) -- PV tetap boleh diposting scr fisik/stok, cuma dikasih
+// peringatan supaya officer tahu jurnalnya belum lengkap, bukan tersembunyi.
 class PvPostingService
 {
     public static function blockers(PvReceipt $pv): array
@@ -76,7 +91,61 @@ class PvPostingService
             }
         });
 
-        return ['ok' => true, 'message' => null];
+        $journalWarning = static::postPurchaseJournal($pv, $login);
+
+        return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning];
+    }
+
+    // Dr Persediaan / Cr GR-IR Clearing per baris is_stock=1 yang c_qty_accepted>0,
+    // dikelompokkan per pasangan akun supaya voucher-nya ringkas. Sengaja di LUAR
+    // transaksi tm2pur di atas -- fin_voucher/fin_voucher_line hidup di koneksi
+    // tm2acc yang berbeda, JournalPostingService buka transaksinya sendiri.
+    // Kegagalan/ketidaklengkapan akun TIDAK membatalkan posting PV yang sudah
+    // terjadi -- cuma dikembalikan sbg pesan peringatan ke caller.
+    protected static function postPurchaseJournal(PvReceipt $pv, string $login): ?string
+    {
+        $pv->load('lines');
+        $rows = [];
+        $unmapped = 0;
+
+        foreach ($pv->lines as $line) {
+            $qty = (float) $line->c_qty_accepted;
+            if (! $line->is_stock || $qty <= 0 || ! $line->item_id) {
+                continue;
+            }
+
+            $material = MRawMaterial::find($line->item_id);
+            $prefix1 = $material ? DocRmprefix1::where('category1', $material->category1)->first() : null;
+
+            $stockAccountId = app(JournalPostingService::class)->resolveAccount($material?->stock_asset_account_id, $prefix1?->default_stock_asset_account_id);
+            $grIrAccountId = app(JournalPostingService::class)->resolveAccount($material?->gr_ir_account_id, $prefix1?->default_gr_ir_account_id);
+            $value = round($qty * (float) $line->c_unit_price, 2);
+
+            if (! $stockAccountId || ! $grIrAccountId || $value <= 0) {
+                $unmapped++;
+
+                continue;
+            }
+
+            $key = $stockAccountId.'-'.$grIrAccountId;
+            $rows[$key]['stock_account_id'] = $stockAccountId;
+            $rows[$key]['gr_ir_account_id'] = $grIrAccountId;
+            $rows[$key]['value'] = ($rows[$key]['value'] ?? 0) + $value;
+        }
+
+        if (! empty($rows)) {
+            $lines = [];
+            foreach ($rows as $row) {
+                $lines[] = ['account_id' => $row['stock_account_id'], 'debit' => $row['value'], 'narration' => "Penerimaan barang {$pv->doc_no}"];
+                $lines[] = ['account_id' => $row['gr_ir_account_id'], 'credit' => $row['value'], 'narration' => "GR/IR {$pv->doc_no} (belum ditagih supplier)"];
+            }
+
+            app(JournalPostingService::class)->post('PUR', 'PV', $pv->pv_id, "Penerimaan Barang {$pv->doc_no}", $lines, $login, $pv->i_doc_date?->toDateString());
+        }
+
+        return $unmapped > 0
+            ? "{$unmapped} baris belum punya akun Persediaan/GR-IR (item maupun kategori) -- jurnal pembelian belum lengkap untuk baris tsb."
+            : null;
     }
 
     protected static function recalcPo(int $poId): void

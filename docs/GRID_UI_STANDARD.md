@@ -67,6 +67,48 @@ Referensi implementasi acuan untuk grid Worklist: `resources/views/pages/inquiry
 dan `costing-list.blade.php` (murni ↗ Buka, tanpa Confirm); `resources/views/pages/quotation/list.blade.php`
 dan `resources/views/pages/co/list.blade.php` (↗ Buka + ✓ Confirm kondisional, plus "+ New Record" khusus Quotation).
 
+**(2026-08-22)** `resources/views/pages/pur/pr/index.blade.php`, `pur/po/index.blade.php`,
+`pur/pv/index.blade.php` — contoh lain "+ New Record" (record memang lahir dari
+picker di grid ini sendiri) TAPI Aksi cuma ↗ Buka, **tanpa** ✓ Confirm — beda
+dari Quotation/CO karena transisi DRAFT→SUBMITTED di sini lewat
+`FlowEngineService` (butuh validasi & pesan blokir sungguhan di layar entry,
+bukan sekadar flip status yang aman diduplikasi ke grid). Kolom identitas PR
+pakai **Departemen peminta** (bukan supplier — PR belum punya supplier, baru
+dipilih di tahap PO), sedangkan PO/PV pakai nama supplier seperti biasa.
+
+## 8. Layar Approval Center — antrian (grid) + form aslinya, BUKAN ringkasan terpisah
+
+**(2026-08-22)** Dicek dulu ke ERP besar (SAP ME29N, action pane Dynamics 365,
+approval di form Odoo, notifikasi Oracle BPM yang membuka dokumen aslinya) —
+semua memakai pola yang sama: approver melihat & memutuskan di **dokumen asli**
+(field otomatis read-only krn status ≠ DRAFT), bukan layar ringkasan/konsolidasi
+custom terpisah. `pur/pr/approval.blade.php` dan `pur/po/approval.blade.php`
+sebelumnya adalah layar 2-kolom (list kiri + ringkasan kanan) dengan tombol
+Approve/Reject sendiri — **dirombak total**:
+
+- **Approve / Reject / Hold pindah ke form entry aslinya** (`pur/pr/entry.blade.php`,
+  `pur/po/entry.blade.php`). Form itu sudah otomatis read-only saat
+  `status !== 'DRAFT'` (semua `@disabled($this->po->status !== 'DRAFT')`),
+  jadi approver melihat PERSIS dokumen yang sama yang dibuat/diedit pembuatnya
+  — tinggal ditambah blok "Keputusan Approval" (Catatan + tombol Hold/Tolak/
+  Setujui) yang muncul kalau `$this->pendingApproval` (baris `flow_log`
+  terakhir milik user login untuk dokumen ini) tidak null, plus timeline
+  "Riwayat Approval" yang selalu tampil begitu ada histori.
+- **Layar `*/approval.blade.php` jadi murni GRID antrian** (bukan detail) —
+  ikut standar grid biasa di file ini: kotak statistik pastel (Total di
+  Antrian / Menunggu Keputusan / Ditahan), kolom identitas (Departemen atau
+  Supplier + no. dokumen), klik 2x buka dokumen asli (route entry yang sama
+  dipakai pembuat dokumen), Aksi cuma ↗ Buka. **Tanpa "+ New Record"** —
+  antrian bukan tempat membuat dokumen baru, dan tidak perlu catatan pastel
+  penjelas (beda dari CO) karena sudah jelas dari namanya "Approval Center".
+- **Hold = keputusan ketiga** di luar Approve/Reject (mis. approver menahan
+  keputusan karena cash flow perusahaan belum siap) — TIDAK mengubah status
+  dokumen, dokumen tetap di antrian approver yang sama utk diputuskan lagi
+  nanti, cuma tercatat sebagai baris `flow_log` baru (`action='HOLD'`, notes
+  wajib diisi). `FlowEngineService::pendingForUser()` sengaja meng-include
+  `action IN ('SUBMITTED','HOLD')` supaya dokumen yang di-hold tidak hilang
+  dari antrian. Baca `App\Services\Flow\FlowEngineService::hold()` untuk detail.
+
 ---
 
 ## 1. Tidak ada header halaman

@@ -2,7 +2,9 @@
 
 namespace App\Models\Inventory;
 
+use App\Models\Master\OrgDepartment;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SfgStock extends Model
@@ -42,5 +44,10 @@ class SfgStock extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(SfgStockD::class, 'doc_id', 'doc_id')->orderBy('seq_no');
+    }
+
+    public function issuedToDepartment(): BelongsTo
+    {
+        return $this->belongsTo(OrgDepartment::class, 'issued_to_dept', 'department_id');
     }
 }

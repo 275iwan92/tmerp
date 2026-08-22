@@ -8,13 +8,13 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+// GRID_UI_STANDARD.md diikuti (2026-08-22). "+ New Record" tetap ada karena
+// PO memang dibuat dari grid ini sendiri (picker supplier).
 new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
 
     public string $search = '';
-
-    public string $statusFilter = '';
 
     public bool $pickerOpen = false;
 
@@ -31,7 +31,6 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
                         ->orWhereHas('lines', fn ($l) => $l->where('i_description', 'like', "%{$term}%"));
                 });
             })
-            ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('po_id')
             ->paginate(20);
     }
@@ -62,6 +61,30 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
             ->get();
     }
 
+    #[Computed]
+    public function statTotal(): int
+    {
+        return PoOrder::count();
+    }
+
+    #[Computed]
+    public function statSubmitted(): int
+    {
+        return PoOrder::where('status', 'SUBMITTED')->count();
+    }
+
+    #[Computed]
+    public function statProgress(): int
+    {
+        return PoOrder::whereIn('status', ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED'])->count();
+    }
+
+    #[Computed]
+    public function statRejected(): int
+    {
+        return PoOrder::whereIn('status', ['REJECTED', 'CANCELLED'])->count();
+    }
+
     public function openPicker(): void
     {
         $this->pickerOpen = true;
@@ -79,79 +102,117 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
 
         return $this->redirect(route('pur.po.entry', ['po' => $po->po_id]));
     }
+
+    public function openPo(int $id)
+    {
+        return $this->redirect(route('pur.po.entry', ['po' => $id]));
+    }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📦 Purchase Order</b>
-        <a href="{{ route('pur.pv.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🚚 Penerimaan Barang</a>
-        <a href="{{ route('pur.po.approval') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">✅ Approval Center</a>
-        <a href="{{ route('pur.pr.list') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar PR</a>
-        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">Menu</a>
-    </header>
+    <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total PO</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statSubmitted }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Disetujui / Diproses</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statProgress }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Ditolak / Batal</p>
+                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statRejected }}</p>
+            </div>
+        </div>
 
-    <div class="max-w-[1280px] mx-auto my-5 px-4">
-        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex-wrap">
-                <div class="flex items-center gap-2">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PO / item..." class="w-64 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <select wire:model.live="statusFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        <option value="">Semua Status</option>
-                        <option value="DRAFT">Draft</option>
-                        <option value="SUBMITTED">Menunggu Approval</option>
-                        <option value="APPROVED">Disetujui</option>
-                        <option value="REJECTED">Ditolak</option>
-                        <option value="SENT">Dikirim ke Supplier</option>
-                        <option value="PARTIALLY_RECEIVED">Sebagian Diterima</option>
-                        <option value="RECEIVED">Diterima</option>
-                        <option value="CLOSED">Selesai</option>
-                    </select>
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PO / item…"
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <button type="button" wire:click="openPicker" class="text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5 cursor-pointer">＋ PO Baru</button>
+                <span class="flex-1"></span>
+                <button type="button" wire:click="openPicker"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>
 
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="bg-[#f4f5f8]">
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">No. PO</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tanggal</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Supplier</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tipe</th>
-                        <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Total Tagihan</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Status</th>
-                        <th class="px-3 py-2 border-b border-[#d7dbe2]"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($this->orders as $po)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="po-{{ $po->po_id }}">
-                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $po->doc_no ?: '(draft)' }}</td>
-                            <td class="px-3 py-2">{{ $po->i_doc_date?->translatedFormat('d M Y') }}</td>
-                            <td class="px-3 py-2">{{ $this->supplierNames[$po->i_supplier_id] ?? '—' }}</td>
-                            <td class="px-3 py-2 text-[10.5px]">{{ $po->i_po_type }} · {{ $po->i_procure_type }}</td>
-                            <td class="px-3 py-2 text-right font-semibold">{{ number_format((float) $po->c_grand_total, 0, ',', '.') }}</td>
-                            <td class="px-3 py-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
-                                    {{ match ($po->status) {
-                                        'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
-                                        'SUBMITTED' => 'bg-[#fff5e0] text-[#8a5a00]',
-                                        'APPROVED', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
-                                        'REJECTED', 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
-                                        default => 'bg-[#eef1f5] text-[#4b5568]',
-                                    } }}">{{ $po->status }}</span>
-                            </td>
-                            <td class="px-3 py-2 text-right">
-                                <a href="{{ route('pur.po.entry', ['po' => $po->po_id]) }}" class="text-accent font-semibold no-underline">Buka →</a>
-                            </td>
+            <div class="max-h-[65vh] overflow-auto">
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier / No. PO</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Tipe</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Total Tagihan</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Status</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="7" class="text-center py-8 text-muted">Belum ada Purchase Order.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->orders as $po)
+                            <tr wire:key="po-{{ $po->po_id }}" wire:dblclick="openPo({{ $po->po_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($po->po_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($this->supplierNames[$po->i_supplier_id] ?? ($po->doc_no ?: 'PO')) }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $this->supplierNames[$po->i_supplier_id] ?? '—' }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $po->doc_no ?: '(draft)' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $po->i_doc_date?->translatedFormat('d M Y') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[10.5px]">{{ $po->i_po_type }} · {{ $po->i_procure_type }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $po->c_grand_total, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
+                                        {{ match ($po->status) {
+                                            'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
+                                            'SUBMITTED' => 'bg-[#fff5e0] text-[#8a5a00]',
+                                            'APPROVED', 'SENT', 'PARTIALLY_RECEIVED', 'RECEIVED', 'CLOSED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
+                                            'REJECTED', 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
+                                            default => 'bg-[#eef1f5] text-[#4b5568]',
+                                        } }}">{{ $po->status }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <button type="button" wire:click.stop="openPo({{ $po->po_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Belum ada Purchase Order.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="px-4 py-3 border-t border-[#eef1f5]">
+            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
                 {{ $this->orders->links() }}
             </div>
         </div>

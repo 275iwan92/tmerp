@@ -2,7 +2,9 @@
 
 namespace App\Models\Inventory;
 
+use App\Models\Master\OrgDepartment;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // Header dokumen stok RM (Stock In/Out/Adjustment/Opname/Return, dibedakan
@@ -46,5 +48,12 @@ class RmStock extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(RmStockD::class, 'doc_id', 'doc_id')->orderBy('seq_no');
+    }
+
+    // Lintas-DB (tm2inv -> tm2mst) -- Eloquent relationship (query terpisah),
+    // BUKAN FK fisik/join, sesuai CLAUDE.md §2.
+    public function issuedToDepartment(): BelongsTo
+    {
+        return $this->belongsTo(OrgDepartment::class, 'issued_to_dept', 'department_id');
     }
 }

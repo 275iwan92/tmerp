@@ -8,9 +8,11 @@ use App\Models\Inventory\RmStock;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\SfgStock;
 use App\Models\Inventory\SfgStockcard;
+use App\Models\Master\DocRmprefix1;
 use App\Models\Master\MRawMaterial;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
+use App\Services\Acc\JournalPostingService;
 use Illuminate\Support\Facades\DB;
 
 // Port dari trigger legacy trg_rm_stock_confirm/trg_fg_stock_confirm/
@@ -20,6 +22,18 @@ use Illuminate\Support\Facades\DB;
 // logikanya diport ke sini (App\Services\*, bukan trigger SQL, konsisten
 // dgn Costing/Quotation/Flow Engine). Satu-satunya jalur SAH utk menulis
 // *_stockcard -- Livewire component TIDAK BOLEH insert langsung (INV_TIER_4 #7).
+// AUTO-JURNAL PEMAKAIAN (2026-08-22, riset ERP Odoo/SAP/D365/Oracle; diperluas
+// ke SFG 2026-08-22 sore): Stock Out RM/SFG sungguhan (docType OUT) otomatis
+// posting Dr HPP (cogs_account_id) / Cr Persediaan (stock_asset_account_id) ke
+// journal_code 'USG'. HANYA docType OUT -- Adjustment/Opname/Return/BB SENGAJA
+// belum dijurnal (beda makna akuntansi, bukan konsumsi produksi). FG TETAP
+// tidak lewat Stock Out sama sekali (lihat komentar stock-out.blade.php) jadi
+// tidak relevan di sini. Akun RM: item override (m_raw_material) -> fallback
+// kategori (doc_rmprefix1). Akun SFG: item override (prod_part) SAJA -- tidak
+// ada tabel fallback kategori setara doc_rmprefix1 utk SFG, jadi part yang
+// belum diisi akunnya akan selalu dilewati+peringatan sampai diisi manual.
+// Lihat JournalPostingService & PvPostingService::postPurchaseJournal() utk
+// pola yg sama di sisi pembelian.
 class StockPostingService
 {
     private const CATEGORY_MAP = [
@@ -46,7 +60,12 @@ class StockPostingService
         $map = self::CATEGORY_MAP[$category] ?? null;
         abort_if(! $map, 404, "Kelas stok tidak dikenal: {$category}");
 
-        return DB::connection('tm2inv')->transaction(function () use ($map, $category, $docId, $actingUser) {
+        // Diisi di dalam transaksi (butuh $prevAvg per baris, cuma tersedia di
+        // situ), dipakai SETELAH commit -- fin_voucher/fin_voucher_line hidup di
+        // koneksi tm2acc yang beda, jangan disatukan ke transaksi tm2inv di atas.
+        $usageJournalRows = [];
+
+        $result = DB::connection('tm2inv')->transaction(function () use ($map, $category, $docId, $actingUser, &$usageJournalRows) {
             /** @var \App\Models\Inventory\RmStock|\App\Models\Inventory\FgStock|\App\Models\Inventory\SfgStock $header */
             $header = $map['header']::with('lines')->lockForUpdate()->findOrFail($docId);
 
@@ -109,6 +128,22 @@ class StockPostingService
                 };
 
                 $prevAvg = $prev ? (float) $prev->avg_unitprice : 0.0;
+
+                // Auto-jurnal pemakaian (2026-08-22, diperluas ke SFG 2026-08-22):
+                // cuma Stock Out sungguhan (docType OUT, bukan BB/RETURN/AD/OP) yang
+                // masuk HPP -- Adjustment/Opname punya makna akuntansi beda (koreksi,
+                // bukan konsumsi produksi) & sengaja TIDAK dijurnal otomatis di sini.
+                // SFG pakai akun langsung dari prod_part (stock_asset_account_id/
+                // cogs_account_id, migration 2026_08_22_000022) -- TANPA fallback
+                // kategori (prod_part tidak punya tabel setara doc_rmprefix1), jadi
+                // kalau belum diisi manual per part, baris ini akan selalu dilewati +
+                // masuk peringatan "belum lengkap" -- bukan silent skip.
+                // Nilai pakai avg_unitprice SEBELUM baris ini (prevAvg) -- itu
+                // valuasi moving-average yang sah saat barang ini keluar.
+                if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT') {
+                    $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => $prevAvg];
+                }
+
                 $unitPrice = (float) ($line->unit_price ?? 0);
                 $qtyIn = ($cat !== 'AD' && $cat !== 'OP' && ((int) $header->doc_type === 1 || $cat === 'RETURN')) ? abs((float) $line->qty) : 0;
                 $qtyOut = ($cat !== 'AD' && $cat !== 'OP' && (int) $header->doc_type === -1 && $cat !== 'RETURN') ? abs((float) $line->qty) : 0;
@@ -166,6 +201,65 @@ class StockPostingService
 
             return ['posted' => true, 'error' => null];
         });
+
+        if ($result['posted'] && ! empty($usageJournalRows)) {
+            $result['journal_warning'] = $this->postUsageJournal($category, $docId, $usageJournalRows, $actingUser);
+        }
+
+        return $result;
+    }
+
+    // Dr HPP (cogs_account_id) / Cr Persediaan (stock_asset_account_id) per
+    // item, dikelompokkan per pasangan akun. Akun kosong (item, dan utk RM
+    // fallback kategori doc_rmprefix1 -- SFG tak punya tabel fallback setara)
+    // DILEWATI dari jurnal, bukan membatalkan posting stok yang sudah terjadi
+    // -- caller cukup tampilkan peringatannya.
+    protected function postUsageJournal(string $category, int $docId, array $usageJournalRows, string $actingUser): ?string
+    {
+        $header = self::CATEGORY_MAP[$category]['header']::find($docId);
+        $rows = [];
+        $unmapped = 0;
+
+        foreach ($usageJournalRows as $r) {
+            if ($r['category'] === 'SFG') {
+                $part = ProdPart::find($r['item_id']);
+                $cogsAccountId = $part?->cogs_account_id;
+                $stockAccountId = $part?->stock_asset_account_id;
+            } else {
+                $material = MRawMaterial::find($r['item_id']);
+                $prefix1 = $material ? DocRmprefix1::where('category1', $material->category1)->first() : null;
+                $cogsAccountId = app(JournalPostingService::class)->resolveAccount($material?->cogs_account_id, $prefix1?->default_coa_account_id);
+                $stockAccountId = app(JournalPostingService::class)->resolveAccount($material?->stock_asset_account_id, $prefix1?->default_stock_asset_account_id);
+            }
+
+            $value = round($r['qty'] * $r['unit_cost'], 2);
+
+            if (! $cogsAccountId || ! $stockAccountId || $value <= 0) {
+                $unmapped++;
+
+                continue;
+            }
+
+            $key = $cogsAccountId.'-'.$stockAccountId;
+            $rows[$key]['cogs_account_id'] = $cogsAccountId;
+            $rows[$key]['stock_account_id'] = $stockAccountId;
+            $rows[$key]['value'] = ($rows[$key]['value'] ?? 0) + $value;
+        }
+
+        if (! empty($rows)) {
+            $label = $category === 'SFG' ? 'Pemakaian barang setengah jadi' : 'Pemakaian bahan baku';
+            $lines = [];
+            foreach ($rows as $row) {
+                $lines[] = ['account_id' => $row['cogs_account_id'], 'debit' => $row['value'], 'narration' => "{$label} {$header?->doc_no}"];
+                $lines[] = ['account_id' => $row['stock_account_id'], 'credit' => $row['value'], 'narration' => "{$label} {$header?->doc_no}"];
+            }
+
+            app(JournalPostingService::class)->post('USG', "STOCK_OUT_{$category}", $docId, "{$label} {$header?->doc_no}", $lines, $actingUser, $header?->doc_date?->toDateString());
+        }
+
+        return $unmapped > 0
+            ? "{$unmapped} baris belum punya akun HPP/Persediaan (item maupun kategori) -- jurnal pemakaian belum lengkap untuk baris tsb."
+            : null;
     }
 
     private function normalizeDocCat(?string $docCat): string

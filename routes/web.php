@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
 
             Route::livewire('/co', 'pages::co.list')->name('co.list');
             Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
+            Route::livewire('/co/delivery-plan', 'pages::co.delivery-plan')->name('co.delivery-plan');
         });
 
         Route::middleware('module:COSTING')->group(function () {
@@ -70,6 +71,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('module:FINACC')->group(function () {
             Route::livewire('/finance/coa', 'pages::finance.coa')->name('finance.coa');
             Route::livewire('/finance/dp-invoice', 'pages::finance.dp-invoice')->name('finance.dp-invoice');
+            Route::livewire('/finance/cash-bank', 'pages::finance.cash-bank')->name('finance.cash-bank');
         });
 
         Route::middleware('module:PROC')->group(function () {
@@ -81,6 +83,13 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/purchasing/po-approval', 'pages::pur.po.approval')->name('pur.po.approval');
             Route::livewire('/purchasing/pv', 'pages::pur.pv.index')->name('pur.pv.list');
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
+            Route::livewire('/purchasing/pq', 'pages::pur.pq.index')->name('pur.pq.list');
+            Route::livewire('/purchasing/pq/{pq}/edit', 'pages::pur.pq.entry')->name('pur.pq.entry');
+            Route::livewire('/purchasing/prt', 'pages::pur.prt.index')->name('pur.prt.list');
+            Route::livewire('/purchasing/prt/{prt}/edit', 'pages::pur.prt.entry')->name('pur.prt.entry');
+            Route::livewire('/purchasing/prt-approval', 'pages::pur.prt.approval')->name('pur.prt.approval');
+            Route::livewire('/purchasing/report/outstanding-pr', 'pages::pur.report.outstanding-pr')->name('pur.report.outstanding-pr');
+            Route::livewire('/purchasing/report/outstanding-po', 'pages::pur.report.outstanding-po')->name('pur.report.outstanding-po');
         });
 
         Route::middleware('module:INV')->group(function () {
@@ -92,6 +101,17 @@ Route::middleware('auth')->group(function () {
 
             // INV_TIER_4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
             Route::livewire('/inventory/stock-in/{category}', 'pages::inventory.stock-in')->name('inv.stock-in.index');
+            // Stock Out & Return v1 dikunci RM saja (INV_RULES.yaml out_wajib_wo /
+            // fg_out_bukan_milik_modul) -- {category} tetap di URL, ditolak di
+            // level route (mount()) kalau bukan RM, bukan cuma disembunyikan di UI.
+            Route::livewire('/inventory/stock-out/{category}', 'pages::inventory.stock-out')->name('inv.stock-out.index');
+            Route::livewire('/inventory/stock-return/{category}', 'pages::inventory.stock-return')->name('inv.stock-return.index');
+            // Adjustment & Opname mencakup RM/FG/SFG (INV_TIER_4.md #4) -- entri
+            // & approval route TERPISAH (INV_RULES.yaml layar_terpisah).
+            // {doc?} opsional -- dipakai layar Persetujuan (approval) utk deep-link
+            // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
+            Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');
+            Route::livewire('/inventory/stock-adjustment-approval/{category}', 'pages::inventory.stock-adjustment-approval')->name('inv.stock-adj.approval');
         });
 
         Route::middleware('module:HRM')->group(function () {

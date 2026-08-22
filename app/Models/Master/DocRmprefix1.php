@@ -14,5 +14,8 @@ class DocRmprefix1 extends Model
 
     protected $primaryKey = 'idprefix';
 
-    protected $fillable = ['category1', 'prefix1', 'note', 'stock_class', 'default_coa_account_id'];
+    protected $fillable = [
+        'category1', 'prefix1', 'note', 'stock_class', 'default_coa_account_id',
+        'default_stock_asset_account_id', 'default_gr_ir_account_id',
+    ];
 }

@@ -19,6 +19,8 @@ class CoOrderDelivery extends Model
         'shipment_type',
         'ship_date',
         'ship_qty',
+        'status',
+        'split_from_id',
         'created_by',
         'updated_by',
     ];
@@ -36,5 +38,10 @@ class CoOrderDelivery extends Model
     public function item(): BelongsTo
     {
         return $this->belongsTo(CoOrderItem::class, 'item_id', 'id_item');
+    }
+
+    public function splitFrom(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'split_from_id', 'id_delivery');
     }
 }

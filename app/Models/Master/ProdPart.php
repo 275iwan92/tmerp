@@ -27,6 +27,10 @@ class ProdPart extends Model
         'max_stock',
         'cur_stock',
         'is_active',
+        'stock_asset_account_id',
+        'cogs_account_id',
+        'cost_center_id',
+        'profit_center_id',
         'created_by',
         'updated_by',
     ];

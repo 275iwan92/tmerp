@@ -34,6 +34,10 @@ class ProdProduct extends Model
         'minimum_selling_price',
         'is_confirmed',
         'is_active',
+        'stock_asset_account_id',
+        'cogs_account_id',
+        'cost_center_id',
+        'profit_center_id',
         'created_by',
         'updated_by',
     ];

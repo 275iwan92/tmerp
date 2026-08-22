@@ -8,13 +8,15 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+// GRID_UI_STANDARD.md diikuti (2026-08-22). PR belum punya supplier (baru
+// dipilih di tahap PO), jadi kolom identitas pakai Departemen peminta -- sama
+// peran dgn "nama customer" di grid Quotation/CO. "+ New Record" tetap ada
+// karena PR memang dibuat dari grid ini sendiri (picker departemen).
 new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
 
     public string $search = '';
-
-    public string $statusFilter = '';
 
     public bool $pickerOpen = false;
 
@@ -33,12 +35,36 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                 $term = $this->search;
                 $q->where(function ($qq) use ($term) {
                     $qq->where('doc_no', 'like', "%{$term}%")
-                        ->orWhereHas('lines', fn ($l) => $l->where('i_description', 'like', "%{$term}%"));
+                        ->orWhereHas('lines', fn ($l) => $l->where('i_description', 'like', "%{$term}%"))
+                        ->orWhereHas('department', fn ($d) => $d->where('department_name', 'like', "%{$term}%"));
                 });
             })
-            ->when($this->statusFilter !== '', fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('pr_id')
             ->paginate(20);
+    }
+
+    #[Computed]
+    public function statTotal(): int
+    {
+        return PrRequisition::count();
+    }
+
+    #[Computed]
+    public function statSubmitted(): int
+    {
+        return PrRequisition::where('status', 'SUBMITTED')->count();
+    }
+
+    #[Computed]
+    public function statProgress(): int
+    {
+        return PrRequisition::whereIn('status', ['APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED'])->count();
+    }
+
+    #[Computed]
+    public function statRejected(): int
+    {
+        return PrRequisition::whereIn('status', ['REJECTED', 'REVISION_NEEDED'])->count();
     }
 
     public function openPicker(): void
@@ -67,83 +93,121 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
 
         return $this->redirect(route('pur.pr.entry', ['pr' => $requisition->pr_id]));
     }
+
+    public function openPr(int $id)
+    {
+        return $this->redirect(route('pur.pr.entry', ['pr' => $id]));
+    }
+
+    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    public function avatarInitials(string $name): string
+    {
+        $words = array_values(array_filter(explode(' ', trim($name))));
+        if (count($words) >= 2) {
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
+        }
+
+        return mb_strtoupper(mb_substr($name, 0, 2));
+    }
+
+    private const AVATAR_PALETTE = [
+        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
+        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
+    ];
+
+    public function avatarGradient(int $id): string
+    {
+        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
+    }
 };
 ?>
 
 <div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🧾 Purchase Requisition</b>
-        <span class="text-xs text-white/75">Permintaan pembelian: hasil MRP (auto) maupun manual (ad-hoc)</span>
-        <a href="{{ route('pur.po.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">📦 Purchase Order</a>
-        <a href="{{ route('pur.pr.approval') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">✅ Approval Center</a>
-        <a href="{{ route('menu') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
-    </header>
+    <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
+                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total PR</p>
+                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
+                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
+                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statSubmitted }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Disetujui / Diproses</p>
+                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statProgress }}</p>
+            </div>
+            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
+                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Ditolak / Revisi</p>
+                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statRejected }}</p>
+            </div>
+        </div>
 
-    <div class="max-w-[1280px] mx-auto my-5 px-4">
-        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex-wrap">
-                <div class="flex items-center gap-2">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PR / item..." class="w-64 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <select wire:model.live="statusFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        <option value="">Semua Status</option>
-                        <option value="DRAFT">Draft</option>
-                        <option value="SUBMITTED">Menunggu Approval</option>
-                        <option value="APPROVED">Disetujui</option>
-                        <option value="REJECTED">Ditolak</option>
-                        <option value="REVISION_NEEDED">Perlu Revisi</option>
-                        <option value="PARTIALLY_ORDERED">Sebagian jadi PO</option>
-                        <option value="FULLY_ORDERED">Sudah jadi PO</option>
-                        <option value="CLOSED">Selesai</option>
-                    </select>
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PR / departemen / item…"
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <button type="button" wire:click="openPicker" class="text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5 cursor-pointer">＋ PR Baru (Manual)</button>
+                <span class="flex-1"></span>
+                <button type="button" wire:click="openPicker"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
             </div>
 
-            <table class="w-full text-xs border-collapse">
-                <thead>
-                    <tr class="bg-[#f4f5f8]">
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">No. PR</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Tanggal</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Sumber</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Departemen</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Dibutuhkan</th>
-                        <th class="text-right px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Est. Nilai</th>
-                        <th class="text-left px-3 py-2 text-[10.5px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Status</th>
-                        <th class="px-3 py-2 border-b border-[#d7dbe2]"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($this->requisitions as $pr)
-                        <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe]" wire:key="pr-{{ $pr->pr_id }}">
-                            <td class="px-3 py-2 font-mono font-bold text-accent">{{ $pr->doc_no ?: '(draft)' }}</td>
-                            <td class="px-3 py-2">{{ $pr->i_doc_date?->translatedFormat('d M Y') }}</td>
-                            <td class="px-3 py-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $pr->i_source === 'MRP' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $pr->i_source === 'MRP' ? 'MRP AUTO' : 'MANUAL' }}</span>
-                            </td>
-                            <td class="px-3 py-2">{{ $pr->department?->department_name ?? '—' }}</td>
-                            <td class="px-3 py-2">{{ $pr->i_need_date?->translatedFormat('d M Y') ?? '—' }}</td>
-                            <td class="px-3 py-2 text-right font-semibold">{{ number_format((float) $pr->c_est_total, 0, ',', '.') }}</td>
-                            <td class="px-3 py-2">
-                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
-                                    {{ match ($pr->status) {
-                                        'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
-                                        'SUBMITTED' => 'bg-[#fff5e0] text-[#8a5a00]',
-                                        'APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
-                                        'REJECTED', 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
-                                        default => 'bg-[#eef1f5] text-[#4b5568]',
-                                    } }}">{{ $pr->status }}</span>
-                            </td>
-                            <td class="px-3 py-2 text-right">
-                                <a href="{{ route('pur.pr.entry', ['pr' => $pr->pr_id]) }}" class="text-accent font-semibold no-underline">Buka →</a>
-                            </td>
+            <div class="max-h-[65vh] overflow-auto">
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Departemen / No. PR</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Sumber</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Dibutuhkan</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Est. Nilai</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Status</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
                         </tr>
-                    @empty
-                        <tr><td colspan="8" class="text-center py-8 text-muted">Belum ada Purchase Requisition.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->requisitions as $pr)
+                            <tr wire:key="pr-{{ $pr->pr_id }}" wire:dblclick="openPr({{ $pr->pr_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($pr->pr_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($pr->department?->department_name ?: $pr->doc_no ?: 'PR') }}</div>
+                                        <div>
+                                            <div class="font-semibold text-[13px]">{{ $pr->department?->department_name ?? '—' }}</div>
+                                            <div class="text-[11px] text-muted font-mono">{{ $pr->doc_no ?: '(draft)' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pr->i_doc_date?->translatedFormat('d M Y') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $pr->i_source === 'MRP' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $pr->i_source === 'MRP' ? 'MRP AUTO' : 'MANUAL' }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pr->i_need_date?->translatedFormat('d M Y') ?? '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $pr->c_est_total, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full
+                                        {{ match ($pr->status) {
+                                            'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
+                                            'SUBMITTED' => 'bg-[#fff5e0] text-[#8a5a00]',
+                                            'APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
+                                            'REJECTED', 'CANCELLED', 'REVISION_NEEDED' => 'bg-[#fbeaea] text-[#a3241f]',
+                                            default => 'bg-[#eef1f5] text-[#4b5568]',
+                                        } }}">{{ $pr->status }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <button type="button" wire:click.stop="openPr({{ $pr->pr_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada Purchase Requisition.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="px-4 py-3 border-t border-[#eef1f5]">
+            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
                 {{ $this->requisitions->links() }}
             </div>
         </div>

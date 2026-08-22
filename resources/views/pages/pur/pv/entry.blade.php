@@ -20,6 +20,8 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
 
     public string $postMessage = '';
 
+    public string $journalWarning = '';
+
     public function mount(int $pv): void
     {
         $this->pvId = $pv;
@@ -208,6 +210,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
         }
 
         $this->postMessage = '';
+        $this->journalWarning = (string) ($result['journal_warning'] ?? '');
         unset($this->pv, $this->blockers);
     }
 
@@ -279,6 +282,9 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
 
         @if ($postMessage)
             <div class="bg-[#fff5e0] border border-[#e0c26a] text-[#8a5a00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ $postMessage }}</div>
+        @endif
+        @if ($journalWarning)
+            <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">ℹ {{ $journalWarning }} Lengkapi akun Persediaan/GR-IR di Master Bahan Baku atau kategori terkait.</div>
         @endif
 
         {{-- BARIS --}}

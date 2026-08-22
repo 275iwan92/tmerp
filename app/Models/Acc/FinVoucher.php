@@ -17,6 +17,8 @@ class FinVoucher extends Model
     protected $fillable = [
         'voucher_number',
         'journal_id',
+        'voucher_type',
+        'main_account_id',
         'entry_date',
         'posting_date',
         'doc_type',
@@ -24,6 +26,11 @@ class FinVoucher extends Model
         'source_type',
         'source_id',
         'reference_no',
+        'partner_name',
+        'ppn_type',
+        'efaktur_no',
+        'pph_type',
+        'bupot_no',
         'description',
         'status',
         'is_cancelled',
@@ -45,6 +52,11 @@ class FinVoucher extends Model
     public function journal(): BelongsTo
     {
         return $this->belongsTo(FinJournal::class, 'journal_id', 'journal_id');
+    }
+
+    public function mainAccount(): BelongsTo
+    {
+        return $this->belongsTo(FinAccount::class, 'main_account_id', 'account_id');
     }
 
     public function lines(): HasMany

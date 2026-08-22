@@ -10,7 +10,7 @@
 
 meta:
   modul: "HRM — Master Employee + Personal Self-Service (subset dari HR yang ditunda)"
-  status: "MASTER EMPLOYEE + SHIFT ROSTER + SELF-SERVICE JALAN (2026-08-19) — seluruh 25 tabel TIER_3A_HRM.sql ter-migrate (org_*/emp_*). prod_machine direstrukturisasi division_sbu->division_id (FK org_division); prod_shift/prod_shift_detail DIGANTI emp_shift/emp_shift_detail. pages::master.employee (/hrm/employee, grid+form 6 tab), pages::hrm.shift-roster (/hrm/shift-roster, papan PPIC drag-drop + grid HR sederhana), dan pages::self-service.index (/self-service, portal karyawan 8 tab) semua hidup & teruji. Auth link tm2sys.sec_user.employee_id SUDAH ada di skema (dipakai portal utk guard 'hanya akun sendiri') — user 'admin' ditautkan ke TM-00001 (Budi Santoso) via HrmMasterSeeder utk uji coba. Engine cuti (SOP 002/RP/TM/VII/2026) diimplementasi NYATA: H+7/H-7, maks 3 hari, kunci Izin selama saldo>0, maks 3x Izin/bulan (dihitung dari bulan date_from yg diajukan, bukan bulan berjalan — sempat bug lalu diperbaiki), lapor sakit >07:30 jadi warning bukan blocker. HR-side approval panel (mockup_master_employee_hr.html, belum diberikan) BELUM dibangun — smua pengajuan self-service baru submit+PENDING, tanpa alur approve/reject HR."
+  status: "SPEC LENGKAP & SINKRON (Tier 1/2/3A/4 + mockup) — DIPERBARUI 2026-08-18 dgn SOP Perizinan resmi (002/RP/TM/VII/2026). Belum diimplementasi Claude Code. Review Telma diperlukan sebelum eksekusi, KHUSUSNYA validasi ulang aturan SOP baru"
   lihat_global: "GLOBAL_RULES.yaml untuk konvensi umum"
   file_terkait:
     - "TIER_1_HRM.md — business requirements (SINKRON 2026-08-18)"

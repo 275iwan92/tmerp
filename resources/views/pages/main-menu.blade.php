@@ -67,9 +67,17 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
             'SALES_QUOT' => route('quotation.list'),
             'SALES_SO' => route('co.list'),
+            'SALES_PLAN' => route('co.delivery-plan'),
             'PROC_PR' => route('pur.pr.list'),
+            'PROC_PR_APPR' => route('pur.pr.approval'),
             'PROC_PO' => route('pur.po.list'),
+            'PROC_PO_APPR' => route('pur.po.approval'),
             'PROC_RCV' => route('pur.pv.list'),
+            'PROC_PQ' => route('pur.pq.list'),
+            'PROC_RET' => route('pur.prt.list'),
+            'PROC_RET_APPR' => route('pur.prt.approval'),
+            'PROC_MON_PR' => route('pur.report.outstanding-pr'),
+            'PROC_MON_PO' => route('pur.report.outstanding-po'),
             'MD_PROD' => route('master.produk'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
@@ -80,6 +88,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_SHIFT' => route('master.shift'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
+            'FIN_CASH' => route('finance.cash-bank'),
             // 2026-08-22: Laporan Inventory dipecah 3 menu per kelas stok
             // (RM/FG/SFG) -- 1 route param'd, 6 menu code beda category.
             'INV_RAW_RM' => route('inv.print.master-stock', ['category' => 'RM']),
@@ -93,6 +102,22 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_RM_ITEM1' => route('inv.stock-in.index', ['category' => 'RM']),
             'INV_FG_ITEM1' => route('inv.stock-in.index', ['category' => 'FG']),
             'INV_SFG_ITEM1' => route('inv.stock-in.index', ['category' => 'SFG']),
+            // Stock Out + Return from Production diperluas ke SFG 2026-08-22
+            // (barang setengah jadi yg sempat nunggu di gudang lanjut ke proses
+            // berikutnya, dan bisa diretur balik kalau cacat/tak kepakai). FG
+            // TETAP ditolak di keduanya -- barang jadi keluar cuma lewat
+            // Delivery Order (Dispatch, belum dibangun), bukan Stock Out
+            // generik (fg_out_bukan_milik_modul, dikonfirmasi user 2026-08-22).
+            'INV_RM_ITEM2' => route('inv.stock-out.index', ['category' => 'RM']),
+            'INV_SFG_ITEM2' => route('inv.stock-out.index', ['category' => 'SFG']),
+            'INV_RM_ITEM3' => route('inv.stock-return.index', ['category' => 'RM']),
+            'INV_SFG_ITEM3' => route('inv.stock-return.index', ['category' => 'SFG']),
+            'INV_RM_ITEM4' => route('inv.stock-adj.index', ['category' => 'RM']),
+            'INV_FG_ITEM4' => route('inv.stock-adj.index', ['category' => 'FG']),
+            'INV_SFG_ITEM4' => route('inv.stock-adj.index', ['category' => 'SFG']),
+            'INV_RM_ITEM5' => route('inv.stock-adj.approval', ['category' => 'RM']),
+            'INV_FG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'FG']),
+            'INV_SFG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'SFG']),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
