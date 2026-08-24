@@ -168,9 +168,6 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 
 <div>
     <div class="hub">
-        <h1>Mau buat inkuiri apa?</h1>
-        <p class="lead">Pilih jenisnya dulu — atau buka kembali inkuiri yang sudah tersimpan di bawah.</p>
-
         <div class="pick">
             <div class="opt n">
                 <div class="ico">✨</div><span class="tag">NEW</span>
@@ -259,31 +256,32 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
             <div class="hd">📂 <span>Inkuiri Tersimpan{{ $ftype ? ' — '.$this->typeLabel($ftype) : '' }}</span>
                 <span class="cnt">{{ $this->inquiries->count() }} inkuiri</span></div>
             <div class="bd">
-                <div class="note b shrink-0">
-                    Pilih inkuiri untuk membukanya. <b>DRAFT</b> bisa diedit; status lain dibuka sebagai lihat-saja.
-                </div>
                 <div class="filters">
                     <input type="text" wire:model.live.debounce.400ms="fq" placeholder="Cari no. inkuiri / nama produk / prospek…">
-                    <select wire:model.live="fst">
-                        <option value="">Semua status</option>
-                        <option value="DRAFT">DRAFT</option>
-                        <option value="WAITING_COST">WAITING_COST</option>
-                        <option value="SUBMITTED">SUBMITTED</option>
-                        <option value="PRICE_CALCULATED">PRICE_CALCULATED</option>
-                        <option value="PRICE_APPROVED">PRICE_APPROVED</option>
-                        <option value="QUOTED">QUOTED</option>
-                        <option value="PROVING">PROVING</option>
-                        <option value="PROVE_APPROVED">PROVE_APPROVED</option>
-                        <option value="CONVERTED">CONVERTED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                        <option value="LOST">LOST</option>
-                    </select>
-                    <select wire:model.live="ftype">
-                        <option value="">Semua tipe</option>
-                        <option value="NEW">NEW</option>
-                        <option value="RECALC">RECALC</option>
-                        <option value="REVISE">REVISE</option>
-                    </select>
+                    <div class="w-[170px] shrink-0">
+                        <select wire:model.live="fst">
+                            <option value="">Semua status</option>
+                            <option value="DRAFT">DRAFT</option>
+                            <option value="WAITING_COST">WAITING_COST</option>
+                            <option value="SUBMITTED">SUBMITTED</option>
+                            <option value="PRICE_CALCULATED">PRICE_CALCULATED</option>
+                            <option value="PRICE_APPROVED">PRICE_APPROVED</option>
+                            <option value="QUOTED">QUOTED</option>
+                            <option value="PROVING">PROVING</option>
+                            <option value="PROVE_APPROVED">PROVE_APPROVED</option>
+                            <option value="CONVERTED">CONVERTED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                            <option value="LOST">LOST</option>
+                        </select>
+                    </div>
+                    <div class="w-[140px] shrink-0">
+                        <select wire:model.live="ftype">
+                            <option value="">Semua tipe</option>
+                            <option value="NEW">NEW</option>
+                            <option value="RECALC">RECALC</option>
+                            <option value="REVISE">REVISE</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="qwrap">
