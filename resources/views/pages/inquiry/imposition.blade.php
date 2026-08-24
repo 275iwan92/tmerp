@@ -277,10 +277,13 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
         @if ($this->layout)
-        <div class="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-3.5">
+        {{-- flex, BUKAN class="grid" -- app.css .grid{} unlayered override
+             grid-cols/md:grid-cols manapun jadi 4 kolom sama rata (lihat catatan
+             di co/entry.blade.php & docs/FORM_UI_STANDARD.md). --}}
+        <div class="flex flex-col md:flex-row gap-3.5">
 
             {{-- KIRI: input --}}
-            <div>
+            <div class="md:w-[320px] md:shrink-0">
                 @if ($this->layout->is_confirmed)
                     <div class="bg-[#eaf7ee] border border-[#a9d9bb] text-[#1f8a4c] text-xs px-3.5 py-2.5 rounded-md mb-3.5 flex items-center justify-between gap-2">
                         <span>✓ Terkonfirmasi oleh {{ $this->layout->confirmed_by }} · {{ $this->layout->confirmed_at?->format('d/m/Y H:i') }}</span>
@@ -291,7 +294,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-3.5 overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📦 Bentangan Flat (1 up)</h3>
                     <div class="p-3.5">
-                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                        <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Flat W (mm)</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->flat_w_mm }}" @disabled($this->layout->is_confirmed)
@@ -315,7 +318,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-3.5 overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📄 Plano</h3>
                     <div class="p-3.5">
-                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                        <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Plano W (mm)</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->plano_w_mm }}" @disabled($this->layout->is_confirmed)
@@ -327,7 +330,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                                     wire:change="updateField('plano_h_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                        <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Gripper (mm)</label>
                                 <input type="number" step="0.1" value="{{ $this->layout->gripper_mm }}" @disabled($this->layout->is_confirmed)
@@ -377,7 +380,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             {{-- KANAN: hasil + visual --}}
-            <div>
+            <div class="md:flex-1 min-w-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center justify-between">
                         <span>🎯 Hasil Imposition</span>
@@ -385,7 +388,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                             class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✓ Konfirmasi</button>
                     </h3>
                     <div class="p-3.5">
-                        <div class="grid grid-cols-3 gap-2.5 mb-3">
+                        <div class="grid three gap-2.5 mb-3">
                             <div class="bg-[#f3fbf7] border border-[#22a06b] rounded-md px-3 py-2.5 text-center">
                                 <div class="text-[9.5px] text-muted uppercase font-bold">Total UP / plano</div>
                                 <div class="text-xl font-extrabold text-[#0e5c38]">{{ $this->layout->up_count }}</div>
