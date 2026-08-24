@@ -111,6 +111,42 @@ Approve/Reject sendiri — **dirombak total**:
 
 ---
 
+## 9. Grid master-detail — expand-row untuk preview item, tanpa pindah halaman
+
+**(2026-08-24)** Instruksi user: grid dokumen yang punya baris anak (item/line) --
+CO, Quotation, PO, dll -- harus gampang diintip detailnya dari grid, tidak
+cuma nama+total. Dicek dulu ke pola ERP besar (ScriptCase Grid Report versi
+lama kita sendiri: baris expand nampilin sub-tabel item; Odoo one2many list
+preview; SAP ALV drill-down; Dynamics 365 sub-grid) -- semua konvergen ke pola
+yang sama: **baris master + chevron toggle -> baris anak (nested table)
+inline**, bukan modal, bukan pindah halaman. Referensi implementasi:
+`resources/views/pages/co/list.blade.php`.
+
+- Kolom chevron **paling kiri**, sebelum kolom identitas, lebar sempit
+  (`w-[32px]`), tanpa label header. Isi `▸` (tertutup) / `▾` (terbuka).
+- State expand disimpan per-baris di komponen (`public array $expanded`,
+  simpan PK yang lagi kebuka) -- boleh lebih dari satu baris terbuka
+  bersamaan, tidak exclusive/accordion.
+- `wire:click.stop="toggleExpand($id)"` di tombol chevron -- **wajib** `.stop`
+  supaya tidak ikut memicu `wire:dblclick` buka halaman entry di baris yang
+  sama (dua aksi berbeda: klik chevron = intip di tempat, klik 2x baris =
+  buka form penuh untuk edit).
+- Baris detail = `<tr>` terpisah, `colspan` penuh ke lebar tabel, isi
+  nested `<table>` item (kolom relevan: deskripsi, qty, harga, subtotal,
+  due date, dst -- ikut kolom yang sama dipakai di tab "Product" pada
+  layar entry, jangan mengarang kolom yang tidak ada di skema).
+- **Query**: eager-load relasi item di komputed grid utama (`->with([...,
+  'items' => fn ($q) => $q->orderBy(...)])`) -- jangan N+1 per baris expand.
+  Data item sudah ikut ter-load meski belum di-expand (grid CO ukurannya
+  wajar/paginated 20 baris, biayanya kecil dibanding N+1 query per klik).
+- Ini **preview read-only** -- tidak ada edit/hapus/tambah item dari sini.
+  Untuk ubah item, tetap lewat ↗ Buka (form entry aslinya).
+- Tidak menggantikan kolom Aksi (§5 pola non-Master) atau toolbar (§6) --
+  chevron murni tambahan kolom paling kiri, aturan lain grid tetap berlaku
+  penuh.
+
+---
+
 ## 1. Tidak ada header halaman
 
 Shell (`layouts.shell`, lihat `docs/FIX_MASTER_CUSTOMER_NAV_ADDRESS.md` §A) sudah

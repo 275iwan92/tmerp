@@ -284,7 +284,21 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         <b class="text-[15px]">📦 Customer Order — Entry</b>
         <span class="text-xs text-white/75">{{ $this->order->co_no }} · {{ $this->order->quotation->customer?->customer_name }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full {{ $this->order->doc_status === 'CONFIRMED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $this->order->doc_status }}</span>
-        <a href="{{ route('co.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar Customer Order</a>
+
+        <div class="ml-auto flex items-center gap-4">
+            <div class="text-right leading-tight">
+                <div class="text-[9.5px] uppercase text-white/55 font-semibold">Net Receivable</div>
+                <div class="text-sm font-extrabold">{{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</div>
+            </div>
+            @if ($this->order->doc_status === 'DRAFT')
+                <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
+                    @disabled($this->order->items->isEmpty())
+                    class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                    ✓ Confirm CO
+                </button>
+            @endif
+            <a href="{{ route('co.list') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar Customer Order</a>
+        </div>
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
@@ -295,7 +309,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                 {{-- HEADER DOKUMEN --}}
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Dokumen</h3>
-                    <div class="grid grid-cols-4 gap-3">
+                    <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No. CO</label>
                             <input readonly value="{{ $this->order->co_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
@@ -309,14 +323,11 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ref. Quotation</label>
                             <input readonly value="{{ $this->order->quotation->quotation_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
                         </div>
+
                         <div>
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Cust. PO No.</label>
                             <input type="text" value="{{ $this->order->customer_po_no }}" @disabled($this->order->doc_status !== 'DRAFT')
                                 wire:change="updateHeader('customer_po_no', $event.target.value)" placeholder="PO/customer/..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Customer</label>
-                            <input readonly value="{{ $this->order->quotation->customer?->customer_name }} ({{ $this->order->quotation->customer?->customer_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
                         </div>
                         <div>
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Order Type</label>
@@ -327,7 +338,12 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                             <input readonly value="{{ $this->order->quotation->currency_code }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
                         </div>
 
-                        <div class="col-span-4">
+                        <div class="col-span-3">
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Customer</label>
+                            <input readonly value="{{ $this->order->quotation->customer?->customer_name }} ({{ $this->order->quotation->customer?->customer_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted font-semibold">
+                        </div>
+
+                        <div class="col-span-3">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Shipment Location</label>
                             <livewire:address-picker
                                 field-name="co-ship-address"
@@ -336,7 +352,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 :initial-label="$this->order->ship_address_label"
                                 wire:key="co-ship-picker-{{ $this->orderId }}" />
                         </div>
-                        <div class="col-span-3">
+                        <div class="col-span-2">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Detail Alamat (jalan, no., RT/RW, patokan)</label>
                             <input type="text" value="{{ $this->order->ship_address_detail }}" @disabled($this->order->doc_status !== 'DRAFT')
                                 wire:change="updateHeader('ship_address_detail', $event.target.value)" placeholder="Jl. ..., No. ..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
@@ -586,13 +602,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                         placeholder="Internal notes for Ops/PPIC..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->order->notes }}</textarea>
                 </div>
 
-                @if ($this->order->doc_status === 'DRAFT')
-                    <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
-                        @disabled($this->order->items->isEmpty())
-                        class="w-full px-4 py-2.5 rounded text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                        Confirm CO
-                    </button>
-                @else
+                @if ($this->order->doc_status !== 'DRAFT')
                     <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5">✓ Sudah di-confirm — isi terkunci</div>
                 @endif
             </div>

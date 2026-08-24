@@ -18,11 +18,29 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
     public string $search = '';
 
+    // Master-detail expand-row (2026-08-24, instruksi user): klik chevron buka
+    // preview item CO tanpa pindah halaman -- meniru ScriptCase report lama
+    // (row-expand) + pola Odoo/SAP/Dynamics (list-detail inline). $expanded
+    // simpan id_order yang lagi kebuka, bukan single value, krn user boleh
+    // expand beberapa baris sekaligus.
+    public array $expanded = [];
+
+    public function toggleExpand(int $id): void
+    {
+        if (in_array($id, $this->expanded, true)) {
+            $this->expanded = array_values(array_diff($this->expanded, [$id]));
+
+            return;
+        }
+
+        $this->expanded[] = $id;
+    }
+
     // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
     #[Computed]
     public function orders()
     {
-        return CoOrder::with('quotation.customer')
+        return CoOrder::with(['quotation.customer', 'items' => fn ($q) => $q->orderBy('line_seq')])
             ->when($this->search !== '', function ($q) {
                 $term = $this->search;
                 $q->where(function ($qq) use ($term) {
@@ -139,6 +157,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
+                            <th class="px-2 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[32px]"></th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer Order</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Ref. Quotation</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
@@ -149,7 +168,12 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                     </thead>
                     <tbody>
                         @forelse ($this->orders as $o)
+                            @php($isOpen = in_array($o->id_order, $this->expanded, true))
                             <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
+                                    <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? 'Tutup preview item' : 'Lihat item' }}"
+                                        class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">{{ $isOpen ? '▾' : '▸' }}</button>
+                                </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-2.5">
                                         <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($o->id_order) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($o->quotation?->customer?->customer_name ?: $o->co_no) }}</div>
@@ -172,8 +196,44 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                     @endif
                                 </td>
                             </tr>
+                            @if ($isOpen)
+                                <tr wire:key="co-detail-{{ $o->id_order }}" class="bg-[#fafbfd]">
+                                    <td colspan="7" class="px-3 py-2.5 border-b border-[#eef1f5]">
+                                        <table class="w-full text-[11.5px] border-collapse ml-8" style="width:calc(100% - 2rem)">
+                                            <thead>
+                                                <tr class="text-[10px] text-muted uppercase font-bold">
+                                                    <th class="text-left px-2 py-1">Produk / Jasa</th>
+                                                    <th class="text-center px-2 py-1 w-14">Type</th>
+                                                    <th class="text-right px-2 py-1 w-28">Qty</th>
+                                                    <th class="text-right px-2 py-1 w-24">Harga</th>
+                                                    <th class="text-right px-2 py-1 w-16">Disc%</th>
+                                                    <th class="text-right px-2 py-1 w-28">Subtotal</th>
+                                                    <th class="text-center px-2 py-1 w-24">Due Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse ($o->items as $item)
+                                                    <tr class="border-t border-[#eef1f5]" wire:key="co-detail-item-{{ $item->id_item }}">
+                                                        <td class="px-2 py-1.5">{{ $item->description }}</td>
+                                                        <td class="px-2 py-1.5 text-center">
+                                                            <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded {{ $item->line_kind === 'PRODUCT' ? 'bg-[#dbeafe] text-[#1e40af]' : 'bg-[#ede9fe] text-[#5b21b6]' }}">{{ $item->line_kind === 'PRODUCT' ? 'P' : 'S' }}</span>
+                                                        </td>
+                                                        <td class="px-2 py-1.5 text-right">{{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}</td>
+                                                        <td class="px-2 py-1.5 text-right">{{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                                                        <td class="px-2 py-1.5 text-right">{{ number_format($item->discount_pct, 1) }}%</td>
+                                                        <td class="px-2 py-1.5 text-right font-semibold">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                                        <td class="px-2 py-1.5 text-center text-muted">{{ $item->due_date?->translatedFormat('d M Y') ?? '—' }}</td>
+                                                    </tr>
+                                                @empty
+                                                    <tr><td colspan="7" class="text-center py-3 text-muted text-[11px]">Belum ada item.</td></tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            @endif
                         @empty
-                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Belum ada Customer Order.</td></tr>
+                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada Customer Order.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
