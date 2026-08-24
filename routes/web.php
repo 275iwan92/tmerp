@@ -117,6 +117,8 @@ Route::middleware('auth')->group(function () {
         Route::middleware('module:HRM')->group(function () {
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
+            Route::livewire('/hrm/attendance', 'pages::hrm.attendance.index')->name('hrm.attendance.index');
+            Route::livewire('/hrm/attendance/{employee}', 'pages::hrm.attendance.profile')->name('hrm.attendance.profile');
         });
     });
 });

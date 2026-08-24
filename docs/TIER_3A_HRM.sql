@@ -614,6 +614,42 @@ CREATE TABLE `emp_resign_request` (
 ) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Pengajuan resign. Saat PROCESSED, aplikasi set emp_employee.is_active=0, resign_date=effective_date, resign_reason=reason';
 
 -- ============================================================
+-- BAGIAN 3B — TIME ATTENDANCE (data mentah scan mesin fingerprint)
+-- Status SEBELUMNYA "ditunda" (lihat catatan lama di komentar kolom
+-- emp_out_permit_request.fingerprint_*) — DICABUT 2026-08-24 atas
+-- konfirmasi user: mesin fingerprint fisik sudah ada di lokasi, datanya
+-- keluar dalam bentuk Excel. Proses PARSING/IMPORT file Excel dikerjakan
+-- di sesi/prompt terpisah — tabel di sini HANYA tujuan akhir data yang
+-- sudah bersih (1 baris = 1 employee x 1 tanggal).
+-- Jadwal (Jadwal Masuk/Keluar) SENGAJA TIDAK disimpan di sini — dihitung
+-- app-layer dari emp_shift_roster + emp_shift_detail employee pada
+-- attendance_date ybs, supaya tidak dobel sumber kebenaran dengan modul
+-- Penjadwalan. Begitu juga Telat/Pulang Cepat/Alpha/Cuti/Sakit/Izin —
+-- semua status ditentukan app-layer saat render (lihat TIER_2_HRM.md
+-- Part D), bukan kolom tersimpan.
+-- ============================================================
+
+-- 3.11 emp_attendance_log (1 baris = 1 employee x 1 tanggal, hasil scan mesin)
+DROP TABLE IF EXISTS `emp_attendance_log`;
+CREATE TABLE `emp_attendance_log` (
+  `attendance_id`    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `employee_id`      BIGINT UNSIGNED NOT NULL,
+  `attendance_date`  DATE NOT NULL,
+  `clock_in_at`      DATETIME NULL DEFAULT NULL COMMENT 'Scan masuk aktual dari mesin fingerprint',
+  `clock_out_at`     DATETIME NULL DEFAULT NULL COMMENT 'Scan keluar aktual dari mesin fingerprint',
+  `source`           VARCHAR(15) NOT NULL DEFAULT 'EXCEL_IMPORT' COMMENT 'EXCEL_IMPORT|MANUAL — MANUAL dipakai HR utk koreksi/entri susulan',
+  `import_batch_ref` VARCHAR(100) NULL DEFAULT NULL COMMENT 'Nama file/batch Excel asal baris ini, utk penelusuran',
+  `notes`            VARCHAR(255) NULL DEFAULT NULL,
+  `created_at`       TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_by`       VARCHAR(100) NULL DEFAULT NULL,
+  `updated_at`       TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by`       VARCHAR(100) NULL DEFAULT NULL,
+  PRIMARY KEY (`attendance_id`),
+  UNIQUE KEY `uq_attendance_employee_date` (`employee_id`, `attendance_date`),
+  KEY `idx_attendance_date` (`attendance_date`)
+) ENGINE=InnoDB CHARACTER SET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Log kehadiran harian (scan fingerprint), 1 baris/employee/tanggal. Sumber data = import Excel (dikerjakan terpisah). Jadwal & status (Telat/Alpha/Cuti/dst) DIHITUNG app-layer saat render, bukan disimpan — lihat TIER_2_HRM.md Part D';
+
+-- ============================================================
 -- BAGIAN 4 — AUTH LINK (referensi saja — tabel users ada di tm2sys)
 -- ============================================================
 -- Di tm2sys.users WAJIB tambah kolom (bukan bagian file ini, referensi implementasi):

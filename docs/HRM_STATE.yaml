@@ -28,7 +28,7 @@ meta:
 # KEPUTUSAN ARSITEKTUR TERKUNCI — MASTER EMPLOYEE (HR Admin)
 # ═══════════════════════════════════════════════════════════════════
 keputusan_terkunci:
-  scope: "HANYA master employee (org_*/emp_*) + portal self-service. Recruitment(tm2hrr)/Payroll(tm2pyr) penuh/Attendance mesin TETAP ditunda — kecuali engine cuti (lihat cuti_engine) yg eksplisit diminta dibangun"
+  scope: "HANYA master employee (org_*/emp_*) + portal self-service + Time Attendance (lihat time_attendance, DICABUT dari status ditunda 2026-08-24). Recruitment(tm2hrr)/Payroll(tm2pyr) penuh TETAP ditunda"
   company_mode: "1 CV (belum PT) dgn 3 SBU/divisi: Offset Printing, Digital Printing, Indostry. org_company=1 baris, org_division=3 baris"
   employment_status: "4 tipe: TETAP, KONTRAK, HARIAN, BORONGAN (emp_contract.employment_type). PROBATION = flag is_probation+probation_end_date di emp_contract (BUKAN tipe baru). DIRUMAHKAN = field work_status di emp_employee (BUKAN tipe kontrak)"
   db_location: "org_*/emp_* di tm2mst (master netral), BUKAN tm2hrm"
@@ -99,6 +99,17 @@ foto_badge:
     lainnya: "Latar belakang polos & terang; wajah menghadap kamera tanpa kacamata hitam/masker/topi; format JPG/PNG maks 5MB"
   validasi: "Mockup sudah implementasi validasi JS nyata: cek dimensi aktual file yg diupload (lebar/tinggi px) + rasio 2:3, tampilkan peringatan jika belum memenuhi syarat SEBELUM submit"
   parameter_status: "Angka 4x6cm / 600x900px / rasio 2:3 adalah PARAMETER yg bisa dikonfigurasi ulang, bukan hardcode permanen"
+
+# ═══════════════════════════════════════════════════════════════════
+# TIME ATTENDANCE — DICABUT DARI STATUS DITUNDA (BARU, 2026-08-24)
+# ═══════════════════════════════════════════════════════════════════
+time_attendance:
+  keputusan: "User eksplisit minta menu Time Attendance + profil kehadiran per karyawan (referensi: screenshot layar V1 ScriptCase 'Data Profile'). Dikonfirmasi via AskUserQuestion: mesin fingerprint fisik SUDAH ada di lokasi (bukan input manual/mockup dummy), dan status ditunda di TIER_1_HRM.md/GLOBAL_RULES.yaml/checklist_mockup_erp.md DICABUT sekarang utk modul ini secara spesifik (bukan seluruh HR — recruitment & payroll penuh tetap ditunda)"
+  sumber_data: "Excel hasil export mesin fingerprint. Parsing/import file Excel ke emp_attendance_log DIKERJAKAN DI SESI/PROMPT CLAUDE TERPISAH (user eksplisit: 'sedang dianalisa terpisah dengan another prompt claude') — TIDAK dibangun di sesi ini. Sesi ini hanya membangun tabel tujuan + 2 layar konsumsi (worklist + profil)."
+  tabel: "emp_attendance_log (tm2mst, BARU) — 1 baris/employee/tanggal. Lihat TIER_3A_HRM.sql Bagian 3B"
+  layar: "1) Menu/worklist Time Attendance (grid karyawan + stat bulan berjalan) — route hrm.attendance.index. 2) Profil Kehadiran per karyawan (kartu identitas + filter tanggal + summary cuti/izin/sakit/lembur + tabel detail harian) — route hrm.attendance.profile. Detail spesifikasi: TIER_1_HRM.md §13, business logic: TIER_2_HRM.md Part D"
+  tidak_dikerjakan_sesi_ini: "Integrasi API/SDK langsung ke mesin fingerprint; parsing file Excel (lihat sumber_data); perhitungan potongan gaji dari Telat/Alpha (ranah Payroll, tetap ditunda)"
+  dokumen_lain_diupdate: "TIER_1_HRM.md §12 (Non-Goals, baris attendance dihapus)+§13 (baru), TIER_2_HRM.md Part D (baru), TIER_3A_HRM.sql Bagian 3B (baru), GLOBAL_RULES.yaml modules.11_hr.submodules (+attendance), checklist_mockup_erp.md MODUL 7 (baris Attendance Sheet)"
 
 # ═══════════════════════════════════════════════════════════════════
 # PORTAL SELF-SERVICE — KATALOG PENGAJUAN (lihat detail lengkap di PANDUAN_user_profile_selfservice.md)
