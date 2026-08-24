@@ -433,7 +433,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid">
                 <div>
                     <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal PR</label>
                     <input type="date" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" @disabled($this->pr->status !== 'DRAFT')

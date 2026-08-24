@@ -378,7 +378,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Dokumen</h3>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid">
                 <div>
                     <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Supplier</label>
                     <input readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
@@ -516,7 +516,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         {{-- DISPOSISI & FOLLOW-UP --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Disposisi & Follow-up</h3>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid">
                 <div>
                     <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Metode Komunikasi</label>
                     <input type="text" value="{{ $this->prt->comm_method }}" @disabled($readOnly) placeholder="Email / Telp / WA" wire:change="updateHeader('comm_method', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">

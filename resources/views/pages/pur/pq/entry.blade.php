@@ -315,7 +315,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
-            <div class="grid grid-cols-4 gap-3">
+            <div class="grid">
                 <div>
                     <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Supplier</label>
                     <input readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">

@@ -271,7 +271,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                 </tfoot>
             </table>
 
-            <div class="grid grid-cols-4 gap-3 mt-4">
+            <div class="grid mt-4">
                 <div class="border border-[#c8ccd4] rounded-sm p-2 text-center"><div class="text-[7.5pt] text-muted uppercase">Saldo Awal</div><div class="text-[12pt] font-bold text-navy">{{ number_format($this->ledger['openingBalance'], 2) }}</div></div>
                 <div class="border border-[#c8ccd4] rounded-sm p-2 text-center"><div class="text-[7.5pt] text-muted uppercase">Total Masuk</div><div class="text-[12pt] font-bold text-[#0f9d58]">+{{ number_format($this->totals['in'], 2) }}</div></div>
                 <div class="border border-[#c8ccd4] rounded-sm p-2 text-center"><div class="text-[7.5pt] text-muted uppercase">Total Keluar</div><div class="text-[12pt] font-bold text-[#b71c1c]">−{{ number_format($this->totals['out'], 2) }}</div></div>

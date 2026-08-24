@@ -503,7 +503,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
-                    <div class="grid grid-cols-4 gap-3">
+                    <div class="grid">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">No. Dokumen</label>
                             <input type="text" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono bg-[#f4f6fa] text-muted">
@@ -598,7 +598,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                             <div class="{{ abs($this->totalDebit - $this->totalCredit) < 0.01 ? 'text-[#16a34a]' : 'text-[#c0392b]' }}"><span class="text-muted font-normal mr-1.5">Selisih:</span>{{ number_format(abs($this->totalDebit - $this->totalCredit), 0, ',', '.') }}</div>
                         </div>
                     @elseif ($activeTab === 'tax')
-                        <div class="grid grid-cols-4 gap-3">
+                        <div class="grid">
                             <div class="flex flex-col gap-1">
                                 <label class="text-xs font-semibold text-[#556]">Perlakuan PPN</label>
                                 <select wire:model="ppn_type" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">

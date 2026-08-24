@@ -83,7 +83,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
         {{-- STATS --}}
-        <div class="grid grid-cols-4 gap-3 mb-4">
+        <div class="grid mb-4">
             <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
                 <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Gudang</p>
                 <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ number_format($this->stats['total']) }}</p>

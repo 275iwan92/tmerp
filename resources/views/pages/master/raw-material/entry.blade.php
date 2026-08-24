@@ -566,7 +566,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Parameter Pengadaan</p>
-                        <div class="grid grid-cols-4 gap-2">
+                        <div class="grid">
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Lead Time (hari)</label><input type="number" wire:model="lead_time_days" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Toleransi Terima (%)</label><input type="number" step="0.1" wire:model="tol_purchase" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
                             <div>
@@ -618,7 +618,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 <div @if ($activeTab !== 'inventory') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Batas Persediaan</p>
-                        <div class="grid grid-cols-4 gap-2">
+                        <div class="grid">
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Min Stock</label><input type="number" wire:model="min_stock" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Safety Stock</label><input type="number" wire:model="safety_stock" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Reorder Point</label><input type="number" wire:model="reorder_point" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
