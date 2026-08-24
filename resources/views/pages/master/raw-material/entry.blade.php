@@ -471,7 +471,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Kepabeanan &amp; Kode Legacy</p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid three">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kode HS</label>
                                 <input type="text" wire:model="hs_code" placeholder="4810.13.00" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -492,7 +492,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 <div @if ($activeTab !== 'specs') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Dimensi &amp; Fisik <span class="text-muted normal-case font-normal">(kosongkan bila bukan kertas/board)</span></p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid three">
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Gramatur (gsm)</label><input type="number" wire:model="gram_weight" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Panjang Plano (cm)</label><input type="number" step="0.0001" wire:model="cm_length" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
                             <div><label class="text-[10px] text-muted uppercase font-semibold block mb-1">Lebar Plano (cm)</label><input type="number" step="0.0001" wire:model="cm_width" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
@@ -503,7 +503,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">QC &amp; Masa Simpan</p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid three">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Wajib QC Saat Terima</label>
                                 <select wire:model="qc_required" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -522,7 +522,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 <div @if ($activeTab !== 'uom') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Satuan &amp; Konversi</p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid three">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">UoM Stok</label>
                                 <select wire:model="uom_stock" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -551,7 +551,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                 </select>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div class="grid two mt-2">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Konversi Beli → Stok</label>
                                 <input type="number" step="0.000001" wire:model="conversion_to_stock" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -590,7 +590,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Metode Harga Perolehan</p>
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid two">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Costing Method</label>
                                 <select wire:model="costing_method" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -627,7 +627,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     </div>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Lokasi &amp; Saldo</p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid three">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Default Lokasi Gudang</label>
                                 <input type="text" wire:model="def_location_id" placeholder="belum ada master gudang -- isi bebas" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -650,7 +650,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 <div @if ($activeTab !== 'accounting') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Linkage ke Chart of Account <span class="text-muted normal-case font-normal">(langsung ke fin_account, tanpa lapisan penentu-akun)</span></p>
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid three">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Label Klasifikasi <span class="normal-case font-normal">(opsional)</span></label>
                                 <input type="text" wire:model="valuation_class" placeholder="mis. Raw Material - Kertas" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -675,7 +675,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                 </select>
                             </div>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div class="grid three mt-2">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Akun Kliring GR/IR</label>
                                 <select wire:model="gr_ir_account_id" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">

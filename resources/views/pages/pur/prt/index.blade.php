@@ -192,7 +192,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="grid grid-cols-3 gap-3 mb-3.5">
+        <div class="grid three mb-3.5">
             <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
                 <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Retur</p>
                 <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
@@ -283,7 +283,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="flex-1 overflow-y-auto p-4">
                     @if (! $pickerSource)
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid two">
                             <button type="button" wire:click="pickSourceType('pv')" class="border-2 border-[#d7dbe2] hover:border-accent rounded-lg p-4 text-left cursor-pointer">
                                 <div class="text-lg mb-1">📦</div>
                                 <div class="text-xs font-bold text-navy">Dari PV (QC Reject)</div>

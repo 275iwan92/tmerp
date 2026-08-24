@@ -770,15 +770,15 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                             ['Agama', $emp->religion],
                             ['Telepon / WA', $emp->phone],
                         ] as [$label, $value])
-                            <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 py-2 text-[13px] border-b border-[#f8fafc] items-center">
-                                <div class="text-muted text-xs">{{ $label }}</div>
-                                <div class="font-medium">{{ $value ?: '—' }}</div>
+                            <div class="flex gap-2.5 py-2 text-[13px] border-b border-[#f8fafc] items-center">
+                                <div class="w-[130px] shrink-0 text-muted text-xs">{{ $label }}</div>
+                                <div class="flex-1 font-medium">{{ $value ?: '—' }}</div>
                                 <button type="button" wire:click="openCorrection('{{ $label }}', @js($value))" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Ajukan Koreksi</button>
                             </div>
                         @endforeach
-                        <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 py-2 text-[13px] items-center">
-                            <div class="text-muted text-xs">Posisi</div>
-                            <div class="font-medium">{{ $emp->position?->position_name }}</div>
+                        <div class="flex gap-2.5 py-2 text-[13px] items-center">
+                            <div class="w-[130px] shrink-0 text-muted text-xs">Posisi</div>
+                            <div class="flex-1 font-medium">{{ $emp->position?->position_name }}</div>
                             <span class="text-[10px] font-semibold bg-[#f1f5f9] text-muted px-2 py-0.5 rounded">Hanya HR</span>
                         </div>
                     </div>
@@ -789,22 +789,22 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                             ['Alamat KTP', $emp->address_detail_ktp],
                             ['Alamat Domisili', $emp->address_detail_domisili],
                         ] as [$label, $value])
-                            <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 py-2 text-[13px] border-b border-[#f8fafc] items-start">
-                                <div class="text-muted text-xs pt-1">{{ $label }}</div>
-                                <div class="font-medium">{{ $value ?: '—' }}</div>
+                            <div class="flex gap-2.5 py-2 text-[13px] border-b border-[#f8fafc] items-start">
+                                <div class="w-[130px] shrink-0 text-muted text-xs pt-1">{{ $label }}</div>
+                                <div class="flex-1 font-medium">{{ $value ?: '—' }}</div>
                                 <button type="button" wire:click="openCorrection('{{ $label }}', @js($value))" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Ajukan Koreksi</button>
                             </div>
                         @endforeach
 
                         <div class="text-sm font-bold text-[#0f172a] mt-4 mb-3 pb-2 border-b border-[#f1f5f9]">BPJS &amp; Jaminan Sosial</div>
-                        <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 py-2 text-[13px] items-center">
-                            <div class="text-muted text-xs">BPJS Kesehatan</div>
-                            <div class="font-medium">{{ $emp->bpjsKesehatan?->no_kepesertaan ?: '—' }}</div>
+                        <div class="flex gap-2.5 py-2 text-[13px] items-center">
+                            <div class="w-[130px] shrink-0 text-muted text-xs">BPJS Kesehatan</div>
+                            <div class="flex-1 font-medium">{{ $emp->bpjsKesehatan?->no_kepesertaan ?: '—' }}</div>
                             <button type="button" wire:click="openCorrection('No. BPJS Kesehatan', @js($emp->bpjsKesehatan?->no_kepesertaan))" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Ajukan Koreksi</button>
                         </div>
-                        <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 py-2 text-[13px] items-center">
-                            <div class="text-muted text-xs">BPJS TK</div>
-                            <div class="font-medium">{{ $emp->bpjsKetenagakerjaan?->no_kepesertaan ?: '—' }}</div>
+                        <div class="flex gap-2.5 py-2 text-[13px] items-center">
+                            <div class="w-[130px] shrink-0 text-muted text-xs">BPJS TK</div>
+                            <div class="flex-1 font-medium">{{ $emp->bpjsKetenagakerjaan?->no_kepesertaan ?: '—' }}</div>
                             <button type="button" wire:click="openCorrection('No. BPJS Ketenagakerjaan', @js($emp->bpjsKetenagakerjaan?->no_kepesertaan))" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Ajukan Koreksi</button>
                         </div>
                     </div>
@@ -871,25 +871,25 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                             <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Status Pernikahan</div>
-                            <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 items-center">
-                                <div class="text-muted text-xs">Status Saat Ini</div>
-                                <div class="font-medium">—</div>
+                            <div class="flex gap-2.5 items-center">
+                                <div class="w-[130px] shrink-0 text-muted text-xs">Status Saat Ini</div>
+                                <div class="flex-1 font-medium">—</div>
                                 <button type="button" wire:click="openFamilyReq('PASANGAN')" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Ajukan Perubahan</button>
                             </div>
                         </div>
                         <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                             <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Rekening Bank Payroll</div>
-                            <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 items-center">
-                                <div class="text-muted text-xs">Bank / No. Rek</div>
-                                <div class="font-medium">{{ $emp->bankAccounts->firstWhere('is_primary', true)?->bank_name }} {{ $emp->bankAccounts->firstWhere('is_primary', true)?->account_no }}</div>
+                            <div class="flex gap-2.5 items-center">
+                                <div class="w-[130px] shrink-0 text-muted text-xs">Bank / No. Rek</div>
+                                <div class="flex-1 font-medium">{{ $emp->bankAccounts->firstWhere('is_primary', true)?->bank_name }} {{ $emp->bankAccounts->firstWhere('is_primary', true)?->account_no }}</div>
                                 <button type="button" wire:click="openCorrection('Rekening Bank Payroll', @js($emp->bankAccounts->firstWhere('is_primary', true)?->account_no))" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Ajukan Ganti</button>
                             </div>
                         </div>
                         <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5 md:col-span-2">
                             <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Kontak Darurat</div>
-                            <div class="grid grid-cols-[130px_1fr_auto] gap-2.5 items-center">
-                                <div class="text-muted text-xs">Nama &amp; Hubungan</div>
-                                <div class="font-medium">{{ $emp->emergency_contact_name ?: '—' }} @if ($emp->emergency_contact_relation) ({{ $emp->emergency_contact_relation }}) @endif</div>
+                            <div class="flex gap-2.5 items-center">
+                                <div class="w-[130px] shrink-0 text-muted text-xs">Nama &amp; Hubungan</div>
+                                <div class="flex-1 font-medium">{{ $emp->emergency_contact_name ?: '—' }} @if ($emp->emergency_contact_relation) ({{ $emp->emergency_contact_relation }}) @endif</div>
                                 <button type="button" wire:click="openCorrection('Kontak Darurat', @js($emp->emergency_contact_name))" class="text-[11px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] px-2 py-1 rounded cursor-pointer">Edit Kontak</button>
                             </div>
                         </div>

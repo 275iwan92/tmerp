@@ -167,7 +167,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ IDENTITAS ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">1. Identitas & Klasifikasi</h3>
-            <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="grid two mb-3">
                 <div class="flex flex-col gap-1">
                     <label class="text-[10px] text-muted uppercase font-semibold">Kode Gudang</label>
                     <input type="text" wire:model="warehouse_code" placeholder="WH-RAW-01" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs font-mono">

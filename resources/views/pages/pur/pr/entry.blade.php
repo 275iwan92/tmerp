@@ -537,12 +537,12 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                     @endif
                 </div>
 
-                <div x-show="tab === 'free'" class="grid grid-cols-[1fr_140px_auto] gap-2 items-end">
-                    <div>
+                <div x-show="tab === 'free'" class="flex gap-2 items-end">
+                    <div class="flex-1">
                         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Deskripsi</label>
                         <input type="text" wire:model="freeDescription" placeholder="mis. Laptop Dell Latitude, Renovasi kantin" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
-                    <div>
+                    <div class="w-[140px] shrink-0">
                         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">UoM</label>
                         <input type="text" wire:model="freeUom" placeholder="Unit" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>

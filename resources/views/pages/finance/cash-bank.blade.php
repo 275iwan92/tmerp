@@ -404,7 +404,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         @endif
 
         @if ($panel === 'grid')
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
+            <div class="grid three mb-3.5">
                 <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
                     <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Voucher</p>
                     <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
@@ -626,7 +626,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                             </div>
                         </div>
                     @else
-                        <div class="grid grid-cols-3 gap-3">
+                        <div class="grid three">
                             <div class="flex flex-col gap-1">
                                 <label class="text-xs font-semibold text-[#556]">Dibuat Oleh</label>
                                 <input type="text" readonly value="{{ $this->editingVoucher?->created_by ?? Auth::user()->login }}" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f4f6fa] text-muted">
