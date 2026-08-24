@@ -376,7 +376,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
     <div class="max-w-[1300px] mx-auto my-5 px-4">
 
         {{-- HEADER BAR --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid grid-cols-4 gap-3">
+        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid gap-3">
             <div class="col-span-2">
                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Nama Item</label>
                 <input type="text" wire:model="material_name" placeholder="mis. Art Carton 210gr 65x100 GOLDEN" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
@@ -418,7 +418,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 <div @if ($activeTab !== 'category') style="display:none" @endif>
                     <div class="border border-[#d7dbe2] rounded-md p-3 mb-3">
                         <p class="text-[10px] font-bold text-accent uppercase mb-2">Hirarki Pembentuk Kode Item</p>
-                        <div class="grid grid-cols-5 gap-2">
+                        <div class="[display:grid] grid-cols-5 gap-2">
                             <div>
                                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kategori</label>
                                 <select wire:change="setPick(1, $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs" @disabled($this->isEdit)>

@@ -193,7 +193,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
             <div><div class="text-[7.5pt] text-muted uppercase">Gudang</div><div class="text-[10pt] font-bold text-navy">{{ $warehouseId ? $this->warehouses->firstWhere('id_warehouse', $warehouseId)?->warehouse_name : 'Semua Gudang' }}</div></div>
         </div>
 
-        <div class="grid grid-cols-5 gap-2.5 mb-3">
+        <div class="[display:grid] grid-cols-5 gap-2.5 mb-3">
             <div class="border border-[#c8ccd4] rounded-sm p-2 text-center"><div class="text-[7.5pt] text-muted uppercase">Total Item</div><div class="text-[12pt] font-bold text-navy">{{ $this->report['itemCount'] }}</div></div>
             <div class="border border-[#c8ccd4] rounded-sm p-2 text-center"><div class="text-[7.5pt] text-muted uppercase">Total Saldo Awal</div><div class="text-[12pt] font-bold text-navy">{{ number_format($this->report['totals']['bb'], 2) }}</div></div>
             <div class="border border-[#c8ccd4] rounded-sm p-2 text-center"><div class="text-[7.5pt] text-muted uppercase">Total Masuk</div><div class="text-[12pt] font-bold text-[#0f9d58]">+{{ number_format($this->report['totals']['in'], 2) }}</div></div>

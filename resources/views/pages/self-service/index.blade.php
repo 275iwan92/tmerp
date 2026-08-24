@@ -835,7 +835,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- ===================== TAB: KELUARGA & STATUS ===================== --}}
             @if ($tab === 'keluarga')
-                <div class="grid grid-cols-1 gap-4">
+                <div class="flex flex-col gap-4">
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#f1f5f9]">
                             <div class="text-sm font-bold text-[#0f172a]">Anggota Keluarga Terdaftar</div>
@@ -953,7 +953,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5 mb-4">
                     <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Saldo Cuti Tahunan — {{ now()->year }}</div>
-                    <div class="grid grid-cols-3 gap-2.5">
+                    <div class="grid three gap-2.5">
                         <div class="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg p-3 text-center"><div class="text-lg font-bold text-[#0f172a]">{{ $this->currentYearBalance?->entitlement_days }}</div><div class="text-[10px] text-muted uppercase font-bold">Hak Cuti</div></div>
                         <div class="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg p-3 text-center"><div class="text-lg font-bold text-[#92400e]">{{ $this->currentYearBalance?->used_days }}</div><div class="text-[10px] text-muted uppercase font-bold">Terpakai</div></div>
                         <div class="bg-[#f8fafc] border border-[#e2e8f0] rounded-lg p-3 text-center"><div class="text-lg font-bold text-[#166534]">{{ $this->currentYearBalance?->remainingDays() }}</div><div class="text-[10px] text-muted uppercase font-bold">Sisa Saldo</div></div>
@@ -981,7 +981,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-xs text-[#991b1b] bg-[#fef2f2] border-l-4 border-[#ef4444] px-3.5 py-2.5 rounded-r-md mb-3">Izin bersifat <b>Unpaid</b> (no present no pay). Maksimal 3 hari berturut &amp; 3x pengajuan per bulan — lebih dari itu otomatis Alpha.</div>
                     @endif
 
-                    <div class="grid grid-cols-2 gap-2.5 mb-3">
+                    <div class="grid two gap-2.5 mb-3">
                         <div>
                             <label class="text-xs text-muted block mb-1">Dari Tanggal</label>
                             <input type="date" wire:model="leave_date_from" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -1003,7 +1003,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     @if ($leave_type === 'SAKIT')
-                        <div class="grid grid-cols-2 gap-2.5 mb-3">
+                        <div class="grid two gap-2.5 mb-3">
                             <div>
                                 <label class="text-xs text-muted block mb-1">Jam Lapor ke HRD</label>
                                 <input type="time" wire:model.live="sakit_lapor_jam" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -1022,7 +1022,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                 @error('att_jkn_screenshot') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                             </div>
                         @else
-                            <div class="grid grid-cols-2 gap-2.5 mb-3">
+                            <div class="grid two gap-2.5 mb-3">
                                 <div>
                                     <label class="text-xs text-muted block mb-1">Surat Keterangan Dokter</label>
                                     <input type="file" wire:model="att_surat_dokter" class="w-full text-[12px]">
@@ -1054,7 +1054,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                 </select>
                             </div>
                             @if ($izin_category === 'INSTANSI_RESMI')
-                                <div class="grid grid-cols-2 gap-2.5 mb-3">
+                                <div class="grid two gap-2.5 mb-3">
                                     <div>
                                         <label class="text-xs text-muted block mb-1">Untuk Keperluan</label>
                                         <select wire:model="izin_relasi_pemohon" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -1138,7 +1138,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Izin Keluar Area Kerja</div>
                         <div class="text-xs text-[#78350f] bg-[#fffbeb] border-l-4 border-[#f59e0b] px-3.5 py-2.5 rounded-r-md mb-3">Wajib disetujui <b>Atasan Langsung DAN HRD</b> sebelum meninggalkan area pabrik.</div>
                         <div class="mb-3"><label class="text-xs text-muted block mb-1">Tanggal</label><input type="date" wire:model="op_permit_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('op_permit_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                        <div class="grid grid-cols-2 gap-2.5 mb-3">
+                        <div class="grid two gap-2.5 mb-3">
                             <div><label class="text-xs text-muted block mb-1">Jam Keluar</label><input type="time" wire:model="op_out_time" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('op_out_time') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
                             <div><label class="text-xs text-muted block mb-1">Jam Kembali</label><input type="time" wire:model="op_return_time" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
                         </div>
@@ -1374,7 +1374,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <form wire:submit="saveEdu" class="flex flex-col gap-3">
                     <div><label class="text-xs text-muted block mb-1">Nama Pelatihan / Sertifikasi</label><input wire:model="edu_activity_name" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('edu_activity_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
                     <div><label class="text-xs text-muted block mb-1">Penyelenggara</label><input wire:model="edu_organizer" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
-                    <div class="grid grid-cols-2 gap-2.5">
+                    <div class="grid two gap-2.5">
                         <div><label class="text-xs text-muted block mb-1">Tanggal</label><input type="date" wire:model="edu_activity_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('edu_activity_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
                         <div><label class="text-xs text-muted block mb-1">Biaya (Rp)</label><input type="number" wire:model="edu_cost" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
                     </div>

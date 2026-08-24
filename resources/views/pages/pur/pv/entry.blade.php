@@ -252,7 +252,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
 
     <div class="max-w-[1500px] mx-auto my-5 px-4">
         {{-- HEADER --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid grid-cols-4 gap-3">
+        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid gap-3">
             <div>
                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal Terima</label>
                 <input type="date" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">

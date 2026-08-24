@@ -474,7 +474,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                 </div>
 
                 <div x-show="tab === 'master'">
-                    <div class="grid grid-cols-5 gap-2 mb-2">
+                    <div class="[display:grid] grid-cols-5 gap-2 mb-2">
                         <div>
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kategori</label>
                             <select wire:change="setPick(1, $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
