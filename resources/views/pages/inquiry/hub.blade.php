@@ -66,12 +66,19 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
             return;
         }
 
-        $type = IqpInquiry::whereKey($this->selectedId)->value('inquiry_type');
+        return $this->openRow($this->selectedId);
+    }
+
+    // Klik 2x baris / ikon Aksi -- buka langsung tanpa lewat select+tombol
+    // footer dulu (GRID_UI_STANDARD.md: klik 2x buka detail).
+    public function openRow(int $id)
+    {
+        $type = IqpInquiry::whereKey($id)->value('inquiry_type');
 
         return match ($type) {
-            'RECALC' => redirect()->route('inquiry.recalc', ['id' => $this->selectedId]),
-            'REVISE' => redirect()->route('inquiry.revise', ['id' => $this->selectedId]),
-            default => redirect()->route('inquiry.form', ['id' => $this->selectedId]),
+            'RECALC' => redirect()->route('inquiry.recalc', ['id' => $id]),
+            'REVISE' => redirect()->route('inquiry.revise', ['id' => $id]),
+            default => redirect()->route('inquiry.form', ['id' => $id]),
         };
     }
 
@@ -293,11 +300,13 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                 <th class="hide-sm">Tipe Produk</th>
                                 <th style="text-align:right">Qty tier utama</th>
                                 <th>Status</th><th>Jenis</th>
+                                <th style="text-align:center; width:1%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->inquiries as $row)
-                                <tr wire:key="inq-{{ $row->id_inquiry }}" class="{{ $selectedId === $row->id_inquiry ? 'sel' : '' }}" wire:click="selectRow({{ $row->id_inquiry }})">
+                                <tr wire:key="inq-{{ $row->id_inquiry }}" class="{{ $selectedId === $row->id_inquiry ? 'sel' : '' }}"
+                                    wire:click="selectRow({{ $row->id_inquiry }})" wire:dblclick="openRow({{ $row->id_inquiry }})" title="Klik 2x untuk buka">
                                     <td><span class="qdoc">{{ $row->inquiry_no ?: '(draft, belum ada no.)' }}</span></td>
                                     <td>{{ $row->inquiry_date?->format('Y-m-d') }}</td>
                                     <td>
@@ -313,9 +322,16 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                     </td>
                                     <td><span class="pill {{ $this->statusPillClass($row->sub_state) }}">{{ $row->sub_state }}</span></td>
                                     <td><span class="pill {{ strtolower($row->inquiry_type) }}">{{ $row->inquiry_type }}</span></td>
+                                    <td style="text-align:center">
+                                        <button type="button" wire:click.stop="openRow({{ $row->id_inquiry }})"
+                                            title="{{ $row->sub_state === 'DRAFT' ? 'Buka untuk diedit' : 'Buka (lihat-saja)' }}"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">
+                                            {{ $row->sub_state === 'DRAFT' ? '✎' : '↗' }}
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="8"><div class="qempty">Belum ada inkuiri yang cocok.</div></td></tr>
+                                <tr><td colspan="9"><div class="qempty">Belum ada inkuiri yang cocok.</div></td></tr>
                             @endforelse
                         </tbody>
                     </table>
