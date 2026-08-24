@@ -760,7 +760,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     <b>SOP Pembaruan Data:</b> Informasi di bawah bersifat <i>read-only</i>. Jika ada kesalahan entri, klik <b>"Ajukan Koreksi"</b> — perubahan aktif setelah diverifikasi HR.
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid two gap-4">
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Profil Utama</div>
                         @foreach ([
@@ -868,7 +868,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-xs text-[#334155] bg-[#f0f9ff] border-l-4 border-accent px-3.5 py-2.5 rounded-r-md mt-3">Anggota keluarga meninggal <b>tidak dihapus</b> dari histori — demi keakuratan rekaman tunjangan &amp; klaim masa lalu.</div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid two gap-4">
                         <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                             <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Status Pernikahan</div>
                             <div class="flex gap-2.5 items-center">
@@ -899,7 +899,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- ===================== TAB: DOKUMEN & PENDIDIKAN ===================== --}}
             @if ($tab === 'dokumen')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid two gap-4">
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Dokumen Identitas Diri</div>
                         @foreach (['KTP' => 'KTP Elektronik', 'NPWP' => 'NPWP', 'SIM' => 'SIM C', 'KK' => 'Kartu Keluarga', 'PASSPORT' => 'Paspor', 'SKCK' => 'SKCK'] as $type => $label)
@@ -1133,7 +1133,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- ===================== TAB: IZIN KELUAR ===================== --}}
             @if ($tab === 'izinkeluar')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid two gap-4">
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Izin Keluar Area Kerja</div>
                         <div class="text-xs text-[#78350f] bg-[#fffbeb] border-l-4 border-[#f59e0b] px-3.5 py-2.5 rounded-r-md mb-3">Wajib disetujui <b>Atasan Langsung DAN HRD</b> sebelum meninggalkan area pabrik.</div>
@@ -1167,7 +1167,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- ===================== TAB: TUKAR SHIFT ===================== --}}
             @if ($tab === 'tukarshift')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid two gap-4">
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Tukar Shift</div>
                         <div class="text-xs text-[#78350f] bg-[#fffbeb] border-l-4 border-[#f59e0b] px-3.5 py-2.5 rounded-r-md mb-3">Batas pengajuan maksimal <b>H-1</b>. Harus disetujui rekan tukar, lalu PPIC.</div>
@@ -1253,7 +1253,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- ===================== TAB: KARTU PENGENAL ===================== --}}
             @if ($tab === 'badge')
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid two gap-4">
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Kartu ID Karyawan Digital</div>
                         <div class="w-full max-w-[330px] h-[200px] bg-gradient-to-br from-[#1e293b] to-[#0f172a] rounded-2xl mx-auto overflow-hidden shadow-lg">

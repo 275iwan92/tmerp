@@ -531,7 +531,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
             <span class="text-xs text-muted">tm2mst.emp_shift_roster</span>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
+        <div class="grid gap-3 mb-3.5">
             <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
                 <div class="text-[11px] text-muted uppercase font-bold">Total Terjadwal</div>
                 <div class="text-[17px] font-extrabold text-navy mt-0.5">{{ $this->metricAssigned }}</div>

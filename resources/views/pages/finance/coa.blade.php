@@ -248,7 +248,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
 <div>
     <div class="w-full px-5 py-4.5">
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
+        <div class="grid gap-3 mb-3.5">
             <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
                 <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Akun Aktif</p>
                 <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotalActive }}</p>
