@@ -21,8 +21,8 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
     public bool $hideInactiveConversions = false;
 
-    // ---- modal satuan ----
-    public bool $showUnitModal = false;
+    // ---- panel satuan (grid <-> form, GRID_UI_STANDARD/FORM_UI_STANDARD) ----
+    public string $panel = 'grid'; // grid | form
 
     public string $unitMode = 'new'; // new | edit
 
@@ -230,12 +230,12 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             $this->unit_is_active = true;
         }
 
-        $this->showUnitModal = true;
+        $this->panel = 'form';
     }
 
-    public function closeUnitModal(): void
+    public function showGrid(): void
     {
-        $this->showUnitModal = false;
+        $this->panel = 'grid';
     }
 
     public function saveUnit(): void
@@ -283,7 +283,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
         unset($this->units, $this->selectedUnit, $this->factorMap, $this->derivedConversions, $this->convertibleUnits);
         $this->selectedCode = $data['uom_code'];
-        $this->showUnitModal = false;
+        $this->panel = 'grid';
     }
 
     // ============== MODAL KONVERSI ==============
@@ -460,6 +460,8 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             Pilih satuan di kiri, klik <b>🔁 Konversi</b>, lalu <b>+ Konversi Baru</b> di panel kanan.
         </div>
 
+        {{-- ============ GRID (LIST + PANEL KONVERSI) ============ --}}
+        @if ($panel === 'grid')
         <div class="[display:grid] grid-cols-1 {{ $conversionPanelOpen ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-1' }} gap-3.5 items-start">
 
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
@@ -579,17 +581,17 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                 </div>
             @endif
         </div>
-    </div>
+        @endif
 
-    {{-- ══ MODAL: SATUAN ══ --}}
-    @if ($showUnitModal)
-        <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center" wire:click.self="closeUnitModal">
-            <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl overflow-hidden">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $unitMode === 'edit' ? 'Edit Satuan · '.$editingUnitCode : 'Satuan Baru' }}</span>
-                    <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeUnitModal">✕</span>
+        {{-- ============ FORM SATUAN (NEW/EDIT) ============ --}}
+        @if ($panel === 'form')
+            <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
+                <div class="text-sm font-bold">
+                    {{ $unitMode === 'edit' ? 'Edit Satuan' : 'Satuan Baru' }}
+                    @if ($unitMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $editingUnitCode }}</span>@endif
                 </div>
-                <form wire:submit="saveUnit" class="p-4 flex flex-col gap-3">
+            </div>
+            <form wire:submit="saveUnit" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                     <div class="flex gap-2.5">
                         <div class="flex-1 flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Kode Satuan *</label>
@@ -622,16 +624,16 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                     </label>
                     <div class="text-[11px] text-muted leading-relaxed">Dimensi <b>SPEC</b> tidak bisa punya satuan dasar / dikonversi. Setelah satuan tersimpan, atur konversinya lewat panel <b>🔁 Konversi</b>.</div>
 
-                    <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="closeUnitModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                    <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
                     </div>
-                </form>
-            </div>
-        </div>
-    @endif
+            </form>
+        @endif
+    </div>
 
-    {{-- ══ MODAL: KONVERSI ══ --}}
+    {{-- ══ MODAL: KONVERSI (sub-entity dalam panel konversi -- tetap modal,
+         konsisten dgn pola supplier.blade.php Contact/Branch) ══ --}}
     @if ($showConvModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center" wire:click.self="closeConvModal">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl overflow-hidden">
