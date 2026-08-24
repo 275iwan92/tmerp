@@ -19,7 +19,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
     public string $search = '';
 
-    public bool $showModal = false;
+    public string $panel = 'grid'; // grid | form
 
     public string $mode = 'new'; // new | edit
 
@@ -106,12 +106,12 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             $this->machine_is_active = true;
         }
 
-        $this->showModal = true;
+        $this->panel = 'form';
     }
 
-    public function closeModal(): void
+    public function showGrid(): void
     {
-        $this->showModal = false;
+        $this->panel = 'grid';
     }
 
     public function save(): void
@@ -166,7 +166,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         }
 
         unset($this->machines);
-        $this->showModal = false;
+        $this->panel = 'grid';
     }
 
     public function toggleActive(int $id): void
@@ -228,6 +228,9 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
+
+        {{-- ============ GRID (LIST) ============ --}}
+        @if ($panel === 'grid')
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
             <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
                 <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Mesin</p>
@@ -304,17 +307,17 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                 </table>
             </div>
         </div>
-    </div>
+        @endif
 
-    {{-- ══ MODAL: MESIN ══ --}}
-    @if ($showModal)
-        <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeModal">
-            <div class="bg-white rounded-xl w-[560px] max-w-[92vw] max-h-[92vh] overflow-y-auto shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2 sticky top-0">
-                    <span>{{ $mode === 'edit' ? 'Edit Mesin · '.$machine_code : 'Tambah Mesin Baru' }}</span>
-                    <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeModal">✕</span>
+        {{-- ============ FORM (NEW/EDIT) ============ --}}
+        @if ($panel === 'form')
+            <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
+                <div class="text-sm font-bold">
+                    {{ $mode === 'edit' ? 'Edit Mesin' : 'Mesin Baru' }}
+                    @if ($mode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $machine_code }}</span>@endif
                 </div>
-                <form wire:submit="save" class="p-4 flex flex-col gap-3">
+            </div>
+            <form wire:submit="save" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
                     <div class="flex gap-2.5">
                         <div class="flex-1 flex flex-col gap-1">
@@ -410,12 +413,11 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                         <input type="checkbox" wire:model="machine_is_active"> Aktif
                     </label>
 
-                    <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                    <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
                     </div>
-                </form>
-            </div>
-        </div>
-    @endif
+            </form>
+        @endif
+    </div>
 </div>
