@@ -766,7 +766,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: OVERVIEW --}}
                 <div class="{{ $formTab === 'overview' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+                    <div class="grid gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Nama Lengkap *</label>
                             <input type="text" wire:model="full_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -796,7 +796,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             </select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
+                    <div class="grid gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Kota Lahir</label>
                             <input type="text" wire:model="birth_place" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -814,7 +814,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             <input type="text" wire:model="npwp_number" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
                         </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div class="grid two gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Telepon / WA</label>
                             <input type="text" wire:model="phone" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -827,7 +827,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Alamat</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div class="grid two gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Alamat KTP</label>
                             <textarea wire:model="address_detail_ktp" rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
@@ -839,7 +839,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Status Kerja</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    <div class="grid three gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Tanggal Bergabung *</label>
                             <input type="date" wire:model="join_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -860,7 +860,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Kontak Darurat</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    <div class="grid three gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Nama</label>
                             <input type="text" wire:model="emergency_contact_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -883,7 +883,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: JOB ALIGNMENT --}}
                 <div class="{{ $formTab === 'job' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Struktur Organisasi</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div class="grid two gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Jabatan (Departemen — Posisi) *</label>
                             <select wire:model="position_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
@@ -897,7 +897,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Default Produksi <span class="text-muted font-normal normal-case">(prefill jadwal, tak mengunci assignment)</span></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    <div class="grid two gap-2.5">
                         <div class="flex flex-col gap-1">
                             <label class="text-xs font-semibold text-[#556]">Mesin Default</label>
                             <select wire:model="default_machine_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
