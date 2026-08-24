@@ -86,24 +86,30 @@ input:read-only, select:disabled, input:disabled, textarea:read-only { @apply bg
 .pill.pri { @apply bg-[#ffe0b2] text-[#8a4b00]; }
 mark { @apply bg-[#ffe9a8] text-inherit p-0; }
 
-/* ===================== HUB (pemilih jenis inkuiri) ===================== */
-.hub { @apply max-w-[1080px] mx-auto my-7 px-4; }
-.hub h1 { @apply text-[22px] text-navy mb-1.5; }
-.hub .lead { @apply text-[13.5px] text-[#667] mb-[22px] leading-relaxed; }
-.pick { @apply grid grid-cols-3 gap-4; }
-.opt { @apply bg-white border-2 border-[#dde3ec] rounded-[10px] p-5 cursor-pointer flex flex-col no-underline text-inherit; transition: .14s; }
+/* ===================== HUB (pemilih jenis inkuiri) =====================
+ * Compact one-screen (2026-08-24, instruksi user): .hub jadi h-full flex
+ * column supaya pas persis tinggi .shell .pane (yang overflow-auto) --
+ * tujuannya SATU-SATUNYA yang scroll adalah .qwrap (flex-1 min-h-0
+ * overflow-auto), bukan seluruh halaman. Backup versi sebelum compact di
+ * docs/backups/inquiry_hub_2026-08-24_before-compact.blade.php -- restore
+ * dari situ kalau hasil ini kurang cocok. */
+.hub { @apply max-w-[1080px] mx-auto px-4 h-full flex flex-col; }
+.hub h1 { @apply text-[18px] text-navy mb-1 flex-shrink-0; }
+.hub .lead { @apply text-[12px] text-[#667] mb-2.5 leading-snug flex-shrink-0; }
+.pick { @apply grid grid-cols-3 gap-3 flex-shrink-0; }
+.opt { @apply bg-white border-2 border-[#dde3ec] rounded-[10px] p-3.5 cursor-pointer flex flex-col no-underline text-inherit; transition: .14s; }
 .opt:hover { @apply border-accent -translate-y-0.5; box-shadow: 0 6px 20px rgba(44, 123, 229, .14); }
-.opt .ico { @apply text-[30px] mb-2.5; }
-.opt h4 { @apply text-[15px] text-navy mb-[5px]; }
-.opt .tag { @apply text-[10px] font-bold tracking-[.5px] px-[7px] py-0.5 rounded-[9px] self-start mb-[9px]; }
+.opt .ico { @apply text-[22px] mb-1.5; }
+.opt h4 { @apply text-[14px] text-navy mb-1; }
+.opt .tag { @apply text-[9.5px] font-bold tracking-[.5px] px-[7px] py-0.5 rounded-[9px] self-start mb-1.5; }
 .opt.n .tag { @apply bg-[#d8ecff] text-[#1560a8]; }
 .opt.r .tag { @apply bg-[#e2e0ff] text-[#4b3fa8]; }
 .opt.v .tag { @apply bg-[#ffe0b2] text-[#8a4b00]; }
-.opt p { @apply text-xs text-[#667] leading-[1.55] mb-3 flex-1; }
-.opt .req { @apply text-[11px] text-muted border-t border-[#eef1f5] pt-[9px] leading-normal; }
+.opt p { @apply text-[11px] text-[#667] leading-[1.4] mb-2 flex-1; }
+.opt .req { @apply text-[10.5px] text-muted border-t border-[#eef1f5] pt-2 leading-snug; }
 .opt .req b { @apply text-[#556]; }
-.optbtns { @apply flex gap-[7px] mt-3; }
-.optbtns a, .optbtns button { @apply flex-1 text-center px-2 py-[9px] rounded-[7px] text-[11.5px] font-bold no-underline cursor-pointer border-none; line-height: 1.3; transition: filter .12s, background .12s; font-family: inherit; }
+.optbtns { @apply flex gap-[7px] mt-2; }
+.optbtns a, .optbtns button { @apply flex-1 text-center px-2 py-2 rounded-[7px] text-[11px] font-bold no-underline cursor-pointer border-none; line-height: 1.3; transition: filter .12s, background .12s; font-family: inherit; }
 .optbtns button:disabled { @apply opacity-50 cursor-not-allowed; filter: none; }
 .bsaved { @apply bg-[#eef1f5] text-[#42506a] border border-[#d5dce6]; }
 .bsaved:hover { @apply bg-[#e2e8f1]; }
@@ -114,11 +120,11 @@ mark { @apply bg-[#ffe9a8] text-inherit p-0; }
 .bn-v { @apply bg-[#e08010]; }
 .prodsel-hl { box-shadow: 0 0 0 3px #cfe0fb; }
 
-.openbox { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-[26px] overflow-hidden; }
-.openbox .hd { @apply px-4 py-3 bg-[#f4f6fa] border-b border-[#e2e7ee] text-sm text-navy font-bold flex items-center gap-2.5; }
+.openbox { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-2.5 overflow-hidden flex-1 flex flex-col min-h-0; }
+.openbox .hd { @apply px-4 py-2 bg-[#f4f6fa] border-b border-[#e2e7ee] text-sm text-navy font-bold flex items-center gap-2.5 flex-shrink-0; }
 .openbox .hd .cnt { @apply text-[11px] font-normal text-muted ml-auto; }
-.openbox .bd { @apply px-4 py-3.5; }
-.filters { @apply flex gap-2 mb-3 flex-wrap; }
+.openbox .bd { @apply px-4 py-2.5 flex-1 flex flex-col min-h-0; }
+.filters { @apply flex gap-2 mb-2 flex-wrap flex-shrink-0; }
 .filters input { @apply flex-1 min-w-[180px] px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-[13px]; }
 .filters select { @apply px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-[13px] bg-white; }
 .qtbl { @apply w-full border-collapse text-[12.5px]; }
@@ -127,22 +133,22 @@ mark { @apply bg-[#ffe9a8] text-inherit p-0; }
 .qtbl tbody tr { @apply cursor-pointer; }
 .qtbl tbody tr:hover { @apply bg-[#f7faff]; }
 .qtbl tbody tr.sel { @apply bg-[#eef5ff]; box-shadow: inset 3px 0 0 #2c7be5; }
-.qwrap { @apply border border-[#e2e7ee] rounded-md max-h-[340px] overflow-auto; }
+.qwrap { @apply border border-[#e2e7ee] rounded-md flex-1 min-h-0 overflow-auto; }
 .qdoc { @apply text-[11.5px] text-navy font-semibold; font-family: ui-monospace, monospace; }
 .qmuted { @apply text-muted text-[11px]; }
 .qempty { @apply p-[26px] text-center text-muted text-[12.5px]; }
-.openact { @apply flex gap-2.5 mt-3 items-center; }
+.openact { @apply flex gap-2.5 mt-2 items-center flex-shrink-0; }
 .openact .sp { @apply flex-1; }
 
 /* ---- Pemilih produk existing (RECALC/REVISE "+ Buat data baru") ---- */
-.prodsel { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-[22px] overflow-hidden hidden; }
+.prodsel { @apply bg-white border border-[#d9dfe8] rounded-[10px] mt-2.5 overflow-hidden hidden flex-shrink-0; }
 .prodsel.on { @apply block; }
 .prodsel .hd { @apply px-4 py-2.5 bg-[#f4f6fa] border-b border-[#e2e7ee] text-[13px] text-navy font-semibold flex items-center gap-2; }
 .prodsel .hd .x { @apply ml-auto cursor-pointer text-muted text-lg; line-height: 1; }
 .prodsel .bd { @apply px-4 py-3.5; }
 .srch { @apply flex gap-2 mb-3; }
 .srch input { @apply flex-1 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-[13px]; }
-.plist { @apply border border-[#e2e7ee] rounded-md max-h-[280px] overflow-auto; }
+.plist { @apply border border-[#e2e7ee] rounded-md max-h-[240px] overflow-auto; }
 .prow { @apply flex items-center gap-3 px-3 py-2.5 border-b border-[#f0f3f7] cursor-pointer; }
 .prow:last-child { @apply border-b-0; }
 .prow:hover { @apply bg-[#f7faff]; }

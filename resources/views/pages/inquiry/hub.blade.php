@@ -166,7 +166,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 };
 ?>
 
-<div>
+<div class="h-full">
     <div class="hub">
         <h1>Mau buat inkuiri apa?</h1>
         <p class="lead">Pilih jenisnya dulu — atau buka kembali inkuiri yang sudah tersimpan di bawah.</p>
@@ -259,7 +259,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
             <div class="hd">📂 <span>Inkuiri Tersimpan{{ $ftype ? ' — '.$this->typeLabel($ftype) : '' }}</span>
                 <span class="cnt">{{ $this->inquiries->count() }} inkuiri</span></div>
             <div class="bd">
-                <div class="note b">
+                <div class="note b shrink-0">
                     Pilih inkuiri untuk membukanya. <b>DRAFT</b> bisa diedit; status lain dibuka sebagai lihat-saja.
                 </div>
                 <div class="filters">
