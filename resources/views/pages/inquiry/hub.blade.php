@@ -166,7 +166,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 };
 ?>
 
-<div class="h-full">
+<div>
     <div class="hub">
         <h1>Mau buat inkuiri apa?</h1>
         <p class="lead">Pilih jenisnya dulu — atau buka kembali inkuiri yang sudah tersimpan di bawah.</p>

@@ -87,13 +87,22 @@ input:read-only, select:disabled, input:disabled, textarea:read-only { @apply bg
 mark { @apply bg-[#ffe9a8] text-inherit p-0; }
 
 /* ===================== HUB (pemilih jenis inkuiri) =====================
- * Compact one-screen (2026-08-24, instruksi user): .hub jadi h-full flex
- * column supaya pas persis tinggi .shell .pane (yang overflow-auto) --
- * tujuannya SATU-SATUNYA yang scroll adalah .qwrap (flex-1 min-h-0
- * overflow-auto), bukan seluruh halaman. Backup versi sebelum compact di
+ * Compact one-screen (2026-08-24, instruksi user): .hub anchor ke 100dvh
+ * (BUKAN h-full/height:100%) -- layar ini dimuat lewat <iframe> di dalam
+ * .pane.framed (lihat main-menu.blade.php + app-shell.js), yang paddingnya
+ * di-nol-kan (.pane.framed{p-0}) dan iframe-nya persis 100% pane. Jadi
+ * 100dvh di sini = tinggi asli yang tersedia, tanpa perlu rantai
+ * height:100% via banyak elemen leluhur (rapuh, gampang putus kalau ada
+ * wrapper tak terduga di antaranya -- itu yang bikin versi h-full
+ * sebelumnya collapse, .qwrap jadi nyaris 0px). Tujuannya SATU-SATUNYA
+ * yang scroll adalah .qwrap (flex-1 min-h-0 overflow-auto), bukan seluruh
+ * halaman. body:has(.hub) menetralkan padding-bottom global (body{pb-10})
+ * yang kalau tidak, bikin 40px kelebihan tinggi & scroll sendiri.
+ * Backup versi sebelum compact di
  * docs/backups/inquiry_hub_2026-08-24_before-compact.blade.php -- restore
  * dari situ kalau hasil ini kurang cocok. */
-.hub { @apply max-w-[1080px] mx-auto px-4 h-full flex flex-col; }
+body:has(.hub) { @apply pb-0; }
+.hub { @apply max-w-[1080px] mx-auto px-4 flex flex-col; height: 100dvh; }
 .hub h1 { @apply text-[18px] text-navy mb-1 flex-shrink-0; }
 .hub .lead { @apply text-[12px] text-[#667] mb-2.5 leading-snug flex-shrink-0; }
 .pick { @apply grid grid-cols-3 gap-3 flex-shrink-0; }
