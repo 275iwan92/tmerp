@@ -37,6 +37,11 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
     public string $freeUom = '';
 
+    // Pencarian cepat (kode/nama) -- alternatif utk user yang sudah hafal
+    // kodenya, supaya tak wajib klik 5 dropdown kategori kalau tak perlu.
+    // Cascade kategori TETAP ada di bawahnya utk yang belum hafal.
+    public string $itemSearch = '';
+
     // Layar approval PR tidak lagi punya form ringkas terpisah -- approver
     // menyetujui/menolak/menahan langsung dari form PR yang sama (field
     // otomatis read-only krn status != DRAFT). Lihat docs/GRID_UI_STANDARD.md
@@ -152,6 +157,19 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         return $q->orderBy('material_name')->limit(40)->get();
     }
 
+    #[Computed]
+    public function itemSearchResults()
+    {
+        if (mb_strlen(trim($this->itemSearch)) < 2) {
+            return collect();
+        }
+        $term = $this->itemSearch;
+
+        return MRawMaterial::where('is_active', true)
+            ->where(fn ($q) => $q->where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%"))
+            ->orderBy('material_name')->limit(15)->get();
+    }
+
     public function setPick(int $level, ?string $value): void
     {
         $this->{"pick{$level}"} = $value === '' ? null : $value;
@@ -194,6 +212,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         $line->save();
 
         $this->pick1 = $this->pick2 = $this->pick3 = $this->pick4 = $this->pick5 = null;
+        $this->itemSearch = '';
         $this->recalcTotal();
         unset($this->pr);
     }
@@ -474,6 +493,24 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                 </div>
 
                 <div x-show="tab === 'master'">
+                    <div class="relative mb-3" style="max-width:420px">
+                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Cari Cepat <span class="text-muted normal-case font-normal">(sudah hafal kode/nama?)</span></label>
+                        <input type="text" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 Ketik kode atau nama item…" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        @if ($this->itemSearchResults->isNotEmpty())
+                            <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
+                                @foreach ($this->itemSearchResults as $m)
+                                    <button type="button" wire:click="addMasterItem({{ $m->material_id }})" wire:key="qsearch-{{ $m->material_id }}" class="w-full flex items-center justify-between text-left px-3 py-1.5 border-b border-[#eef1f5] last:border-0 hover:bg-[#eef3fb] text-xs">
+                                        <span><b class="font-mono text-[11px]">{{ $m->material_code }}</b> — {{ $m->material_name }}</span>
+                                        <span class="text-muted text-[10px]">{{ $m->uom_purchase }} @if($m->is_fx_sensitive) <span class="text-[#a3241f]">⚠ kurs</span> @endif</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-[10.5px] text-muted uppercase font-semibold">atau telusuri per kategori</span>
+                        <span class="flex-1 border-t border-[#eef1f5]"></span>
+                    </div>
                     <div class="[display:grid] grid-cols-5 gap-2 mb-2">
                         <div>
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kategori</label>
