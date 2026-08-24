@@ -297,7 +297,8 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                     ✓ Confirm CO
                 </button>
             @endif
-            <a href="{{ route('co.list') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar Customer Order</a>
+            <a href="{{ route('co.list') }}" title="Kembali ke menu grid"
+                class="inline-flex items-center justify-center w-8 h-8 bg-[#43508a] text-[#cfd6ef] rounded-md no-underline hover:brightness-110">←</a>
         </div>
     </header>
 
