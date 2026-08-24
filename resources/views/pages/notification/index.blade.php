@@ -66,7 +66,11 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
         @if ($this->unreadCount > 0)
             <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#fff5e0] text-[#8a5a00]">{{ $this->unreadCount }} belum dibaca</span>
         @endif
-        <a href="{{ route('menu') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
+        <a href="{{ route('menu') }}" title="Kembali ke Menu Utama"
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[1000px] mx-auto my-5 px-4">

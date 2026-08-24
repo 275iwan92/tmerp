@@ -417,7 +417,11 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($flow_status) }}">{{ $flow_status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">← Daftar</button>
+                    <button type="button" wire:click="backToGrid" title="Kembali ke Daftar"
+                        class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
+                        <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+                    </button>
                 </div>
 
                 <div class="p-4 flex flex-col gap-3">
