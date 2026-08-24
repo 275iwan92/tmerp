@@ -178,19 +178,29 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         <b class="text-[15px]">📄 Quotation Entry</b>
         <span class="text-xs text-white/75">{{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full {{ $this->quotation->doc_status === 'PUBLISHED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $this->quotation->doc_status }}</span>
-        <a href="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" target="_blank" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Preview Cetak</a>
+        {{-- Cetak cuma boleh setelah diterbitkan (PUBLISHED) -- instruksi user
+             2026-08-24, dikunci juga di sisi mount() quotation/print.blade.php. --}}
+        @if ($this->quotation->doc_status === 'PUBLISHED')
+            <a href="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" target="_blank" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Preview Cetak</a>
+        @endif
         <a href="{{ route('quotation.list') }}" title="Kembali ke Daftar Quotation"
-            class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
         </a>
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
-        <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+        @if (session('error'))
+            <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f]">⚠️ {{ session('error') }}</div>
+        @endif
+        {{-- flex, BUKAN class="grid" -- app.css .grid{} unlayered override
+             grid-cols/lg:grid-cols manapun jadi 4 kolom sama rata (lihat catatan
+             di co/entry.blade.php & docs/FORM_UI_STANDARD.md §2). --}}
+        <div class="flex flex-col lg:flex-row gap-4">
 
             {{-- KIRI --}}
-            <div>
+            <div class="lg:flex-1 min-w-0">
                 {{-- HEADER --}}
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Quotation</h3>
@@ -341,7 +351,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             {{-- KANAN --}}
-            <div>
+            <div class="lg:w-[320px] lg:shrink-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Summary &amp; Pajak</h3>
                     <div class="space-y-1 text-xs">

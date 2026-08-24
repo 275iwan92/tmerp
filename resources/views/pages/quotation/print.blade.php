@@ -12,8 +12,21 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $quotationId;
 
+    // Cetak (Nota/Quotation Letter) cuma boleh setelah quotation diterbitkan
+    // (PUBLISHED) -- instruksi user 2026-08-24: draft belum final, jangan bisa
+    // dicetak dulu. Diblok di sini (bukan cuma sembunyikan tombol di entry)
+    // supaya akses langsung lewat URL pun ikut ketutup.
     public function mount(int $quotation): void
     {
+        $doc = QuoQuotation::findOrFail($quotation);
+
+        if ($doc->doc_status !== 'PUBLISHED') {
+            session()->flash('error', 'Quotation ini belum diterbitkan — terbitkan (Publish) dulu sebelum bisa dicetak.');
+            $this->redirect(route('quotation.entry', ['quotation' => $quotation]));
+
+            return;
+        }
+
         $this->quotationId = $quotation;
     }
 
@@ -68,9 +81,6 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 <div class="quo-wrap">
     <div class="bar">
         <button type="button" onclick="window.print()" class="pr">🖶 Cetak / Simpan PDF</button>
-        @if ($this->quotation->doc_status === 'DRAFT')
-            <a href="{{ route('quotation.entry', ['quotation' => $this->quotationId]) }}" class="sc" style="text-decoration:none">✎ Edit</a>
-        @endif
         <a href="{{ route('quotation.list') }}" class="sc" style="text-decoration:none">← Daftar Quotation</a>
         <span class="info">{{ $this->quotation->quotation_no }} · {{ $this->quotation->doc_status }}</span>
     </div>
