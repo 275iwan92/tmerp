@@ -239,7 +239,9 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
             <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#e9f9ef] border border-[#c8ecd6] text-[#1f8a4c]">✅ {{ session('flash') }}</div>
         @endif
 
-        <div class="grid grid-cols-3 gap-3 mb-3.5">
+        {{-- "grid three" bukan grid-cols-3 -- app.css .grid{} unlayered override
+             grid-cols-3 Tailwind jadi 4 kolom, lihat catatan di co/entry.blade.php --}}
+        <div class="grid three mb-3.5">
             <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
                 <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Rencana Aktif</p>
                 <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>

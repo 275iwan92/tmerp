@@ -302,14 +302,23 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
-        <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+        {{-- flex, BUKAN class="grid" -- app.css baris 60 override literal ".grid"
+             jadi grid-cols-4 (unlayered, selalu menang atas grid-cols/lg:grid-cols
+             Tailwind manapun, sama persis kasus input{width:full} di
+             GRID_UI_STANDARD.md §6). Dulu dipakai grid-cols-[1fr_320px] tapi itu
+             ke-override jadi 4 kolom sama rata -- KIRI ikut kepotong ke ~25% lebar,
+             bukan cuma soal grid Header Dokumen di dalamnya. --}}
+        <div class="flex flex-col lg:flex-row gap-4">
 
             {{-- KIRI --}}
-            <div>
+            <div class="lg:flex-1 min-w-0">
                 {{-- HEADER DOKUMEN --}}
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Dokumen</h3>
-                    <div class="grid grid-cols-3 gap-3">
+                    {{-- "grid three" (bukan grid-cols-3) -- ikuti konvensi .grid/.two/.three
+                         yang sudah ada di app.css, satu-satunya cara reliable dapat 3 kolom
+                         di sini (lihat catatan flex di atas). --}}
+                    <div class="grid three">
                         <div>
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No. CO</label>
                             <input readonly value="{{ $this->order->co_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
@@ -564,7 +573,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             </div>
 
             {{-- KANAN --}}
-            <div>
+            <div class="lg:w-[320px] lg:shrink-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Document Discount</h3>
                     <div class="space-y-2">
