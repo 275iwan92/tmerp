@@ -46,8 +46,8 @@ modules:
     desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.finance_accounting) — COA, Journal, Voucher, Invoice, DP Invoice sudah live"
     submodules: ["chart_of_account", "journal_voucher", "invoice", "dp_invoice"]
   "11_hr":
-    desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.hr) — Employee, struktur organisasi, Shift Roster, Self-Service, Time Attendance sudah live"
-    submodules: ["employee_master", "org_structure", "shift_roster", "self_service", "time_attendance"]
+    desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.hr) — Employee, struktur organisasi, Shift Roster, Self-Service sudah live"
+    submodules: ["employee_master", "org_structure", "shift_roster", "self_service"]
 
 modules_excluded:
   finance_accounting: "Cashier, AP, Trial Balance, period close — MASIH di luar scope. CATATAN 2026-08-20: rencana awal 'seluruh Finance/GL di luar scope' sudah TIDAK berlaku — COA, Journal, Voucher, Invoice, DP Invoice sudah dibangun & live (lihat modul 10_finance_accounting di bawah, atas inisiatif user, bukan keputusan sepihak Claude Code). Baris ini sekarang cuma berlaku utk sisa yang benar-benar belum dibangun."

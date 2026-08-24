@@ -120,7 +120,6 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_SFG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'SFG']),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
-            'HRM_ATTENDANCE' => route('hrm.attendance.index'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),

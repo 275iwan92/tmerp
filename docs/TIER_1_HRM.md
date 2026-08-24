@@ -7,11 +7,6 @@
 > DAN **portal Personal Self-Service** karyawan (termasuk **engine cuti** yang dibangun sekarang,
 > bukan sekadar UI). Recruitment (`tm2hrr`) dan Payroll (`tm2pyr`) penuh — termasuk perhitungan
 > potongan gaji/BPJS aktual — **tetap tidak dikerjakan**.
->
-> **2026-08-24 — Time Attendance DICABUT dari status ditunda** (lihat §13): mesin fingerprint fisik
-> sudah ada di lokasi, datanya keluar dalam bentuk Excel. Parsing/import file Excel dikerjakan di
-> sesi terpisah — modul ini hanya menyediakan tabel tujuan (`emp_attendance_log`) + 2 layar (menu
-> worklist + profil kehadiran per karyawan).
 
 ---
 
@@ -177,35 +172,10 @@ kedua sisi sistem.
 - Recruitment pipeline (`tm2hrr`) — ditunda total.
 - Payroll calculation & slip gaji, termasuk **perhitungan potongan BPJS aktual** (`tm2pyr`) —
   ditunda total. Data BPJS di sini murni referensi.
+- Time attendance/absensi (clock-in/out) — ditunda.
 - Matriks approval berjenjang otomatis berdasar `org_level` — data disiapkan, engine belum.
 - RBAC (role/permission) detail granular — bagian modul `08_security`; di sini hanya disinggung
   sebatas 2 role simulasi (HR Officer/Admin App) untuk kebutuhan tab Akun & masking gaji.
 - Akrual cuti proporsional pegawai baru & carryover sisa cuti tahun lalu — kerangka dasar saja,
   detail perhitungan belum final.
-
-## 13. Time Attendance (BARU — dicabut dari status ditunda, 2026-08-24)
-**Sumber data:** scan mesin fingerprint fisik di lokasi pabrik, diekspor ke Excel oleh HR/vendor
-mesin. **Parsing & import file Excel ke `emp_attendance_log` dikerjakan di sesi/prompt terpisah** —
-di luar scope file ini. Modul ini hanya mendefinisikan tabel tujuan datanya dan 2 layar konsumsinya:
-
-1. **Menu Time Attendance (worklist)** — daftar karyawan + ringkasan kehadiran bulan berjalan
-   (jumlah Hadir/Telat/Alpha), search nama/kode, klik 2x → buka Profil Kehadiran karyawan ybs.
-   Mengikuti `GRID_UI_STANDARD.md` (stat box, kolom identitas avatar, double-click, kolom Aksi).
-2. **Profil Kehadiran per karyawan** — kartu identitas (foto/nama/kode/departemen/jabatan/tgl
-   join), filter rentang tanggal, ringkasan Cuti/Izin/Sakit/Keterlambatan (dari `emp_leave_balance`
-   + `emp_leave_request`, sudah ada), ringkasan Lembur (dari `emp_shift_roster.is_overtime`, sudah
-   ada), dan tabel detail harian (tanggal, jam masuk/keluar aktual, jadwal masuk/keluar, telat,
-   pulang cepat, keterangan). Mengikuti `FORM_UI_STANDARD.md` (Back button pill).
-
-**Jadwal (Jadwal Masuk/Keluar) dan status (Telat/Pulang Cepat/Alpha/Cuti/Sakit/Izin/Hari Libur)
-TIDAK disimpan** — dihitung app-layer per baris dari `emp_shift_roster`/`emp_shift_detail` (jadwal)
-dan `emp_leave_request` berstatus APPROVED (alasan absen), supaya tidak dobel sumber kebenaran
-dengan modul Penjadwalan & Self-Service yang sudah ada. Detail logika: `TIER_2_HRM.md` Part D.
-
-**Non-goals modul ini:**
-- Integrasi langsung ke mesin fingerprint (API/SDK vendor) — data masuk lewat Excel, bukan koneksi
-  real-time ke mesin.
-- Perhitungan potongan gaji dari keterlambatan/alpha — ranah Payroll (`tm2pyr`), tetap ditunda.
-- Approval/koreksi data attendance dari sisi karyawan (self-service) — HR yang mengelola langsung
-  lewat kolom `notes`/entri `MANUAL` jika diperlukan, tidak ada alur pengajuan baru.
 - Engine rotasi shift otomatis — roster diinput manual PPIC/HR.

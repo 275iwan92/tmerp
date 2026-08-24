@@ -209,7 +209,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ✅ [F] Personal Data Self-Service — *mockup_personal_data_self_service.html* → `self-service.index`
 - ✅ [G] Master Mesin & Shift (Produksi) — *mockup_master_produksi.html* → `master.machine` + `master.shift`
 - ⬜ [F] Applicant Entry / Recruitment Pipeline — belum ada mockup
-- ✅ [G] Time Attendance (worklist + profil kehadiran) — *dicabut dari status ditunda 2026-08-24, lihat HRM_STATE.yaml → time_attendance* → `hrm.attendance.index` + `hrm.attendance.profile`. Sumber data (import Excel mesin fingerprint) dikerjakan sesi terpisah.
+- ⬜ [G] Attendance Sheet / Dashboard — belum ada mockup
 - ⬜ [F] Payroll Run Entry, Slip Gaji, Payroll Summary — belum ada mockup
 
 ---

@@ -225,25 +225,6 @@ CONFIRMED.
 
 ---
 
-## FILE 4 — TIME ATTENDANCE (BARU, 2026-08-24 — tidak ada mockup HTML terpisah, dibangun langsung
-mengikuti `GRID_UI_STANDARD.md`/`FORM_UI_STANDARD.md`, referensi tampilan V1 ScriptCase "Data Profile")
-
-**Layar 1 — Menu/worklist (`hrm.attendance.index`)**: grid full-page standar — stat box (Total
-Karyawan/Hadir Hari Ini/Telat Bulan Ini/Alpha Bulan Ini), search kode/nama, kolom identitas avatar
-(pola sama `master/employee.blade.php`), kolom ringkas Hadir/Telat/Alpha bulan berjalan, klik 2x
-baris → `hrm.attendance.profile`.
-
-**Layar 2 — Profil Kehadiran (`hrm.attendance.profile`)**: Back pill ke Layar 1. Kartu identitas
-(foto/avatar + nama + kode + departemen + jabatan + tanggal join) mengikuti pola header detail
-`master/employee.blade.php`. Filter rentang tanggal (dari/sampai) + tombol Terapkan. 2 kelompok
-stat box: (a) Cuti/Izin/Sakit/Keterlambatan — Sisa Cuti, Cuti Diambil, Sakit, Izin, Jumlah Telat;
-(b) Lembur — jumlah hari lembur dalam rentang filter. Tabel detail harian: Tanggal, Jam Masuk, Jam
-Keluar, Jadwal Masuk, Jadwal Keluar, Telat, Pulang Cepat, Keterangan (badge warna sesuai
-`GLOBAL_RULES.badge_system`: Hadir hijau, Telat amber, Alpha merah, Cuti/Izin/Sakit biru, Hari
-Libur abu-abu).
-
----
-
 ## Binding Table (field → kolom, ringkas)
 
 | Area | Field UI | Kolom DB |
@@ -273,10 +254,4 @@ Libur abu-abu).
 | HR Admin — Approval Izin Keluar | Tabel dual approval | `emp_out_permit_request WHERE status='PENDING'` |
 | HR Admin — Kedisiplinan | Tabel + auto-insert | `emp_disciplinary`, auto dari trigger app-layer saat Izin >3hr berturut/>3x bulan (lihat TIER_2 B.6c) |
 | Tukar Shift — flag telat | Warning non-blocking | `emp_shift_swap_request.submitted_on_time`, dihitung app-layer thd `requester_roster_id.roster_date - 1 hari` |
-| Attendance — Worklist stat & baris | Hadir/Telat/Alpha per karyawan | `emp_attendance_log` JOIN `emp_employee`, dihitung app-layer per TIER_2 Part D |
-| Attendance — Profil, Jam Masuk/Keluar aktual | Kolom tabel detail | `emp_attendance_log.clock_in_at`/`.clock_out_at` WHERE `employee_id=? AND attendance_date BETWEEN ?` |
-| Attendance — Profil, Jadwal Masuk/Keluar | Kolom tabel detail (dihitung, tidak disimpan) | `emp_shift_roster` + `emp_shift_detail` per TIER_2 Part D.2 |
-| Attendance — Profil, Telat/Pulang Cepat/Keterangan | Kolom tabel detail (dihitung, tidak disimpan) | TIER_2 Part D.3/D.4, silang `emp_leave_request` status APPROVED |
-| Attendance — Profil, summary Cuti/Izin/Sakit | Stat box | `emp_leave_balance.remainingDays()` + `emp_leave_request` per TIER_2 Part D.5 |
-| Attendance — Profil, summary Lembur | Stat box | `emp_shift_roster.is_overtime=1` COUNT dalam rentang filter |
 
