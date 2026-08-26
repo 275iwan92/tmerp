@@ -142,7 +142,7 @@ class CustCustomer extends Model
     }
 
     // default_area_id bisa merujuk geo_city/geo_district/geo_village tergantung
-    // default_area_level (lihat FIX_MASTER_CUSTOMER_NAV_ADDRESS.md §B.2c) — bukan
+    // default_area_level (lihat customer_fix_nav_address.md §B.2c) — bukan
     // relasi BelongsTo tunggal. Resolve label lewat v_geo_full_address, di-filter
     // supaya baris yang cocok konsisten dgn level yang tersimpan (village kosong
     // utk level DISTRICT, district kosong utk level CITY — lihat catatan grain).

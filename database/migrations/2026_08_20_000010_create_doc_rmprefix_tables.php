@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 // Adopsi legacy tm2mst.doc_rmprefix1..5 (pembentuk kode item 5-level:
 // kategori->jenis->gramatur/spec->ukuran->merk, mis. P+Y+J+3+1 = PYJ31) —
-// PROC_TIER_1.md §5.5 & PROC_TIER_3.md §2. Sumber: dump asli dari user
+// procurement_tier1.md §5.5 & procurement_tier3.md §2. Sumber: dump asli dari user
 // (database/legacy/doc_rmprefix.sql, 2026-08-20). Struktur kolom dipertahankan
 // 1:1 dari dump; hanya baris DROP/CREATE FK yang tak relevan (tak ada FK di
 // tabel ini) diabaikan -- generate ulang via Blueprint supaya konsisten

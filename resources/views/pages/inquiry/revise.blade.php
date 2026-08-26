@@ -13,7 +13,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 // Layar REVISE (docs/mockups/inquiry_revise_v2.html) — ubah spec via copy-record
-// + versi baru. Scope manual (R-REV-1, docs/DELTA_TIER_revise_scope_CO.md) menentukan
+// + versi baru. Scope manual (R-REV-1, docs/inquiryproduct_delta_revise.md) menentukan
 // blok edit apa yang tampil; field di luar scope tetap reuse verbatim dari baku.
 new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 {
@@ -123,7 +123,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         }
     }
 
-    // Matriks pemicu — persis Tier 2 (docs/DELTA_TIER_revise_scope_CO.md §TIER 2).
+    // Matriks pemicu — persis Tier 2 (docs/inquiryproduct_delta_revise.md §TIER 2).
     #[Computed]
     public function triggers(): array
     {

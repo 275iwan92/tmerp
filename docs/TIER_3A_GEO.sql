@@ -139,7 +139,7 @@ CREATE TABLE `geo_district` (
 
 -- ============================================================
 -- 6. geo_village  (Level 4 — kelurahan/desa)
---    PENDING #1 DIPUTUSKAN (lihat FIX_MASTER_CUSTOMER_NAV_ADDRESS.md §B.1): 5-level.
+--    PENDING #1 DIPUTUSKAN (lihat customer_fix_nav_address.md §B.1): 5-level.
 -- ============================================================
 DROP TABLE IF EXISTS `geo_village`;
 CREATE TABLE `geo_village` (

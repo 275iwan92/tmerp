@@ -3,9 +3,9 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// Seed posisi approval Procurement + flow_config PR (PROC_TIER_3.md §9).
+// Seed posisi approval Procurement + flow_config PR (procurement_tier3.md §9).
 //
-// DEVIASI dari draf Tier 3 §9 (dicatat di PROC_STATE.yaml, perlu review Jo --
+// DEVIASI dari draf Tier 3 §9 (dicatat di procurement_state.yaml, perlu review Jo --
 // issue PROC-FLOW-POSITION): org_position saat ini HANYA berisi 5 posisi
 // lantai produksi (Operator/Specialist/Inspector), TIDAK ADA jabatan
 // manajerial (Kepala Departemen/Manajer Operasional/Direksi). Draf step-1 PR

@@ -1,0 +1,174 @@
+# ═══════════════════════════════════════════════════════════════════
+# inventory_state.yaml — PROGRESS MODUL 02 INVENTORY (stock movement)
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Inventory.
+# ═══════════════════════════════════════════════════════════════════
+modul: "02_inventory"
+db: tm2inv
+fase: "1 — Stock In / Stock Out / Adjustment+Opname / Return from Production + kartu stok & periode"
+status_umum: >
+  SEMUA 4 LAYAR TRANSAKSI LIVE (2026-08-22): Stock In (RM/FG/SFG), Stock Out (RM saja --
+  lihat INV-06b), Return from Production (RM saja), Stock Adjustment & Opname (RM/FG/SFG,
+  approval berjenjang sungguhan via FlowEngineService). Delta ALTER tm2inv/tm2mst, tabel baru
+  (inv_period/inv_stock_layer/inv_layer_consumption), VIEW (v_inv_movement dkk), dan seed
+  flow_config IN/OUT/AD/OP/RTP (position_id riil Kepala Gudang/Manajer Operasional/Direksi +
+  threshold 5jt/25jt) semua tereksekusi dari sesi sebelumnya (2026-08-21).
+  App\Services\Inventory\StockPostingService::postDocument() terbukti generik lintas SEMUA
+  doc_cat (STOCK/BB/AD/OP/RETURN) & kelas (RM/FG/SFG) tanpa perubahan apapun -- Stock Out/
+  Return/Adjustment memakainya apa adanya, cuma StockDocumentService::saveDraft() + Livewire
+  form yang baru per layar. FlowEngineService.pendingForUser() diperluas (whereIn action
+  SUBMITTED+HOLD, awalnya utk Procurement Hold) -- Adjustment approval numpang perluasan itu
+  tanpa perubahan tambahan. Layar Persetujuan Adjustment (inv.stock-adj.approval) TIDAK jadi
+  queue+detail-panel seperti next_step lama menyarankan -- Approve/Reject digabung ke form
+  entri itu sendiri (pola PR/PO Approval yang dirombak hari sama, lihat procurement_state.yaml),
+  approval screen jadi murni grid antrian + deep-link {doc?} ke form asli. LocationPicker
+  TIDAK jadi komponen terpisah di layar manapun -- dropdown lokasi tetap inline per layar
+  (4 layar sekarang, pola stabil, ekstraksi jadi komponen bersama masih belum terbukti perlu).
+  Valuasi tetap AVG bergerak (moving average) di semua kelas -- FIFO/LIFO (inv_stock_layer)
+  belum diimplementasikan, costing_method per-item masih default AVG (INV-COSTING-METHOD-SEED
+  masih terbuka). Diuji end-to-end via tinker (transaksi 3-koneksi di-rollback): Stock In->
+  Out->Return (saldo 50->150->120->130, qty_returned akumulasi ke 10) lalu Adjustment submit
+  ->approve(final)->auto-post (130->125) + jalur reject->REVISION_NEEDED, semua benar. BELUM
+  diverifikasi visual browser (perlu login).
+
+keputusan_terkunci:
+  INV-01_posting_service: >
+    Trigger trg_rm/sfg/fg_stock_confirm DI-DROP; posting pindah ke
+    App\Services\Inventory\StockPostingService (satu DB transaction). Kontrak legacy
+    stat_confirm=1 -> kartu stok terbentuk TETAP SAMA, hanya eksekutornya berubah.
+    Bukti pendukung: rm_stockcard #39-41 dan #42-44 di dump adalah posting GANDA untuk
+    reference_detail_id 62/63/64 yang sama (doc_id=95), membuat saldo Art Paper 180 -> 50 -> -80.
+    Trigger juga tak bisa mengisi inv_stock_layer maupun ikut transaksi lintas-DB dgn flow_log.
+  INV-02_afkir_by_lokasi: >
+    Bahan afkir dicatat sebagai stok tapi disimpan di lokasi is_usable=0 pada gudang
+    warehouse_type='WASTE'. v_rm_available memberi qty_available=0 utk lokasi tsb.
+    Kolom warehouse_type SUDAH ADA di m_warehouse; yang baru hanya m_wh_loc.is_usable [DELTA].
+    Alternatif 'flag pada baris movement' DITOLAK — flag tidak ikut ke saldo.
+  INV-03_periode: >
+    Tabel inv_period (OPEN/CLOSING/CLOSED). Posting hanya ke periode OPEN, backdate maks
+    sys_constant INV_BACKDATE_DAYS. Menutup celah legacy: pemilihan qty_bb berbasis doc_date
+    membuat posting mundur merusak seluruh qty_eb sesudahnya tanpa terdeteksi.
+  INV-04_idempotensi: "UNIQUE (reference_name, reference_detail_id) di ketiga *_stockcard. Posting kedua gagal DI DATABASE."
+  INV-05_input_fisik: >
+    Adjustment/Opname: user mengetik qty_physical, sistem menghitung selisih.
+    qty_system DISNAPSHOT DAN DISIMPAN di rm_stock_d, tidak dibaca ulang saat posting.
+    Kolom selisih tidak pernah bisa diedit.
+  INV-06_fg_out_dilarang: >
+    Layar Stock Out menolak kelas FG di level route. FG keluar HANYA lewat Delivery Note.
+    Kalau dibuka, ledger FG terisi dua kali.
+  INV-06b_out_return_rm_saja: >
+    [2026-08-22] Stock Out & Return from Production v1 DIKUNCI RM SAJA (bukan cuma "FG
+    ditolak" seperti INV-06 asalnya bilang) -- ditolak di mount() kalau category != RM.
+    Alasan: (a) FG memang dilarang eksplisit (INV-06), (b) SFG SAMA SEKALI tak disebut di
+    spec/mockup Tier 4 utk kedua layar ini -- bukan berarti SFG boleh, cuma belum ada aturan
+    yg mendefinisikannya, jadi ditolak juga sampai ada spec eksplisit. Menu INV_FG_ITEM2/3 &
+    INV_SFG_ITEM2/3 tetap NOT_BUILT dgn status_note menjelaskan ini bukan gap, tapi out-of-scope.
+  INV-07_return_wajib_ref: >
+    Return hanya terhadap Stock Out POSTED; qty <= qty_keluar - qty_returned.
+    Kolom baru: rm_stock_d.return_condition (GOOD/SCRAP) + source_detail_id + qty_returned [DELTA].
+  INV-08_tidak_ada_revise: >
+    Dokumen stok merekam kejadian fisik -> tidak bisa direvisi, hanya dikoreksi dgn dokumen baru.
+    Berbeda dari PR/PO/Inquiry yang memakai REVISE copy-record.
+  INV-09_penomoran: >
+    Pola global PREFIX/YY/##### (IN/OUT/ADJ/OPN/RTP), menggantikan pola legacy 26OU00014.
+    Dokumen lama tidak dinomori ulang.
+  INV-10_approval_hanya_adjustment: >
+    Hanya AD/OP yang berjenjang (3 level menurut nilai MUTLAK). IN-manual 1 level.
+    OUT dan RTP tanpa approval karena menjejak dokumen hulu yang sudah tervalidasi.
+  INV-11_layar_terpisah: "Entri dan Persetujuan Adjustment adalah route berbeda; Approve/Reject tak pernah dirender di layar entri."
+  INV-12_konvensi_kolom: >
+    Kolom baru pada tabel LEGACY mengikuti pola legacy (create_by/create_log), BUKAN konvensi
+    global i_/c_/created_at. Mencampur dua konvensi dalam satu tabel lebih berbahaya daripada
+    menyimpang dari konvensi global. Tabel BARU (inv_*) memakai konvensi global penuh.
+  INV-13_harga_retur: "Retur memakai harga saat keluar (AVG: avg_unitprice baris OUT; FIFO/LIFO: unit_cost dari inv_layer_consumption). SCRAP dicatat nilai penuh."
+
+artefak_selesai:
+  - inventory_tier1.md                    # konsep, scope, rantai dokumen, aktor, integrasi, istilah
+  - inventory_tier2.md                    # business logic Part A/B/C (happy path, 15 kasus khusus, state-form-button)
+  - inventory_tier3.md                    # DROP trigger + delta 3x3 tabel legacy + 3 tabel baru + delta tm2mst/tm2sys + 5 VIEW + seed flow
+  - inventory_tier4.md                    # 8 layar Livewire + service/repository + nota + checklist wiring
+  - inventory_rules.yaml
+  - inventory_state.yaml
+  - mockup_stock_in.html
+  - mockup_stock_out.html
+  - mockup_stock_adjustment.html
+  - mockup_stock_return.html
+  - tmerp_inv.css                    # stylesheet bersama keempat mockup
+
+next_step:
+  - "[SELESAI 2026-08-22] Stock In (RM/FG/SFG) -- resources/views/pages/inventory/stock-in.blade.php, route inv.stock-in.index/{category}"
+  - "[SELESAI 2026-08-22] Stock Out (RM saja, INV-06b) -- stock-out.blade.php, route inv.stock-out.index/{category}"
+  - "[SELESAI 2026-08-22] Return from Production (RM saja, INV-06b) -- stock-return.blade.php, route inv.stock-return.index/{category}"
+  - "[SELESAI 2026-08-22] Stock Adjustment & Opname (RM/FG/SFG) + Persetujuan -- stock-adjustment.blade.php (route inv.stock-adj.index/{category}/{doc?}) + stock-adjustment-approval.blade.php (route inv.stock-adj.approval/{category}, MURNI antrian -- Approve/Reject digabung ke form entri, bukan queue+detail-panel spt rencana lama)"
+  - "SISA: Onhand Grid interaktif, Period Manager, PV/WO auto-post ke Stock In, FIFO/LIFO valuation, permission granular (can_view_cost dkk), Outstanding PV (Procurement -- SENGAJA ditunda user, lihat memory project_outstanding_reports, baru dikerjakan SETELAH ini)"
+  - "PV/WO auto-post Stock In (ref_doc_type != MANUAL) belum diintegrasikan -- StockPostingService sudah generik, tinggal dipanggil dari sisi Purchase Receive/Production nanti (lihat sidebarmenustandard.md #6a utk konteks penuh)"
+  - "[SELESAI 2026-08-22] Update checklistmockuperp.md MODUL 2 -- warna menu shell belum dicek (perlu login browser)"
+  - "Update procurement_state.yaml: open item PROC-COSTING-ENGINE sudah terjawab (inv_stock_layer + inv_layer_consumption didefinisikan di INV_TIER_3 §7) -- belum dicek ulang 2026-08-22"
+
+open_items:
+  - id: INV-DELTA-CONFIRM-THRESHOLD
+    prioritas: "TINGGI (implementasi selesai, sign-off bisnis belum eksplisit dikonfirmasi)"
+    isi: >
+      [UPDATE 2026-08-22] flow_config_step utk module_code AD/OP SUDAH ter-seed persis
+      sesuai usulan: Kepala Gudang (position_id=59) 0-5jt, Manajer Operasional (position_id=6)
+      5-25jt, Direksi (position_id=7) >25jt. Dicek langsung ke tm2mst.flow_config_step, bukan
+      dugaan. Yang BELUM jelas: apakah angka ini sudah benar-benar disetujui Telma/Jo secara
+      formal, atau cuma "usulan default" yang kebetulan sudah dieksekusi duluan — tanyakan
+      kalau approval Adjustment/Opname mulai dipakai sungguhan, jangan asumsikan final.
+  - id: INV-DELTA-CONFIRM-BACKDATE
+    prioritas: SEDANG
+    isi: "INV_BACKDATE_DAYS usulan 7 hari. Terlalu ketat menyulitkan gudang, terlalu longgar merusak tutup periode. Butuh angka riil dari praktik lapangan. Belum dicek apakah sudah ada di sys_constant."
+  - id: INV-FLOW-POSITION
+    prioritas: "RESOLVED 2026-08-22"
+    isi: >
+      position_id riil SUDAH ADA & terpakai di flow_config_step: Kepala Gudang=59,
+      Manajer Operasional=6, Direksi=7 (dicek langsung ke org_position + flow_config_step,
+      bukan diasumsikan). Blocker ini SUDAH TERATASI, kemungkinan besar diselesaikan
+      bersamaan sesi 2026-08-21 saat modul Inventory & Procurement lain digarap, dokumen ini
+      saja yang telat diupdate. StockPostingService/Stock In v1 tidak terhambat oleh item ini.
+  - id: INV-DATA-CLEANUP
+    prioritas: "Kemungkinan besar sudah dilakukan (belum di-cross-check ulang eksplisit 2026-08-22)"
+    isi: >
+      Sebelum unique index dipasang, data legacy WAJIB dibersihkan:
+      (a) rm_stock.doc_no duplikat — 26BB00005 x6, 26OU00014 x5;
+      (b) rm_stock_d.location_id NULL/0 — banyak baris, penyebab saldo yatim di v_rm_onhand;
+      (c) rm_stockcard duplikat reference_detail_id 62/63/64;
+      (d) rm_stockcard dgn qty_eb negatif (doc_id 28,29,30,42) — hasil bug trigger, perlu rebuild.
+      Skrip pratinjau ada di INV_TIER_3 §5. Sesi 2026-08-21 (memory project_inventory_module_status)
+      mencatat "6 duplikat rm_stockcard dari bug double-posting dihapus" & "null location_id
+      dibackfill ke UNKNOWN-LEGACY" -- tampaknya sudah ditangani, tapi item (a)/(d) belum
+      dikonfirmasi eksplisit tuntas. Cross-check ulang sebelum memasang UNIQUE index kalau
+      belum yakin.
+  - id: INV-MIGRASI-TMINV-KE-TM2INV
+    prioritas: "RESOLVED (data sudah ada di tm2inv, keputusan sudah diambil)"
+    isi: >
+      Sudah diputuskan & dieksekusi sesi 2026-08-21: data legacy DIIMPOR (bukan mulai bersih)
+      ke tm2inv, dengan cleanup (duplikat doc_no di-suffix -DUPn, dst — lihat
+      project_inventory_module_status). Rekomendasi "mulai bersih" di paragraf lama TIDAK
+      diambil — catatan ini dibiarkan sbg riwayat keputusan, bukan petunjuk yg masih berlaku.
+  - id: INV-SYSCONST-COL
+    prioritas: "Kemungkinan besar sudah teratasi (belum di-cross-check ulang eksplisit 2026-08-22)"
+    isi: "Nama kolom sys_constant & sys_sequence aktual -- StockPostingService v1 TIDAK memakai sys_constant/sys_sequence sama sekali (nomor dokumen pakai pola manual MAX+1 spt modul lain, lihat StockDocumentService::nextDocNo()), jadi item ini tidak menghalangi Stock In. Masih relevan kalau nanti INV_BACKDATE_DAYS/INV_ADJ_LIMIT_L1/L2 mau dibaca dari sys_constant sungguhan, bukan hardcode di flow_config_step."
+  - id: INV-WAREHOUSE-SEED
+    prioritas: "RESOLVED — gudang riil sudah ada (WH-RAW-01/WH-FG-01/WH-MIX-01/WH-SCP-01), dipakai langsung di Stock In v1"
+    isi: "Daftar gudang & lokasi riil (m_warehouse, m_wh_loc) sudah final dari Master Warehouse (2026-08-21). Catatan: belum ada warehouse_type khusus SFG -- Stock In SFG demo pakai WH-MIX-01 (Transit & Buffer) sbg lokasi WIP, lihat sidebarmenustandard.md #6 poin 3."
+  - id: INV-COSTING-METHOD-SEED
+    prioritas: SEDANG
+    isi: "costing_method per item belum ditetapkan. Default AVG. Kertas mungkin FIFO (fluktuasi harga + lot jelas), tinta/kimia AVG. Butuh review per kategori bersama Accounting."
+  - id: INV-TRANSFER-GUDANG
+    prioritas: RENDAH
+    isi: "Transfer antar gudang saat ini dilakukan sebagai pasangan Stock Out + Stock In (dua dokumen). Bila frekuensinya tinggi, pertimbangkan dokumen tunggal doc_cat='TRANSFER' di fase 2."
+  - id: INV-JURNAL-PERSEDIAAN
+    prioritas: RENDAH
+    isi: "Kolom value_* di *_stockcard sudah menyiapkan angka untuk jurnal persediaan, tapi posting ke GL di luar scope fase ini. Sinkronkan dengan FIN_STATE saat Finance masuk scope."
+  - id: INV-SFG-FG-DEPTH
+    prioritas: SEDANG
+    isi: >
+      Tier 1-4 ditulis dengan RM sebagai contoh utama; SFG dan FG mengikuti aturan yang sama.
+      Yang belum digali: apakah output antar-proses (mis. setelah PLONG) benar-benar perlu
+      dicatat sebagai movement SFG, atau cukup dilacak di Production tanpa menyentuh ledger stok.
+      Mencatat semuanya berarti belasan dokumen SFG per WO. Butuh keputusan bersama Production.
+
+catatan_untuk_sesi_berikutnya: >
+  Mockup memakai 'ADJ/26/00023' untuk dokumen berjenis OPNAME. Sesuai INV-09 yang benar adalah
+  'OPN/26/#####' untuk opname dan 'ADJ/26/#####' untuk adjustment. Spec Tier yang berlaku;
+  mockup akan disesuaikan saat implementasi.

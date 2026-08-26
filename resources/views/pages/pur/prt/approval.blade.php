@@ -8,7 +8,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// GRID_UI_STANDARD.md diikuti. Approve/Reject/Minta Info (Hold) TIDAK di sini
+// griduistandard.md diikuti. Approve/Reject/Minta Info (Hold) TIDAK di sini
 // -- dipindah ke form PRT yang sama (pur/prt/entry.blade.php), pola sama PR/PO/
 // Adjustment. Layar ini murni ANTRIAN -- grid, klik 2x buka dokumen aslinya.
 new #[Title('Persetujuan Purchase Return — TELASIH MAKMUR ERP')] class extends Component

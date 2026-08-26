@@ -10,7 +10,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §6.2 (OnhandGrid) + docs/mockups/mockup_print_master_stock.html.
+// inventory_tier4.md §6.2 (OnhandGrid) + docs/mockups/mockup_print_master_stock.html.
 // Sumber: tm2inv.v_inv_movement (view UNION RM/SFG/FG yang sudah menormalkan
 // item_id/item_code/item_name -- lihat komentar sama di print/stock-card.blade.php)
 // dalam rentang tanggal -- bukan v_rm_onhand/v_fg_onhand/v_sfg_onhand, itu
@@ -18,7 +18,7 @@ use Livewire\Component;
 // periode. SFG/FG masih data uji (bukan produksi sungguhan) -- Stock In/Out
 // belum digarap.
 //
-// {category} WAJIB di URL (bukan toggle dalam halaman) -- SIDEBAR_MENU_STANDARD.md
+// {category} WAJIB di URL (bukan toggle dalam halaman) -- sidebarmenustandard.md
 // §5 (2026-08-22): user minta 3 kelas jadi 3 MENU terpisah (RM/FG/SFG),
 // baik utk Input maupun Laporan, karena recordnya memang masuk ke tabel
 // fisik yang beda (rm_stockcard/fg_stockcard/sfg_stockcard). Satu file

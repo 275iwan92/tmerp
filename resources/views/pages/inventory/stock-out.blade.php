@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §3 + mockup_stock_out.html. v1 DIKUNCI MANUAL (INV_RULES.yaml
+// inventory_tier4.md §3 + mockup_stock_out.html. v1 DIKUNCI MANUAL (inventory_rules.yaml
 // out_wajib_wo mensyaratkan tarik kebutuhan dari tm2prd.prd_wo_material -- modul
 // Production/WO belum dibangun sama sekali di codebase ini, jadi baris ISSUE
 // diisi manual, tanpa cabang SUBSTITUTE/PURCHASE yg butuh data WO.
@@ -28,7 +28,7 @@ use Livewire\Component;
 // dulu (Stock In FG, sudah ada) -> sebagian diambil truk utk kirim (itu DO,
 // bukan Stock Out)" -- lihat memory project_delivery_order_scope kalau nanti
 // dibangun.
-// Alur "DRAFT -> POSTED" TANPA approval (INV_RULES.yaml alasan_out_rtp_tanpa_approval).
+// Alur "DRAFT -> POSTED" TANPA approval (inventory_rules.yaml alasan_out_rtp_tanpa_approval).
 new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 {
     private const DOC_PREFIX = 'OUT';

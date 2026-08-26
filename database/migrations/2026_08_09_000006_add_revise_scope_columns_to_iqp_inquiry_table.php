@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// GAP tertunda (docs/DELTA_TIER_revise_scope_CO.md) — layar REVISE (mockup
+// GAP tertunda (docs/inquiryproduct_delta_revise.md) — layar REVISE (mockup
 // inquiry_revise_v2.html) butuh scope manual (MATERIAL/DIMENSION/ARTWORK/
 // COLOR/PROCESS) + alasan, belum ada kolomnya di TIER_3A_INQUIRY.sql. Simpan
 // scope sebagai CSV (bukan MySQL SET) — Eloquent tak punya cast SET native,

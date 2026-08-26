@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 // Lookup deskripsi kategori (nempel ke domain induknya, bukan ref_ generik —
-// TIER_3A_PREFIX_LIST.md: "lookup ber-domain nempel ke induk"). Diisi dari
+// prefixlist.md: "lookup ber-domain nempel ke induk"). Diisi dari
 // tm2old.mst_vendor_customer_category / mst_vendor_supplier_category oleh
 // VendorMigrationService. cust_customer.category / sup_supplier.category
 // SENGAJA teks bebas (bukan FK) — data legacy-nya sendiri tidak konsisten,

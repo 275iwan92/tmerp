@@ -15,7 +15,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-// mockup_master_employee.html. TIER_1_HRM.md §10: sisi HR Admin FULL-EDITABLE
+// mockup_master_employee.html. masteremployee_tier1.md §10: sisi HR Admin FULL-EDITABLE
 // (tanpa workflow approval) — beda dari self-service karyawan yang selalu
 // lewat pengajuan. §7: gaji TETAP/HARIAN & posisi salary_hidden_from_hr=1
 // disembunyikan dari non-admin ("HR Officer"); is_admin dipakai sbg proxy
@@ -448,7 +448,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         unset($this->employees);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

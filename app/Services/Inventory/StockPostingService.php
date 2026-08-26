@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 // Port dari trigger legacy trg_rm_stock_confirm/trg_fg_stock_confirm/
 // trg_sfg_stock_confirm (database/legacy/tminv_20260722_2018_sd.sql baris
 // ~1278/1347/1430) yang TIDAK ikut ter-import ke DB live (SHOW TRIGGERS
-// kosong) -- lihat docs/SIDEBAR_MENU_STANDARD.md #6a utk alasan kenapa
+// kosong) -- lihat docs/sidebarmenustandard.md #6a utk alasan kenapa
 // logikanya diport ke sini (App\Services\*, bukan trigger SQL, konsisten
 // dgn Costing/Quotation/Flow Engine). Satu-satunya jalur SAH utk menulis
 // *_stockcard -- Livewire component TIDAK BOLEH insert langsung (INV_TIER_4 #7).
@@ -150,7 +150,7 @@ class StockPostingService
                 $qtyAdj = in_array($cat, ['AD', 'OP'], true) ? $qtyFinal : 0;
 
                 // Valuasi AVG bergerak (moving average) -- FIFO/LIFO (inv_stock_layer) belum
-                // diimplementasikan di v1, costing_method per-item belum final (INV_STATE.yaml).
+                // diimplementasikan di v1, costing_method per-item belum final (inventory_state.yaml).
                 $newAvg = $qtyIn > 0
                     ? (($qtyBb * $prevAvg) + ($qtyIn * $unitPrice)) / max($qtyBb + $qtyIn, 0.0001)
                     : $prevAvg;

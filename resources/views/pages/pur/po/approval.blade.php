@@ -8,7 +8,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// GRID_UI_STANDARD.md diikuti (2026-08-22). Approve/Reject/Hold TIDAK LAGI di
+// griduistandard.md diikuti (2026-08-22). Approve/Reject/Hold TIDAK LAGI di
 // layar ini -- dipindah ke form PO yang sama (pur/po/entry.blade.php), persis
 // pola ME29N di SAP / action pane Dynamics 365 / approval di form Odoo:
 // approver melihat & memutuskan langsung di dokumen aslinya, bukan ringkasan
@@ -82,7 +82,7 @@ new #[Title('PO Approval Center — TELASIH MAKMUR ERP')] class extends Componen
         return $this->redirect(route('pur.po.entry', ['po' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

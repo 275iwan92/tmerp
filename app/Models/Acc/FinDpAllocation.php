@@ -5,7 +5,7 @@ namespace App\Models\Acc;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-// FINANCE_DOWN_PAYMENT_TIER_1-4.md §0/§2B-3 — alokasi DP -> invoice final
+// downpayment_tier1-4.md §0/§2B-3 — alokasi DP -> invoice final
 // (M:N). PK tabel aktual `allocation_id` (bukan `dp_allocation_id` seperti
 // draf DDL dokumen) — tabel sudah diterapkan langsung di MySQL sebelum
 // migration Laravel dibuat, lihat migration 2026_08_19_000020.

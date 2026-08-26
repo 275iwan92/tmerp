@@ -1,6 +1,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- PATCH_DDL_PV_MULTIPO.sql
--- TMERP · tm2pur · Menerapkan DELTA_PROC_PV_MULTIPO.md (PV-01 s/d PV-11)
+-- TMERP · tm2pur · Menerapkan purchasereceive_delta_multipo.md (PV-01 s/d PV-11)
 --
 -- Efek: satu SPB boleh menampung banyak PO dari SATU supplier.
 --       Referensi PO PINDAH dari header (pv_receipt.po_id) ke baris (pv_line).

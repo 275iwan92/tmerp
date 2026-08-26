@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 // TIER_3A_FINANCE.sql §8 — VIEW turunan (tak disimpan). v1_fin_account_tree
-// = sumber grid Master COA (tree_level + default_cc_code, FIN_TIER_4.md §2).
+// = sumber grid Master COA (tree_level + default_cc_code, financeaccounting_tier4.md §2).
 // Sisanya dipakai laporan modul Voucher/AR-AP yang menyusul.
 return new class extends Migration
 {

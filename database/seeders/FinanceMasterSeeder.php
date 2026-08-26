@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 
 // TIER_3A_FINANCE.sql §9 — seed jurnal + cost center + COA (54 akun) supaya
 // Master COA tidak kosong & voucher fase-2 punya jurnal/cost-center dasar
-// untuk dipilih. FIN_TIER_4.md §7 checklist: "Seeder jalankan TIER_3A_FINANCE.sql".
+// untuk dipilih. financeaccounting_tier4.md §7 checklist: "Seeder jalankan TIER_3A_FINANCE.sql".
 class FinanceMasterSeeder extends Seeder
 {
     public function run(): void

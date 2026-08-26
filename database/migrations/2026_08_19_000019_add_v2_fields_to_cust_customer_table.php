@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 // mockup_master_customer.html (v2) — field baru dari tab Printing Specs,
 // Sales & Finance (delta), dan Governance yang belum ada di skema manapun.
 // "Sales Organization"/"Distribution Channel" mockup SENGAJA tidak dibawa —
-// keputusan lama CUSTOMER_MASTER_spec.md §1.5 ("SAP-isme tak relevan
+// keputusan lama customer_spec.md §1.5 ("SAP-isme tak relevan
 // percetakan") masih berlaku meski skema lengkap dokumen itu sendiri sudah
 // disuperseded oleh cust_customer yang nyata berjalan sekarang.
 return new class extends Migration

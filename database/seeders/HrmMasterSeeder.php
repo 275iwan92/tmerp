@@ -36,7 +36,7 @@ class HrmMasterSeeder extends Seeder
         $this->linkAdminToEmployee();
     }
 
-    // TIER_1_HRM.md §10: 1 user WAJIB tertaut 1 employee_id sebelum bisa pakai
+    // masteremployee_tier1.md §10: 1 user WAJIB tertaut 1 employee_id sebelum bisa pakai
     // portal self-service ("Jadwal Saya"/dst). SecUserSeeder kebetulan sudah
     // menamai user 'admin' sebagai "Budi Santoso" — tautkan ke TM-00001 supaya
     // ada akun siap pakai untuk uji coba tanpa perlu bikin user baru.

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 // Modul HRM baru (Master Employee, menyusul Shift Roster & Self-Service).
 // sec_module baru 'HRM' + sys_app_menu module/group/item, pola sama dgn
 // migration COSTING (2026_08_15) dan FINACC (2026_08_19_000010). DIREKSI
-// di-grant dulu (belum ada grup HR Officer/Admin App khusus, TIER_1_HRM.md §7
+// di-grant dulu (belum ada grup HR Officer/Admin App khusus, masteremployee_tier1.md §7
 // role itu baru simulasi di layar, bukan sec_group nyata).
 return new class extends Migration
 {

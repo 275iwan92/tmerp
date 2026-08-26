@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// INV_TIER_3.md §9 -- VIEW pelaporan. Dua penyesuaian nyata dari teks asli
+// inventory_tier3.md §9 -- VIEW pelaporan. Dua penyesuaian nyata dari teks asli
 // (diverifikasi ke skema riil, bukan ditebak):
 // 1. Produk/part FG-SFG di project ini adalah tm2mst.prod_product (PK
 //    id_product, product_code/product_name) + tm2mst.prod_part (PK id_part,

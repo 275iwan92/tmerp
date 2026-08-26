@@ -24,7 +24,7 @@ use Livewire\Component;
 // (timeline ringkas dari created_at/updated_at, BUKAN tabel audit generik —
 // tak ada tabelnya). ~22 kolom baru di cust_customer, lihat migration
 // 2026_08_19_000019. "Sales Organization"/"Distribution Channel" mockup
-// SENGAJA tak dibawa (CUSTOMER_MASTER_spec.md §1.5 "SAP-isme tak relevan
+// SENGAJA tak dibawa (customer_spec.md §1.5 "SAP-isme tak relevan
 // percetakan" — satu-satunya bagian dokumen lama itu yang masih dipakai).
 new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 {

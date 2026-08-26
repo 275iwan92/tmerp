@@ -9,7 +9,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti. PRT butuh approval sungguhan (Manajer
+// griduistandard.md diikuti. PRT butuh approval sungguhan (Manajer
 // Operasional) -- Approve/Reject/Hold digabung ke form entri (pur/prt/entry),
 // BUKAN di grid ini (pola sama PR/PO/Adjustment yang dirombak sesi ini).
 // Aksi grid cuma ↗ Buka. "+ New Record" tetap ada (PRT dibuat dari grid ini

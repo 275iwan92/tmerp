@@ -39,7 +39,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
     // Layar approval PR tidak lagi punya form ringkas terpisah -- approver
     // menyetujui/menolak/menahan langsung dari form PR yang sama (field
-    // otomatis read-only krn status != DRAFT). Lihat docs/GRID_UI_STANDARD.md
+    // otomatis read-only krn status != DRAFT). Lihat docs/griduistandard.md
     // & memory project_procurement_module_status.
     public string $approvalNote = '';
 

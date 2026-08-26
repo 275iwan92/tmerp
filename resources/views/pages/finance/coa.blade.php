@@ -8,7 +8,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// FIN_TIER_4.md — Master Chart of Accounts. Grid dari VIEW v1_fin_account_tree
+// financeaccounting_tier4.md — Master Chart of Accounts. Grid dari VIEW v1_fin_account_tree
 // (tree_level + default_cc_code sudah dihitung DB, lihat FinAccountTree).
 // account_id fin_account MANUAL (bukan AUTO_INCREMENT) — dibangkitkan otomatis
 // di nextAccountId() saat tambah baru, user hanya isi account_code (kode GL).
@@ -155,7 +155,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
         if ($this->mode === 'edit' && $id) {
             $a = FinAccount::findOrFail($id);
 
-            // Header (is_postable=0) tak boleh diedit lewat form — FIN_TIER_4.md §3.
+            // Header (is_postable=0) tak boleh diedit lewat form — financeaccounting_tier4.md §3.
             if (! $a->is_postable) {
                 return;
             }

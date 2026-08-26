@@ -7,7 +7,7 @@ use App\Models\Sys\SysSetting;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-// SECURITY_default_password_spec.md §7 — 6 user key person UAT. Login = nama
+// security_defaultpassword_spec.md §7 — 6 user key person UAT. Login = nama
 // depan (lowercase). Password tetap (mudah diingat tester, atas permintaan
 // Jo — bukan random lagi), must_change_password=1 tetap dipaksa ganti di
 // login pertama.

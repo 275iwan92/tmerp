@@ -569,7 +569,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         return SupSupplier::where('is_subcon', true)->count();
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

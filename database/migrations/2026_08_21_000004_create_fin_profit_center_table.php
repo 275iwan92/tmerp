@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// ITEM_MASTER_DELTA.md §4 -- dimensi profit center utk item master & jurnal.
+// itemmaster_delta.md §4 -- dimensi profit center utk item master & jurnal.
 // Draf dokumen mengasumsikan pola code/name polos; DICEK ke fin_cost_center
 // AKTUAL (2026-08-21): PK-nya cc_id (bukan generic id), kolom cc_code/cc_name,
 // plus cc_group (enum) & org_dept_id yang tak disebut draf. fin_profit_center

@@ -17,7 +17,7 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
 
     public bool $unreadOnly = false;
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function notifications()
     {

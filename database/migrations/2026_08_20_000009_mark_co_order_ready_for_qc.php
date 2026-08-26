@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// module_status_system (GLOBAL_RULES.yaml): Customer Order Entry + List selesai
+// module_status_system (globalrules.yaml): Customer Order Entry + List selesai
 // dibangun & diuji end-to-end (2026-08-20) -- tandai SALES_SO siap-QC, sama pola
 // dgn migration 2026_08_20_000006.
 return new class extends Migration

@@ -77,7 +77,7 @@ document.addEventListener('alpine:init', () => {
         openTab(code) {
             const it = this.findItem(code);
             if (! it) return;
-            // module_status_system (GLOBAL_RULES.yaml): NOT_BUILT = is_clickable
+            // module_status_system (globalrules.yaml): NOT_BUILT = is_clickable
             // false di DB (sys_app_menu_color) -- layar belum ada, jangan buka apa-apa.
             if (! it.isClickable) {
                 this.toast(`${it.label} — ${it.statusLabel ?? 'belum tersedia'}.`);

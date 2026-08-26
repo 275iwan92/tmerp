@@ -7,7 +7,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// SECURITY_default_password_spec.md §6 — ditampilkan paksa (middleware
+// security_defaultpassword_spec.md §6 — ditampilkan paksa (middleware
 // force.password) ketika must_change_password=1: habis reset admin, atau
 // user baru. default_password TIDAK diubah oleh alur ini (tetap fallback).
 new #[Layout('layouts::guest')] #[Title('Ganti Password — TELASIH MAKMUR ERP')] class extends Component

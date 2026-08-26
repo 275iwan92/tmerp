@@ -9,7 +9,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
+// griduistandard.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
 // Grid transaksi TETAP boleh punya "+ New Record" (di sini "+ Quotation Baru"
 // via picker customer) karena Quotation memang dibuat dari grid ini -- beda
 // dari Imposition/Costing worklist yang recordnya lahir di layar lain.
@@ -25,7 +25,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
 
     public bool $pickerOpen = false;
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE, bukan load-semua-lalu-filter.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE, bukan load-semua-lalu-filter.
     #[Computed]
     public function quotations()
     {
@@ -131,7 +131,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
         return QuoQuotation::where('doc_status', 'PUBLISHED')->count();
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

@@ -7,7 +7,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
+// griduistandard.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
 // Tidak ada "+ New Record" -- CO lahir dari Quotation yang sudah PUBLISHED
 // (tombol "Buat Customer Order" di layar Quotation), bukan dibuat dari grid ini.
 // Kolom Aksi non-master: bukan Edit+Toggle-aktif (§5), tapi ↗ Buka + ✓ Confirm
@@ -18,7 +18,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
     public string $search = '';
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function orders()
     {
@@ -82,7 +82,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
         unset($this->orders);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

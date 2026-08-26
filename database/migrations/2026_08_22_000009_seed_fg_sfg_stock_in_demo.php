@@ -35,7 +35,7 @@ return new class extends Migration
         ], 'system');
         $postSvc->postDocument('FG', $fgDocId, 'system');
 
-        $sfgWarehouse = MWarehouse::where('warehouse_type', 'MIX')->first(); // belum ada tipe SFG khusus, lihat SIDEBAR_MENU_STANDARD.md #6
+        $sfgWarehouse = MWarehouse::where('warehouse_type', 'MIX')->first(); // belum ada tipe SFG khusus, lihat sidebarmenustandard.md #6
         $sfgLocation = MWhLocation::where('warehouse_id', $sfgWarehouse->id_warehouse)->where('is_usable', true)->first();
         $sfgPartId = \App\Models\Master\ProdPart::where('part_code', 'FB-DUPLEX-001-BODY')->value('id_part');
 

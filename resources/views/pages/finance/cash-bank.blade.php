@@ -11,7 +11,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 // Jurnal Kas & Bank (BKM/BKK/BBM/BBK) -- dari mockup HTML user 2026-08-22
-// (gemini-code-1787379102109.html), disesuaikan ke GRID_UI_STANDARD.md &
+// (gemini-code-1787379102109.html), disesuaikan ke griduistandard.md &
 // pola grid<->form panel-switching satu route (bukan modal spt DP Invoice --
 // kontennya terlalu banyak: tab rincian+pajak+audit, sama spt Stock In/Out).
 // fin_voucher.status ENUM(DRAFT,POSTED,CANCELLED) sudah ada sejak awal tapi

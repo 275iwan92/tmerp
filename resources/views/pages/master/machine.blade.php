@@ -179,7 +179,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         unset($this->machines, $this->statTotal, $this->statActive, $this->statInactive);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

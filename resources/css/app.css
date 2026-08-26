@@ -344,7 +344,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell.mini .leaf .lbl { @apply hidden; }
 .shell.mini .leaf .status-dot { @apply hidden; }
 
-/* module_status_system (GLOBAL_RULES.yaml): titik warna kesiapan-build,
+/* module_status_system (globalrules.yaml): titik warna kesiapan-build,
    dari sys_app_menu_color via SysAppMenu::menuTree() -- abu=belum dibangun,
    kuning=siap di-QC, hijau=terkunci user. Beda dgn sys_theme (tema warna app). */
 .shell .status-dot { @apply w-[7px] h-[7px] rounded-full flex-shrink-0; }

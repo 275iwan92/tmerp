@@ -9,7 +9,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §6.1 + docs/mockups/mockup_print_stock_card.html. Sumber:
+// inventory_tier4.md §6.1 + docs/mockups/mockup_print_stock_card.html. Sumber:
 // tm2inv.v_inv_movement -- view UNION yang sudah menormalkan RM (rm_stockcard
 // + m_raw_material) / SFG (sfg_stockcard + prod_part) / FG (fg_stockcard +
 // prod_product) jadi kolom seragam (item_id/item_code/item_name), jadi satu
@@ -17,7 +17,7 @@ use Livewire\Component;
 // picker item. SFG/FG masih 0 baris nyata (baru diisi data uji) -- Stock
 // In/Out sungguhan belum digarap.
 //
-// {category} WAJIB di URL (bukan toggle dalam halaman) -- SIDEBAR_MENU_STANDARD.md
+// {category} WAJIB di URL (bukan toggle dalam halaman) -- sidebarmenustandard.md
 // §5 (2026-08-22): user minta 3 kelas jadi 3 MENU terpisah (RM/FG/SFG),
 // baik utk Input maupun Laporan, karena recordnya memang masuk ke tabel
 // fisik yang beda (rm_stockcard/fg_stockcard/sfg_stockcard). Satu file

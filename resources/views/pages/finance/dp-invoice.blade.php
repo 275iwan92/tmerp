@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// mockup_down_payment.html + docs/FINANCE_DOWN_PAYMENT_TIER_1-4.md. Uang muka
+// mockup_down_payment.html + docs/downpayment_tier1-4.md. Uang muka
 // (DP) dua arah di atas struktur GL yang sudah ada — fokus SALES DP (kasus
 // utama pabrik), PURCHASE DP menyusul (§2B-5, simetris). 3 event dibangun di
 // sini: Terbitkan DP (1), Catat Pembayaran (2), Alokasikan ke invoice final
@@ -22,7 +22,7 @@ use Livewire\Component;
 // belum ada, jadi Alokasi diuji dengan invoice final yang di-insert manual.
 // Referensi SO/CO mockup ("tm2sdi.sales_orders") DISESUAIKAN jadi input
 // manual (customer + nilai kontrak + no. referensi teks co_reference) --
-// tm2sdi.co_order SEKARANG SUDAH ADA (2026-08-20, lihat SALES_STATE.yaml)
+// tm2sdi.co_order SEKARANG SUDAH ADA (2026-08-20, lihat sales_state.yaml)
 // tapi field ini BELUM di-rewiring ke co_id asli (masih co_reference bebas
 // teks); kolom co_id tetap disimpan logis-opsional utk rewiring sesi lain.
 new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Component

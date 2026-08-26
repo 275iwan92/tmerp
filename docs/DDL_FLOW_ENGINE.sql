@@ -8,7 +8,7 @@
              adalah salah satu JENIS step dalam alur dokumen, bukan sistem terpisah.
 
  Lokasi DB : tmmst (master netral, dipakai lintas modul via VIEW read-only
-             sesuai pola TIER_0_GLOBAL_ARCHITECTURE.md §3)
+             sesuai pola globalarchitecture_tier0.md §3)
 
  [DELTA] Prasyarat: tabel org_position (HRM) & tabel user/akun (mis. sys_user)
          harus sudah ada — FK position_id / user_id menunjuk ke sana.

@@ -81,7 +81,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
     // Password default yang baru saja di-reset — ditampilkan SEKALI di layar
     // (session, bukan disimpan di properti Livewire supaya tak ikut di-dehydrate
-    // ke request berikutnya). SECURITY_default_password_spec.md §0/§4.
+    // ke request berikutnya). security_defaultpassword_spec.md §0/§4.
     public ?int $revealUserId = null;
 
     public function resetPassword(int $userId): void

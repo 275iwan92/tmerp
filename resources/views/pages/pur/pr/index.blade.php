@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti (2026-08-22). PR belum punya supplier (baru
+// griduistandard.md diikuti (2026-08-22). PR belum punya supplier (baru
 // dipilih di tahap PO), jadi kolom identitas pakai Departemen peminta -- sama
 // peran dgn "nama customer" di grid Quotation/CO. "+ New Record" tetap ada
 // karena PR memang dibuat dari grid ini sendiri (picker departemen).
@@ -26,7 +26,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         return OrgDepartment::where('is_active', true)->orderBy('department_name')->get();
     }
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function requisitions()
     {
@@ -99,7 +99,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         return $this->redirect(route('pur.pr.entry', ['pr' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

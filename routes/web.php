@@ -12,7 +12,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     // Di luar force.password: halaman paksa-ganti-password sendiri, tak boleh
-    // ikut digate olehnya (redirect loop) — SECURITY_default_password_spec.md §6.
+    // ikut digate olehnya (redirect loop) — security_defaultpassword_spec.md §6.
     Route::livewire('/password/change', 'pages::auth.password-change')->name('password.change');
 
     Route::middleware('force.password')->group(function () {
@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
 
         // Portal self-service karyawan — bukan modul HR administratif (tanpa
         // module: gate), tapi personal & hanya milik akun sendiri. Guard
-        // "linked employee" ditangani di dalam komponen (TIER_1_HRM.md §5.1).
+        // "linked employee" ditangani di dalam komponen (masteremployee_tier1.md §5.1).
         Route::livewire('/self-service', 'pages::self-service.index')->name('self-service.index');
 
         // Personal, bukan modul administratif -- sama pola dgn self-service (tanpa module: gate).
@@ -95,19 +95,19 @@ Route::middleware('auth')->group(function () {
         Route::middleware('module:INV')->group(function () {
             // {category} = RM|FG|SFG, wajib di URL -- menu sidebar sekarang
             // 3 entri terpisah per kelas (bukan toggle dalam halaman), lihat
-            // SIDEBAR_MENU_STANDARD.md §5. {material?} tetap opsional utk deep-link.
+            // sidebarmenustandard.md §5. {material?} tetap opsional utk deep-link.
             Route::livewire('/inventory/print/stock-card/{category}/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
             Route::livewire('/inventory/print/master-stock/{category}', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
 
-            // INV_TIER_4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
+            // inventory_tier4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
             Route::livewire('/inventory/stock-in/{category}', 'pages::inventory.stock-in')->name('inv.stock-in.index');
-            // Stock Out & Return v1 dikunci RM saja (INV_RULES.yaml out_wajib_wo /
+            // Stock Out & Return v1 dikunci RM saja (inventory_rules.yaml out_wajib_wo /
             // fg_out_bukan_milik_modul) -- {category} tetap di URL, ditolak di
             // level route (mount()) kalau bukan RM, bukan cuma disembunyikan di UI.
             Route::livewire('/inventory/stock-out/{category}', 'pages::inventory.stock-out')->name('inv.stock-out.index');
             Route::livewire('/inventory/stock-return/{category}', 'pages::inventory.stock-return')->name('inv.stock-return.index');
-            // Adjustment & Opname mencakup RM/FG/SFG (INV_TIER_4.md #4) -- entri
-            // & approval route TERPISAH (INV_RULES.yaml layar_terpisah).
+            // Adjustment & Opname mencakup RM/FG/SFG (inventory_tier4.md #4) -- entri
+            // & approval route TERPISAH (inventory_rules.yaml layar_terpisah).
             // {doc?} opsional -- dipakai layar Persetujuan (approval) utk deep-link
             // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
             Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');

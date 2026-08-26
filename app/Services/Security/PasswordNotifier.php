@@ -5,7 +5,7 @@ namespace App\Services\Security;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysSetting;
 
-// SECURITY_default_password_spec.md §5 — notifikasi = toggle, bukan
+// security_defaultpassword_spec.md §5 — notifikasi = toggle, bukan
 // dependency. Jalur manual (grid admin) SELALU jalan tanpa syarat apapun.
 class PasswordNotifier
 {

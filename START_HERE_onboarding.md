@@ -12,7 +12,7 @@ Struktur bundle:
 CLAUDE.md                 → salin ke ROOT proyek TMERP (sejajar artisan)
 docs/                     → salin seluruh folder ke ROOT proyek TMERP
   ├── TIER_0..3A (.md/.sql)
-  ├── TIER_3A_PREFIX_LIST.md
+  ├── prefixlist.md
   └── mockups/*.html
 ```
 
