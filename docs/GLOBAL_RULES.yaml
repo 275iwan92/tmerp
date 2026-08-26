@@ -5,14 +5,16 @@
 # ═══════════════════════════════════════════════════════════════════
 
 meta:
-  scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE) — CATATAN 2026-08-20: user sudah kerjakan Finance & HR di luar urutan/scope awal (lihat modules_excluded + modul 09-11), jadi 'terkunci' di sini artinya urutan prioritas Sales-dulu, BUKAN larangan mutlak menyentuh modul lain kalau user minta. Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
+  scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE) HANYA berarti urutan prioritas Sales-dulu, BUKAN larangan menyentuh modul lain. CATATAN 2026-08-26 (DEC-SCOPE-OPEN, lihat GLOBAL_START_HERE): user resmi membuka Finance & Accounting (10_finance_accounting) DAN HR lengkap termasuk Recruitment/Payroll (11_hr) untuk boleh dikerjakan sekarang — bukan lagi 'di luar scope 10 minggu'. modules_excluded di bawah sudah diperbarui mengikuti keputusan ini. Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
   bahasa: "Jawab Bahasa Indonesia. Singkat-padat-jelas. Bahas konsep sebelum kode. Baca file PENUH sebelum dokumentasi."
   peta_status: "checklist_mockup_erp.md (per-item) DAN warna menu di shell (per-DB, lihat module_status_system) adalah DUA representasi peta status yang sama — WAJIB diupdate BARENGAN tiap ada perubahan status suatu form/grid, jangan cuma salah satu."
 
 # ═══════════════════════════════════════════════════════════════════
-# MODUL ERP — SCOPE 10 MINGGU (Finance/GL/AP/cashier & HR DIKELUARKAN;
-# Invoicing/Billing tetap masuk sebagai AR-lite, bukan bagian GL)
-# Urutan = urutan dependensi eksekusi.
+# MODUL ERP — SCOPE 10 MINGGU (urutan dependensi eksekusi Sales-dulu).
+# CATATAN 2026-08-26: Finance/GL/AP/cashier & HR (Recruitment/Payroll)
+# TIDAK LAGI dikeluarkan dari scope — lihat DEC-SCOPE-OPEN di
+# GLOBAL_START_HERE.md. Urutan di bawah tetap prioritas eksekusi,
+# bukan larangan.
 # ═══════════════════════════════════════════════════════════════════
 modules:
   "01_sales":
@@ -43,15 +45,15 @@ modules:
     desc: "Master data lintas-modul, dipisah dari Sales sejak redesign v2 (2026-08-18/19)"
     submodules: ["customer_master", "supplier_master", "uom_master"]
   "10_finance_accounting":
-    desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.finance_accounting) — COA, Journal, Voucher, Invoice, DP Invoice sudah live"
-    submodules: ["chart_of_account", "journal_voucher", "invoice", "dp_invoice"]
+    desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, bukan cuma sisa. COA, Journal, Voucher, Invoice, DP Invoice sudah live; Cashier/AP/Trial Balance menyusul."
+    submodules: ["chart_of_account", "journal_voucher", "cashier", "accounts_payable", "trial_balance", "invoice", "dp_invoice"]
   "11_hr":
-    desc: "Sebagian dibangun DI LUAR rencana awal 10 minggu (lihat modules_excluded.hr) — Employee, struktur organisasi, Shift Roster, Self-Service sudah live"
-    submodules: ["employee_master", "org_structure", "shift_roster", "self_service"]
+    desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, termasuk Recruitment & Payroll. Employee, struktur organisasi, Shift Roster, Self-Service sudah live."
+    submodules: ["employee_master", "org_structure", "shift_roster", "self_service", "recruitment_pipeline", "time_attendance", "payroll_run"]
 
 modules_excluded:
-  finance_accounting: "Cashier, AP, Trial Balance, period close — MASIH di luar scope. CATATAN 2026-08-20: rencana awal 'seluruh Finance/GL di luar scope' sudah TIDAK berlaku — COA, Journal, Voucher, Invoice, DP Invoice sudah dibangun & live (lihat modul 10_finance_accounting di bawah, atas inisiatif user, bukan keputusan sepihak Claude Code). Baris ini sekarang cuma berlaku utk sisa yang benar-benar belum dibangun."
-  hr: "Recruitment, Time Attendance, Payroll — MASIH ditunda. CATATAN 2026-08-20: rencana awal 'seluruh HR ditunda' sudah TIDAK berlaku — Master Employee, struktur organisasi, Shift Roster, Self-Service sudah dibangun & live (lihat modul 11_hr di bawah). Baris ini sekarang cuma berlaku utk sisa yang benar-benar belum dibangun."
+  finance_accounting: "TIDAK BERLAKU LAGI sejak DEC-SCOPE-OPEN 2026-08-26 (lihat GLOBAL_START_HERE.md) — seluruh Finance & Accounting (Cashier, AP, Trial Balance, GL, COA, Invoice, dst) boleh dikerjakan sekarang. Baris ini dipertahankan sebagai jejak historis, bukan pembatasan aktif."
+  hr: "TIDAK BERLAKU LAGI sejak DEC-SCOPE-OPEN 2026-08-26 (lihat GLOBAL_START_HERE.md) — Recruitment, Time Attendance, Payroll boleh dikerjakan sekarang, sama seperti Master Employee/struktur organisasi/Shift Roster/Self-Service yang sudah live. Baris ini dipertahankan sebagai jejak historis, bukan pembatasan aktif."
 
 stack:
   app: "Laravel + Livewire + Alpine + Tailwind (compiled via Vite; CDN hanya untuk mockup, BUKAN produksi)"

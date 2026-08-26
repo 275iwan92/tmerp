@@ -66,7 +66,7 @@ role_access_control:
 # BPJS — DATA MASTER KEPESERTAAN (BARU)
 # ═══════════════════════════════════════════════════════════════════
 bpjs:
-  scope_boundary: "HANYA simpan status kepesertaan & skema iuran sbg REFERENSI/data master. Perhitungan potongan gaji aktual = ranah modul Payroll (DITUNDA, di luar scope 10 minggu). JANGAN bangun engine hitung potongan"
+  scope_boundary: "HANYA simpan status kepesertaan & skema iuran sbg REFERENSI/data master. Perhitungan potongan gaji aktual = ranah modul Payroll (scope DIBUKA 2026-08-26, lihat GLOBAL_START_HERE.md → DEC-SCOPE-OPEN — tapi tetap modul TERPISAH). JANGAN bangun engine hitung potongan DI SINI (HRM); itu tetap punya modul Payroll sendiri, sekarang boleh mulai dikerjakan"
   bpjs_kesehatan:
     fields: "no_kepesertaan, kelas_rawat (I/II/III), status (aktif/nonaktif), jumlah_tanggungan_terdaftar"
     skema_iuran_referensi: "Perusahaan 4% + Karyawan 1% (potong gaji) dari upah — sesuai regulasi berlaku saat ini, BISA BERUBAH ikut aturan pemerintah"

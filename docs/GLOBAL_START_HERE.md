@@ -8,6 +8,18 @@
 ## ⛔ KEPUTUSAN TERKUNCI — jangan ditanyakan ulang
 Melanggar = sinyal saya tak baca file ini, bukan sinyal keputusan perlu dibahas ulang.
 
+- **DEC-SCOPE-OPEN (2026-08-26)**: user resmi membuka scope **Finance & Accounting** (Modul 06/11 —
+  Cashier, General Ledger, Journal Entry, Trial Balance, AP, COA, Invoice, DP Invoice) DAN
+  **Human Resource lengkap** (Modul 07 — Master Employee/org sudah live, ditambah **Recruitment**
+  `tm2hrr` dan **Payroll** `tm2pyr` termasuk Attendance) untuk **boleh dikerjakan sekarang**,
+  BUKAN lagi ditunda sampai fase "10 minggu" selesai. ScriptCase-catatan "10 minggu"/"di luar
+  scope" di dokumen lama (`GLOBAL_RULES.yaml → modules_excluded`, `TIER_0 §2/§6`,
+  `TIER_1_HRM.md`, `TIER_1_PAYROLL.md`, `TIER_4_PAYROLL.md`, `TIER_1_FLOW_ENGINE.md §4`,
+  `checklist_mockup_erp.md` Modul 6/7/11, `HRM_STATE.yaml`, `00_setup_databases.sql`) **tidak
+  berlaku lagi** untuk kedua modul ini — ini juga menutup kontradiksi Modul 6 vs 11 di
+  `checklist_mockup_erp.md` (COA/GL memang sudah scoped-in, bukan pengecualian liar). Urutan
+  kerja tetap ikut prioritas Sales-dulu di `GLOBAL_RULES.yaml → meta.scope` (dependensi
+  eksekusi), tapi Finance & HR/Payroll/Recruitment TIDAK LAGI diblokir menunggu giliran.
 - **Stack**: Laravel + Livewire + Blade + Tailwind (compiled via Vite, BUKAN CDN di produksi). Herd (Windows), MySQL 8, 10 DB `tm2*`.
 - **ScriptCase = LEGACY-ONLY**: hanya sumber migrasi Version 1. Bukan target, tak dikembangkan lagi. Costing V2 menggantikan engine `tmhpp`.
 - **Rantai otoritas** (hilir tak ubah hulu): Inquiry → Imposition+Routing → Master Card → Costing → Quotation/CO → Production.
@@ -64,11 +76,11 @@ Legenda status: 🟢 jalan · 🟡 sebagian · ⚪ belum. Tanda submodule: ✅ k
 | delivery_note (DN) ✅ | nota kirim |
 | shipment 🔷 | CASE cross-CO consolidated (many-to-many CO:DN, harga di level line) |
 
-### 06 · FINANCE & ACCOUNTING ⚪
-cashier 🔷 · AP 🔷 · AR 🔷 · general_ledger 🔷 · invoicing 🔷
+### 06 · FINANCE & ACCOUNTING 🟡 (DIBUKA 2026-08-26 — lihat DEC-SCOPE-OPEN)
+COA ✅ · DP Invoice ✅ · cashier 🔷 · AP 🔷 · AR 🔷 · general_ledger 🔷 · invoicing 🔷
 
-### 07 · HUMAN RESOURCE ⚪
-recruitment 🔷 · time_attendance 🔷 · payroll 🔷
+### 07 · HUMAN RESOURCE 🟡 (DIBUKA 2026-08-26 — lihat DEC-SCOPE-OPEN)
+employee_master ✅ · shift_roster ✅ · self_service ✅ · recruitment 🔷 · time_attendance 🔷 · payroll 🔷
 
 ### 08 · LOOKUP DATA ⚪
 global_reference 🔷 · lookup 🔷 · parameter 🔷

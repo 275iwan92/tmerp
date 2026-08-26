@@ -70,7 +70,7 @@ Karena kebutuhan ini berlaku untuk **semua modul dokumen** (PR, PO, CO, DO, DN, 
 | `DN` | Delivery Note | Aktif |
 | `OP` | Stock Opname | Aktif (Inventory) |
 | `AD` | Stock Adjustment | Aktif (Inventory) |
-| `HR` | Human Resource | ⚪ Ditunda (di luar scope 10 minggu, config disiapkan tapi tak dipakai) |
+| `HR` | Human Resource | 🟡 DIBUKA 2026-08-26 (DEC-SCOPE-OPEN) — config boleh mulai dipakai |
 
 > Inquiry (`iqp_*`) **tidak** memakai `flow_*` untuk state machine-nya karena sudah punya desain state backbone sendiri di Tier 2 Inquiry (`is_confirmed`/`is_cancelled` + custom lifecycle). Perlu keputusan lanjutan: apakah Inquiry dimigrasi ke `flow_*` juga demi konsistensi, atau tetap terpisah karena kompleksitas state-nya spesifik (lihat §4.2 Tier 2 Flow Engine).
 

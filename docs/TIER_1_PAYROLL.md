@@ -10,7 +10,7 @@
 | **Dokumen** | Tier 1 — Presensi & Payroll · System Flow & Process |
 | **Versi** | 1.0 |
 | **Sumber** | `PRESENSI___PAYROLL_-_RULES___POLICY.pptx` (SOP manual berbasis Google Sheets, existing) |
-| **Status scope** | ⚪ **DI LUAR jalur kerja aktif 10 minggu** (lihat GLOBAL_START_HERE.md / TIER_0 §2, §6) — dokumen ini disiapkan sebagai arsip keputusan arsitektur, BUKAN sinyal HR module dibuka sekarang |
+| **Status scope** | 🟡 **DIBUKA 2026-08-26** (DEC-SCOPE-OPEN, lihat GLOBAL_START_HERE.md) — sebelumnya di luar jalur kerja aktif 10 minggu, sekarang boleh dikerjakan. Prasyarat teknis (HRM/Master Employee live, Open Items Tier 1 §4 & Tier 2 dikonfirmasi Telma) tetap berlaku sebelum implementasi Tier 3 |
 | **Pembaca** | HR Admin · Payroll Officer · Kepala Produksi/SPV (approval lembur & izin) · Sistem Analis |
 | **Aktor** | Karyawan · Atasan Langsung (approval) · HR Admin · Payroll Officer |
 | **Goal** | Menggantikan SOP manual Excel/Google Sheets (ambil flashdisk → convert manual → cek manual → crosscheck manual → rekap manual) dengan sistem yang **mengeliminasi seluruh langkah manual yang sifatnya workaround keterbatasan spreadsheet**, dan menyisakan hanya approval oleh manusia yang memang butuh judgment (izin, cuti, lembur) |

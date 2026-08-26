@@ -43,7 +43,7 @@ Sistem berjalan dalam **transisi bertahap** dari ScriptCase ke Laravel:
 
 ## 2. PETA 10 DATABASE
 
-> ⚠️ **Status vs SCOPE 10 MINGGU (lihat GLOBAL_START_HERE.md):** peta ini infrastruktur penuh (10 DB tetap disiapkan). Tapi modul di baris 7–10 **DI LUAR jalur kerja aktif** — DB-nya boleh dibuat, tapi tak dikembangkan sampai scope aktif (order-to-cash tanpa Finance/HR) selesai.
+> ⚠️ **Status vs SCOPE 10 MINGGU (lihat GLOBAL_START_HERE.md):** peta ini infrastruktur penuh (10 DB tetap disiapkan). **UPDATE 2026-08-26 (DEC-SCOPE-OPEN):** modul di baris 7–10 (Finance & Accounting, HR Master, HR Recruitment, Payroll) **TIDAK LAGI di luar jalur kerja aktif** — user resmi membuka scope-nya, boleh dikerjakan sekarang. "Scope 10 minggu" di kolom terakhir sekarang murni urutan prioritas (Sales-dulu), bukan larangan.
 
 | # | Connection | Database | Modul | Fungsi | Peran | Status scope 10 minggu |
 |---|-----------|----------|-------|--------|-------|-------|
@@ -53,10 +53,10 @@ Sistem berjalan dalam **transisi bertahap** dari ScriptCase ke Laravel:
 | 4 | `conn_tm2pur` | **tm2pur** | Procurement | PR → PO → Receiving | Transaksi | 🟢 aktif |
 | 5 | `conn_tm2inv` | **tm2inv** | Inventory | Item stock, movement, adjustment | Transaksi | 🟢 aktif |
 | 6 | `conn_tm2prd` | **tm2prd** | Production | Planning, scheduling, capacity, output (MPS/MRP) | Transaksi | 🟢 aktif |
-| 7 | `conn_tm2acc` | **tm2acc** | Finance & Accounting | Cashier, AP/AR, General Ledger | Transaksi | ⚪ **DI LUAR scope 10 minggu** — kecuali Invoicing/Billing (AR-lite), yang tetap aktif dan ditempatkan di `tm2sdi`/`tm2acc` sesuai keputusan implementasi nanti |
-| 8 | `conn_tm2hrm` | **tm2hrm** | HR (Master) | Kepegawaian, data karyawan | Master + Transaksi | ⚪ **ditunda** |
-| 9 | `conn_tm2hrr` | **tm2hrr** | HR Recruitment | Rekrut & seleksi | Transaksi | ⚪ **ditunda** |
-| 10 | `conn_tm2pyr` | **tm2pyr** | Payroll | Penggajian | Transaksi | ⚪ **ditunda** |
+| 7 | `conn_tm2acc` | **tm2acc** | Finance & Accounting | Cashier, AP/AR, General Ledger | Transaksi | 🟡 **DIBUKA 2026-08-26** — COA/Journal/Voucher/Invoice/DP Invoice sudah live, Cashier/AP/Trial Balance boleh dikerjakan sekarang |
+| 8 | `conn_tm2hrm` | **tm2hrm** | HR (Master) | Kepegawaian, data karyawan | Master + Transaksi | 🟡 **DIBUKA 2026-08-26** — Master Employee/struktur organisasi/Shift Roster/Self-Service sudah live |
+| 9 | `conn_tm2hrr` | **tm2hrr** | HR Recruitment | Rekrut & seleksi | Transaksi | 🟡 **DIBUKA 2026-08-26** — boleh dikerjakan sekarang |
+| 10 | `conn_tm2pyr` | **tm2pyr** | Payroll | Penggajian | Transaksi | 🟡 **DIBUKA 2026-08-26** — boleh dikerjakan sekarang |
 
 **Catatan penempatan khusus (LOCKED):**
 - `i_inquiry_costing` (MTO costing) → **tm2sdi** (menyatu dengan alur Sales/Inquiry)
@@ -189,7 +189,7 @@ Schema::connection('tm2inv')->create('stock_movement', function($t){ ... });
 | **8** | Dispatch | tm2sdi | W8 |
 | **9** | Invoicing/Billing (AR-lite) | tm2sdi/tm2acc (TBD) | W9 |
 | **10** | Integrasi, regresi, deploy Ubuntu 22 + Docker | semua | W10 |
-| — | Finance penuh (GL/AP/cashier), HR | tm2acc, tm2hrm/hrr/pyr | **di luar scope 10 minggu** |
+| — | Finance penuh (GL/AP/cashier), HR (Recruitment/Payroll) | tm2acc, tm2hrm/hrr/pyr | **DIBUKA 2026-08-26** (DEC-SCOPE-OPEN) — dikerjakan begitu kapasitas tersedia, tak lagi menunggu Fase 10 |
 
 > **Kenapa Master & Security dulu?** Semua modul transaksi bergantung pada keduanya (data induk + hak akses). Membangun Sales sebelum Master = menulis VIEW ke tabel yang belum ada.
 
@@ -210,7 +210,7 @@ File SQL menunjukkan server produksi **aktif**:
 
 ## 8. YANG PERLU DIKOREKSI/DIKONFIRMASI
 
-1. **HR terpecah 3 DB** (`tm2hrm`/`tm2hrr`/`tm2pyr`) — **ditunda** (di luar scope 10 minggu), keputusan struktur DB dibahas saat HR digarap.
+1. **HR terpecah 3 DB** (`tm2hrm`/`tm2hrr`/`tm2pyr`) — scope sudah **DIBUKA 2026-08-26**; struktur `tm2hrm` sudah dipakai (live). Keputusan struktur DB untuk `tm2hrr`/`tm2pyr` dibahas saat masing-masing digarap.
 2. **tm2sys vs tm2mst** — notifikasi & audit trail di `tm2sys`; apakah lookup/parameter global (bukan master bisnis) juga di `tm2mst` atau di `tm2sys`?
 3. **Costing MTS** (`i_stock_costing`) di `tm2inv` — konfirmasi apakah butuh VIEW balik ke `tm2sdi` untuk HPP engine yang sama.
 4. **Baseline data lokal** — impor `.sql` produksi ke lokal, atau mulai struktur bersih ikut Tier 3?

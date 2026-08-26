@@ -1,12 +1,12 @@
 # TIER 1 — MASTER EMPLOYEE + PERSONAL SELF-SERVICE (HRM) · BUSINESS REQUIREMENTS
 **ERP Cetak Offset & Packaging — CV Telasih Makmur Group · Modul 08_security terkait (login) + HRM baru**
 
-> **Catatan scope:** HR (recruitment/attendance/payroll penuh) resmi **ditunda** di luar 10 minggu
-> aktif (lihat `GLOBAL_START_HERE.md` → `modules_excluded.hr`). Modul ini adalah **pengecualian
-> eksplisit** yang diminta owner — mencakup **Master Employee** (data pegawai + struktur organisasi)
-> DAN **portal Personal Self-Service** karyawan (termasuk **engine cuti** yang dibangun sekarang,
-> bukan sekadar UI). Recruitment (`tm2hrr`) dan Payroll (`tm2pyr`) penuh — termasuk perhitungan
-> potongan gaji/BPJS aktual — **tetap tidak dikerjakan**.
+> **Catatan scope:** dokumen ini awalnya ditulis saat HR (recruitment/attendance/payroll penuh)
+> resmi ditunda di luar 10 minggu aktif. **UPDATE 2026-08-26 (DEC-SCOPE-OPEN, lihat
+> `GLOBAL_START_HERE.md`):** pembatasan itu sudah dicabut — Recruitment (`tm2hrr`) dan Payroll
+> (`tm2pyr`) penuh, termasuk perhitungan potongan gaji/BPJS aktual, **sekarang boleh dikerjakan**,
+> bukan lagi pengecualian tunggal. Modul ini (Master Employee + Personal Self-Service, termasuk
+> engine cuti) tetap fondasi yang harus jalan lebih dulu karena modul lain bergantung padanya.
 
 ---
 

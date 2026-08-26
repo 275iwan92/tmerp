@@ -91,4 +91,4 @@
 
 - Prasyarat: HRM/Master Employee (`emp_employee`, `emp_shift`) sudah live dengan DDL per-hari (per catatan arsitektur, bukan versi lama satu start/end).
 - Jangan implementasi Tier 3 (`pyr_status_rule` seed) sebelum Open Items Tier 1 §4 & Tier 2 dikonfirmasi Telma — kalau dikerjakan sekarang nominalnya berisiko salah dan harus diulang.
-- Modul ini **di luar scope aktif 10 minggu** — dokumen ini disimpan sebagai referensi siap-pakai untuk saat giliran HR/Payroll dibuka, bukan untuk dieksekusi Claude Code sekarang kecuali diminta eksplisit.
+- **UPDATE 2026-08-26 (DEC-SCOPE-OPEN):** Modul ini **sudah dibuka** — tidak lagi di luar scope aktif 10 minggu, dan sudah boleh dieksekusi Claude Code sekarang. Tetap ikuti prasyarat di atas (HRM/Master Employee live, Open Items Tier 1 §4 & Tier 2 dikonfirmasi Telma sebelum implementasi Tier 3 `pyr_status_rule` seed).

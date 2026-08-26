@@ -170,7 +170,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ⬜ [F] DO Entry (multi-CO, harga per line — CASE PENTING)
 - ⬜ [G] DO List
 - ⬜ [P] **Delivery Order / Surat Jalan** (line-level CO ref + price)
-- ⬜ [F] Price-change approval *(⚠️ semula 3-party termasuk Finance — Finance di luar scope; verifikasi ulang alur approval jadi 2-party Costing+Sales, atau tahan fitur ini sampai keputusan bisnis)*
+- ⬜ [F] Price-change approval *(UPDATE 2026-08-26: Finance sudah DIBUKA scope-nya — blocker lama "Finance di luar scope" tidak berlaku lagi. Lanjutkan desain approval 3-party asli (Costing+Sales+Finance); belum digarap, tinggal jadwal implementasi, bukan lagi keputusan bisnis menggantung)*
 ### 5.3 Shipment
 - ⬜ [D] Load Planner (tonnage + m³)
 - ⬜ [D] Route Planner (map, nearest-neighbor)
@@ -179,7 +179,12 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ---
 
 ## MODUL 6 — INVOICING & BILLING (AR-lite)
-> ⚠️ **Diganti dari "Finance & Accounting" penuh.** Cashier, General Ledger, Journal Entry, Trial Balance, AP **DI LUAR scope 10 minggu** — lihat `GLOBAL_RULES.yaml → modules_excluded`. Yang tersisa di sini murni AR-lite: invoice dari CO/DN + status tagih/bayar, tanpa buku besar.
+> **UPDATE 2026-08-26 (DEC-SCOPE-OPEN, lihat GLOBAL_START_HERE.md):** catatan lama "diganti dari
+> Finance & Accounting penuh, Cashier/GL/Journal/Trial Balance/AP di luar scope" **sudah tidak
+> berlaku**. Finance & Accounting penuh sekarang boleh dikerjakan — lihat **Modul 11** di bawah,
+> yang sekarang jadi payung modul Finance sesungguhnya (COA sudah live di sana). Modul 6 di sini
+> tetap dipertahankan sebagai catatan AR-lite (invoice dari CO/DN + status tagih/bayar) yang sudah
+> lebih dulu digarap; item Cashier/GL/AP di bawah kini bagian Modul 11, bukan lagi diblokir.
 
 ### 6.1 Invoice Generation
 - ⬜ [F] Invoice Entry (dari CO/DN)
@@ -194,15 +199,18 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ⬜ [G] AR Aging (per CO — invoice setelah semua shipment lock)
 - ⬜ [P] Statement of Account
 
-**Di luar scope 10 minggu (jangan dikerjakan sampai fase Finance dibuka):**
-- ~~Cashier: Cash Receipt/Payment Entry, Kwitansi~~
-- ~~AP Aging~~
-- ~~General Ledger: Journal Entry, Trial Balance, Financial Dashboard~~
+**Fase Finance sudah dibuka 2026-08-26 (DEC-SCOPE-OPEN) — boleh dikerjakan, belum ada mockup:**
+- ⬜ Cashier: Cash Receipt/Payment Entry, Kwitansi
+- ⬜ AP Aging
+- ⬜ General Ledger: Journal Entry, Trial Balance, Financial Dashboard
 
 ---
 
 ## MODUL 7 — HUMAN RESOURCE
-> ⚠️ Sudah **tidak ditunda** — HRM digarap paralel di luar urutan asli dokumen ini (lihat memory `project_hrm_module_status`). Master Employee, Machine/Shift, dan Self-Service sudah live.
+> Sudah **tidak ditunda** — HRM digarap paralel di luar urutan asli dokumen ini (lihat memory `project_hrm_module_status`). Master Employee, Machine/Shift, dan Self-Service sudah live.
+> **UPDATE 2026-08-26 (DEC-SCOPE-OPEN):** Recruitment, Attendance, dan Payroll Run di bawah ini
+> juga sudah **dibuka scope-nya** — sebelumnya tertunda karena "di luar scope 10 minggu", sekarang
+> murni menunggu giliran kerja (belum ada mockup), bukan lagi diblokir keputusan bisnis.
 > **2026-08-21**: `tm2old.emp` (485 karyawan riil) dimigrasikan via Security → Migrasi Data Legacy (`App\Services\Migration\EmployeeMigrationService`). Departemen/jabatan asli nyaris tak tercatat di sumber (cuma 1 & 5 dari 485 baris) — semua karyawan hasil migrasi sementara dibucket ke satu departemen/jabatan "Migrasi Legacy - Belum Dipetakan", **wajib di-assign ulang manual** oleh HR. Menyusul: 137 akun login (`sec_user`) dibuat untuk karyawan aktif (`EmployeeLoginProvisionService`, tombol "Buat Login Karyawan" di tab yang sama) — karyawan yang sudah keluar sengaja tidak dibuatkan akun. Detail lengkap + cara lihat password di memory `project_hrm_module_status`.
 - ✅ [F][G] Master Employee — *mockup_master_employee.html* → `hrm.employee`
 - ✅ [D] Shift Roster — *mockup_shift_roster_v2.html* → `hrm.shift-roster`
@@ -237,7 +245,10 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ---
 
 ## MODUL 11 — FINANCE & ACCOUNTING
-> ⚠️ **Kontradiksi dengan Modul 6 di bawah** (yang bilang "GL/Journal/COA di luar scope 10 minggu") — pada praktiknya COA sudah dibangun & live. Perlu keputusan user: apakah catatan "di luar scope" di Modul 6 mau direvisi, atau COA yang sekarang live dianggap pengecualian scoped-in. Belum saya ubah sepihak.
+> **RESOLVED 2026-08-26 (DEC-SCOPE-OPEN, lihat GLOBAL_START_HERE.md):** kontradiksi vs Modul 6 di
+> atas (yang tadinya bilang "GL/Journal/COA di luar scope 10 minggu") sudah diputuskan user —
+> Finance & Accounting penuh **dibuka**, bukan pengecualian liar. COA yang sudah live memang
+> scoped-in resmi; Modul 6 di atas sudah diperbarui mengikuti keputusan ini.
 - ✅ [G] Chart of Account — *master_coa_mockup.html* → `finance.coa`
 - ✅ [F] DP Invoice — *mockup_down_payment.html* → `finance.dp-invoice` (Event 1/2/4 teruji, lihat memory `project_dp_invoice_status`)
 
