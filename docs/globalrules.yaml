@@ -48,7 +48,7 @@ modules:
     desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, bukan cuma sisa. COA, Journal, Voucher, Invoice, DP Invoice sudah live; Cashier/AP/Trial Balance menyusul."
     submodules: ["chart_of_account", "journal_voucher", "cashier", "accounts_payable", "trial_balance", "invoice", "dp_invoice"]
   "11_hr":
-    desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, termasuk Recruitment & Payroll. Employee, struktur organisasi, Shift Roster, Self-Service sudah live."
+    desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, termasuk Recruitment & Payroll. Employee, struktur organisasi, Shift Roster, Self-Service sudah live. Time Attendance: implementasi lama (emp_attendance_log) DICABUT 2026-08-24 — digantikan rancangan lebih detail di TIER_1_ATTENDANCE.md (draft, belum direview Telma, belum diimplementasi ulang)."
     submodules: ["employee_master", "org_structure", "shift_roster", "self_service", "recruitment_pipeline", "time_attendance", "payroll_run"]
 
 modules_excluded:

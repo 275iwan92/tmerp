@@ -436,6 +436,7 @@ Sheet `REFF_KEAHLIAN` memetakan posisi → tarif harian, dan posisinya **berjenj
 Diambil dari `TIER_1_PAYROLL.md` §2.4, **direvisi** berdasarkan temuan file. Perubahan ditandai.
 
 ### 5.1 Sumbu 1 — Status Kehadiran Harian (`att_daily.status_code`)
+
 Satu hari kerja = **tepat satu** nilai.
 
 | Kode | Nama | Sumber penentuan |
@@ -486,6 +487,7 @@ lain tetap terbaca dari kolom menit dan dari flag di §5.2.
 | `is_holiday_work` | Bekerja di hari Minggu / tanggal merah |
 
 ### 5.3 Sumbu 3 — Status Administratif Berjalan (periode, bukan harian)
+
 `SP1`, `SP2`, `SP3` — hidup di `emp_disciplinary` (modul HRM), **bukan** di `att_daily`. Modul ATT
 hanya membaca dan mengusulkan penerbitannya.
 
@@ -498,10 +500,12 @@ mencampur ketiganya dalam satu daftar status, dan itu penyebab utama ambiguitas.
 ## 6. Aturan Bisnis Utama (ringkas — logika rinci di Tier 2)
 
 ### 6.1 Ambang keterlambatan
+
 `T1` < 5 menit · `T2` 5–15 menit · `T3` > 15 menit. Diukur dari **jam masuk shift efektif hari itu**
 (bukan jam shift generik), sesudah roster & tukar shift disetujui diperhitungkan.
 
 ### 6.2 Batas jam kerja minimum
+
 Total jam kerja efektif < **4,5 jam** dalam satu hari → hari itu **dihitung sebagai `I` (Izin)**,
 kecuali ada penugasan resmi atau persetujuan khusus Manajemen (SOP I.4 dan K.2). Ini berlaku apa pun
 penyebabnya — pulang awal, datang terlambat parah, atau keluar jam kerja.
@@ -511,11 +515,9 @@ Spec lama menyisakan `[DELTA-CONFIRM]`: bila karyawan keluar-masuk beberapa kali
 apakah menit hilang dijumlahkan atau diambil window terpanjang. **Pertanyaan itu gugur.** Aturan SOP
 yang benar bukan tentang lamanya keluar, melainkan tentang **total jam kerja efektif yang tersisa**.
 Karena itu perhitungannya adalah:
-
 ```
 jam_kerja_efektif = Σ (durasi seluruh segmen berada di dalam area) − istirahat terjadwal
 ```
-
 Semua window keluar otomatis terpotong karena tidak masuk hitungan segmen — tanpa perlu memilih
 antara "dijumlah" atau "terpanjang". Ini juga memperbaiki pembacaan keliru atas slide PPTX yang
 menulis *"KELUAR PADA JAM KERJA — MAKSIMAL 4,5 JAM, > 4,5 JAM DIKATEGORIKAN IZIN"*: yang dimaksud
@@ -523,6 +525,7 @@ bukan durasi keluar maksimal 4,5 jam, melainkan **jam kerja tersisa minimal 4,5 
 SOP butir I.4 dan K.2 yang lebih baru dan lebih jelas.
 
 ### 6.3 Alpha
+
 - Tidak ada tap **dan** tidak ada dokumen dalam 1×24 jam → `A` (SOP F.1).
 - Izin lebih dari 3 hari berturut-turut → hari ke-4 dan seterusnya → `A` (SOP D.2 & F.3).
 - Izin lebih dari 3 kali **dalam satu bulan kalender** → kejadian ke-4 dan seterusnya → `A` (SOP K.3).
@@ -533,6 +536,7 @@ bukan duplikasi. Yang pertama berbasis rentetan hari, yang kedua berbasis hitung
 Keduanya diimplementasikan terpisah.
 
 ### 6.4 Eskalasi disiplin (SOP K)
+
 | Pemicu | Tindakan |
 |---|---|
 | Alpha 3 hari kerja berturut-turut | Surat Peringatan |
@@ -550,22 +554,26 @@ baris usulan di antrean tindakan disiplin; HR meninjau lalu memutuskan. Penerbit
 di tengah adalah risiko hukum ketenagakerjaan yang tidak sepadan dengan penghematan waktunya.
 
 ### 6.5 Sakit
+
 Wajib dilaporkan **paling lambat 07.30 WIB** hari itu (SOP C.1). Wajib dua dokumen: SKD + kwitansi/
 resep/bukti pembelian obat — atau alternatif tunggal berupa tangkapan layar riwayat aplikasi JKN bagi
 peserta BPJS. Dokumen diserahkan paling lambat hari H saat masuk kerja (SOP C.3). Bila tidak lengkap
 atau lewat batas → **direklasifikasi menjadi `I`** (SOP C.4).
 
 ### 6.6 Izin memotong cuti
+
 Bila saldo cuti tahunan masih ada, izin **memotong saldo cuti** (SOP B.7), dan karyawan **hanya boleh**
 mengajukan izin bila jatah cuti tahun berjalan sudah habis (SOP D.5). Aturan ini sudah tercatat sebagai
 revisi tertunda di `HRM_STATE.yaml`; modul ATT adalah tempat penegakannya saat menentukan status harian.
 
 ### 6.7 Tidak finger
+
 Momen wajib tap: datang, pulang, istirahat terlambat, keluar pada jam kerja, pulang awal. Tap yang
 hilang → flag `is_missing_punch` + menambah counter bulanan. Modul ATT **tidak** menghitung nilai
 denda; ia hanya mencatat kejadian dan jumlahnya.
 
 ### 6.8 Hari Minggu & tanggal merah
+
 Seluruh jam kerja pada hari tersebut masuk bucket lembur (`OT_BESAR_MINGGU` / `OT_BESAR`), tidak
 diukur terhadap ambang keterlambatan. Untuk PRODUKSI berlaku pola tetap 05.00–14.00 dengan istirahat
 1 jam. Sumber kebenaran tanggal merah — lihat §11 DELTA-02.
@@ -575,7 +583,6 @@ diukur terhadap ambang keterlambatan. Untuk PRODUKSI berlaku pola tetap 05.00–
 ## 7. Dokumen Administratif (`att_permit_letter`)
 
 Satu entitas, enam kategori, meneruskan pola penomoran yang sudah dipakai HR:
-
 ```
 <nomor urut>/<jenis>.<entitas>/<bulan romawi>/<tahun>
 contoh: 041/FDT.TLS/VIII/2026
@@ -735,6 +742,7 @@ Tiga hal berikut **bertentangan di dalam dokumen sumbernya sendiri**. Saya cantu
 penyelesaian, tetapi keputusan akhir ada pada Telma karena ini kebijakan perusahaan, bukan teknis.
 
 ### KONFLIK-01 — Denda: ada atau tidak? *(direvisi di v1.2 — sebagian besar sudah selesai)*
+
 SOP butir **B.2** menyatakan perusahaan **tidak menerapkan sistem denda** atas perizinan, pelanggaran
 hanya dikenakan teguran verbal. Namun SOP butir **F.5** dalam badan dokumen yang sama menyatakan
 **"Alpha mendapatkan sanksi senilai Rp 100.000"**. Sementara denda Rp 25.000 (terlambat) dan
@@ -752,6 +760,7 @@ kejadian. Jadi konflik ini tidak memblokir modul ini sama sekali — dampaknya b
 **Perlu konfirmasi** hanya untuk memastikan pembacaan ini benar sebelum Payroll dikerjakan.
 
 ### KONFLIK-02 — Batas cuti berturut-turut
+
 SOP butir **G.2** menyatakan cuti maksimal **3 hari berturut-turut**. Ini bertentangan dengan hak
 cuti tahunan 12 hari yang lazim dan dengan skema cuti melahirkan 2–3 bulan yang tercatat di spec
 Payroll lama.
@@ -760,6 +769,7 @@ Payroll lama.
 dan cuti khusus/penting. **Perlu konfirmasi eksplisit** karena berdampak langsung pada validasi form.
 
 ### KONFLIK-03 — Batas waktu penyerahan dokumen sakit
+
 SOP butir **C.3** menyebut dokumen diserahkan **paling lambat hari H** saat masuk kerja. SOP butir
 **E.4** menyebut **paling lambat H+1**. Matriks lampiran menyebut **H+1** untuk surat izin.
 
@@ -768,6 +778,7 @@ Pembacaan ini konsisten karena keduanya berada di bab yang berbeda dan mengatur 
 Nilai keduanya tetap disimpan sebagai parameter agar mudah diubah.
 
 ### KONFLIK-04 — Syarat jam pulang untuk Bonus Hadir: 16:30 atau 17:00?
+
 Formula pada sheet `TA` mensyaratkan jam pulang **≥ 16:30**. Namun sebuah catatan yang ditinggalkan
 penyusunnya di sheet yang sama berbunyi bahwa untuk kolom Bonus Hadir ditambahkan aturan: bila jam
 pulang **< 17:00** maka hasilnya 0. Kedua ketentuan itu hidup berdampingan di file yang sama dan

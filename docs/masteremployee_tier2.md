@@ -176,12 +176,12 @@ yang sama jadi `is_primary=0` (1 transaction).
 2. **Dual approval wajib**: `atasan_approved_by/at` **dan** `hrd_approved_by/at` harus terisi
    keduanya sebelum status jadi `APPROVED`. Beda dari request lain (yang cukup 1 approval) — ini
    architecture pengecualian, karena SOP eksplisit mensyaratkan tanda tangan Atasan Langsung DAN HRD.
-3. `fingerprint_out_at`/`fingerprint_in_at` tetap **placeholder di tabel ini** — TIDAK diisi otomatis
-   oleh sistem (izin keluar sesaat ≠ attendance harian, beda tabel/beda tujuan). Modul Time Attendance
-   (§13 `TIER_1_HRM.md`, Part D di bawah) yang sekarang aktif memakai tabel terpisah
-   (`emp_attendance_log`), BUKAN kolom ini.
+3. `fingerprint_out_at`/`fingerprint_in_at` adalah **placeholder** — TIDAK diisi otomatis oleh sistem
+   ini (integrasi mesin fingerprint = domain Attendance, ditunda total). Kolom disiapkan agar skema
+   siap saat modul Attendance akhirnya dikerjakan.
 4. Aturan "< 4,5 jam kerja efektif = dihitung Izin" (SOP I.4) **TIDAK dihitung otomatis** sekarang —
-   HR menilai manual berdasar data attendance yang ada. Dicatat sebagai DELTA di `masteremployee_state.yaml`.
+   HR menilai manual berdasar data fingerprint fisik yang ada di luar sistem, sampai integrasi
+   Attendance tersedia. Dicatat sebagai DELTA di `masteremployee_state.yaml`.
 5. Tanpa Surat Izin Keluar yang disetujui, penegakan fisik (Satpam menolak karyawan keluar) terjadi
    di luar sistem (tidak ada logic aplikasi yang bisa memaksa ini) — sistem hanya menyediakan data
    status pengajuan yang bisa dicek Satpam secara manual/read-only.
@@ -295,50 +295,4 @@ bukan ditolak — HR hanya menentukan tanggal efektif final bila perlu negosiasi
 - Status kepegawaian di header detail: PROBATION (amber) tampilkan `s/d {probation_end_date}`,
   KONTRAK/HARIAN/BORONGAN (biru/amber) tampilkan `Berakhir {end_date}`, TETAP (biru) tanpa tanggal.
 - Pengajuan: PENDING (amber "Menunggu"), APPROVED (hijau "Disetujui"), REJECTED (merah "Ditolak").
-
----
-
-## PART D — TIME ATTENDANCE (BARU, 2026-08-24)
-
-### D.1 Sumber baris per hari
-1 baris `emp_attendance_log` per employee per tanggal, hasil import Excel (dikerjakan terpisah).
-Baris **tidak ada** untuk tanggal tanpa data scan (mesin off/karyawan tidak scan) — halaman
-Profil Kehadiran tetap menampilkan baris untuk SETIAP tanggal dalam rentang filter (bukan hanya
-tanggal yang ada datanya), dengan `clock_in_at`/`clock_out_at` kosong jika tidak ada log.
-
-### D.2 Perhitungan "Jadwal Masuk"/"Jadwal Keluar" (app-layer, tidak disimpan)
-Untuk `(employee_id, tanggal)`: cari `emp_shift_roster` employee tsb pada `roster_date = tanggal`
-→ ambil `shift_id` → JOIN `emp_shift_detail WHERE shift_id=? AND day_of_week={hari tanggal itu}`
-→ `start_time`/`end_time` jadi Jadwal Masuk/Jadwal Keluar. Tidak ada roster ATAU shift tidak
-beroperasi hari itu (baris `emp_shift_detail` kosong utk hari tsb) → Jadwal Masuk/Keluar kosong.
-
-### D.3 Perhitungan Telat / Pulang Cepat (app-layer)
-- **Telat** = `clock_in_at − Jadwal Masuk`, hanya jika hasilnya positif (clock-in setelah jadwal).
-  Jadwal Masuk kosong (tidak ada roster) → Telat tidak dihitung (kosong, bukan 0).
-- **Pulang Cepat** = `Jadwal Keluar − clock_out_at`, hanya jika hasilnya positif.
-- Kedua nilai murni tampilan (menit/format `HH:MM`), **tidak** memicu `emp_disciplinary` otomatis —
-  beda dari eskalasi Alpha (B.6c) yang memang sudah auto-insert dari pelanggaran izin.
-
-### D.4 Perhitungan Keterangan (app-layer, urutan cek per tanggal)
-1. `emp_leave_request WHERE status='APPROVED' AND employee_id=? AND tanggal BETWEEN date_from AND date_to`
-   ada → tampilkan `leave_type` (Cuti/Sakit/Izin/Cuti Khusus).
-2. Tidak ada roster (`emp_shift_roster` kosong utk tanggal tsb) DAN tidak ada leave → tampilkan
-   "Hari Libur" (Minggu/tanggal tidak dijadwalkan — bukan Alpha, karena memang tidak ada jadwal kerja).
-3. Ada roster TAPI `clock_in_at` kosong (tidak scan sama sekali) DAN tidak ada leave APPROVED →
-   "Alpha".
-4. Ada roster DAN `clock_in_at` terisi → "Hadir" (ditambah label Telat/Pulang Cepat dari D.3 jika ada).
-5. `emp_shift_roster.is_overtime=1` pada tanggal tsb → tambahkan badge "Lembur" (terlepas dari
-   status di atas) — sumbernya field yang sudah ada, TIDAK dihitung ulang dari selisih jam.
-
-### D.5 Ringkasan Summary Box (Profil Kehadiran, rentang filter tanggal)
-- **Cuti/Izin/Sakit & Keterlambatan**: `SUM/COUNT emp_leave_request` per `leave_type` (APPROVED,
-  overlap rentang filter) + `Sisa Cuti` dari `emp_leave_balance.remainingDays()` tahun berjalan +
-  jumlah hari berlabel Telat (dihitung dari D.3 di seluruh baris rentang filter).
-- **Lembur**: `COUNT emp_shift_roster WHERE is_overtime=1` dalam rentang filter (jumlah hari), TIDAK
-  ada perhitungan jam/nominal lembur (ranah Payroll, ditunda).
-
-### D.6 Non-goals Part D
-- Tidak ada workflow approval baru untuk data attendance — HR koreksi langsung via `notes`/insert
-  baris `source='MANUAL'` bila perlu, tanpa PENDING/APPROVED.
-- Tidak menghitung potongan gaji dari Telat/Alpha — murni tampilan/laporan.
 - Dokumen kadaluarsa: merah "Kedaluwarsa", amber "Segera (≤30 hari)".
