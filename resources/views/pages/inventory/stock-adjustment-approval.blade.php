@@ -9,7 +9,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §4.3 -- route TERPISAH dari layar entri (INV_RULES.yaml
+// inventory_tier4.md §4.3 -- route TERPISAH dari layar entri (inventory_rules.yaml
 // layar_terpisah), sama pola dgn PR/PO Approval Center: murni ANTRIAN (grid),
 // klik 2x buka dokumen ASLI (stock-adjustment.blade.php, {doc} deep-link) --
 // Approve/Reject/riwayat ada di sana, BUKAN duplikat di sini. 1 antrian ini

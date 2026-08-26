@@ -13,7 +13,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
     public string $search = '';
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function items()
     {
@@ -50,7 +50,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
         unset($this->items, $this->stats);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

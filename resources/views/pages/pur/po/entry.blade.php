@@ -22,7 +22,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
     // menyetujui/menolak/menahan langsung dari form PO yang sama (field
     // otomatis read-only krn status != DRAFT), sama seperti pola ME29N di SAP,
     // action pane di Dynamics 365, dan approval di form PO Odoo. Lihat
-    // docs/GRID_UI_STANDARD.md & memory project_procurement_module_status.
+    // docs/griduistandard.md & memory project_procurement_module_status.
     public string $approvalNote = '';
 
     public string $approvalError = '';

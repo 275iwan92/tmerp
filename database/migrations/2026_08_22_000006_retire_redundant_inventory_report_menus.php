@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 // sekarang REDUNDAN -- fungsinya sudah tercakup di Master Stok kategori FG.
 // "Riwayat Mutasi" (INV_HIST) & "Periode Stok" (INV_PERIOD) juga di-retire
 // atas instruksi eksplisit "yang lain di report inventory dihilangkan" --
-// PENGECUALIAN dari aturan umum SIDEBAR_MENU_STANDARD.md (NOT_BUILT normalnya
+// PENGECUALIAN dari aturan umum sidebarmenustandard.md (NOT_BUILT normalnya
 // tetap tampil sbg placeholder) -- di sini user secara spesifik minta cuma 2.
 return new class extends Migration
 {

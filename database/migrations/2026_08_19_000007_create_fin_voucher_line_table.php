@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 // TIER_3A_FINANCE.sql §6 — baris double-entry. debit XOR credit dijaga CHECK
 // DB (chk_dr_cr) + validasi aplikasi. partner_id wajib bila account.is_recon=1
-// (enforce di Livewire, bukan DB — FIN_TIER_2.md §B2).
+// (enforce di Livewire, bukan DB — financeaccounting_tier2.md §B2).
 return new class extends Migration
 {
     public function up(): void

@@ -19,7 +19,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §4 + mockup_stock_adjustment.html. Beda dari Stock In/Out/Return
+// inventory_tier4.md §4 + mockup_stock_adjustment.html. Beda dari Stock In/Out/Return
 // (langsung DRAFT->POSTED), Adjustment & Opname WAJIB approval berjenjang
 // (flow_config module AD/OP sudah diseed: Lvl1 Kepala Gudang <=5jt, Lvl2 Manajer
 // Operasional 5-25jt, Lvl3 Direksi >25jt, threshold dari SUM(ABS(qty*unit_price))

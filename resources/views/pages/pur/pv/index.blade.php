@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti (2026-08-22). "+ New Record" tetap ada karena
+// griduistandard.md diikuti (2026-08-22). "+ New Record" tetap ada karena
 // SPB memang dibuat dari grid ini sendiri (picker supplier -> baris PO).
 new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Component
 {
@@ -138,7 +138,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
         return $this->redirect(route('pur.pv.entry', ['pv' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

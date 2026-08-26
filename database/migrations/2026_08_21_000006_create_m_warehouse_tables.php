@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 // Master Gudang (docs/mockups/mockup_master_warehouse.html) -- lihat
-// docs/PROC_STATE.yaml id PROC-WAREHOUSE-MASTER: pv_receipt.i_warehouse_code
+// docs/procurement_state.yaml id PROC-WAREHOUSE-MASTER: pv_receipt.i_warehouse_code
 // & pv_line.i_location_code masih VARCHAR bebas menunggu tabel ini.
 //
 // PERBEDAAN dari mockup (didokumentasikan sesuai instruksi user):

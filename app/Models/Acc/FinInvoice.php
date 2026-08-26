@@ -48,7 +48,7 @@ class FinInvoice extends Model
         return $this->belongsTo(FinVoucher::class, 'voucher_id', 'voucher_id');
     }
 
-    // DP -> invoice final mana saja dia sudah dipotong (FINANCE_DOWN_PAYMENT_TIER_1-4.md §0).
+    // DP -> invoice final mana saja dia sudah dipotong (downpayment_tier1-4.md §0).
     public function dpAllocations(): HasMany
     {
         return $this->hasMany(FinDpAllocation::class, 'dp_invoice_id', 'invoice_id');

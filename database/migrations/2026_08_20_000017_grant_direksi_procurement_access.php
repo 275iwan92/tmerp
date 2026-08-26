@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 // bisa buka /purchasing/pr sama sekali. Grant DIREKSI penuh, mirip pola COSTING
 // (2026_08_15_000001) & FINACC. Grup khusus Purchasing (Pemohon/Purchasing
 // Officer) menyusul saat Security/HRM menugaskan user riil ke posisi itu --
-// dicatat di PROC_STATE.yaml, bukan diputuskan sepihak di sini.
+// dicatat di procurement_state.yaml, bukan diputuskan sepihak di sini.
 return new class extends Migration
 {
     public function up(): void

@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\DB;
 
 // User minta grup laporan Inventory diberi judul ringkas "Laporan" saja
 // (bukan "Stok & Laporan"), dan menjadikan pola [grup Input][grup Laporan]
-// sbg patokan sidebar module lain ke depan (lihat SIDEBAR_MENU_STANDARD.md).
+// sbg patokan sidebar module lain ke depan (lihat sidebarmenustandard.md).
 // "Stok Bahan Baku" (INV_RAW) juga diganti nama -- layar aslinya (lihat
 // #[Title] & heading di inventory/print/master-stock.blade.php) SUDAH
 // bernama "Laporan Master Stok" di mana-mana (title bar, header layar,

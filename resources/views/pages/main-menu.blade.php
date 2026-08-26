@@ -121,6 +121,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'HRM_ATTENDANCE' => route('hrm.attendance.index'),
+            'HRM_SELFSERVICE' => route('self-service.index'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
@@ -153,7 +154,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         $routes = $this->itemRoutes();
         $statusColors = SysAppMenuColor::all()->keyBy('status_code');
 
-        // module_status_system (GLOBAL_RULES.yaml): item bawa status_code sendiri
+        // module_status_system (globalrules.yaml): item bawa status_code sendiri
         // dari DB; module/group DERIVE dari anak-anaknya (worst-case menang) --
         // TIDAK disimpan sendiri, supaya "Sales" langsung kelihatan abu kalau ADA
         // satu submenu yang belum dibangun, tanpa perlu expand satu-satu.

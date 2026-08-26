@@ -1,7 +1,7 @@
 -- ============================================================
 -- TIER 3A — MASTER EMPLOYEE (HRM), all-new DDL
 -- ERP Cetak Offset & Packaging — PT. Telasih Makmur
--- DB: tm2mst (org_*, emp_* = master netral lintas modul, sesuai TIER_3A_PREFIX_LIST.md)
+-- DB: tm2mst (org_*, emp_* = master netral lintas modul, sesuai prefixlist.md)
 -- Auth: tm2sys (users) — FK logical, BUKAN constraint lintas-DB (GLOBAL_RULES.fk_cross_db)
 -- ============================================================
 

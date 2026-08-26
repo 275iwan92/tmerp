@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 // docs/mockups/co_delivery_plan_mockup.html -- hub logistik lintas-CO, MURNI
 // penjadwalan (split/gabung/geser tanggal kirim). TIDAK menyentuh stok/COGS
 // sama sekali -- itu domain Delivery Order/Dispatch (belum dibangun,
-// FIN_TIER_1.md Keputusan B: HPP diakui saat DO terbit). Hanya CO yang sudah
+// financeaccounting_tier1.md Keputusan B: HPP diakui saat DO terbit). Hanya CO yang sudah
 // CONFIRMED yang muncul di sini -- CO masih DRAFT jadwalnya diedit di tab
 // "Delivery" milik CO Entry sendiri (co/entry.blade.php), layar ini yang
 // mengelola KELANJUTANNYA sesudah CO fix (kondisi lapangan berubah: truk

@@ -12,17 +12,17 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// mockup_shift_roster_v2.html. TIER_2_HRM.md §A.7/A.8 + TIER_3A_HRM.sql
+// mockup_shift_roster_v2.html. masteremployee_tier2.md §A.7/A.8 + TIER_3A_HRM.sql
 // §2.7a/b. Dua papan:
 //  - PPIC (Offset Printing): drag-drop pegawai ke sel mesin x shift x tanggal,
 //    lifecycle Save(DRAFT)->Confirm(CONFIRMED, terkunci+publish)->Unlock.
 //  - Grid HR (Digital Printing/Indostry): tanpa mesin, klik sel siklus ganti
-//    shift, tersimpan langsung tanpa alur draft/confirm (TIER_2_HRM.md §A.8).
+//    shift, tersimpan langsung tanpa alur draft/confirm (masteremployee_tier2.md §A.8).
 // Drag & drop dieksekusi via Alpine ($wire) di Blade, state $assign disimpan
 // di memori komponen sampai [Simpan Draft]/[Publish & Confirm] ditekan —
 // mirror perilaku mockup asli (drag hanya mutasi in-memory, alert "tersimpan"
 // baru di tombol Save). Bentrok HARD divalidasi saat Confirm (app-layer,
-// TIER_2_HRM.md §A.7.4), bukan saat drop (drop tetap diterima + ditandai).
+// masteremployee_tier2.md §A.7.4), bukan saat drop (drop tetap diterima + ditandai).
 new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $tab = 'ppic'; // ppic | hr

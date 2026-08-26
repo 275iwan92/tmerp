@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 // - Password: App\Services\Security\PasswordResetService::generate() (format
 //   readable, dipakai admin/UAT seeder yang sudah ada) -- BUKAN reset(), sebab
 //   reset() butuh SecUser yang sudah ada; user di sini baru dibuat.
-//   must_change_password=1 supaya tetap masuk alur SECURITY_default_password_spec.md
+//   must_change_password=1 supaya tetap masuk alur security_defaultpassword_spec.md
 //   (dipaksa ganti password begitu login pertama).
 // - approval_status='approved' + active/is_active=1 -- langsung bisa login,
 //   tak nyangkut di alur approval pendaftaran.

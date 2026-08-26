@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti. PQ = "kondisional, boleh dilewati" (PROC_TIER_1
+// griduistandard.md diikuti. PQ = "kondisional, boleh dilewati" (PROC_TIER_1
 // §, tanpa approval berjenjang -- cuma konfirmasi sendiri oleh officer), jadi
 // Aksi = ↗ Buka + ✓ Confirm (sama pola Quotation/CO), BUKAN pola Approval
 // terpisah spt PR/PO/PRT. "+ New Record" tetap ada, PQ dibuat dari grid ini

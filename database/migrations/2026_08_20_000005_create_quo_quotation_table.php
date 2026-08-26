@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// quo_quotation — dicadangkan di TIER_3A_PREFIX_LIST.md, dan iqp_inquiry.quotation_id
+// quo_quotation — dicadangkan di prefixlist.md, dan iqp_inquiry.quotation_id
 // sudah menunggu FK ini sejak awal ("modul belum digarap"). Header tipis: nomor resmi
 // QUO+YY+NNNNN dibuat sekali saat quotation pertama diterbitkan (costing harus sudah
 // published_flag=1 -- CLAUDE.md §4, jangan buang nomor utk quotation yang belum berharga),

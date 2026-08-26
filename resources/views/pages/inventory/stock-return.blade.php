@@ -17,7 +17,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §5 + mockup_stock_return.html. RM + SFG (2026-08-22, diperluas
+// inventory_tier4.md §5 + mockup_stock_return.html. RM + SFG (2026-08-22, diperluas
 // sama hari dgn Stock Out SFG -- kalau SFG bisa keluar ke produksi, wajar bisa
 // diretur juga: barang setengah jadi cacat/nggak kepakai kembali ke gudang,
 // pola akuntansi & fisiknya SAMA dgn RM cuma beda kelas item (ProdPart/

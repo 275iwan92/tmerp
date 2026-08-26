@@ -5,7 +5,7 @@ namespace App\Models\Acc;
 use Illuminate\Database\Eloquent\Model;
 
 // Model baca-saja di atas VIEW v1_fin_dp_outstanding — sisa DP per faktur,
-// FINANCE_DOWN_PAYMENT_TIER_1-4.md §0.
+// downpayment_tier1-4.md §0.
 class FinDpOutstanding extends Model
 {
     protected $connection = 'tm2acc';

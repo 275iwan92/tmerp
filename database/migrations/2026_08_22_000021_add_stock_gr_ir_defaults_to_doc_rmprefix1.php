@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
 // FinanceMasterSeeder ("Kertas & Board" / "Tinta & Chemical"). 13 kategori
 // sisanya (Gasoline/Solasi/Plastik/CTP Plate/Pack Material/ATK/Spare Part x2/
 // Tools/Laptop-IT/Jasa/Peralatan Kebersihan) DIBIARKAN NULL -- sudah ada
-// catatan terbuka PROC-STOCKCLASS-SEED (PROC_STATE.yaml) yang eksplisit minta
+// catatan terbuka PROC-STOCKCLASS-SEED (procurement_state.yaml) yang eksplisit minta
 // review Jo per kategori, bukan tebakan; GR/IR clearing tetap generik utk
 // SEMUA kategori (akun teknis, bukan keputusan bisnis per kategori).
 return new class extends Migration

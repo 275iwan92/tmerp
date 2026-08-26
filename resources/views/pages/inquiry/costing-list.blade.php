@@ -10,7 +10,7 @@ use Livewire\Component;
 // dari layar Sales lain di modul ini, CLAUDE.md #4 Sisi A rahasia). Grid
 // inquiry confirmed & punya part, klik 2x (atau ikon Aksi) buka layar costing
 // per-inquiry yang SUDAH ADA (inquiry/costing.blade.php, tidak diubah).
-// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid transaksi juga
+// griduistandard.md diikuti (2026-08-22, diperluas ke grid transaksi juga
 // atas instruksi user): tanpa header halaman, kotak statistik pastel, kolom
 // identitas avatar+nama+kode, toolbar cuma search, ikon Aksi.
 new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
@@ -98,7 +98,7 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
         return $this->inquiries->filter(fn ($i) => $i->costing?->doc_status === 'PUBLISHED')->count();
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

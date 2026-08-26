@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// INV_TIER_3.md §3-8 -- delta header/detail/kartu stok RM+SFG+FG, tabel baru
+// inventory_tier3.md §3-8 -- delta header/detail/kartu stok RM+SFG+FG, tabel baru
 // tm2inv, seed sys_constant. Dua penyimpangan sadar dari teks Tier 3 asli
 // (diverifikasi langsung ke DB, sama pola dgn temuan PROC-SYSCONST-COL):
 // 1. `sys_sequence` TIDAK ADA di project ini -- penomoran dokumen di seluruh

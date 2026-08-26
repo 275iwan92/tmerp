@@ -62,7 +62,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'pswd_last_updated' => 'datetime',
     ];
 
-    // SECURITY_default_password_spec.md §4 — SET/GET plaintext, tersimpan
+    // security_defaultpassword_spec.md §4 — SET/GET plaintext, tersimpan
     // ciphertext (Crypt::encryptString, key=APP_KEY). Admin baca lewat layar
     // app (accessor auto-decrypt), bukan lewat SQL/serialisasi (lihat $hidden).
     protected function defaultPassword(): Attribute

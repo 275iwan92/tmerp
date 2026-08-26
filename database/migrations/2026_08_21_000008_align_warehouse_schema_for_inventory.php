@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// INV_TIER_3.md §8.1 mengasumsikan tabel `m_wh_loc` (location_id/location_code/
+// inventory_tier3.md §8.1 mengasumsikan tabel `m_wh_loc` (location_id/location_code/
 // location_name/location_type) dan m_warehouse.warehouse_type berisi
 // RM|SFG|FG|WASTE|TRANSIT -- ditulis di channel lain, tidak tahu Master
 // Warehouse yang baru dibangun sesi ini (m_wh_location, row/col/stack/bin_code,

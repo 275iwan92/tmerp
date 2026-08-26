@@ -9,7 +9,7 @@ use Livewire\Component;
 // Komponen reusable — cari wilayah lewat v_geo_full_address (5-level: kelurahan
 // > kecamatan > kota > provinsi > negara), dipakai Master Customer & module lain
 // yang butuh pilih wilayah (Supplier, Shipping Address, dst). Spec:
-// docs/FIX_MASTER_CUSTOMER_NAV_ADDRESS.md §B.3.
+// docs/customer_fix_nav_address.md §B.3.
 //
 // Komunikasi ke parent lewat event `address-picked` (bukan wire:model ganda —
 // Livewire wire:model cuma bind 1 properti, sedangkan hasil pilih wilayah butuh

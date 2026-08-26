@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// SECURITY_default_password_spec.md §3 — admin butuh password default yang
+// security_defaultpassword_spec.md §3 — admin butuh password default yang
 // bisa dibaca (migrasi user lama + fallback manual selama gateway email/WA
 // belum pasti jalan di Docker). default_password = ciphertext Laravel Crypt
 // (bukan hash), must_change_password memaksa ganti password di login berikut.

@@ -6,7 +6,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 // Outstanding PR = PR yang sudah APPROVED tapi baris-nya belum (sepenuhnya)
-// jadi PO -- i_qty > c_qty_ordered (docs/PROC_TIER_3.md view v1_pr_outstanding).
+// jadi PO -- i_qty > c_qty_ordered (docs/procurement_tier3.md view v1_pr_outstanding).
 // pr_requisition.status HEADER tidak pernah otomatis naik ke FULLY_ORDERED/
 // CLOSED saat semua baris FULLY_ORDERED (gap lama, lihat PoBuilderService::
 // addAllocation -- cuma pr_line.c_line_status yg di-update) -- makanya
@@ -82,7 +82,7 @@ new #[Title('Outstanding PR — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('pur.pr.entry', ['pr' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

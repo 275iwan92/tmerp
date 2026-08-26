@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 // PvPostingService -- gerbang POST (PROC_TIER_2 §A-4.5) + rekalkulasi PER PO
-// yang tersentuh (PV-08, DELTA_PROC_PV_MULTIPO.md), krn satu SPB kini boleh
+// yang tersentuh (PV-08, purchasereceive_delta_multipo.md), krn satu SPB kini boleh
 // menyentuh banyak PO sekaligus.
 //
 // TIDAK LENGKAP SAMPAI DI SINI: kontrak "tulis rm_stock/rm_stock_d" (PROC_TIER_3
 // §5.1) BELUM diimplementasi -- dump legacy tminv_20260722_2018_sd.sql belum
-// pernah diberikan (lihat PROC_STATE.yaml). Status PV/PO tetap direkalkulasi
+// pernah diberikan (lihat procurement_state.yaml). Status PV/PO tetap direkalkulasi
 // benar; yang tertunda HANYA baris rm_stock_doc_id (tetap NULL) & pergerakan
 // stok fisik. Begitu dump tersedia, tambahkan pemanggilan insert rm_stock di
 // checkAndPost() persis di titik yang ditandai TODO.

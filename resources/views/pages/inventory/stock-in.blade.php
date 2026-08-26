@@ -15,12 +15,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md #1.1 (route inv.stock-in.index -> StockInPage) + mockup_stock_in.html.
+// inventory_tier4.md #1.1 (route inv.stock-in.index -> StockInPage) + mockup_stock_in.html.
 // {category} WAJIB dari URL (RM/FG/SFG), pola sama seperti print/stock-card
-// & print/master-stock -- lihat SIDEBAR_MENU_STANDARD.md #5. Sumber Dokumen
+// & print/master-stock -- lihat sidebarmenustandard.md #5. Sumber Dokumen
 // v1 cuma MANUAL (PV/WO auto-post belum diintegrasikan -- itu domain Purchase
-// Receive, lihat SIDEBAR_MENU_STANDARD.md #6/#6a, dikerjakan terpisah nanti).
-// GRID_UI_STANDARD.md diikuti utk grid: non-master -> Buka + Confirm
+// Receive, lihat sidebarmenustandard.md #6/#6a, dikerjakan terpisah nanti).
+// griduistandard.md diikuti utk grid: non-master -> Buka + Confirm
 // kondisional (bukan toggle aktif), Confirm di sini = posting sungguhan
 // lewat StockPostingService (bukan sekadar ubah status).
 new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 // PR/PO Approval Center sudah live (route pur.pr.approval / pur.po.approval)
 // tapi belum pernah masuk sys_app_menu -- satu-satunya jalan masuk selama ini
 // adalah link navy header di grid pr/index & po/index, yang justru melanggar
-// NAV-SHELL-CONTRACT (grid tak boleh punya chrome sendiri, docs/GRID_UI_STANDARD.md
+// NAV-SHELL-CONTRACT (grid tak boleh punya chrome sendiri, docs/griduistandard.md
 // #1). Tambahkan sebagai item resmi di grup PROC_TRX (id 210) supaya header itu
 // bisa dihapus dari grid tanpa menghilangkan akses ke layar approval.
 return new class extends Migration

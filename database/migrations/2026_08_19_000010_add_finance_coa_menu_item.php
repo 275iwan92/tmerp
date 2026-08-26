@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 // untuk pemetaan code -> route Laravel. Sort_order 5 supaya tampil sebelum
 // Jurnal (10)/Buku Besar(20) — COA adalah master, dibutuhkan lebih dulu.
 // Sekalian grant akses modul FINACC ke DIREKSI (belum ada grup Finance/Costing
-// khusus — open item FIN_STATE.yaml), mirror pola grant COSTING di migration
+// khusus — open item financeaccounting_state.yaml), mirror pola grant COSTING di migration
 // 2026_08_15_000001 supaya modul baru ini langsung bisa diuji non-admin.
 return new class extends Migration
 {

@@ -11,7 +11,7 @@ use Livewire\Component;
 
 // Master Produk (menu MD_PROD). Grid+form standar header prod_product, paralel
 // ke Customer/Supplier/dst -- BUKAN layar "Master Card" (PROD_CARD, modul
-// Production, F1-F11 di TIER_1_MASTER_PRODUCT.md: dieline/material layer/warna
+// Production, F1-F11 di masterproduct_tier1.md: dieline/material layer/warna
 // per pass/sign-off). Kolom prod_product.design_no/card_status sudah ada di DB
 // (delta TIER_3A_MASTER_CARD.sql ternyata sudah jalan) tapi sengaja TIDAK
 // dipakai di sini -- itu domain Master Card yang belum digarap, biar tidak
@@ -276,7 +276,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         unset($this->products, $this->statTotal, $this->statActive, $this->statConfirmed, $this->statInactive);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

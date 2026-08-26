@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// ITEM_MASTER_DELTA.md -- perluasan m_raw_material utk layar Master Item
+// itemmaster_delta.md -- perluasan m_raw_material utk layar Master Item
 // (mockup_master_rawmaterial.html). Penyesuaian dari draf dokumen (dicatat
-// di ITEM_MASTER_DELTA.md via keputusan 2026-08-21):
+// di itemmaster_delta.md via keputusan 2026-08-21):
 // - old_material_code/old_material_name TIDAK dibuat -- sudah ada
 //   old_item_code/old_item_name (dari dump legacy asli, makna sama).
 // - safety_stock/reorder_point/lead_time_days/purchase_tax_code ditambahkan

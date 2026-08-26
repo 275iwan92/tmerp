@@ -10,7 +10,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 // Layar RECALC (docs/mockups/inquiry_recalc_v2.html) — repeat order harga baru.
-// Spec/layout 100% reuse dari inkuiri "baku" (R-RC-1, docs/DELTA_TIER_revise_scope_CO.md):
+// Spec/layout 100% reuse dari inkuiri "baku" (R-RC-1, docs/inquiryproduct_delta_revise.md):
 // hanya qty & harga bahan yang di-refresh, part/material/process di-clone verbatim
 // (IqpInquiry::cloneStructureFrom), tak ada satupun field spec yang bisa diedit di sini.
 new #[Title('TELASIH MAKMUR — RECALC')] class extends Component

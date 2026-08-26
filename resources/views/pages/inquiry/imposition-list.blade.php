@@ -10,7 +10,7 @@ use Livewire\Component;
 // confirmed (sub_state di luar DRAFT/CANCELLED/LOST) dan punya part -- klik 2x
 // (atau ikon Aksi) buka layar imposition per-inquiry yang SUDAH ADA
 // (inquiry/imposition.blade.php, tidak diubah di sini, cuma dituju).
-// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid transaksi juga
+// griduistandard.md diikuti (2026-08-22, diperluas ke grid transaksi juga
 // atas instruksi user): tanpa header halaman, kotak statistik pastel, kolom
 // identitas avatar+nama+kode, toolbar cuma search, ikon Aksi.
 new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
@@ -94,7 +94,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         return $this->statTotal - $this->statDone;
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

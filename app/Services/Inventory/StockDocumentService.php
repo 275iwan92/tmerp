@@ -7,9 +7,9 @@ use App\Models\Inventory\RmStock;
 use App\Models\Inventory\SfgStock;
 use Illuminate\Support\Facades\DB;
 
-// INV_TIER_4.md #7: layar Stock In/Out/Adjustment/Return TIDAK BOLEH tulis
+// inventory_tier4.md #7: layar Stock In/Out/Adjustment/Return TIDAK BOLEH tulis
 // langsung ke *_stock/*_stock_d dari Livewire component -- lewat sini saja.
-// Nomor dokumen ikut pola INV_TIER_1.md #2: {PREFIX}/{YY}/{#####}.
+// Nomor dokumen ikut pola inventory_tier1.md #2: {PREFIX}/{YY}/{#####}.
 class StockDocumentService
 {
     private const CATEGORY_HEADER = [

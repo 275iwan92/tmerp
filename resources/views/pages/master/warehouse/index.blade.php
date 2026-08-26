@@ -13,7 +13,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
 
     public string $search = '';
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function warehouses()
     {
@@ -53,7 +53,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
         unset($this->warehouses, $this->stats);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

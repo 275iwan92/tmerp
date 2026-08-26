@@ -8,7 +8,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti (2026-08-22). "+ New Record" tetap ada karena
+// griduistandard.md diikuti (2026-08-22). "+ New Record" tetap ada karena
 // PO memang dibuat dari grid ini sendiri (picker supplier).
 new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
 {
@@ -20,7 +20,7 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
 
     public string $supplierSearch = '';
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function orders()
     {
@@ -108,7 +108,7 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('pur.po.entry', ['po' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

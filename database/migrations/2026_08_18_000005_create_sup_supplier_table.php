@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// Master supplier BELUM PERNAH ADA di tm2mst (TIER_3A_PREFIX_LIST.md belum
+// Master supplier BELUM PERNAH ADA di tm2mst (prefixlist.md belum
 // alokasikan prefix sup_). Bentuk tabel ini mirror cust_customer (kolom
 // alamat/kontak/pajak yang sama) + field khusus supplier (is_subcon,
 // category dari legacy supplier_category). Sumber isi: engine migrasi

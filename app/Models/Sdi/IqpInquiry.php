@@ -126,7 +126,7 @@ class IqpInquiry extends Model
         return $prefix.str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
     }
 
-    // RECALC: spec/layout 100% reuse dari baku (DELTA_TIER_revise_scope_CO.md R-RC-1)
+    // RECALC: spec/layout 100% reuse dari baku (inquiryproduct_delta_revise.md R-RC-1)
     // — clone verbatim part+material+process, tak ada field yang diedit user.
     // $source harus sudah eager-load parts.materials & parts.processes.
     public function cloneStructureFrom(self $source): void

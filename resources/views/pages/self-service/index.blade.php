@@ -20,10 +20,10 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-// mockup_personal_data_self_service.html. TIER_1_HRM.md §5: portal HANYA
+// mockup_personal_data_self_service.html. masteremployee_tier1.md §5: portal HANYA
 // milik akun sendiri (guard employee_id di mount()), data pribadi READ-ONLY —
 // semua perubahan lewat pengajuan+approval HR (BEDA dari Master Employee sisi
-// HR yang full-editable). TIER_2_HRM.md §B.5 (engine cuti, SOP
+// HR yang full-editable). masteremployee_tier2.md §B.5 (engine cuti, SOP
 // 002/RP/TM/VII/2026) diimplementasi nyata di sini (bukan sekadar UI), §B.4
 // (koreksi data generik) & B.6/B.7 (izin keluar, tukar shift) juga nyata.
 // Kalender pemilihan tanggal cuti mockup (grid custom klik-multi) DISEDERHANAKAN
@@ -210,7 +210,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
             'old_value' => $this->corr_old_value,
             'new_value' => $data['corr_new_value'],
             'reason' => $data['corr_reason'] ?: null,
-            'requires_hr_approval' => true, // TIER_2_HRM.md B.4: semua koreksi lewat HR, wajib utk field sensitif khususnya
+            'requires_hr_approval' => true, // masteremployee_tier2.md B.4: semua koreksi lewat HR, wajib utk field sensitif khususnya
             'status' => 'PENDING',
             'requested_at' => now(),
         ]);

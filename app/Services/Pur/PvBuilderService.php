@@ -9,7 +9,7 @@ use App\Models\Pur\PvReceipt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-// DELTA_PROC_PV_MULTIPO.md -- alur supplier-first: pilih supplier (§ Langkah 1,
+// purchasereceive_delta_multipo.md -- alur supplier-first: pilih supplier (§ Langkah 1,
 // menggantikan v1_pv_supplier_worklist yg tak dibuat sbg VIEW fisik di sini,
 // diimplementasi sbg query langsung spt pola PoBuilderService::addAllocation)
 // -> worklist baris PO terbuka lintas-PO (§ Langkah 2, v1_po_outstanding) ->

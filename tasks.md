@@ -31,7 +31,7 @@
 
 ### Definition of Done (semua task)
 - Konsisten lintas Tier 1↔2↔3↔4 (tak ada nama kolom/aturan bertentangan).
-- Nama tabel/kolom mengikuti `TIER_3A_PREFIX_LIST.md`.
+- Nama tabel/kolom mengikuti `prefixlist.md`.
 - Bahasa dokumen: teknis Inggris utk DDL, ringkas utk narasi.
 - Sudah di-commit + push.
 
@@ -41,11 +41,11 @@
 
 - [ ] **T01** — Ekstrak semua nama kolom dari `TIER_3_INQUIRY.md`, `TIER_3A_INQUIRY.sql`, `TIER_3A_INQUIRY_COSTING.md`, `TIER_3B_INQUIRY_COSTING.md`. Buat tabel rekonsiliasi `RECON_columns.md`: konsep → nama di tiap file → **nama final terpilih**. Selesaikan inkonsistensi yang sudah tercatat: `parent_inquiry_id` vs `parent_product_id` vs `source_product_id`; `is_*` vs `stat_*` audit convention.
 - [ ] **T02** — Kunci **1 konvensi audit field** (pilih `is_confirmed/is_cancelled/created_at/created_by` sbg standar, buang `stat_*`). Tulis keputusan di `RECON_columns.md` § Decision. Terapkan sebagai catatan "harus diubah" per file (jangan edit isi tier lain dulu — daftar saja).
-- [ ] **T03** — Verifikasi `TIER_3A_PREFIX_LIST.md` mencakup prefix baru: `prod_part_ink`, `prod_part_artwork`, `prod_mastercard_signoff`. Tambah bila kurang.
+- [ ] **T03** — Verifikasi `prefixlist.md` mencakup prefix baru: `prod_part_ink`, `prod_part_artwork`, `prod_mastercard_signoff`. Tambah bila kurang.
 
 ## 2. FINALISASI TIER MASTER PRODUCT
 
-- [ ] **T10** — Gabung draft `TIER_1_MASTER_PRODUCT.md`, `TIER_2_MASTER_PRODUCT.md`, `TIER_4_MASTER_PRODUCT.md` (dari outputs) ke folder project resmi. Samakan gaya dgn Tier Inquiry yang ada.
+- [ ] **T10** — Gabung draft `masterproduct_tier1.md`, `masterproduct_tier2.md`, `masterproduct_tier4.md` (dari outputs) ke folder project resmi. Samakan gaya dgn Tier Inquiry yang ada.
 - [ ] **T11** — Finalisasi `TIER_3A_MASTER_CARD.sql`: ganti scaffolding test → **ALTER terhadap tabel `tm2mst` asli**. Uji di sandbox: apply delta di atas skema master existing (`tmmst_20260730_1425_so.sql` sbg base) sampai hijau.
 - [ ] **T12** — Tambah **trigger MySQL 8.0** utk 2 invariant: (a) tepat 1 `prod_part_artwork.is_active` per part; (b) `card_status='APPROVED'` hanya bila 5 signoff signed + artwork approved. Uji trigger benar menolak pelanggaran.
 - [ ] **T13** — Uji **skenario multi-part** (BADAN+TUTUP+SEKAT) pada `vw_master_card` + part-loop. Buktikan SEKAT (0 artwork, 0 ink) tak memecah VIEW. Cek `group_concat_max_len` cukup utk urutan proses panjang.
@@ -53,7 +53,7 @@
 
 ## 3. FINALISASI REVISE / RECALC (scope + snapshot)
 
-- [ ] **T20** — Terapkan `DELTA_TIER_revise_scope_CO.md` ke Tier 1/2/3 Inquiry resmi: sisipkan aturan R-REV/R-RC/R-CO, matriks pemicu, DDL `revise_scope SET(...)` + kolom snapshot `co_line`.
+- [ ] **T20** — Terapkan `inquiryproduct_delta_revise.md` ke Tier 1/2/3 Inquiry resmi: sisipkan aturan R-REV/R-RC/R-CO, matriks pemicu, DDL `revise_scope SET(...)` + kolom snapshot `co_line`.
 - [ ] **T21** — Uji DDL delta di sandbox: `ALTER TABLE iqp_inquiry ADD revise_scope SET(...)` + kolom snapshot `co_line`. Seed 1 skenario: REVISE artwork+warna (Halal spot) → +1 `prod_part_ink` → buktikan CO lama (snapshot v1) tak berubah, HPP versi baru naik.
 - [ ] **T22** — Selesaikan open-question Halal: tambah toggle **spot vs proses-CMYK** di scope mockup `inquiry_revise_v2.html` (spot=+plate+costing; CMYK=proof-only). Update matriks Tier 2 sesuai.
 - [ ] **T23** — Finalisasi mockup `inquiry_revise_v2.html` & `inquiry_recalc_v2.html` sbg pengganti versi lama; arsipkan `inquiry_revise.html`/`inquiry_recalc.html` lama ke `/_archive`.
@@ -66,7 +66,7 @@
 ## 5. PENUTUP
 
 - [ ] **T90** — Jalankan cek konsistensi akhir lintas semua Tier (grep nama kolom vs `RECON_columns.md`). Laporkan sisa konflik di `### LOG`.
-- [ ] **T91** — Update `checklist_mockup_erp.md`: tandai item Master Product & REVISE/RECALC selesai.
+- [ ] **T91** — Update `checklistmockuperp.md`: tandai item Master Product & REVISE/RECALC selesai.
 - [ ] **T92** — Tulis `CHANGELOG_finalisasi.md` merangkum semua perubahan rilis ini.
 
 ---

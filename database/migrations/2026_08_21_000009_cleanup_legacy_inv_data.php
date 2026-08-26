@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// INV_TIER_3.md §12 langkah 4 ("Bersihkan data legacy") -- WAJIB sebelum unique
+// inventory_tier3.md §12 langkah 4 ("Bersihkan data legacy") -- WAJIB sebelum unique
 // index §3/§5 dipasang. Data ini dump produksi asli (tminv_20260722_2018_sd.sql,
 // 66 rm_stock/48 rm_stock_d/36 rm_stockcard), bukan data yang dikarang -- tapi
 // spec sendiri mendiagnosis 3 cacat nyata dari bug trigger lama:

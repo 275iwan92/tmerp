@@ -224,7 +224,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             'confirmed_at' => now(),
         ]);
 
-        // Auto-fill ke Costing kalau costing_part utk part ini sudah ada (SALES_TIER_COSTING.md
+        // Auto-fill ke Costing kalau costing_part utk part ini sudah ada (productcosting_tier1-4.md
         // §1.1: imposition "dokumen sendiri, memberi up_count/plano" -> mengalir ke costing).
         IqpCostingPart::where('part_id', $layout->part_id)->update([
             'i_panjang_plano_cm' => round($layout->plano_w_mm / 10, 4),

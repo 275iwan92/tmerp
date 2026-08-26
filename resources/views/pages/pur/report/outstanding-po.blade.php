@@ -9,7 +9,7 @@ use Livewire\Component;
 // Outstanding PO = PO yang sudah SENT/PARTIALLY_RECEIVED tapi baris-nya belum
 // (sepenuhnya) diterima -- i_qty > c_qty_received, hanya baris is_receivable
 // (baris SERVICE tak pernah lewat PV -- PROC PV-09). Sejalan dgn
-// docs/PROC_TIER_3.md view v1_po_outstanding. Beda dgn Outstanding PR, header
+// docs/procurement_tier3.md view v1_po_outstanding. Beda dgn Outstanding PR, header
 // po_order.status DI-MAINTAIN dgn benar oleh PvPostingService::recalcPo(),
 // jadi filter status cukup dipercaya -- qty dihitung ulang cuma utk nilai
 // tampilan, bukan penjaga utama spt di Outstanding PR.
@@ -101,7 +101,7 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('pur.po.entry', ['po' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
+    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
     public function avatarInitials(string $name): string
     {
         $words = array_values(array_filter(explode(' ', trim($name))));

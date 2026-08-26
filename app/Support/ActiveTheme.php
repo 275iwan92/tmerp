@@ -6,7 +6,7 @@ use App\Models\Sys\SysSetting;
 use App\Models\Sys\SysTheme;
 use Illuminate\Support\Facades\Auth;
 
-// Resolusi tema aktif (QUEUE.md #9d): sec_user.theme_code (kalau user login &
+// Resolusi tema aktif (queue.md #9d): sec_user.theme_code (kalau user login &
 // kodenya valid) -> sys_setting.active_theme -> sys_theme.is_default=1 ->
 // fallback statis (kalau tabel kosong/koneksi bermasalah, app tetap jalan).
 class ActiveTheme
