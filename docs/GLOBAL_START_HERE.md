@@ -64,8 +64,16 @@ Legenda status: 🟢 jalan · 🟡 sebagian · ⚪ belum. Tanda submodule: ✅ k
 | delivery_note (DN) ✅ | nota kirim |
 | shipment 🔷 | CASE cross-CO consolidated (many-to-many CO:DN, harga di level line) |
 
-### 06 · FINANCE & ACCOUNTING ⚪
-cashier 🔷 · AP 🔷 · AR 🔷 · general_ledger 🔷 · invoicing 🔷
+### 06 · FINANCE & ACCOUNTING 🟡
+> RESMI MASUK SCOPE PENUH sejak keputusan user 2026-08-19 (dikonfirmasi ulang 2026-08-26) — lihat `GLOBAL_RULES.yaml → modules_excluded.finance_accounting`. Bukan lagi pengecualian di luar rencana.
+
+| Submodule | Ket |
+|---|---|
+| chart_of_account ✅ | COA live |
+| cash_bank_journal ✅ | BKM/BKK/BBM/BBK (Draft→Post) live |
+| journal_voucher ✅ | auto-jurnal posting (PV & Stock Out RM) live |
+| invoice / dp_invoice ✅ | DP Invoice Event 1/2/4 live |
+| AP 🔷 · AR (lanjutan) 🔷 · general_ledger (Trial Balance) 🔷 · period_close 🔷 | backlog normal, bukan out-of-scope |
 
 ### 07 · HUMAN RESOURCE ⚪
 recruitment 🔷 · time_attendance 🔷 · payroll 🔷

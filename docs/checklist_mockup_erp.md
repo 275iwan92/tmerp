@@ -170,7 +170,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ⬜ [F] DO Entry (multi-CO, harga per line — CASE PENTING)
 - ⬜ [G] DO List
 - ⬜ [P] **Delivery Order / Surat Jalan** (line-level CO ref + price)
-- ⬜ [F] Price-change approval *(⚠️ semula 3-party termasuk Finance — Finance di luar scope; verifikasi ulang alur approval jadi 2-party Costing+Sales, atau tahan fitur ini sampai keputusan bisnis)*
+- ⬜ [F] Price-change approval — **3-party Costing+Sales+Finance** (keputusan user 2026-08-26: Finance resmi masuk scope, jalankan alur 3-party sesuai spec awal, bukan lagi dipangkas 2-party)
 ### 5.3 Shipment
 - ⬜ [D] Load Planner (tonnage + m³)
 - ⬜ [D] Route Planner (map, nearest-neighbor)
@@ -179,7 +179,7 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ---
 
 ## MODUL 6 — INVOICING & BILLING (AR-lite)
-> ⚠️ **Diganti dari "Finance & Accounting" penuh.** Cashier, General Ledger, Journal Entry, Trial Balance, AP **DI LUAR scope 10 minggu** — lihat `GLOBAL_RULES.yaml → modules_excluded`. Yang tersisa di sini murni AR-lite: invoice dari CO/DN + status tagih/bayar, tanpa buku besar.
+> Jalur AR-lite tetap terpisah dari GL penuh (invoice dari CO/DN + status tagih/bayar). **Update 2026-08-26**: Finance & Accounting (Cashier/GL/Journal/Trial Balance/AP) RESMI MASUK SCOPE PENUH — lihat Modul 11 dan `GLOBAL_RULES.yaml → modules_excluded.finance_accounting`. Daftar "di luar scope" di bawah sudah usang, dipindah statusnya jadi backlog normal (bukan dihapus dari roadmap).
 
 ### 6.1 Invoice Generation
 - ⬜ [F] Invoice Entry (dari CO/DN)
@@ -194,10 +194,11 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 - ⬜ [G] AR Aging (per CO — invoice setelah semua shipment lock)
 - ⬜ [P] Statement of Account
 
-**Di luar scope 10 minggu (jangan dikerjakan sampai fase Finance dibuka):**
-- ~~Cashier: Cash Receipt/Payment Entry, Kwitansi~~
-- ~~AP Aging~~
-- ~~General Ledger: Journal Entry, Trial Balance, Financial Dashboard~~
+**Backlog Finance lanjutan (fase Finance sudah dibuka, lihat Modul 11):**
+- ✅ Cashier: Cash Receipt/Payment Entry — sudah live sebagai Cash & Bank Journal (BKM/BKK/BBM/BBK), lihat Modul 11
+- ⬜ Kwitansi (cetak)
+- ⬜ AP Aging
+- ⬜ General Ledger: Trial Balance, Financial Dashboard (Journal Entry sudah live via Cash & Bank Journal + auto-posting)
 
 ---
 
@@ -237,9 +238,13 @@ Legenda tipe: **[F]** Form entry · **[G]** Grid/list · **[P]** Print-out/dokum
 ---
 
 ## MODUL 11 — FINANCE & ACCOUNTING
-> ⚠️ **Kontradiksi dengan Modul 6 di bawah** (yang bilang "GL/Journal/COA di luar scope 10 minggu") — pada praktiknya COA sudah dibangun & live. Perlu keputusan user: apakah catatan "di luar scope" di Modul 6 mau direvisi, atau COA yang sekarang live dianggap pengecualian scoped-in. Belum saya ubah sepihak.
+> **RESOLVED 2026-08-26**: keputusan user minggu lalu (~2026-08-19) — Finance & Accounting RESMI MASUK SCOPE PENUH, bukan lagi pengecualian. Kontradiksi vs Modul 6 (yang tadinya bilang GL/Cashier/AP "di luar scope") sudah diperbarui di sana. Lihat `GLOBAL_RULES.yaml → modules_excluded.finance_accounting` + `GLOBAL_START_HERE.md §06`.
 - ✅ [G] Chart of Account — *master_coa_mockup.html* → `finance.coa`
 - ✅ [F] DP Invoice — *mockup_down_payment.html* → `finance.dp-invoice` (Event 1/2/4 teruji, lihat memory `project_dp_invoice_status`)
+- ✅ [F] Cash & Bank Journal (BKM/BKK/BBM/BBK) — `finance.voucher` (2026-08-22, alur Draft→Post manual, lihat memory `project_cash_bank_journal`)
+- ✅ Auto-jurnal posting (PV & Stock Out RM/SFG) — `JournalPostingService` (2026-08-22, lihat memory `project_auto_journal_accounting`). Delivery/Invoice auto-jurnal masih ditunda (butuh Costing V2 snapshot + DO)
+- ⬜ [G] AP Aging, Trial Balance, Financial Dashboard — belum digarap
+- ⬜ [F] Purchase Invoice (SUPPLIER_DP/BILL) — lihat Modul 4.5, butuh `fin_invoice_line`
 
 ---
 
