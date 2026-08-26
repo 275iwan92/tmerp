@@ -122,7 +122,7 @@ transaksi = `iqp_costing`, ikut inquiry).
 - `globalarchitecture_tier0.md` — arsitektur global, keputusan LOCKED.
 - `inquiryproduct_tier1.md` — alur & proses inquiry (aktor, state, aturan bisnis).
 - `inquiryproduct_tier2.md` — business logic, state machine, pseudocode HPP.
-- `TIER_3A_*.sql` — DDL (geo, master, inquiry). **Skema aktual = ini.**
+- `TIER_3A_*.sql` — **DIHAPUS 2026-08-26** (sudah dijalankan, isinya tertanam live di MySQL). Skema aktual = dump per-database (`docs/tm2*.sql`), digantikan user secara berkala — bukan lagi file DDL statis ini.
 - `prefixlist.md` — konvensi prefix lengkap.
 - Mockup Tier 4 (HTML/CSS) — acuan UI: `inquiry_new/recalc/revise.html`,
   `inquiry_costing_*.html`, `inquiry_proof.html`, `inquiry_quotation.html`,
