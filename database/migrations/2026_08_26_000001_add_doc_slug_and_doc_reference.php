@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Schema;
 // & tabel ini menjadikan sys_app_menu (bukan tebakan Claude Code) sumber
 // kebenaran nama file docs terkait tiap submodule.
 //
+// Versi SQL manual (kalau tidak lewat `php artisan migrate`, mis. jalankan
+// langsung di Navicat lokal): docs/PATCH_DDL_DOC_SLUG.sql -- isinya sengaja
+// dibuat identik (idempotent, aman diulang) dengan migration ini.
+//
 // - sys_app_menu.doc_slug: HANYA diisi utk code yang punya SATU keluarga
 //   dokumen jelas. File asli = {doc_slug}_tier{n}.md, {doc_slug}_state.yaml,
 //   dst. Boleh sama antar >1 code kalau memang 1 dokumen membahas beberapa
