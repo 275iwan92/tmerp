@@ -9,7 +9,7 @@ class MainMenuShellSmokeTest extends TestCase
 {
     public function test_admin_sees_full_menu_shell(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         $response = $this->get('/menu');
@@ -38,7 +38,7 @@ class MainMenuShellSmokeTest extends TestCase
 
     public function test_setup_menu_item_opens_security_index_with_tab(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         $this->get('/security?tab=groups')->assertOk()->assertSee('Grup');
