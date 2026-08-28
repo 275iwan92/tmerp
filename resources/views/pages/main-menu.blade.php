@@ -94,10 +94,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // (RM/FG/SFG) -- 1 route param'd, 6 menu code beda category.
             'INV_RAW_RM' => route('inv.print.master-stock', ['category' => 'RM']),
             'INV_CARD_RM' => route('inv.print.stock-card', ['category' => 'RM']),
+            'INV_SLOW_RM' => route('inv.print.slow-moving', ['category' => 'RM']),
             'INV_RAW_FG' => route('inv.print.master-stock', ['category' => 'FG']),
             'INV_CARD_FG' => route('inv.print.stock-card', ['category' => 'FG']),
+            'INV_SLOW_FG' => route('inv.print.slow-moving', ['category' => 'FG']),
             'INV_RAW_SFG' => route('inv.print.master-stock', ['category' => 'SFG']),
             'INV_CARD_SFG' => route('inv.print.stock-card', ['category' => 'SFG']),
+            'INV_SLOW_SFG' => route('inv.print.slow-moving', ['category' => 'SFG']),
+            'DISPATCH_DO' => route('dispatch.do.index'),
             // Stock In (item pertama di tiap grup Input -- lihat migration
             // 2026_08_22_000007). Stock Out/Return/Adjustment (ITEM2-5) masih NOT_BUILT.
             'INV_RM_ITEM1' => route('inv.stock-in.index', ['category' => 'RM']),
