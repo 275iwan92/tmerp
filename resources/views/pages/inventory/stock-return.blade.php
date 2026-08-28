@@ -6,8 +6,8 @@ use App\Models\Inventory\RmStockD;
 use App\Models\Inventory\SfgStock;
 use App\Models\Inventory\SfgStockcard;
 use App\Models\Inventory\SfgStockD;
-use App\Models\Master\MWarehouse;
-use App\Models\Master\MWhLocation;
+use App\Models\Master\WhWarehouse;
+use App\Models\Master\WhLoc;
 use App\Models\Master\ProdPart;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
@@ -17,11 +17,11 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §5 + mockup_stock_return.html. RM + SFG (2026-08-22, diperluas
+// inventory_tier4.md §5 + mockup_stock_return.html. RM + SFG (2026-08-22, diperluas
 // sama hari dgn Stock Out SFG -- kalau SFG bisa keluar ke produksi, wajar bisa
 // diretur juga: barang setengah jadi cacat/nggak kepakai kembali ke gudang,
 // pola akuntansi & fisiknya SAMA dgn RM cuma beda kelas item (ProdPart/
-// parts_id, bukan MRawMaterial/material_id). FG TETAP tidak relevan di sini --
+// parts_id, bukan MatRaw/material_id). FG TETAP tidak relevan di sini --
 // FG tak pernah bisa Stock Out (lihat stock-out.blade.php), jadi tak ada
 // sumber utk diretur balik. Simplifikasi vs spec penuh: tanpa tombol "Pecah
 // Baris" (split GOOD/SCRAP dari 1 baris) -- kalau perlu keduanya dari 1 baris
@@ -92,13 +92,13 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
     {
         return $this->category === 'SFG'
             ? (ProdPart::find($itemId)?->part_name ?? "#{$itemId}")
-            : (\App\Models\Master\MRawMaterial::find($itemId)?->material_name ?? "#{$itemId}");
+            : (\App\Models\Master\MatRaw::find($itemId)?->material_name ?? "#{$itemId}");
     }
 
     #[Computed]
     public function warehouses()
     {
-        return MWarehouse::where('is_active', true)->orderBy('warehouse_name')->get();
+        return WhWarehouse::where('activate', true)->orderBy('warehouse_name')->get();
     }
 
     #[Computed]
@@ -108,15 +108,15 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
             return collect();
         }
 
-        return MWhLocation::where('warehouse_id', $this->goodWarehouseId)
-            ->where('is_active', true)->where('is_usable', true)
+        return WhLoc::where('warehouse_id', $this->goodWarehouseId)
+            ->where('activate', true)->where('is_usable', true)
             ->orderBy('location_code')->get();
     }
 
     #[Computed]
     public function scrapLocations()
     {
-        return MWhLocation::where('is_active', true)->where('is_usable', false)->orderBy('location_code')->get();
+        return WhLoc::where('activate', true)->where('is_usable', false)->orderBy('location_code')->get();
     }
 
     // return_wajib_ref_out: cuma Stock Out POSTED, belum dibatalkan, dan masih
@@ -391,25 +391,8 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         };
     }
 
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Avatar helper dipindah ke App\Support\Grid\Avatar (static, dipakai
+    // langsung di markup) -- lihat catatan sama di stock-in/stock-out.
 };
 ?>
 
@@ -424,34 +407,26 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         @endif
 
         @if ($panel === 'grid')
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Dokumen</p>
-                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft</p>
-                    <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statDraft }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Sudah Diterima</p>
-                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statPosted }}</p>
-                </div>
-            </div>
+            <x-grid.stat-row :count="3">
+                <x-grid.stat-box tone="total" label="Total Dokumen" :value="$this->statTotal" />
+                <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
+                <x-grid.stat-box tone="active" label="Sudah Diterima" :value="$this->statPosted" />
+            </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-                <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
                         <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / no. Stock Out…"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
-                    <span class="flex-1"></span>
-                    <button type="button" wire:click="openNew"
-                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-                </div>
+                    <x-slot:newRecord>
+                        <button type="button" wire:click="openNew"
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                    </x-slot:newRecord>
+                </x-grid.toolbar>
 
-                <div class="max-h-[65vh] overflow-auto">
+                <x-grid.table-shell>
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
@@ -467,7 +442,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                 <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
-                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($d->doc_no ?: 'DOC') }}</div>
+                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($d->doc_no ?: 'DOC') }}</div>
                                             <div>
                                                 <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: '(draft)' }}</div>
                                                 <div class="text-[11px] text-muted">{{ $d->notes ?: '—' }}</div>
@@ -480,18 +455,18 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <button type="button" wire:click.stop="openEdit({{ $d->doc_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                        <x-grid.action-icon icon="↗" title="Buka" action="openEdit({{ $d->doc_id }})" />
                                         @if ($d->flow_status === 'DRAFT')
-                                            <button type="button" wire:click.stop="postNow(null, {{ $d->doc_id }})" wire:confirm="Konfirmasi &amp; Posting {{ $d->doc_no }}? Barang akan masuk Kartu Stok." title="Konfirmasi & Posting" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-[#16a34a] hover:bg-[#e9f9ef] cursor-pointer">✓</button>
+                                            <x-grid.action-icon icon="✓" title="Konfirmasi & Posting" action="postNow(null, {{ $d->doc_id }})" variant="success" confirm="Konfirmasi &amp; Posting {{ $d->doc_no }}? Barang akan masuk Kartu Stok." />
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Belum ada dokumen Return from Production.</td></tr>
+                                <x-grid.empty-row :colspan="5" message="Belum ada dokumen Return from Production." />
                             @endforelse
                         </tbody>
                     </table>
-                </div>
+                </x-grid.table-shell>
             </div>
         @else
             {{-- ============ FORM ============ --}}
@@ -502,7 +477,11 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($flow_status) }}">{{ $flow_status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">← Daftar</button>
+                    <button type="button" wire:click="backToGrid" title="Kembali ke Daftar"
+                        class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
+                        <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+                    </button>
                 </div>
 
                 <div class="p-4 flex flex-col gap-3">
@@ -512,43 +491,30 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
                     <div class="flex gap-2.5 flex-wrap items-end">
-                        <div class="flex-1 min-w-[160px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">No. Dokumen</label>
-                            <input type="text" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono bg-[#f4f6fa] text-muted">
+                        <div class="flex-1 min-w-[160px]">
+                            <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="!font-mono" />
                         </div>
-                        <div class="flex-1 min-w-[140px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Dokumen *</label>
-                            <input type="date" wire:model="doc_date" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('doc_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1 min-w-[140px]">
+                            <x-form.input label="Tanggal Dokumen *" type="date" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
                         </div>
                         <div class="flex-1 min-w-[220px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Ref. Stock Out *</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ref. Stock Out *</label>
                             @if (! $readOnly && ! $editingId)
                                 <button type="button" wire:click="openPicker" class="px-2.5 py-2 border border-dashed border-accent rounded-md text-[13px] text-accent font-semibold text-left">{{ $sourceDocNo ?: '🔍 Pilih dokumen Stock Out…' }}</button>
                             @else
                                 <input type="text" value="{{ $sourceDocNo }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono bg-[#f4f6fa] text-muted">
                             @endif
-                            @error('sourceDocId') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                            @error('sourceDocId') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
                         </div>
-                        <div class="flex-1 min-w-[200px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Gudang Tujuan (bahan layak) *</label>
-                            <select wire:model="goodWarehouseId" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->warehouses as $w)
-                                    <option value="{{ $w->id_warehouse }}">{{ $w->warehouse_code }} — {{ $w->warehouse_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('goodWarehouseId') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1 min-w-[200px]">
+                            <x-form.select label="Gudang Tujuan (bahan layak) *" wire:model="goodWarehouseId" :disabled="$readOnly" name="goodWarehouseId"
+                                :options="$this->warehouses->mapWithKeys(fn ($w) => [$w->id_warehouse => $w->warehouse_code.' — '.$w->warehouse_name])->all()" />
                         </div>
-                        <div class="flex-1 min-w-[160px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Proses Asal</label>
-                            <input type="text" wire:model="process_code" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1 min-w-[160px]">
+                            <x-form.input label="Proses Asal" wire:model="process_code" :disabled="$readOnly" />
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Catatan</label>
-                        <textarea wire:model="notes" @disabled($readOnly) rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                    </div>
+                    <x-form.textarea label="Catatan" wire:model="notes" :disabled="$readOnly" rows="2" />
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Baris Item (Retur)</div>
                     @error('lines') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
@@ -572,22 +538,17 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                         <td class="px-2 py-1.5">{{ $line['name'] }}</td>
                                         <td class="px-2 py-1.5 text-right font-mono">{{ rtrim(rtrim(number_format($line['qty_issued'], 2, ',', '.'), '0'), ',') }} {{ $line['uom_code'] }}</td>
                                         <td class="px-2 py-1.5 text-right font-mono font-semibold">{{ rtrim(rtrim(number_format($line['qty_returnable'], 2, ',', '.'), '0'), ',') }}</td>
-                                        <td class="px-2 py-1.5"><input type="text" wire:model="lines.{{ $i }}.qty" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right"></td>
+                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.qty" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                         <td class="px-2 py-1.5">
-                                            <select wire:model="lines.{{ $i }}.return_condition" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs">
-                                                <option value="GOOD">GOOD (Layak)</option>
-                                                <option value="SCRAP">SCRAP (Afkir)</option>
-                                            </select>
+                                            <x-form.select wire:model="lines.{{ $i }}.return_condition" :disabled="$readOnly" class="!py-1" :placeholder="false"
+                                                :options="['GOOD' => 'GOOD (Layak)', 'SCRAP' => 'SCRAP (Afkir)']" />
                                         </td>
                                         <td class="px-2 py-1.5">
-                                            <select wire:model="lines.{{ $i }}.location_id" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs">
-                                                <option value="">— pilih —</option>
-                                                @foreach (($line['return_condition'] === 'SCRAP') ? $this->scrapLocations : $this->goodLocations as $loc)
-                                                    <option value="{{ $loc->location_id }}">{{ $loc->location_code }}</option>
-                                                @endforeach
-                                            </select>
+                                            <x-form.select wire:model="lines.{{ $i }}.location_id" :disabled="$readOnly" class="!py-1"
+                                                :selected="$line['location_id']"
+                                                :options="(($line['return_condition'] === 'SCRAP') ? $this->scrapLocations : $this->goodLocations)->pluck('location_code', 'location_id')->all()" />
                                         </td>
-                                        <td class="px-2 py-1.5"><input type="text" wire:model="lines.{{ $i }}.note_detail" @disabled($readOnly) placeholder="{{ $line['return_condition'] === 'SCRAP' ? 'wajib utk afkir' : 'opsional' }}" class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs"></td>
+                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.note_detail" :disabled="$readOnly" placeholder="{{ $line['return_condition'] === 'SCRAP' ? 'wajib utk afkir' : 'opsional' }}" class="!py-1" /></td>
                                     </tr>
                                 @empty
                                     <tr><td colspan="7" class="text-center py-6 text-muted text-xs">Pilih Ref. Stock Out di atas utk menarik baris yang bisa diretur.</td></tr>

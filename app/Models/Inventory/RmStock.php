@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // Header dokumen stok RM (Stock In/Out/Adjustment/Opname/Return, dibedakan
-// doc_cat+doc_type -- lihat INV_TIER_1.md #2). flow_status menggantikan
+// doc_cat+doc_type -- lihat inventory_tier1.md #2). flow_status menggantikan
 // stat_auth/current_approval_level lama (deprecated, INV_TIER_2 #C-2) --
 // jangan ditulis lagi, cukup flow_status + tm2sys.flow_log (FlowEngineService).
 class RmStock extends Model

@@ -16,13 +16,13 @@ class MatSheetRate extends Model
         'substance_name',
         'flute_type',
         'index_substance',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'index_substance' => 'decimal:4',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

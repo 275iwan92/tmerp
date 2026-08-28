@@ -3,11 +3,11 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// PROC_TIER_3.md §7.4 seed tarif pajak & toleransi. Draf Tier 3 mengasumsikan
+// procurement_tier3.md §7.4 seed tarif pajak & toleransi. Draf Tier 3 mengasumsikan
 // kolom const_code/const_value/const_type, TERNYATA nama kolom asli beda
 // (dikonfirmasi 2026-08-20): constant_key/constant_group/constant_number/
 // constant_text/description/is_active (lihat migration 2026_08_20_000004).
-// Ini resolusi PROC-SYSCONST-COL (PROC_STATE.yaml open_items).
+// Ini resolusi PROC-SYSCONST-COL (procurement_state.yaml open_items).
 return new class extends Migration
 {
     public function up(): void

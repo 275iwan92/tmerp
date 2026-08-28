@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// docs/FINANCE_DOWN_PAYMENT_TIER_1-4.md §0 "DELTA WAJIB" — uang muka (DP) dua
+// docs/downpayment_tier1-4.md §0 "DELTA WAJIB" — uang muka (DP) dua
 // arah di atas struktur GL yang SUDAH ADA. `fin_invoice.invoice_type` enum +
 // tabel `fin_dp_allocation` TERNYATA SUDAH diterapkan langsung di MySQL
 // (di luar migration Laravel) sebelum sesi ini — PK asli `allocation_id`

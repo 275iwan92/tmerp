@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 // TIER_3A_FINANCE.sql §5 — header voucher/journal entry. Snapshot; REVISE
 // pada POSTED = copy-record (revision_no+1), lama is_cancelled=1
-// cancel_reason='SUPERSEDED' — FIN_TIER_2.md §B5.
+// cancel_reason='SUPERSEDED' — financeaccounting_tier2.md §B5.
 return new class extends Migration
 {
     public function up(): void

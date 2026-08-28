@@ -52,14 +52,16 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 ### File & folder
 - **DILARANG emoji/karakter non-ASCII di nama file atau folder** — di seluruh project, kode
   maupun docs. Emoji tetap boleh di **konten** (label tombol, badge, heading di dalam halaman).
-  Rinci: `docs/GLOBAL_RULES.yaml → file_naming`.
+  Rinci: `docs/globalrules.yaml → file_naming`.
 
 ### Prefix tabel per domain
 **Master (tm2mst):**
-`cust_` customer · `prod_` product & proses · `mat_` material & harga bahan ·
-`uom_` satuan · `geo_` wilayah · `fin_` finance (currency/kurs/payment_term) ·
-`sup_` supplier · `emp_` employee · `org_` struktur organisasi ·
-`sys_` sistem/parameter · `ref_` lookup generik lintas-domain.
+`cust_` customer · `prod_` product & proses · `mat_` material, harga bahan &
+spesifikasi fisik (termasuk `mat_plano_size`) · `wh_` struktur gudang (master,
+lintas modul) · `uom_` satuan · `geo_` wilayah ·
+`fin_` finance (currency/kurs/payment_term) · `sup_` supplier · `emp_` employee ·
+`org_` struktur organisasi · `sys_` sistem/parameter ·
+`ref_` lookup generik lintas-domain.
 
 **Transaksi (tm2sdi):**
 `iqp_` inquiry product (+ costing turunan) · `quo_` quotation · `co_` customer order · `do_` delivery order.
@@ -71,10 +73,20 @@ transaksi = `iqp_costing`, ikut inquiry).
 ### Kolom
 - PK: `id_<entitas>` (kecuali `prod_type`, `iqp_type` = kode varchar).
 - Nama: English, snake_case.
-- Master: `is_active` + `created_at/by` + `updated_at/by`.
+- Master: `activate` (toggle aktif/nonaktif, boolean 1 kata — **bukan** `is_active`,
+  keputusan user 2026-08-26) + `created_at/by` + `updated_at/by`.
 - Transaksi: `created_at/by`, `updated_at/by`. Ber-approval: `approved_by/at`.
-  Confirm/cancel: flag `is_confirmed`/`is_cancelled` + `cancel_reason` (pelaku via `updated_by`).
+  Confirm/cancel/close: flag `stat_confirm`/`stat_cancel`/`stat_close` (prefix
+  `stat_` = status siklus dokumen, **bukan** `is_confirmed`/`is_cancelled` —
+  keputusan user 2026-08-26) + `cancel_reason` (pelaku via `updated_by`).
 - State transisi dokumen → tabel `doc_state_log` (polymorphic), BUKAN kolom per-transisi.
+- **DEC-FIELDNAME-STATUS (2026-08-26/27):** rename `is_active`→`activate`
+  & `is_confirmed`/`is_cancelled`→`stat_confirm`/`stat_cancel` — **SELESAI**
+  di semua tabel (tm2mst, tm2acc, tm2sdi, tm2pur, tm2sys **termasuk**
+  `sec_user`/`sec_group`/`sec_module`, dicabut dari pengecualian awal atas
+  instruksi user 2026-08-27 setelah fase lain terbukti aman). `sec_user.active`
+  (kolom legacy terpisah, isinya selalu sama dgn is_active lama) **tidak**
+  ikut berubah. Riwayat & catatan per-fase: `docs/fieldrename_state.yaml`.
 
 ---
 
@@ -109,24 +121,47 @@ transaksi = `iqp_costing`, ikut inquiry).
 
 ## 6. DOKUMEN ACUAN (di /docs)
 
-- `TIER_0_GLOBAL_ARCHITECTURE.md` — arsitektur global, keputusan LOCKED.
-- `TIER_1_INQUIRY_v2_1.md` — alur & proses inquiry (aktor, state, aturan bisnis).
-- `TIER_2_INQUIRY_v3.md` — business logic, state machine, pseudocode HPP.
-- `TIER_3A_*.sql` — DDL (geo, master, inquiry). **Skema aktual = ini.**
-- `TIER_3A_PREFIX_LIST.md` — konvensi prefix lengkap.
+> **Konvensi nama file (DEC-NAMING 2026-08-26):** nama file `docs/*.md`/`*.yaml` mengikuti
+> `sys_app_menu.label` (menu live di `tm2sys`) — lowercase, tanpa spasi, digabung jadi satu
+> kata, + suffix jenis dokumen (`_tier1..4`, `_rules`, `_state`, dst). `sys_app_menu.doc_slug`
+> = sumber kebenaran basis nama per submodule; dokumen yang bukan milik 1 menu item (aturan
+> global/standar/engine/referensi) terdaftar di tabel `sys_doc_reference` (bukan file .md,
+> jangan ditulis manual — cek `SELECT * FROM tm2sys.sys_doc_reference`). Migration:
+> `2026_08_26_000001_add_doc_slug_and_doc_reference.php`. **Saat bikin dokumen baru:** cek dulu
+> `doc_slug` submodule terkait (atau tambahkan row baru di `sys_app_menu`/`sys_doc_reference`
+> kalau belum ada), jangan bikin prefix sendiri.
+
+- `globalarchitecture_tier0.md` — arsitektur global, keputusan LOCKED.
+- `inquiryproduct_tier1.md` — alur & proses inquiry (aktor, state, aturan bisnis).
+- `inquiryproduct_tier2.md` — business logic, state machine, pseudocode HPP.
+- `TIER_3A_*.sql` — **DIHAPUS 2026-08-26** (sudah dijalankan, isinya tertanam live di MySQL). Skema aktual = dump per-database (`docs/tm2*.sql`), digantikan user secara berkala — bukan lagi file DDL statis ini.
+- `prefixlist.md` — konvensi prefix lengkap.
 - Mockup Tier 4 (HTML/CSS) — acuan UI: `inquiry_new/recalc/revise.html`,
   `inquiry_costing_*.html`, `inquiry_proof.html`, `inquiry_quotation.html`,
   `product_costing.html`, `*_nota_*.html`.
-- `GRID_UI_STANDARD.md` — **wajib dibaca sebelum bikin/ubah grid apa pun**
+- `griduistandard.md` — **wajib dibaca sebelum bikin/ubah grid apa pun**
   (Master maupun worklist/transaksi): tanpa header halaman, kotak statistik
   pastel, kolom identitas avatar+nama+kode, klik 2x buka detail, toolbar
   minimal. Kolom Aksi: grid Master = Edit+Toggle-aktif; grid non-Master =
   Buka + Confirm kondisional (tidak pernah toggle aktif/nonaktif).
-- `SIDEBAR_MENU_STANDARD.md` — **wajib dibaca sebelum menata menu
+- `sidebarmenustandard.md` — **wajib dibaca sebelum menata menu
   `sys_app_menu`/sidebar modul apa pun**: selalu ada grup input & grup
   "Laporan" (label ringkas, tanpa kata "Laporan" berulang di item-nya),
   nama item laporan ikut `#[Title]` layar aslinya, grup sidebar otomatis
   collapsible (tak perlu kerjaan tambahan).
+- `ganttboardstandard.md` — **wajib dibaca sebelum bikin/ubah layar Gantt
+  apa pun** (jadwal resource×waktu dengan drag/resize, mis. Scheduling Board):
+  komponen reusable `resources/views/components/gantt/{board,row,task-block}
+  .blade.php`, kontrak Row/Block VM, Alpine store `gantt` untuk highlight
+  lintas-boundary. Gotcha wajib: jangan tulis nama tag komponen berkurung
+  sudut (`<x-...>`) di dalam komentar mana pun — Blade tag compiler ikut
+  mengompilasinya dan merusak file.
+- `printnotastandard.md` — **wajib dibaca sebelum bikin/ubah layar cetak
+  dokumen transaksi (Nota)** — kop+parties+signature+footer, beda dari
+  laporan tabel (`FORM_UI_STANDARD.md`): komponen reusable
+  `resources/views/components/print/{document,sheet,header,parties,party,
+  section,signatures,signature,footer}.blade.php`, tema warna per dokumen
+  via prop `theme`. Gotcha sama seperti `ganttboardstandard.md` §8.
 
 ---
 

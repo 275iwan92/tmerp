@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Pur\PrtReturn;
 use App\Models\Pur\PvReceipt;
 use Illuminate\Support\Facades\Auth;
@@ -9,13 +10,14 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-// GRID_UI_STANDARD.md diikuti. PRT butuh approval sungguhan (Manajer
+// griduistandard.md diikuti. PRT butuh approval sungguhan (Manajer
 // Operasional) -- Approve/Reject/Hold digabung ke form entri (pur/prt/entry),
 // BUKAN di grid ini (pola sama PR/PO/Adjustment yang dirombak sesi ini).
 // Aksi grid cuma ↗ Buka. "+ New Record" tetap ada (PRT dibuat dari grid ini
 // sendiri via picker sumber PV/Stok).
 new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use WithPagination;
 
     public string $search = '';
@@ -34,7 +36,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
                 $q->where(fn ($qq) => $qq->where('doc_no', 'like', "%{$term}%")->orWhere('i_reason', 'like', "%{$term}%"));
             })
             ->orderByDesc('prt_id')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -89,7 +91,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
         }
 
         return DB::connection('tm2mst')->table('sup_supplier')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->where(fn ($q) => $q->where('supplier_name', 'like', "%{$this->supplierSearch}%")->orWhere('supplier_code', 'like', "%{$this->supplierSearch}%"))
             ->orderBy('supplier_name')->limit(15)->get();
     }
@@ -168,58 +170,33 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
         };
     }
 
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="grid grid-cols-3 gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Retur</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statPending }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Nilai Retur</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ number_format($this->statValue, 0, ',', '.') }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="total" label="Total Retur" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="Menunggu Approval" :value="$this->statPending" />
+            <x-grid.stat-box tone="active" label="Nilai Retur" :value="number_format($this->statValue, 0, ',', '.')" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. retur / alasan…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openPicker"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openPicker"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -234,15 +211,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->returns as $r)
                             <tr wire:key="prt-{{ $r->prt_id }}" wire:dblclick="openReturn({{ $r->prt_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($r->prt_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($this->supplierNames[$r->i_supplier_id] ?? ($r->doc_no ?: 'RT')) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $this->supplierNames[$r->i_supplier_id] ?? '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $r->doc_no ?: '(draft)' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$r->prt_id" :name="$this->supplierNames[$r->i_supplier_id] ?? '—'" :code="$r->doc_no ?: '(draft)'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[9px] font-bold px-1.5 py-0.5 rounded {{ $r->i_source === 'QC_REJECT' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $r->i_source === 'QC_REJECT' ? 'DARI PV' : 'DARI STOK' }}</span>
                                 </td>
@@ -252,19 +221,17 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($r->status) }}">{{ $r->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openReturn({{ $r->prt_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    <x-grid.action-icon icon="↗" title="Buka" action="openReturn({{ $r->prt_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Belum ada Purchase Return.</td></tr>
+                            <x-grid.empty-row :colspan="6" message="Belum ada Purchase Return." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
 
-            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
-                {{ $this->returns->links() }}
-            </div>
+            @include('components.grid.pagination-footer', ['paginator' => $this->returns])
         </div>
     </div>
 
@@ -283,7 +250,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="flex-1 overflow-y-auto p-4">
                     @if (! $pickerSource)
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid two">
                             <button type="button" wire:click="pickSourceType('pv')" class="border-2 border-[#d7dbe2] hover:border-accent rounded-lg p-4 text-left cursor-pointer">
                                 <div class="text-lg mb-1">📦</div>
                                 <div class="text-xs font-bold text-navy">Dari PV (QC Reject)</div>

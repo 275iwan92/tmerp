@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 // docs/mockups/co_delivery_plan_mockup.html -- hub logistik lintas-CO, MURNI
 // penjadwalan (split/gabung/geser tanggal kirim). TIDAK menyentuh stok/COGS
 // sama sekali -- itu domain Delivery Order/Dispatch (belum dibangun,
-// FIN_TIER_1.md Keputusan B: HPP diakui saat DO terbit). Hanya CO yang sudah
+// financeaccounting_tier1.md Keputusan B: HPP diakui saat DO terbit). Hanya CO yang sudah
 // CONFIRMED yang muncul di sini -- CO masih DRAFT jadwalnya diedit di tab
 // "Delivery" milik CO Entry sendiri (co/entry.blade.php), layar ini yang
 // mengelola KELANJUTANNYA sesudah CO fix (kondisi lapangan berubah: truk
@@ -210,25 +210,8 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
         };
     }
 
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
@@ -239,48 +222,40 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
             <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#e9f9ef] border border-[#c8ecd6] text-[#1f8a4c]">✅ {{ session('flash') }}</div>
         @endif
 
-        <div class="grid grid-cols-3 gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Rencana Aktif</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Terlambat</p>
-                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statLate }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Terkirim Bulan Ini</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statShipped }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="total" label="Rencana Aktif" :value="$this->statTotal" />
+            <x-grid.stat-box tone="critical" label="Terlambat" :value="$this->statLate" />
+            <x-grid.stat-box tone="active" label="Terkirim Bulan Ini" :value="$this->statShipped" />
+        </x-grid.stat-row>
 
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#eef3fb] border border-[#c8ddfb] text-[#1d4ed8]">
             Jadwal awal diisi dari tab "Delivery" di CO Entry saat CO masih Draft. Di sini Anda cuma atur ULANG logistiknya (pecah/gabung baris, geser tanggal) sesudah CO fix — qty &amp; harga tetap dari CO, tidak bisa diubah di sini. Baris berubah jadi SHIPPED otomatis begitu Delivery Order diterbitkan (belum dibangun).
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer / produk…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                @if ($mergeMode)
-                    <span class="text-[11px] text-muted shrink-0">{{ count($mergeSelectedIds) }} baris dipilih</span>
-                    <button type="button" wire:click="confirmMerge" @disabled(count($mergeSelectedIds) < 2)
-                        class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white disabled:opacity-40 cursor-pointer">OK, Gabungkan</button>
-                    <button type="button" wire:click="toggleMergeMode" class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold border border-[#d7dbe2] cursor-pointer">Batal</button>
-                @else
-                    <button type="button" wire:click="toggleMergeMode"
-                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">⇄ Gabung Baris</button>
-                @endif
-            </div>
+                <x-slot:tools>
+                    @if ($mergeMode)
+                        <span class="text-[11px] text-muted shrink-0">{{ count($mergeSelectedIds) }} baris dipilih</span>
+                        <button type="button" wire:click="confirmMerge" @disabled(count($mergeSelectedIds) < 2)
+                            class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white disabled:opacity-40 cursor-pointer">OK, Gabungkan</button>
+                        <button type="button" wire:click="toggleMergeMode" class="shrink-0 px-3.5 py-1.5 rounded text-xs font-semibold border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    @else
+                        <button type="button" wire:click="toggleMergeMode"
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">⇄ Gabung Baris</button>
+                    @endif
+                </x-slot:tools>
+            </x-grid.toolbar>
             @if ($mergeError)
                 <div class="text-[11px] px-3.5 py-2 bg-[#fdecec] text-[#a3453f]">⚠ {{ $mergeError }}</div>
             @endif
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -307,15 +282,7 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
                                         <input type="checkbox" @checked(in_array($d->id_delivery, $mergeSelectedIds)) onclick="event.preventDefault()" @disabled($d->status !== 'PLANNED')>
                                     </td>
                                 @endif
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($d->id_delivery) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($d->order?->quotation?->customer?->customer_name ?: $d->order?->co_no ?: 'CO') }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $d->order?->quotation?->customer?->customer_name ?? '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $d->order?->co_no }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$d->id_delivery" :name="$d->order?->quotation?->customer?->customer_name ?? '—'" :code="$d->order?->co_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $d->item?->description }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ rtrim(rtrim(number_format((float) $d->ship_qty, 2, ',', '.'), '0'), ',') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
@@ -331,17 +298,17 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
                                 @if (! $mergeMode)
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                         @if ($d->status === 'PLANNED')
-                                            <button type="button" wire:click.stop="openSplitModal({{ $d->id_delivery }})" title="Split / Pindah Tanggal" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✂</button>
+                                            <x-grid.action-icon icon="✂" title="Split / Pindah Tanggal" action="openSplitModal({{ $d->id_delivery }})" />
                                         @endif
                                     </td>
                                 @endif
                             </tr>
                         @empty
-                            <tr><td colspan="{{ $mergeMode ? 6 : 7 }}" class="text-center py-8 text-muted text-sm">Belum ada rencana kirim dari CO yang sudah Confirmed.</td></tr>
+                            <x-grid.empty-row :colspan="$mergeMode ? 6 : 7" message="Belum ada rencana kirim dari CO yang sudah Confirmed." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
     </div>
 
@@ -356,14 +323,10 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
                     <p class="text-[11px] text-[#a3453f] mb-2">⚠ {{ $splitError }}</p>
                 @endif
                 <div class="flex flex-col gap-3">
-                    <div>
-                        <label class="text-xs font-semibold text-[#556] block mb-1">Qty Split <span class="text-muted font-normal">(kosongkan kalau cuma mau pindah tanggal)</span></label>
-                        <input type="text" wire:model="splitQty" placeholder="Kosong = pindah semua qty" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    </div>
-                    <div>
-                        <label class="text-xs font-semibold text-[#556] block mb-1">Tanggal Baru *</label>
-                        <input type="date" wire:model="splitDate" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    </div>
+                    <x-form.input wire:model="splitQty" placeholder="Kosong = pindah semua qty">
+                        <x-slot:label>Qty Split <span class="text-muted font-normal">(kosongkan kalau cuma mau pindah tanggal)</span></x-slot:label>
+                    </x-form.input>
+                    <x-form.input label="Tanggal Baru *" type="date" wire:model="splitDate" />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" wire:click="closeSplitModal" class="text-xs font-semibold px-3.5 py-2 rounded border border-[#d7dbe2] cursor-pointer">Batal</button>

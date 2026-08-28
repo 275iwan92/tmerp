@@ -9,7 +9,7 @@ use Livewire\Component;
 // Outstanding PO = PO yang sudah SENT/PARTIALLY_RECEIVED tapi baris-nya belum
 // (sepenuhnya) diterima -- i_qty > c_qty_received, hanya baris is_receivable
 // (baris SERVICE tak pernah lewat PV -- PROC PV-09). Sejalan dgn
-// docs/PROC_TIER_3.md view v1_po_outstanding. Beda dgn Outstanding PR, header
+// docs/procurement_tier3.md view v1_po_outstanding. Beda dgn Outstanding PR, header
 // po_order.status DI-MAINTAIN dgn benar oleh PvPostingService::recalcPo(),
 // jadi filter status cukup dipercaya -- qty dihitung ulang cuma utk nilai
 // tampilan, bukan penjaga utama spt di Outstanding PR.
@@ -26,7 +26,7 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
     {
         return PoOrder::with('lines')
             ->whereIn('status', ['SENT', 'PARTIALLY_RECEIVED'])
-            ->where('is_cancelled', false)
+            ->where('stat_cancel', false)
             ->when($this->dateFrom !== '', fn ($q) => $q->whereDate('i_doc_date', '>=', $this->dateFrom))
             ->when($this->dateTo !== '', fn ($q) => $q->whereDate('i_doc_date', '<=', $this->dateTo))
             ->orderBy('i_doc_date')
@@ -101,48 +101,21 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('pur.po.entry', ['po' => $id]));
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">PO Outstanding</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statCount }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
-                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Baris Outstanding</p>
-                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->statLines }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Nilai Outstanding</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ number_format($this->statValue, 0, ',', '.') }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="total" label="PO Outstanding" :value="$this->statCount" />
+            <x-grid.stat-box tone="extra" label="Baris Outstanding" :value="$this->statLines" />
+            <x-grid.stat-box tone="warn" label="Nilai Outstanding" :value="number_format($this->statValue, 0, ',', '.')" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto flex-wrap">
+            <x-grid.toolbar class="flex-wrap">
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PO / supplier…"
@@ -155,11 +128,13 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                     <input type="date" wire:model.live="dateTo" class="px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 @if ($search !== '' || $dateFrom !== '' || $dateTo !== '')
-                    <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">Reset filter</button>
+                    <x-slot:tools>
+                        <button type="button" wire:click="resetFilter" class="shrink-0 text-[11px] font-semibold text-muted hover:text-navy underline">Reset filter</button>
+                    </x-slot:tools>
                 @endif
-            </div>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -175,15 +150,7 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->rows as $r)
                             <tr wire:key="opo-{{ $r->po->po_id }}" wire:dblclick="openPo({{ $r->po->po_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($r->po->po_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($this->supplierNames[$r->po->i_supplier_id] ?? ($r->po->doc_no ?: 'PO')) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $this->supplierNames[$r->po->i_supplier_id] ?? '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $r->po->doc_no }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$r->po->po_id" :name="$this->supplierNames[$r->po->i_supplier_id] ?? '—'" :code="$r->po->doc_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->po->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->po->i_delivery_date?->translatedFormat('d M Y') ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right">{{ $r->lineCount }} / {{ $r->po->lines->where('is_receivable', true)->count() }}</td>
@@ -192,15 +159,15 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->po->status === 'PARTIALLY_RECEIVED' ? 'bg-[#fff5e0] text-[#8a5a00]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->po->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openPo({{ $r->po->po_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    <x-grid.action-icon icon="↗" title="Buka" action="openPo({{ $r->po->po_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Tidak ada PO outstanding pada rentang/filter ini.</td></tr>
+                            <x-grid.empty-row :colspan="7" message="Tidak ada PO outstanding pada rentang/filter ini." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
     </div>
 </div>

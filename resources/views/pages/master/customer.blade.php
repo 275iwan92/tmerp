@@ -24,7 +24,7 @@ use Livewire\Component;
 // (timeline ringkas dari created_at/updated_at, BUKAN tabel audit generik —
 // tak ada tabelnya). ~22 kolom baru di cust_customer, lihat migration
 // 2026_08_19_000019. "Sales Organization"/"Distribution Channel" mockup
-// SENGAJA tak dibawa (CUSTOMER_MASTER_spec.md §1.5 "SAP-isme tak relevan
+// SENGAJA tak dibawa (customer_spec.md §1.5 "SAP-isme tak relevan
 // percetakan" — satu-satunya bagian dokumen lama itu yang masih dipakai).
 new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 {
@@ -58,7 +58,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 
     public bool $is_prospect = false;
 
-    public bool $is_active = true;
+    public bool $activate = true;
 
     public bool $is_blacklisted = false;
 
@@ -206,7 +206,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function metricActive(): int
     {
-        return CustCustomer::query()->where('approval_status', 'APPROVED')->where('is_active', true)->count();
+        return CustCustomer::query()->where('approval_status', 'APPROVED')->where('activate', true)->count();
     }
 
     #[Computed]
@@ -234,19 +234,19 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function paymentTerms()
     {
-        return FinPaymentTerm::query()->where('is_active', true)->orderBy('sort_order')->get();
+        return FinPaymentTerm::query()->where('activate', true)->orderBy('sort_order')->get();
     }
 
     #[Computed]
     public function categories()
     {
-        return CustCategory::query()->where('is_active', true)->orderBy('category_code')->get();
+        return CustCategory::query()->where('activate', true)->orderBy('category_code')->get();
     }
 
     #[Computed]
     public function divisions()
     {
-        return OrgDivision::query()->where('is_active', true)->orderBy('division_name')->get();
+        return OrgDivision::query()->where('activate', true)->orderBy('division_name')->get();
     }
 
     public function avatarInitials(?string $name): string
@@ -264,19 +264,9 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         return '??';
     }
 
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]',
-        'from-[#10b981] to-[#059669]',
-        'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]',
-        'from-[#f59e0b] to-[#d97706]',
-        'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // avatarGradient() dipindah ke App\Support\Grid\Avatar::gradient() (static) --
+    // avatarInitials() TETAP di sini (bukan duplikat): strip prefix PT/CV/UD/TBK
+    // sebelum ambil inisial, beda dari helper generik yang dipakai grid lain.
 
     #[On('address-picked')]
     public function onAddressPicked(string $fieldName, ?int $areaId, ?string $areaLevel, ?string $label, ?string $postalCode): void
@@ -531,7 +521,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         $this->customer_type = $customer->customer_type ?? 'local';
         $this->category = $customer->category;
         $this->is_prospect = (bool) $customer->is_prospect;
-        $this->is_active = (bool) $customer->is_active;
+        $this->activate = (bool) $customer->activate;
         $this->is_blacklisted = (bool) $customer->is_blacklisted;
         $this->approval_status = $customer->approval_status ?? 'DRAFT';
         $this->note = (string) $customer->note;
@@ -615,7 +605,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         $this->kyc_status = 'PENDING';
         $this->tax_validated = false;
         $this->is_prospect = false;
-        $this->is_active = true;
+        $this->activate = true;
         $this->is_blacklisted = false;
         $this->approval_status = 'DRAFT';
     }
@@ -658,7 +648,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 'customer_type' => ['required', 'in:local,import'],
                 'category' => ['nullable', 'string', 'exists:tm2mst.cust_category,category_code'],
                 'is_prospect' => ['boolean'],
-                'is_active' => ['boolean'],
+                'activate' => ['boolean'],
                 'is_blacklisted' => ['boolean'],
                 'approval_status' => ['required', 'in:'.implode(',', array_keys(CustCustomer::APPROVAL_STATUSES))],
                 'note' => ['nullable', 'string'],
@@ -728,7 +718,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
     public function toggleActive(int $id): void
     {
         $c = CustCustomer::findOrFail($id);
-        $c->is_active = ! $c->is_active;
+        $c->activate = ! $c->activate;
         $c->updated_by = Auth::user()->login;
         $c->save();
 
@@ -811,74 +801,64 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Customer</p>
-                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotal }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
-                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricActive }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Terblokir</p>
-                    <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->metricBlocked }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft / Onboarding</p>
-                    <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->metricDraft }}</p>
-                </div>
-            </div>
+            <x-grid.stat-row :count="4">
+                <x-grid.stat-box tone="total" label="Total Customer" :value="$this->metricTotal" />
+                <x-grid.stat-box tone="active" label="Aktif" :value="$this->metricActive" />
+                <x-grid.stat-box tone="critical" label="Terblokir" :value="$this->metricBlocked" />
+                <x-grid.stat-box tone="warn" label="Draft / Onboarding" :value="$this->metricDraft" />
+            </x-grid.stat-row>
 
-            <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-t-md px-2.5 py-2 overflow-x-auto">
-                <div class="flex items-center gap-1.5 shrink-0">
-                    <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.400ms="q" placeholder="Cari nama / kode / PIC..."
-                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="newCustomer"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+            <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+                <x-grid.toolbar>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="text-sm">🔍</span>
+                        <input type="text" wire:model.live.debounce.400ms="q" placeholder="Cari nama / kode / PIC..."
+                            class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    </div>
+                    <x-slot:newRecord>
+                        <button type="button" wire:click="newCustomer"
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                    </x-slot:newRecord>
+                </x-grid.toolbar>
 
-            @if ($actionMessage)
-                <div class="text-xs px-3 py-2 border border-t-0 border-[#d7dbe2] bg-[#fff8e1] text-[#8a6d00]">{{ $actionMessage }}</div>
-            @endif
+                @if ($actionMessage)
+                    <div class="text-xs px-3 py-2 border-b border-[#eef1f5] bg-[#fff8e1] text-[#8a6d00]">{{ $actionMessage }}</div>
+                @endif
 
-            <div class="bg-white border border-t-0 border-[#d7dbe2] rounded-b-md overflow-hidden">
-                <table class="w-full border-collapse">
+                <x-grid.table-shell>
+                <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Customer</th>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Tipe</th>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Industri</th>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Limit Kredit</th>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Termin</th>
-                            <th class="text-left bg-[#f4f5f8] text-[#6b7280] text-[10.5px] uppercase tracking-wide px-2.5 py-2 border-b border-[#d7dbe2]">Status</th>
-                            <th class="w-10 bg-[#f4f5f8] border-b border-[#d7dbe2]"></th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Tipe</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Industri</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Limit Kredit</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Termin</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->customers as $c)
                             <tr wire:click="selectRow({{ $c->id_customer }})" wire:dblclick="editRow({{ $c->id_customer }})"
-                                class="cursor-pointer hover:bg-[#f8f9fb] {{ $selectedId === $c->id_customer ? 'bg-[#e8f0fe]' : '' }}"
+                                class="cursor-pointer hover:bg-[#f7faff] {{ $selectedId === $c->id_customer ? 'bg-[#e8f0fe]' : '' }}"
                                 title="Klik 2x untuk buka detail">
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($c->id_customer) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($c->customer_name) }}</div>
+                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($c->id_customer) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($c->customer_name) }}</div>
                                         <div>
                                             <div class="font-semibold text-[13px]">{{ $c->customer_name }}</div>
-                                            <div class="text-[11px] text-[#6b7280]">{{ $c->customer_code }}{{ $c->parent_group ? ' · '.$c->parent_group : '' }}</div>
+                                            <div class="text-[11px] text-muted">{{ $c->customer_code }}{{ $c->parent_group ? ' · '.$c->parent_group : '' }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $c->customer_type === 'import' ? 'Import' : 'Lokal' }}{{ $c->is_prospect ? ' · Prospek' : '' }}</td>
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2] max-w-[160px] truncate">{{ $c->industry_category ?: '—' }}</td>
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">Rp {{ number_format((float) $c->credit_limit, 0, ',', '.') }}</td>
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">{{ $c->paymentTerm?->term_label ?? '—' }}</td>
-                                <td class="px-2.5 py-2 border-b border-[#d7dbe2]">
-                                    <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block {{ $c->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">
-                                        {{ $c->is_active ? 'Aktif' : 'Nonaktif' }}
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->customer_type === 'import' ? 'Import' : 'Lokal' }}{{ $c->is_prospect ? ' · Prospek' : '' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] max-w-[160px] truncate">{{ $c->industry_category ?: '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">Rp {{ number_format((float) $c->credit_limit, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $c->paymentTerm?->term_label ?? '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">
+                                        {{ $c->activate ? 'Aktif' : 'Nonaktif' }}
                                     </span>
                                     <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block ml-1 {{ match($c->approval_status ?? 'DRAFT') { 'APPROVED' => 'bg-[#eaf7ee] text-[#1f8a4c]', 'BLOCKED' => 'bg-[#fdeceb] text-[#c0392b]', 'CREDIT_CHECK' => 'bg-[#fff4e0] text-[#8a6d00]', default => 'bg-[#eef0f3] text-[#6b7280]' } }}">
                                         {{ \App\Models\Master\CustCustomer::APPROVAL_STATUSES[$c->approval_status ?? 'DRAFT'] }}
@@ -887,22 +867,17 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#fdeceb] text-[#c0392b] ml-1">🚫</span>
                                     @endif
                                 </td>
-                                <td class="text-right px-1 py-2 border-b border-[#d7dbe2] whitespace-nowrap">
-                                    <button type="button" wire:click.stop="editRow({{ $c->id_customer }})" title="Edit"
-                                        class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click.stop="toggleActive({{ $c->id_customer }})" wire:confirm="{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }} customer {{ $c->customer_name }}?"
-                                        title="{{ $c->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $c->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <x-grid.action-icon icon="✎" title="Edit" action="editRow({{ $c->id_customer }})" />
+                                    <x-grid.action-icon icon="⏻" :title="$c->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $c->id_customer }})" :variant="$c->activate ? 'danger' : 'default'" confirm="{{ $c->activate ? 'Nonaktifkan' : 'Aktifkan' }} customer {{ $c->customer_name }}?" />
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="text-center py-8 text-[#8a94a6] text-sm">
-                                    Belum ada data customer{{ $q ? ' untuk pencarian ini' : '' }}.
-                                </td>
-                            </tr>
+                            <x-grid.empty-row :colspan="7" message="Belum ada data customer{{ $q ? ' untuk pencarian ini' : '' }}." />
                         @endforelse
                     </tbody>
                 </table>
+                </x-grid.table-shell>
             </div>
         @endif
 
@@ -910,7 +885,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'form')
             <div class="flex justify-between items-center flex-wrap gap-2.5 bg-[#2c3e69] text-white px-4 py-3 rounded-t-md">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ $this->avatarGradient($editingId ?? 0) }} text-white text-xs font-bold flex items-center justify-center shrink-0 uppercase">{{ $this->avatarInitials($customer_name) }}</div>
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($editingId ?? 0) }} text-white text-xs font-bold flex items-center justify-center shrink-0 uppercase">{{ $this->avatarInitials($customer_name) }}</div>
                     <div>
                         <div class="text-sm font-bold">{{ $customer_name ?: ($editingId ? 'Edit Customer' : 'Customer Baru') }}</div>
                         @if ($editingId)<div class="text-xs font-normal opacity-75">{{ $customer_code }}</div>@endif
@@ -979,60 +954,27 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <div class="{{ $formTab === 'overview' ? '' : 'hidden' }}">
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Identitas Umum</h3>
                     <div class="[display:grid] grid-cols-3 gap-3">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Kode Customer</label>
-                            <input type="text" wire:model="customer_code" maxlength="50" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                            @error('customer_code') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
+                        <x-form.input label="Kode Customer" wire:model="customer_code" maxlength="50" name="customer_code" />
+                        <div class="col-span-2">
+                            <x-form.input label="Nama Customer" wire:model="customer_name" maxlength="200" name="customer_name" />
                         </div>
-                        <div class="flex flex-col gap-1 col-span-2">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Nama Customer</label>
-                            <input type="text" wire:model="customer_name" maxlength="200" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                            @error('customer_name') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                        <x-form.input label="Trade Name / Brand" wire:model="trade_name" maxlength="200" />
+                        <x-form.input label="Parent / Customer Group" wire:model="parent_group" maxlength="200" />
+                        <x-form.input label="Kategori Industri" wire:model="industry_category" maxlength="150" placeholder="mis. FMCG - Food & Beverage Packaging" />
+                        <x-form.select label="Tipe" wire:model="customer_type" :placeholder="false" :options="['local' => 'Lokal', 'import' => 'Import']" />
+                        <x-form.input label="NPWP" wire:model="tax_code" maxlength="50" placeholder="00.000.000.0-000.000" />
+                        <x-form.select label="Kategori (Tracking Bayar)" wire:model="category" name="category"
+                            :options="$this->categories->pluck('category_code', 'category_code')->all()" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Trade Name / Brand</label>
-                            <input type="text" wire:model="trade_name" maxlength="200" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Parent / Customer Group</label>
-                            <input type="text" wire:model="parent_group" maxlength="200" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Status</label>
+                            <x-form.checkbox wire:model="activate" label="Aktif" />
                         </div>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Kategori Industri</label>
-                            <input type="text" wire:model="industry_category" maxlength="150" placeholder="mis. FMCG - Food & Beverage Packaging" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Prospek</label>
+                            <x-form.checkbox wire:model="is_prospect" label="Calon pelanggan (belum resmi)" />
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Tipe</label>
-                            <select wire:model="customer_type" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="local">Lokal</option>
-                                <option value="import">Import</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">NPWP</label>
-                            <input type="text" wire:model="tax_code" maxlength="50" placeholder="00.000.000.0-000.000" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Kategori (Tracking Bayar)</label>
-                            <select wire:model="category" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->categories as $cat)
-                                    <option value="{{ $cat->category_code }}">{{ $cat->category_code }}</option>
-                                @endforeach
-                            </select>
-                            @error('category') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Status</label>
-                            <label class="flex items-center gap-2 px-2.5 py-1.5 text-xs"><input type="checkbox" wire:model="is_active"> Aktif</label>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Prospek</label>
-                            <label class="flex items-center gap-2 px-2.5 py-1.5 text-xs"><input type="checkbox" wire:model="is_prospect"> Calon pelanggan (belum resmi)</label>
-                        </div>
-                        <div class="flex flex-col gap-1 col-span-3">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Catatan Internal</label>
-                            <textarea wire:model="note" rows="2" placeholder="mis. preferensi operasional, riwayat masalah" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></textarea>
+                        <div class="col-span-3">
+                            <x-form.textarea label="Catatan Internal" wire:model="note" rows="2" placeholder="mis. preferensi operasional, riwayat masalah" />
                         </div>
                     </div>
                 </div>
@@ -1044,92 +986,49 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Produk &amp; Material</h3>
                     <div class="[display:grid] grid-cols-4 gap-3 mb-3">
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Produk Utama</label><input type="text" wire:model="primary_product" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Produk Sekunder</label><input type="text" wire:model="secondary_product" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Substrate Default</label><input type="text" wire:model="default_substrate" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Standar Warna</label><input type="text" wire:model="color_standard" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
+                        <x-form.input label="Produk Utama" wire:model="primary_product" />
+                        <x-form.input label="Produk Sekunder" wire:model="secondary_product" />
+                        <x-form.input label="Substrate Default" wire:model="default_substrate" />
+                        <x-form.input label="Standar Warna" wire:model="color_standard" />
                     </div>
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Proofing &amp; Quality Control</h3>
                     <div class="[display:grid] grid-cols-4 gap-3 mb-3">
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Metode Proofing</label><input type="text" wire:model="proofing_method" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Approval Artwork</label><input type="text" wire:model="artwork_approval" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Retained Sample</label><input type="text" wire:model="retained_sample" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Verifikasi Barcode</label><input type="text" wire:model="barcode_verification" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
+                        <x-form.input label="Metode Proofing" wire:model="proofing_method" />
+                        <x-form.input label="Approval Artwork" wire:model="artwork_approval" />
+                        <x-form.input label="Retained Sample" wire:model="retained_sample" />
+                        <x-form.input label="Verifikasi Barcode" wire:model="barcode_verification" />
                     </div>
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Finishing &amp; Pengiriman</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Preferensi Finishing</label><input type="text" wire:model="finishing_preference" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Pemilik Die-Cut</label><input type="text" wire:model="die_owner" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
-                        <div class="flex flex-col gap-1"><label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Instruksi Packing</label><input type="text" wire:model="packing_instruction" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></div>
+                        <x-form.input label="Preferensi Finishing" wire:model="finishing_preference" />
+                        <x-form.input label="Pemilik Die-Cut" wire:model="die_owner" />
+                        <x-form.input label="Instruksi Packing" wire:model="packing_instruction" />
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Catatan Kualitas &amp; Kriteria Reject</label>
-                        <textarea wire:model="quality_notes" rows="3" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></textarea>
-                    </div>
+                    <x-form.textarea label="Catatan Kualitas & Kriteria Reject" wire:model="quality_notes" rows="3" />
                 </div>
 
                 {{-- TAB: SALES & FINANCE --}}
                 <div class="{{ $formTab === 'sales' ? '' : 'hidden' }}">
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Wilayah Penjualan &amp; Harga</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Divisi (SBU)</label>
-                            <select wire:model="sales_division_id" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->divisions as $div)
-                                    <option value="{{ $div->division_id }}">{{ $div->division_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('sales_division_id') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Price List</label>
-                            <input type="text" wire:model="price_list_code" maxlength="50" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Profil Pajak</label>
-                            <select wire:model="tax_profile" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="PPN_11">PPN 11% - Domestic Taxable</option>
-                                <option value="EXEMPT">Bebas PPN (Kawasan Berikat)</option>
-                            </select>
-                        </div>
+                        <x-form.select label="Divisi (SBU)" wire:model="sales_division_id" name="sales_division_id"
+                            :options="$this->divisions->pluck('division_name', 'division_id')->all()" />
+                        <x-form.input label="Price List" wire:model="price_list_code" maxlength="50" />
+                        <x-form.select label="Profil Pajak" wire:model="tax_profile" :placeholder="false"
+                            :options="['PPN_11' => 'PPN 11% - Domestic Taxable', 'EXEMPT' => 'Bebas PPN (Kawasan Berikat)']" />
                     </div>
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Termin &amp; Kredit</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-3">
+                        <x-form.select label="Termin Bayar" wire:model="payment_term" name="payment_term"
+                            :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')->all()" />
+                        <x-form.input label="Mata Uang" wire:model="currency_code" maxlength="10" placeholder="IDR" />
+                        <x-form.input label="Limit Kredit" type="number" step="0.01" min="0" wire:model="credit_limit" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Termin Bayar</label>
-                            <select wire:model="payment_term" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->paymentTerms as $pt)
-                                    <option value="{{ $pt->payment_term_code }}">{{ $pt->term_label }}</option>
-                                @endforeach
-                            </select>
-                            @error('payment_term') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Credit Checking</label>
+                            <x-form.checkbox wire:model="credit_check_enabled" label="Aktifkan pengecekan kredit" />
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Mata Uang</label>
-                            <input type="text" wire:model="currency_code" maxlength="10" placeholder="IDR" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Limit Kredit</label>
-                            <input type="number" step="0.01" min="0" wire:model="credit_limit" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Credit Checking</label>
-                            <label class="flex items-center gap-2 px-2.5 py-1.5 text-xs"><input type="checkbox" wire:model="credit_check_enabled"> Aktifkan pengecekan kredit</label>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Credit Rating</label>
-                            <select wire:model="credit_rating" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                @foreach (CustCustomer::CREDIT_RATINGS as $rKey => $rLabel)
-                                    <option value="{{ $rKey }}">{{ $rLabel }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Saldo Piutang Berjalan</label>
-                            <input type="text" readonly value="Rp {{ number_format((float) ($this->selectedCustomer?->current_balance ?? 0), 0, ',', '.') }}" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f3f4f6] text-[#6b7280]">
-                        </div>
+                        <x-form.select label="Credit Rating" wire:model="credit_rating" :placeholder="false" :options="CustCustomer::CREDIT_RATINGS" />
+                        <x-form.input label="Saldo Piutang Berjalan" readonly value="Rp {{ number_format((float) ($this->selectedCustomer?->current_balance ?? 0), 0, ',', '.') }}" />
                     </div>
 
                     {{--
@@ -1154,12 +1053,11 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 <div class="{{ $formTab === 'sites' ? '' : 'hidden' }}">
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Kantor Pusat (Alamat Utama)</h3>
                     <div class="[display:grid] grid-cols-2 gap-3 mb-4">
-                        <div class="flex flex-col gap-1 col-span-2">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Alamat Lengkap</label>
-                            <textarea wire:model="default_address" rows="2" placeholder="Jalan, nomor, RT/RW, patokan" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs"></textarea>
+                        <div class="col-span-2">
+                            <x-form.textarea label="Alamat Lengkap" wire:model="default_address" rows="2" placeholder="Jalan, nomor, RT/RW, patokan" />
                         </div>
                         <div class="flex flex-col gap-1 col-span-2">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">
                                 Wilayah <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-lg ml-1 bg-[#fff8e1] text-[#b98900] normal-case">◆ ketik kelurahan / kecamatan / kota / provinsi / kode pos</span>
                             </label>
                             <livewire:address-picker
@@ -1169,39 +1067,16 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                 :initial-label="$address_label"
                                 wire:key="addr-picker-{{ $editingId ?? 'new' }}" />
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Kode Pos</label>
-                            <input type="text" wire:model="postal_code" maxlength="20" placeholder="Auto dari wilayah, bisa diubah" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
+                        <x-form.input label="Kode Pos" wire:model="postal_code" maxlength="20" placeholder="Auto dari wilayah, bisa diubah" />
                     </div>
 
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Kontak PIC Utama</h3>
                     <div class="[display:grid] grid-cols-3 gap-3 mb-4">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Sapaan</label>
-                            <select wire:model="mr_ms" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="">—</option>
-                                <option value="Bapak">Bapak</option>
-                                <option value="Ibu">Ibu</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Nama PIC</label>
-                            <input type="text" wire:model="contact_name" maxlength="200" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">No. Telepon</label>
-                            <input type="text" wire:model="phone" maxlength="50" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Email</label>
-                            <input type="email" wire:model="email" maxlength="150" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                            @error('email') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Website</label>
-                            <input type="text" wire:model="website" maxlength="150" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        </div>
+                        <x-form.select label="Sapaan" wire:model="mr_ms" placeholder="—" :options="['Bapak' => 'Bapak', 'Ibu' => 'Ibu']" />
+                        <x-form.input label="Nama PIC" wire:model="contact_name" maxlength="200" />
+                        <x-form.input label="No. Telepon" wire:model="phone" maxlength="50" />
+                        <x-form.input label="Email" type="email" wire:model="email" maxlength="150" name="email" />
+                        <x-form.input label="Website" wire:model="website" maxlength="150" />
                     </div>
 
                     @if ($editingId)
@@ -1270,17 +1145,10 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                     <h3 class="text-xs text-[#2c3e69] uppercase tracking-wide mb-2.5 border-b border-[#d7dbe2] pb-1.5">Governance &amp; Kepatuhan</h3>
                     <div class="[display:grid] grid-cols-2 gap-3">
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Validasi NPWP</label>
-                            <label class="flex items-center gap-2 px-2.5 py-1.5 text-xs"><input type="checkbox" wire:model="tax_validated"> NPWP sudah diverifikasi Finance</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Validasi NPWP</label>
+                            <x-form.checkbox wire:model="tax_validated" label="NPWP sudah diverifikasi Finance" />
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10.5px] font-semibold text-[#6b7280] uppercase">Status KYC</label>
-                            <select wire:model="kyc_status" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                @foreach (CustCustomer::KYC_STATUSES as $kKey => $kLabel)
-                                    <option value="{{ $kKey }}">{{ $kLabel }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <x-form.select label="Status KYC" wire:model="kyc_status" :placeholder="false" :options="CustCustomer::KYC_STATUSES" />
                     </div>
                     <div class="text-[11px] text-[#8a94a6] mt-3 leading-relaxed">COA/GL &amp; laporan finansial umumnya internal (Sisi A) — data yang dibagikan ke Sales harus melalui publish, sesuai CLAUDE.md §4.</div>
                 </div>
@@ -1325,33 +1193,18 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeContactModal">✕</span>
                     </div>
                     <form wire:submit="saveContact" novalidate class="p-4 flex flex-col gap-3">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Kontak *</label>
-                            <input type="text" wire:model="c_contact_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('c_contact_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jabatan</label>
-                            <input type="text" wire:model="c_position" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
+                        <x-form.input label="Nama Kontak *" wire:model="c_contact_name" name="c_contact_name" />
+                        <x-form.input label="Jabatan" wire:model="c_position" />
                         <div class="flex gap-2.5">
-                            <div class="flex-1 flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Telepon</label>
-                                <input type="text" wire:model="c_phone" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                            <div class="flex-1">
+                                <x-form.input label="Telepon" wire:model="c_phone" />
                             </div>
-                            <div class="flex-1 flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Email</label>
-                                <input type="email" wire:model="c_email" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                @error('c_email') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                            <div class="flex-1">
+                                <x-form.input label="Email" type="email" wire:model="c_email" name="c_email" />
                             </div>
                         </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Catatan</label>
-                            <textarea wire:model="c_note" rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                        </div>
-                        <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                            <input type="checkbox" wire:model="c_is_default"> Jadikan kontak default
-                        </label>
+                        <x-form.textarea label="Catatan" wire:model="c_note" rows="2" />
+                        <x-form.checkbox wire:model="c_is_default" label="Jadikan kontak default" label-class="text-[#334]" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                             <button type="button" wire:click="closeContactModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                             <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
@@ -1370,16 +1223,10 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                         <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeBranchModal">✕</span>
                     </div>
                     <form wire:submit="saveBranch" novalidate class="p-4 flex flex-col gap-3">
+                        <x-form.input label="Nama Cabang" wire:model="branch_name" placeholder="mis. Gudang Surabaya" />
+                        <x-form.textarea label="Alamat" wire:model="branch_address" rows="2" />
                         <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Cabang</label>
-                            <input type="text" wire:model="branch_name" placeholder="mis. Gudang Surabaya" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Alamat</label>
-                            <textarea wire:model="branch_address" rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Wilayah</label>
+                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Wilayah</label>
                             <livewire:address-picker
                                 field-name="customer-branch-address"
                                 :initial-area-id="$branch_area_id"
@@ -1388,18 +1235,14 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                 wire:key="branch-addr-picker-{{ $editingBranchId ?? 'new' }}" />
                         </div>
                         <div class="flex gap-2.5">
-                            <div class="flex-1 flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Kode Pos</label>
-                                <input type="text" wire:model="branch_postal_code" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                            <div class="flex-1">
+                                <x-form.input label="Kode Pos" wire:model="branch_postal_code" />
                             </div>
-                            <div class="flex-1 flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Telepon</label>
-                                <input type="text" wire:model="branch_phone" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                            <div class="flex-1">
+                                <x-form.input label="Telepon" wire:model="branch_phone" />
                             </div>
                         </div>
-                        <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                            <input type="checkbox" wire:model="branch_is_default"> Jadikan cabang default
-                        </label>
+                        <x-form.checkbox wire:model="branch_is_default" label="Jadikan cabang default" label-class="text-[#334]" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                             <button type="button" wire:click="closeBranchModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                             <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
@@ -1419,11 +1262,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <form wire:submit="confirmUnblock" novalidate class="p-4 flex flex-col gap-3">
                         <div class="text-[11px] text-[#6b7280] leading-relaxed">Butuh akses modul Finance &amp; Accounting atau Admin App. Alasan wajib diisi — akan tercatat di catatan internal customer sebagai jejak audit.</div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Alasan Unblock *</label>
-                            <textarea wire:model="unblock_reason" rows="3" placeholder="Alasan pembukaan blokir..." class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                            @error('unblock_reason') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                        <x-form.textarea label="Alasan Unblock *" wire:model="unblock_reason" rows="3" placeholder="Alasan pembukaan blokir..." name="unblock_reason" />
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                             <button type="button" wire:click="$set('showUnblockModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                             <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#1f8a4c] text-white cursor-pointer">Verifikasi &amp; Release Block</button>

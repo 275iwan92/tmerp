@@ -82,6 +82,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_RAW' => route('master.raw-material.list'),
+            'MD_MATCAT' => route('master.mat-category'),
             'MD_WH' => route('master.warehouse.list'),
             'MD_UOM' => route('master.uom'),
             'MD_MACHINE' => route('master.machine'),
@@ -93,10 +94,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // (RM/FG/SFG) -- 1 route param'd, 6 menu code beda category.
             'INV_RAW_RM' => route('inv.print.master-stock', ['category' => 'RM']),
             'INV_CARD_RM' => route('inv.print.stock-card', ['category' => 'RM']),
+            'INV_SLOW_RM' => route('inv.print.slow-moving', ['category' => 'RM']),
             'INV_RAW_FG' => route('inv.print.master-stock', ['category' => 'FG']),
             'INV_CARD_FG' => route('inv.print.stock-card', ['category' => 'FG']),
+            'INV_SLOW_FG' => route('inv.print.slow-moving', ['category' => 'FG']),
             'INV_RAW_SFG' => route('inv.print.master-stock', ['category' => 'SFG']),
             'INV_CARD_SFG' => route('inv.print.stock-card', ['category' => 'SFG']),
+            'INV_SLOW_SFG' => route('inv.print.slow-moving', ['category' => 'SFG']),
+            'DISPATCH_DO' => route('dispatch.do.index'),
             // Stock In (item pertama di tiap grup Input -- lihat migration
             // 2026_08_22_000007). Stock Out/Return/Adjustment (ITEM2-5) masih NOT_BUILT.
             'INV_RM_ITEM1' => route('inv.stock-in.index', ['category' => 'RM']),
@@ -118,8 +123,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_RM_ITEM5' => route('inv.stock-adj.approval', ['category' => 'RM']),
             'INV_FG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'FG']),
             'INV_SFG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'SFG']),
+            'PROD_MPS' => route('production.scheduling-board'),
+            'PROD_WO_LIST' => route('production.wo.list'),
+            'PROD_RULE_LIB' => route('production.rule-library'),
+            'PROD_MTS_FORECAST' => route('production.mts-forecast'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
+            'HRM_CORRECTION' => route('hrm.correction-requests'),
+            'HRM_SELFSERVICE' => route('self-service.index'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
@@ -137,14 +148,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
 
         $modules = SysAppMenu::query()
             ->where('menu_type', 'module')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereIn('code', $visible)
             ->orderBy('sort_order')
             ->get();
 
         $children = SysAppMenu::query()
             ->whereNotNull('parent_id')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('sort_order')
             ->get()
             ->groupBy('parent_id');
@@ -152,7 +163,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         $routes = $this->itemRoutes();
         $statusColors = SysAppMenuColor::all()->keyBy('status_code');
 
-        // module_status_system (GLOBAL_RULES.yaml): item bawa status_code sendiri
+        // module_status_system (globalrules.yaml): item bawa status_code sendiri
         // dari DB; module/group DERIVE dari anak-anaknya (worst-case menang) --
         // TIDAK disimpan sendiri, supaya "Sales" langsung kelihatan abu kalau ADA
         // satu submenu yang belum dibangun, tanpa perlu expand satu-satu.
@@ -709,24 +720,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             @if ($profileSaved)
                 <div class="mfield"><div class="hint ok">✅ Profil tersimpan.</div></div>
             @endif
-            <div class="mfield">
-                <label>Nama lengkap</label>
-                <input type="text" wire:model="profile_name">
-                @error('profile_name') <div class="hint bad">{{ $message }}</div> @enderror
-            </div>
-            <div class="mfield">
-                <label>Email</label>
-                <input type="email" wire:model="profile_email">
-                @error('profile_email') <div class="hint bad">{{ $message }}</div> @enderror
-            </div>
-            <div class="mfield">
-                <label>No. telepon</label>
-                <input type="text" wire:model="profile_phone">
-            </div>
-            <div class="mfield">
-                <label>Jabatan</label>
-                <input value="{{ $this->roleLabel() }}" readonly>
-            </div>
+            <x-form.input legacy="mfield" label="Nama lengkap" wire:model="profile_name" name="profile_name" />
+            <x-form.input legacy="mfield" label="Email" type="email" wire:model="profile_email" name="profile_email" />
+            <x-form.input legacy="mfield" label="No. telepon" wire:model="profile_phone" />
+            <x-form.input legacy="mfield" label="Jabatan" value="{{ $this->roleLabel() }}" readonly />
         </div>
         <div class="mf">
             <button type="button" class="mbtn c" @click="profileOpen = false">Batal</button>
@@ -744,19 +741,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             @if ($passwordError)
                 <div class="mfield"><div class="hint bad">{{ $passwordError }}</div></div>
             @endif
-            <div class="mfield">
-                <label>Password lama</label>
-                <input type="password" wire:model="old_password" placeholder="Password saat ini">
-            </div>
-            <div class="mfield">
-                <label>Password baru</label>
-                <input type="password" wire:model="new_password" placeholder="Minimal 8 karakter">
-                @error('new_password') <div class="hint bad">{{ $message }}</div> @enderror
-            </div>
-            <div class="mfield">
-                <label>Konfirmasi password baru</label>
-                <input type="password" wire:model="new_password_confirmation" placeholder="Ulangi password baru">
-            </div>
+            <x-form.input legacy="mfield" label="Password lama" type="password" wire:model="old_password" placeholder="Password saat ini" />
+            <x-form.input legacy="mfield" label="Password baru" type="password" wire:model="new_password" placeholder="Minimal 8 karakter" name="new_password" />
+            <x-form.input legacy="mfield" label="Konfirmasi password baru" type="password" wire:model="new_password_confirmation" placeholder="Ulangi password baru" />
         </div>
         <div class="mf">
             <button type="button" class="mbtn c" @click="passwordOpen = false">Batal</button>

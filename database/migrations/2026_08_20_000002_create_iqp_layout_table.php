@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// iqp_layout — dicadangkan di TIER_3A_PREFIX_LIST.md tapi belum pernah dibuat.
+// iqp_layout — dicadangkan di prefixlist.md tapi belum pernah dibuat.
 // Ditulis Imposition Engine (docs/mockups/inquiry_imposition.html): 1 layout
 // per iqp_part, pola "engine suggests, officer confirms" spt iqp_costing.
 // plano_size_id = FK logis ke tm2mst.m_plano_size (lintas-DB, TIDAK fisik —

@@ -17,13 +17,13 @@ class UomUnit extends Model
         'uom_name',
         'dimension',
         'is_base',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'is_base' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

@@ -9,7 +9,7 @@ use App\Models\Pur\PvReceipt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-// DELTA_PROC_PV_MULTIPO.md -- alur supplier-first: pilih supplier (§ Langkah 1,
+// purchasereceive_delta_multipo.md -- alur supplier-first: pilih supplier (§ Langkah 1,
 // menggantikan v1_pv_supplier_worklist yg tak dibuat sbg VIEW fisik di sini,
 // diimplementasi sbg query langsung spt pola PoBuilderService::addAllocation)
 // -> worklist baris PO terbuka lintas-PO (§ Langkah 2, v1_po_outstanding) ->
@@ -20,7 +20,7 @@ class PvBuilderService
     public static function supplierWorklist()
     {
         return PoOrder::whereIn('status', ['SENT', 'PARTIALLY_RECEIVED'])
-            ->where('is_cancelled', false)
+            ->where('stat_cancel', false)
             ->with(['lines' => fn ($q) => $q->where('is_receivable', true)->whereColumn('c_qty_received', '<', 'i_qty')])
             ->get()
             ->filter(fn ($po) => $po->lines->isNotEmpty())
@@ -45,7 +45,7 @@ class PvBuilderService
         return PoLine::with('order')
             ->whereHas('order', fn ($q) => $q->where('i_supplier_id', $supplierId)
                 ->whereIn('status', ['SENT', 'PARTIALLY_RECEIVED'])
-                ->where('is_cancelled', false))
+                ->where('stat_cancel', false))
             ->where('is_receivable', true)
             ->whereColumn('c_qty_received', '<', 'i_qty')
             ->get()

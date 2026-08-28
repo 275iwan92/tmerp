@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Master\MPlanoSize;
+use App\Models\Master\MatPlanoSize;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpLayout;
@@ -36,7 +36,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $part = IqpPart::findOrFail($partId);
-        $default = MPlanoSize::where('is_active', true)->orderBy('sort_order')->first();
+        $default = MatPlanoSize::where('activate', true)->orderBy('sort_order')->first();
 
         IqpLayout::create([
             'part_id' => $partId,
@@ -60,7 +60,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
     {
         $layout = IqpLayout::where('part_id', $partId)->first();
 
-        if (! $layout || $layout->is_confirmed) {
+        if (! $layout || $layout->stat_confirm) {
             return;
         }
 
@@ -103,7 +103,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function planoSizes()
     {
-        return MPlanoSize::where('is_active', true)->orderBy('sort_order')->get();
+        return MatPlanoSize::where('activate', true)->orderBy('sort_order')->get();
     }
 
     #[Computed]
@@ -179,7 +179,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
     {
         $allowed = ['flat_w_mm', 'flat_h_mm', 'gap_mm', 'plano_w_mm', 'plano_h_mm', 'gripper_mm', 'margin_mm'];
 
-        if (! in_array($field, $allowed, true) || ! $this->layout || $this->layout->is_confirmed) {
+        if (! in_array($field, $allowed, true) || ! $this->layout || $this->layout->stat_confirm) {
             return;
         }
 
@@ -190,11 +190,11 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
 
     public function pickPlano(int $planoSizeId): void
     {
-        if (! $this->layout || $this->layout->is_confirmed) {
+        if (! $this->layout || $this->layout->stat_confirm) {
             return;
         }
 
-        $p = MPlanoSize::find($planoSizeId);
+        $p = MatPlanoSize::find($planoSizeId);
 
         if (! $p) {
             return;
@@ -219,12 +219,12 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $layout->update([
-            'is_confirmed' => true,
+            'stat_confirm' => true,
             'confirmed_by' => Auth::user()->login,
             'confirmed_at' => now(),
         ]);
 
-        // Auto-fill ke Costing kalau costing_part utk part ini sudah ada (SALES_TIER_COSTING.md
+        // Auto-fill ke Costing kalau costing_part utk part ini sudah ada (productcosting_tier1-4.md
         // §1.1: imposition "dokumen sendiri, memberi up_count/plano" -> mengalir ke costing).
         IqpCostingPart::where('part_id', $layout->part_id)->update([
             'i_panjang_plano_cm' => round($layout->plano_w_mm / 10, 4),
@@ -242,7 +242,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        $this->layout->update(['is_confirmed' => false, 'confirmed_by' => null, 'confirmed_at' => null]);
+        $this->layout->update(['stat_confirm' => false, 'confirmed_by' => null, 'confirmed_at' => null]);
         unset($this->layout);
     }
 };
@@ -253,7 +253,11 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         <b class="text-[15px]">📐 TELASIH MAKMUR — Imposition Engine</b>
         <span class="text-xs text-white/75">{{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->product_draft_name }}</span>
         <a href="{{ route('inquiry.costing', ['inquiry' => $this->inquiryId]) }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Costing</a>
-        <a href="{{ route('inquiry.hub') }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Inquiry Hub</a>
+        <a href="{{ route('inquiry.hub') }}" title="Kembali ke Inquiry Hub"
+            class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[1180px] mx-auto my-5 px-4">
@@ -265,7 +269,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                 <button type="button" wire:click="switchPart({{ $p->id_part }})"
                     class="text-xs font-semibold px-3 py-1.5 rounded-full border cursor-pointer {{ $this->partId === $p->id_part ? 'bg-navy text-white border-navy' : 'bg-[#f4f6fa] text-navy border-[#d7dbe2]' }}">
                     {{ $p->part_name ?: 'Part #'.$p->part_seq }}
-                    @if ($p->layout?->is_confirmed) <span class="text-[10px]">✓</span> @endif
+                    @if ($p->layout?->stat_confirm) <span class="text-[10px]">✓</span> @endif
                 </button>
             @empty
                 <span class="text-xs text-muted">Belum ada part di inquiry ini — isi dulu di Inquiry New/Recalc/Revise.</span>
@@ -273,11 +277,14 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
         @if ($this->layout)
-        <div class="grid grid-cols-1 md:grid-cols-[320px_1fr] gap-3.5">
+        {{-- flex, BUKAN class="grid" -- app.css .grid{} unlayered override
+             grid-cols/md:grid-cols manapun jadi 4 kolom sama rata (lihat catatan
+             di co/entry.blade.php & docs/FORM_UI_STANDARD.md). --}}
+        <div class="flex flex-col md:flex-row gap-3.5">
 
             {{-- KIRI: input --}}
-            <div>
-                @if ($this->layout->is_confirmed)
+            <div class="md:w-[320px] md:shrink-0">
+                @if ($this->layout->stat_confirm)
                     <div class="bg-[#eaf7ee] border border-[#a9d9bb] text-[#1f8a4c] text-xs px-3.5 py-2.5 rounded-md mb-3.5 flex items-center justify-between gap-2">
                         <span>✓ Terkonfirmasi oleh {{ $this->layout->confirmed_by }} · {{ $this->layout->confirmed_at?->format('d/m/Y H:i') }}</span>
                         <button type="button" wire:click="unlock" class="text-[10.5px] font-bold underline cursor-pointer whitespace-nowrap">Buka kunci</button>
@@ -287,21 +294,21 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-3.5 overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📦 Bentangan Flat (1 up)</h3>
                     <div class="p-3.5">
-                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                        <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Flat W (mm)</label>
-                                <input type="number" step="0.1" value="{{ $this->layout->flat_w_mm }}" @disabled($this->layout->is_confirmed)
+                                <input type="number" step="0.1" value="{{ $this->layout->flat_w_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('flat_w_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Flat H (mm)</label>
-                                <input type="number" step="0.1" value="{{ $this->layout->flat_h_mm }}" @disabled($this->layout->is_confirmed)
+                                <input type="number" step="0.1" value="{{ $this->layout->flat_h_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('flat_h_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
                         <div class="flex flex-col gap-0.5">
                             <label class="text-[11px] text-muted font-semibold">Gap antar-up (mm)</label>
-                            <input type="number" step="0.1" value="{{ $this->layout->gap_mm }}" @disabled($this->layout->is_confirmed)
+                            <input type="number" step="0.1" value="{{ $this->layout->gap_mm }}" @disabled($this->layout->stat_confirm)
                                 wire:change="updateField('gap_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                         </div>
                         <div class="text-[10.5px] text-muted mt-1.5">Dari dieline (iqp_part.flat_w/flat_h). Bisa dioverride bila perlu.</div>
@@ -311,27 +318,27 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-white border border-[#d7dbe2] rounded-md mb-3.5 overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📄 Plano</h3>
                     <div class="p-3.5">
-                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                        <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Plano W (mm)</label>
-                                <input type="number" step="0.1" value="{{ $this->layout->plano_w_mm }}" @disabled($this->layout->is_confirmed)
+                                <input type="number" step="0.1" value="{{ $this->layout->plano_w_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('plano_w_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Plano H (mm)</label>
-                                <input type="number" step="0.1" value="{{ $this->layout->plano_h_mm }}" @disabled($this->layout->is_confirmed)
+                                <input type="number" step="0.1" value="{{ $this->layout->plano_h_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('plano_h_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                        <div class="grid two gap-2 mb-2.5">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Gripper (mm)</label>
-                                <input type="number" step="0.1" value="{{ $this->layout->gripper_mm }}" @disabled($this->layout->is_confirmed)
+                                <input type="number" step="0.1" value="{{ $this->layout->gripper_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('gripper_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Margin tepi (mm)</label>
-                                <input type="number" step="0.1" value="{{ $this->layout->margin_mm }}" @disabled($this->layout->is_confirmed)
+                                <input type="number" step="0.1" value="{{ $this->layout->margin_mm }}" @disabled($this->layout->stat_confirm)
                                     wire:change="updateField('margin_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] disabled:bg-[#eef0f3]">
                             </div>
                         </div>
@@ -361,7 +368,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-2 py-1.5 text-right border-b border-[#eef1f5]">{{ $s->up }}</td>
                                     <td class="px-2 py-1.5 text-right border-b border-[#eef1f5] font-bold {{ $s->eff >= 75 ? 'text-[#0e8a4f]' : ($s->eff >= 55 ? 'text-[#8a5a00]' : 'text-[#c0392b]') }}">{{ number_format($s->eff, 0) }}%</td>
                                     <td class="px-2 py-1.5 text-right border-b border-[#eef1f5]">
-                                        @unless ($this->layout->is_confirmed)
+                                        @unless ($this->layout->stat_confirm)
                                             <button type="button" wire:click="pickPlano({{ $s->id }})" class="text-[11px] font-semibold text-accent cursor-pointer">pilih</button>
                                         @endunless
                                     </td>
@@ -373,15 +380,15 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             {{-- KANAN: hasil + visual --}}
-            <div>
+            <div class="md:flex-1 min-w-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
                     <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center justify-between">
                         <span>🎯 Hasil Imposition</span>
-                        <button type="button" wire:click="confirm" @disabled($this->layout->is_confirmed || $this->layout->up_count < 1)
+                        <button type="button" wire:click="confirm" @disabled($this->layout->stat_confirm || $this->layout->up_count < 1)
                             class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">✓ Konfirmasi</button>
                     </h3>
                     <div class="p-3.5">
-                        <div class="grid grid-cols-3 gap-2.5 mb-3">
+                        <div class="grid three gap-2.5 mb-3">
                             <div class="bg-[#f3fbf7] border border-[#22a06b] rounded-md px-3 py-2.5 text-center">
                                 <div class="text-[9.5px] text-muted uppercase font-bold">Total UP / plano</div>
                                 <div class="text-xl font-extrabold text-[#0e5c38]">{{ $this->layout->up_count }}</div>
@@ -422,7 +429,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                             💡 Engine mencoba <b>tegak</b>, <b>putar 90°</b>, dan <b>campur</b> → memilih UP terbanyak:
                             <b>{{ $this->layout->method }} = {{ $this->layout->up_count }} up</b> (efisiensi {{ number_format($this->layout->efficiency_pct, 0) }}%).
                             Product Designer dapat override bila perlu pertimbangan arah serat/grain.
-                            @if ($this->layout->is_confirmed)
+                            @if ($this->layout->stat_confirm)
                                 <br>✓ Sudah dikonfirmasi — nilai plano &amp; cut sudah mengalir otomatis ke Costing (bila part ini sudah ditambahkan di sana).
                             @endif
                         </div>

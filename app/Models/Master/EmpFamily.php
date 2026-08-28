@@ -21,7 +21,7 @@ class EmpFamily extends Model
         'nik',
         'is_deceased',
         'deceased_date',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -30,7 +30,7 @@ class EmpFamily extends Model
         'birth_date' => 'date',
         'deceased_date' => 'date',
         'is_deceased' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function employee(): BelongsTo

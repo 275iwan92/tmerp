@@ -22,14 +22,14 @@ class CustCustomerBranch extends Model
         'postal_code',
         'phone',
         'is_default',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function customer(): BelongsTo

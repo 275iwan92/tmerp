@@ -5,7 +5,7 @@ namespace App\Models\Sys;
 use Illuminate\Database\Eloquent\Model;
 
 // Preset tema tampilan (module_status_system TIDAK terkait -- ini tema warna
-// APLIKASI keseluruhan, lihat QUEUE.md #8/#9). primary_color/sidebar_color
+// APLIKASI keseluruhan, lihat queue.md #8/#9). primary_color/sidebar_color
 // dipetakan ke CSS var runtime lewat App\Support\ActiveTheme + partials/theme-vars.
 class SysTheme extends Model
 {
@@ -27,13 +27,13 @@ class SysTheme extends Model
         'primary_color',
         'sidebar_color',
         'is_default',
-        'is_active',
+        'activate',
         'sort_order',
     ];
 
     protected $casts = [
         'is_default' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'sort_order' => 'integer',
     ];
 }

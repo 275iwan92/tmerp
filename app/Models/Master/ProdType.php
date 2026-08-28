@@ -35,7 +35,7 @@ class ProdType extends Model
         'sort_order',
         'spec_version',
         'notes',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -43,7 +43,7 @@ class ProdType extends Model
     protected $casts = [
         'dieline_spec' => 'array',
         'has_multi_part' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function params(): HasMany

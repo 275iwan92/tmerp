@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// PO - Purchase Order (PROC_TIER_3.md §4). FK lintas-DB (department, coa_account,
+// PO - Purchase Order (procurement_tier3.md §4). FK lintas-DB (department, coa_account,
 // item, co_line) = LOGICAL (CLAUDE.md §2). alloc_id UNIQUE menjaga 1 alokasi =
 // 1 po_line (anti many-to-many, PROC_TIER_3 §3.1).
 return new class extends Migration

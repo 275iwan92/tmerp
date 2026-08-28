@@ -12,17 +12,17 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// mockup_shift_roster_v2.html. TIER_2_HRM.md §A.7/A.8 + TIER_3A_HRM.sql
+// mockup_shift_roster_v2.html. masteremployee_tier2.md §A.7/A.8 + TIER_3A_HRM.sql
 // §2.7a/b. Dua papan:
 //  - PPIC (Offset Printing): drag-drop pegawai ke sel mesin x shift x tanggal,
 //    lifecycle Save(DRAFT)->Confirm(CONFIRMED, terkunci+publish)->Unlock.
 //  - Grid HR (Digital Printing/Indostry): tanpa mesin, klik sel siklus ganti
-//    shift, tersimpan langsung tanpa alur draft/confirm (TIER_2_HRM.md §A.8).
+//    shift, tersimpan langsung tanpa alur draft/confirm (masteremployee_tier2.md §A.8).
 // Drag & drop dieksekusi via Alpine ($wire) di Blade, state $assign disimpan
 // di memori komponen sampai [Simpan Draft]/[Publish & Confirm] ditekan —
 // mirror perilaku mockup asli (drag hanya mutasi in-memory, alert "tersimpan"
 // baru di tombol Save). Bentrok HARD divalidasi saat Confirm (app-layer,
-// TIER_2_HRM.md §A.7.4), bukan saat drop (drop tetap diterima + ditandai).
+// masteremployee_tier2.md §A.7.4), bukan saat drop (drop tetap diterima + ditandai).
 new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $tab = 'ppic'; // ppic | hr
@@ -125,7 +125,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function machines()
     {
-        return ProdMachine::query()->where('division_id', $this->offsetDivisionId())->where('is_active', true)->orderBy('machine_code')->get();
+        return ProdMachine::query()->where('division_id', $this->offsetDivisionId())->where('activate', true)->orderBy('machine_code')->get();
     }
 
     #[Computed]
@@ -133,7 +133,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     {
         return EmpShift::query()
             ->whereHas('department', fn ($q) => $q->where('division_id', $this->offsetDivisionId()))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('shift_name')
             ->get();
     }
@@ -143,7 +143,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     {
         return EmpEmployee::query()
             ->whereHas('position.department', fn ($q) => $q->where('division_id', $this->offsetDivisionId()))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->when($this->poolSearch !== '', fn ($q) => $q->where('full_name', 'like', "%{$this->poolSearch}%"))
             ->orderBy('full_name')
             ->get();
@@ -439,7 +439,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function hrDivisions()
     {
-        return OrgDivision::query()->where('division_code', '!=', 'OFFSET')->where('is_active', true)->orderBy('division_name')->get();
+        return OrgDivision::query()->where('division_code', '!=', 'OFFSET')->where('activate', true)->orderBy('division_name')->get();
     }
 
     #[Computed]
@@ -451,7 +451,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 
         return EmpShift::query()
             ->whereHas('department', fn ($q) => $q->where('division_id', $this->hrDivisionId))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('shift_name')
             ->get();
     }
@@ -465,7 +465,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 
         return EmpEmployee::query()
             ->whereHas('position.department', fn ($q) => $q->where('division_id', $this->hrDivisionId))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('full_name')
             ->get();
     }
@@ -531,7 +531,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
             <span class="text-xs text-muted">tm2mst.emp_shift_roster</span>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
+        <div class="grid gap-3 mb-3.5">
             <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
                 <div class="text-[11px] text-muted uppercase font-bold">Total Terjadwal</div>
                 <div class="text-[17px] font-extrabold text-navy mt-0.5">{{ $this->metricAssigned }}</div>

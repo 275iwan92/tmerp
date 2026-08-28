@@ -6,9 +6,9 @@ use App\Models\Inventory\RmStock;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\SfgStock;
 use App\Models\Inventory\SfgStockcard;
-use App\Models\Master\MRawMaterial;
-use App\Models\Master\MWarehouse;
-use App\Models\Master\MWhLocation;
+use App\Models\Master\MatRaw;
+use App\Models\Master\WhWarehouse;
+use App\Models\Master\WhLoc;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Services\Flow\FlowEngineService;
@@ -19,7 +19,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// INV_TIER_4.md §4 + mockup_stock_adjustment.html. Beda dari Stock In/Out/Return
+// inventory_tier4.md §4 + mockup_stock_adjustment.html. Beda dari Stock In/Out/Return
 // (langsung DRAFT->POSTED), Adjustment & Opname WAJIB approval berjenjang
 // (flow_config module AD/OP sudah diseed: Lvl1 Kepala Gudang <=5jt, Lvl2 Manajer
 // Operasional 5-25jt, Lvl3 Direksi >25jt, threshold dari SUM(ABS(qty*unit_price))
@@ -116,7 +116,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
     #[Computed]
     public function warehouses()
     {
-        return MWarehouse::where('is_active', true)->orderBy('warehouse_name')->get();
+        return WhWarehouse::where('activate', true)->orderBy('warehouse_name')->get();
     }
 
     #[Computed]
@@ -126,7 +126,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             return collect();
         }
 
-        return MWhLocation::where('warehouse_id', $this->warehouse_id)->where('is_active', true)->orderBy('location_code')->get();
+        return WhLoc::where('warehouse_id', $this->warehouse_id)->where('activate', true)->orderBy('location_code')->get();
     }
 
     #[Computed]
@@ -138,11 +138,11 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         $term = $this->itemSearch;
 
         return match ($this->category) {
-            'SFG' => ProdPart::where('is_active', true)->where(fn ($q) => $q->where('part_code', 'like', "%{$term}%")->orWhere('part_name', 'like', "%{$term}%"))
+            'SFG' => ProdPart::where('activate', true)->where(fn ($q) => $q->where('part_code', 'like', "%{$term}%")->orWhere('part_name', 'like', "%{$term}%"))
                 ->limit(15)->get()->map(fn ($p) => ['id' => $p->id_part, 'code' => $p->part_code, 'name' => $p->part_name, 'uom' => $p->uom_stock]),
-            'FG' => ProdProduct::where('is_active', true)->where(fn ($q) => $q->where('product_code', 'like', "%{$term}%")->orWhere('product_name', 'like', "%{$term}%"))
+            'FG' => ProdProduct::where('activate', true)->where(fn ($q) => $q->where('product_code', 'like', "%{$term}%")->orWhere('product_name', 'like', "%{$term}%"))
                 ->limit(15)->get()->map(fn ($p) => ['id' => $p->id_product, 'code' => $p->product_code, 'name' => $p->product_name, 'uom' => $p->uom_stock]),
-            default => MRawMaterial::where('is_active', true)->where(fn ($q) => $q->where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%"))
+            default => MatRaw::where('activate', true)->where(fn ($q) => $q->where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%"))
                 ->limit(15)->get()->map(fn ($m) => ['id' => $m->material_id, 'code' => $m->material_code, 'name' => $m->material_name, 'uom' => $m->uom_stock]),
         };
     }
@@ -152,7 +152,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         return match ($this->category) {
             'SFG' => ProdPart::find($itemId)?->part_name ?? "#{$itemId}",
             'FG' => ProdProduct::find($itemId)?->product_name ?? "#{$itemId}",
-            default => MRawMaterial::find($itemId)?->material_name ?? "#{$itemId}",
+            default => MatRaw::find($itemId)?->material_name ?? "#{$itemId}",
         };
     }
 
@@ -495,25 +495,8 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         };
     }
 
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Avatar helper dipindah ke App\Support\Grid\Avatar (static, dipakai
+    // langsung di markup) -- lihat catatan sama di stock-in/out/return.
 };
 ?>
 
@@ -528,34 +511,26 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
         @endif
 
         @if ($panel === 'grid')
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Dokumen</p>
-                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
-                    <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statPending }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Sudah Posting</p>
-                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statPosted }}</p>
-                </div>
-            </div>
+            <x-grid.stat-row :count="3">
+                <x-grid.stat-box tone="total" label="Total Dokumen" :value="$this->statTotal" />
+                <x-grid.stat-box tone="warn" label="Menunggu Approval" :value="$this->statPending" />
+                <x-grid.stat-box tone="active" label="Sudah Posting" :value="$this->statPosted" />
+            </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-                <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
                         <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / catatan…"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
-                    <span class="flex-1"></span>
-                    <button type="button" wire:click="openNew"
-                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-                </div>
+                    <x-slot:newRecord>
+                        <button type="button" wire:click="openNew"
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                    </x-slot:newRecord>
+                </x-grid.toolbar>
 
-                <div class="max-h-[65vh] overflow-auto">
+                <x-grid.table-shell>
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
@@ -571,7 +546,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                                 <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
-                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($d->doc_no ?: 'DOC') }}</div>
+                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($d->doc_no ?: 'DOC') }}</div>
                                             <div>
                                                 <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: '(draft)' }}</div>
                                                 <div class="text-[11px] text-muted">{{ $d->reason_code ?: '—' }}</div>
@@ -584,15 +559,15 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <button type="button" wire:click.stop="openEdit({{ $d->doc_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                        <x-grid.action-icon icon="↗" title="Buka" action="openEdit({{ $d->doc_id }})" />
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Belum ada dokumen Adjustment/Opname.</td></tr>
+                                <x-grid.empty-row :colspan="5" message="Belum ada dokumen Adjustment/Opname." />
                             @endforelse
                         </tbody>
                     </table>
-                </div>
+                </x-grid.table-shell>
             </div>
         @else
             {{-- ============ FORM ============ --}}
@@ -603,7 +578,11 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($flow_status) }}">{{ $flow_status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">← Daftar</button>
+                    <button type="button" wire:click="backToGrid" title="Kembali ke Daftar"
+                        class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
+                        <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+                    </button>
                 </div>
 
                 <div class="p-4 flex flex-col gap-3">
@@ -618,48 +597,26 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
                     <div class="flex gap-2.5 flex-wrap">
-                        <div class="flex-1 min-w-[160px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">No. Dokumen</label>
-                            <input type="text" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono bg-[#f4f6fa] text-muted">
+                        <div class="flex-1 min-w-[160px]">
+                            <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="!font-mono" />
                         </div>
-                        <div class="flex-1 min-w-[140px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Dokumen *</label>
-                            <input type="date" wire:model="doc_date" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('doc_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1 min-w-[140px]">
+                            <x-form.input label="Tanggal Dokumen *" type="date" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
                         </div>
-                        <div class="flex-1 min-w-[160px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jenis *</label>
-                            <select wire:model="doc_kind" @disabled($readOnly || $editingId) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="AD">Adjustment (koreksi tunggal)</option>
-                                <option value="OP">Stock Opname (hitung fisik terjadwal)</option>
-                            </select>
+                        <div class="flex-1 min-w-[160px]">
+                            <x-form.select label="Jenis *" wire:model="doc_kind" :disabled="$readOnly || $editingId" :placeholder="false"
+                                :options="['AD' => 'Adjustment (koreksi tunggal)', 'OP' => 'Stock Opname (hitung fisik terjadwal)']" />
                         </div>
-                        <div class="flex-1 min-w-[180px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Gudang *</label>
-                            <select wire:model="warehouse_id" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->warehouses as $w)
-                                    <option value="{{ $w->id_warehouse }}">{{ $w->warehouse_code }} — {{ $w->warehouse_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('warehouse_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1 min-w-[180px]">
+                            <x-form.select label="Gudang *" wire:model="warehouse_id" :disabled="$readOnly" name="warehouse_id"
+                                :options="$this->warehouses->mapWithKeys(fn ($w) => [$w->id_warehouse => $w->warehouse_code.' — '.$w->warehouse_name])->all()" />
                         </div>
-                        <div class="flex-1 min-w-[180px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Alasan *</label>
-                            <select wire:model="reason_code" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                <option value="COUNT_ERROR">Salah hitung/input sebelumnya</option>
-                                <option value="DAMAGED">Rusak</option>
-                                <option value="LOST">Hilang</option>
-                                <option value="FOUND">Ditemukan (lebih dari catatan)</option>
-                                <option value="EXPIRED">Kadaluarsa</option>
-                                <option value="OTHER">Lainnya</option>
-                            </select>
-                            @error('reason_code') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1 min-w-[180px]">
+                            <x-form.select label="Alasan *" wire:model="reason_code" :disabled="$readOnly" name="reason_code"
+                                :options="['COUNT_ERROR' => 'Salah hitung/input sebelumnya', 'DAMAGED' => 'Rusak', 'LOST' => 'Hilang', 'FOUND' => 'Ditemukan (lebih dari catatan)', 'EXPIRED' => 'Kadaluarsa', 'OTHER' => 'Lainnya']" />
                         </div>
-                        <div class="flex-1 min-w-[160px] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Diajukan oleh</label>
-                            <input type="text" value="{{ Auth::user()->name }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f4f6fa] text-muted">
+                        <div class="flex-1 min-w-[160px]">
+                            <x-form.input label="Diajukan oleh" value="{{ Auth::user()->name }}" disabled />
                         </div>
                     </div>
 
@@ -667,36 +624,26 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                         <div class="border border-[#eef1f5] rounded-md p-3 bg-[#fafbfd]">
                             <div class="text-[10.5px] font-bold text-muted uppercase mb-2">Blok Opname</div>
                             <div class="flex gap-2.5 flex-wrap">
-                                <div class="flex-1 min-w-[180px] flex flex-col gap-1">
-                                    <label class="text-xs font-semibold text-[#556]">Petugas Opname *</label>
-                                    <input type="text" wire:model="opn_officer" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <div class="flex-1 min-w-[180px]">
+                                    <x-form.input label="Petugas Opname *" wire:model="opn_officer" :disabled="$readOnly" name="opn_officer" />
                                 </div>
-                                <div class="flex-1 min-w-[180px] flex flex-col gap-1">
-                                    <label class="text-xs font-semibold text-[#556]">Mulai Hitung *</label>
-                                    <input type="datetime-local" wire:model="opn_start" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <div class="flex-1 min-w-[180px]">
+                                    <x-form.input label="Mulai Hitung *" type="datetime-local" wire:model="opn_start" :disabled="$readOnly" />
                                 </div>
-                                <div class="flex-1 min-w-[180px] flex flex-col gap-1">
-                                    <label class="text-xs font-semibold text-[#556]">Selesai Hitung *</label>
-                                    <input type="datetime-local" wire:model="opn_stop" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <div class="flex-1 min-w-[180px]">
+                                    <x-form.input label="Selesai Hitung *" type="datetime-local" wire:model="opn_stop" :disabled="$readOnly" />
                                 </div>
-                                <div class="flex-1 min-w-[180px] flex flex-col gap-1">
-                                    <label class="text-xs font-semibold text-[#556]">Saksi *</label>
-                                    <input type="text" wire:model="opn_witness" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <div class="flex-1 min-w-[180px]">
+                                    <x-form.input label="Saksi *" wire:model="opn_witness" :disabled="$readOnly" />
                                 </div>
                                 <div class="flex items-end pb-2">
-                                    <label class="flex items-center gap-1.5 text-xs font-semibold text-[#556]">
-                                        <input type="checkbox" wire:model="full_scope" @disabled($readOnly)> Cakupan Penuh (semua item bersaldo)
-                                    </label>
+                                    <x-form.checkbox wire:model="full_scope" :disabled="$readOnly" label="Cakupan Penuh (semua item bersaldo)" label-class="font-semibold text-[#556]" />
                                 </div>
                             </div>
-                            @error('opn_officer') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                         </div>
                     @endif
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Catatan / Kronologi</label>
-                        <textarea wire:model="notes" @disabled($readOnly) rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                    </div>
+                    <x-form.textarea label="Catatan / Kronologi" wire:model="notes" :disabled="$readOnly" rows="2" />
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Baris Item</div>
                     @if (! $readOnly)
@@ -742,18 +689,15 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                                     <tr wire:key="line-{{ $i }}" class="border-b border-[#eef1f5]">
                                         <td class="px-2 py-1.5">{{ $line['name'] }}</td>
                                         <td class="px-2 py-1.5">
-                                            <select wire:change="setLineLocation({{ $i }}, $event.target.value)" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs">
-                                                <option value="">— pilih —</option>
-                                                @foreach ($this->selectedWarehouseLocations as $loc)
-                                                    <option value="{{ $loc->location_id }}" @selected($line['location_id'] == $loc->location_id)>{{ $loc->location_code }}</option>
-                                                @endforeach
-                                            </select>
+                                            <x-form.select wire:change="setLineLocation({{ $i }}, $event.target.value)" :disabled="$readOnly" class="!py-1"
+                                                :selected="$line['location_id']"
+                                                :options="$this->selectedWarehouseLocations->pluck('location_code', 'location_id')->all()" />
                                         </td>
                                         <td class="px-2 py-1.5 text-right font-mono text-muted">{{ rtrim(rtrim(number_format($line['qty_system'], 2, ',', '.'), '0'), ',') }}</td>
-                                        <td class="px-2 py-1.5"><input type="text" wire:model="lines.{{ $i }}.qty_physical" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right"></td>
+                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.qty_physical" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                         <td class="px-2 py-1.5 text-right font-mono font-semibold {{ $selisih > 0 ? 'text-[#16a34a]' : ($selisih < 0 ? 'text-[#c0392b]' : 'text-muted') }}">{{ $selisih > 0 ? '+' : '' }}{{ rtrim(rtrim(number_format($selisih, 2, ',', '.'), '0'), ',') }}</td>
                                         <td class="px-2 py-1.5 text-right font-mono text-muted">{{ number_format(abs($selisih * $line['unit_price']), 0, ',', '.') }}</td>
-                                        <td class="px-2 py-1.5"><input type="text" wire:model="lines.{{ $i }}.note_detail" @disabled($readOnly) placeholder="{{ abs($selisih) > 0.0001 ? 'wajib' : 'opsional' }}" class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs"></td>
+                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.note_detail" :disabled="$readOnly" placeholder="{{ abs($selisih) > 0.0001 ? 'wajib' : 'opsional' }}" class="!py-1" /></td>
                                         @if (! $readOnly)
                                             <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="Hapus baris">✕</button></td>
                                         @endif
@@ -802,7 +746,9 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                             @endif
                             <div class="mb-3">
                                 <label class="text-xs text-muted">Alasan Penolakan <span class="text-[#a3241f]">(wajib, min. 10 karakter)</span></label>
-                                <textarea wire:model="approvalNote" rows="2" placeholder="Wajib diisi bila menolak..." class="w-full border border-[#d7dbe2] rounded-lg px-3 py-2 mt-1 text-sm"></textarea>
+                                <div class="mt-1">
+                                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="Wajib diisi bila menolak..." class="!text-sm" />
+                                </div>
                             </div>
                             <div class="flex justify-end gap-2">
                                 <button type="button" wire:click="rejectDoc" wire:confirm="Tolak dokumen ini? Akan dikembalikan ke pembuat utk revisi." class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ Tolak</button>

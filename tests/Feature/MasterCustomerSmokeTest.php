@@ -22,7 +22,7 @@ class MasterCustomerSmokeTest extends TestCase
 
     public function test_new_customer_panel_opens(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::master.customer')
@@ -32,7 +32,7 @@ class MasterCustomerSmokeTest extends TestCase
 
     public function test_address_picker_searches_v_geo_full_address(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test(\App\Livewire\AddressPicker::class, ['fieldName' => 'test'])
@@ -46,7 +46,7 @@ class MasterCustomerSmokeTest extends TestCase
 
     public function test_form_saves_address_from_picker_event(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::master.customer')

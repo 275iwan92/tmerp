@@ -20,7 +20,7 @@ class EmpBpjsKetenagakerjaan extends Model
     protected $fillable = [
         'employee_id',
         'no_kepesertaan',
-        'is_active',
+        'activate',
         'program_jkk',
         'program_jkm',
         'program_jht',
@@ -30,7 +30,7 @@ class EmpBpjsKetenagakerjaan extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'program_jkk' => 'boolean',
         'program_jkm' => 'boolean',
         'program_jht' => 'boolean',

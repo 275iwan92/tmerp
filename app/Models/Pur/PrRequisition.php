@@ -17,14 +17,14 @@ class PrRequisition extends Model
 
     protected $fillable = [
         'doc_no', 'i_doc_date', 'i_source', 'mrp_run_id', 'i_department_id', 'i_need_date', 'i_notes',
-        'c_est_total', 'status', 'revision_no', 'parent_pr_id', 'is_cancelled', 'cancel_reason',
+        'c_est_total', 'status', 'revision_no', 'parent_pr_id', 'stat_cancel', 'cancel_reason',
         'created_by', 'updated_by',
     ];
 
     protected $casts = [
         'i_doc_date' => 'date',
         'i_need_date' => 'date',
-        'is_cancelled' => 'boolean',
+        'stat_cancel' => 'boolean',
     ];
 
     public function lines(): HasMany

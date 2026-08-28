@@ -9,13 +9,16 @@ use App\Models\Master\EmpShift;
 use App\Models\Master\OrgCompany;
 use App\Models\Master\OrgPosition;
 use App\Models\Master\ProdMachine;
+use App\Models\Sys\SecUser;
+use App\Services\Hrm\FamilyEmploymentCrossCheckService;
+use App\Services\Migration\EmployeeLoginProvisionService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-// mockup_master_employee.html. TIER_1_HRM.md §10: sisi HR Admin FULL-EDITABLE
+// mockup_master_employee.html. masteremployee_tier1.md §10: sisi HR Admin FULL-EDITABLE
 // (tanpa workflow approval) — beda dari self-service karyawan yang selalu
 // lewat pengajuan. §7: gaji TETAP/HARIAN & posisi salary_hidden_from_hr=1
 // disembunyikan dari non-admin ("HR Officer"); is_admin dipakai sbg proxy
@@ -49,7 +52,15 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public array $fundedByOptions = ['PERUSAHAAN', 'PRIBADI', 'SHARING'];
 
-    public array $familyRelations = ['SUAMI', 'ISTRI', 'ANAK', 'ORANG_TUA'];
+    public array $familyRelations = ['SUAMI', 'ISTRI', 'ANAK', 'AYAH', 'IBU', 'MERTUA_AYAH', 'MERTUA_IBU'];
+
+    // AYAH/IBU/MERTUA_AYAH/MERTUA_IBU wajib ada (keputusan user 2026-08-27) --
+    // dicek di showDirectory() saat $justRegistered, BUKAN retroaktif ke data lama.
+    private const MANDATORY_FAMILY_RELATIONS = [
+        'AYAH' => 'Ayah', 'IBU' => 'Ibu', 'MERTUA_AYAH' => 'Mertua Ayah', 'MERTUA_IBU' => 'Mertua Ibu',
+    ];
+
+    private const MAX_CHILDREN = 20;
 
     public array $employmentTypes = ['TETAP', 'KONTRAK', 'HARIAN', 'BORONGAN'];
 
@@ -72,6 +83,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     public string $birth_date = '';
 
     public string $nik_ktp = '';
+
+    public string $no_kk = '';
 
     public string $npwp_number = '';
 
@@ -97,7 +110,21 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public string $emergency_contact_phone = '';
 
-    public bool $emp_is_active = true;
+    public bool $emp_activate = true;
+
+    // true hanya sepanjang sesi Livewire yang BARU SAJA membuat employee ini
+    // (bukan derived dari DB) -- dipakai showDirectory() utk memaksa lengkapi
+    // 8 field wajib + 4 relasi keluarga wajib sebelum boleh kembali ke grid.
+    // Tidak retroaktif ke 136 karyawan lama.
+    public bool $justRegistered = false;
+
+    // Kartu login sekali-tampil (keputusan user 2026-08-27: "diangkat jadi
+    // employee" = login auto dibuat, dicetak IT/HR utk diserahkan ke
+    // kandidat -- bukan lewat "Tambah Pengguna" manual yg khusus akun
+    // non-employee spt customer/supplier). Session-only, tak disimpan.
+    public ?array $newLoginCredentials = null;
+
+    public bool $showCredentialModal = false;
 
     // ---- form fields (Job Alignment) ----
     public ?int $position_id = null;
@@ -200,20 +227,20 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function positionOptions()
     {
-        return OrgPosition::query()->with('department')->where('is_active', true)->get()
+        return OrgPosition::query()->with('department')->where('activate', true)->get()
             ->sortBy(fn ($p) => $p->department?->department_name.$p->position_name);
     }
 
     #[Computed]
     public function machineOptions()
     {
-        return ProdMachine::query()->where('is_active', true)->orderBy('machine_code')->get();
+        return ProdMachine::query()->where('activate', true)->orderBy('machine_code')->get();
     }
 
     #[Computed]
     public function shiftOptions()
     {
-        return EmpShift::query()->where('is_active', true)->orderBy('shift_name')->get();
+        return EmpShift::query()->where('activate', true)->orderBy('shift_name')->get();
     }
 
     #[Computed]
@@ -260,8 +287,51 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     // ============== NAVIGASI GRID <-> FORM ==============
     public function showDirectory(): void
     {
+        if ($this->justRegistered && $this->editingId) {
+            if ($this->missingMandatoryFamily()) {
+                $this->formTab = 'family';
+
+                return;
+            }
+
+            if (! $this->newLoginCredentials) {
+                $employee = EmpEmployee::find($this->editingId);
+                $cred = $employee ? app(EmployeeLoginProvisionService::class)->provisionForEmployee($employee, Auth::user()->login) : null;
+
+                if ($cred) {
+                    $this->newLoginCredentials = $cred;
+                    $this->showCredentialModal = true;
+
+                    return;
+                }
+            }
+        }
+
+        $this->justRegistered = false;
+        $this->newLoginCredentials = null;
         $this->panel = 'grid';
         unset($this->employees, $this->metricTotal, $this->metricClean, $this->metricVerbal, $this->metricSp);
+    }
+
+    public function closeCredentialModal(): void
+    {
+        $this->showCredentialModal = false;
+        $this->showDirectory();
+    }
+
+    public function relationLabel(string $code): string
+    {
+        return self::MANDATORY_FAMILY_RELATIONS[$code] ?? ucwords(strtolower($code));
+    }
+
+    public function missingMandatoryFamily(): array
+    {
+        $existing = EmpFamily::where('employee_id', $this->editingId)->pluck('relation')->unique();
+
+        return collect(self::MANDATORY_FAMILY_RELATIONS)
+            ->reject(fn ($label, $code) => $existing->contains($code))
+            ->values()
+            ->all();
     }
 
     public function openNew(): void
@@ -270,17 +340,20 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->editingId = null;
         $this->formTab = 'overview';
         $this->photo = null;
+        $this->justRegistered = false;
+        $this->newLoginCredentials = null;
+        $this->showCredentialModal = false;
 
         $this->reset([
             'employee_code', 'full_name', 'nickname', 'birth_place', 'birth_date',
-            'nik_ktp', 'npwp_number', 'religion', 'phone', 'email_personal',
+            'nik_ktp', 'no_kk', 'npwp_number', 'religion', 'phone', 'email_personal',
             'address_detail_ktp', 'address_detail_domisili', 'join_date',
             'work_status_since', 'emergency_contact_name', 'emergency_contact_relation',
             'emergency_contact_phone', 'position_id', 'default_machine_id', 'default_shift_id',
         ]);
         $this->gender = 'L';
         $this->work_status = 'WORKING';
-        $this->emp_is_active = true;
+        $this->emp_activate = true;
 
         $this->panel = 'form';
     }
@@ -291,6 +364,9 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->editingId = $id;
         $this->formTab = 'overview';
         $this->photo = null;
+        $this->justRegistered = false;
+        $this->newLoginCredentials = null;
+        $this->showCredentialModal = false;
 
         $e = EmpEmployee::findOrFail($id);
         $this->employee_code = $e->employee_code;
@@ -300,6 +376,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->birth_place = (string) $e->birth_place;
         $this->birth_date = (string) ($e->birth_date?->format('Y-m-d') ?? '');
         $this->nik_ktp = (string) $e->nik_ktp;
+        $this->no_kk = (string) $e->no_kk;
         $this->npwp_number = (string) $e->npwp_number;
         $this->religion = (string) $e->religion;
         $this->phone = (string) $e->phone;
@@ -312,7 +389,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->emergency_contact_name = (string) $e->emergency_contact_name;
         $this->emergency_contact_relation = (string) $e->emergency_contact_relation;
         $this->emergency_contact_phone = (string) $e->emergency_contact_phone;
-        $this->emp_is_active = (bool) $e->is_active;
+        $this->emp_activate = (bool) $e->activate;
         $this->position_id = $e->position_id;
         $this->default_machine_id = $e->default_machine_id;
         $this->default_shift_id = $e->default_shift_id;
@@ -335,17 +412,26 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public function save(): void
     {
+        // 8 field "kunci user" wajib SAAT REGISTRASI karyawan baru (keputusan
+        // user 2026-08-27): nama, no KTP, no KK, no HP, tanggal lahir, alamat,
+        // email + nama ibu kandung (dicek terpisah di family tab, lihat
+        // showDirectory()/missingMandatoryFamily()). Karyawan lama (editingId
+        // sudah ada) TIDAK retroaktif dipaksa -- tetap nullable saat edit.
+        $isNew = ! $this->editingId;
+        $req = $isNew ? 'required' : 'nullable';
+
         $data = $this->validate([
             'full_name' => ['required', 'string', 'max:150'],
             'nickname' => ['nullable', 'string', 'max:50'],
             'gender' => ['required', 'in:L,P'],
             'birth_place' => ['nullable', 'string', 'max:100'],
-            'birth_date' => ['nullable', 'date'],
-            'nik_ktp' => ['nullable', 'string', 'max:20'],
+            'birth_date' => [$req, 'date'],
+            'nik_ktp' => [$req, 'string', 'max:20'],
+            'no_kk' => [$req, 'string', 'max:20'],
             'npwp_number' => ['nullable', 'string', 'max:30'],
             'religion' => ['nullable', 'string', 'in:'.implode(',', $this->religions)],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'email_personal' => ['nullable', 'email', 'max:100'],
+            'phone' => [$req, 'string', 'max:30'],
+            'email_personal' => [$req, 'email', 'max:100'],
             'address_detail_ktp' => ['nullable', 'string', 'max:255'],
             'address_detail_domisili' => ['nullable', 'string', 'max:255'],
             'join_date' => ['required', 'date'],
@@ -354,12 +440,19 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
             'emergency_contact_relation' => ['nullable', 'string', 'max:50'],
             'emergency_contact_phone' => ['nullable', 'string', 'max:30'],
-            'emp_is_active' => ['boolean'],
+            'emp_activate' => ['boolean'],
             'position_id' => ['required', 'integer', 'exists:tm2mst.org_position,position_id'],
             'default_machine_id' => ['nullable', 'integer', 'exists:tm2mst.prod_machine,machine_id'],
             'default_shift_id' => ['nullable', 'integer', 'exists:tm2mst.emp_shift,shift_id'],
             'photo' => ['nullable', 'image', 'max:5120'],
         ]);
+
+        // Alamat: cukup salah satu (Domisili sengaja boleh kosong = "sama dgn KTP").
+        if ($isNew && $data['address_detail_ktp'] === '' && $data['address_detail_domisili'] === '') {
+            $this->addError('address_detail_ktp', 'Alamat KTP atau Domisili wajib diisi salah satu.');
+
+            return;
+        }
 
         $payload = [
             'full_name' => $data['full_name'],
@@ -368,6 +461,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'birth_place' => $data['birth_place'] ?: null,
             'birth_date' => $data['birth_date'] ?: null,
             'nik_ktp' => $data['nik_ktp'] ?: null,
+            'no_kk' => $data['no_kk'] ?: null,
             'npwp_number' => $data['npwp_number'] ?: null,
             'religion' => $data['religion'] ?: null,
             'phone' => $data['phone'] ?: null,
@@ -380,7 +474,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'emergency_contact_name' => $data['emergency_contact_name'] ?: null,
             'emergency_contact_relation' => $data['emergency_contact_relation'] ?: null,
             'emergency_contact_phone' => $data['emergency_contact_phone'] ?: null,
-            'is_active' => $data['emp_is_active'],
+            'activate' => $data['emp_activate'],
             'position_id' => $data['position_id'],
             'default_machine_id' => $data['default_machine_id'] ?: null,
             'default_shift_id' => $data['default_shift_id'] ?: null,
@@ -393,13 +487,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             }
             EmpEmployee::whereKey($this->editingId)->update($payload);
         } else {
-            $company = OrgCompany::query()->where('is_active', true)->firstOrFail();
+            $company = OrgCompany::query()->where('activate', true)->firstOrFail();
             $payload['company_id'] = $company->company_id;
             $payload['employee_code'] = $this->nextEmployeeCode($company->company_id);
             $payload['created_by'] = Auth::user()->login;
             $employee = EmpEmployee::create($payload);
             $this->editingId = $employee->employee_id;
             $this->employee_code = $employee->employee_code;
+            $this->justRegistered = true;
 
             if ($this->photo) {
                 $employee->update(['photo_path' => $this->photo->store("hrm/{$employee->employee_id}/profile", 'public')]);
@@ -441,33 +536,17 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     public function toggleActive(int $id): void
     {
         $e = EmpEmployee::findOrFail($id);
-        $e->is_active = ! $e->is_active;
+        $e->activate = ! $e->activate;
         $e->updated_by = Auth::user()->login;
         $e->save();
 
         unset($this->employees);
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai langsung sbg static call --
+    // grid ini tetap markup manual krn perlu fallback foto profil, tidak
+    // dipaksa <x-grid.identity-cell> yang tak dukung foto).
 
     // ============== SUB-MODAL: PENDIDIKAN ==============
     public function openEducationModal(): void
@@ -525,14 +604,38 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'fam_nik' => ['nullable', 'string', 'max:20'],
         ]);
 
-        EmpFamily::create([
+        if ($data['fam_relation'] === 'ANAK') {
+            $childCount = EmpFamily::where('employee_id', $this->editingId)->where('relation', 'ANAK')->count();
+
+            if ($childCount >= self::MAX_CHILDREN) {
+                $this->addError('fam_relation', 'Maksimal '.self::MAX_CHILDREN.' anak per karyawan.');
+
+                return;
+            }
+        }
+
+        if (in_array($data['fam_relation'], ['AYAH', 'IBU', 'MERTUA_AYAH', 'MERTUA_IBU'], true)) {
+            $already = EmpFamily::where('employee_id', $this->editingId)->where('relation', $data['fam_relation'])->exists();
+
+            if ($already) {
+                $this->addError('fam_relation', 'Data '.self::MANDATORY_FAMILY_RELATIONS[$data['fam_relation']].' sudah ada.');
+
+                return;
+            }
+        }
+
+        $family = EmpFamily::create([
             'employee_id' => $this->editingId,
             'relation' => $data['fam_relation'],
             'full_name' => $data['fam_full_name'],
             'birth_date' => $data['fam_birth_date'] ?: null,
             'nik' => $data['fam_nik'] ?: null,
-            'is_active' => true,
+            'activate' => true,
+            'created_by' => Auth::user()->login,
+            'updated_by' => Auth::user()->login,
         ]);
+
+        app(FamilyEmploymentCrossCheckService::class)->checkFamilyMember($family);
 
         unset($this->currentEmployee);
         $this->showFamilyModal = false;
@@ -574,7 +677,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         ]);
 
         // Hanya 1 kontrak aktif per employee (TIER_3A_HRM.sql §2.2, enforced app-level).
-        EmpContract::where('employee_id', $this->editingId)->where('is_active', true)->update(['is_active' => false]);
+        EmpContract::where('employee_id', $this->editingId)->where('activate', true)->update(['activate' => false]);
 
         EmpContract::create([
             'employee_id' => $this->editingId,
@@ -585,7 +688,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'salary_amount' => $data['ctr_salary_amount'],
             'is_probation' => $data['ctr_is_probation'],
             'probation_end_date' => $data['ctr_probation_end_date'] ?: null,
-            'is_active' => true,
+            'activate' => true,
             'created_by' => Auth::user()->login,
         ]);
 
@@ -627,38 +730,27 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 <div>
     @if ($panel === 'grid')
         <div class="max-w-[1400px] mx-auto my-5 px-4">
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Headcount</p>
-                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotal }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Clean / No SP</p>
-                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricClean }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Verbal Warning</p>
-                    <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->metricVerbal }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">SP Aktif</p>
-                    <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->metricSp }}</p>
-                </div>
-            </div>
+            <x-grid.stat-row :count="4">
+                <x-grid.stat-box tone="total" label="Total Headcount" :value="$this->metricTotal" />
+                <x-grid.stat-box tone="active" label="Clean / No SP" :value="$this->metricClean" />
+                <x-grid.stat-box tone="warn" label="Verbal Warning" :value="$this->metricVerbal" />
+                <x-grid.stat-box tone="critical" label="SP Aktif" :value="$this->metricSp" />
+            </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-                <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
                         <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama / NIK…"
                             class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
-                    <span class="flex-1"></span>
-                    <button type="button" wire:click="openNew"
-                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-                </div>
+                    <x-slot:newRecord>
+                        <button type="button" wire:click="openNew"
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                    </x-slot:newRecord>
+                </x-grid.toolbar>
 
-                <div class="max-h-[65vh] overflow-auto">
+                <x-grid.table-shell>
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
@@ -678,7 +770,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                             @if ($e->photo_path)
                                                 <img src="{{ asset('storage/'.$e->photo_path) }}" class="w-8 h-8 rounded-md object-cover shrink-0 border border-[#d9dfe8]">
                                             @else
-                                                <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($e->employee_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($e->full_name) }}</div>
+                                                <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($e->employee_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($e->full_name) }}</div>
                                             @endif
                                             <div>
                                                 <div class="font-semibold text-[#0f172a] text-[13px]">{{ $e->full_name }}</div>
@@ -691,20 +783,21 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $this->workStatuses[$e->work_status] ?? $e->work_status }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $this->workStatuses[$e->work_status] ?? $e->work_status }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <button type="button" wire:click.stop="openEdit({{ $e->employee_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                        <button type="button" wire:click.stop="toggleActive({{ $e->employee_id }})" wire:confirm="{{ $e->is_active ? 'Nonaktifkan' : 'Aktifkan' }} employee {{ $e->full_name }}?"
-                                            title="{{ $e->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $e->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                        <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $e->employee_id }})"
+                                            :confirm="($e->activate ? 'Nonaktifkan' : 'Aktifkan').' employee '.$e->full_name.'?'"
+                                            :variant="$e->activate ? 'danger' : 'default'" />
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                                <x-grid.empty-row :colspan="5" message="Tidak ada." />
                             @endforelse
                         </tbody>
                     </table>
-                </div>
+                </x-grid.table-shell>
             </div>
         </div>
     @else
@@ -726,8 +819,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             wire:dblclick="openPhotoModal" title="Klik 2x untuk lihat foto penuh"
                             class="w-[72px] h-[72px] rounded-lg object-cover border-2 border-accent cursor-pointer hover:opacity-90">
                     @else
-                        <div class="w-[72px] h-[72px] rounded-lg bg-gradient-to-br {{ $emp ? $this->avatarGradient($emp->employee_id) : 'from-[#94a3b8] to-[#64748b]' }} text-white text-xl font-bold flex items-center justify-center">
-                            {{ $emp ? $this->avatarInitials($emp->full_name) : '＋' }}
+                        <div class="w-[72px] h-[72px] rounded-lg bg-gradient-to-br {{ $emp ? \App\Support\Grid\Avatar::gradient($emp->employee_id) : 'from-[#94a3b8] to-[#64748b]' }} text-white text-xl font-bold flex items-center justify-center">
+                            {{ $emp ? \App\Support\Grid\Avatar::initials($emp->full_name) : '＋' }}
                         </div>
                     @endif
                 </div>
@@ -766,156 +859,61 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 {{-- TAB: OVERVIEW --}}
                 <div class="{{ $formTab === 'overview' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Lengkap *</label>
-                            <input type="text" wire:model="full_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('full_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Panggilan</label>
-                            <input type="text" wire:model="nickname" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jenis Kelamin *</label>
-                            <select wire:model="gender" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($genders as $val => $label)
-                                    <option value="{{ $val }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            @error('gender') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Agama</label>
-                            <select wire:model="religion" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($religions as $r)
-                                    <option value="{{ $r }}">{{ $r }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="grid gap-2.5">
+                        <x-form.input label="Nama Lengkap *" name="full_name" wire:model="full_name" />
+                        <x-form.input label="Panggilan" wire:model="nickname" />
+                        <x-form.select label="Jenis Kelamin *" name="gender" wire:model="gender" :options="$genders" :selected="$gender" />
+                        <x-form.select label="Agama" wire:model="religion" :options="array_combine($religions, $religions)" :selected="$religion" />
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kota Lahir</label>
-                            <input type="text" wire:model="birth_place" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Lahir</label>
-                            <input type="date" wire:model="birth_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">NIK KTP</label>
-                            <input type="text" wire:model="nik_ktp" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">NPWP</label>
-                            <input type="text" wire:model="npwp_number" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
+                    <div class="grid gap-2.5">
+                        <x-form.input label="Kota Lahir" wire:model="birth_place" />
+                        <x-form.input label="Tanggal Lahir (sesuai KTP)" name="birth_date" type="date" wire:model="birth_date" />
+                        <x-form.input label="NIK KTP" name="nik_ktp" wire:model="nik_ktp" />
+                        <x-form.input label="No. Kartu Keluarga (KK)" name="no_kk" wire:model="no_kk" />
+                        <x-form.input label="NPWP" wire:model="npwp_number" />
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Telepon / WA</label>
-                            <input type="text" wire:model="phone" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Email Pribadi</label>
-                            <input type="email" wire:model="email_personal" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('email_personal') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                    <div class="grid two gap-2.5">
+                        <x-form.input label="Telepon / WA (No. Smartphone Utama)" name="phone" wire:model="phone" />
+                        <x-form.input label="Email Pribadi" name="email_personal" type="email" wire:model="email_personal" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Alamat</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Alamat KTP</label>
-                            <textarea wire:model="address_detail_ktp" rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Alamat Domisili <span class="text-muted font-normal">(kosongkan jika sama dgn KTP)</span></label>
-                            <textarea wire:model="address_detail_domisili" rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                        </div>
+                    <div class="grid two gap-2.5">
+                        <x-form.textarea label="Alamat KTP" name="address_detail_ktp" wire:model="address_detail_ktp" rows="2" />
+                        <x-form.textarea label="Alamat Domisili (kosongkan jika sama dgn KTP)" wire:model="address_detail_domisili" rows="2" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Status Kerja</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Bergabung *</label>
-                            <input type="date" wire:model="join_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('join_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Status Kerja *</label>
-                            <select wire:model="work_status" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                @foreach ($workStatuses as $val => $label)
-                                    <option value="{{ $val }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Berlaku Sejak</label>
-                            <input type="date" wire:model="work_status_since" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
+                    <div class="grid three gap-2.5">
+                        <x-form.input label="Tanggal Bergabung *" name="join_date" type="date" wire:model="join_date" />
+                        <x-form.select label="Status Kerja *" wire:model="work_status" :options="$workStatuses" :selected="$work_status" :placeholder="false" />
+                        <x-form.input label="Berlaku Sejak" type="date" wire:model="work_status_since" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Kontak Darurat</div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama</label>
-                            <input type="text" wire:model="emergency_contact_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Hubungan</label>
-                            <input type="text" wire:model="emergency_contact_relation" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Telepon</label>
-                            <input type="text" wire:model="emergency_contact_phone" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        </div>
+                    <div class="grid three gap-2.5">
+                        <x-form.input label="Nama" wire:model="emergency_contact_name" />
+                        <x-form.input label="Hubungan" wire:model="emergency_contact_relation" />
+                        <x-form.input label="Telepon" wire:model="emergency_contact_phone" />
                     </div>
 
-                    <label class="flex items-center gap-2 text-[13px] text-[#334] mt-1">
-                        <input type="checkbox" wire:model="emp_is_active"> Aktif
-                    </label>
+                    <x-form.checkbox label="Aktif" wire:model="emp_activate" />
                 </div>
 
                 {{-- TAB: JOB ALIGNMENT --}}
                 <div class="{{ $formTab === 'job' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Struktur Organisasi</div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jabatan (Departemen — Posisi) *</label>
-                            <select wire:model="position_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->positionOptions as $p)
-                                    <option value="{{ $p->position_id }}">{{ $p->department?->department_name }} — {{ $p->position_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('position_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                    <div class="grid two gap-2.5">
+                        <x-form.select label="Jabatan (Departemen — Posisi) *" name="position_id" wire:model="position_id"
+                            :options="$this->positionOptions->mapWithKeys(fn ($p) => [$p->position_id => $p->department?->department_name.' — '.$p->position_name])" :selected="$position_id" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Default Produksi <span class="text-muted font-normal normal-case">(prefill jadwal, tak mengunci assignment)</span></div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Mesin Default</label>
-                            <select wire:model="default_machine_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— tanpa default —</option>
-                                @foreach ($this->machineOptions as $m)
-                                    <option value="{{ $m->machine_id }}">{{ $m->machine_code }} — {{ $m->machine_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Shift Default</label>
-                            <select wire:model="default_shift_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— tanpa default —</option>
-                                @foreach ($this->shiftOptions as $s)
-                                    <option value="{{ $s->shift_id }}">{{ $s->shift_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                    <div class="grid two gap-2.5">
+                        <x-form.select label="Mesin Default" wire:model="default_machine_id" placeholder="— tanpa default —"
+                            :options="$this->machineOptions->mapWithKeys(fn ($m) => [$m->machine_id => $m->machine_code.' — '.$m->machine_name])" :selected="$default_machine_id" />
+                        <x-form.select label="Shift Default" wire:model="default_shift_id" placeholder="— tanpa default —"
+                            :options="$this->shiftOptions->pluck('shift_name', 'shift_id')" :selected="$default_shift_id" />
                     </div>
 
                     @if ($emp)
@@ -962,6 +960,16 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     @if (! $editingId)
                         <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum menambah anggota keluarga.</div>
                     @else
+                        @if ($justRegistered)
+                            @php $missingFamily = $this->missingMandatoryFamily(); @endphp
+                            <div class="text-[11px] font-semibold px-3 py-2 rounded-md mb-2.5 {{ $missingFamily ? 'bg-[#fef3c7] text-[#92400e] border border-[#fde68a]' : 'bg-[#eaf7ee] text-[#1f8a4c] border border-[#bbe6cc]' }}">
+                                @if ($missingFamily)
+                                    ⚠ Data keluarga wajib belum lengkap: {{ implode(', ', $missingFamily) }}. Lengkapi dulu sebelum keluar dari layar ini.
+                                @else
+                                    ✓ Data keluarga wajib (Ayah, Ibu, Mertua Ayah, Mertua Ibu) sudah lengkap.
+                                @endif
+                            </div>
+                        @endif
                         <div class="flex items-center justify-between mb-2.5">
                             <div class="text-xs font-bold text-navy uppercase tracking-wide">Anggota Keluarga</div>
                             <button type="button" wire:click="openFamilyModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Tambah Anggota</button>
@@ -979,7 +987,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             <tbody>
                                 @forelse ($emp?->families ?? [] as $f)
                                     <tr wire:key="fam-{{ $f->family_id }}" class="border-b border-[#f0f3f7]">
-                                        <td class="px-2 py-1.5 font-semibold">{{ $f->relation }}</td>
+                                        <td class="px-2 py-1.5 font-semibold">{{ $this->relationLabel($f->relation) }}</td>
                                         <td class="px-2 py-1.5">{{ $f->full_name }}</td>
                                         <td class="px-2 py-1.5">{{ $f->birth_date?->format('d M Y') ?: '—' }}</td>
                                         <td class="px-2 py-1.5">
@@ -1036,7 +1044,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                             @endif
                                         </td>
                                         <td class="px-2 py-1.5">
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->is_active ? 'AKTIF' : 'RIWAYAT' }}</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? 'AKTIF' : 'RIWAYAT' }}</span>
                                         </td>
                                     </tr>
                                 @empty
@@ -1095,45 +1103,19 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[480px] max-w-[92vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Riwayat Pendidikan</div>
                 <form wire:submit="saveEducation" class="p-4 flex flex-col gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Tipe *</label>
-                        <select wire:model="edu_education_type" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @foreach ($educationTypes as $t)
-                                <option value="{{ $t }}">{{ $t }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Nama Kegiatan *</label>
-                        <input type="text" wire:model="edu_activity_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        @error('edu_activity_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Penyelenggara</label>
-                        <input type="text" wire:model="edu_organizer" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                    </div>
+                    <x-form.select label="Tipe *" wire:model="edu_education_type" :options="array_combine($educationTypes, $educationTypes)" :placeholder="false" />
+                    <x-form.input label="Nama Kegiatan *" name="edu_activity_name" wire:model="edu_activity_name" />
+                    <x-form.input label="Penyelenggara" wire:model="edu_organizer" />
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal *</label>
-                            <input type="date" wire:model="edu_activity_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('edu_activity_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Tanggal *" name="edu_activity_date" type="date" wire:model="edu_activity_date" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Biaya (Rp)</label>
-                            <input type="number" step="1" min="0" wire:model="edu_cost" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="Biaya (Rp)" type="number" step="1" min="0" wire:model="edu_cost" />
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Dibiayai Oleh *</label>
-                        <select wire:model="edu_funded_by" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @foreach ($fundedByOptions as $f)
-                                <option value="{{ $f }}">{{ $f }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="edu_is_bonding"> Ikatan Dinas
-                    </label>
+                    <x-form.select label="Dibiayai Oleh *" wire:model="edu_funded_by" :options="array_combine($fundedByOptions, $fundedByOptions)" :placeholder="false" />
+                    <x-form.checkbox label="Ikatan Dinas" wire:model="edu_is_bonding" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                         <button type="button" wire:click="$set('showEducationModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
@@ -1149,27 +1131,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Anggota Keluarga</div>
                 <form wire:submit="saveFamily" class="p-4 flex flex-col gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Hubungan *</label>
-                        <select wire:model="fam_relation" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @foreach ($familyRelations as $r)
-                                <option value="{{ $r }}">{{ $r }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Nama Lengkap *</label>
-                        <input type="text" wire:model="fam_full_name" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                        @error('fam_full_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.select label="Hubungan *" wire:model="fam_relation" :options="collect($familyRelations)->mapWithKeys(fn ($r) => [$r => $this->relationLabel($r)])" :placeholder="false" />
+                    <x-form.input label="Nama Lengkap *" name="fam_full_name" wire:model="fam_full_name" />
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Lahir</label>
-                            <input type="date" wire:model="fam_birth_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="Tanggal Lahir" type="date" wire:model="fam_birth_date" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">NIK</label>
-                            <input type="text" wire:model="fam_nik" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="NIK" wire:model="fam_nik" />
                         </div>
                     </div>
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
@@ -1181,6 +1150,44 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         </div>
     @endif
 
+    {{-- ══ MODAL: KARTU LOGIN KARYAWAN BARU (sekali tampil, cetak IT/HR) ══ --}}
+    @if ($showCredentialModal && $newLoginCredentials)
+        <style>
+            @media print {
+                body * { visibility: hidden; }
+                #credential-print-card, #credential-print-card * { visibility: visible; }
+                #credential-print-card { position: fixed; inset: 0; }
+            }
+        </style>
+        <div class="fixed inset-0 bg-[rgba(20,26,40,.6)] z-[100] flex items-center justify-center p-5">
+            <div id="credential-print-card" class="bg-white rounded-xl w-[380px] max-w-[92vw] shadow-2xl overflow-hidden">
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Kartu Login Karyawan Baru</div>
+                <div class="p-5 flex flex-col gap-3">
+                    <div class="text-center text-xs text-muted">TELASIH MAKMUR ERP — untuk diserahkan ke karyawan</div>
+                    <div>
+                        <div class="text-[10px] text-muted uppercase font-semibold">Nama</div>
+                        <div class="text-sm font-bold text-navy">{{ $newLoginCredentials['name'] }} @if($employee_code)({{ $employee_code }})@endif</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-muted uppercase font-semibold">Username</div>
+                        <div class="text-lg font-mono font-bold tracking-wide">{{ $newLoginCredentials['login'] }}</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-muted uppercase font-semibold">Password Awal</div>
+                        <div class="text-lg font-mono font-bold tracking-wide">{{ $newLoginCredentials['password'] }}</div>
+                    </div>
+                    <div class="text-[10px] text-muted border-t border-[#eef1f5] pt-2 print:hidden">
+                        Wajib ganti password saat login pertama. Password ini hanya tampil SEKALI — cetak atau catat sekarang sebelum ditutup.
+                    </div>
+                    <div class="flex gap-2 pt-1 print:hidden">
+                        <button type="button" onclick="window.print()" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">🖨 Cetak</button>
+                        <button type="button" wire:click="closeCredentialModal" class="flex-1 px-3 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Tutup &amp; Selesai</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- ══ MODAL: KONTRAK ══ --}}
     @if ($showContractModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showContractModal', false)">
@@ -1188,48 +1195,26 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Kontrak Baru <span class="font-normal opacity-80">(kontrak aktif lama otomatis ditutup)</span></div>
                 <form wire:submit="saveContract" class="p-4 flex flex-col gap-3">
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tipe *</label>
-                            <select wire:model="ctr_employment_type" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                @foreach ($employmentTypes as $t)
-                                    <option value="{{ $t }}">{{ $t }}</option>
-                                @endforeach
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="Tipe *" wire:model="ctr_employment_type" :options="array_combine($employmentTypes, $employmentTypes)" :placeholder="false" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jenis Gaji *</label>
-                            <select wire:model="ctr_salary_type" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="PER_MONTH">Per Bulan</option>
-                                <option value="PER_DAY">Per Hari</option>
-                                <option value="PER_UNIT">Per Unit</option>
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="Jenis Gaji *" wire:model="ctr_salary_type" :placeholder="false"
+                                :options="['PER_MONTH' => 'Per Bulan', 'PER_DAY' => 'Per Hari', 'PER_UNIT' => 'Per Unit']" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Mulai *</label>
-                            <input type="date" wire:model="ctr_start_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('ctr_start_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Mulai *" name="ctr_start_date" type="date" wire:model="ctr_start_date" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Selesai <span class="text-muted font-normal">(kosong = TETAP)</span></label>
-                            <input type="date" wire:model="ctr_end_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('ctr_end_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Selesai (kosong = TETAP)" name="ctr_end_date" type="date" wire:model="ctr_end_date" />
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Nominal Gaji (Rp) *</label>
-                        <input type="number" step="1" min="0" wire:model="ctr_salary_amount" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                    </div>
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model.live="ctr_is_probation"> Masa Probation
-                    </label>
+                    <x-form.input label="Nominal Gaji (Rp) *" type="number" step="1" min="0" wire:model="ctr_salary_amount" />
+                    <x-form.checkbox label="Masa Probation" wire:model.live="ctr_is_probation" />
                     @if ($ctr_is_probation)
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Probation Selesai *</label>
-                            <input type="date" wire:model="ctr_probation_end_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('ctr_probation_end_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                        <x-form.input label="Probation Selesai *" name="ctr_probation_end_date" type="date" wire:model="ctr_probation_end_date" />
                     @endif
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                         <button type="button" wire:click="$set('showContractModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
@@ -1246,23 +1231,9 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Catatan Kedisiplinan</div>
                 <form wire:submit="saveDisciplinary" class="p-4 flex flex-col gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Tipe *</label>
-                        <select wire:model="dis_type" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @foreach ($disciplinaryTypes as $t)
-                                <option value="{{ $t }}">{{ $t }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Tanggal Kejadian *</label>
-                        <input type="date" wire:model="dis_incident_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Alasan *</label>
-                        <textarea wire:model="dis_reason" rows="2" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                        @error('dis_reason') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.select label="Tipe *" wire:model="dis_type" :options="array_combine($disciplinaryTypes, $disciplinaryTypes)" :placeholder="false" />
+                    <x-form.input label="Tanggal Kejadian *" type="date" wire:model="dis_incident_date" />
+                    <x-form.textarea label="Alasan *" name="dis_reason" wire:model="dis_reason" rows="2" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                         <button type="button" wire:click="$set('showDisciplinaryModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                         <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>

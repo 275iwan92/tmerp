@@ -34,7 +34,7 @@ class SysAppMenu extends Model
         'target',
         'target_kind',
         'sort_order',
-        'is_active',
+        'activate',
         'required_object',
         'status_code',
         'status_note',
@@ -43,12 +43,12 @@ class SysAppMenu extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'sort_order' => 'integer',
         'status_updated_at' => 'datetime',
     ];
 
-    // Claude Code SENDIRI yang boleh panggil ini (module_status_system, GLOBAL_RULES.yaml)
+    // Claude Code SENDIRI yang boleh panggil ini (module_status_system, globalrules.yaml)
     // -- setiap kali 1 komponen/mockup selesai dibangun. TIDAK PERNAH promosikan ke LOCKED;
     // hanya user yang boleh set LOCKED (lewat instruksi eksplisit atau Navicat manual).
     public function markReadyForQc(?string $note = null): void

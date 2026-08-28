@@ -14,7 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// mockup_down_payment.html + docs/FINANCE_DOWN_PAYMENT_TIER_1-4.md. Uang muka
+// mockup_down_payment.html + docs/downpayment_tier1-4.md. Uang muka
 // (DP) dua arah di atas struktur GL yang sudah ada — fokus SALES DP (kasus
 // utama pabrik), PURCHASE DP menyusul (§2B-5, simetris). 3 event dibangun di
 // sini: Terbitkan DP (1), Catat Pembayaran (2), Alokasikan ke invoice final
@@ -22,7 +22,7 @@ use Livewire\Component;
 // belum ada, jadi Alokasi diuji dengan invoice final yang di-insert manual.
 // Referensi SO/CO mockup ("tm2sdi.sales_orders") DISESUAIKAN jadi input
 // manual (customer + nilai kontrak + no. referensi teks co_reference) --
-// tm2sdi.co_order SEKARANG SUDAH ADA (2026-08-20, lihat SALES_STATE.yaml)
+// tm2sdi.co_order SEKARANG SUDAH ADA (2026-08-20, lihat sales_state.yaml)
 // tapi field ini BELUM di-rewiring ke co_id asli (masih co_reference bebas
 // teks); kolom co_id tetap disimpan logis-opsional utk rewiring sesi lain.
 new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Component
@@ -68,7 +68,7 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
     #[Computed]
     public function customers()
     {
-        return CustCustomer::query()->where('is_active', true)->orderBy('customer_name')->get();
+        return CustCustomer::query()->where('activate', true)->orderBy('customer_name')->get();
     }
 
     #[Computed]
@@ -486,32 +486,24 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
             <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#eaf7ee] border border-[#bfe6cd] text-[#1f8a4c]">✓ {{ $actionMsg }}</div>
         @endif
 
-        <div class="[display:grid] grid-cols-3 gap-3 mb-3.5">
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Menunggu Dibayar</div>
-                <div class="text-[17px] font-extrabold text-[#b45309] mt-0.5">{{ $this->metricWaitingApproval }}</div>
-            </div>
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Lunas</div>
-                <div class="text-[17px] font-extrabold text-[#1f8a4c] mt-0.5">{{ $this->metricPaid }}</div>
-            </div>
-            <div class="bg-white border border-[#d9dfe8] rounded-lg px-3.5 py-2.5">
-                <div class="text-[11px] text-muted uppercase font-bold">Sisa DP Belum Teralokasi</div>
-                <div class="text-[17px] font-extrabold text-navy mt-0.5">Rp {{ $this->metricOutstandingTotal }}</div>
-            </div>
-        </div>
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="warn" label="Menunggu Dibayar" :value="$this->metricWaitingApproval" />
+            <x-grid.stat-box tone="active" label="Lunas" :value="$this->metricPaid" />
+            <x-grid.stat-box tone="total" label="Sisa DP Belum Teralokasi" value="Rp {{ $this->metricOutstandingTotal }}" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <x-grid.table-shell>
             <table class="w-full border-collapse text-[12.5px]">
                 <thead>
                     <tr>
-                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">No. Invoice DP</th>
-                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Customer</th>
-                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Tanggal</th>
-                        <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Total DP</th>
-                        <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Sisa Belum Teralokasi</th>
-                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Status</th>
-                        <th class="text-center px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Aksi</th>
+                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">No. Invoice DP</th>
+                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer</th>
+                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Tanggal</th>
+                        <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Total DP</th>
+                        <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Sisa Belum Teralokasi</th>
+                        <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status</th>
+                        <th class="text-center px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -536,10 +528,11 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada tagihan uang muka.</td></tr>
+                        <x-grid.empty-row :colspan="7" message="Belum ada tagihan uang muka." />
                     @endforelse
                 </tbody>
             </table>
+            </x-grid.table-shell>
         </div>
     </div>
 
@@ -553,76 +546,55 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
                 </div>
                 <form wire:submit="issueDpInvoice" class="p-4 flex flex-col gap-3">
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Customer *</label>
-                            <select wire:model.live="customer_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih customer —</option>
-                                @foreach ($this->customers as $c)
-                                    <option value="{{ $c->id_customer }}">{{ $c->customer_name }} ({{ $c->customer_code }})</option>
-                                @endforeach
-                            </select>
-                            @error('customer_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.select wire:model.live="customer_id" placeholder="— pilih customer —" name="customer_id"
+                                :options="$this->customers->mapWithKeys(fn ($c) => [$c->id_customer => $c->customer_name.' ('.$c->customer_code.')'])->all()">
+                                <x-slot:label>Customer *</x-slot:label>
+                            </x-form.select>
                             @if ($this->selectedCustomer?->tax_profile === 'EXEMPT')
                                 <span class="text-[11px] text-[#1f8a4c]">Bebas PPN (kawasan berikat) — tanpa PPN 11%.</span>
                             @endif
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">No. Referensi CO/SO</label>
-                            <input type="text" wire:model="co_reference" placeholder="mis. SO-2026-0899" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="No. Referensi CO/SO" wire:model="co_reference" placeholder="mis. SO-2026-0899" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nilai Kontrak (Nilai SO) *</label>
-                            <input type="number" step="0.01" min="0" wire:model.live="contract_value" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('contract_value') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Nilai Kontrak (Nilai SO) *" type="number" step="0.01" min="0" wire:model.live="contract_value" name="contract_value" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Metode Penagihan DP</label>
-                            <select wire:model.live="dp_method" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="percent">Persentase dari Nilai Kontrak</option>
-                                <option value="fixed">Nominal Tetap</option>
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="Metode Penagihan DP" wire:model.live="dp_method" :placeholder="false"
+                                :options="['percent' => 'Persentase dari Nilai Kontrak', 'fixed' => 'Nominal Tetap']" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
                         @if ($dp_method === 'percent')
-                            <div class="flex-1 flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Persentase DP (%) *</label>
-                                <input type="number" step="0.01" min="0.01" max="100" wire:model.live="dp_percent" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                @error('dp_percent') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                            <div class="flex-1">
+                                <x-form.input label="Persentase DP (%) *" type="number" step="0.01" min="0.01" max="100" wire:model.live="dp_percent" name="dp_percent" />
                             </div>
                         @else
-                            <div class="flex-1 flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Nominal DP (Rp) *</label>
-                                <input type="number" step="0.01" min="0.01" wire:model.live="dp_fixed_amount" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                @error('dp_fixed_amount') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                            <div class="flex-1">
+                                <x-form.input label="Nominal DP (Rp) *" type="number" step="0.01" min="0.01" wire:model.live="dp_fixed_amount" name="dp_fixed_amount" />
                             </div>
                         @endif
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Akun Kewajiban UM</label>
-                            <input type="text" readonly value="213200 — Uang Muka Penjualan dari Pelanggan" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f3f4f6] text-muted">
+                        <div class="flex-1">
+                            <x-form.input label="Akun Kewajiban UM" readonly value="213200 — Uang Muka Penjualan dari Pelanggan" class="bg-[#f3f4f6]" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Faktur DP</label>
-                            <input type="date" wire:model="entry_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="Tanggal Faktur DP" type="date" wire:model="entry_date" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Jatuh Tempo DP</label>
-                            <input type="date" wire:model="due_date" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('due_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Tanggal Jatuh Tempo DP" type="date" wire:model="due_date" name="due_date" />
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Catatan / Instruksi Cetak Pada Faktur</label>
-                        <input type="text" wire:model="print_note" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                    </div>
+                    <x-form.input label="Catatan / Instruksi Cetak Pada Faktur" wire:model="print_note" />
 
                     <div class="bg-[#f8fafc] border border-[#e2e7ee] rounded-md p-3.5 flex flex-col gap-1.5 text-[13px]">
                         <div class="flex justify-between"><span class="text-muted">Nilai Kontrak:</span><span>Rp {{ number_format($this->calc['contract'], 0, ',', '.') }}</span></div>
@@ -653,29 +625,20 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
                 <form wire:submit="allocateDp" class="p-4 flex flex-col gap-3">
                     <div class="text-xs text-muted">Sisa DP tersedia: <b class="text-navy">Rp {{ number_format($this->allocatingDpRemaining, 0, ',', '.') }}</b></div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Invoice Final Tujuan *</label>
-                        <select wire:model="alloc_final_invoice_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            <option value="">— pilih invoice final —</option>
-                            @foreach ($this->openFinalInvoices as $fi)
-                                <option value="{{ $fi->invoice_id }}">{{ $fi->invoice_number }} — sisa Rp {{ number_format((float) $fi->total_amount - (float) $fi->paid_amount, 0, ',', '.') }}</option>
-                            @endforeach
-                        </select>
-                        @error('alloc_final_invoice_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                    <div>
+                        <x-form.select label="Invoice Final Tujuan *" wire:model="alloc_final_invoice_id" placeholder="— pilih invoice final —" name="alloc_final_invoice_id"
+                            :options="$this->openFinalInvoices->mapWithKeys(fn ($fi) => [$fi->invoice_id => $fi->invoice_number.' — sisa Rp '.number_format((float) $fi->total_amount - (float) $fi->paid_amount, 0, ',', '.')])->all()" />
                         @if ($this->openFinalInvoices->isEmpty())
                             <span class="text-[11px] text-muted">Belum ada invoice final terbuka untuk customer ini.</span>
                         @endif
                     </div>
 
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Potong Pokok (Rp) *</label>
-                            <input type="number" step="0.01" min="0.01" wire:model="alloc_base" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('alloc_base') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Potong Pokok (Rp) *" type="number" step="0.01" min="0.01" wire:model="alloc_base" name="alloc_base" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Potong PPN (Rp)</label>
-                            <input type="number" step="0.01" min="0" wire:model="alloc_tax" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="Potong PPN (Rp)" type="number" step="0.01" min="0" wire:model="alloc_tax" />
                         </div>
                     </div>
 

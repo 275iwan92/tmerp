@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// Delta wajib PROC_TIER_3.md §7.1: kolom tambahan di doc_rmprefix1 (kelas
+// Delta wajib procurement_tier3.md §7.1: kolom tambahan di doc_rmprefix1 (kelas
 // stok + akun COA usulan, penentu klasifikasi beban PR/PO) dan m_raw_material
 // (metode harga perolehan per item, penanda sensitif kurs, FK ke prefix5).
 return new class extends Migration

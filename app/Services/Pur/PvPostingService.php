@@ -2,25 +2,32 @@
 
 namespace App\Services\Pur;
 
-use App\Models\Master\DocRmprefix1;
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatCategory;
+use App\Models\Master\MatRaw;
+use App\Models\Master\WhLoc;
+use App\Models\Master\WhWarehouse;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PvReceipt;
 use App\Services\Acc\JournalPostingService;
+use App\Services\Inventory\StockDocumentService;
+use App\Services\Inventory\StockPostingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 // PvPostingService -- gerbang POST (PROC_TIER_2 §A-4.5) + rekalkulasi PER PO
-// yang tersentuh (PV-08, DELTA_PROC_PV_MULTIPO.md), krn satu SPB kini boleh
+// yang tersentuh (PV-08, purchasereceive_delta_multipo.md), krn satu SPB kini boleh
 // menyentuh banyak PO sekaligus.
 //
-// TIDAK LENGKAP SAMPAI DI SINI: kontrak "tulis rm_stock/rm_stock_d" (PROC_TIER_3
-// §5.1) BELUM diimplementasi -- dump legacy tminv_20260722_2018_sd.sql belum
-// pernah diberikan (lihat PROC_STATE.yaml). Status PV/PO tetap direkalkulasi
-// benar; yang tertunda HANYA baris rm_stock_doc_id (tetap NULL) & pergerakan
-// stok fisik. Begitu dump tersedia, tambahkan pemanggilan insert rm_stock di
-// checkAndPost() persis di titik yang ditandai TODO.
+// INTEGRASI STOK FISIK (kontrak PROC_TIER_3 §5.1, rm_stock_doc_id): stok
+// diposting LEBIH DULU lewat App\Services\Inventory\StockDocumentService +
+// StockPostingService (jalur SAH satu-satunya utk menulis rm_stock*, sama
+// persis dgn Stock In manual) -- SEBELUM status PV diubah jadi POSTED, supaya
+// tidak pernah ada PV berstatus POSTED tanpa pergerakan stok. tm2inv & tm2pur
+// beda koneksi (CLAUDE.md §2, tak bisa satu transaction), jadi urutannya:
+// stok dulu (postToInventory, transaksinya sendiri) -> baru transaction tm2pur
+// (status+rm_stock_doc_id+rekalkulasi PO) -> jurnal pembelian (tm2acc, soal-fail
+// spt sebelumnya). Kalau posting stok gagal, PV TIDAK berubah status sama sekali.
 //
 // AUTO-JURNAL PEMBELIAN (2026-08-22, riset ERP Odoo/SAP/D365/Oracle): setiap
 // baris is_stock=1 diposting Dr Persediaan (stock_asset_account_id) / Cr GR/IR
@@ -28,7 +35,7 @@ use Illuminate\Support\Facades\DB;
 // Invoice supplier belum dibangun (fin_invoice_line, PROC_TIER_3 §7.2 masih
 // TODO) -- saat modul itu ada nanti, pelunasannya Dr GR/IR / Cr Hutang Usaha,
 // pola standar 4 ERP besar itu utk celah "barang sudah masuk, tagihan belum".
-// Akun diambil dari m_raw_material per item, fallback ke doc_rmprefix1 per
+// Akun diambil dari mat_raw per item, fallback ke doc_rmprefix1 per
 // kategori kalau item belum di-set (JournalPostingService::resolveAccount()).
 // Baris yang akun-nya (item maupun kategori) sama2 kosong DILEWATI dari jurnal
 // (bukan diblokir) -- PV tetap boleh diposting scr fisik/stok, cuma dikasih
@@ -74,14 +81,20 @@ class PvPostingService
 
         $login = Auth::user()->login;
 
-        DB::connection('tm2pur')->transaction(function () use ($pv, $login) {
-            // TODO(tminv): begitu rm_stock/rm_stock_d tersedia, INSERT satu rm_stock
-            // (doc_no=$pv->doc_no, doc_type=1, doc_cat='STOCK', warehouse_id=...)
-            // + N rm_stock_d per baris is_stock=1 (material_id, qty=c_qty_accepted,
-            // uom_code=i_uom_stock, unit_price=c_unit_price, lot_no, reference_id=
-            // pv_line_id, reference_name='tm2pur.pv_line'), lalu isi rm_stock_doc_id.
+        try {
+            $stockDocId = static::postToInventory($pv, $login);
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => 'Gagal posting stok fisik: '.$e->getMessage()];
+        }
 
-            $pv->update(['status' => 'POSTED', 'posted_at' => now(), 'posted_by' => $login, 'updated_by' => $login]);
+        DB::connection('tm2pur')->transaction(function () use ($pv, $login, $stockDocId) {
+            $pv->update([
+                'status' => 'POSTED',
+                'posted_at' => now(),
+                'posted_by' => $login,
+                'rm_stock_doc_id' => $stockDocId,
+                'updated_by' => $login,
+            ]);
 
             // PV-08: rekalkulasi SETIAP PO yang tersentuh, bukan asumsi satu PO.
             $poIds = DB::connection('tm2pur')->table('pv_line')->where('pv_id', $pv->pv_id)->select('c_po_id')->distinct()->pluck('c_po_id');
@@ -94,6 +107,89 @@ class PvPostingService
         $journalWarning = static::postPurchaseJournal($pv, $login);
 
         return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning];
+    }
+
+    // Bangun + posting SATU dokumen Stock In RM dari baris PV yang is_stock=1
+    // & c_qty_accepted>0 (baris jasa/non-stock dilewati). Lokasi rak per baris:
+    // (1) cocokkan i_location_code (teks bebas, PV-05) ke wh_loc.location_code
+    // di gudang yang sama, (2) fallback mat_raw.def_location_id kalau ada &
+    // satu gudang, (3) fallback lokasi usable+aktif pertama di gudang tsb.
+    // Tanpa lokasi sama sekali = gudang belum lengkap di Master Warehouse,
+    // dilempar exception (bukan ditebak location_id sembarang -- itu akan
+    // merusak akurasi kartu stok fisik). Return null kalau tak ada baris stok
+    // (mis. PV isinya jasa semua) -- rm_stock_doc_id tetap NULL, itu valid.
+    protected static function postToInventory(PvReceipt $pv, string $login): ?int
+    {
+        $pv->loadMissing('lines');
+
+        $stockLines = $pv->lines->filter(fn ($l) => $l->is_stock && $l->item_id && (float) $l->c_qty_accepted > 0);
+
+        if ($stockLines->isEmpty()) {
+            return null;
+        }
+
+        $warehouse = WhWarehouse::where('warehouse_code', $pv->i_warehouse_code)->first();
+        if (! $warehouse) {
+            throw new \RuntimeException("Kode gudang '{$pv->i_warehouse_code}' tidak ditemukan di Master Warehouse.");
+        }
+
+        $usableLocations = WhLoc::where('warehouse_id', $warehouse->id_warehouse)
+            ->where('activate', true)->where('is_usable', true)
+            ->orderBy('row_code')->orderBy('col_code')->orderBy('stack_code')->get();
+        $fallbackLocation = $usableLocations->first();
+
+        $lines = [];
+        foreach ($stockLines as $line) {
+            $location = null;
+
+            if ($line->i_location_code) {
+                $location = $usableLocations->firstWhere('location_code', trim($line->i_location_code));
+            }
+
+            if (! $location) {
+                $defLocationId = MatRaw::where('material_id', $line->item_id)->value('def_location_id');
+                if ($defLocationId) {
+                    $location = $usableLocations->firstWhere('location_id', $defLocationId);
+                }
+            }
+
+            $location ??= $fallbackLocation;
+
+            if (! $location) {
+                throw new \RuntimeException("Gudang '{$pv->i_warehouse_code}' belum punya lokasi/rak aktif -- lengkapi Master Warehouse dulu.");
+            }
+
+            $lines[] = [
+                'material_id' => $line->item_id,
+                'qty' => (float) $line->c_qty_accepted,
+                'uom_code' => $line->i_uom_stock,
+                'unit_price' => (float) $line->c_unit_price,
+                'lot_no' => $line->i_lot_no,
+                'location_id' => $location->location_id,
+            ];
+        }
+
+        $docService = app(StockDocumentService::class);
+
+        $docId = $docService->saveDraft('RM', null, [
+            'doc_no' => $docService->nextDocNo('RM', 'IN'),
+            'doc_date' => $pv->i_doc_date,
+            'doc_type' => 1,
+            'doc_cat' => 'STOCK',
+            'ref_doc_type' => 'PV',
+            'ref_doc_id' => $pv->pv_id,
+            'ref_doc_no' => $pv->doc_no,
+            'warehouse_id' => $warehouse->id_warehouse,
+            'notes' => "Auto dari Penerimaan Barang {$pv->doc_no}",
+        ], $lines, $login);
+
+        $result = app(StockPostingService::class)->postDocument('RM', $docId, $login);
+
+        if (! $result['posted']) {
+            throw new \RuntimeException($result['error'] ?? 'Gagal posting stok (tidak diketahui).');
+        }
+
+        return $docId;
     }
 
     // Dr Persediaan / Cr GR-IR Clearing per baris is_stock=1 yang c_qty_accepted>0,
@@ -114,8 +210,8 @@ class PvPostingService
                 continue;
             }
 
-            $material = MRawMaterial::find($line->item_id);
-            $prefix1 = $material ? DocRmprefix1::where('category1', $material->category1)->first() : null;
+            $material = MatRaw::find($line->item_id);
+            $prefix1 = $material ? MatCategory::level(1)->where('category_name', $material->category1)->first() : null;
 
             $stockAccountId = app(JournalPostingService::class)->resolveAccount($material?->stock_asset_account_id, $prefix1?->default_stock_asset_account_id);
             $grIrAccountId = app(JournalPostingService::class)->resolveAccount($material?->gr_ir_account_id, $prefix1?->default_gr_ir_account_id);

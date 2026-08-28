@@ -13,7 +13,7 @@ class FlowConfig extends Model
 
     protected $primaryKey = 'flow_config_id';
 
-    protected $fillable = ['module_code', 'division_id', 'total_step', 'notes', 'is_active', 'created_by', 'updated_by'];
+    protected $fillable = ['module_code', 'division_id', 'total_step', 'notes', 'activate', 'created_by', 'updated_by'];
 
     public function steps(): HasMany
     {

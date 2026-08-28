@@ -33,7 +33,7 @@ class FinVoucher extends Model
         'bupot_no',
         'description',
         'status',
-        'is_cancelled',
+        'stat_cancel',
         'cancel_reason',
         'posted_by',
         'posted_at',
@@ -46,7 +46,7 @@ class FinVoucher extends Model
         'posting_date' => 'date',
         'posted_at' => 'datetime',
         'revision_no' => 'integer',
-        'is_cancelled' => 'boolean',
+        'stat_cancel' => 'boolean',
     ];
 
     public function journal(): BelongsTo

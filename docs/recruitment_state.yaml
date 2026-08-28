@@ -1,0 +1,56 @@
+# ═══════════════════════════════════════════════════════════════════
+# recruitment_state.yaml — PROGRESS MODUL Recruitment (tm2hrr)
+# Menunjuk ke globalrules.yaml. Modul baru — dibuat 2026-08-27.
+# Catatan: submodul dari 11_hr (globalrules.yaml), terpisah dari
+#          masteremployee_state.yaml yang eksplisit MENGECUALIKAN
+#          Recruitment dari scope-nya.
+# ═══════════════════════════════════════════════════════════════════
+
+meta:
+  modul: "Recruitment (tm2hrr) — permohonan tenaga kerja s.d. auto-provisioning login ERP"
+  status: "SPEC LENGKAP Tier 1-4 + DDL (2026-08-27). Belum diimplementasi Claude Code. Approval matrix BELUM di-seed (nama role riil belum dikonfirmasi Telma)."
+  lihat_global: "globalrules.yaml untuk konvensi umum"
+  file_terkait:
+    - "recruitment_tier1.md — business requirements & system flow"
+    - "recruitment_tier2.md — business logic (approval matrix, pipeline, dedup, offer, hire trigger)"
+    - "recruitment_tier3.md — DDL tm2hrr + skema Firebase (Plan A) + DDL tm2crp (Plan B) + sync worker"
+    - "recruitment_tier4.md — wireframe portal (P1-P4) + internal HR (L1-L9)"
+
+# ═══════════════════════════════════════════════════════════════════
+# KEPUTUSAN ARSITEKTUR TERKUNCI
+# ═══════════════════════════════════════════════════════════════════
+keputusan_terkunci:
+  pemisahan_entitas: "Requisition (kebutuhan) != Vacancy (posting/iklan) != Candidate (orang, persisten/talent pool) != Application (lamaran=candidate x vacancy, state machine nempel di sini). JANGAN disederhanakan/digabung"
+  recruitment_track: "rcr_track = tabel master EXTENSIBLE (bukan ENUM hardcode) — seed STAFF/NON_STAFF/BORONGAN, bisa nambah track baru tanpa ubah skema/kode. Beda axis dari emp_contract.employment_type (TETAP/KONTRAK/HARIAN/BORONGAN) yang sudah ada di HRM"
+  approval_pipeline_data_driven: "Approval chain requisition (rcr_approval_matrix), approval offer (rcr_offer_approval_matrix), dan pipeline seleksi (app_pipeline_stage_config) SEMUA data-driven per track — TIDAK hardcode di kode, konsisten prinsip pyr_status_rule di Attendance/Payroll"
+  dua_host_arsitektur: "Portal kandidat (DMZ/publik, web+mobile) TERPISAH TOTAL dari internal tm2hrr (jaringan privat). Model sync PULL — internal yang inisiasi tarik data secara berkala, portal TIDAK PERNAH push masuk ke jaringan internal (antisipasi hack, keputusan eksplisit Telma)"
+  portal_backend_dual_plan: |
+    Plan A (PRIMARY, diasumsikan disetujui): Firebase (Firestore+Auth+Storage), region asia-southeast2 (Jakarta, kepatuhan UU PDP).
+    Plan B (CADANGAN): tm2crp — MariaDB ringan di VPS terpisah, DDL sudah siap (Tier 3 SECTION 3), exposed via REST API read-only+token+IP-allowlist.
+    Keduanya diisolasi dari domain logic internal via PortalSyncAdapterInterface (Tier 3 SECTION 1.1) — ganti Plan A<->B = ganti 1 config env (PORTAL_BACKEND), TIDAK sentuh business logic tm2hrr. Keputusan final A vs B BOLEH ditunda tanpa menghambat pembangunan internal.
+  dedup_candidate: "Nomor KTP (national_id) = UNIQUE key dedupe di cnd_candidate. WNA pakai passport_no sbg fallback (BELUM final, lihat delta_pending)"
+  family_data_scope: "cnd_family_member HANYA current job + current employer per anggota (ayah/ibu/mertua ayah/mertua ibu/pasangan/anak) — TANPA histori. Beda dari cnd_work_experience milik kandidat SENDIRI yang TETAP histori (append, bukan overwrite)"
+  talent_pool_reuse: "Kandidat REJECTED/WITHDRAWN TIDAK DIHAPUS, tetap aktif & searchable di talent pool (L3). Bisa diundang ke vacancy lain (buat app_application baru) tanpa isi ulang data"
+  offer_negosiasi: "Counter-offer = row app_offer BARU (previous_offer_id terisi), BUKAN edit in-place — konsisten pola REVISE/copy-record global"
+  hire_trigger: "Auto-provisioning (emp_employee + emp_contract + sec_user) HANYA jalan setelah HR klik eksplisit 'Provision ke ERP' (L9) — TIDAK otomatis diam-diam saat status berubah HIRED. Idempotent via provisioned_employee_id guard"
+  default_password_pattern: "Ikuti security_defaultpassword_spec.md — sec_user.default_password (Crypt, readable) + must_change_password=1, BUKAN pola baru"
+  mobile_stack: "Flutter — 1 codebase Android+iOS+Web untuk portal kandidat (Tier 3 SECTION 6). Konsisten dgn alasan pemilihan Firebase (SDK sama lintas platform)"
+  push_notification: "WAJIB rilis pertama (bukan fase 2) — Firebase Cloud Messaging (FCM), INDEPENDEN dari keputusan Plan A/B data (Tier 3 SECTION 6.1). Tabel cnd_device_token (tm2hrr) simpan token multi-device per kandidat. Trigger: APPLIED/INTERVIEW dijadwalkan/REJECTED/OFFERING/HIRED (Tier 2 SECTION 8.1). Isi notifikasi tanpa detail sensitif di lock-screen"
+
+# ═══════════════════════════════════════════════════════════════════
+# OPEN ITEMS — wajib konfirmasi sebelum seed data/eksekusi penuh
+# ═══════════════════════════════════════════════════════════════════
+delta_pending:
+  - "[PENTING] Nama jabatan riil org_position yang mengisi role 'Dept Head'/'HR Manager'/'Direksi' di rcr_approval_matrix & rcr_offer_approval_matrix — asumsi 3/2/1 jenjang per track (STAFF/NON_STAFF/BORONGAN), lihat Tier 2 SECTION 2 & 5. JANGAN seed sebelum ini dikonfirmasi Telma."
+  - "Keputusan final Plan A (Firebase) vs Plan B (tm2crp MariaDB) — budget/approval Firebase masih ditimbang user. Internal tm2hrr BOLEH dibangun paralel karena adapter pattern mengisolasi keputusan ini (lihat keputusan_terkunci.portal_backend_dual_plan)."
+  - "Dedupe key untuk kandidat WNA (passport_no sbg fallback) — belum didesain detail, lihat Tier 1 SECTION 4 Open Item #5."
+  - "Kebijakan retensi/purge data kandidat non-aktif lama (kepatuhan UU PDP) — belum ada aturan, dicatat sbg Open Item Tier 1 #4."
+  - "Format nomor requisition_no/vacancy_code — asumsi RCR{YY}{NNNNN}, belum dikonfirmasi pola resmi perusahaan."
+  - "Akun Google Play ($25) & Apple Developer ($99/tahun) + privacy policy publik belum disiapkan — perlu dimulai lebih awal karena review Apple bisa 1-2 minggu (Tier 3 SECTION 6.4)."
+
+next_step:
+  - "Konfirmasi Telma: daftar jabatan riil untuk approval matrix (delta_pending #1) — baru boleh seed data."
+  - "Putuskan Plan A vs Plan B portal (delta_pending #2) — tidak menghambat mulai eksekusi Claude Code untuk tm2hrr internal."
+  - "Review keseluruhan Tier 1-4 oleh Telma sebelum eksekusi Claude Code."
+  - "Update globalarchitecture_tier0.md: tambahkan catatan tm2crp/Firebase sbg host ke-11 di luar 10 DB tm2* resmi."
+  - "Update prefixlist.md Tier 3A: tambahkan bagian domain Recruitment (rcr_/vac_/cnd_/app_) yang belum tercatat di sana."

@@ -90,7 +90,7 @@ class EmployeeMigrationService
             [
                 'division_id' => null,
                 'department_name' => 'Migrasi Legacy - Belum Dipetakan',
-                'is_active' => true,
+                'activate' => true,
                 'created_by' => $actor,
                 'updated_by' => $actor,
             ]
@@ -104,7 +104,7 @@ class EmployeeMigrationService
             [
                 'level_id' => $levelId,
                 'position_name' => 'Karyawan Legacy - Belum Dipetakan',
-                'is_active' => true,
+                'activate' => true,
                 'created_by' => $actor,
                 'updated_by' => $actor,
             ]
@@ -137,7 +137,7 @@ class EmployeeMigrationService
                 'company_id' => $companyId,
                 'department_code' => $code,
                 'department_name' => $name,
-                'is_active' => true,
+                'activate' => true,
                 'updated_by' => $actor,
             ];
 
@@ -180,7 +180,7 @@ class EmployeeMigrationService
                 'level_id' => $fallbackLevelId,
                 'position_code' => $code,
                 'position_name' => $name,
-                'is_active' => true,
+                'activate' => true,
                 'updated_by' => $actor,
             ];
 
@@ -259,7 +259,7 @@ class EmployeeMigrationService
                         'email_personal' => $this->blank($e->email),
                         'join_date' => $e->hire_date ?: null,
                         'resign_date' => $e->resign_date ?: null,
-                        'is_active' => ((int) $e->is_active) === 1,
+                        'activate' => ((int) $e->is_active) === 1,
                         'updated_by' => $actor,
                     ];
 
@@ -301,7 +301,7 @@ class EmployeeMigrationService
                 'bank_name' => $bankName,
                 'account_holder_name' => trim((string) $e->full_name),
                 'is_primary' => true,
-                'is_active' => true,
+                'activate' => true,
                 'created_by' => $actor,
                 'updated_by' => $actor,
             ]
@@ -324,7 +324,7 @@ class EmployeeMigrationService
                 'file_path' => $this->blank($ktp->file_url) ?? $this->blank($ktp->identity_url),
                 'expiry_date' => $ktp->expiry_date ?: null,
                 'uploaded_by_role' => 'HR',
-                'is_active' => true,
+                'activate' => true,
                 'created_by' => $actor,
                 'updated_by' => $actor,
             ]

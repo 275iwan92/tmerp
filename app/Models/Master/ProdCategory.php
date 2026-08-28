@@ -15,12 +15,12 @@ class ProdCategory extends Model
     protected $fillable = [
         'category_name',
         'description',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

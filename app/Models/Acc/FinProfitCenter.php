@@ -15,12 +15,12 @@ class FinProfitCenter extends Model
     protected $fillable = [
         'pc_code',
         'pc_name',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

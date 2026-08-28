@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Sys\SysNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -9,6 +10,7 @@ use Livewire\WithPagination;
 
 new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use WithPagination;
 
     public string $search = '';
@@ -17,7 +19,7 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
 
     public bool $unreadOnly = false;
 
-    // grid_performance (GLOBAL_RULES.yaml): server-side pagination + WHERE.
+    // grid_performance (globalrules.yaml): server-side pagination + WHERE.
     #[Computed]
     public function notifications()
     {
@@ -31,7 +33,7 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
             ->when($this->typeFilter !== '', fn ($q) => $q->where('type', $this->typeFilter))
             ->when($this->unreadOnly, fn ($q) => $q->where('is_read', false))
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -66,28 +68,35 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
         @if ($this->unreadCount > 0)
             <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#fff5e0] text-[#8a5a00]">{{ $this->unreadCount }} belum dibaca</span>
         @endif
-        <a href="{{ route('menu') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Menu</a>
+        <a href="{{ route('menu') }}" title="Kembali ke Menu Utama"
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[1000px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex-wrap">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari judul / isi..." class="w-56 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <select wire:model.live="typeFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        <option value="">Semua Tipe</option>
-                        <option value="info">Info</option>
-                        <option value="success">Sukses</option>
-                        <option value="warning">Peringatan</option>
-                        <option value="error">Error</option>
-                    </select>
-                    <label class="flex items-center gap-1.5 text-xs text-[#4b5568] cursor-pointer">
-                        <input type="checkbox" wire:model.live="unreadOnly" class="rounded border-[#d7dbe2]">
-                        Hanya belum dibaca
-                    </label>
+            <x-grid.toolbar class="!bg-[#f4f6fa]">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari judul / isi..." class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <button type="button" wire:click="markAllRead" class="text-[11px] font-bold text-accent">Tandai semua terbaca</button>
-            </div>
+                <select wire:model.live="typeFilter" class="shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <option value="">Semua Tipe</option>
+                    <option value="info">Info</option>
+                    <option value="success">Sukses</option>
+                    <option value="warning">Peringatan</option>
+                    <option value="error">Error</option>
+                </select>
+                <label class="flex items-center gap-1.5 text-xs text-[#4b5568] cursor-pointer shrink-0">
+                    <input type="checkbox" wire:model.live="unreadOnly" class="rounded border-[#d7dbe2]">
+                    Hanya belum dibaca
+                </label>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="markAllRead" class="shrink-0 text-[11px] font-bold text-accent">Tandai semua terbaca</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
             <div class="divide-y divide-[#eef1f5]">
                 @forelse ($this->notifications as $n)
@@ -117,9 +126,7 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
                 @endforelse
             </div>
 
-            <div class="px-4 py-3 border-t border-[#eef1f5]">
-                {{ $this->notifications->links() }}
-            </div>
+            @include('components.grid.pagination-footer', ['paginator' => $this->notifications])
         </div>
     </div>
 </div>

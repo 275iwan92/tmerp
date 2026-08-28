@@ -19,13 +19,13 @@ class FinPartnerAccount extends Model
         'ar_account_id',
         'ap_account_id',
         'payment_term',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function arAccount(): BelongsTo

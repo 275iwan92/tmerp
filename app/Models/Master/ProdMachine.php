@@ -28,13 +28,13 @@ class ProdMachine extends Model
         'gsm_min',
         'gsm_max',
         'notes',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'year_acquired' => 'integer',
         'color_count' => 'integer',
         'max_speed_per_hour' => 'integer',

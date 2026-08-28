@@ -20,13 +20,13 @@ class OrgCompany extends Model
         'address',
         'phone',
         'email',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function divisions(): HasMany

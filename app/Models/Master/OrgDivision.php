@@ -18,13 +18,13 @@ class OrgDivision extends Model
         'company_id',
         'division_code',
         'division_name',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function company(): BelongsTo

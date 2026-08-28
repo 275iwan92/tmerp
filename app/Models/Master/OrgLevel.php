@@ -16,13 +16,13 @@ class OrgLevel extends Model
         'level_code',
         'level_name',
         'level_rank',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'level_rank' => 'integer',
     ];
 }

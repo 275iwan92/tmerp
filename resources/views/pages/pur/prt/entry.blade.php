@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatRaw;
 use App\Models\Pur\PrtLine;
 use App\Models\Pur\PrtReturn;
 use App\Models\Pur\PvLine;
@@ -82,7 +82,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         }
         $term = $this->itemSearch;
 
-        return MRawMaterial::where('is_active', true)
+        return MatRaw::where('activate', true)->where('stat_confirm', true)
             ->where(fn ($q) => $q->where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%"))
             ->limit(15)->get();
     }
@@ -152,7 +152,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
             return;
         }
 
-        $material = MRawMaterial::findOrFail($materialId);
+        $material = MatRaw::findOrFail($materialId);
         $login = Auth::user()->login;
         $nextLineNo = ((int) $this->prt->lines()->max('line_no')) + 1;
 
@@ -352,7 +352,11 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
                 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->prt->status }}</span>
-        <a href="{{ route('pur.prt.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar Retur</a>
+        <a href="{{ route('pur.prt.list') }}" title="Kembali ke Daftar Retur"
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[1400px] mx-auto my-5 px-4">
@@ -374,40 +378,20 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Dokumen</h3>
-            <div class="grid grid-cols-4 gap-3">
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Supplier</label>
-                    <input readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal Retur</label>
-                    <input type="date" value="{{ $this->prt->i_doc_date?->format('Y-m-d') }}" @disabled($readOnly)
-                        wire:change="updateHeader('i_doc_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
+            <div class="grid">
+                <x-form.input label="Supplier" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
+                <x-form.input label="Tanggal Retur" type="date" value="{{ $this->prt->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                    wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @if ($this->prt->i_source === 'QC_REJECT')
-                    <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ref. PV</label>
-                        <input readonly value="{{ $this->prt->sourcePv?->doc_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">QC Inspector</label>
-                        <input type="text" value="{{ $this->prt->qc_inspector }}" @disabled($readOnly)
-                            wire:change="updateHeader('qc_inspector', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                    </div>
+                    <x-form.input label="Ref. PV" readonly value="{{ $this->prt->sourcePv?->doc_no }}" class="bg-[#f8fafc]" />
+                    <x-form.input label="QC Inspector" value="{{ $this->prt->qc_inspector }}" :disabled="$readOnly"
+                        wire:change="updateHeader('qc_inspector', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @endif
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Disposisi *</label>
-                    <select @disabled($readOnly) wire:change="updateHeader('i_disposition', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        <option value="CREDIT_NOTE" @selected($this->prt->i_disposition === 'CREDIT_NOTE')>Credit Note</option>
-                        <option value="REPLACEMENT" @selected($this->prt->i_disposition === 'REPLACEMENT')>Ganti Barang</option>
-                    </select>
-                </div>
+                <x-form.select label="Disposisi *" :disabled="$readOnly" wire:change="updateHeader('i_disposition', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    :placeholder="false" :selected="$this->prt->i_disposition" :options="['CREDIT_NOTE' => 'Credit Note', 'REPLACEMENT' => 'Ganti Barang']" />
                 @if ($this->prt->i_disposition === 'REPLACEMENT')
-                    <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Batas Waktu Pengganti</label>
-                        <input type="date" value="{{ $this->prt->replacement_due_date?->format('Y-m-d') }}" @disabled($readOnly)
-                            wire:change="updateHeader('replacement_due_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                    </div>
+                    <x-form.input label="Batas Waktu Pengganti" type="date" value="{{ $this->prt->replacement_due_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                        wire:change="updateHeader('replacement_due_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @endif
             </div>
             <div class="mt-3">
@@ -475,17 +459,17 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
                                 <td class="px-3 py-2 text-muted">{{ $line->line_no }}</td>
                                 <td class="px-3 py-2">{{ $line->i_description }}</td>
                                 <td class="px-3 py-2">
-                                    <input type="text" value="{{ $line->i_lot_no }}" @disabled($readOnly)
-                                        wire:change="updateLine({{ $line->prt_line_id }}, 'i_lot_no', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input value="{{ $line->i_lot_no }}" :disabled="$readOnly"
+                                        wire:change="updateLine({{ $line->prt_line_id }}, 'i_lot_no', $event.target.value)" class="w-20 !py-1 disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_qty }}" @disabled($readOnly)
-                                        wire:change="updateLine({{ $line->prt_line_id }}, 'i_qty', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_qty }}" :disabled="$readOnly"
+                                        wire:change="updateLine({{ $line->prt_line_id }}, 'i_qty', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2">{{ $line->i_uom }}</td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->c_unit_price }}" @disabled($readOnly || $line->pv_line_id)
-                                        wire:change="updateLine({{ $line->prt_line_id }}, 'c_unit_price', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->c_unit_price }}" :disabled="$readOnly || $line->pv_line_id"
+                                        wire:change="updateLine({{ $line->prt_line_id }}, 'c_unit_price', $event.target.value)" class="w-24 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right font-mono font-semibold">{{ number_format((float) $line->c_line_value, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2">
@@ -512,32 +496,14 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         {{-- DISPOSISI & FOLLOW-UP --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Disposisi & Follow-up</h3>
-            <div class="grid grid-cols-4 gap-3">
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Metode Komunikasi</label>
-                    <input type="text" value="{{ $this->prt->comm_method }}" @disabled($readOnly) placeholder="Email / Telp / WA" wire:change="updateHeader('comm_method', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">PIC Supplier</label>
-                    <input type="text" value="{{ $this->prt->supplier_pic }}" @disabled($readOnly) wire:change="updateHeader('supplier_pic', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tgl Kirim Fisik</label>
-                    <input type="date" value="{{ $this->prt->physical_return_date?->format('Y-m-d') }}" @disabled($readOnly) wire:change="updateHeader('physical_return_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ekspedisi</label>
-                    <input type="text" value="{{ $this->prt->expedition }}" @disabled($readOnly) wire:change="updateHeader('expedition', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
+            <div class="grid">
+                <x-form.input label="Metode Komunikasi" value="{{ $this->prt->comm_method }}" :disabled="$readOnly" placeholder="Email / Telp / WA" wire:change="updateHeader('comm_method', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="PIC Supplier" value="{{ $this->prt->supplier_pic }}" :disabled="$readOnly" wire:change="updateHeader('supplier_pic', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="Tgl Kirim Fisik" type="date" value="{{ $this->prt->physical_return_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('physical_return_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="Ekspedisi" value="{{ $this->prt->expedition }}" :disabled="$readOnly" wire:change="updateHeader('expedition', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @if ($this->prt->i_disposition === 'CREDIT_NOTE')
-                    <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No. CN Supplier</label>
-                        <input type="text" value="{{ $this->prt->cn_supplier_no }}" @disabled($readOnly) wire:change="updateHeader('cn_supplier_no', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                    </div>
-                    <div>
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tgl CN Diterima</label>
-                        <input type="date" value="{{ $this->prt->cn_received_date?->format('Y-m-d') }}" @disabled($readOnly) wire:change="updateHeader('cn_received_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                    </div>
+                    <x-form.input label="No. CN Supplier" value="{{ $this->prt->cn_supplier_no }}" :disabled="$readOnly" wire:change="updateHeader('cn_supplier_no', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                    <x-form.input label="Tgl CN Diterima" type="date" value="{{ $this->prt->cn_received_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('cn_received_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @endif
             </div>
             <div class="mt-3">
@@ -578,7 +544,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
                 @endif
                 <div class="flex justify-end gap-2 items-start">
                     <div class="flex-1 max-w-[380px]">
-                        <textarea wire:model="cancelReason" rows="1" placeholder="Alasan pembatalan (min. 10 karakter, kalau mau batalkan)..." class="w-full border border-[#d7dbe2] rounded px-2.5 py-1.5 text-xs"></textarea>
+                        <x-form.textarea wire:model="cancelReason" rows="1" placeholder="Alasan pembatalan (min. 10 karakter, kalau mau batalkan)..." />
                     </div>
                     <button type="button" wire:click="cancelDoc" wire:confirm="Batalkan dokumen retur ini?" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Batalkan</button>
                     <button type="button" wire:click="submitForApproval" wire:confirm="Ajukan retur ini utk approval Manajer Operasional? Nomor dokumen akan diterbitkan." class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Ajukan Persetujuan</button>
@@ -591,8 +557,9 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
                 @endif
                 <div class="mb-3">
-                    <label class="text-xs text-muted">Catatan <span class="text-[#a3241f]">(wajib utk Tolak / Minta Info)</span></label>
-                    <textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau pertanyaan tambahan..." class="w-full border border-[#d7dbe2] rounded-lg px-3 py-2 mt-1 text-sm"></textarea>
+                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau pertanyaan tambahan..." class="!text-sm">
+                        <x-slot:label>Catatan <span class="text-[#a3241f] normal-case">(wajib utk Tolak / Minta Info)</span></x-slot:label>
+                    </x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" wire:click="holdDoc" wire:confirm="Minta info tambahan? Retur tetap di antrian Anda." class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ Minta Info</button>

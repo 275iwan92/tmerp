@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Master\MWarehouse;
-use App\Models\Master\MWhLocation;
+use App\Models\Master\WhWarehouse;
+use App\Models\Master\WhLoc;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -19,7 +19,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
     public string $warehouse_type = 'RM';
 
-    public bool $is_active = true;
+    public bool $activate = true;
 
     // Baris bin baru (ditambah lewat mini-form, bukan wire:model per kolom --
     // sama pola dgn addCoating() di inquiry/costing.blade.php).
@@ -36,13 +36,13 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
     public function mount(?int $warehouse = null): void
     {
         if ($warehouse) {
-            $wh = MWarehouse::findOrFail($warehouse);
+            $wh = WhWarehouse::findOrFail($warehouse);
             $this->warehouseId = $wh->id_warehouse;
             $this->isEdit = true;
             $this->warehouse_code = $wh->warehouse_code;
             $this->warehouse_name = $wh->warehouse_name;
             $this->warehouse_type = $wh->warehouse_type;
-            $this->is_active = $wh->is_active;
+            $this->activate = $wh->activate;
         }
     }
 
@@ -53,7 +53,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
             return collect();
         }
 
-        return MWhLocation::where('warehouse_id', $this->warehouseId)
+        return WhLoc::where('warehouse_id', $this->warehouseId)
             ->orderBy('row_code')->orderBy('col_code')->orderBy('stack_code')->get();
     }
 
@@ -62,7 +62,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         $this->formError = '';
 
         $this->validate([
-            'warehouse_code' => 'required|string|max:20|unique:tm2mst.m_warehouse,warehouse_code,'.($this->warehouseId ?: 'NULL').',id_warehouse',
+            'warehouse_code' => 'required|string|max:20|unique:tm2mst.wh_warehouse,warehouse_code,'.($this->warehouseId ?: 'NULL').',id_warehouse',
             'warehouse_name' => 'required|string|max:100',
             'warehouse_type' => 'required|in:RM,SFG,FG,MIX,WASTE,TRANSIT',
         ]);
@@ -70,19 +70,19 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         $login = Auth::user()->login;
 
         if ($this->isEdit) {
-            MWarehouse::whereKey($this->warehouseId)->update([
+            WhWarehouse::whereKey($this->warehouseId)->update([
                 'warehouse_code' => $this->warehouse_code,
                 'warehouse_name' => $this->warehouse_name,
                 'warehouse_type' => $this->warehouse_type,
-                'is_active' => $this->is_active,
+                'activate' => $this->activate,
                 'updated_by' => $login,
             ]);
         } else {
-            $wh = MWarehouse::create([
+            $wh = WhWarehouse::create([
                 'warehouse_code' => $this->warehouse_code,
                 'warehouse_name' => $this->warehouse_name,
                 'warehouse_type' => $this->warehouse_type,
-                'is_active' => $this->is_active,
+                'activate' => $this->activate,
                 'created_by' => $login,
                 'updated_by' => $login,
             ]);
@@ -113,7 +113,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
         $binCode = "{$this->warehouse_code}-{$this->newRow}-{$this->newCol}-{$this->newStack}";
 
-        if (MWhLocation::where('location_code', $binCode)->exists()) {
+        if (WhLoc::where('location_code', $binCode)->exists()) {
             $this->formError = "Bin {$binCode} sudah ada.";
 
             return;
@@ -121,7 +121,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
         $isWaste = $this->warehouse_type === 'WASTE';
 
-        MWhLocation::create([
+        WhLoc::create([
             'warehouse_id' => $this->warehouseId,
             'row_code' => $this->newRow,
             'col_code' => $this->newCol,
@@ -140,7 +140,7 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
     public function removeLocation(int $locationId): void
     {
-        MWhLocation::where('warehouse_id', $this->warehouseId)->whereKey($locationId)->delete();
+        WhLoc::where('warehouse_id', $this->warehouseId)->whereKey($locationId)->delete();
         unset($this->locations);
     }
 };
@@ -148,7 +148,11 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🏬 {{ $isEdit ? 'Edit Gudang: '.$warehouse_code : 'Gudang Baru' }}</b>
-        <a href="{{ route('master.warehouse.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar Gudang</a>
+        <a href="{{ route('master.warehouse.list') }}" title="Kembali ke Daftar Gudang"
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[900px] mx-auto my-5 px-4">
@@ -163,15 +167,9 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ IDENTITAS ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">1. Identitas & Klasifikasi</h3>
-            <div class="grid grid-cols-2 gap-3 mb-3">
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Kode Gudang</label>
-                    <input type="text" wire:model="warehouse_code" placeholder="WH-RAW-01" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs font-mono">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Nama Gudang</label>
-                    <input type="text" wire:model="warehouse_name" placeholder="Gudang Bahan Baku Utama" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
+            <div class="grid two mb-3">
+                <x-form.input label="Kode Gudang" wire:model="warehouse_code" placeholder="WH-RAW-01" class="font-mono" name="warehouse_code" />
+                <x-form.input label="Nama Gudang" wire:model="warehouse_name" placeholder="Gudang Bahan Baku Utama" name="warehouse_name" />
             </div>
             <div class="flex flex-col gap-1 mb-3">
                 <label class="text-[10px] text-muted uppercase font-semibold">Tipe Gudang</label>
@@ -183,9 +181,9 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
                     @endforeach
                 </div>
             </div>
-            <label class="flex items-center gap-1.5 text-xs cursor-pointer mb-3">
-                <input type="checkbox" wire:model="is_active"> Aktif
-            </label>
+            <div class="mb-3">
+                <x-form.checkbox wire:model="activate" label="Aktif" />
+            </div>
             <button type="button" wire:click="save" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">💾 Simpan Gudang</button>
         </div>
 

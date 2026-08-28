@@ -28,7 +28,7 @@ class MasterUomSmokeTest extends TestCase
 
     public function test_selecting_unit_computes_correct_derived_conversion_factors(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         $component = Livewire::test('pages::master.uom')
@@ -53,7 +53,7 @@ class MasterUomSmokeTest extends TestCase
 
     public function test_spec_dimension_unit_cannot_open_conversion_panel(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::master.uom')
@@ -64,7 +64,7 @@ class MasterUomSmokeTest extends TestCase
 
     public function test_new_unit_can_be_created_via_modal(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::master.uom')
@@ -83,7 +83,7 @@ class MasterUomSmokeTest extends TestCase
 
     public function test_conversion_between_mismatched_dimensions_is_rejected(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::master.uom')
@@ -100,7 +100,7 @@ class MasterUomSmokeTest extends TestCase
 
     public function test_new_conversion_saves_and_appears_in_direct_list(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         $component = Livewire::test('pages::master.uom')

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 // flow_config PO (PROC_TIER_3 §9): step1 Manajer Operasional (semua nilai),
 // step2 Direksi (>=100jt). Posisi pakai yang sudah dibuat migration 000015
 // (MGR-OPS/DIREKSI-OPS) -- deviasi sama seperti PR (approval terpusat,
-// bukan per-departemen), lihat PROC_STATE.yaml issue PROC-FLOW-POSITION.
+// bukan per-departemen), lihat procurement_state.yaml issue PROC-FLOW-POSITION.
 return new class extends Migration
 {
     public function up(): void

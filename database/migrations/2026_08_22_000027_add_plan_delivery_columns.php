@@ -7,12 +7,12 @@ use Illuminate\Support\Facades\Schema;
 // Plan Delivery (docs/mockups/co_delivery_plan_mockup.html) -- hub logistik
 // lintas-CO, MURNI penjadwalan (split/gabung/geser tanggal kirim), TIDAK
 // menyentuh stok sama sekali (itu domain Delivery Order/Dispatch, belum
-// dibangun -- lihat FIN_TIER_1.md Keputusan B: HPP diakui saat DO terbit,
+// dibangun -- lihat financeaccounting_tier1.md Keputusan B: HPP diakui saat DO terbit,
 // bukan di sini). co_order_delivery sudah ada (dipakai tab "Delivery" di CO
 // Entry, migration 2026_08_20_000008) tapi belum punya status/lineage split --
 // tab CO Entry cuma menulis jadwal AWAL sekali saat CO masih DRAFT; begitu CO
-// CONFIRMED, screen ini yang mengelola lanjutannya (checklist_mockup_erp.md
-// & SALES_STATE.yaml sebelumnya menandai relasi 2 layar ini "perlu klarifikasi
+// CONFIRMED, screen ini yang mengelola lanjutannya (checklistmockuperp.md
+// & sales_state.yaml sebelumnya menandai relasi 2 layar ini "perlu klarifikasi
 // scope" -- resolusi: saling melengkapi, bukan bentrok, lihat memory
 // project_plan_delivery_screen).
 return new class extends Migration

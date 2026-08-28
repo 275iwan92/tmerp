@@ -10,7 +10,7 @@ use Livewire\Component;
 // dari layar Sales lain di modul ini, CLAUDE.md #4 Sisi A rahasia). Grid
 // inquiry confirmed & punya part, klik 2x (atau ikon Aksi) buka layar costing
 // per-inquiry yang SUDAH ADA (inquiry/costing.blade.php, tidak diubah).
-// GRID_UI_STANDARD.md diikuti (2026-08-22, diperluas ke grid transaksi juga
+// griduistandard.md diikuti (2026-08-22, diperluas ke grid transaksi juga
 // atas instruksi user): tanpa header halaman, kotak statistik pastel, kolom
 // identitas avatar+nama+kode, toolbar cuma search, ikon Aksi.
 new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
@@ -98,26 +98,8 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
         return $this->inquiries->filter(fn ($i) => $i->costing?->doc_status === 'PUBLISHED')->count();
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
@@ -127,36 +109,23 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
             🔒 Layar ini khusus role Costing/Direksi — angka HPP &amp; margin tidak boleh bocor ke Sisi B (Sales) sebelum <b>doc_status = PUBLISHED</b> (approve Direksi).
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Perlu Costing</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Belum Dimulai</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statNotStarted }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
-                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Menunggu Approval Direksi</p>
-                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->statPendingApproval }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Published</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statPublished }}</p>
-                <p class="text-[10px] text-[#2f7a52]/70">DEKLASIFIKASI KE SALES</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total Perlu Costing" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="Belum Dimulai" :value="$this->statNotStarted" />
+            <x-grid.stat-box tone="extra" label="Menunggu Approval Direksi" :value="$this->statPendingApproval" />
+            <x-grid.stat-box tone="active" label="Published" :value="$this->statPublished" subtitle="DEKLASIFIKASI KE SALES" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. inkuiri / nama produk…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-            </div>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -171,16 +140,8 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->inquiries as $row)
                             <tr wire:key="cost-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Costing">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($custName) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $custName }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $row->inquiry_no ?: '—' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
+                                <x-grid.identity-cell :id="$row->id_inquiry" :name="$custName" :code="$row->inquiry_no ?: '—'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->product_draft_name ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->typeBadgeClass($row->inquiry_type) }}">{{ $row->inquiry_type }}</span>
@@ -192,15 +153,15 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->docStatusBadgeClass($row->costing?->doc_status) }}">{{ $row->costing?->doc_status ?? 'Belum dimulai' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="open({{ $row->id_inquiry }})" title="Buka Costing" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    <x-grid.action-icon icon="↗" title="Buka Costing" action="open({{ $row->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada inkuiri yang perlu costing.</td></tr>
+                            <x-grid.empty-row :colspan="6" message="Tidak ada inkuiri yang perlu costing." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
     </div>
 </div>

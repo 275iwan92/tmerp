@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// PV - Purchase Receive / SPB (PROC_TIER_3 §5 + DELTA_PROC_PV_MULTIPO.md PV-01..PV-11).
+// PV - Purchase Receive / SPB (PROC_TIER_3 §5 + purchasereceive_delta_multipo.md PV-01..PV-11).
 // Desain ULANG dari patch asli user: patch mengasumsikan kolom snapshot penuh
 // (c_supplier_name, c_department_name, dst) yang tak ada di po_order/po_line
 // SAYA (gaya minimal-FK, PROC_TIER_3 asli) -- prasyarat DDL_PROCUREMENT_tm2pur.sql
@@ -45,7 +45,7 @@ return new class extends Migration
                 $table->string('status', 20)->default('DRAFT')->comment('DRAFT|QC_PENDING|POSTED|CANCELLED');
                 $table->dateTime('posted_at')->nullable();
                 $table->string('posted_by', 100)->nullable();
-                $table->unsignedBigInteger('rm_stock_doc_id')->nullable()->comment('LOGICAL -> tm2inv.rm_stock -- NULL sampai tminv legacy tersedia, lihat PROC_STATE.yaml');
+                $table->unsignedBigInteger('rm_stock_doc_id')->nullable()->comment('LOGICAL -> tm2inv.rm_stock -- NULL sampai tminv legacy tersedia, lihat procurement_state.yaml');
 
                 $table->string('created_by', 100)->nullable();
                 $table->timestamp('created_at')->useCurrent();

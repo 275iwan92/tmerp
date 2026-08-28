@@ -17,12 +17,12 @@ class FinCurrency extends Model
         'currency_name',
         'symbol',
         'counted_word',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models\Inventory;
 
-use App\Models\Master\MWhLocation;
+use App\Models\Master\WhLoc;
 use App\Models\Master\ProdProduct;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +41,6 @@ class FgStockD extends Model
 
     public function location(): BelongsTo
     {
-        return $this->belongsTo(MWhLocation::class, 'location_id', 'location_id');
+        return $this->belongsTo(WhLoc::class, 'location_id', 'location_id');
     }
 }

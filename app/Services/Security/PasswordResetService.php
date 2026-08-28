@@ -5,7 +5,7 @@ namespace App\Services\Security;
 use App\Models\Sys\SecUser;
 use Illuminate\Support\Facades\Hash;
 
-// SECURITY_default_password_spec.md §5 — generate password readable +
+// security_defaultpassword_spec.md §5 — generate password readable +
 // alur reset (dipakai admin manual & self-service ke depan).
 class PasswordResetService
 {

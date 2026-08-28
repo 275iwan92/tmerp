@@ -2,7 +2,7 @@
 
 namespace App\Models\Sdi;
 
-use App\Models\Master\MPlanoSize;
+use App\Models\Master\MatPlanoSize;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,7 +29,7 @@ class IqpLayout extends Model
         'efficiency_pct',
         'waste_pct',
         'layout_detail',
-        'is_confirmed',
+        'stat_confirm',
         'confirmed_by',
         'confirmed_at',
         'created_by',
@@ -48,7 +48,7 @@ class IqpLayout extends Model
         'efficiency_pct' => 'decimal:2',
         'waste_pct' => 'decimal:2',
         'layout_detail' => 'array',
-        'is_confirmed' => 'boolean',
+        'stat_confirm' => 'boolean',
         'confirmed_at' => 'datetime',
     ];
 
@@ -57,9 +57,9 @@ class IqpLayout extends Model
         return $this->belongsTo(IqpPart::class, 'part_id', 'id_part');
     }
 
-    // plano_size_id -> m_plano_size (tm2mst): FK lintas-DB, relasi logis.
+    // plano_size_id -> mat_plano_size (tm2mst): FK lintas-DB, relasi logis.
     public function planoSize(): BelongsTo
     {
-        return $this->belongsTo(MPlanoSize::class, 'plano_size_id', 'id_plano_size');
+        return $this->belongsTo(MatPlanoSize::class, 'plano_size_id', 'id_plano_size');
     }
 }

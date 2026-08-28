@@ -13,7 +13,7 @@ use App\Models\Sdi\IqpCostingPart;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Port dari method Scriptcase `calc_cogs` (docs/SALES_TIER_COSTING.md).
+ * Port dari method Scriptcase `calc_cogs` (docs/productcosting_tier1-4.md).
  * part_type DC dan SHEET_DIGITAL yang diimplementasikan — part_type lain
  * (DC+SF, DC+SHEET, KRAFT, SHEET polos) sengaja dilempar exception, lihat
  * ProdPartType::is_engine_ready.
@@ -151,7 +151,7 @@ class CostingEngine
     }
 
     /**
-     * Formula geometri+harga SHEET_DIGITAL (§B.5 + §B.2 SALES_TIER_COSTING.md),
+     * Formula geometri+harga SHEET_DIGITAL (§B.5 + §B.2 productcosting_tier1-4.md),
      * diverifikasi byte-presisi ke Excel "OB COCO TOKYO..." blok UJK (kolom A-H).
      */
     protected function calculateSheetDigitalPart(IqpCostingPart $part, float $qty): void
@@ -164,7 +164,7 @@ class CostingEngine
         $t = (float) $part->i_dim_tinggi_mm;
         $lidahLem = (float) $part->i_lidah_lem_mm;
 
-        $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('is_active', true)->first() : null;
+        $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('activate', true)->first() : null;
         if (! $allowance) {
             throw new \RuntimeException("flute_type '{$part->flute_type}' tidak ditemukan di mat_flute_allowance.");
         }
@@ -275,7 +275,7 @@ class CostingEngine
 
         // Toleransi = mark-up on price, SAMA gaya dgn margin (÷(1-tol%)), BUKAN ×(1+tol%).
         // Diverifikasi byte-presisi ke Excel asli "OB COCO TOKYO..." (C31 = C30/(1-B31)),
-        // beda dari ringkasan §0 SALES_TIER_COSTING.md yang keliru menulis additive.
+        // beda dari ringkasan §0 productcosting_tier1-4.md yang keliru menulis additive.
         $tolerancePct = min((float) $tier->tolerance_pct, 99.9999); // guard div-by-zero
         $afterTolerancePc = $hppPc / (1 - ($tolerancePct / 100));
 

@@ -51,8 +51,8 @@ class IqpInquiry extends Model
         'design_number',
         'co_id',
         'sub_state',
-        'is_confirmed',
-        'is_cancelled',
+        'stat_confirm',
+        'stat_cancel',
         'cancel_reason',
         'is_approved',
         'approved_by',
@@ -70,8 +70,8 @@ class IqpInquiry extends Model
         'approved_at' => 'datetime',
         'is_prospect' => 'boolean',
         'pph_applicable' => 'boolean',
-        'is_confirmed' => 'boolean',
-        'is_cancelled' => 'boolean',
+        'stat_confirm' => 'boolean',
+        'stat_cancel' => 'boolean',
         'is_approved' => 'boolean',
         'ppn_percent' => 'decimal:4',
         'pph_percent' => 'decimal:4',
@@ -126,7 +126,7 @@ class IqpInquiry extends Model
         return $prefix.str_pad((string) $seq, 5, '0', STR_PAD_LEFT);
     }
 
-    // RECALC: spec/layout 100% reuse dari baku (DELTA_TIER_revise_scope_CO.md R-RC-1)
+    // RECALC: spec/layout 100% reuse dari baku (inquiryproduct_delta_revise.md R-RC-1)
     // — clone verbatim part+material+process, tak ada field yang diedit user.
     // $source harus sudah eager-load parts.materials & parts.processes.
     public function cloneStructureFrom(self $source): void

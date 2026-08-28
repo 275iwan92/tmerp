@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 // PQ (Purchase Quotation) & PRT (Purchase Return) -- DDL dasar dari
-// docs/PROC_TIER_3.md §3 & §6, disesuaikan setelah user memberi mockup HTML
+// docs/procurement_tier3.md §3 & §6, disesuaikan setelah user memberi mockup HTML
 // (mockup_purchase_quotation.html / mockup_purchase_return.html, 2026-08-22)
 // yang menunjukkan beberapa field belum ada di draf DDL asli:
 //   PQ: i_lead_time_day di HEADER (draf DDL cuma level baris).

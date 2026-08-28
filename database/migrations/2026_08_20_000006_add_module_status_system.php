@@ -5,8 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// module_status_system per GLOBAL_RULES.yaml + QUEUE.md #2 — menu jadi "peta"
-// visual progress build, bukan cuma checklist_mockup_erp.md tertulis.
+// module_status_system per globalrules.yaml + queue.md #2 — menu jadi "peta"
+// visual progress build, bukan cuma checklistmockuperp.md tertulis.
 // NOT_BUILT (default, abu, tak bisa diklik) -> READY_FOR_QC (Claude Code
 // selesai bangun, kuning, klik-able) -> LOCKED (user QC & konfirmasi, hijau,
 // HANYA user yang boleh set ini).
@@ -19,7 +19,7 @@ return new class extends Migration
         Schema::connection('tm2sys')->table('sys_app_menu', function (Blueprint $table) {
             $table->enum('status_code', ['NOT_BUILT', 'READY_FOR_QC', 'LOCKED'])
                 ->default('NOT_BUILT')
-                ->comment('Kesiapan build (menu_type=item saja) -- lihat module_status_system di GLOBAL_RULES.yaml');
+                ->comment('Kesiapan build (menu_type=item saja) -- lihat module_status_system di globalrules.yaml');
             $table->string('status_note', 255)->nullable();
             $table->string('status_updated_by', 100)->nullable();
             $table->dateTime('status_updated_at')->nullable();

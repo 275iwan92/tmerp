@@ -23,7 +23,7 @@ class EmpContract extends Model
         'salary_amount',
         'is_probation',
         'probation_end_date',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -34,7 +34,7 @@ class EmpContract extends Model
         'probation_end_date' => 'date',
         'salary_amount' => 'decimal:4',
         'is_probation' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function employee(): BelongsTo

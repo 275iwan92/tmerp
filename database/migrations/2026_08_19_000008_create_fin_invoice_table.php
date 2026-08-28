@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 // TIER_3A_FINANCE.sql §7 — subledger AR/AP, source polymorphic (Keputusan A).
 // total_amount = subtotal+tax, snapshot beku saat posting (tak retroaktif
-// walau rate pajak berubah — FIN_TIER_2.md §B7).
+// walau rate pajak berubah — financeaccounting_tier2.md §B7).
 return new class extends Migration
 {
     public function up(): void

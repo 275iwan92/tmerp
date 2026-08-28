@@ -4,17 +4,17 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
 // Stock Out, Return from Production, Stock Adjustment & Opname (+ layar
-// Persetujuan-nya) dibangun 2026-08-22 (INV_TIER_4.md §3/§4/§5). Placeholder
+// Persetujuan-nya) dibangun 2026-08-22 (inventory_tier4.md §3/§4/§5). Placeholder
 // item-nya sudah ada sejak sesi sebelumnya (INV_TRX_RM/FG/SFG_ITEM2..5), cuma
 // perlu dipindah dari NOT_BUILT -> READY_FOR_QC utk yang benar-benar dikerjakan.
 // FG/SFG untuk Stock Out & Return from Production SENGAJA dibiarkan NOT_BUILT
-// -- di luar cakupan modul per INV_RULES.yaml (fg_out_bukan_milik_modul; SFG
+// -- di luar cakupan modul per inventory_rules.yaml (fg_out_bukan_milik_modul; SFG
 // sama sekali tak disebut spec/mockup Tier 4 utk kedua layar itu).
 return new class extends Migration
 {
     private const BUILT = ['INV_RM_ITEM2', 'INV_RM_ITEM3', 'INV_RM_ITEM4', 'INV_RM_ITEM5', 'INV_FG_ITEM4', 'INV_FG_ITEM5', 'INV_SFG_ITEM4', 'INV_SFG_ITEM5'];
 
-    private const OUT_OF_SCOPE_NOTE = 'Di luar cakupan modul Stock Out/Return v1 -- INV_RULES.yaml (fg_out_bukan_milik_modul / SFG tak disebut spec Tier 4). Hanya kelas RM yang berlaku.';
+    private const OUT_OF_SCOPE_NOTE = 'Di luar cakupan modul Stock Out/Return v1 -- inventory_rules.yaml (fg_out_bukan_milik_modul / SFG tak disebut spec Tier 4). Hanya kelas RM yang berlaku.';
 
     public function up(): void
     {

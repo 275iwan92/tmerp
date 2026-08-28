@@ -37,7 +37,7 @@ class SupSupplier extends Model
         'tax_service_value',
         'is_blacklisted',
         'note',
-        'is_active',
+        'activate',
         'legacy_vendor_code',
         'created_by',
         'updated_by',
@@ -46,7 +46,7 @@ class SupSupplier extends Model
     protected $casts = [
         'is_subcon' => 'boolean',
         'is_blacklisted' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'tax_purchase_value' => 'decimal:2',
         'tax_service_value' => 'decimal:2',
     ];

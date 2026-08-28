@@ -21,13 +21,13 @@ class EmpBpjsKesehatan extends Model
         'employee_id',
         'no_kepesertaan',
         'kelas_rawat',
-        'is_active',
+        'activate',
         'dependents_count',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'dependents_count' => 'integer',
         'updated_at' => 'datetime',
     ];

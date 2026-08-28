@@ -22,7 +22,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
     // menyetujui/menolak/menahan langsung dari form PO yang sama (field
     // otomatis read-only krn status != DRAFT), sama seperti pola ME29N di SAP,
     // action pane di Dynamics 365, dan approval di form PO Odoo. Lihat
-    // docs/GRID_UI_STANDARD.md & memory project_procurement_module_status.
+    // docs/griduistandard.md & memory project_procurement_module_status.
     public string $approvalNote = '';
 
     public string $approvalError = '';
@@ -61,7 +61,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
     #[Computed]
     public function departments()
     {
-        return OrgDepartment::where('is_active', true)->orderBy('department_name')->get();
+        return OrgDepartment::where('activate', true)->orderBy('department_name')->get();
     }
 
     // Alokasi PR yang APPROVED, belum terkonversi, dan supplier-nya cocok
@@ -267,7 +267,11 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                 'REJECTED', 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->po->status }}</span>
-        <a href="{{ route('pur.po.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar PO</a>
+        <a href="{{ route('pur.po.list') }}" title="Kembali ke Daftar PO"
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[1400px] mx-auto my-5 px-4">
@@ -293,45 +297,21 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
-            <div class="grid grid-cols-4 gap-3">
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Supplier</label>
-                    <input readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal PO</label>
-                    <input type="date" value="{{ $this->po->i_doc_date?->format('Y-m-d') }}" @disabled($this->po->status !== 'DRAFT')
-                        wire:change="updateHeader('i_doc_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tipe PO</label>
-                    <select @disabled($this->po->status !== 'DRAFT') wire:change="updateHeader('i_po_type', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        <option value="LOCAL" @selected($this->po->i_po_type === 'LOCAL')>Local</option>
-                        <option value="IMPORT" @selected($this->po->i_po_type === 'IMPORT')>Import</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tipe Pengadaan</label>
-                    <select @disabled($this->po->status !== 'DRAFT') wire:change="updateHeader('i_procure_type', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        <option value="REPEAT" @selected($this->po->i_procure_type === 'REPEAT')>Repeat (rutin)</option>
-                        <option value="ONE_TIME" @selected($this->po->i_procure_type === 'ONE_TIME')>One-Time</option>
-                        <option value="CAPEX" @selected($this->po->i_procure_type === 'CAPEX')>Capex</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Syarat Bayar</label>
-                    <input type="text" value="{{ $this->po->i_payment_term }}" placeholder="mis. Net 30" @disabled($this->po->status !== 'DRAFT')
-                        wire:change="updateHeader('i_payment_term', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tgl Kirim</label>
-                    <input type="date" value="{{ $this->po->i_delivery_date?->format('Y-m-d') }}" @disabled($this->po->status !== 'DRAFT')
-                        wire:change="updateHeader('i_delivery_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
+            <div class="grid">
+                <x-form.input label="Supplier" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
+                <x-form.input label="Tanggal PO" type="date" value="{{ $this->po->i_doc_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
+                    wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.select label="Tipe PO" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_po_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    :placeholder="false" :selected="$this->po->i_po_type" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" />
+                <x-form.select label="Tipe Pengadaan" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_procure_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    :placeholder="false" :selected="$this->po->i_procure_type" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" />
+                <x-form.input label="Syarat Bayar" value="{{ $this->po->i_payment_term }}" placeholder="mis. Net 30" :disabled="$this->po->status !== 'DRAFT'"
+                    wire:change="updateHeader('i_payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="Tgl Kirim" type="date" value="{{ $this->po->i_delivery_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
+                    wire:change="updateHeader('i_delivery_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <div class="col-span-2">
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kirim Ke</label>
-                    <input type="text" value="{{ $this->po->i_ship_to }}" @disabled($this->po->status !== 'DRAFT')
-                        wire:change="updateHeader('i_ship_to', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
+                    <x-form.input label="Kirim Ke" value="{{ $this->po->i_ship_to }}" :disabled="$this->po->status !== 'DRAFT'"
+                        wire:change="updateHeader('i_ship_to', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 </div>
             </div>
             <div class="mt-3">
@@ -394,12 +374,12 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                                 <td class="px-3 py-2 text-right font-mono">{{ rtrim(rtrim(number_format((float) $line->i_qty, 2, ',', '.'), '0'), ',') }}</td>
                                 <td class="px-3 py-2">{{ $line->i_uom }}</td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_price }}" @disabled($this->po->status !== 'DRAFT')
-                                        wire:change="updateLine({{ $line->po_line_id }}, 'i_price', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_price }}" :disabled="$this->po->status !== 'DRAFT'"
+                                        wire:change="updateLine({{ $line->po_line_id }}, 'i_price', $event.target.value)" class="w-24 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_disc_pct }}" @disabled($this->po->status !== 'DRAFT')
-                                        wire:change="updateLine({{ $line->po_line_id }}, 'i_disc_pct', $event.target.value)" class="w-16 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_disc_pct }}" :disabled="$this->po->status !== 'DRAFT'"
+                                        wire:change="updateLine({{ $line->po_line_id }}, 'i_disc_pct', $event.target.value)" class="w-16 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right font-mono font-semibold">{{ number_format((float) $line->c_line_net, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-[10.5px] text-muted">{{ $line->allocation?->line?->requisition?->doc_no }}</td>
@@ -458,8 +438,9 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
                 @endif
                 <div class="mb-3">
-                    <label class="text-xs text-muted">Catatan <span class="text-[#a3241f]">(wajib utk Tolak / Hold)</span></label>
-                    <textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau catatan hold (mis. cash flow belum siap)..." class="w-full border border-[#d7dbe2] rounded-lg px-3 py-2 mt-1 text-sm"></textarea>
+                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau catatan hold (mis. cash flow belum siap)..." class="!text-sm">
+                        <x-slot:label>Catatan <span class="text-[#a3241f] normal-case">(wajib utk Tolak / Hold)</span></x-slot:label>
+                    </x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" wire:click="holdDoc" wire:confirm="Tahan PO ini? Tetap di antrian Anda, diputuskan lagi nanti." class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ Hold</button>

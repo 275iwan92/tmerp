@@ -11,7 +11,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 // Jurnal Kas & Bank (BKM/BKK/BBM/BBK) -- dari mockup HTML user 2026-08-22
-// (gemini-code-1787379102109.html), disesuaikan ke GRID_UI_STANDARD.md &
+// (gemini-code-1787379102109.html), disesuaikan ke griduistandard.md &
 // pola grid<->form panel-switching satu route (bukan modal spt DP Invoice --
 // kontennya terlalu banyak: tab rincian+pajak+audit, sama spt Stock In/Out).
 // fin_voucher.status ENUM(DRAFT,POSTED,CANCELLED) sudah ada sejak awal tapi
@@ -343,7 +343,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        $voucher->update(['status' => 'CANCELLED', 'is_cancelled' => true, 'updated_by' => Auth::user()->login]);
+        $voucher->update(['status' => 'CANCELLED', 'stat_cancel' => true, 'updated_by' => Auth::user()->login]);
         unset($this->vouchers, $this->statTotal, $this->statDraft, $this->statPosted);
         session()->flash('flash', 'Draft dibatalkan.');
         $this->panel = 'grid';
@@ -370,26 +370,8 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         };
     }
 
-    public function avatarInitials(string $name): string
-    {
-        $name = trim($name) ?: 'K B';
-        $words = array_values(array_filter(explode(' ', $name)));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
@@ -404,34 +386,26 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
         @endif
 
         @if ($panel === 'grid')
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3.5">
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Voucher</p>
-                    <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft</p>
-                    <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statDraft }}</p>
-                </div>
-                <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                    <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Sudah Posting</p>
-                    <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statPosted }}</p>
-                </div>
-            </div>
+            <x-grid.stat-row :count="3">
+                <x-grid.stat-box tone="total" label="Total Voucher" :value="$this->statTotal" />
+                <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
+                <x-grid.stat-box tone="active" label="Sudah Posting" :value="$this->statPosted" />
+            </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-                <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+                <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
                         <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. bukti / tipe / mitra…"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
-                    <span class="flex-1"></span>
-                    <button type="button" wire:click="openNew"
-                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-                </div>
+                    <x-slot:newRecord>
+                        <button type="button" wire:click="openNew"
+                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                    </x-slot:newRecord>
+                </x-grid.toolbar>
 
-                <div class="max-h-[65vh] overflow-auto">
+                <x-grid.table-shell>
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
@@ -447,15 +421,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                         <tbody>
                             @forelse ($this->vouchers as $v)
                                 <tr wire:key="vch-{{ $v->voucher_id }}" wire:dblclick="openEdit({{ $v->voucher_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                    <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                        <div class="flex items-center gap-2.5">
-                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($v->voucher_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($v->partner_name ?: $v->voucher_type) }}</div>
-                                            <div>
-                                                <div class="font-semibold text-[13px]">{{ $v->partner_name ?: '—' }}</div>
-                                                <div class="text-[11px] text-muted font-mono">{{ $v->voucher_number }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
+                                    <x-grid.identity-cell :id="$v->voucher_id" :name="$v->partner_name ?: '—'" :code="$v->voucher_number" />
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $v->entry_date?->translatedFormat('d M Y') }}</td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $this->typeBadgeClass($v->voucher_type) }}">{{ $v->voucher_type }}</span>
@@ -466,18 +432,19 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($v->status) }}">{{ $v->status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <button type="button" wire:click.stop="openEdit({{ $v->voucher_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                        <x-grid.action-icon icon="↗" title="Buka" action="openEdit({{ $v->voucher_id }})" />
                                         @if ($v->status === 'DRAFT')
-                                            <button type="button" wire:click.stop="postDoc({{ $v->voucher_id }})" wire:confirm="Posting {{ $v->voucher_number }}? Setelah posting tidak bisa diedit lagi." title="Post Jurnal" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-[#16a34a] hover:bg-[#e9f9ef] cursor-pointer">✓</button>
+                                            <x-grid.action-icon icon="✓" title="Post Jurnal" action="postDoc({{ $v->voucher_id }})"
+                                                confirm="Posting {{ $v->voucher_number }}? Setelah posting tidak bisa diedit lagi." variant="success" />
                                         @endif
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada jurnal Kas &amp; Bank.</td></tr>
+                                <x-grid.empty-row :colspan="7" message="Belum ada jurnal Kas & Bank." />
                             @endforelse
                         </tbody>
                     </table>
-                </div>
+                </x-grid.table-shell>
             </div>
         @else
             {{-- ============ FORM ============ --}}
@@ -487,7 +454,11 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($status) }}">{{ $status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">← Daftar</button>
+                    <button type="button" wire:click="backToGrid" title="Kembali ke Daftar"
+                        class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
+                        <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+                    </button>
                 </div>
 
                 <div class="p-4 flex flex-col gap-3">
@@ -499,41 +470,15 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
-                    <div class="grid grid-cols-4 gap-3">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">No. Dokumen</label>
-                            <input type="text" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono bg-[#f4f6fa] text-muted">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tipe Transaksi *</label>
-                            <select wire:model.live="voucher_type" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                                <option value="BKM">Bukti Kas Masuk (BKM)</option>
-                                <option value="BKK">Bukti Kas Keluar (BKK)</option>
-                                <option value="BBM">Bukti Bank Masuk (BBM)</option>
-                                <option value="BBK">Bukti Bank Keluar (BBK)</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tanggal Pembukuan *</label>
-                            <input type="date" wire:model="entry_date" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Akun Kas/Bank Utama *</label>
-                            <select wire:model.live="main_account_id" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->cashBankAccounts as $a)
-                                    <option value="{{ $a->account_id }}">{{ $a->account_code }} — {{ $a->account_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Mitra / Penerima</label>
-                            <input type="text" wire:model="partner_name" @disabled($readOnly) placeholder="Nama perusahaan / individu" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Referensi / No. Cek / Giro</label>
-                            <input type="text" wire:model="reference_no" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                        </div>
+                    <div class="grid">
+                        <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="font-mono" />
+                        <x-form.select label="Tipe Transaksi *" wire:model.live="voucher_type" :disabled="$readOnly" :placeholder="false"
+                            :options="['BKM' => 'Bukti Kas Masuk (BKM)', 'BKK' => 'Bukti Kas Keluar (BKK)', 'BBM' => 'Bukti Bank Masuk (BBM)', 'BBK' => 'Bukti Bank Keluar (BBK)']" />
+                        <x-form.input label="Tanggal Pembukuan *" type="date" wire:model="entry_date" :disabled="$readOnly" />
+                        <x-form.select label="Akun Kas/Bank Utama *" wire:model.live="main_account_id" :disabled="$readOnly"
+                            :options="$this->cashBankAccounts->mapWithKeys(fn ($a) => [$a->account_id => $a->account_code.' — '.$a->account_name])" :selected="$main_account_id" />
+                        <x-form.input label="Mitra / Penerima" wire:model="partner_name" :disabled="$readOnly" placeholder="Nama perusahaan / individu" />
+                        <x-form.input label="Referensi / No. Cek / Giro" wire:model="reference_no" :disabled="$readOnly" />
                     </div>
                 </div>
 
@@ -564,16 +509,12 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                                     @forelse ($lines as $i => $line)
                                         <tr wire:key="line-{{ $i }}" class="border-b border-[#eef1f5]">
                                             <td class="px-2 py-1.5">
-                                                <select wire:model="lines.{{ $i }}.account_id" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent">
-                                                    <option value="">— pilih akun —</option>
-                                                    @foreach ($this->postableAccounts as $a)
-                                                        <option value="{{ $a->account_id }}" @selected((int) ($line['account_id'] ?? 0) === $a->account_id)>{{ $a->account_code }} — {{ $a->account_name }}</option>
-                                                    @endforeach
-                                                </select>
+                                                <x-form.select wire:model="lines.{{ $i }}.account_id" :disabled="$readOnly" placeholder="— pilih akun —" class="!py-1"
+                                                    :options="$this->postableAccounts->mapWithKeys(fn ($a) => [$a->account_id => $a->account_code.' — '.$a->account_name])" :selected="$line['account_id'] ?? null" />
                                             </td>
-                                            <td class="px-2 py-1.5"><input type="text" wire:model="lines.{{ $i }}.desc" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent"></td>
-                                            <td class="px-2 py-1.5"><input type="number" step="0.01" wire:model.live="lines.{{ $i }}.debit" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent"></td>
-                                            <td class="px-2 py-1.5"><input type="number" step="0.01" wire:model.live="lines.{{ $i }}.credit" @disabled($readOnly) class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent"></td>
+                                            <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.desc" :disabled="$readOnly" class="!py-1" /></td>
+                                            <td class="px-2 py-1.5"><x-form.input type="number" step="0.01" wire:model.live="lines.{{ $i }}.debit" :disabled="$readOnly" class="!py-1 text-right" /></td>
+                                            <td class="px-2 py-1.5"><x-form.input type="number" step="0.01" wire:model.live="lines.{{ $i }}.credit" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                             @if (! $readOnly)
                                                 <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="Hapus baris">✕</button></td>
                                             @endif
@@ -594,47 +535,19 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                             <div class="{{ abs($this->totalDebit - $this->totalCredit) < 0.01 ? 'text-[#16a34a]' : 'text-[#c0392b]' }}"><span class="text-muted font-normal mr-1.5">Selisih:</span>{{ number_format(abs($this->totalDebit - $this->totalCredit), 0, ',', '.') }}</div>
                         </div>
                     @elseif ($activeTab === 'tax')
-                        <div class="grid grid-cols-4 gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Perlakuan PPN</label>
-                                <select wire:model="ppn_type" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                                    <option value="NONE">Non-PPN</option>
-                                    <option value="MASUKAN_11">PPN Masukan 11%</option>
-                                    <option value="KELUARAN_11">PPN Keluaran 11%</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Nomor Faktur Pajak (e-Faktur)</label>
-                                <input type="text" wire:model="efaktur_no" @disabled($readOnly) placeholder="010.003-25.00000000" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Jenis Pemotongan PPh</label>
-                                <select wire:model="pph_type" @disabled($readOnly) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                                    <option value="NONE">Tanpa PPh</option>
-                                    <option value="PPH23_2">PPh Pasal 23 (2% - Jasa)</option>
-                                    <option value="PPH4_2_10">PPh Pasal 4(2) (10% - Sewa/Bangunan)</option>
-                                    <option value="PPH21">PPh Pasal 21 (Bukan Pegawai)</option>
-                                </select>
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Nomor Bukti Potong PPh</label>
-                                <input type="text" wire:model="bupot_no" @disabled($readOnly) placeholder="BP-2025-0001928" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] disabled:bg-[#f4f6fa]">
-                            </div>
+                        <div class="grid">
+                            <x-form.select label="Perlakuan PPN" wire:model="ppn_type" :disabled="$readOnly" :placeholder="false"
+                                :options="['NONE' => 'Non-PPN', 'MASUKAN_11' => 'PPN Masukan 11%', 'KELUARAN_11' => 'PPN Keluaran 11%']" />
+                            <x-form.input label="Nomor Faktur Pajak (e-Faktur)" wire:model="efaktur_no" :disabled="$readOnly" placeholder="010.003-25.00000000" />
+                            <x-form.select label="Jenis Pemotongan PPh" wire:model="pph_type" :disabled="$readOnly" :placeholder="false"
+                                :options="['NONE' => 'Tanpa PPh', 'PPH23_2' => 'PPh Pasal 23 (2% - Jasa)', 'PPH4_2_10' => 'PPh Pasal 4(2) (10% - Sewa/Bangunan)', 'PPH21' => 'PPh Pasal 21 (Bukan Pegawai)']" />
+                            <x-form.input label="Nomor Bukti Potong PPh" wire:model="bupot_no" :disabled="$readOnly" placeholder="BP-2025-0001928" />
                         </div>
                     @else
-                        <div class="grid grid-cols-3 gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Dibuat Oleh</label>
-                                <input type="text" readonly value="{{ $this->editingVoucher?->created_by ?? Auth::user()->login }}" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f4f6fa] text-muted">
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Diposting Oleh</label>
-                                <input type="text" readonly value="{{ $this->editingVoucher?->posted_by ?? '—' }}" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f4f6fa] text-muted">
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs font-semibold text-[#556]">Tgl. Posting</label>
-                                <input type="text" readonly value="{{ $this->editingVoucher?->posted_at?->translatedFormat('d M Y, H:i') ?? '—' }}" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f4f6fa] text-muted">
-                            </div>
+                        <div class="grid three">
+                            <x-form.input label="Dibuat Oleh" readonly value="{{ $this->editingVoucher?->created_by ?? Auth::user()->login }}" />
+                            <x-form.input label="Diposting Oleh" readonly value="{{ $this->editingVoucher?->posted_by ?? '—' }}" />
+                            <x-form.input label="Tgl. Posting" readonly value="{{ $this->editingVoucher?->posted_at?->translatedFormat('d M Y, H:i') ?? '—' }}" />
                         </div>
                     @endif
                 </div>

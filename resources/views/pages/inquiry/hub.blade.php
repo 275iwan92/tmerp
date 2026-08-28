@@ -66,12 +66,19 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
             return;
         }
 
-        $type = IqpInquiry::whereKey($this->selectedId)->value('inquiry_type');
+        return $this->openRow($this->selectedId);
+    }
+
+    // Klik 2x baris / ikon Aksi -- buka langsung tanpa lewat select+tombol
+    // footer dulu (GRID_UI_STANDARD.md: klik 2x buka detail).
+    public function openRow(int $id)
+    {
+        $type = IqpInquiry::whereKey($id)->value('inquiry_type');
 
         return match ($type) {
-            'RECALC' => redirect()->route('inquiry.recalc', ['id' => $this->selectedId]),
-            'REVISE' => redirect()->route('inquiry.revise', ['id' => $this->selectedId]),
-            default => redirect()->route('inquiry.form', ['id' => $this->selectedId]),
+            'RECALC' => redirect()->route('inquiry.recalc', ['id' => $id]),
+            'REVISE' => redirect()->route('inquiry.revise', ['id' => $id]),
+            default => redirect()->route('inquiry.form', ['id' => $id]),
         };
     }
 
@@ -168,9 +175,6 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 
 <div>
     <div class="hub">
-        <h1>Mau buat inkuiri apa?</h1>
-        <p class="lead">Pilih jenisnya dulu — atau buka kembali inkuiri yang sudah tersimpan di bawah.</p>
-
         <div class="pick">
             <div class="opt n">
                 <div class="ico">✨</div><span class="tag">NEW</span>
@@ -259,62 +263,80 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
             <div class="hd">📂 <span>Inkuiri Tersimpan{{ $ftype ? ' — '.$this->typeLabel($ftype) : '' }}</span>
                 <span class="cnt">{{ $this->inquiries->count() }} inkuiri</span></div>
             <div class="bd">
-                <div class="note b">
-                    Pilih inkuiri untuk membukanya. <b>DRAFT</b> bisa diedit; status lain dibuka sebagai lihat-saja.
-                </div>
                 <div class="filters">
                     <input type="text" wire:model.live.debounce.400ms="fq" placeholder="Cari no. inkuiri / nama produk / prospek…">
-                    <select wire:model.live="fst">
-                        <option value="">Semua status</option>
-                        <option value="DRAFT">DRAFT</option>
-                        <option value="WAITING_COST">WAITING_COST</option>
-                        <option value="SUBMITTED">SUBMITTED</option>
-                        <option value="PRICE_CALCULATED">PRICE_CALCULATED</option>
-                        <option value="PRICE_APPROVED">PRICE_APPROVED</option>
-                        <option value="QUOTED">QUOTED</option>
-                        <option value="PROVING">PROVING</option>
-                        <option value="PROVE_APPROVED">PROVE_APPROVED</option>
-                        <option value="CONVERTED">CONVERTED</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                        <option value="LOST">LOST</option>
-                    </select>
-                    <select wire:model.live="ftype">
-                        <option value="">Semua tipe</option>
-                        <option value="NEW">NEW</option>
-                        <option value="RECALC">RECALC</option>
-                        <option value="REVISE">REVISE</option>
-                    </select>
+                    <div class="w-[170px] shrink-0">
+                        <select wire:model.live="fst">
+                            <option value="">Semua status</option>
+                            <option value="DRAFT">DRAFT</option>
+                            <option value="WAITING_COST">WAITING_COST</option>
+                            <option value="SUBMITTED">SUBMITTED</option>
+                            <option value="PRICE_CALCULATED">PRICE_CALCULATED</option>
+                            <option value="PRICE_APPROVED">PRICE_APPROVED</option>
+                            <option value="QUOTED">QUOTED</option>
+                            <option value="PROVING">PROVING</option>
+                            <option value="PROVE_APPROVED">PROVE_APPROVED</option>
+                            <option value="CONVERTED">CONVERTED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                            <option value="LOST">LOST</option>
+                        </select>
+                    </div>
+                    <div class="w-[140px] shrink-0">
+                        <select wire:model.live="ftype">
+                            <option value="">Semua tipe</option>
+                            <option value="NEW">NEW</option>
+                            <option value="RECALC">RECALC</option>
+                            <option value="REVISE">REVISE</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="qwrap">
                     <table class="qtbl">
                         <thead>
                             <tr>
-                                <th>No. Inkuiri</th><th>Tgl</th><th>Customer</th>
-                                <th class="hide-sm">Produk (draft)</th>
+                                <th>Produk / Customer</th>
+                                <th>No. Inkuiri</th><th>Tgl</th>
                                 <th class="hide-sm">Tipe Produk</th>
                                 <th style="text-align:right">Qty tier utama</th>
                                 <th>Status</th><th>Jenis</th>
+                                <th style="text-align:center; width:1%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->inquiries as $row)
-                                <tr wire:key="inq-{{ $row->id_inquiry }}" class="{{ $selectedId === $row->id_inquiry ? 'sel' : '' }}" wire:click="selectRow({{ $row->id_inquiry }})">
+                                @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
+                                <tr wire:key="inq-{{ $row->id_inquiry }}" class="{{ $selectedId === $row->id_inquiry ? 'sel' : '' }}"
+                                    wire:click="selectRow({{ $row->id_inquiry }})" wire:dblclick="openRow({{ $row->id_inquiry }})" title="Klik 2x untuk buka">
+                                    <td>
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($row->product_draft_name ?: $custName) }}</div>
+                                            <div>
+                                                <div class="font-semibold text-[13px] text-navy">{{ $row->product_draft_name ?: '(tanpa nama produk)' }}</div>
+                                                <div class="text-[11px] text-muted">
+                                                    {{ $custName }}
+                                                    @if ($row->is_prospect)
+                                                        <span class="pill prospect">prospek</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td><span class="qdoc">{{ $row->inquiry_no ?: '(draft, belum ada no.)' }}</span></td>
                                     <td>{{ $row->inquiry_date?->format('Y-m-d') }}</td>
-                                    <td>
-                                        {{ $row->is_prospect ? $row->prospect_name : $row->customer?->customer_name }}
-                                        @if ($row->is_prospect)
-                                            <span class="pill prospect">prospek</span>
-                                        @endif
-                                    </td>
-                                    <td class="hide-sm">{{ $row->product_draft_name }}</td>
                                     <td class="hide-sm">{{ $row->parts->first()?->part_type ?? '—' }}</td>
                                     <td style="text-align:right">
                                         {{ $row->tiers->first()?->qty ? number_format((float) $row->tiers->first()->qty, 0, ',', '.') : '—' }}
                                     </td>
                                     <td><span class="pill {{ $this->statusPillClass($row->sub_state) }}">{{ $row->sub_state }}</span></td>
                                     <td><span class="pill {{ strtolower($row->inquiry_type) }}">{{ $row->inquiry_type }}</span></td>
+                                    <td style="text-align:center">
+                                        <button type="button" wire:click.stop="openRow({{ $row->id_inquiry }})"
+                                            title="{{ $row->sub_state === 'DRAFT' ? 'Buka untuk diedit' : 'Buka (lihat-saja)' }}"
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">
+                                            {{ $row->sub_state === 'DRAFT' ? '✎' : '↗' }}
+                                        </button>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr><td colspan="8"><div class="qempty">Belum ada inkuiri yang cocok.</div></td></tr>

@@ -26,6 +26,7 @@ class EmpEmployee extends Model
         'birth_place',
         'birth_date',
         'nik_ktp',
+        'no_kk',
         'npwp_number',
         'religion',
         'marital_status',
@@ -46,7 +47,7 @@ class EmpEmployee extends Model
         'emergency_contact_phone',
         'default_machine_id',
         'default_shift_id',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -56,7 +57,7 @@ class EmpEmployee extends Model
         'join_date' => 'date',
         'resign_date' => 'date',
         'work_status_since' => 'date',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function company(): BelongsTo
@@ -86,7 +87,7 @@ class EmpEmployee extends Model
 
     public function activeContract(): HasOne
     {
-        return $this->hasOne(EmpContract::class, 'employee_id', 'employee_id')->where('is_active', true);
+        return $this->hasOne(EmpContract::class, 'employee_id', 'employee_id')->where('activate', true);
     }
 
     public function families(): HasMany

@@ -16,7 +16,7 @@ class MatCoatingRate extends Model
         'coating_type',
         'index_coating',
         'effective_date',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -24,6 +24,6 @@ class MatCoatingRate extends Model
     protected $casts = [
         'index_coating' => 'decimal:4',
         'effective_date' => 'date',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

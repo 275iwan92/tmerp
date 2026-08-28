@@ -13,7 +13,7 @@ use Livewire\Attributes\Url;
 use Livewire\Component;
 
 // Layar REVISE (docs/mockups/inquiry_revise_v2.html) — ubah spec via copy-record
-// + versi baru. Scope manual (R-REV-1, docs/DELTA_TIER_revise_scope_CO.md) menentukan
+// + versi baru. Scope manual (R-REV-1, docs/inquiryproduct_delta_revise.md) menentukan
 // blok edit apa yang tampil; field di luar scope tetap reuse verbatim dari baku.
 new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 {
@@ -52,7 +52,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             $this->scope = $this->inquiry->reviseScopeArray();
             $this->revise_reason = $this->inquiry->revise_reason ?? '';
             $this->design_number = $this->inquiry->design_number ?? '';
-            $this->readOnly = (bool) $this->inquiry->is_confirmed;
+            $this->readOnly = (bool) $this->inquiry->stat_confirm;
 
             return;
         }
@@ -123,7 +123,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         }
     }
 
-    // Matriks pemicu — persis Tier 2 (docs/DELTA_TIER_revise_scope_CO.md §TIER 2).
+    // Matriks pemicu — persis Tier 2 (docs/inquiryproduct_delta_revise.md §TIER 2).
     #[Computed]
     public function triggers(): array
     {
@@ -144,7 +144,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         }
 
         if (! array_key_exists($typeCode, $this->dimParamsCache)) {
-            $type = ProdType::with(['params' => fn ($q) => $q->where('is_active', true)->orderBy('seq')])->find($typeCode);
+            $type = ProdType::with(['params' => fn ($q) => $q->where('activate', true)->orderBy('seq')])->find($typeCode);
 
             $this->dimParamsCache[$typeCode] = $type?->params->map(fn ($p) => [
                 'key' => $p->param_key,
@@ -191,7 +191,8 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         }
 
         return MatRaw::query()
-            ->where('is_active', true)
+            ->where('activate', true)
+            ->where('stat_confirm', true)
             ->where(function ($q) use ($row) {
                 $q->where('material_name', 'like', "%{$row['query']}%")->orWhere('material_code', 'like', "%{$row['query']}%");
             })
@@ -212,7 +213,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             return;
         }
 
-        $this->parts[$partIndex]['materials'][$matIndex]['rawmat_id'] = $material->id_material;
+        $this->parts[$partIndex]['materials'][$matIndex]['rawmat_id'] = $material->material_id;
         $this->parts[$partIndex]['materials'][$matIndex]['display_name'] = $material->material_name;
         $this->parts[$partIndex]['materials'][$matIndex]['gram_weight'] = $material->gram_weight;
         $this->parts[$partIndex]['materials'][$matIndex]['size_p'] = $material->cm_length;
@@ -421,8 +422,8 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             // R-CO-1/R-REV lineage: versi lama dikunci & ditandai superseded, CO/quotation
             // yang sudah pakai versi lama tetap aman (snapshot beku, tak tersentuh).
             $this->source->update([
-                'is_confirmed' => true,
-                'is_cancelled' => true,
+                'stat_confirm' => true,
+                'stat_cancel' => true,
                 'cancel_reason' => 'Digantikan oleh revisi v'.$newRevisionNo.' ('.$this->inquiry->inquiry_no.')',
                 'sub_state' => 'CANCELLED',
                 'updated_by' => Auth::user()->login,
@@ -448,7 +449,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
         $this->persist('SUBMITTED');
 
-        $this->inquiry->update(['is_confirmed' => true, 'updated_by' => Auth::user()->login]);
+        $this->inquiry->update(['stat_confirm' => true, 'updated_by' => Auth::user()->login]);
         $this->readOnly = true;
         $this->flash = 'Inkuiri '.$this->inquiry->inquiry_no.' dikirim ke Costing — status SUBMITTED, form terkunci.';
     }
@@ -526,11 +527,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                         <span class="tx"><b>⚙️ Proses</b><span>Urutan/finishing berubah. → costing ulang.</span></span>
                     </label>
                 </div>
-                <div class="f">
-                    <label>Alasan Revisi *</label>
-                    <input type="text" wire:model="revise_reason" placeholder="mis. Tambah logo Halal Indonesia (spot ink) — permintaan customer" @if($readOnly) disabled @endif>
-                    @error('revise_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                </div>
+                <x-form.input legacy label="Alasan Revisi *" wire:model="revise_reason" placeholder="mis. Tambah logo Halal Indonesia (spot ink) — permintaan customer" :disabled="$readOnly" name="revise_reason" />
             </div>
         </div>
 
@@ -550,10 +547,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         @if (in_array('ARTWORK', $scope, true))
             <div class="eb">
                 <div class="t">🎨 Artwork — Identitas Desain Baru</div>
-                <div class="f">
-                    <label>No. Design / Proof</label>
-                    <input type="text" wire:model="design_number" placeholder="mis. DS003480" @if($readOnly) disabled @endif>
-                </div>
+                <x-form.input legacy label="No. Design / Proof" wire:model="design_number" placeholder="mis. DS003480" :disabled="$readOnly" />
                 <div class="note b" style="margin-top:10px">Artwork baru akan melalui proof ulang (modul Proof/Prove) sebelum quotation — di luar layar ini.</div>
             </div>
         @endif
@@ -563,14 +557,8 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                 <div class="t">🖌️ Warna — Konfigurasi Cetak per Part</div>
                 @foreach ($parts as $i => $part)
                     <div class="grid two" style="margin-bottom:8px">
-                        <div class="f">
-                            <label>{{ $part['part_name'] ?: 'Part '.($i + 1) }} — Warna (mis. 4/4)</label>
-                            <input type="text" wire:model="parts.{{ $i }}.cfg_color" @if($readOnly) disabled @endif>
-                        </div>
-                        <div class="f">
-                            <label>Catatan tinta/plate</label>
-                            <input type="text" wire:model="parts.{{ $i }}.cfg_ink" placeholder="mis. +1 spot Pantone 348C" @if($readOnly) disabled @endif>
-                        </div>
+                        <x-form.input legacy label="{{ $part['part_name'] ?: 'Part '.($i + 1) }} — Warna (mis. 4/4)" wire:model="parts.{{ $i }}.cfg_color" :disabled="$readOnly" />
+                        <x-form.input legacy label="Catatan tinta/plate" wire:model="parts.{{ $i }}.cfg_ink" placeholder="mis. +1 spot Pantone 348C" :disabled="$readOnly" />
                     </div>
                 @endforeach
                 <div class="hppimpact">⚠️ Penambahan spot/plate menaikkan HPP walau ukuran &amp; bahan tetap — dihitung ulang oleh Costing.</div>
@@ -584,13 +572,10 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                     <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
                     <div class="grid three" style="margin-bottom:10px">
                         @forelse ($this->dimParams($part['type_code']) as $param)
-                            <div class="f">
-                                <label>{{ $param['label'] }} @if($param['uom'])({{ $param['uom'] }})@endif</label>
-                                <input type="text" wire:model="parts.{{ $i }}.dims.{{ $param['key'] }}" @if($readOnly) disabled @endif>
-                            </div>
+                            <x-form.input legacy label="{{ $param['label'] }} {{ $param['uom'] ? '('.$param['uom'].')' : '' }}" wire:model="parts.{{ $i }}.dims.{{ $param['key'] }}" :disabled="$readOnly" />
                         @empty
-                            <div class="f"><label>Panjang (cm)</label><input type="number" step="0.01" wire:model="parts.{{ $i }}.flat_w" @if($readOnly) disabled @endif></div>
-                            <div class="f"><label>Lebar (cm)</label><input type="number" step="0.01" wire:model="parts.{{ $i }}.flat_h" @if($readOnly) disabled @endif></div>
+                            <x-form.input legacy label="Panjang (cm)" type="number" step="0.01" wire:model="parts.{{ $i }}.flat_w" :disabled="$readOnly" />
+                            <x-form.input legacy label="Lebar (cm)" type="number" step="0.01" wire:model="parts.{{ $i }}.flat_h" :disabled="$readOnly" />
                         @endforelse
                     </div>
                 @endforeach
@@ -613,7 +598,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                                     @if (! empty($mat['query']) && mb_strlen($mat['query']) >= 2)
                                         <div class="ac-box on">
                                             @forelse ($this->materialResults($i, $j) as $opt)
-                                                <div class="ac-i" wire:click="selectMaterial({{ $i }}, {{ $j }}, {{ $opt->id_material }})">
+                                                <div class="ac-i" wire:click="selectMaterial({{ $i }}, {{ $j }}, {{ $opt->material_id }})">
                                                     <b>{{ $opt->material_name }}</b> <span class="cd">{{ $opt->material_code }}</span>
                                                 </div>
                                             @empty

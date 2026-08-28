@@ -1,0 +1,59 @@
+# ═══════════════════════════════════════════════════════════════════
+# masterproduct_state.yaml — PROGRESS MASTER PRODUCT (Master Card)
+# BARU DIBUAT 2026-08-27 — belum pernah ada file state untuk modul ini
+# sebelumnya (hanya masterproduct_tier1/2/4.md, tanpa tracking progres).
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Master Product.
+# ═══════════════════════════════════════════════════════════════════
+modul: "master_product"
+db: tm2mst
+fase: "1 — Master Card (prod_product/prod_part) + kategori & akun COA"
+status_umum: >
+  Struktur inti (prod_product, prod_part, prod_part_artwork/ink/material/process,
+  prod_mastercard_signoff) SUDAH LIVE — dibangun sebelum file state ini ada, lihat
+  masterproduct_tier1/2.md untuk desain aslinya. Diverifikasi keberadaannya dari
+  tm2mst_20260827so.sql (2026-08-27): prod_product PK id_product, prod_part PK id_part
+  (FK product_id), keduanya SUDAH punya kolom akun sendiri (lihat keputusan_terkunci A).
+  prod_category (PK id_category) juga sudah ada tapi baru berisi category_name/description
+  — belum ada kolom akun default sampai delta 2026-08-27 (lihat B).
+
+keputusan_terkunci:
+  A_akun_per_level: >
+    Akun Persediaan/HPP Produk Jadi ada di 3 level, masing-masing NULLABLE, resolve dari
+    paling spesifik: prod_part.stock_asset_account_id/cogs_account_id (WIP/SFG, sudah ada)
+    -> prod_product.stock_asset_account_id/cogs_account_id (FG, sudah ada) -> 
+    prod_category.default_stock_account_id/default_cogs_account_id (fallback terakhir,
+    DITAMBAHKAN 2026-08-27, lihat financeaccounting_delta_partner_category_coa_v2.md §2).
+    prod_part & prod_product JUGA sudah punya cost_center_id/profit_center_id (belum
+    dipakai logic apa pun sampai sesi ini — masih murni kolom siap pakai).
+  B_kategori_bukan_pengganti_override: >
+    prod_category HANYA fallback. Kalau part/produk sudah diisi akun manual, kategori
+    TIDAK PERNAH menimpa — resolve pakai COALESCE/null-safe chaining, override tertinggi
+    selalu menang.
+  C_sisi_a_akun: >
+    Field akun COA (di semua 3 level) hanya terlihat Costing Officer + Direksi, konsisten
+    model Costing Room (Sisi A vs Sisi B) yang berlaku di Product Costing.
+
+artefak_terkait:
+  - masterproduct_tier1.md
+  - masterproduct_tier2.md
+  - masterproduct_tier4.md
+  - financeaccounting_delta_partner_category_coa_v2.md   # delta akun 2026-08-27
+
+next_step:
+  - "2026-08-27: jalankan Grup A dari financeaccounting_delta_partner_category_coa_v2.md — ALTER prod_category (2 kolom default akun), resolve method di ProdPart/ProdProduct, ubah titik baca akun di JournalPostingService (jangan tulis ulang service)"
+  - "Seed isi 5 baris prod_category existing dengan akun default — verifikasi dulu isinya (SELECT * FROM prod_category) sebelum UPDATE massal"
+  - "Layar Master Kategori Produk: konfirmasi apakah sudah ada form-nya sekarang atau perlu dibuat baru untuk menampung 2 field akun (Sisi A saja)"
+
+open_items:
+  - id: MP-CATEGORY-SEED-CONTENT
+    prioritas: SEDANG
+    isi: "Isi 5 baris prod_category yang sudah ada (AUTO_INCREMENT=6) belum diverifikasi ke Jo — apakah representatif utk kebutuhan akun berbeda per kategori (mis. Packaging vs Label Komersial), atau semua boleh diarahkan ke akun default yang sama dulu."
+  - id: MP-COST-PROFIT-CENTER-UNUSED
+    prioritas: RENDAH
+    isi: "cost_center_id/profit_center_id di prod_part & prod_product sudah ada kolomnya tapi belum dipakai logic mana pun (posting jurnal belum baca field ini). Menyusul kalau JournalPostingService diperluas mengisi dimensi cost/profit center per baris jurnal."
+  - id: MP-JOURNALPOSTINGSERVICE-FG-HOOK
+    prioritas: SEDANG
+    isi: "resolveCogsAccountId()/resolveStockAccountId() di ProdProduct disiapkan untuk COGS saat DO/shipment (financeaccounting_tier2.md A5), TAPI titik pemanggilannya belum ada karena Delivery/Invoice auto-jurnal sendiri masih ditunda (butuh Costing V2 snapshot + modul DO/Dispatch). Method sudah siap, tinggal disambung saat DO auto-jurnal digarap."
+
+catatan:
+  - "PK tidak konsisten across tabel produk: prod_product pakai id_product, prod_part pakai id_part — pola khas project ini (banyak tabel tm2mst pakai id_<entitas> bukan <entitas>_id), selalu verifikasi nama PK sebelum menulis migration/query baru."

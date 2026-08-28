@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 // PROC_MON (id 280, "Monitoring") + PROC_MON_PR/PROC_MON_PO (id 281/282) sudah
 // ada dari draft awal tapi masih NOT_BUILT dgn target ScriptCase lama
 // (grid_monitoring_pr.php) -- sekarang diisi dgn layar Outstanding PR/PO yang
-// baru (docs/SIDEBAR_MENU_STANDARD.md: grup laporan wajib berlabel polos
+// baru (docs/sidebarmenustandard.md: grup laporan wajib berlabel polos
 // "Laporan", nama item ikut #[Title] layar asli). Outstanding PV SENGAJA
 // ditambah sbg placeholder NOT_BUILT -- user minta ditunda dulu, baru
 // dikerjakan setelah Stock Out (lihat memory project_outstanding_reports).

@@ -4,7 +4,7 @@ namespace App\Models\Sys;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Warna badge status kesiapan-build menu (module_status_system, GLOBAL_RULES.yaml)
+// Warna badge status kesiapan-build menu (module_status_system, globalrules.yaml)
 // -- TERPISAH dari sys_theme (itu tema warna aplikasi keseluruhan, ini status
 // per-menu: abu=belum dibangun, kuning=siap di-QC, hijau=terkunci user).
 class SysAppMenuColor extends Model

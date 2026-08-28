@@ -17,7 +17,7 @@ class MatFluteAllowance extends Model
         'leb_panjang_mm',
         'leb_lebar_mm',
         'leb_tinggi_mm',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -26,7 +26,7 @@ class MatFluteAllowance extends Model
         'leb_panjang_mm' => 'decimal:2',
         'leb_lebar_mm' => 'decimal:2',
         'leb_tinggi_mm' => 'decimal:2',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     // Turunan (dihitung di CostingEngine, bukan di sini/VIEW — lihat §B.5):

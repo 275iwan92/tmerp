@@ -32,8 +32,8 @@ class ProdProduct extends Model
         'cur_stock',
         'default_selling_price',
         'minimum_selling_price',
-        'is_confirmed',
-        'is_active',
+        'stat_confirm',
+        'activate',
         'stock_asset_account_id',
         'cogs_account_id',
         'cost_center_id',
@@ -43,8 +43,8 @@ class ProdProduct extends Model
     ];
 
     protected $casts = [
-        'is_confirmed' => 'boolean',
-        'is_active' => 'boolean',
+        'stat_confirm' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     // Same-DB (tm2mst): FK fisik prod_product.customer_id -> cust_customer.id_customer.

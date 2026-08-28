@@ -18,13 +18,13 @@ class GeoRegion extends Model
         'country_id',
         'region_code',
         'region_name',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function cities(): HasMany

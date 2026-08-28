@@ -20,7 +20,7 @@ class SupSupplierContact extends Model
         'phone',
         'email',
         'is_default',
-        'is_active',
+        'activate',
         'note',
         'created_by',
         'updated_by',
@@ -28,7 +28,7 @@ class SupSupplierContact extends Model
 
     protected $casts = [
         'is_default' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function supplier(): BelongsTo

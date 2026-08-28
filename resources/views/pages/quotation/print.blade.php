@@ -12,8 +12,21 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $quotationId;
 
+    // Cetak (Nota/Quotation Letter) cuma boleh setelah quotation diterbitkan
+    // (PUBLISHED) -- instruksi user 2026-08-24: draft belum final, jangan bisa
+    // dicetak dulu. Diblok di sini (bukan cuma sembunyikan tombol di entry)
+    // supaya akses langsung lewat URL pun ikut ketutup.
     public function mount(int $quotation): void
     {
+        $doc = QuoQuotation::findOrFail($quotation);
+
+        if ($doc->doc_status !== 'PUBLISHED') {
+            session()->flash('error', 'Quotation ini belum diterbitkan — terbitkan (Publish) dulu sebelum bisa dicetak.');
+            $this->redirect(route('quotation.entry', ['quotation' => $quotation]));
+
+            return;
+        }
+
         $this->quotationId = $quotation;
     }
 
@@ -65,41 +78,23 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<div class="quo-wrap">
-    <div class="bar">
-        <button type="button" onclick="window.print()" class="pr">🖶 Cetak / Simpan PDF</button>
-        @if ($this->quotation->doc_status === 'DRAFT')
-            <a href="{{ route('quotation.entry', ['quotation' => $this->quotationId]) }}" class="sc" style="text-decoration:none">✎ Edit</a>
-        @endif
-        <a href="{{ route('quotation.list') }}" class="sc" style="text-decoration:none">← Daftar Quotation</a>
-        <span class="info">{{ $this->quotation->quotation_no }} · {{ $this->quotation->doc_status }}</span>
-    </div>
+{{-- Kerangka umum (bar cetak, page A4, kop, parties, section bernomor, tanda
+     tangan, footer) datang dari resources/views/components/print/* --
+     docs/printnotastandard.md. Palet navy/accent TMERP di sini (bukan hijau
+     spt Nota Inquiry) sesuai docs/mockups/mockup_sales_quotation_letter_print.html. --}}
+<x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->quotation->quotation_no }} · {{ $this->quotation->doc_status }}">
+    <x-slot:toolbar>
+        <a href="{{ route('quotation.list') }}" class="sc">← Daftar Quotation</a>
+    </x-slot:toolbar>
 
-    <div class="page">
-
-        <div class="kop">
-            <div class="kop-l">
-                <div class="logo">{{ strtoupper(substr($this->company?->company_code ?? 'TM', 0, 2)) }}</div>
-                <div>
-                    <div class="co-name">{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
-                    <div class="co-addr">
-                        {{ $this->company?->address ?? '—' }}
-                        @if ($this->company?->phone) <br>Telp {{ $this->company->phone }} @endif
-                        @if ($this->company?->email) · {{ $this->company->email }} @endif
-                        @if ($this->company?->npwp_number) · NPWP {{ $this->company->npwp_number }} @endif
-                    </div>
-                </div>
-            </div>
-            <div class="kop-r">
-                <div class="doc-title">SURAT PENAWARAN HARGA</div>
-                <div class="doc-no">{{ $this->quotation->quotation_no }}</div>
-                <div class="doc-meta">
-                    Tanggal Terbit: {{ $this->quotation->issued_date?->translatedFormat('d F Y') }}
-                    · Rev. {{ str_pad($this->quotation->revision_no, 2, '0', STR_PAD_LEFT) }}<br>
-                    Ref. Inquiry: <span class="ref">{{ $this->inquiryRefs ?: '—' }}</span>
-                </div>
-            </div>
-        </div>
+    <x-print.sheet>
+        <x-print.header :company="$this->company" doc-title="SURAT PENAWARAN HARGA" :doc-no="$this->quotation->quotation_no">
+            <x-slot:meta>
+                Tanggal Terbit: {{ $this->quotation->issued_date?->translatedFormat('d F Y') }}
+                · Rev. {{ str_pad($this->quotation->revision_no, 2, '0', STR_PAD_LEFT) }}<br>
+                Ref. Inquiry: <span class="ref">{{ $this->inquiryRefs ?: '—' }}</span>
+            </x-slot:meta>
+        </x-print.header>
 
         <div class="valid">
             <div class="v-main">
@@ -115,32 +110,26 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
             </div>
         </div>
 
-        <div class="parties">
-            <div class="party">
-                <h4>KEPADA YTH.</h4>
+        <x-print.parties columns="1.2fr 1fr">
+            <x-print.party label="KEPADA YTH.">
                 <div class="nm">{{ $this->quotation->customer?->customer_name ?? '—' }}</div>
                 <div class="dt">
                     Kode Customer: <b>{{ $this->quotation->customer?->customer_code ?? '—' }}</b><br>
                     @if ($this->quotation->customer?->contact_name) UP. <b>{{ $this->quotation->customer->contact_name }}</b> @endif
                     @if ($this->quotation->customer?->phone) · {{ $this->quotation->customer->phone }} @endif
                 </div>
-            </div>
-            <div class="party">
-                <h4>DARI</h4>
+            </x-print.party>
+            <x-print.party label="DARI">
                 <div class="nm">{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
                 <div class="dt">
                     PIC Sales: <b>{{ $this->quotation->issued_by ?? '—' }}</b><br>
                     Mata Uang: <b>{{ $this->quotation->currency_code }}</b> · Skema Pajak:
                     <b>{{ $this->quotation->tax_scheme === 'INCL' ? 'Inclusive' : 'Exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</b>
                 </div>
-            </div>
-        </div>
+            </x-print.party>
+        </x-print.parties>
 
-        <div class="sec">
-            <div class="sec-h"><span class="n">1</span><h3>Rincian Penawaran</h3>
-                <span class="rule"></span>
-                <span class="hint">{{ $this->quotation->tax_scheme === 'INCL' ? 'harga inclusive PPN' : 'harga exclusive PPN' }}</span>
-            </div>
+        <x-print.section number="1" title="Rincian Penawaran" :hint="$this->quotation->tax_scheme === 'INCL' ? 'harga inclusive PPN' : 'harga exclusive PPN'">
             <table class="items">
                 <thead>
                     <tr>
@@ -175,7 +164,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     Harga di atas <b>{{ $this->quotation->tax_scheme === 'INCL' ? 'sudah termasuk' : 'belum termasuk' }} PPN</b>
                     ({{ $this->quotation->tax_scheme === 'INCL' ? 'inclusive' : 'exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%).
                     <br><span class="ppn">Harga {{ $this->quotation->tax_scheme === 'INCL' ? 'INCLUSIVE' : 'EXCLUSIVE' }} PPN</span>
-                    <div style="margin-top:5px;color:var(--muted)">
+                    <div style="margin-top:5px;color:var(--print-muted)">
                         Toleransi kuantitas ±5% (standar industri percetakan). Kelebihan/kekurangan dalam
                         rentang toleransi ditagihkan sesuai jumlah aktual terkirim.
                     </div>
@@ -217,12 +206,11 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                 </div>
             @endif
-        </div>
+        </x-print.section>
 
-        <div class="sec">
-            <div class="sec-h"><span class="n">2</span><h3>Termin &amp; Pembayaran</h3><span class="rule"></span></div>
-            <div class="two">
-                <div class="box">
+        <x-print.section number="2" title="Termin &amp; Pembayaran">
+            <div class="print-two">
+                <div class="print-box">
                     <h5>TERMIN PEMBAYARAN</h5>
                     <div class="pay-row"><span class="k">Termin</span><span class="v">{{ $this->quotation->payment_term ?? '—' }}</span></div>
                     <div class="pay-row"><span class="k">Lead time produksi</span><span class="v">menyesuaikan kapasitas</span></div>
@@ -243,12 +231,12 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                         @endif
                     </div>
                 </div>
-                <div class="box">
+                <div class="print-box">
                     <h5>SYARAT &amp; KETENTUAN</h5>
                     @if ($this->quotation->notes)
                         <p style="white-space:pre-line">{{ $this->quotation->notes }}</p>
                     @else
-                        <ol class="terms">
+                        <ol class="print-terms">
                             <li>Penawaran berlaku sampai tanggal yang tertera pada strip masa berlaku di atas.</li>
                             <li>Harga {{ $this->quotation->tax_scheme === 'INCL' ? 'inclusive' : 'exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%.</li>
                             <li>Lead time produksi terhitung setelah artwork final &amp; digital proof (warna) disetujui.</li>
@@ -258,199 +246,102 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     @endif
                 </div>
             </div>
-        </div>
+        </x-print.section>
 
-        <div class="sign-wrap">
-            <div class="sign-h">PENGESAHAN &amp; PERSETUJUAN</div>
-            <div class="sign-b">
-                <div class="sign-intro">
-                    Penawaran ini diterbitkan secara resmi oleh {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}.
-                    Untuk melanjutkan ke pesanan produksi, mohon terbitkan Purchase Order dengan mengacu nomor quotation
-                    <b>{{ $this->quotation->quotation_no }}</b>, atau tandatangani kolom persetujuan customer
-                    di bawah dan kirim kembali sebelum masa berlaku berakhir.
-                </div>
-                <div class="sign">
-                    <div class="cell">
-                        <div class="co">Hormat kami, {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
-                        <div class="line"></div>
-                        <div class="rol">Direksi</div>
-                        <div class="nm">( ................................. )</div>
-                        <div class="sub">Authorized signatory &amp; stempel</div>
-                    </div>
-                    <div class="cell">
-                        <div class="co">{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
-                        <div class="line"></div>
-                        <div class="rol">Disiapkan</div>
-                        <div class="nm">{{ $this->quotation->issued_by ?? '—' }}</div>
-                        <div class="sub">Sales Executive</div>
-                    </div>
-                    <div class="cell">
-                        <div class="co">Disetujui oleh customer</div>
-                        <div class="line"></div>
-                        <div class="rol">Customer</div>
-                        <div class="nm">( ................................. )</div>
-                        <div class="sub">Nama jelas, jabatan &amp; stempel</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <x-print.signatures>
+            <x-slot:intro>
+                Penawaran ini diterbitkan secara resmi oleh {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}.
+                Untuk melanjutkan ke pesanan produksi, mohon terbitkan Purchase Order dengan mengacu nomor quotation
+                <b>{{ $this->quotation->quotation_no }}</b>, atau tandatangani kolom persetujuan customer
+                di bawah dan kirim kembali sebelum masa berlaku berakhir.
+            </x-slot:intro>
 
-        <div class="foot">
-            <span>{{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} ·
-                  dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP</span>
-            <span>Halaman 1 dari 1</span>
-        </div>
-    </div>
+            <x-print.signature company="Hormat kami, {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+                role="Direksi" name="( ................................. )" sub="Authorized signatory &amp; stempel" />
+            <x-print.signature company="{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+                role="Disiapkan" name="{{ $this->quotation->issued_by ?? '—' }}" sub="Sales Executive" />
+            <x-print.signature company="Disetujui oleh customer" role="Customer"
+                name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />
+        </x-print.signatures>
+
+        <x-print.footer page="Halaman 1 dari 1">
+            {{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} ·
+            dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP
+        </x-print.footer>
+    </x-print.sheet>
 
     <style>
-        {{-- Palet navy/accent TMERP (bukan hijau spt Nota Inquiry) -- sesuai
-             docs/mockups/mockup_sales_quotation_letter_print.html, dikoreksi 2026-08-20
-             dari draf pertama yang salah pakai palet lama. --}}
-        .quo-wrap{
-          --navy:#2c3e69; --navy-soft:#eef1f7; --accent:#2f6fed; --accent-soft:#eaf0ff;
-          --ink:#1a1d21; --muted:#6b7280; --line:#d4d8dd; --line2:#eceff2;
-          --gold:#9a7b18; --danger:#a3241f; --warn:#8a5a00;
-        }
-        .quo-wrap{background:#8e959c;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-             font-size:10pt;color:var(--ink);padding:24px 0;
-             -webkit-print-color-adjust:exact;print-color-adjust:exact}
-        .quo-wrap *{box-sizing:border-box}
-        .quo-wrap .page{width:210mm;min-height:297mm;margin:0 auto 18px;background:#fff;
-              padding:12mm 12mm 18mm;position:relative;box-shadow:0 6px 24px rgba(0,0,0,.28)}
-        .quo-wrap .bar{width:210mm;margin:0 auto 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-        .quo-wrap .bar button{border:0;border-radius:5px;padding:8px 16px;font-size:9.5pt;font-weight:600;
-                    cursor:pointer;font-family:inherit}
-        .quo-wrap .bar .pr{background:var(--navy);color:#fff}
-        .quo-wrap .bar .sc{background:#fff;color:var(--ink);border:1px solid var(--line);padding:8px 16px;border-radius:5px;font-size:9.5pt;font-weight:600}
-        .quo-wrap .bar .info{color:#fff;font-size:8.5pt;margin-left:auto;opacity:.9}
+        {{-- Hanya style KONTEN spesifik quotation -- kerangka (bar/page/kop/
+             parties/sec-h/sign/foot) sudah dari resources/views/components/print/*. --}}
+        .print-doc .nopr{border:1.5px dashed var(--print-warn);background:#fffbf2;padding:14px 16px}
+        .print-doc .nopr .t{font-size:11pt;font-weight:700;color:var(--print-warn)}
+        .print-doc .nopr .d{font-size:9pt;color:#5f4a1c;line-height:1.6;margin-top:5px}
 
-        .quo-wrap .nopr{border:1.5px dashed var(--warn);background:#fffbf2;padding:14px 16px}
-        .quo-wrap .nopr .t{font-size:11pt;font-weight:700;color:var(--warn)}
-        .quo-wrap .nopr .d{font-size:9pt;color:#5f4a1c;line-height:1.6;margin-top:5px}
-
-        .quo-wrap .kop{display:flex;justify-content:space-between;align-items:flex-start;
-             border-bottom:2.5px solid var(--navy);padding-bottom:7px}
-        .quo-wrap .logo{width:42px;height:42px;border-radius:7px;background:var(--navy);color:#fff;
-              display:flex;align-items:center;justify-content:center;font-weight:700;
-              font-size:14pt;letter-spacing:-1px;flex:0 0 auto}
-        .quo-wrap .kop-l{display:flex;gap:10px;align-items:center}
-        .quo-wrap .co-name{font-size:13pt;font-weight:700;letter-spacing:-.3px;line-height:1.1;color:var(--navy)}
-        .quo-wrap .co-addr{font-size:7.2pt;color:var(--muted);line-height:1.4;margin-top:2px}
-        .quo-wrap .kop-r{text-align:right}
-        .quo-wrap .doc-title{font-size:11.5pt;font-weight:700;color:var(--navy);letter-spacing:.5px}
-        .quo-wrap .doc-no{font-size:14pt;font-weight:700;font-family:Consolas,monospace;color:var(--accent);
-                letter-spacing:-.5px;margin-top:1px}
-        .quo-wrap .doc-meta{font-size:7.6pt;color:var(--muted);margin-top:2px;line-height:1.45}
-        .quo-wrap .doc-meta .ref{color:var(--navy);font-weight:600}
-
-        .quo-wrap .valid{display:flex;align-items:stretch;margin-top:9px;border:1.5px solid var(--navy)}
-        .quo-wrap .valid .v-main{flex:1;background:var(--navy);color:#fff;padding:6px 12px;
+        .print-doc .valid{display:flex;align-items:stretch;margin-top:9px;border:1.5px solid var(--print-accent)}
+        .print-doc .valid .v-main{flex:1;background:var(--print-accent);color:#fff;padding:6px 12px;
                        display:flex;align-items:center;gap:10px}
-        .quo-wrap .valid .v-main .ic{font-size:15pt;line-height:1}
-        .quo-wrap .valid .v-main .txt{line-height:1.25}
-        .quo-wrap .valid .v-main .txt b{font-size:11pt;font-weight:700}
-        .quo-wrap .valid .v-main .txt small{display:block;font-size:6.8pt;letter-spacing:.6px;
+        .print-doc .valid .v-main .ic{font-size:15pt;line-height:1}
+        .print-doc .valid .v-main .txt{line-height:1.25}
+        .print-doc .valid .v-main .txt b{font-size:11pt;font-weight:700}
+        .print-doc .valid .v-main .txt small{display:block;font-size:6.8pt;letter-spacing:.6px;
                                   opacity:.82;font-weight:600;text-transform:uppercase}
-        .quo-wrap .valid .v-side{flex:0 0 auto;padding:6px 12px;display:flex;flex-direction:column;
-                       justify-content:center;text-align:right;background:var(--navy-soft)}
-        .quo-wrap .valid .v-side .k{font-size:6.6pt;letter-spacing:.6px;color:var(--navy);
+        .print-doc .valid .v-side{flex:0 0 auto;padding:6px 12px;display:flex;flex-direction:column;
+                       justify-content:center;text-align:right;background:var(--print-accent-soft)}
+        .print-doc .valid .v-side .k{font-size:6.6pt;letter-spacing:.6px;color:var(--print-accent);
                           font-weight:700;text-transform:uppercase}
-        .quo-wrap .valid .v-side .d{font-size:9pt;font-weight:600;color:var(--ink)}
+        .print-doc .valid .v-side .d{font-size:9pt;font-weight:600;color:var(--print-ink)}
 
-        .quo-wrap .parties{display:grid;grid-template-columns:1.2fr 1fr;margin-top:9px;border:1px solid var(--line)}
-        .quo-wrap .party{padding:6px 9px}
-        .quo-wrap .party+.party{border-left:1px solid var(--line)}
-        .quo-wrap .party h4{font-size:6.6pt;letter-spacing:1px;color:var(--muted);font-weight:700;margin-bottom:2px}
-        .quo-wrap .party .nm{font-size:10pt;font-weight:600;line-height:1.25}
-        .quo-wrap .party .dt{font-size:7.6pt;color:#4b5158;line-height:1.55;margin-top:2px}
-        .quo-wrap .party .dt b{color:var(--ink)}
+        .print-doc .print-kop .doc-meta .ref{color:var(--print-accent);font-weight:600}
 
-        .quo-wrap .sec{margin-top:10px}
-        .quo-wrap .sec-h{display:flex;align-items:center;gap:6px;margin-bottom:5px}
-        .quo-wrap .sec-h .n{width:15px;height:15px;border-radius:3px;background:var(--navy);color:#fff;
-                  font-size:7.6pt;font-weight:700;display:flex;align-items:center;
-                  justify-content:center;flex:0 0 auto}
-        .quo-wrap .sec-h h3{font-size:8.6pt;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--navy)}
-        .quo-wrap .sec-h .rule{flex:1;height:1px;background:var(--line)}
-        .quo-wrap .sec-h .hint{font-size:7pt;color:var(--muted);font-weight:400;letter-spacing:0}
-
-        .quo-wrap table.items{width:100%;border-collapse:collapse;font-size:8.4pt;border:1px solid var(--line)}
-        .quo-wrap table.items th{background:var(--navy);color:#fff;font-size:6.8pt;letter-spacing:.5px;
+        .print-doc table.items{width:100%;border-collapse:collapse;font-size:8.4pt;border:1px solid var(--print-line)}
+        .print-doc table.items th{background:var(--print-accent);color:#fff;font-size:6.8pt;letter-spacing:.5px;
                        padding:5px 8px;text-align:right;font-weight:700}
-        .quo-wrap table.items th:first-child{text-align:left}
-        .quo-wrap table.items th.desc{text-align:left;width:40%}
-        .quo-wrap table.items td{padding:6px 8px;border-bottom:1px solid var(--line2);text-align:right;
+        .print-doc table.items th:first-child{text-align:left}
+        .print-doc table.items th.desc{text-align:left;width:40%}
+        .print-doc table.items td{padding:6px 8px;border-bottom:1px solid var(--print-line2);text-align:right;
                        vertical-align:top;font-variant-numeric:tabular-nums}
-        .quo-wrap table.items td.desc{text-align:left}
-        .quo-wrap table.items td.desc .nm{font-weight:700;font-size:8.8pt}
-        .quo-wrap table.items td.desc .sp{color:var(--muted);font-size:7.4pt;line-height:1.5;margin-top:2px}
-        .quo-wrap table.items td.ref{font-family:Consolas,monospace;font-weight:700;color:var(--accent);font-size:7.8pt;text-align:left}
-        .quo-wrap table.items td.q{font-weight:600}
-        .quo-wrap table.items td.amt{font-weight:700}
-        .quo-wrap table.items tr.main td{background:var(--accent-soft)}
+        .print-doc table.items td.desc{text-align:left}
+        .print-doc table.items td.desc .nm{font-weight:700;font-size:8.8pt}
+        .print-doc table.items td.desc .sp{color:var(--print-muted);font-size:7.4pt;line-height:1.5;margin-top:2px}
+        .print-doc table.items td.ref{font-family:Consolas,monospace;font-weight:700;color:var(--print-accent);font-size:7.8pt;text-align:left}
+        .print-doc table.items td.q{font-weight:600}
+        .print-doc table.items td.amt{font-weight:700}
+        .print-doc table.items tr.main td{background:var(--print-accent-soft)}
 
-        .quo-wrap .totwrap{display:grid;grid-template-columns:1fr 78mm;gap:10px;margin-top:8px}
-        .quo-wrap .tot-note{border:1px solid var(--line);padding:7px 9px;font-size:7.6pt;line-height:1.55}
-        .quo-wrap .tot-note h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:3px}
-        .quo-wrap .tot-note .ppn{display:inline-block;margin-top:3px;padding:1.5px 7px;border-radius:3px;
-                       background:var(--accent-soft);color:var(--navy);font-weight:700;font-size:7.4pt}
-        .quo-wrap table.tot{width:100%;border-collapse:collapse;font-size:8.6pt}
-        .quo-wrap table.tot td{padding:4px 9px;font-variant-numeric:tabular-nums}
-        .quo-wrap table.tot td.k{color:var(--muted);text-align:left}
-        .quo-wrap table.tot td.v{text-align:right;font-weight:600}
-        .quo-wrap table.tot tr.sub td{border-bottom:1px solid var(--line2)}
-        .quo-wrap table.tot tr.grand td{background:var(--navy);color:#fff;font-weight:700;font-size:11pt;
+        .print-doc .totwrap{display:grid;grid-template-columns:1fr 78mm;gap:10px;margin-top:8px}
+        .print-doc .tot-note{border:1px solid var(--print-line);padding:7px 9px;font-size:7.6pt;line-height:1.55}
+        .print-doc .tot-note h5{font-size:6.6pt;letter-spacing:.9px;color:var(--print-muted);font-weight:700;margin-bottom:3px}
+        .print-doc .tot-note .ppn{display:inline-block;margin-top:3px;padding:1.5px 7px;border-radius:3px;
+                       background:var(--print-accent-soft);color:var(--print-accent);font-weight:700;font-size:7.4pt}
+        .print-doc table.tot{width:100%;border-collapse:collapse;font-size:8.6pt}
+        .print-doc table.tot td{padding:4px 9px;font-variant-numeric:tabular-nums}
+        .print-doc table.tot td.k{color:var(--print-muted);text-align:left}
+        .print-doc table.tot td.v{text-align:right;font-weight:600}
+        .print-doc table.tot tr.sub td{border-bottom:1px solid var(--print-line2)}
+        .print-doc table.tot tr.grand td{background:var(--print-accent);color:#fff;font-weight:700;font-size:11pt;
                               padding:7px 9px}
-        .quo-wrap table.tot tr.grand td.k{color:#fff;letter-spacing:.5px}
+        .print-doc table.tot tr.grand td.k{color:#fff;letter-spacing:.5px}
 
-        .quo-wrap .alt{margin-top:8px;border:1px dashed var(--line);padding:6px 9px}
-        .quo-wrap .alt h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:4px}
-        .quo-wrap table.alt-t{width:100%;border-collapse:collapse;font-size:8pt}
-        .quo-wrap table.alt-t th{color:var(--muted);font-size:6.6pt;letter-spacing:.4px;padding:3px 7px;
-                       text-align:right;font-weight:700;border-bottom:1px solid var(--line)}
-        .quo-wrap table.alt-t th:first-child{text-align:left}
-        .quo-wrap table.alt-t td{padding:3px 7px;text-align:right;border-bottom:1px solid var(--line2);
+        .print-doc .alt{margin-top:8px;border:1px dashed var(--print-line);padding:6px 9px}
+        .print-doc .alt h5{font-size:6.6pt;letter-spacing:.9px;color:var(--print-muted);font-weight:700;margin-bottom:4px}
+        .print-doc table.alt-t{width:100%;border-collapse:collapse;font-size:8pt}
+        .print-doc table.alt-t th{color:var(--print-muted);font-size:6.6pt;letter-spacing:.4px;padding:3px 7px;
+                       text-align:right;font-weight:700;border-bottom:1px solid var(--print-line)}
+        .print-doc table.alt-t th:first-child{text-align:left}
+        .print-doc table.alt-t td{padding:3px 7px;text-align:right;border-bottom:1px solid var(--print-line2);
                        font-variant-numeric:tabular-nums}
-        .quo-wrap table.alt-t td:first-child{text-align:left;color:var(--muted)}
-        .quo-wrap table.alt-t td.p{font-weight:700}
-        .quo-wrap table.alt-t tr.best td.p{color:var(--gold)}
-        .quo-wrap .alt .cap{font-size:6.9pt;color:var(--muted);margin-top:4px;line-height:1.5}
+        .print-doc table.alt-t td:first-child{text-align:left;color:var(--print-muted)}
+        .print-doc table.alt-t td.p{font-weight:700}
+        .print-doc table.alt-t tr.best td.p{color:var(--print-gold)}
+        .print-doc .alt .cap{font-size:6.9pt;color:var(--print-muted);margin-top:4px;line-height:1.5}
 
-        .quo-wrap .two{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
-        .quo-wrap .box{border:1px solid var(--line);padding:6px 9px;font-size:7.7pt;line-height:1.6}
-        .quo-wrap .box h5{font-size:6.6pt;letter-spacing:.9px;color:var(--muted);font-weight:700;margin-bottom:4px}
-        .quo-wrap ol.terms{margin-left:13px;font-size:7.7pt;line-height:1.65}
-        .quo-wrap ol.terms li{margin-bottom:1.5px}
-        .quo-wrap .pay-row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;
-                 border-bottom:1px dotted var(--line2)}
-        .quo-wrap .pay-row:last-child{border-bottom:0}
-        .quo-wrap .pay-row .k{color:var(--muted)}
-        .quo-wrap .pay-row .v{font-weight:600;text-align:right}
-        .quo-wrap .bank{margin-top:5px;padding:5px 7px;background:var(--navy-soft);border-radius:4px;
+        .print-doc .pay-row{display:flex;justify-content:space-between;gap:8px;padding:2px 0;
+                 border-bottom:1px dotted var(--print-line2)}
+        .print-doc .pay-row:last-child{border-bottom:0}
+        .print-doc .pay-row .k{color:var(--print-muted)}
+        .print-doc .pay-row .v{font-weight:600;text-align:right}
+        .print-doc .bank{margin-top:5px;padding:5px 7px;background:var(--print-accent-soft);border-radius:4px;
               font-size:7.6pt;line-height:1.6}
-        .quo-wrap .bank b{font-size:8.4pt;color:var(--navy)}
-
-        .quo-wrap .sign-wrap{margin-top:10px;border:1.5px solid var(--navy);page-break-inside:avoid}
-        .quo-wrap .sign-h{background:var(--navy);color:#fff;padding:4px 9px;font-size:7.8pt;
-                font-weight:700;letter-spacing:.8px}
-        .quo-wrap .sign-b{padding:9px}
-        .quo-wrap .sign-intro{font-size:7.8pt;line-height:1.55;color:#4b5158;margin-bottom:8px}
-        .quo-wrap .sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;text-align:center}
-        .quo-wrap .sign .cell .rol{font-size:7.4pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--navy)}
-        .quo-wrap .sign .cell .co{font-size:6.8pt;color:var(--muted);margin-bottom:2px}
-        .quo-wrap .sign .cell .line{border-bottom:1px solid var(--ink);height:44px;margin-bottom:3px}
-        .quo-wrap .sign .cell .nm{font-size:7.8pt;font-weight:600}
-        .quo-wrap .sign .cell .sub{font-size:6.6pt;color:var(--muted)}
-
-        .quo-wrap .foot{position:absolute;bottom:8mm;left:12mm;right:12mm;border-top:1px solid var(--line);
-              padding-top:4px;font-size:6.6pt;color:var(--muted);display:flex;
-              justify-content:space-between;gap:10px}
-
-        @media print{
-          .quo-wrap{background:#fff;padding:0}
-          .quo-wrap .bar{display:none}
-          .quo-wrap .page{box-shadow:none;margin:0;width:auto;min-height:auto;padding:11mm 11mm 16mm}
-          @page{size:A4 portrait;margin:0}
-        }
+        .print-doc .bank b{font-size:8.4pt;color:var(--print-accent)}
     </style>
-</div>
+</x-print.document>

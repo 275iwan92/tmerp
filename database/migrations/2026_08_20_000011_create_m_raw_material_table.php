@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 // Adopsi legacy tm2mst.m_raw_material (item master bahan baku/jasa/sparepart,
-// 5893 baris riil) -- PROC_TIER_1.md §1.1/§5.5 & PROC_TIER_3.md §7.1.
+// 5893 baris riil) -- procurement_tier1.md §1.1/§5.5 & procurement_tier3.md §7.1.
 // Sumber: dump asli user (database/legacy/m_raw_material.sql, 2026-08-20).
 // DEVIASI dari dump asli (structure boleh diubah - arahan user 2026-08-20):
 // FK `uom_purchase/uom_stock/uom_usage -> m_uom(uom_code)` DIHAPUS -- tabel

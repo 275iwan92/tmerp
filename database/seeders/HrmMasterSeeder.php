@@ -36,7 +36,7 @@ class HrmMasterSeeder extends Seeder
         $this->linkAdminToEmployee();
     }
 
-    // TIER_1_HRM.md §10: 1 user WAJIB tertaut 1 employee_id sebelum bisa pakai
+    // masteremployee_tier1.md §10: 1 user WAJIB tertaut 1 employee_id sebelum bisa pakai
     // portal self-service ("Jadwal Saya"/dst). SecUserSeeder kebetulan sudah
     // menamai user 'admin' sebagai "Budi Santoso" — tautkan ke TM-00001 supaya
     // ada akun siap pakai untuk uji coba tanpa perlu bikin user baru.
@@ -55,7 +55,7 @@ class HrmMasterSeeder extends Seeder
     {
         return OrgCompany::query()->updateOrCreate(
             ['company_code' => 'TM'],
-            ['company_name' => 'CV Telasih Makmur Group', 'is_active' => true]
+            ['company_name' => 'CV Telasih Makmur Group', 'activate' => true]
         );
     }
 
@@ -72,7 +72,7 @@ class HrmMasterSeeder extends Seeder
         foreach ($rows as $code => $name) {
             $divisions[$code] = OrgDivision::query()->updateOrCreate(
                 ['company_id' => $company->company_id, 'division_code' => $code],
-                ['division_name' => $name, 'is_active' => true]
+                ['division_name' => $name, 'activate' => true]
             );
         }
 
@@ -99,7 +99,7 @@ class HrmMasterSeeder extends Seeder
                 [
                     'division_id' => $row['division'] ? $divisions[$row['division']]->division_id : null,
                     'department_name' => $row['name'],
-                    'is_active' => true,
+                    'activate' => true,
                 ]
             );
         }
@@ -121,7 +121,7 @@ class HrmMasterSeeder extends Seeder
         foreach ($rows as $code => $row) {
             $levels[$code] = OrgLevel::query()->updateOrCreate(
                 ['level_code' => $code],
-                ['level_name' => $row['name'], 'level_rank' => $row['rank'], 'is_active' => true]
+                ['level_name' => $row['name'], 'level_rank' => $row['rank'], 'activate' => true]
             );
         }
 
@@ -147,7 +147,7 @@ class HrmMasterSeeder extends Seeder
                 [
                     'level_id' => $levels[$row['level']]->level_id,
                     'position_name' => $row['name'],
-                    'is_active' => true,
+                    'activate' => true,
                 ]
             );
         }
@@ -175,7 +175,7 @@ class HrmMasterSeeder extends Seeder
                     'brand_model' => $r['brand'],
                     'year_acquired' => $r['year'],
                     'serial_no' => $r['serial'],
-                    'is_active' => true,
+                    'activate' => true,
                 ]
             );
         }
@@ -185,38 +185,38 @@ class HrmMasterSeeder extends Seeder
     {
         $shift1 = EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['PRESS']->department_id, 'shift_name' => 'TM Production Shift 1'],
-            ['is_active' => true]
+            ['activate' => true]
         );
         $this->seedDailyHours($shift1, '05:00', '09:30', '10:00', '13:15', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
 
         $shift2 = EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['PRESS']->department_id, 'shift_name' => 'TM Production Shift 2'],
-            ['is_active' => true]
+            ['activate' => true]
         );
         $this->seedDailyHours($shift2, '13:15', null, null, '21:15', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
 
         $shift3 = EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['SECURITY']->department_id, 'shift_name' => 'Security Shift 3'],
-            ['is_active' => true]
+            ['activate' => true]
         );
         $this->seedDailyHours($shift3, '11:30', null, null, '21:30', ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
 
         EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['DIGITALPROD']->department_id, 'shift_name' => 'TDP Production Long Shift 1'],
-            ['is_active' => true]
+            ['activate' => true]
         );
         EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['DIGITALPROD']->department_id, 'shift_name' => 'TDP Production Shift 2'],
-            ['is_active' => true]
+            ['activate' => true]
         );
 
         EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['INDOSTRYPROD']->department_id, 'shift_name' => 'Indostry Shift 1'],
-            ['is_active' => true]
+            ['activate' => true]
         );
         EmpShift::query()->updateOrCreate(
             ['department_id' => $departments['INDOSTRYPROD']->department_id, 'shift_name' => 'Indostry Shift 2'],
-            ['is_active' => true]
+            ['activate' => true]
         );
     }
 
@@ -336,7 +336,7 @@ class HrmMasterSeeder extends Seeder
                     'phone' => $r['phone'],
                     'join_date' => $r['join_date'],
                     'work_status' => 'WORKING',
-                    'is_active' => true,
+                    'activate' => true,
                 ]
             );
 
@@ -346,7 +346,7 @@ class HrmMasterSeeder extends Seeder
                     'employment_type' => $r['contract']['type'],
                     'salary_type' => $r['contract']['salary_type'],
                     'salary_amount' => $r['contract']['salary'],
-                    'is_active' => true,
+                    'activate' => true,
                 ]
             );
 
@@ -370,7 +370,7 @@ class HrmMasterSeeder extends Seeder
                         'relation' => $r['family']['relation'],
                         'birth_date' => $r['family']['birth_date'],
                         'nik' => $r['family']['nik'],
-                        'is_active' => true,
+                        'activate' => true,
                     ]
                 );
             }

@@ -13,10 +13,10 @@ CREATE DATABASE IF NOT EXISTS `tm2sdi` CHARACTER SET utf8mb4 COLLATE utf8mb4_uni
 CREATE DATABASE IF NOT EXISTS `tm2pur` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Procurement
 CREATE DATABASE IF NOT EXISTS `tm2inv` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Inventory
 CREATE DATABASE IF NOT EXISTS `tm2prd` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Production
-CREATE DATABASE IF NOT EXISTS `tm2acc` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Finance & Accounting (DI LUAR scope 10 minggu; kecuali Invoicing/Billing AR-lite)
-CREATE DATABASE IF NOT EXISTS `tm2hrm` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- HR Master (ditunda)
-CREATE DATABASE IF NOT EXISTS `tm2hrr` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- HR Recruitment (ditunda)
-CREATE DATABASE IF NOT EXISTS `tm2pyr` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Payroll (ditunda)
+CREATE DATABASE IF NOT EXISTS `tm2acc` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Finance & Accounting (scope DIBUKA 2026-08-26, lihat DEC-SCOPE-OPEN)
+CREATE DATABASE IF NOT EXISTS `tm2hrm` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- HR Master (scope DIBUKA 2026-08-26)
+CREATE DATABASE IF NOT EXISTS `tm2hrr` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- HR Recruitment (scope DIBUKA 2026-08-26)
+CREATE DATABASE IF NOT EXISTS `tm2pyr` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  -- Payroll (scope DIBUKA 2026-08-26)
 
 -- ------------------------------------------------------------
 -- 2. USER: backupadmin — administrator cadangan (full akses)

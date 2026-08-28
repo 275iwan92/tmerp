@@ -19,13 +19,13 @@ class ProdTypeSize extends Model
         'size_code',
         'size_label',
         'sort_order',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function type(): BelongsTo

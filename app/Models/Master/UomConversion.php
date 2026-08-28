@@ -16,14 +16,14 @@ class UomConversion extends Model
         'uom_src',
         'uom_dst',
         'conversion_value',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'conversion_value' => 'decimal:6',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     // uom_src/uom_dst nyimpan uom_code (VARCHAR) langsung, bukan FK id_uom

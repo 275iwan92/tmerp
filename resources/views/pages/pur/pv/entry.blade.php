@@ -243,24 +243,19 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->pv->status }}</span>
-        <a href="{{ route('pur.pv.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar SPB</a>
+        <a href="{{ route('pur.pv.list') }}" title="Kembali ke Daftar SPB"
+            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+        </a>
     </header>
 
     <div class="max-w-[1500px] mx-auto my-5 px-4">
         {{-- HEADER --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid grid-cols-4 gap-3">
-            <div>
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal Terima</label>
-                <input type="date" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
-            </div>
-            <div>
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Surat Jalan Utama</label>
-                <input type="text" value="{{ $this->pv->i_supplier_do_no }}" wire:change="updateHeader('i_supplier_do_no', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
-            </div>
-            <div>
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No Kendaraan</label>
-                <input type="text" value="{{ $this->pv->i_vehicle_no }}" wire:change="updateHeader('i_vehicle_no', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
-            </div>
+        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid gap-3">
+            <x-form.input label="Tanggal Terima" type="date" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" />
+            <x-form.input label="Surat Jalan Utama" value="{{ $this->pv->i_supplier_do_no }}" wire:change="updateHeader('i_supplier_do_no', $event.target.value)" />
+            <x-form.input label="No Kendaraan" value="{{ $this->pv->i_vehicle_no }}" wire:change="updateHeader('i_vehicle_no', $event.target.value)" />
             <div>
                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">PO Tercakup</label>
                 <div class="flex items-center gap-1.5 flex-wrap pt-1.5">
@@ -275,8 +270,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                 </div>
             </div>
             <div class="col-span-4">
-                <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Catatan</label>
-                <input type="text" value="{{ $this->pv->i_notes }}" wire:change="updateHeader('i_notes', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                <x-form.input label="Catatan" value="{{ $this->pv->i_notes }}" wire:change="updateHeader('i_notes', $event.target.value)" />
             </div>
         </div>
 
@@ -322,37 +316,33 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                                     @endif
                                 </td>
                                 <td class="px-2 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_qty_purchase }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_qty_purchase', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_qty_purchase }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_qty_purchase', $event.target.value)" class="w-20 !py-1 text-right" />
                                 </td>
                                 <td class="px-2 py-2">{{ $line->i_uom_purchase }}</td>
                                 <td class="px-2 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_qty_stock }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_qty_stock', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_qty_stock }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_qty_stock', $event.target.value)" class="w-20 !py-1 text-right" />
                                 </td>
                                 <td class="px-2 py-2">{{ $line->i_uom_stock }}</td>
                                 <td class="px-2 py-2">
-                                    <select wire:change="setQuality({{ $line->pv_line_id }}, $event.target.value)" class="px-1.5 py-1 border border-[#d7dbe2] rounded text-xs">
-                                        <option value="PENDING" @selected($line->qc_quality_status === 'PENDING')>— pending —</option>
-                                        <option value="PASS" @selected($line->qc_quality_status === 'PASS')>PASS</option>
-                                        <option value="PARTIAL" @selected($line->qc_quality_status === 'PARTIAL')>PARTIAL</option>
-                                        <option value="FAIL" @selected($line->qc_quality_status === 'FAIL')>FAIL</option>
-                                    </select>
+                                    <x-form.select wire:change="setQuality({{ $line->pv_line_id }}, $event.target.value)" class="!py-1" :placeholder="false"
+                                        :selected="$line->qc_quality_status" :options="['PENDING' => '— pending —', 'PASS' => 'PASS', 'PARTIAL' => 'PARTIAL', 'FAIL' => 'FAIL']" />
                                     @if ($line->qc_qty_status !== 'DONE')
                                         <button type="button" wire:click="markQtyDone({{ $line->pv_line_id }})" class="block text-[10px] text-accent font-semibold mt-1">Tandai QC Qty Selesai</button>
                                     @endif
                                 </td>
                                 <td class="px-2 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->c_qty_accepted }}" @disabled($line->qc_quality_status !== 'PARTIAL')
-                                        wire:change="updateQcQty({{ $line->pv_line_id }}, 'c_qty_accepted', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-[#f8fafc]">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->c_qty_accepted }}" :disabled="$line->qc_quality_status !== 'PARTIAL'"
+                                        wire:change="updateQcQty({{ $line->pv_line_id }}, 'c_qty_accepted', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-[#f8fafc]" />
                                 </td>
                                 <td class="px-2 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->c_qty_rejected }}" @disabled($line->qc_quality_status !== 'PARTIAL')
-                                        wire:change="updateQcQty({{ $line->pv_line_id }}, 'c_qty_rejected', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-[#f8fafc]">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->c_qty_rejected }}" :disabled="$line->qc_quality_status !== 'PARTIAL'"
+                                        wire:change="updateQcQty({{ $line->pv_line_id }}, 'c_qty_rejected', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-[#f8fafc]" />
                                 </td>
                                 <td class="px-2 py-2">
-                                    <input type="text" value="{{ $line->i_lot_no }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_lot_no', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs">
+                                    <x-form.input value="{{ $line->i_lot_no }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_lot_no', $event.target.value)" class="w-24 !py-1" />
                                 </td>
                                 <td class="px-2 py-2">
-                                    <input type="text" value="{{ $line->i_location_code }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_location_code', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs">
+                                    <x-form.input value="{{ $line->i_location_code }}" wire:change="updateLine({{ $line->pv_line_id }}, 'i_location_code', $event.target.value)" class="w-20 !py-1" />
                                 </td>
                             </tr>
                             @if ($line->is_tol_exceeded && ! $line->tol_override_by)

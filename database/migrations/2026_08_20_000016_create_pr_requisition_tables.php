@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// PR - Purchase Requisition (PROC_TIER_3.md §2). FK lintas-DB (department,
+// PR - Purchase Requisition (procurement_tier3.md §2). FK lintas-DB (department,
 // coa_account, item, co_line) = LOGICAL, tidak dibuat FK fisik (CLAUDE.md §2).
 return new class extends Migration
 {

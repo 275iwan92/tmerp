@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
 // Engine approval + state-transition generik lintas modul (TIER_1/2/3_FLOW_ENGINE.md).
 // Implementasi tahap ini: submit() dokumen ke step APPROVAL pertama yang cocok
 // (status_from + rentang amount). approve()/reject() menyusul saat layar
-// approval (PrApproval, dst) dibangun -- lihat PROC_STATE.yaml next_step.
+// approval (PrApproval, dst) dibangun -- lihat procurement_state.yaml next_step.
 class FlowEngineService
 {
     // Kirim dokumen dari statusFrom (mis. 'DRAFT') ke step APPROVAL/AUTO pertama
@@ -101,7 +101,7 @@ class FlowEngineService
     {
         $acting = FlowPositionActing::query()
             ->where('position_id', $positionId)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->first();
@@ -113,7 +113,7 @@ class FlowEngineService
     {
         return FlowConfig::query()
             ->where('module_code', $moduleCode)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->where(function ($q) use ($divisionId) {
                 $q->where('division_id', $divisionId)->orWhereNull('division_id');
             })
@@ -141,7 +141,7 @@ class FlowEngineService
         $ownPositionId = $user?->currentPositionId();
 
         $pltPositionIds = FlowPositionActing::where('acting_user_id', $userId)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->pluck('position_id');
@@ -178,7 +178,7 @@ class FlowEngineService
         $login = Auth::user()->login ?? null;
 
         $isActing = FlowPositionActing::where('position_id', $step->position_id)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->where('acting_user_id', $userId)
@@ -255,7 +255,7 @@ class FlowEngineService
         $login = Auth::user()->login ?? null;
 
         $isActing = FlowPositionActing::where('position_id', $step->position_id)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->where('acting_user_id', $userId)
@@ -291,7 +291,7 @@ class FlowEngineService
         $login = Auth::user()->login ?? null;
 
         $isActing = FlowPositionActing::where('position_id', $step->position_id)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->where('acting_user_id', $userId)

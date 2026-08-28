@@ -23,7 +23,7 @@ use Illuminate\Support\Str;
 // - Password: App\Services\Security\PasswordResetService::generate() (format
 //   readable, dipakai admin/UAT seeder yang sudah ada) -- BUKAN reset(), sebab
 //   reset() butuh SecUser yang sudah ada; user di sini baru dibuat.
-//   must_change_password=1 supaya tetap masuk alur SECURITY_default_password_spec.md
+//   must_change_password=1 supaya tetap masuk alur security_defaultpassword_spec.md
 //   (dipaksa ganti password begitu login pertama).
 // - approval_status='approved' + active/is_active=1 -- langsung bisa login,
 //   tak nyangkut di alur approval pendaftaran.
@@ -50,12 +50,10 @@ class EmployeeLoginProvisionService
 
         $employeesWithLogin = SecUser::whereNotNull('employee_id')->pluck('employee_id')->flip()->toArray();
 
-        $passwordSvc = app(PasswordResetService::class);
-
         EmpEmployee::whereNotNull('legacy_employee_id')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('employee_id')
-            ->chunk(100, function ($chunk) use (&$report, &$existingLogins, $employeesWithLogin, $passwordSvc, $actor) {
+            ->chunk(100, function ($chunk) use (&$report, &$existingLogins, $employeesWithLogin, $actor) {
                 foreach ($chunk as $emp) {
                     if (isset($employeesWithLogin[$emp->employee_id])) {
                         $report['skippedExisting']++;
@@ -63,36 +61,57 @@ class EmployeeLoginProvisionService
                         continue;
                     }
 
-                    $login = $this->uniqueLogin($emp->full_name, $existingLogins);
-                    $existingLogins[$login] = true;
-
-                    $plain = $passwordSvc->generate();
-
-                    SecUser::create([
-                        'login' => $login,
-                        'pswd' => Hash::make($plain),
-                        'default_password' => $plain, // accessor -> Crypt::encryptString
-                        'must_change_password' => true,
-                        'name' => $emp->full_name,
-                        'email' => $login.'@telasih.co.id',
-                        'employee_id' => $emp->employee_id,
-                        'active' => true,
-                        'is_active' => true,
-                        'is_admin' => false,
-                        'approval_status' => 'approved',
-                        'pswd_last_updated' => now(),
-                        'created_by' => $actor,
-                        'updated_by' => $actor,
-                    ]);
+                    $cred = $this->provisionForEmployee($emp, $actor, $existingLogins);
+                    $existingLogins[mb_strtolower($cred['login'])] = true;
 
                     $report['created']++;
                     if (count($report['sample']) < 15) {
-                        $report['sample'][] = ['login' => $login, 'name' => $emp->full_name, 'password' => $plain];
+                        $report['sample'][] = $cred;
                     }
                 }
             });
 
         return $report;
+    }
+
+    // Provisioning SATU karyawan (dipakai jalur registrasi baru lewat Master
+    // Employee -- keputusan user 2026-08-27: "diangkat jadi employee" =
+    // login auto dibuat, dicetak IT/HR buat kandidat -- BUKAN lewat layar
+    // "Tambah Pengguna" manual yg tak menaut employee_id, itu khusus akun
+    // non-employee spt customer/supplier). Idempotent: kalau employee_id ini
+    // sudah punya login, return null, tak bikin dobel.
+    public function provisionForEmployee(EmpEmployee $emp, string $actor, ?array $existingLoginsHint = null): ?array
+    {
+        if (SecUser::where('employee_id', $emp->employee_id)->exists()) {
+            return null;
+        }
+
+        $existingLogins = $existingLoginsHint ?? SecUser::pluck('login')
+            ->map(fn ($l) => mb_strtolower((string) $l))
+            ->flip()
+            ->toArray();
+
+        $login = $this->uniqueLogin($emp->full_name, $existingLogins);
+        $plain = app(PasswordResetService::class)->generate();
+
+        SecUser::create([
+            'login' => $login,
+            'pswd' => Hash::make($plain),
+            'default_password' => $plain, // accessor -> Crypt::encryptString
+            'must_change_password' => true,
+            'name' => $emp->full_name,
+            'email' => $login.'@telasih.co.id',
+            'employee_id' => $emp->employee_id,
+            'active' => true,
+            'activate' => true,
+            'is_admin' => false,
+            'approval_status' => 'approved',
+            'pswd_last_updated' => now(),
+            'created_by' => $actor,
+            'updated_by' => $actor,
+        ]);
+
+        return ['login' => $login, 'name' => $emp->full_name, 'password' => $plain];
     }
 
     protected function uniqueLogin(string $fullName, array &$existingLogins): string

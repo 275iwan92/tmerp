@@ -284,50 +284,60 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         <b class="text-[15px]">📦 Customer Order — Entry</b>
         <span class="text-xs text-white/75">{{ $this->order->co_no }} · {{ $this->order->quotation->customer?->customer_name }}</span>
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full {{ $this->order->doc_status === 'CONFIRMED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $this->order->doc_status }}</span>
-        <a href="{{ route('co.list') }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">← Daftar Customer Order</a>
+
+        <div class="ml-auto flex items-center gap-4">
+            <div class="text-right leading-tight">
+                <div class="text-[9.5px] uppercase text-white/55 font-semibold">Net Receivable</div>
+                <div class="text-sm font-extrabold">{{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</div>
+            </div>
+            @if ($this->order->doc_status === 'DRAFT')
+                <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
+                    @disabled($this->order->items->isEmpty())
+                    class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                    ✓ Confirm CO
+                </button>
+            @endif
+            <a href="{{ route('co.list') }}" title="Kembali ke menu grid"
+                class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+                <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+            </a>
+        </div>
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
-        <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-4">
+        {{-- flex, BUKAN class="grid" -- app.css baris 60 override literal ".grid"
+             jadi grid-cols-4 (unlayered, selalu menang atas grid-cols/lg:grid-cols
+             Tailwind manapun, sama persis kasus input{width:full} di
+             GRID_UI_STANDARD.md §6). Dulu dipakai grid-cols-[1fr_320px] tapi itu
+             ke-override jadi 4 kolom sama rata -- KIRI ikut kepotong ke ~25% lebar,
+             bukan cuma soal grid Header Dokumen di dalamnya. --}}
+        <div class="flex flex-col lg:flex-row gap-4">
 
             {{-- KIRI --}}
-            <div>
+            <div class="lg:flex-1 min-w-0">
                 {{-- HEADER DOKUMEN --}}
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Dokumen</h3>
-                    <div class="grid grid-cols-4 gap-3">
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No. CO</label>
-                            <input readonly value="{{ $this->order->co_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">CO Date</label>
-                            <input type="date" value="{{ $this->order->co_date?->format('Y-m-d') }}" @disabled($this->order->doc_status !== 'DRAFT')
-                                wire:change="updateHeader('co_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ref. Quotation</label>
-                            <input readonly value="{{ $this->order->quotation->quotation_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Cust. PO No.</label>
-                            <input type="text" value="{{ $this->order->customer_po_no }}" @disabled($this->order->doc_status !== 'DRAFT')
-                                wire:change="updateHeader('customer_po_no', $event.target.value)" placeholder="PO/customer/..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Customer</label>
-                            <input readonly value="{{ $this->order->quotation->customer?->customer_name }} ({{ $this->order->quotation->customer?->customer_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Order Type</label>
-                            <input readonly value="{{ $this->orderType }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Mata Uang</label>
-                            <input readonly value="{{ $this->order->quotation->currency_code }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
+                    {{-- "grid three" (bukan grid-cols-3) -- ikuti konvensi .grid/.two/.three
+                         yang sudah ada di app.css, satu-satunya cara reliable dapat 3 kolom
+                         di sini (lihat catatan flex di atas). --}}
+                    <div class="grid three">
+                        <x-form.input label="No. CO" readonly value="{{ $this->order->co_no }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="CO Date" type="date" value="{{ $this->order->co_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('co_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                        <x-form.input label="Ref. Quotation" readonly value="{{ $this->order->quotation->quotation_no }}" class="bg-[#f8fafc]" />
+
+                        <x-form.input label="Cust. PO No." value="{{ $this->order->customer_po_no }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('customer_po_no', $event.target.value)" placeholder="PO/customer/..." class="disabled:bg-[#f8fafc]" />
+                        <x-form.input label="Order Type" readonly value="{{ $this->orderType }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="Mata Uang" readonly value="{{ $this->order->quotation->currency_code }}" class="bg-[#f8fafc]" />
+
+                        <div class="col-span-3">
+                            <x-form.input label="Customer" readonly value="{{ $this->order->quotation->customer?->customer_name }} ({{ $this->order->quotation->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
                         </div>
 
-                        <div class="col-span-4">
+                        <div class="col-span-3">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Shipment Location</label>
                             <livewire:address-picker
                                 field-name="co-ship-address"
@@ -336,15 +346,11 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 :initial-label="$this->order->ship_address_label"
                                 wire:key="co-ship-picker-{{ $this->orderId }}" />
                         </div>
-                        <div class="col-span-3">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Detail Alamat (jalan, no., RT/RW, patokan)</label>
-                            <input type="text" value="{{ $this->order->ship_address_detail }}" @disabled($this->order->doc_status !== 'DRAFT')
-                                wire:change="updateHeader('ship_address_detail', $event.target.value)" placeholder="Jl. ..., No. ..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
+                        <div class="col-span-2">
+                            <x-form.input label="Detail Alamat (jalan, no., RT/RW, patokan)" value="{{ $this->order->ship_address_detail }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                                wire:change="updateHeader('ship_address_detail', $event.target.value)" placeholder="Jl. ..., No. ..." class="disabled:bg-[#f8fafc]" />
                         </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kode Pos</label>
-                            <input readonly value="{{ $this->order->ship_postal_code }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
+                        <x-form.input label="Kode Pos" readonly value="{{ $this->order->ship_postal_code }}" class="bg-[#f8fafc]" />
                     </div>
                 </div>
 
@@ -385,7 +391,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                     <tr class="border-b border-[#eef1f5]" wire:key="co-item-{{ $item->id_item }}">
                                         <td class="px-2 py-2">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')
-                                                <input type="text" value="{{ $item->description }}" placeholder="Deskripsi..." wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs font-medium">
+                                                <x-form.input value="{{ $item->description }}" placeholder="Deskripsi..." wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="!py-1 font-medium" />
                                             @else
                                                 <div class="font-medium text-navy">{{ $item->description }}</div>
                                             @endif
@@ -397,14 +403,14 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         </td>
                                         <td class="px-2 py-2 text-right">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')
-                                                <input type="number" step="0.01" value="{{ $item->qty }}" wire:change="updateItem({{ $item->id_item }}, 'qty', $event.target.value)" class="w-16 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                                <x-form.input type="number" step="0.01" value="{{ $item->qty }}" wire:change="updateItem({{ $item->id_item }}, 'qty', $event.target.value)" class="w-16 !py-1 text-right" />
                                             @else
                                                 {{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}
                                             @endif
                                         </td>
                                         <td class="px-2 py-2 text-right">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')
-                                                <input type="number" step="0.01" value="{{ $item->unit_price }}" wire:change="updateItem({{ $item->id_item }}, 'unit_price', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                                <x-form.input type="number" step="0.01" value="{{ $item->unit_price }}" wire:change="updateItem({{ $item->id_item }}, 'unit_price', $event.target.value)" class="w-20 !py-1 text-right" />
                                             @else
                                                 {{ number_format($item->unit_price, 0, ',', '.') }}
                                             @endif
@@ -412,8 +418,8 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         <td class="px-2 py-2 text-right">{{ number_format($item->discount_pct, 1) }}%</td>
                                         <td class="px-2 py-2 text-right font-bold text-navy">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                         <td class="px-2 py-2 text-center">
-                                            <input type="date" value="{{ $item->due_date?->format('Y-m-d') }}" @disabled($this->order->doc_status !== 'DRAFT')
-                                                wire:change="updateItem({{ $item->id_item }}, 'due_date', $event.target.value)" class="px-1.5 py-1 border border-[#d7dbe2] rounded text-[11px] disabled:bg-[#f8fafc]">
+                                            <x-form.input type="date" value="{{ $item->due_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                                                wire:change="updateItem({{ $item->id_item }}, 'due_date', $event.target.value)" class="!py-1 text-[11px] disabled:bg-[#f8fafc]" />
                                         </td>
                                         <td class="px-2 py-2 text-center">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')
@@ -452,16 +458,14 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         @forelse ($item->deliveries as $d)
                                             <tr wire:key="dlv-{{ $d->id_delivery }}">
                                                 <td class="px-2 py-1.5">
-                                                    <select @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateDelivery({{ $d->id_delivery }}, 'shipment_type', $event.target.value)" class="px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                                        <option value="FULL" @selected($d->shipment_type === 'FULL')>FULL</option>
-                                                        <option value="PARTIAL" @selected($d->shipment_type === 'PARTIAL')>PARTIAL</option>
-                                                    </select>
+                                                    <x-form.select :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'shipment_type', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]"
+                                                        :placeholder="false" :selected="$d->shipment_type" :options="['FULL' => 'FULL', 'PARTIAL' => 'PARTIAL']" />
                                                 </td>
                                                 <td class="px-2 py-1.5">
-                                                    <input type="date" value="{{ $d->ship_date?->format('Y-m-d') }}" @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_date', $event.target.value)" class="px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
+                                                    <x-form.input type="date" value="{{ $d->ship_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_date', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]" />
                                                 </td>
                                                 <td class="px-2 py-1.5 text-right">
-                                                    <input type="number" step="0.01" value="{{ $d->ship_qty }}" @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_qty', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-[#f8fafc]">
+                                                    <x-form.input type="number" step="0.01" value="{{ $d->ship_qty }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_qty', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-[#f8fafc]" />
                                                 </td>
                                                 <td class="px-2 py-1.5 text-center">
                                                     @if ($this->order->doc_status === 'DRAFT')
@@ -501,23 +505,18 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 @forelse ($this->order->externalCosts as $c)
                                     <tr wire:key="ext-{{ $c->id_cost }}">
                                         <td class="px-2 py-1.5">
-                                            <select @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateExternalCost({{ $c->id_cost }}, 'category', $event.target.value)" class="px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                                @foreach (['Trucking', 'Expedition', 'Lainnya'] as $cat)
-                                                    <option value="{{ $cat }}" @selected($c->category === $cat)>{{ $cat }}</option>
-                                                @endforeach
-                                            </select>
+                                            <x-form.select :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'category', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]"
+                                                :placeholder="false" :selected="$c->category" :options="['Trucking' => 'Trucking', 'Expedition' => 'Expedition', 'Lainnya' => 'Lainnya']" />
                                         </td>
                                         <td class="px-2 py-1.5">
-                                            <input type="text" value="{{ $c->description }}" @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateExternalCost({{ $c->id_cost }}, 'description', $event.target.value)" class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
+                                            <x-form.input value="{{ $c->description }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'description', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]" />
                                         </td>
                                         <td class="px-2 py-1.5 text-right">
-                                            <input type="number" step="0.01" value="{{ $c->nominal }}" @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateExternalCost({{ $c->id_cost }}, 'nominal', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-[#f8fafc]">
+                                            <x-form.input type="number" step="0.01" value="{{ $c->nominal }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'nominal', $event.target.value)" class="w-24 !py-1 text-right disabled:bg-[#f8fafc]" />
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
-                                            <select @disabled($this->order->doc_status !== 'DRAFT') wire:change="updateExternalCost({{ $c->id_cost }}, 'tax_treatment', $event.target.value)" class="px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                                <option value="TAXABLE" @selected($c->tax_treatment === 'TAXABLE')>Taxable</option>
-                                                <option value="REIMBURSEMENT" @selected($c->tax_treatment === 'REIMBURSEMENT')>Reimbursement</option>
-                                            </select>
+                                            <x-form.select :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateExternalCost({{ $c->id_cost }}, 'tax_treatment', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]"
+                                                :placeholder="false" :selected="$c->tax_treatment" :options="['TAXABLE' => 'Taxable', 'REIMBURSEMENT' => 'Reimbursement']" />
                                         </td>
                                         <td class="px-2 py-1.5 text-center">
                                             @if ($this->order->doc_status === 'DRAFT')
@@ -548,19 +547,13 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             </div>
 
             {{-- KANAN --}}
-            <div>
+            <div class="lg:w-[320px] lg:shrink-0">
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Document Discount</h3>
                     <div class="space-y-2">
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Disc. Doc (fix dari IQ)</label>
-                            <input readonly value="{{ $this->order->discount_doc_pct !== null ? number_format($this->order->discount_doc_pct, 2).'%' : '—' }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Disc. Qty</label>
-                            <input type="number" step="0.01" value="{{ $this->order->discount_qty_pct }}" @disabled($this->order->doc_status !== 'DRAFT')
-                                wire:change="updateHeader('discount_qty_pct', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        </div>
+                        <x-form.input label="Disc. Doc (fix dari IQ)" readonly value="{{ $this->order->discount_doc_pct !== null ? number_format($this->order->discount_doc_pct, 2).'%' : '—' }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="Disc. Qty" type="number" step="0.01" value="{{ $this->order->discount_qty_pct }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('discount_qty_pct', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                     </div>
                 </div>
 
@@ -586,13 +579,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                         placeholder="Internal notes for Ops/PPIC..." class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->order->notes }}</textarea>
                 </div>
 
-                @if ($this->order->doc_status === 'DRAFT')
-                    <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
-                        @disabled($this->order->items->isEmpty())
-                        class="w-full px-4 py-2.5 rounded text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                        Confirm CO
-                    </button>
-                @else
+                @if ($this->order->doc_status !== 'DRAFT')
                     <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5">✓ Sudah di-confirm — isi terkunci</div>
                 @endif
             </div>

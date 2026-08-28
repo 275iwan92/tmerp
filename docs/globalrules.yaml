@@ -1,0 +1,186 @@
+# ═══════════════════════════════════════════════════════════════════
+# globalrules.yaml — ATURAN UNIVERSAL SEMUA MODUL (jarang berubah)
+# TMERP · PT. Telasih Makmur · Laravel + Livewire
+# Modul MENUNJUK ke file ini, TIDAK menyalin. Khas-modul → <MODUL>_RULES.yaml
+# ═══════════════════════════════════════════════════════════════════
+
+meta:
+  scope: "Scope terkunci 10 minggu (lihat GLOBAL_START_HERE) HANYA berarti urutan prioritas Sales-dulu, BUKAN larangan menyentuh modul lain. CATATAN 2026-08-26 (DEC-SCOPE-OPEN, lihat GLOBAL_START_HERE): user resmi membuka Finance & Accounting (10_finance_accounting) DAN HR lengkap termasuk Recruitment/Payroll (11_hr) untuk boleh dikerjakan sekarang — bukan lagi 'di luar scope 10 minggu'. modules_excluded di bawah sudah diperbarui mengikuti keputusan ini. Baca ini + GLOBAL_START_HERE + <MODUL>_STATE tiap sesi."
+  bahasa: "Jawab Bahasa Indonesia. Singkat-padat-jelas. Bahas konsep sebelum kode. Baca file PENUH sebelum dokumentasi."
+  peta_status: "checklistmockuperp.md (per-item) DAN warna menu di shell (per-DB, lihat module_status_system) adalah DUA representasi peta status yang sama — WAJIB diupdate BARENGAN tiap ada perubahan status suatu form/grid, jangan cuma salah satu."
+
+# ═══════════════════════════════════════════════════════════════════
+# MODUL ERP — SCOPE 10 MINGGU (urutan dependensi eksekusi Sales-dulu).
+# CATATAN 2026-08-26: Finance/GL/AP/cashier & HR (Recruitment/Payroll)
+# TIDAK LAGI dikeluarkan dari scope — lihat DEC-SCOPE-OPEN di
+# globalstarthere.md. Urutan di bawah tetap prioritas eksekusi,
+# bukan larangan.
+# ═══════════════════════════════════════════════════════════════════
+modules:
+  "01_sales":
+    desc: "Inquiry, Quotation, Sales Order/CO"
+    submodules: ["inquiry_product", "imposition_routing", "product_costing", "sales_quotation", "customer_order_sales_order", "sales_delivery_plan", "submit_to_production"]
+  "02_inventory":
+    desc: "Master item & pergerakan stok — fondasi untuk MRP"
+    submodules: ["item_master", "stock_movement", "stock_adjustment", "stock_opname"]
+  "03_production":
+    desc: "Perencanaan & eksekusi produksi (konsumen Routing/BOP dari Sales)"
+    submodules: ["mps", "mrp", "capacity_planning", "production_order_work_order", "bop_execution", "production_output"]
+  "04_procurement":
+    desc: "Dipicu MRP"
+    submodules: ["purchase_requisition", "purchase_order", "receiving_goods_receipt"]
+  "05_dispatch":
+    desc: "Distribusi & pengiriman"
+    submodules: ["picking_packing", "delivery_order", "delivery_note", "shipment_cross_co"]
+  "06_invoicing_billing":
+    desc: "AR-lite — invoice dari CO/DN + status tagih/bayar. BUKAN General Ledger/AP/cashier."
+    submodules: ["invoice_generation", "billing_status", "ar_aging_basic"]
+  "07_lookup":
+    desc: "Data referensi lintas modul"
+    submodules: ["global_reference", "lookup", "parameter"]
+  "08_security":
+    desc: "Akses & audit"
+    submodules: ["user_role_management", "notification", "audit_trail", "opening_app_auth_shell"]
+  "09_master_data":
+    desc: "Master data lintas-modul, dipisah dari Sales sejak redesign v2 (2026-08-18/19)"
+    submodules: ["customer_master", "supplier_master", "uom_master"]
+  "10_finance_accounting":
+    desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, bukan cuma sisa. COA, Journal, Voucher, Invoice, DP Invoice sudah live; Cashier/AP/Trial Balance menyusul."
+    submodules: ["chart_of_account", "journal_voucher", "cashier", "accounts_payable", "trial_balance", "invoice", "dp_invoice"]
+  "11_hr":
+    desc: "DIBUKA (DEC-SCOPE-OPEN 2026-08-26) — boleh dikerjakan penuh sekarang, termasuk Recruitment & Payroll. Employee, struktur organisasi, Shift Roster, Self-Service sudah live. Time Attendance: implementasi lama (emp_attendance_log) DICABUT 2026-08-24 — digantikan rancangan lebih detail di TIER_1_ATTENDANCE.md (draft, belum direview Telma, belum diimplementasi ulang)."
+    submodules: ["employee_master", "org_structure", "shift_roster", "self_service", "recruitment_pipeline", "time_attendance", "payroll_run"]
+
+modules_excluded:
+  finance_accounting: "TIDAK BERLAKU LAGI sejak DEC-SCOPE-OPEN 2026-08-26 (lihat globalstarthere.md) — seluruh Finance & Accounting (Cashier, AP, Trial Balance, GL, COA, Invoice, dst) boleh dikerjakan sekarang. Baris ini dipertahankan sebagai jejak historis, bukan pembatasan aktif."
+  hr: "TIDAK BERLAKU LAGI sejak DEC-SCOPE-OPEN 2026-08-26 (lihat globalstarthere.md) — Recruitment, Time Attendance, Payroll boleh dikerjakan sekarang, sama seperti Master Employee/struktur organisasi/Shift Roster/Self-Service yang sudah live. Baris ini dipertahankan sebagai jejak historis, bukan pembatasan aktif."
+
+stack:
+  app: "Laravel + Livewire + Alpine + Tailwind (compiled via Vite; CDN hanya untuk mockup, BUKAN produksi)"
+  env: "Laravel Herd (Windows), MySQL 8"
+  repo: "275iwan92/tmerp · path C:\\Users\\iwanp\\Herd\\tmerp · branch main (Claude Code otonom: auto/dev)"
+  databases: "10 DB terpisah tm2*: tm2sys tm2mst tm2sdi tm2pur tm2inv tm2prd tm2acc tm2hrm tm2hrr tm2pyr"
+
+db_conventions:
+  naming: "tabel/field English; prosa Indonesia"
+  types: "money DECIMAL(18,4); dim mm DECIMAL(10,2)"
+  columns: "i_=input(boleh DEFAULT); c_=computed(TANPA DEFAULT); turunan di VIEW v1_"
+  fk_cross_db: "LOGICAL (Eloquent), BUKAN constraint MySQL — aman untuk referensi lintas tm2*"
+  snapshot: "semua data transaksional pakai snapshot pattern (freeze nilai saat confirmed)"
+  audit: "created_by/at + updated_by/at di tiap tabel transaksi"
+
+file_naming:
+  ascii_only: "DILARANG karakter emoji/non-ASCII di nama file & folder di seluruh project (kode maupun docs). Alasan: 2026-08-15 — 12 file Livewire SFC pakai prefix ⚡ (mengira wajib utk Livewire v4 single-file component); ternyata cek vendor/livewire/livewire/src/Finder/Finder.php membuktikan ⚡ HANYA salah satu varian opsional (pattern 'singleFileWithZap'), pattern 'singleFile' polos tanpa prefix SAMA validnya dan dicoba sebagai fallback. Semua 12 file di-rename ke ASCII biasa (git mv, history terjaga) tanpa masalah — lihat komit 'Rename Livewire SFC ⚡-prefixed files to ASCII'."
+  emoji_in_ui: "Emoji BOLEH dipakai di dalam KONTEN halaman (label tombol, badge, heading) — larangan ini HANYA untuk nama file/folder di filesystem, bukan teks yang dirender."
+
+doc_types:
+  NEW: "dokumen baru"
+  RECALC: "hitung ulang, spec/isi tetap"
+  REVISE: "spec berubah = COPY-RECORD (revision_no+1; versi lama is_cancelled=1 cancel_reason=SUPERSEDED). TIDAK edit confirmed"
+  immutable: "tipe ditetapkan sekali"
+
+authority_chain:
+  urutan: "Inquiry (spec) → Imposition+Routing (Product Designer) → Master Card (print terkontrol) → Costing (harga) → Quotation/CO → Production"
+  prinsip: "Tiap tahap MENGUNCI ke tahap berikut. Hilir tak boleh ubah milik hulu (read-only/terkunci); perubahan = REVISE di hulu."
+  engine_pattern: "untuk semua engine (Imposition, Scheduling, Costing, Route Planning): 'engine suggests, officer confirms'"
+
+process_order:
+  pre: "FILM → PISAU/MATRAS → PLATE (per warna/sisi: 4/4=8, 4/0=4)"
+  floor: "1.BELAH PLANO → 2.CETAK → 3.COATING(WB/UV/varnish, multi-layer) → 4.LAMINASI(titik MERGE duplex+corrugated/SF) → 5.PLONG/diecut → 6.LEM → 7.KUPAS → 8.PACKING → 9.KIRIM"
+  koreksi_kritis: "COATING DULU baru LAMINASI"
+
+ui_conventions:
+  tokens: "navy #2c3e69 (--navy) ; accent #2f6fed (--accent)"
+  layout_mode: "FULL-PAGE (w-full+padding) untuk layar OPERASIONAL (grid/costing/inquiry); TERPUSAT (max-width) untuk FORM/AUTH/NOTA/dokumen"
+  layout_pelajaran: "JANGAN pakai class `container` Tailwind (penyebab bug margin melebar di Edge). max-width/mx-auto BOLEH untuk mode terpusat — pilih sadar, bukan dilarang total"
+  layouts_wajib: "layouts.guest (auth), layouts.shell (menu), layouts.app"
+  badge_system: "🔒 locked(abu) / ◆ selector-harga(kuning) / ⚙ engine(ungu) / = hasil(hijau) — INI badge di dalam FORM/field. Beda dengan warna MENU di shell, yang ikut module_status_system: abu=NOT_BUILT, kuning/oranye=READY_FOR_QC, hijau=LOCKED."
+  mockup_arti: "'HTML/CSS mockup' = replikasi struktur layar EXISTING + dummy data (BUKAN desain baru)"
+  sisi_visibilitas: "Sisi A (internal/Direksi, angka sensitif visible) vs Sisi B (eksternal/Sales, redacted sampai published)"
+
+# ═══════════════════════════════════════════════════════════════════
+# STANDAR GRID/LIST BERVOLUME BESAR (semua modul — wajib, bukan opsional)
+# ═══════════════════════════════════════════════════════════════════
+grid_performance:
+  pagination: "WAJIB server-side (Livewire WithPagination trait), BUKAN load semua lalu potong di client. 20-50 baris/halaman, gaya page-number klasik (bukan infinite scroll) — cocok untuk data administratif/transaksional"
+  search_filter: "WAJIB jadi WHERE clause di query (server-side). DILARANG filter array/JS di browser — itu berarti seluruh data tetap ke-load duluan sebelum difilter, sama saja tak berguna"
+  indexing: "kolom yang sering dicari/di-sort (name, code, kota, status, FK) WAJIB diindex sebelum data mencapai ribuan baris — hindari full table scan"
+  berlaku_untuk: "semua grid administratif: Customer, Item Master, PO/PR, Inquiry Hub, dll — bukan cuma satu modul"
+
+tier_docs:
+  tier1: "business requirements"
+  tier2: "Part A happy path / Part B special cases / Part C state-form-button"
+  tier3: "DDL + VIEW + migrasi (3A ideal, 3B pragmatis bila perlu)"
+  tier4: "per-screen spec + binding table (field→kolom)"
+  sumber_kebenaran_rumus: "kode + test regresi (BUKAN dokumen). Dokumen = spec/keputusan"
+
+workflow:
+  fix_vs_design: "FIX-type → Claude Code langsung. Design/concept → dibahas di chat."
+  state_update: "update <MODUL>_STATE.yaml tiap ada keputusan baru"
+  ownership: "Jo pegang setting/upload/commit; Claude hanya tulis file (tak bisa akses setting/memori project)"
+  isolasi: "memori terisolasi per-project; lintas-project TIDAK terbaca (batas desain, tak bisa ditembus)"
+
+# ═══════════════════════════════════════════════════════════════════
+# SISTEM STATUS MODUL (WAJIB — 3 tingkat, tercermin di warna menu)
+# ═══════════════════════════════════════════════════════════════════
+module_status_system:
+  tujuan: "Satu sistem status dipakai bareng untuk (a) proteksi delete otomatis Claude Code, dan (b) warna menu di UI shell — supaya user tahu dari tampilan menu, mana yang siap di-QC, mana yang belum dikerjakan sama sekali."
+  penyimpanan: "DI DATABASE, kolom tambahan di tabel tm2sys.sys_app_menu (SUDAH ADA, dipakai layouts.shell — kolom existing: id, parent_id, code, label, trans_key, icon, menu_type[module/group/item], object_type[form/grid/report/dashboard/link], target, target_kind, sort_order, is_active, required_object, created_at). JANGAN bikin tabel baru untuk data menu — hanya ALTER tambah kolom status."
+
+  ddl_tambahan: |
+    -- Migration: tambah kolom status ke tm2sys.sys_app_menu (tabel SUDAH ADA, JANGAN diganti nama/struktur existing)
+    ALTER TABLE tm2sys.sys_app_menu
+      ADD COLUMN status_code ENUM('NOT_BUILT','READY_FOR_QC','LOCKED')
+        NOT NULL DEFAULT 'NOT_BUILT'
+        COMMENT 'i_ = status kesiapan menu (hanya relevan utk menu_type=item), lihat module_status_system di globalrules.yaml',
+      ADD COLUMN status_note VARCHAR(255) NULL
+        COMMENT 'i_ = catatan singkat opsional, mis. alasan revisi/QC gagal',
+      ADD COLUMN status_updated_by VARCHAR(100) NULL,
+      ADD COLUMN status_updated_at DATETIME NULL,
+      ADD INDEX idx_sys_app_menu_status (status_code);
+
+    -- module/group (menu_type != 'item') TIDAK perlu status_code sendiri — statusnya derived
+    -- dari agregat status children-nya (lihat 'derivasi_status_parent' di bawah), bukan disimpan.
+
+    -- Tabel konfigurasi warna TERPISAH (bukan hardcode di kode/CSS) —
+    -- supaya warna bisa diubah tanpa deploy, sejalan prinsip data-driven.
+    CREATE TABLE tm2sys.sys_app_menu_color (
+      status_code    VARCHAR(20) PRIMARY KEY,   -- NOT_BUILT / READY_FOR_QC / LOCKED
+      color_hex      VARCHAR(7)  NOT NULL,      -- '#9ca3af' dst
+      label          VARCHAR(50) NOT NULL,      -- teks badge, mis. 'Belum Tersedia' / 'Siap di-QC' / 'OK'
+      is_clickable   TINYINT(1)  NOT NULL DEFAULT 1,
+      updated_by     VARCHAR(100) NULL,
+      updated_at     DATETIME    NULL
+    );
+
+    INSERT INTO tm2sys.sys_app_menu_color (status_code, color_hex, label, is_clickable) VALUES
+      ('NOT_BUILT',     '#9ca3af', 'Belum Tersedia', 0),
+      ('READY_FOR_QC',  '#f59e0b', 'Siap di-QC',      1),
+      ('LOCKED',        '#16a34a', 'OK',              1);
+
+  derivasi_status_parent: "Untuk baris menu_type='module'/'group' (bukan 'item'), warna menu di shell dihitung, BUKAN disimpan di status_code sendiri: kalau SEMUA item-anak LOCKED -> tampil hijau; kalau ADA yang NOT_BUILT -> tampil abu (worst-case); selain itu -> kuning/oranye. Gunanya supaya user langsung lihat dari menu induk (mis. 'Sales') progress keseluruhan tanpa expand satu-satu."
+
+  catatan_object_type: "required_object di sys_app_menu SUDAH menunjuk ke sec_module.module_code (hak akses) — TIDAK dipakai untuk status_code ini, dua hal beda (akses vs kesiapan-build). target (mis. 'form_costing.php') dipakai Claude Code sebagai acuan file Livewire/Blade komponen yang harus dicek/di-update statusnya."
+
+  tingkat:
+    NOT_BUILT:
+      arti: "Menu/tabel sudah ada di DB tapi form/grid belum dibuat sama sekali"
+      siapa_nandai: "default value kolom (belum pernah di-UPDATE oleh siapa pun)"
+      warna_menu: "baca dari tm2sys.sys_app_menu_color WHERE status_code='NOT_BUILT' (default abu, is_clickable=0)"
+      boleh_diubah_dihapus: "bebas, Claude Code kerjakan tanpa tanya"
+
+    READY_FOR_QC:
+      arti: "Claude Code SUDAH selesai membangun (mockup/komponen/modul) dan menandai sendiri sebagai 'siap direview user'"
+      siapa_nandai: "Claude Code UPDATE tm2sys.sys_app_menu.status_code='READY_FOR_QC' SENDIRI, otomatis, setiap kali selesai satu mockup/komponen (tanpa nunggu perintah user) — SEJALAN dengan QUEUE #4 (push tiap 1 mockup selesai) dan QUEUE #6 (lanjut otomatis). Isi status_updated_by='claude_code', status_updated_at=NOW()."
+      warna_menu: "baca dari tm2sys.sys_app_menu_color WHERE status_code='READY_FOR_QC' (default kuning/oranye, is_clickable=1)"
+      boleh_diubah_dihapus: "bebas oleh Claude Code (masih tahap develop, belum dikonfirmasi user) — termasuk rewrite total kalau ternyata salah"
+
+    LOCKED:
+      arti: "User (Telma/Jo) sudah QC dan konfirmasi OK — final"
+      siapa_nandai: "HANYA user yang mengubah status_code menjadi 'LOCKED' (lewat instruksi eksplisit ke Claude Code sebutkan menu mana, atau Navicat manual). Claude Code TIDAK BOLEH UPDATE status_code ke LOCKED atas inisiatif sendiri."
+      warna_menu: "baca dari tm2sys.sys_app_menu_color WHERE status_code='LOCKED' (default hijau, is_clickable=1)"
+      boleh_diubah_dihapus: "DILARANG tanpa konfirmasi eksplisit user — satu-satunya pengecualian dari prinsip kerja otonom 'jangan tanya-tanya' (QUEUE #7). File terkait menu berstatus LOCKED = jangan dihapus/rewrite tanpa tanya."
+
+  alur: "NOT_BUILT → (Claude Code bangun) → READY_FOR_QC → (user review & OK) → LOCKED. Kalau user QC dan MENOLAK (belum OK), status_code tetap READY_FOR_QC, Claude Code revisi lagi bebas sampai user promosikan ke LOCKED."
+
+  menu_shell_binding: "layouts.shell WAJIB JOIN tm2sys.sys_app_menu ke tm2sys.sys_app_menu_color (untuk item) + derivasi_status_parent (untuk module/group) saat render menu — warna & is_clickable ikut data DB secara real, BUKAN hardcode Tailwind class per status di Blade."

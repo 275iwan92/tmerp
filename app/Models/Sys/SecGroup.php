@@ -18,14 +18,14 @@ class SecGroup extends Model
         'group_code',
         'group_name',
         'mgmt_level',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'mgmt_level' => 'integer',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function permissions(): HasMany

@@ -1,25 +1,33 @@
 <?php
 
-use App\Models\Master\MWarehouse;
-use App\Models\Master\MWhLocation;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 
 // feedback_keep_dummy_data: layar Stock In baru wajib ada data uji di semua
 // kelas, bukan cuma RM (yang sudah teruji via smoke test manual, doc_id 101,
 // IN/26/00001). Posting SUNGGUHAN lewat StockPostingService yang sama persis
 // dipakai layar -- bukan insert manual ke stockcard -- supaya alur (termasuk
 // idempotency & sinkron cur_stock) ikut teruji, bukan cuma data statis.
+//
+// CATATAN 2026-08-27: pakai DB::table() mentah dgn nama tabel LAMA
+// (m_warehouse/m_wh_loc), BUKAN model WhWarehouse/WhLoc/nama tabel baru --
+// migration ini posisinya SEBELUM migration rename
+// (2026_08_27_000011_rename_warehouse_and_plano_size_tables.php) di urutan
+// riwayat. Kalau migrate:fresh replay dari nol, di titik ini tabelnya MASIH
+// bernama m_warehouse/m_wh_loc (belum di-rename) -- pakai model baru di sini
+// akan pecah. Migration lama harus tetap mencerminkan skema SAAT itu.
 return new class extends Migration
 {
     public function up(): void
     {
         $docSvc = app(StockDocumentService::class);
         $postSvc = app(StockPostingService::class);
+        $mst = DB::connection('tm2mst');
 
-        $fgWarehouse = MWarehouse::where('warehouse_type', 'FG')->first();
-        $fgLocation = MWhLocation::where('warehouse_id', $fgWarehouse->id_warehouse)->where('is_usable', true)->first();
+        $fgWarehouse = $mst->table('m_warehouse')->where('warehouse_type', 'FG')->first();
+        $fgLocation = $mst->table('m_wh_loc')->where('warehouse_id', $fgWarehouse->id_warehouse)->where('is_usable', true)->first();
 
         $fgDocNo = $docSvc->nextDocNo('FG', 'IN');
         $fgDocId = $docSvc->saveDraft('FG', null, [
@@ -35,8 +43,8 @@ return new class extends Migration
         ], 'system');
         $postSvc->postDocument('FG', $fgDocId, 'system');
 
-        $sfgWarehouse = MWarehouse::where('warehouse_type', 'MIX')->first(); // belum ada tipe SFG khusus, lihat SIDEBAR_MENU_STANDARD.md #6
-        $sfgLocation = MWhLocation::where('warehouse_id', $sfgWarehouse->id_warehouse)->where('is_usable', true)->first();
+        $sfgWarehouse = $mst->table('m_warehouse')->where('warehouse_type', 'MIX')->first(); // belum ada tipe SFG khusus, lihat sidebarmenustandard.md #6
+        $sfgLocation = $mst->table('m_wh_loc')->where('warehouse_id', $sfgWarehouse->id_warehouse)->where('is_usable', true)->first();
         $sfgPartId = \App\Models\Master\ProdPart::where('part_code', 'FB-DUPLEX-001-BODY')->value('id_part');
 
         $sfgDocNo = $docSvc->nextDocNo('SFG', 'IN');

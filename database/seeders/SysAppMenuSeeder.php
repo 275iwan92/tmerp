@@ -25,7 +25,7 @@ class SysAppMenuSeeder extends Seeder
     {
         $costing = SecModule::query()->updateOrCreate(
             ['module_code' => 'COSTING'],
-            ['parent_id' => null, 'module_name' => 'Costing (HPP)', 'icon' => 'fa-solid fa-calculator', 'route_prefix' => 'inquiry-costing', 'min_mgmt_level' => 2, 'is_reportable' => true, 'sort_order' => 15, 'is_active' => true]
+            ['parent_id' => null, 'module_name' => 'Costing (HPP)', 'icon' => 'fa-solid fa-calculator', 'route_prefix' => 'inquiry-costing', 'min_mgmt_level' => 2, 'is_reportable' => true, 'sort_order' => 15, 'activate' => true]
         );
 
         foreach (['SALES', 'PROC', 'INV', 'PROD', 'MDATA', 'FINACC', 'SETUP'] as $moduleCode) {

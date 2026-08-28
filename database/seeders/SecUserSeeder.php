@@ -24,7 +24,7 @@ class SecUserSeeder extends Seeder
                 'email' => 'budi.santoso@telasih.co.id',
                 'active' => true,
                 'is_admin' => true,
-                'is_active' => true,
+                'activate' => true,
             ]
         );
 
@@ -36,7 +36,7 @@ class SecUserSeeder extends Seeder
                 'email' => 'rina.wijaya@telasih.co.id',
                 'active' => true,
                 'is_admin' => false,
-                'is_active' => true,
+                'activate' => true,
             ]
         );
 

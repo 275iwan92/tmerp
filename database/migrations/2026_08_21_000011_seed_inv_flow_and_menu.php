@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-// INV_TIER_3.md §10-11 -- seed Flow Engine (IN/OUT/AD/OP/RTP) + registrasi menu.
+// inventory_tier3.md §10-11 -- seed Flow Engine (IN/OUT/AD/OP/RTP) + registrasi menu.
 // Prasyarat INV-FLOW-POSITION: "Kepala Gudang" belum ada di org_position (baru
 // ada HELPER GUDANG LV1-3 bucket legacy) -- dibuat di sini, level SPV di bawah
 // Manajer Operasional (sudah ada, position_id dipakai Procurement). Sesuai

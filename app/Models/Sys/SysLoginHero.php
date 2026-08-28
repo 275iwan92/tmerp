@@ -18,16 +18,16 @@ class SysLoginHero extends Model
         'image_url',
         'caption',
         'sort_order',
-        'is_active',
+        'activate',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'sort_order' => 'integer',
     ];
 
     public static function random(): ?self
     {
-        return self::query()->where('is_active', true)->inRandomOrder()->first();
+        return self::query()->where('activate', true)->inRandomOrder()->first();
     }
 }
