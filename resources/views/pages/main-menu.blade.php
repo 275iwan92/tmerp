@@ -131,6 +131,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.
             'PROD_OUTPUT' => route('production.wo.list'),
             'PROD_SCRAP_TYPE' => route('production.scrap-type'),
+            'PROD_PROCESS_RATE' => route('production.process-rate'),
             'PROD_MON_WO' => route('production.monitoring'),
             'PROD_RULE_LIB' => route('production.rule-library'),
             'PROD_MTS_FORECAST' => route('production.mts-forecast'),

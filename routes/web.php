@@ -148,6 +148,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
             Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
+            Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
         });
     });
 });

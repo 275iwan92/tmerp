@@ -22,7 +22,7 @@ class PrdWo extends Model
         'wo_no', 'wo_type', 'source_type', 'source_co_id', 'source_forecast_id',
         'product_id', 'parts_id', 'part_code', 'source_delivery_id', 'source_iqp_part_id',
         'qty', 'due_date', 'material_needed_by',
-        'wo_status', 'schedule_layer', 'is_hot_job', 'hot_job_source', 'hot_job_customer_id',
+        'wo_status', 'schedule_layer', 'is_hot_job', 'hot_job_source', 'hot_job_customer_id', 'priority',
         'confirmed_at', 'cancel_reason', 'created_by', 'updated_by',
     ];
 
