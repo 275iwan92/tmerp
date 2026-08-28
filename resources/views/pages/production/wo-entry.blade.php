@@ -817,7 +817,15 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     <span class="normal-case font-semibold text-[10.5px]">{{ $this->masterCard?->kode_item ?? $this->workOrder->product?->product_code ?? '—' }}</span>
                 </div>
 
-                <div class="grid md:grid-cols-[280px_1fr]">
+                {{-- GOTCHA: resources/css/app.css punya rule global ".grid { grid-cols-4 }"
+                     (dialect grid lama, butuh .two/.three/.five utk kolom lain) yang
+                     BENTROK sama Tailwind ".grid-cols-N" biasa (spesifisitas sama,
+                     legacy sering menang) -- pakai "[display:grid]" (arbitrary property,
+                     nama class beda) bukan literal "grid" utk semua grid baru di bawah,
+                     supaya tak diam-diam kepotong jadi 4 kolom. Ketahuan dari screenshot
+                     user: baris Nama Produk/Customer (grid-cols-2) kepotong jadi 4 kolom
+                     sempit, teks per-kata wrap. --}}
+                <div class="[display:grid] md:grid-cols-[280px_1fr]">
                     {{-- PART #5: artwork + dieline (potong/lipat) + anotasi dimensi --}}
                     <div class="p-3 border-b md:border-b-0 md:border-r border-[#eef1f5] bg-[#fbfcfe]">
                         <div class="relative bg-white border border-[#e2e6ee] rounded-lg overflow-hidden aspect-[4/5] flex items-center justify-center p-5">
@@ -841,7 +849,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         {{-- Identitas Order --}}
                         <div class="mb-3.5 pb-3.5 border-b border-dashed border-[#e2e6ee]">
                             <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">Identitas Order</div>
-                            <div class="grid grid-cols-4 gap-2.5 text-[11.5px]">
+                            <div class="[display:grid] grid-cols-4 gap-2.5 text-[11.5px]">
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">No. CO</div><div class="font-bold font-mono text-accent">{{ $this->workOrder->coOrder?->co_no ?? '—' }}</div></div>
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">No. Desain</div><div class="font-bold">{{ $this->masterCard?->no_desain ?: '— belum diisi' }}</div></div>
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">Due Date</div><div class="font-bold">{{ $this->workOrder->due_date?->translatedFormat('d M Y') ?? '—' }}</div></div>
@@ -854,7 +862,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     </div>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-2.5 text-[11.5px] mt-2.5">
+                            <div class="[display:grid] grid-cols-2 gap-2.5 text-[11.5px] mt-2.5">
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">Nama Produk</div><div class="font-bold">{{ $this->workOrder->product?->product_name ?? '—' }}</div></div>
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">Customer</div><div class="font-bold">{{ $this->workOrder->coOrder?->quotation?->customer?->customer_name ?? '—' }}</div></div>
                             </div>
@@ -863,7 +871,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         {{-- Spesifikasi Produk --}}
                         <div class="mb-3.5 pb-3.5 border-b border-dashed border-[#e2e6ee]">
                             <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">Spesifikasi Produk</div>
-                            <div class="grid grid-cols-4 gap-2.5 text-[11.5px]">
+                            <div class="[display:grid] grid-cols-4 gap-2.5 text-[11.5px]">
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">Qty Order</div><div class="font-bold">{{ number_format((float) $this->workOrder->qty, 0, ',', '.') }} Pcs</div></div>
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">Ukuran Cetak</div><div class="font-bold">{{ $this->masterCard?->ukuran_cetak ?: '— belum diisi' }}</div></div>
                                 <div><div class="text-[8.7px] text-muted uppercase font-bold">Jenis Finishing</div><div class="font-bold">{{ $this->masterCard?->jenis_finishing ?: '— belum diisi' }}</div></div>
@@ -877,7 +885,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         {{-- Warna Cetak --}}
                         <div>
                             <div class="text-[9px] uppercase tracking-wide font-bold text-accent mb-1.5">Warna Cetak</div>
-                            <div class="grid grid-cols-2 gap-2.5">
+                            <div class="[display:grid] grid-cols-2 gap-2.5">
                                 <div class="bg-[#fbfcfe] border border-[#eef1f6] rounded-md px-2.5 py-2">
                                     <div class="text-[8.8px] uppercase font-bold text-muted mb-1">Warna Pertama (CS)</div>
                                     <div class="text-[10.8px] font-semibold">{{ $this->masterCard?->warna_cs ?: '— belum diisi' }}</div>
@@ -893,7 +901,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="mx-3.5 mb-3.5 text-[10px] font-bold px-2.5 py-2 rounded-md bg-[#fdecec] border border-[#f0b8b5] text-[#a3241f]">⚠ Semua proof print (digital + letak) wajib dilampirkan bersama Master Card sebelum cetak massal.</div>
 
-                <div class="grid grid-cols-5 border-t border-[#eef1f5]">
+                <div class="[display:grid] grid-cols-5 border-t border-[#eef1f5]">
                     @foreach (['Desainer', 'Marketing', 'PPIC', 'QA', 'Plant Manager'] as $role)
                         @php($so = $this->masterCardSignoff->get($role))
                         <div class="px-3 py-2.5 {{ ! $loop->last ? 'border-r border-[#eef1f5]' : '' }}">
@@ -1239,7 +1247,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     @endif
                                 @endif
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="[display:grid] grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Kirim Ke Vendor</label>
                                     <input type="date" wire:model="subDueOut" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
@@ -1334,7 +1342,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="[display:grid] grid-cols-2 gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Shift (opsional)</label>
                             <input type="text" wire:model="outputShiftNote" placeholder="mis. Shift 1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
