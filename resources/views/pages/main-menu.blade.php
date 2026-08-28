@@ -68,6 +68,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'SALES_QUOT' => route('quotation.list'),
             'SALES_SO' => route('co.list'),
             'SALES_PLAN' => route('co.delivery-plan'),
+            // Delivery Order/Surat Jalan (DO+SJ 1 tabel 2 cetakan) -- sebelumnya
+            // modul "Dispatch" berdiri sendiri, digabung ke sini 2026-08-28 (lihat
+            // migration move_dispatch_menu_into_sales_delivery).
+            'SALES_DO' => route('dispatch.do.index'),
             'PROC_PR' => route('pur.pr.list'),
             'PROC_PR_APPR' => route('pur.pr.approval'),
             'PROC_PO' => route('pur.po.list'),
@@ -103,7 +107,6 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_RAW_SFG' => route('inv.print.master-stock', ['category' => 'SFG']),
             'INV_CARD_SFG' => route('inv.print.stock-card', ['category' => 'SFG']),
             'INV_SLOW_SFG' => route('inv.print.slow-moving', ['category' => 'SFG']),
-            'DISPATCH_DO' => route('dispatch.do.index'),
             // Stock In (item pertama di tiap grup Input -- lihat migration
             // 2026_08_22_000007). Stock Out/Return/Adjustment (ITEM2-5) masih NOT_BUILT.
             'INV_RM_ITEM1' => route('inv.stock-in.index', ['category' => 'RM']),

@@ -38,6 +38,18 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/co', 'pages::co.list')->name('co.list');
             Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
             Route::livewire('/co/delivery-plan', 'pages::co.delivery-plan')->name('co.delivery-plan');
+
+            // Delivery (DO/Surat Jalan) -- sebelumnya modul "Dispatch" berdiri sendiri,
+            // digabung ke Sales > grup "Delivery" (menu SALES_DO) 2026-08-28 atas
+            // permintaan user (kepanjangan Delivery Order/Delivery Notes, bukan
+            // "Dispatch"). {doId} wajib di sini (beda dari spec teks asli "{doId?}")
+            // krn DoList SELALU pre-create header via picker customer sebelum redirect
+            // ke Entry (lihat catatan deviasi di dispatch/do/list.blade.php) -- tak
+            // pernah ada Entry tanpa doId.
+            Route::livewire('/dispatch/do', 'pages::dispatch.do.list')->name('dispatch.do.index');
+            Route::livewire('/dispatch/do/{doId}', 'pages::dispatch.do.entry')->name('dispatch.do.entry');
+            Route::livewire('/dispatch/do/{doId}/print', 'pages::dispatch.do.print')->name('dispatch.do.print');
+            Route::livewire('/dispatch/do/{doId}/print-surat-jalan', 'pages::dispatch.do.print-surat-jalan')->name('dispatch.do.print-surat-jalan');
         });
 
         Route::middleware('module:COSTING')->group(function () {
@@ -119,17 +131,6 @@ Route::middleware('auth')->group(function () {
             // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
             Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');
             Route::livewire('/inventory/stock-adjustment-approval/{category}', 'pages::inventory.stock-adjustment-approval')->name('inv.stock-adj.approval');
-        });
-
-        Route::middleware('module:DISPATCH')->group(function () {
-            // dispatch_tier4.md §1 -- {doId} wajib di sini (beda dari spec teks
-            // asli "{doId?}") krn DoList SELALU pre-create header via picker
-            // customer sebelum redirect ke Entry (lihat catatan deviasi di
-            // dispatch/do/list.blade.php) -- tak pernah ada Entry tanpa doId.
-            Route::livewire('/dispatch/do', 'pages::dispatch.do.list')->name('dispatch.do.index');
-            Route::livewire('/dispatch/do/{doId}', 'pages::dispatch.do.entry')->name('dispatch.do.entry');
-            Route::livewire('/dispatch/do/{doId}/print', 'pages::dispatch.do.print')->name('dispatch.do.print');
-            Route::livewire('/dispatch/do/{doId}/print-surat-jalan', 'pages::dispatch.do.print-surat-jalan')->name('dispatch.do.print-surat-jalan');
         });
 
         Route::middleware('module:HRM')->group(function () {
