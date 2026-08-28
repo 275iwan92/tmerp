@@ -128,8 +128,11 @@ Route::middleware('auth')->group(function () {
 
         Route::middleware('module:PROD')->group(function () {
             Route::livewire('/production/scheduling-board', 'pages::production.scheduling-board')->name('production.scheduling-board');
+            Route::livewire('/production/monitoring', 'pages::production.monitoring-dashboard')->name('production.monitoring');
             Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
-            Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry');
+            Route::livewire('/production/wo/generate', 'pages::production.wo-generate')->name('production.wo.generate');
+            Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
+            Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
             Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');

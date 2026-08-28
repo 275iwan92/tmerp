@@ -1,13 +1,18 @@
 <?php
 
+use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
-use App\Models\Master\SupSupplier;
+use App\Models\Master\ProdPartProcessEmployeeRate;
+use App\Models\Master\ProdPartProcessMachineRate;
+use App\Models\Master\ProdProcess;
 use App\Models\Prd\PrdBreakdownEvent;
 use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
 use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Prd\PrdWoOperationOutputDefect;
+use App\Models\Master\SupSupplier;
+use App\Models\Sdi\IqpPartMaterial;
 use App\Services\Pur\SubcontractPoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -27,6 +32,14 @@ use Livewire\Component;
 // §4 istilah baku -- TIDAK ADA spec Tier2/3/4 sama sekali untuk F15, skema
 // & layar didesain dari nol di sesi ini, lihat migration
 // 2026_08_28_000010_create_prd_wo_operation_output).
+//
+// Diperluas 2026-08-28 (Screen #2, docs/production_scheduling_wo_generation_delta.md
+// §5): header CO/produk/part, panel Bill of Material (read-only, dari
+// iqp_part_material via source_iqp_part_id), Bill of Process jadi interaktif
+// (tambah/edit proses+mesin+target) -- HANYA selagi status DRAFT/SIMULATED
+// (canEditRouting(), konsisten prinsip snapshot/beku begitu commit ke jadwal
+// real). Target default diambil dari prod_part_process_machine_rate/
+// _employee_rate (§4.2/4.3 delta doc), selalu bisa di-override manual.
 new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $wo;
@@ -82,7 +95,41 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function workOrder(): PrdWo
     {
-        return PrdWo::with(['operations.crew.employee', 'operations.outputs.defects.scrapType'])->findOrFail($this->wo);
+        return PrdWo::with(['coOrder', 'product', 'operations.crew.employee', 'operations.outputs.defects.scrapType'])->findOrFail($this->wo);
+    }
+
+    // Lintas-DB (tm2prd -> tm2sdi) -- query terpisah, bukan join fisik.
+    // Bill of Material: source_iqp_part_id jembatan balik ke snapshot Inquiry.
+    #[Computed]
+    public function billOfMaterial()
+    {
+        if (! $this->workOrder->source_iqp_part_id) {
+            return collect();
+        }
+
+        return IqpPartMaterial::where('part_id', $this->workOrder->source_iqp_part_id)->orderBy('layer_seq')->get();
+    }
+
+    // Bill of Process cuma boleh diedit selagi belum commit ke jadwal real
+    // (prinsip snapshot/beku, CLAUDE.md §4) -- konsisten guard lain di layar ini.
+    #[Computed]
+    public function canEditRouting(): bool
+    {
+        return in_array($this->workOrder->wo_status, ['DRAFT', 'SIMULATED'], true);
+    }
+
+    #[Computed]
+    public function processOptions()
+    {
+        return ProdProcess::where('activate', true)->orderBy('process_name')->get();
+    }
+
+    #[Computed]
+    public function machineOptions()
+    {
+        $offsetDivisionId = OrgDivision::where('division_code', 'OFFSET')->value('division_id');
+
+        return ProdMachine::where('division_id', $offsetDivisionId)->where('activate', true)->orderBy('machine_name')->get();
     }
 
     #[Computed]
@@ -146,6 +193,116 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     public function backToList()
     {
         return $this->redirect(route('production.wo.list'));
+    }
+
+    // ---- Bill of Process interaktif (Screen #2) ----
+
+    public function addProcessRow(): void
+    {
+        if (! $this->canEditRouting) {
+            return;
+        }
+
+        $wo = $this->workOrder;
+        $nextSeq = ((int) $wo->operations->max('seq_no')) + 1;
+
+        PrdWoOperation::create([
+            'wo_id' => $wo->wo_id,
+            'seq_no' => $nextSeq,
+            'process_name' => '',
+            'resource_type' => 'MACHINE',
+            'qty' => $wo->qty,
+            'task_status' => 'PENDING',
+            'created_by' => Auth::user()->login,
+        ]);
+
+        unset($this->workOrder);
+    }
+
+    public function removeProcessRow(int $operationId): void
+    {
+        if (! $this->canEditRouting) {
+            return;
+        }
+
+        $op = PrdWoOperation::find($operationId);
+        if ($op && $op->task_status === 'PENDING') {
+            $op->delete();
+            unset($this->workOrder);
+        }
+    }
+
+    public function updateOperationField(int $operationId, string $field, $value): void
+    {
+        if (! $this->canEditRouting || ! in_array($field, ['process_name', 'machine_id', 'resource_type', 'rate_band_value'], true)) {
+            return;
+        }
+
+        $op = PrdWoOperation::findOrFail($operationId);
+
+        if ($field === 'resource_type') {
+            $op->resource_type = $value;
+            if ($value === 'MANUAL') {
+                $op->machine_id = null;
+            }
+        } elseif ($field === 'machine_id') {
+            $op->machine_id = $value ?: null;
+        } elseif ($field === 'rate_band_value') {
+            $op->rate_band_value = $value !== '' ? $value : null;
+        } else {
+            $op->process_name = $value;
+        }
+
+        $op->updated_by = Auth::user()->login;
+        $op->save();
+        unset($this->workOrder);
+    }
+
+    // Ambil ulang target default dari prod_part_process_machine_rate/
+    // _employee_rate (delta doc §4.2/4.3) -- dipanggil manual (tombol "↻
+    // Ambil Default"), BUKAN otomatis tiap ganti mesin, supaya tak diam-diam
+    // menimpa angka yang sudah di-override PPIC.
+    public function refillTargetDefault(int $operationId): void
+    {
+        if (! $this->canEditRouting) {
+            return;
+        }
+
+        $op = PrdWoOperation::findOrFail($operationId);
+        $wo = $this->workOrder;
+        $processId = ProdProcess::where('process_name', $op->process_name)->value('id_process');
+
+        if (! $processId) {
+            $this->dispatch('wo-toast', message: 'Nama proses tidak cocok dengan master Proses -- tak bisa ambil default.');
+
+            return;
+        }
+
+        $rate = null;
+        if ($op->resource_type === 'MACHINE' && $op->machine_id) {
+            $rate = ProdPartProcessMachineRate::active()
+                ->where('product_id', $wo->product_id)->where('part_code', $wo->part_code)
+                ->where('process_id', $processId)->where('machine_id', $op->machine_id)
+                ->value('target_qty_per_hour');
+        } elseif ($op->resource_type === 'MANUAL') {
+            $employeeId = $op->operatorUtama()?->employee_id;
+            if ($employeeId) {
+                $rate = ProdPartProcessEmployeeRate::active()
+                    ->where('product_id', $wo->product_id)->where('part_code', $wo->part_code)
+                    ->where('process_id', $processId)->where('employee_id', $employeeId)
+                    ->value('target_qty_per_hour');
+            }
+        }
+
+        if ($rate === null) {
+            $this->dispatch('wo-toast', message: 'Belum ada target default tersimpan utk kombinasi ini -- isi manual.');
+
+            return;
+        }
+
+        $op->update(['rate_band_value' => $rate, 'updated_by' => Auth::user()->login]);
+        unset($this->workOrder);
+        $this->dispatch('wo-toast', message: "Target diisi dari default: {$rate}/jam.");
     }
 
     public function openInSchedulingBoard()
@@ -418,6 +575,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 HOT</span>
         @endif
         <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-white/15 text-white">{{ $this->workOrder->wo_status }}</span>
+        <a href="{{ route('production.wo.print', ['wo' => $this->wo]) }}" target="_blank" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#43508a] hover:brightness-110 text-[11px] font-bold uppercase tracking-wide text-white no-underline">🖨 Cetak</a>
         <button type="button" wire:click="backToList" title="Kembali ke Worklist WO"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full hover:brightness-110 cursor-pointer">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
@@ -426,6 +584,12 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     </header>
 
     <div class="max-w-[1100px] mx-auto my-5 px-4">
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] p-4 mb-4 grid grid-cols-3 gap-4 text-xs">
+            <div><div class="text-[10px] text-muted uppercase font-bold mb-0.5">No. CO</div><div class="font-semibold">{{ $this->workOrder->coOrder?->co_no ?? '—' }}</div></div>
+            <div><div class="text-[10px] text-muted uppercase font-bold mb-0.5">Produk</div><div class="font-semibold">{{ $this->workOrder->product?->product_name ?? '—' }}</div></div>
+            <div><div class="text-[10px] text-muted uppercase font-bold mb-0.5">Part</div><div class="font-semibold">{{ $this->workOrder->part_code ?? '—' }}</div></div>
+        </div>
+
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] p-4 mb-4 grid grid-cols-4 gap-4 text-xs">
             <div><div class="text-[10px] text-muted uppercase font-bold mb-0.5">Tipe</div><div class="font-semibold">{{ $this->workOrder->wo_type }}</div></div>
             <div><div class="text-[10px] text-muted uppercase font-bold mb-0.5">Qty</div><div class="font-semibold">{{ number_format((float) $this->workOrder->qty, 0, ',', '.') }}</div></div>
@@ -433,17 +597,48 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             <div><div class="text-[10px] text-muted uppercase font-bold mb-0.5">Bahan Dibutuhkan</div><div class="font-semibold">{{ $this->workOrder->material_needed_by?->translatedFormat('d M Y H:i') ?? '—' }}</div></div>
         </div>
 
+        @if ($this->billOfMaterial->isNotEmpty())
+            <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden mb-4">
+                <div class="px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide font-bold border-b border-[#eef1f5]">Bill of Material</div>
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-1.5 text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5]">Material</th>
+                            <th class="text-left px-3 py-1.5 text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5]">Gramatur</th>
+                            <th class="text-left px-3 py-1.5 text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5]">Ukuran</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($this->billOfMaterial as $mat)
+                            <tr wire:key="bom-{{ $mat->id_part_material }}">
+                                <td class="px-3 py-1.5 border-b border-[#eef1f5]">{{ $mat->rawmat_name }}</td>
+                                <td class="px-3 py-1.5 border-b border-[#eef1f5]">{{ $mat->gram_weight ? number_format((float) $mat->gram_weight, 0, ',', '.').' gsm' : '—' }}</td>
+                                <td class="px-3 py-1.5 border-b border-[#eef1f5]">{{ $mat->size_p && $mat->size_l ? number_format((float) $mat->size_p, 1, ',', '.').' x '.number_format((float) $mat->size_l, 1, ',', '.').' cm' : '—' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+
         @if ($this->hasScheduledOperation)
             <button type="button" wire:click="openInSchedulingBoard" class="mb-4 px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">📅 Lihat di Scheduling Board</button>
         @endif
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <div class="px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide font-bold border-b border-[#eef1f5] flex items-center justify-between">
+                <span>Bill of Process</span>
+                @if ($this->canEditRouting)
+                    <button type="button" wire:click="addProcessRow" class="normal-case font-semibold text-[11px] px-2.5 py-1 rounded bg-[#eef3fb] text-[#2f6fed] cursor-pointer">+ Tambah Proses</button>
+                @endif
+            </div>
             <table class="w-full border-collapse text-[12.5px]">
                 <thead>
                     <tr>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Seq</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Proses</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Mesin / Crew</th>
+                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Target/Jam</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Jendela Waktu</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Status</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Output Aktual</th>
@@ -454,10 +649,50 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     @forelse ($this->workOrder->operations as $op)
                         <tr wire:key="op-{{ $op->operation_id }}">
                             <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $op->seq_no }}</td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold">{{ $op->process_name }}</td>
+                            <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold">
+                                @if ($this->canEditRouting && $op->task_status === 'PENDING')
+                                    <select wire:change="updateOperationField({{ $op->operation_id }}, 'process_name', $event.target.value)" class="w-full px-1.5 py-1 border border-[#c7cfda] rounded text-[11.5px]">
+                                        <option value="">— pilih proses —</option>
+                                        @foreach ($this->processOptions as $proc)
+                                            <option value="{{ $proc->process_name }}" @selected($op->process_name === $proc->process_name)>{{ $proc->process_name }}</option>
+                                        @endforeach
+                                    </select>
+                                @else
+                                    {{ $op->process_name ?: '—' }}
+                                @endif
+                            </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                {{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : 'Manual' }}
+                                @if ($this->canEditRouting && $op->task_status === 'PENDING')
+                                    <div class="flex items-center gap-1.5">
+                                        <select wire:change="updateOperationField({{ $op->operation_id }}, 'resource_type', $event.target.value)" class="px-1.5 py-1 border border-[#c7cfda] rounded text-[11.5px]">
+                                            <option value="MACHINE" @selected($op->resource_type === 'MACHINE')>Mesin</option>
+                                            <option value="MANUAL" @selected($op->resource_type === 'MANUAL')>Manual</option>
+                                        </select>
+                                        @if ($op->resource_type === 'MACHINE')
+                                            <select wire:change="updateOperationField({{ $op->operation_id }}, 'machine_id', $event.target.value)" class="px-1.5 py-1 border border-[#c7cfda] rounded text-[11.5px]">
+                                                <option value="">— pilih mesin —</option>
+                                                @foreach ($this->machineOptions as $mc)
+                                                    <option value="{{ $mc->machine_id }}" @selected($op->machine_id === $mc->machine_id)>{{ $mc->machine_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        @endif
+                                    </div>
+                                @else
+                                    {{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : 'Manual' }}
+                                @endif
                                 <div class="text-[10.5px] text-muted">{{ $op->crew->map(fn ($c) => $c->employee?->full_name)->filter()->implode(' + ') ?: '—' }}</div>
+                            </td>
+                            <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                @if ($this->canEditRouting && $op->task_status === 'PENDING')
+                                    <div class="flex items-center gap-1">
+                                        <input type="number" step="0.01" value="{{ $op->rate_band_value }}"
+                                            wire:change="updateOperationField({{ $op->operation_id }}, 'rate_band_value', $event.target.value)"
+                                            class="w-20 px-1.5 py-1 border border-[#c7cfda] rounded text-[11.5px]" placeholder="—">
+                                        <button type="button" wire:click="refillTargetDefault({{ $op->operation_id }})" title="Ambil target default" class="text-[13px] cursor-pointer">↻</button>
+                                    </div>
+                                @else
+                                    {{ $op->rate_band_value ? number_format((float) $op->rate_band_value, 0, ',', '.') : '—' }}
+                                @endif
                             </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">
                                 {{ $op->target_start ? $op->target_start->format('d/m H:i').'–'.$op->target_finish->format('H:i') : '—' }}
@@ -499,10 +734,13 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 @elseif ($op->task_status !== 'DONE')
                                     <span class="text-muted text-[11px]">—</span>
                                 @endif
+                                @if ($this->canEditRouting && $op->task_status === 'PENDING')
+                                    <button type="button" wire:click="removeProcessRow({{ $op->operation_id }})" title="Hapus baris proses" class="ml-1 px-2 py-1.5 rounded text-[11px] font-semibold bg-[#fbeaea] text-[#a3241f] cursor-pointer">✕</button>
+                                @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
+                        <tr><td colspan="8" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
                     @endforelse
                 </tbody>
             </table>

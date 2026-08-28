@@ -2,6 +2,7 @@
 
 namespace App\Models\Prd;
 
+use App\Models\Master\ProdProduct;
 use App\Models\Sdi\CoOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,7 +20,8 @@ class PrdWo extends Model
 
     protected $fillable = [
         'wo_no', 'wo_type', 'source_type', 'source_co_id', 'source_forecast_id',
-        'product_id', 'parts_id', 'qty', 'due_date', 'material_needed_by',
+        'product_id', 'parts_id', 'part_code', 'source_delivery_id', 'source_iqp_part_id',
+        'qty', 'due_date', 'material_needed_by',
         'wo_status', 'schedule_layer', 'is_hot_job', 'hot_job_source', 'hot_job_customer_id',
         'confirmed_at', 'cancel_reason', 'created_by', 'updated_by',
     ];
@@ -79,6 +81,12 @@ class PrdWo extends Model
     public function coOrder(): BelongsTo
     {
         return $this->belongsTo(CoOrder::class, 'source_co_id', 'id_order');
+    }
+
+    // Lintas-DB (tm2prd -> tm2mst) -- query terpisah, bukan join fisik.
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(ProdProduct::class, 'product_id', 'id_product');
     }
 
     // Penomoran WO -- pola sama CoOrder::nextCoNo()/QuoQuotation::nextQuotationNo().
