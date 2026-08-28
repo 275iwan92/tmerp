@@ -775,7 +775,17 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             <b class="text-[15px]">📋 Work Order Baru</b>
             <span class="text-xs text-white/75">belum ada WO dipilih</span>
         @endif
-        <button type="button" wire:click="backToList" title="Kembali ke Worklist WO"
+        {{-- GOTCHA: layar ini juga dibuka sbg iframe popup dari MPS - Spreadsheet
+             (mps-spreadsheet.blade.php, "woModalUrl") supaya tombol Back
+             browser tak nyasar. Kalau "Back" di sini navigasi iframe itu
+             sendiri ke Worklist WO (backToList() biasa), hasilnya layar
+             penuh (header+padding sendiri) numpuk di dalam popup kecil --
+             kelihatan kacau. Deteksi konteks iframe di klien (window.top !==
+             window.self): kalau di dalam iframe, reload window PARENT (sama
+             persis perilaku tombol "✕ Tutup" milik MPS - Spreadsheet) supaya
+             popup tertutup & sheet ter-refresh; kalau berdiri sendiri (dibuka
+             dari Worklist WO/menu spt biasa), tetap panggil backToList() lewat $wire. --}}
+        <button type="button" x-on:click="window.top !== window.self ? window.top.location.reload() : $wire.backToList()" title="Kembali ke Worklist WO"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full hover:brightness-110 cursor-pointer">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
