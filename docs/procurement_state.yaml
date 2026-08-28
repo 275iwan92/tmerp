@@ -52,13 +52,29 @@ status_umum: >
   Lain", rekalkulasi PER PO yang tersentuh saat POST (PV-08, PvPostingService::recalcPo()
   dipanggil utk SETIAP po_id distinct, bukan asumsi 1 PO). po_line.is_receivable ditambahkan
   (PV-09) -- baris SERVICE otomatis tak pernah muncul di worklist PV.
-  KETERBATASAN SADAR: PvPostingService::post() BELUM menulis rm_stock/rm_stock_d.
+  KETERBATASAN SADAR (RESOLVED 2026-08-28): PvPostingService::post() dulu BELUM menulis
+  rm_stock/rm_stock_d.
   UPDATE 2026-08-21 (sore): dump tminv_20260722_2018_sd.sql SUDAH diberikan user & diimpor
   penuh ke tm2inv (lihat inventory_state.yaml/memory project_inventory_module_status) -- blocker
   file SELESAI. Yang masih tertunda HANYA menyambungkan titik TODO di kode ke
   App\Services\Inventory\StockPostingService (belum dibangun -- baru skema Tier 3-nya yang
   jalan, Tier 4/service posting masih kosong). Status PV->POSTED dan rekalkulasi po_line/
   po_order per-PO (PV-08) tetap benar & teruji terlepas dari ini.
+  SELESAI 2026-08-28 (sesi Telma, Inventory & Delivery): titik TODO disambungkan.
+  PvPostingService::postToInventory() (dipanggil dari post(), SEBELUM status PV diubah jadi
+  POSTED -- kalau posting stok gagal, PV tidak berubah status sama sekali, jadi tak pernah ada
+  PV POSTED tanpa pergerakan stok) membangun 1 dokumen Stock In RM lewat
+  StockDocumentService::saveDraft() + StockPostingService::postDocument() (jalur SAH yang sama
+  dgn Stock In manual, bukan insert langsung) dari baris PV yang is_stock=1 & c_qty_accepted>0.
+  ref_doc_type='PV', ref_doc_id/ref_doc_no tertaut, pv_receipt.rm_stock_doc_id terisi.
+  Resolusi gudang: i_warehouse_code -> wh_warehouse.warehouse_code. Resolusi lokasi per baris
+  (i_location_code teks bebas, PV-05, sering kosong): (1) cocokkan ke wh_loc.location_code di
+  gudang yang sama, (2) fallback mat_raw.def_location_id, (3) fallback lokasi usable+aktif
+  pertama di gudang tsb -- tanpa lokasi sama sekali = exception eksplisit (bukan ditebak).
+  Diuji end-to-end via tests/Feature/PvStockIntegrationTest.php (2 test, PHPUnit permanen,
+  bukan cuma tinker): (a) PO->PV->QC PASS->POST RM riil -> rm_stock/rm_stock_d/rm_stockcard
+  benar, mat_raw.cur_stock bertambah, po_line jadi RECEIVED; (b) PV isi jasa/SERVICE murni
+  (is_stock=0) -> POST sukses, rm_stock_doc_id tetap NULL (bukan error) -- keduanya lulus.
   Diverifikasi tuntas via tinker: (a) 1 SPB dari 1 PO normal -> POST -> PO jadi RECEIVED; (b)
   toleransi terlampaui (8% vs batas 5%) -> POST terblokir -> override -> POST sukses; (c) KASUS
   UTAMA PV-01: 2 PO BERBEDA ditarik ke SATU SPB sekaligus (c_po_count=2), POST merekalkulasi
@@ -130,7 +146,8 @@ artefak_selesai:
   - "Migration 2026_08_21_000005  # pv_receipt/pv_line (tm2pur, desain ulang PV-01..PV-11) + po_line.is_receivable (PV-09)"
   - "App\\Models\\Pur\\{PvReceipt,PvLine}"
   - "App\\Services\\Pur\\PvBuilderService  # supplierWorklist()+openLinesForSupplier()+createFromLines()+addLines() -- picker 2-langkah ala Oracle Find Expected Receipts"
-  - "App\\Services\\Pur\\PvPostingService  # blockers()+post() -- rekalkulasi PER PO yang tersentuh (PV-08); rm_stock BELUM ditulis, TODO eksplisit di kode"
+  - "App\\Services\\Pur\\PvPostingService  # blockers()+post()+postToInventory() -- rekalkulasi PER PO yang tersentuh (PV-08); rm_stock DITULIS via StockDocumentService/StockPostingService sejak 2026-08-28 (SELESAI, lihat status_umum)"
+  - "tests/Feature/PvStockIntegrationTest.php  # SELESAI 2026-08-28: verifikasi PV->Stock In (RM riil + PV jasa/non-stock)"
   - "resources/views/pages/pur/pv/{index,entry}.blade.php  # route pur.pv.list / pur.pv.entry, gate module:PROC"
   - "docs/purchasereceive_delta_multipo.md, docs/PATCH_DDL_PV_MULTIPO.sql, docs/PATCH_SEED_PV_MULTIPO.sql, docs/mockups/mockup_purchase_receive.html, docs/mockups/nota_pv_spb.html  # dokumen asli user, dibaca penuh -- lihat status_umum utk deviasi skema"
   - "resources/views/pages/pur/po/approval.blade.php  # route pur.po.approval, gate module:PROC"

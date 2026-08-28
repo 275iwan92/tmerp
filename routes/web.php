@@ -104,6 +104,7 @@ Route::middleware('auth')->group(function () {
             // sidebarmenustandard.md §5. {material?} tetap opsional utk deep-link.
             Route::livewire('/inventory/print/stock-card/{category}/{material?}', 'pages::inventory.print.stock-card')->name('inv.print.stock-card');
             Route::livewire('/inventory/print/master-stock/{category}', 'pages::inventory.print.master-stock')->name('inv.print.master-stock');
+            Route::livewire('/inventory/print/slow-moving/{category}', 'pages::inventory.print.slow-moving')->name('inv.print.slow-moving');
 
             // inventory_tier4.md #1.1 -- {category} = RM|FG|SFG, pola sama seperti Laporan.
             Route::livewire('/inventory/stock-in/{category}', 'pages::inventory.stock-in')->name('inv.stock-in.index');
@@ -118,6 +119,17 @@ Route::middleware('auth')->group(function () {
             // langsung ke form dokumen tertentu (grid<->form tetap 1 komponen).
             Route::livewire('/inventory/stock-adjustment/{category}/{doc?}', 'pages::inventory.stock-adjustment')->name('inv.stock-adj.index');
             Route::livewire('/inventory/stock-adjustment-approval/{category}', 'pages::inventory.stock-adjustment-approval')->name('inv.stock-adj.approval');
+        });
+
+        Route::middleware('module:DISPATCH')->group(function () {
+            // dispatch_tier4.md §1 -- {doId} wajib di sini (beda dari spec teks
+            // asli "{doId?}") krn DoList SELALU pre-create header via picker
+            // customer sebelum redirect ke Entry (lihat catatan deviasi di
+            // dispatch/do/list.blade.php) -- tak pernah ada Entry tanpa doId.
+            Route::livewire('/dispatch/do', 'pages::dispatch.do.list')->name('dispatch.do.index');
+            Route::livewire('/dispatch/do/{doId}', 'pages::dispatch.do.entry')->name('dispatch.do.entry');
+            Route::livewire('/dispatch/do/{doId}/print', 'pages::dispatch.do.print')->name('dispatch.do.print');
+            Route::livewire('/dispatch/do/{doId}/print-surat-jalan', 'pages::dispatch.do.print-surat-jalan')->name('dispatch.do.print-surat-jalan');
         });
 
         Route::middleware('module:HRM')->group(function () {
