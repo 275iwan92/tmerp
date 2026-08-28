@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 // mockup_scheduling_board.html + production_scheduling_tier4.md §3. Iterasi
@@ -47,6 +48,9 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     const PX_PER_HOUR = 70;
 
+    // #[Url] -- WO Detail (wo-entry.blade.php) deep-link "Lihat di Scheduling
+    // Board" lewat ?date=YYYY-MM-DD, bukan cuma bisa dibuka polos.
+    #[Url]
     public string $date = '2026-08-28';
 
     public string $filterMachine = 'all';

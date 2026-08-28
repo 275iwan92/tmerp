@@ -2,7 +2,9 @@
 
 namespace App\Models\Prd;
 
+use App\Models\Master\ProdMachine;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 // Constraint Rule Library (Batching/Sequencing) sebagai DATA -- Tier1 §5A.7.
 // Dibaca runtime oleh SchedulingRuleEngine (app/Services/Scheduling).
@@ -27,6 +29,12 @@ class PrdSchedulingRule extends Model
         'effective_to' => 'date',
         'approved_at' => 'datetime',
     ];
+
+    // Lintas-DB (tm2prd -> tm2mst) -- query terpisah, bukan join fisik.
+    public function machine(): BelongsTo
+    {
+        return $this->belongsTo(ProdMachine::class, 'applies_to_machine_id', 'machine_id');
+    }
 
     public function scopeActive($query)
     {

@@ -128,6 +128,10 @@ Route::middleware('auth')->group(function () {
 
         Route::middleware('module:PROD')->group(function () {
             Route::livewire('/production/scheduling-board', 'pages::production.scheduling-board')->name('production.scheduling-board');
+            Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
+            Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry');
+            Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
+            Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
         });
     });
 });

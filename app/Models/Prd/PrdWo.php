@@ -2,7 +2,9 @@
 
 namespace App\Models\Prd;
 
+use App\Models\Sdi\CoOrder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PrdWo extends Model
@@ -69,6 +71,14 @@ class PrdWo extends Model
     public function materials(): HasMany
     {
         return $this->hasMany(PrdWoMaterial::class, 'wo_id', 'wo_id')->orderBy('seq_no');
+    }
+
+    // Lintas-DB (tm2prd -> tm2sdi) -- query terpisah (Eloquent eager-load
+    // batching), bukan join fisik. Dipakai Worklist WO utk resolve nama
+    // customer: PrdWo -> co_order -> quo_quotation -> cust_customer (tm2mst).
+    public function coOrder(): BelongsTo
+    {
+        return $this->belongsTo(CoOrder::class, 'source_co_id', 'id_order');
     }
 
     // Penomoran WO -- pola sama CoOrder::nextCoNo()/QuoQuotation::nextQuotationNo().
