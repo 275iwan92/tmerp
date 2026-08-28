@@ -389,7 +389,13 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
                                 finishLabel: @js($finishLabel),
                             })">
                             <td class="font-mono font-bold text-accent">
-                                <a href="{{ route('production.wo.entry', ['wo' => $op->wo_id]) }}" class="text-accent no-underline hover:underline">{{ $op->wo?->wo_no ?? '—' }}</a>
+                                {{-- Buka WO Detail sbg popup (iframe modal) di atas spreadsheet -- permintaan
+                                     user: link biasa navigasi penuh & tombol Back browser tidak balik ke
+                                     Spreadsheet dgn benar. href tetap ada utk ctrl/cmd+klik & buka tab baru
+                                     (native browser, tak disentuh JS); klik polos dicegat -> buka modal. --}}
+                                <a href="{{ route('production.wo.entry', ['wo' => $op->wo_id]) }}"
+                                    x-on:click="if (! $event.ctrlKey && ! $event.metaKey) { $event.preventDefault(); woModalUrl = $event.target.href }"
+                                    class="text-accent no-underline hover:underline">{{ $op->wo?->wo_no ?? '—' }}</a>
                             </td>
                             <td>{{ $op->wo?->coOrder?->quotation?->customer?->customer_name ?? 'GENERAL' }}</td>
                             <td>{{ $op->wo?->product?->product_name ?? '—' }} <span class="text-muted">({{ $op->wo?->part_code ?? '—' }})</span></td>
@@ -475,6 +481,27 @@ new #[Title('MPS - Spreadsheet — TELASIH MAKMUR ERP')] class extends Component
     <div x-show="toastShow" x-transition x-cloak
         class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#1f2328] text-white text-xs font-medium px-4 py-2.5 rounded-md shadow-lg z-[200] max-w-[80vw] text-center"
         x-text="toastMsg"></div>
+
+    {{-- Popup WO Detail -- iframe di atas Spreadsheet (halaman ini TIDAK pernah
+         ditinggalkan, jadi tak ada masalah "Back tak balik ke Spreadsheet").
+         Tutup = reload halaman ini (bukan cuma tutup modal) supaya perubahan
+         yg mungkin dibuat di WO Detail (operator/waktu/priority dll) langsung
+         kelihatan di sheet -- state DataTables (halaman/sort/filter) tetap
+         terjaga lewat `stateSave` (lihat @script). --}}
+    <div x-show="woModalUrl" x-cloak x-transition.opacity
+        class="fixed inset-0 bg-black/60 z-[300] flex items-center justify-center p-4 sm:p-8"
+        x-on:click.self="window.location.reload()">
+        <div class="bg-white rounded-lg w-full h-full max-w-[1400px] relative shadow-2xl flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between bg-navy px-4 py-2 shrink-0">
+                <span class="text-white text-[11px] font-bold uppercase tracking-wide">📋 WO Detail</span>
+                <button type="button" x-on:click="window.location.reload()"
+                    class="text-white text-[11px] font-bold uppercase tracking-wide bg-white/10 hover:bg-white/20 rounded-full px-3 py-1 border-none cursor-pointer">
+                    ✕ Tutup
+                </button>
+            </div>
+            <iframe x-show="woModalUrl" :src="woModalUrl" class="w-full grow border-0"></iframe>
+        </div>
+    </div>
 </div>
 
 @script
