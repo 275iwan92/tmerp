@@ -5,6 +5,7 @@ use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
+use App\Models\Prd\PrdWoOperationOutput;
 use App\Services\Pur\SubcontractPoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -19,8 +20,11 @@ use Livewire\Component;
 // ini). Jadi "Buka" selalu ke sini dulu (pola sama semua grid lain: PR->
 // pr.entry), dengan tombol "Lihat di Scheduling Board" yang aktif kalau ada
 // operation terjadwal. Halaman ini juga rumah QC Gate (Lulus/Tolak,
-// production_scheduling_tier2.md §2/§3.1) dan pemicu Breakdown & Subcontract
-// Form (Tier1 §9.3, Tier2 §7) -- keduanya belum ada UI apa pun sebelum ini.
+// production_scheduling_tier2.md §2/§3.1), pemicu Breakdown & Subcontract
+// Form (Tier1 §9.3, Tier2 §7), dan Production Output Recording (F15, Tier1
+// §4 istilah baku -- TIDAK ADA spec Tier2/3/4 sama sekali untuk F15, skema
+// & layar didesain dari nol di sesi ini, lihat migration
+// 2026_08_28_000010_create_prd_wo_operation_output).
 new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $wo;
@@ -55,6 +59,19 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
     public float $subEstimatedCost = 0;
 
+    // Catat Output (F15)
+    public ?int $outputOperationId = null;
+
+    public float $outputQtyGood = 0;
+
+    public float $outputQtyReject = 0;
+
+    public float $outputQtyWaste = 0;
+
+    public string $outputShiftNote = '';
+
+    public string $outputNotes = '';
+
     public function mount(int $wo): void
     {
         $this->wo = $wo;
@@ -63,7 +80,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function workOrder(): PrdWo
     {
-        return PrdWo::with(['operations.crew.employee'])->findOrFail($this->wo);
+        return PrdWo::with(['operations.crew.employee', 'operations.outputs'])->findOrFail($this->wo);
     }
 
     #[Computed]
@@ -302,6 +319,47 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         $this->dispatch('wo-toast', message: "Task {$op->process_name} kembali dari subkontrak, wajib QC.");
     }
 
+    // ---- Production Output Recording (F15) ----
+
+    public function openOutputEntry(int $operationId): void
+    {
+        $this->outputOperationId = $operationId;
+        $this->outputQtyGood = 0;
+        $this->outputQtyReject = 0;
+        $this->outputQtyWaste = 0;
+        $this->outputShiftNote = '';
+        $this->outputNotes = '';
+    }
+
+    public function closeOutputEntry(): void
+    {
+        $this->outputOperationId = null;
+    }
+
+    public function saveOutputEntry(): void
+    {
+        if ($this->outputQtyGood <= 0 && $this->outputQtyReject <= 0 && $this->outputQtyWaste <= 0) {
+            $this->dispatch('wo-toast', message: 'Isi minimal salah satu qty (baik/reject/waste).');
+
+            return;
+        }
+
+        PrdWoOperationOutput::create([
+            'operation_id' => $this->outputOperationId,
+            'qty_good' => $this->outputQtyGood,
+            'qty_reject' => $this->outputQtyReject,
+            'qty_waste' => $this->outputQtyWaste,
+            'shift_note' => $this->outputShiftNote ?: null,
+            'notes' => $this->outputNotes ?: null,
+            'recorded_by' => Auth::user()->login,
+            'recorded_at' => now(),
+        ]);
+
+        $this->outputOperationId = null;
+        unset($this->workOrder);
+        $this->dispatch('wo-toast', message: 'Output tercatat.');
+    }
+
     private function statusBadgeClasses(string $status): string
     {
         return match ($status) {
@@ -356,6 +414,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Mesin / Crew</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Jendela Waktu</th>
                         <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Status</th>
+                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Output Aktual</th>
                         <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Aksi</th>
                     </tr>
                 </thead>
@@ -374,7 +433,21 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                             <td class="px-3 py-2 border-b border-[#eef1f5]">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClasses($op->task_status) }}">{{ $op->task_status }}</span>
                             </td>
+                            <td class="px-3 py-2 border-b border-[#eef1f5] text-[11px]">
+                                @if ($op->outputs->isEmpty())
+                                    <span class="text-muted">belum dicatat</span>
+                                @else
+                                    <span class="font-semibold {{ $op->outputProgressPercent() >= 100 ? 'text-[#15803d]' : 'text-[#1f2328]' }}">{{ number_format($op->totalQtyGood(), 0, ',', '.') }}</span>
+                                    / {{ number_format((float) $op->qty, 0, ',', '.') }} baik ({{ $op->outputProgressPercent() }}%)
+                                    @if ($op->totalQtyReject() > 0 || $op->totalQtyWaste() > 0)
+                                        <div class="text-[#a3241f]">reject {{ number_format($op->totalQtyReject(), 0, ',', '.') }} · waste {{ number_format($op->totalQtyWaste(), 0, ',', '.') }}</div>
+                                    @endif
+                                @endif
+                            </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                @if (in_array($op->task_status, ['RUNNING', 'DONE'], true))
+                                    <button type="button" wire:click="openOutputEntry({{ $op->operation_id }})" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#eef3fb] text-[#2f6fed] cursor-pointer mr-1">📊 Catat Output</button>
+                                @endif
                                 @if ($op->task_status === 'RUNNING')
                                     <button type="button" wire:click="openBreakdown({{ $op->operation_id }})" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#fbeaea] text-[#a3241f] cursor-pointer">⚠ Lapor Breakdown</button>
                                 @elseif ($op->task_status === 'QC_HOLD')
@@ -384,13 +457,13 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     <button type="button" wire:click="reworkFromReject({{ $op->operation_id }})" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#eef3fb] text-[#2f6fed] cursor-pointer">↻ Rework</button>
                                 @elseif ($op->task_status === 'SUBCONTRACT')
                                     <button type="button" wire:click="receiveFromSubcontract({{ $op->operation_id }})" class="px-3 py-1.5 rounded text-[11px] font-semibold bg-[#eef3fb] text-[#2f6fed] cursor-pointer">📦 Terima dari Subkontrak</button>
-                                @else
+                                @elseif ($op->task_status !== 'DONE')
                                     <span class="text-muted text-[11px]">—</span>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
+                        <tr><td colspan="7" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -508,6 +581,47 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                             </div>
                         @endif
                     @endif
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Catat Output modal (F15) --}}
+    @if ($outputOperationId)
+        <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeOutputEntry">
+            <div class="bg-white rounded-xl w-[420px] max-w-[95vw] shadow-2xl">
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
+                    <span>📊 Catat Output</span>
+                    <button type="button" wire:click="closeOutputEntry" class="text-white/70 hover:text-white cursor-pointer">✕</button>
+                </div>
+                <div class="p-4 space-y-3">
+                    <p class="text-[11px] text-muted">Boleh dicatat berkali-kali (mis. per shift/giliran) — angka di grid otomatis dijumlah dari semua entri.</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Qty Baik</label>
+                            <input type="number" wire:model="outputQtyGood" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Reject</label>
+                            <input type="number" wire:model="outputQtyReject" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Waste</label>
+                            <input type="number" wire:model="outputQtyWaste" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Shift (opsional)</label>
+                        <input type="text" wire:model="outputShiftNote" placeholder="mis. Shift 1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Catatan (opsional)</label>
+                        <input type="text" wire:model="outputNotes" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                    </div>
+                    <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
+                        <button type="button" wire:click="closeOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                        <button type="button" wire:click="saveOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan</button>
+                    </div>
                 </div>
             </div>
         </div>

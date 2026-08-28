@@ -30,9 +30,17 @@ use Livewire\Component;
 // (app/Services/Scheduling) -- scope disepakati user: pilih WO EXISTING yang
 // belum terjadwal (bukan form bikin WO baru on-the-spot ala mockup, supaya
 // tak perlu ALTER enum prd_wo.source_type yang cuma punya CO_CONFIRMED/
-// MTS_FORECAST). Opsi "Reroute Subkontrak" tetap tampil di dialog (sesuai
-// generator) tapi belum bisa diterapkan -- perlu fitur PO Subkontrak (Tier1
-// §9.3) yang belum dibangun; dipesankan jujur ke user saat dipilih.
+// MTS_FORECAST). Opsi "Reroute Subkontrak" di dialog sekarang BISA diterapkan
+// (PO Subkontrak nyata via App\Services\Pur\SubcontractPoService, dibangun
+// sesi berikutnya bersama WO Detail -- lihat wo-entry.blade.php).
+//
+// Production Output Recording (F15, TIDAK ADA spec Tier2/3/4 -- didesain
+// dari nol) disambung ke board 2026-08-28: operationVm() pakai
+// outputProgressPercent() (qty baik aktual / target) utk progress blok begitu
+// ada catatan output, fallback ke progressPercent() berbasis waktu selama
+// belum ada catatan -- PPIC lihat kemajuan produksi SUNGGUHAN langsung dari
+// board, tanpa buka WO Detail. Catat output-nya sendiri ada di WO Detail
+// (tombol "📊 Catat Output" per task RUNNING/DONE), bukan di board ini.
 //
 // SENGAJA masih belum ada: backward-scheduling otomatis/PDR auto-assign saat
 // board dibuka (baru jalan lewat Interruption Dialog di atas), Simulation
@@ -163,7 +171,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     private function operationsForDay()
     {
-        return PrdWoOperation::with(['wo', 'crew.employee'])
+        return PrdWoOperation::with(['wo', 'crew.employee', 'outputs'])
             ->whereDate('target_start', $this->date)
             ->orderBy('target_start')
             ->get();
@@ -284,16 +292,28 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             default => '',
         };
 
+        // F15 Production Output Recording -- begitu ada catatan output nyata,
+        // progress blok pakai itu (qty baik/target) alih-alih proporsi waktu
+        // berlalu, supaya PPIC lihat kemajuan produksi SUNGGUHAN dari board
+        // langsung, bukan cuma "sudah berapa lama berjalan". Belum ada
+        // catatan -> tetap fallback ke progressPercent() waktu (perilaku lama).
+        $hasOutput = $op->outputs->isNotEmpty();
+        $progress = $hasOutput ? $op->outputProgressPercent() : $op->progressPercent(now());
+        $timeLabel = $this->hourLabel($start).'–'.$this->hourLabel($start + $duration);
+        if ($hasOutput) {
+            $timeLabel .= ' · '.number_format($op->totalQtyGood(), 0, ',', '.').'/'.number_format((float) $op->qty, 0, ',', '.');
+        }
+
         return [
             'id' => $op->operation_id,
             'resource' => $op->resource_type === 'MACHINE' ? 'm'.$op->machine_id : 'e'.($op->crew->firstWhere('crew_role', 'OPERATOR_UTAMA')?->employee_id ?? 0),
             'title' => $icon.($op->wo->wo_no ?? '?').' · '.$op->process_name,
             'subtitle' => $op->process_name,
-            'timeLabel' => $this->hourLabel($start).'–'.$this->hourLabel($start + $duration),
+            'timeLabel' => $timeLabel,
             'statusLabel' => $this->statusLabel($op->task_status),
             'left' => ($start - self::TIMELINE_START) * self::PX_PER_HOUR,
             'width' => $duration * self::PX_PER_HOUR,
-            'progress' => $op->progressPercent(now()),
+            'progress' => $progress,
             'bg' => $color['bg'],
             'text' => $color['text'],
             'urgent' => (bool) $op->is_hot_job,

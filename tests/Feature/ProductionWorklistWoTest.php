@@ -9,6 +9,7 @@ use App\Models\Prd\PrdMtsForecast;
 use App\Models\Prd\PrdSchedulingRule;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
+use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
 use App\Models\Sys\SecUser;
@@ -238,5 +239,43 @@ class ProductionWorklistWoTest extends TestCase
         $this->assertEqualsWithDelta(0.9, (float) $forecast->accuracy_pct, 0.0001);
 
         $forecast->delete();
+    }
+
+    // F15 Production Output Recording -- tanpa spec Tier2/3/4 (didesain dari
+    // nol 2026-08-28), tautan ke Scheduling Board diverifikasi lewat progress
+    // blok (operationVm() pakai outputProgressPercent() begitu ada catatan).
+    public function test_output_entry_accumulates_and_reflects_on_board(): void
+    {
+        $this->actingAs($this->admin());
+
+        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
+        $this->assertSame('800.0000', $op->qty);
+
+        $beforeBoard = Livewire::test('pages::production.scheduling-board')->set('date', '2026-08-28');
+        $beforeBoard->assertDontSee('400/800');
+
+        Livewire::test('pages::production.wo-entry', ['wo' => $op->wo_id])
+            ->call('openOutputEntry', $op->operation_id)
+            ->set('outputQtyGood', 400)
+            ->set('outputQtyReject', 5)
+            ->call('saveOutputEntry')
+            ->call('openOutputEntry', $op->operation_id)
+            ->set('outputQtyGood', 200)
+            ->set('outputQtyWaste', 3)
+            ->call('saveOutputEntry');
+
+        $op->refresh();
+        $op->load('outputs');
+        $this->assertSame(600.0, $op->totalQtyGood());
+        $this->assertSame(5.0, $op->totalQtyReject());
+        $this->assertSame(3.0, $op->totalQtyWaste());
+        $this->assertSame(75, $op->outputProgressPercent());
+        $this->assertCount(2, $op->outputs);
+
+        Livewire::test('pages::production.scheduling-board')
+            ->set('date', '2026-08-28')
+            ->assertSee('600/800');
+
+        PrdWoOperationOutput::where('operation_id', $op->operation_id)->delete();
     }
 }
