@@ -134,6 +134,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'PROD_MON_WO' => route('production.monitoring'),
             'PROD_RULE_LIB' => route('production.rule-library'),
             'PROD_MTS_FORECAST' => route('production.mts-forecast'),
+            'PROD_SHIFT_ROSTER' => route('hrm.shift-roster'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'HRM_CORRECTION' => route('hrm.correction-requests'),
