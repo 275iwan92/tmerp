@@ -87,6 +87,8 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_UOM' => route('master.uom'),
             'MD_MACHINE' => route('master.machine'),
             'MD_SHIFT' => route('master.shift'),
+            'PROD_MST_PROCESS' => route('production.master-process'),
+            'PROD_MST_CREW' => route('production.master-crew'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),

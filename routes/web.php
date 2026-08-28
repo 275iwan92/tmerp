@@ -149,6 +149,8 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
+            Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
+            Route::livewire('/production/master-crew', 'pages::production.master-crew')->name('production.master-crew');
         });
     });
 });
