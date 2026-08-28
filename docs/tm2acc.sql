@@ -1,3 +1,8 @@
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: tm2acc
+-- ------------------------------------------------------
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -9,6 +14,11 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `fin_account`
+--
+
 DROP TABLE IF EXISTS `fin_account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -23,7 +33,7 @@ CREATE TABLE `fin_account` (
   `is_postable` tinyint(1) NOT NULL DEFAULT '1',
   `default_cc_id` int unsigned DEFAULT NULL,
   `tax_scheme_code` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `activate` tinyint(1) NOT NULL DEFAULT '1',
   `created_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -37,11 +47,20 @@ CREATE TABLE `fin_account` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_account`
+--
+
 LOCK TABLES `fin_account` WRITE;
 /*!40000 ALTER TABLE `fin_account` DISABLE KEYS */;
 INSERT INTO `fin_account` VALUES (100,'100000','ASET (ASSETS)','ASSET','DEBIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(110,'110000','ASET LANCAR','ASSET','DEBIT',100,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(111,'111100','Kas Operasional Pabrik','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(112,'111200','Bank BCA - Rekening Utama IDR','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(113,'111300','Bank Mandiri - USD (Ekspor)','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(121,'112100','Piutang Usaha - Customer Lokal','ASSET','DEBIT',110,1,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(122,'112200','Piutang Usaha - Customer Ekspor','ASSET','DEBIT',110,1,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(131,'113100','Persediaan Bahan Baku - Kertas & Board','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(132,'113200','Persediaan Bahan Baku - Tinta & Chemical','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(133,'113300','Persediaan Tooling - Pisau Pond & Deboss','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(134,'113400','Persediaan WIP (Cetak/Finishing)','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(135,'113500','Persediaan Barang Jadi (Packaging)','ASSET','DEBIT',110,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(141,'114100','PPN Masukan (Input VAT)','ASSET','DEBIT',110,0,1,13,'PPN_IN',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(142,'114200','Uang Muka PPh Pasal 22 - Kertas Mill','ASSET','DEBIT',110,0,1,13,'PPH22',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(143,'114300','Uang Muka Pembelian ke Supplier','ASSET','DEBIT',110,1,1,NULL,NULL,1,NULL,'2026-08-19 02:07:31',NULL,'2026-08-19 08:09:46'),(150,'120000','ASET TETAP PABRIK','ASSET','DEBIT',100,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(151,'121100','Mesin Cetak Offset','ASSET','DEBIT',150,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(152,'121200','Mesin Finishing (Die-Cutter/Folder Gluer)','ASSET','DEBIT',150,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(159,'121900','Akumulasi Penyusutan Mesin','ASSET','CREDIT',150,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(200,'200000','KEWAJIBAN (LIABILITIES)','LIABILITY','CREDIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(210,'210000','KEWAJIBAN JANGKA PENDEK','LIABILITY','CREDIT',200,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(211,'211100','Hutang Dagang - Supplier Kertas & Board','LIABILITY','CREDIT',210,1,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(212,'211200','Hutang Dagang - Supplier Tinta & Chemical','LIABILITY','CREDIT',210,1,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(213,'211300','Hutang Jasa Subkon Finishing (Laminasi/UV)','LIABILITY','CREDIT',210,1,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(221,'212100','Hutang PPN Keluaran (Output VAT)','LIABILITY','CREDIT',210,0,1,13,'PPN_OUT',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(222,'212200','Hutang PPh Pasal 23 (Jasa Subkon)','LIABILITY','CREDIT',210,0,1,13,'PPH23',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(223,'212300','Hutang PPh Pasal 22 (Industri Kertas)','LIABILITY','CREDIT',210,0,1,13,'PPH22',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(231,'213100','Beban Akrual / YMH Dibayar','LIABILITY','CREDIT',210,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(232,'213200','Uang Muka Penjualan dari Pelanggan','LIABILITY','CREDIT',210,1,1,NULL,NULL,1,NULL,'2026-08-19 02:07:31',NULL,'2026-08-19 08:09:46'),(300,'300000','EKUITAS (EQUITY)','EQUITY','CREDIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(311,'311000','Modal Disetor','EQUITY','CREDIT',300,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(321,'321000','Laba Ditahan','EQUITY','CREDIT',300,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(322,'322000','Laba Tahun Berjalan','EQUITY','CREDIT',300,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(400,'400000','PENDAPATAN (REVENUE)','REVENUE','CREDIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(411,'411000','Penjualan Packaging - Food Grade Box','REVENUE','CREDIT',400,0,1,NULL,'PPN_OUT',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(412,'412000','Penjualan Packaging - Non-Food/Commercial','REVENUE','CREDIT',400,0,1,NULL,'PPN_OUT',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(413,'413000','Pendapatan Jasa Maklon / Subkon','REVENUE','CREDIT',400,0,1,NULL,'PPN_OUT',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(421,'421000','Diskon Penjualan & Retur','REVENUE','DEBIT',400,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(500,'500000','BEBAN POKOK PENJUALAN (COGS)','COGS','DEBIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(511,'511000','HPP - Bahan Baku Kertas & Board','COGS','DEBIT',500,0,1,1,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(512,'512000','HPP - Tinta, Varnish & Chemical','COGS','DEBIT',500,0,1,1,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(513,'513000','HPP - Jasa Subkon Finishing External','COGS','DEBIT',500,0,1,2,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(514,'514000','HPP - Tenaga Kerja Langsung','COGS','DEBIT',500,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(515,'515000','HPP - Penyusutan Mesin Produksi','COGS','DEBIT',500,0,1,1,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(516,'516000','HPP - Listrik & Daya Pabrik','COGS','DEBIT',500,0,1,1,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(600,'600000','BEBAN OPERASIONAL (EXPENSES)','EXPENSE','DEBIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(611,'611000','Beban Gaji Mgmt, Sales & Admin','EXPENSE','DEBIT',600,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(612,'612000','Beban QC & Lab Warna (Delta E)','EXPENSE','DEBIT',600,0,1,6,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(613,'613000','Beban Amortisasi Pelat CTP & Artwork','EXPENSE','DEBIT',600,0,1,4,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(614,'614000','Beban Pemasaran & Komisi Sales','EXPENSE','DEBIT',600,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(615,'615000','Beban Kerugian Kertas Rusak (Waste)','EXPENSE','DEBIT',600,0,1,1,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-19 08:09:46'),(800,'800000','PENDAPATAN & BEBAN LAIN-LAIN','OTHER_INCOME','CREDIT',NULL,0,0,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(811,'811000','Selisih Kurs Transaksi','OTHER_INCOME','CREDIT',800,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(812,'812000','Beban Administrasi Bank & Bunga','OTHER_EXPENSE','DEBIT',800,0,1,NULL,NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(813,'211900','Hutang Barang Belum Ditagih (GR/IR Clearing)','LIABILITY','CREDIT',NULL,0,1,NULL,NULL,1,'_system','2026-08-21 23:06:54',NULL,'2026-08-21 23:06:54');
 /*!40000 ALTER TABLE `fin_account` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_cost_center`
+--
+
 DROP TABLE IF EXISTS `fin_cost_center`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -51,7 +70,7 @@ CREATE TABLE `fin_cost_center` (
   `cc_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `cc_group` enum('PRODUCTION','SALES','PURCHASING','PREPRESS','QC','WAREHOUSE','FINANCE','TAX','GENERAL') COLLATE utf8mb4_unicode_ci NOT NULL,
   `org_dept_id` bigint unsigned DEFAULT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `activate` tinyint(1) NOT NULL DEFAULT '1',
   `created_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -61,11 +80,20 @@ CREATE TABLE `fin_cost_center` (
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_cost_center`
+--
+
 LOCK TABLES `fin_cost_center` WRITE;
 /*!40000 ALTER TABLE `fin_cost_center` DISABLE KEYS */;
 INSERT INTO `fin_cost_center` VALUES (1,'CC-PROD-PRINT','Produksi - Cetak Offset','PRODUCTION',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(2,'CC-PROD-FINISH','Produksi - Finishing (Pond/Lem)','PRODUCTION',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(3,'CC-PRODUCTION','Produksi - Umum','PRODUCTION',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(4,'CC-PREPRESS','Prepress / CTP','PREPRESS',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(5,'CC-TOOLING','Tooling / Pisau Pond','PRODUCTION',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(6,'CC-QC-LAB','QC & Lab Warna','QC',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(7,'CC-WH-PAPER','Gudang Kertas & Board','WAREHOUSE',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(8,'CC-WH-INK','Gudang Tinta & Chemical','WAREHOUSE',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(9,'CC-WH-FG','Gudang Barang Jadi','WAREHOUSE',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(10,'CC-SALES','Penjualan','SALES',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(11,'CC-PURCHASING','Pembelian','PURCHASING',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(12,'CC-FINANCE','Keuangan','FINANCE',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(13,'CC-TAX','Perpajakan','TAX',NULL,1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08');
 /*!40000 ALTER TABLE `fin_cost_center` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_dp_allocation`
+--
+
 DROP TABLE IF EXISTS `fin_dp_allocation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -89,10 +117,19 @@ CREATE TABLE `fin_dp_allocation` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Alokasi DP ke invoice final (M:N); sisa DP = total − Σ(base+tax)';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_dp_allocation`
+--
+
 LOCK TABLES `fin_dp_allocation` WRITE;
 /*!40000 ALTER TABLE `fin_dp_allocation` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fin_dp_allocation` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_invoice`
+--
+
 DROP TABLE IF EXISTS `fin_invoice`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -128,10 +165,19 @@ CREATE TABLE `fin_invoice` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_invoice`
+--
+
 LOCK TABLES `fin_invoice` WRITE;
 /*!40000 ALTER TABLE `fin_invoice` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fin_invoice` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_journal`
+--
+
 DROP TABLE IF EXISTS `fin_journal`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -140,7 +186,7 @@ CREATE TABLE `fin_journal` (
   `journal_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `journal_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `journal_type` enum('SALES','PURCHASE','CASH_BANK','GENERAL') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `activate` tinyint(1) NOT NULL DEFAULT '1',
   `created_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -150,11 +196,20 @@ CREATE TABLE `fin_journal` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_journal`
+--
+
 LOCK TABLES `fin_journal` WRITE;
 /*!40000 ALTER TABLE `fin_journal` DISABLE KEYS */;
 INSERT INTO `fin_journal` VALUES (1,'CSH','Jurnal Kas Operasional Pabrik','CASH_BANK',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(2,'BNK','Jurnal Bank Utama & Ekspor','CASH_BANK',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(3,'SAL','Jurnal Penjualan Packaging','SALES',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(4,'PUR','Jurnal Pembelian Material','PURCHASE',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(5,'GEN','Jurnal Umum & Penyesuaian','GENERAL',1,NULL,'2026-08-18 18:02:08',NULL,'2026-08-18 18:02:08'),(6,'USG','Jurnal Pemakaian Bahan Baku','GENERAL',1,'_system','2026-08-21 23:06:54',NULL,NULL);
 /*!40000 ALTER TABLE `fin_journal` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_partner_account`
+--
+
 DROP TABLE IF EXISTS `fin_partner_account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -165,7 +220,7 @@ CREATE TABLE `fin_partner_account` (
   `ar_account_id` int unsigned DEFAULT NULL,
   `ap_account_id` int unsigned DEFAULT NULL,
   `payment_term` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'NET30',
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `activate` tinyint(1) NOT NULL DEFAULT '1',
   `created_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -179,10 +234,19 @@ CREATE TABLE `fin_partner_account` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_partner_account`
+--
+
 LOCK TABLES `fin_partner_account` WRITE;
 /*!40000 ALTER TABLE `fin_partner_account` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fin_partner_account` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_profit_center`
+--
+
 DROP TABLE IF EXISTS `fin_profit_center`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -190,7 +254,7 @@ CREATE TABLE `fin_profit_center` (
   `pc_id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `pc_code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'mis. ''PC-PACKAGING'', ''PC-COMMERCIAL''',
   `pc_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `activate` tinyint(1) NOT NULL DEFAULT '1',
   `created_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -200,11 +264,20 @@ CREATE TABLE `fin_profit_center` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_profit_center`
+--
+
 LOCK TABLES `fin_profit_center` WRITE;
 /*!40000 ALTER TABLE `fin_profit_center` DISABLE KEYS */;
 INSERT INTO `fin_profit_center` VALUES (1,'PC-PACKAGING','Packaging',1,NULL,'2026-08-20 15:07:02',NULL,'2026-08-20 15:07:02'),(2,'PC-COMMERCIAL','Commercial Print',1,NULL,'2026-08-20 15:07:02',NULL,'2026-08-20 15:07:02');
 /*!40000 ALTER TABLE `fin_profit_center` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_voucher`
+--
+
 DROP TABLE IF EXISTS `fin_voucher`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -224,7 +297,7 @@ CREATE TABLE `fin_voucher` (
   `partner_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
   `status` enum('DRAFT','POSTED','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
-  `is_cancelled` tinyint(1) NOT NULL DEFAULT '0',
+  `stat_cancel` tinyint(1) NOT NULL DEFAULT '0',
   `cancel_reason` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `posted_by` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `posted_at` datetime DEFAULT NULL,
@@ -247,10 +320,19 @@ CREATE TABLE `fin_voucher` (
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_voucher`
+--
+
 LOCK TABLES `fin_voucher` WRITE;
 /*!40000 ALTER TABLE `fin_voucher` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fin_voucher` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `fin_voucher_line`
+--
+
 DROP TABLE IF EXISTS `fin_voucher_line`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -278,10 +360,19 @@ CREATE TABLE `fin_voucher_line` (
 ) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `fin_voucher_line`
+--
+
 LOCK TABLES `fin_voucher_line` WRITE;
 /*!40000 ALTER TABLE `fin_voucher_line` DISABLE KEYS */;
 /*!40000 ALTER TABLE `fin_voucher_line` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Temporary view structure for view `v1_fin_account_tree`
+--
+
 DROP TABLE IF EXISTS `v1_fin_account_tree`;
 /*!50001 DROP VIEW IF EXISTS `v1_fin_account_tree`*/;
 SET @saved_cs_client     = @@character_set_client;
@@ -297,10 +388,15 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `is_postable`,
  1 AS `default_cc_id`,
  1 AS `tax_scheme_code`,
- 1 AS `is_active`,
+ 1 AS `activate`,
  1 AS `tree_level`,
  1 AS `default_cc_code`*/;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `v1_fin_ap_aging`
+--
+
 DROP TABLE IF EXISTS `v1_fin_ap_aging`;
 /*!50001 DROP VIEW IF EXISTS `v1_fin_ap_aging`*/;
 SET @saved_cs_client     = @@character_set_client;
@@ -319,6 +415,11 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `days_overdue`,
  1 AS `payment_status`*/;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `v1_fin_ar_aging`
+--
+
 DROP TABLE IF EXISTS `v1_fin_ar_aging`;
 /*!50001 DROP VIEW IF EXISTS `v1_fin_ar_aging`*/;
 SET @saved_cs_client     = @@character_set_client;
@@ -336,6 +437,11 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `days_overdue`,
  1 AS `payment_status`*/;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `v1_fin_dp_outstanding`
+--
+
 DROP TABLE IF EXISTS `v1_fin_dp_outstanding`;
 /*!50001 DROP VIEW IF EXISTS `v1_fin_dp_outstanding`*/;
 SET @saved_cs_client     = @@character_set_client;
@@ -352,6 +458,11 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `used_tax`,
  1 AS `dp_remaining`*/;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `v1_fin_trial_balance`
+--
+
 DROP TABLE IF EXISTS `v1_fin_trial_balance`;
 /*!50001 DROP VIEW IF EXISTS `v1_fin_trial_balance`*/;
 SET @saved_cs_client     = @@character_set_client;
@@ -366,6 +477,19 @@ SET @saved_cs_client     = @@character_set_client;
  1 AS `total_credit`,
  1 AS `balance`*/;
 SET character_set_client = @saved_cs_client;
+
+--
+-- Dumping events for database 'tm2acc'
+--
+
+--
+-- Dumping routines for database 'tm2acc'
+--
+
+--
+-- Final view structure for view `v1_fin_account_tree`
+--
+
 /*!50001 DROP VIEW IF EXISTS `v1_fin_account_tree`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -375,10 +499,15 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`tm2user`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `v1_fin_account_tree` AS select `a`.`account_id` AS `account_id`,`a`.`account_code` AS `account_code`,`a`.`account_name` AS `account_name`,`a`.`account_type` AS `account_type`,`a`.`normal_balance` AS `normal_balance`,`a`.`parent_id` AS `parent_id`,`a`.`is_recon` AS `is_recon`,`a`.`is_postable` AS `is_postable`,`a`.`default_cc_id` AS `default_cc_id`,`a`.`tax_scheme_code` AS `tax_scheme_code`,`a`.`is_active` AS `is_active`,(case when (`a`.`parent_id` is null) then 1 when (`p`.`parent_id` is null) then 2 else 3 end) AS `tree_level`,`cc`.`cc_code` AS `default_cc_code` from ((`fin_account` `a` left join `fin_account` `p` on((`p`.`account_id` = `a`.`parent_id`))) left join `fin_cost_center` `cc` on((`cc`.`cc_id` = `a`.`default_cc_id`))) */;
+/*!50001 VIEW `v1_fin_account_tree` AS select `a`.`account_id` AS `account_id`,`a`.`account_code` AS `account_code`,`a`.`account_name` AS `account_name`,`a`.`account_type` AS `account_type`,`a`.`normal_balance` AS `normal_balance`,`a`.`parent_id` AS `parent_id`,`a`.`is_recon` AS `is_recon`,`a`.`is_postable` AS `is_postable`,`a`.`default_cc_id` AS `default_cc_id`,`a`.`tax_scheme_code` AS `tax_scheme_code`,`a`.`activate` AS `activate`,(case when (`a`.`parent_id` is null) then 1 when (`p`.`parent_id` is null) then 2 else 3 end) AS `tree_level`,`cc`.`cc_code` AS `default_cc_code` from ((`fin_account` `a` left join `fin_account` `p` on((`p`.`account_id` = `a`.`parent_id`))) left join `fin_cost_center` `cc` on((`cc`.`cc_id` = `a`.`default_cc_id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v1_fin_ap_aging`
+--
+
 /*!50001 DROP VIEW IF EXISTS `v1_fin_ap_aging`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -392,6 +521,11 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v1_fin_ar_aging`
+--
+
 /*!50001 DROP VIEW IF EXISTS `v1_fin_ar_aging`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -405,6 +539,11 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v1_fin_dp_outstanding`
+--
+
 /*!50001 DROP VIEW IF EXISTS `v1_fin_dp_outstanding`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -418,6 +557,11 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v1_fin_trial_balance`
+--
+
 /*!50001 DROP VIEW IF EXISTS `v1_fin_trial_balance`*/;
 /*!50001 SET @saved_cs_client          = @@character_set_client */;
 /*!50001 SET @saved_cs_results         = @@character_set_results */;
@@ -427,7 +571,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`tm2user`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `v1_fin_trial_balance` AS select `a`.`account_id` AS `account_id`,`a`.`account_code` AS `account_code`,`a`.`account_name` AS `account_name`,`a`.`account_type` AS `account_type`,`a`.`normal_balance` AS `normal_balance`,coalesce(sum(`l`.`debit`),0) AS `total_debit`,coalesce(sum(`l`.`credit`),0) AS `total_credit`,(coalesce(sum(`l`.`debit`),0) - coalesce(sum(`l`.`credit`),0)) AS `balance` from ((`fin_account` `a` left join `fin_voucher_line` `l` on((`l`.`account_id` = `a`.`account_id`))) left join `fin_voucher` `v` on(((`v`.`voucher_id` = `l`.`voucher_id`) and (`v`.`status` = 'POSTED') and (`v`.`is_cancelled` = 0)))) where (`a`.`is_postable` = 1) group by `a`.`account_id`,`a`.`account_code`,`a`.`account_name`,`a`.`account_type`,`a`.`normal_balance` */;
+/*!50001 VIEW `v1_fin_trial_balance` AS select `a`.`account_id` AS `account_id`,`a`.`account_code` AS `account_code`,`a`.`account_name` AS `account_name`,`a`.`account_type` AS `account_type`,`a`.`normal_balance` AS `normal_balance`,coalesce(sum(`l`.`debit`),0) AS `total_debit`,coalesce(sum(`l`.`credit`),0) AS `total_credit`,(coalesce(sum(`l`.`debit`),0) - coalesce(sum(`l`.`credit`),0)) AS `balance` from ((`fin_account` `a` left join `fin_voucher_line` `l` on((`l`.`account_id` = `a`.`account_id`))) left join `fin_voucher` `v` on(((`v`.`voucher_id` = `l`.`voucher_id`) and (`v`.`status` = 'POSTED') and (`v`.`stat_cancel` = 0)))) where (`a`.`is_postable` = 1) group by `a`.`account_id`,`a`.`account_code`,`a`.`account_name`,`a`.`account_type`,`a`.`normal_balance` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -441,3 +585,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Dump completed on 2026-08-28  9:23:16

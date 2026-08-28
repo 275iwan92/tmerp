@@ -1,3 +1,8 @@
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: tm2sdi
+-- ------------------------------------------------------
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -9,6 +14,11 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `co_order`
+--
+
 DROP TABLE IF EXISTS `co_order`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -35,14 +45,23 @@ CREATE TABLE `co_order` (
   UNIQUE KEY `co_order_co_no_unique` (`co_no`),
   UNIQUE KEY `co_order_quotation_id_unique` (`quotation_id`),
   CONSTRAINT `co_order_quotation_id_foreign` FOREIGN KEY (`quotation_id`) REFERENCES `quo_quotation` (`id_quotation`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `co_order`
+--
 
 LOCK TABLES `co_order` WRITE;
 /*!40000 ALTER TABLE `co_order` DISABLE KEYS */;
 INSERT INTO `co_order` VALUES (2,'CO2600001','2026-08-19',5,'PO-DUMMY-001',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'CONFIRMED','Data uji -- dibuat manual, bukan dari alur Costing sungguhan.','2026-08-19 13:39:48','2026-08-19 13:39:48','system','system');
 /*!40000 ALTER TABLE `co_order` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `co_order_delivery`
+--
+
 DROP TABLE IF EXISTS `co_order_delivery`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -69,10 +88,19 @@ CREATE TABLE `co_order_delivery` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `co_order_delivery`
+--
+
 LOCK TABLES `co_order_delivery` WRITE;
 /*!40000 ALTER TABLE `co_order_delivery` DISABLE KEYS */;
 /*!40000 ALTER TABLE `co_order_delivery` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `co_order_external_cost`
+--
+
 DROP TABLE IF EXISTS `co_order_external_cost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -93,10 +121,19 @@ CREATE TABLE `co_order_external_cost` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `co_order_external_cost`
+--
+
 LOCK TABLES `co_order_external_cost` WRITE;
 /*!40000 ALTER TABLE `co_order_external_cost` DISABLE KEYS */;
 /*!40000 ALTER TABLE `co_order_external_cost` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `co_order_item`
+--
+
 DROP TABLE IF EXISTS `co_order_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -127,11 +164,20 @@ CREATE TABLE `co_order_item` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `co_order_item`
+--
+
 LOCK TABLES `co_order_item` WRITE;
 /*!40000 ALTER TABLE `co_order_item` DISABLE KEYS */;
 INSERT INTO `co_order_item` VALUES (3,2,1,6,'PRODUCT',NULL,'RSC Box Corrugated 5-Ply Ekspor (contoh manual)',NULL,1000.00,'Pcs',12500.0000,0.00,12500000.00,NULL,'2026-08-19 13:39:48','2026-08-19 13:39:48','system','system');
 /*!40000 ALTER TABLE `co_order_item` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_costing`
+--
+
 DROP TABLE IF EXISTS `iqp_costing`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -168,14 +214,23 @@ CREATE TABLE `iqp_costing` (
   UNIQUE KEY `uq_costing_doc` (`doc_no`),
   KEY `idx_cost_status` (`doc_status`) USING BTREE,
   CONSTRAINT `fk_cost_inquiry` FOREIGN KEY (`inquiry_id`) REFERENCES `iqp_inquiry` (`id_inquiry`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Header costing HPP (MTO). RAHASIA (Sisi A). Publish via approve Direksi';
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Header costing HPP (MTO). RAHASIA (Sisi A). Publish via approve Direksi';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_costing`
+--
 
 LOCK TABLES `iqp_costing` WRITE;
 /*!40000 ALTER TABLE `iqp_costing` DISABLE KEYS */;
 INSERT INTO `iqp_costing` VALUES (7,NULL,'2026-08-13',6,'NEW',336.00,486.00,0.00,0.00,0.0000,0.0000,0.0000,0.0000,'CALCULATED',NULL,'PPN',11.00,'IDR',NULL,0,0,NULL,NULL,'2026-08-12 23:27:52','2026-08-23 17:24:20','admin','admin'),(24,NULL,'2026-08-15',5,'NEW',515.00,190.00,0.00,0.00,NULL,NULL,NULL,NULL,'DRAFT',NULL,'PPN',11.00,'IDR',NULL,0,0,NULL,NULL,'2026-08-14 22:13:47','2026-08-19 23:07:11','admin','admin');
 /*!40000 ALTER TABLE `iqp_costing` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_costing_part`
+--
+
 DROP TABLE IF EXISTS `iqp_costing_part`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -251,14 +306,23 @@ CREATE TABLE `iqp_costing_part` (
   KEY `iqp_costing_part_part_id_foreign` (`part_id`),
   CONSTRAINT `fk_cpart_costing` FOREIGN KEY (`costing_id`) REFERENCES `iqp_costing` (`id_costing`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `iqp_costing_part_part_id_foreign` FOREIGN KEY (`part_id`) REFERENCES `iqp_part` (`id_part`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detail costing per part (baru DC). c_*=engine only. docs/SALES_TIER_COSTING.md ┬º1.2 (dipangkas ke DC)';
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Detail costing per part (baru DC). c_*=engine only. docs/SALES_TIER_COSTING.md ┬º1.2 (dipangkas ke DC)';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_costing_part`
+--
 
 LOCK TABLES `iqp_costing_part` WRITE;
 /*!40000 ALTER TABLE `iqp_costing_part` DISABLE KEYS */;
-INSERT INTO `iqp_costing_part` VALUES (31,24,1,1,'Body','DC',1.00,NULL,NULL,NULL,NULL,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,79.0000,109.0000,8.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'admin','2026-08-19 17:37:17','admin','2026-08-19 17:37:17'),(32,7,NULL,1,'','DC',1.00,NULL,NULL,NULL,1,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0.0000,0.0000,1.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'johiwan','2026-08-23 21:49:54','johiwan','2026-08-23 21:50:03'),(33,7,NULL,2,'','SHEET_DIGITAL',1.00,NULL,NULL,NULL,NULL,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0.0000,0.0000,1.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'johiwan','2026-08-23 21:49:57','johiwan','2026-08-23 21:49:57');
+INSERT INTO `iqp_costing_part` VALUES (31,24,1,1,'Body','DC',1.00,NULL,NULL,NULL,NULL,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,79.0000,109.0000,8.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'admin','2026-08-19 17:37:17','admin','2026-08-19 17:37:17'),(32,7,NULL,1,'','DC',1.00,NULL,NULL,NULL,1,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0.0000,0.0000,1.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'johiwan','2026-08-23 21:49:54','johiwan','2026-08-23 21:50:03'),(33,7,NULL,2,'','SHEET_DIGITAL',1.00,NULL,NULL,NULL,NULL,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0.0000,0.0000,1.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'johiwan','2026-08-23 21:49:57','johiwan','2026-08-23 21:49:57'),(34,24,NULL,2,'','DC',1.00,NULL,NULL,NULL,NULL,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0.0000,0.0000,1.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'johiwan','2026-08-27 09:21:38','johiwan','2026-08-27 09:21:38'),(35,24,NULL,3,'','SHEET_DIGITAL',1.00,NULL,NULL,NULL,NULL,NULL,'UJK',NULL,0.00,1.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0.0000,0.0000,1.0000,1.0000,4,0.0000,0.0000,0.0000,NULL,NULL,0.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'johiwan','2026-08-27 09:21:38','johiwan','2026-08-27 09:21:38');
 /*!40000 ALTER TABLE `iqp_costing_part` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_costing_part_coating`
+--
+
 DROP TABLE IF EXISTS `iqp_costing_part_coating`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -274,13 +338,22 @@ CREATE TABLE `iqp_costing_part_coating` (
   PRIMARY KEY (`id_coating`),
   KEY `idx_coating_cpart` (`costing_part_id`),
   CONSTRAINT `fk_coating_cpart` FOREIGN KEY (`costing_part_id`) REFERENCES `iqp_costing_part` (`id_costing_part`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Coating per part, multi-layer berurutan. Index di-snapshot saat hitung';
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Coating per part, multi-layer berurutan. Index di-snapshot saat hitung';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_costing_part_coating`
+--
 
 LOCK TABLES `iqp_costing_part_coating` WRITE;
 /*!40000 ALTER TABLE `iqp_costing_part_coating` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_costing_part_coating` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_costing_price_tier`
+--
+
 DROP TABLE IF EXISTS `iqp_costing_price_tier`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -308,14 +381,23 @@ CREATE TABLE `iqp_costing_price_tier` (
   PRIMARY KEY (`id_price_tier`),
   KEY `idx_ptier_costing` (`costing_id`),
   CONSTRAINT `fk_ptier_costing` FOREIGN KEY (`costing_id`) REFERENCES `iqp_costing` (`id_costing`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ladder harga per tier qty. Tooling diamortisasi di sini; parameter di-snapshot saat publish';
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ladder harga per tier qty. Tooling diamortisasi di sini; parameter di-snapshot saat publish';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_costing_price_tier`
+--
 
 LOCK TABLES `iqp_costing_price_tier` WRITE;
 /*!40000 ALTER TABLE `iqp_costing_price_tier` DISABLE KEYS */;
 INSERT INTO `iqp_costing_price_tier` VALUES (7,7,5,1000.00,1,0.00,0.00,'NEAREST',1.00,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,0.0000,'admin','2026-08-12 23:27:52','admin','2026-08-23 17:24:20'),(24,24,4,5000.00,1,0.00,0.00,'NEAREST',1.00,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'admin','2026-08-14 22:13:47','admin','2026-08-19 23:07:11');
 /*!40000 ALTER TABLE `iqp_costing_price_tier` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_costing_state_log`
+--
+
 DROP TABLE IF EXISTS `iqp_costing_state_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -332,10 +414,19 @@ CREATE TABLE `iqp_costing_state_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Jejak transisi doc_status costing (audit pipeline)';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `iqp_costing_state_log`
+--
+
 LOCK TABLES `iqp_costing_state_log` WRITE;
 /*!40000 ALTER TABLE `iqp_costing_state_log` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_costing_state_log` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_external_cost`
+--
+
 DROP TABLE IF EXISTS `iqp_external_cost`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -353,13 +444,22 @@ CREATE TABLE `iqp_external_cost` (
   PRIMARY KEY (`id_external_cost`) USING BTREE,
   KEY `idx_ext_inquiry` (`inquiry_id`) USING BTREE,
   CONSTRAINT `fk_ext_inquiry` FOREIGN KEY (`inquiry_id`) REFERENCES `iqp_inquiry` (`id_inquiry`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Biaya eksternal (trucking/ekspedisi/jasa luar). Default taxable (masuk DPP)';
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Biaya eksternal (trucking/ekspedisi/jasa luar). Default taxable (masuk DPP)';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_external_cost`
+--
 
 LOCK TABLES `iqp_external_cost` WRITE;
 /*!40000 ALTER TABLE `iqp_external_cost` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_external_cost` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_inquiry`
+--
+
 DROP TABLE IF EXISTS `iqp_inquiry`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -398,8 +498,8 @@ CREATE TABLE `iqp_inquiry` (
   `design_number` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Identitas artwork/proof, mis. DS003479',
   `co_id` bigint unsigned DEFAULT NULL COMMENT 'FK -> co_order (jejak balik via quotation)',
   `sub_state` varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT' COMMENT 'DRAFT|WAITING_COST|SUBMITTED|PRICE_CALCULATED|PRICE_APPROVED|QUOTED|PROVING|PROVE_APPROVED|CONVERTED|CANCELLED|LOST',
-  `is_confirmed` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Sales kunci (stat_confirm lama)',
-  `is_cancelled` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Hanya bila is_confirmed=1',
+  `stat_confirm` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Sales kunci (stat_confirm lama)',
+  `stat_cancel` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Hanya bila is_confirmed=1',
   `cancel_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_approved` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Approval Direksi = publish harga',
   `approved_by` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Direksi yg approve',
@@ -417,14 +517,23 @@ CREATE TABLE `iqp_inquiry` (
   KEY `iqp_inquiry_co_id_foreign` (`co_id`),
   CONSTRAINT `fk_inq_type` FOREIGN KEY (`inquiry_type`) REFERENCES `iqp_type` (`type_code`) ON DELETE RESTRICT ON UPDATE CASCADE,
   CONSTRAINT `iqp_inquiry_co_id_foreign` FOREIGN KEY (`co_id`) REFERENCES `co_order` (`id_order`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=84 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Header inquiry product (MTO). Sumber kebenaran spec/harga/pajak/state';
+) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Header inquiry product (MTO). Sumber kebenaran spec/harga/pajak/state';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_inquiry`
+--
 
 LOCK TABLES `iqp_inquiry` WRITE;
 /*!40000 ALTER TABLE `iqp_inquiry` DISABLE KEYS */;
 INSERT INTO `iqp_inquiry` VALUES (5,'IQ2600001','2026-08-08','EMAIL',NULL,NULL,1,'CV Test Dieline',NULL,'Box Test Dieline',NULL,'NEW',NULL,0,NULL,NULL,'OWN','PRODUCT',NULL,NULL,'PPN',0,11.0000,2.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'SUBMITTED',1,0,NULL,0,NULL,NULL,'2026-08-07 21:42:28','2026-08-21 10:03:37','web','system'),(6,'IQ2600002','2026-08-08','EMAIL',NULL,NULL,1,'CV Test Kalender',NULL,'Kalender Test',NULL,'NEW',NULL,0,NULL,NULL,'OWN','PRODUCT',NULL,NULL,'PPN',0,11.0000,2.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'SUBMITTED',1,0,NULL,0,NULL,NULL,'2026-08-07 22:58:54','2026-08-21 10:03:37','web','system'),(82,'IQ2600003','2026-08-20','Referral','Dummy Sales',14,0,NULL,NULL,'Contoh Badge RECALC (dummy)','Dummy data khusus cek warna badge nota tipe RECALC.','RECALC',NULL,0,NULL,NULL,'OWN','PRODUCT',NULL,NULL,'PPN',0,11.0000,2.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'DRAFT',0,0,NULL,0,NULL,NULL,'2026-08-20 14:46:10','2026-08-20 14:46:10','dummy_seed','dummy_seed'),(83,'IQ2600004','2026-08-20','Referral','Dummy Sales',14,0,NULL,NULL,'Contoh Badge REVISE (dummy)','Dummy data khusus cek warna badge nota tipe REVISE.','REVISE',NULL,1,NULL,NULL,'OWN','PRODUCT',NULL,NULL,'PPN',0,11.0000,2.0000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'DRAFT',0,0,NULL,0,NULL,NULL,'2026-08-20 14:46:10','2026-08-20 14:46:10','dummy_seed','dummy_seed');
 /*!40000 ALTER TABLE `iqp_inquiry` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_layout`
+--
+
 DROP TABLE IF EXISTS `iqp_layout`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -444,7 +553,7 @@ CREATE TABLE `iqp_layout` (
   `efficiency_pct` decimal(5,2) NOT NULL DEFAULT '0.00',
   `waste_pct` decimal(5,2) NOT NULL DEFAULT '0.00',
   `layout_detail` json DEFAULT NULL COMMENT 'Grid/mix detail utk render ulang visual',
-  `is_confirmed` tinyint(1) NOT NULL DEFAULT '0',
+  `stat_confirm` tinyint(1) NOT NULL DEFAULT '0',
   `confirmed_by` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `confirmed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -457,11 +566,20 @@ CREATE TABLE `iqp_layout` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `iqp_layout`
+--
+
 LOCK TABLES `iqp_layout` WRITE;
 /*!40000 ALTER TABLE `iqp_layout` DISABLE KEYS */;
 INSERT INTO `iqp_layout` VALUES (1,1,515.00,190.00,3.00,4,790.00,1090.00,12.00,8.00,'PUTAR',8,95.23,4.77,'{\"cells\": [{\"h\": 515, \"n\": 1, \"w\": 190, \"x\": 8, \"y\": 20, \"rot\": true}, {\"h\": 515, \"n\": 2, \"w\": 190, \"x\": 201, \"y\": 20, \"rot\": true}, {\"h\": 515, \"n\": 3, \"w\": 190, \"x\": 394, \"y\": 20, \"rot\": true}, {\"h\": 515, \"n\": 4, \"w\": 190, \"x\": 587, \"y\": 20, \"rot\": true}, {\"h\": 515, \"n\": 5, \"w\": 190, \"x\": 8, \"y\": 538, \"rot\": true}, {\"h\": 515, \"n\": 6, \"w\": 190, \"x\": 201, \"y\": 538, \"rot\": true}, {\"h\": 515, \"n\": 7, \"w\": 190, \"x\": 394, \"y\": 538, \"rot\": true}, {\"h\": 515, \"n\": 8, \"w\": 190, \"x\": 587, \"y\": 538, \"rot\": true}], \"layout\": {\"ih\": 515, \"iw\": 190, \"rot\": true, \"cols\": 4, \"rows\": 2, \"type\": \"grid\"}}',0,NULL,NULL,'2026-08-19 17:29:48','2026-08-19 17:38:14','admin','admin'),(2,2,336.00,486.00,3.00,1,650.00,1000.00,12.00,8.00,'PUTAR',2,53.00,47.00,'{\"cells\": [{\"h\": 336, \"n\": 1, \"w\": 486, \"x\": 8, \"y\": 20, \"rot\": true}, {\"h\": 336, \"n\": 2, \"w\": 486, \"x\": 8, \"y\": 359, \"rot\": true}], \"layout\": {\"ih\": 336, \"iw\": 486, \"rot\": true, \"cols\": 1, \"rows\": 2, \"type\": \"grid\"}}',0,NULL,NULL,'2026-08-21 13:49:53','2026-08-21 13:49:53','johiwan','johiwan');
 /*!40000 ALTER TABLE `iqp_layout` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_part`
+--
+
 DROP TABLE IF EXISTS `iqp_part`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -486,14 +604,23 @@ CREATE TABLE `iqp_part` (
   PRIMARY KEY (`id_part`) USING BTREE,
   KEY `idx_part_inquiry` (`inquiry_id`) USING BTREE,
   CONSTRAINT `fk_part_inquiry` FOREIGN KEY (`inquiry_id`) REFERENCES `iqp_inquiry` (`id_inquiry`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Part mirror inquiry (snapshot m_product_parts). Tiap part punya dieline & bahan';
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Part mirror inquiry (snapshot m_product_parts). Tiap part punya dieline & bahan';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_part`
+--
 
 LOCK TABLES `iqp_part` WRITE;
 /*!40000 ALTER TABLE `iqp_part` DISABLE KEYS */;
 INSERT INTO `iqp_part` VALUES (1,5,1,NULL,'Body','DC',1.0000,NULL,NULL,'{\"dims\": {\"dust_flap\": \"40.0000\", \"glue_flap\": \"15.0000\", \"product_width\": \"50.0000\", \"top_tuck_flap\": \"35.0000\", \"product_height\": \"120.0000\", \"product_length\": \"200\"}, \"flat\": {\"h\": \"H\", \"w\": \"W\"}, \"vars\": {\"H\": \"C+2*TT\", \"W\": \"2*(A+B)+G\", \"x1\": \"G\", \"x2\": \"G+A\", \"x3\": \"G+A+B\", \"x4\": \"G+2*A+B\", \"x5\": \"G+2*(A+B)\", \"yBot\": \"TT+C\", \"yTop\": \"TT\"}, \"canvas\": {\"h\": \"H\", \"w\": \"W\"}, \"elements\": [{\"h\": \"C\", \"k\": \"CUT\", \"t\": \"rect\", \"w\": \"x5-x1\", \"x\": \"x1\", \"y\": \"yTop\"}, {\"k\": \"CREASE\", \"t\": \"line\", \"x1\": \"x2\", \"x2\": \"x2\", \"y1\": \"yTop\", \"y2\": \"yBot\"}, {\"k\": \"CREASE\", \"t\": \"line\", \"x1\": \"x3\", \"x2\": \"x3\", \"y1\": \"yTop\", \"y2\": \"yBot\"}, {\"k\": \"CREASE\", \"t\": \"line\", \"x1\": \"x4\", \"x2\": \"x4\", \"y1\": \"yTop\", \"y2\": \"yBot\"}, {\"k\": \"CREASE\", \"t\": \"line\", \"x1\": \"x1\", \"x2\": \"x5\", \"y1\": \"yTop\", \"y2\": \"yTop\"}, {\"k\": \"CREASE\", \"t\": \"line\", \"x1\": \"x1\", \"x2\": \"x5\", \"y1\": \"yBot\", \"y2\": \"yBot\"}, {\"g\": \"8\", \"k\": \"CUT\", \"t\": \"glue\", \"x0\": \"0\", \"x1\": \"G\", \"yB\": \"yBot\", \"yT\": \"yTop\"}, {\"a\": \"x1\", \"b\": \"x2\", \"h\": \"TT\", \"k\": \"CUT\", \"t\": \"tuck\", \"y\": \"yTop\", \"dir\": \"up\"}, {\"a\": \"x3\", \"b\": \"x4\", \"h\": \"TT\", \"k\": \"CUT\", \"t\": \"tuck\", \"y\": \"yTop\", \"dir\": \"up\"}, {\"a\": \"x1\", \"b\": \"x2\", \"h\": \"TT\", \"k\": \"CUT\", \"t\": \"tuck\", \"y\": \"yBot\", \"dir\": \"down\"}, {\"a\": \"x3\", \"b\": \"x4\", \"h\": \"TT\", \"k\": \"CUT\", \"t\": \"tuck\", \"y\": \"yBot\", \"dir\": \"down\"}, {\"a\": \"x2\", \"b\": \"x3\", \"h\": \"DF*0.7\", \"k\": \"CUT\", \"t\": \"dust\", \"y\": \"yTop\", \"dir\": \"up\"}, {\"a\": \"x4\", \"b\": \"x5\", \"h\": \"DF*0.7\", \"k\": \"CUT\", \"t\": \"dust\", \"y\": \"yTop\", \"dir\": \"up\"}, {\"a\": \"x2\", \"b\": \"x3\", \"h\": \"DF*0.7\", \"k\": \"CUT\", \"t\": \"dust\", \"y\": \"yBot\", \"dir\": \"down\"}, {\"a\": \"x4\", \"b\": \"x5\", \"h\": \"DF*0.7\", \"k\": \"CUT\", \"t\": \"dust\", \"y\": \"yBot\", \"dir\": \"down\"}], \"type_code\": \"CARD_BOX\"}',515.0000,190.0000,97850.0000,'2026-08-07 21:42:28','2026-08-07 21:42:28','web','web'),(2,6,1,NULL,'Part 1','DC',1.0000,NULL,NULL,'{\"gen\": \"FLAT_CAL\", \"dims\": {\"page_count\": \"13.00\", \"hanger_type\": \"EYELET\", \"binding_type\": \"SPIRAL\", \"product_width\": \"480.00\", \"product_length\": \"330.00\", \"overflow_margin\": \"3.00\"}, \"flat\": {\"h\": \"B+2*P\", \"w\": \"A+2*P\"}, \"vars\": {\"H\": \"B\", \"W\": \"A\", \"nh\": \"max(5, A/50)\"}, \"canvas\": {\"h\": \"H\", \"w\": \"W\"}, \"elements\": [{\"k\": \"BLEED\", \"p\": \"P\", \"t\": \"bleed\"}, {\"h\": \"B\", \"k\": \"CUT\", \"t\": \"rect\", \"w\": \"A\", \"x\": \"0\", \"y\": \"0\"}, {\"k\": \"HOLE\", \"n\": \"nh\", \"r\": \"1.8\", \"t\": \"holes\", \"w\": \"A\", \"y\": \"7\"}, {\"k\": \"HOLE\", \"r\": \"3\", \"t\": \"circle\", \"cx\": \"A/2\", \"cy\": \"4\"}], \"type_code\": \"KALENDER_DINDING\"}',336.0000,486.0000,163296.0000,'2026-08-07 22:58:54','2026-08-07 22:58:54','web','web');
 /*!40000 ALTER TABLE `iqp_part` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_part_material`
+--
+
 DROP TABLE IF EXISTS `iqp_part_material`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -516,13 +643,22 @@ CREATE TABLE `iqp_part_material` (
   PRIMARY KEY (`id_part_material`) USING BTREE,
   KEY `idx_pmat_part` (`part_id`) USING BTREE,
   CONSTRAINT `fk_pmat_part` FOREIGN KEY (`part_id`) REFERENCES `iqp_part` (`id_part`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Layer bahan per part (snapshot). Mendukung multi-layer (duplex+SF)';
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Layer bahan per part (snapshot). Mendukung multi-layer (duplex+SF)';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_part_material`
+--
 
 LOCK TABLES `iqp_part_material` WRITE;
 /*!40000 ALTER TABLE `iqp_part_material` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_part_material` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_part_process`
+--
+
 DROP TABLE IF EXISTS `iqp_part_process`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -546,10 +682,19 @@ CREATE TABLE `iqp_part_process` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Proses per part, ber-branch & flow (SPLIT/MERGE). Snapshot routing';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `iqp_part_process`
+--
+
 LOCK TABLES `iqp_part_process` WRITE;
 /*!40000 ALTER TABLE `iqp_part_process` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_part_process` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_prove`
+--
+
 DROP TABLE IF EXISTS `iqp_prove`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -573,10 +718,19 @@ CREATE TABLE `iqp_prove` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Prove final per inquiry (1:1). Repeat order = inquiry baru = prove baru';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `iqp_prove`
+--
+
 LOCK TABLES `iqp_prove` WRITE;
 /*!40000 ALTER TABLE `iqp_prove` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_prove` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_prove_log`
+--
+
 DROP TABLE IF EXISTS `iqp_prove_log`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -595,10 +749,19 @@ CREATE TABLE `iqp_prove_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Log versi prove (v1/v2/v3) di bawah prove header';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `iqp_prove_log`
+--
+
 LOCK TABLES `iqp_prove_log` WRITE;
 /*!40000 ALTER TABLE `iqp_prove_log` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_prove_log` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_tier`
+--
+
 DROP TABLE IF EXISTS `iqp_tier`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -621,14 +784,23 @@ CREATE TABLE `iqp_tier` (
   UNIQUE KEY `uq_one_primary_per_inquiry` (`primary_key_guard`) USING BTREE,
   KEY `idx_tier_inquiry` (`inquiry_id`) USING BTREE,
   CONSTRAINT `fk_tier_inquiry` FOREIGN KEY (`inquiry_id`) REFERENCES `iqp_inquiry` (`id_inquiry`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Tier qty inquiry. 1 UTAMA dipaksa via unique index. Diskon item per tier';
+) ENGINE=InnoDB AUTO_INCREMENT=96 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Tier qty inquiry. 1 UTAMA dipaksa via unique index. Diskon item per tier';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_tier`
+--
 
 LOCK TABLES `iqp_tier` WRITE;
 /*!40000 ALTER TABLE `iqp_tier` DISABLE KEYS */;
 INSERT INTO `iqp_tier` (`id_tier`, `inquiry_id`, `tier_seq`, `qty`, `is_primary`, `discount_item_type`, `discount_item_value`, `price_excl`, `price_incl`, `created_at`, `updated_at`, `created_by`, `updated_by`) VALUES (4,5,1,5000.0000,1,NULL,NULL,NULL,NULL,'2026-08-07 21:42:28','2026-08-07 21:42:28','web','web'),(5,6,1,1000.0000,1,NULL,NULL,NULL,NULL,'2026-08-07 22:58:54','2026-08-07 22:58:54','web','web');
 /*!40000 ALTER TABLE `iqp_tier` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_tooling`
+--
+
 DROP TABLE IF EXISTS `iqp_tooling`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -648,29 +820,47 @@ CREATE TABLE `iqp_tooling` (
   PRIMARY KEY (`id_tooling`) USING BTREE,
   KEY `idx_tool_inquiry` (`inquiry_id`) USING BTREE,
   CONSTRAINT `fk_tool_inquiry` FOREIGN KEY (`inquiry_id`) REFERENCES `iqp_inquiry` (`id_inquiry`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Line tooling. AUS/TIDAK_ADA -> biaya baru terpisah, tak disembunyikan di harga/pc';
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Line tooling. AUS/TIDAK_ADA -> biaya baru terpisah, tak disembunyikan di harga/pc';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_tooling`
+--
 
 LOCK TABLES `iqp_tooling` WRITE;
 /*!40000 ALTER TABLE `iqp_tooling` DISABLE KEYS */;
 /*!40000 ALTER TABLE `iqp_tooling` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `iqp_type`
+--
+
 DROP TABLE IF EXISTS `iqp_type`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `iqp_type` (
   `type_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'NEW | RECALC | REVISE',
   `type_label` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Label UI',
-  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `activate` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`type_code`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='Lookup tipe inquiry. Set once di header, tak berubah';
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `iqp_type`
+--
 
 LOCK TABLES `iqp_type` WRITE;
 /*!40000 ALTER TABLE `iqp_type` DISABLE KEYS */;
 INSERT INTO `iqp_type` VALUES ('NEW','Produk Baru',1),('RECALC','Hitung Ulang Harga',1),('REVISE','Ubah Spesifikasi',1);
 /*!40000 ALTER TABLE `iqp_type` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `quo_quotation`
+--
+
 DROP TABLE IF EXISTS `quo_quotation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -697,11 +887,20 @@ CREATE TABLE `quo_quotation` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `quo_quotation`
+--
+
 LOCK TABLES `quo_quotation` WRITE;
 /*!40000 ALTER TABLE `quo_quotation` DISABLE KEYS */;
 INSERT INTO `quo_quotation` VALUES (4,'QUO2600001',14,0,'2026-08-21','2026-09-20',NULL,'EXCL','IDR',NULL,'DRAFT','system','2026-08-21 13:39:48','2026-08-21 13:39:48','system','system'),(5,'QUO2600002',14,0,'2026-08-16','2026-09-15',NULL,'EXCL','IDR',NULL,'PUBLISHED','system','2026-08-16 13:39:48','2026-08-16 13:39:48','system','system');
 /*!40000 ALTER TABLE `quo_quotation` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `quo_quotation_item`
+--
+
 DROP TABLE IF EXISTS `quo_quotation_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -731,11 +930,23 @@ CREATE TABLE `quo_quotation_item` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `quo_quotation_item`
+--
+
 LOCK TABLES `quo_quotation_item` WRITE;
 /*!40000 ALTER TABLE `quo_quotation_item` DISABLE KEYS */;
 INSERT INTO `quo_quotation_item` VALUES (5,4,1,'MANUAL',NULL,NULL,'Folding Box Duplex 350gr Kosmetik (contoh manual)',NULL,5000.00,'Pcs',850.0000,0.00,4250000.00,'2026-08-21 13:39:48','2026-08-21 13:39:48','system','system'),(6,5,1,'MANUAL',NULL,NULL,'RSC Box Corrugated 5-Ply Ekspor (contoh manual)',NULL,1000.00,'Pcs',12500.0000,0.00,12500000.00,'2026-08-16 13:39:48','2026-08-16 13:39:48','system','system');
 /*!40000 ALTER TABLE `quo_quotation_item` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping events for database 'tm2sdi'
+--
+
+--
+-- Dumping routines for database 'tm2sdi'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -746,3 +957,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Dump completed on 2026-08-28  9:23:14

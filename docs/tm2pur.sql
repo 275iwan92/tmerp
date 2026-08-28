@@ -1,3 +1,8 @@
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: tm2pur
+-- ------------------------------------------------------
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -9,6 +14,11 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `po_import_doc`
+--
+
 DROP TABLE IF EXISTS `po_import_doc`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -33,10 +43,19 @@ CREATE TABLE `po_import_doc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `po_import_doc`
+--
+
 LOCK TABLES `po_import_doc` WRITE;
 /*!40000 ALTER TABLE `po_import_doc` DISABLE KEYS */;
 /*!40000 ALTER TABLE `po_import_doc` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `po_line`
+--
+
 DROP TABLE IF EXISTS `po_line`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -78,14 +97,23 @@ CREATE TABLE `po_line` (
   KEY `po_line_is_receivable_index` (`is_receivable`),
   CONSTRAINT `po_line_alloc_id_foreign` FOREIGN KEY (`alloc_id`) REFERENCES `pr_line_alloc` (`alloc_id`) ON DELETE SET NULL,
   CONSTRAINT `po_line_po_id_foreign` FOREIGN KEY (`po_id`) REFERENCES `po_order` (`po_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `po_line`
+--
 
 LOCK TABLES `po_line` WRITE;
 /*!40000 ALTER TABLE `po_line` DISABLE KEYS */;
 INSERT INTO `po_line` VALUES (1,1,1,1,40,'IOH12','Ink OFFSET HN FINNA EMERALD GREEN IVR','RAW',10.0000,'KG','KG',1.000000,999999.0000,0.00,NULL,9999990.0000,2,132,NULL,1,1,NULL,10.0000,0.0000,'RECEIVED','admin','2026-08-20 13:59:05','admin','2026-08-20 19:55:15'),(2,1,2,2,1,'GZ00726','ANIMAL GLUE','RAW',100.0000,'PCS','PCS',1.000000,100000.0000,0.00,NULL,10000000.0000,3,132,NULL,1,1,NULL,100.0000,0.0000,'RECEIVED','admin','2026-08-20 13:59:05','admin','2026-08-20 19:55:15'),(3,2,1,3,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI','RAW',50.0000,'LBR',NULL,NULL,25000.0000,NULL,NULL,1250000.0000,1,131,NULL,1,1,5.00,54.0000,0.0000,'RECEIVED','test_multipo','2026-08-20 19:59:13','test_multipo','2026-08-20 19:59:13'),(4,3,1,NULL,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI','RAW',20.0000,'LBR',NULL,NULL,25000.0000,NULL,NULL,500000.0000,1,131,NULL,1,1,5.00,20.0000,0.0000,'RECEIVED','test_2po','2026-08-20 20:00:32','test_2po','2026-08-20 20:00:32'),(5,4,1,NULL,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI','RAW',30.0000,'LBR',NULL,NULL,25000.0000,NULL,NULL,750000.0000,1,131,NULL,1,1,5.00,30.0000,0.0000,'RECEIVED','test_2po','2026-08-20 20:00:32','test_2po','2026-08-20 20:00:32'),(6,5,1,NULL,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI','RAW',10.0000,'LBR',NULL,NULL,25000.0000,NULL,NULL,250000.0000,1,131,NULL,1,1,NULL,0.0000,NULL,NULL,'test_full_flow','2026-08-20 20:26:08','test_full_flow','2026-08-20 20:26:08');
 /*!40000 ALTER TABLE `po_line` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `po_order`
+--
+
 DROP TABLE IF EXISTS `po_order`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -95,7 +123,7 @@ CREATE TABLE `po_order` (
   `i_doc_date` date NOT NULL,
   `i_supplier_id` bigint unsigned NOT NULL COMMENT 'LOGICAL -> tm2mst.sup_supplier',
   `i_pq_id` bigint unsigned DEFAULT NULL COMMENT 'penawaran acuan - PQ belum dibangun, selalu NULL fase ini',
-  `i_po_type` enum('LOCAL','IMPORT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'LOCAL',
+  `i_po_type` enum('LOCAL','IMPORT','SUBCONTRACT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'LOCAL',
   `i_procure_type` enum('REPEAT','ONE_TIME','CAPEX','CASH') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'REPEAT',
   `i_currency_id` bigint unsigned DEFAULT NULL COMMENT 'LOGICAL -> tm2mst.fin_currency; NULL fase ini (default IDR, PQ belum ada)',
   `i_fx_rate` decimal(18,6) NOT NULL DEFAULT '1.000000',
@@ -115,7 +143,7 @@ CREATE TABLE `po_order` (
   `source_note` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `revision_no` int unsigned NOT NULL DEFAULT '0',
   `parent_po_id` bigint unsigned DEFAULT NULL,
-  `is_cancelled` tinyint(1) NOT NULL DEFAULT '0',
+  `stat_cancel` tinyint(1) NOT NULL DEFAULT '0',
   `cancel_reason` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_by` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -127,14 +155,23 @@ CREATE TABLE `po_order` (
   KEY `po_order_i_supplier_id_index` (`i_supplier_id`),
   KEY `po_order_i_doc_date_index` (`i_doc_date`),
   KEY `po_order_i_procure_type_index` (`i_procure_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `po_order`
+--
 
 LOCK TABLES `po_order` WRITE;
 /*!40000 ALTER TABLE `po_order` DISABLE KEYS */;
 INSERT INTO `po_order` VALUES (1,'PO2600001','2026-08-20',1,NULL,'LOCAL','REPEAT',NULL,1.000000,NULL,NULL,NULL,NULL,NULL,19999990.0000,2199998.9000,0.0000,22199988.9000,22199988.9000,'RECEIVED','2026-08-21 02:50:06',0,NULL,0,NULL,0,NULL,'admin','2026-08-20 13:59:05','admin','2026-08-20 19:55:15'),(2,'PO2600002','2026-08-21',1,NULL,'LOCAL','REPEAT',NULL,1.000000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'RECEIVED','2026-08-21 02:59:13',0,NULL,0,NULL,0,NULL,'test_multipo','2026-08-20 19:59:13','test_multipo','2026-08-20 19:59:13'),(3,'PO2600003','2026-08-21',1,NULL,'LOCAL','REPEAT',NULL,1.000000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'RECEIVED','2026-08-21 03:00:32',0,NULL,0,NULL,0,NULL,'test_2po','2026-08-20 20:00:32','test_2po','2026-08-20 20:00:32'),(4,'PO2600004','2026-08-21',1,NULL,'LOCAL','REPEAT',NULL,1.000000,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'RECEIVED','2026-08-21 03:00:32',0,NULL,0,NULL,0,NULL,'test_2po','2026-08-20 20:00:32','test_2po','2026-08-20 20:00:32'),(5,'PO2600005','2026-08-21',1,NULL,'LOCAL','REPEAT',NULL,1.000000,NULL,NULL,NULL,NULL,NULL,250000.0000,27500.0000,0.0000,277500.0000,277500.0000,'SENT','2026-08-21 03:26:09',0,NULL,0,NULL,0,NULL,'test_full_flow','2026-08-20 20:26:08','test_full_flow','2026-08-20 20:26:09');
 /*!40000 ALTER TABLE `po_order` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pq_line`
+--
+
 DROP TABLE IF EXISTS `pq_line`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -163,10 +200,19 @@ CREATE TABLE `pq_line` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `pq_line`
+--
+
 LOCK TABLES `pq_line` WRITE;
 /*!40000 ALTER TABLE `pq_line` DISABLE KEYS */;
 /*!40000 ALTER TABLE `pq_line` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pq_quotation`
+--
+
 DROP TABLE IF EXISTS `pq_quotation`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -198,10 +244,19 @@ CREATE TABLE `pq_quotation` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `pq_quotation`
+--
+
 LOCK TABLES `pq_quotation` WRITE;
 /*!40000 ALTER TABLE `pq_quotation` DISABLE KEYS */;
 /*!40000 ALTER TABLE `pq_quotation` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pr_line`
+--
+
 DROP TABLE IF EXISTS `pr_line`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -235,14 +290,23 @@ CREATE TABLE `pr_line` (
   KEY `pr_line_item_id_index` (`item_id`),
   KEY `pr_line_i_co_line_id_index` (`i_co_line_id`),
   CONSTRAINT `pr_line_pr_id_foreign` FOREIGN KEY (`pr_id`) REFERENCES `pr_requisition` (`pr_id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pr_line`
+--
 
 LOCK TABLES `pr_line` WRITE;
 /*!40000 ALTER TABLE `pr_line` DISABLE KEYS */;
 INSERT INTO `pr_line` VALUES (1,2,1,'MASTER_ITEM',229,'P4454','Paper HVS 58 GR 65 x 100 CM RAINBOW',500.0000,'LBR',25000.0000,12500000.0000,1,131,NULL,1,NULL,NULL,0.0000,0.0000,NULL,'seed_dummy','2026-08-20 10:16:45','seed_dummy','2026-08-20 10:16:45'),(2,2,2,'FREE_TEXT',NULL,NULL,'Sewa mesin genset cadangan (dummy)',1.0000,'Unit',3500000.0000,3500000.0000,1,611,NULL,0,NULL,NULL,0.0000,0.0000,NULL,'seed_dummy','2026-08-20 10:16:45','seed_dummy','2026-08-20 10:16:45'),(3,3,1,'MASTER_ITEM',40,'IOH12','Ink OFFSET HN FINNA EMERALD GREEN IVR',10.0000,'KG',150000.0000,1500000.0000,2,132,NULL,1,NULL,NULL,10.0000,10.0000,'FULLY_ORDERED','seed_dummy','2026-08-20 10:16:45','seed_dummy','2026-08-20 13:59:05'),(4,4,1,'MASTER_ITEM',1,'GZ00726','ANIMAL GLUE',100.0000,'PCS',100000.0000,10000000.0000,3,132,NULL,1,NULL,NULL,100.0000,100.0000,'FULLY_ORDERED','functional_test','2026-08-20 10:41:44','functional_test','2026-08-20 13:59:05'),(5,8,1,'MASTER_ITEM',305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI',50.0000,'LBR',25000.0000,1250000.0000,1,131,NULL,1,NULL,NULL,0.0000,0.0000,NULL,'test_multipo','2026-08-20 19:59:13','test_multipo','2026-08-20 19:59:13');
 /*!40000 ALTER TABLE `pr_line` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pr_line_alloc`
+--
+
 DROP TABLE IF EXISTS `pr_line_alloc`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -265,11 +329,20 @@ CREATE TABLE `pr_line_alloc` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `pr_line_alloc`
+--
+
 LOCK TABLES `pr_line_alloc` WRITE;
 /*!40000 ALTER TABLE `pr_line_alloc` DISABLE KEYS */;
 INSERT INTO `pr_line_alloc` VALUES (1,3,1,10.0000,1,NULL,1,'dummy_mgrops','2026-08-20 11:36:39','admin','2026-08-20 13:59:05'),(2,4,1,100.0000,1,NULL,1,NULL,'2026-08-20 11:39:29','admin','2026-08-20 13:59:05'),(3,5,1,50.0000,NULL,NULL,0,'test_multipo','2026-08-20 19:59:13','test_multipo','2026-08-20 19:59:13');
 /*!40000 ALTER TABLE `pr_line_alloc` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pr_requisition`
+--
+
 DROP TABLE IF EXISTS `pr_requisition`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -277,7 +350,7 @@ CREATE TABLE `pr_requisition` (
   `pr_id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `doc_no` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'PR/YY/##### - digenerate saat SUBMIT',
   `i_doc_date` date NOT NULL,
-  `i_source` enum('MANUAL','MRP') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'MANUAL',
+  `i_source` enum('MANUAL','MRP','SUBCONTRACT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'MANUAL',
   `mrp_run_id` bigint unsigned DEFAULT NULL COMMENT 'reserved - MRP belum dibangun',
   `i_department_id` bigint unsigned NOT NULL COMMENT 'LOGICAL -> tm2mst.org_department',
   `i_need_date` date DEFAULT NULL,
@@ -286,7 +359,7 @@ CREATE TABLE `pr_requisition` (
   `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT' COMMENT 'DRAFT|SUBMITTED|APPROVED|REJECTED|REVISION_NEEDED|PARTIALLY_ORDERED|FULLY_ORDERED|CLOSED|CANCELLED',
   `revision_no` int unsigned NOT NULL DEFAULT '0',
   `parent_pr_id` bigint unsigned DEFAULT NULL,
-  `is_cancelled` tinyint(1) NOT NULL DEFAULT '0',
+  `stat_cancel` tinyint(1) NOT NULL DEFAULT '0',
   `cancel_reason` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_by` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -297,14 +370,23 @@ CREATE TABLE `pr_requisition` (
   KEY `pr_requisition_status_index` (`status`),
   KEY `pr_requisition_i_doc_date_index` (`i_doc_date`),
   KEY `pr_requisition_i_department_id_index` (`i_department_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `pr_requisition`
+--
 
 LOCK TABLES `pr_requisition` WRITE;
 /*!40000 ALTER TABLE `pr_requisition` DISABLE KEYS */;
 INSERT INTO `pr_requisition` VALUES (2,NULL,'2026-08-20','MANUAL',NULL,1,'2026-08-27','Contoh PR draft (dummy data) -- stok kertas untuk lot produksi berikutnya.',16000000.0000,'DRAFT',0,NULL,0,NULL,'seed_dummy','2026-08-20 10:16:45','seed_dummy','2026-08-20 10:16:45'),(3,'PR2600001','2026-08-19','MANUAL',NULL,2,'2026-08-23','Contoh PR sudah diajukan (dummy data) -- untuk uji layar PR Approval berikutnya.',1500000.0000,'APPROVED',0,NULL,0,NULL,'seed_dummy','2026-08-20 10:16:45','seed_dummy','2026-08-20 11:36:39'),(4,'PR2600002','2026-08-20','MANUAL',NULL,3,NULL,NULL,10000000.0000,'APPROVED',0,NULL,0,NULL,'functional_test','2026-08-20 10:41:44','test_approval','2026-08-20 11:06:25'),(5,'PR2600003','2026-08-20','MANUAL',NULL,1,NULL,NULL,75000000.0000,'REVISION_NEEDED',0,NULL,0,NULL,'functional_test','2026-08-20 10:41:44','test_approval','2026-08-20 11:06:25'),(6,'PR2600004','2026-08-20','MANUAL',NULL,1,NULL,NULL,80000000.0000,'APPROVED',0,NULL,0,NULL,'test_escalation','2026-08-20 11:06:51','test_escalation','2026-08-20 11:06:51'),(7,'PR2600005','2026-08-21','MANUAL',NULL,1,NULL,NULL,NULL,'APPROVED',0,NULL,0,NULL,'test_multipo','2026-08-20 19:58:28','test_multipo','2026-08-20 19:58:28'),(8,'PR2600006','2026-08-21','MANUAL',NULL,1,NULL,NULL,NULL,'APPROVED',0,NULL,0,NULL,'test_multipo','2026-08-20 19:59:13','test_multipo','2026-08-20 19:59:13');
 /*!40000 ALTER TABLE `pr_requisition` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `prt_line`
+--
+
 DROP TABLE IF EXISTS `prt_line`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -337,10 +419,19 @@ CREATE TABLE `prt_line` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `prt_line`
+--
+
 LOCK TABLES `prt_line` WRITE;
 /*!40000 ALTER TABLE `prt_line` DISABLE KEYS */;
 /*!40000 ALTER TABLE `prt_line` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `prt_return`
+--
+
 DROP TABLE IF EXISTS `prt_return`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -379,10 +470,19 @@ CREATE TABLE `prt_return` (
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `prt_return`
+--
+
 LOCK TABLES `prt_return` WRITE;
 /*!40000 ALTER TABLE `prt_return` DISABLE KEYS */;
 /*!40000 ALTER TABLE `prt_return` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pv_line`
+--
+
 DROP TABLE IF EXISTS `pv_line`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -439,11 +539,20 @@ CREATE TABLE `pv_line` (
 ) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `pv_line`
+--
+
 LOCK TABLES `pv_line` WRITE;
 /*!40000 ALTER TABLE `pv_line` DISABLE KEYS */;
 INSERT INTO `pv_line` VALUES (3,2,1,1,1,'PO2600001',1,40,'IOH12','Ink OFFSET HN FINNA EMERALD GREEN IVR',1,NULL,10.0000,'KG',10.0000,'KG',1.000000,0,'DONE','PASS',10.0000,0.0000,NULL,'test_pv','2026-08-21 02:54:53',NULL,0.0000,0,NULL,NULL,NULL,999999.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 19:54:53','admin','2026-08-20 19:54:53'),(4,2,2,2,1,'PO2600001',2,1,'GZ00726','ANIMAL GLUE',1,NULL,100.0000,'PCS',100.0000,'PCS',1.000000,0,'DONE','PASS',100.0000,0.0000,NULL,'test_pv','2026-08-21 02:54:53',NULL,0.0000,0,NULL,NULL,NULL,100000.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 19:54:53','admin','2026-08-20 19:54:53'),(5,3,1,1,1,'PO2600001',1,40,'IOH12','Ink OFFSET HN FINNA EMERALD GREEN IVR',1,NULL,10.0000,'KG',10.0000,'KG',1.000000,0,'DONE','PASS',10.0000,0.0000,NULL,'test_pv','2026-08-21 02:55:15',NULL,0.0000,0,NULL,NULL,NULL,999999.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 19:55:15','admin','2026-08-20 19:55:15'),(6,3,2,2,1,'PO2600001',2,1,'GZ00726','ANIMAL GLUE',1,NULL,100.0000,'PCS',100.0000,'PCS',1.000000,0,'DONE','PASS',100.0000,0.0000,NULL,'test_pv','2026-08-21 02:55:15',NULL,0.0000,0,NULL,NULL,NULL,100000.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 19:55:15','admin','2026-08-20 19:55:15'),(7,4,1,3,2,'PO2600002',1,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI',1,NULL,54.0000,'LBR',54.0000,'LBR',NULL,0,'DONE','PASS',54.0000,0.0000,NULL,NULL,NULL,5.00,8.0000,1,'test_manager','2026-08-21 02:59:13','Kelebihan kirim diterima',25000.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 19:59:13','admin','2026-08-20 19:59:13'),(8,5,1,4,3,'PO2600003',1,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI',1,NULL,20.0000,'LBR',20.0000,'LBR',NULL,0,'DONE','PASS',20.0000,0.0000,NULL,NULL,NULL,5.00,0.0000,0,NULL,NULL,NULL,25000.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 20:00:32','admin','2026-08-20 20:00:32'),(9,5,2,5,4,'PO2600004',1,305,'PYJ31','Paper Ivory 300gr 79 X 109 CM BOHUI',1,NULL,30.0000,'LBR',30.0000,'LBR',NULL,0,'DONE','PASS',30.0000,0.0000,NULL,NULL,NULL,5.00,0.0000,0,NULL,NULL,NULL,25000.0000,NULL,NULL,NULL,NULL,0.0000,0.0000,'admin','2026-08-20 20:00:32','admin','2026-08-20 20:00:32');
 /*!40000 ALTER TABLE `pv_line` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `pv_receipt`
+--
+
 DROP TABLE IF EXISTS `pv_receipt`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -474,11 +583,23 @@ CREATE TABLE `pv_receipt` (
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `pv_receipt`
+--
+
 LOCK TABLES `pv_receipt` WRITE;
 /*!40000 ALTER TABLE `pv_receipt` DISABLE KEYS */;
 INSERT INTO `pv_receipt` VALUES (2,'SPB2600001','2026-08-21',1,'GD-BB',NULL,NULL,NULL,1,'PO2600001','QC_PENDING',NULL,NULL,NULL,'admin','2026-08-20 19:54:53','admin','2026-08-20 19:54:53'),(3,'SPB2600002','2026-08-21',1,'GD-BB',NULL,NULL,NULL,1,'PO2600001','POSTED','2026-08-21 02:55:15','admin',NULL,'admin','2026-08-20 19:55:15','admin','2026-08-20 19:55:15'),(4,'SPB2600003','2026-08-21',1,'GD-BB',NULL,NULL,NULL,1,'PO2600002','POSTED','2026-08-21 02:59:13','admin',NULL,'admin','2026-08-20 19:59:13','admin','2026-08-20 19:59:13'),(5,'SPB2600004','2026-08-21',1,'GD-BB',NULL,NULL,NULL,2,'PO2600003, PO2600004','POSTED','2026-08-21 03:00:32','admin',NULL,'admin','2026-08-20 20:00:32','admin','2026-08-20 20:00:32');
 /*!40000 ALTER TABLE `pv_receipt` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Dumping events for database 'tm2pur'
+--
+
+--
+-- Dumping routines for database 'tm2pur'
+--
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -489,3 +610,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- Dump completed on 2026-08-28  9:23:15
