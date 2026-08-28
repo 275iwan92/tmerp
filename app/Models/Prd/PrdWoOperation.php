@@ -90,12 +90,31 @@ class PrdWoOperation extends Model
 
     public function totalQtyReject(): float
     {
-        return (float) $this->outputs->sum('qty_reject');
+        return (float) $this->outputs
+            ->flatMap(fn ($o) => $o->defects)
+            ->filter(fn ($d) => $d->scrapType?->category === 'REJECT')
+            ->sum('qty');
     }
 
     public function totalQtyWaste(): float
     {
-        return (float) $this->outputs->sum('qty_waste');
+        return (float) $this->outputs
+            ->flatMap(fn ($o) => $o->defects)
+            ->filter(fn ($d) => $d->scrapType?->category === 'WASTE')
+            ->sum('qty');
+    }
+
+    // Rincian per tipe (mis. "Cacat Cetak: 3, Warna Meleset: 2") -- dipakai WO
+    // Detail supaya PPIC lihat KENAPA reject/waste-nya, bukan cuma angka total.
+    // @return array<string, float> nama tipe -> total qty
+    public function defectBreakdown(string $category): array
+    {
+        return $this->outputs
+            ->flatMap(fn ($o) => $o->defects)
+            ->filter(fn ($d) => $d->scrapType?->category === $category)
+            ->groupBy(fn ($d) => $d->scrapType->type_name)
+            ->map(fn ($rows) => (float) $rows->sum('qty'))
+            ->all();
     }
 
     // Progress produksi SUNGGUHAN (qty baik / target) -- beda dari progressPercent()

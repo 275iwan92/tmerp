@@ -3,9 +3,11 @@
 use App\Models\Master\ProdMachine;
 use App\Models\Master\SupSupplier;
 use App\Models\Prd\PrdBreakdownEvent;
+use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
 use App\Models\Prd\PrdWoOperationOutput;
+use App\Models\Prd\PrdWoOperationOutputDefect;
 use App\Services\Pur\SubcontractPoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -59,14 +61,14 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
     public float $subEstimatedCost = 0;
 
-    // Catat Output (F15)
+    // Catat Output (F15) -- qty_good header + baris rinci reject/waste
+    // ber-tipe, boleh beberapa tipe sekaligus dalam 1 entri (permintaan user
+    // 2026-08-28: "banyak tipe dalam 1 entri", bukan 1 tipe per entri).
     public ?int $outputOperationId = null;
 
     public float $outputQtyGood = 0;
 
-    public float $outputQtyReject = 0;
-
-    public float $outputQtyWaste = 0;
+    public array $outputDefectRows = []; // [['category'=>'REJECT'|'WASTE', 'scrap_type_id'=>int|null, 'qty'=>float], ...]
 
     public string $outputShiftNote = '';
 
@@ -80,7 +82,19 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function workOrder(): PrdWo
     {
-        return PrdWo::with(['operations.crew.employee', 'operations.outputs'])->findOrFail($this->wo);
+        return PrdWo::with(['operations.crew.employee', 'operations.outputs.defects.scrapType'])->findOrFail($this->wo);
+    }
+
+    #[Computed]
+    public function rejectTypes()
+    {
+        return PrdScrapType::reject()->active()->orderBy('sort_order')->get();
+    }
+
+    #[Computed]
+    public function wasteTypes()
+    {
+        return PrdScrapType::waste()->active()->orderBy('sort_order')->get();
     }
 
     #[Computed]
@@ -325,8 +339,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     {
         $this->outputOperationId = $operationId;
         $this->outputQtyGood = 0;
-        $this->outputQtyReject = 0;
-        $this->outputQtyWaste = 0;
+        $this->outputDefectRows = [];
         $this->outputShiftNote = '';
         $this->outputNotes = '';
     }
@@ -336,24 +349,43 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         $this->outputOperationId = null;
     }
 
+    public function addDefectRow(string $category): void
+    {
+        $this->outputDefectRows[] = ['category' => $category, 'scrap_type_id' => null, 'qty' => 0];
+    }
+
+    public function removeDefectRow(int $index): void
+    {
+        unset($this->outputDefectRows[$index]);
+        $this->outputDefectRows = array_values($this->outputDefectRows);
+    }
+
     public function saveOutputEntry(): void
     {
-        if ($this->outputQtyGood <= 0 && $this->outputQtyReject <= 0 && $this->outputQtyWaste <= 0) {
-            $this->dispatch('wo-toast', message: 'Isi minimal salah satu qty (baik/reject/waste).');
+        $validRows = collect($this->outputDefectRows)->filter(fn ($r) => ! empty($r['scrap_type_id']) && (float) $r['qty'] > 0);
+
+        if ($this->outputQtyGood <= 0 && $validRows->isEmpty()) {
+            $this->dispatch('wo-toast', message: 'Isi qty baik, atau minimal 1 baris reject/waste (tipe + qty).');
 
             return;
         }
 
-        PrdWoOperationOutput::create([
+        $output = PrdWoOperationOutput::create([
             'operation_id' => $this->outputOperationId,
             'qty_good' => $this->outputQtyGood,
-            'qty_reject' => $this->outputQtyReject,
-            'qty_waste' => $this->outputQtyWaste,
             'shift_note' => $this->outputShiftNote ?: null,
             'notes' => $this->outputNotes ?: null,
             'recorded_by' => Auth::user()->login,
             'recorded_at' => now(),
         ]);
+
+        foreach ($validRows as $row) {
+            PrdWoOperationOutputDefect::create([
+                'output_id' => $output->output_id,
+                'scrap_type_id' => $row['scrap_type_id'],
+                'qty' => $row['qty'],
+            ]);
+        }
 
         $this->outputOperationId = null;
         unset($this->workOrder);
@@ -439,8 +471,15 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 @else
                                     <span class="font-semibold {{ $op->outputProgressPercent() >= 100 ? 'text-[#15803d]' : 'text-[#1f2328]' }}">{{ number_format($op->totalQtyGood(), 0, ',', '.') }}</span>
                                     / {{ number_format((float) $op->qty, 0, ',', '.') }} baik ({{ $op->outputProgressPercent() }}%)
-                                    @if ($op->totalQtyReject() > 0 || $op->totalQtyWaste() > 0)
-                                        <div class="text-[#a3241f]">reject {{ number_format($op->totalQtyReject(), 0, ',', '.') }} · waste {{ number_format($op->totalQtyWaste(), 0, ',', '.') }}</div>
+                                    @php($rejectBreakdown = $op->defectBreakdown('REJECT'))
+                                    @php($wasteBreakdown = $op->defectBreakdown('WASTE'))
+                                    @if (! empty($rejectBreakdown))
+                                        <div class="text-[#a3241f]">reject {{ number_format($op->totalQtyReject(), 0, ',', '.') }}
+                                            — {{ collect($rejectBreakdown)->map(fn ($qty, $name) => "{$name}: ".number_format($qty, 0, ',', '.'))->implode(', ') }}</div>
+                                    @endif
+                                    @if (! empty($wasteBreakdown))
+                                        <div class="text-[#92400e]">waste {{ number_format($op->totalQtyWaste(), 0, ',', '.') }}
+                                            — {{ collect($wasteBreakdown)->map(fn ($qty, $name) => "{$name}: ".number_format($qty, 0, ',', '.'))->implode(', ') }}</div>
                                     @endif
                                 @endif
                             </td>
@@ -586,38 +625,79 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         </div>
     @endif
 
-    {{-- Catat Output modal (F15) --}}
+    {{-- Catat Output modal (F15) -- qty baik + baris rinci reject/waste
+         ber-tipe, boleh beberapa tipe sekaligus (permintaan user 2026-08-28). --}}
     @if ($outputOperationId)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeOutputEntry">
-            <div class="bg-white rounded-xl w-[420px] max-w-[95vw] shadow-2xl">
+            <div class="bg-white rounded-xl w-[520px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
                     <span>📊 Catat Output</span>
                     <button type="button" wire:click="closeOutputEntry" class="text-white/70 hover:text-white cursor-pointer">✕</button>
                 </div>
-                <div class="p-4 space-y-3">
-                    <p class="text-[11px] text-muted">Boleh dicatat berkali-kali (mis. per shift/giliran) — angka di grid otomatis dijumlah dari semua entri.</p>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Qty Baik</label>
-                            <input type="number" wire:model="outputQtyGood" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Reject</label>
-                            <input type="number" wire:model="outputQtyReject" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Waste</label>
-                            <input type="number" wire:model="outputQtyWaste" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        </div>
-                    </div>
+                <div class="p-4 space-y-4">
+                    <p class="text-[11px] text-muted">Boleh dicatat berkali-kali (mis. per shift/giliran) — angka di grid otomatis dijumlah dari semua entri.
+                        Tipe reject/waste tidak lengkap? <a href="{{ route('production.scrap-type') }}" target="_blank" class="text-accent underline">Kelola Tipe Scrap →</a></p>
+
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Shift (opsional)</label>
-                        <input type="text" wire:model="outputShiftNote" placeholder="mis. Shift 1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Qty Baik</label>
+                        <input type="number" wire:model="outputQtyGood" min="0" step="1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                     </div>
+
                     <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Catatan (opsional)</label>
-                        <input type="text" wire:model="outputNotes" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-[10px] font-bold text-[#a3241f] uppercase">Reject (opsional, boleh lebih dari 1 tipe)</label>
+                            <button type="button" wire:click="addDefectRow('REJECT')" class="text-[11px] font-semibold text-[#a3241f] hover:underline cursor-pointer">+ Tambah</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            @foreach ($outputDefectRows as $i => $row)
+                                @continue($row['category'] !== 'REJECT')
+                                <div wire:key="defect-row-{{ $i }}" class="flex gap-1.5">
+                                    <select wire:model="outputDefectRows.{{ $i }}.scrap_type_id" class="flex-1 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                        <option value="">-- pilih tipe --</option>
+                                        @foreach ($this->rejectTypes as $t)
+                                            <option value="{{ $t->type_id }}">{{ $t->type_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <input type="number" wire:model="outputDefectRows.{{ $i }}.qty" min="0" step="1" placeholder="qty" class="w-20 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <button type="button" wire:click="removeDefectRow({{ $i }})" class="px-2 text-[#a3241f] cursor-pointer">✕</button>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label class="text-[10px] font-bold text-[#92400e] uppercase">Waste/Scrap (opsional, boleh lebih dari 1 tipe)</label>
+                            <button type="button" wire:click="addDefectRow('WASTE')" class="text-[11px] font-semibold text-[#92400e] hover:underline cursor-pointer">+ Tambah</button>
+                        </div>
+                        <div class="space-y-1.5">
+                            @foreach ($outputDefectRows as $i => $row)
+                                @continue($row['category'] !== 'WASTE')
+                                <div wire:key="defect-row-{{ $i }}" class="flex gap-1.5">
+                                    <select wire:model="outputDefectRows.{{ $i }}.scrap_type_id" class="flex-1 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                        <option value="">-- pilih tipe --</option>
+                                        @foreach ($this->wasteTypes as $t)
+                                            <option value="{{ $t->type_id }}">{{ $t->type_name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <input type="number" wire:model="outputDefectRows.{{ $i }}.qty" min="0" step="1" placeholder="qty" class="w-20 px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <button type="button" wire:click="removeDefectRow({{ $i }})" class="px-2 text-[#92400e] cursor-pointer">✕</button>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Shift (opsional)</label>
+                            <input type="text" wire:model="outputShiftNote" placeholder="mis. Shift 1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Catatan (opsional)</label>
+                            <input type="text" wire:model="outputNotes" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                    </div>
+
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
                         <button type="button" wire:click="closeOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                         <button type="button" wire:click="saveOutputEntry" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan</button>

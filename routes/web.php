@@ -132,6 +132,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry');
             Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
             Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
+            Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
         });
     });
 });

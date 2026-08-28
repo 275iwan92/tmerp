@@ -171,7 +171,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     private function operationsForDay()
     {
-        return PrdWoOperation::with(['wo', 'crew.employee', 'outputs'])
+        return PrdWoOperation::with(['wo', 'crew.employee', 'outputs.defects.scrapType'])
             ->whereDate('target_start', $this->date)
             ->orderBy('target_start')
             ->get();

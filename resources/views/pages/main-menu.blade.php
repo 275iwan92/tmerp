@@ -125,6 +125,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // per task dari WO Detail (masuk lewat Worklist WO), lihat
             // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.
             'PROD_OUTPUT' => route('production.wo.list'),
+            'PROD_SCRAP_TYPE' => route('production.scrap-type'),
             'PROD_RULE_LIB' => route('production.rule-library'),
             'PROD_MTS_FORECAST' => route('production.mts-forecast'),
             'HRM_EMPLOYEE' => route('hrm.employee'),

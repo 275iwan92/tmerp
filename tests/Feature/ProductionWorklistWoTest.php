@@ -9,6 +9,7 @@ use App\Models\Prd\PrdMtsForecast;
 use App\Models\Prd\PrdSchedulingRule;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
+use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
@@ -250,6 +251,8 @@ class ProductionWorklistWoTest extends TestCase
 
         $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
         $this->assertSame('800.0000', $op->qty);
+        $printDefect = PrdScrapType::where('type_code', 'PRINT_DEFECT')->firstOrFail();
+        $makeready = PrdScrapType::where('type_code', 'MAKEREADY')->firstOrFail();
 
         $beforeBoard = Livewire::test('pages::production.scheduling-board')->set('date', '2026-08-28');
         $beforeBoard->assertDontSee('400/800');
@@ -257,15 +260,19 @@ class ProductionWorklistWoTest extends TestCase
         Livewire::test('pages::production.wo-entry', ['wo' => $op->wo_id])
             ->call('openOutputEntry', $op->operation_id)
             ->set('outputQtyGood', 400)
-            ->set('outputQtyReject', 5)
+            ->call('addDefectRow', 'REJECT')
+            ->set('outputDefectRows.0.scrap_type_id', $printDefect->type_id)
+            ->set('outputDefectRows.0.qty', 5)
             ->call('saveOutputEntry')
             ->call('openOutputEntry', $op->operation_id)
             ->set('outputQtyGood', 200)
-            ->set('outputQtyWaste', 3)
+            ->call('addDefectRow', 'WASTE')
+            ->set('outputDefectRows.0.scrap_type_id', $makeready->type_id)
+            ->set('outputDefectRows.0.qty', 3)
             ->call('saveOutputEntry');
 
         $op->refresh();
-        $op->load('outputs');
+        $op->load('outputs.defects.scrapType');
         $this->assertSame(600.0, $op->totalQtyGood());
         $this->assertSame(5.0, $op->totalQtyReject());
         $this->assertSame(3.0, $op->totalQtyWaste());
@@ -275,6 +282,37 @@ class ProductionWorklistWoTest extends TestCase
         Livewire::test('pages::production.scheduling-board')
             ->set('date', '2026-08-28')
             ->assertSee('600/800');
+
+        PrdWoOperationOutput::where('operation_id', $op->operation_id)->delete();
+    }
+
+    // Permintaan user 2026-08-28: 1 entri output boleh punya BEBERAPA tipe
+    // reject/waste sekaligus (bukan cuma 1 tipe per entri) -- form nested.
+    public function test_output_entry_supports_multiple_scrap_types_in_one_entry(): void
+    {
+        $this->actingAs($this->admin());
+
+        $op = PrdWoOperation::whereHas('wo', fn ($q) => $q->where('wo_no', 'WO2600231'))->firstOrFail();
+        $printDefect = PrdScrapType::where('type_code', 'PRINT_DEFECT')->firstOrFail();
+        $colorOff = PrdScrapType::where('type_code', 'COLOR_OFF')->firstOrFail();
+
+        Livewire::test('pages::production.wo-entry', ['wo' => $op->wo_id])
+            ->call('openOutputEntry', $op->operation_id)
+            ->set('outputQtyGood', 500)
+            ->call('addDefectRow', 'REJECT')
+            ->set('outputDefectRows.0.scrap_type_id', $printDefect->type_id)
+            ->set('outputDefectRows.0.qty', 3)
+            ->call('addDefectRow', 'REJECT')
+            ->set('outputDefectRows.1.scrap_type_id', $colorOff->type_id)
+            ->set('outputDefectRows.1.qty', 2)
+            ->call('saveOutputEntry');
+
+        $op->refresh();
+        $op->load('outputs.defects.scrapType');
+        $this->assertSame(5.0, $op->totalQtyReject());
+        $breakdown = $op->defectBreakdown('REJECT');
+        $this->assertSame(3.0, $breakdown[$printDefect->type_name]);
+        $this->assertSame(2.0, $breakdown[$colorOff->type_name]);
 
         PrdWoOperationOutput::where('operation_id', $op->operation_id)->delete();
     }
