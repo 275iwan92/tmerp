@@ -295,3 +295,47 @@ Antrean, unassign balik ke Antrean tanpa menghapus `machine_id`, guard task RUNN
 digeser, deteksi mesin kosong). `ProductionWoGenerationTest::test_screen3_monitoring_dashboard_renders`
 diupdate (assertion lama "Pencapaian per Proses"/"Status per Mesin" sudah tak ada lagi, diganti cek
 "MPS - Cards"/"Antrean").
+
+---
+
+## 10. Engine MPS disatukan lintas WO Detail/Gantt/Kanban — REVISI 2026-08-28
+
+User minta dipastikan "engine MPS" (PdrEngine + BackwardSchedulingService + RateBandResolver +
+CrewAvailabilityChecker) benar2 jalan otomatis di ketiga layar (WO Detail, MPS - Gantt Chart,
+MPS - Kanban Board), bukan cuma tampilan berbeda dari data yang sama (itu sudah benar sejak awal —
+ketiganya query `PrdWo`/`PrdWoOperation` langsung, tak ada cache/salinan). Ditemukan 1 bug nyata +
+2 gap desain saat ditelusuri:
+
+1. **Bug nyata (WoGenerationService)**: `generateFromDelivery()` memanggil
+   `$this->backwardScheduler->schedule($wo->fresh(['operations']))` — `schedule()` cuma menghitung
+   di memory, TIDAK menyimpan (beda dari `scheduleAndPersist()`). Hasilnya dibuang (dipanggil di
+   objek `fresh()` terpisah dari `$wo` yang di-push ke `$created`), padahal komentar lama mengklaim
+   "`material_needed_by` langsung terisi". **Fix**: ganti ke `scheduleAndPersist($wo)` — Est.
+   Mulai/Selesai & `material_needed_by` sekarang benar2 terisi begitu WO digenerate.
+2. **Gap desain (Gantt Chart)**: `moveOperation()`/`resizeOperation()`/`reassignOperation()` di
+   `scheduling-board.blade.php` langsung `$op->update()` tanpa lewat `PdrEngine::
+   validateManualReschedule()` — padahal method itu didokumentasikan "WAJIB dipanggil server-side
+   saat drag-drop manual" (`CrewAvailabilityChecker` docblock) dan sudah ada sejak awal, cuma
+   kepakai di alur Hot Job. **Fix**: ketiga mutator sekarang panggil `validateManualReschedule()`
+   dulu (cek konflik crew, durasi minimum, lock QC_HOLD) sebelum commit — drag yang bentrok ditolak
+   dgn toast pesan alasannya.
+3. **Keputusan user (Kanban)**: sebelumnya `moveOperation()` di `monitoring-dashboard.blade.php`
+   sengaja pakai estimasi qty/rate sendiri ("quick-assign visual", §9 di atas). User memutuskan
+   dibalik: Kanban sekarang panggil `PdrEngine::backwardScheduleAndPersist($op->wo)` juga — assign
+   ke kolom mesin memicu hitung ULANG seluruh urutan task WO itu dari `due_date` (bukan cuma task
+   yang digeser), pakai `RateBandResolver` yang sama dgn Gantt. Efek: task lain di WO yang sama BISA
+   ikut pindah tanggal/kolom setelah 1 drag — ini disengaja (1 data, 1 sumber kebenaran jadwal),
+   bukan bug. Fallback ke estimasi sederhana lama tetap ada (try/catch `RuntimeException`) khusus
+   utk WO yang py task manual/rate band belum lengkap (`RateBandResolver`/`resolveRateForTask` blm
+   dukung resource manual), supaya drag tak dead-end — toast menandai kalau lagi fallback.
+
+**Efek samping yang perlu diketahui**: `rate_band_value` pada operation kini di-overwrite oleh
+`RateBandResolver` (Rate Band Tier1 §5A.6: histori DONE/QC_PASSED, fallback `max_speed_per_hour *
+0.8`) setelah backward-schedule persist — BUKAN lagi nilai dari `prod_part_process_machine_rate`
+(target rate PPIC, dipakai `WoGenerationService::lookupDefaultMachineRate()` cuma sbg bootstrap
+awal sebelum backward-schedule pertama jalan). 2 sumber rate ini sudah beda konsep sejak desain
+awal (target rate vs rate band aktual) — bug lama menyembunyikan bedanya krn backward-schedule tak
+pernah persisten. `ProductionWoGenerationTest::test_generate_creates_wo_with_operations_and_correct_qty`
+diupdate mengikuti (assert 6400 dari `max_speed_per_hour` CETAK-01, bukan 6000 dari rate table).
+
+Regresi penuh 77/77 setelah perubahan ini (`php artisan test --testsuite=Feature`).

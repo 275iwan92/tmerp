@@ -3,14 +3,16 @@
 use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
 use App\Models\Prd\PrdWoOperation;
+use App\Services\Scheduling\PdrEngine;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// Screen #3 / "MPS - Cards" -- REVISI 2026-08-28 (menggantikan versi kartu
-// statis pertama, docs/production_scheduling_wo_generation_delta.md §6).
+// Screen #3 / "MPS - Kanban Board" (nama lama "MPS - Cards", direname
+// 2026-08-28 supaya sesuai isinya) -- REVISI 2026-08-28 (menggantikan versi
+// kartu statis pertama, docs/production_scheduling_wo_generation_delta.md §6).
 // User minta bentuk Kanban ala Trello: kolom = mesin/proses, card = task
 // (1 prd_wo_operation, BUKAN 1 WO utuh -- 1 WO bisa py beberapa task di
 // mesin berbeda). Direview via mockup HTML (Claude Artifact) sebelum
@@ -21,7 +23,14 @@ use Livewire\Component;
 // divisi OFFSET, di-filter tanggal $date, merah kalau tak ada task
 // RUNNING/ASSIGNED), kolom "Manual" (task resource_type=MANUAL hari itu,
 // tak ikut logika kosong/merah krn bukan mesin fisik).
-new #[Title('MPS - Cards — TELASIH MAKMUR ERP')] class extends Component
+//
+// REVISI 2026-08-28 (lanjutan, permintaan user "engine MPS harus jalan di
+// WO/Kanban/Gantt"): assign dari Antrean ke kolom mesin TIDAK LAGI pakai
+// estimasi qty/rate sendiri ("quick-assign visual") -- sekarang panggil
+// PdrEngine::backwardScheduleAndPersist() yang sama dgn Gantt Chart, lihat
+// §10 delta doc. Fallback estimasi lama cuma jalan kalau engine gagal
+// (RuntimeException -- rate band task manual/belum lengkap).
+new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $date;
 
@@ -127,7 +136,7 @@ new #[Title('MPS - Cards — TELASIH MAKMUR ERP')] class extends Component
     // "Lapor Breakdown", bukan digeser sembarangan di board ini).
     public function moveOperation(int $operationId, ?int $machineId): void
     {
-        $op = PrdWoOperation::find($operationId);
+        $op = PrdWoOperation::with('wo')->find($operationId);
 
         if (! $op || $op->resource_type !== 'MACHINE') {
             $this->dispatch('wo-toast', message: 'Hanya task mesin yang bisa dipindah lewat drag di sini.');
@@ -159,32 +168,43 @@ new #[Title('MPS - Cards — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        $wasUnscheduled = is_null($op->target_start);
         $op->machine_id = $machineId;
         $op->updated_by = Auth::user()->login;
+        $op->save();
 
-        if ($wasUnscheduled) {
-            // Simplifikasi sadar: waktu mulai = sekarang, durasi dari
-            // rate_band_value kalau ada (fallback 1 jam) -- BUKAN backward
-            // scheduling penuh (kalender/konflik mesin tetap tanggung jawab
-            // BackwardSchedulingService via Gantt Chart, board ini cuma
-            // quick-assign visual).
+        // REVISI 2026-08-28 (permintaan user): Kanban kini ikut pakai engine
+        // sungguhan (PdrEngine::backwardScheduleAndPersist), bukan lagi
+        // estimasi qty/rate sendiri -- ini menghitung ULANG seluruh urutan
+        // task WO ini dari due_date (bukan cuma task yg digeser), supaya WO
+        // Detail/Gantt/Kanban selalu baca jadwal yang sama persis (1 data, 3
+        // tampilan -- lihat [[project_kanban_gantt_single_source]]). Task lain
+        // di WO yang sama BISA ikut pindah tanggal/kolom setelah drag ini --
+        // itu memang tujuannya, bukan efek samping.
+        $engineOk = false;
+        try {
+            app(PdrEngine::class)->backwardScheduleAndPersist($op->wo);
+            $op->refresh();
+            $engineOk = true;
+        } catch (\RuntimeException) {
+            // WO ini py task manual/rate band belum lengkap -- engine tak
+            // bisa hitung backward penuh (sama guard yg dipakai
+            // WoGenerationService). Fallback ke estimasi sederhana utk task
+            // INI saja supaya drag tetap jalan, PPIC lengkapi rate band lewat
+            // Master Data > Target Rate baru koreksi manual di WO Detail/Gantt.
             $rate = (float) ($op->rate_band_value ?? 0);
             $hours = $rate > 0 ? max(0.5, ((float) $op->qty) / $rate) : 1.0;
             $op->target_start = now();
             $op->target_finish = now()->copy()->addMinutes((int) round($hours * 60));
-
-            if ($op->task_status === 'PENDING') {
-                $op->transitionTo('ASSIGNED');
-            } else {
-                $op->save();
-            }
-        } else {
             $op->save();
         }
 
+        if ($op->task_status === 'PENDING') {
+            $op->transitionTo('ASSIGNED');
+        }
+
         unset($this->machineOperations, $this->queueOperations);
-        $this->dispatch('wo-toast', message: 'Task dipindah ke '.($op->fresh()->machine?->machine_name ?? 'mesin').'.');
+        $note = $engineOk ? '' : ' (estimasi sederhana -- rate band WO ini belum lengkap utk hitung penuh)';
+        $this->dispatch('wo-toast', message: 'Task dipindah ke '.($op->fresh()->machine?->machine_name ?? 'mesin').'.'.$note);
     }
 
     private function statusBadgeClasses(string $status): string
@@ -220,7 +240,7 @@ new #[Title('MPS - Cards — TELASIH MAKMUR ERP')] class extends Component
 <div x-data="{ toastMsg: '', toastShow: false, toastTimer: null, draggedId: null }"
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📌 MPS - Cards</b>
+        <b class="text-[15px]">📌 MPS - Kanban Board</b>
         <input type="date" wire:model.live="date" class="bg-white/10 text-white text-[11px] font-bold px-3 py-1.5 rounded-md border-none">
         <a href="{{ route('production.scheduling-board') }}" class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-[#43508a] rounded-full hover:brightness-110 no-underline">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 MPS - Gantt Chart</span>

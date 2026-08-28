@@ -88,12 +88,16 @@ class WoGenerationService
                     ]);
                 }
 
-                // Backward-schedule preview (belum di-persist, WO masih DRAFT --
-                // konsisten Tier1 §5A.1, PPIC masih review di Screen #2) supaya
-                // material_needed_by langsung terisi utk ditampilkan.
+                // Backward-schedule & PERSIST saat generate (2026-08-28: schedule()
+                // sebelumnya dipanggil di objek fresh() lalu hasilnya dibuang --
+                // Est. Mulai/Selesai & material_needed_by tak pernah benar2 terisi
+                // walau komentar lama bilang begitu, lihat CLAUDE.md/project memory
+                // "engine MPS auto". WO tetap DRAFT (persist di sini cuma isi jadwal
+                // awal, bukan approval) -- PPIC boleh override manual di WO
+                // Detail/Gantt/Kanban kapan saja sesudahnya.
                 if ($wo->operations()->exists()) {
                     try {
-                        $this->backwardScheduler->schedule($wo->fresh(['operations']));
+                        $this->backwardScheduler->scheduleAndPersist($wo);
                     } catch (\RuntimeException) {
                         // Rate band blm lengkap (task manual, dst) -- PPIC lengkapi
                         // manual di Screen #2, jangan gagalkan generate karena ini.

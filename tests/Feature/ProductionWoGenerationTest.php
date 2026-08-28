@@ -53,10 +53,17 @@ class ProductionWoGenerationTest extends TestCase
         $this->assertSame($deliveryId, $wo->source_delivery_id);
         $this->assertCount(3, $wo->operations);
 
-        // rate default ke-lookup benar utk proses Cetak (seed migration: 6000/jam),
-        // NULL utk proses lain yang belum py rate row.
+        // rate_band_value akhir = hasil RateBandResolver (Rate Band Tier1 §5A.6),
+        // BUKAN prod_part_process_machine_rate (6000/jam itu cuma bootstrap awal
+        // sebelum backward-schedule jalan -- lihat WoGenerationService::
+        // lookupDefaultMachineRate). Backward-schedule 2026-08-28 kini benar2
+        // dipersist saat generate (dulu dibuang, bug), jadi rate_band_value akhir
+        // = fallback master CETAK-01 (max_speed_per_hour 8000 * 0.8 = 6400, belum
+        // py histori DONE/QC_PASSED). Est. Mulai/Selesai pun ikut terisi otomatis.
         $cetak = $wo->operations->firstWhere('process_name', 'Cetak');
-        $this->assertEquals(6000, (float) $cetak->rate_band_value);
+        $this->assertEquals(6400, (float) $cetak->rate_band_value);
+        $this->assertNotNull($cetak->target_start);
+        $this->assertNotNull($cetak->target_finish);
 
         // cleanup
         $wo->operations()->delete();
@@ -126,7 +133,7 @@ class ProductionWoGenerationTest extends TestCase
         $this->actingAs($this->admin());
 
         Livewire::test('pages::production.monitoring-dashboard')
-            ->assertSee('MPS - Cards')
+            ->assertSee('MPS - Kanban Board')
             ->assertSee('Antrean');
     }
 
