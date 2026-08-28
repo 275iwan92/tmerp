@@ -118,13 +118,16 @@ class ProductionWoGenerationTest extends TestCase
         $this->assertNull(PrdWoOperation::find($newOp->operation_id));
     }
 
+    // Screen #3 "MPS - Cards" dirombak jadi Kanban 2026-08-28 (versi kartu
+    // statis pertama diganti) -- lihat ProductionMpsCardsKanbanTest utk
+    // cakupan drag-drop penuh, test ini cuma smoke-check render dasar.
     public function test_screen3_monitoring_dashboard_renders(): void
     {
         $this->actingAs($this->admin());
 
         Livewire::test('pages::production.monitoring-dashboard')
-            ->assertSee('Pencapaian per Proses')
-            ->assertSee('Status per Mesin');
+            ->assertSee('MPS - Cards')
+            ->assertSee('Antrean');
     }
 
     public function test_wo_print_form_renders_bop_and_bom(): void

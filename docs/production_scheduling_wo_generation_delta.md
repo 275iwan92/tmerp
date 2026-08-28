@@ -248,3 +248,50 @@ krn `prd_wo` tak py FK ke `prod_part` spesifik. Bill of Material "Qty Kebutuhan"
 (belum ikut faktor lembar/plano dari Imposition — gap §3 yang sama). "Qty Harus Dibeli" = selisih
 kebutuhan-tersedia sederhana, BUKAN MRP netting penuh lintas-WO (F10, sengaja dideferred).
 Artwork/dieline masih placeholder ilustrasi (`prod_part_artwork` 0 baris di seluruh DB).
+
+---
+
+## 9. Screen #3 HIDUP LAGI 2026-08-28 (revisi §5 sebelumnya, versi Kanban)
+
+§5 di atas bilang Screen #3 "dibatalkan" saat WO Detail dirombak jadi 1 layar. User kemudian minta
+menu-nya tetap ada tapi diberi nama ulang jadi 3 baris berurutan di Planning: **"Work Order"**
+(`PROD_WO_LIST`), **"MPS - Gantt Chart"** (`PROD_MPS` → `production.scheduling-board`, existing),
+**"MPS - Cards"** (`PROD_MON_WO`, dipindah dari grup Output ke Planning — migration `000024`).
+"MPS - Cards" inilah Screen #3 yang tadinya dianggap batal, HIDUP LAGI dalam bentuk baru: bukan
+kartu statis per-proses/per-mesin lagi, tapi **Kanban ala Trello** (route `production.monitoring`,
+file `monitoring-dashboard.blade.php`) — direview via mockup HTML (Claude Artifact, drag-drop
+native HTML5 utk simulasi) sebelum dibangun.
+
+**Struktur**: kolom = **Antrean** (task mesin `task_status=PENDING` + `target_start` NULL, backlog
+global lepas tanggal) + 1 kolom per `ProdMachine` aktif divisi OFFSET (filter tanggal via date
+picker, MERAH kalau tak ada card RUNNING/ASSIGNED) + kolom **Manual** (task `resource_type=MANUAL`
+hari itu, tak ikut logika kosong/merah). **Card = 1 `prd_wo_operation`** (task), BUKAN 1 WO utuh —
+keputusan eksplisit user krn 1 WO bisa py beberapa task di mesin berbeda.
+
+**Drag-drop**: Alpine `x-data="{draggedId}"` di root + `x-on:dragstart`/`x-on:dragover.prevent`/
+`x-on:drop="$wire.moveOperation(draggedId, machineId)"` per kartu/kolom — bukan library eksternal
+(SortableJS dst, tak ada di project ini), native HTML5 drag events + Livewire method call langsung.
+`moveOperation(operationId, ?machineId)`:
+- Digated: hanya task `resource_type=MACHINE` + status `PENDING`/`ASSIGNED` yang boleh digeser
+  (task yang sudah RUNNING/selesai/breakdown ditolak dgn toast, arahkan ke "Lapor Breakdown" di WO
+  Detail — bukan dead-end, tetap ada jalan lain).
+- Drop ke kolom mesin dari Antrean (belum py jadwal): set `machine_id`, `target_start=now()`,
+  `target_finish` dari estimasi `rate_band_value`/`qty` (fallback 1 jam) — **simplifikasi sadar**,
+  BUKAN backward scheduling penuh (kalender/konflik tetap tanggung jawab
+  `BackwardSchedulingService` via MPS - Gantt Chart), transisi status PENDING→ASSIGNED.
+- Drop ke Antrean (unassign): **SENGAJA TIDAK menghapus `machine_id`** — cuma reset
+  `target_start`/`target_finish`/status. Alasan: `WoGenerationService` sudah pre-fill `machine_id`
+  sbg SARAN dari snapshot routing Inquiry saat WO digenerate (WO belum tentu py `target_start` tapi
+  SUDAH py `machine_id`); menghapusnya bikin `BackwardSchedulingService::resolveRateForTask()` salah
+  kira task itu "manual" (guard-nya cek `!machine_id`, bukan cek `resource_type` doang) dan
+  `RateBandResolver` melempar exception. **Bug ini benar-benar kejadian** saat development sesi ini
+  — skrip tinker ad-hoc (bukan test permanen) sempat menge-null-kan `machine_id` WO2600250 lewat
+  draft awal `moveOperation()`, bikin `ProductionSchedulingBoardSmokeTest::test_hot_job_dialog_...`
+  gagal (ketahuan dari re-run regresi, bukan dari user) — datanya diperbaiki manual + logic
+  diperbaiki supaya kelas bug ini tak terulang.
+
+Test permanen: `tests/Feature/ProductionMpsCardsKanbanTest.php` (6 test — render, assign dari
+Antrean, unassign balik ke Antrean tanpa menghapus `machine_id`, guard task RUNNING/MANUAL tak bisa
+digeser, deteksi mesin kosong). `ProductionWoGenerationTest::test_screen3_monitoring_dashboard_renders`
+diupdate (assertion lama "Pencapaian per Proses"/"Status per Mesin" sudah tak ada lagi, diganti cek
+"MPS - Cards"/"Antrean").
