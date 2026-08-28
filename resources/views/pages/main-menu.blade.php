@@ -134,6 +134,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'PROD_SCRAP_TYPE' => route('production.scrap-type'),
             'PROD_PROCESS_RATE' => route('production.process-rate'),
             'PROD_MON_WO' => route('production.monitoring'),
+            'PROD_MPS_SHEET' => route('production.mps-spreadsheet'),
             'PROD_RULE_LIB' => route('production.rule-library'),
             'PROD_MTS_FORECAST' => route('production.mts-forecast'),
             'PROD_SHIFT_ROSTER' => route('hrm.shift-roster'),

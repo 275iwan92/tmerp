@@ -339,3 +339,78 @@ pernah persisten. `ProductionWoGenerationTest::test_generate_creates_wo_with_ope
 diupdate mengikuti (assert 6400 dari `max_speed_per_hour` CETAK-01, bukan 6000 dari rate table).
 
 Regresi penuh 77/77 setelah perubahan ini (`php artisan test --testsuite=Feature`).
+
+---
+
+## 11. MPS - Spreadsheet — layar ke-4, kompatibilitas Google Sheets (2026-08-28)
+
+User minta 1 layar lagi: **"MPS - Spreadsheet"** (`PROD_MPS_SHEET`, route `production.mps-spreadsheet`,
+file `mps-spreadsheet.blade.php`) — UI/UX kompatibel dgn kebiasaan lama PPIC pakai Google Sheets utk
+kelola MPS. **BUKAN sumber data baru** — baca/tulis `prd_wo_operation`/`prd_wo` yang SAMA dgn WO
+Detail/Gantt/Kanban (kini **1 data, 4 tampilan**), lewat `PdrEngine` yang sama juga (permintaan
+eksplisit user: "PASTIKAN engine MPS nya tetap jalan dengan baik").
+
+**Scope**: 1 baris = 1 `prd_wo_operation` (task), semua task yang BELUM `DONE`/`QC_PASSED` (cap 1000
+baris, bukan per-hari kayak Gantt/Kanban — ini justru poin utamanya, PPIC biasa lihat SEMUA task
+sekaligus di 1 sheet raksasa, DataTables yang urus sort/search/paging/filter di sisi klien). Kolom:
+WO No (link ke WO Detail) · Customer · Produk/Part · Proses · **Mesin** (editable) · **Operator**
+(editable) · Qty · Target/Jam · **Est. Mulai** (editable) · **Est. Selesai** (editable) · Status ·
+Due Date. Hanya task `PENDING`/`ASSIGNED` yang editable (task `RUNNING`/`BREAKDOWN`/dst kelola lewat
+WO Detail "Lapor Breakdown" — guard sama persis Kanban).
+
+**Filter per kolom ala Excel AutoFilter** (permintaan lanjutan user, "sangat dibutuhkan utk lihat
+per Proses/Mesin"): baris ke-2 `<thead>` berisi dropdown (Proses/Mesin/Operator/Status, exact-match
+via regex anchor `^value$`) + text input bebas (WO No/Customer/Produk) per kolom, disamping search
+global bawaan DataTables. `orderCellsTop: true` supaya klik sort tetap nempel di baris header
+PERTAMA (bukan baris filter).
+
+**Library**: DataTables 3 + KeyTable (dari `docs/data tables/`, disediakan user — bundle Editor 3
+ikut ter-download tapi **SENGAJA TIDAK dipakai**, lihat alasan di bawah). File `.min.js`/`.min.css`
+disalin ke `public/vendor/datatables/`, dimuat via `@assets`/`@endassets` blade Livewire (bukan lewat
+Vite/app.js global — cuma dipakai 1 layar, tak perlu bloat bundle semua halaman lain).
+
+**Kenapa TIDAK pakai extension Editor** (walau paling "siap pakai" utk spreadsheet-style editing):
+Editor bawa kontrak AJAX sendiri (action=edit, server balikin `{data:[...]}`/`{error:...}`) yang
+kalau diimplementasi jujur perlu endpoint terpisah dari Livewire — artinya validasi
+`PdrEngine`/`CrewAvailabilityChecker` harus dipanggil dari 2 tempat berbeda dan gampang menyimpang
+seiring waktu. Sebagai gantinya: sel editable pakai pola **klik 2x reveal input/select** (sama
+semangat dgn dblclick-edit yang sudah ada di WO Detail), commit lewat method Livewire yang sama
+persis gayanya dgn Gantt/Kanban/WO Detail.
+
+**Kenapa tabelnya `wire:ignore`, bukan re-render Livewire biasa** (beda dari 3 layar lain): DataTables
+menyisipkan wrapper DOM sendiri (search box, kontrol paging) di sekitar `<table>` aslinya — kalau
+Livewire coba morph ulang subtree itu tiap request (pola normal Gantt/Kanban), wrapper itu akan
+bentrok/rusak. Konsekuensinya: 4 method Livewire (`updateMachine`/`updateOperator`/`updateStart`/
+`updateFinish`) di-panggil via `$wire.call()` dari 1 komponen Alpine `mpsRow` per `<tr>` (bukan
+`wire:change` biasa), dan masing2 me-**return array kecil** (`{ok, machineLabel, startLabel, ...}`)
+yg langsung dipakai Alpine utk nge-patch span sel yg relevan + memberi tahu DataTables re-index sel
+itu (`table.row(tr).invalidate('dom').draw(false)`) — tanpa reload apa pun. Toast tetap jalan normal
+(dispatch event browser, tak terpengaruh `wire:ignore`).
+
+**Kenapa Mesin/Operator/Est Mulai/Selesai pakai `<template x-if>`, BUKAN `x-show`, utk elemen
+edit-nya**: awalnya dicoba `x-show` (CSS `display:none` doang) — ternyata `<select>`/`<input>` yang
+cuma disembunyikan CSS TETAP ada di DOM, dan DataTables baca `textContent` sel utk sort/search
+termasuk isi elemen tersembunyi itu (gabungan semua `<option>`, bukan cuma span teksnya) — sort/
+search kolom itu rusak diam-diam. `<template x-if="editingX">` beneran MELEPAS elemen dari DOM saat
+tidak diedit, jadi cuma `<span x-text="...">` yang terbaca DataTables.
+
+**Keterbatasan yg disengaja** (bukan bug tersembunyi): assign mesin ke task belum terjadwal bisa
+nge-reschedule SELURUH WO (task lain, baris LAIN) lewat `backwardScheduleAndPersist` — baris lain itu
+TIDAK auto-update tampilannya (di luar jangkauan `wire:ignore`/patch per-baris), user diberi tahu
+lewat toast utk klik "🔄 Refresh" (reload polos, `stateSave` DataTables tetap mempertahankan
+halaman/sort/filter yg lagi aktif).
+
+**Engine, kontekstual persis spt layar lain** (`mps-spreadsheet.blade.php`):
+- Assign Mesin ke task **belum terjadwal** (`target_start` NULL) → sama persis Kanban:
+  `PdrEngine::backwardScheduleAndPersist($op->wo)` (hitung ulang seluruh WO dari `due_date`),
+  fallback estimasi sederhana kalau rate band blm lengkap (`RuntimeException`, task manual dst).
+- Ganti Mesin/Operator/waktu manual pada task **sudah terjadwal** → sama persis Gantt:
+  `PdrEngine::validateManualReschedule()` dulu (konflik crew, durasi minimum, lock QC_HOLD) sebelum
+  commit — ditolak dgn toast pesan alasan kalau invalid.
+
+Test permanen: `tests/Feature/ProductionMpsSpreadsheetTest.php` (5 test — render, assign mesin ke
+task Antrean via engine, edit Est Mulai tervalidasi, **konflik operator ditolak** [skenario nyata:
+2 task overlap waktu, assign operator yg sama ke keduanya → assignment KEDUA ditolak], task RUNNING
+tak bisa diedit). Test ini cek method Livewire (PHP/DB/engine) — interaksi DataTables/Alpine di
+browser (sort/filter/klik 2x edit) belum ada automated test-nya (`Livewire::test()` tak menjalankan
+JS), diverifikasi manual dulu. Regresi penuh 82/82 setelah ini.
