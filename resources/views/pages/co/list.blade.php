@@ -56,7 +56,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
     protected function gridBaseQuery()
     {
-        return CoOrder::with(['quotation.customer', 'items' => fn ($q) => $q->orderBy('line_seq')]);
+        return CoOrder::with(['quotation.customer', 'items' => fn ($q) => $q->orderBy('line_seq'), 'externalCosts']);
     }
 
     protected function gridIdentitySearchColumns(): array
@@ -108,7 +108,11 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
     // preview item CO tanpa pindah halaman -- meniru ScriptCase report lama
     // (row-expand) + pola Odoo/SAP/Dynamics (list-detail inline). $expanded
     // simpan id_order yang lagi kebuka, bukan single value, krn user boleh
-    // expand beberapa baris sekaligus.
+    // expand beberapa baris sekaligus. Diperluas 2026-08-29 (permintaan user):
+    // preview sekarang ikut nampilin External Cost (sebelumnya cuma Product/
+    // Service items), krn External Cost jg masuk hitungan Net Receivable
+    // (CoOrder::totals()) -- dummy data uji di migration
+    // 2026_08_29_000001_seed_co_external_cost_dummy.php.
     public array $expanded = [];
 
     public function toggleExpand(int $id): void
@@ -329,6 +333,35 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                                 @endforelse
                                             </tbody>
                                         </table>
+
+                                        {{-- External Cost (2026-08-29, permintaan user) -- sebelumnya preview
+                                             expand-row cuma tampilkan Product/Service items, padahal External
+                                             Cost (trucking/ekspedisi dll) ikut masuk hitungan Net Receivable
+                                             (lihat CoOrder::totals()) -- ditambah supaya preview-nya lengkap. --}}
+                                        @if ($o->externalCosts->isNotEmpty())
+                                            <table class="w-full text-[11.5px] border-collapse ml-8 mt-2.5" style="width:calc(100% - 2rem)">
+                                                <thead>
+                                                    <tr class="text-[10px] text-muted uppercase font-bold">
+                                                        <th class="text-left px-2 py-1">External Cost</th>
+                                                        <th class="text-left px-2 py-1">Description</th>
+                                                        <th class="text-right px-2 py-1 w-28">Nominal</th>
+                                                        <th class="text-center px-2 py-1 w-32">Tax Treatment</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($o->externalCosts as $cost)
+                                                        <tr class="border-t border-[#eef1f5]" wire:key="co-detail-cost-{{ $cost->id_cost }}">
+                                                            <td class="px-2 py-1.5">{{ $cost->category }}</td>
+                                                            <td class="px-2 py-1.5 text-muted">{{ $cost->description ?: '—' }}</td>
+                                                            <td class="px-2 py-1.5 text-right font-semibold">{{ number_format($cost->nominal, 0, ',', '.') }}</td>
+                                                            <td class="px-2 py-1.5 text-center">
+                                                                <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded {{ $cost->tax_treatment === 'TAXABLE' ? 'bg-[#fff5e0] text-[#8a5a00]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $cost->tax_treatment }}</span>
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        @endif
                                     </td>
                                 </tr>
                             @endif

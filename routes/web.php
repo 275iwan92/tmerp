@@ -38,6 +38,18 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/co', 'pages::co.list')->name('co.list');
             Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
             Route::livewire('/co/delivery-plan', 'pages::co.delivery-plan')->name('co.delivery-plan');
+
+            // Delivery (DO/Surat Jalan) -- sebelumnya modul "Dispatch" berdiri sendiri,
+            // digabung ke Sales > grup "Delivery" (menu SALES_DO) 2026-08-28 atas
+            // permintaan user (kepanjangan Delivery Order/Delivery Notes, bukan
+            // "Dispatch"). {doId} wajib di sini (beda dari spec teks asli "{doId?}")
+            // krn DoList SELALU pre-create header via picker customer sebelum redirect
+            // ke Entry (lihat catatan deviasi di dispatch/do/list.blade.php) -- tak
+            // pernah ada Entry tanpa doId.
+            Route::livewire('/dispatch/do', 'pages::dispatch.do.list')->name('dispatch.do.index');
+            Route::livewire('/dispatch/do/{doId}', 'pages::dispatch.do.entry')->name('dispatch.do.entry');
+            Route::livewire('/dispatch/do/{doId}/print', 'pages::dispatch.do.print')->name('dispatch.do.print');
+            Route::livewire('/dispatch/do/{doId}/print-surat-jalan', 'pages::dispatch.do.print-surat-jalan')->name('dispatch.do.print-surat-jalan');
         });
 
         Route::middleware('module:COSTING')->group(function () {
@@ -121,29 +133,27 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/inventory/stock-adjustment-approval/{category}', 'pages::inventory.stock-adjustment-approval')->name('inv.stock-adj.approval');
         });
 
-        Route::middleware('module:DISPATCH')->group(function () {
-            // dispatch_tier4.md §1 -- {doId} wajib di sini (beda dari spec teks
-            // asli "{doId?}") krn DoList SELALU pre-create header via picker
-            // customer sebelum redirect ke Entry (lihat catatan deviasi di
-            // dispatch/do/list.blade.php) -- tak pernah ada Entry tanpa doId.
-            Route::livewire('/dispatch/do', 'pages::dispatch.do.list')->name('dispatch.do.index');
-            Route::livewire('/dispatch/do/{doId}', 'pages::dispatch.do.entry')->name('dispatch.do.entry');
-            Route::livewire('/dispatch/do/{doId}/print', 'pages::dispatch.do.print')->name('dispatch.do.print');
-            Route::livewire('/dispatch/do/{doId}/print-surat-jalan', 'pages::dispatch.do.print-surat-jalan')->name('dispatch.do.print-surat-jalan');
-        });
-
         Route::middleware('module:HRM')->group(function () {
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
             Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
+            Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
         });
 
         Route::middleware('module:PROD')->group(function () {
             Route::livewire('/production/scheduling-board', 'pages::production.scheduling-board')->name('production.scheduling-board');
+            Route::livewire('/production/monitoring', 'pages::production.monitoring-dashboard')->name('production.monitoring');
+            Route::livewire('/production/mps-spreadsheet', 'pages::production.mps-spreadsheet')->name('production.mps-spreadsheet');
             Route::livewire('/production/wo', 'pages::production.wo-list')->name('production.wo.list');
-            Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry');
+            Route::livewire('/production/wo/new', 'pages::production.wo-entry')->name('production.wo.new');
+            Route::livewire('/production/wo/{wo}/print', 'pages::production.wo-print')->name('production.wo.print')->where('wo', '[0-9]+');
+            Route::livewire('/production/wo/{wo}', 'pages::production.wo-entry')->name('production.wo.entry')->where('wo', '[0-9]+');
             Route::livewire('/production/rule-library', 'pages::production.rule-library')->name('production.rule-library');
             Route::livewire('/production/mts-forecast', 'pages::production.mts-forecast')->name('production.mts-forecast');
+            Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
+            Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
+            Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
+            Route::livewire('/production/master-crew', 'pages::production.master-crew')->name('production.master-crew');
         });
     });
 });

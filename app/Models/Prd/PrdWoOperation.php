@@ -76,6 +76,59 @@ class PrdWoOperation extends Model
         return $this->hasMany(PrdCrewAssignment::class, 'operation_id', 'operation_id');
     }
 
+    public function outputs(): HasMany
+    {
+        return $this->hasMany(PrdWoOperationOutput::class, 'operation_id', 'operation_id')->orderByDesc('recorded_at');
+    }
+
+    // F15 Production Output Recording -- total hasil aktual = SUM seluruh log
+    // (boleh dicatat berkali-kali per shift/giliran, bukan sekali di akhir).
+    public function totalQtyGood(): float
+    {
+        return (float) $this->outputs->sum('qty_good');
+    }
+
+    public function totalQtyReject(): float
+    {
+        return (float) $this->outputs
+            ->flatMap(fn ($o) => $o->defects)
+            ->filter(fn ($d) => $d->scrapType?->category === 'REJECT')
+            ->sum('qty');
+    }
+
+    public function totalQtyWaste(): float
+    {
+        return (float) $this->outputs
+            ->flatMap(fn ($o) => $o->defects)
+            ->filter(fn ($d) => $d->scrapType?->category === 'WASTE')
+            ->sum('qty');
+    }
+
+    // Rincian per tipe (mis. "Cacat Cetak: 3, Warna Meleset: 2") -- dipakai WO
+    // Detail supaya PPIC lihat KENAPA reject/waste-nya, bukan cuma angka total.
+    // @return array<string, float> nama tipe -> total qty
+    public function defectBreakdown(string $category): array
+    {
+        return $this->outputs
+            ->flatMap(fn ($o) => $o->defects)
+            ->filter(fn ($d) => $d->scrapType?->category === $category)
+            ->groupBy(fn ($d) => $d->scrapType->type_name)
+            ->map(fn ($rows) => (float) $rows->sum('qty'))
+            ->all();
+    }
+
+    // Progress produksi SUNGGUHAN (qty baik / target) -- beda dari progressPercent()
+    // di bawah yang cuma proporsi waktu berlalu. Dipakai Scheduling Board supaya
+    // PPIC lihat kemajuan riil, bukan cuma "sudah berapa lama berjalan".
+    public function outputProgressPercent(): int
+    {
+        if ((float) $this->qty <= 0) {
+            return 0;
+        }
+
+        return (int) max(0, min(100, round($this->totalQtyGood() / (float) $this->qty * 100)));
+    }
+
     // Lintas-DB (tm2prd -> tm2mst) -- query terpisah, bukan join fisik.
     public function machine(): BelongsTo
     {

@@ -30,9 +30,17 @@ use Livewire\Component;
 // (app/Services/Scheduling) -- scope disepakati user: pilih WO EXISTING yang
 // belum terjadwal (bukan form bikin WO baru on-the-spot ala mockup, supaya
 // tak perlu ALTER enum prd_wo.source_type yang cuma punya CO_CONFIRMED/
-// MTS_FORECAST). Opsi "Reroute Subkontrak" tetap tampil di dialog (sesuai
-// generator) tapi belum bisa diterapkan -- perlu fitur PO Subkontrak (Tier1
-// §9.3) yang belum dibangun; dipesankan jujur ke user saat dipilih.
+// MTS_FORECAST). Opsi "Reroute Subkontrak" di dialog sekarang BISA diterapkan
+// (PO Subkontrak nyata via App\Services\Pur\SubcontractPoService, dibangun
+// sesi berikutnya bersama WO Detail -- lihat wo-entry.blade.php).
+//
+// Production Output Recording (F15, TIDAK ADA spec Tier2/3/4 -- didesain
+// dari nol) disambung ke board 2026-08-28: operationVm() pakai
+// outputProgressPercent() (qty baik aktual / target) utk progress blok begitu
+// ada catatan output, fallback ke progressPercent() berbasis waktu selama
+// belum ada catatan -- PPIC lihat kemajuan produksi SUNGGUHAN langsung dari
+// board, tanpa buka WO Detail. Catat output-nya sendiri ada di WO Detail
+// (tombol "📊 Catat Output" per task RUNNING/DONE), bukan di board ini.
 //
 // SENGAJA masih belum ada: backward-scheduling otomatis/PDR auto-assign saat
 // board dibuka (baru jalan lewat Interruption Dialog di atas), Simulation
@@ -40,6 +48,14 @@ use Livewire\Component;
 // ada sandbox terpisah, tombol "Submit ke Master Schedule" masih placeholder
 // karena itu butuh Worklist WO/pull-CO yang belum dibangun) -- dicatat di
 // project memory.
+//
+// REVISI 2026-08-28 (permintaan user, "engine MPS harus jalan di WO/Kanban/
+// Gantt"): moveOperation()/resizeOperation()/reassignOperation() sekarang
+// WAJIB lewat PdrEngine::validateManualReschedule() sebelum commit (konflik
+// crew, durasi minimum, lock QC_HOLD) -- sebelumnya method itu ada tapi cuma
+// dipanggil dari Hot Job dialog, drag/resize biasa lolos tanpa validasi sama
+// sekali. Ditemukan bareng bug WoGenerationService yang menghitung backward-
+// schedule tapi tak pernah menyimpannya (lihat WoGenerationService.php).
 new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 {
     const TIMELINE_START = 8;
@@ -163,7 +179,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     private function operationsForDay()
     {
-        return PrdWoOperation::with(['wo', 'crew.employee'])
+        return PrdWoOperation::with(['wo', 'crew.employee', 'outputs.defects.scrapType'])
             ->whereDate('target_start', $this->date)
             ->orderBy('target_start')
             ->get();
@@ -284,16 +300,28 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             default => '',
         };
 
+        // F15 Production Output Recording -- begitu ada catatan output nyata,
+        // progress blok pakai itu (qty baik/target) alih-alih proporsi waktu
+        // berlalu, supaya PPIC lihat kemajuan produksi SUNGGUHAN dari board
+        // langsung, bukan cuma "sudah berapa lama berjalan". Belum ada
+        // catatan -> tetap fallback ke progressPercent() waktu (perilaku lama).
+        $hasOutput = $op->outputs->isNotEmpty();
+        $progress = $hasOutput ? $op->outputProgressPercent() : $op->progressPercent(now());
+        $timeLabel = $this->hourLabel($start).'–'.$this->hourLabel($start + $duration);
+        if ($hasOutput) {
+            $timeLabel .= ' · '.number_format($op->totalQtyGood(), 0, ',', '.').'/'.number_format((float) $op->qty, 0, ',', '.');
+        }
+
         return [
             'id' => $op->operation_id,
             'resource' => $op->resource_type === 'MACHINE' ? 'm'.$op->machine_id : 'e'.($op->crew->firstWhere('crew_role', 'OPERATOR_UTAMA')?->employee_id ?? 0),
             'title' => $icon.($op->wo->wo_no ?? '?').' · '.$op->process_name,
             'subtitle' => $op->process_name,
-            'timeLabel' => $this->hourLabel($start).'–'.$this->hourLabel($start + $duration),
+            'timeLabel' => $timeLabel,
             'statusLabel' => $this->statusLabel($op->task_status),
             'left' => ($start - self::TIMELINE_START) * self::PX_PER_HOUR,
             'width' => $duration * self::PX_PER_HOUR,
-            'progress' => $op->progressPercent(now()),
+            'progress' => $progress,
             'bg' => $color['bg'],
             'text' => $color['text'],
             'urgent' => (bool) $op->is_hot_job,
@@ -403,11 +431,15 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $this->mode = $mode;
     }
 
+    // Validasi PdrEngine (Tier1 §5A.9) WAJIB server-side sebelum commit drag/
+    // resize/reassign manual -- lihat CrewAvailabilityChecker docblock. Sampai
+    // 2026-08-28 method ini ada tapi tak pernah dipanggil dari board (cuma
+    // dipanggil dari Hot Job dialog); sekarang di-wire ke 3 mutator di bawah.
     public function moveOperation(int $operationId, float $newStartHour): void
     {
-        $op = PrdWoOperation::with('wo')->find($operationId);
-        if (! $op || $op->task_status === 'QC_HOLD' || ! $op->target_start) {
-            $this->dispatch('board-toast', message: 'Task QC Hold terkunci, tidak bisa digeser.');
+        $op = PrdWoOperation::with(['wo', 'crew'])->find($operationId);
+        if (! $op || ! $op->target_start) {
+            $this->dispatch('board-toast', message: 'Task belum terjadwal, tidak bisa digeser.');
 
             return;
         }
@@ -415,10 +447,18 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $durationMinutes = $op->target_start->diffInMinutes($op->target_finish);
         $newStartHour = max(self::TIMELINE_START, min($newStartHour, self::TIMELINE_END - 0.25));
         $newStart = Carbon::parse($this->date)->startOfDay()->addMinutes((int) round($newStartHour * 60));
+        $newFinish = $newStart->copy()->addMinutes($durationMinutes);
+
+        $errors = app(PdrEngine::class)->validateManualReschedule($op, $newStart, $newFinish, $op->crew->pluck('employee_id')->all());
+        if (! empty($errors)) {
+            $this->dispatch('board-toast', message: implode(' ', $errors));
+
+            return;
+        }
 
         $op->update([
             'target_start' => $newStart,
-            'target_finish' => $newStart->copy()->addMinutes($durationMinutes),
+            'target_finish' => $newFinish,
             'updated_by' => Auth::user()->login,
         ]);
 
@@ -427,16 +467,25 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     public function resizeOperation(int $operationId, float $newDurationHour): void
     {
-        $op = PrdWoOperation::with('wo')->find($operationId);
-        if (! $op || $op->task_status === 'QC_HOLD' || ! $op->target_start) {
-            $this->dispatch('board-toast', message: 'Task QC Hold terkunci, tidak bisa diubah durasinya.');
+        $op = PrdWoOperation::with(['wo', 'crew'])->find($operationId);
+        if (! $op || ! $op->target_start) {
+            $this->dispatch('board-toast', message: 'Task belum terjadwal, tidak bisa diubah durasinya.');
 
             return;
         }
 
         $newDurationHour = max(0.25, $newDurationHour);
+        $newFinish = $op->target_start->copy()->addMinutes((int) round($newDurationHour * 60));
+
+        $errors = app(PdrEngine::class)->validateManualReschedule($op, $op->target_start, $newFinish, $op->crew->pluck('employee_id')->all());
+        if (! empty($errors)) {
+            $this->dispatch('board-toast', message: implode(' ', $errors));
+
+            return;
+        }
+
         $op->update([
-            'target_finish' => $op->target_start->copy()->addMinutes((int) round($newDurationHour * 60)),
+            'target_finish' => $newFinish,
             'updated_by' => Auth::user()->login,
         ]);
 
@@ -445,7 +494,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
     public function reassignOperation(int $operationId, string $resourceKey, string $processName): void
     {
-        $op = PrdWoOperation::with('wo')->find($operationId);
+        $op = PrdWoOperation::with(['wo', 'crew'])->find($operationId);
         if (! $op) {
             return;
         }
@@ -454,6 +503,19 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
             $this->dispatch('board-toast', message: 'Task QC Hold terkunci, tidak bisa dipindah mesin/orang.');
 
             return;
+        }
+
+        if ($op->target_start && $op->target_finish) {
+            $proposedCrewIds = str_starts_with($resourceKey, 'e')
+                ? [(int) substr($resourceKey, 1)]
+                : $op->crew->pluck('employee_id')->all();
+
+            $errors = app(PdrEngine::class)->validateManualReschedule($op, $op->target_start, $op->target_finish, $proposedCrewIds);
+            if (! empty($errors)) {
+                $this->dispatch('board-toast', message: implode(' ', $errors));
+
+                return;
+            }
         }
 
         $op->process_name = $processName;

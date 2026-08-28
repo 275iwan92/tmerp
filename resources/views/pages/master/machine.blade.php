@@ -15,7 +15,7 @@ use Livewire\Component;
 // FK logis prod_part_process.machine_id, jangan sampai orphan.
 new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 {
-    public array $machineTypes = ['Cetak', 'Coating', 'Laminasi', 'Potong', 'Lainnya'];
+    public array $machineTypes = ['Cetak', 'Coating', 'Laminasi', 'Potong', 'Subkontraktor', 'Lainnya'];
 
     public string $search = '';
 

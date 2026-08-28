@@ -2,6 +2,7 @@
 
 use App\Models\Master\EmpBadgePhotoRequest;
 use App\Models\Master\EmpCorrectionRequest;
+use App\Models\Master\EmpDisciplinary;
 use App\Models\Master\EmpDocument;
 use App\Models\Master\EmpEducation;
 use App\Models\Master\EmpEmployee;
@@ -410,6 +411,35 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
             ->count();
     }
 
+    // sop_perizinan_resmi.ketentuan_alpha_dan_disiplin: "Izin ke-4 dst dalam
+    // bulan yang sama DIANGGAP ALPHA". Pengajuannya sendiri tetap diblok (bukan
+    // hal yang bisa "diajukan"), tapi kejadiannya tercatat otomatis ke
+    // emp_disciplinary supaya HR tahu tanpa menunggu karyawan lapor manual --
+    // dedup per employee+tanggal supaya klik berulang tidak dobel-catat.
+    private function recordAutoAlpha(Carbon $date, int $attemptNumber): void
+    {
+        if (! $this->employeeId) {
+            return;
+        }
+
+        $exists = EmpDisciplinary::where('employee_id', $this->employeeId)
+            ->where('type', 'ALPHA')
+            ->where('incident_date', $date->toDateString())
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        EmpDisciplinary::create([
+            'employee_id' => $this->employeeId,
+            'type' => 'ALPHA',
+            'incident_date' => $date->toDateString(),
+            'reason' => "Percobaan pengajuan Izin ke-{$attemptNumber} bulan {$date->format('F Y')} — melebihi batas 3x/bulan sesuai SOP Perizinan 002/RP/TM/VII/2026, otomatis tercatat Alpha.",
+            'issued_by' => 'SYSTEM',
+        ]);
+    }
+
     #[Computed]
     public function sakitLaporTerlambat(): bool
     {
@@ -506,7 +536,8 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 return;
             }
             if ($this->izinCountForMonth($from) >= 3) {
-                $this->addError('leave_date_from', 'Sudah 3x mengajukan Izin bulan ini — pengajuan lebih lanjut otomatis dicatat sebagai Alpha, hubungi HR.');
+                $this->recordAutoAlpha($from, $this->izinCountForMonth($from) + 1);
+                $this->addError('leave_date_from', 'Sudah 3x mengajukan Izin bulan ini — pengajuan ini otomatis dicatat sebagai Alpha di rekam jejak kedisiplinan Anda, tanpa perlu lapor manual ke HR.');
 
                 return;
             }

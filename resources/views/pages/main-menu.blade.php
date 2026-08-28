@@ -68,6 +68,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'SALES_QUOT' => route('quotation.list'),
             'SALES_SO' => route('co.list'),
             'SALES_PLAN' => route('co.delivery-plan'),
+            // Delivery Order/Surat Jalan (DO+SJ 1 tabel 2 cetakan) -- sebelumnya
+            // modul "Dispatch" berdiri sendiri, digabung ke sini 2026-08-28 (lihat
+            // migration move_dispatch_menu_into_sales_delivery).
+            'SALES_DO' => route('dispatch.do.index'),
             'PROC_PR' => route('pur.pr.list'),
             'PROC_PR_APPR' => route('pur.pr.approval'),
             'PROC_PO' => route('pur.po.list'),
@@ -87,6 +91,8 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_UOM' => route('master.uom'),
             'MD_MACHINE' => route('master.machine'),
             'MD_SHIFT' => route('master.shift'),
+            'PROD_MST_PROCESS' => route('production.master-process'),
+            'PROD_MST_CREW' => route('production.master-crew'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),
@@ -101,7 +107,6 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_RAW_SFG' => route('inv.print.master-stock', ['category' => 'SFG']),
             'INV_CARD_SFG' => route('inv.print.stock-card', ['category' => 'SFG']),
             'INV_SLOW_SFG' => route('inv.print.slow-moving', ['category' => 'SFG']),
-            'DISPATCH_DO' => route('dispatch.do.index'),
             // Stock In (item pertama di tiap grup Input -- lihat migration
             // 2026_08_22_000007). Stock Out/Return/Adjustment (ITEM2-5) masih NOT_BUILT.
             'INV_RM_ITEM1' => route('inv.stock-in.index', ['category' => 'RM']),
@@ -125,8 +130,17 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_SFG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'SFG']),
             'PROD_MPS' => route('production.scheduling-board'),
             'PROD_WO_LIST' => route('production.wo.list'),
+            // Production Output (F15) belum punya layar sendiri -- catat output
+            // per task dari WO Detail (masuk lewat Worklist WO), lihat
+            // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.
+            'PROD_OUTPUT' => route('production.wo.list'),
+            'PROD_SCRAP_TYPE' => route('production.scrap-type'),
+            'PROD_PROCESS_RATE' => route('production.process-rate'),
+            'PROD_MON_WO' => route('production.monitoring'),
+            'PROD_MPS_SHEET' => route('production.mps-spreadsheet'),
             'PROD_RULE_LIB' => route('production.rule-library'),
             'PROD_MTS_FORECAST' => route('production.mts-forecast'),
+            'PROD_SHIFT_ROSTER' => route('hrm.shift-roster'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'HRM_CORRECTION' => route('hrm.correction-requests'),

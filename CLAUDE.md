@@ -162,6 +162,13 @@ transaksi = `iqp_costing`, ikut inquiry).
   `resources/views/components/print/{document,sheet,header,parties,party,
   section,signatures,signature,footer}.blade.php`, tema warna per dokumen
   via prop `theme`. Gotcha sama seperti `ganttboardstandard.md` §8.
+- `production_scheduling_wo_generation_delta.md` — **wajib dibaca sebelum
+  menyentuh alur generate WO / layar Worklist WO-Detail-Monitoring** —
+  delta atas `production_scheduling_tier1-4.md` (LOCKED, tidak direvisi):
+  WO lahir dari `co_order_delivery` (Plan Delivery) bukan CO langsung, 1
+  `iqp_part` = 1 `prd_wo` (konvergensi antar-part sengaja belum dimodelkan),
+  target rate dikunci ke `prod_product`+`part_code` teks (bukan `prod_part`
+  yang ternyata tak pernah diisi).
 
 ---
 

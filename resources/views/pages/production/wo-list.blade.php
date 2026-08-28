@@ -11,7 +11,13 @@ use Livewire\WithPagination;
 // diikuti dari resources/views/pages/pur/pr/index.blade.php (stat-row 4 kotak,
 // identity-cell avatar+kode, badge status via match(), action-icon "Buka").
 // WO tidak lahir dari grid ini (otomatis dari CO confirmed / cycle MTS) --
-// TIDAK ADA "+ New Record", toolbar cuma search + catatan asal data.
+// Direvisi 2026-08-28: TERNYATA WO generation dari CO belum pernah beneran
+// diimplementasikan (Tier1 F1) -- "+ New Record" di sini bukan bikin WO
+// kosong manual, tapi ↗ ke production.wo.new (WO Detail dgn $wo=null,
+// modal picklist Plan Delivery kebuka otomatis -> auto-generate). Screen #1
+// yang dulu berdiri sendiri (wo-generate.blade.php) DIHAPUS 2026-08-28
+// (permintaan user: gabung jadi 1 alur dgn WO Detail, bukan layar terpisah).
+// Lihat docs/production_scheduling_wo_generation_delta.md.
 new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasGridPagination;
@@ -80,6 +86,9 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <span class="text-[11px] text-muted italic">Otomatis dari CO Confirmed (MTO) / cycle MTS Forecast — bukan dibuat manual dari sini.</span>
+                <x-slot:newRecord>
+                    <a href="{{ route('production.wo.new') }}" class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#16a34a] text-white no-underline">+ Generate dari Plan Delivery</a>
+                </x-slot:newRecord>
             </x-grid.toolbar>
 
             <x-grid.table-shell>

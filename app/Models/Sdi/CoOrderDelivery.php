@@ -2,8 +2,10 @@
 
 namespace App\Models\Sdi;
 
+use App\Models\Prd\PrdWo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CoOrderDelivery extends Model
 {
@@ -43,5 +45,14 @@ class CoOrderDelivery extends Model
     public function splitFrom(): BelongsTo
     {
         return $this->belongsTo(self::class, 'split_from_id', 'id_delivery');
+    }
+
+    // Lintas-DB (tm2sdi -> tm2prd) -- query terpisah, bukan join fisik.
+    // docs/production_scheduling_wo_generation_delta.md §1 -- WoGenerationService
+    // mengisi prd_wo.source_delivery_id, dipakai Screen #1 (wo-generate.blade.php)
+    // cegah baris yang sudah digenerate muncul lagi di picklist.
+    public function generatedWos(): HasMany
+    {
+        return $this->hasMany(PrdWo::class, 'source_delivery_id', 'id_delivery');
     }
 }

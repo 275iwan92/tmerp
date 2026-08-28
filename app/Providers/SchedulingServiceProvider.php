@@ -10,6 +10,7 @@ use App\Services\Scheduling\MachineCalendarService;
 use App\Services\Scheduling\PdrEngine;
 use App\Services\Scheduling\RateBandResolver;
 use App\Services\Scheduling\SchedulingRuleEngine;
+use App\Services\Scheduling\WoGenerationService;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -55,6 +56,10 @@ class SchedulingServiceProvider extends ServiceProvider
 
         $this->app->singleton(InterruptionOptionGenerator::class, function ($app) {
             return new InterruptionOptionGenerator($app->make(PdrEngine::class));
+        });
+
+        $this->app->singleton(WoGenerationService::class, function ($app) {
+            return new WoGenerationService($app->make(BackwardSchedulingService::class));
         });
     }
 }
