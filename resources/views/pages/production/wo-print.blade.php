@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Master\MatRaw;
 use App\Models\Master\OrgCompany;
 use App\Models\Prd\PrdWo;
 use App\Models\Sdi\IqpPartMaterial;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -13,7 +15,10 @@ use Livewire\Component;
 // -- pencatatan digital tetap lewat F15 "Catat Output" di WO Detail, form
 // ini semata backup/checklist fisik shift/mesin yang belum tentu selalu
 // pegang tablet. Bill of Material ditampilkan sbg referensi (bukan
-// utk diisi).
+// utk diisi). Diselaraskan 2026-08-28 sama kolom baru WO Detail hasil
+// rombak (Operator terjadwal + Qty Kebutuhan/Tersedia/Harus Dibeli) --
+// dipola persis dari billOfMaterialRows() wo-entry.blade.php, sengaja
+// diduplikasi (bukan diekstrak ke trait) supaya print tetap berdiri sendiri.
 new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $woId;
@@ -26,7 +31,7 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function wo(): PrdWo
     {
-        return PrdWo::with(['coOrder', 'product', 'operations' => fn ($q) => $q->orderBy('seq_no')])->findOrFail($this->woId);
+        return PrdWo::with(['coOrder', 'product', 'operations.crew.employee' => fn ($q) => $q->orderBy('seq_no')])->findOrFail($this->woId);
     }
 
     #[Computed]
@@ -43,6 +48,27 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
         }
 
         return IqpPartMaterial::where('part_id', $this->wo->source_iqp_part_id)->orderBy('layer_seq')->get();
+    }
+
+    #[Computed]
+    public function billOfMaterialRows()
+    {
+        return $this->billOfMaterial->map(function ($mat) {
+            $rawmat = $mat->rawmat_id ? MatRaw::find($mat->rawmat_id) : null;
+            $unit = $rawmat?->uom_stock ?: 'Pcs';
+            $qtyKebutuhan = (float) $this->wo->qty;
+            $qtyTersedia = $mat->rawmat_id
+                ? (float) DB::connection('tm2inv')->table('v_rm_available')->where('material_id', $mat->rawmat_id)->sum('qty_available')
+                : 0.0;
+
+            return (object) [
+                'name' => $mat->rawmat_name,
+                'unit' => $unit,
+                'qty_kebutuhan' => $qtyKebutuhan,
+                'qty_tersedia' => $qtyTersedia,
+                'qty_harus_dibeli' => max(0, $qtyKebutuhan - $qtyTersedia),
+            ];
+        });
     }
 };
 ?>
@@ -78,20 +104,22 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
             </x-print.party>
         </x-print.parties>
 
-        <x-print.section number="1" title="Bill of Process" hint="isi kolom kosong secara manual di lapangan">
+        <x-print.section number="1" title="Bill of Process" hint="kolom putih terisi rencana, kolom kosong isi manual di lapangan">
             <table class="bop">
                 <thead>
                     <tr>
                         <th style="width:4%">Seq</th>
-                        <th style="width:16%">Proses</th>
-                        <th style="width:14%">Mesin</th>
-                        <th style="width:9%">Target/Jam</th>
-                        <th style="width:9%">Jam Mulai</th>
-                        <th style="width:9%">Jam Selesai</th>
-                        <th style="width:9%">Qty Baik</th>
-                        <th style="width:8%">Reject</th>
-                        <th style="width:8%">Waste</th>
-                        <th style="width:14%">Paraf Operator</th>
+                        <th style="width:13%">Proses</th>
+                        <th style="width:12%">Mesin</th>
+                        <th style="width:10%">Operator</th>
+                        <th style="width:8%">Target/Jam</th>
+                        <th style="width:8%">Rencana Mulai</th>
+                        <th style="width:8%">Aktual Mulai</th>
+                        <th style="width:8%">Aktual Selesai</th>
+                        <th style="width:8%">Qty Baik</th>
+                        <th style="width:7%">Reject</th>
+                        <th style="width:7%">Waste</th>
+                        <th style="width:7%">Paraf</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,7 +128,9 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                             <td class="c">{{ $op->seq_no }}</td>
                             <td class="l"><b>{{ $op->process_name ?: '—' }}</b></td>
                             <td class="l">{{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : 'Manual' }}</td>
+                            <td class="l">{{ $op->operatorUtama()?->employee?->full_name ?? '—' }}</td>
                             <td class="c">{{ $op->rate_band_value ? number_format((float) $op->rate_band_value, 0, ',', '.') : '—' }}</td>
+                            <td class="c">{{ $op->target_start?->format('d/m H:i') ?? '—' }}</td>
                             <td class="blank"></td>
                             <td class="blank"></td>
                             <td class="blank"></td>
@@ -109,28 +139,30 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                             <td class="blank"></td>
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="c" style="padding:14px;color:var(--print-muted)">Belum ada proses.</td></tr>
+                        <tr><td colspan="12" class="c" style="padding:14px;color:var(--print-muted)">Belum ada proses.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </x-print.section>
 
-        @if ($this->billOfMaterial->isNotEmpty())
-            <x-print.section number="2" title="Bill of Material" hint="referensi -- tidak untuk diisi">
+        @if ($this->billOfMaterialRows->isNotEmpty())
+            <x-print.section number="2" title="Bill of Material" hint="Qty Kebutuhan/Tersedia referensi -- kolom Diambil isi manual saat pengambilan gudang">
                 <table class="bom">
                     <thead>
                         <tr>
-                            <th class="l" style="width:50%">Material</th>
-                            <th style="width:25%">Gramatur</th>
-                            <th style="width:25%">Ukuran</th>
+                            <th class="l" style="width:40%">Material</th>
+                            <th style="width:18%">Qty Kebutuhan</th>
+                            <th style="width:18%">Qty Tersedia (Gudang)</th>
+                            <th style="width:24%">Qty Diambil (paraf)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($this->billOfMaterial as $mat)
+                        @foreach ($this->billOfMaterialRows as $row)
                             <tr>
-                                <td class="l">{{ $mat->rawmat_name }}</td>
-                                <td>{{ $mat->gram_weight ? number_format((float) $mat->gram_weight, 0, ',', '.').' gsm' : '—' }}</td>
-                                <td>{{ $mat->size_p && $mat->size_l ? number_format((float) $mat->size_p, 1, ',', '.').' x '.number_format((float) $mat->size_l, 1, ',', '.').' cm' : '—' }}</td>
+                                <td class="l">{{ $row->name }}</td>
+                                <td>{{ number_format($row->qty_kebutuhan, 0, ',', '.') }} {{ $row->unit }}</td>
+                                <td>{{ number_format($row->qty_tersedia, 0, ',', '.') }} {{ $row->unit }}</td>
+                                <td class="blank"></td>
                             </tr>
                         @endforeach
                     </tbody>

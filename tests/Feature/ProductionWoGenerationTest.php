@@ -74,17 +74,22 @@ class ProductionWoGenerationTest extends TestCase
         );
     }
 
-    public function test_screen1_picklist_excludes_already_generated_delivery(): void
+    // Screen #1 (picklist berdiri sendiri, wo-generate.blade.php) DIHAPUS
+    // 2026-08-28 -- fungsinya digabung jadi modal dalam WO Detail
+    // (production.wo.new / tombol "Pilih Plan Delivery Lain"), lihat
+    // ProductionWoDetailRebuildTest::test_plan_delivery_modal_generates_wo_and_redirects.
+    public function test_delivery_picklist_modal_excludes_already_generated_delivery(): void
     {
         $this->actingAs($this->admin());
         $wo = $this->seededWo();
 
-        // delivery id yg SUDAH generate WO tak boleh muncul lagi di picklist,
+        // delivery id yg SUDAH generate WO tak boleh muncul lagi di modal,
         // meski baris co_order_delivery LAIN utk CO yang sama masih eligible
         // (migration 000021 sengaja nambah 1 partial shipment lagi utk demo
         // picklist tak kosong -- jadi assert per delivery_id, bukan per no. CO).
-        $html = Livewire::test('pages::production.wo-generate')->html();
-        $this->assertStringNotContainsString('generate('.$wo->source_delivery_id.')', $html);
+        $test = Livewire::test('pages::production.wo-entry')->call('openDeliveryModal');
+        $html = $test->html();
+        $this->assertStringNotContainsString('pickPlanDelivery('.$wo->source_delivery_id.')', $html);
     }
 
     public function test_screen2_bill_of_process_is_editable_while_draft(): void

@@ -125,7 +125,6 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_SFG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'SFG']),
             'PROD_MPS' => route('production.scheduling-board'),
             'PROD_WO_LIST' => route('production.wo.list'),
-            'PROD_WO_GENERATE' => route('production.wo.generate'),
             // Production Output (F15) belum punya layar sendiri -- catat output
             // per task dari WO Detail (masuk lewat Worklist WO), lihat
             // wo-entry.blade.php "Catat Output". Menu ini cuma pintu masuk.

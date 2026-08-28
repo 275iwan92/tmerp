@@ -46,7 +46,13 @@ use Livewire\Component;
 // _employee_rate (§4.2/4.3 delta doc), selalu bisa di-override manual.
 new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 {
-    public int $wo;
+    // Nullable -- layar ini SEKARANG juga jadi entry point "Add New WO"
+    // (route production.wo.new, tanpa {wo} di URL). Permintaan user
+    // 2026-08-28: hapus Screen #1 (wo-generate.blade.php) yang berdiri
+    // sendiri, gabung ke sini -- WO Detail = tempat mulai (belum ada WO,
+    // modal Plan Delivery kebuka otomatis) SEKALIGUS tempat edit (WO sudah
+    // ada, tab Master Card/BOP/BOM terisi).
+    public ?int $wo = null;
 
     // QC reject modal
     public ?int $qcRejectOperationId = null;
@@ -99,9 +105,15 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     // sendiri, pola sama beberapa computed lain di codebase ini.
     public bool $showDeliveryModal = false;
 
-    public function mount(int $wo): void
+    public function mount(?int $wo = null): void
     {
         $this->wo = $wo;
+
+        if ($this->wo === null) {
+            // "Add New WO" -- belum ada WO dipilih, langsung buka modal
+            // picklist Plan Delivery supaya PPIC tidak lihat layar kosong.
+            $this->showDeliveryModal = true;
+        }
     }
 
     public function openDeliveryModal(): void
@@ -751,13 +763,18 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 <div x-data="{ toastMsg: '', toastShow: false, toastTimer: null, tab: 'mc' }"
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">📋 WO Detail</b>
-        <span class="text-xs text-white/75">{{ $this->workOrder->wo_no }}</span>
-        @if ($this->workOrder->is_hot_job)
-            <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 HOT</span>
+        @if ($this->wo)
+            <b class="text-[15px]">📋 WO Detail</b>
+            <span class="text-xs text-white/75">{{ $this->workOrder->wo_no }}</span>
+            @if ($this->workOrder->is_hot_job)
+                <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#dc2626] text-white">🔥 HOT</span>
+            @endif
+            <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-white/15 text-white">{{ $this->workOrder->wo_status }}</span>
+            <a href="{{ route('production.wo.print', ['wo' => $this->wo]) }}" target="_blank" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#43508a] hover:brightness-110 text-[11px] font-bold uppercase tracking-wide text-white no-underline">🖨 Cetak</a>
+        @else
+            <b class="text-[15px]">📋 Work Order Baru</b>
+            <span class="text-xs text-white/75">belum ada WO dipilih</span>
         @endif
-        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-white/15 text-white">{{ $this->workOrder->wo_status }}</span>
-        <a href="{{ route('production.wo.print', ['wo' => $this->wo]) }}" target="_blank" class="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#43508a] hover:brightness-110 text-[11px] font-bold uppercase tracking-wide text-white no-underline">🖨 Cetak</a>
         <button type="button" wire:click="backToList" title="Kembali ke Worklist WO"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full hover:brightness-110 cursor-pointer">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
@@ -766,6 +783,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     </header>
 
     <div class="max-w-[1300px] mx-auto my-5 px-4">
+    @if ($this->wo)
 
         {{-- PART #1: strip sumber Plan Delivery + tombol buka modal picklist
              (bukan grid permanen -- docs/production_scheduling_wo_generation_delta.md §5). --}}
@@ -1085,6 +1103,18 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                 <p class="px-3.5 py-2.5 text-[10px] text-muted italic border-t border-[#eef1f5]">Qty Tersedia diambil live dari stok gudang (v_rm_available). Qty Kebutuhan masih simplifikasi = qty WO (belum ikut faktor lembar/plano hasil Imposition). "Qty Harus Dibeli" = selisih sederhana, bukan MRP netting penuh lintas-WO.</p>
             </div>
         </div>
+
+    @else
+        {{-- "Add New WO" -- belum ada WO, ajak PPIC pilih Plan Delivery dulu
+             (modal otomatis kebuka via mount(), tombol ini cuma jaga-jaga
+             kalau ditutup manual). --}}
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] py-16 text-center">
+            <div class="text-4xl mb-3">📋</div>
+            <div class="font-bold text-navy text-[15px] mb-1.5">Belum Ada Work Order Dipilih</div>
+            <p class="text-muted text-xs max-w-[420px] mx-auto mb-4">Pilih 1 baris Plan Delivery yang sudah Confirmed untuk digenerate jadi Work Order baru — Bill of Process &amp; Bill of Material otomatis diambil dari Inquiry.</p>
+            <button type="button" wire:click="openDeliveryModal" class="px-5 py-2.5 rounded-md text-xs font-bold bg-[#16a34a] text-white cursor-pointer">🔍 Pilih Plan Delivery</button>
+        </div>
+    @endif
     </div>
 
     {{-- Modal: Pilih Plan Delivery Lain (Part #1) --}}

@@ -196,20 +196,31 @@ sementara terima banyak "— belum diisi" sampai data itu ada.
 
 ---
 
-## 7. Rute & file (referensi cepat)
+## 7. Rute & file (referensi cepat) — REVISI 2026-08-28 (Screen #1 dihapus)
+
+> Screen #1 berdiri sendiri (`wo-generate.blade.php`, route `production.wo.generate`, menu
+> `PROD_WO_GENERATE`) **DIHAPUS** atas permintaan user — fungsinya (picklist Plan Delivery)
+> digabung jadi **modal** di dalam WO Detail. File screen dihapus, route dihapus, menu dihapus
+> (migration `2026_08_28_000023`). Jangan buat ulang layar terpisah utk ini.
 
 | Layar | Route | File |
 |---|---|---|
-| Screen #1 | `production.wo.generate` | `resources/views/pages/production/wo-generate.blade.php` |
-| Screen #2 | `production.wo.entry` | `resources/views/pages/production/wo-entry.blade.php` |
-| Screen #3 | `production.monitoring` | `resources/views/pages/production/monitoring-dashboard.blade.php` |
+| WO Detail — "Add New" (belum ada WO, modal picklist auto-buka) | `production.wo.new` | `resources/views/pages/production/wo-entry.blade.php` (sama komponen, `$wo=null`) |
+| WO Detail — edit (Master Card/BOP/BOM tab) | `production.wo.entry` | `resources/views/pages/production/wo-entry.blade.php` |
+| Screen #3 (Monitoring Kartu) | `production.monitoring` | `resources/views/pages/production/monitoring-dashboard.blade.php` |
 | Print WO | `production.wo.print` | `resources/views/pages/production/wo-print.blade.php` |
+| Kelola Target Rate Proses×Mesin/Pegawai | `production.process-rate` | `resources/views/pages/production/process-rate.blade.php` |
 
 Screen #3 dipasang ke `sys_app_menu` code **`PROD_MON_WO`** ("Monitoring Work Order") — baris
 lama peninggalan V1 (`target=grid_monitoring_wo.php`, `status_code=NOT_BUILT` sejak 2026-08-08)
-yang ternyata pas jadi slot Screen #3, dipakai ulang bukan bikin kode menu baru. Screen #2 & Print
-WO sengaja TIDAK py menu sendiri — diakses lewat Worklist WO ("↗ Buka") / tombol "🖨 Cetak" di WO
-Detail, pola sama Nota Inquiry (`printnotastandard.md`).
+yang ternyata pas jadi slot Screen #3, dipakai ulang bukan bikin kode menu baru. WO Detail (baik
+mode baru maupun edit) & Print WO sengaja TIDAK py menu top-level sendiri — masuk lewat Worklist
+WO ("+ Generate dari Plan Delivery" → `production.wo.new`, atau "↗ Buka" baris existing →
+`production.wo.entry`) / tombol "🖨 Cetak" di dalam WO Detail, pola sama Nota Inquiry
+(`printnotastandard.md`). Print WO diselaraskan sama kolom baru WO Detail: Bill of Process py
+kolom Operator (rencana) + Rencana Mulai (terisi) + Aktual Mulai/Selesai (kosong utk diisi
+tangan); Bill of Material py Qty Kebutuhan/Tersedia (terisi, sumber sama `billOfMaterialRows()`
+WO Detail) + Qty Diambil (kosong, paraf gudang).
 
 ---
 
