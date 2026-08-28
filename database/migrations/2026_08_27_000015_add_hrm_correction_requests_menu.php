@@ -1,0 +1,45 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+// Menu "Koreksi Data Karyawan" di bawah modul HRM -> pages::hrm.correction-requests
+// (route hrm.correction-requests). Item flat langsung di bawah HRM (pola sama
+// HRM_ATTENDANCE/HRM_PAYROLL/HRM_RECRUITMENT), bukan sub-grup -- ini 1 layar
+// review, bukan kumpulan beberapa layar terkait.
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $sys = DB::connection('tm2sys');
+
+        $hrmId = $sys->table('sys_app_menu')->where('code', 'HRM')->value('id');
+
+        if (! $hrmId || $sys->table('sys_app_menu')->where('code', 'HRM_CORRECTION')->exists()) {
+            return;
+        }
+
+        $nextId = (int) $sys->table('sys_app_menu')->max('id') + 1;
+
+        $sys->table('sys_app_menu')->insert([
+            'id' => $nextId,
+            'parent_id' => $hrmId,
+            'code' => 'HRM_CORRECTION',
+            'label' => 'Koreksi Data Karyawan',
+            'menu_type' => 'item',
+            'object_type' => 'grid',
+            'target_kind' => 'app',
+            'sort_order' => 55,
+            'activate' => true,
+            'status_code' => 'READY_FOR_QC',
+            'status_updated_by' => 'claude_code',
+            'status_updated_at' => now(),
+            'created_at' => now(),
+        ]);
+    }
+
+    public function down(): void
+    {
+        DB::connection('tm2sys')->table('sys_app_menu')->where('code', 'HRM_CORRECTION')->delete();
+    }
+};

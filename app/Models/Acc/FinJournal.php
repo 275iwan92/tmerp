@@ -16,12 +16,12 @@ class FinJournal extends Model
         'journal_code',
         'journal_name',
         'journal_type',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

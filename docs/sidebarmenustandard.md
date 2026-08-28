@@ -120,7 +120,7 @@ user: recordnya memang masuk ke TABEL FISIK yang berbeda per kelas, jadi
 strukturnya harus kelihatan di menu, bukan disembunyikan.
 
 1. **Bahan Baku & Bahan Pembantu** (`stock_class = 'RM'`) — master
-   `MRawMaterial` (`m_raw_material`), sumber transaksi `rm_stock`/`rm_stock_d`/`rm_stockcard`.
+   `MatRaw` (`mat_raw`), sumber transaksi `rm_stock`/`rm_stock_d`/`rm_stockcard`.
 2. **Barang Jadi** (`stock_class = 'FG'`) — master `ProdProduct` (`prod_product`),
    sumber transaksi `fg_stock`/`fg_stock_d`/`fg_stockcard`.
 3. **Barang Setengah Jadi** (`stock_class = 'SFG'`) — master `ProdPart`
@@ -202,7 +202,7 @@ lainnya digarap:
    user) — BUKAN dicampur ke pool RM umum milik perusahaan, karena bahan
    ini secara hukum/akuntansi tetap milik customer (consignment), bukan
    inventory perusahaan. Kemungkinan butuh `warehouse_type` atau flag
-   kepemilikan tersendiri di `m_wh_loc`/`rm_stock_d` (mis. `ownership_type`
+   kepemilikan tersendiri di `wh_loc`/`rm_stock_d` (mis. `ownership_type`
    OWN/CUSTOMER) supaya laporan RM tidak salah menghitungnya sebagai aset
    sendiri — desain persis kolomnya belum diputuskan, perlu dibahas lagi
    saat digarap, jangan diasumsikan sama dengan RM biasa.

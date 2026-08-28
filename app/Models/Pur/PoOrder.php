@@ -20,7 +20,7 @@ class PoOrder extends Model
         'i_payment_term', 'i_delivery_date', 'i_ship_to', 'i_notes',
         'c_dpp', 'c_ppn', 'c_pph', 'c_grand_total', 'c_net_payable',
         'status', 'sent_at', 'is_auto_generated', 'source_note',
-        'revision_no', 'parent_po_id', 'is_cancelled', 'cancel_reason',
+        'revision_no', 'parent_po_id', 'stat_cancel', 'cancel_reason',
         'created_by', 'updated_by',
     ];
 
@@ -30,7 +30,7 @@ class PoOrder extends Model
         'i_quotation_valid_until' => 'date',
         'sent_at' => 'datetime',
         'is_auto_generated' => 'boolean',
-        'is_cancelled' => 'boolean',
+        'stat_cancel' => 'boolean',
     ];
 
     public function lines(): HasMany

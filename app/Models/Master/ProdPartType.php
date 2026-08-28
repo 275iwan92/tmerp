@@ -18,7 +18,7 @@ class ProdPartType extends Model
         'pisau_rate_rp',
         'pakai_laminasi',
         'is_engine_ready',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -27,6 +27,6 @@ class ProdPartType extends Model
         'pisau_rate_rp' => 'decimal:4',
         'pakai_laminasi' => 'boolean',
         'is_engine_ready' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

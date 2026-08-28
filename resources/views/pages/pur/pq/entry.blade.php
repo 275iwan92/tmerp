@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Master\FinCurrency;
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatRaw;
 use App\Models\Pur\PqLine;
 use App\Models\Pur\PqQuotation;
 use App\Models\Pur\PrLine;
@@ -46,13 +46,13 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
     #[Computed]
     public function currencies()
     {
-        return FinCurrency::where('is_active', true)->orderBy('currency_code')->get();
+        return FinCurrency::where('activate', true)->orderBy('currency_code')->get();
     }
 
     #[Computed]
     public function openRequisitions()
     {
-        return PrRequisition::whereIn('status', ['APPROVED', 'PARTIALLY_ORDERED'])->where('is_cancelled', false)->orderByDesc('pr_id')->limit(50)->get();
+        return PrRequisition::whereIn('status', ['APPROVED', 'PARTIALLY_ORDERED'])->where('stat_cancel', false)->orderByDesc('pr_id')->limit(50)->get();
     }
 
     #[Computed]
@@ -63,7 +63,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
         }
         $term = $this->itemSearch;
 
-        return MRawMaterial::where('is_active', true)
+        return MatRaw::where('activate', true)->where('stat_confirm', true)
             ->where(fn ($q) => $q->where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%"))
             ->limit(15)->get();
     }
@@ -112,7 +112,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
             return;
         }
 
-        $material = MRawMaterial::findOrFail($materialId);
+        $material = MatRaw::findOrFail($materialId);
         $login = Auth::user()->login;
         $nextLineNo = ((int) $this->pq->lines()->max('line_no')) + 1;
 
@@ -316,53 +316,21 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
             <div class="grid">
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Supplier</label>
-                    <input readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal PQ</label>
-                    <input type="date" value="{{ $this->pq->i_doc_date?->format('Y-m-d') }}" @disabled($readOnly)
-                        wire:change="updateHeader('i_doc_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Berlaku s/d</label>
-                    <input type="date" value="{{ $this->pq->i_quotation_valid_until?->format('Y-m-d') }}" @disabled($readOnly)
-                        wire:change="updateHeader('i_quotation_valid_until', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">PR Acuan (opsional)</label>
-                    <select @disabled($readOnly) wire:change="updateHeader('i_pr_id', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        <option value="">— tidak ada —</option>
-                        @foreach ($this->openRequisitions as $pr)
-                            <option value="{{ $pr->pr_id }}" @selected($this->pq->i_pr_id === $pr->pr_id)>{{ $pr->doc_no }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Mata Uang</label>
-                    <select @disabled($readOnly) wire:change="updateHeader('i_currency_id', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        <option value="">— pilih —</option>
-                        @foreach ($this->currencies as $c)
-                            <option value="{{ $c->id_currency }}" @selected($this->pq->i_currency_id === $c->id_currency)>{{ $c->currency_code }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kurs</label>
-                    <input type="number" step="0.000001" value="{{ $this->pq->i_fx_rate }}" @disabled($readOnly)
-                        wire:change="updateHeader('i_fx_rate', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Syarat Bayar</label>
-                    <input type="text" value="{{ $this->pq->i_payment_term }}" @disabled($readOnly)
-                        wire:change="updateHeader('i_payment_term', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Lead Time Umum (hari)</label>
-                    <input type="number" value="{{ $this->pq->i_lead_time_day }}" @disabled($readOnly)
-                        wire:change="updateHeader('i_lead_time_day', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
+                <x-form.input label="Supplier" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
+                <x-form.input label="Tanggal PQ" type="date" value="{{ $this->pq->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                    wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="Berlaku s/d" type="date" value="{{ $this->pq->i_quotation_valid_until?->format('Y-m-d') }}" :disabled="$readOnly"
+                    wire:change="updateHeader('i_quotation_valid_until', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.select label="PR Acuan (opsional)" :disabled="$readOnly" wire:change="updateHeader('i_pr_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    placeholder="— tidak ada —" :selected="$this->pq->i_pr_id" :options="$this->openRequisitions->pluck('doc_no', 'pr_id')->all()" />
+                <x-form.select label="Mata Uang" :disabled="$readOnly" wire:change="updateHeader('i_currency_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    :selected="$this->pq->i_currency_id" :options="$this->currencies->pluck('currency_code', 'id_currency')->all()" />
+                <x-form.input label="Kurs" type="number" step="0.000001" value="{{ $this->pq->i_fx_rate }}" :disabled="$readOnly"
+                    wire:change="updateHeader('i_fx_rate', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="Syarat Bayar" value="{{ $this->pq->i_payment_term }}" :disabled="$readOnly"
+                    wire:change="updateHeader('i_payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.input label="Lead Time Umum (hari)" type="number" value="{{ $this->pq->i_lead_time_day }}" :disabled="$readOnly"
+                    wire:change="updateHeader('i_lead_time_day', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
             <div class="mt-3">
                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Catatan</label>
@@ -414,19 +382,19 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                                 <td class="px-3 py-2 text-muted">{{ $line->line_no }}</td>
                                 <td class="px-3 py-2">{{ $line->i_description }} @if($line->pr_line_id) <span class="text-[9px] text-muted">(dari PR)</span> @endif</td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_qty }}" @disabled($readOnly)
-                                        wire:change="updateLine({{ $line->pq_line_id }}, 'i_qty', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_qty }}" :disabled="$readOnly"
+                                        wire:change="updateLine({{ $line->pq_line_id }}, 'i_qty', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2">{{ $line->i_uom }}</td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_price_fx }}" @disabled($readOnly)
-                                        wire:change="updateLine({{ $line->pq_line_id }}, 'i_price_fx', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_price_fx }}" :disabled="$readOnly"
+                                        wire:change="updateLine({{ $line->pq_line_id }}, 'i_price_fx', $event.target.value)" class="w-24 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right font-mono text-muted">{{ number_format((float) $line->c_price_idr, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right font-mono font-semibold">{{ number_format((float) $line->c_subtotal_idr, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" value="{{ $line->i_lead_time_day }}" @disabled($readOnly)
-                                        wire:change="updateLine({{ $line->pq_line_id }}, 'i_lead_time_day', $event.target.value)" class="w-16 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" value="{{ $line->i_lead_time_day }}" :disabled="$readOnly"
+                                        wire:change="updateLine({{ $line->pq_line_id }}, 'i_lead_time_day', $event.target.value)" class="w-16 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2">
                                     @if (! $readOnly)
@@ -485,7 +453,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                 @endif
                 <div class="flex gap-2 items-end mt-2">
                     <div class="flex-1">
-                        <textarea wire:model="cancelReason" rows="1" placeholder="Alasan pembatalan (min. 10 karakter)..." class="w-full border border-[#d7dbe2] rounded px-2.5 py-1.5 text-xs"></textarea>
+                        <x-form.textarea wire:model="cancelReason" rows="1" placeholder="Alasan pembatalan (min. 10 karakter)..." />
                     </div>
                     <button type="button" wire:click="cancelPq" wire:confirm="Batalkan PQ ini?" class="border border-[#d7dbe2] text-[#a3241f] text-xs font-bold px-4 py-2 rounded-md">Batalkan</button>
                 </div>

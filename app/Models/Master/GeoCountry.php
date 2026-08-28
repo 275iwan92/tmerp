@@ -23,13 +23,13 @@ class GeoCountry extends Model
         'land_area_km2',
         'currency_id',
         'tax_percentage',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function regions(): HasMany

@@ -45,7 +45,7 @@ class UatKeyPersonSeeder extends Seeder
                     'default_password' => $plain, // accessor -> encrypt
                     'must_change_password' => true,
                     'active' => 1,
-                    'is_active' => 1,
+                    'activate' => 1,
                     'is_admin' => 0,
                     'approval_status' => 'approved',
                     'theme_code' => 'navy',

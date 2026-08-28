@@ -204,7 +204,7 @@ class VendorMigrationService
                             CustCustomer::create(array_merge($data, $areaFields, $paymentTermFields, [
                                 'customer_code' => $v->vendor_code,
                                 'legacy_vendor_code' => $v->vendor_code,
-                                'is_active' => true,
+                                'activate' => true,
                                 'created_by' => $actor,
                             ]));
                             $report['customers']['created']++;
@@ -226,7 +226,7 @@ class VendorMigrationService
                             SupSupplier::create(array_merge($data, $areaFields, $paymentTermFields, [
                                 'supplier_code' => $v->vendor_code,
                                 'legacy_vendor_code' => $v->vendor_code,
-                                'is_active' => true,
+                                'activate' => true,
                                 'created_by' => $actor,
                             ]));
                             $report['suppliers']['created']++;
@@ -257,7 +257,7 @@ class VendorMigrationService
                         'bank_code' => $this->blank($b->bank_code),
                         'bank_account_no' => $this->blank($b->bank_account_no),
                         'bank_account_name' => $this->blank($b->bank_account_name),
-                        'is_active' => true,
+                        'activate' => true,
                         'updated_by' => $actor,
                     ];
 

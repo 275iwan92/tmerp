@@ -91,7 +91,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
 
         // Label mockup "Username atau email" — terima keduanya di kolom yang sama.
         $user = SecUser::query()->where('login', $login)->orWhere('email', $login)->first();
-        $ok = $user && $user->active && $user->is_active && Hash::check($this->pswd, (string) $user->pswd);
+        $ok = $user && $user->active && $user->activate && Hash::check($this->pswd, (string) $user->pswd);
 
         // BRIEF §3.1.3: catat SETIAP percobaan, berhasil atau gagal.
         SecLoginAttempt::create([

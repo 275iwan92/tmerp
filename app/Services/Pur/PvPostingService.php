@@ -2,8 +2,8 @@
 
 namespace App\Services\Pur;
 
-use App\Models\Master\DocRmprefix1;
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatCategory;
+use App\Models\Master\MatRaw;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PvReceipt;
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\DB;
 // Invoice supplier belum dibangun (fin_invoice_line, PROC_TIER_3 §7.2 masih
 // TODO) -- saat modul itu ada nanti, pelunasannya Dr GR/IR / Cr Hutang Usaha,
 // pola standar 4 ERP besar itu utk celah "barang sudah masuk, tagihan belum".
-// Akun diambil dari m_raw_material per item, fallback ke doc_rmprefix1 per
+// Akun diambil dari mat_raw per item, fallback ke doc_rmprefix1 per
 // kategori kalau item belum di-set (JournalPostingService::resolveAccount()).
 // Baris yang akun-nya (item maupun kategori) sama2 kosong DILEWATI dari jurnal
 // (bukan diblokir) -- PV tetap boleh diposting scr fisik/stok, cuma dikasih
@@ -114,8 +114,8 @@ class PvPostingService
                 continue;
             }
 
-            $material = MRawMaterial::find($line->item_id);
-            $prefix1 = $material ? DocRmprefix1::where('category1', $material->category1)->first() : null;
+            $material = MatRaw::find($line->item_id);
+            $prefix1 = $material ? MatCategory::level(1)->where('category_name', $material->category1)->first() : null;
 
             $stockAccountId = app(JournalPostingService::class)->resolveAccount($material?->stock_asset_account_id, $prefix1?->default_stock_asset_account_id);
             $grIrAccountId = app(JournalPostingService::class)->resolveAccount($material?->gr_ir_account_id, $prefix1?->default_gr_ir_account_id);

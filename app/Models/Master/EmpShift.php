@@ -18,13 +18,13 @@ class EmpShift extends Model
         'department_id',
         'shift_name',
         'description',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function department(): BelongsTo

@@ -164,7 +164,7 @@ class CostingEngine
         $t = (float) $part->i_dim_tinggi_mm;
         $lidahLem = (float) $part->i_lidah_lem_mm;
 
-        $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('is_active', true)->first() : null;
+        $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('activate', true)->first() : null;
         if (! $allowance) {
             throw new \RuntimeException("flute_type '{$part->flute_type}' tidak ditemukan di mat_flute_allowance.");
         }

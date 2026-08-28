@@ -22,12 +22,12 @@ class SupCategory extends Model
     protected $fillable = [
         'category_code',
         'description',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

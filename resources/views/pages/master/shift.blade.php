@@ -31,7 +31,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
 
     public ?int $department_id = null;
 
-    public bool $shift_is_active = true;
+    public bool $shift_activate = true;
 
     // index 0..6 -> dayOrder[index]
     public array $days = [];
@@ -51,7 +51,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function departmentOptions()
     {
-        return OrgDepartment::query()->where('is_active', true)->orderBy('department_name')->get();
+        return OrgDepartment::query()->where('activate', true)->orderBy('department_name')->get();
     }
 
     protected function blankDays(): array
@@ -76,7 +76,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
             $s = EmpShift::with('details')->findOrFail($id);
             $this->shift_name = $s->shift_name;
             $this->department_id = $s->department_id;
-            $this->shift_is_active = (bool) $s->is_active;
+            $this->shift_activate = (bool) $s->activate;
 
             foreach ($s->details as $detail) {
                 $idx = array_search($detail->day_of_week, $this->dayOrder);
@@ -90,7 +90,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
             }
         } else {
             $this->reset(['shift_name', 'department_id']);
-            $this->shift_is_active = true;
+            $this->shift_activate = true;
         }
 
         $this->panel = 'form';
@@ -117,7 +117,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
         $data = $this->validate([
             'shift_name' => ['required', 'string', 'max:150'],
             'department_id' => ['required', 'integer', 'exists:tm2mst.org_department,department_id'],
-            'shift_is_active' => ['boolean'],
+            'shift_activate' => ['boolean'],
             'days' => ['array', 'size:7'],
             'days.*.day_of_week' => ['required', 'string', 'in:'.implode(',', $this->dayOrder)],
             'days.*.start_time' => ['nullable', 'date_format:H:i'],
@@ -129,7 +129,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
         $payload = [
             'shift_name' => $data['shift_name'],
             'department_id' => $data['department_id'],
-            'is_active' => $data['shift_is_active'],
+            'activate' => $data['shift_activate'],
             'updated_by' => Auth::user()->login,
         ];
 
@@ -171,7 +171,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
     public function toggleActive(int $id): void
     {
         $s = EmpShift::findOrFail($id);
-        $s->is_active = ! $s->is_active;
+        $s->activate = ! $s->activate;
         $s->updated_by = Auth::user()->login;
         $s->save();
 
@@ -187,41 +187,23 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function statActive(): int
     {
-        return EmpShift::where('is_active', true)->count();
+        return EmpShift::where('activate', true)->count();
     }
 
     #[Computed]
     public function statInactive(): int
     {
-        return EmpShift::where('is_active', false)->count();
+        return EmpShift::where('activate', false)->count();
     }
 
     #[Computed]
     public function statDepartments(): int
     {
-        return EmpShift::where('is_active', true)->distinct('department_id')->count('department_id');
+        return EmpShift::where('activate', true)->distinct('department_id')->count('department_id');
     }
 
-    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
@@ -230,42 +212,31 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <div class="grid gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Shift</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statActive }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
-                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Departemen Terpakai</p>
-                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->statDepartments }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Nonaktif</p>
-                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statInactive }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total Shift" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" label="Departemen Terpakai" :value="$this->statDepartments" />
+            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
+        </x-grid.stat-row>
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
             Direplikasi dari struktur legacy (<code>m_shifts</code> + <code>m_shifts_details</code>): 1 shift = 1 header + jam kerja per hari (Senin–Minggu bisa beda), lengkap jam istirahat. Klik <b>✎</b> untuk buka detail jamnya.
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama shift / departemen…"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openModal('new')"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openModal('new')"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -279,29 +250,25 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->shifts as $s)
                             <tr wire:key="shift-{{ $s->shift_id }}" wire:dblclick="openModal('edit', {{ $s->shift_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($s->shift_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($s->shift_name) }}</div>
-                                        <div class="font-semibold text-navy text-[13px]">{{ $s->shift_name }}</div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$s->shift_id" :name="$s->shift_name" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $s->department?->department_name ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[#667]">{{ $s->scheduleSummary() }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $s->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $s->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $s->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $s->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openModal('edit', {{ $s->shift_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click.stop="toggleActive({{ $s->shift_id }})" wire:confirm="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }} shift {{ $s->shift_name }}?"
-                                        title="{{ $s->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $s->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $s->shift_id }})" />
+                                    <x-grid.action-icon icon="⏻" :title="$s->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $s->shift_id }})"
+                                        :confirm="($s->activate ? 'Nonaktifkan' : 'Aktifkan').' shift '.$s->shift_name.'?'"
+                                        :variant="$s->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                            <x-grid.empty-row :colspan="5" message="Tidak ada." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
         @endif
 
@@ -315,20 +282,12 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
             </div>
             <form wire:submit="save" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Shift *</label>
-                            <input type="text" wire:model="shift_name" placeholder="mis. TM Production Shift 1" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('shift_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Nama Shift *" name="shift_name" wire:model="shift_name" placeholder="mis. TM Production Shift 1" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Departemen *</label>
-                            <select wire:model="department_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->departmentOptions as $d)
-                                    <option value="{{ $d->department_id }}">{{ $d->department_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('department_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.select label="Departemen *" name="department_id" wire:model="department_id"
+                                :options="$this->departmentOptions->pluck('department_name', 'department_id')" :selected="$department_id" />
                         </div>
                     </div>
 
@@ -364,9 +323,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="text-[11px] text-muted">Kosongkan Masuk &amp; Pulang untuk menandai hari tidak beroperasi.</div>
 
-                    <label class="flex items-center gap-2 text-[13px] text-[#334] mt-1">
-                        <input type="checkbox" wire:model="shift_is_active"> Aktif
-                    </label>
+                    <x-form.checkbox label="Aktif" wire:model="shift_activate" />
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
                         <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>

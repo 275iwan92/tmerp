@@ -87,27 +87,6 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
         return self::TYPE_LABELS[$type] ?? $type;
     }
 
-    // GRID_UI_STANDARD.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
-
     #[Computed]
     public function inquiries()
     {
@@ -331,7 +310,7 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
                                     wire:click="selectRow({{ $row->id_inquiry }})" wire:dblclick="openRow({{ $row->id_inquiry }})" title="Klik 2x untuk buka">
                                     <td>
                                         <div class="flex items-center gap-2.5">
-                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($row->product_draft_name ?: $custName) }}</div>
+                                            <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($row->id_inquiry) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($row->product_draft_name ?: $custName) }}</div>
                                             <div>
                                                 <div class="font-semibold text-[13px] text-navy">{{ $row->product_draft_name ?: '(tanpa nama produk)' }}</div>
                                                 <div class="text-[11px] text-muted">

@@ -30,7 +30,7 @@ class InquiryToolingCostSmokeTest extends TestCase
 
     public function test_form_saves_tooling_discount_and_external_cost(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])

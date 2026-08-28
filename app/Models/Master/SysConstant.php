@@ -18,23 +18,23 @@ class SysConstant extends Model
         'constant_number',
         'constant_text',
         'description',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'constant_number' => 'decimal:6',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public static function number(string $key, float $default = 0.0): float
     {
-        return (float) (static::query()->where('constant_key', $key)->where('is_active', true)->value('constant_number') ?? $default);
+        return (float) (static::query()->where('constant_key', $key)->where('activate', true)->value('constant_number') ?? $default);
     }
 
     public static function text(string $key, ?string $default = null): ?string
     {
-        return static::query()->where('constant_key', $key)->where('is_active', true)->value('constant_text') ?? $default;
+        return static::query()->where('constant_key', $key)->where('activate', true)->value('constant_text') ?? $default;
     }
 }

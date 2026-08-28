@@ -12,7 +12,7 @@ class FlowPositionActing extends Model
 
     protected $primaryKey = 'acting_id';
 
-    protected $fillable = ['position_id', 'acting_user_id', 'start_date', 'end_date', 'reason', 'is_active', 'created_by', 'updated_by'];
+    protected $fillable = ['position_id', 'acting_user_id', 'start_date', 'end_date', 'reason', 'activate', 'created_by', 'updated_by'];
 
     protected $casts = [
         'start_date' => 'date',

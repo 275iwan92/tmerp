@@ -59,7 +59,7 @@ class AuthPagesSmokeTest extends TestCase
         $this->createdUserId = $user->id_user;
 
         $this->assertFalse((bool) $user->active);
-        $this->assertFalse((bool) $user->is_active);
+        $this->assertFalse((bool) $user->activate);
         $this->assertSame('customer', $user->reg_type);
         $this->assertSame('3201011234560001', $user->id_number);
         $this->assertStringStartsWith('test.register.', $user->login);

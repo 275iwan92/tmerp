@@ -19,13 +19,13 @@ class GeoCity extends Model
         'city_type',
         'city_name',
         'post_code',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function region(): BelongsTo

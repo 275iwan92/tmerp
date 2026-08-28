@@ -125,7 +125,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function machines()
     {
-        return ProdMachine::query()->where('division_id', $this->offsetDivisionId())->where('is_active', true)->orderBy('machine_code')->get();
+        return ProdMachine::query()->where('division_id', $this->offsetDivisionId())->where('activate', true)->orderBy('machine_code')->get();
     }
 
     #[Computed]
@@ -133,7 +133,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     {
         return EmpShift::query()
             ->whereHas('department', fn ($q) => $q->where('division_id', $this->offsetDivisionId()))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('shift_name')
             ->get();
     }
@@ -143,7 +143,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     {
         return EmpEmployee::query()
             ->whereHas('position.department', fn ($q) => $q->where('division_id', $this->offsetDivisionId()))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->when($this->poolSearch !== '', fn ($q) => $q->where('full_name', 'like', "%{$this->poolSearch}%"))
             ->orderBy('full_name')
             ->get();
@@ -439,7 +439,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function hrDivisions()
     {
-        return OrgDivision::query()->where('division_code', '!=', 'OFFSET')->where('is_active', true)->orderBy('division_name')->get();
+        return OrgDivision::query()->where('division_code', '!=', 'OFFSET')->where('activate', true)->orderBy('division_name')->get();
     }
 
     #[Computed]
@@ -451,7 +451,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 
         return EmpShift::query()
             ->whereHas('department', fn ($q) => $q->where('division_id', $this->hrDivisionId))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('shift_name')
             ->get();
     }
@@ -465,7 +465,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
 
         return EmpEmployee::query()
             ->whereHas('position.department', fn ($q) => $q->where('division_id', $this->hrDivisionId))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('full_name')
             ->get();
     }

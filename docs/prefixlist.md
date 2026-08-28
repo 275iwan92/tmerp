@@ -18,8 +18,8 @@ Pendekatan ALL-NEW · nama English · prefix per **domain data** (bukan per pema
 |--------|--------|--------------|
 | `cust_` | Customer | cust_customer, cust_group, cust_address, cust_contact, cust_term |
 | `prod_` | Product & Proses produksi | prod_product, prod_type, prod_category, prod_bom, prod_process, prod_routing, prod_coating_type, prod_parts_process, prod_cfg_ink |
-| `mat_`  | Material & HARGA bahan/proses | mat_raw, mat_paper, mat_paper_grammage, mat_coating_rate, mat_film_rate, mat_sheet_rate, mat_sheet_discount_tier |
-| `inv_`  | Inventory | inv_item, inv_warehouse, inv_location, inv_allocation |
+| `mat_`  | Material & HARGA bahan/proses + spesifikasi fisik | mat_raw, mat_category, mat_coating_rate, mat_grammage, mat_sheet_rate, mat_sheet_discount_tier, mat_flute_allowance, mat_plano_size |
+| `wh_`   | Struktur gudang (master, dipakai lintas modul Sales/Procurement/Inventory) | wh_warehouse, wh_loc |
 | `uom_`  | Unit measure | uom_unit, uom_conversion, uom_group |
 | `sup_`  | Supplier | sup_supplier, sup_sheet_supplier, sup_contact |
 | `emp_`  | Employee (data orang) | emp_employee, emp_contract, emp_family, emp_document, emp_bank_account, emp_shift |
@@ -59,30 +59,47 @@ Pendekatan ALL-NEW · nama English · prefix per **domain data** (bukan per pema
 
 ## D. KOLOM BAKU (baseline)
 
+> **Update 2026-08-26 (DEC-FIELDNAME-STATUS):** `is_active` → **`activate`**
+> (1 kata, bukan `is_*`), `is_confirmed`/`is_cancelled` → **`stat_confirm`**/
+> **`stat_cancel`** (prefix `stat_` = status siklus dokumen; juga sediakan
+> `stat_close` kalau nanti ada fitur "Tutup" dokumen). Berlaku retroaktif ke
+> semua tabel kecuali `sec_user`/`sec_group`/`sec_module`. Progres per
+> database: lihat `docs/fieldrename_state.yaml`.
+
 **Master:**
 ```
-is_active TINYINT(1) NOT NULL DEFAULT 1
+activate TINYINT(1) NOT NULL DEFAULT 1
 created_at / updated_at / created_by / updated_by
 ```
 Master transaksional (cust_customer, prod_product) WAJIB 4 kolom audit.
-Master statis kecil (lkp_) cukup is_active + create/update.
+Master statis kecil (lkp_) cukup activate + create/update.
 
 **Transaksi (semua):**
 ```
 created_by / created_at / updated_by / updated_at
 ```
 + ber-approval: `approved_by` / `approved_at`
-+ confirm/cancel: cukup flag `is_confirmed` / `is_cancelled` + `cancel_reason` (pelaku via updated_by).
++ confirm/cancel/close: flag `stat_confirm` / `stat_cancel` / `stat_close` + `cancel_reason` (pelaku via updated_by).
 
 ---
 
 ## E. KEPUTUSAN TERKUNCI (rangkuman)
-- Flag master = **`is_active`** (bukan is_enable).
+- Flag master = **`activate`** (2026-08-26, ganti dari `is_active`/is_enable).
+- Flag status siklus dokumen = **`stat_confirm`/`stat_cancel`/`stat_close`**
+  (2026-08-26, ganti dari `is_confirmed`/`is_cancelled`).
 - Rate fluktuatif (coating/film/sheet) = **pola versioned + is_active**, hanya **1 baris is_active=1 per jenis**. `effective_date` untuk riwayat; **tanpa end_date**. Proteksi 1-aktif via generated column + unique index (pending konfirmasi).
 - Costing lama aman via **snapshot** ke transaksi (bukan baca master).
 - Currency↔Country: **geo_country.currency_id → fin_currency** (arah dibalik). tax pindah ke country.
 - Prefix **`cost_` DIHAPUS** — tak ada penghuni (semua ke mat_/prod_/ref_).
 - `m_constant` → **`sys_constant`** (domain sistem baru).
+- **2026-08-27**: sisa prefix `m_*` lama (dari dump TIER_3A pertama, di luar
+  kesepakatan) dibereskan: `m_product_type*`/`m_ref_param_option` (5 tabel)
+  dihapus — duplikat murni, tak ada Model/kode yang refer, isinya sudah
+  dipindah ke `prod_type*`/`ref_param_option` sejak 2026-08-18. `m_raw_material`
+  (5894 baris nyata, salah prefix) digabung ke `mat_raw` (prefix benar tapi
+  SELALU kosong sebelumnya — bug: dropdown bahan Inquiry kosong sejak awal,
+  sekarang berfungsi). `m_warehouse`/`m_wh_loc` → `wh_warehouse`/`wh_loc`
+  (prefix domain baru `wh_`). `m_plano_size` → `mat_plano_size`.
 - **`hr_` dipecah** → `emp_` (data orang) + `org_` (struktur organisasi).
 - **`lkp_` → `ref_`**; lookup ber-domain nempel ke induk, `ref_` hanya generik.
 - Inquiry → **`iqp_`** (inquiry product), semua turunan ikut.

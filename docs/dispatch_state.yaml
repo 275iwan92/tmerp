@@ -1,0 +1,78 @@
+# ═══════════════════════════════════════════════════════════════════
+# dispatch_state.yaml — PROGRESS MODUL 05 DISPATCH
+# Update tiap ada keputusan/task baru. Baca DULU tiap sesi Dispatch.
+# ═══════════════════════════════════════════════════════════════════
+modul: "05_dispatch"
+db: tm2sdi
+fase: "1 — Delivery Order + Surat Jalan (satu objek, dua cetakan), konsolidasi lintas-CO, no-merge rule"
+status_umum: >
+  BARU TAHAP SPEC (2026-08-26) -- Tier 1-4 + rules.yaml + state.yaml + mockup HTML simulasi
+  sudah ditulis lengkap, BELUM ADA implementasi Livewire/DDL sungguhan. Sesi ini juga
+  mengoreksi asumsi lama di flowengine_tier1.md §4 (module_code DO dan DN dianggap dua
+  dokumen terpisah) -- diputuskan JADI SATU objek data (do_delivery/do_line) dengan dua
+  cetakan, berdasar riset komparatif SAP/Oracle/D365/Odoo. Keputusan inti lain yang
+  dikunci sesi ini: konsolidasi lintas-CO di level baris (bukan header), no-merge rule
+  (item sama nama tapi beda harga = 2 baris terpisah, kunci identitas co_order_item_id),
+  qty_available dihitung live via VIEW (TIDAK ada ALTER ke co_order_delivery yang sudah
+  live), satu DO = satu shipping event tunggal.
+
+keputusan_terkunci: "-- lihat dispatch_rules.yaml, semua kode DISPATCH-00 s.d. DISPATCH-08 --"
+
+artefak_selesai:
+  - dispatch_tier1.md          # konsep, scope, rantai dokumen, aktor, integrasi, istilah
+  - dispatch_tier2.md          # picker logic, no-merge rule, status lifecycle, validasi, price override, cetak
+  - dispatch_tier3.md          # DDL do_delivery/do_line, VIEW v_co_delivery_outstanding + v_do_list, penomoran, seed UAT
+  - dispatch_tier4.md          # peta layar, wireframe per blok, cara pakai mockup -> implementasi, skenario UAT, checklist wiring
+  - dispatch_rules.yaml
+  - dispatch_state.yaml
+  - mockup_delivery_order.html  # simulasi visual vanilla JS, no-merge rule teruji visual
+
+next_step:
+  - "Buat migration do_delivery + do_line (dispatch_tier3.md §2-3)"
+  - "Buat VIEW v_co_delivery_outstanding + v_do_list (dispatch_tier3.md §4) -- cek dulu apakah cross-DB VIEW tm2sdi->tm2mst diizinkan privilege user aplikasi, kalau tidak fallback ke join level Eloquent (catatan di §4.2)"
+  - "Jalankan seed data UAT (dispatch_tier3.md §6) di environment dev/staging sebelum QA mulai skenario dispatch_tier4.md §8"
+  - "Komponen Livewire DoList (dispatch_tier4.md §2) -- ikuti griduistandard.md persis, termasuk expand-row master-detail §9"
+  - "Komponen Livewire DoEntry (dispatch_tier4.md §3-6) -- putuskan dulu pola persist: auto-save per aksi vs draft-buffer eksplisit, cek konsistensi dgn pola CO Entry existing (lihat dispatch_tier4.md §7.2 catatan)"
+  - "DispatchService: pullLines/confirm/markShipped/cancel (dispatch_tier4.md §9) -- method sama dipanggil dari Entry maupun tombol Confirm di grid, jangan duplikasi"
+  - "Test unit khusus no-merge rule (DISPATCH-02) -- WAJIB ada, ini aturan paling mudah ter-regresi kalau ada refactor query picker"
+  - "Cetak DO (Sisi A) & Surat Jalan (Sisi B) -- pastikan query Surat Jalan benar-benar tidak menyertakan kolom harga, bukan cuma disembunyikan CSS"
+  - "Update sidebarmenustandard.md -- menu Dispatch belum terdaftar"
+  - "Update checklistmockuperp.md MODUL 5 begitu tiap sub-item selesai"
+
+open_items:
+  - id: DISPATCH-STOCK-OUT-FG
+    prioritas: SEDANG
+    isi: >
+      Transisi DO ke SHIPPED seharusnya memicu Stock Out FG di Inventory (aturan INV-06:
+      "FG keluar HANYA lewat Delivery Note"). Tier 1-4 modul ini SENGAJA tidak merancang
+      integrasi ini -- butuh keputusan valuasi COGS FG (AVG/FIFO) tersendiri bersama
+      Inventory. v1 DO murni administratif, tidak menyentuh stok sama sekali.
+  - id: DISPATCH-INVOICING-LINK
+    prioritas: RENDAH (belum jadi blocker, Invoicing/Billing belum digarap)
+    isi: >
+      do_line.qty_invoiced sudah disiapkan (default 0, tidak dipakai modul ini) sebagai
+      pijakan Fase 2. Rekomendasi riset: invoice_line mereferensikan do_line_id (bukan
+      do_delivery_id/co_order_id) agar partial invoicing terhadap partial delivery, dan
+      1-DO-banyak-invoice/banyak-DO-1-invoice, sama-sama mungkin tanpa perubahan struktur.
+  - id: DISPATCH-PRICE-APPROVAL
+    prioritas: RENDAH (kolom reserved sudah cukup untuk v1)
+    isi: >
+      checklistmockuperp.md MODUL 5.2 mencatat "Price-change approval (approval 3-party
+      asli Costing+Sales+Finance)" sebagai item terbuka terpisah, kini boleh dikerjakan
+      karena Finance sudah dibuka scope-nya (DEC-SCOPE-OPEN 2026-08-26). BELUM digarap di
+      Tier ini -- kolom price_overridden/original_unit_price/price_change_approval_status
+      sudah disiapkan di do_line/do_delivery, tinggal disambung flow_config module_code DO
+      kalau/ketika keputusan approval-nya dibuat.
+  - id: DISPATCH-DOC-NO-SEQUENCE
+    prioritas: RENDAH
+    isi: >
+      dispatch_tier3.md §5 mengusulkan pola manual MAX+1 per tahun (sama pola
+      StockPostingService lama), tapi CATATAN eksplisit di situ: cek dulu apakah modul
+      lebih baru sudah pakai sys_sequence sungguhan sebelum Claude Code memutuskan pola
+      penomoran do_no -- jangan asumsikan pola lama otomatis berlaku di sini.
+
+catatan_untuk_sesi_berikutnya: >
+  flowengine_tier1.md §4 masih mencantumkan module_code DO dan DN sebagai dua baris
+  "Aktif" terpisah -- ini SUDAH DI-OVERRIDE oleh DISPATCH-00 (dispatch_rules.yaml), DN
+  tidak dipakai. Kalau nanti membaca flowengine_tier1.md tanpa konteks ini, JANGAN
+  membangun ulang DN sebagai dokumen terpisah -- baca dispatch_tier1.md §1.2 dulu.

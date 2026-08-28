@@ -5,7 +5,15 @@
 modul: "06_finance"
 db: tm2acc
 fase: "1 — GL inti (COA, Voucher, AR/AP subledger, laporan dasar)"
-status_umum: "COA + DOWN PAYMENT JALAN (2026-08-19) — 7 tabel + 4 view tm2acc ter-migrate, seed jurnal/cost-center/COA (54 akun termasuk 143 Uang Muka Pembelian & 232 Uang Muka Penjualan dari downpayment_tier1-4.md). Livewire Master COA (/finance/coa) & DP Invoice (/finance/dp-invoice, Event 1 Terbitkan + Event 2 Catat Pembayaran + Event 4 Alokasi ke invoice final) hidup & teruji terhadap sample tie-out dokumen (Rp55,5jt DP -> alokasi 22,2jt -> sisa 33,3jt, persis). fin_dp_allocation + enum invoice_type CUSTOMER_DP/SUPPLIER_DP TERNYATA sudah diterapkan langsung di MySQL sebelum sesi ini (PK asli allocation_id, bukan dp_allocation_id draf dokumen) — migration 2026_08_19_000020 dibuat idempotent supaya tidak bentrok. Referensi SO/CO mockup diganti input manual (customer + nilai kontrak + no. referensi teks) karena saat itu tm2sdi.co_order belum dibangun — UPDATE 2026-08-20: co_order SEKARANG ADA (lihat sales_state.yaml), tapi field co_id di sini masih belum di-rewiring ke FK asli (belum dikerjakan). Event 3 (invoice final per shipment, milik modul Delivery Order) & PURCHASE DP (cermin) belum digarap. Voucher/Jurnal UI generik & AR/AP UI belum digarap."
+status_umum: "COA + DOWN PAYMENT JALAN (2026-08-19) — 7 tabel + 4 view tm2acc ter-migrate, seed jurnal/cost-center/COA (54 akun termasuk 143 Uang Muka Pembelian & 232 Uang Muka Penjualan dari downpayment_tier1-4.md). Livewire Master COA (/finance/coa) & DP Invoice (/finance/dp-invoice, Event 1 Terbitkan + Event 2 Catat Pembayaran + Event 4 Alokasi ke invoice final) hidup & teruji terhadap sample tie-out dokumen (Rp55,5jt DP -> alokasi 22,2jt -> sisa 33,3jt, persis). fin_dp_allocation + enum invoice_type CUSTOMER_DP/SUPPLIER_DP TERNYATA sudah diterapkan langsung di MySQL sebelum sesi ini (PK asli allocation_id, bukan dp_allocation_id draf dokumen) — migration 2026_08_19_000020 dibuat idempotent supaya tidak bentrok. Referensi SO/CO mockup diganti input manual (customer + nilai kontrak + no. referensi teks) karena saat itu tm2sdi.co_order belum dibangun — UPDATE 2026-08-20: co_order SEKARANG ADA (lihat sales_state.yaml), tapi field co_id di sini masih belum di-rewiring ke FK asli (belum dikerjakan). Event 3 (invoice final per shipment, milik modul Delivery Order) & PURCHASE DP (cermin) belum digarap. Voucher/Jurnal UI generik & AR/AP UI belum digarap.
+
+  ⚠ CATATAN STALENESS (2026-08-27): paragraf di atas berhenti di 2026-08-19 dan TIDAK
+  mencerminkan pekerjaan sesudahnya. checklistmockuperp.md Modul 11 mencatat progres lebih
+  baru yang HARUS dibaca bersamaan dengan file ini: Cash & Bank Journal (BKM/BKK/BBM/BBK,
+  2026-08-22, finance.voucher), JournalPostingService (2026-08-22, auto-jurnal PV & Stock Out
+  RM/SFG), dan DEC-SCOPE-OPEN (2026-08-26, globalstarthere.md) yang membuka penuh scope
+  Finance & HR — bukan lagi ditunda. Sesi berikutnya sebaiknya menulis ulang status_umum ini
+  dari nol berdasarkan kondisi kode aktual, bukan menyambung paragraf lama."
 
 keputusan_terkunci:
   A: "GL terintegrasi BERTAHAP via polymorphic source_type/source_id (fase-1 manual)"
@@ -15,6 +23,20 @@ keputusan_terkunci:
   hapus_business_partners: "partner = ref logical ke cust_customer/sup_supplier; recon-map di fin_partner_account"
   tax_rate: "tax_scheme_code → tm2mst.fin_tax_scheme (bukan hardcode di nama akun)"
   money: "DECIMAL(18,4)"
+  E_partner_segment_2026-08-27: >
+    Segmentasi akun AR/AP customer/supplier pakai trade_type (local/import, huruf kecil).
+    Tabel baru fin_partner_segment_default (partner_type, trade_type) -> account_id, sbg
+    default lapis-1; fin_partner_account (existing) jadi hasil resolve + kolom is_overridden
+    baru supaya override manual user tak tertimpa auto-fill berikutnya. Lihat
+    financeaccounting_delta_partner_category_coa_v2.md §3. STATUS: DDL §3.1-3.2 boleh
+    jalan, Observer auto-fill (§3.3) DITAHAN sampai skema fin_partner_account aktual
+    diverifikasi (belum diupload user per 2026-08-27).
+  F_prod_category_fallback_2026-08-27: >
+    Akun Persediaan/HPP Produk Jadi resolve 3-lapis: prod_part.*_account_id (paling
+    spesifik, existing) -> prod_product.*_account_id (existing) -> prod_category.
+    default_*_account_id (BARU, satu-satunya kolom yang ditambahkan — prod_category,
+    prod_product, prod_part semua SUDAH punya field terkait sebelum sesi ini). Lihat
+    financeaccounting_delta_partner_category_coa_v2.md §2.
 
 artefak_selesai:
   - TIER_3A_FINANCE.sql   # DDL + VIEW v1_ + seed (journal, cost_center, COA 50+ akun)
@@ -24,11 +46,14 @@ artefak_selesai:
   - financeaccounting_tier4.md
   - financeaccounting_rules.yaml
   - financeaccounting_state.yaml
+  - financeaccounting_delta_partner_category_coa_v2.md   # BARU 2026-08-27 — kode akun master+transaksional
 
 next_step:
   - "SELESAI: wiring checklist FIN_TIER_4 §7 (model App\\Models\\Acc\\*, Livewire pages::finance.coa, menu ACC_COA, FinanceMasterSeeder) — 2026-08-19"
   - "Menyusul: layar Voucher/Jurnal (fin_voucher+fin_voucher_line, validasi balance & recon-partner), AR/AP (fin_invoice), Trial Balance report"
   - "Permission FINACC baru di-grant ke DIREKSI (belum ada grup Finance/Costing dedicated, lihat open_items)"
+  - "BARU 2026-08-27: eksekusi Grup A (prod_category fallback) dari financeaccounting_delta_partner_category_coa_v2.md — aman jalan sekarang, delta kecil"
+  - "BARU 2026-08-27: eksekusi Grup B §3.1-3.2 (sup_supplier.trade_type + fin_partner_segment_default) — §3.3 Observer TUNGGU verifikasi fin_partner_account"
 
 open_items:
   - "fin_tax_scheme di tm2mst: konfirmasi SUDAH ada / perlu dibuat + nilai rate (PPN 11/12%, PPh22/23)"
@@ -39,7 +64,14 @@ open_items:
   - "REVISE POSTED: copy-record vs jurnal pembalik akuntansi — pilih untuk fase-2"
   - "Multi-currency USD (kurs/revaluation) — ditunda fase-2"
   - "Auto-posting Sales(CO/DO)/Procurement(PO/Receiving) — fase-2 (hook source_* sudah siap)"
+  - id: FIN-PARTNER-ACCOUNT-VERIFY
+    prioritas: TINGGI
+    isi: "2026-08-27: fin_partner_account statusnya belum dikonfirmasi user (kolom aktual, apakah sudah ada mekanisme serupa dari sesi lain). JANGAN bangun Observer auto-fill (financeaccounting_delta_partner_category_coa_v2.md §3.3) sebelum user upload dump/schema tm2acc terbaru."
+  - id: FIN-ACCOUNT-CODE-SEED-VERIFY
+    prioritas: SEDANG
+    isi: "2026-08-27: sebelum insert akun baru 122 (Piutang Ekspor)/212 (Hutang Impor), verifikasi account_code 121/211/113500 benar ada persis di seed COA aktual — jangan asumsikan dari draf dokumen lama."
 
 catatan:
   - "COA seed diadaptasi dari referensi industri cetak (FBB/Duplex/Kraft, tooling pond, subkon finishing)"
   - "Urutan proses produksi (COATING→LAMINASI) tak berdampak di GL; hanya struktur komponen HPP"
+  - "2026-08-27: cust_customer.ar_account_code YANG DISEBUT draf lama v1 TERNYATA TIDAK PERNAH ADA di skema aktual (diverifikasi dari tm2mst_20260827so.sql) — tidak ada yang perlu dideprecate, sumber kebenaran akun AR/AP sejak awal memang fin_partner_account."

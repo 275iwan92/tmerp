@@ -21,13 +21,13 @@ class FinPaymentTerm extends Model
         'term_label',
         'days',
         'sort_order',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'days' => 'integer',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

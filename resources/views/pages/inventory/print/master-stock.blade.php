@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Master\MRawMaterial;
-use App\Models\Master\MWarehouse;
+use App\Models\Master\MatRaw;
+use App\Models\Master\WhWarehouse;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +53,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
     #[Computed]
     public function warehouses()
     {
-        return MWarehouse::orderBy('warehouse_name')->get();
+        return WhWarehouse::orderBy('warehouse_name')->get();
     }
 
     // Peta item_id -> [kode, nama, kategori-grup, uom, min_stock] generik per
@@ -70,7 +70,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                 'code' => $p->product_code, 'name' => $p->product_name, 'group' => $p->category?->category_name ?: 'Tanpa Kategori',
                 'uom' => $p->uom_stock, 'min_stock' => $p->min_stock,
             ])->all(),
-            default => MRawMaterial::whereIn('material_id', $ids)->get()->keyBy('material_id')->map(fn ($m) => [
+            default => MatRaw::whereIn('material_id', $ids)->get()->keyBy('material_id')->map(fn ($m) => [
                 'code' => $m->material_code, 'name' => $m->material_name, 'group' => $m->category1 ?: 'Tanpa Kategori',
                 'uom' => $m->uom_stock, 'min_stock' => $m->min_stock,
             ])->all(),
@@ -96,7 +96,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
 
         $itemIds = $rows->pluck('item_id')->unique()->all();
         $meta = $this->itemMeta($itemIds);
-        $warehouseNames = MWarehouse::whereIn('id_warehouse', $rows->pluck('warehouse_id')->unique())->pluck('warehouse_name', 'id_warehouse');
+        $warehouseNames = WhWarehouse::whereIn('id_warehouse', $rows->pluck('warehouse_id')->unique())->pluck('warehouse_name', 'id_warehouse');
 
         $byItem = $rows->groupBy('item_id')->map(function ($itemRows, $itemId) use ($meta, $warehouseNames) {
             $byLocation = $itemRows->groupBy('location_id');

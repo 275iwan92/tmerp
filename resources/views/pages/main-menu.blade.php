@@ -82,6 +82,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
             'MD_RAW' => route('master.raw-material.list'),
+            'MD_MATCAT' => route('master.mat-category'),
             'MD_WH' => route('master.warehouse.list'),
             'MD_UOM' => route('master.uom'),
             'MD_MACHINE' => route('master.machine'),
@@ -118,8 +119,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'INV_RM_ITEM5' => route('inv.stock-adj.approval', ['category' => 'RM']),
             'INV_FG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'FG']),
             'INV_SFG_ITEM5' => route('inv.stock-adj.approval', ['category' => 'SFG']),
+            'PROD_MPS' => route('production.scheduling-board'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
+            'HRM_CORRECTION' => route('hrm.correction-requests'),
             'HRM_SELFSERVICE' => route('self-service.index'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
@@ -138,14 +141,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
 
         $modules = SysAppMenu::query()
             ->where('menu_type', 'module')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereIn('code', $visible)
             ->orderBy('sort_order')
             ->get();
 
         $children = SysAppMenu::query()
             ->whereNotNull('parent_id')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('sort_order')
             ->get()
             ->groupBy('parent_id');
@@ -710,24 +713,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             @if ($profileSaved)
                 <div class="mfield"><div class="hint ok">✅ Profil tersimpan.</div></div>
             @endif
-            <div class="mfield">
-                <label>Nama lengkap</label>
-                <input type="text" wire:model="profile_name">
-                @error('profile_name') <div class="hint bad">{{ $message }}</div> @enderror
-            </div>
-            <div class="mfield">
-                <label>Email</label>
-                <input type="email" wire:model="profile_email">
-                @error('profile_email') <div class="hint bad">{{ $message }}</div> @enderror
-            </div>
-            <div class="mfield">
-                <label>No. telepon</label>
-                <input type="text" wire:model="profile_phone">
-            </div>
-            <div class="mfield">
-                <label>Jabatan</label>
-                <input value="{{ $this->roleLabel() }}" readonly>
-            </div>
+            <x-form.input legacy="mfield" label="Nama lengkap" wire:model="profile_name" name="profile_name" />
+            <x-form.input legacy="mfield" label="Email" type="email" wire:model="profile_email" name="profile_email" />
+            <x-form.input legacy="mfield" label="No. telepon" wire:model="profile_phone" />
+            <x-form.input legacy="mfield" label="Jabatan" value="{{ $this->roleLabel() }}" readonly />
         </div>
         <div class="mf">
             <button type="button" class="mbtn c" @click="profileOpen = false">Batal</button>
@@ -745,19 +734,9 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             @if ($passwordError)
                 <div class="mfield"><div class="hint bad">{{ $passwordError }}</div></div>
             @endif
-            <div class="mfield">
-                <label>Password lama</label>
-                <input type="password" wire:model="old_password" placeholder="Password saat ini">
-            </div>
-            <div class="mfield">
-                <label>Password baru</label>
-                <input type="password" wire:model="new_password" placeholder="Minimal 8 karakter">
-                @error('new_password') <div class="hint bad">{{ $message }}</div> @enderror
-            </div>
-            <div class="mfield">
-                <label>Konfirmasi password baru</label>
-                <input type="password" wire:model="new_password_confirmation" placeholder="Ulangi password baru">
-            </div>
+            <x-form.input legacy="mfield" label="Password lama" type="password" wire:model="old_password" placeholder="Password saat ini" />
+            <x-form.input legacy="mfield" label="Password baru" type="password" wire:model="new_password" placeholder="Minimal 8 karakter" name="new_password" />
+            <x-form.input legacy="mfield" label="Konfirmasi password baru" type="password" wire:model="new_password_confirmation" placeholder="Ulangi password baru" />
         </div>
         <div class="mf">
             <button type="button" class="mbtn c" @click="passwordOpen = false">Batal</button>

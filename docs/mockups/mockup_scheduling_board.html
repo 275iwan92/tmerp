@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scheduling Board — Production Scheduling (PPIC)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f7f7f5;
+    color: #1f2328;
+    padding: 20px 24px;
+  }
+  .wrap { max-width: 1500px; margin: 0 auto; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  h1 { font-size: 18px; font-weight: 600; }
+  .mode-toggle { display: flex; background: #fff; border: 1px solid #e5e7eb; border-radius: 999px; padding: 4px; font-size: 12px; font-weight: 500; }
+  .mode-toggle button { border: none; background: none; padding: 6px 12px; border-radius: 999px; cursor: pointer; color: #6b7280; font: inherit; }
+  .mode-toggle button.active { background: #dbeafe; color: #1d4ed8; }
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  select {
+    font-size: 12px; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 8px 12px; background: #fff; color: #374151; font-family: inherit; cursor: pointer;
+  }
+  select:focus { outline: 2px solid #93c5fd; outline-offset: 1px; }
+  .btn { font-size: 12px; font-weight: 500; border-radius: 8px; padding: 8px 16px;
+         border: none; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,.05); font-family: inherit; }
+  .btn-hot { background: #dc2626; color: #fff; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-hot:hover { background: #b91c1c; }
+  .btn-submit { background: #16a34a; color: #fff; }
+  .btn-submit:hover { background: #15803d; }
+
+  .filter-chips { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; min-height: 22px; flex-wrap: wrap; }
+  .chip { font-size: 11px; background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe;
+          border-radius: 999px; padding: 3px 10px; display: inline-flex; align-items: center; gap: 6px; }
+  .chip button { border: none; background: none; color: #3730a3; cursor: pointer; font-size: 12px; line-height: 1; padding: 0; }
+  .chip-reset { font-size: 11px; color: #6b7280; text-decoration: underline; cursor: pointer; background: none; border: none; font-family: inherit; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+  .stat-card { border-radius: 12px; padding: 12px 16px; border: 1px solid; cursor: pointer; transition: box-shadow .15s ease, transform .1s ease; }
+  .stat-card:hover { transform: translateY(-1px); }
+  .stat-card.on { box-shadow: 0 0 0 2px currentColor inset; }
+  .stat-card p:first-child { font-size: 11px; margin-bottom: 2px; }
+  .stat-card p:last-child { font-size: 20px; font-weight: 600; }
+  .stat-neutral { background: #fff; border-color: #e5e7eb; color: #1f2328; }
+  .stat-neutral p:last-child { color: #1f2328; }
+  .stat-danger { background: #fef2f2; border-color: #fecaca; color: #b91c1c; }
+  .stat-danger p { color: #b91c1c; }
+  .stat-warn { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  .stat-warn p { color: #92400e; }
+  .stat-info { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+  .stat-info p { color: #1d4ed8; }
+  .stat-hint { font-size: 9px; color: inherit; opacity: .65; margin-top: 2px; }
+
+  .legend { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; font-size: 11px; color: #6b7280; flex-wrap: wrap; }
+  .legend-group { display: flex; align-items: center; gap: 10px; padding-right: 14px; border-right: 1px solid #e5e7eb; }
+  .legend-group:last-child { border-right: none; }
+  .legend span.item { display: inline-flex; align-items: center; gap: 5px; }
+  .swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+
+  .board { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; overflow-x: auto; position: relative; padding-bottom: 8px; }
+  .board-inner { min-width: 1060px; }
+  .ruler { display: flex; border-bottom: 1px solid #e5e7eb; background: #fafafa; font-size: 11px; color: #6b7280; font-weight: 500; }
+  .ruler-label { width: 220px; flex: none; padding: 10px 16px; }
+  .ruler-track { position: relative; flex: 1; height: 34px; }
+  .ruler-tick { position: absolute; top: 0; height: 100%; display: flex; align-items: center; transform: translateX(-50%); }
+
+  .board-row { display: flex; align-items: stretch; border-bottom: 1px solid #f0f0f0; transition: opacity .15s ease; }
+  .board-row.hidden-row { display: none; }
+  .row-label { width: 220px; flex: none; padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; }
+  .row-label .machine { font-size: 13px; font-weight: 500; color: #1f2328; }
+  .row-label .crew { font-size: 10px; color: #6b7280; margin-top: 2px; }
+  .row-track { position: relative; flex: 1; min-height: 62px; background-image: repeating-linear-gradient(to right, #f5f5f4 0, #f5f5f4 1px, transparent 1px, transparent 70px); }
+
+  .task-block {
+    position: absolute; top: 8px; height: 46px; border-radius: 7px; font-size: 11px;
+    padding: 6px 8px; overflow: hidden; cursor: grab; user-select: none;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06);
+  }
+  .task-block.dragging { cursor: grabbing; opacity: .85; box-shadow: 0 6px 14px rgba(0,0,0,.18); z-index: 5; }
+  .task-block .title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .task-block .sub { font-size: 9.5px; opacity: .85; white-space: nowrap; }
+  .task-block:hover .resize-handle { opacity: 1; }
+  .resize-handle {
+    position: absolute; top: 0; right: 0; width: 10px; height: 100%; cursor: ew-resize;
+    opacity: 0; transition: opacity .15s ease;
+  }
+  .resize-handle::after {
+    content: ''; position: absolute; right: 2px; top: 50%; transform: translateY(-50%);
+    width: 3px; height: 18px; border-radius: 2px; background: rgba(0,0,0,.35);
+  }
+  .progress-track { position: absolute; left: 6px; right: 6px; bottom: 5px; height: 4px; background: rgba(255,255,255,.5); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: rgba(0,0,0,.42); border-radius: 3px; }
+
+  .task-block.idle-block { cursor: default; background: repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6 6px,#e5e7eb 6px,#e5e7eb 12px); color: #9ca3af; display:flex; align-items:center; justify-content:center; box-shadow:none; }
+  .task-block.hot-job { outline: 2px solid #dc2626; outline-offset: -2px; }
+  .task-block.st-breakdown { background: #fca5a5 !important; color: #7f1d1d !important; }
+  .task-block.st-qchold { border: 2px dashed #d97706; }
+  .task-block.risk-match { box-shadow: 0 0 0 2px #1f2328, 0 1px 2px rgba(0,0,0,.06); }
+  .task-block.dimmed-out { opacity: .22; }
+
+  .divider-row { padding: 8px 16px; background: #fafafa; border-bottom: 1px solid #e5e7eb; font-size: 11px; font-weight: 600; color: #6b7280; }
+  .divider-row.hidden-row { display: none; }
+  .footnote { font-size: 11px; color: #9ca3af; margin-top: 12px; }
+  .empty-state { padding: 40px 16px; text-align: center; color: #9ca3af; font-size: 13px; }
+  .empty-state.hidden-row { display: none; }
+
+  .popover {
+    position: fixed; z-index: 50; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.15); padding: 14px 16px; width: 240px; font-size: 12px; display: none;
+  }
+  .popover.show { display: block; }
+  .popover h3 { font-size: 13px; margin-bottom: 8px; color: #1f2328; }
+  .popover dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 8px; }
+  .popover dt { color: #6b7280; }
+  .popover dd { color: #1f2328; font-weight: 500; text-align: right; }
+  .popover .close-pop { position: absolute; top: 8px; right: 10px; border: none; background: none; color: #9ca3af; cursor: pointer; font-size: 14px; }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(31,35,40,.55); z-index: 60;
+    display: none; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .edit-modal { background: #fff; border-radius: 14px; width: 100%; max-width: 380px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,.2); }
+  .edit-modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+  .edit-modal-header h3 { font-size: 14px; font-weight: 600; }
+  .edit-modal-header button { border: none; background: none; color: #9ca3af; font-size: 18px; cursor: pointer; }
+  .edit-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .edit-field label { font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px; }
+  .edit-field select, .edit-field input { width: 100%; font-size: 13px; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px 10px; font-family: inherit; }
+  .edit-modal-footer { padding: 14px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 8px; background: #fafafa; }
+  .btn-cancel { background: none; color: #6b7280; font-size: 12px; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; }
+  .btn-cancel:hover { background: #f0f0f0; }
+  .btn-save { background: #1d4ed8; color: #fff; font-size: 12px; font-weight: 500; padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-family: inherit; }
+  .btn-save:hover { background: #1e40af; }
+
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(10px); background: #1f2328; color: #fff;
+           font-size: 12px; padding: 10px 18px; border-radius: 999px; opacity: 0; transition: opacity .2s ease, transform .2s ease; z-index: 70; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Scheduling Board</h1>
+      <div class="mode-toggle">
+        <button class="active">● Simulasi</button>
+        <button>○ Live</button>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <select><option>27 Agu – 29 Agu 2026</option></select>
+
+      <select id="filterMachine">
+        <option value="all">Semua Mesin</option>
+        <option value="lithrone">Lithrone G40</option>
+        <option value="laminasi">Laminasi L1</option>
+        <option value="plong">Plong P2</option>
+      </select>
+
+      <select id="filterProcess">
+        <option value="all">Semua Proses</option>
+        <option value="Cetak">Cetak</option>
+        <option value="Laminasi">Laminasi</option>
+        <option value="Plong">Plong</option>
+        <option value="Packing">Packing</option>
+      </select>
+
+      <button class="btn btn-hot" onclick="document.getElementById('interruptionHint').style.display='block'">🔥 Sisip Hot Job</button>
+      <button class="btn btn-submit">Submit ke Master Schedule</button>
+    </div>
+  </div>
+
+  <p id="interruptionHint" style="display:none; font-size:12px; color:#b91c1c; margin-bottom:10px;">
+    → Klik ini membuka Interruption Dialog (lihat mockup_interruption_dialog.html) untuk memilih opsi penyisipan.
+  </p>
+
+  <div class="filter-chips" id="filterChips"></div>
+
+  <div class="stats">
+    <div class="stat-card stat-neutral" id="statAll"><p>Total Task Aktif</p><p>18</p><p class="stat-hint">klik untuk reset sorotan</p></div>
+    <div class="stat-card stat-danger" id="statUnscheduled"><p>⚠ Belum Terjadwal</p><p>3</p><p class="stat-hint">—</p></div>
+    <div class="stat-card stat-warn" id="statRisk"><p>Berisiko Telat (CR&lt;1)</p><p>2</p><p class="stat-hint">klik untuk sorot di board</p></div>
+    <div class="stat-card stat-info" id="statIdle"><p>Mesin Kosong &gt;2 jam</p><p>1</p><p class="stat-hint">klik untuk sorot di board</p></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-group">
+      <span class="item"><span class="swatch" style="background:#bfdbfe;"></span>Cetak</span>
+      <span class="item"><span class="swatch" style="background:#ddd6fe;"></span>Laminasi</span>
+      <span class="item"><span class="swatch" style="background:#fed7aa;"></span>Plong</span>
+      <span class="item"><span class="swatch" style="background:#99f6e4;"></span>Packing</span>
+    </div>
+    <div class="legend-group">
+      <span class="item"><span class="swatch" style="background:#fca5a5;"></span>Breakdown</span>
+      <span class="item"><span class="swatch" style="background:#fff;border:2px dashed #d97706;"></span>QC Hold</span>
+      <span class="item"><span class="swatch" style="background:#fff;border:2px solid #dc2626;"></span>🔥 Hot Job</span>
+    </div>
+    <div class="legend-group" style="border-right:none;">
+      <span class="item">▬ garis dalam blok = progress pengerjaan</span>
+    </div>
+  </div>
+
+  <div class="board">
+    <div class="board-inner">
+
+      <div class="ruler">
+        <div class="ruler-label">Mesin / Crew</div>
+        <div class="ruler-track" id="rulerTrack"></div>
+      </div>
+
+      <div class="board-row" data-resource="lithrone" data-machine="lithrone">
+        <div class="row-label"><div class="machine">Lithrone G40</div><div class="crew">👤 Budi (utama) + Joko</div></div>
+        <div class="row-track" id="track-lithrone">
+          <div class="task-block" data-wo="WO-0231" data-process="Cetak" data-start="8" data-duration="4" data-progress="65" data-status="running">
+            <div class="resize-handle"></div>
+            <div class="title">WO-0231 · Cetak</div>
+            <div class="sub">08:00–12:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:65%"></div></div>
+          </div>
+          <div class="task-block idle-block" data-wo="IDLE-G40" data-idle="1" data-start="12" data-duration="2" data-status="idle">idle</div>
+          <div class="task-block hot-job" data-wo="WO-0245" data-process="Cetak" data-start="14" data-duration="3" data-progress="10" data-hot="1" data-status="assigned">
+            <div class="resize-handle"></div>
+            <div class="title">🔥 WO-0245 · Cetak</div>
+            <div class="sub">14:00–17:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:10%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-row" data-resource="laminasi" data-machine="laminasi">
+        <div class="row-label"><div class="machine">Laminasi L1</div><div class="crew">👤 Rudi (utama)</div></div>
+        <div class="row-track" id="track-laminasi">
+          <div class="task-block" data-wo="WO-0228" data-process="Laminasi" data-start="11" data-duration="3" data-progress="40" data-status="running">
+            <div class="resize-handle"></div>
+            <div class="title">WO-0228 · Laminasi</div>
+            <div class="sub">11:00–14:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:40%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-row" data-resource="plong" data-machine="plong">
+        <div class="row-label"><div class="machine">Plong P2</div><div class="crew">👤 — menunggu reroute</div></div>
+        <div class="row-track" id="track-plong">
+          <div class="task-block" data-wo="WO-0230" data-process="Plong" data-start="8" data-duration="2" data-progress="100" data-status="done">
+            <div class="resize-handle"></div>
+            <div class="title">WO-0230</div>
+            <div class="sub">08:00–10:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+          </div>
+          <div class="task-block st-breakdown" data-wo="WO-0230-BD" data-process="Plong" data-start="10" data-duration="3" data-progress="20" data-risk="1" data-status="breakdown">
+            <div class="resize-handle"></div>
+            <div class="title">⚠ BREAKDOWN</div>
+            <div class="sub">10:00–13:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:20%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-row" data-section="manual">MANUAL JOB (per orang — bukan mesin, §5A.9)</div>
+
+      <div class="board-row" data-resource="siti" data-machine="manual">
+        <div class="row-label"><div class="machine">Siti</div><div class="crew">Packing</div></div>
+        <div class="row-track" id="track-siti">
+          <div class="task-block" data-wo="WO-0225" data-process="Packing" data-start="10" data-duration="3" data-progress="55" data-status="running">
+            <div class="resize-handle"></div>
+            <div class="title">WO-0225 · Packing</div>
+            <div class="sub">10:00–13:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:55%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-row" data-resource="rina" data-machine="manual">
+        <div class="row-label"><div class="machine">Rina</div><div class="crew">Packing</div></div>
+        <div class="row-track" id="track-rina">
+          <div class="task-block st-qchold" data-wo="WO-0227" data-process="Packing" data-start="12" data-duration="4" data-progress="90" data-risk="1" data-status="qchold">
+            <div class="resize-handle"></div>
+            <div class="title">🔍 WO-0227 · QC Hold</div>
+            <div class="sub">12:00–16:00</div>
+            <div class="progress-track"><div class="progress-fill" style="width:90%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state hidden-row" id="emptyState">Tidak ada mesin/proses yang cocok dengan filter ini.</div>
+
+    </div>
+  </div>
+
+  <p class="footnote">
+    Drag blok = ubah waktu mulai · tarik tepi kanan = ubah durasi · klik = detail singkat ·
+    double-klik = ubah mesin/proses. Mode Simulasi aktif — perubahan belum memengaruhi jadwal Live
+    sampai Submit. Blok QC Hold/Breakdown tetap bisa digeser di mockup ini untuk demonstrasi, tapi
+    di sistem nyata QC Hold terkunci sampai QA memutuskan (Tier4 §6).
+  </p>
+
+</div>
+
+<div class="popover" id="taskPopover">
+  <button class="close-pop" id="popClose">&times;</button>
+  <h3 id="popTitle">WO-0231</h3>
+  <dl>
+    <dt>Proses</dt><dd id="popProcess">Cetak</dd>
+    <dt>Waktu</dt><dd id="popTime">08:00–12:00</dd>
+    <dt>Progress</dt><dd id="popProgress">65%</dd>
+    <dt>Status</dt><dd id="popStatus">Running</dd>
+  </dl>
+</div>
+
+<div class="modal-backdrop" id="editBackdrop">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <h3>Ubah Task</h3>
+      <button id="editClose">&times;</button>
+    </div>
+    <div class="edit-modal-body">
+      <div class="edit-field">
+        <label>Kode WO</label>
+        <input id="editWoLabel" disabled>
+      </div>
+      <div class="edit-field">
+        <label>Resource (Mesin / Orang)</label>
+        <select id="editResource">
+          <option value="lithrone">Lithrone G40</option>
+          <option value="laminasi">Laminasi L1</option>
+          <option value="plong">Plong P2</option>
+          <option value="siti">Siti (Manual)</option>
+          <option value="rina">Rina (Manual)</option>
+        </select>
+      </div>
+      <div class="edit-field">
+        <label>Proses</label>
+        <select id="editProcess">
+          <option value="Cetak">Cetak</option>
+          <option value="Laminasi">Laminasi</option>
+          <option value="Plong">Plong</option>
+          <option value="Packing">Packing</option>
+        </select>
+      </div>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn-cancel" id="editCancel">Batal</button>
+      <button class="btn-save" id="editSave">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  var TIMELINE_START = 8;
+  var TIMELINE_END = 20;
+  var PX_PER_HOUR = 70;
+  var TRACK_WIDTH = (TIMELINE_END - TIMELINE_START) * PX_PER_HOUR;
+  var SNAP_HOUR = 0.25; // snap ke 15 menit
+
+  var PROCESS_COLOR = {
+    'Cetak':    { bg: '#bfdbfe', text: '#1e3a8a' },
+    'Laminasi': { bg: '#ddd6fe', text: '#5b21b6' },
+    'Plong':    { bg: '#fed7aa', text: '#9a3412' },
+    'Packing':  { bg: '#99f6e4', text: '#115e59' }
+  };
+
+  // ================= Ruler jam =================
+  var rulerTrack = document.getElementById('rulerTrack');
+  rulerTrack.style.width = TRACK_WIDTH + 'px';
+  for (var h = TIMELINE_START; h <= TIMELINE_END; h++) {
+    var tick = document.createElement('div');
+    tick.className = 'ruler-tick';
+    tick.style.left = ((h - TIMELINE_START) * PX_PER_HOUR) + 'px';
+    tick.textContent = (h < 10 ? '0' + h : h) + ':00';
+    rulerTrack.appendChild(tick);
+  }
+  document.querySelectorAll('.row-track').forEach(function (t) { t.style.width = TRACK_WIDTH + 'px'; });
+
+  // ================= Render posisi & warna tiap blok dari data-* =================
+  function formatHour(dec) {
+    var h = Math.floor(dec);
+    var m = Math.round((dec - h) * 60);
+    if (m === 60) { h++; m = 0; }
+    return (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+  }
+
+  function renderBlock(block) {
+    var start = parseFloat(block.getAttribute('data-start'));
+    var duration = parseFloat(block.getAttribute('data-duration'));
+    block.style.left = (start - TIMELINE_START) * PX_PER_HOUR + 'px';
+    block.style.width = (duration * PX_PER_HOUR) + 'px';
+
+    if (block.getAttribute('data-idle') === '1') return; // idle: tak perlu warna proses/waktu
+
+    var proc = block.getAttribute('data-process');
+    var status = block.getAttribute('data-status');
+    var colorInfo = PROCESS_COLOR[proc] || { bg: '#e5e7eb', text: '#374151' };
+
+    // status breakdown override warna (paling kritis, harus mencolok)
+    if (status !== 'breakdown') {
+      block.style.background = colorInfo.bg;
+      block.style.color = colorInfo.text;
+    }
+
+    var subEl = block.querySelector('.sub');
+    if (subEl) subEl.textContent = formatHour(start) + '–' + formatHour(start + duration);
+  }
+
+  document.querySelectorAll('.task-block').forEach(renderBlock);
+
+  // ================= Toast kecil =================
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2200);
+  }
+
+  // ================= 1) DRAG untuk pindah waktu (dan bisa lintas baris) =================
+  var dragState = null;
+
+  document.querySelectorAll('.task-block:not(.idle-block)').forEach(function (block) {
+    block.addEventListener('mousedown', function (e) {
+      if (e.target.classList.contains('resize-handle')) return; // biar resize handle yang tangani
+      e.preventDefault();
+      var track = block.parentElement;
+      dragState = {
+        block: block,
+        startMouseX: e.clientX,
+        startLeft: parseFloat(block.style.left),
+        trackWidth: track.offsetWidth,
+        blockWidth: block.offsetWidth
+      };
+      block.classList.add('dragging');
+    });
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    if (!dragState) return;
+    var dx = e.clientX - dragState.startMouseX;
+    var newLeft = dragState.startLeft + dx;
+    newLeft = Math.max(0, Math.min(newLeft, dragState.trackWidth - dragState.blockWidth));
+    // snap ke 15 menit
+    var snappedHourOffset = Math.round((newLeft / PX_PER_HOUR) / SNAP_HOUR) * SNAP_HOUR;
+    dragState.block.style.left = (snappedHourOffset * PX_PER_HOUR) + 'px';
+  });
+
+  document.addEventListener('mouseup', function () {
+    if (!dragState) return;
+    var block = dragState.block;
+    block.classList.remove('dragging');
+    var newStart = TIMELINE_START + (parseFloat(block.style.left) / PX_PER_HOUR);
+    block.setAttribute('data-start', newStart.toFixed(2));
+    var duration = parseFloat(block.getAttribute('data-duration'));
+    var sub = block.querySelector('.sub');
+    if (sub) sub.textContent = formatHour(newStart) + '–' + formatHour(newStart + duration);
+    showToast(block.getAttribute('data-wo') + ' dipindah ke ' + formatHour(newStart));
+    dragState = null;
+  });
+
+  // ================= 2) RESIZE tepi kanan untuk ubah durasi =================
+  var resizeState = null;
+
+  document.querySelectorAll('.resize-handle').forEach(function (handle) {
+    handle.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var block = handle.parentElement;
+      resizeState = {
+        block: block,
+        startMouseX: e.clientX,
+        startWidth: block.offsetWidth,
+        trackWidth: block.parentElement.offsetWidth,
+        blockLeft: parseFloat(block.style.left)
+      };
+      block.classList.add('dragging');
+    });
+  });
+
+  document.addEventListener('mousemove', function (e) {
+    if (!resizeState) return;
+    var dx = e.clientX - resizeState.startMouseX;
+    var newWidth = resizeState.startWidth + dx;
+    var minWidth = PX_PER_HOUR * 0.5; // minimum 30 menit
+    var maxWidth = resizeState.trackWidth - resizeState.blockLeft;
+    newWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+    // snap ke 15 menit
+    var snappedHours = Math.round((newWidth / PX_PER_HOUR) / SNAP_HOUR) * SNAP_HOUR;
+    resizeState.block.style.width = (snappedHours * PX_PER_HOUR) + 'px';
+  });
+
+  document.addEventListener('mouseup', function () {
+    if (!resizeState) return;
+    var block = resizeState.block;
+    block.classList.remove('dragging');
+    var newDuration = parseFloat(block.style.width) / PX_PER_HOUR;
+    block.setAttribute('data-duration', newDuration.toFixed(2));
+    var start = parseFloat(block.getAttribute('data-start'));
+    var sub = block.querySelector('.sub');
+    if (sub) sub.textContent = formatHour(start) + '–' + formatHour(start + newDuration);
+    showToast(block.getAttribute('data-wo') + ' durasi jadi ' + newDuration.toFixed(1) + ' jam');
+    resizeState = null;
+  });
+
+  // ================= 3) DOUBLE-KLIK untuk ubah mesin & proses =================
+  var editBackdrop = document.getElementById('editBackdrop');
+  var editResource = document.getElementById('editResource');
+  var editProcess = document.getElementById('editProcess');
+  var editWoLabel = document.getElementById('editWoLabel');
+  var editingBlock = null;
+
+  document.querySelectorAll('.task-block:not(.idle-block)').forEach(function (block) {
+    block.addEventListener('dblclick', function (e) {
+      e.stopPropagation();
+      editingBlock = block;
+      editWoLabel.value = block.getAttribute('data-wo');
+      editResource.value = block.parentElement.parentElement.getAttribute('data-resource');
+      editProcess.value = block.getAttribute('data-process');
+      editBackdrop.classList.add('show');
+    });
+  });
+
+  function closeEditModal() { editBackdrop.classList.remove('show'); editingBlock = null; }
+  document.getElementById('editClose').addEventListener('click', closeEditModal);
+  document.getElementById('editCancel').addEventListener('click', closeEditModal);
+  editBackdrop.addEventListener('click', function (e) { if (e.target === editBackdrop) closeEditModal(); });
+
+  document.getElementById('editSave').addEventListener('click', function () {
+    if (!editingBlock) return;
+    var newResource = editResource.value;
+    var newProcess = editProcess.value;
+    var oldResource = editingBlock.parentElement.parentElement.getAttribute('data-resource');
+
+    editingBlock.setAttribute('data-process', newProcess);
+    var titleEl = editingBlock.querySelector('.title');
+    if (titleEl) {
+      var wo = editingBlock.getAttribute('data-wo');
+      var hotPrefix = editingBlock.getAttribute('data-hot') === '1' ? '🔥 ' : '';
+      titleEl.textContent = hotPrefix + wo + ' · ' + newProcess;
+    }
+    renderBlock(editingBlock);
+
+    if (newResource !== oldResource) {
+      var targetTrack = document.getElementById('track-' + newResource);
+      if (targetTrack) {
+        targetTrack.appendChild(editingBlock);
+        renderBlock(editingBlock); // posisi tetap sama, cuma pindah induk
+      }
+    }
+    showToast('Task ' + editingBlock.getAttribute('data-wo') + ' diperbarui');
+    closeEditModal();
+  });
+
+  // ================= 4) Progress bar sudah dirender inline via .progress-fill =================
+  // (data-progress dipakai saat render awal; update via popover/detail bila ada perubahan actual qty)
+
+  // ================= Filter Mesin & Proses =================
+  var filterMachine = document.getElementById('filterMachine');
+  var filterProcess = document.getElementById('filterProcess');
+  var chipsWrap = document.getElementById('filterChips');
+  var emptyState = document.getElementById('emptyState');
+
+  function applyFilters() {
+    var mVal = filterMachine.value;
+    var pVal = filterProcess.value;
+    var rows = document.querySelectorAll('.board-row[data-resource]');
+    var anyVisible = false;
+
+    rows.forEach(function (row) {
+      var rowMachine = row.getAttribute('data-machine');
+      var machineOk = (mVal === 'all') || (rowMachine === mVal);
+      row.classList.toggle('hidden-row', !machineOk);
+      if (!machineOk) return;
+
+      var blocksInRow = row.querySelectorAll('.task-block:not(.idle-block)');
+      var rowHasVisibleBlock = (pVal === 'all');
+      blocksInRow.forEach(function (b) {
+        var match = (pVal === 'all') || (b.getAttribute('data-process') === pVal);
+        b.style.display = match ? '' : 'none';
+        if (match) rowHasVisibleBlock = true;
+      });
+      if (rowHasVisibleBlock || pVal === 'all') anyVisible = true;
+    });
+
+    var manualVisible = Array.prototype.some.call(
+      document.querySelectorAll('.board-row[data-machine="manual"]'),
+      function (r) { return !r.classList.contains('hidden-row'); }
+    );
+    document.querySelector('.divider-row[data-section="manual"]').classList.toggle('hidden-row', !manualVisible);
+
+    emptyState.classList.toggle('hidden-row', anyVisible);
+    renderChips();
+  }
+
+  function renderChips() {
+    chipsWrap.innerHTML = '';
+    var mVal = filterMachine.value, pVal = filterProcess.value;
+    if (mVal === 'all' && pVal === 'all') return;
+    if (mVal !== 'all') chipsWrap.appendChild(makeChip('Mesin: ' + filterMachine.options[filterMachine.selectedIndex].text, function () { filterMachine.value = 'all'; applyFilters(); }));
+    if (pVal !== 'all') chipsWrap.appendChild(makeChip('Proses: ' + pVal, function () { filterProcess.value = 'all'; applyFilters(); }));
+    var resetBtn = document.createElement('button');
+    resetBtn.className = 'chip-reset';
+    resetBtn.textContent = 'Reset semua filter';
+    resetBtn.onclick = function () { filterMachine.value = 'all'; filterProcess.value = 'all'; applyFilters(); };
+    chipsWrap.appendChild(resetBtn);
+  }
+
+  function makeChip(label, onRemove) {
+    var chip = document.createElement('span');
+    chip.className = 'chip';
+    var text = document.createElement('span'); text.textContent = label;
+    var btn = document.createElement('button'); btn.textContent = '×'; btn.onclick = onRemove;
+    chip.appendChild(text); chip.appendChild(btn);
+    return chip;
+  }
+
+  filterMachine.addEventListener('change', applyFilters);
+  filterProcess.addEventListener('change', applyFilters);
+
+  // ================= Kartu statistik = sorot task =================
+  var statRisk = document.getElementById('statRisk');
+  var statIdle = document.getElementById('statIdle');
+  var statAll = document.getElementById('statAll');
+
+  function clearHighlight() {
+    document.querySelectorAll('.task-block').forEach(function (b) { b.classList.remove('dimmed-out', 'risk-match'); });
+    [statRisk, statIdle, statAll].forEach(function (s) { s.classList.remove('on'); });
+  }
+  function highlightBy(attr, statEl) {
+    var already = statEl.classList.contains('on');
+    clearHighlight();
+    if (already) return;
+    statEl.classList.add('on');
+    document.querySelectorAll('.task-block').forEach(function (b) {
+      if (b.getAttribute(attr) === '1') b.classList.add('risk-match');
+      else b.classList.add('dimmed-out');
+    });
+  }
+  statRisk.addEventListener('click', function () { highlightBy('data-risk', statRisk); });
+  statIdle.addEventListener('click', function () { highlightBy('data-idle', statIdle); });
+  statAll.addEventListener('click', clearHighlight);
+
+  // ================= Popover detail (klik singkat) =================
+  var popover = document.getElementById('taskPopover');
+  var suppressClick = false;
+
+  document.getElementById('popClose').addEventListener('click', function () { popover.classList.remove('show'); });
+
+  document.querySelectorAll('.task-block:not(.idle-block)').forEach(function (block) {
+    block.addEventListener('click', function (e) {
+      if (dragState || resizeState) return;
+      document.getElementById('popTitle').textContent = block.getAttribute('data-wo');
+      document.getElementById('popProcess').textContent = block.getAttribute('data-process');
+      var start = parseFloat(block.getAttribute('data-start'));
+      var duration = parseFloat(block.getAttribute('data-duration'));
+      document.getElementById('popTime').textContent = formatHour(start) + '–' + formatHour(start + duration);
+      document.getElementById('popProgress').textContent = (block.getAttribute('data-progress') || '0') + '%';
+      document.getElementById('popStatus').textContent = block.getAttribute('data-status');
+
+      var rect = block.getBoundingClientRect();
+      popover.style.top = (rect.bottom + 8) + 'px';
+      popover.style.left = Math.min(rect.left, window.innerWidth - 260) + 'px';
+      popover.classList.add('show');
+      e.stopPropagation();
+    });
+  });
+  document.addEventListener('click', function () { popover.classList.remove('show'); });
+  popover.addEventListener('click', function (e) { e.stopPropagation(); });
+
+  // ================= Toggle Mode Simulasi/Live =================
+  document.querySelectorAll('.mode-toggle button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.mode-toggle button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

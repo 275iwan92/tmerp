@@ -1,22 +1,43 @@
 <?php
 
-use App\Models\Sys\SysTranslation;
-use Illuminate\Auth\Events\PasswordReset;
-use Illuminate\Support\Facades\Password;
+use App\Models\Sys\SecUser;
+use App\Services\Security\SecurityRecoveryService;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+// Lupa Password berbasis 4 pertanyaan (keputusan user 2026-08-27) --
+// MENGGANTIKAN alur link-email lama (Password::broker), bukan tambahan.
+// Alasan: email/WA gateway belum tentu jalan di server ini (BRIEF
+// security_defaultpassword_spec.md §0), jadi self-service tak boleh
+// bergantung email. Berhasil verifikasi 4-4nya -> password KEMBALI ke
+// default_password yang sudah ada (diberikan Admin di awal, BUKAN
+// generate baru) via SecurityRecoveryService::resetToDefaultPassword().
 new #[Layout('layouts::guest')] #[Title('Lupa Password — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url]
     public string $lang = 'id';
 
-    public string $email = '';
+    public int $step = 1; // 1=cari akun, 2=jawab 4 pertanyaan, 3=sukses
 
-    public bool $sent = false;
+    public string $loginField = '';
+
+    public ?int $targetUserId = null;
+
+    public string $questionLabel = '';
+
+    public string $birthDate = '';
+
+    public string $motherName = '';
+
+    public string $phone = '';
+
+    public string $answer = '';
+
+    public ?string $errorMessage = null;
 
     public function mount(): void
     {
@@ -26,21 +47,91 @@ new #[Layout('layouts::guest')] #[Title('Lupa Password — TELASIH MAKMUR ERP')]
     }
 
     #[Computed]
-    public function t(): array
+    public function targetUser(): ?SecUser
     {
-        return SysTranslation::forLang($this->lang) ?: SysTranslation::forLang('id');
+        return $this->targetUserId ? SecUser::find($this->targetUserId) : null;
     }
 
-    // BRIEF §3.2: pesan sukses SELALU sama — tak boleh bocorkan email terdaftar
-    // atau tidak. Broker Laravel sendiri sudah tidak melempar exception utk
-    // email tak dikenal (mengembalikan status string), jadi cukup abaikan hasilnya.
-    public function send(): void
+    protected function throttleKey(): string
     {
-        $this->validate(['email' => ['required', 'email']]);
+        return 'password-recovery:'.strtolower(trim($this->loginField)).'|'.request()->ip();
+    }
 
-        Password::broker()->sendResetLink(['email' => $this->email]);
+    public function findAccount(SecurityRecoveryService $service): void
+    {
+        $this->errorMessage = null;
 
-        $this->sent = true;
+        $this->validate(['loginField' => ['required', 'string']]);
+
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), 8)) {
+            $this->errorMessage = 'Terlalu banyak percobaan. Coba lagi nanti atau hubungi Administrator.';
+
+            return;
+        }
+
+        $user = SecUser::where('login', trim($this->loginField))->orWhere('email', trim($this->loginField))->first();
+
+        // Pesan generik sengaja SAMA utk "tak ada akun" & "belum setup" --
+        // jangan bocorkan mana yang benar (cegah enumerasi akun).
+        if (! $user || ! $service->isSetupComplete($user)) {
+            RateLimiter::hit($this->throttleKey(), 900);
+            $this->errorMessage = 'Akun tidak ditemukan atau belum mengatur pertanyaan keamanan. Hubungi Administrator.';
+
+            return;
+        }
+
+        $this->targetUserId = $user->id_user;
+        $this->questionLabel = $user->securityQuestion?->question_text ?? '';
+        $this->step = 2;
+    }
+
+    public function verifyAnswers(SecurityRecoveryService $service): void
+    {
+        $this->errorMessage = null;
+
+        $data = $this->validate([
+            'birthDate' => ['required', 'date'],
+            'motherName' => ['required', 'string'],
+            'phone' => ['required', 'string'],
+            'answer' => ['required', 'string'],
+        ]);
+
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), 8)) {
+            $this->errorMessage = 'Terlalu banyak percobaan. Coba lagi nanti atau hubungi Administrator.';
+
+            return;
+        }
+
+        $user = $this->targetUser;
+
+        if (! $user) {
+            $this->step = 1;
+
+            return;
+        }
+
+        $ok = $service->verify($user, $data['birthDate'], $data['motherName'], $data['phone'], $data['answer']);
+
+        if (! $ok) {
+            RateLimiter::hit($this->throttleKey(), 900);
+            $this->errorMessage = 'Salah satu jawaban tidak sesuai. Periksa kembali.';
+
+            return;
+        }
+
+        if (! $service->resetToDefaultPassword($user)) {
+            $this->errorMessage = 'Akun ini belum punya password default tersimpan. Hubungi Administrator.';
+
+            return;
+        }
+
+        RateLimiter::clear($this->throttleKey());
+        $this->step = 3;
+    }
+
+    public function backToStart(): void
+    {
+        $this->reset(['step', 'targetUserId', 'questionLabel', 'birthDate', 'motherName', 'phone', 'answer', 'errorMessage']);
     }
 };
 ?>
@@ -49,21 +140,42 @@ new #[Layout('layouts::guest')] #[Title('Lupa Password — TELASIH MAKMUR ERP')]
     <div class="card">
         <div class="top"><span class="logo">📦</span> TELASIH MAKMUR</div>
         <div class="body">
-            <h2>{{ $this->t['fp_heading'] ?? 'Lupa password' }}</h2>
-            <p class="sub">{{ $this->t['fp_sub'] ?? 'Masukkan email akun Anda. Kami kirim tautan untuk atur ulang password.' }}</p>
+            <h2>Lupa password</h2>
 
-            @if ($sent)
-                <div class="done show">{{ $this->t['fp_done'] ?? 'Jika email terdaftar, tautan reset sudah dikirim.' }}</div>
-            @else
-                <form wire:submit="send">
-                    <label>{{ $this->t['label_email'] ?? 'Email' }}</label>
-                    <input type="email" wire:model="email" placeholder="nama@telasih.co.id">
-                    @error('email') <div class="hint" style="color:var(--ap-danger);margin-top:6px;font-size:12.5px">{{ $message }}</div> @enderror
-                    <button type="submit" class="btn" wire:loading.attr="disabled">{{ $this->t['btn_send'] ?? 'Kirim tautan reset' }}</button>
+            @if ($step === 1)
+                <p class="sub">Masukkan username atau email akun Anda.</p>
+
+                @if ($errorMessage)
+                    <div class="hint bad" style="margin-bottom:14px">{{ $errorMessage }}</div>
+                @endif
+
+                <form wire:submit="findAccount">
+                    <x-form.input legacy="field" label="Username atau email" wire:model="loginField" autofocus name="loginField" />
+
+                    <button type="submit" class="btn" wire:loading.attr="disabled" style="margin-top:16px">Lanjutkan</button>
                 </form>
+            @elseif ($step === 2)
+                <p class="sub">Jawab 4 pertanyaan ini untuk verifikasi identitas Anda.</p>
+
+                @if ($errorMessage)
+                    <div class="hint bad" style="margin-bottom:14px">{{ $errorMessage }}</div>
+                @endif
+
+                <form wire:submit="verifyAnswers">
+                    <x-form.input legacy="field" label="Tanggal lahir" type="date" wire:model="birthDate" name="birthDate" />
+                    <x-form.input legacy="field" label="Nama ibu kandung" wire:model="motherName" placeholder="Nama lengkap ibu kandung Anda" name="motherName" />
+                    <x-form.input legacy="field" label="Nomor HP terdaftar" wire:model="phone" placeholder="08xxxxxxxxxx" name="phone" />
+                    <x-form.input legacy="field" label="{{ $questionLabel }}" wire:model="answer" placeholder="Jawaban Anda" name="answer" />
+
+                    <button type="submit" class="btn" wire:loading.attr="disabled" style="margin-top:20px">Verifikasi</button>
+                </form>
+
+                <button type="button" class="back" style="background:none;border:none;cursor:pointer" wire:click="backToStart"><span>&larr;</span> <span>Kembali</span></button>
+            @else
+                <div class="done show">Password Anda sudah dikembalikan ke <b>password default</b> — password yang diberikan Administrator saat akun Anda pertama kali dibuat. Silakan login memakainya; Anda akan diminta membuat password baru setelah masuk.</div>
             @endif
 
-            <a class="back" href="{{ route('login', ['lang' => $lang]) }}"><span>←</span> <span>{{ $this->t['back_login'] ?? 'Kembali ke halaman masuk' }}</span></a>
+            <a class="back" href="{{ route('login', ['lang' => $lang]) }}"><span>←</span> <span>Kembali ke halaman masuk</span></a>
         </div>
     </div>
 </div>

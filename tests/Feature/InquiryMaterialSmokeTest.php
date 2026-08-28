@@ -27,7 +27,7 @@ class InquiryMaterialSmokeTest extends TestCase
         }
 
         if ($this->material) {
-            DB::connection('tm2mst')->table('mat_raw')->where('id_material', $this->material->id_material)->delete();
+            DB::connection('tm2mst')->table('mat_raw')->where('material_id', $this->material->material_id)->delete();
         }
 
         parent::tearDown();
@@ -35,7 +35,7 @@ class InquiryMaterialSmokeTest extends TestCase
 
     public function test_form_renders_and_saves_material_and_color(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         // GET smoke: full initial render must not throw.
@@ -50,7 +50,7 @@ class InquiryMaterialSmokeTest extends TestCase
             'gram_weight' => 310,
             'cm_length' => 79,
             'cm_width' => 109,
-            'is_active' => true,
+            'activate' => true,
         ]);
 
         Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
@@ -64,8 +64,8 @@ class InquiryMaterialSmokeTest extends TestCase
             ->set('parts.0.cfg_color', '4/1')
             ->set('parts.0.cfg_ink', 'Pantone 485 C')
             ->set('parts.0.materials.0.query', 'Duplex')
-            ->call('selectMaterial', 0, 0, $this->material->id_material)
-            ->assertSet('parts.0.materials.0.rawmat_id', $this->material->id_material)
+            ->call('selectMaterial', 0, 0, $this->material->material_id)
+            ->assertSet('parts.0.materials.0.rawmat_id', $this->material->material_id)
             ->assertSet('parts.0.materials.0.brand', 'IK')
             ->call('addMaterialRow', 0)
             ->assertCount('parts.0.materials', 2)
@@ -81,7 +81,7 @@ class InquiryMaterialSmokeTest extends TestCase
 
         // Baris bahan kosong (belum pilih material) sengaja tidak ikut tersimpan.
         $this->assertCount(1, $part->materials);
-        $this->assertSame($this->material->id_material, $part->materials->first()->rawmat_id);
+        $this->assertSame($this->material->material_id, $part->materials->first()->rawmat_id);
         $this->assertTrue((bool) $part->materials->first()->is_primary);
     }
 }

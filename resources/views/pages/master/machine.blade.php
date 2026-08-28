@@ -53,7 +53,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
     public string $notes = '';
 
-    public bool $machine_is_active = true;
+    public bool $machine_activate = true;
 
     #[Computed]
     public function machines()
@@ -70,7 +70,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function divisionOptions()
     {
-        return OrgDivision::query()->where('is_active', true)->orderBy('division_name')->get();
+        return OrgDivision::query()->where('activate', true)->orderBy('division_name')->get();
     }
 
     public function openModal(string $mode, ?int $id = null): void
@@ -95,7 +95,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             $this->gsm_min = (string) ($m->gsm_min ?? '');
             $this->gsm_max = (string) ($m->gsm_max ?? '');
             $this->notes = (string) $m->notes;
-            $this->machine_is_active = (bool) $m->is_active;
+            $this->machine_activate = (bool) $m->activate;
         } else {
             $this->reset([
                 'machine_code', 'machine_name', 'machine_type', 'division_id',
@@ -103,7 +103,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                 'color_count', 'max_speed_per_hour', 'capacity_per_shift',
                 'gsm_min', 'gsm_max', 'notes',
             ]);
-            $this->machine_is_active = true;
+            $this->machine_activate = true;
         }
 
         $this->panel = 'form';
@@ -136,7 +136,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             'gsm_min' => ['nullable', 'integer', 'min:0'],
             'gsm_max' => ['nullable', 'integer', 'min:0'],
             'notes' => ['nullable', 'string'],
-            'machine_is_active' => ['boolean'],
+            'machine_activate' => ['boolean'],
         ]);
 
         $payload = [
@@ -154,7 +154,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             'gsm_min' => $data['gsm_min'] !== null && $data['gsm_min'] !== '' ? $data['gsm_min'] : null,
             'gsm_max' => $data['gsm_max'] !== null && $data['gsm_max'] !== '' ? $data['gsm_max'] : null,
             'notes' => $data['notes'] ?: null,
-            'is_active' => $data['machine_is_active'],
+            'activate' => $data['machine_activate'],
             'updated_by' => Auth::user()->login,
         ];
 
@@ -172,33 +172,15 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     public function toggleActive(int $id): void
     {
         $m = ProdMachine::findOrFail($id);
-        $m->is_active = ! $m->is_active;
+        $m->activate = ! $m->activate;
         $m->updated_by = Auth::user()->login;
         $m->save();
 
         unset($this->machines, $this->statTotal, $this->statActive, $this->statInactive);
     }
 
-    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 
     #[Computed]
     public function statTotal(): int
@@ -209,19 +191,19 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function statActive(): int
     {
-        return ProdMachine::where('is_active', true)->count();
+        return ProdMachine::where('activate', true)->count();
     }
 
     #[Computed]
     public function statInactive(): int
     {
-        return ProdMachine::where('is_active', false)->count();
+        return ProdMachine::where('activate', false)->count();
     }
 
     #[Computed]
     public function statDivisions(): int
     {
-        return ProdMachine::where('is_active', true)->distinct('division_id')->count('division_id');
+        return ProdMachine::where('activate', true)->distinct('division_id')->count('division_id');
     }
 };
 ?>
@@ -231,42 +213,31 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <div class="grid gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Mesin</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statActive }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
-                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Divisi Terpakai</p>
-                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->statDivisions }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Nonaktif</p>
-                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statInactive }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total Mesin" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" label="Divisi Terpakai" :value="$this->statDivisions" />
+            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
+        </x-grid.stat-row>
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
             Hanya <b>Offset Printing</b> yang menggunakan assignment mesin presisi (banyak lini). Digital Printing &amp; Indostry tidak butuh entri di sini — pakai grid shift sederhana tanpa mesin.
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openModal('new')"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openModal('new')"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -280,32 +251,25 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->machines as $m)
                             <tr wire:key="machine-{{ $m->machine_id }}" wire:dblclick="openModal('edit', {{ $m->machine_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($m->machine_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($m->machine_name) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $m->machine_name }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $m->machine_code }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$m->machine_id" :name="$m->machine_name" :code="$m->machine_code" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->machine_type ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->brand_model ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $m->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $m->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $m->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $m->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openModal('edit', {{ $m->machine_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click.stop="toggleActive({{ $m->machine_id }})" wire:confirm="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }} mesin {{ $m->machine_name }}?"
-                                        title="{{ $m->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $m->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $m->machine_id }})" />
+                                    <x-grid.action-icon icon="⏻" :title="$m->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $m->machine_id }})"
+                                        :confirm="($m->activate ? 'Nonaktifkan' : 'Aktifkan').' mesin '.$m->machine_name.'?'"
+                                        :variant="$m->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="5" class="text-center py-8 text-muted text-sm">Tidak ada.</td></tr>
+                            <x-grid.empty-row :colspan="5" message="Tidak ada." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
         @endif
 
@@ -320,98 +284,61 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             <form wire:submit="save" class="bg-white border border-t-0 border-[#d7dbe2] p-5 flex flex-col gap-3">
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kode Mesin *</label>
-                            <input type="text" wire:model="machine_code" placeholder="mis. CETAK-01" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] uppercase">
-                            @error('machine_code') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Kode Mesin *" name="machine_code" wire:model="machine_code" placeholder="mis. CETAK-01" class="uppercase" />
                         </div>
-                        <div class="flex-[2] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Mesin *</label>
-                            <input type="text" wire:model="machine_name" placeholder="mis. Cetak 1" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('machine_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-[2]">
+                            <x-form.input label="Nama Mesin *" name="machine_name" wire:model="machine_name" placeholder="mis. Cetak 1" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jenis Mesin</label>
-                            <select wire:model="machine_type" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($machineTypes as $t)
-                                    <option value="{{ $t }}">{{ $t }}</option>
-                                @endforeach
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="Jenis Mesin" wire:model="machine_type" :options="array_combine($machineTypes, $machineTypes)" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Divisi (SBU) *</label>
-                            <select wire:model="division_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->divisionOptions as $d)
-                                    <option value="{{ $d->division_id }}">{{ $d->division_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('division_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.select label="Divisi (SBU) *" name="division_id" wire:model="division_id"
+                                :options="$this->divisionOptions->pluck('division_name', 'division_id')" :selected="$division_id" />
                         </div>
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Aset</div>
                     <div class="flex gap-2.5">
-                        <div class="flex-[2] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Merk / Model</label>
-                            <input type="text" wire:model="brand_model" placeholder="mis. Heidelberg SM 74" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-[2]">
+                            <x-form.input label="Merk / Model" wire:model="brand_model" placeholder="mis. Heidelberg SM 74" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tahun</label>
-                            <input type="text" wire:model="year_acquired" placeholder="2015" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('year_acquired') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Tahun" name="year_acquired" wire:model="year_acquired" placeholder="2015" />
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Nomor Seri Aset</label>
-                        <input type="text" wire:model="serial_no" placeholder="mis. SM74-2015-0231" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                    </div>
+                    <x-form.input label="Nomor Seri Aset" wire:model="serial_no" placeholder="mis. SM74-2015-0231" />
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Spesifikasi Teknis</div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Max Ukuran Kertas</label>
-                            <input type="text" wire:model="max_paper_size" placeholder="52 × 74 cm" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="Max Ukuran Kertas" wire:model="max_paper_size" placeholder="52 × 74 cm" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Jumlah Warna / Unit</label>
-                            <input type="text" wire:model="color_count" placeholder="4" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('color_count') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Jumlah Warna / Unit" name="color_count" wire:model="color_count" placeholder="4" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kecepatan Max (sheet/jam)</label>
-                            <input type="text" wire:model="max_speed_per_hour" placeholder="15000" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('max_speed_per_hour') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Kecepatan Max (sheet/jam)" name="max_speed_per_hour" wire:model="max_speed_per_hour" placeholder="15000" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kapasitas per Shift</label>
-                            <input type="text" wire:model="capacity_per_shift" placeholder="± 100.000 sheet" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                        <div class="flex-1">
+                            <x-form.input label="Kapasitas per Shift" wire:model="capacity_per_shift" placeholder="± 100.000 sheet" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Gramatur Min (gsm)</label>
-                            <input type="text" wire:model="gsm_min" placeholder="60" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('gsm_min') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Gramatur Min (gsm)" name="gsm_min" wire:model="gsm_min" placeholder="60" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Gramatur Max (gsm)</label>
-                            <input type="text" wire:model="gsm_max" placeholder="350" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('gsm_max') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Gramatur Max (gsm)" name="gsm_max" wire:model="gsm_max" placeholder="350" />
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Catatan</label>
-                        <textarea wire:model="notes" rows="2" placeholder="Catatan tambahan (mis. keterbatasan, perawatan khusus)" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                    </div>
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="machine_is_active"> Aktif
-                    </label>
+                    <x-form.textarea label="Catatan" wire:model="notes" rows="2" placeholder="Catatan tambahan (mis. keterbatasan, perawatan khusus)" />
+                    <x-form.checkbox label="Aktif" wire:model="machine_activate" />
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
                         <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>

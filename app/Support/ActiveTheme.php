@@ -13,7 +13,7 @@ class ActiveTheme
 {
     public static function resolve(): SysTheme
     {
-        $active = SysTheme::where('is_active', true);
+        $active = SysTheme::where('activate', true);
 
         $userCode = Auth::check() ? Auth::user()->theme_code : null;
 

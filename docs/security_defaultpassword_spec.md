@@ -357,3 +357,58 @@ Seeder di atas **tidak** menyentuh `sec_user_group` — aman dijalankan lebih du
 ## 9. Catatan keamanan (operasional)
 - File dump `.sql` berisi `default_password` = **ciphertext**, aman tanpa `APP_KEY`. Tetap: **JANGAN commit `.env` (APP_KEY) ke Git.** Bila APP_KEY hilang/di-rotate, seluruh `default_password` tak terbaca — dokumentasikan APP_KEY di brankas.
 - `default_password` & `pswd` masuk `$hidden` model → tak bocor lewat serialisasi API/JSON.
+
+---
+
+## 10. ADDENDUM 2026-08-27 — Lupa Password berbasis 4 pertanyaan (MENGGANTIKAN alur email)
+
+Keputusan user: alur `Password::broker()->sendResetLink()` (link email) di
+`auth/forgot-password.blade.php` **diganti total**, bukan ditambah pilihan —
+alasannya sama dengan §0 di atas (gateway email/WA belum tentu jalan). User
+self-service jawab **4 pertanyaan**, semua benar → password **kembali ke
+`default_password` yang sudah ada** (bukan generate baru).
+
+**Kolom baru `sec_user`** (migration `2026_08_27_000006`, direvisi
+`2026_08_27_000007`): `birth_date` (date), `mother_name_hash` (bcrypt,
+**bukan** Crypt — tak pernah perlu ditampilkan balik), `security_question_id`
+(FK fisik → `sec_recovery_question.id_question`, sesama tm2sys jadi FK boleh
+dipakai, CLAUDE.md §2), `security_answer_hash` (bcrypt), `security_setup_at`
+(NULL = belum setup).
+
+**Tabel baru `tm2sys.sec_recovery_question`** (migration `2026_08_27_000007`)
+— daftar 6 pertanyaan keamanan tetap, awalnya sempat hardcode array PHP
+(`App\Support\SecurityQuestions`, **DIHAPUS**) lalu direvisi ke tabel atas
+instruksi user: ini murni domain security/system, harus di tm2sys (bukan
+tm2mst), prefix `sec_` (sejalur `sec_user`/`sec_group`/`sec_module`, bukan
+`sys_` yang di database ini isinya UI/config spt `sys_app_menu`/`sys_theme`).
+Model: `App\Models\Sys\SecRecoveryQuestion`.
+
+**4 pertanyaan & sumber datanya:**
+1. Tanggal lahir — kalau `sec_user.employee_id` tertaut, otomatis disalin dari
+   `emp_employee.birth_date` sekali saat setup (read-only di layar, user
+   tinggal konfirmasi); tak tertaut → isi manual.
+2. Nama ibu kandung — isi manual, di-hash.
+3. No HP terdaftar — pakai `sec_user.phone` yang sudah ada.
+4. Pertanyaan keamanan pilihan user (dropdown dari `sec_recovery_question`
+   yang `activate=1`) + jawaban, di-hash.
+
+**Setup dipaksa via `ForcePasswordChange` middleware** (diperluas, bukan
+middleware baru) — independen dari `must_change_password`, supaya 146 akun
+lama yang sudah pernah ganti password dulu (jadi tak pernah lagi kena gerbang
+`must_change_password`) tetap kebagian setup. Urutan kalau user butuh
+dua-duanya: `password.change` dulu, baru `security.setup`.
+
+**Layar baru:** `/security/setup` (`pages::auth.security-setup`) — setup
+sekali. `/forgot-password` (`pages::auth.forgot-password`) — dirombak total
+jadi 3-langkah: cari akun → jawab 4 pertanyaan → sukses.
+
+**Service baru:** `App\Services\Security\SecurityRecoveryService` —
+`isSetupComplete()`, `resolveBirthDateFromEmployee()`, `saveSetup()`,
+`verify()` (semua-atau-tidak-sama-sekali, tak bilang field mana yang salah),
+`resetToDefaultPassword()` (reuse `default_password` apa adanya, **tidak**
+generate baru — beda dari `PasswordResetService::reset()` yang memang
+generate password baru untuk kasus reset manual oleh Admin).
+
+**Rate limit:** `RateLimiter` bawaan Laravel, key `login+ip`, 8 percobaan per
+15 menit, di kedua langkah (cari akun & jawab pertanyaan) — mencegah tebak
+paksa tanggal lahir/no HP.

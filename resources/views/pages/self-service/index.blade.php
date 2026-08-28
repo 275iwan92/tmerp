@@ -262,7 +262,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
     public function saveFamilyReq(): void
     {
-        $rules = ['famreq_relation' => ['required', 'in:SUAMI,ISTRI,ANAK,ORANG_TUA']];
+        $rules = ['famreq_relation' => ['required', 'in:SUAMI,ISTRI,ANAK']];
 
         if ($this->famreq_type === 'MENINGGAL') {
             $rules['famreq_family_id'] = ['required', 'integer', 'exists:tm2mst.emp_family,family_id'];
@@ -273,6 +273,16 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $data = $this->validate($rules);
+
+        if ($this->famreq_type === 'LAHIR' && $data['famreq_relation'] === 'ANAK') {
+            $childCount = EmpFamily::where('employee_id', $this->employeeId)->where('relation', 'ANAK')->count();
+
+            if ($childCount >= 20) {
+                $this->addError('famreq_relation', 'Maksimal 20 anak per karyawan.');
+
+                return;
+            }
+        }
 
         $family = $this->famreq_family_id ? EmpFamily::find($this->famreq_family_id) : null;
 
@@ -332,7 +342,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 'file_path' => $this->storeUpload($this->doc_file, 'documents'),
                 'expiry_date' => $data['doc_expiry_date'] ?: null,
                 'uploaded_by_role' => 'SELF',
-                'is_active' => true,
+                'activate' => true,
             ]
         );
 
@@ -610,7 +620,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
         return EmpEmployee::query()
             ->where('employee_id', '!=', $this->employeeId)
             ->whereHas('position.department', fn ($q) => $q->where('division_id', $this->employee->position->department->division_id))
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('full_name')
             ->get();
     }
@@ -982,16 +992,8 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     <div class="grid two gap-2.5 mb-3">
-                        <div>
-                            <label class="text-xs text-muted block mb-1">Dari Tanggal</label>
-                            <input type="date" wire:model="leave_date_from" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('leave_date_from') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="text-xs text-muted block mb-1">Sampai Tanggal</label>
-                            <input type="date" wire:model="leave_date_to" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('leave_date_to') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
+                        <x-form.input label="Dari Tanggal" type="date" wire:model="leave_date_from" name="leave_date_from" />
+                        <x-form.input label="Sampai Tanggal" type="date" wire:model="leave_date_to" name="leave_date_to" />
                     </div>
 
                     @if ($leave_type === 'CUTI')
@@ -1005,14 +1007,13 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     @if ($leave_type === 'SAKIT')
                         <div class="grid two gap-2.5 mb-3">
                             <div>
-                                <label class="text-xs text-muted block mb-1">Jam Lapor ke HRD</label>
-                                <input type="time" wire:model.live="sakit_lapor_jam" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <x-form.input label="Jam Lapor ke HRD" type="time" wire:model.live="sakit_lapor_jam" />
                                 @if ($this->sakitLaporTerlambat)
                                     <div class="text-[11px] text-red-600 font-semibold mt-1">⚠ Melewati batas 07:30 WIB — akan direview HR.</div>
                                 @endif
                             </div>
                             <div class="flex items-end pb-2">
-                                <label class="flex items-center gap-2 text-[12.5px]"><input type="checkbox" wire:model.live="sakit_via_jkn"> Peserta JKN (cukup screenshot riwayat)</label>
+                                <x-form.checkbox wire:model.live="sakit_via_jkn" label="Peserta JKN (cukup screenshot riwayat)" />
                             </div>
                         </div>
                         @if ($sakit_via_jkn)
@@ -1038,43 +1039,33 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
                     @if ($leave_type === 'IZIN' && ! $this->izinLocked)
                         <div class="mb-3">
-                            <label class="text-xs text-muted block mb-1">Sifat Izin</label>
-                            <select wire:model.live="izin_sifat" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="terjadwal">Terjadwal (min. H-7)</option>
-                                <option value="mendadak">Mendadak (darurat/musibah)</option>
-                            </select>
+                            <x-form.select label="Sifat Izin" wire:model.live="izin_sifat" :placeholder="false"
+                                :options="['terjadwal' => 'Terjadwal (min. H-7)', 'mendadak' => 'Mendadak (darurat/musibah)']" />
                         </div>
                         @if ($izin_sifat === 'mendadak')
                             <div class="mb-3">
-                                <label class="text-xs text-muted block mb-1">Kategori Keperluan Mendadak</label>
-                                <select wire:model.live="izin_category" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                    <option value="MUSIBAH">Musibah Keluarga / Kecelakaan / Bencana</option>
-                                    <option value="INSTANSI_RESMI">Keperluan Instansi Pemerintah Resmi</option>
-                                    <option value="KEPENGURUSAN_MUSIBAH">Kepengurusan Duka / Musibah</option>
-                                </select>
+                                <x-form.select label="Kategori Keperluan Mendadak" wire:model.live="izin_category" :placeholder="false" :options="[
+                                    'MUSIBAH' => 'Musibah Keluarga / Kecelakaan / Bencana',
+                                    'INSTANSI_RESMI' => 'Keperluan Instansi Pemerintah Resmi',
+                                    'KEPENGURUSAN_MUSIBAH' => 'Kepengurusan Duka / Musibah',
+                                ]" />
                             </div>
                             @if ($izin_category === 'INSTANSI_RESMI')
                                 <div class="grid two gap-2.5 mb-3">
-                                    <div>
-                                        <label class="text-xs text-muted block mb-1">Untuk Keperluan</label>
-                                        <select wire:model="izin_relasi_pemohon" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                            <option value="DIRI_SENDIRI">Diri Sendiri</option>
-                                            <option value="SUAMI_ISTRI">Suami/Istri</option>
-                                            <option value="ANAK_KANDUNG">Anak Kandung</option>
-                                            <option value="ORANG_TUA_KANDUNG">Orang Tua Kandung</option>
-                                            <option value="MERTUA">Mertua</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-muted block mb-1">Instansi Tujuan</label>
-                                        <select wire:model="izin_instansi_asal" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                            <option value="BPJS">BPJS</option>
-                                            <option value="RUMAH_SAKIT">Rumah Sakit</option>
-                                            <option value="SEKOLAH">Sekolah</option>
-                                            <option value="KEPOLISIAN">Kepolisian</option>
-                                            <option value="INSTANSI_PEMERINTAH_LAINNYA">Instansi Pemerintah Lainnya</option>
-                                        </select>
-                                    </div>
+                                    <x-form.select label="Untuk Keperluan" wire:model="izin_relasi_pemohon" :placeholder="false" :options="[
+                                        'DIRI_SENDIRI' => 'Diri Sendiri',
+                                        'SUAMI_ISTRI' => 'Suami/Istri',
+                                        'ANAK_KANDUNG' => 'Anak Kandung',
+                                        'ORANG_TUA_KANDUNG' => 'Orang Tua Kandung',
+                                        'MERTUA' => 'Mertua',
+                                    ]" />
+                                    <x-form.select label="Instansi Tujuan" wire:model="izin_instansi_asal" :placeholder="false" :options="[
+                                        'BPJS' => 'BPJS',
+                                        'RUMAH_SAKIT' => 'Rumah Sakit',
+                                        'SEKOLAH' => 'Sekolah',
+                                        'KEPOLISIAN' => 'Kepolisian',
+                                        'INSTANSI_PEMERINTAH_LAINNYA' => 'Instansi Pemerintah Lainnya',
+                                    ]" />
                                 </div>
                             @endif
                             <div class="mb-3">
@@ -1087,14 +1078,13 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
                     @if ($leave_type === 'CUTI_KHUSUS')
                         <div class="mb-3">
-                            <label class="text-xs text-muted block mb-1">Jenis Peristiwa Khusus</label>
-                            <select wire:model="khusus_event_type" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="MENIKAH">Pernikahan Karyawan</option>
-                                <option value="MENIKAHKAN_KHITAN_ANAK">Menikahkan / Mengkhitankan Anak</option>
-                                <option value="ISTRI_MELAHIRKAN">Istri Melahirkan / Keguguran</option>
-                                <option value="KELUARGA_MENINGGAL">Keluarga Inti Meninggal Dunia</option>
-                                <option value="IBADAH">Ibadah</option>
-                            </select>
+                            <x-form.select label="Jenis Peristiwa Khusus" wire:model="khusus_event_type" :placeholder="false" :options="[
+                                'MENIKAH' => 'Pernikahan Karyawan',
+                                'MENIKAHKAN_KHITAN_ANAK' => 'Menikahkan / Mengkhitankan Anak',
+                                'ISTRI_MELAHIRKAN' => 'Istri Melahirkan / Keguguran',
+                                'KELUARGA_MENINGGAL' => 'Keluarga Inti Meninggal Dunia',
+                                'IBADAH' => 'Ibadah',
+                            ]" />
                         </div>
                         <div class="mb-3">
                             <label class="text-xs text-muted block mb-1">Lampiran Bukti Pendukung</label>
@@ -1104,8 +1094,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     <div class="mb-3">
-                        <label class="text-xs text-muted block mb-1">Keterangan / Alasan</label>
-                        <textarea wire:model="leave_reason" rows="2" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
+                        <x-form.textarea label="Keterangan / Alasan" wire:model="leave_reason" rows="2" />
                     </div>
 
                     <button type="button" wire:click="submitLeave" class="w-full bg-accent text-white text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer">Kirimkan Pengajuan</button>
@@ -1137,12 +1126,12 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Izin Keluar Area Kerja</div>
                         <div class="text-xs text-[#78350f] bg-[#fffbeb] border-l-4 border-[#f59e0b] px-3.5 py-2.5 rounded-r-md mb-3">Wajib disetujui <b>Atasan Langsung DAN HRD</b> sebelum meninggalkan area pabrik.</div>
-                        <div class="mb-3"><label class="text-xs text-muted block mb-1">Tanggal</label><input type="date" wire:model="op_permit_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('op_permit_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
+                        <div class="mb-3"><x-form.input label="Tanggal" type="date" wire:model="op_permit_date" name="op_permit_date" /></div>
                         <div class="grid two gap-2.5 mb-3">
-                            <div><label class="text-xs text-muted block mb-1">Jam Keluar</label><input type="time" wire:model="op_out_time" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('op_out_time') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                            <div><label class="text-xs text-muted block mb-1">Jam Kembali</label><input type="time" wire:model="op_return_time" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
+                            <x-form.input label="Jam Keluar" type="time" wire:model="op_out_time" name="op_out_time" />
+                            <x-form.input label="Jam Kembali" type="time" wire:model="op_return_time" />
                         </div>
-                        <div class="mb-3"><label class="text-xs text-muted block mb-1">Keperluan</label><textarea wire:model="op_reason" rows="3" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>@error('op_reason') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
+                        <div class="mb-3"><x-form.textarea label="Keperluan" wire:model="op_reason" rows="3" name="op_reason" /></div>
                         <button type="button" wire:click="submitOutPermit" class="w-full bg-accent text-white text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer">Kirim Surat Izin Keluar</button>
                     </div>
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
@@ -1172,37 +1161,20 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Tukar Shift</div>
                         <div class="text-xs text-[#78350f] bg-[#fffbeb] border-l-4 border-[#f59e0b] px-3.5 py-2.5 rounded-r-md mb-3">Batas pengajuan maksimal <b>H-1</b>. Harus disetujui rekan tukar, lalu PPIC.</div>
                         <div class="mb-3">
-                            <label class="text-xs text-muted block mb-1">Jadwal Saya yang Ditukar</label>
-                            <select wire:model="swap_requester_roster_id" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->myUpcomingRoster as $r)
-                                    <option value="{{ $r->roster_id }}">{{ $r->roster_date->translatedFormat('l, d M') }} — {{ $r->shift->shift_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('swap_requester_roster_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                            <x-form.select label="Jadwal Saya yang Ditukar" wire:model="swap_requester_roster_id" name="swap_requester_roster_id"
+                                :options="$this->myUpcomingRoster->mapWithKeys(fn ($r) => [$r->roster_id => $r->roster_date->translatedFormat('l, d M').' — '.$r->shift->shift_name])->all()" />
                         </div>
                         <div class="mb-3">
-                            <label class="text-xs text-muted block mb-1">Rekan Pengganti</label>
-                            <select wire:model.live="swap_target_employee_id" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->swapColleagues as $c)
-                                    <option value="{{ $c->employee_id }}">{{ $c->full_name }}</option>
-                                @endforeach
-                            </select>
+                            <x-form.select label="Rekan Pengganti" wire:model.live="swap_target_employee_id"
+                                :options="$this->swapColleagues->pluck('full_name', 'employee_id')->all()" />
                         </div>
                         @if ($swap_target_employee_id)
                             <div class="mb-3">
-                                <label class="text-xs text-muted block mb-1">Jadwal Rekan (Target Tukar)</label>
-                                <select wire:model="swap_target_roster_id" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                    <option value="">— pilih —</option>
-                                    @foreach ($this->targetRosterOptions as $r)
-                                        <option value="{{ $r->roster_id }}">{{ $r->roster_date->translatedFormat('l, d M') }} — {{ $r->shift->shift_name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('swap_target_roster_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                                <x-form.select label="Jadwal Rekan (Target Tukar)" wire:model="swap_target_roster_id" name="swap_target_roster_id"
+                                    :options="$this->targetRosterOptions->mapWithKeys(fn ($r) => [$r->roster_id => $r->roster_date->translatedFormat('l, d M').' — '.$r->shift->shift_name])->all()" />
                             </div>
                         @endif
-                        <div class="mb-3"><label class="text-xs text-muted block mb-1">Alasan</label><textarea wire:model="swap_reason" rows="2" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea></div>
+                        <div class="mb-3"><x-form.textarea label="Alasan" wire:model="swap_reason" rows="2" /></div>
                         <button type="button" wire:click="submitSwap" class="w-full bg-accent text-white text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer">Ajukan Permohonan Tukar</button>
                     </div>
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
@@ -1291,9 +1263,9 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-base font-bold text-[#0f172a] mb-1">Ajukan Koreksi Data</div>
                 <div class="text-xs text-muted mb-3">Field: <b>{{ $corr_field_name }}</b></div>
                 <form wire:submit="saveCorrection" class="flex flex-col gap-3">
-                    <div><label class="text-xs text-muted block mb-1">Nilai Saat Ini</label><input value="{{ $corr_old_value }}" disabled class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] bg-[#f1f5f9] text-muted"></div>
-                    <div><label class="text-xs text-muted block mb-1">Nilai Baru</label><input wire:model="corr_new_value" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('corr_new_value') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                    <div><label class="text-xs text-muted block mb-1">Alasan</label><textarea wire:model="corr_reason" rows="2" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea></div>
+                    <x-form.input label="Nilai Saat Ini" value="{{ $corr_old_value }}" disabled class="bg-[#f1f5f9]" />
+                    <x-form.input label="Nilai Baru" wire:model="corr_new_value" name="corr_new_value" />
+                    <x-form.textarea label="Alasan" wire:model="corr_reason" rows="2" />
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showCorrectionModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Kirim Pengajuan</button></div>
                 </form>
             </div>
@@ -1306,32 +1278,15 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-base font-bold text-[#0f172a] mb-3">{{ match ($famreq_type) { 'LAHIR' => 'Ajukan Kelahiran Anak Baru', 'MENINGGAL' => 'Tandai Anggota Keluarga Meninggal', default => 'Ajukan Perubahan Status Pasangan' } }}</div>
                 <form wire:submit="saveFamilyReq" class="flex flex-col gap-3">
                     @if ($famreq_type === 'MENINGGAL')
-                        <div>
-                            <label class="text-xs text-muted block mb-1">Pilih Anggota Keluarga</label>
-                            <select wire:model="famreq_family_id" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->employee->families->where('is_deceased', false) as $f)
-                                    <option value="{{ $f->family_id }}">{{ $f->full_name }} ({{ $f->relation }})</option>
-                                @endforeach
-                            </select>
-                            @error('famreq_family_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                        </div>
-                        <div><label class="text-xs text-muted block mb-1">Tanggal Meninggal</label><input type="date" wire:model="famreq_deceased_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('famreq_deceased_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
+                        <x-form.select label="Pilih Anggota Keluarga" wire:model="famreq_family_id" name="famreq_family_id"
+                            :options="$this->employee->families->where('is_deceased', false)->mapWithKeys(fn ($f) => [$f->family_id => $f->full_name.' ('.$f->relation.')'])->all()" />
+                        <x-form.input label="Tanggal Meninggal" type="date" wire:model="famreq_deceased_date" name="famreq_deceased_date" />
                         <div><label class="text-xs text-muted block mb-1">Upload Surat Kematian</label><input type="file" wire:model="famreq_attachment" class="w-full text-[12px]"></div>
                     @else
-                        <div>
-                            <label class="text-xs text-muted block mb-1">Hubungan</label>
-                            <select wire:model="famreq_relation" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                @if ($famreq_type === 'PASANGAN')
-                                    <option value="SUAMI">Suami</option>
-                                    <option value="ISTRI">Istri</option>
-                                @else
-                                    <option value="ANAK">Anak</option>
-                                @endif
-                            </select>
-                        </div>
-                        <div><label class="text-xs text-muted block mb-1">Nama Lengkap</label><input wire:model="famreq_full_name" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('famreq_full_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                        <div><label class="text-xs text-muted block mb-1">Tanggal Lahir</label><input type="date" wire:model="famreq_birth_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
+                        <x-form.select label="Hubungan" wire:model="famreq_relation" :placeholder="false"
+                            :options="$famreq_type === 'PASANGAN' ? ['SUAMI' => 'Suami', 'ISTRI' => 'Istri'] : ['ANAK' => 'Anak']" />
+                        <x-form.input label="Nama Lengkap" wire:model="famreq_full_name" name="famreq_full_name" />
+                        <x-form.input label="Tanggal Lahir" type="date" wire:model="famreq_birth_date" />
                         <div><label class="text-xs text-muted block mb-1">Upload Akta / Buku Nikah</label><input type="file" wire:model="famreq_attachment" class="w-full text-[12px]"></div>
                     @endif
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showFamilyReqModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Kirim Pengajuan</button></div>
@@ -1345,8 +1300,8 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] p-5">
                 <div class="text-base font-bold text-[#991b1b] mb-3">Pengajuan Pengunduran Diri</div>
                 <form wire:submit="saveResign" class="flex flex-col gap-3">
-                    <div><label class="text-xs text-muted block mb-1">Tanggal Efektif</label><input type="date" wire:model="resign_effective_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('resign_effective_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                    <div><label class="text-xs text-muted block mb-1">Alasan</label><textarea wire:model="resign_reason" rows="3" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>@error('resign_reason') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
+                    <x-form.input label="Tanggal Efektif" type="date" wire:model="resign_effective_date" name="resign_effective_date" />
+                    <x-form.textarea label="Alasan" wire:model="resign_reason" rows="3" name="resign_reason" />
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showResignModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#991b1b] text-white cursor-pointer">Kirim Pengajuan</button></div>
                 </form>
             </div>
@@ -1358,8 +1313,8 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] p-5">
                 <div class="text-base font-bold text-[#0f172a] mb-3">Upload Dokumen — {{ $doc_type }}</div>
                 <form wire:submit="saveDoc" class="flex flex-col gap-3">
-                    <div><label class="text-xs text-muted block mb-1">Nomor Dokumen</label><input wire:model="doc_document_no" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
-                    <div><label class="text-xs text-muted block mb-1">Masa Berlaku (jika ada)</label><input type="date" wire:model="doc_expiry_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
+                    <x-form.input label="Nomor Dokumen" wire:model="doc_document_no" />
+                    <x-form.input label="Masa Berlaku (jika ada)" type="date" wire:model="doc_expiry_date" />
                     <div><label class="text-xs text-muted block mb-1">File (JPG/PNG/PDF, maks 5MB)</label><input type="file" wire:model="doc_file" class="w-full text-[12px]">@error('doc_file') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showDocModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan &amp; Upload</button></div>
                 </form>
@@ -1372,13 +1327,14 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] p-5">
                 <div class="text-base font-bold text-[#0f172a] mb-3">Tambah Riwayat Pelatihan</div>
                 <form wire:submit="saveEdu" class="flex flex-col gap-3">
-                    <div><label class="text-xs text-muted block mb-1">Nama Pelatihan / Sertifikasi</label><input wire:model="edu_activity_name" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('edu_activity_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                    <div><label class="text-xs text-muted block mb-1">Penyelenggara</label><input wire:model="edu_organizer" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
+                    <x-form.input label="Nama Pelatihan / Sertifikasi" wire:model="edu_activity_name" name="edu_activity_name" />
+                    <x-form.input label="Penyelenggara" wire:model="edu_organizer" />
                     <div class="grid two gap-2.5">
-                        <div><label class="text-xs text-muted block mb-1">Tanggal</label><input type="date" wire:model="edu_activity_date" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">@error('edu_activity_date') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
-                        <div><label class="text-xs text-muted block mb-1">Biaya (Rp)</label><input type="number" wire:model="edu_cost" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></div>
+                        <x-form.input label="Tanggal" type="date" wire:model="edu_activity_date" name="edu_activity_date" />
+                        <x-form.input label="Biaya (Rp)" type="number" wire:model="edu_cost" />
                     </div>
-                    <div><label class="text-xs text-muted block mb-1">Ditanggung Oleh</label><select wire:model="edu_funded_by" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"><option value="PRIBADI">Pribadi</option><option value="PERUSAHAAN">Perusahaan</option><option value="SHARING">Sharing</option></select></div>
+                    <x-form.select label="Ditanggung Oleh" wire:model="edu_funded_by" :placeholder="false"
+                        :options="['PRIBADI' => 'Pribadi', 'PERUSAHAAN' => 'Perusahaan', 'SHARING' => 'Sharing']" />
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showEduModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button></div>
                 </form>
             </div>

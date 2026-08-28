@@ -1,11 +1,7 @@
 <?php
 
-use App\Models\Master\DocRmprefix1;
-use App\Models\Master\DocRmprefix2;
-use App\Models\Master\DocRmprefix3;
-use App\Models\Master\DocRmprefix4;
-use App\Models\Master\DocRmprefix5;
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatCategory;
+use App\Models\Master\MatRaw;
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrLine;
 use App\Models\Pur\PrRequisition;
@@ -23,15 +19,16 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
     public string $itemSource = 'MASTER_ITEM';
 
-    public ?string $pick1 = null;
+    // pick = id_category dari mat_category, per level
+    public ?int $pick1 = null;
 
-    public ?string $pick2 = null;
+    public ?int $pick2 = null;
 
-    public ?string $pick3 = null;
+    public ?int $pick3 = null;
 
-    public ?string $pick4 = null;
+    public ?int $pick4 = null;
 
-    public ?string $pick5 = null;
+    public ?int $pick5 = null;
 
     public string $freeDescription = '';
 
@@ -78,7 +75,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
     #[Computed]
     public function departments()
     {
-        return OrgDepartment::where('is_active', true)->orderBy('department_name')->get();
+        return OrgDepartment::where('activate', true)->orderBy('department_name')->get();
     }
 
     #[Computed]
@@ -93,52 +90,37 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
     #[Computed]
     public function cat1Options()
     {
-        return DocRmprefix1::orderBy('category1')->get();
+        return MatCategory::level(1)->where('activate', true)->orderBy('category_name')->get();
     }
 
     #[Computed]
     public function cat2Options()
     {
-        if (! $this->pick1) {
-            return collect();
-        }
-
-        return DocRmprefix2::where('category1', $this->pick1)->orderBy('category2')->get();
+        return $this->pick1 ? MatCategory::level(2)->where('parent_id', $this->pick1)->where('activate', true)->orderBy('category_name')->get() : collect();
     }
 
     #[Computed]
     public function cat3Options()
     {
-        if (! $this->pick1 || ! $this->pick2) {
-            return collect();
-        }
-
-        return DocRmprefix3::where('category1', $this->pick1)->where('category2', $this->pick2)->orderBy('category3')->get();
+        return $this->pick2 ? MatCategory::level(3)->where('parent_id', $this->pick2)->where('activate', true)->orderBy('category_name')->get() : collect();
     }
 
     #[Computed]
     public function cat4Options()
     {
-        if (! $this->pick1 || ! $this->pick2 || ! $this->pick3) {
-            return collect();
-        }
-
-        return DocRmprefix4::where('category1', $this->pick1)->where('category2', $this->pick2)->where('category3', $this->pick3)->orderBy('category4')->get();
+        return $this->pick3 ? MatCategory::level(4)->where('parent_id', $this->pick3)->where('activate', true)->orderBy('category_name')->get() : collect();
     }
 
     #[Computed]
     public function cat5Options()
     {
-        if (! $this->pick1 || ! $this->pick2 || ! $this->pick3 || ! $this->pick4) {
-            return collect();
-        }
-
-        return DocRmprefix5::where('category1', $this->pick1)->where('category2', $this->pick2)
-            ->where('category3', $this->pick3)->where('category4', $this->pick4)->orderBy('category5')->get();
+        return $this->pick4 ? MatCategory::level(5)->where('parent_id', $this->pick4)->where('activate', true)->orderBy('category_name')->get() : collect();
     }
 
     // Material yang cocok sejauh level dipilih -- tidak wajib sampai level 5,
     // banyak kategori (Ink/Glue/Chemical) hanya sedalam level 3 di master.
+    // mat_raw.category1..5 masih TEXT -- resolve id_category terpilih
+    // jadi nama sekali di sini, baru dipakai filter (bukan cascading di atas).
     #[Computed]
     public function matchingMaterials()
     {
@@ -146,11 +128,14 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             return collect();
         }
 
-        $q = MRawMaterial::where('is_active', 1)->where('category1', $this->pick1);
+        $names = MatCategory::whereIn('id_category', array_filter([$this->pick1, $this->pick2, $this->pick3, $this->pick4, $this->pick5]))
+            ->pluck('category_name', 'level');
 
-        foreach (['pick2' => 'category2', 'pick3' => 'category3', 'pick4' => 'category4', 'pick5' => 'category5'] as $prop => $col) {
-            if ($this->{$prop}) {
-                $q->where($col, $this->{$prop});
+        $q = MatRaw::where('activate', 1)->where('stat_confirm', true)->where('category1', $names[1] ?? null);
+
+        foreach ([2 => 'category2', 3 => 'category3', 4 => 'category4', 5 => 'category5'] as $level => $col) {
+            if (isset($names[$level])) {
+                $q->where($col, $names[$level]);
             }
         }
 
@@ -165,14 +150,14 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         }
         $term = $this->itemSearch;
 
-        return MRawMaterial::where('is_active', true)
+        return MatRaw::where('activate', true)->where('stat_confirm', true)
             ->where(fn ($q) => $q->where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%"))
             ->orderBy('material_name')->limit(15)->get();
     }
 
     public function setPick(int $level, ?string $value): void
     {
-        $this->{"pick{$level}"} = $value === '' ? null : $value;
+        $this->{"pick{$level}"} = $value === '' ? null : (int) $value;
 
         // reset level di bawahnya supaya kombinasi tidak nyangkut
         foreach (range($level + 1, 5) as $deeper) {
@@ -186,8 +171,8 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
             return;
         }
 
-        $material = MRawMaterial::findOrFail($materialId);
-        $prefix1 = DocRmprefix1::where('category1', $material->category1)->first();
+        $material = MatRaw::findOrFail($materialId);
+        $prefix1 = MatCategory::level(1)->where('category_name', $material->category1)->first();
         $login = Auth::user()->login;
 
         $nextLineNo = ((int) $this->pr->lines()->max('line_no')) + 1;
@@ -453,29 +438,15 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
             <div class="grid">
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal PR</label>
-                    <input type="date" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" @disabled($this->pr->status !== 'DRAFT')
-                        wire:change="updateHeader('i_doc_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Departemen Peminta <span class="text-[#a3241f]">*</span></label>
-                    <select @disabled($this->pr->status !== 'DRAFT') wire:change="updateHeader('i_department_id', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        <option value="">— pilih —</option>
-                        @foreach ($this->departments as $dept)
-                            <option value="{{ $dept->department_id }}" @selected($this->pr->i_department_id === $dept->department_id)>{{ $dept->department_name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Sumber</label>
-                    <input readonly value="MANUAL" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                </div>
-                <div>
-                    <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tgl Dibutuhkan</label>
-                    <input type="date" value="{{ $this->pr->i_need_date?->format('Y-m-d') }}" @disabled($this->pr->status !== 'DRAFT')
-                        wire:change="updateHeader('i_need_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                </div>
+                <x-form.input label="Tanggal PR" type="date" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
+                    wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.select :disabled="$this->pr->status !== 'DRAFT'" wire:change="updateHeader('i_department_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                    :selected="$this->pr->i_department_id" :options="$this->departments->pluck('department_name', 'department_id')->all()">
+                    <x-slot:label>Departemen Peminta <span class="text-[#a3241f]">*</span></x-slot:label>
+                </x-form.select>
+                <x-form.input label="Sumber" readonly value="MANUAL" class="bg-[#f8fafc]" />
+                <x-form.input label="Tgl Dibutuhkan" type="date" value="{{ $this->pr->i_need_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
+                    wire:change="updateHeader('i_need_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
             <div class="mt-3">
                 <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Catatan / Justifikasi</label>
@@ -512,51 +483,20 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                         <span class="flex-1 border-t border-[#eef1f5]"></span>
                     </div>
                     <div class="[display:grid] grid-cols-5 gap-2 mb-2">
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kategori</label>
-                            <select wire:change="setPick(1, $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->cat1Options as $o)
-                                    <option value="{{ $o->category1 }}" @selected($pick1 === $o->category1)>{{ $o->category1 }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Jenis</label>
-                            <select wire:change="setPick(2, $event.target.value)" @disabled(! $pick1) class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->cat2Options as $o)
-                                    <option value="{{ $o->category2 }}" @selected($pick2 === $o->category2)>{{ $o->category2 }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Gramatur/Spec</label>
-                            <select wire:change="setPick(3, $event.target.value)" @disabled(! $pick2) class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->cat3Options as $o)
-                                    <option value="{{ $o->category3 }}" @selected($pick3 === $o->category3)>{{ $o->category3 }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ukuran <span class="text-muted normal-case font-normal">(opsional)</span></label>
-                            <select wire:change="setPick(4, $event.target.value)" @disabled(! $pick3 || $this->cat4Options->isEmpty()) class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                <option value="">— semua —</option>
-                                @foreach ($this->cat4Options as $o)
-                                    <option value="{{ $o->category4 }}" @selected($pick4 === $o->category4)>{{ $o->category4 }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Merk <span class="text-muted normal-case font-normal">(opsional)</span></label>
-                            <select wire:change="setPick(5, $event.target.value)" @disabled(! $pick4 || $this->cat5Options->isEmpty()) class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                <option value="">— semua —</option>
-                                @foreach ($this->cat5Options as $o)
-                                    <option value="{{ $o->category5 }}" @selected($pick5 === $o->category5)>{{ $o->category5 }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <x-form.select label="Kategori" wire:change="setPick(1, $event.target.value)"
+                            :selected="$pick1" :options="$this->cat1Options->pluck('category_name', 'id_category')->all()" />
+                        <x-form.select label="Jenis" wire:change="setPick(2, $event.target.value)" :disabled="! $pick1" class="disabled:bg-[#f8fafc]"
+                            :selected="$pick2" :options="$this->cat2Options->pluck('category_name', 'id_category')->all()" />
+                        <x-form.select label="Gramatur/Spec" wire:change="setPick(3, $event.target.value)" :disabled="! $pick2" class="disabled:bg-[#f8fafc]"
+                            :selected="$pick3" :options="$this->cat3Options->pluck('category_name', 'id_category')->all()" />
+                        <x-form.select wire:change="setPick(4, $event.target.value)" :disabled="! $pick3 || $this->cat4Options->isEmpty()" class="disabled:bg-[#f8fafc]"
+                            placeholder="— semua —" :selected="$pick4" :options="$this->cat4Options->pluck('category_name', 'id_category')->all()">
+                            <x-slot:label>Ukuran <span class="text-muted normal-case font-normal">(opsional)</span></x-slot:label>
+                        </x-form.select>
+                        <x-form.select wire:change="setPick(5, $event.target.value)" :disabled="! $pick4 || $this->cat5Options->isEmpty()" class="disabled:bg-[#f8fafc]"
+                            placeholder="— semua —" :selected="$pick5" :options="$this->cat5Options->pluck('category_name', 'id_category')->all()">
+                            <x-slot:label>Merk <span class="text-muted normal-case font-normal">(opsional)</span></x-slot:label>
+                        </x-form.select>
                     </div>
 
                     @if ($pick1)
@@ -576,12 +516,10 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
 
                 <div x-show="tab === 'free'" class="flex gap-2 items-end">
                     <div class="flex-1">
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Deskripsi</label>
-                        <input type="text" wire:model="freeDescription" placeholder="mis. Laptop Dell Latitude, Renovasi kantin" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        <x-form.input label="Deskripsi" wire:model="freeDescription" placeholder="mis. Laptop Dell Latitude, Renovasi kantin" />
                     </div>
                     <div class="w-[140px] shrink-0">
-                        <label class="text-[10px] text-muted uppercase font-semibold block mb-1">UoM</label>
-                        <input type="text" wire:model="freeUom" placeholder="Unit" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        <x-form.input label="UoM" wire:model="freeUom" placeholder="Unit" />
                     </div>
                     <button type="button" wire:click="addFreeText" class="text-[11px] font-bold text-white bg-navy rounded px-3 py-1.5">＋ Tambah</button>
                 </div>
@@ -617,43 +555,35 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                                     @if ($line->i_item_source === 'MASTER_ITEM')
                                         <span class="font-mono text-[10px] text-muted">{{ $line->c_item_code }}</span><br>{{ $line->i_description }}
                                     @else
-                                        <input type="text" value="{{ $line->i_description }}" @disabled($this->pr->status !== 'DRAFT')
-                                            wire:change="updateLine({{ $line->pr_line_id }}, 'i_description', $event.target.value)" class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent">
+                                        <x-form.input value="{{ $line->i_description }}" :disabled="$this->pr->status !== 'DRAFT'"
+                                            wire:change="updateLine({{ $line->pr_line_id }}, 'i_description', $event.target.value)" class="!py-1 disabled:bg-transparent disabled:border-transparent" />
                                         <span class="text-[9px] text-[#8a5a00] bg-[#fff5e0] px-1 rounded">FREE TEXT</span>
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_qty }}" @disabled($this->pr->status !== 'DRAFT')
-                                        wire:change="updateLine({{ $line->pr_line_id }}, 'i_qty', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_qty }}" :disabled="$this->pr->status !== 'DRAFT'"
+                                        wire:change="updateLine({{ $line->pr_line_id }}, 'i_qty', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($line->i_item_source === 'FREE_TEXT')
-                                        <input type="text" value="{{ $line->i_uom }}" @disabled($this->pr->status !== 'DRAFT')
-                                            wire:change="updateLine({{ $line->pr_line_id }}, 'i_uom', $event.target.value)" class="w-16 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent">
+                                        <x-form.input value="{{ $line->i_uom }}" :disabled="$this->pr->status !== 'DRAFT'"
+                                            wire:change="updateLine({{ $line->pr_line_id }}, 'i_uom', $event.target.value)" class="w-16 !py-1 disabled:bg-transparent disabled:border-transparent" />
                                     @else
                                         {{ $line->i_uom }}
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right">
-                                    <input type="number" step="0.01" value="{{ $line->i_est_price }}" @disabled($this->pr->status !== 'DRAFT') placeholder="opsional"
-                                        wire:change="updateLine({{ $line->pr_line_id }}, 'i_est_price', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right disabled:bg-transparent disabled:border-transparent">
+                                    <x-form.input type="number" step="0.01" value="{{ $line->i_est_price }}" :disabled="$this->pr->status !== 'DRAFT'" placeholder="opsional"
+                                        wire:change="updateLine({{ $line->pr_line_id }}, 'i_est_price', $event.target.value)" class="w-24 !py-1 text-right disabled:bg-transparent disabled:border-transparent" />
                                 </td>
                                 <td class="px-3 py-2 text-right font-mono">{{ $line->c_est_subtotal !== null ? number_format((float) $line->c_est_subtotal, 0, ',', '.') : '—' }}</td>
                                 <td class="px-3 py-2">
-                                    <select wire:change="updateLine({{ $line->pr_line_id }}, 'i_department_id', $event.target.value)" @disabled($this->pr->status !== 'DRAFT') class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent">
-                                        <option value="">— pilih —</option>
-                                        @foreach ($this->departments as $dept)
-                                            <option value="{{ $dept->department_id }}" @selected($line->i_department_id === $dept->department_id)>{{ $dept->department_name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-form.select wire:change="updateLine({{ $line->pr_line_id }}, 'i_department_id', $event.target.value)" :disabled="$this->pr->status !== 'DRAFT'" class="!py-1 disabled:bg-transparent disabled:border-transparent"
+                                        :selected="$line->i_department_id" :options="$this->departments->pluck('department_name', 'department_id')->all()" />
                                 </td>
                                 <td class="px-3 py-2">
-                                    <select wire:change="updateLine({{ $line->pr_line_id }}, 'i_coa_account_id', $event.target.value)" @disabled($this->pr->status !== 'DRAFT') class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs disabled:bg-transparent disabled:border-transparent">
-                                        <option value="">— pilih —</option>
-                                        @foreach ($this->coaAccounts as $acc)
-                                            <option value="{{ $acc->account_id }}" @selected($line->i_coa_account_id === $acc->account_id)>{{ $acc->account_code }} - {{ $acc->account_name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <x-form.select wire:change="updateLine({{ $line->pr_line_id }}, 'i_coa_account_id', $event.target.value)" :disabled="$this->pr->status !== 'DRAFT'" class="!py-1 disabled:bg-transparent disabled:border-transparent"
+                                        :selected="$line->i_coa_account_id" :options="$this->coaAccounts->mapWithKeys(fn ($acc) => [$acc->account_id => $acc->account_code.' - '.$acc->account_name])->all()" />
                                 </td>
                                 <td class="px-3 py-2">
                                     @if ($this->pr->status === 'DRAFT')
@@ -713,8 +643,9 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                     <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
                 @endif
                 <div class="mb-3">
-                    <label class="text-xs text-muted">Catatan <span class="text-[#a3241f]">(wajib utk Tolak / Hold)</span></label>
-                    <textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau catatan hold (mis. cash flow belum siap)..." class="w-full border border-[#d7dbe2] rounded-lg px-3 py-2 mt-1 text-sm"></textarea>
+                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="Alasan penolakan, atau catatan hold (mis. cash flow belum siap)..." class="!text-sm">
+                        <x-slot:label>Catatan <span class="text-[#a3241f] normal-case">(wajib utk Tolak / Hold)</span></x-slot:label>
+                    </x-form.textarea>
                 </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" wire:click="holdDoc" wire:confirm="Tahan PR ini? Tetap di antrian Anda, diputuskan lagi nanti." class="bg-[#6d28d9] text-white px-4 py-2 rounded-lg text-sm font-semibold">⏸ Hold</button>

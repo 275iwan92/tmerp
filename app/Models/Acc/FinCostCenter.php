@@ -17,12 +17,12 @@ class FinCostCenter extends Model
         'cc_name',
         'cc_group',
         'org_dept_id',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

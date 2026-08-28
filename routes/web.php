@@ -15,6 +15,10 @@ Route::middleware('auth')->group(function () {
     // ikut digate olehnya (redirect loop) — security_defaultpassword_spec.md §6.
     Route::livewire('/password/change', 'pages::auth.password-change')->name('password.change');
 
+    // Sama alasannya dgn password.change — halaman setup 4 pertanyaan keamanan
+    // sendiri juga di luar force.password (redirect loop kalau ikut digate).
+    Route::livewire('/security/setup', 'pages::auth.security-setup')->name('security.setup');
+
     Route::middleware('force.password')->group(function () {
         Route::livewire('/menu', 'pages::main-menu')->name('menu');
 
@@ -62,6 +66,8 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/master/raw-material', 'pages::master.raw-material.index')->name('master.raw-material.list');
             Route::livewire('/master/raw-material/create', 'pages::master.raw-material.entry')->name('master.raw-material.create');
             Route::livewire('/master/raw-material/{material}/edit', 'pages::master.raw-material.entry')->name('master.raw-material.edit');
+
+            Route::livewire('/master/mat-category', 'pages::master.mat-category')->name('master.mat-category');
 
             Route::livewire('/master/warehouse', 'pages::master.warehouse.index')->name('master.warehouse.list');
             Route::livewire('/master/warehouse/create', 'pages::master.warehouse.entry')->name('master.warehouse.create');
@@ -117,6 +123,11 @@ Route::middleware('auth')->group(function () {
         Route::middleware('module:HRM')->group(function () {
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
+            Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
+        });
+
+        Route::middleware('module:PROD')->group(function () {
+            Route::livewire('/production/scheduling-board', 'pages::production.scheduling-board')->name('production.scheduling-board');
         });
     });
 });

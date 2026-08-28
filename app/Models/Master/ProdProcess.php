@@ -15,13 +15,13 @@ class ProdProcess extends Model
     protected $fillable = [
         'process_name',
         'gantt_color',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     // Tidak ada relasi balik ke iqp_part_process (tm2sdi, process_id) — sengaja,

@@ -169,10 +169,10 @@ open_items:
     isi: "inv_stock_layer & konsumsi FIFO/LIFO sisi OUT adalah milik modul Inventory (belum dibangun). Procurement hanya MENGISI layer saat IN. Perlu INV_TIER tersendiri."
   - id: PROC-ITEMCODE-GEN
     prioritas: SEDANG
-    isi: "material_code: auto-generate dari rangkaian doc_rmprefix1..5 (prefix5_id) ATAU tetap manual seperti legacy (GZ00726 — pola lama tidak selalu mengikuti 5 hirarki)? Belum diputuskan."
+    isi: "material_code: auto-generate dari rangkaian mat_category 1..5 (dulu doc_rmprefix1..5, diganti 2026-08-26 -- lihat migration 2026_08_26_000002) ATAU tetap manual seperti legacy (GZ00726 — pola lama tidak selalu mengikuti 5 hirarki)? Belum diputuskan."
   - id: PROC-STOCKCLASS-SEED
     prioritas: SEDANG
-    isi: "Pemetaan stock_class + default_coa_account_id untuk tiap baris doc_rmprefix1 (Paper=RAW, Jasa=SERVICE, ATK/Sparepart=INDIRECT, dst) belum di-seed — butuh review Jo per kategori."
+    isi: "Pemetaan stock_class + default_coa_account_id untuk tiap kategori level 1 di mat_category (dulu doc_rmprefix1, diganti 2026-08-26; Paper=RAW, Jasa=SERVICE, ATK/Sparepart=INDIRECT, dst) belum di-seed — butuh review Jo per kategori. Sekarang bisa diisi langsung dari layar Master Kategori Bahan Baku (route master.mat-category), tak perlu lagi insert manual ke DB."
   - id: PROC-PPN-RATE
     prioritas: SEDANG
     isi: "Tarif PPN di-seed 11% dan PPh23 jasa 2% — perlu konfirmasi Jo apakah sudah sesuai kondisi saat ini."

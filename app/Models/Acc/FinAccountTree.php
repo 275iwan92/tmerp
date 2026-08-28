@@ -21,7 +21,7 @@ class FinAccountTree extends Model
     protected $casts = [
         'is_recon' => 'boolean',
         'is_postable' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'tree_level' => 'integer',
     ];
 }

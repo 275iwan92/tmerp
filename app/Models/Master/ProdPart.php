@@ -26,7 +26,7 @@ class ProdPart extends Model
         'min_stock',
         'max_stock',
         'cur_stock',
-        'is_active',
+        'activate',
         'stock_asset_account_id',
         'cogs_account_id',
         'cost_center_id',
@@ -36,7 +36,7 @@ class ProdPart extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function product(): BelongsTo

@@ -30,7 +30,7 @@ class FinAccount extends Model
         'is_postable',
         'default_cc_id',
         'tax_scheme_code',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -38,7 +38,7 @@ class FinAccount extends Model
     protected $casts = [
         'is_recon' => 'boolean',
         'is_postable' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function parent(): BelongsTo

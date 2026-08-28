@@ -1,0 +1,91 @@
+# ═══════════════════════════════════════════════════════════════════
+# dispatch_rules.yaml — KEPUTUSAN TERKUNCI MODUL 05 DISPATCH
+# Dibaca Claude Code SEBELUM implementasi. Referensi ke dispatch_tier1..4.md.
+# ═══════════════════════════════════════════════════════════════════
+modul: "05_dispatch"
+db: tm2sdi
+scope_tier_ini: "5.2 Delivery Order + Surat Jalan (satu objek data, dua cetakan). TIDAK termasuk 5.1 Picking granular/WMS, 5.3 Shipment/Load/Route Planner."
+
+keputusan_terkunci:
+  DISPATCH-00_satu_objek_dua_cetak: >
+    do_delivery/do_line adalah SATU tabel transaksi. Delivery Order (internal, berharga)
+    dan Surat Jalan (eksternal, tanpa harga, tanda tangan penerima) adalah DUA CETAKAN
+    dari data yang sama, BUKAN dua dokumen/tabel terpisah. Override eksplisit terhadap
+    asumsi flowengine_tier1.md §4 yang mereservasi module_code DO dan DN sebagai baris
+    terpisah -- DN tidak dipakai sebagai module_code aktif. Basis: riset komparatif SAP
+    (Outbound Delivery + delivery note = 1 objek + output), D365 (Packing Slip = padanan
+    Surat Jalan, tanpa dokumen "DO" terpisah), praktik Indonesia (DO vs Surat Jalan = dua
+    lembar cetak dari transaksi fisik yang sama). Lihat dispatch_tier1.md §1.2.
+
+  DISPATCH-01_konsolidasi_level_baris: >
+    do_delivery (header) dikunci ke SATU customer_id (hard block, terkunci begitu baris
+    pertama ditarik -- pola sama PV-02/PV-03 di Procurement). do_line membawa co_order_id +
+    co_order_item_id SENDIRI per baris -- inilah yang memungkinkan satu DO memuat baris
+    dari beberapa CO berbeda milik customer yang sama. Meniru SAP (VBFA level item),
+    Oracle (wsh_delivery_details.source_line_id), D365 (OrigSalesId per baris packing slip).
+
+  DISPATCH-02_no_merge_rule: >
+    KUNCI IDENTITAS baris do_line = co_order_item_id, BUKAN item_id/nama produk. Dua
+    co_order_item_id berbeda SELALU jadi 2 baris do_line terpisah, walau item_description
+    identik -- karena harga (unit_price) adalah SNAPSHOT dari co_order_item.unit_price,
+    bukan dihitung ulang. Menggabung baris berarti kehilangan jejak harga-ke-CO-asal,
+    melanggar audit trail. TIDAK ADA tombol "Gabung Baris" di v1. Badge visual peringatan
+    ("item sama, harga beda") diperbolehkan sebagai INFO, tidak mengubah data. Test case
+    wajib ada di dispatch_tier2.md §B.4 -- WAJIB test unit tersendiri, bukan cuma manual QA.
+
+  DISPATCH-03_satu_shipping_event: >
+    Satu do_delivery = satu shipping event tunggal. TIDAK ada status per-baris granular
+    (sebagian SHIPPED sebagian belum dalam satu DO yang sama). Kalau sebagian item belum
+    siap kirim, solusinya buat DO terpisah untuk sisanya -- didukung native karena satu
+    baris co_order_delivery bisa ditarik parsial ke banyak DO berbeda (qty_available
+    dihitung live, lihat DISPATCH-04).
+
+  DISPATCH-04_qty_available_live: >
+    "Sisa qty tersedia" sebuah baris co_order_delivery TIDAK disimpan sebagai kolom fisik
+    -- dihitung live via VIEW v_co_delivery_outstanding = ship_qty - SUM(do_line.qty_do
+    WHERE co_delivery_id=X AND status IN ('PLANNED','SHIPPED')). Baris do_line CANCELLED
+    otomatis melepas qty kembali ke pool tanpa aksi manual tambahan. TIDAK ADA ALTER
+    terhadap tabel co_order_delivery yang sudah live.
+
+  DISPATCH-05_hard_lock_customer: >
+    customer_id di header do_delivery terkunci begitu do_line pertama ditarik (pola sama
+    PV-02/PV-03 Procurement). Semua do_line dalam satu DO wajib berasal dari CO yang
+    customer-nya sama dengan header -- divalidasi ulang di server, bukan cuma filter query
+    picker.
+
+  DISPATCH-06_status_lifecycle: >
+    DRAFT -> CONFIRMED -> SHIPPED, dengan CANCELLED bisa dari DRAFT atau CONFIRMED (TIDAK
+    dari SHIPPED). do_no digenerate SAAT Confirm (bukan saat draft dibuat), format
+    DO/YY/##### (pola global sama INV-09). Confirm WAJIB re-validasi qty_available versi
+    terkini di server (cegah race condition dua DO menarik jadwal sama bersamaan).
+
+  DISPATCH-07_price_override_reserved: >
+    Kolom price_overridden/original_unit_price/price_change_approval_status DISIAPKAN di
+    do_line/do_delivery, TAPI TIDAK ADA flow approval aktif di v1. User boleh edit harga
+    manual saat DRAFT tanpa blocking apa pun. Approval 3-party (Costing+Sales+Finance)
+    adalah keputusan Fase 2 terpisah, JANGAN dibangun sekarang.
+
+  DISPATCH-08_sisi_a_sisi_b: >
+    Cetakan Delivery Order (internal) = Sisi A, harga tampil penuh. Cetakan Surat Jalan
+    (eksternal, dibawa kurir) = Sisi B, kolom harga TIDAK ADA DI QUERY CETAK (bukan cuma
+    disembunyikan CSS) -- pola sama Procurement PV.
+
+di_luar_scope_eksplisit:
+  - "5.1 Picking List granular (lokasi/bin, scan barcode) -- lihat dispatch_tier1.md §8"
+  - "5.1 Packing List (koli/tonase/m3), do_package/do_package_line -- menunggu 5.3"
+  - "5.3 Load Planner, Route Planner, Shipment Manifest"
+  - "FG Stock Out otomatis saat SHIPPED -- butuh keputusan valuasi COGS FG tersendiri, lihat open_items DISPATCH-STOCK-OUT-FG di dispatch_state.yaml"
+  - "Proof of Delivery digital (foto/tanda tangan elektronik) -- v1 tanda tangan fisik saja"
+  - "Delivery Return / retur setelah SHIPPED -- modul terpisah setara PRT vs PV"
+  - "Invoicing/Billing (AR-lite) -- do_line.qty_invoiced disiapkan sebagai pijakan saja, tidak diimplementasi di sini"
+  - "Price-change approval 3-party -- kolom reserved saja (DISPATCH-07)"
+
+referensi:
+  - dispatch_tier1.md
+  - dispatch_tier2.md
+  - dispatch_tier3.md
+  - dispatch_tier4.md
+  - mockup_delivery_order.html
+  - checklistmockuperp.md (MODUL 1 co_order_delivery, MODUL 5)
+  - flowengine_tier1.md (§4, di-override sebagian oleh DISPATCH-00)
+  - procurement_tier1.md (pola Sisi A/B, hard-lock dokumen)

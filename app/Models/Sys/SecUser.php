@@ -36,7 +36,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'employee_id',
         'linked_type',
         'linked_id',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
         'default_password',
@@ -44,6 +44,11 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'approval_status',
         'theme_code',
         'pswd_last_updated',
+        'birth_date',
+        'mother_name_hash',
+        'security_question_id',
+        'security_answer_hash',
+        'security_setup_at',
     ];
 
     protected $hidden = [
@@ -51,15 +56,19 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         'mfa',
         'activation_code',
         'default_password',
+        'mother_name_hash',
+        'security_answer_hash',
     ];
 
     protected $casts = [
         'active' => 'boolean',
         'is_admin' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'must_change_password' => 'boolean',
         'mfa_last_updated' => 'datetime',
         'pswd_last_updated' => 'datetime',
+        'birth_date' => 'date',
+        'security_setup_at' => 'datetime',
     ];
 
     // security_defaultpassword_spec.md §4 — SET/GET plaintext, tersimpan
@@ -93,6 +102,11 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
             ->withPivot('id_user_group');
     }
 
+    public function securityQuestion(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(SecRecoveryQuestion::class, 'security_question_id', 'id_question');
+    }
+
     public function maxMgmtLevel(): int
     {
         return (int) ($this->groups()->max('mgmt_level') ?? 0);
@@ -124,7 +138,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
     // is_admin=1 bypass total (akses penuh semua modul aktif).
     public function accessibleModules(): Collection
     {
-        $modules = SecModule::query()->where('is_active', true)->orderBy('sort_order')->get();
+        $modules = SecModule::query()->where('activate', true)->orderBy('sort_order')->get();
 
         if ($this->is_admin) {
             return $modules->keyBy('module_code')->map(fn (SecModule $m) => (object) [
@@ -172,6 +186,36 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         return (bool) $this->is_admin || $this->canAccessModule('SETUP');
     }
 
+    // Role gate PPIC/Production Scheduling (production_scheduling_tier1.md §9.7,
+    // tier2.md §9 permission matrix). is_admin bypass total, konsisten pola
+    // canAccessModule() di atas.
+    public function hasGroup(string ...$groupCodes): bool
+    {
+        if ($this->is_admin) {
+            return true;
+        }
+
+        return $this->groups()->whereIn('sec_group.group_code', $groupCodes)->exists();
+    }
+
+    public function isQa(): bool
+    {
+        return $this->hasGroup('QA');
+    }
+
+    // "Manager Produksi atau lebih tinggi" -- Tier1 §9.7 (Rule Library ACTIVATE).
+    public function isProdManagerOrAbove(): bool
+    {
+        return $this->is_admin || $this->hasGroup('PROD_MGR', 'OPS_MGR', 'DIREKSI') || $this->maxMgmtLevel() >= 3;
+    }
+
+    // "Manager Operasional atau lebih tinggi (GM/Direksi)" -- Tier1 §9.3/§9.4
+    // (approve subkontrak->PO, approve substitusi bahan).
+    public function isOpsManagerOrAbove(): bool
+    {
+        return $this->is_admin || $this->hasGroup('OPS_MGR', 'DIREKSI') || $this->maxMgmtLevel() >= 4;
+    }
+
     // employee_id -> tm2mst.emp_employee (LOGICAL, lintas-DB) -- dipakai Flow
     // Engine utk resolusi "posisi user login ini" saat menyusun antrian approval
     // (PrApproval, dst). Query terpisah, bukan join, sesuai CLAUDE.md §2.
@@ -193,7 +237,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
         if ($this->is_admin) {
             return \App\Models\Sys\SysAppMenu::query()
                 ->where('menu_type', 'module')
-                ->where('is_active', true)
+                ->where('activate', true)
                 ->pluck('code');
         }
 
@@ -201,7 +245,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract
 
         return \App\Models\Sys\SysAppMenu::query()
             ->where('menu_type', 'module')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereNotNull('required_object')
             ->get()
             ->filter(fn ($m) => $accessible->contains($m->required_object))

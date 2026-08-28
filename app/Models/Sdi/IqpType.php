@@ -23,11 +23,11 @@ class IqpType extends Model
     protected $fillable = [
         'type_code',
         'type_label',
-        'is_active',
+        'activate',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function inquiries(): HasMany

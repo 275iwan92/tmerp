@@ -21,14 +21,14 @@ class OrgPosition extends Model
         'position_code',
         'position_name',
         'salary_hidden_from_hr',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'salary_hidden_from_hr' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function department(): BelongsTo

@@ -60,6 +60,7 @@ header.app-header .back { @apply ml-auto bg-[#43508a] text-[#cfd6ef] border-none
 .grid { @apply grid grid-cols-4 gap-x-3.5 gap-y-2.5; }
 .grid.two { @apply grid-cols-2; }
 .grid.three { @apply grid-cols-3; }
+.grid.five { @apply grid-cols-5; }
 .f { @apply flex flex-col gap-[3px]; }
 .f.col2 { @apply col-span-2; }
 .f.col3 { @apply col-span-3; }
@@ -175,6 +176,7 @@ body:has(.hub) { @apply pb-0; }
     .pick { @apply grid-cols-2; }
     .grid { @apply grid-cols-2; }
     .grid.three { @apply grid-cols-2; }
+    .grid.five { @apply grid-cols-3; }
     .f.col3, .f.col4 { @apply col-span-2; }
     .flx { @apply flex-col; }
     .flx > div[style*="width:360px"] { width: 100% !important; }
@@ -184,7 +186,7 @@ body:has(.hub) { @apply pb-0; }
     .hub h1 { @apply text-[19px]; }
     header.app-header { @apply flex-wrap gap-2; }
     .qtbl .hide-sm { @apply hidden; }
-    .grid, .grid.two, .grid.three { @apply grid-cols-1; }
+    .grid, .grid.two, .grid.three, .grid.five { @apply grid-cols-1; }
     .f.col2, .f.col3, .f.col4 { @apply col-span-1; }
     header.app-header .back { @apply ml-0; }
 }

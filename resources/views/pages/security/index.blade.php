@@ -57,7 +57,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
             'email' => $this->u_email ?: null,
             'pswd' => Hash::make($this->u_pswd),
             'active' => true,
-            'is_active' => true,
+            'activate' => true,
         ]);
 
         $user->groups()->attach($this->u_group_id);
@@ -75,7 +75,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $user = SecUser::findOrFail($userId);
-        $user->update(['is_active' => ! $user->is_active]);
+        $user->update(['activate' => ! $user->activate]);
         unset($this->users);
     }
 
@@ -123,7 +123,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
             'group_code' => strtoupper(str_replace(' ', '_', $this->g_code)),
             'group_name' => $this->g_name,
             'mgmt_level' => $this->g_level,
-            'is_active' => true,
+            'activate' => true,
         ]);
 
         $this->reset(['g_code', 'g_name']);
@@ -149,9 +149,9 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
     {
         return SecModule::query()
             ->whereNull('parent_id')
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('sort_order')
-            ->with(['children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
+            ->with(['children' => fn ($q) => $q->where('activate', true)->orderBy('sort_order')])
             ->get();
     }
 
@@ -273,36 +273,12 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <p class="note" style="color:var(--sp-ok)">✅ {{ $userMessage }}</p>
                     @endif
                     <div class="form-grid">
-                        <div class="fld">
-                            <label>Username</label>
-                            <input wire:model="u_login" placeholder="mis. andi.pratama">
-                            @error('u_login') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="fld">
-                            <label>Nama lengkap</label>
-                            <input wire:model="u_name" placeholder="Andi Pratama">
-                            @error('u_name') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="fld">
-                            <label>Email</label>
-                            <input wire:model="u_email" placeholder="andi@telasih.co.id">
-                            @error('u_email') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="fld">
-                            <label>Password awal</label>
-                            <input type="password" wire:model="u_pswd" placeholder="Minimal 8 karakter">
-                            @error('u_pswd') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="fld">
-                            <label>Grup</label>
-                            <select wire:model="u_group_id" x-data x-effect="$el.value = @js($u_group_id)">
-                                <option value="">— pilih grup —</option>
-                                @foreach ($this->groups as $g)
-                                    <option value="{{ $g->id_group }}">{{ $g->group_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('u_group_id') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
+                        <x-form.input legacy="fld" label="Username" wire:model="u_login" placeholder="mis. andi.pratama" name="u_login" />
+                        <x-form.input legacy="fld" label="Nama lengkap" wire:model="u_name" placeholder="Andi Pratama" name="u_name" />
+                        <x-form.input legacy="fld" label="Email" wire:model="u_email" placeholder="andi@telasih.co.id" name="u_email" />
+                        <x-form.input legacy="fld" label="Password awal" type="password" wire:model="u_pswd" placeholder="Minimal 8 karakter" name="u_pswd" />
+                        <x-form.select legacy="fld" label="Grup" wire:model="u_group_id" x-data x-effect="$el.value = @js($u_group_id)"
+                            placeholder="— pilih grup —" name="u_group_id" :options="$this->groups->pluck('group_name', 'id_group')->all()" />
                     </div>
                     <div class="actions"><button type="button" class="btn btn-primary" wire:click="addUser">Tambah pengguna</button></div>
                 </div>
@@ -317,7 +293,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                     <td>{{ $u->login }}</td>
                                     <td>{{ $u->name }}</td>
                                     <td>{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' (Admin)' : '' }}</td>
-                                    <td><span class="pill {{ $u->is_active ? 'on' : 'off' }}">{{ $u->is_active ? 'Aktif' : 'Nonaktif' }}</span></td>
+                                    <td><span class="pill {{ $u->activate ? 'on' : 'off' }}">{{ $u->activate ? 'Aktif' : 'Nonaktif' }}</span></td>
                                     <td>
                                         @if (session()->has('resetPlain_'.$u->id_user))
                                             <span class="note" style="color:var(--sp-ok)">Baru: <code>{{ session('resetPlain_'.$u->id_user) }}</code></span>
@@ -333,7 +309,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                             <button type="button" class="link-act" wire:click="revealPassword({{ $u->id_user }})">Lihat password</button>
                                         @endif
                                         @if ($u->id_user !== Auth::id())
-                                            <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                            <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->activate ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                                         @else
                                             <span class="note">(akun Anda)</span>
                                         @endif
@@ -355,24 +331,10 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <p class="note" style="color:var(--sp-ok)">✅ {{ $groupMessage }}</p>
                     @endif
                     <div class="form-grid">
-                        <div class="fld">
-                            <label>Kode grup</label>
-                            <input wire:model="g_code" placeholder="mis. PRODUKSI_SPV">
-                            @error('g_code') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="fld">
-                            <label>Nama grup</label>
-                            <input wire:model="g_name" placeholder="mis. Supervisor Produksi">
-                            @error('g_name') <div class="note" style="color:var(--sp-danger)">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="fld">
-                            <label>Level manajemen (1=Staf .. 5=Direksi)</label>
-                            <select wire:model="g_level" x-data x-effect="$el.value = @js($g_level)">
-                                @foreach ([1 => '1 - Staf', 2 => '2 - Supervisor', 3 => '3 - Manager', 4 => '4 - GM', 5 => '5 - Direksi'] as $lvl => $label)
-                                    <option value="{{ $lvl }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <x-form.input legacy="fld" label="Kode grup" wire:model="g_code" placeholder="mis. PRODUKSI_SPV" name="g_code" />
+                        <x-form.input legacy="fld" label="Nama grup" wire:model="g_name" placeholder="mis. Supervisor Produksi" name="g_name" />
+                        <x-form.select legacy="fld" label="Level manajemen (1=Staf .. 5=Direksi)" wire:model="g_level" x-data x-effect="$el.value = @js($g_level)"
+                            :placeholder="false" :options="[1 => '1 - Staf', 2 => '2 - Supervisor', 3 => '3 - Manager', 4 => '4 - GM', 5 => '5 - Direksi']" />
                     </div>
                     <div class="actions"><button type="button" class="btn btn-primary" wire:click="addGroup">Tambah grup</button></div>
                 </div>
@@ -400,13 +362,9 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                 <h1>Hak Akses Grup</h1><p class="desc">Pilih grup, lalu tentukan akses per modul (hierarki induk → sub).</p>
 
                 <div class="box">
-                    <div class="fld" style="max-width:320px">
-                        <label>Grup</label>
-                        <select wire:model.live="permGroupId" x-data x-effect="$el.value = @js($permGroupId)">
-                            @foreach ($this->groups as $g)
-                                <option value="{{ $g->id_group }}">{{ $g->group_name }}</option>
-                            @endforeach
-                        </select>
+                    <div style="max-width:320px">
+                        <x-form.select legacy="fld" label="Grup" wire:model.live="permGroupId" x-data x-effect="$el.value = @js($permGroupId)"
+                            :placeholder="false" :options="$this->groups->pluck('group_name', 'id_group')->all()" />
                     </div>
                 </div>
 
@@ -555,7 +513,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="box" style="margin-top:16px">
                     <h3>emp_employee (aktif) → login sec_user</h3>
-                    <p class="note">Buat akun login untuk karyawan hasil migrasi di atas yang <code>is_active=1</code> (karyawan yang sudah keluar TIDAK dibuatkan akun — realistis). Username = nama depan (tabrakan ditambah angka), password acak dibuat lewat <code>PasswordResetService</code>, wajib ganti password di login pertama. Aman dijalankan berulang — karyawan yang sudah punya akun dilewati.</p>
+                    <p class="note">Buat akun login untuk karyawan hasil migrasi di atas yang <code>activate=1</code> (karyawan yang sudah keluar TIDAK dibuatkan akun — realistis). Username = nama depan (tabrakan ditambah angka), password acak dibuat lewat <code>PasswordResetService</code>, wajib ganti password di login pertama. Aman dijalankan berulang — karyawan yang sudah punya akun dilewati.</p>
                     <div class="actions">
                         <button type="button" class="btn btn-primary" wire:click="runEmployeeLoginProvision" wire:loading.attr="disabled"
                             wire:confirm="Buat akun login untuk semua karyawan aktif hasil migrasi sekarang?">

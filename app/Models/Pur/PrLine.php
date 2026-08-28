@@ -2,7 +2,7 @@
 
 namespace App\Models\Pur;
 
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatRaw;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -36,7 +36,7 @@ class PrLine extends Model
 
     public function material(): BelongsTo
     {
-        return $this->belongsTo(MRawMaterial::class, 'item_id', 'material_id');
+        return $this->belongsTo(MatRaw::class, 'item_id', 'material_id');
     }
 
     public function allocations(): HasMany

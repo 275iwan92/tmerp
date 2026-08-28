@@ -20,7 +20,7 @@ class PvBuilderService
     public static function supplierWorklist()
     {
         return PoOrder::whereIn('status', ['SENT', 'PARTIALLY_RECEIVED'])
-            ->where('is_cancelled', false)
+            ->where('stat_cancel', false)
             ->with(['lines' => fn ($q) => $q->where('is_receivable', true)->whereColumn('c_qty_received', '<', 'i_qty')])
             ->get()
             ->filter(fn ($po) => $po->lines->isNotEmpty())
@@ -45,7 +45,7 @@ class PvBuilderService
         return PoLine::with('order')
             ->whereHas('order', fn ($q) => $q->where('i_supplier_id', $supplierId)
                 ->whereIn('status', ['SENT', 'PARTIALLY_RECEIVED'])
-                ->where('is_cancelled', false))
+                ->where('stat_cancel', false))
             ->where('is_receivable', true)
             ->whereColumn('c_qty_received', '<', 'i_qty')
             ->get()

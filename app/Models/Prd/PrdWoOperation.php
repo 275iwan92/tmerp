@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Models\Prd;
+
+use App\Models\Master\ProdMachine;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+// Task / Job Operation -- unit terkecil yang dijadwalkan di Scheduling Board
+// (production_scheduling_tier1.md §4, §5A). machine() adalah relasi LOGICAL
+// lintas-DB (tm2prd -> tm2mst), bukan FK fisik -- CLAUDE.md §2.
+class PrdWoOperation extends Model
+{
+    protected $connection = 'tm2prd';
+
+    protected $table = 'prd_wo_operation';
+
+    protected $primaryKey = 'operation_id';
+
+    const UPDATED_AT = 'updated_at';
+
+    protected $fillable = [
+        'wo_id', 'seq_no', 'process_name', 'resource_type', 'machine_id', 'qty',
+        'target_start', 'target_finish', 'actual_start', 'actual_finish',
+        'task_status', 'qc_gate_required', 'rejection_reason', 'is_hot_job',
+        'batched_with_operation_id', 'rate_band_value', 'critical_ratio',
+        'created_by', 'updated_by',
+    ];
+
+    protected $casts = [
+        'target_start' => 'datetime',
+        'target_finish' => 'datetime',
+        'actual_start' => 'datetime',
+        'actual_finish' => 'datetime',
+        'qc_gate_required' => 'boolean',
+        'is_hot_job' => 'boolean',
+        'qty' => 'decimal:4',
+        'critical_ratio' => 'decimal:4',
+    ];
+
+    // Tier2 §2 — state machine Task. Guard wajib di service layer, bukan cuma UI.
+    public const TRANSITIONS = [
+        'PENDING' => ['ASSIGNED'],
+        'ASSIGNED' => ['RUNNING', 'PENDING'],       // batal-assign kembali ke PENDING
+        'RUNNING' => ['DONE', 'BREAKDOWN'],
+        'BREAKDOWN' => ['PENDING', 'SUBCONTRACT'],   // reroute mesin lain / subkontrak
+        'SUBCONTRACT' => ['QC_HOLD'],
+        'DONE' => ['QC_HOLD', 'QC_PASSED'],     // lompat ke QC_PASSED bila qc_gate_required=false
+        'QC_HOLD' => ['QC_PASSED', 'QC_REJECTED'],
+        'QC_REJECTED' => ['PENDING', 'BREAKDOWN'],     // rework, atau eskalasi
+        'QC_PASSED' => [],                            // final per task
+    ];
+
+    public function canTransitionTo(string $target): bool
+    {
+        return in_array($target, self::TRANSITIONS[$this->task_status] ?? [], true);
+    }
+
+    public function transitionTo(string $target): void
+    {
+        if (! $this->canTransitionTo($target)) {
+            throw new \DomainException("Transisi status Task tidak sah: {$this->task_status} -> {$target}");
+        }
+        $this->task_status = $target;
+        $this->save();
+    }
+
+    public function wo(): BelongsTo
+    {
+        return $this->belongsTo(PrdWo::class, 'wo_id', 'wo_id');
+    }
+
+    public function crew(): HasMany
+    {
+        return $this->hasMany(PrdCrewAssignment::class, 'operation_id', 'operation_id');
+    }
+
+    // Lintas-DB (tm2prd -> tm2mst) -- query terpisah, bukan join fisik.
+    public function machine(): BelongsTo
+    {
+        return $this->belongsTo(ProdMachine::class, 'machine_id', 'machine_id');
+    }
+
+    public function operatorUtama(): ?PrdCrewAssignment
+    {
+        return $this->crew->firstWhere('crew_role', 'OPERATOR_UTAMA');
+    }
+
+    // Progress kasar dari rentang waktu target (belum ada kolom qty actual per
+    // Tier 3) -- DONE/QC_PASSED = 100%, RUNNING = proporsi waktu berlalu, sisanya 0.
+    public function progressPercent(\Carbon\Carbon $now): int
+    {
+        if (in_array($this->task_status, ['DONE', 'QC_PASSED'], true)) {
+            return 100;
+        }
+
+        if ($this->task_status !== 'RUNNING' || ! $this->target_start || ! $this->target_finish) {
+            return 0;
+        }
+
+        $total = $this->target_start->diffInSeconds($this->target_finish);
+        if ($total <= 0) {
+            return 0;
+        }
+
+        $elapsed = max(0, $this->target_start->diffInSeconds($now, false));
+
+        return (int) max(0, min(100, round($elapsed / $total * 100)));
+    }
+}

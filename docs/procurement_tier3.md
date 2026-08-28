@@ -467,6 +467,13 @@ CREATE TABLE prt_line (
 ## 7. DELTA LINTAS-DATABASE (WAJIB dijalankan sebelum implementasi)
 
 ### 7.1 `tm2mst` — master item & kategori
+> **Update 2026-08-26:** `doc_rmprefix1..5` di patch di bawah ini sudah diganti
+> `mat_category` (1 tabel self-referencing: `parent_id`/`level`/`category_name`/
+> `prefix_char`, pengganti 5 tabel snowflake) — lihat migration
+> `2026_08_26_000002_replace_doc_rmprefix_with_mat_category.php`. Kolom
+> `stock_class`/`default_*_account_id` di bawah sekarang ada di `mat_category`
+> (cuma diisi utk `level=1`, dulu `doc_rmprefix1`). `prefix5_id` di
+> `m_raw_material` sudah di-repoint FK-nya ke `mat_category.id_category`.
 ```sql
 -- Kelas stok di level kategori induk -> menuntun klasifikasi & akun beban
 ALTER TABLE doc_rmprefix1

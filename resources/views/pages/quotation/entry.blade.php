@@ -30,7 +30,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function paymentTerms()
     {
-        return FinPaymentTerm::where('is_active', true)->orderBy('sort_order')->get();
+        return FinPaymentTerm::where('activate', true)->orderBy('sort_order')->get();
     }
 
     // Inquiry customer yang sama, costing sudah published, belum ditarik ke quotation ini.
@@ -205,44 +205,19 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Quotation</h3>
                     <div class="grid">
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No. Quotation</label>
-                            <input readonly value="{{ $this->quotation->quotation_no }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Tanggal</label>
-                            <input type="date" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" @disabled($this->quotation->doc_status !== 'DRAFT')
-                                wire:change="updateHeader('issued_date', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Berlaku s/d</label>
-                            <input type="date" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" @disabled($this->quotation->doc_status !== 'DRAFT')
-                                wire:change="updateHeader('valid_until', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Termin Pembayaran</label>
-                            <select @disabled($this->quotation->doc_status !== 'DRAFT') wire:change="updateHeader('payment_term', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->paymentTerms as $pt)
-                                    <option value="{{ $pt->payment_term_code }}" @selected($this->quotation->payment_term === $pt->payment_term_code)>{{ $pt->term_label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
+                        <x-form.input label="No. Quotation" readonly value="{{ $this->quotation->quotation_no }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="Tanggal" type="date" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('issued_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                        <x-form.input label="Berlaku s/d" type="date" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('valid_until', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                        <x-form.select label="Termin Pembayaran" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                            :selected="$this->quotation->payment_term" :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')->all()" />
                         <div class="col-span-2">
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Customer</label>
-                            <input readonly value="{{ $this->quotation->customer?->customer_name }} ({{ $this->quotation->customer?->customer_code }})" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
+                            <x-form.input label="Customer" readonly value="{{ $this->quotation->customer?->customer_name }} ({{ $this->quotation->customer?->customer_code }})" class="bg-[#f8fafc]" />
                         </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Skema Pajak</label>
-                            <select @disabled($this->quotation->doc_status !== 'DRAFT') wire:change="updateHeader('tax_scheme', $event.target.value)" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">
-                                <option value="EXCL" @selected($this->quotation->tax_scheme === 'EXCL')>Exclusive PPN 11%</option>
-                                <option value="INCL" @selected($this->quotation->tax_scheme === 'INCL')>Inclusive PPN 11%</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Mata Uang</label>
-                            <input readonly value="{{ $this->quotation->currency_code }}" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-[#f8fafc] text-muted">
-                        </div>
+                        <x-form.select label="Skema Pajak" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('tax_scheme', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                            :placeholder="false" :selected="$this->quotation->tax_scheme" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" />
+                        <x-form.input label="Mata Uang" readonly value="{{ $this->quotation->currency_code }}" class="bg-[#f8fafc]" />
                     </div>
                 </div>
 
@@ -300,8 +275,8 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="px-2.5 py-2 font-mono font-bold text-accent">{{ $item->inquiry?->inquiry_no ?? '—' }}</td>
                                     <td class="px-2.5 py-2">
                                         @if ($item->source_type === 'FREEFORM' && $this->quotation->doc_status === 'DRAFT')
-                                            <input type="text" value="{{ $item->description }}" placeholder="Deskripsi baris (mis. jasa/ongkos)..."
-                                                wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="w-full px-1.5 py-1 border border-[#d7dbe2] rounded text-xs font-medium">
+                                            <x-form.input value="{{ $item->description }}" placeholder="Deskripsi baris (mis. jasa/ongkos)..."
+                                                wire:change="updateItem({{ $item->id_item }}, 'description', $event.target.value)" class="!py-1 font-medium" />
                                         @else
                                             <div class="font-medium text-navy">{{ $item->description }}</div>
                                         @endif
@@ -316,21 +291,21 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                     </td>
                                     <td class="px-2.5 py-2 text-right">
                                         @if ($this->quotation->doc_status === 'DRAFT')
-                                            <input type="number" step="0.01" value="{{ $item->qty }}" wire:change="updateItem({{ $item->id_item }}, 'qty', $event.target.value)" class="w-20 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                            <x-form.input type="number" step="0.01" value="{{ $item->qty }}" wire:change="updateItem({{ $item->id_item }}, 'qty', $event.target.value)" class="w-20 !py-1 text-right" />
                                         @else
                                             {{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}
                                         @endif
                                     </td>
                                     <td class="px-2.5 py-2 text-right">
                                         @if ($this->quotation->doc_status === 'DRAFT')
-                                            <input type="number" step="0.01" value="{{ $item->unit_price }}" wire:change="updateItem({{ $item->id_item }}, 'unit_price', $event.target.value)" class="w-24 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                            <x-form.input type="number" step="0.01" value="{{ $item->unit_price }}" wire:change="updateItem({{ $item->id_item }}, 'unit_price', $event.target.value)" class="w-24 !py-1 text-right" />
                                         @else
                                             {{ number_format($item->unit_price, 0, ',', '.') }}
                                         @endif
                                     </td>
                                     <td class="px-2.5 py-2 text-right">
                                         @if ($this->quotation->doc_status === 'DRAFT')
-                                            <input type="number" step="0.1" value="{{ $item->discount_pct }}" wire:change="updateItem({{ $item->id_item }}, 'discount_pct', $event.target.value)" class="w-14 px-1.5 py-1 border border-[#d7dbe2] rounded text-xs text-right">
+                                            <x-form.input type="number" step="0.1" value="{{ $item->discount_pct }}" wire:change="updateItem({{ $item->id_item }}, 'discount_pct', $event.target.value)" class="w-14 !py-1 text-right" />
                                         @else
                                             {{ number_format($item->discount_pct, 1) }}%
                                         @endif

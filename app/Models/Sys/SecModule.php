@@ -23,14 +23,14 @@ class SecModule extends Model
         'min_mgmt_level',
         'is_reportable',
         'sort_order',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'is_reportable' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function parent(): BelongsTo

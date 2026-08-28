@@ -56,10 +56,12 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 
 ### Prefix tabel per domain
 **Master (tm2mst):**
-`cust_` customer · `prod_` product & proses · `mat_` material & harga bahan ·
-`uom_` satuan · `geo_` wilayah · `fin_` finance (currency/kurs/payment_term) ·
-`sup_` supplier · `emp_` employee · `org_` struktur organisasi ·
-`sys_` sistem/parameter · `ref_` lookup generik lintas-domain.
+`cust_` customer · `prod_` product & proses · `mat_` material, harga bahan &
+spesifikasi fisik (termasuk `mat_plano_size`) · `wh_` struktur gudang (master,
+lintas modul) · `uom_` satuan · `geo_` wilayah ·
+`fin_` finance (currency/kurs/payment_term) · `sup_` supplier · `emp_` employee ·
+`org_` struktur organisasi · `sys_` sistem/parameter ·
+`ref_` lookup generik lintas-domain.
 
 **Transaksi (tm2sdi):**
 `iqp_` inquiry product (+ costing turunan) · `quo_` quotation · `co_` customer order · `do_` delivery order.
@@ -71,10 +73,20 @@ transaksi = `iqp_costing`, ikut inquiry).
 ### Kolom
 - PK: `id_<entitas>` (kecuali `prod_type`, `iqp_type` = kode varchar).
 - Nama: English, snake_case.
-- Master: `is_active` + `created_at/by` + `updated_at/by`.
+- Master: `activate` (toggle aktif/nonaktif, boolean 1 kata — **bukan** `is_active`,
+  keputusan user 2026-08-26) + `created_at/by` + `updated_at/by`.
 - Transaksi: `created_at/by`, `updated_at/by`. Ber-approval: `approved_by/at`.
-  Confirm/cancel: flag `is_confirmed`/`is_cancelled` + `cancel_reason` (pelaku via `updated_by`).
+  Confirm/cancel/close: flag `stat_confirm`/`stat_cancel`/`stat_close` (prefix
+  `stat_` = status siklus dokumen, **bukan** `is_confirmed`/`is_cancelled` —
+  keputusan user 2026-08-26) + `cancel_reason` (pelaku via `updated_by`).
 - State transisi dokumen → tabel `doc_state_log` (polymorphic), BUKAN kolom per-transisi.
+- **DEC-FIELDNAME-STATUS (2026-08-26/27):** rename `is_active`→`activate`
+  & `is_confirmed`/`is_cancelled`→`stat_confirm`/`stat_cancel` — **SELESAI**
+  di semua tabel (tm2mst, tm2acc, tm2sdi, tm2pur, tm2sys **termasuk**
+  `sec_user`/`sec_group`/`sec_module`, dicabut dari pengecualian awal atas
+  instruksi user 2026-08-27 setelah fase lain terbukti aman). `sec_user.active`
+  (kolom legacy terpisah, isinya selalu sama dgn is_active lama) **tidak**
+  ikut berubah. Riwayat & catatan per-fase: `docs/fieldrename_state.yaml`.
 
 ---
 
@@ -137,6 +149,19 @@ transaksi = `iqp_costing`, ikut inquiry).
   "Laporan" (label ringkas, tanpa kata "Laporan" berulang di item-nya),
   nama item laporan ikut `#[Title]` layar aslinya, grup sidebar otomatis
   collapsible (tak perlu kerjaan tambahan).
+- `ganttboardstandard.md` — **wajib dibaca sebelum bikin/ubah layar Gantt
+  apa pun** (jadwal resource×waktu dengan drag/resize, mis. Scheduling Board):
+  komponen reusable `resources/views/components/gantt/{board,row,task-block}
+  .blade.php`, kontrak Row/Block VM, Alpine store `gantt` untuk highlight
+  lintas-boundary. Gotcha wajib: jangan tulis nama tag komponen berkurung
+  sudut (`<x-...>`) di dalam komentar mana pun — Blade tag compiler ikut
+  mengompilasinya dan merusak file.
+- `printnotastandard.md` — **wajib dibaca sebelum bikin/ubah layar cetak
+  dokumen transaksi (Nota)** — kop+parties+signature+footer, beda dari
+  laporan tabel (`FORM_UI_STANDARD.md`): komponen reusable
+  `resources/views/components/print/{document,sheet,header,parties,party,
+  section,signatures,signature,footer}.blade.php`, tema warna per dokumen
+  via prop `theme`. Gotcha sama seperti `ganttboardstandard.md` §8.
 
 ---
 

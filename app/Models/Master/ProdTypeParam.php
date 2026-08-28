@@ -26,7 +26,7 @@ class ProdTypeParam extends Model
         'max_value',
         'unit',
         'seq',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -37,7 +37,7 @@ class ProdTypeParam extends Model
         'default_value' => 'decimal:2',
         'min_value' => 'decimal:2',
         'max_value' => 'decimal:2',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function type(): BelongsTo

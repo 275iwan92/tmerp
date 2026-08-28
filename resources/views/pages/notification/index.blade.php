@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Sys\SysNotification;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -9,6 +10,7 @@ use Livewire\WithPagination;
 
 new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use WithPagination;
 
     public string $search = '';
@@ -31,7 +33,7 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
             ->when($this->typeFilter !== '', fn ($q) => $q->where('type', $this->typeFilter))
             ->when($this->unreadOnly, fn ($q) => $q->where('is_read', false))
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -75,23 +77,26 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
 
     <div class="max-w-[1000px] mx-auto my-5 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2] flex-wrap">
-                <div class="flex items-center gap-2 flex-wrap">
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari judul / isi..." class="w-56 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    <select wire:model.live="typeFilter" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        <option value="">Semua Tipe</option>
-                        <option value="info">Info</option>
-                        <option value="success">Sukses</option>
-                        <option value="warning">Peringatan</option>
-                        <option value="error">Error</option>
-                    </select>
-                    <label class="flex items-center gap-1.5 text-xs text-[#4b5568] cursor-pointer">
-                        <input type="checkbox" wire:model.live="unreadOnly" class="rounded border-[#d7dbe2]">
-                        Hanya belum dibaca
-                    </label>
+            <x-grid.toolbar class="!bg-[#f4f6fa]">
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari judul / isi..." class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <button type="button" wire:click="markAllRead" class="text-[11px] font-bold text-accent">Tandai semua terbaca</button>
-            </div>
+                <select wire:model.live="typeFilter" class="shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <option value="">Semua Tipe</option>
+                    <option value="info">Info</option>
+                    <option value="success">Sukses</option>
+                    <option value="warning">Peringatan</option>
+                    <option value="error">Error</option>
+                </select>
+                <label class="flex items-center gap-1.5 text-xs text-[#4b5568] cursor-pointer shrink-0">
+                    <input type="checkbox" wire:model.live="unreadOnly" class="rounded border-[#d7dbe2]">
+                    Hanya belum dibaca
+                </label>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="markAllRead" class="shrink-0 text-[11px] font-bold text-accent">Tandai semua terbaca</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
             <div class="divide-y divide-[#eef1f5]">
                 @forelse ($this->notifications as $n)
@@ -121,9 +126,7 @@ new #[Title('Notification Center — TELASIH MAKMUR ERP')] class extends Compone
                 @endforelse
             </div>
 
-            <div class="px-4 py-3 border-t border-[#eef1f5]">
-                {{ $this->notifications->links() }}
-            </div>
+            @include('components.grid.pagination-footer', ['paginator' => $this->notifications])
         </div>
     </div>
 </div>

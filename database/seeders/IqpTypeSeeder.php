@@ -22,7 +22,7 @@ class IqpTypeSeeder extends Seeder
         foreach ($types as $type) {
             IqpType::query()->updateOrCreate(
                 ['type_code' => $type['type_code']],
-                ['type_label' => $type['type_label'], 'is_active' => true]
+                ['type_label' => $type['type_label'], 'activate' => true]
             );
         }
     }

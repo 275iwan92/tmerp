@@ -69,7 +69,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
     public bool $product_is_confirmed = false;
 
-    public bool $product_is_active = true;
+    public bool $product_activate = true;
 
     #[Computed]
     public function products()
@@ -86,13 +86,13 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function categoryOptions()
     {
-        return ProdCategory::query()->where('is_active', true)->orderBy('category_name')->get();
+        return ProdCategory::query()->where('activate', true)->orderBy('category_name')->get();
     }
 
     #[Computed]
     public function uomOptions()
     {
-        return UomUnit::query()->where('is_active', true)->orderBy('uom_code')->get();
+        return UomUnit::query()->where('activate', true)->orderBy('uom_code')->get();
     }
 
     #[Computed]
@@ -103,7 +103,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         }
 
         return CustCustomer::query()
-            ->where('is_active', true)
+            ->where('activate', true)
             ->where(fn ($q) => $q->where('customer_name', 'like', "%{$this->custQuery}%")
                 ->orWhere('customer_code', 'like', "%{$this->custQuery}%"))
             ->orderBy('customer_name')
@@ -137,19 +137,19 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function statActive(): int
     {
-        return ProdProduct::where('is_active', true)->count();
+        return ProdProduct::where('activate', true)->count();
     }
 
     #[Computed]
     public function statConfirmed(): int
     {
-        return ProdProduct::where('is_confirmed', true)->count();
+        return ProdProduct::where('stat_confirm', true)->count();
     }
 
     #[Computed]
     public function statInactive(): int
     {
-        return ProdProduct::where('is_active', false)->count();
+        return ProdProduct::where('activate', false)->count();
     }
 
     public function openModal(string $mode, ?int $id = null): void
@@ -179,9 +179,9 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             $this->max_stock = (string) ($p->max_stock ?? '');
             $this->default_selling_price = (string) ($p->default_selling_price ?? '');
             $this->minimum_selling_price = (string) ($p->minimum_selling_price ?? '');
-            $this->product_is_confirmed = (bool) $p->is_confirmed;
-            $this->product_is_active = (bool) $p->is_active;
-            $this->lockedSpec = (bool) $p->is_confirmed;
+            $this->product_is_confirmed = (bool) $p->stat_confirm;
+            $this->product_activate = (bool) $p->activate;
+            $this->lockedSpec = (bool) $p->stat_confirm;
         } else {
             $this->reset([
                 'product_code', 'product_name', 'category_id', 'customer_id', 'customer_label', 'custQuery',
@@ -191,7 +191,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             ]);
             $this->conversion_to_stock = '1';
             $this->product_is_confirmed = false;
-            $this->product_is_active = true;
+            $this->product_activate = true;
             $this->lockedSpec = false;
         }
 
@@ -229,7 +229,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             'default_selling_price' => ['nullable', 'numeric', 'min:0'],
             'minimum_selling_price' => ['nullable', 'numeric', 'min:0'],
             'product_is_confirmed' => ['boolean'],
-            'product_is_active' => ['boolean'],
+            'product_activate' => ['boolean'],
         ]);
 
         $payload = [
@@ -250,8 +250,8 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             'max_stock' => $data['max_stock'] !== '' && $data['max_stock'] !== null ? $data['max_stock'] : null,
             'default_selling_price' => $data['default_selling_price'] !== '' && $data['default_selling_price'] !== null ? $data['default_selling_price'] : null,
             'minimum_selling_price' => $data['minimum_selling_price'] !== '' && $data['minimum_selling_price'] !== null ? $data['minimum_selling_price'] : null,
-            'is_confirmed' => $data['product_is_confirmed'],
-            'is_active' => $data['product_is_active'],
+            'stat_confirm' => $data['product_is_confirmed'],
+            'activate' => $data['product_activate'],
             'updated_by' => Auth::user()->login,
         ];
 
@@ -269,33 +269,15 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
     public function toggleActive(int $id): void
     {
         $p = ProdProduct::findOrFail($id);
-        $p->is_active = ! $p->is_active;
+        $p->activate = ! $p->activate;
         $p->updated_by = Auth::user()->login;
         $p->save();
 
         unset($this->products, $this->statTotal, $this->statActive, $this->statConfirmed, $this->statInactive);
     }
 
-    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
@@ -304,39 +286,27 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <div class="grid gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Produk</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statActive }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
-                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Terkonfirmasi</p>
-                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->statConfirmed }}</p>
-                <p class="text-[10px] text-[#6b4fa0]/70">SPEC TERKUNCI</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Nonaktif</p>
-                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statInactive }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total Produk" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" label="Terkonfirmasi" :value="$this->statConfirmed" subtitle="SPEC TERKUNCI" />
+            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama produk…"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openModal('new')"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openModal('new')"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -351,15 +321,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->products as $p)
                             <tr wire:key="prod-{{ $p->id_product }}" wire:dblclick="openModal('edit', {{ $p->id_product }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($p->id_product) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($p->product_name ?: $p->product_code) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $p->product_name ?: '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $p->product_code }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$p->id_product" :name="$p->product_name ?: '—'" :code="$p->product_code" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->category->category_name ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->customer->customer_name ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] font-mono">
@@ -371,24 +333,25 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex flex-wrap gap-1">
-                                        @if ($p->is_confirmed)
+                                        @if ($p->stat_confirm)
                                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">TERKUNCI</span>
                                         @endif
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $p->is_active ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $p->is_active ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $p->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $p->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                     </div>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openModal('edit', {{ $p->id_product }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                    <button type="button" wire:click.stop="toggleActive({{ $p->id_product }})" wire:confirm="{{ $p->is_active ? 'Nonaktifkan' : 'Aktifkan' }} produk {{ $p->product_name }}?"
-                                        title="{{ $p->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $p->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $p->id_product }})" />
+                                    <x-grid.action-icon icon="⏻" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->id_product }})"
+                                        :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' produk '.$p->product_name.'?'"
+                                        :variant="$p->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" class="text-center py-8 text-muted text-sm">Tidak ada produk.</td></tr>
+                            <x-grid.empty-row :colspan="6" message="Tidak ada produk." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
         @endif
 
@@ -409,27 +372,17 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kode Produk *</label>
-                            <input type="text" wire:model="product_code" placeholder="mis. FB-DUPLEX-001" @disabled($lockedSpec) class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono">
-                            @error('product_code') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Kode Produk *" name="product_code" wire:model="product_code" placeholder="mis. FB-DUPLEX-001" :disabled="$lockedSpec" class="font-mono" />
                         </div>
-                        <div class="flex-[2] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Produk *</label>
-                            <input type="text" wire:model="product_name" placeholder="mis. Folding Box Duplex Kosmetik" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('product_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-[2]">
+                            <x-form.input label="Nama Produk *" name="product_name" wire:model="product_name" placeholder="mis. Folding Box Duplex Kosmetik" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kategori</label>
-                            <select wire:model="category_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->categoryOptions as $c)
-                                    <option value="{{ $c->id_category }}">{{ $c->category_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('category_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.select label="Kategori" name="category_id" wire:model="category_id"
+                                :options="$this->categoryOptions->pluck('category_name', 'id_category')" :selected="$category_id" />
                         </div>
                         <div class="flex-1 flex flex-col gap-1 relative">
                             <label class="text-xs font-semibold text-[#556]">Customer <span class="text-muted font-normal">(kosongkan jika stock item umum)</span></label>
@@ -455,88 +408,53 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                             @endif
                         </div>
                     </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Deskripsi</label>
-                        <textarea wire:model="description" rows="2" placeholder="Catatan/deskripsi produk" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]"></textarea>
-                    </div>
+                    <x-form.textarea label="Deskripsi" wire:model="description" rows="2" placeholder="Catatan/deskripsi produk" />
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Satuan &amp; Dimensi</div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">UoM Stok</label>
-                            <select wire:model="uom_stock" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->uomOptions as $u)
-                                    <option value="{{ $u->uom_code }}">{{ $u->uom_code }} — {{ $u->uom_name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="UoM Stok" wire:model="uom_stock" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">UoM Jual</label>
-                            <select wire:model="uom_sales" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($this->uomOptions as $u)
-                                    <option value="{{ $u->uom_code }}">{{ $u->uom_code }} — {{ $u->uom_name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="UoM Jual" wire:model="uom_sales" :options="$this->uomOptions->mapWithKeys(fn ($u) => [$u->uom_code => $u->uom_code.' — '.$u->uom_name])" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Konversi ke Stok</label>
-                            <input type="text" wire:model="conversion_to_stock" placeholder="1" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('conversion_to_stock') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Konversi ke Stok" name="conversion_to_stock" wire:model="conversion_to_stock" placeholder="1" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Panjang (cm)</label>
-                            <input type="text" wire:model="cm_length" @disabled($lockedSpec) placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('cm_length') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Panjang (cm)" name="cm_length" wire:model="cm_length" :disabled="$lockedSpec" placeholder="0" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Lebar (cm)</label>
-                            <input type="text" wire:model="cm_width" @disabled($lockedSpec) placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('cm_width') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Lebar (cm)" name="cm_width" wire:model="cm_width" :disabled="$lockedSpec" placeholder="0" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tinggi (cm)</label>
-                            <input type="text" wire:model="cm_height" @disabled($lockedSpec) placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('cm_height') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Tinggi (cm)" name="cm_height" wire:model="cm_height" :disabled="$lockedSpec" placeholder="0" />
                         </div>
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Stok &amp; Harga</div>
                     <div class="text-[11px] text-muted -mt-1">Stok saat ini (<code>cur_stock</code>) mengikuti ledger Inventory, bukan diisi manual di sini — hanya batas min/max yang diatur.</div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Stok Minimum</label>
-                            <input type="text" wire:model="min_stock" placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('min_stock') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Stok Minimum" name="min_stock" wire:model="min_stock" placeholder="0" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Stok Maksimum</label>
-                            <input type="text" wire:model="max_stock" placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('max_stock') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Stok Maksimum" name="max_stock" wire:model="max_stock" placeholder="0" />
                         </div>
                     </div>
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Harga Jual Default</label>
-                            <input type="text" wire:model="default_selling_price" placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('default_selling_price') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Harga Jual Default" name="default_selling_price" wire:model="default_selling_price" placeholder="0" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Harga Jual Minimum</label>
-                            <input type="text" wire:model="minimum_selling_price" placeholder="0" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('minimum_selling_price') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Harga Jual Minimum" name="minimum_selling_price" wire:model="minimum_selling_price" placeholder="0" />
                         </div>
                     </div>
 
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="product_is_confirmed"> Sudah dikonfirmasi (kunci kode &amp; dimensi)
-                    </label>
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="product_is_active"> Aktif
-                    </label>
+                    <x-form.checkbox label="Sudah dikonfirmasi (kunci kode & dimensi)" wire:model="product_is_confirmed" />
+                    <x-form.checkbox label="Aktif" wire:model="product_activate" />
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
                         <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>

@@ -2,7 +2,7 @@
 
 namespace App\Services\Pur;
 
-use App\Models\Master\DocRmprefix1;
+use App\Models\Master\MatCategory;
 use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrLineAlloc;
@@ -56,7 +56,7 @@ class PoBuilderService
             if ($line->i_item_source === 'FREE_TEXT') {
                 $lineClass = $line->is_stock ? 'RAW' : 'INDIRECT';
             } elseif ($line->material) {
-                $prefix1 = DocRmprefix1::where('category1', $line->material->category1)->first();
+                $prefix1 = MatCategory::level(1)->where('category_name', $line->material->category1)->first();
                 $lineClass = $prefix1?->stock_class ?? 'RAW';
             }
 

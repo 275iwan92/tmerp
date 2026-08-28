@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Pur\PvReceipt;
 use App\Services\Pur\PvBuilderService;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 // SPB memang dibuat dari grid ini sendiri (picker supplier -> baris PO).
 new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use WithPagination;
 
     public string $search = '';
@@ -39,7 +41,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                 });
             })
             ->orderByDesc('pv_id')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -138,63 +140,34 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
         return $this->redirect(route('pur.pv.entry', ['pv' => $id]));
     }
 
-    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="grid gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total SPB</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu QC</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statQcPending }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Terposting</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statPosted }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Dibatalkan</p>
-                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statCancelled }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total SPB" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="Menunggu QC" :value="$this->statQcPending" />
+            <x-grid.stat-box tone="active" label="Terposting" :value="$this->statPosted" />
+            <x-grid.stat-box tone="critical" label="Dibatalkan" :value="$this->statCancelled" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. SPB / PO / surat jalan…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openPicker"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openPicker"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -210,15 +183,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                     <tbody>
                         @forelse ($this->receipts as $pv)
                             <tr wire:key="pv-{{ $pv->pv_id }}" wire:dblclick="openReceipt({{ $pv->pv_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($pv->pv_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($this->supplierNames[$pv->i_supplier_id] ?? ($pv->doc_no ?: 'SPB')) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $this->supplierNames[$pv->i_supplier_id] ?? '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $pv->doc_no }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$pv->pv_id" :name="$this->supplierNames[$pv->i_supplier_id] ?? '—'" :code="$pv->doc_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pv->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if (($pv->c_po_count ?? 0) > 1)
@@ -239,19 +204,17 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                                         } }}">{{ $pv->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openReceipt({{ $pv->pv_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    <x-grid.action-icon icon="↗" title="Buka" action="openReceipt({{ $pv->pv_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada Penerimaan Barang.</td></tr>
+                            <x-grid.empty-row :colspan="7" message="Belum ada Penerimaan Barang." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
 
-            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
-                {{ $this->receipts->links() }}
-            </div>
+            @include('components.grid.pagination-footer', ['paginator' => $this->receipts])
         </div>
     </div>
 
@@ -291,7 +254,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                     @else
                         <div class="px-4 py-2 border-b border-[#eef1f5] flex items-center gap-3">
                             <span class="text-xs font-semibold">{{ $this->supplierNames[$pickedSupplierId] ?? '—' }}</span>
-                            <input type="text" wire:model="pickedWarehouse" placeholder="Kode gudang penerima (mis. GD-BB)" class="px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                            <x-form.input wire:model="pickedWarehouse" placeholder="Kode gudang penerima (mis. GD-BB)" class="!py-1.5" />
                         </div>
                         <table class="w-full text-xs border-collapse">
                             <thead>

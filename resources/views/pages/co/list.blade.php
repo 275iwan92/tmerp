@@ -1,6 +1,11 @@
 <?php
 
+use App\Livewire\Concerns\HasCustomizableGrid;
+use App\Models\Master\CustCustomer;
 use App\Models\Sdi\CoOrder;
+use App\Models\Sdi\CoOrderExternalCost;
+use App\Models\Sdi\CoOrderItem;
+use App\Models\Sdi\QuoQuotation;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -12,11 +17,92 @@ use Livewire\WithPagination;
 // (tombol "Buat Customer Order" di layar Quotation), bukan dibuat dari grid ini.
 // Kolom Aksi non-master: bukan Edit+Toggle-aktif (§5), tapi ↗ Buka + ✓ Confirm
 // (DRAFT->CONFIRMED langsung dari grid, sesuai instruksi user 2026-08-22).
+//
+// Rollout ke-2 fasilitas grid custom view/sort/group-by (griduistandard.md
+// §10, keputusan user 2026-08-27) -- Status & Net Receivable TETAP kolom
+// tetap (anchor finansial grid Sales, tak ikut disembunyikan), yang
+// dikustomisasi cuma kolom sekunder. "Ref. Quotation" TIDAK sortable
+// (nilainya dari relasi quotation.quotation_no, bukan kolom co_order
+// langsung -- orderBy() SQL tak bisa menjangkaunya tanpa join).
 new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasCustomizableGrid;
     use WithPagination;
 
-    public string $search = '';
+    protected function gridKey(): string
+    {
+        return 'sales.co-list';
+    }
+
+    protected function gridColumnDefs(): array
+    {
+        return [
+            'quotation.quotation_no' => ['label' => 'Ref. Quotation', 'sortable' => false],
+            'co_date' => ['label' => 'Tanggal'],
+            'customer_po_no' => ['label' => 'No. PO Customer'],
+            'ship_address_label' => ['label' => 'Label Alamat Kirim'],
+            'discount_doc_pct' => ['label' => 'Diskon Dokumen %'],
+            'discount_qty_pct' => ['label' => 'Diskon Qty %'],
+            'notes' => ['label' => 'Catatan'],
+            'created_by' => ['label' => 'Dibuat Oleh'],
+            'updated_by' => ['label' => 'Diubah Oleh'],
+        ];
+    }
+
+    protected function gridDefaultColumns(): array
+    {
+        return ['quotation.quotation_no', 'co_date', 'customer_po_no'];
+    }
+
+    protected function gridBaseQuery()
+    {
+        return CoOrder::with(['quotation.customer', 'items' => fn ($q) => $q->orderBy('line_seq')]);
+    }
+
+    protected function gridIdentitySearchColumns(): array
+    {
+        return ['co_no' => 'No. CO', 'quotation.customer.customer_name' => 'Nama Customer'];
+    }
+
+    // 'quotation.customer.customer_name' melintas tm2sdi (co_order/quo_quotation)
+    // -> tm2mst (cust_customer) -- whereHas() bertingkat TAK BISA dipakai
+    // (Eloquent bikin 1 EXISTS subquery nested di koneksi yg sama, error
+    // "table doesn't exist" begitu nyentuh cust_customer). Resolusi manual
+    // 2-tahap sesuai CLAUDE.md §2 ("query terpisah, cocokkan di PHP"): cari
+    // id_customer yg cocok (tm2mst) -> id_quotation yg customer_id-nya masuk
+    // situ (tm2sdi) -> baru filter co_order.quotation_id.
+    protected function gridCrossDbSearchResolvers(): array
+    {
+        return [
+            'quotation.customer.customer_name' => function (string $operator, string $pattern) {
+                $customerIds = $operator === '='
+                    ? CustCustomer::whereRaw('CAST(customer_name AS CHAR) = ?', [$pattern])->pluck('id_customer')
+                    : CustCustomer::where('customer_name', $operator, $pattern)->pluck('id_customer');
+
+                if ($customerIds->isEmpty()) {
+                    return [];
+                }
+
+                $quotationIds = QuoQuotation::whereIn('customer_id', $customerIds)->pluck('id_quotation');
+
+                if ($quotationIds->isEmpty()) {
+                    return [];
+                }
+
+                return CoOrder::whereIn('quotation_id', $quotationIds)->pluck('id_order')->all();
+            },
+        ];
+    }
+
+    public function columnValue($row, string $key): string
+    {
+        return match ($key) {
+            'quotation.quotation_no' => $row->quotation?->quotation_no ?? '—',
+            'co_date' => $row->co_date?->translatedFormat('d M Y') ?? '—',
+            'discount_doc_pct', 'discount_qty_pct' => data_get($row, $key) !== null ? number_format((float) data_get($row, $key), 1).'%' : '—',
+            default => (string) (data_get($row, $key) ?: '—'),
+        };
+    }
 
     // Master-detail expand-row (2026-08-24, instruksi user): klik chevron buka
     // preview item CO tanpa pindah halaman -- meniru ScriptCase report lama
@@ -40,16 +126,22 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
     #[Computed]
     public function orders()
     {
-        return CoOrder::with(['quotation.customer', 'items' => fn ($q) => $q->orderBy('line_seq')])
-            ->when($this->search !== '', function ($q) {
-                $term = $this->search;
-                $q->where(function ($qq) use ($term) {
-                    $qq->where('co_no', 'like', "%{$term}%")
-                        ->orWhereHas('quotation.customer', fn ($c) => $c->where('customer_name', 'like', "%{$term}%"));
-                });
-            })
-            ->orderByDesc('id_order')
-            ->paginate(20);
+        return $this->gridSortedQuery()
+            ->when(! $this->gridSortColumn, fn ($q) => $q->orderByDesc('id_order'))
+            ->paginate($this->perPage);
+    }
+
+    // Hapus massal (keputusan user 2026-08-27, pilot Aksi-kiri): HANYA CO
+    // berstatus DRAFT boleh dicentang & dihapus -- guard di level query juga.
+    public function bulkDelete(): void
+    {
+        $ids = CoOrder::whereIn('id_order', $this->selectedRows)->where('doc_status', 'DRAFT')->pluck('id_order');
+        CoOrderItem::whereIn('order_id', $ids)->delete();
+        CoOrderExternalCost::whereIn('order_id', $ids)->delete();
+        CoOrder::whereKey($ids)->delete();
+
+        $this->clearSelection();
+        unset($this->orders);
     }
 
     #[Computed]
@@ -100,26 +192,8 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
         unset($this->orders);
     }
 
-    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Rekonsiliasi component grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
@@ -127,80 +201,104 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         {{-- "grid three" bukan grid-cols-3 -- app.css .grid{} unlayered override
              grid-cols-3 Tailwind jadi 4 kolom, lihat catatan di co/entry.blade.php --}}
-        <div class="grid three mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Customer Order</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Draft</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statDraft }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Confirmed</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statConfirmed }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="total" label="Total Customer Order" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
+            <x-grid.stat-box tone="active" label="Confirmed" :value="$this->statConfirmed" />
+        </x-grid.stat-row>
 
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fef6e7] border border-[#f5e0b3] text-[#8a4b00]">
             CO dibuat dari Quotation yang sudah <b>PUBLISHED</b> — buka Quotation, klik "Buat Customer Order". Tidak ada "+ New Record" di sini.
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
-                <div class="flex items-center gap-1.5 shrink-0">
-                    <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer…"
-                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
-            </div>
+            <x-grid.toolbar>
+                @include('components.grid.search-box', ['columnDefs' => $this->gridSearchColumnDefs(), 'placeholder' => 'Cari no. CO / customer…'])
+                <x-slot:tools><x-grid.toolbar-buttons /></x-slot:tools>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            @if (count($selectedRows))
+                <div class="flex items-center gap-2.5 bg-[#fdecec] border-b border-[#f5c6c6] px-3.5 py-2 text-[12px]">
+                    <span class="font-semibold text-[#a3453f]">{{ count($selectedRows) }} CO draft dipilih</span>
+                    <button type="button" wire:click="bulkDelete" wire:confirm="Hapus permanen {{ count($selectedRows) }} Customer Order draft terpilih beserta item-nya? Tindakan ini tidak bisa dibatalkan."
+                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#c0392b] text-white cursor-pointer">🗑 Hapus</button>
+                    <button type="button" wire:click="clearSelection" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white border border-[#f5c6c6] text-[#a3453f] cursor-pointer">Batal</button>
+                </div>
+            @endif
+
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
                             <th class="px-2 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[32px]"></th>
+                            <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]"></th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer Order</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Ref. Quotation</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
+                            @foreach ($gridVisibleColumns as $key)
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] whitespace-nowrap">
+                                    @if (($this->gridColumnDefs()[$key]['sortable'] ?? true) === false)
+                                        {{ $this->gridColumnDefs()[$key]['label'] }}
+                                    @else
+                                        <button type="button" wire:click="toggleGridSort('{{ $key }}')" class="inline-flex items-center gap-1 cursor-pointer hover:text-navy">
+                                            {{ $this->gridColumnDefs()[$key]['label'] }}
+                                            <span class="text-[9px]">{{ match (true) {
+                                                $gridSortColumn === $key && $gridSortDirection === 'asc' => '▲',
+                                                $gridSortColumn === $key && $gridSortDirection === 'desc' => '▼',
+                                                default => '↕',
+                                            } }}</span>
+                                        </button>
+                                    @endif
+                                </th>
+                            @endforeach
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
                             <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Net Receivable</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
+                        @php $colspan = count($gridVisibleColumns) + 5; @endphp
                         @forelse ($this->orders as $o)
+                            @if ($gridGroupBy && $loop->first)
+                                @php $renderedGroups = []; @endphp
+                            @endif
+                            @if ($gridGroupBy)
+                                @php $groupVal = $this->columnValue($o, $gridGroupBy); @endphp
+                                @if (! in_array($groupVal, $renderedGroups, true))
+                                    @php $renderedGroups[] = $groupVal; @endphp
+                                    <x-grid.group-header-row :label="$this->gridColumnDefs()[$gridGroupBy]['label']" :value="$groupVal" :colspan="$colspan" />
+                                @endif
+                            @endif
                             @php($isOpen = in_array($o->id_order, $this->expanded, true))
                             <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                 <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
                                     <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? 'Tutup preview item' : 'Lihat item' }}"
                                         class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">{{ $isOpen ? '▾' : '▸' }}</button>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($o->id_order) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($o->quotation?->customer?->customer_name ?: $o->co_no) }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $o->quotation?->customer?->customer_name ?? '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $o->co_no }}</div>
-                                        </div>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] whitespace-nowrap">
+                                    <div class="flex items-center gap-1">
+                                        @if ($o->doc_status === 'DRAFT')
+                                            <input type="checkbox" wire:click.stop="toggleRowSelection({{ $o->id_order }})" @checked(in_array($o->id_order, $selectedRows, true))
+                                                title="Pilih untuk hapus massal (draft)" class="w-3.5 h-3.5 cursor-pointer mr-0.5">
+                                        @else
+                                            <span class="w-3.5 inline-block shrink-0"></span>
+                                        @endif
+                                        <x-grid.action-icon icon="↗" title="Buka Customer Order ini" action="openOrder({{ $o->id_order }})" :bordered="true" />
+                                        @if ($o->doc_status === 'DRAFT')
+                                            <x-grid.action-icon icon="✓" title="Confirm CO ini (DRAFT → CONFIRMED)" action="confirmOrder({{ $o->id_order }})"
+                                                confirm="Confirm CO {{ $o->co_no }}?" variant="success" :bordered="true" />
+                                        @endif
                                     </div>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-muted">{{ $o->quotation?->quotation_no }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $o->co_date?->translatedFormat('d M Y') }}</td>
+                                <x-grid.identity-cell :id="$o->id_order" :name="$o->quotation?->customer?->customer_name ?? '—'" :code="$o->co_no" />
+                                @foreach ($gridVisibleColumns as $key)
+                                    <td class="px-3 py-2 border-b border-[#eef1f5] {{ in_array($key, ['discount_doc_pct', 'discount_qty_pct'], true) ? 'text-right' : '' }} {{ $key === 'quotation.quotation_no' ? 'font-mono text-muted' : '' }}">{{ $this->columnValue($o, $key) }}</td>
+                                @endforeach
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $o->doc_status === 'CONFIRMED' ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $o->doc_status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$o->id_order] ?? 0, 0, ',', '.') }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openOrder({{ $o->id_order }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
-                                    @if ($o->doc_status === 'DRAFT')
-                                        <button type="button" wire:click.stop="confirmOrder({{ $o->id_order }})" wire:confirm="Confirm CO {{ $o->co_no }}?" title="Confirm" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-[#16a34a] hover:bg-[#e9f9ef] cursor-pointer">✓</button>
-                                    @endif
-                                </td>
                             </tr>
                             @if ($isOpen)
                                 <tr wire:key="co-detail-{{ $o->id_order }}" class="bg-[#fafbfd]">
-                                    <td colspan="7" class="px-3 py-2.5 border-b border-[#eef1f5]">
+                                    <td colspan="{{ $colspan }}" class="px-3 py-2.5 border-b border-[#eef1f5]">
                                         <table class="w-full text-[11.5px] border-collapse ml-8" style="width:calc(100% - 2rem)">
                                             <thead>
                                                 <tr class="text-[10px] text-muted uppercase font-bold">
@@ -235,15 +333,17 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </tr>
                             @endif
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada Customer Order.</td></tr>
+                            <x-grid.empty-row :colspan="$colspan" message="Belum ada Customer Order." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
 
-            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
-                {{ $this->orders->links() }}
-            </div>
+            @include('components.grid.pagination-footer', ['paginator' => $this->orders])
         </div>
     </div>
+
+    @include('components.grid.column-modal', ['columnDefs' => $this->gridColumnDefs()])
+    @include('components.grid.sort-modal', ['columnDefs' => $this->gridColumnDefs()])
+    @include('components.grid.export-modal', ['columnDefs' => $this->gridColumnDefs()])
 </div>

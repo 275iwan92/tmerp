@@ -18,14 +18,14 @@ class CustCustomerBank extends Model
         'bank_code',
         'bank_account_no',
         'bank_account_name',
-        'is_active',
+        'activate',
         'legacy_vendor_bank_id',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function customer(): BelongsTo

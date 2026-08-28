@@ -147,6 +147,177 @@ inline**, bukan modal, bukan pindah halaman. Referensi implementasi:
 
 ---
 
+## 10. Fasilitas custom view/sort/group-by/export (opsional per grid)
+
+**(2026-08-27, redesain sesudahnya di sesi sama setelah user tunjukkan
+referensi ScriptCase — dual-listbox Available/Selected, tombol berlabel
+terpisah, bukan 1 ikon serba-guna)**. Keputusan user: grid boleh punya kolom
+TERSEDIA jauh lebih banyak dari yang TAMPIL (mis. 15 kolom tersedia, 5 tampil
+default, user bisa naikkan lebih — sadar konsekuensi scroll horizontal),
+sort per kolom, group-by dari kolom yang lagi tampil, dan export ke
+CSV/Excel/PDF. **Ini fasilitas OPSIONAL** — pasang hanya di grid yang benar
+dari sononya punya banyak kolom bermakna DAN yang secara aktif diminta user,
+bukan default wajib di semua grid. Sejauh ini terpasang di 2 grid:
+`master/raw-material/index.blade.php` (pilot, 15 kolom dari skema `mat_raw`)
+dan `co/list.blade.php` (rollout ke-2, Status & Net Receivable jadi kolom
+anchor tetap — tak ikut disembunyikan, karena itu info finansial inti
+worklist Sales).
+
+**Konflik dengan §6 (toolbar terkunci)**: kontrol Kolom/Sort/Export TIDAK
+BOLEH jadi elemen toolbar baru sembarangan (search + New Record tetap
+satu-satunya isi baris toolbar aslinya). Solusinya: **3 tombol berlabel
+kecil** ("☰ Kolom", "↕ Sort", "⬇ Export") dikelompokkan dalam 1 blok
+`border-r` di antara search dan "+ New Record" ("+ New Record" tetap di
+ujung paling kanan) — beda kategori visual dari search/New-Record, masing2
+buka modalnya sendiri (bukan 1 panel serba-guna).
+
+**Implementasi**: `App\Livewire\Concerns\HasCustomizableGrid` (trait, BUKAN
+child Livewire component — state-nya erat kaitan dgn query grid induk).
+Markup modal **dibagi lewat `@include`, BUKAN `<x-component>`** — anonymous
+Blade component (`<x-...>`) punya scope terisolasi (`@props`), TIDAK otomatis
+lihat properti Livewire induk (`$showColumnModal` dkk jadi undefined kalau
+dipakai) — `@include('components.grid.xxx-modal', [...])` mewarisi scope
+current, ini yang benar utk kasus ini. File markup: `resources/views/components/grid/{toolbar-buttons,column-modal,sort-modal,export-modal}.blade.php`
+(reusable via `@include`/`<x-grid.toolbar-buttons />` — toolbar-buttons aman
+dipakai sbg `<x-...>` krn tak butuh variable scope, cuma `wire:click` string).
+
+Komponen pemakai wajib implementasikan 5 method kontrak: `gridKey()`,
+`gridColumnDefs()` (`['key' => ['label' => .., 'sortable' => bool]]`),
+`gridDefaultColumns()`, `gridBaseQuery()`, `columnValue($row, $key)` (format
+tampil 1 sel, dipakai tabel DAN export — supaya angka/tanggal yang diexport
+konsisten dgn yang terlihat di grid, bukan raw value). Preferensi (kolom
+tampil + sort + group-by, BUKAN kolom export — lihat di bawah) tersimpan per
+user PER grid di `tm2sys.sys_grid_preference`.
+
+- **Modal Kolom**: dual-listbox (Tersedia ↔ Tampil), klik nama kolom
+  pindah sisi, `»`/`«` pindah semua/kosongkan. State kerja
+  (`columnModalSelected`) TERPISAH dari `gridVisibleColumns` sampai tombol
+  "Terapkan" diklik — "Batal" beneran batal, tidak ada yang ke-apply
+  diam-diam per klik (beda dari draf checkbox pertama yg langsung apply).
+  Group-by (dari kolom yg lagi dipilih di modal ini) & tombol Reset ada di
+  modal yang sama.
+- **Modal Sort**: daftar kolom (dari yang tampil, kolom `sortable: false`
+  otomatis tak muncul) + toggle Asc/Desc, SATU kolom aktif sekaligus (bukan
+  multi-kolom — keputusan user eksplisit, meski ScriptCase punya multi-sort).
+  Icon `↕`/`▲`/`▼` di judul kolom tabel tetap ada sbg shortcut cepat (klik
+  langsung toggle 3-arah asc→desc→none), tak perlu buka modal.
+- **Group-by**: HANYA dari kolom yang lagi tampil, render sbg baris header
+  grup sebelum anggotanya — per-halaman-paginasi saat ini, BUKAN agregat
+  lintas semua halaman (batasan v1 disengaja).
+- **Modal Export**: pilih format (Excel/CSV/PDF) + dual-listbox kolom KHUSUS
+  export (`exportColumns`, defaultnya ikut kolom yg lagi tampil tapi BOLEH
+  beda — tak ikut tersimpan ke `sys_grid_preference`, reset tiap buka modal).
+  Excel: `maatwebsite/excel` (`App\Exports\GenericGridExport`, 1 class
+  generik dipakai ulang). CSV: native `fputcsv`. PDF: `barryvdh/laravel-dompdf`
+  — **dibatasi 200 baris** (`HasCustomizableGrid::PDF_ROW_LIMIT`), dompdf
+  boros memori luar biasa utk tabel besar (500 baris × 6 kolom sempat OOM di
+  512MB) — PDF memang bukan format yang cocok utk dump ribuan baris, dikasih
+  peringatan di halaman PDF-nya kalau data terpotong. Data lama hasil migrasi
+  disaring lewat `iconv('UTF-8','UTF-8//IGNORE',...)` sebelum masuk PDF —
+  byte non-UTF-8 di kolom teks bebas bikin dompdf gagal total.
+- **Gotcha test**: `Livewire::test()->call('exportGridPdf'/'runExport')`
+  bisa muncul error palsu "Malformed UTF-8" — itu Livewire test harness yang
+  gagal proses respons PDF biner (bukan streaming), BUKAN bug produksi.
+  Verifikasi export PDF lewat `$test->instance()->exportGridPdf(...)`
+  langsung (skip pembungkus `->call()`), cek `str_starts_with($content, '%PDF-')`.
+- **Identitas kolom** (avatar+nama+kode, §3) & kolom anchor grid-spesifik
+  (mis. Status/Net Receivable di CO) selalu tampil, TIDAK ikut jadi bagian
+  kolom yang bisa disembunyikan.
+- Minimal 1 kolom kustom wajib tetap tampil (trait menolak hapus kolom
+  terakhir, baik di modal Kolom maupun Export).
+
+**Search fleksibel** (referensi ScriptCase, sama sesi): dropdown RINGAN
+nempel langsung di search box (`resources/views/components/grid/search-box.blade.php`,
+`▾` di ujung kanan input) — beda dari 3 modal Kolom/Sort/Export yang lebih
+berat, cukup 2 pengaturan jadi tak perlu modal penuh. Isi: pilih **kolom**
+yang dicari (default "Semua Field" — union kolom identitas + kolom
+customizable yang `searchable`, lihat `gridIdentitySearchColumns()`) dan
+**kondisi**: Mengandung / Diawali / Sama Dengan / Tidak Mengandung.
+
+- **Kolom identitas HARUS didaftarkan lewat `gridIdentitySearchColumns()`**
+  (override di komponen), bukan cuma `gridColumnDefs()` — identitas (nama+
+  kode) tak pernah masuk `gridColumnDefs()` krn tak boleh disembunyikan
+  (§3), tapi tetap harus bisa dicari (itu justru target pencarian paling
+  umum).
+- **"Sama Dengan" WAJIB `CAST(col AS CHAR)`, jangan `where($col, '=', $term)`
+  polos** — ditemukan bug nyata 2026-08-27: MySQL diam-diam meng-cast
+  string non-numerik ke `0` saat dibandingkan ke kolom numerik/boolean
+  (`stat_confirm = 'ANIMAL GLUE'` jadi `stat_confirm = 0`, cocok ke SEMUA
+  baris draft). Search multi-kolom heterogen (angka+teks+boolean sekaligus)
+  bikin ini gampang lolos tak ketahuan kalau cuma dites 1 kolom.
+- **Kolom relasi CROSS-DATABASE tak bisa pakai `whereHas()` bertingkat**
+  (mis. `co_order`→`quo_quotation` di tm2sdi →`cust_customer` di tm2mst) --
+  Eloquent membangun 1 EXISTS subquery bersarang di KONEKSI YANG SAMA
+  dengan query induk, error "table doesn't exist" begitu subquery
+  menyentuh tabel di DB lain. Ini TERNYATA sudah jadi bug lama di kode CO
+  asli (`orWhereHas('quotation.customer', ...)` sejak awal dibangun),
+  baru ketahuan sekarang krn baru dites sungguhan. Fix: override
+  `gridCrossDbSearchResolvers()` — resolusi manual 2+ tahap ("query
+  terpisah, cocokkan di PHP", CLAUDE.md §2): cari ID yang cocok di DB
+  tujuan, lalu `whereIn` berantai balik ke PK grid induk. Referensi
+  implementasi: `co/list.blade.php` (`quotation.customer.customer_name`).
+  **Kalau bikin grid baru dengan kolom identitas dari relasi lintas-DB,
+  cek dulu apakah itu whereHas 1-tingkat same-DB (aman) atau bertingkat/
+  lintas-DB (butuh resolver) — jangan asumsikan whereHas selalu aman.**
+- **Posisi dropdown pakai `x-teleport="body"` + `position:fixed` dihitung
+  manual (`getBoundingClientRect()`), BUKAN `position:absolute` biasa** —
+  bug nyata 2026-08-27: toolbar induk pakai `overflow-x-auto` (§6, jaga-jaga
+  layar sempit), yang MEMOTONG `position:absolute` (CSS: set overflow-x ke
+  selain visible bikin overflow-y ikut jadi auto, bukan cuma horizontal).
+  Dropdown kepotong/kegencet, susah diklik. `x-teleport` (Alpine core, tanpa
+  plugin) pindahkan dropdown ke `<body>`, lepas dari batasan leluhur
+  manapun. Pola sama berlaku utk floating panel LAIN yang nempel ke elemen
+  di dalam toolbar `overflow-x-auto` — modal penuh (`fixed inset-0`, spt
+  Kolom/Sort/Export) TIDAK kena masalah ini krn posisinya relatif ke
+  viewport langsung, bukan relatif ke elemen di dalam toolbar.
+
+**Pagination footer 3-bagian** (referensi ScriptCase, 2026-08-27): footer
+grid diganti dari pagination Livewire default ke `@include('components.grid.pagination-footer',
+['paginator' => $this->items])` — kiri = "Go to [nomor halaman]" (input
+angka, `wire:change="gotoPage(...)"`) + "View [10/25/50/100]" (pill button,
+`setPerPage()`, BUKAN `<select>` — hindari bug morph §Livewire), tengah =
+navigasi halaman (first/prev/nomor-halaman via `gridPageRange()`/next/last,
+pakai method native `WithPagination`), kanan = `[a – b dari total]`.
+`perPage` (default 25) properti trait baru, dipakai di `items()`/`orders()`
+computed sbg `->paginate($this->perPage)`.
+
+**Pilot: Aksi pindah ke KIRI + checkbox multi-delete** (2026-08-27) — INI
+PENGECUALIAN TERBATAS dari §4 dan §5 (yang LOCKED: Aksi selalu di kanan,
+tidak ada checkbox select), bukan aturan baru menggantikan §4/§5. User
+eksplisit membatasi scope: **hanya 2 layar pilot** yang sedang aktif
+dikerjakan sesi ini — `master/raw-material/index.blade.php` dan
+`co/list.blade.php`. **Jangan roll out ke grid lain tanpa ditanya dulu.**
+
+- **Kolom Aksi pindah dari `<td>` terakhir (kanan) ke `<td>` pertama
+  (kiri, sebelum kolom identitas)**, lebar tetap `w-[110px]`. Ikon
+  diperbesar dari `w-7 h-7` (§5) jadi **`w-8 h-8` + `border` (selalu
+  terlihat, bukan cuma saat hover)** supaya lebih jelas ("icon edit yang
+  cukup jelas" — permintaan user eksplisit), `title` tooltip tetap wajib.
+  Raw Material: ✎ Edit + ⏻ Toggle-aktif (border warna ikut state, sama pola
+  §5). CO: ↗ Buka + ✓ Confirm kondisional (`wire:confirm`, border hijau).
+- **Checkbox multi-select — HANYA utk baris yang BELUM confirm/masih
+  draft** (`@if (! $m->stat_confirm)` di Raw Material,
+  `@if ($o->doc_status === 'DRAFT')` di CO) — baris yang sudah
+  confirm/bukan-draft TIDAK dapat checkbox sama sekali, bukan checkbox
+  yang di-disable. `selectedRows` (array, trait) + `toggleRowSelection($id)`
+  + `clearSelection()`.
+- **Bulk-action bar kondisional** (`@if (count($selectedRows))`) muncul di
+  atas tabel, bukan di toolbar (§6 tetap terkunci: toolbar tak boleh nambah
+  elemen) — isinya jumlah baris terpilih + tombol "Hapus" dengan
+  `wire:confirm`.
+- **`bulkDelete()` wajib guard di level query, bukan cuma sembunyikan
+  checkbox di UI** — checkbox yang tak dirender mencegah user memilih
+  baris confirmed dari grid, tapi guard backend (`->where('stat_confirm',
+  false)` / `->where('doc_status', 'DRAFT')` di query delete-nya) tetap
+  wajib ada sbg lapis kedua. Diverifikasi 2026-08-27: baris confirmed yang
+  "dipilih" langsung lewat pemanggilan method (skip UI) tetap TIDAK
+  terhapus krn guard query ini.
+- Diuji end-to-end (bukan cuma "tak ada exception"): `setPerPage`+`gotoPage`
+  mengubah jumlah baris/halaman aktual; `bulkDelete` pada campuran draft+
+  confirmed hanya menghapus draft, `selectedRows` ke-clear sesudahnya.
+
+---
+
 ## 1. Tidak ada header halaman
 
 Shell (`layouts.shell`, lihat `docs/customer_fix_nav_address.md` §A) sudah
@@ -162,8 +333,32 @@ utama ("+ New Record") pindah ke ujung kanan baris toolbar (§3), bukan bar send
 
 ## 2. Kotak statistik — pastel, bukan gradient mencolok
 
-4 kotak (kadang bisa lebih/kurang sesuai kebutuhan data), `grid grid-cols-2
-lg:grid-cols-4 gap-3 mb-3.5` (atau `mb-3`/`mb-4`, ikuti spacing sekitar).
+Jumlah kotak menyesuaikan kebutuhan data (3-5 umum, bisa lebih). **Pakai
+class `.grid` + varian TETAP (`two`/`three`/`five`), BUKAN Tailwind
+`grid-cols-X` langsung** — `resources/css/app.css` `.grid{}` **unlayered**
+(di luar `@layer`, `@import 'tailwindcss'` di baris 1 file), jadi SELALU
+menang atas utility Tailwind manapun termasuk `grid-cols-2 lg:grid-cols-4`,
+apa pun urutan/specificity-nya (sama kelas masalah dgn reset `<input>` di
+§6). Pola `class="grid grid-cols-2 lg:grid-cols-4 ..."` yang dulu dipakai
+di beberapa layar **DIAM-DIAM TIDAK PERNAH JALAN** — ketahuan 2026-08-27
+lewat laporan user soal 5 kotak yang wrapping jelek jadi 2 baris (4+1).
+
+**Aturan jumlah kotak per baris (2026-08-27)**: N kotak, MAKSIMAL 5 per
+baris, lebar menyesuaikan supaya tetap 1 baris kalau N≤5. Baru wrap ke
+baris ke-2 kalau N>5 (maks wajar ~10 kotak/2 baris — di luar itu,
+pertimbangkan ulang apakah semua metrik itu memang perlu jadi kotak).
+
+| N kotak | Class |
+|---|---|
+| 2 | `grid two` |
+| 3 | `grid three` |
+| 4 | `grid` (default, tanpa varian) |
+| 5 | `grid five` |
+| 6-10 | **`grid five` juga** (bukan class baru) — 5 kolom, sisa kotak otomatis wrap ke baris ke-2 (mis. 8 kotak = 5+3). Ini yang bikin aturan "maks 5/baris" konsisten: row pertama SELALU max 5, tak peduil N berapa. |
+
+Spacing ikut `mb-3`/`mb-3.5`/`mb-4` sesuai konteks sekitar (gap antar-kotak
+sudah baku dari `.grid{}` itu sendiri, `gap-x-3.5 gap-y-2.5`, jangan
+ditimpa manual).
 
 **JANGAN** pakai `bg-gradient-to-br ... text-white` (draf pertama sesi ini, DITOLAK
 user — terlalu mencolok, teks putih di atas warna jenuh susah dibaca). **PAKAI**
@@ -258,7 +453,9 @@ yang digabung HANYA identitas nama+kode.
   terpisah, bukan modal)** pada baris = **satu-satunya** cara buka form/detail.
   Tambahkan `title="Klik 2x untuk buka detail"` dan `cursor-pointer` pada `<tr>`.
 - **Jangan** pasang kolom radio-button atau checkbox select terpisah lagi (pola
-  lama Customer/Supplier sebelum sesi ini — DIHAPUS).
+  lama Customer/Supplier sebelum sesi ini — DIHAPUS). **Kecuali** 2 layar pilot
+  checkbox-multi-delete di §10 (khusus baris belum-confirm, scope terbatas,
+  jangan roll out ke grid lain tanpa ditanya).
 - **(Update 2026-08-21)** Karena toolbar sekarang **tidak boleh punya tombol
   aksi sekunder sama sekali** (§6 — direvisi, dulu Supplier/UoM boleh punya
   tombol yang butuh "baris terpilih", sekarang tidak), pola `wire:click="selectRow(...)"`
@@ -273,14 +470,18 @@ yang digabung HANYA identitas nama+kode.
 
 ## 5. Kolom Aksi — selalu tepat 2 ikon: Edit + Toggle-aktif
 
+**Posisi default: kanan (`<td>` terakhir).** Pengecualian pilot 2 layar
+(Aksi di kiri, ikon `w-8 h-8` + border) didokumentasikan di §10 — jangan
+generalisasi tanpa ditanya user dulu.
+
 ```html
 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
     <button type="button" wire:click.stop="edit({{ $row->id }})" title="Edit"
         class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
     <button type="button" wire:click.stop="toggleActive({{ $row->id }})"
-        wire:confirm="{{ $row->is_active ? 'Nonaktifkan' : 'Aktifkan' }} {{ $entityLabel }} {{ $row->name }}?"
-        title="{{ $row->is_active ? 'Nonaktifkan' : 'Aktifkan' }}"
-        class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $row->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+        wire:confirm="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }} {{ $entityLabel }} {{ $row->name }}?"
+        title="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }}"
+        class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $row->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
 </td>
 ```
 
@@ -294,7 +495,7 @@ yang digabung HANYA identitas nama+kode.
 - **Setiap grid Master wajib punya `toggleActive()` (atau
   `toggleXxxActive()` kalau ada beberapa entitas dalam satu file, mis. UoM punya
   `toggleUnitActive()` + `toggleConversionActive()`)** — kalau modelnya belum
-  punya kolom `is_active`, itu tanda modelnya perlu delta dulu, bukan alasan
+  punya kolom `activate`, itu tanda modelnya perlu delta dulu, bukan alasan
   melewati kolom Aksi.
 - Kalau ada tombol Edit/Aksi lain yang jadi redundan setelah kolom ini + klik 2x
   ada (mis. tombol "✎ Edit" terpisah di toolbar), **hapus yang redundan** —

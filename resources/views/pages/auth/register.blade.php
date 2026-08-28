@@ -205,7 +205,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
             'email' => $this->email,
             'phone' => $this->phone,
             'active' => false,
-            'is_active' => false,
+            'activate' => false,
             'reg_type' => $this->ptype,
             'id_number' => $this->idno,
         ]);

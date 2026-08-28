@@ -33,7 +33,7 @@ class CostingEngineTest extends TestCase
 
     public function test_engine_calculates_dc_part_and_price_ladder(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         // 1) Buat inquiry dasar (1 tier qty=1000) via layar form yang sudah teruji.
@@ -141,7 +141,7 @@ class CostingEngineTest extends TestCase
 
     public function test_engine_rejects_unimplemented_part_type(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
@@ -177,7 +177,7 @@ class CostingEngineTest extends TestCase
      */
     public function test_engine_calculates_sheet_digital_matches_excel_coco_tokyo(): void
     {
-        $admin = SecUser::where('login', 'admin')->firstOrFail();
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
         $sheetRate = \App\Models\Master\MatSheetRate::where('substance_name', '200 KL / 125 / 200 KL')->where('flute_type', 'B/F')->firstOrFail();

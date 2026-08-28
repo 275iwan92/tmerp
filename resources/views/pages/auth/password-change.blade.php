@@ -70,15 +70,8 @@ new #[Layout('layouts::guest')] #[Title('Ganti Password — TELASIH MAKMUR ERP')
             @endif
 
             <form wire:submit="submit">
-                <label>Password baru</label>
-                <input type="password" wire:model="pswdNew" autocomplete="new-password" placeholder="Minimal 8 karakter">
-                @error('pswdNew') <div class="hint bad">{{ $message }}</div> @enderror
-
-                <div style="margin-top:16px">
-                    <label>Konfirmasi password baru</label>
-                    <input type="password" wire:model="pswdConfirm" autocomplete="new-password" placeholder="Ulangi password baru">
-                    @error('pswdConfirm') <div class="hint bad">{{ $message }}</div> @enderror
-                </div>
+                <x-form.input legacy="field" label="Password baru" type="password" wire:model="pswdNew" autocomplete="new-password" placeholder="Minimal 8 karakter" name="pswdNew" />
+                <x-form.input legacy="field" label="Konfirmasi password baru" type="password" wire:model="pswdConfirm" autocomplete="new-password" placeholder="Ulangi password baru" name="pswdConfirm" />
 
                 <button type="submit" class="btn" wire:loading.attr="disabled">Simpan password baru</button>
             </form>

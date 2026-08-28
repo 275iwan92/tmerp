@@ -20,7 +20,7 @@ class MatGrammage extends Model
         'duplex_dc_pct',
         'ivory_ap_price_per_kg',
         'effective_date',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
@@ -31,6 +31,6 @@ class MatGrammage extends Model
         'duplex_dc_pct' => 'decimal:4',
         'ivory_ap_price_per_kg' => 'decimal:4',
         'effective_date' => 'date',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 }

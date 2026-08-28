@@ -87,53 +87,31 @@ new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class ext
         return $this->redirect(route('inv.stock-adj.index', ['category' => $this->category, 'doc' => $id]));
     }
 
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="grid two mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total di Antrian Saya</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Nilai Absolut Total</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ number_format($this->statValue, 0, ',', '.') }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="2">
+            <x-grid.stat-box tone="total" label="Total di Antrian Saya" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="Nilai Absolut Total" :value="number_format($this->statValue, 0, ',', '.')" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / alasan…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#eef1f5] text-[#4b5568]">{{ self::CATEGORY_LABELS[$category] }}</span>
-            </div>
+                <x-slot:tools>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#eef1f5] text-[#4b5568]">{{ self::CATEGORY_LABELS[$category] }}</span>
+                </x-slot:tools>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -149,15 +127,7 @@ new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class ext
                     <tbody>
                         @forelse ($this->rows as $r)
                             <tr wire:key="adjq-{{ $r->doc->doc_id }}" wire:dblclick="openDoc({{ $r->doc->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($r->doc->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($r->doc->doc_no ?: 'DOC') }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px] font-mono">{{ $r->doc->doc_no }}</div>
-                                            <div class="text-[11px] text-muted">{{ $r->doc->reason_code ?: '—' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$r->doc->doc_id" :name="$r->doc->doc_no" :code="$r->doc->reason_code ?: '—'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->doc->doc_cat === 'OP' ? 'Opname' : 'Adjustment' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $r->pending->acted_at?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-[10.5px]">{{ $r->pending->pending_label ?? '—' }}</td>
@@ -166,15 +136,15 @@ new #[Title('Persetujuan Adjustment & Opname — TELASIH MAKMUR ERP')] class ext
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fff5e0] text-[#8a5a00]">MENUNGGU</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openDoc({{ $r->doc->doc_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    <x-grid.action-icon icon="↗" title="Buka" action="openDoc({{ $r->doc->doc_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Tidak ada dokumen menunggu approval Anda saat ini.</td></tr>
+                            <x-grid.empty-row :colspan="7" message="Tidak ada dokumen menunggu approval Anda saat ini." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
     </div>
 </div>

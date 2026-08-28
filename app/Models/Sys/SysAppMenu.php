@@ -34,7 +34,7 @@ class SysAppMenu extends Model
         'target',
         'target_kind',
         'sort_order',
-        'is_active',
+        'activate',
         'required_object',
         'status_code',
         'status_note',
@@ -43,7 +43,7 @@ class SysAppMenu extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
         'sort_order' => 'integer',
         'status_updated_at' => 'datetime',
     ];

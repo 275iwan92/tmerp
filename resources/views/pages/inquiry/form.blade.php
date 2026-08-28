@@ -74,9 +74,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public string $sub_state = 'DRAFT';
 
-    public bool $is_confirmed = false;
+    public bool $stat_confirm = false;
 
-    public bool $is_cancelled = false;
+    public bool $stat_cancel = false;
 
     public bool $showCancelForm = false;
 
@@ -144,12 +144,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->discount_qty_value = $inq->discount_qty_value !== null ? rtrim(rtrim((string) $inq->discount_qty_value, '0'), '.') : '';
         $this->discount_qty_min_ton = $inq->discount_qty_min_ton !== null ? rtrim(rtrim((string) $inq->discount_qty_min_ton, '0'), '.') : '';
         $this->sub_state = $inq->sub_state;
-        $this->is_confirmed = (bool) $inq->is_confirmed;
-        $this->is_cancelled = (bool) $inq->is_cancelled;
+        $this->stat_confirm = (bool) $inq->stat_confirm;
+        $this->stat_cancel = (bool) $inq->stat_cancel;
 
-        // Tier 2 §11.2: begitu is_confirmed=1 form terkunci total (CONFIRMED/DONE/CANCELLED
-        // semuanya turunan dari is_confirmed), bukan berdasar teks sub_state (itu label monitoring).
-        $this->readOnly = $this->is_confirmed;
+        // Tier 2 §11.2: begitu stat_confirm=1 form terkunci total (CONFIRMED/DONE/CANCELLED
+        // semuanya turunan dari stat_confirm), bukan berdasar teks sub_state (itu label monitoring).
+        $this->readOnly = $this->stat_confirm;
 
         $this->tiers = $inq->tiers->map(fn (IqpTier $t) => [
             'id' => $t->id_tier,
@@ -229,7 +229,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         return CustCustomer::query()
-            ->where('is_active', true)
+            ->where('activate', true)
             ->where(function ($q) {
                 $q->where('customer_name', 'like', "%{$this->custQuery}%")
                     ->orWhere('customer_code', 'like', "%{$this->custQuery}%");
@@ -427,11 +427,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     public function productTypeOptions(): array
     {
         return ProdType::query()
-            ->where('is_active', true)
+            ->where('activate', true)
             ->orderBy('sort_order')
             ->with([
-                'params' => fn ($q) => $q->where('is_active', true)->orderBy('seq'),
-                'sizes' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')->with('values'),
+                'params' => fn ($q) => $q->where('activate', true)->orderBy('seq'),
+                'sizes' => fn ($q) => $q->where('activate', true)->orderBy('sort_order')->with('values'),
             ])
             ->get()
             ->mapWithKeys(fn (ProdType $t) => [
@@ -542,7 +542,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             return;
         }
 
-        $type = ProdType::with(['params' => fn ($q) => $q->where('is_active', true)])->find($typeCode);
+        $type = ProdType::with(['params' => fn ($q) => $q->where('activate', true)])->find($typeCode);
 
         if (! $type) {
             return;
@@ -650,7 +650,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         return MatRaw::query()
-            ->where('is_active', true)
+            ->where('activate', true)
+            ->where('stat_confirm', true)
             ->where(function ($q) use ($row) {
                 $q->where('material_name', 'like', "%{$row['query']}%")
                     ->orWhere('material_code', 'like', "%{$row['query']}%");
@@ -672,7 +673,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             return;
         }
 
-        $this->parts[$partIndex]['materials'][$matIndex]['rawmat_id'] = $material->id_material;
+        $this->parts[$partIndex]['materials'][$matIndex]['rawmat_id'] = $material->material_id;
         $this->parts[$partIndex]['materials'][$matIndex]['display_name'] = $material->material_name;
         $this->parts[$partIndex]['materials'][$matIndex]['brand'] = $material->brand ?? '';
         $this->parts[$partIndex]['materials'][$matIndex]['category'] = $material->category1 ?? '';
@@ -1085,12 +1086,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->persist();
 
         $this->inquiry->update([
-            'is_confirmed' => true,
+            'stat_confirm' => true,
             'sub_state' => 'SUBMITTED',
             'updated_by' => Auth::user()->login,
         ]);
 
-        $this->is_confirmed = true;
+        $this->stat_confirm = true;
         $this->readOnly = true;
         $this->sub_state = 'SUBMITTED';
         $this->flash = 'Inkuiri '.$this->inquiry_no.' dikonfirmasi — status SUBMITTED, form terkunci.';
@@ -1109,20 +1110,20 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public function cancel(): void
     {
-        if (! $this->is_confirmed || $this->is_cancelled) {
+        if (! $this->stat_confirm || $this->stat_cancel) {
             return;
         }
 
         $this->validate(['cancel_reason' => ['required', 'string', 'max:255']]);
 
         $this->inquiry->update([
-            'is_cancelled' => true,
+            'stat_cancel' => true,
             'cancel_reason' => $this->cancel_reason,
             'sub_state' => 'CANCELLED',
             'updated_by' => Auth::user()->login,
         ]);
 
-        $this->is_cancelled = true;
+        $this->stat_cancel = true;
         $this->sub_state = 'CANCELLED';
         $this->showCancelForm = false;
         $this->flash = 'Inkuiri '.$this->inquiry_no.' dibatalkan.';
@@ -1158,12 +1159,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 <button type="button" class="btn p" wire:click="save" @if($readOnly) disabled @endif wire:loading.attr="disabled">
                     💾 Simpan
                 </button>
-                @unless($is_confirmed)
+                @unless($stat_confirm)
                     <button type="button" class="btn s" wire:click="confirm" wire:loading.attr="disabled">
                         ✅ Confirm
                     </button>
                 @endunless
-                @if($is_confirmed && ! $is_cancelled)
+                @if($stat_confirm && ! $stat_cancel)
                     <button type="button" class="btn d" wire:click="openCancelForm">
                         ✖ Batalkan
                     </button>
@@ -1193,49 +1194,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             <div class="body">
                 <div class="sec-title">Header Inkuiri</div>
                 <div class="grid">
-                    <div class="f">
-                        <label>No. Inkuiri (auto)</label>
-                        <input type="text" value="{{ $inquiry_no ?: 'belum tersimpan' }}" readonly>
-                    </div>
-                    <div class="f">
-                        <label>Tanggal</label>
-                        <input type="date" wire:model="inquiry_date" @if($readOnly) disabled @endif>
-                        @error('inquiry_date') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="f">
-                        <label>Sumber</label>
-                        <select wire:model="source" x-data x-effect="$el.value = @js($source)" @if($readOnly) disabled @endif>
-                            @foreach (['EMAIL', 'WA', 'PHONE', 'VISIT', 'MARKETPLACE'] as $opt)
-                                <option value="{{ $opt }}" @selected($source === $opt)>{{ $opt }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="f">
-                        <label>PIC Sales</label>
-                        <input type="text" wire:model="pic_sales" placeholder="Nama PIC Sales" @if($readOnly) disabled @endif>
-                    </div>
+                    <x-form.input legacy label="No. Inkuiri (auto)" value="{{ $inquiry_no ?: 'belum tersimpan' }}" readonly />
+                    <x-form.input legacy label="Tanggal" type="date" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
+                    <x-form.select legacy label="Sumber" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
+                        :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
+                    <x-form.input legacy label="PIC Sales" wire:model="pic_sales" placeholder="Nama PIC Sales" :disabled="$readOnly" />
 
-                    <div class="f col2">
-                        <label>Prospek?</label>
-                        <div style="display:flex;gap:6px">
-                            <button type="button" class="btn xs {{ ! $is_prospect ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setProspect(false)" @if($readOnly) disabled @endif>Tidak — customer terdaftar</button>
-                            <button type="button" class="btn xs {{ $is_prospect ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setProspect(true)" @if($readOnly) disabled @endif>Ya — belum terdaftar</button>
-                        </div>
-                    </div>
-                    <div class="f col2">
-                        <label>Deadline Quotation <span class="hint" style="font-weight:400">(min. +14 hari kerja)</span></label>
-                        <input type="date" wire:model="deadline_quotation" @if($readOnly) disabled @endif>
-                        @error('deadline_quotation') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.toggle-group legacy col2 label="Prospek?">
+                        <x-form.toggle-option legacy :active="! $is_prospect" style="flex:1" wire:click="setProspect(false)" :disabled="$readOnly">Tidak — customer terdaftar</x-form.toggle-option>
+                        <x-form.toggle-option legacy :active="$is_prospect" style="flex:1" wire:click="setProspect(true)" :disabled="$readOnly">Ya — belum terdaftar</x-form.toggle-option>
+                    </x-form.toggle-group>
+                    <x-form.input legacy col2 wire:model="deadline_quotation" type="date" :disabled="$readOnly" name="deadline_quotation">
+                        <x-slot:label>Deadline Quotation <span class="hint" style="font-weight:400">(min. +14 hari kerja)</span></x-slot:label>
+                    </x-form.input>
 
                     @if ($is_prospect)
-                        <div class="f col2">
-                            <label>Nama Calon Customer</label>
-                            <input type="text" wire:model="prospect_name" placeholder="Nama prospek…" @if($readOnly) disabled @endif>
-                            @error('prospect_name') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                        </div>
+                        <x-form.input legacy col2 label="Nama Calon Customer" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
                     @elseif ($customer_id)
                         <div class="f col2">
                             <label>Customer</label>
@@ -1267,17 +1241,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         </div>
                     @endif
 
-                    <div class="f col2">
-                        <label>Nama Produk (draft)</label>
-                        <input type="text" wire:model="product_draft_name" maxlength="150"
-                               placeholder="mis. Box Kosmetik Serum 30ml" @if($readOnly) disabled @endif>
-                        <div class="hint">Nama sementara selama quotation. Karakter khusus (/@#%"';) tidak diperbolehkan.</div>
-                        @error('product_draft_name') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="f col2">
-                        <label>Catatan Sales</label>
-                        <textarea wire:model="sales_note" rows="2" placeholder="opsional" @if($readOnly) disabled @endif></textarea>
-                    </div>
+                    @php $productDraftHint = 'Nama sementara selama quotation. Karakter khusus (/@#%"\';) tidak diperbolehkan.'; @endphp
+                    <x-form.input legacy col2 label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
+                        placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
+                        :hint="$productDraftHint" />
+                    <x-form.textarea legacy col2 label="Catatan Sales" wire:model="sales_note" rows="2" placeholder="opsional" :disabled="$readOnly" />
                 </div>
             </div>
         </div>
@@ -1286,56 +1254,28 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             <h3>Sifat Order &amp; Pajak <span style="font-weight:400;color:#889">(menentukan struktur biaya &amp; pajak)</span></h3>
             <div class="body">
                 <div class="grid">
-                    <div class="f">
-                        <label>Sumber Bahan</label>
-                        <div style="display:flex;gap:6px">
-                            <button type="button" class="btn xs {{ $material_source === 'OWN' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setMaterialSource('OWN')" @if($readOnly) disabled @endif>Perusahaan (OWN)</button>
-                            <button type="button" class="btn xs {{ $material_source === 'CUSTOMER' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setMaterialSource('CUSTOMER')" @if($readOnly) disabled @endif>Customer sediakan</button>
-                        </div>
-                        <div class="hint">{{ $material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA.' }}</div>
-                    </div>
-                    <div class="f">
-                        <label>Jenis Pekerjaan</label>
-                        <input type="text" value="{{ $this->jobNature() }}" readonly>
-                        <div class="hint">Otomatis dari sumber bahan (PRODUCT / JASA).</div>
-                    </div>
-                    <div class="f">
-                        <label>Skema PPN</label>
-                        <div style="display:flex;gap:6px">
-                            <button type="button" class="btn xs {{ $tax_scheme === 'PPN' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setTaxScheme('PPN')" @if($readOnly) disabled @endif>PPN</button>
-                            <button type="button" class="btn xs {{ $tax_scheme === 'NON_PPN' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setTaxScheme('NON_PPN')" @if($readOnly) disabled @endif>NON_PPN</button>
-                        </div>
-                    </div>
-                    <div class="f">
-                        <label>PPh23 (jasa)</label>
-                        <div style="display:flex;gap:6px">
-                            <button type="button" class="btn xs {{ ! $pph_applicable ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setPph(false)" @if($readOnly || $this->jobNature() !== 'JASA') disabled @endif>Tidak</button>
-                            <button type="button" class="btn xs {{ $pph_applicable ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setPph(true)" @if($readOnly || $this->jobNature() !== 'JASA') disabled @endif>Ya</button>
-                        </div>
-                        <div class="hint">Hanya relevan bila Jenis Pekerjaan = JASA.</div>
-                    </div>
+                    <x-form.toggle-group legacy label="Sumber Bahan" :hint="$material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA.'">
+                        <x-form.toggle-option legacy :active="$material_source === 'OWN'" style="flex:1" wire:click="setMaterialSource('OWN')" :disabled="$readOnly">Perusahaan (OWN)</x-form.toggle-option>
+                        <x-form.toggle-option legacy :active="$material_source === 'CUSTOMER'" style="flex:1" wire:click="setMaterialSource('CUSTOMER')" :disabled="$readOnly">Customer sediakan</x-form.toggle-option>
+                    </x-form.toggle-group>
+                    <x-form.input legacy label="Jenis Pekerjaan" value="{{ $this->jobNature() }}" readonly hint="Otomatis dari sumber bahan (PRODUCT / JASA)." />
+                    <x-form.toggle-group legacy label="Skema PPN">
+                        <x-form.toggle-option legacy :active="$tax_scheme === 'PPN'" style="flex:1" wire:click="setTaxScheme('PPN')" :disabled="$readOnly">PPN</x-form.toggle-option>
+                        <x-form.toggle-option legacy :active="$tax_scheme === 'NON_PPN'" style="flex:1" wire:click="setTaxScheme('NON_PPN')" :disabled="$readOnly">NON_PPN</x-form.toggle-option>
+                    </x-form.toggle-group>
+                    <x-form.toggle-group legacy label="PPh23 (jasa)" hint="Hanya relevan bila Jenis Pekerjaan = JASA.">
+                        <x-form.toggle-option legacy :active="! $pph_applicable" style="flex:1" wire:click="setPph(false)" :disabled="$readOnly || $this->jobNature() !== 'JASA'">Tidak</x-form.toggle-option>
+                        <x-form.toggle-option legacy :active="$pph_applicable" style="flex:1" wire:click="setPph(true)" :disabled="$readOnly || $this->jobNature() !== 'JASA'">Ya</x-form.toggle-option>
+                    </x-form.toggle-group>
                 </div>
 
                 @if ($material_source === 'CUSTOMER')
                     <div style="margin-top:6px">
                         <div class="sec-title">Spesifikasi Bahan Customer <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">(wajib bila bahan dari customer)</span></div>
                         <div class="grid two">
-                            <div class="f col2">
-                                <label>Deskripsi bahan customer *</label>
-                                <input type="text" wire:model="cust_material_spec"
-                                       placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" @if($readOnly) disabled @endif>
-                                @error('cust_material_spec') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                            </div>
-                            <div class="f">
-                                <label>ETA bahan tiba</label>
-                                <input type="date" wire:model="cust_material_eta" @if($readOnly) disabled @endif>
-                            </div>
+                            <x-form.input legacy col2 label="Deskripsi bahan customer *" wire:model="cust_material_spec"
+                                placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" :disabled="$readOnly" name="cust_material_spec" />
+                            <x-form.input legacy label="ETA bahan tiba" type="date" wire:model="cust_material_eta" :disabled="$readOnly" />
                         </div>
                         <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling &amp; spoilage dihitung Costing.</div>
                     </div>
@@ -1545,7 +1485,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                                 @if (mb_strlen($mat['query'] ?? '') >= 2)
                                                                     <div class="ac-box on">
                                                                         @forelse ($this->materialResults($i, $j) as $m)
-                                                                            <div class="ac-i" wire:click="selectMaterial({{ $i }}, {{ $j }}, {{ $m->id_material }})">
+                                                                            <div class="ac-i" wire:click="selectMaterial({{ $i }}, {{ $j }}, {{ $m->material_id }})">
                                                                                 <b>{!! $this->highlightMatch($m->material_name, $mat['query']) !!}</b>
                                                                                 <span class="cd">{{ $m->material_code }}</span>
                                                                             </div>

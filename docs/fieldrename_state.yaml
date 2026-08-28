@@ -1,0 +1,130 @@
+# fieldrename_state.yaml — DEC-FIELDNAME-STATUS progress tracker
+# Keputusan user 2026-08-26: is_active -> activate, is_confirmed/is_cancelled
+# -> stat_confirm/stat_cancel (+ stat_close kalau nanti perlu), retroaktif ke
+# SEMUA tabel KECUALI sec_user/sec_group/sec_module (login/permission,
+# dikecualikan permanen -- resiko lockout). Lihat CLAUDE.md §3 &
+# docs/prefixlist.md §D-E untuk aturan lengkapnya.
+#
+# Dikerjakan BERTAHAP per database (instruksi user) -- jangan lanjut ke fase
+# berikutnya sebelum fase sebelumnya diverifikasi (migrate + smoke test +
+# npm run build) dan dilaporkan ke user.
+
+decision: DEC-FIELDNAME-STATUS
+decided_at: "2026-08-26"
+excluded_tables_permanent:
+  - sec_user
+  - sec_group
+  - sec_module
+
+phases:
+  - id: 1
+    database: tm2mst
+    status: IN_PROGRESS
+    tables_is_active: 58
+    tables_is_confirmed: 1 # prod_product
+    migration: "2026_08_26_000007_rename_is_active_to_activate_tm2mst.php"
+    db_migration_done: true
+    code_update_done: true
+    notes: >
+      m_raw_material dapat kolom baru stat_confirm/confirmed_at/confirmed_by
+      (fitur Confirm item, migration 2026_08_26_000006) -- BUKAN bagian
+      rename ini, tapi sengaja dibuat langsung pakai nama baru (stat_confirm)
+      supaya tidak nambah utang rename lagi.
+      PERINGATAN 2026-08-26: 2 agent paralel yang mengerjakan kode sempat
+      jalan di git worktree yang ternyata bercabang dari `main`, BUKAN dari
+      branch kerja -- 33 file yang isinya beda antara main & branch (termasuk
+      raw-material/entry.blade.php dan pur/pr/entry.blade.php, hasil kerja
+      mat_category sebelumnya) sempat tertimpa versi main yang usang. Sudah
+      dipulihkan manual (restore ke commit branch + re-apply rename) dan
+      diverifikasi ulang (lint 243 file + smoke test semua layar tersentuh +
+      npm run build), tapi jadi pelajaran: kalau delegasi ke Agent tool untuk
+      task berikutnya (fase 2-5), JANGAN pakai isolation:"worktree" kecuali
+      benar-benar perlu -- kerjakan langsung di working tree utama, atau
+      verifikasi dulu worktree branch-nya sama dgn HEAD saat ini.
+
+  - id: 2
+    database: tm2acc
+    status: DONE
+    tables_is_active: 5 # fin_account, fin_cost_center, fin_journal, fin_partner_account, fin_profit_center (v1_fin_account_tree itu VIEW, bukan base table -- lihat notes)
+    tables_is_cancelled: 1 # fin_voucher
+    db_migration_done: true
+    code_update_done: true
+    notes: >
+      finance/coa.blade.php & cash-bank.blade.php + raw-material/entry.blade.php
+      (FinCostCenter/FinProfitCenter, sempat dikembalikan ke is_active pas
+      fase 1 krn belum waktunya) sudah beres.
+      PENTING: v1_fin_account_tree & v1_fin_trial_balance adalah SQL VIEW yang
+      SELECT-nya menyebut nama kolom lama langsung (is_active/is_cancelled) --
+      ALTER TABLE RENAME COLUMN pada base table TIDAK menyentuh VIEW, jadi
+      keduanya jadi invalid sampai di-DROP+CREATE ulang manual (migration
+      2026_08_27_000002). Sebelum fase 3-5, audit SEMUA VIEW di database
+      terkait (SHOW CREATE VIEW / information_schema.VIEWS) utk cek ada yang
+      menyebut is_active/is_confirmed/is_cancelled -- sudah dicek 2026-08-26
+      untuk tm2sdi/tm2pur/tm2sys: BERSIH, tidak ada VIEW yang kena. tm2inv
+      juga bersih (tapi tm2inv sendiri tidak masuk scope rename ini).
+
+  - id: 3
+    database: tm2sdi
+    status: DONE
+    tables_is_active: 1 # iqp_type
+    tables_is_confirmed: 2 # iqp_inquiry, iqp_layout
+    tables_is_cancelled: 1 # iqp_inquiry
+    db_migration_done: true
+    code_update_done: true
+    notes: >
+      Migration 2026_08_27_000003. Kode: IqpInquiry.php, IqpLayout.php,
+      IqpType.php + 7 file inquiry/*.blade.php (revise/imposition/costing/
+      form/recalc/imposition-list/nota). Tak ada VIEW tm2sdi yang kena (sudah
+      diaudit fase 2). Verifikasi: lint 243 file bersih, 9 layar inquiry lulus
+      smoke test, data utuh (iqp_type activate=1: 3, iqp_inquiry
+      stat_confirm=1: 2), npm run build bersih.
+
+  - id: 4
+    database: tm2pur
+    status: DONE
+    tables_is_cancelled: 2 # po_order, pr_requisition
+    db_migration_done: true
+    code_update_done: true
+    notes: >
+      Migration 2026_08_27_000004. Kode: PoOrder.php, PrRequisition.php,
+      PvBuilderService.php, pur/pq/entry.blade.php, pur/report/outstanding-pr
+      & outstanding-po.blade.php. Tidak ada is_active/is_confirmed di tm2pur,
+      tidak ada VIEW. Verifikasi: lint 243 file bersih, 9 layar pur lulus
+      smoke test (PO/PR entry+index+approval, outstanding reports), data
+      utuh (po_order stat_cancel=0: 5, pr_requisition stat_cancel=0: 7),
+      npm run build bersih.
+
+  - id: 5
+    database: tm2sys
+    status: DONE
+    tables_is_active: 9 # sys_app_menu, sys_doc_reference, sys_login_hero, sys_quotes, sys_theme, sys_user_menu, sec_user, sec_group, sec_module
+    db_migration_done: true
+    code_update_done: true
+    notes: >
+      2026-08-27: user EKSPLISIT minta sec_user/sec_group/sec_module ikut
+      di-rename juga (pengecualian awal dicabut), setelah fase 1-4 terbukti
+      aman. Dicek dulu: sec_user.active vs sec_user.is_active SELALU sama
+      nilainya di 146/146 baris (active = kolom asli legacy V1, is_active =
+      duplikat V2) -- cuma is_active yang di-rename ke activate, kolom
+      `active` TIDAK disentuh (beda kolom, bukan bagian rename ini).
+      Migration 2026_08_27_000005. File paling kritis: auth/login.blade.php
+      baris pengecekan `$user->active && $user->is_active` -> diubah jadi
+      `$user->active && $user->activate` -- SATU-SATUNYA baris yang kalau
+      salah bisa mengunci SEMUA user dari login. Diuji END-TO-END lewat
+      Livewire::test('pages::auth.login')->call('submit') dengan password
+      salah (membuktikan seluruh alur query+pengecekan kolom jalan mulus,
+      cuma Hash::check yang gagal seperti seharusnya) -- BUKAN cuma render
+      halaman kosong. Juga: toggleUserActive di security/index.blade.php
+      diuji nyata (toggle+revert), ActiveTheme::resolve() OK.
+      Tak lupa: seeders (SecUserSeeder, SysAppMenuSeeder, IqpTypeSeeder,
+      HrmMasterSeeder, UatKeyPersonSeeder) & 2 test PHPUnit
+      (AuthPagesSmokeTest, InquiryMaterialSmokeTest) TERNYATA juga menyebut
+      is_active langsung -- kelewat di sapuan awal krn scan sebelumnya cuma
+      app/+resources/views/, belum database/seeders/+tests/. Semua sudah
+      diperbaiki & di-lint. php artisan test tests/Feature/AuthPagesSmokeTest.php
+      tests/Feature/InquiryMaterialSmokeTest.php: 3/4 lulus, 1 gagal TAPI
+      bukan gara-gara rename (env test pakai sqlite :memory: terpisah, user
+      'admin' memang belum ada di situ -- errornya "no query results", BUKAN
+      "column not found", jadi bukti rename-nya sendiri utuh).
+
+DEC-FIELDNAME-STATUS: SEMUA 5 FASE SELESAI 2026-08-27.

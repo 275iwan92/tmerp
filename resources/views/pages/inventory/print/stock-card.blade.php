@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use Illuminate\Support\Facades\Auth;
@@ -11,7 +11,7 @@ use Livewire\Component;
 
 // inventory_tier4.md §6.1 + docs/mockups/mockup_print_stock_card.html. Sumber:
 // tm2inv.v_inv_movement -- view UNION yang sudah menormalkan RM (rm_stockcard
-// + m_raw_material) / SFG (sfg_stockcard + prod_part) / FG (fg_stockcard +
+// + mat_raw) / SFG (sfg_stockcard + prod_part) / FG (fg_stockcard +
 // prod_product) jadi kolom seragam (item_id/item_code/item_name), jadi satu
 // query generik cukup utk 3 kelas stok, tinggal ganti stock_class + sumber
 // picker item. SFG/FG masih 0 baris nyata (baru diisi data uji) -- Stock
@@ -66,7 +66,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
         return match ($this->category) {
             'SFG' => optional(ProdPart::find($this->materialId), fn ($p) => ['code' => $p->part_code, 'name' => $p->part_name, 'uom' => $p->uom_stock]),
             'FG' => optional(ProdProduct::find($this->materialId), fn ($p) => ['code' => $p->product_code, 'name' => $p->product_name, 'uom' => $p->uom_stock]),
-            default => optional(MRawMaterial::find($this->materialId), fn ($m) => ['code' => $m->material_code, 'name' => $m->material_name, 'uom' => $m->uom_stock]),
+            default => optional(MatRaw::find($this->materialId), fn ($m) => ['code' => $m->material_code, 'name' => $m->material_name, 'uom' => $m->uom_stock]),
         };
     }
 
@@ -84,7 +84,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                 ->limit(15)->get()->map(fn ($p) => ['id' => $p->id_part, 'code' => $p->part_code, 'name' => $p->part_name]),
             'FG' => ProdProduct::where('product_code', 'like', "%{$term}%")->orWhere('product_name', 'like', "%{$term}%")
                 ->limit(15)->get()->map(fn ($p) => ['id' => $p->id_product, 'code' => $p->product_code, 'name' => $p->product_name]),
-            default => MRawMaterial::where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%")
+            default => MatRaw::where('material_code', 'like', "%{$term}%")->orWhere('material_name', 'like', "%{$term}%")
                 ->limit(15)->get()->map(fn ($m) => ['id' => $m->material_id, 'code' => $m->material_code, 'name' => $m->material_name]),
         };
     }
@@ -100,7 +100,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
     public function locationName(): ?string
     {
         return $this->locationId
-            ? DB::connection('tm2mst')->table('m_wh_loc')->where('location_id', $this->locationId)->value('location_name')
+            ? DB::connection('tm2mst')->table('wh_loc')->where('location_id', $this->locationId)->value('location_name')
             : null;
     }
 

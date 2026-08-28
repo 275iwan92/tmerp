@@ -45,6 +45,6 @@ class IqpPartMaterial extends Model
     // Master boleh berubah setelahnya; rawmat_name di kolom ini adalah snapshot beku.
     public function rawMaterial(): BelongsTo
     {
-        return $this->belongsTo(MatRaw::class, 'rawmat_id', 'id_material');
+        return $this->belongsTo(MatRaw::class, 'rawmat_id', 'material_id');
     }
 }

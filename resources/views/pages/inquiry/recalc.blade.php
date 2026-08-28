@@ -51,7 +51,7 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
             $tier = $this->inquiry->tiers->first();
             $this->qty = $tier?->qty !== null ? rtrim(rtrim((string) $tier->qty, '0'), '.') : '';
             $this->deadline_quotation = optional($this->inquiry->deadline_quotation)->toDateString();
-            $this->readOnly = (bool) $this->inquiry->is_confirmed;
+            $this->readOnly = (bool) $this->inquiry->stat_confirm;
 
             return;
         }
@@ -97,7 +97,7 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
             return collect();
         }
 
-        return MatRaw::whereIn('id_material', $ids)->orderBy('material_name')->get()->map(function (MatRaw $m) {
+        return MatRaw::whereIn('material_id', $ids)->orderBy('material_name')->get()->map(function (MatRaw $m) {
             $baku = $m->avg_unitprice !== null ? (float) $m->avg_unitprice : null;
             $kini = $m->last_unitprice !== null ? (float) $m->last_unitprice : $baku;
             $delta = ($baku !== null && $baku > 0 && $kini !== null) ? (($kini - $baku) / $baku) * 100 : null;
@@ -210,7 +210,7 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
         $this->persistDraft();
 
         $this->inquiry->update([
-            'is_confirmed' => true,
+            'stat_confirm' => true,
             'sub_state' => 'SUBMITTED',
             'updated_by' => Auth::user()->login,
         ]);
@@ -249,25 +249,12 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
                 </div>
                 <div class="note o">RECALC = <b>repeat order harga baru</b>. Spec, dimensi, artwork, warna, dan proses <b>tidak berubah</b> — semua di-reuse dari inkuiri baku. Yang di-refresh hanya <b>harga bahan terkini</b>.</div>
                 <div class="grid three">
-                    <div class="f">
-                        <label>Customer</label>
-                        <input type="text" value="{{ $source->is_prospect ? $source->prospect_name : ($source->customer?->customer_name ?? '—') }}" readonly>
-                    </div>
-                    <div class="f">
-                        <label>Produk</label>
-                        <input type="text" value="{{ $source->product_draft_name }}" readonly>
-                    </div>
-                    <div class="f">
-                        <label>Qty Order (PCS) *</label>
-                        <input type="number" step="0.0001" min="0" wire:model="qty" @if($readOnly) disabled @endif>
-                        @error('qty') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.input legacy label="Customer" value="{{ $source->is_prospect ? $source->prospect_name : ($source->customer?->customer_name ?? '—') }}" readonly />
+                    <x-form.input legacy label="Produk" value="{{ $source->product_draft_name }}" readonly />
+                    <x-form.input legacy label="Qty Order (PCS) *" type="number" step="0.0001" min="0" wire:model="qty" :disabled="$readOnly" name="qty" />
                 </div>
                 <div class="grid three" style="margin-top:10px">
-                    <div class="f">
-                        <label>Deadline Quotation</label>
-                        <input type="date" wire:model="deadline_quotation" @if($readOnly) disabled @endif>
-                    </div>
+                    <x-form.input legacy label="Deadline Quotation" type="date" wire:model="deadline_quotation" :disabled="$readOnly" />
                 </div>
             </div>
         </div>

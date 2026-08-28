@@ -19,14 +19,14 @@ class EmpBankAccount extends Model
         'account_no',
         'account_holder_name',
         'is_primary',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'is_primary' => 'boolean',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function employee(): BelongsTo

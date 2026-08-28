@@ -44,7 +44,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
 
     public string $tax_scheme_code = '';
 
-    public bool $coa_is_active = true;
+    public bool $coa_activate = true;
 
     #[Computed]
     public function accounts()
@@ -66,13 +66,13 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
     #[Computed]
     public function costCenterOptions()
     {
-        return FinCostCenter::query()->where('is_active', true)->orderBy('cc_code')->get();
+        return FinCostCenter::query()->where('activate', true)->orderBy('cc_code')->get();
     }
 
     #[Computed]
     public function metricTotalActive(): int
     {
-        return FinAccount::query()->where('is_active', true)->count();
+        return FinAccount::query()->where('activate', true)->count();
     }
 
     #[Computed]
@@ -139,7 +139,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
     public function toggleActive(int $accountId): void
     {
         $a = FinAccount::findOrFail($accountId);
-        $a->is_active = ! $a->is_active;
+        $a->activate = ! $a->activate;
         $a->updated_by = Auth::user()->login;
         $a->save();
 
@@ -169,13 +169,13 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
             $this->is_postable = (bool) $a->is_postable;
             $this->default_cc_id = $a->default_cc_id;
             $this->tax_scheme_code = (string) $a->tax_scheme_code;
-            $this->coa_is_active = (bool) $a->is_active;
+            $this->coa_activate = (bool) $a->activate;
         } else {
             $this->reset(['parent_id', 'account_code', 'account_name', 'account_type', 'default_cc_id', 'tax_scheme_code']);
             $this->normal_balance = 'DEBIT';
             $this->is_recon = false;
             $this->is_postable = true;
-            $this->coa_is_active = true;
+            $this->coa_activate = true;
         }
 
         $this->showModal = true;
@@ -208,7 +208,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
             'is_postable' => ['boolean'],
             'default_cc_id' => ['nullable', 'integer', 'exists:tm2acc.fin_cost_center,cc_id'],
             'tax_scheme_code' => ['nullable', 'string', 'max:20'],
-            'coa_is_active' => ['boolean'],
+            'coa_activate' => ['boolean'],
         ]);
 
         if ($this->mode === 'edit' && $this->parent_id === $this->editingId) {
@@ -227,7 +227,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
             'is_postable' => $data['is_postable'],
             'default_cc_id' => $data['default_cc_id'] ?: null,
             'tax_scheme_code' => $data['tax_scheme_code'] ?: null,
-            'is_active' => $data['coa_is_active'],
+            'activate' => $data['coa_activate'],
             'updated_by' => Auth::user()->login,
         ];
 
@@ -248,39 +248,27 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
 <div>
     <div class="w-full px-5 py-4.5">
 
-        <div class="grid gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Akun Aktif</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->metricTotalActive }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#f1ecfc] border border-[#ddd0f7]">
-                <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Akun Rekonsiliasi (AR/AP)</p>
-                <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">{{ $this->metricTotalRecon }}</p>
-                <p class="text-[10px] text-[#6b4fa0]/70">TERKUNCI</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Akun HPP Produksi (COGS)</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->metricTotalCogs }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Persediaan &amp; Tooling</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->metricTotalPersediaan }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total Akun Aktif" :value="$this->metricTotalActive" />
+            <x-grid.stat-box tone="extra" label="Akun Rekonsiliasi (AR/AP)" :value="$this->metricTotalRecon" subtitle="TERKUNCI" />
+            <x-grid.stat-box tone="warn" label="Akun HPP Produksi (COGS)" :value="$this->metricTotalCogs" />
+            <x-grid.stat-box tone="active" label="Persediaan & Tooling" :value="$this->metricTotalPersediaan" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama akun…"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openModal('new')"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openModal('new')"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[70vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -311,7 +299,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5] font-mono {{ $a->tree_level == 3 ? 'pl-[42px]' : ($a->tree_level == 2 ? 'pl-6' : '') }}">{{ $a->account_code }}</td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                     {{ $a->account_name }}
-                                    @if (! $a->is_active)
+                                    @if (! $a->activate)
                                         <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef0f3] text-[#8a8f98] ml-1 align-middle">NONAKTIF</span>
                                     @endif
                                 </td>
@@ -335,20 +323,19 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     @if ($a->is_postable)
-                                        <button type="button" wire:click="openModal('edit', {{ $a->account_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                                        <button type="button" wire:click="toggleActive({{ $a->account_id }})" wire:confirm="{{ $a->is_active ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $a->account_code }}?"
-                                            title="{{ $a->is_active ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $a->is_active ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                                        <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $a->account_id }})" />
+                                        <x-grid.action-icon icon="⏻" :title="$a->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $a->account_id }})" :variant="$a->activate ? 'danger' : 'default'" confirm="{{ $a->activate ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $a->account_code }}?" />
                                     @else
                                         —
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Tidak ada akun.</td></tr>
+                            <x-grid.empty-row :colspan="7" message="Tidak ada akun." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
         </div>
     </div>
 
@@ -361,79 +348,45 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                     <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeModal">✕</span>
                 </div>
                 <form wire:submit="save" class="p-4 flex flex-col gap-3">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs font-semibold text-[#556]">Parent Akun</label>
-                        <select wire:model="parent_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            <option value="">— tanpa parent (root) —</option>
-                            @foreach ($this->parentOptions as $p)
-                                @if (! ($mode === 'edit' && $p->account_id === $editingId))
-                                    <option value="{{ $p->account_id }}">{{ $p->account_code }} — {{ $p->account_name }}</option>
-                                @endif
-                            @endforeach
-                        </select>
-                        @error('parent_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.select label="Parent Akun" wire:model="parent_id" placeholder="— tanpa parent (root) —" name="parent_id"
+                        :options="$this->parentOptions->filter(fn ($p) => ! ($mode === 'edit' && $p->account_id === $editingId))->mapWithKeys(fn ($p) => [$p->account_id => $p->account_code.' — '.$p->account_name])->all()" />
 
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Kode Akun *</label>
-                            <input type="text" wire:model="account_code" maxlength="20" placeholder="mis. 115100" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono">
-                            @error('account_code') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Kode Akun *" wire:model="account_code" maxlength="20" placeholder="mis. 115100" class="font-mono" name="account_code" />
                         </div>
-                        <div class="flex-[2] flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Nama Akun *</label>
-                            <input type="text" wire:model="account_name" placeholder="mis. Kas Kecil Gudang" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            @error('account_name') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-[2]">
+                            <x-form.input label="Nama Akun *" wire:model="account_name" placeholder="mis. Kas Kecil Gudang" name="account_name" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Tipe *</label>
-                            <select wire:model="account_type" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— pilih —</option>
-                                @foreach ($accountTypes as $t)
-                                    <option value="{{ $t }}">{{ $this->accountTypeLabel($t) }}</option>
-                                @endforeach
-                            </select>
-                            @error('account_type') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.select label="Tipe *" wire:model="account_type" name="account_type"
+                                :options="collect($accountTypes)->mapWithKeys(fn ($t) => [$t => $this->accountTypeLabel($t)])->all()" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Saldo Normal *</label>
-                            <select wire:model="normal_balance" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="DEBIT">DEBIT</option>
-                                <option value="CREDIT">CREDIT</option>
-                            </select>
+                        <div class="flex-1">
+                            <x-form.select label="Saldo Normal *" wire:model="normal_balance" :placeholder="false" :options="['DEBIT' => 'DEBIT', 'CREDIT' => 'CREDIT']" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Default Cost Center</label>
-                            <select wire:model="default_cc_id" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                                <option value="">— tanpa default —</option>
-                                @foreach ($this->costCenterOptions as $cc)
-                                    <option value="{{ $cc->cc_id }}">{{ $cc->cc_code }} — {{ $cc->cc_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('default_cc_id') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.select label="Default Cost Center" wire:model="default_cc_id" placeholder="— tanpa default —" name="default_cc_id"
+                                :options="$this->costCenterOptions->mapWithKeys(fn ($cc) => [$cc->cc_id => $cc->cc_code.' — '.$cc->cc_name])->all()" />
                         </div>
-                        <div class="flex-1 flex flex-col gap-1">
-                            <label class="text-xs font-semibold text-[#556]">Skema Pajak</label>
-                            <input type="text" wire:model="tax_scheme_code" maxlength="20" placeholder="PPN_IN / PPN_OUT / PPH22 / PPH23" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] uppercase">
-                            @error('tax_scheme_code') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                        <div class="flex-1">
+                            <x-form.input label="Skema Pajak" wire:model="tax_scheme_code" maxlength="20" placeholder="PPN_IN / PPN_OUT / PPH22 / PPH23" class="uppercase" name="tax_scheme_code" />
                         </div>
                     </div>
 
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="is_recon"> Akun rekonsiliasi (wajib partner di tiap baris jurnal — AR/AP)
-                    </label>
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="is_postable"> Bisa dijurnal langsung <span class="text-muted">(nonaktifkan untuk akun header/kelompok)</span>
-                    </label>
-                    <label class="flex items-center gap-2 text-[13px] text-[#334]">
-                        <input type="checkbox" wire:model="coa_is_active"> Aktif
-                    </label>
+                    <x-form.checkbox wire:model="is_recon" label-class="text-[#334]">
+                        Akun rekonsiliasi (wajib partner di tiap baris jurnal — AR/AP)
+                    </x-form.checkbox>
+                    <x-form.checkbox wire:model="is_postable" label-class="text-[#334]">
+                        Bisa dijurnal langsung <span class="text-muted">(nonaktifkan untuk akun header/kelompok)</span>
+                    </x-form.checkbox>
+                    <x-form.checkbox wire:model="coa_activate" label="Aktif" label-class="text-[#334]" />
 
                     <div class="text-[11px] text-muted leading-relaxed">Rate PPN/PPh tidak disimpan di sini — <code>Skema Pajak</code> hanya kode referensi (mis. PPN_OUT), nilai % diambil dari <code>tm2mst.fin_tax_scheme</code> saat posting voucher.</div>
 

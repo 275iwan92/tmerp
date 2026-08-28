@@ -8,8 +8,8 @@ use App\Models\Inventory\RmStock;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\SfgStock;
 use App\Models\Inventory\SfgStockcard;
-use App\Models\Master\DocRmprefix1;
-use App\Models\Master\MRawMaterial;
+use App\Models\Master\MatCategory;
+use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdProduct;
 use App\Services\Acc\JournalPostingService;
@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\DB;
 // journal_code 'USG'. HANYA docType OUT -- Adjustment/Opname/Return/BB SENGAJA
 // belum dijurnal (beda makna akuntansi, bukan konsumsi produksi). FG TETAP
 // tidak lewat Stock Out sama sekali (lihat komentar stock-out.blade.php) jadi
-// tidak relevan di sini. Akun RM: item override (m_raw_material) -> fallback
+// tidak relevan di sini. Akun RM: item override (mat_raw) -> fallback
 // kategori (doc_rmprefix1). Akun SFG: item override (prod_part) SAJA -- tidak
 // ada tabel fallback kategori setara doc_rmprefix1 utk SFG, jadi part yang
 // belum diisi akunnya akan selalu dilewati+peringatan sampai diisi manual.
@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\DB;
 class StockPostingService
 {
     private const CATEGORY_MAP = [
-        'RM' => ['header' => RmStock::class, 'card' => RmStockcard::class, 'itemKey' => 'material_id', 'itemModel' => MRawMaterial::class, 'itemPk' => 'material_id'],
+        'RM' => ['header' => RmStock::class, 'card' => RmStockcard::class, 'itemKey' => 'material_id', 'itemModel' => MatRaw::class, 'itemPk' => 'material_id'],
         'FG' => ['header' => FgStock::class, 'card' => FgStockcard::class, 'itemKey' => 'product_id', 'itemModel' => ProdProduct::class, 'itemPk' => 'id_product'],
         'SFG' => ['header' => SfgStock::class, 'card' => SfgStockcard::class, 'itemKey' => 'parts_id', 'itemModel' => ProdPart::class, 'itemPk' => 'id_part'],
     ];
@@ -192,7 +192,7 @@ class StockPostingService
 
             // Sinkronkan cur_stock master item (netto delta dokumen ini, dijumlah semua lokasi).
             // NULL-safe: ->increment() gagal diam-diam (NULL + x = NULL di SQL) -- banyak
-            // m_raw_material.cur_stock legacy masih NULL (5893 baris blm pernah disentuh
+            // mat_raw.cur_stock legacy masih NULL (5893 baris blm pernah disentuh
             // stok), jadi wajib COALESCE, bukan increment() polos.
             foreach ($netByItem as $itemId => $delta) {
                 $map['itemModel']::where($map['itemPk'], $itemId)
@@ -226,8 +226,8 @@ class StockPostingService
                 $cogsAccountId = $part?->cogs_account_id;
                 $stockAccountId = $part?->stock_asset_account_id;
             } else {
-                $material = MRawMaterial::find($r['item_id']);
-                $prefix1 = $material ? DocRmprefix1::where('category1', $material->category1)->first() : null;
+                $material = MatRaw::find($r['item_id']);
+                $prefix1 = $material ? MatCategory::level(1)->where('category_name', $material->category1)->first() : null;
                 $cogsAccountId = app(JournalPostingService::class)->resolveAccount($material?->cogs_account_id, $prefix1?->default_coa_account_id);
                 $stockAccountId = app(JournalPostingService::class)->resolveAccount($material?->stock_asset_account_id, $prefix1?->default_stock_asset_account_id);
             }

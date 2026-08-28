@@ -101,7 +101,7 @@ class FlowEngineService
     {
         $acting = FlowPositionActing::query()
             ->where('position_id', $positionId)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->first();
@@ -113,7 +113,7 @@ class FlowEngineService
     {
         return FlowConfig::query()
             ->where('module_code', $moduleCode)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->where(function ($q) use ($divisionId) {
                 $q->where('division_id', $divisionId)->orWhereNull('division_id');
             })
@@ -141,7 +141,7 @@ class FlowEngineService
         $ownPositionId = $user?->currentPositionId();
 
         $pltPositionIds = FlowPositionActing::where('acting_user_id', $userId)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->pluck('position_id');
@@ -178,7 +178,7 @@ class FlowEngineService
         $login = Auth::user()->login ?? null;
 
         $isActing = FlowPositionActing::where('position_id', $step->position_id)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->where('acting_user_id', $userId)
@@ -255,7 +255,7 @@ class FlowEngineService
         $login = Auth::user()->login ?? null;
 
         $isActing = FlowPositionActing::where('position_id', $step->position_id)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->where('acting_user_id', $userId)
@@ -291,7 +291,7 @@ class FlowEngineService
         $login = Auth::user()->login ?? null;
 
         $isActing = FlowPositionActing::where('position_id', $step->position_id)
-            ->where('is_active', true)
+            ->where('activate', true)
             ->whereDate('start_date', '<=', now())
             ->whereDate('end_date', '>=', now())
             ->where('acting_user_id', $userId)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrRequisition;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 // karena PR memang dibuat dari grid ini sendiri (picker departemen).
 new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use WithPagination;
 
     public string $search = '';
@@ -23,7 +25,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
     #[Computed]
     public function departments()
     {
-        return OrgDepartment::where('is_active', true)->orderBy('department_name')->get();
+        return OrgDepartment::where('activate', true)->orderBy('department_name')->get();
     }
 
     // grid_performance (globalrules.yaml): server-side pagination + WHERE.
@@ -40,7 +42,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                 });
             })
             ->orderByDesc('pr_id')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -99,63 +101,34 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         return $this->redirect(route('pur.pr.entry', ['pr' => $id]));
     }
 
-    // griduistandard.md #3 -- avatar inisial+warna utk kolom identitas.
-    public function avatarInitials(string $name): string
-    {
-        $words = array_values(array_filter(explode(' ', trim($name))));
-        if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr($words[1], 0, 1));
-        }
-
-        return mb_strtoupper(mb_substr($name, 0, 2));
-    }
-
-    private const AVATAR_PALETTE = [
-        'from-[#2563eb] to-[#1d4ed8]', 'from-[#10b981] to-[#059669]', 'from-[#ef4444] to-[#dc2626]',
-        'from-[#8b5cf6] to-[#6d28d9]', 'from-[#f59e0b] to-[#d97706]', 'from-[#0ea5e9] to-[#0284c7]',
-    ];
-
-    public function avatarGradient(int $id): string
-    {
-        return self::AVATAR_PALETTE[$id % count(self::AVATAR_PALETTE)];
-    }
+    // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
+    // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <div class="grid gap-3 mb-3.5">
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-                <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total PR</p>
-                <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->statTotal }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-                <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Menunggu Approval</p>
-                <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->statSubmitted }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Disetujui / Diproses</p>
-                <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->statProgress }}</p>
-            </div>
-            <div class="rounded-lg p-3.5 shadow-sm bg-[#fdecec] border border-[#f5c6c6]">
-                <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Ditolak / Revisi</p>
-                <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">{{ $this->statRejected }}</p>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4">
+            <x-grid.stat-box tone="total" label="Total PR" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="Menunggu Approval" :value="$this->statSubmitted" />
+            <x-grid.stat-box tone="active" label="Disetujui / Diproses" :value="$this->statProgress" />
+            <x-grid.stat-box tone="critical" label="Ditolak / Revisi" :value="$this->statRejected" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-            <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto">
+            <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PR / departemen / item…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
-                <span class="flex-1"></span>
-                <button type="button" wire:click="openPicker"
-                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-            </div>
+                <x-slot:newRecord>
+                    <button type="button" wire:click="openPicker"
+                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
 
-            <div class="max-h-[65vh] overflow-auto">
+            <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
@@ -171,15 +144,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                     <tbody>
                         @forelse ($this->requisitions as $pr)
                             <tr wire:key="pr-{{ $pr->pr_id }}" wire:dblclick="openPr({{ $pr->pr_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center gap-2.5">
-                                        <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ $this->avatarGradient($pr->pr_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ $this->avatarInitials($pr->department?->department_name ?: $pr->doc_no ?: 'PR') }}</div>
-                                        <div>
-                                            <div class="font-semibold text-[13px]">{{ $pr->department?->department_name ?? '—' }}</div>
-                                            <div class="text-[11px] text-muted font-mono">{{ $pr->doc_no ?: '(draft)' }}</div>
-                                        </div>
-                                    </div>
-                                </td>
+                                <x-grid.identity-cell :id="$pr->pr_id" :name="$pr->department?->department_name ?? '—'" :code="$pr->doc_no ?: '(draft)'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pr->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $pr->i_source === 'MRP' ? 'bg-[#eef3fb] text-[#2f6fed]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $pr->i_source === 'MRP' ? 'MRP AUTO' : 'MANUAL' }}</span>
@@ -197,19 +162,17 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                                         } }}">{{ $pr->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <button type="button" wire:click.stop="openPr({{ $pr->pr_id }})" title="Buka" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">↗</button>
+                                    <x-grid.action-icon icon="↗" title="Buka" action="openPr({{ $pr->pr_id }})" />
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted text-sm">Belum ada Purchase Requisition.</td></tr>
+                            <x-grid.empty-row :colspan="7" message="Belum ada Purchase Requisition." />
                         @endforelse
                     </tbody>
                 </table>
-            </div>
+            </x-grid.table-shell>
 
-            <div class="px-3.5 py-2.5 border-t border-[#eef1f5]">
-                {{ $this->requisitions->links() }}
-            </div>
+            @include('components.grid.pagination-footer', ['paginator' => $this->requisitions])
         </div>
     </div>
 

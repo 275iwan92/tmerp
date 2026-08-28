@@ -99,7 +99,7 @@ Berdasarkan struktur `tm2mst` aktual:
 
 | Elemen | Konvensi | Contoh |
 |--------|----------|--------|
-| Prefix tabel master | `doc_` , `m_` | `doc_rmprefix1`, `m_product` |
+| Prefix tabel master | domain (`mat_`, `m_`, dst.) | `mat_category`, `m_product` |
 | Prefix tabel transaksi | `i_` (inquiry/item transaksi) | `i_inquiry_costing`, `i_inquiry_prove_log` |
 | Primary key | `id...` UNSIGNED AUTO_INCREMENT | `idprefix`, `idproduct` |
 | Charset | utf8mb4 / utf8mb4_unicode_ci | (semua tabel) |

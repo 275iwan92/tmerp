@@ -20,13 +20,13 @@ class OrgDepartment extends Model
         'company_id',
         'department_code',
         'department_name',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function division(): BelongsTo

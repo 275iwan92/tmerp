@@ -20,14 +20,14 @@ class EmpDocument extends Model
         'file_path',
         'expiry_date',
         'uploaded_by_role',
-        'is_active',
+        'activate',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'expiry_date' => 'date',
-        'is_active' => 'boolean',
+        'activate' => 'boolean',
     ];
 
     public function employee(): BelongsTo
