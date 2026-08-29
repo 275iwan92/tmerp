@@ -4,6 +4,7 @@ namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OrgPosition extends Model
 {
@@ -17,6 +18,7 @@ class OrgPosition extends Model
         'legacy_position_id',
         'legacy_skill_rate',
         'department_id',
+        'reports_to_position_id',
         'level_id',
         'position_code',
         'position_name',
@@ -39,5 +41,15 @@ class OrgPosition extends Model
     public function level(): BelongsTo
     {
         return $this->belongsTo(OrgLevel::class, 'level_id', 'level_id');
+    }
+
+    public function reportsTo(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'reports_to_position_id', 'position_id');
+    }
+
+    public function directReports(): HasMany
+    {
+        return $this->hasMany(self::class, 'reports_to_position_id', 'position_id');
     }
 }

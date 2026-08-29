@@ -134,10 +134,27 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::middleware('module:HRM')->group(function () {
+            Route::livewire('/hrm/position', 'pages::hrm.position')->name('hrm.position');
+            Route::livewire('/hrm/org-chart', 'pages::hrm.org-chart')->name('hrm.org-chart');
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
             Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
+
+            // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --
+            // portal simulasi (Portal Candidate) sengaja di bawah middleware
+            // HRM yang sama, ditaruh sementara di grup menu Recruitment.
+            Route::livewire('/hrm/recruitment/requisition', 'pages::recruitment.requisition.list')->name('hrm.recruitment.requisition.list');
+            Route::livewire('/hrm/recruitment/requisition/{requisition}', 'pages::recruitment.requisition.entry')->name('hrm.recruitment.requisition.entry')->where('requisition', '[0-9]+');
+            Route::livewire('/hrm/recruitment/vacancy', 'pages::recruitment.vacancy')->name('hrm.recruitment.vacancy');
+            Route::livewire('/hrm/recruitment/talent-pool', 'pages::recruitment.talent-pool')->name('hrm.recruitment.talent-pool');
+            Route::livewire('/hrm/recruitment/pipeline-board', 'pages::recruitment.pipeline-board')->name('hrm.recruitment.pipeline-board');
+            Route::livewire('/hrm/recruitment/interview-schedule', 'pages::recruitment.interview-schedule')->name('hrm.recruitment.interview-schedule');
+            Route::livewire('/hrm/recruitment/assessment-result', 'pages::recruitment.assessment-result')->name('hrm.recruitment.assessment-result');
+            Route::livewire('/hrm/recruitment/offer', 'pages::recruitment.offer.list')->name('hrm.recruitment.offer.list');
+            Route::livewire('/hrm/recruitment/offer/{application}', 'pages::recruitment.offer.entry')->name('hrm.recruitment.offer.entry')->where('application', '[0-9]+');
+            Route::livewire('/hrm/recruitment/hire-provision', 'pages::recruitment.hire-provision')->name('hrm.recruitment.hire-provision');
+            Route::livewire('/hrm/recruitment/portal', 'pages::recruitment.portal')->name('hrm.recruitment.portal');
         });
 
         Route::middleware('module:PROD')->group(function () {

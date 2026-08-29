@@ -8,13 +8,42 @@
 
 meta:
   modul: "Recruitment (tm2hrr) — permohonan tenaga kerja s.d. auto-provisioning login ERP"
-  status: "SPEC LENGKAP Tier 1-4 + DDL (2026-08-27). Belum diimplementasi Claude Code. Approval matrix BELUM di-seed (nama role riil belum dikonfirmasi Telma)."
+  status: "LIVE 2026-08-29 — L1-L7+L9 (internal, minus L8 Sync Log) + Portal Candidate (simulasi P1-P4 gabung 1 layar) semua dibangun & diuji end-to-end via Livewire::test() (lihat implementasi di bawah). Approval matrix DIRESOLUSI via rcr_approver_assignment (role->sec_user langsung, BUKAN role->org_position seperti asumsi awal Tier2/Tier3 — org_position 'HR Manager'/'Dept Head' belum rapi) dgn 3 nama riil dari user: Direksi=Johannes Iwan, Dept Head=Annisa Kusumaningtyas, HR Manager=Sania Maura."
   lihat_global: "globalrules.yaml untuk konvensi umum"
   file_terkait:
     - "recruitment_tier1.md — business requirements & system flow"
     - "recruitment_tier2.md — business logic (approval matrix, pipeline, dedup, offer, hire trigger)"
-    - "recruitment_tier3.md — DDL tm2hrr + skema Firebase (Plan A) + DDL tm2crp (Plan B) + sync worker"
+    - "recruitment_tier3.md — DDL tm2hrr + skema Firebase (Plan A) + DDL tm2crp (Plan B) + sync worker -- DDL tm2hrr diimplementasi APA ADANYA minus rcr_sync_log/cnd_device_token TIDAK DIPAKAI (lihat percobaan_tm2crp_2026_08_29); Plan A/B portal (Firebase/tm2crp) BELUM dipakai, portal masih simulasi tulis-langsung"
     - "recruitment_tier4.md — wireframe portal (P1-P4) + internal HR (L1-L9)"
+
+implementasi_2026_08_29:
+  migrations:
+    - "2026_08_29_000003_create_recruitment_tm2hrr_schema.php — 18 tabel tm2hrr + seed rcr_track/app_pipeline_stage_config/rcr_approval_matrix/rcr_offer_approval_matrix/rcr_approver_assignment"
+    - "2026_08_29_000006_finalize_recruitment_menu.php — status_code READY_FOR_QC + tambah item HRM_RCR_PORTAL"
+  models: "app/Models/Hrr/* (19 model, connection tm2hrr, PK id_xxx)"
+  services:
+    - "App\\Services\\Recruitment\\RecruitmentApprovalService — approval requisition & offer, BESPOKE (bukan FlowEngineService, lihat class utk alasan)"
+  layar:
+    L1: "resources/views/pages/recruitment/requisition/{list,entry}.blade.php — route hrm.recruitment.requisition.*"
+    L2: "resources/views/pages/recruitment/vacancy.blade.php — route hrm.recruitment.vacancy"
+    L3: "resources/views/pages/recruitment/talent-pool.blade.php — route hrm.recruitment.talent-pool"
+    L4: "resources/views/pages/recruitment/pipeline-board.blade.php — route hrm.recruitment.pipeline-board (tombol, TANPA drag-drop)"
+    L5: "resources/views/pages/recruitment/interview-schedule.blade.php — route hrm.recruitment.interview-schedule"
+    L6: "resources/views/pages/recruitment/assessment-result.blade.php — route hrm.recruitment.assessment-result"
+    L7: "resources/views/pages/recruitment/offer/{list,entry}.blade.php — route hrm.recruitment.offer.*"
+    L9: "resources/views/pages/recruitment/hire-provision.blade.php — route hrm.recruitment.hire-provision, reuse EmployeeLoginProvisionService"
+    portal: "resources/views/pages/recruitment/portal.blade.php — route hrm.recruitment.portal, wizard 1 file (P1-P4 gabung)"
+  diuji: "Livewire::test() end-to-end (BUKAN browser -- login browser via automasi dilarang, lihat feedback_no_credential_automation): requisition STAFF/NON_STAFF/BORONGAN (jumlah seq approval beda per track) + reject path, publish vacancy, portal apply (upsert candidate+family+education overwrite, work_experience append), pipeline advance dgn guard assessment wajib utk PSIKOTES/INTERVIEW_HR/INTERVIEW_USER (dibuktikan block lalu lolos), reject/withdraw pipeline, jadwal interview + notifikasi SysNotification, offer approval berjenjang + accept manual, talent pool search+invite, tutup vacancy, hapus requisition draft, provisioning ke ERP (emp_employee+emp_contract+sec_user+emp_document tercipta, kredensial tampil). Semua PASS."
+  bug_ditemukan_saat_test: "AppAssessmentResult & AppInterviewSchedule awalnya tidak punya relasi application() -- ketahuan dari Livewire test crash 'undefined relationship', sudah diperbaiki sebelum lanjut."
+  revisi_2026_08_29_form_resmi: "Form Apply portal (P3) dirombak total dari 6 langkah sederhana jadi 12 langkah PERSIS mengikuti formulir resmi HR 'DATA CALON KARYAWAN' (No. Dok LJM/HRD/P01/F02) -- user unggah contoh terisi asli (form portal.pdf, kandidat Sufyan Anas) & minta portal dibangun berdasarkan itu. Skema cnd_candidate diperluas besar (~45 kolom baru: data pribadi lengkap/kesehatan/minat-konsep-pribadi/kesediaan JSON checklist/referensi JSON/kontak darurat JSON/bahasa&komputer JSON/e-signature typed-name) + cnd_family_member (gender/usia/pendidikan) + cnd_education (periode+nilai) + cnd_work_experience (~19 kolom baru: lokasi/gaji awal-akhir/bawahan/fasilitas/atasan/prestasi/struktur-org/masalah/alasan-keluar) + 2 tabel baru cnd_education_nonformal & cnd_organization_experience. Migration 2026_08_29_000010_expand_candidate_form_fields.php. Diuji end-to-end persis mengikuti data PDF contoh (Sufyan Anas), termasuk resume/reload semua field baru saat login ulang via KTP -- semua PASS."
+  revisi_2026_08_29_lanjutan:
+    - "L4 Pipeline Board: drag-drop diaktifkan atas instruksi user (deviasi sadar dari Tier4 §15 'TIDAK boleh drag-drop bebas') -- kartu bisa digeser scr visual, TAPI server tetap menolak lompat tahap (cuma terima target=stage_seq+1) & tetap menegakkan guard assessment wajib. Tombol Lanjutkan/Reject/Withdraw tetap ada sbg alternatif. method moveCard()."
+    - "L5 Jadwal Interview: dibangun ULANG total jadi kalender ala Google Calendar (Day/Month/3-Month/Year, switcher + prev/next/today) atas instruksi user, ganti dari grid+modal sebelumnya. Panel kiri = daftar kandidat menunggu jadwal (draggable), panel kanan = kalender (drop target). Drop -> popup Tanggal/Jam(prefilled dari lokasi drop)/Interviewer/Lokasi. Klik chip jadwal existing -> popup detail + Tandai Selesai/Batalkan."
+  belum_dikerjakan:
+    - "L8 Rekap Sync Log — sengaja dilewati, tidak relevan selama portal nulis langsung ke tm2hrr (tidak ada sync worker aktif)"
+    - "Portal P4 accept/decline offer interaktif — HR input manual di L7 sbg gantinya (dicatat sbg keterbatasan)"
+    - "Verifikasi visual di browser sungguhan — belum dilakukan (auth login diblokir dari otomasi), user disarankan cek sendiri via browser dgn akun asli"
+    - "org_position 'HR Manager'/'Dept Head' belum dirapikan sbg posisi riil — rcr_approver_assignment tetap dipakai sbg lapisan resolusi permanen sampai itu dirapikan"
 
 # ═══════════════════════════════════════════════════════════════════
 # KEPUTUSAN ARSITEKTUR TERKUNCI
@@ -41,7 +70,7 @@ keputusan_terkunci:
 # OPEN ITEMS — wajib konfirmasi sebelum seed data/eksekusi penuh
 # ═══════════════════════════════════════════════════════════════════
 delta_pending:
-  - "[PENTING] Nama jabatan riil org_position yang mengisi role 'Dept Head'/'HR Manager'/'Direksi' di rcr_approval_matrix & rcr_offer_approval_matrix — asumsi 3/2/1 jenjang per track (STAFF/NON_STAFF/BORONGAN), lihat Tier 2 SECTION 2 & 5. JANGAN seed sebelum ini dikonfirmasi Telma."
+  - "[RESOLVED 2026-08-29] Nama jabatan riil utk role 'Dept Head'/'HR Manager'/'Direksi' SUDAH dikonfirmasi user (bukan Telma langsung, tapi user sesi ini): Direksi=Johannes Iwan, Dept Head=Annisa Kusumaningtyas, HR Manager=Sania Maura — diresolusi via tabel rcr_approver_assignment (role->sec_user_id langsung), BUKAN via org_position (org_position 'HR Manager'/'Dept Head' MASIH belum ada rapi, emp_employee.position_id kedua orang itu juga masih legacy-unmapped id=9 — lapisan rcr_approver_assignment sengaja dibuat utk melewati gap ini, lihat implementasi_2026_08_29). Kalau org_position dirapikan nanti, cukup update baris rcr_approver_assignment, TIDAK perlu ubah kode."
   - "Keputusan final Plan A (Firebase) vs Plan B (tm2crp MariaDB) — budget/approval Firebase masih ditimbang user. Internal tm2hrr BOLEH dibangun paralel karena adapter pattern mengisolasi keputusan ini (lihat keputusan_terkunci.portal_backend_dual_plan)."
   - "Dedupe key untuk kandidat WNA (passport_no sbg fallback) — belum didesain detail, lihat Tier 1 SECTION 4 Open Item #5."
   - "Kebijakan retensi/purge data kandidat non-aktif lama (kepatuhan UU PDP) — belum ada aturan, dicatat sbg Open Item Tier 1 #4."
@@ -49,21 +78,23 @@ delta_pending:
   - "Akun Google Play ($25) & Apple Developer ($99/tahun) + privacy policy publik belum disiapkan — perlu dimulai lebih awal karena review Apple bisa 1-2 minggu (Tier 3 SECTION 6.4)."
 
 next_step:
-  - "Konfirmasi Telma: daftar jabatan riil untuk approval matrix (delta_pending #1) — baru boleh seed data."
-  - "Putuskan Plan A vs Plan B portal (delta_pending #2) — tidak menghambat mulai eksekusi Claude Code untuk tm2hrr internal."
-  - "Review keseluruhan Tier 1-4 oleh Telma sebelum eksekusi Claude Code."
-  - "Update globalarchitecture_tier0.md: tambahkan catatan tm2crp/Firebase sbg host ke-11 di luar 10 DB tm2* resmi."
+  - "User cek sendiri via browser (login akun asli) — Claude Code tidak bisa verifikasi visual krn login browser via otomasi dilarang (feedback_no_credential_automation), verifikasi sejauh ini murni Livewire::test() level logika+DB."
+  - "Putuskan Plan A vs Plan B portal beneran (Firebase vs tm2crp) — baru relevan kalau/waktu portal dipindah keluar dari simulasi ini. Sempat dicoba tm2crp 2026-08-29, dibatalkan/ditunda user (lihat percobaan_tm2crp_2026_08_29)."
+  - "Rapikan org_position 'HR Manager'/'Dept Head' + emp_employee.position_id Annisa/Sania (masih legacy-unmapped) — tidak urgent, rcr_approver_assignment sudah jadi lapisan aman sementara."
+  - "Update globalarchitecture_tier0.md: tambahkan catatan tm2crp/Firebase sbg host ke-11 di luar 10 DB tm2* resmi (baru relevan begitu Plan B beneran dipasang, bukan sekarang)."
   - "Update prefixlist.md Tier 3A: tambahkan bagian domain Recruitment (rcr_/vac_/cnd_/app_) yang belum tercatat di sana."
+  - "L8 Sync Log — bangun begitu portal beneran dipisah host (butuh sync worker sungguhan, tidak relevan selama simulasi nulis langsung)."
 
 # ═══════════════════════════════════════════════════════════════════
 # CATATAN SEMENTARA — SIMULASI PORTAL DI REPO tmerp INI (2026-08-29)
 # ═══════════════════════════════════════════════════════════════════
 simulasi_portal_sementara:
   keputusan: "Atas instruksi user 2026-08-29: portal kandidat (P1-P4) DIBUAT DULU sbg simulasi/preview DI DALAM repo tmerp ini (Laravel/Livewire, host yang sama dgn internal), supaya user bisa lihat & review tampilannya duluan."
-  status: "BELUM dibangun — baru dicatat sbg keputusan/rencana, menunggu instruksi lanjut Claude Code utk mulai implementasi."
+  status: "LIVE 2026-08-29 — dibangun sbg 1 layar wizard resources/views/pages/recruitment/portal.blade.php (route hrm.recruitment.portal, menu HRM_RCR_PORTAL label 'Portal Candidate' di grup Recruitment). 'Login' cuma via No. KTP (tanpa password/OTP sungguhan, sesuai instruksi 'jangan investasi berlebihan di sisi auth'). Diuji end-to-end via Livewire::test() (lihat implementasi_2026_08_29)."
   sifat: "SEMENTARA/prototipe, BUKAN perubahan arsitektur final. keputusan_terkunci.dua_host_arsitektur (portal = host terpisah, Flutter, PULL-sync) TETAP BERLAKU sbg desain akhir — simulasi ini cuma jalan pintas visual di host internal."
   rencana_migrasi: "Setelah user setuju tampilannya, hasil simulasi (struktur layar P1-P4, komponen, alur) di-copy/port ke stack final (Flutter, host terpisah, Firebase Plan A atau tm2crp Plan B) — BUKAN dipakai langsung sbg portal produksi di host internal."
   implikasi_teknis_saat_digarap:
     - "Taruh di route/namespace yang jelas ditandai sementara (mis. prefix /recruitment-portal-preview atau folder resources/views/recruitment-portal-sim/) supaya gampang dibedakan dari layar internal HRM (L1-L9) & gampang dicabut/dipindah nanti."
     - "Boleh pakai tabel tm2hrr yang sama (cnd_*/app_*) langsung tanpa lapisan sync — karena ini masih 1 host, TAPI ingat ini menyimpang dari desain final (portal beneran tidak pernah akses tm2hrr langsung, cuma lewat PULL sync worker). Jangan biarkan asumsi ini menyelinap ke kode internal L1-L9."
     - "Jangan investasi berlebihan di sisi auth/security portal simulasi ini (mis. tidak perlu OTP/verifikasi WhatsApp beneran) — cukup untuk keperluan review visual, karena akan dibuang/diganti total saat pindah host."
+  percobaan_tm2crp_2026_08_29: "Sempat dicoba pindah portal simulasi ke DB terpisah tm2crp (Plan B beneran, docs/recruitment_tier3.md SECTION 3 -- model Crp*, migration crp schema, config/database.php koneksi tm2crp, RecruitmentSyncService PULL worker) atas instruksi user 'untuk portal simulasi gunakan mariaDB'. DIBATALKAN user di sesi yang sama ('pakai mysql dulu saja, tm2crp nanti kita pindahkan') -- semua kode itu SUDAH DIHAPUS lagi (model Crp*, migration crp, sync service, config/env tm2crp). Portal simulasi kembali ke rencana awal: nulis langsung ke tm2hrr. tm2hrr.rcr_sync_log tabelnya TETAP ada di skema (murah dipertahankan, cocok Tier3) tapi TIDAK DIPAKAI -- baru relevan lagi begitu tm2crp benar-benar dipasang nanti."
