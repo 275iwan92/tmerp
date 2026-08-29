@@ -53,15 +53,20 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#2f6fed'),
             ])
-            // Sidebar TETAP collapsible (bukan topNavigation()) -- shell lama juga
-            // punya tombol "⊟" collapse (lihat .side-collapse, class `mini` di
-            // main-menu.blade.php). Modul lama = top mega-nav + sub-sidebar 2 tingkat;
-            // primitif Filament yang paling dekat merepresentasikan 3 level
-            // Module->Group->Item adalah CLUSTER (=Module) berisi navigationGroup
-            // (=Group) berisi Resource/Page (=Item) -- SEMUA tetap satu sidebar kiri,
-            // bukan replika pixel-perfect top+side terpisah. Ini batasan jujur yang
-            // perlu didiskusikan kalau exact 2-tier terpisah wajib dipertahankan.
             ->sidebarCollapsibleOnDesktop()
+            // Override menu atas (2026-08-30): ->topNavigation() adalah fitur
+            // BAWAAN Filament yang TERNYATA sudah persis meniru pola shell lama
+            // (top mega-nav pilih modul + sub-sidebar kiri isi grup/item), tanpa
+            // perlu render hook/Blade override custom -- dikonfirmasi via HTTP
+            // kernel asli: topbar selalu berisi "Dashboard | Human Resources"
+            // (level Cluster=Module) di SEMUA halaman, sementara sidebar kiri
+            // baru menampilkan isi grup (Organization/Employee/Recruitment) +
+            // item (Master Posisi/Master Employee/Pipeline Board) saat SEDANG
+            // di dalam cluster tsb -- persis Module->Group->Item lama, cuma
+            // modul-switcher-nya pindah dari <nav class="mega"> custom ke
+            // topbar Filament bawaan. Form/Grid (Resource form()/table()) TIDAK
+            // disentuh sama sekali oleh perubahan ini.
+            ->topNavigation()
             // Filament secara default mengurutkan grup navigasi berdasar urutan
             // DITEMUKAN saat discovery (bukan sort_order kita) -- didaftarkan
             // eksplisit di sini SUPAYA urutan grup persis sys_app_menu (module
