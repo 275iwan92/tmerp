@@ -41,6 +41,13 @@
   - Diverifikasi via `Livewire::test('pages::main-menu')` sbg user admin (`johiwan`) & user non-admin ber-`employee_id`: sidebar footer cuma muncul utk admin, dropdown Setup hilang utk admin (tak dobel dgn sidebar), trigger popup Portal Karyawan ada, link My Security ada. `npm run build` sudah dijalankan (ada class Tailwind baru: `.side-footer`, `.modal.wide`).
 - **Keterbatasan diketahui (belum ditangani, dicatat biar tidak lupa):** `self-service/index.blade.php` (Portal Karyawan) adalah halaman full standalone dgn header sendiri ("← Kembali ke Menu Utama") — saat di-iframe dalam pop up, link itu akan menavigasi ISI IFRAME (bukan menutup pop up). Bukan bug fatal (user tetap bisa tutup pop up lewat tombol ×), tapi kurang mulus. "Aktivitas saya" di dropdown profil TIDAK ikut diubah jadi pop up sesi ini — item itu sebenarnya sudah lama salah-wiring (menunjuk ke `openTab('SET_USER')`/Setup, bukan layar aktivitas sungguhan) dan belum ada layar "Aktivitas Saya" yang nyata dibangun; ini bug lama terpisah, bukan bagian dari revisi QC-002 ini.
 
+### QC-003 — 2026-08-30
+- **Layar:** Sidebar kiri, section "Security" (khusus admin)
+- **Jenis:** Revisi
+- **Deskripsi:** Lanjutan QC-002. User klarifikasi: item "Account Security" seharusnya bukan 1 tombol tunggal, tapi **menu GROUP** bernama "Security" berisi sub-menu: Account, Group, Group per Submodule, User per Group, dan lain-lain.
+- **Perbaikan:** `.side-footer` di sidebar kiri diubah dari 1 tombol jadi grup collapsible (pola sama seperti grup modul biasa: `.side-cap-btn` + chevron + daftar `.leaf`), berisi 5 sub-item yang membuka tab `security.index` (atau `setup.support-tickets`) yang SUDAH ADA sebelumnya, cuma dulu digabung jadi 1 pintu masuk (selalu lompat ke tab "users"): **Account** (`SET_USER`, tab Pengguna), **Group** (`SET_GROUP`, tab Grup), **Group per Submodule** (`SET_PERM`, tab "Hak Akses Grup" — memang persis hierarki modul→submodul), **Migration** (`SET_MIGRATION`), **Support Tickets** (`SET_TICKETS`). Diverifikasi via `Livewire::test()` sbg `johiwan` (is_admin): grup "Security" + kelima sub-item render dgn benar. `npm run build` dijalankan.
+- **Belum dibuatkan layar terpisah:** "User per Group" — tidak ada layar drill-down khusus yg menampilkan daftar user per grup secara terpisah; info ini sudah tersirat di 2 layar yang ada (tab Account menampilkan grup tiap user, tab Group menampilkan jumlah user tiap grup). Kalau user tetap mau layar drill-down baru (klik nama grup → daftar user anggotanya), perlu diklarifikasi/diminta terpisah.
+
 ### QC-001 — 2026-08-29
 - **Layar:** Dropdown profil (topbar) vs Portal Karyawan
 - **Jenis:** Revisi

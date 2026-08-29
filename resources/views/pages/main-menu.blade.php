@@ -592,19 +592,32 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             </template>
         </div>
         @if (Auth::user()->is_admin)
-            {{-- "Account Security" -- instruksi user 2026-08-30: pindah dari
-            dropdown profil ("Pengaturan (Setup)") jadi item terpisah dipasak
-            di bagian PALING BAWAH sidebar kiri, HANYA utk is_admin (bukan
-            canSetup() yg lebih longgar) -- ini pintu masuk yg sama persis ke
-            Setup (Users/Groups/Perms/Migration/Support Tickets), cuma
-            posisinya dipindah + dinamakan ulang, bukan fitur baru. Portal
+            {{-- "Security" -- instruksi user 2026-08-30: dipasak PALING BAWAH
+            sidebar kiri, HANYA utk is_admin, dan berupa MENU GROUP (bukan 1
+            tombol) berisi sub-item Account/Group/Group per Submodule/
+            Migration/Support Tickets -- ini pintu masuk ke tab2 yang SUDAH
+            ADA di security.index (SET_USER/SET_GROUP/SET_PERM/SET_MIGRATION)
+            + setup.support-tickets, cuma dipecah jadi leaf terpisah (dulu
+            digabung 1 tombol yg selalu lompat ke tab 'users' saja). Portal
             Karyawan tab Security (profil+password non-admin) TIDAK
             berubah/tidak kena gate ini. --}}
-            <div class="side-footer">
-                <button type="button" class="leaf" @click="openTab('SET_USER')" title="Setup & keamanan aplikasi (khusus admin)">
-                    <span class="lic"><i class="fa-solid fa-shield-halved"></i></span>
-                    <span class="lbl">Account Security</span>
+            <div class="side-footer" x-data="{ open: false }">
+                <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                    <span class="side-cap">Security</span>
+                    <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
                 </button>
+                <template x-for="it in [
+                    { code: 'SET_USER', label: 'Account', icon: 'fa-solid fa-user-gear' },
+                    { code: 'SET_GROUP', label: 'Group', icon: 'fa-solid fa-people-group' },
+                    { code: 'SET_PERM', label: 'Group per Submodule', icon: 'fa-solid fa-diagram-project' },
+                    { code: 'SET_MIGRATION', label: 'Migration', icon: 'fa-solid fa-database' },
+                    { code: 'SET_TICKETS', label: 'Support Tickets', icon: 'fa-solid fa-ticket' },
+                ]" :key="it.code">
+                    <button type="button" class="leaf" x-show="open" :class="{ active: activeTabCode === it.code }" @click="openTab(it.code)">
+                        <span class="lic"><i :class="it.icon"></i></span>
+                        <span class="lbl" x-text="it.label"></span>
+                    </button>
+                </template>
             </div>
         @endif
     </aside>
