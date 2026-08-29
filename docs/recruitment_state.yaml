@@ -54,3 +54,16 @@ next_step:
   - "Review keseluruhan Tier 1-4 oleh Telma sebelum eksekusi Claude Code."
   - "Update globalarchitecture_tier0.md: tambahkan catatan tm2crp/Firebase sbg host ke-11 di luar 10 DB tm2* resmi."
   - "Update prefixlist.md Tier 3A: tambahkan bagian domain Recruitment (rcr_/vac_/cnd_/app_) yang belum tercatat di sana."
+
+# ═══════════════════════════════════════════════════════════════════
+# CATATAN SEMENTARA — SIMULASI PORTAL DI REPO tmerp INI (2026-08-29)
+# ═══════════════════════════════════════════════════════════════════
+simulasi_portal_sementara:
+  keputusan: "Atas instruksi user 2026-08-29: portal kandidat (P1-P4) DIBUAT DULU sbg simulasi/preview DI DALAM repo tmerp ini (Laravel/Livewire, host yang sama dgn internal), supaya user bisa lihat & review tampilannya duluan."
+  status: "BELUM dibangun — baru dicatat sbg keputusan/rencana, menunggu instruksi lanjut Claude Code utk mulai implementasi."
+  sifat: "SEMENTARA/prototipe, BUKAN perubahan arsitektur final. keputusan_terkunci.dua_host_arsitektur (portal = host terpisah, Flutter, PULL-sync) TETAP BERLAKU sbg desain akhir — simulasi ini cuma jalan pintas visual di host internal."
+  rencana_migrasi: "Setelah user setuju tampilannya, hasil simulasi (struktur layar P1-P4, komponen, alur) di-copy/port ke stack final (Flutter, host terpisah, Firebase Plan A atau tm2crp Plan B) — BUKAN dipakai langsung sbg portal produksi di host internal."
+  implikasi_teknis_saat_digarap:
+    - "Taruh di route/namespace yang jelas ditandai sementara (mis. prefix /recruitment-portal-preview atau folder resources/views/recruitment-portal-sim/) supaya gampang dibedakan dari layar internal HRM (L1-L9) & gampang dicabut/dipindah nanti."
+    - "Boleh pakai tabel tm2hrr yang sama (cnd_*/app_*) langsung tanpa lapisan sync — karena ini masih 1 host, TAPI ingat ini menyimpang dari desain final (portal beneran tidak pernah akses tm2hrr langsung, cuma lewat PULL sync worker). Jangan biarkan asumsi ini menyelinap ke kode internal L1-L9."
+    - "Jangan investasi berlebihan di sisi auth/security portal simulasi ini (mis. tidak perlu OTP/verifikasi WhatsApp beneran) — cukup untuk keperluan review visual, karena akan dibuang/diganti total saat pindah host."
