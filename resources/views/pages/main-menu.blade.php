@@ -7,6 +7,8 @@ use App\Models\Sys\SysChatConversation;
 use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
+use App\Models\Sys\SysSupportTicket;
+use App\Models\Sys\SysSupportTicketAttachment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -14,9 +16,12 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends Component
 {
+    use WithFileUploads;
+
     public string $profile_name = '';
 
     public string $profile_email = '';
@@ -38,6 +43,17 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     public ?int $activeConversationId = null;
 
     public string $chatInput = '';
+
+    // ---- Help & Support (dropdown profil, dulu placeholder toast) ----
+    public string $support_description = '';
+
+    public string $support_context = '';
+
+    public array $support_attachments = [];
+
+    public ?string $supportError = null;
+
+    public ?string $supportSubmittedNo = null;
 
     public function mount(): void
     {
@@ -163,6 +179,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
             'SET_MIGRATION' => route('security.index', ['tab' => 'migration']),
+            'SET_TICKETS' => route('setup.support-tickets'),
         ];
     }
 
@@ -349,6 +366,54 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         $this->passwordSaved = true;
     }
 
+    #[Computed]
+    public function myTickets()
+    {
+        return SysSupportTicket::where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(10)->get();
+    }
+
+    public function submitSupportTicket(): void
+    {
+        $this->supportError = null;
+
+        if (trim($this->support_description) === '') {
+            $this->supportError = 'Deskripsi wajib diisi.';
+
+            return;
+        }
+
+        $year = now()->format('y');
+        $month = now()->format('m');
+        $seq = SysSupportTicket::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count() + 1;
+
+        $ticket = SysSupportTicket::create([
+            'ticket_no' => "SPT{$year}{$month}".str_pad((string) $seq, 4, '0', STR_PAD_LEFT),
+            'created_by_user_id' => Auth::id(),
+            'screen_context' => $this->support_context ?: null,
+            'description' => $this->support_description,
+            'status' => 'OPEN',
+        ]);
+
+        foreach ($this->support_attachments as $file) {
+            SysSupportTicketAttachment::create([
+                'ticket_id' => $ticket->id_ticket,
+                'file_path' => $file->store('support-tickets', 'public'),
+                'uploaded_at' => now(),
+            ]);
+        }
+
+        $this->supportSubmittedNo = $ticket->ticket_no;
+        $this->support_description = '';
+        $this->support_attachments = [];
+        unset($this->myTickets);
+    }
+
+    public function resetSupportForm(): void
+    {
+        $this->supportSubmittedNo = null;
+        $this->supportError = null;
+    }
+
     public function logout()
     {
         Auth::logout();
@@ -526,6 +591,22 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 </div>
             </template>
         </div>
+        @if (Auth::user()->is_admin)
+            {{-- "Account Security" -- instruksi user 2026-08-30: pindah dari
+            dropdown profil ("Pengaturan (Setup)") jadi item terpisah dipasak
+            di bagian PALING BAWAH sidebar kiri, HANYA utk is_admin (bukan
+            canSetup() yg lebih longgar) -- ini pintu masuk yg sama persis ke
+            Setup (Users/Groups/Perms/Migration/Support Tickets), cuma
+            posisinya dipindah + dinamakan ulang, bukan fitur baru. Portal
+            Karyawan tab Security (profil+password non-admin) TIDAK
+            berubah/tidak kena gate ini. --}}
+            <div class="side-footer">
+                <button type="button" class="leaf" @click="openTab('SET_USER')" title="Setup & keamanan aplikasi (khusus admin)">
+                    <span class="lic"><i class="fa-solid fa-shield-halved"></i></span>
+                    <span class="lbl">Account Security</span>
+                </button>
+            </div>
+        @endif
     </aside>
 
     <div class="main">
@@ -586,16 +667,30 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                         <button type="button" class="um-item" @click="ddOpen = false; aiOpen = true"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--sh-violet)"></i> Asisten AI</button>
                         <div class="um-sep"></div>
                         <div class="um-cap">Akun</div>
-                        <button type="button" class="um-item" @click="ddOpen = false; profileOpen = true"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
-                        <button type="button" class="um-item" @click="ddOpen = false; passwordOpen = true"><i class="fa-solid fa-key"></i> Ubah password</button>
                         @if (Auth::user()->employee_id)
-                            <a href="{{ route('self-service.index') }}" class="um-item"><i class="fa-solid fa-id-card"></i> Portal Karyawan</a>
+                            {{-- Akun tertaut karyawan -- "Edit profil"/"Ubah password" DIGABUNG ke
+                            Portal Karyawan tab Security (instruksi user 2026-08-29 "jadikan satu").
+                            Instruksi user 2026-08-30: SEMUA urusan user profile pakai layar pop up
+                            KECUALI security -- jadi Portal Karyawan sekarang popup (iframe lebar
+                            proporsional, bukan navigasi keluar shell), sementara link Security
+                            tetap navigasi biasa (dikecualikan, +tetap ada gate admin terpisah
+                            "Account Security" di sidebar kiri paling bawah -- lihat di atas). --}}
+                            <button type="button" class="um-item" @click="ddOpen = false; portalOpen = true"><i class="fa-solid fa-id-card"></i> Portal Karyawan</button>
+                            <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="fa-solid fa-shield-halved"></i> My Security</a>
+                        @else
+                            {{-- Fallback KHUSUS akun tanpa employee_id (mis. admin teknis) --
+                            Portal Karyawan sama sekali tidak bisa diakses akun ini. --}}
+                            <button type="button" class="um-item" @click="ddOpen = false; profileOpen = true"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
+                            <button type="button" class="um-item" @click="ddOpen = false; passwordOpen = true"><i class="fa-solid fa-key"></i> Ubah password</button>
                         @endif
-                        @if (Auth::user()->canSetup())
+                        @if (Auth::user()->canSetup() && ! Auth::user()->is_admin)
+                            {{-- Full admin (is_admin) sudah punya jalur sendiri: "Account Security"
+                            dipasak di bagian bawah sidebar kiri (lihat <aside> di atas). Item ini
+                            cuma utk user yg cuma dapat akses modul SETUP tanpa is_admin penuh. --}}
                             <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
                         @endif
                         <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
-                        <button type="button" class="um-item" @click="ddOpen = false; toast('Bantuan & dukungan — segera.')"><i class="fa-solid fa-circle-question"></i> Bantuan &amp; dukungan</button>
+                        <button type="button" class="um-item" @click="ddOpen = false; supportOpen = true; $wire.set('support_context', (openTabs.find(t => t.code === activeTabCode)?.label || 'Home') + ' — ' + new Date().toLocaleString('id-ID'))"><i class="fa-solid fa-circle-question"></i> Help &amp; Support</button>
                         <div class="um-item" style="cursor:default"><i class="fa-solid fa-globe"></i> Bahasa
                             <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
                                 <button type="button" class="um-flag active" @click.stop="toast('Bahasa: Indonesia')">🇮🇩</button>
@@ -776,6 +871,84 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         <div class="mf">
             <button type="button" class="mbtn c" @click="passwordOpen = false">Batal</button>
             <button type="button" class="mbtn p" wire:click="savePassword" wire:loading.attr="disabled">Simpan password</button>
+        </div>
+    </div></div>
+
+    {{-- Modal Portal Karyawan -- instruksi user 2026-08-30: pop up lebar
+    proporsional tanpa scroll ganda (bukan lagi navigasi <a href> keluar
+    shell). Iframe di-lazy-load (:src cuma diisi saat portalOpen=true) supaya
+    tidak ikut ke-load diam-diam waktu shell pertama render. --}}
+    @if (Auth::user()->employee_id)
+        <div class="mov" :class="{ on: portalOpen }"><div class="modal wide">
+            <div class="mh"><h3>Portal Karyawan</h3><button type="button" class="x" @click="portalOpen = false">&times;</button></div>
+            <div class="mb">
+                <iframe :src="portalOpen ? '{{ route('self-service.index') }}' : ''" title="Portal Karyawan"></iframe>
+            </div>
+        </div></div>
+    @endif
+
+    {{-- Modal Help & Support (dulu placeholder toast "segera") --}}
+    <div class="mov" :class="{ on: supportOpen }"><div class="modal">
+        <div class="mh"><h3>Help &amp; Support</h3><button type="button" class="x" @click="supportOpen = false; $wire.resetSupportForm()">&times;</button></div>
+        <div class="mb">
+            @if ($supportSubmittedNo)
+                <div class="mfield" style="text-align:center;padding:18px 0">
+                    <div style="font-size:32px">✅</div>
+                    <div style="font-weight:600;margin-top:6px">Ticket submitted</div>
+                    <div class="hint">Ticket #{{ $supportSubmittedNo }} — we'll get back to you.</div>
+                </div>
+            @else
+                <div class="hint" style="margin-bottom:8px">{{ $support_context ?: 'Screen context unavailable' }}</div>
+                @if ($supportError)
+                    <div class="mfield"><div class="hint bad">{{ $supportError }}</div></div>
+                @endif
+                <div class="mfield">
+                    <textarea wire:model="support_description" rows="4" placeholder="What happened? The more detail, the faster it gets fixed." style="width:100%;resize:vertical"></textarea>
+                </div>
+                <div class="mfield">
+                    <label class="hint" style="display:block;margin-bottom:4px">Attach screenshots (optional)</label>
+                    <input type="file" wire:model="support_attachments" multiple accept="image/*">
+                    <div wire:loading wire:target="support_attachments" class="hint">Uploading…</div>
+                    @if (count($support_attachments))
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+                            @foreach ($support_attachments as $i => $file)
+                                <div style="position:relative;width:52px;height:52px">
+                                    <img src="{{ $file->temporaryUrl() }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
+                                    <button type="button" wire:click="$set('support_attachments.{{ $i }}', null)" title="Remove"
+                                        style="position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid #d7dbe2;border-radius:999px;width:18px;height:18px;font-size:11px;line-height:1;cursor:pointer">×</button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+                @if ($this->myTickets->isNotEmpty())
+                    <div style="border-top:1px solid #eef1f5;margin-top:14px;padding-top:10px">
+                        <div class="hint" style="font-weight:600;margin-bottom:6px">My tickets</div>
+                        <div style="display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto">
+                            @foreach ($this->myTickets as $t)
+                                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+                                    <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;{{ match ($t->status) {
+                                        'DONE' => 'background:#eaf7ee;color:#1f8a4c',
+                                        'CLOSED' => 'background:#eef1f5;color:#4b5568',
+                                        'IN_PROGRESS' => 'background:#fff5e0;color:#8a5a00',
+                                        default => 'background:#eaf2ff;color:#1d4ed8',
+                                    } }}">{{ str_replace('_', ' ', $t->status) }}</span>
+                                    <span style="flex:1;color:#334155">{{ Str::limit($t->description, 46) }}</span>
+                                    <span style="color:#94a3b8">{{ $t->created_at->diffForHumans(null, true) }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endif
+        </div>
+        <div class="mf">
+            @if ($supportSubmittedNo)
+                <button type="button" class="mbtn p" @click="supportOpen = false; $wire.resetSupportForm()">Close</button>
+            @else
+                <button type="button" class="mbtn c" @click="supportOpen = false">Cancel</button>
+                <button type="button" class="mbtn p" wire:click="submitSupportTicket" wire:loading.attr="disabled">Submit</button>
+            @endif
         </div>
     </div></div>
 

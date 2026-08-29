@@ -156,6 +156,7 @@ transaksi = `iqp_costing`, ikut inquiry).
   lintas-boundary. Gotcha wajib: jangan tulis nama tag komponen berkurung
   sudut (`<x-...>`) di dalam komentar mana pun — Blade tag compiler ikut
   mengompilasinya dan merusak file.
+- `docs/qc_feedback.md` — **tempat user tulis hasil QC/revisi/bug setelah cek aplikasi sendiri di browser** (Claude Code tidak bisa login browser otomatis, lihat §7). Cek file ini kalau user minta "cek qc_feedback" / "kerjakan yang belum" — proses entry di bagian "Belum Dikerjakan", pindahkan ke "Selesai" (isi Perbaikan+tanggal) atau "Ditutup" (kalau ternyata bukan bug) setelah selesai, jangan hapus entry.
 - `docs/attachments/` — folder tempat menaruh **form manual (kertas/scan) & file Excel yang SAAT INI benar-benar dipakai** di lapangan, dijadikan acuan sebelum membangun/mengubah layar terkait (jangan menebak field, cek dulu ke sini kalau ada dokumen relevan). **Daftar isi lengkap: `docs/attachments_index.md`** — cek/update file itu setiap ada attachment baru ditambah/dipakai, jangan baca ulang seluruh folder dari nol tiap sesi.
 - `printnotastandard.md` — **wajib dibaca sebelum bikin/ubah layar cetak
   dokumen transaksi (Nota)** — kop+parties+signature+footer, beda dari

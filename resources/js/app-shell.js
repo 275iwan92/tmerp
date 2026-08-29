@@ -32,6 +32,8 @@ document.addEventListener('alpine:init', () => {
         notifOpen: false,
         chatOpen: false,
         aiOpen: false,
+        supportOpen: false,
+        portalOpen: false,
 
         paletteOpen: false,
         paletteQuery: '',

@@ -16,8 +16,10 @@ use App\Models\Master\EmpShiftRoster;
 use App\Models\Master\EmpShiftSwapRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -35,6 +37,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 
+    #[Url]
     public string $tab = 'profil';
 
     public ?int $employeeId = null;
@@ -154,9 +157,82 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
     public string $swap_reason = '';
 
+    // ---- tab: Security (akun login sec_user -- BUKAN data emp_employee,
+    // makanya edit LANGSUNG tanpa alur pengajuan+approval HR spt tab lain di
+    // sini. Gabungan dari "Edit profil"+"Ubah password" yg dulu modal
+    // terpisah di dropdown topbar -- instruksi user 2026-08-29, "jadikan
+    // satu". Topbar tetap simpan modal itu sbg fallback KHUSUS akun yg
+    // employee_id-nya null (tidak bisa akses Portal Karyawan sama sekali). ----
+    public string $acc_name = '';
+
+    public string $acc_email = '';
+
+    public string $acc_phone = '';
+
+    public bool $accSaved = false;
+
+    public string $acc_old_password = '';
+
+    public string $acc_new_password = '';
+
+    public string $acc_new_password_confirmation = '';
+
+    public ?string $accPasswordError = null;
+
+    public bool $accPasswordSaved = false;
+
     public function mount(): void
     {
         $this->employeeId = Auth::user()->employee_id;
+
+        if (! in_array($this->tab, ['profil', 'keluarga', 'dokumen', 'cuti', 'izinkeluar', 'tukarshift', 'jadwal', 'badge', 'security'], true)) {
+            $this->tab = 'profil';
+        }
+
+        $user = Auth::user();
+        $this->acc_name = $user->name ?? '';
+        $this->acc_email = $user->email ?? '';
+        $this->acc_phone = $user->phone ?? '';
+    }
+
+    public function saveAccountProfile(): void
+    {
+        $this->validate([
+            'acc_name' => ['required', 'string', 'max:255'],
+            'acc_email' => ['required', 'email', 'max:255'],
+            'acc_phone' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        Auth::user()->update([
+            'name' => $this->acc_name,
+            'email' => $this->acc_email,
+            'phone' => $this->acc_phone,
+        ]);
+
+        $this->accSaved = true;
+    }
+
+    public function changeAccountPassword(): void
+    {
+        $this->accPasswordError = null;
+        $this->accPasswordSaved = false;
+
+        $user = Auth::user();
+
+        if (! Hash::check($this->acc_old_password, (string) $user->pswd)) {
+            $this->accPasswordError = 'Password lama salah.';
+
+            return;
+        }
+
+        $this->validate(['acc_new_password' => ['required', 'string', 'min:8', 'confirmed']]);
+
+        $user->update(['pswd' => Hash::make($this->acc_new_password), 'pswd_last_updated' => now()]);
+
+        $this->acc_old_password = '';
+        $this->acc_new_password = '';
+        $this->acc_new_password_confirmation = '';
+        $this->accPasswordSaved = true;
     }
 
     #[Computed]
@@ -790,7 +866,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- TABS --}}
             <div class="bg-white border border-[#e2e8f0] rounded-xl p-1.5 mb-4 flex gap-1 flex-wrap sticky top-[52px] z-30">
-                @foreach (['profil' => '👤 Data Saya', 'keluarga' => '👪 Keluarga & Status', 'dokumen' => '📄 Dokumen & Pendidikan', 'cuti' => '📅 Cuti/Sakit/Izin', 'izinkeluar' => '🚪 Izin Keluar', 'tukarshift' => '🔄 Tukar Shift', 'jadwal' => '🗓️ Jadwal Saya', 'badge' => '🪪 Kartu Pengenal'] as $key => $label)
+                @foreach (['profil' => '👤 Data Saya', 'keluarga' => '👪 Keluarga & Status', 'dokumen' => '📄 Dokumen & Pendidikan', 'cuti' => '📅 Cuti/Sakit/Izin', 'izinkeluar' => '🚪 Izin Keluar', 'tukarshift' => '🔄 Tukar Shift', 'jadwal' => '🗓️ Jadwal Saya', 'badge' => '🪪 Kartu Pengenal', 'security' => '🔒 Security'] as $key => $label)
                     <button type="button" wire:click="$set('tab', '{{ $key }}')" class="px-3 py-2 text-xs font-medium rounded-md cursor-pointer {{ $tab === $key ? 'bg-[#0f172a] text-white font-semibold' : 'text-muted hover:bg-[#f8fafc]' }}">{{ $label }}</button>
                 @endforeach
             </div>
@@ -1280,6 +1356,42 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                             Format 4×6cm (rasio 2:3), minimal 600×900px, latar polos terang, wajah menghadap depan.
                         </div>
                         <button type="button" wire:click="openBadgeModal" class="w-full bg-accent text-white text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer">Upload Foto ID Baru</button>
+                    </div>
+                </div>
+            @endif
+
+            {{-- ===================== TAB: SECURITY ===================== --}}
+            @if ($tab === 'security')
+                <div class="text-xs text-[#334155] bg-[#f0f9ff] border-l-4 border-accent px-3.5 py-2.5 rounded-r-md mb-4">
+                    Data akun login (bukan data HR) — bisa diubah langsung tanpa persetujuan HR.
+                </div>
+                <div class="grid two gap-4">
+                    <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
+                        <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Account profile</div>
+                        @if ($accSaved)
+                            <div class="text-xs text-[#166534] bg-[#f0fdf4] border-l-4 border-[#16a34a] px-3.5 py-2.5 rounded-r-md mb-3">✅ Profil akun tersimpan.</div>
+                        @endif
+                        <div class="space-y-3">
+                            <x-form.input label="Nama lengkap" wire:model="acc_name" name="acc_name" />
+                            <x-form.input label="Email" type="email" wire:model="acc_email" name="acc_email" />
+                            <x-form.input label="No. telepon" wire:model="acc_phone" />
+                        </div>
+                        <button type="button" wire:click="saveAccountProfile" class="w-full bg-accent text-white text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer mt-3">Simpan</button>
+                    </div>
+                    <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
+                        <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Change password</div>
+                        @if ($accPasswordSaved)
+                            <div class="text-xs text-[#166534] bg-[#f0fdf4] border-l-4 border-[#16a34a] px-3.5 py-2.5 rounded-r-md mb-3">✅ Password diperbarui.</div>
+                        @endif
+                        @if ($accPasswordError)
+                            <div class="text-xs text-[#991b1b] bg-[#fef2f2] border-l-4 border-[#dc2626] px-3.5 py-2.5 rounded-r-md mb-3">{{ $accPasswordError }}</div>
+                        @endif
+                        <div class="space-y-3">
+                            <x-form.input label="Password lama" type="password" wire:model="acc_old_password" placeholder="Password saat ini" />
+                            <x-form.input label="Password baru" type="password" wire:model="acc_new_password" placeholder="Minimal 8 karakter" name="acc_new_password" />
+                            <x-form.input label="Konfirmasi password baru" type="password" wire:model="acc_new_password_confirmation" placeholder="Ulangi password baru" />
+                        </div>
+                        <button type="button" wire:click="changeAccountPassword" class="w-full bg-accent text-white text-xs font-semibold px-4 py-2.5 rounded-md cursor-pointer mt-3">Update password</button>
                     </div>
                 </div>
             @endif

@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
+        Route::livewire('/setup/support-tickets', 'pages::setup.support-tickets')->name('setup.support-tickets')->middleware('admin');
 
         // Portal self-service karyawan — bukan modul HR administratif (tanpa
         // module: gate), tapi personal & hanya milik akun sendiri. Guard
