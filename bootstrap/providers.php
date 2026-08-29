@@ -1,9 +1,7 @@
 <?php
 
-use App\Providers\AppServiceProvider;
-use App\Providers\SchedulingServiceProvider;
-
 return [
-    AppServiceProvider::class,
-    SchedulingServiceProvider::class,
+    App\Providers\AppServiceProvider::class,
+    App\Providers\Filament\AdminPanelProvider::class,
+    App\Providers\SchedulingServiceProvider::class,
 ];
