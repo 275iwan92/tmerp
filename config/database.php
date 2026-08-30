@@ -226,6 +226,26 @@ return [
             'engine' => 'InnoDB',
         ],
 
+        // tm2crp — Plan B portal database (MariaDB), host TERPISAH secara
+        // sengaja dari 10 koneksi tm2* di atas (driver 'mariadb', port/user/
+        // password beda) -- bukan salah satu dari 10 DB modul fungsional,
+        // dan bukan diakses via Eloquent relationship ke tm2* lain (portal
+        // tidak boleh tahu skema internal). Lihat CLAUDE.md §2 & docs/
+        // recruitment_tier3.md §1 (arsitektur 2-host, PULL sync worker).
+        'tm2crp' => [
+            'driver' => 'mariadb',
+            'host' => env('DB_CRP_HOST', '127.0.0.1'),
+            'port' => env('DB_CRP_PORT', '3307'),
+            'database' => env('DB_CRP_DATABASE', 'tm2crp'),
+            'username' => env('DB_CRP_USERNAME', 'tm2crp_user'),
+            'password' => env('DB_CRP_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+        ],
+
         // SQLite bawaan — biarkan bila ingin fallback testing cepat.
         'sqlite' => [
             'driver' => 'sqlite',

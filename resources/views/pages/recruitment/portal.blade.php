@@ -1,13 +1,8 @@
 <?php
 
+use App\Contracts\Recruitment\PortalBackendAdapterInterface;
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\CndCandidate;
-use App\Models\Hrr\CndDocument;
-use App\Models\Hrr\CndEducation;
-use App\Models\Hrr\CndEducationNonformal;
-use App\Models\Hrr\CndFamilyMember;
-use App\Models\Hrr\CndOrganizationExperience;
-use App\Models\Hrr\CndWorkExperience;
 use App\Models\Hrr\VacVacancy;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -21,6 +16,15 @@ use Livewire\WithFileUploads;
 // terisi diberikan user) -- field & urutan section sesuai dokumen itu, bukan
 // dikira-kira. Skema pendukung: migration 2026_08_29_000010_expand_candidate_form_fields.php.
 // Auth tetap disederhanakan (masuk via No. KTP, tanpa password/OTP sungguhan).
+//
+// REVISI 2026-08-30 (docs/recruitment_delta_plan_ab_local.md): submitApplication()
+// TIDAK LAGI menulis langsung ke tm2hrr (Cnd*/AppApplication) -- sekarang lewat
+// PortalBackendAdapterInterface (Plan A Firebase / Plan B tm2crp MariaDB, switch
+// via config('recruitment.backend')), sesuai arsitektur 2-host terkunci di
+// recruitment_tier3.md §1. Internal (tm2hrr) baru terisi setelah sync worker
+// (php artisan recruitment:sync-portal, jadwal tiap 2 menit) menariknya --
+// myApplications() karena itu bisa tampil KOSONG sesaat setelah kirim lamaran,
+// itu bukan bug, itu memang eventual-consistency dari desain PULL sync.
 new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
@@ -28,8 +32,6 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     public int $step = 0; // 0=masuk .. 12=review/lamar, 13=selesai
 
     public string $loginKtp = '';
-
-    public ?int $candidateId = null;
 
     // -- Data Pribadi --
     public string $name = '';
@@ -165,6 +167,8 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
 
     public ?int $submittedApplicationId = null;
 
+    public ?string $lastSubmissionUuid = null;
+
     protected const WILLING_ITEMS = [
         'probation' => 'Mengikuti masa percobaan',
         'training' => 'Mengikuti training sesuai ketentuan Perusahaan',
@@ -179,6 +183,14 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     public function mount(): void
     {
         $this->willingness = array_fill_keys(array_keys(self::WILLING_ITEMS), false);
+    }
+
+    // Resolve lewat container tiap kali dipakai (bukan property Livewire --
+    // service adapter tak aman diserialisasi antar-request). Lihat catatan
+    // revisi 2026-08-30 di atas.
+    protected function adapter(): PortalBackendAdapterInterface
+    {
+        return app(PortalBackendAdapterInterface::class);
     }
 
     #[Computed]
@@ -196,11 +208,17 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
     #[Computed]
     public function myApplications()
     {
-        if (! $this->candidateId) {
+        // Baca dari internal (tm2hrr) -- HANYA terisi setelah sync worker
+        // menariknya dari backend portal aktif. Sebelum sync jalan, kandidat
+        // yang baru saja submit belum punya id_candidate di sini -- lihat
+        // catatan "eventual consistency" di komentar atas class ini.
+        $candidate = CndCandidate::where('national_id', $this->national_id)->first();
+
+        if (! $candidate) {
             return collect();
         }
 
-        return AppApplication::with('vacancy')->where('id_candidate', $this->candidateId)->orderByDesc('id_application')->get();
+        return AppApplication::with('vacancy')->where('id_candidate', $candidate->id_candidate)->orderByDesc('id_application')->get();
     }
 
     public function enter(): void
@@ -211,78 +229,75 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
             return;
         }
 
-        $candidate = CndCandidate::where('national_id', $this->loginKtp)->first();
+        // Prefill dari submission TERAKHIR di backend portal aktif (bukan
+        // tm2hrr) -- portal tidak pernah baca internal langsung, sesuai
+        // arsitektur 2-host terkunci (recruitment_tier3.md §1).
+        $last = $this->adapter()->findLatestByNationalId($this->loginKtp);
 
-        if ($candidate) {
-            $this->candidateId = $candidate->id_candidate;
-            $this->name = $candidate->name;
-            $this->nickname = (string) $candidate->nickname;
-            $this->national_id = $candidate->national_id;
-            $this->gender = (string) $candidate->gender;
-            $this->religion = (string) $candidate->religion;
-            $this->email = (string) $candidate->email;
-            $this->phone = (string) $candidate->phone;
-            $this->birth_date = (string) $candidate->birth_date?->format('Y-m-d');
-            $this->address = (string) $candidate->address;
-            $this->address_domisili = (string) $candidate->address_domisili;
-            $this->vehicle_type = (string) $candidate->vehicle_type;
-            $this->sim_types = $candidate->sim_types ?? [];
-            $this->marital_status = (string) $candidate->marital_status;
-            $this->marital_date = (string) $candidate->marital_date?->format('Y-m-d');
+        if ($last) {
+            $this->name = (string) ($last['name'] ?? '');
+            $this->nickname = (string) ($last['nickname'] ?? '');
+            $this->national_id = (string) $last['national_id'];
+            $this->gender = (string) ($last['gender'] ?? '');
+            $this->religion = (string) ($last['religion'] ?? '');
+            $this->email = (string) ($last['email'] ?? '');
+            $this->phone = (string) ($last['phone'] ?? '');
+            $this->birth_date = (string) ($last['birth_date'] ?? '');
+            $this->address = (string) ($last['address'] ?? '');
+            $this->address_domisili = (string) ($last['address_domisili'] ?? '');
+            $this->vehicle_type = (string) ($last['vehicle_type'] ?? '');
+            $this->sim_types = $last['sim_types'] ?? [];
+            $this->marital_status = (string) ($last['marital_status'] ?? '');
+            $this->marital_date = (string) ($last['marital_date'] ?? '');
 
-            $this->family = $candidate->familyMembers->map(fn ($f) => $f->only(['relation_type', 'name', 'gender', 'age', 'last_education', 'current_job', 'current_employer']))->all();
-            $this->education = $candidate->education->map(fn ($e) => $e->only(['level', 'institution', 'major', 'period_start_year', 'graduation_year', 'final_score']))->all();
-            $this->educationNonformal = $candidate->educationNonformal->map(fn ($e) => $e->only(['course_type', 'institution', 'period_start_year', 'period_end_year', 'certificate_no']))->all();
-            $this->orgExperience = $candidate->organizationExperience->map(fn ($o) => $o->only(['organization_name', 'position', 'period', 'task_description']))->all();
-            $this->workExp = $candidate->workExperience->map(fn ($w) => $w->only([
-                'company', 'location', 'business_type', 'employee_count', 'company_phone', 'position', 'start_date', 'end_date',
-                'position_end', 'position_end_start_date', 'position_end_end_date', 'subordinate_count_start', 'subordinate_count_end',
-                'salary_start', 'salary_end', 'benefits', 'supervisor_name', 'supervisor_phone', 'achievement', 'description',
-                'org_structure_note', 'key_challenge', 'improvement_made', 'leave_reason',
-            ]))->all();
+            $this->family = $last['family_members'] ?? [];
+            $this->education = $last['education'] ?? [];
+            $this->educationNonformal = $last['education_nonformal'] ?? [];
+            $this->orgExperience = $last['org_experience'] ?? [];
+            $this->workExp = $last['work_experience'] ?? [];
 
-            $this->company_acquaintance = (string) $candidate->company_acquaintance;
-            $this->hobby = (string) $candidate->hobby;
-            $this->leisure_activity = (string) $candidate->leisure_activity;
-            $this->reading_topics = (string) $candidate->reading_topics;
-            $this->went_abroad = (string) $candidate->went_abroad;
-            $this->emergencyContacts = $candidate->emergency_contacts ?? [];
-            $this->professionalReferences = $candidate->professional_references ?? [];
+            $this->company_acquaintance = (string) ($last['company_acquaintance'] ?? '');
+            $this->hobby = (string) ($last['hobby'] ?? '');
+            $this->leisure_activity = (string) ($last['leisure_activity'] ?? '');
+            $this->reading_topics = (string) ($last['reading_topics'] ?? '');
+            $this->went_abroad = (string) ($last['went_abroad'] ?? '');
+            $this->emergencyContacts = $last['emergency_contacts'] ?? [];
+            $this->professionalReferences = $last['professional_references'] ?? [];
 
-            $this->why_join_us = (string) $candidate->why_join_us;
-            $this->what_you_know_about_us = (string) $candidate->what_you_know_about_us;
-            $this->contribution_plan = (string) $candidate->contribution_plan;
-            $this->role_plan_if_hired = (string) $candidate->role_plan_if_hired;
-            $this->job_type_preference = (string) $candidate->job_type_preference;
-            $this->job_nature_preference = (string) $candidate->job_nature_preference;
-            $this->work_environment_preference = (string) $candidate->work_environment_preference;
-            $this->hindering_environment = (string) $candidate->hindering_environment;
-            $this->preferred_colleague_type = (string) $candidate->preferred_colleague_type;
-            $this->difficult_decision_topic = (string) $candidate->difficult_decision_topic;
-            $this->strengths_weaknesses = (string) $candidate->strengths_weaknesses;
-            $this->who_you_ask_when_stuck = (string) $candidate->who_you_ask_when_stuck;
+            $this->why_join_us = (string) ($last['why_join_us'] ?? '');
+            $this->what_you_know_about_us = (string) ($last['what_you_know_about_us'] ?? '');
+            $this->contribution_plan = (string) ($last['contribution_plan'] ?? '');
+            $this->role_plan_if_hired = (string) ($last['role_plan_if_hired'] ?? '');
+            $this->job_type_preference = (string) ($last['job_type_preference'] ?? '');
+            $this->job_nature_preference = (string) ($last['job_nature_preference'] ?? '');
+            $this->work_environment_preference = (string) ($last['work_environment_preference'] ?? '');
+            $this->hindering_environment = (string) ($last['hindering_environment'] ?? '');
+            $this->preferred_colleague_type = (string) ($last['preferred_colleague_type'] ?? '');
+            $this->difficult_decision_topic = (string) ($last['difficult_decision_topic'] ?? '');
+            $this->strengths_weaknesses = (string) ($last['strengths_weaknesses'] ?? '');
+            $this->who_you_ask_when_stuck = (string) ($last['who_you_ask_when_stuck'] ?? '');
 
-            $this->height_cm = $candidate->height_cm;
-            $this->weight_kg = $candidate->weight_kg;
-            $this->blood_type = (string) $candidate->blood_type;
-            $this->illness_history = (string) $candidate->illness_history;
-            $this->hospitalized_history = (string) $candidate->hospitalized_history;
-            $this->is_smoker = $candidate->is_smoker;
-            $this->physical_disability = (string) $candidate->physical_disability;
-            $this->family_health_ok = $candidate->family_health_ok;
+            $this->height_cm = $last['height_cm'] ?? null;
+            $this->weight_kg = $last['weight_kg'] ?? null;
+            $this->blood_type = (string) ($last['blood_type'] ?? '');
+            $this->illness_history = (string) ($last['illness_history'] ?? '');
+            $this->hospitalized_history = (string) ($last['hospitalized_history'] ?? '');
+            $this->is_smoker = $last['is_smoker'] ?? null;
+            $this->physical_disability = (string) ($last['physical_disability'] ?? '');
+            $this->family_health_ok = $last['family_health_ok'] ?? null;
 
-            $this->languageSkills = $candidate->language_skills ?? [];
-            $this->computerSkills = $candidate->computer_skills ?? [];
-            $this->still_receiving_aid = (string) $candidate->still_receiving_aid;
-            $this->other_dependents = (string) $candidate->other_dependents;
-            $this->source_of_info = (string) $candidate->source_of_info;
-            $this->expected_salary = $candidate->expected_salary;
-            $this->expected_facility = (string) $candidate->expected_facility;
-            $this->availability_date = (string) $candidate->availability_date?->format('Y-m-d');
+            $this->languageSkills = $last['language_skills'] ?? [];
+            $this->computerSkills = $last['computer_skills'] ?? [];
+            $this->still_receiving_aid = (string) ($last['still_receiving_aid'] ?? '');
+            $this->other_dependents = (string) ($last['other_dependents'] ?? '');
+            $this->source_of_info = (string) ($last['source_of_info'] ?? '');
+            $this->expected_salary = $last['expected_salary'] ?? null;
+            $this->expected_facility = (string) ($last['expected_facility'] ?? '');
+            $this->availability_date = (string) ($last['availability_date'] ?? '');
 
-            $this->willingness = array_merge($this->willingness, $candidate->willingness_checklist ?? []);
-            $this->agreement_signed = (bool) $candidate->agreement_signed;
-            $this->signature_name = (string) $candidate->signature_name;
+            $this->willingness = array_merge($this->willingness, $last['willingness_checklist'] ?? []);
+            $this->agreement_signed = (bool) ($last['agreement_signed'] ?? false);
+            $this->signature_name = (string) ($last['signature_name'] ?? '');
         } else {
             $this->national_id = $this->loginKtp;
         }
@@ -338,113 +353,58 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
             return;
         }
 
-        $candidate = CndCandidate::updateOrCreate(
-            ['national_id' => $this->national_id],
-            [
-                'name' => $this->name, 'nickname' => $this->nickname ?: null, 'gender' => $this->gender ?: null,
-                'religion' => $this->religion ?: null, 'email' => $this->email, 'phone' => $this->phone,
-                'birth_date' => $this->birth_date ?: null, 'address' => $this->address,
-                'address_domisili' => $this->address_domisili ?: null, 'vehicle_type' => $this->vehicle_type ?: null,
-                'sim_types' => $this->sim_types, 'marital_status' => $this->marital_status ?: null,
-                'marital_date' => $this->marital_date ?: null,
-                'company_acquaintance' => $this->company_acquaintance ?: null, 'hobby' => $this->hobby ?: null,
-                'leisure_activity' => $this->leisure_activity ?: null, 'reading_topics' => $this->reading_topics ?: null,
-                'went_abroad' => $this->went_abroad ?: null,
-                'emergency_contacts' => array_values(array_filter($this->emergencyContacts, fn ($r) => trim($r['name'] ?? '') !== '')),
-                'professional_references' => array_values(array_filter($this->professionalReferences, fn ($r) => trim($r['name'] ?? '') !== '')),
-                'why_join_us' => $this->why_join_us ?: null, 'what_you_know_about_us' => $this->what_you_know_about_us ?: null,
-                'contribution_plan' => $this->contribution_plan ?: null, 'role_plan_if_hired' => $this->role_plan_if_hired ?: null,
-                'job_type_preference' => $this->job_type_preference ?: null, 'job_nature_preference' => $this->job_nature_preference ?: null,
-                'work_environment_preference' => $this->work_environment_preference ?: null, 'hindering_environment' => $this->hindering_environment ?: null,
-                'preferred_colleague_type' => $this->preferred_colleague_type ?: null, 'difficult_decision_topic' => $this->difficult_decision_topic ?: null,
-                'strengths_weaknesses' => $this->strengths_weaknesses ?: null, 'who_you_ask_when_stuck' => $this->who_you_ask_when_stuck ?: null,
-                'height_cm' => $this->height_cm, 'weight_kg' => $this->weight_kg, 'blood_type' => $this->blood_type ?: null,
-                'illness_history' => $this->illness_history ?: null, 'hospitalized_history' => $this->hospitalized_history ?: null,
-                'is_smoker' => $this->is_smoker, 'physical_disability' => $this->physical_disability ?: null,
-                'family_health_ok' => $this->family_health_ok,
-                'language_skills' => array_values(array_filter($this->languageSkills, fn ($r) => trim($r['language'] ?? '') !== '')),
-                'computer_skills' => array_values(array_filter($this->computerSkills, fn ($r) => trim($r['skill'] ?? '') !== '')),
-                'still_receiving_aid' => $this->still_receiving_aid ?: null, 'other_dependents' => $this->other_dependents ?: null,
-                'source_of_info' => $this->source_of_info ?: null, 'expected_salary' => $this->expected_salary,
-                'expected_facility' => $this->expected_facility ?: null, 'availability_date' => $this->availability_date ?: null,
-                'willingness_checklist' => $this->willingness, 'agreement_signed' => $this->agreement_signed,
-                'signature_name' => $this->signature_name, 'agreement_signed_at' => now(),
-                'created_by' => 'portal_sim', 'updated_by' => 'portal_sim',
-            ]
-        );
-        $this->candidateId = $candidate->id_candidate;
+        // REVISI 2026-08-30: bukan tulis langsung ke tm2hrr lagi -- payload
+        // dikirim ke backend portal aktif (Plan A/B) lewat adapter, internal
+        // baru terisi setelah sync worker jalan. Lihat komentar atas class ini.
+        $vacancyCode = VacVacancy::findOrFail($this->applyVacancyId)->vacancy_code;
 
-        // Overwrite snapshot saat ini (family/education/nonformal/org exp) -- pola sama family/education existing (Tier2 §6).
-        // array_map null-coalesce: kolom numerik (age, tahun, dst) menolak
-        // string kosong di MySQL strict mode (Incorrect integer value '' --
-        // bug nyata ditemukan saat test), form kirim '' bukan null lewat wire:model.
         $clean = fn (array $row) => array_map(fn ($v) => $v === '' ? null : $v, $row);
 
-        CndFamilyMember::where('id_candidate', $candidate->id_candidate)->delete();
-        foreach ($this->family as $f) {
-            if (trim($f['name'] ?? '') !== '') {
-                CndFamilyMember::create(['id_candidate' => $candidate->id_candidate, ...$clean($f)]);
-            }
-        }
+        $payload = [
+            'vacancy_code' => $vacancyCode,
+            'national_id' => $this->national_id,
+            'name' => $this->name, 'nickname' => $this->nickname ?: null, 'gender' => $this->gender ?: null,
+            'religion' => $this->religion ?: null, 'email' => $this->email, 'phone' => $this->phone,
+            'birth_date' => $this->birth_date ?: null, 'address' => $this->address,
+            'address_domisili' => $this->address_domisili ?: null, 'vehicle_type' => $this->vehicle_type ?: null,
+            'sim_types' => $this->sim_types, 'marital_status' => $this->marital_status ?: null,
+            'marital_date' => $this->marital_date ?: null,
+            'company_acquaintance' => $this->company_acquaintance ?: null, 'hobby' => $this->hobby ?: null,
+            'leisure_activity' => $this->leisure_activity ?: null, 'reading_topics' => $this->reading_topics ?: null,
+            'went_abroad' => $this->went_abroad ?: null,
+            'emergency_contacts' => array_values(array_filter($this->emergencyContacts, fn ($r) => trim($r['name'] ?? '') !== '')),
+            'professional_references' => array_values(array_filter($this->professionalReferences, fn ($r) => trim($r['name'] ?? '') !== '')),
+            'why_join_us' => $this->why_join_us ?: null, 'what_you_know_about_us' => $this->what_you_know_about_us ?: null,
+            'contribution_plan' => $this->contribution_plan ?: null, 'role_plan_if_hired' => $this->role_plan_if_hired ?: null,
+            'job_type_preference' => $this->job_type_preference ?: null, 'job_nature_preference' => $this->job_nature_preference ?: null,
+            'work_environment_preference' => $this->work_environment_preference ?: null, 'hindering_environment' => $this->hindering_environment ?: null,
+            'preferred_colleague_type' => $this->preferred_colleague_type ?: null, 'difficult_decision_topic' => $this->difficult_decision_topic ?: null,
+            'strengths_weaknesses' => $this->strengths_weaknesses ?: null, 'who_you_ask_when_stuck' => $this->who_you_ask_when_stuck ?: null,
+            'height_cm' => $this->height_cm, 'weight_kg' => $this->weight_kg, 'blood_type' => $this->blood_type ?: null,
+            'illness_history' => $this->illness_history ?: null, 'hospitalized_history' => $this->hospitalized_history ?: null,
+            'is_smoker' => $this->is_smoker, 'physical_disability' => $this->physical_disability ?: null,
+            'family_health_ok' => $this->family_health_ok,
+            'language_skills' => array_values(array_filter($this->languageSkills, fn ($r) => trim($r['language'] ?? '') !== '')),
+            'computer_skills' => array_values(array_filter($this->computerSkills, fn ($r) => trim($r['skill'] ?? '') !== '')),
+            'still_receiving_aid' => $this->still_receiving_aid ?: null, 'other_dependents' => $this->other_dependents ?: null,
+            'source_of_info' => $this->source_of_info ?: null, 'expected_salary' => $this->expected_salary,
+            'expected_facility' => $this->expected_facility ?: null, 'availability_date' => $this->availability_date ?: null,
+            'willingness_checklist' => $this->willingness, 'agreement_signed' => $this->agreement_signed,
+            'signature_name' => $this->signature_name, 'agreement_signed_at' => now()->toDateTimeString(),
+            'family_members' => array_values(array_filter(array_map($clean, $this->family), fn ($f) => trim($f['name'] ?? '') !== '')),
+            'education' => array_values(array_filter(array_map($clean, $this->education), fn ($e) => trim($e['institution'] ?? '') !== '')),
+            'education_nonformal' => array_values(array_filter(array_map($clean, $this->educationNonformal), fn ($e) => trim($e['course_type'] ?? '') !== '')),
+            'org_experience' => array_values(array_filter(array_map($clean, $this->orgExperience), fn ($o) => trim($o['organization_name'] ?? '') !== '')),
+            'work_experience' => array_values(array_filter(array_map($clean, $this->workExp), fn ($w) => trim($w['company'] ?? '') !== '')),
+        ];
 
-        CndEducation::where('id_candidate', $candidate->id_candidate)->delete();
-        foreach ($this->education as $e) {
-            if (trim($e['institution'] ?? '') !== '') {
-                CndEducation::create(['id_candidate' => $candidate->id_candidate, ...$clean($e)]);
-            }
-        }
-
-        CndEducationNonformal::where('id_candidate', $candidate->id_candidate)->delete();
-        foreach ($this->educationNonformal as $e) {
-            if (trim($e['course_type'] ?? '') !== '') {
-                CndEducationNonformal::create(['id_candidate' => $candidate->id_candidate, ...$clean($e)]);
-            }
-        }
-
-        CndOrganizationExperience::where('id_candidate', $candidate->id_candidate)->delete();
-        foreach ($this->orgExperience as $o) {
-            if (trim($o['organization_name'] ?? '') !== '') {
-                CndOrganizationExperience::create(['id_candidate' => $candidate->id_candidate, ...$clean($o)]);
-            }
-        }
-
-        // Riwayat kerja kandidat sendiri -- APPEND, bukan overwrite (Tier2 §6).
-        foreach ($this->workExp as $w) {
-            if (trim($w['company'] ?? '') === '') {
-                continue;
-            }
-
-            $exists = CndWorkExperience::where('id_candidate', $candidate->id_candidate)
-                ->where('company', $w['company'])->where('position', $w['position'] ?? '')->exists();
-
-            if (! $exists) {
-                CndWorkExperience::create(array_merge(['id_candidate' => $candidate->id_candidate], array_map(fn ($v) => $v === '' ? null : $v, $w)));
-            }
-        }
-
-        if ($this->cvFile) {
-            CndDocument::create([
-                'id_candidate' => $candidate->id_candidate, 'doc_type' => 'CV',
-                'file_path' => $this->cvFile->store('recruitment/documents', 'public'), 'uploaded_at' => now(),
-            ]);
-        }
-
-        if ($this->ijazahFile) {
-            CndDocument::create([
-                'id_candidate' => $candidate->id_candidate, 'doc_type' => 'IJAZAH',
-                'file_path' => $this->ijazahFile->store('recruitment/documents', 'public'), 'uploaded_at' => now(),
-            ]);
-        }
-
-        $application = AppApplication::create([
-            'id_candidate' => $candidate->id_candidate,
-            'id_vacancy' => $this->applyVacancyId,
-            'current_stage_seq' => 1,
-            'status' => 'APPLIED',
-            'applied_at' => now(),
+        $submissionUuid = $this->adapter()->saveSubmission($payload, [
+            'cv' => $this->cvFile,
+            'ijazah' => $this->ijazahFile,
         ]);
 
-        $this->submittedApplicationId = $application->id_application;
+        $this->submittedApplicationId = null;
+        $this->lastSubmissionUuid = $submissionUuid;
         $this->cvFile = null;
         $this->ijazahFile = null;
         $this->step = 13;
@@ -785,7 +745,15 @@ new #[Title('Portal Candidate (Simulasi) — TELASIH MAKMUR ERP')] class extends
                     <p class="text-3xl mb-2">✅</p>
                     <h2 class="text-sm font-bold text-[#1f8a4c] mb-1">Lamaran Terkirim</h2>
                     <p class="text-[11.5px] text-muted">Terima kasih, lamaran Anda sudah kami terima.</p>
+                    @if ($lastSubmissionUuid)
+                        <p class="text-[10px] text-muted mt-1">Ref: {{ $lastSubmissionUuid }}</p>
+                    @endif
                 </div>
+                @if ($this->myApplications->isEmpty())
+                    <div class="bg-[#fff8e6] border border-[#f4e0a3] text-[#8a5a00] text-[11px] rounded-md px-3 py-2 mb-2">
+                        ⏳ Lamaran sedang menunggu sinkronisasi ke sistem internal HR (berjalan otomatis tiap 2 menit) -- muncul di riwayat di bawah begitu selesai.
+                    </div>
+                @endif
                 <div class="border-t border-[#eef1f5] pt-4 mt-2">
                     <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Riwayat Lamaran Saya</p>
                     @foreach ($this->myApplications as $app)

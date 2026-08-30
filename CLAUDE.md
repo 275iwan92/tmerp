@@ -38,6 +38,24 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 | pyr | tm2pyr | Payroll system with Encrypted data (**requirement, BELUM diimplementasikan** — lihat catatan di bawah tabel) |
 | sys | tm2sys | Sistem: user, role, notifikasi, audit trail |
 | old | tm2old | Old data for migration |
+| crp | tm2crp | **Portal Kandidat Plan B** (MariaDB, BUKAN salah satu dari 10 DB tm2* MySQL di atas) — staging submission mentah dari portal eksternal sebelum ditarik ke tm2hrr. Host TERPISAH secara arsitektur (VPS/DMZ di desain final; lokal port 3307 utk dev, keputusan user 2026-08-30). Detail: `docs/recruitment_tier3.md` §1-3, `docs/recruitment_delta_plan_ab_local.md`. |
+
+**Portal Kandidat Recruitment — arsitektur 2-backend (Plan A/B, adapter pattern):**
+Portal kandidat (belum jadi app Flutter terpisah, masih simulasi Livewire
+`resources/views/pages/recruitment/portal.blade.php`) TIDAK menulis langsung
+ke `tm2hrr` lagi sejak 2026-08-30 — lewat `PortalBackendAdapterInterface`,
+implementasi dipilih via `.env PORTAL_BACKEND=firebase|mariadb`:
+- **Plan A — Firebase** (`FirebaseSyncAdapter`): Firestore, lokal pakai
+  **Firebase Local Emulator Suite** (`firebase/firebase.json`, jalankan
+  `firebase emulators:start` dari folder `firebase/`), project id
+  `demo-tmerp-crp` (tak perlu akun/billing Firebase asli).
+- **Plan B — MariaDB `tm2crp`** (`MariaDbPortalSyncAdapter`): lihat tabel di
+  atas.
+- Internal (`tm2hrr`) TIDAK PERNAH tahu backend mana yang aktif — PULL sync
+  worker (`php artisan recruitment:sync-portal`, jadwal tiap 2 menit,
+  `App\Services\Recruitment\PortalSyncService`) tarik data lewat interface
+  yang sama, idempoten via `tm2hrr.rcr_sync_log` + `app_application.submission_uuid`.
+- Ganti Plan A↔B = ganti 1 baris `.env`, tanpa sentuh business logic sync.
 
 **Payroll encryption (keputusan user 2026-08-30, requirement — BELUM ada
 implementasi teknis sesi manapun):** data gaji & histori gaji (tm2pyr) WAJIB

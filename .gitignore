@@ -25,3 +25,9 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Firebase Local Emulator Suite (docs/recruitment_delta_plan_ab_local.md §4) --
+# config (firebase.json/.firebaserc/*.rules) TETAP versioned, cuma log/state
+# runtime yang di-ignore.
+/firebase/*-debug.log
+/firebase/.firebase/
