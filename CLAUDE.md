@@ -191,6 +191,15 @@ transaksi = `iqp_costing`, ikut inquiry).
   bikin Resource baru tanpa kena crash generator `--cluster=`. Ini HANYA
   mengatur chrome/navigasi Filament — isi layar tetap ikut standar UI
   lain sesuai jenisnya (lihat `uistandardindex.md`).
+- `spreadsheetgridstandard.md` — **wajib dibaca sebelum bikin/ubah grid
+  spreadsheet-editable apa pun** (klik sel langsung edit, drag-fill AutoFill
+  copy nilai ke bawah, "+ Baris" langsung dari tabel, simpan batch lewat
+  "Simpan Semua") — pola TERPISAH dari `griduistandard.md`, opt-in HANYA
+  utk master kecil/kolom scalar (pilot: Master Currency, list Satuan Master
+  UOM). Adopsi perilaku AutoFill DataTables.net versi ringan buatan sendiri
+  (Alpine+Livewire, keputusan user 2026-08-30) — DataTables Editor asli
+  (dibutuhkan utk inline-edit sungguhan) berbayar & belum ada license key,
+  DataTables juga bentrok arsitektur dgn cara Livewire re-render DOM tabel.
 
 ---
 

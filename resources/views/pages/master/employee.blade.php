@@ -69,6 +69,19 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     // ---- grid & filter ----
     public string $search = '';
 
+    // Card View (docs/griduistandard.md §11, adopsi CardView DataTables.net
+    // versi ringan -- keputusan user 2026-08-30). HANYA Employee, karena ini
+    // satu-satunya master dgn foto asli (bukan avatar inisial generik) --
+    // jangan roll out ke grid lain tanpa ditanya. Default List (konsisten
+    // grid lain), Card opsional. Interaksi klik tetap 2x sama seperti List
+    // (griduistandard.md §4) -- tidak ada pengecualian perilaku klik utk Card.
+    public string $employeeView = 'list'; // list | card
+
+    public function setEmployeeView(string $view): void
+    {
+        $this->employeeView = in_array($view, ['list', 'card'], true) ? $view : 'list';
+    }
+
     // ---- form fields (Overview) ----
     public string $employee_code = '';
 
@@ -744,12 +757,55 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama / NIK…"
                             class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
+                    <x-slot:tools>
+                        <div class="flex items-center gap-1 pr-2.5 mr-1 border-r border-[#e2e7ee] shrink-0">
+                            <button type="button" wire:click="setEmployeeView('list')" title="Tampilan Daftar"
+                                class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'list' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">☰ List</button>
+                            <button type="button" wire:click="setEmployeeView('card')" title="Tampilan Kartu"
+                                class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'card' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">▦ Card</button>
+                        </div>
+                    </x-slot:tools>
                     <x-slot:newRecord>
                         <button type="button" wire:click="openNew"
                             class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
                     </x-slot:newRecord>
                 </x-grid.toolbar>
 
+                @if ($employeeView === 'card')
+                    <div class="[display:grid] grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-3.5">
+                        @forelse ($this->employees as $e)
+                            @php $badge = $this->disciplineBadge($e); @endphp
+                            <div wire:key="emp-card-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})"
+                                class="cursor-pointer bg-white border border-[#e2e7ee] rounded-xl overflow-hidden hover:shadow-md hover:border-accent transition-shadow"
+                                title="Klik 2x untuk buka detail">
+                                <div class="h-[110px] bg-[#f1f4f9] flex items-center justify-center overflow-hidden">
+                                    @if ($e->photo_path)
+                                        <img src="{{ asset('storage/'.$e->photo_path) }}" class="w-full h-full object-cover">
+                                    @else
+                                        <div class="w-16 h-16 rounded-full bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($e->employee_id) }} text-white text-lg font-bold flex items-center justify-center">{{ \App\Support\Grid\Avatar::initials($e->full_name) }}</div>
+                                    @endif
+                                </div>
+                                <div class="p-3">
+                                    <div class="font-semibold text-[13px] text-[#0f172a] truncate">{{ $e->full_name }}</div>
+                                    <div class="text-[11px] text-muted truncate">{{ $e->employee_code }} @if($e->position?->position_name) · {{ $e->position->position_name }} @endif</div>
+                                    <div class="text-[11px] text-muted truncate mt-0.5">{{ $e->position?->department?->department_name ?: '—' }}</div>
+                                    <div class="flex items-center gap-1.5 flex-wrap mt-2">
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $badge['class'] }}">{{ $badge['label'] }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $this->workStatuses[$e->work_status] ?? $e->work_status }}</span>
+                                    </div>
+                                    <div class="flex justify-end gap-0.5 mt-2 pt-2 border-t border-[#eef1f5]">
+                                        <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $e->employee_id }})"
+                                            :confirm="($e->activate ? 'Nonaktifkan' : 'Aktifkan').' employee '.$e->full_name.'?'"
+                                            :variant="$e->activate ? 'danger' : 'default'" />
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="col-span-full text-center py-8 text-muted text-sm">Tidak ada.</div>
+                        @endforelse
+                    </div>
+                @else
                 <x-grid.table-shell>
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
@@ -798,6 +854,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         </tbody>
                     </table>
                 </x-grid.table-shell>
+                @endif
             </div>
         </div>
     @else

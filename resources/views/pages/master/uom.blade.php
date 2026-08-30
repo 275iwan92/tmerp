@@ -1,14 +1,25 @@
 <?php
 
+use App\Livewire\Concerns\HasSpreadsheetGrid;
 use App\Models\Master\UomConversion;
 use App\Models\Master\UomUnit;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Component
 {
+    // Pilot #2 docs/spreadsheetgridstandard.md (2026-08-30) -- list Satuan
+    // (kolom kiri) jadi spreadsheet-editable, panel Konversi (kolom kanan)
+    // TETAP tidak berubah (relasional, bukan kandidat spreadsheet-edit).
+    // Method modal lama (openUnitModal/saveUnit) SENGAJA tetap ada -- masih
+    // dites langsung via Livewire::test() di MasterUomSmokeTest, cuma sudah
+    // tidak dipanggil dari toolbar grid lagi ("+ Baris" spreadsheet gantikan
+    // "+ New Record").
+    use HasSpreadsheetGrid;
+
     public array $dimensions = ['PANJANG', 'LUAS', 'MASSA', 'VOLUME', 'JUMLAH', 'WAKTU', 'SPEC'];
 
     // ---- list & filter satuan ----
@@ -62,6 +73,94 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
                 ->orWhere('uom_name', 'like', "%{$this->search}%")))
             ->orderBy('dimension')->orderBy('uom_code')
             ->get();
+    }
+
+    // ============== SPREADSHEET GRID (docs/spreadsheetgridstandard.md) ==============
+    protected function spreadsheetKey(): string
+    {
+        return 'master-uom-unit';
+    }
+
+    protected function spreadsheetColumns(): array
+    {
+        return [
+            'uom_code' => ['label' => 'Kode', 'type' => 'text', 'required' => true, 'editableWhenExisting' => false],
+            'uom_name' => ['label' => 'Nama Satuan', 'type' => 'text', 'required' => true],
+            'dimension' => ['label' => 'Dimensi', 'type' => 'select', 'options' => $this->dimensions, 'required' => true],
+            'is_base' => ['label' => 'Dasar', 'type' => 'boolean'],
+            'activate' => ['label' => 'Aktif', 'type' => 'boolean'],
+            '_conversion' => ['label' => '', 'type' => 'action', 'icon' => '🔁', 'title' => 'Konversi', 'method' => 'openConversionPanel', 'paramKey' => 'uom_code', 'hideWhenColumn' => 'dimension', 'hideWhenValue' => 'SPEC'],
+        ];
+    }
+
+    protected function spreadsheetQuery()
+    {
+        return UomUnit::query()
+            ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
+                ->where('uom_code', 'like', "%{$this->search}%")
+                ->orWhere('uom_name', 'like', "%{$this->search}%")))
+            ->orderBy('dimension')->orderBy('uom_code');
+    }
+
+    protected function spreadsheetRowId($row): int|string
+    {
+        return $row->uom_code;
+    }
+
+    protected function spreadsheetNewRowDefaults(): array
+    {
+        return ['uom_code' => '', 'uom_name' => '', 'dimension' => $this->dimensions[0], 'is_base' => false, 'activate' => true];
+    }
+
+    protected function spreadsheetValidateRow(array $data, int|string|null $existingId): array
+    {
+        $data['uom_code'] = strtoupper(trim((string) $data['uom_code']));
+
+        $unique = 'unique:tm2mst.uom_unit,uom_code';
+        if ($existingId) {
+            $unique .= ','.$existingId.',uom_code';
+        }
+
+        $validator = Validator::make($data, [
+            'uom_code' => ['required', 'string', 'max:50', $unique],
+            'uom_name' => ['required', 'string', 'max:200'],
+            'dimension' => ['required', 'string', 'in:'.implode(',', $this->dimensions)],
+            'is_base' => ['boolean'],
+            'activate' => ['boolean'],
+        ]);
+
+        $validator->after(function ($v) use ($data) {
+            if (($data['dimension'] ?? null) === 'SPEC' && ! empty($data['is_base'])) {
+                $v->errors()->add('is_base', 'Dimensi SPEC tidak boleh punya satuan dasar.');
+            }
+        });
+
+        return $validator->validate();
+    }
+
+    protected function spreadsheetPersistRow(array $data, int|string|null $existingId): void
+    {
+        $payload = [
+            'uom_code' => $data['uom_code'],
+            'uom_name' => $data['uom_name'],
+            'dimension' => $data['dimension'],
+            'is_base' => (bool) ($data['is_base'] ?? false),
+            'activate' => (bool) ($data['activate'] ?? false),
+            'updated_by' => Auth::user()->login,
+        ];
+
+        if ($existingId) {
+            UomUnit::where('uom_code', $existingId)->update($payload);
+        } else {
+            $payload['created_by'] = Auth::user()->login;
+            UomUnit::create($payload);
+        }
+
+        if ($payload['is_base']) {
+            UomUnit::where('dimension', $payload['dimension'])->where('uom_code', '!=', $payload['uom_code'])->update(['is_base' => false]);
+        }
+
+        unset($this->units, $this->statTotal, $this->statActive, $this->statInactive);
     }
 
     #[Computed]
@@ -435,62 +534,23 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
         <div class="[display:grid] grid-cols-1 {{ $conversionPanelOpen ? 'lg:grid-cols-[1fr_420px]' : 'lg:grid-cols-1' }} gap-3.5 items-start">
 
             {{-- ============ KARTU KIRI: LIST SATUAN ============ --}}
-            <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
-                <x-grid.toolbar>
-                    <div class="flex items-center gap-1.5 shrink-0">
-                        <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…"
-                            class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                    </div>
-                    <x-slot:newRecord>
-                        <button type="button" wire:click="openUnitModal('new')"
-                            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-                    </x-slot:newRecord>
-                </x-grid.toolbar>
+            <div class="mb-2 flex items-center gap-1.5">
+                <span class="text-sm">🔍</span>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama…"
+                    class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            </div>
 
-                <x-grid.table-shell>
-                    <table class="w-full border-collapse text-[12.5px]">
-                        <thead>
-                            <tr>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Satuan</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Dimensi</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Dasar</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($this->units as $u)
-                                <tr wire:key="unit-{{ $u->id_uom }}" wire:click="selectUnit('{{ $u->uom_code }}')" wire:dblclick="openUnitModal('edit', '{{ $u->uom_code }}')"
-                                    class="cursor-pointer hover:bg-[#f7faff] {{ $selectedCode === $u->uom_code ? 'bg-[#eef5ff] shadow-[inset_3px_0_0_var(--color-accent)]' : '' }}" title="Klik 2x untuk buka detail">
-                                    <x-grid.identity-cell :id="$u->id_uom" :name="$u->uom_name ?: '—'" :code="$u->uom_code" />
-                                    <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->dimensionBadgeClass($u->dimension) }}">{{ $u->dimension ?: '—' }}</span>
-                                    </td>
-                                    <td class="px-3 py-2 border-b border-[#eef1f5]">{!! $u->is_base ? '<span class="text-sm text-[#e0a800]">⭐</span>' : '' !!}</td>
-                                    <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $u->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $u->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
-                                    </td>
-                                    <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        @if ($u->dimension !== 'SPEC')
-                                            <x-grid.action-icon icon="🔁" title="Konversi" action="openConversionPanel('{{ $u->uom_code }}')" />
-                                        @endif
-                                        <x-grid.action-icon icon="✎" title="Edit" action="openUnitModal('edit', '{{ $u->uom_code }}')" />
-                                        <x-grid.action-icon icon="⏻" :title="$u->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleUnitActive('{{ $u->uom_code }}')"
-                                            :confirm="($u->activate ? 'Nonaktifkan' : 'Aktifkan').' satuan '.$u->uom_code.'?'"
-                                            :variant="$u->activate ? 'danger' : 'default'" />
-                                    </td>
-                                </tr>
-                            @empty
-                                <x-grid.empty-row :colspan="5" message="Tidak ada." />
-                            @endforelse
-                        </tbody>
-                    </table>
-                </x-grid.table-shell>
-                <div class="flex gap-3.5 flex-wrap text-[11px] text-[#667] px-3.5 py-2 border-t border-[#eef1f5] bg-[#fafbfd]">
-                    <span><b class="text-navy">Cara pakai:</b> klik baris → tombol <b>Konversi</b> / <b>Edit</b> aktif. <span class="text-muted ml-1.5">{{ $this->units->count() }} satuan</span></span>
-                    <span><b>⭐</b> = satuan dasar dimensi.</span>
-                </div>
+            <x-grid.spreadsheet-table
+                grid-key="{{ $this->spreadsheetKey() }}"
+                :columns="$this->spreadsheetColumns()"
+                :rows="$this->spreadsheetRows()"
+                :new-row-defaults="$this->spreadsheetNewRowDefaults()"
+                :errors="$this->spreadsheetErrors"
+                :version="$this->spreadsheetVersion" />
+
+            <div class="flex gap-3.5 flex-wrap text-[11px] text-[#667] px-1 py-2">
+                <span><span class="text-muted">{{ $this->units->count() }} satuan.</span> Klik ikon <b>🔁</b> untuk buka panel Konversi.</span>
+                <span><b>Dasar</b> = satuan dasar dimensi (hanya 1 per dimensi, dasar lama otomatis dilepas saat "Simpan Semua").</span>
             </div>
 
             {{-- ============ KARTU KANAN: PANEL KONVERSI ============ --}}

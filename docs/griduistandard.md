@@ -318,6 +318,36 @@ dikerjakan sesi ini — `master/raw-material/index.blade.php` dan
 
 ---
 
+## 11. Card View (opsional, HANYA grid dengan foto asli)
+
+**(2026-08-30)** Adopsi perilaku **CardView** DataTables.net (versi ringan
+buatan sendiri, tanpa dependency baru) — toggle tampilan List/Card di
+toolbar. **Dibatasi ke Master Employee saja** (satu-satunya master dengan
+foto asli per-baris, bukan avatar inisial generik) — jangan roll out ke grid
+lain tanpa ditanya dulu, sama semangatnya dengan pembatasan checkbox
+multi-delete di §10.
+
+- **Toggle "☰ List" / "▦ Card"** — 2 tombol pill dikelompokkan di slot
+  `tools` toolbar (`x-slot:tools`, presedennya sama dengan tombol Kolom/
+  Sort/Export §10 — exception kedua dari toolbar-minimal §6), bukan
+  menggantikan tampilan List secara permanen. Default **List** (konsisten
+  dengan semua grid lain), Card murni opsional.
+- **Interaksi klik card TETAP klik-2x** (`wire:dblclick`) — TIDAK ada
+  pengecualian perilaku klik untuk Card meski secara visual berbentuk tile,
+  supaya konsisten dengan §4 di semua grid lain.
+- **Isi card**: foto besar (atau avatar gradient kalau belum ada foto) di
+  atas, nama+kode+jabatan, departemen, badge status (kedisiplinan + status
+  kerja), lalu ikon Aksi (Edit/Toggle) di footer card — kolom Aksi §5 tetap
+  berlaku, cuma posisinya di footer card bukan `<td>` kanan.
+- **State toggle disimpan di properti biasa** (`public string $employeeView`),
+  BUKAN `sys_grid_preference` (itu infrastruktur §10 utk kolom/sort/group-by,
+  bukan utk pilihan tampilan) — cukup session Livewire, reset ke List tiap
+  reload halaman.
+- Referensi implementasi: `resources/views/pages/master/employee.blade.php`
+  (`setEmployeeView()`, blok `@if ($employeeView === 'card')`).
+
+---
+
 ## 1. Tidak ada header halaman
 
 Shell (`layouts.shell`, lihat `docs/customer_fix_nav_address.md` §A) sudah
