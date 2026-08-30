@@ -21,6 +21,21 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
     public string $activePanel = 'users';
 
     // ================= PENGGUNA =================
+    // REVISI 2026-08-30 (instruksi user): "Daftar pengguna" tadinya <table>
+    // polos + form "Tambah pengguna" selalu-tampil -- diganti pola Grid Master
+    // standar (docs/griduistandard.md): kotak statistik pastel, kolom identitas
+    // avatar+nama+kode, toolbar search+"+ New Record", kolom Aksi ikon.
+    // Panel grid<->form pakai swap $userView (BUKAN modal float) -- pola PERSIS
+    // sama dgn resources/views/pages/master/shift.blade.php, komponen
+    // <x-grid.*> dipakai apa adanya (bukan reinvent).
+    public string $userSearch = '';
+
+    public string $userView = 'grid'; // grid | form
+
+    public string $userMode = 'new'; // new | edit
+
+    public ?int $editingUserId = null;
+
     public string $u_login = '';
 
     public string $u_name = '';
@@ -36,35 +51,101 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function users()
     {
-        return SecUser::query()->with('groups')->orderBy('login')->get();
+        return SecUser::query()
+            ->with('groups')
+            ->when($this->userSearch !== '', fn ($q) => $q->where(fn ($qq) => $qq
+                ->where('login', 'like', "%{$this->userSearch}%")
+                ->orWhere('name', 'like', "%{$this->userSearch}%")
+                ->orWhere('email', 'like', "%{$this->userSearch}%")))
+            ->orderBy('login')
+            ->get();
     }
 
-    public function addUser(): void
+    #[Computed]
+    public function userStatTotal(): int
     {
+        return SecUser::count();
+    }
+
+    #[Computed]
+    public function userStatActive(): int
+    {
+        return SecUser::where('activate', true)->count();
+    }
+
+    #[Computed]
+    public function userStatMustChange(): int
+    {
+        return SecUser::where('must_change_password', true)->count();
+    }
+
+    #[Computed]
+    public function userStatInactive(): int
+    {
+        return SecUser::where('activate', false)->count();
+    }
+
+    public function openUserForm(string $mode, ?int $id = null): void
+    {
+        $this->resetErrorBag();
         $this->userMessage = null;
+        $this->userMode = in_array($mode, ['new', 'edit'], true) ? $mode : 'new';
+        $this->editingUserId = $id;
 
-        $this->validate([
-            'u_login' => ['required', 'string', 'max:190', 'unique:tm2sys.sec_user,login'],
-            'u_name' => ['required', 'string', 'max:255'],
-            'u_email' => ['nullable', 'email', 'max:255'],
-            'u_pswd' => ['required', 'string', 'min:8'],
-            'u_group_id' => ['required', 'integer', 'exists:tm2sys.sec_group,id_group'],
-        ]);
+        if ($this->userMode === 'edit' && $id) {
+            $user = SecUser::with('groups')->findOrFail($id);
+            $this->u_login = $user->login;
+            $this->u_name = $user->name;
+            $this->u_email = (string) $user->email;
+            $this->u_pswd = '';
+            $this->u_group_id = $user->groups->first()->id_group ?? null;
+        } else {
+            $this->reset(['u_login', 'u_name', 'u_email', 'u_pswd', 'u_group_id']);
+        }
 
-        $user = SecUser::create([
-            'login' => $this->u_login,
-            'name' => $this->u_name,
-            'email' => $this->u_email ?: null,
-            'pswd' => Hash::make($this->u_pswd),
-            'active' => true,
-            'activate' => true,
-        ]);
+        $this->userView = 'form';
+    }
 
-        $user->groups()->attach($this->u_group_id);
+    public function showUserGrid(): void
+    {
+        $this->userView = 'grid';
+    }
 
-        $this->reset(['u_login', 'u_name', 'u_email', 'u_pswd', 'u_group_id']);
-        $this->userMessage = 'Pengguna ditambahkan.';
-        unset($this->users);
+    public function saveUser(): void
+    {
+        if ($this->userMode === 'edit' && $this->editingUserId) {
+            $this->validate([
+                'u_name' => ['required', 'string', 'max:255'],
+                'u_email' => ['nullable', 'email', 'max:255'],
+                'u_group_id' => ['required', 'integer', 'exists:tm2sys.sec_group,id_group'],
+            ]);
+
+            $user = SecUser::findOrFail($this->editingUserId);
+            $user->update(['name' => $this->u_name, 'email' => $this->u_email ?: null]);
+            $user->groups()->sync([$this->u_group_id]);
+        } else {
+            $this->validate([
+                'u_login' => ['required', 'string', 'max:190', 'unique:tm2sys.sec_user,login'],
+                'u_name' => ['required', 'string', 'max:255'],
+                'u_email' => ['nullable', 'email', 'max:255'],
+                'u_pswd' => ['required', 'string', 'min:8'],
+                'u_group_id' => ['required', 'integer', 'exists:tm2sys.sec_group,id_group'],
+            ]);
+
+            $user = SecUser::create([
+                'login' => $this->u_login,
+                'name' => $this->u_name,
+                'email' => $this->u_email ?: null,
+                'pswd' => Hash::make($this->u_pswd),
+                'active' => true,
+                'activate' => true,
+            ]);
+
+            $user->groups()->attach($this->u_group_id);
+        }
+
+        unset($this->users, $this->userStatTotal, $this->userStatActive, $this->userStatMustChange, $this->userStatInactive);
+        $this->userView = 'grid';
     }
 
     public function toggleUserActive(int $userId): void
@@ -76,7 +157,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
         $user = SecUser::findOrFail($userId);
         $user->update(['activate' => ! $user->activate]);
-        unset($this->users);
+        unset($this->users, $this->userStatActive, $this->userStatInactive);
     }
 
     // Password default yang baru saja di-reset — ditampilkan SEKALI di layar
@@ -91,10 +172,24 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
         session()->flash('resetPlain_'.$userId, $plain);
         $this->revealUserId = $userId;
-        unset($this->users);
+        unset($this->users, $this->userStatMustChange);
     }
 
     // ================= GRUP =================
+    // REVISI 2026-08-30: pola sama persis dgn PENGGUNA di atas (Grid Master
+    // standar, swap grid<->form) -- instruksi user "begitu pula dengan menu
+    // lainnya, pertimbangkan dengan UI yang sama". groupOptions() (TANPA
+    // filter search) dipakai khusus utk dropdown pemilih grup (form Pengguna
+    // & panel Hak Akses Grup) -- TERPISAH dari groups() yg search-filtered,
+    // supaya dropdown itu tak ikut kosong saat user lagi ngetik di search grid.
+    public string $groupSearch = '';
+
+    public string $groupView = 'grid'; // grid | form
+
+    public string $groupMode = 'new'; // new | edit
+
+    public ?int $editingGroupId = null;
+
     public string $g_code = '';
 
     public string $g_name = '';
@@ -106,30 +201,99 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function groups()
     {
-        return SecGroup::withCount('users')->orderBy('group_name')->get();
+        return SecGroup::withCount('users')
+            ->when($this->groupSearch !== '', fn ($q) => $q->where(fn ($qq) => $qq
+                ->where('group_code', 'like', "%{$this->groupSearch}%")
+                ->orWhere('group_name', 'like', "%{$this->groupSearch}%")))
+            ->orderBy('group_name')
+            ->get();
     }
 
-    public function addGroup(): void
+    #[Computed]
+    public function groupOptions()
     {
+        return SecGroup::where('activate', true)->orderBy('group_name')->get();
+    }
+
+    #[Computed]
+    public function groupStatTotal(): int
+    {
+        return SecGroup::count();
+    }
+
+    #[Computed]
+    public function groupStatFilled(): int
+    {
+        return SecGroup::has('users')->count();
+    }
+
+    #[Computed]
+    public function groupStatEmpty(): int
+    {
+        return SecGroup::doesntHave('users')->count();
+    }
+
+    public function openGroupForm(string $mode, ?int $id = null): void
+    {
+        $this->resetErrorBag();
         $this->groupMessage = null;
+        $this->groupMode = in_array($mode, ['new', 'edit'], true) ? $mode : 'new';
+        $this->editingGroupId = $id;
 
-        $this->validate([
-            'g_code' => ['required', 'string', 'max:40', 'unique:tm2sys.sec_group,group_code'],
-            'g_name' => ['required', 'string', 'max:100'],
-            'g_level' => ['required', 'integer', 'min:1', 'max:5'],
-        ]);
+        if ($this->groupMode === 'edit' && $id) {
+            $g = SecGroup::findOrFail($id);
+            $this->g_code = $g->group_code;
+            $this->g_name = $g->group_name;
+            $this->g_level = $g->mgmt_level;
+        } else {
+            $this->reset(['g_code', 'g_name']);
+            $this->g_level = 1;
+        }
 
-        SecGroup::create([
-            'group_code' => strtoupper(str_replace(' ', '_', $this->g_code)),
-            'group_name' => $this->g_name,
-            'mgmt_level' => $this->g_level,
-            'activate' => true,
-        ]);
+        $this->groupView = 'form';
+    }
 
-        $this->reset(['g_code', 'g_name']);
-        $this->g_level = 1;
-        $this->groupMessage = 'Grup ditambahkan.';
-        unset($this->groups);
+    public function showGroupGrid(): void
+    {
+        $this->groupView = 'grid';
+    }
+
+    public function saveGroup(): void
+    {
+        if ($this->groupMode === 'edit' && $this->editingGroupId) {
+            $this->validate([
+                'g_name' => ['required', 'string', 'max:100'],
+                'g_level' => ['required', 'integer', 'min:1', 'max:5'],
+            ]);
+
+            SecGroup::findOrFail($this->editingGroupId)->update([
+                'group_name' => $this->g_name,
+                'mgmt_level' => $this->g_level,
+            ]);
+        } else {
+            $this->validate([
+                'g_code' => ['required', 'string', 'max:40', 'unique:tm2sys.sec_group,group_code'],
+                'g_name' => ['required', 'string', 'max:100'],
+                'g_level' => ['required', 'integer', 'min:1', 'max:5'],
+            ]);
+
+            SecGroup::create([
+                'group_code' => strtoupper(str_replace(' ', '_', $this->g_code)),
+                'group_name' => $this->g_name,
+                'mgmt_level' => $this->g_level,
+                'activate' => true,
+            ]);
+        }
+
+        unset($this->groups, $this->groupOptions, $this->groupStatTotal, $this->groupStatFilled, $this->groupStatEmpty);
+        $this->groupView = 'grid';
+    }
+
+    public function toggleGroupActive(int $groupId): void
+    {
+        $g = SecGroup::findOrFail($groupId);
+        $g->update(['activate' => ! $g->activate]);
+        unset($this->groups, $this->groupOptions, $this->groupStatFilled, $this->groupStatEmpty);
     }
 
     // ================= HAK AKSES GRUP =================
@@ -273,98 +437,197 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
          .modal seperti dicatat di komentar §Security/Setup di atas. --}}
     <div class="sp-shell">
         <div class="sp-content">
-            {{-- 1. Pengguna --}}
+            {{-- 1. Pengguna -- Grid Master standar (docs/griduistandard.md), revisi 2026-08-30 --}}
             <section class="panel {{ $activePanel === 'users' ? 'active' : '' }}">
                 <h1>Pengguna</h1><p class="desc">Kelola akun yang bisa masuk ke aplikasi.</p>
 
-                <div class="box">
-                    <h3>Tambah pengguna</h3>
-                    @if ($userMessage)
-                        <p class="note" style="color:var(--sp-ok)">✅ {{ $userMessage }}</p>
-                    @endif
-                    <div class="form-grid">
-                        <x-form.input legacy="fld" label="Username" wire:model="u_login" placeholder="mis. andi.pratama" name="u_login" />
-                        <x-form.input legacy="fld" label="Nama lengkap" wire:model="u_name" placeholder="Andi Pratama" name="u_name" />
-                        <x-form.input legacy="fld" label="Email" wire:model="u_email" placeholder="andi@telasih.co.id" name="u_email" />
-                        <x-form.input legacy="fld" label="Password awal" type="password" wire:model="u_pswd" placeholder="Minimal 8 karakter" name="u_pswd" />
-                        <x-form.select legacy="fld" label="Grup" wire:model="u_group_id" x-data x-effect="$el.value = @js($u_group_id)"
-                            placeholder="— pilih grup —" name="u_group_id" :options="$this->groups->pluck('group_name', 'id_group')->all()" />
-                    </div>
-                    <div class="actions"><button type="button" class="btn btn-primary" wire:click="addUser">Tambah pengguna</button></div>
-                </div>
+                @if ($userView === 'grid')
+                    <x-grid.stat-row :count="4">
+                        <x-grid.stat-box tone="total" label="Total Pengguna" :value="$this->userStatTotal" />
+                        <x-grid.stat-box tone="active" label="Aktif" :value="$this->userStatActive" />
+                        <x-grid.stat-box tone="warn" label="Wajib Ganti Password" :value="$this->userStatMustChange" />
+                        <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->userStatInactive" />
+                    </x-grid.stat-row>
 
-                <div class="box">
-                    <h3>Daftar pengguna</h3>
-                    <table>
-                        <thead><tr><th>Username</th><th>Nama</th><th>Grup</th><th>Status</th><th>Password</th><th>Aksi</th></tr></thead>
-                        <tbody>
-                            @foreach ($this->users as $u)
-                                <tr wire:key="user-{{ $u->id_user }}">
-                                    <td>{{ $u->login }}</td>
-                                    <td>{{ $u->name }}</td>
-                                    <td>{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' (Admin)' : '' }}</td>
-                                    <td><span class="pill {{ $u->activate ? 'on' : 'off' }}">{{ $u->activate ? 'Aktif' : 'Nonaktif' }}</span></td>
-                                    <td>
-                                        @if (session()->has('resetPlain_'.$u->id_user))
-                                            <span class="note" style="color:var(--sp-ok)">Baru: <code>{{ session('resetPlain_'.$u->id_user) }}</code></span>
-                                        @elseif ($u->must_change_password)
-                                            <span class="pill off">Wajib ganti</span>
-                                        @else
-                                            <span class="note">—</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <button type="button" class="link-act" wire:click="resetPassword({{ $u->id_user }})" wire:confirm="Reset password {{ $u->login }} ke password baru?">Reset password</button>
-                                        @if ($u->default_password)
-                                            <button type="button" class="link-act" wire:click="revealPassword({{ $u->id_user }})">Lihat password</button>
-                                        @endif
-                                        @if ($u->id_user !== Auth::id())
-                                            <button type="button" class="link-act" wire:click="toggleUserActive({{ $u->id_user }})">{{ $u->activate ? 'Nonaktifkan' : 'Aktifkan' }}</button>
-                                        @else
-                                            <span class="note">(akun Anda)</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                    @if ($userMessage)
+                        <div class="text-xs px-3 py-2 border border-[#c8ecd6] bg-[#e9f9ef] text-[#2f7a52] rounded-md mb-3">✅ {{ $userMessage }}</div>
+                    @endif
+
+                    <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+                        <x-grid.toolbar>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="text-sm">🔍</span>
+                                <input type="text" wire:model.live.debounce.300ms="userSearch" placeholder="Cari username / nama / email…"
+                                    class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                            </div>
+                            <x-slot:newRecord>
+                                <button type="button" wire:click="openUserForm('new')"
+                                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                            </x-slot:newRecord>
+                        </x-grid.toolbar>
+
+                        <x-grid.table-shell>
+                            <table class="w-full border-collapse text-[12.5px]">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Pengguna</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Grup</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Status</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Password</th>
+                                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($this->users as $u)
+                                        <tr wire:key="user-{{ $u->id_user }}" wire:dblclick="openUserForm('edit', {{ $u->id_user }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                                            <x-grid.identity-cell :id="$u->id_user" :name="$u->name" :code="$u->login" />
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $u->groups->pluck('group_name')->implode(', ') ?: '—' }}{{ $u->is_admin ? ' (Admin)' : '' }}</td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $u->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $u->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                            </td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                                @if (session()->has('resetPlain_'.$u->id_user))
+                                                    <span class="text-[11px] font-bold text-[#1f8a4c]">Baru: <code>{{ session('resetPlain_'.$u->id_user) }}</code></span>
+                                                @elseif ($u->must_change_password)
+                                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-[#fef6e7] text-[#8a6d00]">Wajib ganti</span>
+                                                @else
+                                                    <span class="text-[11px] text-muted">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                                <x-grid.action-icon icon="✎" title="Edit" action="openUserForm('edit', {{ $u->id_user }})" />
+                                                <x-grid.action-icon icon="🔑" title="Reset Password" action="resetPassword({{ $u->id_user }})"
+                                                    confirm="Reset password {{ $u->login }} ke password baru?" />
+                                                @if ($u->default_password)
+                                                    <x-grid.action-icon icon="👁" title="Lihat Password" action="revealPassword({{ $u->id_user }})" />
+                                                @endif
+                                                @if ($u->id_user !== Auth::id())
+                                                    <x-grid.action-icon icon="⏻" :title="$u->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleUserActive({{ $u->id_user }})"
+                                                        :confirm="($u->activate ? 'Nonaktifkan' : 'Aktifkan').' pengguna '.$u->login.'?'"
+                                                        :variant="$u->activate ? 'danger' : 'default'" />
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <x-grid.empty-row :colspan="5" :message="'Tidak ada pengguna'.($userSearch ? ' untuk pencarian ini' : '').'.'" />
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </x-grid.table-shell>
+                    </div>
+                @else
+                    {{-- FORM Pengguna (New/Edit) --}}
+                    <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
+                        <div class="text-sm font-bold">
+                            {{ $userMode === 'edit' ? 'Edit Pengguna' : 'Pengguna Baru' }}
+                            @if ($userMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $u_login }}</span>@endif
+                        </div>
+                    </div>
+                    <form wire:submit="saveUser" class="bg-white border border-t-0 border-[#d7dbe2] p-5 rounded-b-md">
+                        <div class="form-grid">
+                            <x-form.input legacy="fld" label="Username" wire:model="u_login" placeholder="mis. andi.pratama" name="u_login" @readonly($userMode === 'edit') />
+                            <x-form.input legacy="fld" label="Nama lengkap" wire:model="u_name" placeholder="Andi Pratama" name="u_name" />
+                            <x-form.input legacy="fld" label="Email" wire:model="u_email" placeholder="andi@telasih.co.id" name="u_email" />
+                            @if ($userMode === 'new')
+                                <x-form.input legacy="fld" label="Password awal" type="password" wire:model="u_pswd" placeholder="Minimal 8 karakter" name="u_pswd" />
+                            @endif
+                            <x-form.select legacy="fld" label="Grup" wire:model="u_group_id" name="u_group_id"
+                                placeholder="— pilih grup —" :options="$this->groupOptions->pluck('group_name', 'id_group')->all()" :selected="$u_group_id" />
+                        </div>
+                        @if ($userMode === 'edit')
+                            <p class="note">Ganti password lewat aksi 🔑 "Reset Password" di grid, bukan di sini.</p>
+                        @endif
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" wire:click="showUserGrid" class="btn btn-ghost">Batal</button>
+                        </div>
+                    </form>
+                @endif
             </section>
 
-            {{-- 2. Grup --}}
+            {{-- 2. Grup -- Grid Master standar, sama pola dgn Pengguna di atas --}}
             <section class="panel {{ $activePanel === 'groups' ? 'active' : '' }}">
                 <h1>Grup</h1><p class="desc">Grup menampung sekumpulan pengguna yang berbagi hak akses sama.</p>
 
-                <div class="box">
-                    <h3>Tambah grup</h3>
-                    @if ($groupMessage)
-                        <p class="note" style="color:var(--sp-ok)">✅ {{ $groupMessage }}</p>
-                    @endif
-                    <div class="form-grid">
-                        <x-form.input legacy="fld" label="Kode grup" wire:model="g_code" placeholder="mis. PRODUKSI_SPV" name="g_code" />
-                        <x-form.input legacy="fld" label="Nama grup" wire:model="g_name" placeholder="mis. Supervisor Produksi" name="g_name" />
-                        <x-form.select legacy="fld" label="Level manajemen (1=Staf .. 5=Direksi)" wire:model="g_level" x-data x-effect="$el.value = @js($g_level)"
-                            :placeholder="false" :options="[1 => '1 - Staf', 2 => '2 - Supervisor', 3 => '3 - Manager', 4 => '4 - GM', 5 => '5 - Direksi']" />
-                    </div>
-                    <div class="actions"><button type="button" class="btn btn-primary" wire:click="addGroup">Tambah grup</button></div>
-                </div>
+                @if ($groupView === 'grid')
+                    <x-grid.stat-row :count="3">
+                        <x-grid.stat-box tone="total" label="Total Grup" :value="$this->groupStatTotal" />
+                        <x-grid.stat-box tone="active" label="Terisi (≥1 Pengguna)" :value="$this->groupStatFilled" />
+                        <x-grid.stat-box tone="warn" label="Kosong" :value="$this->groupStatEmpty" />
+                    </x-grid.stat-row>
 
-                <div class="box">
-                    <h3>Daftar grup</h3>
-                    <table>
-                        <thead><tr><th>Kode</th><th>Nama grup</th><th>Level</th><th>Jumlah user</th></tr></thead>
-                        <tbody>
-                            @foreach ($this->groups as $g)
-                                <tr wire:key="group-{{ $g->id_group }}">
-                                    <td>{{ $g->group_code }}</td>
-                                    <td>{{ $g->group_name }}</td>
-                                    <td>{{ $g->mgmt_level }}</td>
-                                    <td>{{ $g->users_count }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                    @if ($groupMessage)
+                        <div class="text-xs px-3 py-2 border border-[#c8ecd6] bg-[#e9f9ef] text-[#2f7a52] rounded-md mb-3">✅ {{ $groupMessage }}</div>
+                    @endif
+
+                    <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+                        <x-grid.toolbar>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="text-sm">🔍</span>
+                                <input type="text" wire:model.live.debounce.300ms="groupSearch" placeholder="Cari kode / nama grup…"
+                                    class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                            </div>
+                            <x-slot:newRecord>
+                                <button type="button" wire:click="openGroupForm('new')"
+                                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                            </x-slot:newRecord>
+                        </x-grid.toolbar>
+
+                        <x-grid.table-shell>
+                            <table class="w-full border-collapse text-[12.5px]">
+                                <thead>
+                                    <tr>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Grup</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Level</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Jumlah User</th>
+                                        <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Status</th>
+                                        <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($this->groups as $g)
+                                        <tr wire:key="group-{{ $g->id_group }}" wire:dblclick="openGroupForm('edit', {{ $g->id_group }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                                            <x-grid.identity-cell :id="$g->id_group" :name="$g->group_name" :code="$g->group_code" />
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $g->mgmt_level }}</td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $g->users_count }}</td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $g->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $g->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                            </td>
+                                            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                                <x-grid.action-icon icon="✎" title="Edit" action="openGroupForm('edit', {{ $g->id_group }})" />
+                                                <x-grid.action-icon icon="⏻" :title="$g->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleGroupActive({{ $g->id_group }})"
+                                                    :confirm="($g->activate ? 'Nonaktifkan' : 'Aktifkan').' grup '.$g->group_name.'?'"
+                                                    :variant="$g->activate ? 'danger' : 'default'" />
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <x-grid.empty-row :colspan="5" :message="'Tidak ada grup'.($groupSearch ? ' untuk pencarian ini' : '').'.'" />
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </x-grid.table-shell>
+                    </div>
+                @else
+                    {{-- FORM Grup (New/Edit) --}}
+                    <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
+                        <div class="text-sm font-bold">
+                            {{ $groupMode === 'edit' ? 'Edit Grup' : 'Grup Baru' }}
+                            @if ($groupMode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $g_code }}</span>@endif
+                        </div>
+                    </div>
+                    <form wire:submit="saveGroup" class="bg-white border border-t-0 border-[#d7dbe2] p-5 rounded-b-md">
+                        <div class="form-grid">
+                            <x-form.input legacy="fld" label="Kode grup" wire:model="g_code" placeholder="mis. PRODUKSI_SPV" name="g_code" @readonly($groupMode === 'edit') />
+                            <x-form.input legacy="fld" label="Nama grup" wire:model="g_name" placeholder="mis. Supervisor Produksi" name="g_name" />
+                            <x-form.select legacy="fld" label="Level manajemen (1=Staf .. 5=Direksi)" wire:model="g_level"
+                                :placeholder="false" :options="[1 => '1 - Staf', 2 => '2 - Supervisor', 3 => '3 - Manager', 4 => '4 - GM', 5 => '5 - Direksi']" :selected="$g_level" />
+                        </div>
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                            <button type="button" wire:click="showGroupGrid" class="btn btn-ghost">Batal</button>
+                        </div>
+                    </form>
+                @endif
             </section>
 
             {{-- 3. Hak Akses Grup --}}
@@ -373,8 +636,8 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="box">
                     <div style="max-width:320px">
-                        <x-form.select legacy="fld" label="Grup" wire:model.live="permGroupId" x-data x-effect="$el.value = @js($permGroupId)"
-                            :placeholder="false" :options="$this->groups->pluck('group_name', 'id_group')->all()" />
+                        <x-form.select legacy="fld" label="Grup" wire:model.live="permGroupId"
+                            :placeholder="false" :options="$this->groupOptions->pluck('group_name', 'id_group')->all()" :selected="$permGroupId" />
                     </div>
                 </div>
 
