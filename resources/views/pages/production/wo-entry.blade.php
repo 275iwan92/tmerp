@@ -369,7 +369,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 <div class="text-[10.5px] text-muted">{{ $op->crew->map(fn ($c) => $c->employee?->full_name)->filter()->implode(' + ') ?: '—' }}</div>
                             </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                {{ $op->target_start ? $op->target_start->format('d/m H:i').'–'.$op->target_finish->format('H:i') : '—' }}
+                                {{ $op->target_start && $op->target_finish ? $op->target_start->format('d/m H:i').'–'.$op->target_finish->format('H:i') : '—' }}
                             </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClasses($op->task_status) }}">{{ $op->task_status }}</span>

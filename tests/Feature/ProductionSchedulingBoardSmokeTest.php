@@ -167,42 +167,47 @@ class ProductionSchedulingBoardSmokeTest extends TestCase
         $originalDisplacedStart = $displacedOp->target_start->copy();
         $originalDisplacedFinish = $displacedOp->target_finish->copy();
 
-        $component = Livewire::test('pages::production.scheduling-board')
-            ->set('hotWoId', $hotWo->wo_id)
-            ->call('generateHotJobOptions');
+        // try/finally -- data dummy ini dipakai ulang oleh test lain & demo manual
+        // di browser, jadi restore WAJIB jalan walau assertion di bawah gagal
+        // partway (assertion gagal = exception = restore lama ke-skip, WO/operation
+        // ini tertinggal setengah ter-hot-job selamanya sampai di-reset manual).
+        try {
+            $component = Livewire::test('pages::production.scheduling-board')
+                ->set('hotWoId', $hotWo->wo_id)
+                ->call('generateHotJobOptions');
 
-        $options = $component->get('hotOptions');
-        $this->assertNotEmpty($options);
+            $options = $component->get('hotOptions');
+            $this->assertNotEmpty($options);
 
-        $displaceIndex = collect($options)->search(fn ($o) => ($o['displaced_wo_no'] ?? null) === 'WO2600260');
-        $this->assertNotFalse($displaceIndex, 'Opsi "geser WO2600260" tidak ditemukan -- '.json_encode($options));
+            $displaceIndex = collect($options)->search(fn ($o) => ($o['displaced_wo_no'] ?? null) === 'WO2600260');
+            $this->assertNotFalse($displaceIndex, 'Opsi "geser WO2600260" tidak ditemukan -- '.json_encode($options));
 
-        $component
-            ->set('hotSource', 'DIREKSI')
-            ->set('hotSelectedOption', $displaceIndex)
-            ->call('applyHotJobOption');
+            $component
+                ->set('hotSource', 'DIREKSI')
+                ->set('hotSelectedOption', $displaceIndex)
+                ->call('applyHotJobOption');
 
-        $hotWo->refresh();
-        $hotOp->refresh();
-        $displacedOp->refresh();
+            $hotWo->refresh();
+            $hotOp->refresh();
+            $displacedOp->refresh();
 
-        $this->assertTrue($hotWo->is_hot_job);
-        $this->assertSame('DIREKSI', $hotWo->hot_job_source);
-        $this->assertTrue($hotOp->is_hot_job);
-        $this->assertSame('ASSIGNED', $hotOp->task_status);
-        $this->assertTrue($hotOp->target_start->equalTo($originalDisplacedStart));
-        $this->assertTrue($hotOp->target_finish->equalTo($originalDisplacedFinish));
-        $this->assertTrue($displacedOp->target_start->gt($originalDisplacedStart));
-        $this->assertTrue($displacedOp->target_finish->gt($originalDisplacedFinish));
+            $this->assertTrue($hotWo->is_hot_job);
+            $this->assertSame('DIREKSI', $hotWo->hot_job_source);
+            $this->assertTrue($hotOp->is_hot_job);
+            $this->assertSame('ASSIGNED', $hotOp->task_status);
+            $this->assertTrue($hotOp->target_start->equalTo($originalDisplacedStart));
+            $this->assertTrue($hotOp->target_finish->equalTo($originalDisplacedFinish));
+            $this->assertTrue($displacedOp->target_start->gt($originalDisplacedStart));
+            $this->assertTrue($displacedOp->target_finish->gt($originalDisplacedFinish));
 
-        $this->assertTrue(
-            PrdDecisionFeedbackLog::where('wo_id', $hotWo->wo_id)->where('event_type', 'INTERRUPTION')->exists()
-        );
-
-        // Restore -- data dummy ini dipakai ulang oleh test lain & demo manual di browser.
-        PrdDecisionFeedbackLog::where('wo_id', $hotWo->wo_id)->delete();
-        $hotWo->update(['is_hot_job' => false, 'hot_job_source' => null, 'hot_job_customer_id' => null]);
-        $hotOp->update(['is_hot_job' => false, 'task_status' => 'PENDING', 'target_start' => null, 'target_finish' => null]);
-        $displacedOp->update(['target_start' => $originalDisplacedStart, 'target_finish' => $originalDisplacedFinish]);
+            $this->assertTrue(
+                PrdDecisionFeedbackLog::where('wo_id', $hotWo->wo_id)->where('event_type', 'INTERRUPTION')->exists()
+            );
+        } finally {
+            PrdDecisionFeedbackLog::where('wo_id', $hotWo->wo_id)->delete();
+            $hotWo->update(['is_hot_job' => false, 'hot_job_source' => null, 'hot_job_customer_id' => null]);
+            $hotOp->update(['is_hot_job' => false, 'task_status' => 'PENDING', 'target_start' => null, 'target_finish' => null]);
+            $displacedOp->update(['target_start' => $originalDisplacedStart, 'target_finish' => $originalDisplacedFinish]);
+        }
     }
 }

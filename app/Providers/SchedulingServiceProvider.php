@@ -7,6 +7,7 @@ use App\Services\Scheduling\CompositePriorityScorer;
 use App\Services\Scheduling\CrewAvailabilityChecker;
 use App\Services\Scheduling\InterruptionOptionGenerator;
 use App\Services\Scheduling\MachineCalendarService;
+use App\Services\Scheduling\MpsEngine;
 use App\Services\Scheduling\PdrEngine;
 use App\Services\Scheduling\RateBandResolver;
 use App\Services\Scheduling\SchedulingRuleEngine;
@@ -55,6 +56,10 @@ class SchedulingServiceProvider extends ServiceProvider
 
         $this->app->singleton(InterruptionOptionGenerator::class, function ($app) {
             return new InterruptionOptionGenerator($app->make(PdrEngine::class));
+        });
+
+        $this->app->singleton(MpsEngine::class, function ($app) {
+            return new MpsEngine($app->make(PdrEngine::class));
         });
     }
 }

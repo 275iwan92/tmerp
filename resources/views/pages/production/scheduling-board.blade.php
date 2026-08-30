@@ -671,7 +671,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<div x-data="{}">
+<div x-data="{}" wire:poll.10s.visible="$refresh">
     <div class="w-full px-5 py-4.5">
 
         @php($board = $this->board())
@@ -679,6 +679,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         <div class="flex items-center gap-2 flex-wrap mb-3.5">
             <h1 class="text-lg font-bold text-navy">🗓️ Scheduling Board</h1>
             <span class="text-xs text-muted">tm2prd.prd_wo_operation</span>
+            <a href="{{ route('production.kanban') }}" class="text-xs text-[#2f6fed] underline ml-1">🗂️ Lihat di Kanban</a>
 
             <div class="flex bg-white border border-[#e5e7eb] rounded-full p-1 text-xs font-medium ml-2">
                 <button type="button" wire:click="setMode('simulasi')" class="px-3 py-1.5 rounded-full {{ $mode === 'simulasi' ? 'bg-[#dbeafe] text-[#1d4ed8]' : 'text-muted' }}">● Simulasi</button>
