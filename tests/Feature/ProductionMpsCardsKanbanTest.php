@@ -122,7 +122,14 @@ class ProductionMpsCardsKanbanTest extends TestCase
     {
         $this->actingAs($this->admin());
 
-        $instance = Livewire::test('pages::production.monitoring-dashboard')->instance();
+        // machineOperations() filter by whereDate('target_start', $this->date) --
+        // data dummy dijangkarkan ke 2026-08-28 (lihat seed_prd_scheduling_board_dummy),
+        // bukan "hari ini" yang terus berjalan. Wajib di-pin, sama pola
+        // ProductionSchedulingBoardSmokeTest -- kalau tidak, tes ini diam-diam
+        // gagal begitu tanggal kalender lewat dari 2026-08-28.
+        $instance = Livewire::test('pages::production.monitoring-dashboard')
+            ->set('date', '2026-08-28')
+            ->instance();
 
         $idleMachine = ProdMachine::where('machine_code', 'COAT-01')->first();
         if ($idleMachine) {
