@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Sys\SecGroup;
+use App\Models\Sys\SecRecoveryQuestion;
 use App\Models\Sys\SecUser;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,19 @@ class SecUserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Setup 4-pertanyaan lupa password (security_recovery_20260827) juga
+        // WAJIB diisi di sini — kalau NULL, ForcePasswordChange redirect tiap
+        // akun seeder ini ke /security/setup sebelum halaman lain kebuka.
+        $recoveryQuestionId = SecRecoveryQuestion::query()->where('activate', true)->orderBy('sort_order')->value('id_question');
+
+        $recoveryFields = [
+            'birth_date' => '1990-01-01',
+            'mother_name_hash' => Hash::make('seeder default mother name'),
+            'security_question_id' => $recoveryQuestionId,
+            'security_answer_hash' => Hash::make('seeder default answer'),
+            'security_setup_at' => now(),
+        ];
+
         $admin = SecUser::query()->updateOrCreate(
             ['login' => 'admin'],
             [
@@ -25,7 +39,7 @@ class SecUserSeeder extends Seeder
                 'active' => true,
                 'is_admin' => true,
                 'activate' => true,
-            ]
+            ] + $recoveryFields
         );
 
         $sales = SecUser::query()->updateOrCreate(
@@ -37,7 +51,7 @@ class SecUserSeeder extends Seeder
                 'active' => true,
                 'is_admin' => false,
                 'activate' => true,
-            ]
+            ] + $recoveryFields
         );
 
         $salesStaff = SecGroup::query()->where('group_code', 'SALES_STAFF')->first();

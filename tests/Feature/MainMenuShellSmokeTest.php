@@ -20,6 +20,9 @@ class MainMenuShellSmokeTest extends TestCase
         $response->assertSee('Sales');
         $response->assertSee('Procurement');
         $response->assertSee('Setup', false);
+        // PROD_MRP disembunyikan (activate=0) -- Engine MRP tetap jalan di
+        // balik layar, cuma menunya yang tak tampil (bahkan ke admin).
+        $response->assertDontSee('MRP (Material Requirement Planning)');
     }
 
     public function test_sales_staff_sees_only_permitted_modules(): void
