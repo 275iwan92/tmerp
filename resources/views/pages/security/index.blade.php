@@ -261,8 +261,18 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div class="secpage">
-    <div class="shell">
-        <div class="content">
+    {{-- class "sp-shell"/"sp-content" (BUKAN "shell"/"content" polos) --
+         nama polos itu SUDAH dipakai class global outer app shell
+         (main-menu.blade.php, lihat .shell{h-screen overflow-hidden} dan
+         .shell .content{overflow-hidden} di app.css) -- kalau dipakai lagi
+         di sini, div ini ikut kena overflow-hidden+h-screen yang TIDAK
+         dimaksud (padahal beda dokumen/iframe), memotong konten yang lebih
+         tinggi dari layar (mis. "Daftar pengguna") tanpa bisa discroll sama
+         sekali. Ditemukan 2026-08-30 dari laporan user (tabel kepotong,
+         "tidak ada tombol scrolling") -- collision SIS class polos, bukan
+         .modal seperti dicatat di komentar §Security/Setup di atas. --}}
+    <div class="sp-shell">
+        <div class="sp-content">
             {{-- 1. Pengguna --}}
             <section class="panel {{ $activePanel === 'users' ? 'active' : '' }}">
                 <h1>Pengguna</h1><p class="desc">Kelola akun yang bisa masuk ke aplikasi.</p>
