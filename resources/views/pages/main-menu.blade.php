@@ -174,7 +174,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'HRM_RCR_ASSESSMENT' => route('hrm.recruitment.assessment-result'),
             'HRM_RCR_OFFER' => route('hrm.recruitment.offer.list'),
             'HRM_RCR_PROVISION' => route('hrm.recruitment.hire-provision'),
-            'HRM_RCR_PORTAL' => route('hrm.recruitment.portal'),
+            // 2026-08-30: portal simulasi internal digantikan Portal Rekrutmen
+            // Profesional publik (URL sama, di luar auth) -- iframe tab ini
+            // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
+            'HRM_RCR_PORTAL' => route('careers.landing'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),

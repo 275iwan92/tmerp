@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureIsAdmin;
 use App\Http\Middleware\EnsureModuleAccess;
+use App\Http\Middleware\EnsurePortalCandidateAuthenticated;
 use App\Http\Middleware\ForcePasswordChange;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'module' => EnsureModuleAccess::class,
             'admin' => EnsureIsAdmin::class,
             'force.password' => ForcePasswordChange::class,
+            'portal.candidate' => EnsurePortalCandidateAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -24,6 +24,23 @@ class MariaDbPortalSyncAdapter implements PortalBackendAdapterInterface
         return $submission?->toArray();
     }
 
+    /**
+     * tm2crp tidak punya konsep 'candidate_uid' Firestore -- akun MariaDB
+     * diidentifikasi via national_id (lihat saveSubmission). Method ini
+     * realistically hanya dipanggil dari jalur Firebase (portal profesional
+     * careers/* HARDCODE ke FirebaseSyncAdapter, bukan lewat interface ini --
+     * lihat komentar di file itu), diimplementasi best-effort: perlakukan
+     * $candidateUid sbg national_id supaya kontrak interface tetap terpenuhi.
+     */
+    public function findAllByCandidateUid(string $candidateUid): array
+    {
+        return CrpSubmission::where('national_id', $candidateUid)
+            ->orderByDesc('submitted_at')
+            ->get()
+            ->map(fn (CrpSubmission $s) => $s->toArray())
+            ->all();
+    }
+
     public function saveSubmission(array $payload, array $files = []): string
     {
         $account = CrpCandidateAccount::firstOrCreate(
@@ -79,8 +96,7 @@ class MariaDbPortalSyncAdapter implements PortalBackendAdapterInterface
 
     public function pushStatusUpdate(string $submissionUuid, string $status): void
     {
-        // Belum ada kolom status lamaran di crp_submission (lihat delta doc,
-        // portal.blade.php simulasi baca status langsung dari internal) --
-        // no-op sengaja, disiapkan sesuai kontrak interface.
+        CrpSubmission::where('submission_uuid', $submissionUuid)
+            ->update(['app_status' => $status, 'status_pushed_at' => now()]);
     }
 }

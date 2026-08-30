@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Contracts\Recruitment\PortalBackendAdapterInterface;
+use App\Models\Hrr\AppApplication;
+use App\Observers\AppApplicationObserver;
 use App\Services\Recruitment\FirebaseSyncAdapter;
 use App\Services\Recruitment\MariaDbPortalSyncAdapter;
 use Illuminate\Support\ServiceProvider;
@@ -21,5 +23,11 @@ class RecruitmentServiceProvider extends ServiceProvider
                 default => $this->app->make(MariaDbPortalSyncAdapter::class),
             };
         });
+    }
+
+    public function boot(): void
+    {
+        // pushStatusUpdate() generik lintas layar internal -- lihat komentar AppApplicationObserver.
+        AppApplication::observe(AppApplicationObserver::class);
     }
 }

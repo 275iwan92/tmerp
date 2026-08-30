@@ -4,6 +4,40 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/menu');
 
+// Portal Rekrutmen Profesional (publik, DI LUAR middleware 'auth' internal --
+// akun kandidat TERPISAH dari sec_user, lihat App\Services\Portal\CandidateAuthService
+// + docs/recruitmentportal_web_tier1.md). Alamat SENGAJA dipertahankan sama
+// dengan portal simulasi lama (/hrm/recruitment/portal, instruksi user
+// 2026-08-30) meski sekarang PUBLIK (bukan lagi di dalam grup 'auth'+'module:HRM'
+// -- baris registrasi lama di grup itu sudah DIHAPUS, lihat git blame). Guard
+// sesi sendiri 'portal.candidate' (BUKAN middleware 'auth' ERP internal).
+Route::prefix('hrm/recruitment/portal')->name('careers.')->group(function () {
+    Route::livewire('/', 'pages::careers.landing')->name('landing');
+    Route::livewire('/lowongan/{vacancy_code}', 'pages::careers.vacancy-detail')->name('vacancy-detail');
+    Route::livewire('/daftar', 'pages::careers.register')->name('register');
+    Route::livewire('/masuk', 'pages::careers.login')->name('login');
+    Route::get('/keluar', function () {
+        session()->forget('portal_candidate_uid');
+        session()->regenerate();
+
+        return redirect()->route('careers.landing');
+    })->name('logout');
+    Route::get('/verifikasi/{uid}', function (string $uid) {
+        if (! request()->hasValidSignature()) {
+            abort(403, 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.');
+        }
+
+        app(\App\Services\Portal\CandidateAuthService::class)->markEmailVerified($uid);
+
+        return redirect()->route('careers.login')->with('verified', true);
+    })->name('verify-email')->middleware('signed');
+
+    Route::middleware('portal.candidate')->group(function () {
+        Route::livewire('/lamar/{vacancy_code}', 'pages::careers.apply')->name('apply');
+        Route::livewire('/lamaran-saya', 'pages::careers.dashboard')->name('dashboard');
+    });
+});
+
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', 'pages::auth.login')->name('login');
     Route::livewire('/register', 'pages::auth.register')->name('register');
@@ -146,6 +180,14 @@ Route::middleware('auth')->group(function () {
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --
             // portal simulasi (Portal Candidate) sengaja di bawah middleware
             // HRM yang sama, ditaruh sementara di grup menu Recruitment.
+            // CATATAN 2026-08-30: route 'hrm.recruitment.portal' (portal
+            // SIMULASI di dalam shell admin, butuh login internal) SUDAH
+            // DIHAPUS dari sini -- diganti Portal Rekrutmen Profesional publik
+            // di URL yang SAMA (/hrm/recruitment/portal, lihat grup route
+            // 'careers.*' di atas file ini, DI LUAR middleware auth). File
+            // Livewire lama (pages::recruitment.portal) masih ada di repo
+            // (tak dihapus, cuma tak lagi ada route yang menunjuknya) --
+            // lihat docs/recruitmentportal_web_tier1.md kenapa dipertahankan.
             Route::livewire('/hrm/recruitment/requisition', 'pages::recruitment.requisition.list')->name('hrm.recruitment.requisition.list');
             Route::livewire('/hrm/recruitment/requisition/{requisition}', 'pages::recruitment.requisition.entry')->name('hrm.recruitment.requisition.entry')->where('requisition', '[0-9]+');
             Route::livewire('/hrm/recruitment/vacancy', 'pages::recruitment.vacancy')->name('hrm.recruitment.vacancy');
@@ -156,7 +198,6 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/hrm/recruitment/offer', 'pages::recruitment.offer.list')->name('hrm.recruitment.offer.list');
             Route::livewire('/hrm/recruitment/offer/{application}', 'pages::recruitment.offer.entry')->name('hrm.recruitment.offer.entry')->where('application', '[0-9]+');
             Route::livewire('/hrm/recruitment/hire-provision', 'pages::recruitment.hire-provision')->name('hrm.recruitment.hire-provision');
-            Route::livewire('/hrm/recruitment/portal', 'pages::recruitment.portal')->name('hrm.recruitment.portal');
         });
 
         Route::middleware('module:PROD')->group(function () {

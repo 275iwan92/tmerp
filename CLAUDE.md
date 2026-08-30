@@ -40,22 +40,34 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 | old | tm2old | Old data for migration |
 | crp | tm2crp | **Portal Kandidat Plan B** (MariaDB, BUKAN salah satu dari 10 DB tm2* MySQL di atas) — staging submission mentah dari portal eksternal sebelum ditarik ke tm2hrr. Host TERPISAH secara arsitektur (VPS/DMZ di desain final; lokal port 3307 utk dev, keputusan user 2026-08-30). Detail: `docs/recruitment_tier3.md` §1-3, `docs/recruitment_delta_plan_ab_local.md`. |
 
-**Portal Kandidat Recruitment — arsitektur 2-backend (Plan A/B, adapter pattern):**
-Portal kandidat (belum jadi app Flutter terpisah, masih simulasi Livewire
-`resources/views/pages/recruitment/portal.blade.php`) TIDAK menulis langsung
-ke `tm2hrr` lagi sejak 2026-08-30 — lewat `PortalBackendAdapterInterface`,
-implementasi dipilih via `.env PORTAL_BACKEND=firebase|mariadb`:
-- **Plan A — Firebase** (`FirebaseSyncAdapter`): Firestore, lokal pakai
-  **Firebase Local Emulator Suite** (`firebase/firebase.json`, jalankan
-  `firebase emulators:start` dari folder `firebase/`), project id
-  `demo-tmerp-crp` (tak perlu akun/billing Firebase asli).
+**Portal Kandidat Recruitment — 2 kanal, adapter pattern sync ke tm2hrr:**
+1. **`/hrm/recruitment/portal`** — Portal Rekrutmen Profesional PUBLIK
+   (live 2026-08-30, `docs/recruitmentportal_web_tier1.md`): akun real
+   (register No.KTP+Nama+Email+No.HP+password, verifikasi email), database
+   **Firebase (Firestore) hardcode** (`App\Services\Recruitment\FirebaseSyncAdapter`
+   dipanggil LANGSUNG, bukan lewat interface switchable). Ini yang dipakai
+   kandidat sungguhan sekarang. Kanal ke-2 (Flutter, HP) BELUM dibangun —
+   dicatat sbg rencana, backend Firestore sudah siap dipakai bareng.
+2. **`resources/views/pages/recruitment/portal.blade.php`** — simulasi lama
+   (KTP-only, tanpa akun), SUDAH TIDAK ADA ROUTE yang menunjuknya sejak
+   kanal #1 live (file tetap ada di repo, jangan dihapus — jadi sumber
+   partial `_apply-form-steps.blade.php`), dulu pakai `PortalBackendAdapterInterface`
+   switchable via `.env PORTAL_BACKEND=firebase|mariadb`.
+- **Plan A — Firebase**: Firestore, lokal pakai **Firebase Local Emulator
+  Suite** (`firebase/firebase.json`, jalankan `firebase emulators:start
+  --only firestore,auth` dari folder `firebase/` — TIDAK auto-start,
+  nyalakan manual tiap sesi dev), project id `demo-tmerp-crp` (tak perlu
+  akun/billing Firebase asli). REST API langsung (`App\Support\Firestore\FirestoreRestClient`),
+  BUKAN SDK `google/cloud-firestore` (butuh `ext-grpc`, tak ada di PHP Windows).
 - **Plan B — MariaDB `tm2crp`** (`MariaDbPortalSyncAdapter`): lihat tabel di
-  atas.
+  atas — masih ada, dipakai simulasi lama kalau `.env PORTAL_BACKEND=mariadb`.
 - Internal (`tm2hrr`) TIDAK PERNAH tahu backend mana yang aktif — PULL sync
   worker (`php artisan recruitment:sync-portal`, jadwal tiap 2 menit,
-  `App\Services\Recruitment\PortalSyncService`) tarik data lewat interface
-  yang sama, idempoten via `tm2hrr.rcr_sync_log` + `app_application.submission_uuid`.
-- Ganti Plan A↔B = ganti 1 baris `.env`, tanpa sentuh business logic sync.
+  `App\Services\Recruitment\PortalSyncService`) tarik data, idempoten via
+  `tm2hrr.rcr_sync_log` + `app_application.submission_uuid`. Arah balik
+  (status lamaran berubah di internal → portal) via `App\Observers\AppApplicationObserver`
+  (generik, nempel di event `updated` `app_application.status`, bukan
+  ditempel manual di tiap layar HR) memanggil `pushStatusUpdate()`.
 
 **Payroll encryption (keputusan user 2026-08-30, requirement — BELUM ada
 implementasi teknis sesi manapun):** data gaji & histori gaji (tm2pyr) WAJIB

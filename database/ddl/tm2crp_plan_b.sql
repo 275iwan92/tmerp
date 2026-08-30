@@ -118,6 +118,8 @@ CREATE TABLE crp_submission (
 
     submitted_at DATETIME NOT NULL,
     sync_status ENUM('pending','synced') NOT NULL DEFAULT 'pending',
+    app_status VARCHAR(30) NULL COMMENT 'mirror app_application.status, ditulis balik internal via pushStatusUpdate() -- recruitment_tier3.md §1.2',
+    status_pushed_at DATETIME NULL,
     synced_at DATETIME NULL,
 
     CONSTRAINT fk_submission_account FOREIGN KEY (id_account) REFERENCES crp_candidate_account(id_account),

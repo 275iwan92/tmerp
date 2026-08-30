@@ -20,6 +20,14 @@ interface PortalBackendAdapterInterface
     public function findLatestByNationalId(string $nationalId): ?array;
 
     /**
+     * Sisi PORTAL -- SEMUA submission milik 1 akun (dashboard "Lamaran Saya",
+     * recruitment_tier4.md §5) -- beda dari findLatestByNationalId (cuma 1
+     * baris terbaru, buat prefill) & fetchPendingSubmissions (cuma yg pending,
+     * buat worker). Urut submitted_at terbaru dulu.
+     */
+    public function findAllByCandidateUid(string $candidateUid): array;
+
+    /**
      * Sisi PORTAL -- simpan 1 submission baru (draft/final lamaran). Payload
      * associative array, key = nama kolom crp_submission (mirror cnd_candidate,
      * lihat CrpSubmission model). $files = ['cv' => UploadedFile|null, 'ijazah' => UploadedFile|null].
