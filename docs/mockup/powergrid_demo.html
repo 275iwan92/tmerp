@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Demo Livewire PowerGrid — Acuan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        --bg: #f7f8fb; --card: #ffffff; --border: #e2e5ec; --text: #1f2430; --muted: #6b7280;
+        --brand: #4f46e5; --brand-soft: #eef2ff; --green: #16a34a; --green-soft: #ecfdf3;
+        --red: #dc2626; --red-soft: #fef2f2; --amber: #d97706; --amber-soft: #fffbeb;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 24px; }
+    .note { max-width: 1180px; margin: 0 auto 16px; padding: 12px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; font-size: 12.5px; color: #92400e; line-height: 1.6; }
+    .wrap { max-width: 1180px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+    .pg-header { padding: 16px 18px; border-bottom: 1px solid var(--border); }
+    .pg-title { font-size: 16px; font-weight: 700; margin: 0 0 2px; }
+    .pg-sub { font-size: 12px; color: var(--muted); margin: 0; }
+
+    .pg-toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .pg-search { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+    .pg-search input { width: 100%; padding: 8px 10px 8px 30px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; }
+    .pg-search span { position: absolute; left: 9px; top: 8px; font-size: 13px; color: var(--muted); }
+    .pg-btn { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+    .pg-btn:hover { background: #f3f4f6; }
+    .pg-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .pg-spacer { flex: 1; }
+    .pg-export { position: relative; }
+    .pg-export-menu { display: none; position: absolute; right: 0; top: 38px; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 20; min-width: 140px; overflow: hidden; }
+    .pg-export-menu.show { display: block; }
+    .pg-export-menu button { width: 100%; text-align: left; padding: 9px 12px; border: 0; background: none; font-size: 12.5px; cursor: pointer; }
+    .pg-export-menu button:hover { background: #f3f4f6; }
+
+    .pg-filters { display: none; padding: 12px 18px; border-bottom: 1px solid var(--border); background: #fafbfc; gap: 12px; flex-wrap: wrap; }
+    .pg-filters.show { display: flex; }
+    .pg-filter-field { display: flex; flex-direction: column; gap: 4px; min-width: 140px; }
+    .pg-filter-field label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: .03em; }
+    .pg-filter-field select, .pg-filter-field input { padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12.5px; }
+
+    .pg-bulkbar { display: none; align-items: center; gap: 10px; padding: 10px 18px; background: var(--brand-soft); border-bottom: 1px solid var(--border); font-size: 12.5px; }
+    .pg-bulkbar.show { display: flex; }
+    .pg-bulkbar b { color: var(--brand); }
+    .pg-bulkbar .pg-btn { background: #fff; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th { text-align: left; padding: 10px 14px; background: #fafbfc; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; user-select: none; }
+    thead th.sortable { cursor: pointer; }
+    thead th.sortable:hover { color: var(--text); }
+    thead th .arrow { display: inline-block; margin-left: 4px; opacity: .35; font-size: 10px; }
+    thead th.sorted .arrow { opacity: 1; color: var(--brand); }
+    tbody td { padding: 10px 14px; border-bottom: 1px solid #f0f1f5; vertical-align: middle; }
+    tbody tr:hover { background: #fafbff; }
+    tbody tr.selected { background: var(--brand-soft); }
+
+    .cell-id { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg,#6366f1,#4338ca); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cell-id .name { font-weight: 600; font-size: 13px; }
+    .cell-id .code { font-size: 11px; color: var(--muted); font-family: ui-monospace, monospace; }
+
+    .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; }
+    .badge.green { background: var(--green-soft); color: #15803d; }
+    .badge.red { background: var(--red-soft); color: #b91c1c; }
+    .badge.amber { background: var(--amber-soft); color: #b45309; }
+
+    .pg-toggle { width: 34px; height: 19px; border-radius: 999px; background: #d1d5db; position: relative; cursor: pointer; display: inline-block; transition: background .15s; }
+    .pg-toggle.on { background: var(--green); }
+    .pg-toggle .knob { position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+    .pg-toggle.on .knob { left: 17px; }
+
+    .pg-select-cell select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: #fff; }
+
+    .pg-row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+    .pg-icon-btn { width: 28px; height: 28px; border-radius: 6px; border: 0; background: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+    .pg-icon-btn:hover { background: #f3f4f6; color: var(--text); }
+
+    .pg-detail-row td { background: #fafbff; padding: 14px 14px 14px 44px; font-size: 12.5px; color: #374151; }
+    .pg-detail-row.hidden { display: none; }
+    .chevron { cursor: pointer; display: inline-block; transition: transform .15s; color: var(--muted); }
+    .chevron.open { transform: rotate(90deg); }
+
+    .pg-footer { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; flex-wrap: wrap; gap: 10px; font-size: 12.5px; color: var(--muted); }
+    .pg-pagination { display: flex; align-items: center; gap: 4px; }
+    .pg-page-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 12px; cursor: pointer; }
+    .pg-page-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+    .pg-perpage select { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; }
+
+    .callout { max-width: 1180px; margin: 16px auto 0; font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .callout b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="note">
+    📌 <b>Mockup acuan (docs/mockup/powergrid_demo.html)</b> — replika visual+interaksi <b>Livewire PowerGrid v6</b> (tema Tailwind default paket, BUKAN tema navy/pastel tmerp). Semua interaksi di sini simulasi JS murni (sort/filter/search/pagination/edit-inline/bulk-select) di atas data contoh statis — bukan koneksi Livewire/DB sungguhan. Tujuannya cuma memperlihatkan RASA & fitur bawaan paket sebelum diputuskan diadopsi atau tidak.
+</div>
+
+<div class="wrap">
+    <div class="pg-header">
+        <p class="pg-title">Customers</p>
+        <p class="pg-sub">Contoh PowerGrid::eloquent() di atas tabel pelanggan — sort, filter, search, export, editable column, bulk action, expand-detail semua bawaan paket.</p>
+    </div>
+
+    <div class="pg-toolbar">
+        <div class="pg-search"><span>🔍</span><input id="pgSearch" type="text" placeholder="Search..." oninput="pgApply()"></div>
+        <button class="pg-btn" id="pgFilterBtn" onclick="pgToggleFilters()">🔽 Filters</button>
+        <div class="pg-export">
+            <button class="pg-btn" onclick="pgToggleExport()">⬇ Export</button>
+            <div class="pg-export-menu" id="pgExportMenu">
+                <button onclick="pgFakeExport('CSV')">Export CSV</button>
+                <button onclick="pgFakeExport('XLSX')">Export XLSX</button>
+                <button onclick="pgFakeExport('PDF')">Export PDF</button>
+            </div>
+        </div>
+        <div class="pg-spacer"></div>
+        <span style="font-size:11.5px;color:var(--muted)">bawaan: <b>PowerGrid::header()</b></span>
+    </div>
+
+    <div class="pg-filters" id="pgFilters">
+        <div class="pg-filter-field">
+            <label>Segment</label>
+            <select id="fSegment" onchange="pgApply()">
+                <option value="">Semua</option>
+                <option>Retail</option>
+                <option>Corporate</option>
+                <option>Government</option>
+            </select>
+        </div>
+        <div class="pg-filter-field">
+            <label>Status</label>
+            <select id="fStatus" onchange="pgApply()">
+                <option value="">Semua</option>
+                <option value="1">Aktif</option>
+                <option value="0">Nonaktif</option>
+            </select>
+        </div>
+        <div class="pg-filter-field">
+            <label>Min. Credit Limit</label>
+            <input type="number" id="fCredit" placeholder="0" oninput="pgApply()">
+        </div>
+    </div>
+
+    <div class="pg-bulkbar" id="pgBulkbar">
+        <span><b id="pgBulkCount">0</b> baris terpilih</span>
+        <button class="pg-btn" onclick="alert('Demo: bulk export terpilih')">⬇ Export Terpilih</button>
+        <button class="pg-btn" onclick="alert('Demo: bulk nonaktifkan')">⏻ Nonaktifkan</button>
+        <button class="pg-btn" style="color:var(--red)" onclick="alert('Demo: bulk hapus')">🗑 Hapus</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width:28px"><input type="checkbox" id="pgSelectAll" onclick="pgToggleAll(this)"></th>
+                <th style="width:24px"></th>
+                <th class="sortable" onclick="pgSort('name')" data-col="name">Customer <span class="arrow">▲</span></th>
+                <th class="sortable" onclick="pgSort('segment')" data-col="segment">Segment <span class="arrow">▲</span></th>
+                <th>Sales Rep</th>
+                <th class="sortable" onclick="pgSort('credit')" data-col="credit">Credit Limit <span class="arrow">▲</span></th>
+                <th>Status</th>
+                <th style="text-align:right">Aksi</th>
+            </tr>
+        </thead>
+        <tbody id="pgBody"></tbody>
+    </table>
+
+    <div class="pg-footer">
+        <div class="pg-perpage">Tampilkan
+            <select id="pgPerPage" onchange="pgApply()">
+                <option>5</option>
+                <option selected>10</option>
+                <option>25</option>
+            </select>
+        baris</div>
+        <div id="pgRangeInfo">—</div>
+        <div class="pg-pagination" id="pgPagination"></div>
+    </div>
+</div>
+
+<div class="callout">
+    <b>Fitur yang terlihat di sini (bawaan paket, tanpa kode custom kita):</b> sort per kolom (klik header), filter row toggle (dropdown + angka minimum), search global, checkbox select + bulk action bar mengambang, kolom Status = toggle switch langsung klik di tabel (editable column, auto-save di versi asli), kolom Segment = dropdown langsung di tabel (editable select column), expand-row (klik ▸) utk detail tanpa pindah halaman, export dropdown (CSV/XLSX/PDF), pagination dgn per-page selector. Semua itu konfigurasi deklaratif di 1 class PHP (<code>PowerGridComponent</code>), bukan ditulis manual sel-per-sel seperti <code>HasCustomizableGrid</code>/<code>HasSpreadsheetGrid</code> kita.
+</div>
+
+<script>
+const DATA = [
+    { id:1, name:'PT Cendana Mas', code:'CUS-0001', segment:'Corporate', rep:'Dewi A.', credit:150000000, active:true },
+    { id:2, name:'CV Sinar Abadi', code:'CUS-0002', segment:'Retail', rep:'Budi S.', credit:25000000, active:true },
+    { id:3, name:'Toko Makmur Jaya', code:'CUS-0003', segment:'Retail', rep:'Budi S.', credit:10000000, active:false },
+    { id:4, name:'PT Graha Pratama', code:'CUS-0004', segment:'Corporate', rep:'Dewi A.', credit:300000000, active:true },
+    { id:5, name:'Dinas Perindustrian Kota', code:'CUS-0005', segment:'Government', rep:'Rian P.', credit:500000000, active:true },
+    { id:6, name:'UD Berkah Selalu', code:'CUS-0006', segment:'Retail', rep:'Budi S.', credit:8000000, active:true },
+    { id:7, name:'PT Nusantara Kemas', code:'CUS-0007', segment:'Corporate', rep:'Rian P.', credit:220000000, active:false },
+    { id:8, name:'CV Dua Putra', code:'CUS-0008', segment:'Retail', rep:'Dewi A.', credit:15000000, active:true },
+    { id:9, name:'Kantor Kecamatan Timur', code:'CUS-0009', segment:'Government', rep:'Rian P.', credit:75000000, active:true },
+    { id:10, name:'PT Sumber Rejeki', code:'CUS-0010', segment:'Corporate', rep:'Budi S.', credit:180000000, active:true },
+    { id:11, name:'Toko Elektronik Jaya', code:'CUS-0011', segment:'Retail', rep:'Dewi A.', credit:12000000, active:false },
+    { id:12, name:'PT Baja Konstruksi', code:'CUS-0012', segment:'Corporate', rep:'Rian P.', credit:410000000, active:true },
+];
+
+let sortCol = 'name', sortDir = 1, page = 1;
+const selected = new Set();
+const expanded = new Set();
+
+function initials(n){ const w=n.trim().split(' '); return (w[0][0]+(w[1]?w[1][0]:'')).toUpperCase(); }
+function idr(n){ return 'Rp ' + n.toLocaleString('id-ID'); }
+
+function filtered(){
+    const q = document.getElementById('pgSearch').value.toLowerCase();
+    const seg = document.getElementById('fSegment').value;
+    const st = document.getElementById('fStatus').value;
+    const minCredit = parseFloat(document.getElementById('fCredit').value) || 0;
+    return DATA.filter(r =>
+        (!q || r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q)) &&
+        (!seg || r.segment === seg) &&
+        (st === '' || String(r.active ? 1 : 0) === st) &&
+        (r.credit >= minCredit)
+    ).sort((a,b) => {
+        let av=a[sortCol], bv=b[sortCol];
+        if (typeof av === 'string') return av.localeCompare(bv) * sortDir;
+        return (av - bv) * sortDir;
+    });
+}
+
+function pgSort(col){
+    sortDir = (sortCol === col) ? -sortDir : 1;
+    sortCol = col;
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.toggle('sorted', th.dataset.col === col);
+        th.querySelector('.arrow').textContent = (th.dataset.col === col && sortDir === -1) ? '▼' : '▲';
+    });
+    pgApply();
+}
+
+function pgToggleFilters(){
+    document.getElementById('pgFilters').classList.toggle('show');
+    document.getElementById('pgFilterBtn').classList.toggle('active');
+}
+function pgToggleExport(){ document.getElementById('pgExportMenu').classList.toggle('show'); }
+function pgFakeExport(fmt){ document.getElementById('pgExportMenu').classList.remove('show'); alert('Demo: export ' + fmt + ' (' + filtered().length + ' baris)'); }
+
+function pgToggleAll(cb){
+    const rows = pageRows();
+    rows.forEach(r => cb.checked ? selected.add(r.id) : selected.delete(r.id));
+    render();
+}
+function pgToggleRow(id, cb){
+    cb.checked ? selected.add(id) : selected.delete(id);
+    render();
+}
+function pgToggleActive(id){
+    const row = DATA.find(r => r.id === id);
+    row.active = !row.active;
+    render();
+}
+function pgChangeSegment(id, val){
+    DATA.find(r => r.id === id).segment = val;
+    render();
+}
+function pgToggleExpand(id){
+    expanded.has(id) ? expanded.delete(id) : expanded.add(id);
+    render();
+}
+
+function pageRows(){
+    const perPage = parseInt(document.getElementById('pgPerPage').value);
+    const f = filtered();
+    const start = (page - 1) * perPage;
+    return f.slice(start, start + perPage);
+}
+
+function pgApply(){ page = 1; render(); }
+
+function render(){
+    const perPage = parseInt(document.getElementById('pgPerPage').value);
+    const f = filtered();
+    const totalPages = Math.max(1, Math.ceil(f.length / perPage));
+    if (page > totalPages) page = totalPages;
+    const rows = pageRows();
+
+    const tbody = document.getElementById('pgBody');
+    tbody.innerHTML = rows.map(r => `
+        <tr class="${selected.has(r.id) ? 'selected' : ''}">
+            <td><input type="checkbox" ${selected.has(r.id) ? 'checked' : ''} onclick="pgToggleRow(${r.id}, this)"></td>
+            <td><span class="chevron ${expanded.has(r.id) ? 'open' : ''}" onclick="pgToggleExpand(${r.id})">▸</span></td>
+            <td>
+                <div class="cell-id">
+                    <div class="avatar">${initials(r.name)}</div>
+                    <div><div class="name">${r.name}</div><div class="code">${r.code}</div></div>
+                </div>
+            </td>
+            <td class="pg-select-cell">
+                <select onchange="pgChangeSegment(${r.id}, this.value)">
+                    ${['Retail','Corporate','Government'].map(s => `<option ${r.segment===s?'selected':''}>${s}</option>`).join('')}
+                </select>
+            </td>
+            <td>${r.rep}</td>
+            <td>${idr(r.credit)}</td>
+            <td><span class="pg-toggle ${r.active ? 'on' : ''}" onclick="pgToggleActive(${r.id})"><span class="knob"></span></span></td>
+            <td>
+                <div class="pg-row-actions">
+                    <button class="pg-icon-btn" title="Lihat" onclick="alert('Demo: buka detail ${r.name}')">👁</button>
+                    <button class="pg-icon-btn" title="Edit" onclick="alert('Demo: edit ${r.name}')">✎</button>
+                    <button class="pg-icon-btn" title="Hapus" onclick="alert('Demo: hapus ${r.name}')">🗑</button>
+                </div>
+            </td>
+        </tr>
+        <tr class="pg-detail-row ${expanded.has(r.id) ? '' : 'hidden'}">
+            <td colspan="8">
+                <b>Ringkasan cepat</b> — Sales Rep: ${r.rep} · Segment: ${r.segment} · Credit Limit: ${idr(r.credit)} · Status: ${r.active ? 'Aktif' : 'Nonaktif'}.
+                <span style="color:var(--muted)">(contoh "Detail Row" PowerGrid — expand tanpa query tambahan kalau data sudah di-load)</span>
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">Tidak ada data cocok filter.</td></tr>';
+
+    document.getElementById('pgBulkbar').classList.toggle('show', selected.size > 0);
+    document.getElementById('pgBulkCount').textContent = selected.size;
+
+    const start = f.length ? (page - 1) * perPage + 1 : 0;
+    const end = Math.min(page * perPage, f.length);
+    document.getElementById('pgRangeInfo').textContent = `${start}–${end} dari ${f.length}`;
+
+    const pager = document.getElementById('pgPagination');
+    let html = `<button class="pg-page-btn" onclick="pgGoto(${page-1})" ${page<=1?'disabled':''}>‹</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+        html += `<button class="pg-page-btn ${p===page?'active':''}" onclick="pgGoto(${p})">${p}</button>`;
+    }
+    html += `<button class="pg-page-btn" onclick="pgGoto(${page+1})" ${page>=totalPages?'disabled':''}>›</button>`;
+    pager.innerHTML = html;
+}
+
+function pgGoto(p){ page = p; render(); }
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.pg-export')) document.getElementById('pgExportMenu').classList.remove('show');
+});
+
+render();
+</script>
+</body>
+</html>

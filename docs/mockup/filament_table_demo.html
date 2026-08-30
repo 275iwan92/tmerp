@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Demo Filament Table Builder — Acuan</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    :root {
+        --bg: #f4f4f5; --card: #ffffff; --border: #e4e4e7; --text: #18181b; --muted: #71717a;
+        --primary: #6366f1; --primary-soft: #eef2ff; --primary-dark: #4338ca;
+        --green: #16a34a; --green-soft: #f0fdf4; --red: #dc2626; --red-soft: #fef2f2;
+        --amber: #d97706; --amber-soft: #fffbeb; --sky: #0284c7; --sky-soft: #f0f9ff;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
+    .note { max-width: 1200px; margin: 20px auto 16px; padding: 12px 16px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; font-size: 12.5px; color: #92400e; line-height: 1.6; }
+
+    .fi-topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 14px 32px; }
+    .fi-topbar-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+    .fi-breadcrumb { font-size: 12px; color: var(--muted); }
+    .fi-topbar-inner .fi-spacer { flex: 1; }
+
+    .fi-page-header { max-width: 1200px; margin: 22px auto 16px; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .fi-page-title { font-size: 22px; font-weight: 700; margin: 0; letter-spacing: -.01em; }
+    .fi-btn-primary { background: var(--primary); color: #fff; border: 0; padding: 9px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,.06); }
+    .fi-btn-primary:hover { background: var(--primary-dark); }
+
+    .fi-wrap { max-width: 1200px; margin: 0 auto 40px; padding: 0 32px; }
+    .fi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+
+    .fi-toolbar { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .fi-search { position: relative; flex: 1; min-width: 220px; max-width: 340px; }
+    .fi-search input { width: 100%; padding: 8px 10px 8px 32px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; background: #fafafa; }
+    .fi-search span { position: absolute; left: 10px; top: 8px; font-size: 13px; color: var(--muted); }
+    .fi-spacer { flex: 1; }
+    .fi-filter-wrap { position: relative; }
+    .fi-btn { padding: 8px 13px; border-radius: 8px; border: 1px solid var(--border); background: #fff; font-size: 12.5px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+    .fi-btn:hover { background: #f4f4f5; }
+    .fi-badge-count { background: var(--primary); color: #fff; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 6px; margin-left: 2px; }
+
+    .fi-filter-panel { display: none; position: absolute; right: 0; top: 42px; background: #fff; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 12px 32px rgba(0,0,0,.14); z-index: 30; width: 260px; padding: 14px; }
+    .fi-filter-panel.show { display: block; }
+    .fi-filter-panel .f-field { margin-bottom: 12px; }
+    .fi-filter-panel label { display: block; font-size: 11.5px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+    .fi-filter-panel select, .fi-filter-panel input { width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 7px; font-size: 12.5px; }
+    .fi-filter-reset { font-size: 11.5px; color: var(--primary); background: none; border: 0; cursor: pointer; font-weight: 600; padding: 0; }
+
+    .fi-bulkbar { display: none; align-items: center; gap: 10px; margin: 0 18px; margin-top: 12px; padding: 10px 14px; background: #18181b; color: #fff; border-radius: 10px; font-size: 12.5px; }
+    .fi-bulkbar.show { display: flex; }
+    .fi-bulkbar .fi-btn { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.2); }
+    .fi-bulkbar .fi-btn:hover { background: rgba(255,255,255,.2); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 4px; }
+    thead th { text-align: left; padding: 10px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    thead th.sortable { cursor: pointer; }
+    thead th.sortable:hover { color: var(--text); }
+    thead th .arrow { margin-left: 4px; font-size: 10px; opacity: .4; }
+    thead th.sorted .arrow { opacity: 1; color: var(--primary); }
+    tbody td { padding: 11px 16px; border-bottom: 1px solid #f4f4f5; vertical-align: middle; }
+    tbody tr:hover { background: #fafafa; }
+    tbody tr.selected { background: var(--primary-soft); }
+
+    .cell-id { display: flex; align-items: center; gap: 11px; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,#818cf8,#4338ca); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .cell-id .name { font-weight: 600; font-size: 13.5px; color: var(--text); }
+    .cell-id .desc { font-size: 11.5px; color: var(--muted); }
+
+    .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .badge.green { background: var(--green-soft); color: #15803d; }
+    .badge.red { background: var(--red-soft); color: #b91c1c; }
+    .badge.amber { background: var(--amber-soft); color: #b45309; }
+    .badge.sky { background: var(--sky-soft); color: #0369a1; }
+    .badge.gray { background: #f4f4f5; color: #52525b; }
+
+    .fi-toggle { width: 34px; height: 20px; border-radius: 999px; background: #d4d4d8; position: relative; cursor: pointer; display: inline-block; transition: background .15s; }
+    .fi-toggle.on { background: var(--primary); }
+    .fi-toggle .knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+    .fi-toggle.on .knob { left: 16px; }
+
+    .fi-row-actions { display: flex; gap: 4px; justify-content: flex-end; position: relative; }
+    .fi-icon-btn { width: 30px; height: 30px; border-radius: 7px; border: 0; background: none; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+    .fi-icon-btn:hover { background: #f4f4f5; color: var(--text); }
+    .fi-dropdown { display: none; position: absolute; right: 0; top: 34px; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); z-index: 20; min-width: 150px; overflow: hidden; }
+    .fi-dropdown.show { display: block; }
+    .fi-dropdown button { width: 100%; text-align: left; padding: 9px 12px; border: 0; background: none; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .fi-dropdown button:hover { background: #f4f4f5; }
+    .fi-dropdown button.danger { color: var(--red); }
+
+    .fi-footer { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; flex-wrap: wrap; gap: 10px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--border); }
+    .fi-perpage { display: flex; gap: 4px; }
+    .fi-pp-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: #fff; font-size: 11.5px; cursor: pointer; font-weight: 600; }
+    .fi-pp-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .fi-pagination { display: flex; align-items: center; gap: 4px; }
+    .fi-page-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border); background: #fff; font-size: 12px; cursor: pointer; }
+    .fi-page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    .callout { max-width: 1200px; margin: 0 auto 30px; padding: 0 32px; font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .callout b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="note" style="margin-left:32px;margin-right:32px;max-width:1136px">
+    📌 <b>Mockup acuan (docs/mockup/filament_table_demo.html)</b> — replika visual+interaksi <b>Filament Table Builder v5</b> (tema admin-panel Filament, warna primer indigo default — BUKAN tema navy/pastel tmerp; kalau dipakai, ini konteksnya panel <code>/admin</code>, lihat <code>admindashboardstandard.md</code>). Interaksi di sini simulasi JS murni di atas data contoh statis — bukan Resource Filament sungguhan.
+</div>
+
+<div class="fi-topbar">
+    <div class="fi-topbar-inner">
+        <span class="fi-breadcrumb">HRM  ›  Employees</span>
+    </div>
+</div>
+
+<div class="fi-page-header">
+    <h1 class="fi-page-title">Employees</h1>
+    <button class="fi-btn-primary" onclick="alert('Demo: buka form Create Employee')">+ New employee</button>
+</div>
+
+<div class="fi-wrap">
+    <div class="fi-bulkbar" id="fiBulkbar">
+        <span><b id="fiBulkCount">0</b> selected</span>
+        <button class="fi-btn" onclick="alert('Demo: bulk export')">Export selected</button>
+        <button class="fi-btn" onclick="alert('Demo: bulk deactivate')">Deactivate</button>
+        <button class="fi-btn" style="color:#fca5a5" onclick="alert('Demo: bulk delete')">Delete</button>
+    </div>
+
+    <div class="fi-card">
+        <div class="fi-toolbar">
+            <div class="fi-search"><span>🔍</span><input id="fiSearch" type="text" placeholder="Search employees" oninput="fiApply()"></div>
+            <div class="fi-spacer"></div>
+            <div class="fi-filter-wrap">
+                <button class="fi-btn" onclick="fiToggleFilters()">⏚ Filters <span class="fi-badge-count" id="fiFilterCount" style="display:none">0</span></button>
+                <div class="fi-filter-panel" id="fiFilterPanel">
+                    <div class="f-field">
+                        <label>Department</label>
+                        <select id="fDept" onchange="fiApply()">
+                            <option value="">All</option>
+                            <option>Produksi</option>
+                            <option>Finance</option>
+                            <option>HR</option>
+                            <option>Sales</option>
+                        </select>
+                    </div>
+                    <div class="f-field">
+                        <label>Work status</label>
+                        <select id="fWork" onchange="fiApply()">
+                            <option value="">All</option>
+                            <option>Bekerja</option>
+                            <option>Cuti</option>
+                        </select>
+                    </div>
+                    <div class="f-field">
+                        <label>Active only</label>
+                        <select id="fActive" onchange="fiApply()">
+                            <option value="">All</option>
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                    <button class="fi-filter-reset" onclick="fiResetFilters()">Reset filters</button>
+                </div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:28px"><input type="checkbox" onclick="fiToggleAll(this)"></th>
+                    <th class="sortable sorted" onclick="fiSort('name')" data-col="name">Employee <span class="arrow">▲</span></th>
+                    <th class="sortable" onclick="fiSort('dept')" data-col="dept">Department <span class="arrow">▲</span></th>
+                    <th>Discipline</th>
+                    <th>Work status</th>
+                    <th>Active</th>
+                    <th style="width:56px"></th>
+                </tr>
+            </thead>
+            <tbody id="fiBody"></tbody>
+        </table>
+
+        <div class="fi-footer">
+            <div>Showing <span id="fiRangeInfo">—</span></div>
+            <div class="fi-perpage" id="fiPerpage"></div>
+            <div class="fi-pagination" id="fiPagination"></div>
+        </div>
+    </div>
+</div>
+
+<div class="callout">
+    <b>Fitur yang terlihat di sini (bawaan paket, tanpa kode custom kita):</b> panel Filters berbentuk dropdown (bukan baris toolbar) dengan badge jumlah filter aktif, bulk-action bar berwarna gelap (khas Filament) muncul di ATAS card saat ada baris terpilih, kolom Discipline & Work status = <code>BadgeColumn</code> (warna dipetakan otomatis per nilai enum di config, bukan class manual per kondisi), kolom Active = <code>ToggleColumn</code> (klik langsung, auto-save di versi asli — tanpa <code>wire:confirm</code>, beda dari pola toggle tmerp yang selalu konfirmasi), aksi per-baris pakai dropdown "⋮" (<code>ActionGroup</code>) bukan ikon sejajar, footer pagination pill "10/25/50/All" + halaman. Semua ini konsisten dgn tema panel admin Filament — kalau diadopsi, HANYA masuk akal di track <code>/admin</code>, bukan disuntikkan ke shell lama tmerp.
+</div>
+
+<script>
+const DATA = [
+    { id:1, name:'Siti Rahayu', code:'TM-00012', dept:'Produksi', discipline:'Clean', work:'Bekerja', active:true, photo:null },
+    { id:2, name:'Ahmad Fauzi', code:'TM-00034', dept:'Finance', discipline:'Verbal: 1/6', work:'Bekerja', active:true, photo:null },
+    { id:3, name:'Dewi Lestari', code:'TM-00051', dept:'HR', discipline:'Clean', work:'Cuti', active:true, photo:null },
+    { id:4, name:'Budi Santoso', code:'TM-00062', dept:'Sales', discipline:'SP1 AKTIF', work:'Bekerja', active:false, photo:null },
+    { id:5, name:'Rina Wulandari', code:'TM-00078', dept:'Produksi', discipline:'Clean', work:'Bekerja', active:true, photo:null },
+    { id:6, name:'Joko Prasetyo', code:'TM-00081', dept:'Produksi', discipline:'Verbal: 3/6', work:'Bekerja', active:true, photo:null },
+    { id:7, name:'Maya Sari', code:'TM-00093', dept:'Finance', discipline:'Clean', work:'Bekerja', active:true, photo:null },
+    { id:8, name:'Agus Setiawan', code:'TM-00107', dept:'Sales', discipline:'Clean', work:'Bekerja', active:true, photo:null },
+    { id:9, name:'Nur Hasanah', code:'TM-00119', dept:'HR', discipline:'Clean', work:'Cuti', active:true, photo:null },
+    { id:10, name:'Dedi Kurniawan', code:'TM-00126', dept:'Produksi', discipline:'SP2 AKTIF', work:'Bekerja', active:false, photo:null },
+    { id:11, name:'Yuni Astuti', code:'TM-00133', dept:'Sales', discipline:'Clean', work:'Bekerja', active:true, photo:null },
+    { id:12, name:'Hendra Gunawan', code:'TM-00140', dept:'Finance', discipline:'Verbal: 1/6', work:'Bekerja', active:true, photo:null },
+];
+
+let sortCol = 'name', sortDir = 1, page = 1, perPage = 10;
+const selected = new Set();
+let openDropdown = null;
+
+function initials(n){ const w=n.trim().split(' '); return (w[0][0]+(w[1]?w[1][0]:'')).toUpperCase(); }
+function disciplineBadge(d){
+    if (d.startsWith('SP')) return 'red';
+    if (d.startsWith('Verbal')) return 'amber';
+    return 'green';
+}
+
+function filtered(){
+    const q = document.getElementById('fiSearch').value.toLowerCase();
+    const dept = document.getElementById('fDept').value;
+    const work = document.getElementById('fWork').value;
+    const act = document.getElementById('fActive').value;
+    return DATA.filter(r =>
+        (!q || r.name.toLowerCase().includes(q) || r.code.toLowerCase().includes(q)) &&
+        (!dept || r.dept === dept) &&
+        (!work || r.work === work) &&
+        (act === '' || String(r.active ? 1 : 0) === act)
+    ).sort((a,b) => (a[sortCol] > b[sortCol] ? 1 : a[sortCol] < b[sortCol] ? -1 : 0) * sortDir);
+}
+
+function fiSort(col){
+    sortDir = (sortCol === col) ? -sortDir : 1;
+    sortCol = col;
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.toggle('sorted', th.dataset.col === col);
+        th.querySelector('.arrow').textContent = (th.dataset.col === col && sortDir === -1) ? '▼' : '▲';
+    });
+    render();
+}
+
+function fiToggleFilters(){ document.getElementById('fiFilterPanel').classList.toggle('show'); }
+function fiResetFilters(){
+    document.getElementById('fDept').value = '';
+    document.getElementById('fWork').value = '';
+    document.getElementById('fActive').value = '';
+    fiApply();
+}
+function fiApply(){
+    page = 1;
+    const active = ['fDept','fWork','fActive'].filter(id => document.getElementById(id).value !== '').length;
+    const badge = document.getElementById('fiFilterCount');
+    badge.style.display = active ? 'inline-block' : 'none';
+    badge.textContent = active;
+    render();
+}
+
+function fiToggleAll(cb){
+    pageRows().forEach(r => cb.checked ? selected.add(r.id) : selected.delete(r.id));
+    render();
+}
+function fiToggleRow(id, cb){
+    cb.checked ? selected.add(id) : selected.delete(id);
+    render();
+}
+function fiToggleActive(id){
+    DATA.find(r => r.id === id).active = !DATA.find(r => r.id === id).active;
+    render();
+}
+function fiToggleDropdown(id){
+    openDropdown = (openDropdown === id) ? null : id;
+    render();
+}
+
+function pageRows(){
+    const f = filtered();
+    const start = (page - 1) * perPage;
+    return perPage === 0 ? f : f.slice(start, start + perPage);
+}
+
+function setPerPage(n){ perPage = n; page = 1; render(); }
+
+function render(){
+    const f = filtered();
+    const totalPages = perPage === 0 ? 1 : Math.max(1, Math.ceil(f.length / perPage));
+    if (page > totalPages) page = totalPages;
+    const rows = pageRows();
+
+    document.getElementById('fiBody').innerHTML = rows.map(r => `
+        <tr class="${selected.has(r.id) ? 'selected' : ''}">
+            <td><input type="checkbox" ${selected.has(r.id) ? 'checked' : ''} onclick="fiToggleRow(${r.id}, this)"></td>
+            <td>
+                <div class="cell-id">
+                    <div class="avatar">${initials(r.name)}</div>
+                    <div><div class="name">${r.name}</div><div class="desc">${r.code}</div></div>
+                </div>
+            </td>
+            <td>${r.dept}</td>
+            <td><span class="badge ${disciplineBadge(r.discipline)}">${r.discipline}</span></td>
+            <td><span class="badge ${r.work === 'Cuti' ? 'sky' : 'gray'}">${r.work}</span></td>
+            <td><span class="fi-toggle ${r.active ? 'on' : ''}" onclick="fiToggleActive(${r.id})"><span class="knob"></span></span></td>
+            <td>
+                <div class="fi-row-actions">
+                    <button class="fi-icon-btn" onclick="fiToggleDropdown(${r.id})">⋮</button>
+                    <div class="fi-dropdown ${openDropdown === r.id ? 'show' : ''}">
+                        <button onclick="alert('Demo: view ${r.name}')">👁 View</button>
+                        <button onclick="alert('Demo: edit ${r.name}')">✎ Edit</button>
+                        <button class="danger" onclick="alert('Demo: delete ${r.name}')">🗑 Delete</button>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    `).join('') || '<tr><td colspan="7" style="text-align:center;padding:36px;color:var(--muted)">No employees found.</td></tr>';
+
+    document.getElementById('fiBulkbar').classList.toggle('show', selected.size > 0);
+    document.getElementById('fiBulkCount').textContent = selected.size;
+
+    const start = f.length ? (page - 1) * perPage + 1 : 0;
+    const end = perPage === 0 ? f.length : Math.min(page * perPage, f.length);
+    document.getElementById('fiRangeInfo').textContent = `${start} to ${end} of ${f.length} results`;
+
+    document.getElementById('fiPerpage').innerHTML = [10, 25, 50].map(n =>
+        `<button class="fi-pp-btn ${perPage===n?'active':''}" onclick="setPerPage(${n})">${n}</button>`
+    ).join('') + `<button class="fi-pp-btn ${perPage===0?'active':''}" onclick="setPerPage(0)">All</button>`;
+
+    let html = `<button class="fi-page-btn" onclick="fiGoto(${page-1})" ${page<=1?'disabled':''}>‹</button>`;
+    for (let p = 1; p <= totalPages; p++) html += `<button class="fi-page-btn ${p===page?'active':''}" onclick="fiGoto(${p})">${p}</button>`;
+    html += `<button class="fi-page-btn" onclick="fiGoto(${page+1})" ${page>=totalPages?'disabled':''}>›</button>`;
+    document.getElementById('fiPagination').innerHTML = html;
+}
+
+function fiGoto(p){ page = p; render(); }
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.fi-filter-wrap')) document.getElementById('fiFilterPanel').classList.remove('show');
+    if (!e.target.closest('.fi-row-actions')) { openDropdown = null; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
