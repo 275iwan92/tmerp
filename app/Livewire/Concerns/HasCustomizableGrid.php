@@ -72,6 +72,18 @@ trait HasCustomizableGrid
         }
     }
 
+    // Shift-klik range-select (2026-08-30, permintaan user: "ctrl/shift ala
+    // file manager"). $ids dihitung di CLIENT (Alpine, urutan DOM checkbox
+    // yang lagi dirender) lalu dikirim ke sini apa adanya -- AMAN meski ada
+    // id yang sebenarnya tidak boleh dipilih (mis. baris sudah confirmed),
+    // krn guard bisnis tetap di level query saat bulkDelete() (WHERE
+    // stat_confirm=false / doc_status=DRAFT), bukan percaya array ini
+    // mentah-mentah. Klik biasa (tanpa shift) tetap lewat toggleRowSelection().
+    public function selectRange(array $ids): void
+    {
+        $this->selectedRows = array_values(array_unique(array_merge($this->selectedRows, $ids)));
+    }
+
     public function clearSelection(): void
     {
         $this->selectedRows = [];
@@ -87,8 +99,6 @@ trait HasCustomizableGrid
 
     public bool $showSortModal = false;
 
-    public bool $showExportModal = false;
-
     // State kerja SEMENTARA di dalam modal Kolom -- dipisah dari
     // gridVisibleColumns supaya "Batal" beneran batal, bukan langsung apply
     // tiap klik (beda dari desain checkbox lama).
@@ -99,13 +109,6 @@ trait HasCustomizableGrid
     public ?string $sortModalColumn = null;
 
     public ?string $sortModalDirection = 'asc';
-
-    // Kolom export BOLEH beda dari kolom yang lagi tampil di grid (pola
-    // ScriptCase: export punya pemilihan kolom sendiri, default ikut yang
-    // lagi tampil tapi bisa diubah).
-    public array $exportColumns = [];
-
-    public string $exportFormat = 'excel'; // excel | csv | pdf
 
     abstract protected function gridKey(): string;
 
@@ -348,6 +351,21 @@ trait HasCustomizableGrid
 
         $resolvers = $this->gridCrossDbSearchResolvers();
 
+        // Semua kolom (termasuk numerik/boolean/tanggal) WAJIB lewat
+        // `CAST(col AS CHAR)` sebelum LIKE/=, bukan cuma utk "Sama Dengan"
+        // seperti sebelumnya (2026-08-30, permintaan user: filter tetap
+        // harus jalan lintas tipe data). Dua alasan gabung:
+        // 1) Bug lama (2026-08-27): MySQL diam-diam meng-cast string
+        //    non-numerik ke 0 utk perbandingan `=` ke kolom numerik/boolean
+        //    (`stat_confirm = 'ANIMAL GLUE'` jadi `stat_confirm = 0`, cocok
+        //    ke SEMUA baris draft).
+        // 2) LIKE polos ke kolom non-VARCHAR kadang tak konsisten antar versi
+        //    MySQL/index -- CAST AS CHAR memaksa semuanya jadi perbandingan
+        //    string biasa, seragam & aman utk teks/angka/boolean/tanggal.
+        // Catatan: kolom tanggal (mis. `co_date`) ke-CAST ke format ISO MySQL
+        // (YYYY-MM-DD), BUKAN format tampil translatedFormat() ("30 Agu
+        // 2026") -- user bisa cari "2026-08" atau "30", TIDAK bisa cari
+        // "Agustus"/"Agu". Batasan yang disengaja, bukan bug.
         if ($this->searchCondition === 'not_contains') {
             // "Tidak mengandung" = TAK SATUPUN kolom terpilih cocok (AND semua
             // negasi). Kolom relasi (dot-notation, termasuk cross-DB resolver)
@@ -358,43 +376,32 @@ trait HasCustomizableGrid
                 if (str_contains($key, '.')) {
                     continue;
                 }
-                $query->where($key, 'not like', "%{$term}%");
+                $query->whereRaw("CAST(`{$key}` AS CHAR) NOT LIKE ?", ["%{$term}%"]);
             }
 
             return $query;
         }
 
-        // "Sama Dengan" (=) BAHAYA dipakai polos ke kolom numerik/boolean --
-        // MySQL diam-diam meng-cast string non-numerik ke 0 utk perbandingan
-        // (mis. `stat_confirm = 'ANIMAL GLUE'` jadi `stat_confirm = 0`,
-        // cocok ke SEMUA baris draft!). Ketemu nyata 2026-08-27 (search
-        // "Equal" balikin 5894 baris alih-alih 1). CAST AS CHAR paksa
-        // perbandingan string, aman utk semua tipe kolom.
         [$operator, $pattern] = match ($this->searchCondition) {
             'starts_with' => ['like', "{$term}%"],
-            'equal' => ['cast_equal', $term],
+            'equal' => ['=', $term],
             default => ['like', "%{$term}%"],
         };
 
         $query->where(function ($q) use ($columns, $operator, $pattern, $resolvers) {
             foreach ($columns as $key) {
                 if (isset($resolvers[$key])) {
-                    $sqlOperator = $operator === 'cast_equal' ? '=' : $operator;
-                    $ids = $resolvers[$key]($sqlOperator, $pattern);
+                    $ids = $resolvers[$key]($operator, $pattern);
                     $pk = $this->gridBaseQuery()->getModel()->getKeyName();
                     $q->orWhereIn($pk, $ids);
                 } elseif (str_contains($key, '.')) {
                     $relation = substr($key, 0, strrpos($key, '.'));
                     $col = substr($key, strrpos($key, '.') + 1);
                     $q->orWhereHas($relation, function ($r) use ($col, $operator, $pattern) {
-                        $operator === 'cast_equal'
-                            ? $r->whereRaw("CAST(`{$col}` AS CHAR) = ?", [$pattern])
-                            : $r->where($col, $operator, $pattern);
+                        $r->whereRaw("CAST(`{$col}` AS CHAR) {$operator} ?", [$pattern]);
                     });
-                } elseif ($operator === 'cast_equal') {
-                    $q->orWhereRaw("CAST(`{$key}` AS CHAR) = ?", [$pattern]);
                 } else {
-                    $q->orWhere($key, $operator, $pattern);
+                    $q->orWhereRaw("CAST(`{$key}` AS CHAR) {$operator} ?", [$pattern]);
                 }
             }
         });
@@ -413,39 +420,27 @@ trait HasCustomizableGrid
         return $query;
     }
 
-    // ============== MODAL: EXPORT ==============
-    public function openExportModal(): void
+    // ============== EXPORT (2026-08-30: dropdown ringan ala PowerGrid,
+    // BUKAN lagi modal pilih-kolom terpisah) ==============
+    // Keputusan user eksplisit: export SELALU ikut kolom yang lagi TAMPIL
+    // di grid ($gridVisibleColumns) -- kalau mau export kolom lain, ubah
+    // dulu tampilan lewat tombol "☰ Kolom", baru export. Method di bawah
+    // sengaja tanpa argumen (beda dari exportGridCsv/Excel/Pdf($columns)
+    // generik di bawahnya yang tetap menerima override eksplisit kalau
+    // dipanggil langsung, mis. dari test).
+    public function exportCsv(): StreamedResponse
     {
-        $this->exportColumns = $this->gridVisibleColumns;
-        $this->exportFormat = 'excel';
-        $this->showExportModal = true;
+        return $this->exportGridCsv($this->gridVisibleColumns);
     }
 
-    public function addExportColumn(string $key): void
+    public function exportExcel()
     {
-        if (! in_array($key, $this->exportColumns, true) && array_key_exists($key, $this->gridColumnDefs())) {
-            $this->exportColumns[] = $key;
-        }
+        return $this->exportGridExcel($this->gridVisibleColumns);
     }
 
-    public function removeExportColumn(string $key): void
+    public function exportPdf()
     {
-        if (count($this->exportColumns) <= 1) {
-            return;
-        }
-
-        $this->exportColumns = array_values(array_diff($this->exportColumns, [$key]));
-    }
-
-    public function addAllExportColumns(): void
-    {
-        $this->exportColumns = array_keys($this->gridColumnDefs());
-    }
-
-    public function removeAllExportColumns(): void
-    {
-        $first = array_key_first($this->gridColumnDefs());
-        $this->exportColumns = $first ? [$first] : [];
+        return $this->exportGridPdf($this->gridVisibleColumns);
     }
 
     protected function gridExportRows(array $columns, ?int $limit = null): array
@@ -473,17 +468,6 @@ trait HasCustomizableGrid
     protected function sanitizeExportValue(string $value): string
     {
         return iconv('UTF-8', 'UTF-8//IGNORE', $value) ?: $value;
-    }
-
-    public function runExport()
-    {
-        $this->showExportModal = false;
-
-        return match ($this->exportFormat) {
-            'csv' => $this->exportGridCsv($this->exportColumns),
-            'pdf' => $this->exportGridPdf($this->exportColumns),
-            default => $this->exportGridExcel($this->exportColumns),
-        };
     }
 
     public function exportGridCsv(?array $columns = null): StreamedResponse

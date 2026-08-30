@@ -227,7 +227,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                 </div>
                 <x-slot:tools>
                     @include('components.grid.filters-panel')
-                    <x-grid.toolbar-buttons />
+                    @include('components.grid.toolbar-buttons')
                 </x-slot:tools>
             </x-grid.toolbar>
             @include('components.grid.filters-row', ['columnDefs' => $this->gridSearchColumnDefs()])
@@ -241,6 +241,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                 </div>
             @endif
 
+            <div x-data="rowMultiSelect()">
             <x-grid.table-shell>
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
@@ -286,21 +287,23 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                             <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                 <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
                                     <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? 'Tutup preview item' : 'Lihat item' }}"
-                                        class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">{{ $isOpen ? '▾' : '▸' }}</button>
+                                        class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">
+                                        <span class="inline-block transition-transform duration-150 {{ $isOpen ? 'rotate-90' : '' }}">›</span>
+                                    </button>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] whitespace-nowrap">
-                                    <div class="flex items-center gap-1">
+                                    <div class="flex items-center gap-1.5">
                                         @if ($o->doc_status === 'DRAFT')
-                                            <input type="checkbox" wire:click.stop="toggleRowSelection({{ $o->id_order }})" @checked(in_array($o->id_order, $selectedRows, true))
-                                                title="Pilih untuk hapus massal (draft)" class="w-3.5 h-3.5 cursor-pointer mr-0.5">
+                                            <input type="checkbox" class="row-checkbox" data-id="{{ $o->id_order }}"
+                                                @click.stop="handleCheckClick($event, {{ $o->id_order }})" @checked(in_array($o->id_order, $selectedRows, true))
+                                                title="Pilih untuk hapus massal (draft) — shift+klik utk pilih rentang" class="w-3.5 h-3.5 cursor-pointer">
                                         @else
                                             <span class="w-3.5 inline-block shrink-0"></span>
                                         @endif
-                                        <x-grid.action-icon icon="↗" title="Buka Customer Order ini" action="openOrder({{ $o->id_order }})" :bordered="true" />
-                                        @if ($o->doc_status === 'DRAFT')
-                                            <x-grid.action-icon icon="✓" title="Confirm CO ini (DRAFT → CONFIRMED)" action="confirmOrder({{ $o->id_order }})"
-                                                confirm="Confirm CO {{ $o->co_no }}?" variant="success" :bordered="true" />
-                                        @endif
+                                        <x-grid.action-dropdown :actions="[
+                                            ['icon' => '↗', 'label' => 'Buka', 'action' => 'openOrder('.$o->id_order.')', 'tooltip' => 'Buka Customer Order ini — atau klik 2x pada baris'],
+                                            ...($o->doc_status === 'DRAFT' ? [['icon' => '✓', 'label' => 'Confirm', 'action' => 'confirmOrder('.$o->id_order.')', 'confirm' => 'Confirm CO '.$o->co_no.'?', 'variant' => 'success', 'tooltip' => 'DRAFT → CONFIRMED']] : []),
+                                        ]" />
                                     </div>
                                 </td>
                                 <x-grid.identity-cell :id="$o->id_order" :name="$o->quotation?->customer?->customer_name ?? '—'" :code="$o->co_no" />
@@ -383,6 +386,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                     </tbody>
                 </table>
             </x-grid.table-shell>
+            </div>
 
             @include('components.grid.pagination-footer', ['paginator' => $this->orders])
         </div>
@@ -390,5 +394,4 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
     @include('components.grid.column-modal', ['columnDefs' => $this->gridColumnDefs()])
     @include('components.grid.sort-modal', ['columnDefs' => $this->gridColumnDefs()])
-    @include('components.grid.export-modal', ['columnDefs' => $this->gridColumnDefs()])
 </div>

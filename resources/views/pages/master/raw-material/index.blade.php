@@ -147,14 +147,24 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
+            {{-- Pilot chrome ala PowerGrid (2026-08-30), roll-out ke-2 sesudah CO --
+                 lihat griduistandard.md §12. --}}
             <x-grid.toolbar>
-                @include('components.grid.search-box', ['columnDefs' => $this->gridSearchColumnDefs(), 'placeholder' => 'Cari kode, nama, HS code…'])
-                <x-slot:tools><x-grid.toolbar-buttons /></x-slot:tools>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode, nama, HS code…"
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <x-slot:tools>
+                    @include('components.grid.filters-panel')
+                    @include('components.grid.toolbar-buttons')
+                </x-slot:tools>
                 <x-slot:newRecord>
                     <a href="{{ route('master.raw-material.create') }}"
                         class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] no-underline cursor-pointer">+ New Record</a>
                 </x-slot:newRecord>
             </x-grid.toolbar>
+            @include('components.grid.filters-row', ['columnDefs' => $this->gridSearchColumnDefs()])
 
             @if (count($selectedRows))
                 <div class="flex items-center gap-2.5 bg-[#fdecec] border-b border-[#f5c6c6] px-3.5 py-2 text-[12px]">
@@ -165,20 +175,22 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                 </div>
             @endif
 
+            <div x-data="rowMultiSelect()">
             <x-grid.table-shell>
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr>
-                            <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]"></th>
+                            <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[135px]"></th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Item</th>
                             @foreach ($gridVisibleColumns as $key)
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] whitespace-nowrap">
-                                    <button type="button" wire:click="toggleGridSort('{{ $key }}')" class="inline-flex items-center gap-1 cursor-pointer hover:text-navy">
+                                    <button type="button" wire:click="toggleGridSort('{{ $key }}')"
+                                        class="inline-flex items-center gap-1 cursor-pointer hover:text-navy {{ $gridSortColumn === $key ? 'text-accent' : '' }}">
                                         {{ $this->gridColumnDefs()[$key]['label'] }}
-                                        <span class="text-[9px]">{{ match (true) {
+                                        <span class="text-[9px] {{ $gridSortColumn === $key ? 'text-accent' : 'opacity-40' }}">{{ match (true) {
                                             $gridSortColumn === $key && $gridSortDirection === 'asc' => '▲',
                                             $gridSortColumn === $key && $gridSortDirection === 'desc' => '▼',
-                                            default => '↕',
+                                            default => '▲',
                                         } }}</span>
                                     </button>
                                 </th>
@@ -203,18 +215,20 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                             @endif
                             <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="mat-{{ $m->material_id }}" wire:dblclick="openItem({{ $m->material_id }})" title="Klik 2x untuk buka detail">
                                 <td class="px-3 py-2 whitespace-nowrap">
-                                    <div class="flex items-center gap-1">
+                                    <div class="flex items-center gap-1.5">
                                         @if (! $m->stat_confirm)
-                                            <input type="checkbox" wire:click.stop="toggleRowSelection({{ $m->material_id }})" @checked(in_array($m->material_id, $selectedRows, true))
-                                                title="Pilih untuk hapus massal (draft)" class="w-3.5 h-3.5 cursor-pointer mr-0.5">
+                                            <input type="checkbox" class="row-checkbox" data-id="{{ $m->material_id }}"
+                                                @click.stop="handleCheckClick($event, {{ $m->material_id }})" @checked(in_array($m->material_id, $selectedRows, true))
+                                                title="Pilih untuk hapus massal (draft) — shift+klik utk pilih rentang" class="w-3.5 h-3.5 cursor-pointer">
                                         @else
                                             <span class="w-3.5 inline-block shrink-0"></span>
                                         @endif
-                                        <x-grid.action-icon icon="✎" title="Edit item ini" action="openItem({{ $m->material_id }})" :bordered="true" />
-                                        <x-grid.action-icon icon="⏻" :title="$m->activate ? 'Klik untuk nonaktifkan item ini' : 'Klik untuk aktifkan item ini'"
-                                            action="toggleActive({{ $m->material_id }})"
+                                        <x-grid.action-dropdown :actions="[
+                                            ['icon' => '✎', 'label' => 'Edit', 'action' => 'openItem('.$m->material_id.')', 'tooltip' => 'Edit item ini — atau klik 2x pada baris'],
+                                        ]" />
+                                        <x-grid.toggle-switch :on="(bool) $m->activate" action="toggleActive({{ $m->material_id }})"
                                             :confirm="($m->activate ? 'Nonaktifkan' : 'Aktifkan').' item '.$m->material_name.'?'"
-                                            :variant="$m->activate ? 'danger' : 'default'" :bordered="true" />
+                                            :title="$m->activate ? 'Klik untuk nonaktifkan item ini' : 'Klik untuk aktifkan item ini'" />
                                     </div>
                                 </td>
                                 <x-grid.identity-cell :id="$m->material_id" :name="$m->material_name" :code="$m->material_code" />
@@ -238,6 +252,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     </tbody>
                 </table>
             </x-grid.table-shell>
+            </div>
 
             @include('components.grid.pagination-footer', ['paginator' => $this->items])
         </div>
@@ -245,5 +260,4 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
     @include('components.grid.column-modal', ['columnDefs' => $this->gridColumnDefs()])
     @include('components.grid.sort-modal', ['columnDefs' => $this->gridColumnDefs()])
-    @include('components.grid.export-modal', ['columnDefs' => $this->gridColumnDefs()])
 </div>

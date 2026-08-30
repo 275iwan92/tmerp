@@ -1,11 +1,13 @@
 {{--
     griduistandard.md §6 -- wrapper baris toolbar grid (search + opsional
-    tombol Kolom/Sort/Export + opsional "+ New Record"). Slot default diisi
-    @include('components.grid.search-box', ...) LANGSUNG di layar pemanggil
-    (bukan di file component ini) -- konten slot dievaluasi di scope Livewire
-    pemanggil, bukan scope terisolasi component, jadi search-box tetap bisa
-    akses $showSearchDropdown dkk seperti biasa. Named slot `tools` (tombol
-    Kolom/Sort/Export) & `newRecord` opsional.
+    tombol Filters/Kolom/Sort/Export + opsional "+ New Record"). Slot default
+    diisi input search polos LANGSUNG di layar pemanggil (bukan di file
+    component ini) -- konten slot dievaluasi di scope Livewire pemanggil,
+    bukan scope terisolasi component. Named slot `tools` (tombol Filters via
+    components.grid.filters-panel §12 + Kolom/Sort/Export via
+    components.grid.toolbar-buttons) & `newRecord` opsional. Panel filter
+    (components.grid.filters-row) dirender TERPISAH sesudah komponen ini,
+    bukan di dalam slot manapun -- lihat catatan di filters-row.blade.php.
 --}}
 {{-- $attributes->merge(...) supaya layar report yang butuh flex-wrap (2 baris
      filter: search + rentang tanggal) bisa tambah class tanpa fork component. --}}

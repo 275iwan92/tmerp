@@ -348,41 +348,36 @@ multi-delete di §10.
 
 ---
 
-## 12. Pilot chrome ala PowerGrid — tombol Filters terpisah + sort-header polos (HANYA CO)
+## 12. Chrome gabungan PowerGrid + Filament (HasCustomizableGrid: CO & Raw Material)
 
 **(2026-08-30)** Sesudah membandingkan mockup `docs/mockup/powergrid_demo.html`
-vs `docs/mockup/filament_table_demo.html`, user memilih kombinasi: chrome
-filter/sort-header/pagination/export ala **PowerGrid** (dinilai "simple
-elegant"), tapi kolom Aksi + interaksi klik-2x buka form **TETAP** pola tmerp
-yang sudah ada (kebetulan mirip Filament). Dicoba sebagai **pilot 1 grid:
-Customer Order** (`co/list.blade.php`) — grid transaksi, dipilih user sendiri
-karena representatif utk grid worklist. **Jangan roll out ke grid lain tanpa
-ditanya dulu**, sama status-nya dengan pilot Aksi-kiri §10.
+vs `docs/mockup/filament_table_demo.html`, user memutuskan kombinasi final —
+**diterapkan ke KEDUA grid yang pakai `HasCustomizableGrid`** (`co/list.blade.php`
+dan `master/raw-material/index.blade.php` — kebetulan cuma 2 grid ini yang
+pakai trait itu, jadi perubahan trait di bawah otomatis konsisten di
+keduanya, TIDAK menyentuh grid lain manapun). Kalau nanti trait ini dipakai
+grid ke-3, grid itu otomatis ikut semua keputusan di section ini juga —
+bukan pilot terbatas lagi seperti versi draf pertama section ini.
 
-- **Tombol "🔽 Filters" terpisah** (`components/grid/filters-panel.blade.php`)
-  menggantikan caret kecil yang nempel di search box (`search-box.blade.php`,
-  **tetap dipakai apa adanya di grid lain** — tidak diubah). Badge angka
-  muncul di tombol kalau `$searchColumns` sedang dipersempit dari "Semua
-  Field". State & method di baliknya **sama persis** dgn yang sudah ada di
-  `HasCustomizableGrid` (`showSearchDropdown`, `searchModalColumns`, dst) —
-  cuma tata-letak visualnya beda, 0 logic baru.
-- **Panel filter jadi baris penuh** di bawah toolbar
-  (`components/grid/filters-row.blade.php`), bukan popover
-  `x-teleport`/`position:fixed` — karena sekarang panelnya `@include` TERPISAH
-  dari `<x-grid.toolbar>` (toolbar induk `flex` tanpa wrap, §6, jadi tak bisa
-  "turun baris" di dalam toolbar yang sama).
-- **Sort-header selalu tampilkan panah** (▲ pudar/`opacity-40` saat tak
-  aktif, warna accent + terang saat kolom itu yang lagi disortir) — beda dari
-  ↕ netral yang dipakai grid lain sebelumnya, TAPI mekanismenya
-  (`toggleGridSort()`) sama persis, cuma polish CSS lokal di markup
-  `co/list.blade.php` (bukan diekstrak ke komponen, jadi tak menyentuh grid
-  lain yang menulis header serupa secara terpisah).
-- Pagination footer & tombol Export/Kolom/Sort **TIDAK diubah** — sudah
-  dinilai cukup dekat dgn gaya yang disukai (page-pill + per-page + range
-  info sudah mirip PowerGrid dari awal).
-- Kalau nanti dianggap berhasil dan mau di-generalisasi ke grid
-  `HasCustomizableGrid` lain, itu keputusan baru yang perlu ditanyakan user
-  dulu — jangan diam-diam mengganti `search-box.blade.php` bawaan.
+**Sumber tiap keputusan (jangan tebak-tebak lagi):**
+
+| Elemen | Ditiru dari | Detail |
+|---|---|---|
+| Tombol "🔽 Filters" terpisah + panel baris | PowerGrid | `components/grid/filters-panel.blade.php` (tombol+badge) + `components/grid/filters-row.blade.php` (panel baris penuh di bawah toolbar). **Menggantikan total** `search-box.blade.php` lama (caret popover) — file itu **sudah dihapus**, HasCustomizableGrid cuma 2 konsumen jadi tidak ada grid lain yang kehilangan fitur. State/method di baliknya (`showSearchDropdown`, `searchModalColumns`, dst) tidak berubah, cuma tata letak. |
+| Sort-header selalu tampilkan panah | PowerGrid | ▲ pudar (`opacity-40`) saat tak aktif, warna `text-accent` + terang saat kolom itu yang disortir. Mekanisme `toggleGridSort()` tidak berubah, polish CSS lokal di tiap file grid (bukan komponen bersama). |
+| Export jadi dropdown ringan, ikut kolom TAMPIL | PowerGrid (dgn modifikasi user) | `components/grid/export-dropdown.blade.php` — **BUKAN lagi modal pilih-kolom terpisah** (`export-modal.blade.php` **sudah dihapus**, beserta state `exportColumns`/`exportFormat`/`showExportModal` di trait). Export SELALU pakai `$gridVisibleColumns` apa adanya — kalau tampil 10 kolom, ke-export 10; kalau 2, ke-export 2. Tooltip tombol WAJIB menjelaskan ini ("gunakan ☰ Kolom dulu sebelum export"). Method Livewire: `exportCsv()`/`exportExcel()`/`exportPdf()` (tanpa argumen, trigger langsung — bukan 2 langkah pilih-format-lalu-klik-tombol seperti modal lama). |
+| Kolom Aksi → dropdown "⋮" | Filament | `components/grid/action-dropdown.blade.php` — SATU tombol "⋮" per baris mengumpulkan semua aksi (ganti ikon sejajar §5 khusus di 2 grid ini). **Posisi tetap KIRI** (§10, tidak berubah). Setiap item aksi yang setara "buka/edit" WAJIB `tooltip` yang menyebut klik-2x sbg jalan pintas (mis. "Buka Customer Order ini — atau klik 2x pada baris"). `x-data="{open:false}"` lokal per-baris (Alpine, bukan Livewire state) + `@click.outside`. |
+| Toggle aktif/nonaktif jadi visual switch | Tidak ditiru dari manapun (gaya visual custom, perilaku tetap tmerp) | `components/grid/toggle-switch.blade.php` — **TETAP WAJIB `wire:confirm`** sebelum eksekusi (beda dari PowerGrid/Filament yang toggle instan) — cuma tampilannya switch, bukan lagi ikon ⏻. Raw Material pakai ini; CO tidak (tak ada konsep activate di CO, tetap pakai Confirm sbg item dropdown). |
+| Expand-row pakai ikon chevron | PowerGrid | Ganti glyph `▸`/`▾` jadi 1 karakter `›` + `rotate-90` CSS transform saat terbuka (bukan swap karakter). Cuma CO yang punya expand-row. |
+| Checkbox + Ctrl/Shift multi-select | Konsep umum file-manager (bukan spesifik PowerGrid/Filament) | `resources/js/row-multiselect.js` (`Alpine.data('rowMultiSelect', ...)`), dibungkus di `<div x-data="rowMultiSelect()">` mengelilingi `<x-grid.table-shell>`. Klik biasa (dgn/tanpa Ctrl — checkbox memang sudah independen tanpa modifier) = `toggleRowSelection()` seperti biasa. **Shift+klik** = pilih SEMUA baris di antara klik terakhir & baris ini (urutan DOM `.row-checkbox`, method baru `selectRange()` di trait) — SELALU menambah pilihan, tidak toggle-off. Guard bisnis (baris mana boleh dihapus massal) tetap di query `bulkDelete()`, `selectRange()` tidak menyaring apa pun di level PHP (Alpine cuma UX, bukan sumber kebenaran keamanan). |
+| Filter tetap jalan lintas tipe data (teks/angka/boolean/tanggal) | Permintaan eksplisit user | `HasCustomizableGrid::gridSearchedQuery()` sekarang **SELALU** `CAST(col AS CHAR)` sebelum `LIKE`/`=` untuk SEMUA kondisi (dulu cuma "Sama Dengan" yang di-cast, "Mengandung"/"Diawali" masih `LIKE` polos) — kolom relasi (`whereHas`) & langsung sama-sama kena. **Batasan disengaja**: kolom tanggal ke-CAST ke format ISO MySQL (`YYYY-MM-DD`), BUKAN format tampil `translatedFormat()` ("30 Agu 2026") — user bisa cari "2026-08"/"30", TIDAK bisa cari "Agustus". |
+| Pagination footer | Dipertahankan tmerp | Sudah dinilai cukup dekat gaya PowerGrid dari awal (page-pill + per-page + range info), sengaja tidak disentuh sama sekali. |
+| Klik-2x buka form, kolom identitas | Dipertahankan tmerp (LOCKED) | Instruksi eksplisit user — tidak ikut redesain dari sumber manapun. |
+
+**Kalau bikin/pindahkan grid ke `HasCustomizableGrid` di masa depan** — otomatis
+dapat SEMUA baris tabel di atas (bukan pilot terbatas lagi), KECUALI
+toggle-switch (§ itu opt-in manual per grid lewat `<x-grid.toggle-switch>`,
+cuma dipasang kalau grid itu punya kolom `activate`).
 
 ---
 
