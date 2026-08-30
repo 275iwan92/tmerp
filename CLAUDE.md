@@ -131,6 +131,11 @@ transaksi = `iqp_costing`, ikut inquiry).
 > `doc_slug` submodule terkait (atau tambahkan row baru di `sys_app_menu`/`sys_doc_reference`
 > kalau belum ada), jangan bikin prefix sendiri.
 
+> **`uistandardindex.md` — peta semua standar UI/UX** (grid/form/nota/gantt/
+> kanban/admin dashboard Filament) + kapan masing-masing wajib dibaca. **Cek
+> file ini dulu** kalau bingung standar mana yang relevan untuk 1 layar baru,
+> daripada baca satu-satu daftar di bawah.
+
 - `globalarchitecture_tier0.md` — arsitektur global, keputusan LOCKED.
 - `inquiryproduct_tier1.md` — alur & proses inquiry (aktor, state, aturan bisnis).
 - `inquiryproduct_tier2.md` — business logic, state machine, pseudocode HPP.
@@ -156,6 +161,12 @@ transaksi = `iqp_costing`, ikut inquiry).
   lintas-boundary. Gotcha wajib: jangan tulis nama tag komponen berkurung
   sudut (`<x-...>`) di dalam komentar mana pun — Blade tag compiler ikut
   mengompilasinya dan merusak file.
+- `kanbanboardstandard.md` — **wajib dibaca sebelum bikin/ubah layar Kanban
+  apa pun** (kolom kategori/status diskrit, kartu drag-drop antar kolom,
+  mis. Pipeline Board, Monitoring Dashboard): pola `x-data="{draggedId}"` +
+  `dragover.prevent`/`drop`, validasi bisnis WAJIB di server (DB = satu-
+  satunya sumber kebenaran posisi kartu, drag di layar cuma usulan sampai
+  re-render), tombol aksi non-drag selalu tersedia sbg fallback.
 - `docs/qc_feedback.md` — **tempat user tulis hasil QC/revisi/bug setelah cek aplikasi sendiri di browser** (Claude Code tidak bisa login browser otomatis, lihat §7). Cek file ini kalau user minta "cek qc_feedback" / "kerjakan yang belum" — proses entry di bagian "Belum Dikerjakan", pindahkan ke "Selesai" (isi Perbaikan+tanggal) atau "Ditutup" (kalau ternyata bukan bug) setelah selesai, jangan hapus entry.
 - `docs/attachments/` — folder tempat menaruh **form manual (kertas/scan) & file Excel yang SAAT INI benar-benar dipakai** di lapangan, dijadikan acuan sebelum membangun/mengubah layar terkait (jangan menebak field, cek dulu ke sini kalau ada dokumen relevan). **Daftar isi lengkap: `docs/attachments_index.md`** — cek/update file itu setiap ada attachment baru ditambah/dipakai, jangan baca ulang seluruh folder dari nol tiap sesi.
 - `printnotastandard.md` — **wajib dibaca sebelum bikin/ubah layar cetak
@@ -171,6 +182,15 @@ transaksi = `iqp_costing`, ikut inquiry).
   `iqp_part` = 1 `prd_wo` (konvergensi antar-part sengaja belum dimodelkan),
   target rate dikunci ke `prod_product`+`part_code` teks (bukan `prod_part`
   yang ternyata tak pernah diisi).
+- `admindashboardstandard.md` — **wajib dibaca sebelum bikin/pindahkan
+  modul apa pun ke panel Filament `/admin`** (migrasi bertahap, dimulai
+  2026-08-30): pemetaan Module→Cluster/Group→navigationGroup/Item→Resource,
+  urutan grup harus didaftarkan eksplisit (`->navigationGroups()`), auth
+  bridge kolom `login`/`pswd` (bukan email/password bawaan Filament),
+  `->topNavigation()` untuk pola top-pilih-modul + sidebar-isi-modul, cara
+  bikin Resource baru tanpa kena crash generator `--cluster=`. Ini HANYA
+  mengatur chrome/navigasi Filament — isi layar tetap ikut standar UI
+  lain sesuai jenisnya (lihat `uistandardindex.md`).
 
 ---
 
