@@ -216,10 +216,21 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            {{-- Pilot chrome ala PowerGrid (2026-08-30, permintaan user) -- search
+                 polos + tombol "Filters" terpisah (bukan caret di search box),
+                 panel filter jadi baris penuh di bawah toolbar. HANYA grid ini. --}}
             <x-grid.toolbar>
-                @include('components.grid.search-box', ['columnDefs' => $this->gridSearchColumnDefs(), 'placeholder' => 'Cari no. CO / customer…'])
-                <x-slot:tools><x-grid.toolbar-buttons /></x-slot:tools>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer…"
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <x-slot:tools>
+                    @include('components.grid.filters-panel')
+                    <x-grid.toolbar-buttons />
+                </x-slot:tools>
             </x-grid.toolbar>
+            @include('components.grid.filters-row', ['columnDefs' => $this->gridSearchColumnDefs()])
 
             @if (count($selectedRows))
                 <div class="flex items-center gap-2.5 bg-[#fdecec] border-b border-[#f5c6c6] px-3.5 py-2 text-[12px]">
@@ -242,12 +253,13 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                     @if (($this->gridColumnDefs()[$key]['sortable'] ?? true) === false)
                                         {{ $this->gridColumnDefs()[$key]['label'] }}
                                     @else
-                                        <button type="button" wire:click="toggleGridSort('{{ $key }}')" class="inline-flex items-center gap-1 cursor-pointer hover:text-navy">
+                                        <button type="button" wire:click="toggleGridSort('{{ $key }}')"
+                                            class="inline-flex items-center gap-1 cursor-pointer hover:text-navy {{ $gridSortColumn === $key ? 'text-accent' : '' }}">
                                             {{ $this->gridColumnDefs()[$key]['label'] }}
-                                            <span class="text-[9px]">{{ match (true) {
+                                            <span class="text-[9px] {{ $gridSortColumn === $key ? 'text-accent' : 'opacity-40' }}">{{ match (true) {
                                                 $gridSortColumn === $key && $gridSortDirection === 'asc' => '▲',
                                                 $gridSortColumn === $key && $gridSortDirection === 'desc' => '▼',
-                                                default => '↕',
+                                                default => '▲',
                                             } }}</span>
                                         </button>
                                     @endif

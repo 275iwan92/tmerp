@@ -348,6 +348,44 @@ multi-delete di §10.
 
 ---
 
+## 12. Pilot chrome ala PowerGrid — tombol Filters terpisah + sort-header polos (HANYA CO)
+
+**(2026-08-30)** Sesudah membandingkan mockup `docs/mockup/powergrid_demo.html`
+vs `docs/mockup/filament_table_demo.html`, user memilih kombinasi: chrome
+filter/sort-header/pagination/export ala **PowerGrid** (dinilai "simple
+elegant"), tapi kolom Aksi + interaksi klik-2x buka form **TETAP** pola tmerp
+yang sudah ada (kebetulan mirip Filament). Dicoba sebagai **pilot 1 grid:
+Customer Order** (`co/list.blade.php`) — grid transaksi, dipilih user sendiri
+karena representatif utk grid worklist. **Jangan roll out ke grid lain tanpa
+ditanya dulu**, sama status-nya dengan pilot Aksi-kiri §10.
+
+- **Tombol "🔽 Filters" terpisah** (`components/grid/filters-panel.blade.php`)
+  menggantikan caret kecil yang nempel di search box (`search-box.blade.php`,
+  **tetap dipakai apa adanya di grid lain** — tidak diubah). Badge angka
+  muncul di tombol kalau `$searchColumns` sedang dipersempit dari "Semua
+  Field". State & method di baliknya **sama persis** dgn yang sudah ada di
+  `HasCustomizableGrid` (`showSearchDropdown`, `searchModalColumns`, dst) —
+  cuma tata-letak visualnya beda, 0 logic baru.
+- **Panel filter jadi baris penuh** di bawah toolbar
+  (`components/grid/filters-row.blade.php`), bukan popover
+  `x-teleport`/`position:fixed` — karena sekarang panelnya `@include` TERPISAH
+  dari `<x-grid.toolbar>` (toolbar induk `flex` tanpa wrap, §6, jadi tak bisa
+  "turun baris" di dalam toolbar yang sama).
+- **Sort-header selalu tampilkan panah** (▲ pudar/`opacity-40` saat tak
+  aktif, warna accent + terang saat kolom itu yang lagi disortir) — beda dari
+  ↕ netral yang dipakai grid lain sebelumnya, TAPI mekanismenya
+  (`toggleGridSort()`) sama persis, cuma polish CSS lokal di markup
+  `co/list.blade.php` (bukan diekstrak ke komponen, jadi tak menyentuh grid
+  lain yang menulis header serupa secara terpisah).
+- Pagination footer & tombol Export/Kolom/Sort **TIDAK diubah** — sudah
+  dinilai cukup dekat dgn gaya yang disukai (page-pill + per-page + range
+  info sudah mirip PowerGrid dari awal).
+- Kalau nanti dianggap berhasil dan mau di-generalisasi ke grid
+  `HasCustomizableGrid` lain, itu keputusan baru yang perlu ditanyakan user
+  dulu — jangan diam-diam mengganti `search-box.blade.php` bawaan.
+
+---
+
 ## 1. Tidak ada header halaman
 
 Shell (`layouts.shell`, lihat `docs/customer_fix_nav_address.md` §A) sudah
