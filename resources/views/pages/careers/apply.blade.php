@@ -3,6 +3,7 @@
 use App\Models\Hrr\VacVacancy;
 use App\Services\Portal\CandidateAuthService;
 use App\Services\Recruitment\FirebaseSyncAdapter;
+use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -19,14 +20,21 @@ use Livewire\WithFileUploads;
 // instruksi eksplisit user ("firebase untuk database"), supaya tidak
 // tergantung/berubah kalau .env PORTAL_BACKEND diganti utk keperluan simulasi
 // internal (portal.blade.php lama, beda konsep akun -- lihat delta doc §7).
-// Field step 1-11 SAMA PERSIS (partial _apply-form-steps).
+//
+// REVISI 2026-08-30 (instruksi user): SEMUA seksi tampil sekaligus 1 halaman
+// tabular (bukan wizard step-per-step lagi, lihat partial _apply-form-steps),
+// dan SEMUA field wajib diisi -- termasuk Nama Ayah & Ibu (baris terkunci
+// index 0/1 di $family, lihat mount()), pendidikan, pengalaman kerja, dst,
+// "tidak terkecuali". Validasi dikumpulkan 1x lewat Validator::make()->after()
+// supaya kandidat lihat SEMUA yang kurang sekaligus (1 alert), bukan
+// ketemu satu-satu tiap klik ulang.
 new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Component
 {
     use WithFileUploads;
 
     public string $vacancy_code;
 
-    public int $step = 1; // 1..11 isian, 12 = review & submit, 13 = selesai
+    public bool $submitted = false;
 
     // -- Data Pribadi (name/national_id/email dikunci dari akun) --
     public string $name = '';
@@ -57,6 +65,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
 
     public string $marital_date = '';
 
+    /** Index 0 = Ayah, index 1 = Ibu -- SELALU ada & terkunci (lihat mount()/partial), baris lain bebas ditambah/dihapus. */
     public array $family = [];
 
     public array $education = [];
@@ -164,6 +173,10 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
     {
         $this->vacancy_code = $vacancy_code;
         $this->willingness = array_fill_keys(array_keys(self::WILLING_ITEMS), false);
+        $this->family = [
+            ['relation_type' => 'FATHER', 'name' => '', 'gender' => 'L', 'age' => '', 'last_education' => '', 'current_job' => '', 'current_employer' => ''],
+            ['relation_type' => 'MOTHER', 'name' => '', 'gender' => 'P', 'age' => '', 'last_education' => '', 'current_job' => '', 'current_employer' => ''],
+        ];
 
         $candidate = $auth->findByUid(session('portal_candidate_uid'));
 
@@ -189,7 +202,6 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
                 }
             }
             $this->sim_types = $last['sim_types'] ?? [];
-            $this->family = $last['family_members'] ?? [];
             $this->education = $last['education'] ?? [];
             $this->educationNonformal = $last['education_nonformal'] ?? [];
             $this->orgExperience = $last['org_experience'] ?? [];
@@ -199,6 +211,18 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
             $this->languageSkills = $last['language_skills'] ?? [];
             $this->computerSkills = $last['computer_skills'] ?? [];
             $this->willingness = array_merge($this->willingness, $last['willingness_checklist'] ?? []);
+
+            // Timpa baris Ayah/Ibu terkunci dgn data lama KALAU ada, jangan
+            // ganti seluruh array (indeks lain harus tetap FATHER/MOTHER dulu).
+            foreach ($last['family_members'] ?? [] as $f) {
+                if (($f['relation_type'] ?? null) === 'FATHER') {
+                    $this->family[0] = array_merge($this->family[0], $f);
+                } elseif (($f['relation_type'] ?? null) === 'MOTHER') {
+                    $this->family[1] = array_merge($this->family[1], $f);
+                } else {
+                    $this->family[] = $f;
+                }
+            }
         }
     }
 
@@ -229,24 +253,14 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
 
     public function removeRow(string $prop, int $i): void
     {
-        unset($this->{$prop}[$i]);
-        $this->{$prop} = array_values($this->{$prop});
-    }
-
-    public function nextStep(): void
-    {
-        if ($this->step === 1 && trim($this->name) === '') {
-            $this->addError('name', 'Nama wajib diisi.');
-
+        // Baris 0/1 Ayah/Ibu di $family terkunci -- tombol hapus memang tidak
+        // dirender utk itu di partial, guard ini jaga-jaga kalau dipanggil manual.
+        if ($prop === 'family' && in_array($i, [0, 1], true)) {
             return;
         }
 
-        $this->step++;
-    }
-
-    public function prevStep(): void
-    {
-        $this->step = max(1, $this->step - 1);
+        unset($this->{$prop}[$i]);
+        $this->{$prop} = array_values($this->{$prop});
     }
 
     public function submitApplication(): void
@@ -257,10 +271,66 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
             return;
         }
 
-        if (! $this->agreement_signed || trim($this->signature_name) === '') {
-            $this->addError('apply', 'Anda wajib menyetujui pernyataan & mengisi nama sebagai tanda tangan (step Kesediaan & Pernyataan) sebelum mengirim lamaran.');
+        $rules = [
+            'name' => ['required', 'min:3'], 'nickname' => ['required'], 'gender' => ['required'], 'religion' => ['required'],
+            'phone' => ['required'], 'birth_date' => ['required', 'date'], 'address' => ['required'], 'address_domisili' => ['required'],
+            'vehicle_type' => ['required'], 'marital_status' => ['required'],
+            'marital_date' => [\Illuminate\Validation\Rule::requiredIf($this->marital_status !== '' && $this->marital_status !== 'LAJANG')],
 
-            return;
+            'family.0.name' => ['required'], 'family.1.name' => ['required'],
+
+            'education' => ['required', 'array', 'min:1'], 'education.*.institution' => ['required'],
+            'educationNonformal' => ['required', 'array', 'min:1'], 'educationNonformal.*.course_type' => ['required'],
+            'orgExperience' => ['required', 'array', 'min:1'], 'orgExperience.*.organization_name' => ['required'],
+            'workExp' => ['required', 'array', 'min:1'], 'workExp.*.company' => ['required'],
+
+            'company_acquaintance' => ['required'], 'hobby' => ['required'], 'leisure_activity' => ['required'],
+            'reading_topics' => ['required'], 'went_abroad' => ['required'],
+            'professionalReferences' => ['required', 'array', 'min:2'], 'professionalReferences.*.name' => ['required'], 'professionalReferences.*.phone' => ['required'],
+            'emergencyContacts' => ['required', 'array', 'min:3'], 'emergencyContacts.*.name' => ['required'],
+            'emergencyContacts.*.relation' => ['required'], 'emergencyContacts.*.phone' => ['required'], 'emergencyContacts.*.address' => ['required'],
+
+            'why_join_us' => ['required'], 'what_you_know_about_us' => ['required'], 'contribution_plan' => ['required'],
+            'role_plan_if_hired' => ['required'], 'job_type_preference' => ['required'], 'job_nature_preference' => ['required'],
+            'work_environment_preference' => ['required'], 'hindering_environment' => ['required'], 'preferred_colleague_type' => ['required'],
+            'difficult_decision_topic' => ['required'], 'strengths_weaknesses' => ['required'], 'who_you_ask_when_stuck' => ['required'],
+
+            'height_cm' => ['required', 'numeric'], 'weight_kg' => ['required', 'numeric'], 'blood_type' => ['required'],
+            'illness_history' => ['required'], 'hospitalized_history' => ['required'], 'is_smoker' => ['required'],
+            'physical_disability' => ['required'], 'family_health_ok' => ['required'],
+
+            'languageSkills' => ['required', 'array', 'min:1'], 'languageSkills.*.language' => ['required'],
+            'computerSkills' => ['required', 'array', 'min:1'], 'computerSkills.*.skill' => ['required'],
+
+            'still_receiving_aid' => ['required'], 'other_dependents' => ['required'], 'source_of_info' => ['required'],
+            'expected_salary' => ['required', 'numeric'], 'expected_facility' => ['required'], 'availability_date' => ['required', 'date'],
+
+            'agreement_signed' => ['accepted'], 'signature_name' => ['required'],
+            'cvFile' => ['required'], 'ijazahFile' => ['required'],
+        ];
+
+        $attributes = [
+            'family.0.name' => 'Nama Ayah', 'family.1.name' => 'Nama Ibu',
+            'education' => 'Pendidikan Formal', 'educationNonformal' => 'Pendidikan Non-Formal', 'orgExperience' => 'Pengalaman Organisasi',
+            'workExp' => 'Pengalaman Kerja', 'professionalReferences' => 'Referensi', 'emergencyContacts' => 'Kontak Darurat',
+            'languageSkills' => 'Bahasa Asing', 'computerSkills' => 'Penguasaan Komputer', 'cvFile' => 'CV', 'ijazahFile' => 'Ijazah',
+        ];
+
+        $validator = Validator::make($this->all(), $rules, [], $attributes);
+
+        // Cek tambahan yang tak murni "field kosong" -- semua Kesediaan wajib
+        // dicentang (instruksi user "tidak terkecuali"), gabung ke bag error
+        // yang SAMA supaya kandidat lihat SEMUA kekurangan dalam 1 alert.
+        $validator->after(function ($v) {
+            if (in_array(false, $this->willingness, true) || count($this->willingness) < count(self::WILLING_ITEMS)) {
+                $v->errors()->add('willingness', 'Semua poin Kesediaan & Pernyataan wajib dicentang.');
+            }
+        });
+
+        if ($validator->fails()) {
+            // Livewire otomatis re-throw ValidationException ini ke $errors
+            // bag milik component -- alert banner di view baca dari situ.
+            $validator->validate();
         }
 
         $clean = fn (array $row) => array_map(fn ($v) => $v === '' ? null : $v, $row);
@@ -278,8 +348,8 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
             'company_acquaintance' => $this->company_acquaintance ?: null, 'hobby' => $this->hobby ?: null,
             'leisure_activity' => $this->leisure_activity ?: null, 'reading_topics' => $this->reading_topics ?: null,
             'went_abroad' => $this->went_abroad ?: null,
-            'emergency_contacts' => array_values(array_filter($this->emergencyContacts, fn ($r) => trim($r['name'] ?? '') !== '')),
-            'professional_references' => array_values(array_filter($this->professionalReferences, fn ($r) => trim($r['name'] ?? '') !== '')),
+            'emergency_contacts' => array_values($this->emergencyContacts),
+            'professional_references' => array_values($this->professionalReferences),
             'why_join_us' => $this->why_join_us ?: null, 'what_you_know_about_us' => $this->what_you_know_about_us ?: null,
             'contribution_plan' => $this->contribution_plan ?: null, 'role_plan_if_hired' => $this->role_plan_if_hired ?: null,
             'job_type_preference' => $this->job_type_preference ?: null, 'job_nature_preference' => $this->job_nature_preference ?: null,
@@ -290,18 +360,18 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
             'illness_history' => $this->illness_history ?: null, 'hospitalized_history' => $this->hospitalized_history ?: null,
             'is_smoker' => $this->is_smoker, 'physical_disability' => $this->physical_disability ?: null,
             'family_health_ok' => $this->family_health_ok,
-            'language_skills' => array_values(array_filter($this->languageSkills, fn ($r) => trim($r['language'] ?? '') !== '')),
-            'computer_skills' => array_values(array_filter($this->computerSkills, fn ($r) => trim($r['skill'] ?? '') !== '')),
+            'language_skills' => array_values($this->languageSkills),
+            'computer_skills' => array_values($this->computerSkills),
             'still_receiving_aid' => $this->still_receiving_aid ?: null, 'other_dependents' => $this->other_dependents ?: null,
             'source_of_info' => $this->source_of_info ?: null, 'expected_salary' => $this->expected_salary,
             'expected_facility' => $this->expected_facility ?: null, 'availability_date' => $this->availability_date ?: null,
             'willingness_checklist' => $this->willingness, 'agreement_signed' => $this->agreement_signed,
             'signature_name' => $this->signature_name, 'agreement_signed_at' => now()->toDateTimeString(),
-            'family_members' => array_values(array_filter(array_map($clean, $this->family), fn ($f) => trim($f['name'] ?? '') !== '')),
-            'education' => array_values(array_filter(array_map($clean, $this->education), fn ($e) => trim($e['institution'] ?? '') !== '')),
-            'education_nonformal' => array_values(array_filter(array_map($clean, $this->educationNonformal), fn ($e) => trim($e['course_type'] ?? '') !== '')),
-            'org_experience' => array_values(array_filter(array_map($clean, $this->orgExperience), fn ($o) => trim($o['organization_name'] ?? '') !== '')),
-            'work_experience' => array_values(array_filter(array_map($clean, $this->workExp), fn ($w) => trim($w['company'] ?? '') !== '')),
+            'family_members' => array_values(array_map($clean, $this->family)),
+            'education' => array_values(array_map($clean, $this->education)),
+            'education_nonformal' => array_values(array_map($clean, $this->educationNonformal)),
+            'org_experience' => array_values(array_map($clean, $this->orgExperience)),
+            'work_experience' => array_values(array_map($clean, $this->workExp)),
         ];
 
         $this->lastSubmissionUuid = app(FirebaseSyncAdapter::class)->saveSubmission($payload, [
@@ -311,15 +381,16 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
 
         $this->cvFile = null;
         $this->ijazahFile = null;
-        $this->step = 13;
+        $this->submitted = true;
     }
 };
 ?>
 
-<div class="max-w-[760px] mx-auto my-8 px-5">
-    @if ($step !== 13)
+<div class="max-w-[820px] mx-auto my-8 px-5">
+    @if (! $submitted)
         <a href="{{ route('careers.vacancy-detail', $vacancy_code) }}" class="text-[12px] font-bold text-muted hover:text-navy">&larr; Batalkan, kembali ke detail lowongan</a>
         <h1 class="text-[18px] font-extrabold text-navy mt-2 mb-1">Lamar: {{ $this->vacancy->title }}</h1>
+        <p class="text-[11.5px] text-muted mb-4">Semua field bertanda * wajib diisi sebelum lamaran bisa dikirim.</p>
 
         @unless ($this->emailVerified)
             <div class="bg-[#fff8e6] border border-[#f4e0a3] text-[#8a5a00] text-[11.5px] rounded-md px-3 py-2 mb-4">
@@ -327,36 +398,26 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
             </div>
         @endunless
 
-        @php $stepLabels = ['Data Pribadi', 'Keluarga', 'Pendidikan', 'Organisasi', 'Pengalaman Kerja', 'Sosial & Referensi', 'Minat Pribadi', 'Kesehatan', 'Bahasa/Komputer/Info', 'Kesediaan', 'Dokumen', 'Review & Kirim']; @endphp
-        <p class="text-[10.5px] text-muted text-center mb-1 mt-4">Langkah {{ $step }} dari 12 — {{ $stepLabels[$step - 1] }}</p>
-        <div class="w-full h-1.5 bg-[#eef1f5] rounded-full mb-4 overflow-hidden">
-            <div class="h-full bg-navy" style="width: {{ round($step / 12 * 100) }}%"></div>
-        </div>
+        @if ($errors->any())
+            <div class="bg-[#fbeaea] border border-[#f3c6c6] text-[#a3241f] text-[12px] rounded-md px-4 py-3 mb-4">
+                <p class="font-bold mb-1.5">⚠ Ada {{ $errors->count() }} isian yang belum lengkap:</p>
+                <ul class="list-disc list-inside space-y-0.5">
+                    @foreach ($errors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
         <div class="bg-white border border-[#e6e9ef] rounded-xl p-5">
-            @if ($step <= 11)
-                @include('pages::careers._apply-form-steps')
-            @elseif ($step === 12)
-                <h2 class="text-sm font-bold text-navy mb-3">Review &amp; Kirim Lamaran</h2>
-                <p class="text-[12px] text-muted mb-4">Periksa kembali ringkasan berikut. Klik "Lanjut"/"Kembali" di atas kalau ada yang mau diperbaiki dulu.</p>
-                <dl class="text-[12.5px] space-y-2 mb-4">
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">Melamar untuk</dt><dd class="font-bold text-navy">{{ $this->vacancy->title }}</dd></div>
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">Nama</dt><dd>{{ $name }}</dd></div>
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">No. KTP</dt><dd>{{ $national_id }}</dd></div>
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">Email</dt><dd>{{ $email }}</dd></div>
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">Pendidikan tercatat</dt><dd>{{ count($education) }} baris</dd></div>
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">Pengalaman kerja tercatat</dt><dd>{{ count($workExp) }} baris</dd></div>
-                    <div class="flex justify-between border-b border-[#eef1f5] pb-1.5"><dt class="text-muted">Dokumen</dt><dd>{{ ($cvFile ? 'CV ✓' : 'CV ✗').' / '.($ijazahFile ? 'Ijazah ✓' : 'Ijazah ✗') }}</dd></div>
-                </dl>
-                @error('apply') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
-                <button type="button" wire:click="submitApplication" wire:loading.attr="disabled" class="w-full bg-[#1f8a4c] text-white text-sm font-bold px-4 py-2.5 rounded-md disabled:opacity-50">Kirim Lamaran</button>
-            @endif
+            @include('pages::careers._apply-form-steps')
 
-            <div class="flex justify-between mt-4 pt-3 border-t border-[#eef1f5]">
-                <button type="button" wire:click="prevStep" @if($step === 1) disabled @endif class="text-xs font-bold text-muted px-4 py-2 disabled:opacity-30">← Kembali</button>
-                @if ($step < 12)
-                    <button type="button" wire:click="nextStep" class="bg-navy text-white text-xs font-bold px-4 py-2 rounded-md">Lanjut →</button>
-                @endif
+            <div class="mt-6 pt-5 border-t border-[#eef1f5]">
+                <h2 class="text-sm font-bold text-navy mb-3">Kirim Lamaran</h2>
+                <button type="button" wire:click="submitApplication" wire:loading.attr="disabled" class="w-full bg-[#1f8a4c] text-white text-sm font-bold px-4 py-2.5 rounded-md disabled:opacity-50">
+                    <span wire:loading.remove wire:target="submitApplication">Kirim Lamaran</span>
+                    <span wire:loading wire:target="submitApplication">Mengirim...</span>
+                </button>
             </div>
         </div>
     @else

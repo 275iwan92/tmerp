@@ -159,11 +159,9 @@ class CareersPortalTest extends TestCase
         $this->assertTrue($apply->get('emailVerified'));
         $this->assertSame('Test E2E', $apply->get('name'));
 
-        $apply->set('agreement_signed', true)
-            ->set('signature_name', 'Test E2E')
-            ->set('address', 'Jl. Test')
-            ->call('submitApplication')
-            ->assertHasNoErrors();
+        $this->fillAllRequiredApplyFields($apply);
+
+        $apply->call('submitApplication')->assertHasNoErrors();
 
         $this->submissionUuid = $apply->get('lastSubmissionUuid');
         $this->assertNotNull($this->submissionUuid);
@@ -209,5 +207,72 @@ class CareersPortalTest extends TestCase
             ->assertHasErrors('apply');
 
         $this->assertNull($apply->get('lastSubmissionUuid'));
+    }
+
+    public function test_missing_father_mother_name_and_other_required_sections_are_rejected(): void
+    {
+        $auth = app(CandidateAuthService::class);
+        $candidate = $auth->register([
+            'national_id' => $this->nationalId, 'name' => 'Test Validasi', 'email' => $this->email, 'phone' => '081200000000', 'password' => 'password123',
+        ]);
+        $this->candidateUid = $candidate['_docId'];
+        $auth->markEmailVerified($this->candidateUid);
+
+        $vacancy = VacVacancy::where('is_published', true)->firstOrFail();
+        $this->withSession(['portal_candidate_uid' => $this->candidateUid]);
+
+        $apply = Livewire::test('pages::careers.apply', ['vacancy_code' => $vacancy->vacancy_code]);
+
+        // Family index 0/1 (Ayah/Ibu) pra-terisi kosong dari mount() -- kirim
+        // tanpa mengisi apa pun harus ditolak spesifik krn nama Ayah & Ibu kosong.
+        $this->assertSame('', $apply->get('family')[0]['name']);
+        $this->assertSame('', $apply->get('family')[1]['name']);
+
+        $apply->call('submitApplication')
+            ->assertHasErrors(['family.0.name', 'family.1.name', 'education', 'workExp', 'agreement_signed']);
+
+        $this->assertNull($apply->get('lastSubmissionUuid'));
+    }
+
+    protected function fillAllRequiredApplyFields($apply): void
+    {
+        $file = fn (string $name) => \Illuminate\Http\UploadedFile::fake()->create($name, 100);
+
+        $apply->set('family.0.name', 'Bapak Uji')
+            ->set('family.1.name', 'Ibu Uji')
+            ->set('nickname', 'Uji')->set('gender', 'LAKI_LAKI')->set('religion', 'Islam')
+            ->set('birth_date', '2000-01-01')->set('address', 'Jl. Test No. 1')->set('address_domisili', 'Jl. Test No. 1')
+            ->set('vehicle_type', 'MOTOR')->set('marital_status', 'LAJANG')
+            ->set('education', [['level' => 'SMA', 'institution' => 'SMA Test', 'major' => 'IPA', 'period_start_year' => 2015, 'graduation_year' => 2018, 'final_score' => 80]])
+            ->set('educationNonformal', [['course_type' => 'Tidak ada', 'institution' => '-', 'period_start_year' => '', 'period_end_year' => '', 'certificate_no' => '']])
+            ->set('orgExperience', [['organization_name' => 'Tidak ada', 'position' => '-', 'period' => '-', 'task_description' => '-']])
+            ->set('workExp', [['company' => 'Belum ada pengalaman', 'position' => '-', 'start_date' => '', 'end_date' => '', 'description' => '-']])
+            ->set('company_acquaintance', 'Tidak ada')->set('hobby', 'Membaca')->set('leisure_activity', 'Membaca')
+            ->set('reading_topics', 'Berita')->set('went_abroad', 'Tidak pernah')
+            ->set('professionalReferences', [['name' => 'Ref 1', 'phone' => '0811'], ['name' => 'Ref 2', 'phone' => '0812']])
+            ->set('emergencyContacts', [
+                ['name' => 'Kontak 1', 'relation' => 'Saudara', 'phone' => '0811', 'address' => 'Malang'],
+                ['name' => 'Kontak 2', 'relation' => 'Teman', 'phone' => '0812', 'address' => 'Malang'],
+                ['name' => 'Kontak 3', 'relation' => 'Tetangga', 'phone' => '0813', 'address' => 'Malang'],
+            ])
+            ->set('why_join_us', 'Ingin berkembang')->set('what_you_know_about_us', 'Perusahaan percetakan')
+            ->set('contribution_plan', 'Kontribusi maksimal')->set('role_plan_if_hired', 'Bekerja sesuai SOP')
+            ->set('job_type_preference', 'Pelaksana')->set('job_nature_preference', 'Teknis')
+            ->set('work_environment_preference', 'Pabrik')->set('hindering_environment', 'Tidak ada')
+            ->set('preferred_colleague_type', 'Jujur')->set('difficult_decision_topic', 'Menegur bawahan')
+            ->set('strengths_weaknesses', 'Kelebihan: rajin. Kekurangan: kurang teliti')->set('who_you_ask_when_stuck', 'Atasan')
+            ->set('height_cm', 170)->set('weight_kg', 60)->set('blood_type', 'O')
+            ->set('illness_history', 'Tidak ada')->set('hospitalized_history', 'Tidak ada')
+            ->set('is_smoker', 0)->set('physical_disability', 'Tidak ada')->set('family_health_ok', 1)
+            ->set('languageSkills', [['language' => 'Inggris', 'written' => 'CB', 'oral' => 'CB', 'notes' => '']])
+            ->set('computerSkills', [['skill' => 'MS Office', 'level' => 'B', 'notes' => '']])
+            ->set('still_receiving_aid', 'Tidak ada')->set('other_dependents', 'Tidak ada')
+            ->set('source_of_info', 'Website')->set('expected_salary', 4000000)->set('expected_facility', 'Tidak ada')
+            ->set('availability_date', now()->addWeek()->toDateString())
+            ->set('willingness', array_fill_keys(array_keys([
+                'probation', 'training', 'overtime', 'guarantee_docs', 'resign_notice', 'obey_rules', 'resign_if_married_pregnant', 'relocation',
+            ]), true))
+            ->set('agreement_signed', true)->set('signature_name', 'Test E2E')
+            ->set('cvFile', $file('cv.pdf'))->set('ijazahFile', $file('ijazah.pdf'));
     }
 }
