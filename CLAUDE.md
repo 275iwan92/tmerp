@@ -1,4 +1,4 @@
-# CLAUDE.md — Konteks Proyek ERP PT. Telasih Makmur (Versi 2)
+# CLAUDE.md — Konteks Proyek ERP CV. Telasih Makmur (Versi 2)
 
 > File ini dibaca Claude Code tiap sesi. Ini "memori" & aturan proyek.
 > Sumber kebenaran: dokumen Tier di `/docs`. Bila ragu, baca Tier, jangan menebak.
@@ -7,11 +7,15 @@
 
 ## 1. APA INI
 
-ERP cetak **offset & packaging** untuk PT. Telasih Makmur. Migrasi bertahap
-dari ScriptCase (V1) ke **Laravel 13 + Livewire** (V2). Kita mengerjakan **V2**.
+ERP **offset printing & packaging** untuk CV. Telasih Makmur. Migrasi bertahap
+dari ScriptCase (V1) ke **Laravel v13 + Livewire v4 + Tailwind CSS + Filament v5**. Kita mengerjakan **V2**.
 
 - Bahasa jawaban ke user: **Bahasa Indonesia**.
 - Gaya: ringkas, padat, jujur. Tidak bertele-tele. Jangan asumsi — cek dulu.
+- Programming style: komentar HANYA untuk hal yang tidak lazim/non-obvious
+  (keputusan desain, gotcha, alasan WHY) — kode yang sudah jelas dari nama
+  variabel/struktur TIDAK perlu dikomentari paksa (keputusan user 2026-08-30,
+  memperjelas draf awal "rich comments" yang sempat ambigu).
 - V2 pakai database `tm2*` yang **permanen** (menggantikan `tm*` lama setelah cutover).
 
 ---
@@ -24,23 +28,50 @@ lokal (MySQL 8.0.46 · InnoDB · utf8mb4 · utf8mb4_unicode_ci).
 | Connection | Database | Isi |
 |---|---|---|
 | mst | tm2mst | **Master netral** (single source of truth): customer, product, material, geo, currency, uom |
-| sdi | tm2sdi | **Sales-domain**: inquiry (`iqp_*`), quotation, customer order, delivery |
+| sdi | tm2sdi | **Sales-domain**: inquiry (`iqp_*`), quotation, customer order, delivery management, Marketing Management |
 | pur | tm2pur | Procurement |
 | inv | tm2inv | Inventory |
-| prd | tm2prd | Produksi / work order |
-| acc | tm2acc | Finance & accounting |
-| hrm | tm2hrm | HR master/organisasi |
-| hrr | tm2hrr | HR transaksi |
-| pyr | tm2pyr | Payroll |
+| prd | tm2prd | Production, Master Production Schedule, MRP, Work Order, Production Output, Quality Control Management |
+| acc | tm2acc | Finance & Accounting |
+| hrm | tm2hrm | HR Organization Structure, Time Attendance, Shift Roster, Leave Management |
+| hrr | tm2hrr | HR recruitment system |
+| pyr | tm2pyr | Payroll system with Encrypted data (**requirement, BELUM diimplementasikan** — lihat catatan di bawah tabel) |
 | sys | tm2sys | Sistem: user, role, notifikasi, audit trail |
+| old | tm2old | Old data for migration |
+
+**Payroll encryption (keputusan user 2026-08-30, requirement — BELUM ada
+implementasi teknis sesi manapun):** data gaji & histori gaji (tm2pyr) WAJIB
+terenkripsi at-rest. Belum ada keputusan algoritma/key management/model mana
+saja yang kena — jangan asumsikan sudah terpasang, dan jangan mulai
+implementasi sendiri tanpa konfirmasi desain (mana kolom, cara rotate key,
+dampak ke query/laporan yang butuh baca nilai asli).
 
 ### Aturan lintas-DB (LOCKED — KRITIKAL)
 - **FK MySQL TIDAK BISA lintas-database.** Jangan pernah bikin constraint FK antar-DB.
 - **FK dalam DB yang sama** = tetap fisik (constraint normal). Contoh: `iqp_part.inquiry_id → iqp_inquiry` (sama-sama di tm2sdi) = FK fisik OK.
-- **Relasi antar-modul (beda DB):**
-  - Baca via **VIEW read-only** ATAU **Eloquent relationship** (query terpisah, cocokkan di PHP).
-  - **JANGAN** pakai query builder `->join()` antar tabel beda-DB (error/lambat).
-  - Selalu eager-load: `Inquiry::with('customer')`, bukan join manual.
+- **Relasi antar-modul (beda DB) — 3 pola, beda kegunaan:**
+  1. **Eloquent relationship, query terpisah, cocokkan di PHP** (DEFAULT/paling
+     umum dipakai di codebase ini sejauh ini) — `Inquiry::with('customer')`,
+     atau cari ID di DB A dulu lalu `whereIn` ke DB B (pola
+     `gridCrossDbSearchResolvers()` di `HasCustomizableGrid`). Simpel, cukup
+     cepat utk kebanyakan kasus (grid, form, laporan biasa).
+  2. **VIEW read-only DI DALAM database yang dituju**, isinya JOIN lintas-DB
+     pakai qualifier `db.table` di SQL mentah (mis. `CREATE VIEW
+     tm2inv.v_stock_with_material AS SELECT i.*, m.material_name FROM
+     tm2inv.inv_x i JOIN tm2mst.mat_raw m ON ...`) — **valid di MySQL**
+     (batasan cross-DB cuma berlaku ke FK CONSTRAINT, bukan ke JOIN/VIEW biasa
+     selama masih 1 server MySQL yang sama). **Kapan dipakai**: keputusan user
+     2026-08-30 — HANYA saat performa baca jadi prioritas nyata (query
+     dipanggil sering/volume besar, tiap milidetik berarti), karena JOIN
+     didorong ke level DB (pakai index DB engine) alih-alih 2+ round-trip
+     query + digabung manual di PHP. **Bukan default** — kalau tidak ada
+     alasan performa spesifik, tetap pakai pola 1 (lebih simpel dirawat).
+  3. **JANGAN**: query builder Eloquent `->join()` atau `whereHas()`
+     bertingkat lintas KONEKSI berbeda — Eloquent membangun subquery di
+     konteks 1 koneksi saja, error "table doesn't exist" begitu subquery
+     menyentuh DB lain (ditemukan nyata 2026-08-27, lihat
+     `griduistandard.md` §10). Ini beda dari pola 2 di atas (VIEW pakai SQL
+     mentah lintas-DB, bukan Eloquent query-builder chaining).
 - **Integritas lintas-modul = tanggung jawab Laravel**, bukan DB:
   - Validasi keberadaan: `exists:mst.cust_customer,id_customer` saat simpan.
   - Cascade/restrict lintas-DB: logika manual di Service, bukan ON DELETE.
