@@ -314,26 +314,28 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
  * ============================================================ */
 .shell {
     --side: #1f2742; --side-2: #27314f; --side-hover: #2d3860; --topbar: #141b30;
-    --sh-accent: #2f6fed; --sh-accent-2: #255bd4; --side-ink: #cbd1e6; --side-muted: #7b85a8;
+    --sh-accent: #2f6fed; --sh-accent-2: #255bd4; --side-ink: #cbd1e6; --side-ink-strong: #ffffff; --side-muted: #7b85a8;
+    --side-hover-soft: rgba(255, 255, 255, .08); --side-border-soft: rgba(255, 255, 255, .08);
+    --side-head-bg: rgba(0, 0, 0, .18); --side-border: transparent;
     --content-bg: #eef1f6; --tabbar: #e6e8f2; --sh-border: #e3e7f0; --sh-surface: #ffffff;
     --sh-ink: #3a4568; --sh-ink-strong: #2f3a5e; --sh-muted: #9aa3bd; --sh-violet: #7a52d0; --sh-amber: #b6852a;
     --side-w: 262px; --topbar-h: 56px; --tab-h: 44px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     @apply bg-[var(--content-bg)] text-[var(--sh-ink)] h-screen overflow-hidden flex;
 }
-.shell aside { @apply bg-[var(--side)] text-[var(--side-ink)] flex flex-col flex-shrink-0 overflow-hidden; width: var(--side-w); transition: width .18s; }
+.shell aside { @apply bg-[var(--side)] text-[var(--side-ink)] flex flex-col flex-shrink-0 overflow-hidden; width: var(--side-w); border-right: 1px solid var(--side-border); transition: width .18s; }
 .shell.mini aside { @apply w-[66px]; }
 .shell.nosidebar aside { @apply w-0; }
-.shell .side-head { @apply flex items-center gap-2.5 px-3.5 flex-shrink-0; height: var(--topbar-h); background: rgba(0, 0, 0, .18); }
+.shell .side-head { @apply flex items-center gap-2.5 px-3.5 flex-shrink-0; height: var(--topbar-h); background: var(--side-head-bg); }
 .shell .logo-home { @apply flex items-center gap-2.5 bg-transparent border-none p-0 cursor-pointer text-left min-w-0; }
 .shell .logo-badge { @apply w-[34px] h-[34px] rounded-[9px] flex-shrink-0; background: conic-gradient(from 200deg, #ff5f6d, #ffc371, #2f6fed, #8a5cf6, #ff5f6d); }
 .shell .logo-txt { @apply overflow-hidden whitespace-nowrap; line-height: 1.05; }
-.shell .logo-txt b { @apply text-[15px] tracking-[.4px] text-white; }
+.shell .logo-txt b { @apply text-[15px] tracking-[.4px] text-[var(--side-ink-strong)]; }
 .shell .logo-txt span { @apply text-[10px] tracking-[2px] text-[var(--side-muted)] uppercase; }
 .shell .side-collapse { @apply ml-auto bg-transparent border-none text-[var(--side-muted)] cursor-pointer text-[15px] p-1.5 rounded-md; }
-.shell .side-collapse:hover { @apply text-white; background: rgba(255, 255, 255, .08); }
+.shell .side-collapse:hover { @apply text-[var(--side-ink-strong)]; background: var(--side-hover-soft); }
 .shell.mini .logo-txt { @apply hidden; }
-.shell .mod-title { @apply flex items-center gap-[11px] pt-4 px-4 pb-2.5 text-white text-[15px] font-bold tracking-[.6px] whitespace-nowrap; }
+.shell .mod-title { @apply flex items-center gap-[11px] pt-4 px-4 pb-2.5 text-[var(--side-ink-strong)] text-[15px] font-bold tracking-[.6px] whitespace-nowrap; }
 .shell .mod-title .ic { @apply text-lg w-[22px] text-center flex-shrink-0; }
 .shell.mini .mod-title { @apply justify-center pt-4 px-0 pb-2.5; }
 .shell.mini .mod-title .lbl { @apply hidden; }
@@ -341,18 +343,18 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .side-cap { @apply text-[10px] tracking-[.7px] uppercase text-[var(--side-muted)] pt-[11px] px-3 pb-[5px] font-bold whitespace-nowrap; }
 .shell.mini .side-cap { @apply hidden; }
 .shell .side-cap-btn { @apply flex items-center gap-1.5 w-full bg-transparent border-none text-left cursor-pointer; font-family: inherit; }
-.shell .side-cap-btn:hover .side-cap { @apply text-[#c7cee6]; }
+.shell .side-cap-btn:hover .side-cap { @apply text-[var(--side-ink-strong)]; }
 .shell .side-cap-btn .chev { @apply ml-auto text-[8px] opacity-70 transition-transform duration-150; }
 .shell .side-cap-btn .chev.collapsed { @apply -rotate-90; }
-.shell .leaf { @apply flex items-center gap-[11px] w-full bg-transparent border-none text-left text-[#aeb6d4] px-3 py-2.5 rounded-lg cursor-pointer text-[13.5px] whitespace-nowrap; font-family: inherit; }
-.shell .leaf:hover { @apply text-white bg-[var(--side-hover)]; }
+.shell .leaf { @apply flex items-center gap-[11px] w-full bg-transparent border-none text-left text-[var(--side-ink)] px-3 py-2.5 rounded-lg cursor-pointer text-[13.5px] whitespace-nowrap; font-family: inherit; }
+.shell .leaf:hover { @apply text-[var(--side-ink-strong)] bg-[var(--side-hover)]; }
 .shell .leaf.active { @apply text-white bg-[var(--sh-accent)]; }
 .shell .leaf .lic { @apply w-5 text-center flex-shrink-0 text-[13px] opacity-90; }
 .shell .leaf .lbl { @apply flex-1 truncate; }
 .shell .leaf.not-built { @apply opacity-55 cursor-not-allowed; }
 .shell.mini .leaf { @apply justify-center py-2.5 px-0; }
 .shell.mini .leaf .lbl { @apply hidden; }
-.shell .side-footer { @apply flex-shrink-0 px-2 py-2; border-top: 1px solid rgba(255, 255, 255, .08); }
+.shell .side-footer { @apply flex-shrink-0 px-2 py-2; border-top: 1px solid var(--side-border-soft); }
 .shell.mini .leaf .status-dot { @apply hidden; }
 
 /* module_status_system (globalrules.yaml): titik warna kesiapan-build,
@@ -363,20 +365,20 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell.mini .side-hint { @apply hidden; }
 
 .shell .main { @apply flex-1 flex flex-col min-w-0 relative; }
-.shell .topbar { @apply text-white flex items-center gap-1 px-3 flex-shrink-0; height: var(--topbar-h); background: var(--topbar); }
+.shell .topbar { @apply text-[var(--side-ink-strong)] flex items-center gap-1 px-3 flex-shrink-0; height: var(--topbar-h); background: var(--topbar); border-bottom: 1px solid var(--side-border); }
 .shell.notopbar .topbar { @apply hidden; }
-.shell .tb-btn { @apply bg-transparent border-none text-[#c7cee6] cursor-pointer text-lg p-2 rounded-lg; line-height: 1; font-family: inherit; }
-.shell .tb-btn:hover { @apply text-white; background: rgba(255, 255, 255, .10); }
+.shell .tb-btn { @apply bg-transparent border-none text-[var(--side-ink)] cursor-pointer text-lg p-2 rounded-lg; line-height: 1; font-family: inherit; }
+.shell .tb-btn:hover { @apply text-[var(--side-ink-strong)]; background: var(--side-hover-soft); }
 .shell .mega { @apply flex items-stretch h-full ml-1.5 overflow-x-auto; }
-.shell .mega-item { @apply bg-transparent border-none text-[#c1c8e2] text-[13.5px] font-semibold px-3.5 cursor-pointer flex items-center gap-[7px] whitespace-nowrap border-b-[3px] border-transparent; font-family: inherit; }
-.shell .mega-item:hover { @apply text-white; background: rgba(255, 255, 255, .08); }
-.shell .mega-item.active { @apply text-white border-b-[var(--sh-accent)]; background: rgba(47, 111, 237, .18); }
+.shell .mega-item { @apply bg-transparent border-none text-[var(--side-ink)] text-[13.5px] font-semibold px-3.5 cursor-pointer flex items-center gap-[7px] whitespace-nowrap border-b-[3px] border-transparent; font-family: inherit; }
+.shell .mega-item:hover { @apply text-[var(--side-ink-strong)]; background: var(--side-hover-soft); }
+.shell .mega-item.active { @apply text-[var(--sh-accent)] border-b-[var(--sh-accent)]; background: rgba(47, 111, 237, .18); }
 .shell .tb-spacer { @apply flex-1; }
 .shell .avatar { @apply w-8 h-8 rounded-full bg-[#c3ccdf] flex items-center justify-center ml-1 cursor-pointer relative; }
 .shell .avatar svg { @apply w-5 h-5 fill-[#5a6488]; }
 .shell #topbar-restore { @apply hidden absolute top-1.5 right-3.5 z-[45]; }
 .shell.notopbar #topbar-restore { @apply block; }
-.shell #topbar-restore button { @apply text-white border-none rounded-[20px] px-3.5 py-1.5 text-xs cursor-pointer; background: var(--topbar); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); font-family: inherit; }
+.shell #topbar-restore button { @apply text-[var(--side-ink-strong)] border-none rounded-[20px] px-3.5 py-1.5 text-xs cursor-pointer; background: var(--topbar); box-shadow: 0 4px 14px rgba(0, 0, 0, .25); font-family: inherit; }
 
 .shell .tabbar { @apply flex items-end gap-0.5 px-2 flex-shrink-0 overflow-x-auto; height: var(--tab-h); background: var(--tabbar); }
 .shell .tabbar:empty::before { content: "Belum ada menu terbuka"; @apply text-[var(--sh-muted)] text-[12.5px] self-center px-2; }

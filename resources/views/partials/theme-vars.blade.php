@@ -10,14 +10,20 @@
      (security) -- Finance/HRM/Master/Inquiry pakai --color-navy/--color-accent
      global langsung (bg-navy dsb), otomatis ikut tanpa perlu blok terpisah.
 
-     mode terang/gelap (2026-08-31, sys_theme.mode): sidebar/topbar SENGAJA
-     tetap gelap di kedua mode (teks .mega-item/.um-item hardcode terang di
-     app.css, pastel di sidebar bikin teks itu tak terbaca) -- yang berubah
-     cuma token area KONTEN .shell (--content-bg dst). Ini baru cover chrome
-     .shell (halaman pasca-login + isi tab non-iframe) -- layar transaksi yg
-     dimuat via <iframe> (inquiry, stock-in, dst) pakai token global
-     --color-navy/--color-accent yg SUDAH ikut, tapi belum tentu tiap kelas
-     Tailwind di dalamnya sadar dark-mode; itu scope terpisah, belum digarap. --}}
+     mode terang/gelap (2026-08-31, awalnya sidebar/topbar SENGAJA dibiarkan
+     gelap di kedua mode krn teks .mega-item/.leaf/.tb-btn hardcode terang di
+     app.css -- user 2026-08-31 minta direvisi, mode terang harus terang
+     SEMUA termasuk sidebar/topbar. app.css sudah diubah supaya teks itu
+     ikut var (--side-ink/--side-ink-strong/--side-muted, bukan hardcode
+     putih lagi), jadi di sini tinggal override --side/--topbar + pasangan
+     teksnya per mode. Mode gelap TETAP pakai sidebar_color per-tema (hue
+     personalisasi tetap kepakai di sidebar/topbar gelap); mode terang
+     sidebar/topbar-nya putih polos (hue tema tetap kelihatan lewat
+     --sh-accent). Ini baru cover chrome .shell (halaman pasca-login + isi
+     tab non-iframe) -- layar transaksi yg dimuat via <iframe> (inquiry,
+     stock-in, dst) pakai token global --color-navy/--color-accent yg SUDAH
+     ikut, tapi belum tentu tiap kelas Tailwind di dalamnya sadar dark-mode;
+     itu scope terpisah, belum digarap. --}}
 @php $__theme = \App\Support\ActiveTheme::resolve(); @endphp
 <style>
     :root {
@@ -25,10 +31,10 @@
         --color-accent: {{ $__theme->primary_color }};
     }
     .shell {
-        --side: {{ $__theme->sidebar_color }};
-        --topbar: {{ $__theme->sidebar_color }};
         --sh-accent: {{ $__theme->primary_color }};
         @if ($__theme->mode === 'dark')
+            --side: {{ $__theme->sidebar_color }};
+            --topbar: {{ $__theme->sidebar_color }};
             --content-bg: {{ $__theme->content_bg_color ?: '#12162a' }};
             --tabbar: #171c33;
             --sh-border: #2a3157;
@@ -37,6 +43,16 @@
             --sh-ink-strong: #eef1ff;
             --sh-muted: #7680a6;
         @else
+            --side: #ffffff;
+            --topbar: #ffffff;
+            --side-hover: #eef2fa;
+            --side-ink: #4a5578;
+            --side-ink-strong: #1c2440;
+            --side-muted: #8a92ad;
+            --side-hover-soft: rgba(20, 26, 45, .06);
+            --side-border-soft: rgba(20, 26, 45, .08);
+            --side-head-bg: rgba(20, 26, 45, .04);
+            --side-border: #e3e7f0;
             --content-bg: {{ $__theme->content_bg_color ?: '#eef1f6' }};
         @endif
     }
