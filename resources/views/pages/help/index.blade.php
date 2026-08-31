@@ -77,7 +77,8 @@ new #[Title('Panduan Penggunaan — TELASIH MAKMUR ERP')] class extends Componen
                     <li><b>Sidebar kiri</b> berubah isinya sesuai modul yang dipilih, dikelompokkan per grup. <b>Klik nama grup (mis. "Transaksi") untuk ciutkan/buka</b> — ini tersembunyi kalau tidak dicoba, coba klik langsung nama grupnya, bukan cuma panah kecilnya.</li>
                     <li><b>Tab di atas area kerja</b> — tiap layar yang dibuka jadi tab baru, bisa buka banyak layar sekaligus tanpa kehilangan yang lain. Klik ✕ di tab untuk menutup.</li>
                     <li><b>Ikon profil</b> (kanan atas) — Edit profil, Ubah password, Portal Karyawan, My Security, dan <b>Panduan Penggunaan (halaman ini)</b>.</li>
-                    <li><b>Ikon 🔍 pencarian cepat</b> di topbar — cari nama layar langsung tanpa klik-klik menu satu-satu.</li>
+                    <li><b>Ikon 🔍 pencarian cepat</b> di topbar (atau tekan <kbd>Ctrl</kbd>+<kbd>K</kbd>) — cari nama layar langsung tanpa klik-klik menu satu-satu.</li>
+                    <li><b>Tekan <kbd>F1</kbd> kapan saja</b> — langsung buka halaman ini (Panduan Penggunaan) di tab baru, di layar mana pun Anda sedang berada.</li>
                 </ul>
             </section>
 

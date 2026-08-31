@@ -710,7 +710,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                         Support" di bawah (itu kirim tiket ke tim support). target="_blank" sengaja
                         (bukan openTab() shell) -- halaman referensi enak dibuka di tab terpisah
                         sambil tetap kerja di tab utama, tak perlu masuk sistem tab/iframe shell. --}}
-                        <a href="{{ route('help.index') }}" target="_blank" class="um-item"><i class="fa-solid fa-book"></i> Panduan Penggunaan</a>
+                        <a href="{{ route('help.index') }}" target="_blank" class="um-item" title="Jalan pintas: tekan F1 di mana saja"><i class="fa-solid fa-book"></i> Panduan Penggunaan <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span></a>
                         <button type="button" class="um-item" @click="ddOpen = false; supportOpen = true; $wire.set('support_context', (openTabs.find(t => t.code === activeTabCode)?.label || 'Home') + ' — ' + new Date().toLocaleString('id-ID'))"><i class="fa-solid fa-circle-question"></i> Help &amp; Support</button>
                         <div class="um-item" style="cursor:default"><i class="fa-solid fa-globe"></i> Bahasa
                             <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
@@ -742,7 +742,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                     <div class="hero"></div>
                     <h1>Selamat datang, {{ $this->greetName() }} 👋</h1>
                     <p>Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar. Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.</p>
-                    <div class="hint">Ctrl+K cari cepat · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>︿</kbd> sembunyikan top bar.</div>
+                    <div class="hint">Ctrl+K cari cepat · <kbd>F1</kbd> bantuan · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>︿</kbd> sembunyikan top bar.</div>
                 </div>
             </div>
             <template x-for="t in openTabs" :key="'pane-'+t.code">

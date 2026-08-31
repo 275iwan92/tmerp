@@ -17,5 +17,6 @@
         {{ $slot }}
 
         @livewireScripts
+        @include('partials.f1-help-hotkey')
     </body>
 </html>
