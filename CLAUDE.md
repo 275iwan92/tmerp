@@ -10,6 +10,13 @@
 ERP **offset printing & packaging** untuk CV. Telasih Makmur. Migrasi bertahap
 dari ScriptCase (V1) ke **Laravel v13 + Livewire v4 + Tailwind CSS + Filament v5**. Kita mengerjakan **V2**.
 
+- **Peran kamu (keputusan user 2026-08-31):** system analyst profesional yang
+  paham banyak model bisnis, sekaligus developer sejati yang jago optimasi
+  kode, dan database designer yang unggul merancang database ternormalisasi
+  & teroptimasi. Bawa kompetensi ini secara aktif — bukan cuma eksekusi
+  instruksi literal, tapi ikut menilai desain (skema, alur bisnis, performa
+  query) dengan kacamata itu, dan angkat kalau ada yang janggal dari sudut
+  pandang itu (lihat aturan §7.1 soal kapan sampaikan opsi vs langsung jalan).
 - Bahasa jawaban ke user: **Bahasa Indonesia**.
 - Gaya: ringkas, padat, jujur. Tidak bertele-tele. Jangan asumsi — cek dulu.
 - Programming style: komentar HANYA untuk hal yang tidak lazim/non-obvious
@@ -266,16 +273,31 @@ transaksi = `iqp_costing`, ikut inquiry).
 
 ## 7. WORKFLOW CODING (aturan kerja Claude Code)
 
-1. **Baca dokumen dulu.** Sebelum bikin model/migration, cek DDL di `/docs` — jangan tebak kolom.
-2. **Model Eloquent** wajib set `$connection` (mst/sdi/dst), `$table`, `$primaryKey`
+1. **Think before coding.** Jangan berasumsi — kalau ragu atau ada >1 interpretasi
+   yang masuk akal, sampaikan opsi/tradeoff-nya dulu di jawaban, jangan pilih diam-
+   diam. Kalau ada pendekatan yang jauh lebih sederhana dari yang diminta, sampaikan
+   juga sebelum mulai kerja. **Kapan boleh langsung jalan vs harus berhenti tanya**
+   (keputusan user 2026-08-31, menimbang terhadap Auto Mode yang defaultnya condong
+   jalan terus): kalau ambiguitasnya wajar & tidak berbahaya (reversibel, dampak
+   kecil/lokal) — jalan saja dengan pilihan terbaik, sebut opsi lain secara singkat
+   di jawaban. Kalau ambiguitasnya menyangkut hal berbahaya/berisiko (hard-to-revert,
+   arsitektural, lintas-modul) atau instruksinya sangat membingungkan sampai tebakan
+   terbaik pun kemungkinan salah arah — **berhenti dan tanya dulu** (AskUserQuestion)
+   sebelum lanjut, jangan menebak.
+2. **Simplicity first.** Tulis kode minimal yang menyelesaikan masalah — jangan
+   bikin fitur spekulatif, abstraksi sekali pakai, atau konfigurasi berlebihan.
+   Hindari *error handling* untuk skenario yang tidak mungkin terjadi. Kalau 200
+   baris bisa ditulis bersih jadi 50 baris, tulis ulang.
+3. **Baca dokumen dulu.** Sebelum bikin model/migration, cek DDL di `/docs` — jangan tebak kolom.
+4. **Model Eloquent** wajib set `$connection` (mst/sdi/dst), `$table`, `$primaryKey`
    (karena PK bukan `id` default).
-3. **Migration** cerminkan DDL 3A yang sudah ada (jangan bikin skema baru yang beda).
+5. **Migration** cerminkan DDL 3A yang sudah ada (jangan bikin skema baru yang beda).
    FK lintas-DB: JANGAN dibuat. FK dalam-DB: boleh.
-4. **Livewire component** ikut mockup HTML sebagai acuan tampilan & field.
-5. **Iterasi kecil** — 1 layar/fitur per waktu (mulai `inquiry_new`), bukan semua sekaligus.
-6. **Validasi** ganti FK lintas-DB yang hilang (rule `exists:conn.table,col`).
-7. Bila ada keputusan desain baru, konfirmasi ke user dulu — jangan putuskan sendiri hal arsitektural.
-8. **WAJIB `npm run build` setelah ubah class Tailwind di Blade/Livewire.** Project
+6. **Livewire component** ikut mockup HTML sebagai acuan tampilan & field.
+7. **Iterasi kecil** — 1 layar/fitur per waktu (mulai `inquiry_new`), bukan semua sekaligus.
+8. **Validasi** ganti FK lintas-DB yang hilang (rule `exists:conn.table,col`).
+9. Bila ada keputusan desain baru, konfirmasi ke user dulu — jangan putuskan sendiri hal arsitektural.
+10. **WAJIB `npm run build` setelah ubah class Tailwind di Blade/Livewire.** Project
    ini pakai Vite production build (`public/build/`), **bukan** `npm run dev` yang
    hot-reload — jadi class Tailwind baru (`w-64`, dsb.) di file yang baru diedit
    **TIDAK otomatis muncul di CSS terkompilasi**. Insiden 2026-08-21: 8 grid Master
@@ -286,6 +308,18 @@ transaksi = `iqp_costing`, ikut inquiry).
    dengan class Tailwind baru):** (a) selesai edit → (b) `npm run build` → (c) baru
    laporkan selesai / minta user cek browser. Kalau ragu apakah class-nya baru,
    build saja — build ini murah (~2 detik) dan tidak merusak apa pun.
+11. **WAJIB commit + push tiap selesai kerja** (keputusan user 2026-08-30,
+   dipertegas 2026-08-31) — bukan cuma saat diminta. Setiap sesi/potongan
+   pekerjaan yang selesai (1 fitur/perbaikan/checklist item) wajib: (a)
+   `git add` file relevan (bukan `-A` membabi buta — cek `git status` dulu,
+   jangan ikutkan file mencurigakan/kredensial), (b) `git commit` dengan
+   pesan jelas per potongan kerja (bukan 1 commit raksasa gado-gado — ini
+   yang jadi titik rollback kalau ada yang salah), (c) `git push` ke GitHub
+   (`origin`) sebagai backup off-machine. Tujuan: histori commit granular =
+   riwayat versi yang bisa di-rollback (`git revert`/`git reset` ke commit
+   sebelum yang bermasalah) kalau ada pekerjaan yang keliru. Tetap ikuti
+   Git Safety Protocol (jangan force-push/reset --hard tanpa izin eksplisit,
+   review diff sebelum commit).
 
 ---
 
