@@ -459,6 +459,12 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .um-theme-grid { @apply flex flex-wrap gap-2 px-3 pt-1 pb-2.5; }
 .shell .um-swatch { @apply w-[22px] h-[22px] rounded-full border-2 border-transparent cursor-pointer flex items-center justify-center text-white text-[9px] flex-shrink-0; }
 .shell .um-swatch.active { border-color: var(--sh-ink-strong); box-shadow: 0 0 0 2px var(--sh-surface); }
+.shell .um-theme-matrix { @apply px-3 pt-1 pb-1.5; }
+.shell .utm-hdr { @apply grid gap-1.5 mb-1; grid-template-columns: 44px repeat(3, 22px); }
+.shell .utm-hdr span { @apply text-[9px] font-bold text-center text-[var(--sh-muted)]; }
+.shell .utm-row { @apply grid gap-1.5 items-center mb-1.5; grid-template-columns: 44px repeat(3, 22px); }
+.shell .utm-lbl { @apply text-[10.5px] font-semibold text-[var(--sh-ink)] truncate; }
+.shell .utm-empty { @apply w-[22px] h-[22px]; }
 .shell .um-count { @apply ml-auto bg-[#e5484d] text-white text-[10.5px] font-bold rounded-lg min-w-[18px] h-[18px] px-1.5 flex items-center justify-center; }
 .shell .nz { @apply flex gap-[11px] px-3 py-2.5 rounded-lg cursor-pointer; }
 .shell .nz:hover { @apply bg-[#f2f5fb]; }

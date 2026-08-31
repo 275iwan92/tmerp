@@ -310,15 +310,36 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     // yang sudah ada. theme-vars.blade.php baca ulang tiap full page load, jadi
     // ganti tema butuh reload (lihat pemanggil $wire.setTheme()/quickToggleTheme()
     // di Blade -- selalu diikuti location.reload()).
+    // Matrix 4 mode (pastel/cerah/dark/hitam) x 3 corak (blue/green/red) --
+    // instruksi user 2026-08-31 "matrix-kan dengan corak, taruh dalam tabel
+    // supaya mudah diubah ke depannya". Data 100% dari sys_theme.family/hue
+    // (migration 2026_08_31_000004) -- tambah baris baru di DB otomatis
+    // muncul di sel yang sesuai, tak perlu ubah kode ini. Tema lama yang di
+    // luar B/G/R (Slate/Indigo/Plum/Teal, family NULL) tampil terpisah di
+    // grup "Klasik".
     #[Computed]
-    public function themeList(): array
+    public function themeMatrix(): array
     {
-        return \App\Models\Sys\SysTheme::where('activate', true)
-            ->orderBy('sort_order')
-            ->get(['code', 'name', 'primary_color', 'mode'])
+        $themes = \App\Models\Sys\SysTheme::where('activate', true)->orderBy('sort_order')->get();
+
+        $families = ['pastel' => 'Pastel', 'cerah' => 'Cerah', 'dark' => 'Dark', 'hitam' => 'Hitam'];
+        $hues = ['blue' => 'B', 'green' => 'G', 'red' => 'R'];
+
+        $matrix = [];
+        foreach ($families as $fKey => $fLabel) {
+            $cells = [];
+            foreach ($hues as $hKey => $hLabel) {
+                $t = $themes->first(fn ($x) => $x->family === $fKey && $x->hue === $hKey);
+                $cells[] = $t ? ['code' => $t->code, 'name' => $t->name, 'primary' => $t->primary_color] : null;
+            }
+            $matrix[] = ['label' => $fLabel, 'cells' => $cells];
+        }
+
+        $classic = $themes->whereNull('family')
             ->map(fn ($t) => ['code' => $t->code, 'name' => $t->name, 'primary' => $t->primary_color, 'mode' => $t->mode])
-            ->values()
-            ->all();
+            ->values()->all();
+
+        return ['families' => array_values($families), 'hues' => array_values($hues), 'matrix' => $matrix, 'classic' => $classic];
     }
 
     public function currentThemeCode(): string
@@ -741,16 +762,39 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                             </span>
                         </div>
                         <div class="um-cap">Tema</div>
-                        <div class="um-theme-grid" @click.stop>
-                            @foreach ($this->themeList as $t)
-                                <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
-                                    title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? 'gelap' : 'terang' }})"
-                                    style="background:{{ $t['primary'] }}"
-                                    @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
-                                    @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
-                                </button>
+                        <div class="um-theme-matrix" @click.stop>
+                            <div class="utm-hdr">
+                                <span></span>
+                                @foreach ($this->themeMatrix['hues'] as $h)<span>{{ $h }}</span>@endforeach
+                            </div>
+                            @foreach ($this->themeMatrix['matrix'] as $row)
+                                <div class="utm-row">
+                                    <span class="utm-lbl">{{ $row['label'] }}</span>
+                                    @foreach ($row['cells'] as $cell)
+                                        @if ($cell)
+                                            <button type="button" class="um-swatch {{ $cell['code'] === $this->currentThemeCode() ? 'active' : '' }}"
+                                                title="{{ $cell['name'] }}" style="background:{{ $cell['primary'] }}"
+                                                @click="$wire.setTheme('{{ $cell['code'] }}').then(() => location.reload())"></button>
+                                        @else
+                                            <span class="utm-empty"></span>
+                                        @endif
+                                    @endforeach
+                                </div>
                             @endforeach
                         </div>
+                        @if (! empty($this->themeMatrix['classic']))
+                            <div class="um-cap">Klasik</div>
+                            <div class="um-theme-grid" @click.stop>
+                                @foreach ($this->themeMatrix['classic'] as $t)
+                                    <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
+                                        title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? 'gelap' : 'terang' }})"
+                                        style="background:{{ $t['primary'] }}"
+                                        @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
+                                        @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
+                                    </button>
+                                @endforeach
+                            </div>
+                        @endif
                         <div class="um-sep"></div>
                         <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> Keluar aplikasi</button>
                     </div>

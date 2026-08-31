@@ -44,6 +44,7 @@ yang mana, supaya sesi baru tidak perlu menebak dari nama file saja.
 | [`printnotastandard.md`](printnotastandard.md) | Dokumen cetak transaksi ke pihak luar — kop+parties+tanda tangan (Nota, Quotation, calon DO/Surat Jalan) | Bikin/ubah layar cetak dokumen transaksi (BUKAN laporan tabel — itu tetap `FORM_UI_STANDARD.md`) |
 | [`admindashboardstandard.md`](admindashboardstandard.md) | Navigasi/chrome panel admin Filament (`/admin`) — pemetaan Module/Group/Item, auth bridge, cara bikin Resource baru | Migrasikan/bikin modul baru di `/admin` (Filament) |
 | [`spreadsheetgridstandard.md`](spreadsheetgridstandard.md) | Grid spreadsheet-editable (klik sel edit, drag-fill AutoFill, "+ Baris") — HANYA master kecil/scalar (Currency, UOM) | Bikin/ubah grid spreadsheet-editable apa pun |
+| [`themestandard.md`](themestandard.md) | Tema aplikasi — matrix 4 mode (Pastel/Cerah/Dark/Hitam) x 3 corak (Biru/Hijau/Merah), data di `tm2sys.sys_theme` | Menambah/mengubah pilihan tema, atau token warna baru yang harus ikut ganti per mode |
 
 ---
 
