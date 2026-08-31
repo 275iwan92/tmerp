@@ -254,7 +254,7 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                 <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Menunggu Dijadwalkan ({{ $this->candidatesAwaiting->count() }})</p>
                 <div class="space-y-1.5">
                     @forelse ($this->candidatesAwaiting as $row)
-                        <div draggable="true" x-on:dragstart="draggedId = {{ $row->app->id_application }}"
+                        <div draggable="true" title="Seret ke slot jadwal di kalender untuk menjadwalkan interview" x-on:dragstart="draggedId = {{ $row->app->id_application }}"
                             class="text-[11px] px-2.5 py-2 rounded-md border border-[#d7dbe2] bg-[#fef6e7] cursor-grab active:cursor-grabbing">
                             <p class="font-semibold">{{ $row->app->candidate->name ?? '—' }}</p>
                             <p class="text-[10px] text-muted">{{ $row->stage->stage_name }} · {{ $row->app->vacancy->title ?? '' }}</p>

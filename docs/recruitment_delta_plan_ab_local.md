@@ -81,7 +81,7 @@ sendiri kalau mau lebih bersih. Bukan keputusan mendesak.
 `firebase/firebase.json` + `.firebaserc` (project id `demo-tmerp-crp`) — project
 **demo**, bukan project Firebase sungguhan (tak ada akun Google Cloud/billing
 terhubung). `FirebaseSyncAdapter` diarahkan ke emulator via env
-`FIRESTORE_EMULATOR_HOST=127.0.0.1:8090` (`.env FIREBASE_USE_EMULATOR=true`).
+`FIRESTORE_EMULATOR_HOST=127.0.0.1:8093` (`.env FIREBASE_USE_EMULATOR=true`).
 
 **Menyalakan emulator** (manual, bukan bagian `npm run dev`/`php artisan serve`):
 ```bash
@@ -89,7 +89,7 @@ cd firebase
 firebase emulators:start --only firestore,auth
 ```
 Emulator UI: `http://127.0.0.1:4000` (atau port fallback kalau 4000 dipakai,
-cek output CLI). Firestore: port 8090. Auth: port 9099.
+cek output CLI). Firestore: port 8093 (dipindah dari 8090 2026-08-30 -- bentrok port dgn aplikasi Windows tak terkait, Wondershare NativePush). Auth: port 9099.
 
 **Java Runtime** — emulator Firestore/Auth butuh JRE. Installer MSI resmi
 (`winget install Microsoft.OpenJDK.21`) **macet nunggu UAC elevation** di

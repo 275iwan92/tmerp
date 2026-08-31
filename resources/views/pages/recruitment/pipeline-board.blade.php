@@ -190,7 +190,7 @@ new #[Title('Pipeline Board — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="space-y-2 min-h-[60px]">
                         @forelse ($cards as $card)
-                            <div wire:key="card-{{ $card->id_application }}" draggable="true"
+                            <div wire:key="card-{{ $card->id_application }}" draggable="true" title="Seret kartu ini ke kolom lain untuk pindahkan tahap"
                                 x-on:dragstart="draggedId = {{ $card->id_application }}"
                                 class="bg-white border border-[#d7dbe2] rounded-md p-2.5 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md">
                                 <p class="text-[12.5px] font-semibold">{{ $card->candidate->name ?? '—' }}</p>

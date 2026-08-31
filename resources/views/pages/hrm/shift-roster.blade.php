@@ -630,7 +630,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
                                                     @foreach ($occupants as $employeeId)
                                                         @php $cls = $this->chipClass($employeeId, $date, $shift->shift_id, $machineId); @endphp
                                                         <div wire:key="chip-{{ $slotKey }}-{{ $employeeId }}"
-                                                            draggable="true"
+                                                            draggable="true" title="Seret ke slot mesin/tanggal/shift lain untuk pindahkan, atau ke Pool di bawah untuk lepas"
                                                             x-on:dragstart="$event.dataTransfer.setData('text/plain', JSON.stringify({employeeId: {{ $employeeId }}, fromKey: {machineId: {{ $machineId }}, date: '{{ $date }}', shiftId: {{ $shift->shift_id }}}}))"
                                                             class="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-semibold cursor-grab {{ $cls === 'busy-badge' ? 'bg-[#ffe8e8] text-[#ee5d50]' : ($cls === 'busy-badge-soft' ? 'bg-[#fff8e7] text-[#ffb800]' : 'bg-[#f4f7fe] text-[#4318ff]') }}">
                                                             <span class="flex-1 truncate">{{ $this->employeeNames[$employeeId] ?? '?' }}</span>
@@ -662,7 +662,7 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         <div class="flex gap-2 flex-wrap min-h-[38px]">
                             @forelse ($this->pool as $emp)
-                                <div draggable="true"
+                                <div draggable="true" title="Seret ke slot mesin/tanggal/shift di tabel atas untuk menugaskan"
                                     x-on:dragstart="$event.dataTransfer.setData('text/plain', JSON.stringify({employeeId: {{ $emp->employee_id }}}))"
                                     class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-grab bg-[#f4f7fe] text-[#4318ff]">{{ $emp->full_name }}</div>
                             @empty

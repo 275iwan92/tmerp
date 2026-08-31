@@ -282,7 +282,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                 <div class="p-2 flex flex-col gap-2 overflow-y-auto min-h-[70px] flex-1"
                     x-on:dragover.prevent x-on:drop="$wire.moveOperation(draggedId, null); draggedId = null">
                     @forelse ($this->queueOperations as $op)
-                        <div draggable="true" x-on:dragstart="draggedId = {{ $op->operation_id }}"
+                        <div draggable="true" title="Seret kartu ini ke kolom mesin lain untuk pindahkan tugasnya" x-on:dragstart="draggedId = {{ $op->operation_id }}"
                             class="bg-white rounded-lg shadow-sm border-l-4 {{ $this->cardBorderClasses($op->task_status) }} px-2.5 py-2 cursor-grab hover:shadow-md">
                             <div class="flex items-center justify-between gap-1.5 mb-1">
                                 <span class="font-mono font-extrabold text-accent text-[11px]">{{ $op->wo?->wo_no }}</span>
@@ -309,7 +309,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
                     <div class="p-2 flex flex-col gap-2 overflow-y-auto min-h-[70px] flex-1"
                         x-on:dragover.prevent x-on:drop="$wire.moveOperation(draggedId, {{ $machine->machine_id }}); draggedId = null">
                         @forelse ($ops as $op)
-                            <div draggable="true" x-on:dragstart="draggedId = {{ $op->operation_id }}"
+                            <div draggable="true" title="Seret kartu ini ke kolom mesin lain untuk pindahkan tugasnya" x-on:dragstart="draggedId = {{ $op->operation_id }}"
                                 class="bg-white rounded-lg shadow-sm border-l-4 {{ $this->cardBorderClasses($op->task_status) }} px-2.5 py-2 cursor-grab hover:shadow-md">
                                 <div class="flex items-center justify-between gap-1.5 mb-1">
                                     <span class="font-mono font-extrabold text-accent text-[11px]">{{ $op->wo?->wo_no }}</span>

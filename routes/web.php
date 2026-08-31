@@ -94,6 +94,11 @@ Route::middleware('auth')->group(function () {
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
         Route::livewire('/setup/support-tickets', 'pages::setup.support-tickets')->name('setup.support-tickets')->middleware('admin');
 
+        // Help Center -- panduan pakai aplikasi (bukan tiket support, itu modal
+        // "Help & Support" terpisah di profile dropdown). SEMUA user login boleh
+        // akses (tanpa middleware 'admin' seperti /security di atas).
+        Route::livewire('/bantuan', 'pages::help.index')->name('help.index');
+
         // Portal self-service karyawan — bukan modul HR administratif (tanpa
         // module: gate), tapi personal & hanya milik akun sendiri. Guard
         // "linked employee" ditangani di dalam komponen (masteremployee_tier1.md §5.1).

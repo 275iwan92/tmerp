@@ -706,6 +706,11 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                             <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
                         @endif
                         <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
+                        {{-- Panduan Penggunaan (2026-08-30, instruksi user) -- BEDA dari "Help &
+                        Support" di bawah (itu kirim tiket ke tim support). target="_blank" sengaja
+                        (bukan openTab() shell) -- halaman referensi enak dibuka di tab terpisah
+                        sambil tetap kerja di tab utama, tak perlu masuk sistem tab/iframe shell. --}}
+                        <a href="{{ route('help.index') }}" target="_blank" class="um-item"><i class="fa-solid fa-book"></i> Panduan Penggunaan</a>
                         <button type="button" class="um-item" @click="ddOpen = false; supportOpen = true; $wire.set('support_context', (openTabs.find(t => t.code === activeTabCode)?.label || 'Home') + ' — ' + new Date().toLocaleString('id-ID'))"><i class="fa-solid fa-circle-question"></i> Help &amp; Support</button>
                         <div class="um-item" style="cursor:default"><i class="fa-solid fa-globe"></i> Bahasa
                             <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
