@@ -13,7 +13,11 @@
     window.addEventListener('keydown', function (e) {
         if (e.key === 'F1') {
             e.preventDefault();
-            window.open('{{ route('help.index') }}', '_blank');
+            // Bawa konteks layar otomatis ke tab Tiket Bantuan -- document.title
+            // tiap screen Livewire full-page diisi #[Title('Nama Layar — TELASIH...')],
+            // ambil bagian sebelum ' — ' saja.
+            var ctx = (document.title || '').split(' — ')[0] || 'Aplikasi';
+            window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(ctx), '_blank');
         }
     });
 </script>

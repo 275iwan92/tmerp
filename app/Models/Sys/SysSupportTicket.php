@@ -30,4 +30,9 @@ class SysSupportTicket extends Model
     {
         return $this->hasMany(SysSupportTicketAttachment::class, 'ticket_id', 'id_ticket');
     }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(SysSupportReply::class, 'ticket_id', 'id_ticket')->orderBy('created_at');
+    }
 }

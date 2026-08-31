@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Sys\SysSupportReply;
 use App\Models\Sys\SysSupportTicket;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -54,13 +55,43 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function selected(): ?SysSupportTicket
     {
-        return $this->selectedId ? SysSupportTicket::with(['creator', 'attachments'])->find($this->selectedId) : null;
+        return $this->selectedId ? SysSupportTicket::with(['creator', 'attachments', 'replies'])->find($this->selectedId) : null;
     }
 
     public function open(int $id): void
     {
         $this->selectedId = $id;
         $this->resolution_note = SysSupportTicket::find($id)?->resolution_note ?? '';
+        $this->newReply = '';
+    }
+
+    // ================= BALASAN (2026-08-30) =================
+    // Instruksi user: gabung ticketing + Help Center, tiket wajib punya
+    // riwayat balasan (sebelumnya sys_support_replies ada di skema tapi tak
+    // pernah dipakai). Admin/support staff balas dari sini; user lihat +
+    // bisa balas balik dari Help Center (resources/views/pages/help/index.blade.php).
+    public string $newReply = '';
+
+    public function addReply(): void
+    {
+        if (! $this->selected || trim($this->newReply) === '') {
+            return;
+        }
+
+        SysSupportReply::create([
+            'ticket_id' => $this->selected->id_ticket,
+            'author' => Auth::user()->name ?? Auth::user()->login ?? 'Support',
+            'body' => $this->newReply,
+        ]);
+
+        // Balasan staff otomatis majukan status OPEN -> IN_PROGRESS (sinyal
+        // "sedang ditangani") -- tidak menimpa status yg sudah DONE/CLOSED.
+        if ($this->selected->status === 'OPEN') {
+            $this->selected->update(['status' => 'IN_PROGRESS']);
+        }
+
+        $this->newReply = '';
+        unset($this->selected, $this->rows, $this->stats);
     }
 
     public function setStatus(string $status): void
@@ -128,7 +159,7 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
                     <tr wire:key="ticket-{{ $t->id_ticket }}" wire:dblclick="open({{ $t->id_ticket }})" class="cursor-pointer hover:bg-[#f8fafc]" title="Double-click to open">
                         <td class="px-3 py-2 font-mono font-semibold">{{ $t->ticket_no }}</td>
                         <td class="px-3 py-2">{{ $t->creator->name ?? '—' }}</td>
-                        <td class="px-3 py-2 text-muted">{{ Str::limit($t->screen_context, 30) }}</td>
+                        <td class="px-3 py-2 text-muted">{{ Str::limit($t->screen_context ?? '', 30) ?: '—' }}</td>
                         <td class="px-3 py-2">{{ Str::limit($t->description, 50) }}</td>
                         <td class="px-3 py-2">
                             <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full {{ match ($t->status) {
@@ -153,7 +184,7 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
 
     @if ($this->selected)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('selectedId', null)">
-            <div class="bg-white rounded-xl w-full max-w-[480px] p-5">
+            <div class="bg-white rounded-xl w-full max-w-[560px] p-5 max-h-[92vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-1">
                     <h3 class="text-sm font-bold text-navy font-mono">{{ $this->selected->ticket_no }}</h3>
                     <span class="text-[10.5px] font-bold px-2 py-0.5 rounded-full {{ match ($this->selected->status) {
@@ -176,7 +207,27 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                 @endif
 
-                <x-form.textarea wire:model="resolution_note" rows="2" placeholder="What was fixed / why closed…"><x-slot:label>Resolution note</x-slot:label></x-form.textarea>
+                {{-- Thread balasan (2026-08-30) -- dua arah, sys_support_replies dipakai
+                pertama kali di sini. Balasan user sendiri (dari Help Center) & staff
+                sama-sama muncul kronologis, dibedakan warna bubble. --}}
+                @if ($this->selected->replies->isNotEmpty())
+                    <div class="border-t border-[#eef1f5] mt-3 pt-3 max-h-[220px] overflow-y-auto space-y-2">
+                        @foreach ($this->selected->replies as $r)
+                            @php($isMine = $r->author === (Auth::user()->name ?? Auth::user()->login))
+                            <div class="rounded-md px-3 py-2 text-[12px] {{ $isMine ? 'bg-[#eaf2ff] ml-6' : 'bg-[#f4f6fa] mr-6' }}">
+                                <div class="flex justify-between text-[10px] text-muted mb-0.5"><span class="font-bold">{{ $r->author }}</span><span>{{ $r->created_at->diffForHumans(null, true) }}</span></div>
+                                <div>{{ $r->body }}</div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                <div class="flex gap-2 mt-3">
+                    <textarea wire:model="newReply" rows="2" placeholder="Tulis balasan ke pelapor…" class="flex-1 border border-[#d7dbe2] rounded-md px-2.5 py-1.5 text-[12px] resize-none"></textarea>
+                    <button type="button" wire:click="addReply" wire:loading.attr="disabled" class="self-end bg-navy text-white text-xs font-bold px-3 py-2 rounded-md shrink-0">Kirim</button>
+                </div>
+
+                <x-form.textarea wire:model="resolution_note" rows="2" class="mt-3" placeholder="What was fixed / why closed…"><x-slot:label>Resolution note</x-slot:label></x-form.textarea>
 
                 <div class="flex flex-wrap justify-end gap-2 mt-4">
                     <button type="button" wire:click="$set('selectedId', null)" class="border border-[#d7dbe2] text-xs font-bold px-3 py-2 rounded-md">Close panel</button>

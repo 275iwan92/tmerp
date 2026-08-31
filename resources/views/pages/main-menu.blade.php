@@ -7,8 +7,6 @@ use App\Models\Sys\SysChatConversation;
 use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
-use App\Models\Sys\SysSupportTicket;
-use App\Models\Sys\SysSupportTicketAttachment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -44,16 +42,10 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
 
     public string $chatInput = '';
 
-    // ---- Help & Support (dropdown profil, dulu placeholder toast) ----
-    public string $support_description = '';
-
-    public string $support_context = '';
-
-    public array $support_attachments = [];
-
-    public ?string $supportError = null;
-
-    public ?string $supportSubmittedNo = null;
+    // Help & Support (tiket) DIPINDAH ke resources/views/pages/help/index.blade.php
+    // 2026-08-30 (instruksi user: gabung ticketing + Help Center jadi 1 tempat) --
+    // properti support_*/myTickets/submitSupportTicket/resetSupportForm yang
+    // dulu ada di sini SUDAH DIHAPUS, jangan bikin lagi versi duplikat di sini.
 
     public function mount(): void
     {
@@ -369,53 +361,6 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         $this->passwordSaved = true;
     }
 
-    #[Computed]
-    public function myTickets()
-    {
-        return SysSupportTicket::where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(10)->get();
-    }
-
-    public function submitSupportTicket(): void
-    {
-        $this->supportError = null;
-
-        if (trim($this->support_description) === '') {
-            $this->supportError = 'Deskripsi wajib diisi.';
-
-            return;
-        }
-
-        $year = now()->format('y');
-        $month = now()->format('m');
-        $seq = SysSupportTicket::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count() + 1;
-
-        $ticket = SysSupportTicket::create([
-            'ticket_no' => "SPT{$year}{$month}".str_pad((string) $seq, 4, '0', STR_PAD_LEFT),
-            'created_by_user_id' => Auth::id(),
-            'screen_context' => $this->support_context ?: null,
-            'description' => $this->support_description,
-            'status' => 'OPEN',
-        ]);
-
-        foreach ($this->support_attachments as $file) {
-            SysSupportTicketAttachment::create([
-                'ticket_id' => $ticket->id_ticket,
-                'file_path' => $file->store('support-tickets', 'public'),
-                'uploaded_at' => now(),
-            ]);
-        }
-
-        $this->supportSubmittedNo = $ticket->ticket_no;
-        $this->support_description = '';
-        $this->support_attachments = [];
-        unset($this->myTickets);
-    }
-
-    public function resetSupportForm(): void
-    {
-        $this->supportSubmittedNo = null;
-        $this->supportError = null;
-    }
 
     public function logout()
     {
@@ -706,12 +651,18 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                             <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
                         @endif
                         <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
-                        {{-- Panduan Penggunaan (2026-08-30, instruksi user) -- BEDA dari "Help &
-                        Support" di bawah (itu kirim tiket ke tim support). target="_blank" sengaja
-                        (bukan openTab() shell) -- halaman referensi enak dibuka di tab terpisah
-                        sambil tetap kerja di tab utama, tak perlu masuk sistem tab/iframe shell. --}}
-                        <a href="{{ route('help.index') }}" target="_blank" class="um-item" title="Jalan pintas: tekan F1 di mana saja"><i class="fa-solid fa-book"></i> Panduan Penggunaan <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span></a>
-                        <button type="button" class="um-item" @click="ddOpen = false; supportOpen = true; $wire.set('support_context', (openTabs.find(t => t.code === activeTabCode)?.label || 'Home') + ' — ' + new Date().toLocaleString('id-ID'))"><i class="fa-solid fa-circle-question"></i> Help &amp; Support</button>
+                        {{-- Bantuan & Support -- GABUNGAN (2026-08-30, instruksi user "Combine Help
+                        and support yang ticketing and Help and support yang menjelaskan segala
+                        hal") dari 2 menu terpisah sebelumnya (Panduan Penggunaan + modal tiket
+                        Help & Support) jadi SATU tempat (resources/views/pages/help/index.blade.php,
+                        3 sub-menu: Tiket/Cara Pakai/Modul). target="_blank" (bukan openTab() shell)
+                        -- halaman referensi enak dibuka di tab terpisah sambil tetap kerja di tab
+                        utama. Konteks layar aktif ikut terbawa ke tab Tiket (sama spirit dgn
+                        partials/f1-help-hotkey.blade.php yg pakai document.title). --}}
+                        <button type="button" class="um-item" title="Jalan pintas: tekan F1 di mana saja"
+                            @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
+                            <i class="fa-solid fa-circle-question"></i> Bantuan &amp; Support <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
+                        </button>
                         <div class="um-item" style="cursor:default"><i class="fa-solid fa-globe"></i> Bahasa
                             <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
                                 <button type="button" class="um-flag active" @click.stop="toast('Bahasa: Indonesia')">🇮🇩</button>
@@ -907,71 +858,6 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             </div>
         </div></div>
     @endif
-
-    {{-- Modal Help & Support (dulu placeholder toast "segera") --}}
-    <div class="mov" :class="{ on: supportOpen }"><div class="modal">
-        <div class="mh"><h3>Help &amp; Support</h3><button type="button" class="x" @click="supportOpen = false; $wire.resetSupportForm()">&times;</button></div>
-        <div class="mb">
-            @if ($supportSubmittedNo)
-                <div class="mfield" style="text-align:center;padding:18px 0">
-                    <div style="font-size:32px">✅</div>
-                    <div style="font-weight:600;margin-top:6px">Ticket submitted</div>
-                    <div class="hint">Ticket #{{ $supportSubmittedNo }} — we'll get back to you.</div>
-                </div>
-            @else
-                <div class="hint" style="margin-bottom:8px">{{ $support_context ?: 'Screen context unavailable' }}</div>
-                @if ($supportError)
-                    <div class="mfield"><div class="hint bad">{{ $supportError }}</div></div>
-                @endif
-                <div class="mfield">
-                    <textarea wire:model="support_description" rows="4" placeholder="What happened? The more detail, the faster it gets fixed." style="width:100%;resize:vertical"></textarea>
-                </div>
-                <div class="mfield">
-                    <label class="hint" style="display:block;margin-bottom:4px">Attach screenshots (optional)</label>
-                    <input type="file" wire:model="support_attachments" multiple accept="image/*">
-                    <div wire:loading wire:target="support_attachments" class="hint">Uploading…</div>
-                    @if (count($support_attachments))
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-                            @foreach ($support_attachments as $i => $file)
-                                <div style="position:relative;width:52px;height:52px">
-                                    <img src="{{ $file->temporaryUrl() }}" style="width:100%;height:100%;object-fit:cover;border-radius:8px">
-                                    <button type="button" wire:click="$set('support_attachments.{{ $i }}', null)" title="Remove"
-                                        style="position:absolute;top:-6px;right:-6px;background:#fff;border:1px solid #d7dbe2;border-radius:999px;width:18px;height:18px;font-size:11px;line-height:1;cursor:pointer">×</button>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-                @if ($this->myTickets->isNotEmpty())
-                    <div style="border-top:1px solid #eef1f5;margin-top:14px;padding-top:10px">
-                        <div class="hint" style="font-weight:600;margin-bottom:6px">My tickets</div>
-                        <div style="display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto">
-                            @foreach ($this->myTickets as $t)
-                                <div style="display:flex;align-items:center;gap:8px;font-size:12px">
-                                    <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap;{{ match ($t->status) {
-                                        'DONE' => 'background:#eaf7ee;color:#1f8a4c',
-                                        'CLOSED' => 'background:#eef1f5;color:#4b5568',
-                                        'IN_PROGRESS' => 'background:#fff5e0;color:#8a5a00',
-                                        default => 'background:#eaf2ff;color:#1d4ed8',
-                                    } }}">{{ str_replace('_', ' ', $t->status) }}</span>
-                                    <span style="flex:1;color:#334155">{{ Str::limit($t->description, 46) }}</span>
-                                    <span style="color:#94a3b8">{{ $t->created_at->diffForHumans(null, true) }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-            @endif
-        </div>
-        <div class="mf">
-            @if ($supportSubmittedNo)
-                <button type="button" class="mbtn p" @click="supportOpen = false; $wire.resetSupportForm()">Close</button>
-            @else
-                <button type="button" class="mbtn c" @click="supportOpen = false">Cancel</button>
-                <button type="button" class="mbtn p" wire:click="submitSupportTicket" wire:loading.attr="disabled">Submit</button>
-            @endif
-        </div>
-    </div></div>
 
     <div x-text="toastMsg"
          style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#2f3a5e;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;transition:opacity .25s;z-index:130;pointer-events:none"
