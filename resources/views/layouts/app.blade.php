@@ -16,6 +16,8 @@
     <body>
         {{ $slot }}
 
+        <x-alert.toast />
+
         @livewireScripts
         @include('partials.f1-help-hotkey')
     </body>

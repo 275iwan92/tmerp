@@ -1064,9 +1064,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- ===================== TAB: CUTI / SAKIT / IZIN ===================== --}}
             @if ($tab === 'cuti')
-                @if (session('leaveSubmitted'))
-                    <div class="text-xs text-[#166534] bg-[#dcfce7] border border-[#86efac] px-3.5 py-2.5 rounded-md mb-4">✓ {{ session('leaveSubmitted') }}</div>
-                @endif
+                <x-alert.banner type="success" :message="session('leaveSubmitted')" />
 
                 <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5 mb-4">
                     <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Saldo Cuti Tahunan — {{ now()->year }}</div>

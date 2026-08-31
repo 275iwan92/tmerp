@@ -362,12 +362,8 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         @php $readOnly = $this->prt->status !== 'DRAFT'; @endphp
 
-        @if (session('flash'))
-            <div class="bg-[#e9f9ef] border border-[#c8ecd6] text-[#1f8a4c] text-xs rounded-md px-4 py-2.5 mb-4">✅ {{ session('flash') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="bg-[#fff5e0] border border-[#e0c26a] text-[#8a5a00] text-xs rounded-md px-4 py-2.5 mb-4">⚠ {{ session('error') }}</div>
-        @endif
+        <x-alert.banner type="success" :message="session('flash')" />
+        <x-alert.banner type="warning" :message="session('error')" />
 
         @if ($this->approvalHistory->last()?->action === 'HOLD')
             <div class="bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0] text-xs rounded-md px-4 py-2.5 mb-4">

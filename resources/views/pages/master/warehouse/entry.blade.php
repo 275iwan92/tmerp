@@ -157,12 +157,8 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 
     <div class="max-w-[900px] mx-auto my-5 px-4">
 
-        @if (session('saved'))
-            <div class="bg-[#eaf7ee] border border-[#bfe6cb] text-[#1f8a4c] text-xs px-3.5 py-2.5 rounded-md mb-3">✓ {{ session('saved') }}</div>
-        @endif
-        @if ($formError)
-            <div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md mb-3">⚠ {{ $formError }}</div>
-        @endif
+        <x-alert.banner type="success" :message="session('saved')" />
+        <x-alert.banner type="danger" :message="$formError" />
 
         {{-- ============ IDENTITAS ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">

@@ -191,9 +191,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">
-        @if (session('error'))
-            <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f]">⚠️ {{ session('error') }}</div>
-        @endif
+        <x-alert.banner type="danger" :message="session('error')" />
         {{-- flex, BUKAN class="grid" -- app.css .grid{} unlayered override
              grid-cols/lg:grid-cols manapun jadi 4 kolom sama rata (lihat catatan
              di co/entry.blade.php & docs/FORM_UI_STANDARD.md §2). --}}

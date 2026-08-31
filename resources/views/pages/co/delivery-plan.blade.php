@@ -218,9 +218,7 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
 
-        @if (session('flash'))
-            <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#e9f9ef] border border-[#c8ecd6] text-[#1f8a4c]">✅ {{ session('flash') }}</div>
-        @endif
+        <x-alert.banner type="success" :message="session('flash')" />
 
         <x-grid.stat-row :count="3">
             <x-grid.stat-box tone="total" label="Rencana Aktif" :value="$this->statTotal" />

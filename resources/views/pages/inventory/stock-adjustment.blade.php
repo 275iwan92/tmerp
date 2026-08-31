@@ -503,12 +503,8 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
 
-        @if (session('flash'))
-            <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#e9f9ef] border border-[#c8ecd6] text-[#1f8a4c]">✅ {{ session('flash') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f]">⚠️ {{ session('error') }}</div>
-        @endif
+        <x-alert.banner type="success" :message="session('flash')" />
+        <x-alert.banner type="danger" :message="session('error')" />
 
         @if ($panel === 'grid')
             <x-grid.stat-row :count="3">
