@@ -228,6 +228,8 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 'id' => $node->id,
                 'code' => $node->code,
                 'label' => $node->label,
+                'shortLabel' => $node->short_label,
+                'tooltip' => $node->tooltip,
                 'icon' => $this->iconFor($node),
                 'menuType' => $node->menu_type,
                 'objectType' => $node->object_type,
@@ -294,6 +296,61 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
         $walk($this->menuTree, '');
 
         return $flat;
+    }
+
+    // ================= TEMA (sys_theme, instruksi user 2026-08-31) =================
+    // Light/dark BUKAN sumbu terpisah dari tema warna -- 1 baris sys_theme =
+    // hue + mode sekaligus (mis. "Navy Gelap"), dipilih lewat sec_user.theme_code
+    // yang sudah ada. theme-vars.blade.php baca ulang tiap full page load, jadi
+    // ganti tema butuh reload (lihat pemanggil $wire.setTheme()/quickToggleTheme()
+    // di Blade -- selalu diikuti location.reload()).
+    #[Computed]
+    public function themeList(): array
+    {
+        return \App\Models\Sys\SysTheme::where('activate', true)
+            ->orderBy('sort_order')
+            ->get(['code', 'name', 'primary_color', 'mode'])
+            ->map(fn ($t) => ['code' => $t->code, 'name' => $t->name, 'primary' => $t->primary_color, 'mode' => $t->mode])
+            ->values()
+            ->all();
+    }
+
+    public function currentThemeCode(): string
+    {
+        return \App\Support\ActiveTheme::resolve()->code;
+    }
+
+    public function currentThemeMode(): string
+    {
+        return \App\Support\ActiveTheme::resolve()->mode ?? 'light';
+    }
+
+    public function setTheme(string $code): void
+    {
+        if (! \App\Models\Sys\SysTheme::where('code', $code)->where('activate', true)->exists()) {
+            return;
+        }
+
+        Auth::user()->update(['theme_code' => $code]);
+    }
+
+    public function quickToggleTheme(): void
+    {
+        $current = \App\Support\ActiveTheme::resolve();
+
+        if (($current->mode ?? 'light') === 'dark') {
+            $lightCode = str_ends_with($current->code, '_dark') ? substr($current->code, 0, -5) : null;
+            $target = $lightCode && \App\Models\Sys\SysTheme::where('code', $lightCode)->where('activate', true)->exists()
+                ? $lightCode
+                : (\App\Models\Sys\SysTheme::where('is_default', true)->value('code') ?? 'navy');
+        } else {
+            $darkCode = $current->code.'_dark';
+            $target = \App\Models\Sys\SysTheme::where('code', $darkCode)->where('activate', true)->exists()
+                ? $darkCode
+                : (\App\Models\Sys\SysTheme::where('mode', 'dark')->orderBy('sort_order')->value('code') ?? 'navy_dark');
+        }
+
+        $this->setTheme($target);
     }
 
     public function greetName(): string
@@ -577,8 +634,8 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 {{-- SETUP sengaja tidak muncul di topbar -- khusus admin, aksesnya
                      lewat menu profil ("Pengaturan (Setup)" di dropdown avatar). --}}
                 <template x-for="m in menuTree.filter(x => x.code !== 'SETUP')" :key="m.id">
-                    <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="m.label + (m.statusLabel ? ' — '+m.statusLabel : '')" @click="selectModule(m.code)">
-                        <span class="mi"><i :class="m.icon"></i></span> <span x-text="topLabel(m.code, m.label)"></span>
+                    <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="(m.tooltip || m.label) + (m.statusLabel ? ' — '+m.statusLabel : '')" @click="selectModule(m.code)">
+                        <span class="mi"><i :class="m.icon"></i></span> <span x-text="m.shortLabel || m.label"></span>
                         <span class="status-dot" :style="{ background: m.statusColor }"></span>
                     </button>
                 </template>
@@ -598,6 +655,14 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 @if ($this->unreadNotifCount > 0)
                     <span class="tbadge">{{ $this->unreadNotifCount }}</span>
                 @endif
+            </button>
+
+            {{-- Toggle cepat terang/gelap -- instruksi user 2026-08-31 "ada di dekat
+            logo user". Ganti tema butuh reload penuh (theme-vars.blade.php dibaca
+            saat page load, di luar boundary re-render Livewire component ini). --}}
+            <button type="button" class="tb-btn" title="{{ $this->currentThemeMode() === 'dark' ? 'Ganti ke tema terang' : 'Ganti ke tema gelap' }}"
+                @click="$wire.quickToggleTheme().then(() => location.reload())">
+                <i class="fa-solid {{ $this->currentThemeMode() === 'dark' ? 'fa-sun' : 'fa-moon' }}"></i>
             </button>
 
             <div class="pop">
@@ -668,6 +733,17 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                                 <button type="button" class="um-flag active" @click.stop="toast('Bahasa: Indonesia')">🇮🇩</button>
                                 <button type="button" class="um-flag" @click.stop="toast('Bahasa: English')">🇬🇧</button>
                             </span>
+                        </div>
+                        <div class="um-cap">Tema</div>
+                        <div class="um-theme-grid" @click.stop>
+                            @foreach ($this->themeList as $t)
+                                <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
+                                    title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? 'gelap' : 'terang' }})"
+                                    style="background:{{ $t['primary'] }}"
+                                    @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
+                                    @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
+                                </button>
+                            @endforeach
                         </div>
                         <div class="um-sep"></div>
                         <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> Keluar aplikasi</button>

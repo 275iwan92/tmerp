@@ -46,6 +46,7 @@ class ActiveTheme
             'name' => 'Navy (default)',
             'primary_color' => '#2f6fed',
             'sidebar_color' => '#1f2742',
+            'mode' => 'light',
         ]);
     }
 }

@@ -8,7 +8,16 @@
      3 sistem variabel warna independen di app.css ke-cover di sini: .shell
      (post-login), .authpage (login/register/forgot-password), .secpage
      (security) -- Finance/HRM/Master/Inquiry pakai --color-navy/--color-accent
-     global langsung (bg-navy dsb), otomatis ikut tanpa perlu blok terpisah. --}}
+     global langsung (bg-navy dsb), otomatis ikut tanpa perlu blok terpisah.
+
+     mode terang/gelap (2026-08-31, sys_theme.mode): sidebar/topbar SENGAJA
+     tetap gelap di kedua mode (teks .mega-item/.um-item hardcode terang di
+     app.css, pastel di sidebar bikin teks itu tak terbaca) -- yang berubah
+     cuma token area KONTEN .shell (--content-bg dst). Ini baru cover chrome
+     .shell (halaman pasca-login + isi tab non-iframe) -- layar transaksi yg
+     dimuat via <iframe> (inquiry, stock-in, dst) pakai token global
+     --color-navy/--color-accent yg SUDAH ikut, tapi belum tentu tiap kelas
+     Tailwind di dalamnya sadar dark-mode; itu scope terpisah, belum digarap. --}}
 @php $__theme = \App\Support\ActiveTheme::resolve(); @endphp
 <style>
     :root {
@@ -19,6 +28,17 @@
         --side: {{ $__theme->sidebar_color }};
         --topbar: {{ $__theme->sidebar_color }};
         --sh-accent: {{ $__theme->primary_color }};
+        @if ($__theme->mode === 'dark')
+            --content-bg: {{ $__theme->content_bg_color ?: '#12162a' }};
+            --tabbar: #171c33;
+            --sh-border: #2a3157;
+            --sh-surface: #1b2140;
+            --sh-ink: #c7cee8;
+            --sh-ink-strong: #eef1ff;
+            --sh-muted: #7680a6;
+        @else
+            --content-bg: {{ $__theme->content_bg_color ?: '#eef1f6' }};
+        @endif
     }
     .authpage {
         --ap-navy: {{ $__theme->sidebar_color }};

@@ -315,7 +315,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell {
     --side: #1f2742; --side-2: #27314f; --side-hover: #2d3860; --topbar: #141b30;
     --sh-accent: #2f6fed; --sh-accent-2: #255bd4; --side-ink: #cbd1e6; --side-muted: #7b85a8;
-    --content-bg: #eef1f6; --tabbar: #e6e8f2; --sh-border: #e3e7f0;
+    --content-bg: #eef1f6; --tabbar: #e6e8f2; --sh-border: #e3e7f0; --sh-surface: #ffffff;
     --sh-ink: #3a4568; --sh-ink-strong: #2f3a5e; --sh-muted: #9aa3bd; --sh-violet: #7a52d0; --sh-amber: #b6852a;
     --side-w: 262px; --topbar-h: 56px; --tab-h: 44px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -382,7 +382,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .tabbar:empty::before { content: "Belum ada menu terbuka"; @apply text-[var(--sh-muted)] text-[12.5px] self-center px-2; }
 .shell .tab { @apply flex items-center gap-2 h-[34px] py-0 pl-[13px] pr-2.5 bg-[#d3d7e8] text-[#5a6488] rounded-t-[9px] cursor-pointer text-[13px] whitespace-nowrap max-w-[230px]; }
 .shell .tab:hover { @apply bg-[#dde0ee]; }
-.shell .tab.active { @apply bg-white text-[var(--sh-ink-strong)] font-semibold; box-shadow: 0 -2px 0 var(--sh-accent) inset; }
+.shell .tab.active { @apply bg-[var(--sh-surface)] text-[var(--sh-ink-strong)] font-semibold; box-shadow: 0 -2px 0 var(--sh-accent) inset; }
 .shell .tab .tlbl { @apply overflow-hidden text-ellipsis; }
 .shell .tab .tx { @apply border-none bg-transparent text-inherit cursor-pointer text-[15px] opacity-60 px-0.5 rounded; line-height: 1; }
 .shell .tab .tx:hover { @apply opacity-100; background: rgba(0, 0, 0, .08); }
@@ -419,7 +419,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 
 .shell .pal-ov { @apply hidden fixed inset-0 justify-center items-start pt-[12vh] z-[120]; background: rgba(20, 27, 48, .45); }
 .shell .pal-ov.open { @apply flex; }
-.shell .pal { @apply w-full max-w-[580px] bg-white rounded-2xl overflow-hidden; box-shadow: 0 30px 80px rgba(10, 18, 45, .4); }
+.shell .pal { @apply w-full max-w-[580px] bg-[var(--sh-surface)] rounded-2xl overflow-hidden; box-shadow: 0 30px 80px rgba(10, 18, 45, .4); }
 .shell .pal-in { @apply flex items-center gap-2.5 px-4 py-3.5 border-b border-[var(--sh-border)]; }
 .shell .pal-in input { @apply flex-1 border-none outline-none text-base text-[var(--sh-ink-strong)]; font-family: inherit; }
 .shell .pal-list { @apply max-h-[330px] overflow-y-auto p-2; }
@@ -437,7 +437,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .avatar-btn { @apply flex items-center gap-[7px] bg-transparent border-none cursor-pointer py-1.5 px-1.5 rounded-lg; font-family: inherit; }
 .shell .avatar-btn:hover { background: rgba(255, 255, 255, .10); }
 .shell .avatar-btn .avatar { @apply w-[30px] h-[30px]; }
-.shell .pop-menu { @apply hidden absolute right-0 top-[46px] bg-white text-[var(--sh-ink)] rounded-xl min-w-[256px] overflow-hidden z-[70]; box-shadow: 0 16px 44px rgba(15, 22, 45, .24); }
+.shell .pop-menu { @apply hidden absolute right-0 top-[46px] bg-[var(--sh-surface)] text-[var(--sh-ink)] rounded-xl min-w-[256px] overflow-hidden z-[70]; box-shadow: 0 16px 44px rgba(15, 22, 45, .24); }
 .shell .pop-menu.open { @apply block; }
 .shell .um-head { @apply flex items-center gap-3 px-4 py-[15px] border-b border-[var(--sh-border)]; }
 .shell .um-av { @apply w-11 h-11 rounded-full bg-[#dce1ee] flex items-center justify-center flex-shrink-0; }
@@ -454,6 +454,9 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .um-cap { @apply text-[10px] tracking-[.6px] uppercase text-[var(--sh-muted)] font-bold pt-2.5 px-3 pb-[3px]; }
 .shell .um-flag { @apply border border-[var(--sh-border)] bg-white rounded-[7px] px-[7px] py-0.5 text-sm cursor-pointer; }
 .shell .um-flag.active { @apply border-[var(--sh-accent)]; box-shadow: 0 0 0 2px rgba(47, 111, 237, .15); }
+.shell .um-theme-grid { @apply flex flex-wrap gap-2 px-3 pt-1 pb-2.5; }
+.shell .um-swatch { @apply w-[22px] h-[22px] rounded-full border-2 border-transparent cursor-pointer flex items-center justify-center text-white text-[9px] flex-shrink-0; }
+.shell .um-swatch.active { border-color: var(--sh-ink-strong); box-shadow: 0 0 0 2px var(--sh-surface); }
 .shell .um-count { @apply ml-auto bg-[#e5484d] text-white text-[10.5px] font-bold rounded-lg min-w-[18px] h-[18px] px-1.5 flex items-center justify-center; }
 .shell .nz { @apply flex gap-[11px] px-3 py-2.5 rounded-lg cursor-pointer; }
 .shell .nz:hover { @apply bg-[#f2f5fb]; }
@@ -465,7 +468,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 
 .shell .backdrop { @apply fixed inset-0 opacity-0 pointer-events-none z-[110]; background: rgba(20, 27, 48, .4); transition: opacity .2s; }
 .shell .backdrop.on { @apply opacity-100 pointer-events-auto; }
-.shell .drawer { @apply fixed top-0 right-0 h-screen w-[390px] max-w-[92vw] bg-white z-[115] flex flex-col; box-shadow: -12px 0 40px rgba(15, 22, 45, .2); transform: translateX(100%); transition: transform .22s; }
+.shell .drawer { @apply fixed top-0 right-0 h-screen w-[390px] max-w-[92vw] bg-[var(--sh-surface)] z-[115] flex flex-col; box-shadow: -12px 0 40px rgba(15, 22, 45, .2); transform: translateX(100%); transition: transform .22s; }
 .shell .drawer.on { transform: none; }
 .shell .dr-head { @apply h-14 flex items-center gap-2.5 px-4 border-b border-[var(--sh-border)] flex-shrink-0; }
 .shell .dr-head .ico { @apply text-[var(--sh-accent)]; } .shell .dr-title { @apply font-bold text-[var(--sh-ink-strong)]; }
@@ -732,6 +735,51 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .secpage .switch input:checked + .slider { background: var(--sp-ok); }
 .secpage .switch input:checked + .slider::before { transform: translateX(18px); }
 .secpage .note { @apply text-[12.5px] text-[var(--sp-muted)] mt-1.5; }
+
+/* ============================================================
+ * Standar Alert (2026-08-31) -- global, TIDAK di-scope ke .shell
+ * spy jalan juga di halaman transaksi yg dimuat lewat <iframe>.
+ * Pakai var(--sh-surface/--sh-border/--sh-ink-strong, fallback)
+ * -- otomatis ikut gelap kalau dirender di dalam .shell mode dark
+ * (var ke-set di theme-vars.blade.php), tetap terang di halaman lain
+ * (var tak ke-set, fallback dipakai). Namespace app-alert-* sengaja
+ * DIPISAH dari .toast/.banner bare class lain di file ini supaya
+ * tak collision (lihat insiden .grid class collision sebelumnya).
+ * ============================================================ */
+.app-alert-stack { @apply fixed top-4 right-4 z-[200] flex flex-col gap-2.5 w-[336px] max-w-[calc(100vw-32px)]; }
+.app-alert-toast {
+    @apply relative flex gap-2.5 rounded-xl overflow-hidden pl-[15px] pr-3 py-3;
+    background: var(--sh-surface, #fff); border: 1px solid var(--sh-border, #e3e7f0);
+    box-shadow: 0 10px 30px -8px rgba(20, 26, 40, .22);
+    animation: appAlertIn .22s cubic-bezier(.2, .9, .3, 1.15);
+}
+@keyframes appAlertIn { from { opacity: 0; transform: translateX(14px) scale(.98); } to { opacity: 1; transform: none; } }
+.app-alert-toast .bar { @apply absolute left-0 top-0 bottom-0 w-1; }
+.app-alert-toast .ic { @apply w-7 h-7 rounded-[9px] flex items-center justify-center flex-shrink-0 text-[13px]; }
+.app-alert-toast .body { @apply flex-1 min-w-0 pr-3; }
+.app-alert-toast .ttl { @apply text-[13px] font-bold m-0; color: var(--sh-ink-strong, #2f3a5e); }
+.app-alert-toast .msg { @apply text-[12px] leading-relaxed m-0; color: var(--sh-muted, #6b7386); }
+.app-alert-toast .close { @apply absolute top-2 right-2 w-[18px] h-[18px] flex items-center justify-center rounded-md border-none bg-transparent cursor-pointer text-[10px]; color: var(--sh-muted, #9aa3bd); }
+.app-alert-toast .close:hover { background: var(--sh-border, #e3e7f0); }
+.app-alert-toast .progress { @apply absolute left-0 bottom-0 h-[2.5px] opacity-40; animation: appAlertShrink linear forwards; }
+@keyframes appAlertShrink { from { width: 100%; } to { width: 0%; } }
+.app-alert-toast.success .bar, .app-alert-toast.success .progress { background: #1f8a4c; }
+.app-alert-toast.success .ic { @apply text-[#1f8a4c]; background: #e9f9ef; }
+.app-alert-toast.info .bar, .app-alert-toast.info .progress { background: #255bd4; }
+.app-alert-toast.info .ic { @apply text-[#255bd4]; background: #eaf1ff; }
+.app-alert-toast.warning .bar, .app-alert-toast.warning .progress { background: #b6852a; }
+.app-alert-toast.warning .ic { @apply text-[#8a6d1f]; background: #fff6e2; }
+.app-alert-toast.danger .bar, .app-alert-toast.danger .progress { background: #c94a41; }
+.app-alert-toast.danger .ic { @apply text-[#a3453f]; background: #fdecec; }
+
+.app-alert-banner { @apply flex items-start gap-2.5 rounded-[10px] border px-3.5 py-2.5 mb-3.5 text-[12.5px] leading-relaxed; }
+.app-alert-banner .ic { @apply mt-px flex-shrink-0 text-[13px]; }
+.app-alert-banner .close { @apply ml-auto flex-shrink-0 border-none bg-transparent cursor-pointer opacity-60 text-[11px]; color: inherit; }
+.app-alert-banner .close:hover { @apply opacity-100; }
+.app-alert-banner.success { @apply bg-[#e9f9ef] border-[#c8ecd6] text-[#1f8a4c]; }
+.app-alert-banner.info { @apply bg-[#eaf1ff] border-[#c6d9fb] text-[#255bd4]; }
+.app-alert-banner.warning { @apply bg-[#fff8e6] border-[#f5dfa0] text-[#8a6d1f]; }
+.app-alert-banner.danger { @apply bg-[#fdecec] border-[#f5c6c6] text-[#a3453f]; }
 .secpage .toast { @apply fixed left-1/2 bottom-[26px] text-white px-4.5 py-2.5 rounded-lg text-[13px] opacity-0 z-[99] pointer-events-none; background: #2f3a5e; transform: translateX(-50%); transition: opacity .25s; }
 .secpage .toast.show { @apply opacity-100; }
 @media (max-width: 820px) { .secpage .side { @apply w-16; } .secpage .side .cap, .secpage .nav-item span.t { @apply hidden; } .secpage .nav-item { @apply justify-center; } .secpage .form-grid { @apply grid-cols-1; } .secpage .htitle { @apply hidden; } }
