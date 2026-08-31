@@ -291,13 +291,6 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .ac-none { @apply px-2.5 py-2 text-xs text-muted; }
 .cust-ok { color: #177a4b !important; }
 
-/* galeri modal + popup prospek */
-.modal { @apply hidden fixed inset-0 z-[100] p-6 overflow-auto; background: rgba(20, 26, 40, .55); }
-.modal.on { @apply block; }
-.modal-in { @apply max-w-[1080px] mx-auto bg-white rounded-[10px] overflow-hidden; }
-.modal-hd { @apply px-4 py-3 bg-navy text-white flex items-center gap-3; }
-.modal-hd b { @apply text-sm; }
-.modal-hd .x { @apply ml-auto cursor-pointer text-xl; line-height: 1; }
 .catbar { @apply flex gap-1.5 px-4 py-2.5 border-b border-[#e2e7ee] flex-wrap bg-[#fbfcfe]; }
 .catbar button { @apply border border-[#cfd7e3] bg-white px-3 py-1.5 rounded-[14px] text-xs cursor-pointer; }
 .catbar button.on { @apply bg-accent text-white border-accent; }
