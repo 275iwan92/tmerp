@@ -53,6 +53,14 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::hex('#2f6fed'),
             ])
+            // Dark mode Filament BAWAAN (default: aktif, tak dipaksa, pakai
+            // localStorage/preferensi OS browser sendiri) SAMA SEKALI TERPISAH
+            // dari toggle tema shell lama (sys_theme, lihat theme-vars.blade.php)
+            // -- user 2026-08-31 lapor /admin masih gelap walau shell lama sudah
+            // diganti terang, krn dua sistem itu memang tak saling tahu. Dipaksa
+            // terang di sini (bukan disinkronkan) supaya konsisten dgn shell lama
+            // yang saat ini defaultnya terang juga.
+            ->darkMode(false)
             ->sidebarCollapsibleOnDesktop()
             // Override menu atas (2026-08-30): ->topNavigation() adalah fitur
             // BAWAAN Filament yang TERNYATA sudah persis meniru pola shell lama
