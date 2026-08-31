@@ -584,7 +584,7 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
                 <div class="side-hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>
             </template>
             <template x-for="grp in sidebarGroups" :key="grp.id">
-                <div x-data="{ open: true }">
+                <div x-data="{ open: false }">
                     <template x-if="grp.menuType === 'group'">
                         <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
                             <span class="side-cap" x-text="grp.label"></span>
