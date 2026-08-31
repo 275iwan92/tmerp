@@ -97,6 +97,12 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             'MD_MATCAT' => route('master.mat-category'),
             'MD_WH' => route('master.warehouse.list'),
             'MD_UOM' => route('master.uom'),
+            // Shortcut "Master Data Terkait" di dalam modul WM (2026-08-31) --
+            // reuse route MDATA yang sama persis (bukan duplikasi layar/data).
+            'INV_REF_RAW' => route('master.raw-material.list'),
+            'INV_REF_MATCAT' => route('master.mat-category'),
+            'INV_REF_PROD' => route('master.produk'),
+            'INV_REF_WH' => route('master.warehouse.list'),
             'MD_MACHINE' => route('master.machine'),
             'MD_SHIFT' => route('master.shift'),
             'PROD_MST_PROCESS' => route('production.master-process'),
