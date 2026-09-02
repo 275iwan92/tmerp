@@ -235,7 +235,7 @@ new #[Title('Forecast MTS — TELASIH MAKMUR ERP')] class extends Component
                             @endif
                         @endif
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid two gap-3">
                         <div>
                             <x-form.date-picker label="Periode Mulai" wire:model="periodStart" />
                             @error('periodStart') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror

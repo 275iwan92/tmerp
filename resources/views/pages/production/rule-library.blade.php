@@ -227,7 +227,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                         <input type="text" wire:model="rule_name" placeholder="mis. Gabung dieline sama" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                         @error('rule_name') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid two gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Mesin (opsional)</label>
                             <select wire:model="applies_to_machine_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
@@ -242,7 +242,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                             <input type="text" wire:model="applies_to_process" placeholder="mis. Cetak" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid two gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Field Kondisi</label>
                             <input type="text" wire:model="condition_field" placeholder="mis. dieline_ref" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">

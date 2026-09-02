@@ -317,26 +317,6 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 
 ## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
 
-- **`class="grid"` + `grid-cols-N` Tailwind mentah tanpa `.two`/`.three`**
-  — **AUDIT SELESAI 2026-09-02** (cuma list, BELUM diperbaiki — keputusan
-  perbaiki-atau-tidak menyusul). Sebagian file sudah pakai workaround
-  `[display:grid]` (bukan class `grid` biasa) jadi AMAN — `master/customer`,
-  `master/employee`, `master/supplier`, `production/wo-entry`,
-  `master/raw-material/entry`, `pur/pr/entry`. Yang **MASIH KENA** (pakai
-  `class="grid grid-cols-N"` literal, N≠4, tanpa `.two`/`.three`/`.five` —
-  akan tampil sebagai grid 4-kolom yang salah krn `.grid{grid-cols-4}`
-  unlayered SELALU menang, lihat `FORM_UI_STANDARD.md` §2):
-  `production/scheduling-board.blade.php:865` (grid-cols-2),
-  `production/rule-library.blade.php:230,245` (grid-cols-2),
-  `production/mts-forecast.blade.php:238` (grid-cols-2),
-  `components/form/date-picker.blade.php:87,92` (grid-cols-7 — dipakai
-  di banyak layar via `<x-form.date-picker>`, potensi dampak terluas),
-  `recruitment/interview-schedule.blade.php:315,320,336,342,348`
-  (grid-cols-3 & grid-cols-7, kalender interview), `careers/landing.blade.php:38`
-  (`md:grid-cols-2`, halaman publik — cek dulu apakah pakai `app.css` yang
-  sama sebelum asumsikan kena). **Belum diverifikasi visual di browser**
-  (audit murni grep+baca CSS) — kalau mau perbaiki, verifikasi dulu satu
-  per satu sebelum ganti ke `[display:grid]`.
 - **Halaman transaksi iframe** (Inquiry, Stock In, Quotation, dst) —
   belum ikut sistem tema `sys_theme` (themestandard.md §6), masih warna
   Tailwind literal.

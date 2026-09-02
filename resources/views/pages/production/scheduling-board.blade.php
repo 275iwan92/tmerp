@@ -862,7 +862,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     @if ($hotWoId && $hotOperationId)
-                        <div class="grid grid-cols-2 gap-3">
+                        <div class="grid two gap-3">
                             <div>
                                 <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Sumber</label>
                                 <select wire:model.live="hotSource" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">

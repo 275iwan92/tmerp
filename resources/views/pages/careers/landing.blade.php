@@ -35,7 +35,7 @@ new #[Layout('layouts::portal')] #[Title('Karir')] class extends Component
                 Belum ada lowongan terbuka saat ini. Silakan cek kembali lain waktu.
             </div>
         @else
-            <div class="grid gap-4 md:grid-cols-2">
+            <div class="[display:grid] gap-4 md:grid-cols-2">
                 @foreach ($this->vacancies as $vac)
                     <a href="{{ route('careers.vacancy-detail', $vac->vacancy_code) }}" class="block bg-white border border-[#e6e9ef] rounded-xl p-5 hover:border-accent hover:shadow-md transition">
                         <span class="text-[10px] font-bold text-accent uppercase tracking-wide">{{ $vac->vacancy_code }}</span>

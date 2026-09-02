@@ -12,6 +12,23 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2)
+
+- **§10 — `class="grid" grid-cols-N` literal DIPERBAIKI** (audit 2026-09-02
+  pagi selesai, sesi ini eksekusi perbaikannya). 6 file/9 lokasi: grid-cols-2
+  → dialek `.grid.two` existing (`production/scheduling-board.blade.php:865`,
+  `rule-library.blade.php:230,245`, `mts-forecast.blade.php:238`), grid-cols-3
+  → `.grid.three` (`recruitment/interview-schedule.blade.php:315,336`),
+  grid-cols-7 → `[display:grid]` (tak ada dialek `.seven`, dipakai
+  `components/form/date-picker.blade.php:87,92` — dampak terluas krn dipakai
+  lintas modul — + `interview-schedule.blade.php:320,342,348`),
+  `careers/landing.blade.php:38` (`md:grid-cols-2` responsive, dicek pakai
+  `app.css` yg sama → `[display:grid]` supaya breakpoint md: tetap jalan,
+  BUKAN `.two` flat yg akan hilangkan behaviour 1-kol mobile). `npm run build`
+  dijalankan, `php -l` semua file lolos. Belum verifikasi visual browser
+  langsung (butuh login) — pola fix identik yg sudah terbukti jalan di file
+  lain (`imposition.blade.php` dst), risiko rendah.
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`)
 
 - **ProDev Fase 1 TUNTAS** (`docs/inquiry_product_costing/productdevelopment_tier1.md`

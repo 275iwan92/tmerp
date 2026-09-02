@@ -312,12 +312,12 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                 @elseif ($viewMode === 'year')
                     {{-- YEAR VIEW: 12 mini bulan, klik tanggal -> Day view --}}
-                    <div class="grid grid-cols-3 gap-3 p-3">
+                    <div class="grid three gap-3 p-3">
                         @for ($m = 1; $m <= 12; $m++)
                             @php $anchor = Carbon::create((int) $this->focus()->format('Y'), $m, 1); @endphp
                             <div class="border border-[#eef1f5] rounded-md p-1.5">
                                 <p class="text-[10.5px] font-bold text-navy text-center mb-1">{{ $anchor->translatedFormat('MMMM') }}</p>
-                                <div class="grid grid-cols-7 gap-0.5 text-center">
+                                <div class="[display:grid] grid-cols-7 gap-0.5 text-center">
                                     @foreach ($this->weeksFor($anchor) as $week)
                                         @foreach ($week as $day)
                                             @php $inMonth = $day->month === $m; $ds = $day->format('Y-m-d'); $has = isset($this->schedulesByDate[$ds]); @endphp
@@ -333,19 +333,19 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                 @else
                     {{-- MONTH / 3-MONTH VIEW: grid bulan penuh --}}
                     @php $anchors = $viewMode === '3month' ? [$this->focus(), $this->focus()->copy()->addMonth(), $this->focus()->copy()->addMonths(2)] : [$this->focus()]; @endphp
-                    <div class="{{ $viewMode === '3month' ? 'grid grid-cols-3 divide-x divide-[#eef1f5]' : '' }}">
+                    <div class="{{ $viewMode === '3month' ? 'grid three divide-x divide-[#eef1f5]' : '' }}">
                         @foreach ($anchors as $anchor)
                             <div>
                                 @if ($viewMode === '3month')
                                     <p class="text-xs font-bold text-navy text-center py-2 border-b border-[#eef1f5]">{{ $anchor->translatedFormat('MMMM Y') }}</p>
                                 @endif
-                                <div class="grid grid-cols-7 text-center text-[10px] font-bold text-muted uppercase border-b border-[#eef1f5]">
+                                <div class="[display:grid] grid-cols-7 text-center text-[10px] font-bold text-muted uppercase border-b border-[#eef1f5]">
                                     @foreach (['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'] as $d)
                                         <div class="py-1.5">{{ $d }}</div>
                                     @endforeach
                                 </div>
                                 @foreach ($this->weeksFor($anchor) as $week)
-                                    <div class="grid grid-cols-7 divide-x divide-[#eef1f5] border-b border-[#eef1f5]">
+                                    <div class="[display:grid] grid-cols-7 divide-x divide-[#eef1f5] border-b border-[#eef1f5]">
                                         @foreach ($week as $day)
                                             @php $inMonth = $day->month === $anchor->month; $ds = $day->format('Y-m-d'); $items = $this->schedulesByDate[$ds] ?? []; $isToday = $day->isToday(); @endphp
                                             <div class="{{ $viewMode === '3month' ? 'min-h-[54px]' : 'min-h-[92px]' }} p-1 {{ $inMonth ? 'bg-white' : 'bg-[#f8fafc]' }} hover:bg-[#f0f5ff]"

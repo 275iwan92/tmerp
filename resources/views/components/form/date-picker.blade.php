@@ -84,12 +84,12 @@
                     class="w-6 h-6 rounded border border-[#d7dbe2] hover:bg-[#f4f6fa] cursor-pointer text-[#374151]">&gt;</button>
             </div>
 
-            <div class="grid grid-cols-7 gap-0.5 text-center mb-0.5">
+            <div class="[display:grid] grid-cols-7 gap-0.5 text-center mb-0.5">
                 <template x-for="d in dayLabels" :key="d">
                     <div class="text-[10px] font-semibold text-[#697386]" x-text="d"></div>
                 </template>
             </div>
-            <div class="grid grid-cols-7 gap-0.5">
+            <div class="[display:grid] grid-cols-7 gap-0.5">
                 <template x-for="(cell, idx) in days" :key="idx">
                     <button type="button"
                         x-text="cell ?? ''"
