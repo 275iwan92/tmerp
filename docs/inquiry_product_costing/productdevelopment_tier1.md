@@ -148,7 +148,7 @@ duplikasi:
 | Material + Kualitas (gsm) | `DUPLEX IKA DP`, `350 gsm` | Cek dulu: link ke `mat_grammage`/`mat_raw` (tm2mst, sudah ada di Costing) via FK, JANGAN duplikasi teks bebas |
 | Ukuran Bahan (raw sheet sblm potong) | `84,5 x 72 cm` | ✅ `prod_part.sheet_raw_w_cm`/`sheet_raw_h_cm` — gap nyata |
 | Ukuran Cetak | `84,5 x 72 cm` | ✅ `prod_part.print_area_w_cm`/`print_area_h_cm` |
-| Jenis Finishing (bisa multi: Laminating + UV + Hotprint) | `Laminating Doff, UV Spot, Hot Print Gold Puyeh` | ✅ `prod_part.finishing_notes` (text) — ATAU child table `prod_part_finishing` kalau mau tiap finishing punya biaya/urutan sendiri (lebih tepat kalau finishing juga masuk hitungan Costing per-item, bukan cuma catatan) |
+| Jenis Finishing (bisa multi: Laminating + UV + Hotprint) | `Laminating Doff, UV Spot, Hot Print Gold Puyeh` | ❌ **BUKAN kolom teks** — tabel anak baru **`prod_part_finishing`** (keputusan user 2026-09-02, §4.2a), 1 baris per jenis finishing, siap dikaitkan biaya/urutan proses masing-masing |
 | Bentuk Sambungan (Single/Double Join) | `Double Join` | ✅ `prod_part.join_type` |
 | **Isi dalam Satu Cetakan = hasil UP** | `4 UP`, `1/2 UP`, `1 SET`, `8 UP` | Bukan kolom manual — **hasil `ImpositionEngine`**, disimpan di tabel anak `prod_part_layout` (§4.2a), bukan diketik officer |
 | Warna Pertama/Kedua (Unit 1-4 = CMYK/spot) | `Black/Cyan/Magenta/Yellow` | ✅ `prod_part.color_set_1`/`color_set_2` (JSON array) |
@@ -185,6 +185,20 @@ duplikasi:
    TIDAK bisa di-preview inline browser** (bukan format native web), cuma
    disimpan+bisa didownload; JPEG/PDF bisa preview inline
    (`<img>`/embed PDF).
+4. **`prod_part_finishing`** (keputusan user 2026-09-02 §7 poin 5) — jenis
+   finishing sbg data terstruktur, bukan teks bebas: `id_part` FK, `seq`,
+   `finishing_type` (Laminating Doff/Glossy, UV Spot, Hot Print, Varnish,
+   Emboss, dst — kemungkinan perlu lookup `ref_finishing_type` sendiri
+   drpd enum hardcode, banyak variasi dari data riil §4.2), `notes`, kolom
+   biaya opsional (nanti dipakai Costing) — persis pola `prod_part_process`
+   tapi utk finishing.
+5. **`mat_flap_rule`** (keputusan user 2026-09-02 §7 poin 8, `tm2mst`) —
+   tabel referensi rentang lidah valid struktural, pola sama
+   `MatFluteAllowance`: `material_type`/`grammage_range`/`glue_type` →
+   `flap_min_mm`/`flap_max_mm`. **BUTUH DATA RIIL dari user** (aturan
+   lem/struktur per material CV. Telasih Makmur) sebelum diisi — dipakai
+   `prod_part.flap_min_mm`/`flap_max_mm` (§4.3a) sbg lookup default,
+   officer tetap bisa override per part kalau ada kasus khusus.
 
 **Temuan penting**: `Kode Pisau` (nama/rujukan pisau, string) dan
 `Ukuran Pisau` (dimensi fisik pisau pond, BEDA dari ukuran cetak — pisau
@@ -323,15 +337,17 @@ Tingkat 1 belum cukup memuaskan hasil nyata di lapangan. Tingkat 2 BUTUH
 data baru (`flap_width_mm`, `flap_offset_mm`) yang belum tentu gampang
 diisi officer tanpa training tambahan (perlu ukur dari dieline asli).
 
-**Soal batas `flap_min_mm`/`flap_max_mm`**: ini ATURAN TEKNIK (kekuatan
-lem/struktur, beda per material/jenis lem), bukan angka bebas. Ada
-preseden di kode: `MatFluteAllowance` (`app/Models/Master/MatFluteAllowance.php`)
-sudah jadi tabel serupa utk geometri corrugated (dipakai `CostingEngine.php`
-SHEET_DIGITAL, sudah diverifikasi byte-presisi ke Excel asli) — bisa
-dicontoh polanya bikin tabel sejenis utk aturan lidah, ATAU lebih simpel:
-officer isi `flap_min_mm`/`flap_max_mm` manual per part (compromise MVP,
-tidak butuh tabel referensi baru dulu). **Ini salah satu pertanyaan di
-§7.**
+**Soal batas `flap_min_mm`/`flap_max_mm`** [KEPUTUSAN 2026-09-02]: ini
+ATURAN TEKNIK (kekuatan lem/struktur, beda per material/jenis lem), bukan
+angka bebas — user pilih **tabel referensi baru `mat_flap_rule`**
+(§4.2a poin 5), pola sama `MatFluteAllowance`
+(`app/Models/Master/MatFluteAllowance.php`, sudah jadi preseden tabel
+serupa utk geometri corrugated, dipakai `CostingEngine.php` SHEET_DIGITAL
+yg sudah diverifikasi byte-presisi ke Excel asli). **BUTUH DATA RIIL dari
+user** (aturan lem/struktur per material CV. Telasih Makmur) sebelum tabel
+ini terisi benar — lihat §7 poin 8, jadi prasyarat sebelum ENGINE Tingkat 1
+dipakai kalkulasi harga produksi sungguhan (boleh mulai development dgn
+angka placeholder dulu).
 
 ### 4.4 Data Flow In/Out
 
@@ -450,43 +466,54 @@ dikonfirmasi user dulu sebelum dieksekusi.
 
 ## 7. Pertanyaan Terbuka / Keputusan yang Dibutuhkan
 
-1. **Prioritas tool** — dari 10 tool §4.3, mana yang mau dikerjakan duluan?
-   Realistis bertahap: Tool #1 (pindah rumah + skema baru) → **Tingkat 1
-   ENGINE §4.3a** (parametric flap sweep, langsung jawab contoh user) →
-   #10 (Intra-Product Combiner) → #2 (Pcs→Plano) → #4 (Die-Rule) → baru
-   yang lebih rumit (Tingkat 2 ENGINE/interlock, #3/#6/#8).
+Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
+2026-09-02 sore — dicatat di sini, coretan (~~...~~) = sudah selesai:
+
+1. ~~Prioritas tool?~~ **[TERJAWAB]**: user SETUJU urutan yang diusulkan
+   — Tool #1 (pindah rumah + skema baru) → **Tingkat 1 ENGINE §4.3a**
+   (parametric flap sweep) → #10 (Intra-Product Combiner) → #2
+   (Pcs→Plano) → #4 (Die-Rule) → baru yang lebih rumit (Tingkat 2
+   ENGINE/interlock, #3/#6/#8). **Ini urutan kerja resmi kalau eksekusi
+   dimulai.**
 2. ~~Dimensi Master Card di level Part atau Product?~~ **[TERJAWAB
    2026-09-02, §4.2b]**.
 3. ~~Sumber `Kode Item`?~~ **[TERJAWAB 2026-09-02]**: ditunda, pakai
    nomor urut sementara (PK `id` auto-increment yang sudah ada, mis.
    tampilkan `MC-{id}` apa adanya) — pola penamaan mnemonic final
    diputuskan belakangan, TIDAK memblokir pengembangan sekarang.
-4. **Toggle Manual/Ambil-Data di Costing** — per-part atau per-costing
-   (§5.1)?
-5. **Finishing jadi kolom teks atau tabel anak?** (§4.2 baris Jenis
-   Finishing) — tergantung apakah tiap jenis finishing butuh biaya/urutan
-   sendiri di Costing/routing, atau cukup catatan deskriptif saja.
+4. ~~Toggle Manual/Ambil-Data di Costing — per-part atau per-costing?~~
+   **[TERJAWAB]**: **per-part**, konsisten dgn `iqp_costing_part` yang
+   sudah granular per part — 1 costing boleh campur part manual + part
+   ambil-data.
+5. ~~Finishing jadi kolom teks atau tabel anak?~~ **[TERJAWAB]**: **tabel
+   anak** — jadi `prod_part_finishing` (bukan `finishing_notes` teks di
+   §4.2), 1 baris per jenis finishing, siap dikaitkan ke biaya/urutan
+   proses masing-masing di Costing/routing nanti.
 6. **Batas upload file** (§4.2a) — ukuran maks, apakah AI wajib disertai
-   PDF export (utk preview) atau cukup file AI mentah tersimpan?
+   PDF export (utk preview) atau cukup file AI mentah tersimpan? **Masih
+   terbuka.**
 7. **Sumber dokumen** (`imposition_nesting`, `gemini_spark_productcosting.md`,
    `mockup_mastercard.jpg`) — dari riset user sendiri atau AI lain (Gemini)?
    Perlu tahu tingkat kepercayaan formulanya, terutama klaim hemat 12-22%
    dari Interlocking Nesting (ini angka umum industri, belum tentu pas
    dgn mesin/spesifikasi CV. Telasih Makmur — jangan dipakai mentah-mentah
-   sbg target performa).
-8. **[BARU] `flap_min_mm`/`flap_max_mm` (§4.3a) — dari tabel aturan
-   teknik (pola `MatFluteAllowance`) atau diisi manual per part oleh
-   officer?** Tabel referensi lebih konsisten/aman (tidak bisa asal isi
-   angka salah), tapi butuh data riil dari user (aturan lem/struktur per
-   material — belum ada di dokumen manapun yang saya baca) sebelum bisa
-   dibangun. Manual per part lebih cepat dibangun tapi rawan human-error.
+   sbg target performa). **Masih terbuka.**
+8. ~~`flap_min_mm`/`flap_max_mm` — tabel referensi atau manual per
+   part?~~ **[TERJAWAB]**: **tabel referensi** (pola `MatFluteAllowance`)
+   — tabel baru mis. `mat_flap_rule` (material/jenis lem → flap_min_mm/
+   flap_max_mm). **Butuh data riil dari user** (aturan lem/struktur per
+   material) sebelum tabel ini bisa diisi — belum ada di dokumen manapun
+   yang sudah dibaca, jadi ini jadi prasyarat sebelum ENGINE Tingkat 1
+   bisa jalan produksi sungguhan (bisa mulai dgn placeholder/default dulu
+   utk pengembangan, tapi jangan dipakai kalkulasi harga riil sebelum
+   angka aslinya masuk).
 9. **[BARU] Berapa banyak contoh kasus flap/interlock riil dibutuhkan
    sebelum ENGINE Tingkat 1 dianggap cukup teruji?** — beda dari
    `CostingEngine.php` SHEET_DIGITAL yang sudah diverifikasi byte-presisi
    ke 1 Excel asli, engine imposition ini BELUM ada data pembanding riil
    sama sekali — perlu tau apakah ada dokumen/kasus serupa
    `docs/attachments/` yang bisa jadi bahan verifikasi sebelum dipakai
-   produksi sungguhan.
+   produksi sungguhan. **Masih terbuka.**
 
 ---
 
