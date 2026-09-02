@@ -22,6 +22,8 @@ class SysLanguage extends Model
         'code',
         'name',
         'is_default',
+        'decimal_separator',
+        'thousand_separator',
     ];
 
     protected $casts = [

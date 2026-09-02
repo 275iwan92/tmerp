@@ -7,6 +7,7 @@ use App\Models\Sys\SysChatConversation;
 use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
+use App\Support\Branding\Brand;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -16,6 +17,10 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+// #[Title] PHP attribute WAJIB constant expression -- TIDAK BISA panggil
+// Brand::name() (query DB) di sini, jadi tetap literal statis. Judul tab
+// browser masih "TELASIH MAKMUR", beda dari brand di topbar/body yang sudah
+// dinamis -- disengaja, di luar cakupan (lihat docs/configurationstandard.md).
 new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends Component
 {
     use WithFileUploads;
@@ -176,12 +181,34 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini
             // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
             'HRM_RCR_PORTAL' => route('careers.landing'),
+            'SET_CONFIG' => route('setup.configuration'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
             'SET_MIGRATION' => route('security.index', ['tab' => 'migration']),
             'SET_TICKETS' => route('setup.support-tickets'),
         ];
+    }
+
+    // Identitas aplikasi (docs/configurationstandard.md) -- APP_NAME BUKAN
+    // "TELASIH MAKMUR" hardcode lagi, dibaca dari tm2sys.sys_constant lewat
+    // App\Support\Branding\Brand, diedit di layar Configuration.
+    #[Computed]
+    public function brandName(): string
+    {
+        return Brand::name();
+    }
+
+    #[Computed]
+    public function brandTagline(): string
+    {
+        return Brand::tagline();
+    }
+
+    #[Computed]
+    public function brandLogoUrl(): ?string
+    {
+        return Brand::logoUrl();
     }
 
     // Pohon menu (module->group->item) dari sys_app_menu, difilter izin lewat
@@ -586,8 +613,12 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
     <aside>
         <div class="side-head">
             <button type="button" class="logo-home" @click="selectModule('HOME')" title="Kembali ke Home">
-                <span class="logo-badge"></span>
-                <span class="logo-txt"><b>TELASIH MAKMUR</b><br><span>packaging solution</span></span>
+                <span class="logo-badge">
+                    @if ($this->brandLogoUrl)
+                        <img src="{{ $this->brandLogoUrl }}" alt="{{ $this->brandName }}" class="w-full h-full object-cover rounded-[9px]">
+                    @endif
+                </span>
+                <span class="logo-txt"><b>{{ $this->brandName }}</b>@if ($this->brandTagline)<br><span>{{ $this->brandTagline }}</span>@endif</span>
             </button>
             <button type="button" class="side-collapse" @click="mini = !mini" title="Ciutkan sidebar (mini)">⊟</button>
         </div>
@@ -624,6 +655,17 @@ new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends
             </template>
         </div>
         @if (Auth::user()->is_admin)
+            {{-- "Configuration" -- instruksi user 2026-09-02: 1 layar (bukan
+            grup ber-sub-item spt Security di bawahnya), edit sys_constant
+            (identitas app/logo/font, semua konstanta sistem) + bahasa/
+            terjemahan. Dipasak TEPAT DI ATAS "Security", is_admin only sama
+            spt Security. docs/configurationstandard.md. --}}
+            <div class="side-footer">
+                <button type="button" class="side-cap-btn" @click="openTab('SET_CONFIG')" title="Configuration">
+                    <span class="side-cap">Configuration</span>
+                    <i class="fa-solid fa-sliders"></i>
+                </button>
+            </div>
             {{-- "Security" -- instruksi user 2026-08-30: dipasak PALING BAWAH
             sidebar kiri, HANYA utk is_admin, dan berupa MENU GROUP (bukan 1
             tombol) berisi sub-item Account/Group/Group per Submodule/

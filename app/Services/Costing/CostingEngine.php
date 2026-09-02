@@ -7,7 +7,7 @@ use App\Models\Master\MatGrammage;
 use App\Models\Master\MatSheetDiscountTier;
 use App\Models\Master\MatSheetRate;
 use App\Models\Master\ProdPartType;
-use App\Models\Master\SysConstant;
+use App\Models\Sys\SysConstant;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use Illuminate\Support\Facades\DB;

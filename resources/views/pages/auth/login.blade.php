@@ -133,7 +133,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         <div class="hero-panel">
             <img src="{{ $this->hero['url'] }}" alt="{{ $this->hero['caption'] }}" @load="$el.classList.add('on')" x-init="$el.complete && $el.classList.add('on')">
             <div class="hero-veil"></div>
-            <div class="hero-brand"><span class="logo-badge"></span><div><b>TELASIH MAKMUR</b><span>packaging solution</span></div></div>
+            <x-auth.hero-brand />
             <div class="hero-clock" wire:key="clock-{{ $lang }}" x-data="{ time: '', date: '' }" x-init="
                     const fmt = () => {
                         const now = new Date();

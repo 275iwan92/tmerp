@@ -60,7 +60,7 @@ new #[Layout('layouts::guest')] #[Title('Ganti Password — TELASIH MAKMUR ERP')
 
 <div class="authpage center">
     <div class="card">
-        <div class="top"><span class="logo">📦</span> TELASIH MAKMUR</div>
+        <x-auth.top-brand />
         <div class="body">
             <h2>Ganti password</h2>
             <p class="sub">Anda login memakai password default. Buat password baru sebelum melanjutkan.</p>

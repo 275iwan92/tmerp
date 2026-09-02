@@ -98,7 +98,7 @@ new #[Layout('layouts::guest')] #[Title('Setup Keamanan Akun — TELASIH MAKMUR 
 
 <div class="authpage center">
     <div class="card">
-        <div class="top"><span class="logo">📦</span> TELASIH MAKMUR</div>
+        <x-auth.top-brand />
         <div class="body">
             <h2>Setup keamanan akun</h2>
             <p class="sub">Isi 4 data ini sekali saja — dipakai untuk verifikasi identitas kalau Anda lupa password nanti (tanpa email).</p>

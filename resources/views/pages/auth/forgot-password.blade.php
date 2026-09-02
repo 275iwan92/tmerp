@@ -138,7 +138,7 @@ new #[Layout('layouts::guest')] #[Title('Lupa Password — TELASIH MAKMUR ERP')]
 
 <div class="authpage center">
     <div class="card">
-        <div class="top"><span class="logo">📦</span> TELASIH MAKMUR</div>
+        <x-auth.top-brand />
         <div class="body">
             <h2>Lupa password</h2>
 

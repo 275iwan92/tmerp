@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Master\OrgCompany;
-use App\Models\Master\SysConstant;
+use App\Models\Sys\SysConstant;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Inquiry\TierPricingResolver;
 use Livewire\Attributes\Computed;
@@ -216,9 +216,9 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     <div class="pay-row"><span class="k">Lead time produksi</span><span class="v">menyesuaikan kapasitas</span></div>
                     <div class="pay-row"><span class="k">Mulai dihitung</span><span class="v">setelah proof disetujui</span></div>
                     @php
-                        $bankName = \App\Models\Master\SysConstant::text('BANK_NAME');
-                        $bankAcctName = \App\Models\Master\SysConstant::text('BANK_ACCOUNT_NAME');
-                        $bankAcctNo = \App\Models\Master\SysConstant::text('BANK_ACCOUNT_NO');
+                        $bankName = \App\Models\Sys\SysConstant::text('BANK_NAME');
+                        $bankAcctName = \App\Models\Sys\SysConstant::text('BANK_ACCOUNT_NAME');
+                        $bankAcctNo = \App\Models\Sys\SysConstant::text('BANK_ACCOUNT_NO');
                     @endphp
                     <div class="bank">
                         @if ($bankName || $bankAcctNo)

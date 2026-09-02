@@ -17,6 +17,7 @@ class GeoCountry extends Model
     protected $fillable = [
         'country_code',
         'iso_code',
+        'flag_emoji',
         'country_name',
         'capital_name',
         'call_country_no',

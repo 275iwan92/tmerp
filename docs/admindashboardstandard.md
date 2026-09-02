@@ -236,7 +236,79 @@ automation, bahkan akun dev/test). Cara verifikasi yang benar:
 
 ---
 
-## 9. YANG SENGAJA BELUM DIKERJAKAN
+## 10. TEMA WARNA DASHBOARD (PERSONAL, USER PROFILE)
+
+> Dibuat 2026-09-02, ikut mockup `docs/mockups/mockup_dashboardcolor.html`.
+> **Beda dari `themestandard.md`** (itu punya SHELL LAMA, matrix 4 mode x 3
+> corak, `tm2sys.sys_theme`, berlaku SAMA ke semua device user) — ini
+> **PERSONAL per-user**, cuma berlaku di panel Filament, disimpan 2 kolom
+> `sec_user.admin_theme_mode`/`admin_theme_accent` (bukan tabel lookup
+> terpisah — 5 mode x 7 aksen sepenuhnya ortogonal di mockup, tidak butuh
+> kombinasi ter-precompute spt `sys_theme`).
+
+### 10.1 5 Mode x 7 Aksen
+
+Mode: `light`/`pastel`/`bright`/`dark`/`black`. Aksen: `blue`/`green`/`red`/
+`purple`/`amber`/`cyan`/`mono`. Diedit di **User Profile** Filament
+(`/admin/profile`, `App\Filament\Pages\Auth\EditProfile extends
+Filament\Auth\Pages\EditProfile`), section "Tampilan Dashboard" — UI-nya
+persis mockup: `<select>` mode + 7 swatch bulat aksen
+(`resources/views/filament/forms/dashboard-theme-picker.blade.php`), ganti
+warna **instan** di client (Alpine set atribut `data-fi-theme`/`data-fi-accent`
+di `<html>`) sebelum tombol Save bawaan Filament diklik (baru situ tersimpan
+permanen ke DB) — persis cara mockup ("ikutin mockup... begitu pula cara
+user menggantinya", instruksi user 2026-09-02).
+
+### 10.2 2 lapis implementasi — native Filament + kosmetik custom
+
+**Lapis 1 (native, robust, di-generate Filament sendiri):**
+- **Aksen** → `Panel::colors(['primary' => Color::hex($hex)])`, dihitung per
+  request dari `Auth::user()->admin_theme_accent` di `AdminPanelProvider::panel()`
+  (map lengkap: `AdminPanelProvider::ACCENT_HEX`). Ini cara BENAR ganti
+  warna Filament — semua komponen (tombol/link/badge/nav aktif) otomatis
+  ikut, tidak perlu override CSS manual satu-satu.
+- **Dark/Light** → `Panel::darkMode()` (toggle-able, BUKAN lagi `darkMode(false)`
+  spt sebelum 2026-09-02) + `->defaultThemeMode(ThemeMode::Dark|Light)`
+  dihitung dari `admin_theme_mode` (`dark`/`black` → Dark, sisanya → Light).
+  Kontras teks dijamin BENAR oleh CSS dark-mode bawaan Filament sendiri.
+
+**Lapis 2 (kosmetik, best-effort, custom CSS):** variasi background per mode
+yang Filament sendiri TIDAK punya (pastel tint, glass blur ala mockup, OLED
+hitam pekat) — `resources/views/filament/partials/theme-matrix.blade.php`,
+didaftarkan via `->renderHook(PanelsRenderHook::HEAD_END, ...)`. Target CSS
+cuma container besar yang nama class-nya dipastikan stabil (`body.fi-body`,
+`.fi-sidebar`, `.fi-topbar`, `.fi-main`) — **BUKAN klaim override semua
+komponen Filament**, kalau ada komponen dalam yang belum ikut ganti
+background saat mode pastel/bright/black, itu memang belum tercakup lapis
+ini (bukan bug tersembunyi, keputusan sadar batasi scope).
+
+### 10.3 Kenapa BUKAN tabel lookup spt `sys_theme`
+
+`sys_theme` (shell lama) butuh tabel karena kombinasi mode+hue-nya
+PRECOMPUTED (tiap baris py warna sidebar/aksen sendiri yg tidak bisa
+diturunkan formula sederhana). Mockup dashboard ini SEBALIQNYA — mode &
+aksen benar-benar ortogonal (35 kombinasi = 5x7 murni CSS var override,
+tanpa pengecualian per kombinasi) — 2 kolom enum `sec_user` sudah cukup,
+tabel lookup baru cuma nambah kompleksitas tanpa manfaat nyata.
+
+---
+
+## 11. BRAND FILAMENT (NAMA/LOGO/FAVICON) — SUMBER DI SHELL LAMA
+
+`->brandName()`/`->brandLogo()`/`->favicon()` di `AdminPanelProvider` **TIDAK
+lagi hardcode** ("TELASIH MAKMUR ERP" string literal) sejak 2026-09-02 —
+dihitung dari `App\Support\Branding\Brand::` (baca `tm2sys.sys_constant`,
+key `APP_NAME`/`APP_LOGO_PATH`). **Diedit di layar Configuration, shell
+LAMA** (`/setup/configuration`, is_admin), BUKAN di panel Filament — dokumen
+ini cuma mendokumentasikan sisi KONSUMEN (Filament baca), detail penuh
+(struktur tabel, cara tambah konstanta, cara kelola bahasa) ada di
+`docs/configurationstandard.md`. Kalau brand tidak berubah setelah admin
+edit di Configuration, cek `Brand::` dulu (bukan cache Filament — tidak ada
+caching di titik ini, query langsung tiap request).
+
+---
+
+## 12. YANG SENGAJA BELUM DIKERJAKAN
 
 - Modul lain (Sales/Procurement/Inventory/Production/Finance/9 layar
   Recruitment lain/Setup) masih 100% di shell lama — migrasi baru
@@ -246,3 +318,8 @@ automation, bahkan akun dev/test). Cara verifikasi yang benar:
 - `composer.json` mengunci `"filament/filament": "^5.7"` — jangan upgrade
   major version tanpa sepengetahuan user (breaking changes API besar antar
   major Filament).
+- Lapis 2 tema (§10.2) belum diuji visual lintas SEMUA layar Filament
+  (Resource table, form, widget) — cuma diverifikasi render (status 200,
+  atribut `data-fi-theme` ada) via HTTP kernel, bukan screenshot visual per
+  mode. Kalau ada bagian yang kelihatan pecah di mode tertentu, itu perluasan
+  selector CSS di §10.2, bukan rombak arsitektur.

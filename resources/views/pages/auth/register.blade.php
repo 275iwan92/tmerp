@@ -237,7 +237,7 @@ new #[Layout('layouts::guest')] #[Title('Daftar Akun — TELASIH MAKMUR ERP')] c
         <div class="hero-panel">
             <img :src="heroImg" @load="$el.classList.add('on')" alt="">
             <div class="hero-veil"></div>
-            <div class="hero-brand"><span class="logo-badge"></span><div><b>TELASIH MAKMUR</b><span>packaging solution</span></div></div>
+            <x-auth.hero-brand />
             <div class="hero-quote">
                 <div class="qi">&#8220;</div>
                 <div class="q">{{ $this->quote['t'] }}</div>

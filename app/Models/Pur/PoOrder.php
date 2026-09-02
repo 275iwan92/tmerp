@@ -58,8 +58,8 @@ class PoOrder extends Model
         $lines = $this->lines;
 
         $dpp = $lines->sum('c_line_net');
-        $ppnRate = (float) (\Illuminate\Support\Facades\DB::connection('tm2mst')->table('sys_constant')->where('constant_key', 'PPN')->value('constant_number') ?? 11);
-        $pphRate = (float) (\Illuminate\Support\Facades\DB::connection('tm2mst')->table('sys_constant')->where('constant_key', 'PPH23_JASA')->value('constant_number') ?? 2);
+        $ppnRate = (float) (\Illuminate\Support\Facades\DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPN')->value('constant_number') ?? 11);
+        $pphRate = (float) (\Illuminate\Support\Facades\DB::connection('tm2sys')->table('sys_constant')->where('constant_key', 'PPH23_JASA')->value('constant_number') ?? 2);
 
         $ppn = round($dpp * $ppnRate / 100, 4);
         $pph = round($lines->where('i_line_class', 'SERVICE')->sum('c_line_net') * $pphRate / 100, 4);
