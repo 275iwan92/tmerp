@@ -117,6 +117,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             // sekalian nambah MD_EXCHRATE (Master Kurs, baru).
             'MD_CURRENCY' => route('master.currency'),
             'MD_EXCHRATE' => route('master.exchange-rate'),
+            'MD_HOLIDAY' => route('master.holiday'),
             'PROD_MST_PROCESS' => route('production.master-process'),
             'PROD_MST_CREW' => route('production.master-crew'),
             'ACC_COA' => route('finance.coa'),

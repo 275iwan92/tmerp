@@ -14,6 +14,34 @@
 
 ## 2026-09-02
 
+- **§12.5 — `sys_holiday` dibangun** (tabel hari libur nasional, sebelumnya
+  tidak ada sama sekali). Migration `2026_09_02_000015` bikin tabel
+  `tm2mst.sys_holiday` (id_holiday, holiday_date unique, holiday_name,
+  holiday_type enum NATIONAL/COMPANY, activate, created_by/updated_by) +
+  seed 5 hari libur tanggal-tetap 2026 (1 Jan, 1 Mei, 1 Jun, 17 Agu, 25 Des
+  — SENGAJA tidak isi hari libur kalender lunar/hasil sidang isbat, itu
+  perlu update manual tiap tahun). Layar CRUD baru "Master Hari Libur"
+  (`resources/views/pages/master/holiday.blade.php`, pola spreadsheet-
+  editable sama seperti Master Currency/Kurs) + `App\Models\Master\SysHoliday`
+  (ada helper `isHoliday(string $date): bool` utk dipakai modul Attendance
+  nanti) + route `master.holiday` + menu `MD_HOLIDAY` (migration
+  `2026_09_02_000016`). **Catatan**: ini baru tabel+CRUD-nya saja — aturan
+  lembur H-7/H-1 yang MEMAKAI tabel ini di modul Attendance belum digarap
+  (Payroll/Attendance masih belum dibangun, lihat `project_payroll_encryption_requirement.md`).
+- **Label grup Sales diseragamkan**: `SALES_MON` (`sys_app_menu`) dari
+  "Monitoring & Laporan" → **"Laporan"** polos, konsisten dengan modul lain
+  yang sudah diseragamkan sejak 2026-08-22 (`docs/sidebarmenustandard.md`
+  §1). Migration `2026_09_02_000017`.
+- **QUEUE item #9 (2026-08-20, theme picker via `sys_user_menu`) — diverifikasi
+  ulang, TERNYATA CUMA SETENGAH SELESAI.** Fitur pilih-tema yang terlihat di
+  UI sekarang jalan lewat mekanisme LAIN (`sys_theme` + dropdown avatar,
+  lihat `docs/themestandard.md`) — bukan lewat `sys_user_menu`. Tabel
+  `sys_user_menu` sendiri **masih ada & terisi 10 baris** di `tm2sys` tapi
+  **grep `main-menu.blade.php` = 0 referensi**, jadi genuinely orphaned:
+  data tersimpan tapi tak pernah dibaca aplikasi. Item ini TETAP TERBUKA di
+  `BACKLOG.md` §10 (bukan ditutup) — bukan kandidat "mudah" lagi karena
+  perlu keputusan dulu: dipakai betulan (refactor dropdown menu jadi
+  data-driven dari tabel ini) atau dihapus sebagai dead table.
 - **§2 poin 1 — ~97 judul tab browser jadi dinamis.** Solusi:
   bukan edit 97 file `#[Title('X — TELASIH MAKMUR ERP')]` satu-satu (yang
   tidak mungkin krn PHP attribute wajib constant expression) — literal

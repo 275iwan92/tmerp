@@ -63,16 +63,15 @@ Sales Order                  <- grup input (order sudah jadi)
   Customer Order
 Delivery                     <- grup input (pengiriman)
   Plan Delivery / Delivery Order
-Monitoring & Laporan         <- grup laporan (belum di-generic-kan jadi "Laporan"
-                                 saja — evaluasi lagi kalau modul lain sudah konsisten)
+Laporan                       <- grup laporan (diseragamkan dari "Monitoring &
+                                  Laporan" 2026-09-02, konsisten dgn modul lain)
 ```
 
-**Catatan konsistensi**: Sales masih pakai label "Monitoring & Laporan" (label
-lama), belum diseragamkan ke "Laporan" polos seperti Inventory. Ini SENGAJA
-belum disentuh saat sesi 2026-08-22 (scope waktu itu cuma Inventory) — kalau
-menyentuh Sales lagi, pertimbangkan menyamakan ke "Laporan" saja untuk
-konsistensi lintas modul, tapi konfirmasi ke user dulu (bukan keputusan
-otomatis, karena label itu terlihat langsung oleh user tiap hari).
+**Catatan konsistensi — SELESAI 2026-09-02**: Sales dulu pakai label
+"Monitoring & Laporan" (label lama), belum diseragamkan ke "Laporan" polos
+spt Inventory — sengaja belum disentuh sejak sesi 2026-08-22 (scope waktu
+itu cuma Inventory). Sudah diseragamkan (`SALES_MON.label` = "Laporan"),
+konsisten lintas modul sekarang.
 
 ---
 

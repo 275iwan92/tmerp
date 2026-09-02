@@ -279,11 +279,21 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 - **WYSIWYG template-editor untuk Nota/print** — ide sempat dilontarkan
   saat print/nota component diekstrak (2026-08-28), sengaja ditunda
   (keputusan setingkat modul baru, belum diminta).
-- **QUEUE item #9 lama (theme picker penuh via `sys_user_menu`)** —
-  memori 2026-08-20 bilang ini masih pending, TAPI sistem tema (matrix
-  4 mode x 3 corak, picker di dropdown avatar) sudah selesai dibangun
-  2026-08-31 (`themestandard.md`) — **kemungkinan besar sudah usang/
-  terselesaikan**, verifikasi dulu sebelum menganggap ini masih terbuka.
+- **QUEUE item #9 lama — VERIFIKASI SELESAI 2026-09-02, hasilnya SETENGAH
+  usang, setengah MASIH nyata terbuka**: item ini dulu 2 bagian jadi 1
+  ("refactor dropdown avatar jadi data-driven dari `sys_user_menu`" +
+  "modal picker tema di atasnya"). Bagian **picker tema SUDAH selesai**
+  (`themestandard.md`, dibangun 2026-08-31) — TAPI implementasinya lewat
+  grid HARDCODE di dropdown avatar, BUKAN lewat `sys_user_menu`. Dicek
+  langsung: tabel `tm2sys.sys_user_menu` **memang ada & berisi 10 baris**,
+  tapi `main-menu.blade.php` **tidak pernah membacanya sama sekali** (0
+  referensi) — dropdown avatar masih 100% tombol Blade hardcode. Jadi
+  bagian "refactor jadi data-driven" dari item #9 **belum pernah
+  dikerjakan**, tabelnya nganggur berisi data yang tidak dipakai apa pun.
+  File `QUEUE.md` sumber aslinya sudah tidak ada lagi (digantikan
+  `BACKLOG.md` ini). **Keputusan menyusul**: apakah refactor ini masih mau
+  dikerjakan (buat dropdown data-driven) atau `sys_user_menu` dianggap
+  usang & boleh diabaikan/dihapus — belum diputuskan, jangan asumsikan.
 
 ---
 
@@ -326,9 +336,6 @@ BUKAN kerjaan tertunda, jangan dikira backlog. Yang beneran masih terbuka:
   mau balik.
 - `printnotastandard.md` §8 — ide "edit isi cetak lewat GUI" (WYSIWYG,
   sudah dicatat di §10 backlog ini juga) masih sekadar ide.
-- `sidebarmenustandard.md` §1 — grup Sales masih pakai label lama
-  "Monitoring & Laporan" (belum diseragamkan ke "Laporan"), sengaja belum
-  disentuh, butuh konfirmasi user (label user-visible).
 
 ### 12.2 Inquiry/CO — keputusan bisnis masih menggantung
 
@@ -368,9 +375,6 @@ Billing (AR-lite, Modul 6 terpisah).
 
 ### 12.5 HR — Attendance & Payroll, gap teknis konkret
 
-- **`sys_holiday`** (tabel hari libur nasional) **tidak ada sama sekali**
-  di database manapun — jadi blocker nyata untuk aturan lembur H-7/H-1 di
-  modul Attendance.
 - **DELTA-01**: `emp_shift` butuh dimensi lokasi/gedung baru untuk pola
   shift Satpam (S1-S5) — skema saat ini tidak punya konsep gedung.
 - **DELTA-03**: business unit ke-3 (Indostry Packaging) belum punya kode
