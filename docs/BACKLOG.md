@@ -291,6 +291,126 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 
 ---
 
+## 12. TAMBAHAN DARI AUDIT MENYELURUH `docs/*.md` (agent riset 2026-09-02)
+
+Hasil sisir 107 file Tier/standar yang belum saya baca sendiri. **3 item
+yang kedengarannya kritis SUDAH DICEK LANGSUNG ke DB dan TERNYATA SUDAH
+BERES** (dokumen sumbernya `openingapp_tier1-4.md`, jelas ditulis sebelum
+banyak sesi berikutnya): `sec_group_permission` sekarang 14 baris (bukan 0
+— B-OA2 resolved), `sys_login_hero` tabelnya sudah ada (B-OA5 resolved),
+akun admin bisa login normal (B-OA12 kemungkinan resolved juga, sudah
+diverifikasi hari ini via login `johiwan`/`admin`). **Pelajaran: dokumen
+`openingapp_tier*.md` secara umum sudah usang berat** — kalau baca dokumen
+itu, JANGAN percaya "blocker"-nya tanpa cek ulang ke DB dulu.
+
+### 12.1 Komponen UI — batas yang SENGAJA (bukan gap nyata)
+
+Ganttboard/Kanban/Nota komponen semuanya punya daftar "yang sengaja tidak
+ditangani" (auto-assign resource, validasi konflik, zoom dinamis, drag
+lintas-board, reorder manual kartu, dll) — ini keputusan desain sadar,
+BUKAN kerjaan tertunda, jangan dikira backlog. Yang beneran masih terbuka:
+- `spreadsheetgridstandard.md` §8 — tanpa arrow-key nav, tanpa multi-cell
+  select, tanpa indikator dirty per-sel, tanpa undo/redo.
+- `griduistandard.md` §10 — beberapa filter dropdown (tipe/kategori/
+  divisi/dimensi/sembunyikan-nonaktif) pernah DIHAPUS dari beberapa
+  toolbar grid, belum dikembalikan — butuh keputusan user eksplisit kalau
+  mau balik.
+- `printnotastandard.md` §8 — ide "edit isi cetak lewat GUI" (WYSIWYG,
+  sudah dicatat di §10 backlog ini juga) masih sekadar ide.
+- `sidebarmenustandard.md` §1 — grup Sales masih pakai label lama
+  "Monitoring & Laporan" (belum diseragamkan ke "Laporan"), sengaja belum
+  disentuh, butuh konfirmasi user (label user-visible).
+
+### 12.2 Inquiry/CO — keputusan bisnis masih menggantung
+
+`inquiryproduct_tier1.md` §6.2 & `tier2.md` §15 — sederet keputusan bisnis
+BELUM dikunci (bukan soal teknis, soal kebijakan): granularity bahan
+customer-supplied (all-or-nothing vs per-material), basis handling-fee,
+kebijakan waste bahan customer, definisi umur/impresi maksimal tooling,
+invoice-per-CO vs split, pajak external-cost. Plus 2 dokumen terkait yang
+belum pernah dibangun sama sekali: `FORECAST_ENGINE_spec.md` (forecast
+demand, butuh ≥1 tahun data) dan `SALES_INITIATIVE_note.md` (modul
+"jual kapasitas nganggur" — masih verbal, belum ada sistem).
+
+### 12.3 Procurement/Finance — subsistem yang belum ada sama sekali
+
+- **Purchase Invoice (SUPPLIER_DP/SUPPLIER_BILL)** — belum dibangun,
+  butuh tabel delta `fin_invoice_line` yang belum ada.
+- **Seluruh subsistem AR/AP Finance** (Invoice Entry+print, e-Faktur,
+  Billing Status, Payment Record, AR/AP Aging, Statement of Account,
+  Kwitansi, GL Trial Balance dashboard) — belum ada 1 layar pun,
+  Journal Entry sendiri sudah live (Cash & Bank + auto-posting).
+- **Partner Account auto-fill** (`financeaccounting_delta_partner_category_coa_v2.md`
+  §3.3) — mekanisme Observer-nya **secara eksplisit diblokir**, menunggu
+  konfirmasi state `fin_partner_account` di `tm2acc` — cek dulu sebelum
+  lanjut, mungkin sudah tidak relevan.
+- Blanket PO/kontrak jangka panjang, Supplier performance rating — "belum
+  dibutuhkan"/"menyusul", tidak ada urgensi tercatat.
+
+### 12.4 Delivery/Dispatch — 8 item eksplisit di luar scope v1
+
+`dispatch_tier1.md` §8: picking list granular (per-lokasi/barcode),
+Packing List (koli/tonase/m³), Load Planner, Route Planner, Shipment
+Manifest, approval 3-pihak perubahan harga (kolom sudah disiapkan, TANPA
+flow aktif), FG Stock Out otomatis saat SHIPPED (butuh keputusan valuasi
+AVG/FIFO dulu), Proof of Delivery digital (foto/e-signature — v1 masih
+tanda tangan fisik), Delivery Return (retur pasca-SHIPPED), Invoicing/
+Billing (AR-lite, Modul 6 terpisah).
+
+### 12.5 HR — Attendance & Payroll, gap teknis konkret
+
+- **`sys_holiday`** (tabel hari libur nasional) **tidak ada sama sekali**
+  di database manapun — jadi blocker nyata untuk aturan lembur H-7/H-1 di
+  modul Attendance.
+- **DELTA-01**: `emp_shift` butuh dimensi lokasi/gedung baru untuk pola
+  shift Satpam (S1-S5) — skema saat ini tidak punya konsep gedung.
+- **DELTA-03**: business unit ke-3 (Indostry Packaging) belum punya kode
+  dokumen huruf (setelah TLS/TDP) — perlu diputuskan.
+- Semua perhitungan Rupiah (lembur, denda, potongan, uang makan/roti,
+  prorata gaji, slip gaji) tetap domain **Payroll**, konsisten dengan §7
+  di atas (modul Payroll belum dibangun sama sekali).
+- Koneksi real-time mesin fingerprint (SDK/ADMS) — ditunda ke v2, v1
+  cuma berbasis file-export.
+- GPS/selfie mobile clock-in — tidak diminta, tidak dibangun.
+
+### 12.6 Recruitment — 4 item tambahan di luar yang sudah tercatat §8
+
+- Kandidat WNA (bukan WNI) butuh kunci dedup alternatif (paspor, bukan
+  KTP) — **belum didesain**.
+- Kebijakan retensi/purge/anonimisasi data kandidat lama (kepatuhan PDP)
+  — belum ada keputusan sama sekali.
+- App Flutter (kanal ke-2 portal, Android+iOS) — belum mulai, effort
+  setingkat proyek terpisah.
+- Publikasi ke Google Play ($25)/App Store ($99/th) + privacy policy —
+  dicatat eksplisit sebagai tugas OPERASIONAL user, bukan sesuatu yang
+  bisa dikerjakan Claude Code — jangan lupa saat rilis.
+
+### 12.7 Checklist master lintas-modul (`checklistmockuperp.md`)
+
+File ini sendiri berfungsi sebagai daftar centang ⬜/🟡 raksasa. Layar yang
+masih ⬜ (belum dibangun) di luar yang sudah tercatat di section lain file
+ini: Prove Warna (versioning v1/v2/v3), Nota Quotation & Nota CO print,
+Nota Alokasi/Label Rak Inventory, Period Manager (buka/tutup periode stok
+— `PeriodService::assertOpen()` belum dipanggil di mana pun), FIFO/LIFO
+valuation (`StockValuationService`, saat ini cuma AVG), Forecast Engine &
+Flow Engine (state-machine) mockup produksi lama (kemungkinan besar sudah
+digantikan oleh `production_scheduling_tier*.md` yang jauh lebih baru —
+cek dulu sebelum kerjakan, potensi duplikat), print PR/PO/PQ, Setup >
+Audit Trail Viewer & generic Lookup Master maintainer (sebagian sudah
+tercakup Configuration hari ini, sebagian belum).
+
+### 12.8 Catatan konsistensi (bukan actionable, cuma disclosure)
+
+Beberapa dokumen lama (`masteremployee_tier1.md`, `TIER_1_ATTENDANCE.md`)
+masih bilang Recruitment/Payroll/Attendance "ditunda total", padahal
+dokumen lain yang lebih baru (`recruitment_tier1-4.md`, dst) menunjukkan
+Recruitment sudah dibuka lagi & dibangun penuh sejak keputusan
+"DEC-SCOPE-OPEN" 2026-08-26. Dicatat apa adanya sesuai sumbernya, bukan
+diselaraskan paksa — kalau baca dokumen lama soal 3 modul ini, cek dulu
+tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
+
+---
+
 ## SELESAI (dipindahkan dari section di atas, bukan dihapus)
 
 *(kosong — belum ada item dari file ini yang selesai dikerjakan)*

@@ -78,6 +78,12 @@ Layar baru itu...
 - Dokumen per-modul (`<slug>_tier1..4.md`) — itu spesifikasi FITUR
   spesifik, bukan pola UI lintas-modul. Index ini cuma untuk dokumen yang
   dipakai LEBIH DARI 1 modul.
+- **[`BACKLOG.md`](BACKLOG.md)** — bukan standar pola UI, tapi tracking
+  pekerjaan tertunda lintas-modul (Fase 2 Report + semua item "belum
+  dikerjakan" dari tiap dokumen di atas + Tier docs per-modul). Cek di
+  sana kalau mau tahu apa yang MASIH HARUS dikerjakan di layar/dokumen
+  jenis apa pun — index ini cuma peta "standar sudah ada", bukan "sudah
+  100% diterapkan di mana-mana".
 
 ---
 

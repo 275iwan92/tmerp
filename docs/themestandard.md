@@ -22,9 +22,13 @@ sudah ada.
 avatar, drawer notif/chat, command palette). **BELUM** mencakup:
 - Halaman transaksi yang dibuka lewat `<iframe>` tab (Inquiry, Stock In,
   Quotation, dst.) — masih warna Tailwind literal, tidak ikut toggle.
-- Panel Filament `/admin` — punya dark-mode bawaan sendiri, sengaja
-  **dipaksa terang terus** (`AdminPanelProvider::panel()->darkMode(false)`)
-  supaya tidak nyasar gelap sendiri lepas dari sistem ini.
+- Panel Filament `/admin` — **UPDATE 2026-09-02**: TIDAK lagi dipaksa
+  terang total. Punya sistem tema SENDIRI, TERPISAH dari `sys_theme` di
+  sini (5 mode x 7 aksen, personal per-user via `sec_user.admin_theme_mode`/
+  `admin_theme_accent`) — lihat `docs/admindashboardstandard.md` §10.
+  Kedua sistem tetap independen (Filament tidak baca `sys_theme`, shell
+  lama tidak baca `admin_theme_*`), cuma sekarang Filament punya
+  toggle-nya sendiri alih-alih dikunci `darkMode(false)`.
 
 ---
 
@@ -179,8 +183,11 @@ keterbatasan yang belum sempat diperbaiki.
 
 - **Halaman iframe (transaksi)** — lihat §1, scope terpisah & jauh lebih
   besar (audit warna Tailwind literal di puluhan file), belum digarap.
-- **Filament `/admin`** — sengaja dipaksa terang (`darkMode(false)`),
-  TIDAK disinkronkan ke `sys_theme` — 2 sistem independen.
+- **Filament `/admin`** — punya sistem tema SENDIRI sejak 2026-09-02
+  (`admindashboardstandard.md` §10), TIDAK disinkronkan ke `sys_theme` —
+  tetap 2 sistem independen (beda alasan dari sebelumnya: dulu karena
+  dipaksa terang total, sekarang karena memang 2 desain berbeda —
+  4x3 shared-preference vs 5x7 personal-preference).
 - **Preferensi per-device/lintas-perangkat** — `theme_code` nempel ke
   `sec_user`, jadi 1 pilihan berlaku di semua device user itu (bukan per-
   browser). Ini sudah pola yang sama dengan `sec_user.theme_code` versi
