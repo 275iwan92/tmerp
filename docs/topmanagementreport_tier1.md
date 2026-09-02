@@ -84,26 +84,51 @@ hal terpisah. Baru diputuskan detail teknisnya saat mulai digarap.
 
 ## 5. Terbuka / Belum Diputuskan
 
-Poin ini **HARUS** dikonfirmasi user sebelum mulai membangun layar sungguhan:
+> **UPDATE 2026-09-02**: dokumen ini awalnya berdiri sendiri, ternyata cuma
+> cocok utk level **Top Management** dari sistem 4-level yang diminta user
+> belakangan (`docs/reportstandard.md`, yang sekarang jadi dokumen INDUK —
+> baca itu dulu utk gambaran 4 level & keputusan akses/kode supervisor).
+> Poin 2, 4 di bawah **SUDAH DIPUTUSKAN** (lihat catatan di tiap poin),
+> sisanya masih terbuka.
 
 1. **Lokasi di menu**: grup sidebar baru "Laporan Eksekutif" (top-level,
    lintas modul) atau tetap tersebar di tiap modul dengan badge "Eksekutif"?
-2. **Kontrol akses**: siapa yang boleh lihat (Direksi saja? Level manajer ke
-   atas?) — perlu `min_mgmt_level` khusus per griduistandard.md pola yang
-   sudah ada di `sec_module`, atau modul akses baru.
+   **MASIH TERBUKA.**
+2. ~~**Kontrol akses**~~ — **DIPUTUSKAN 2026-09-02**: reuse `sec_group.mgmt_level`
+   yang sudah ada (skala 1-5, komentar kolom DB sendiri sudah define
+   1=Staff/2=Supervisor/3=Manager/4=GM/5=Direksi — persis skala 4-level yang
+   diminta user, bukan kebetulan). **GM = grup `OPS_MGR`** (Manager
+   Operasional) yang sudah ada, BUKAN grup baru. Level Top Management
+   (laporan ini) = `maxMgmtLevel() >= 4` (OPS_MGR/GM + DIREKSI sekaligus),
+   TAPI approval di dalamnya tetap 2 tingkat terpisah (Direksi-only vs
+   GM-ke-atas) — lihat `reportstandard.md` §2 utk detail helper method yang
+   perlu ditambah ke `SecUser`.
 3. **Engine pivot**: dibangun generik (1 komponen Livewire dipakai ulang tiap
    laporan, dimensi/ukuran dikonfigurasi) atau layar custom per laporan?
    Terkait langsung ke item checklist "grid custom view/sort/group-by" —
    sebaiknya didesain bersama, bukan dua proyek terpisah yang tumpang tindih.
-4. **Grafik**: library apa (Chart.js? ApexCharts? native SVG?) — belum ada
-   preseden grafik di project ini sejauh sesi ini berjalan.
+   **MASIH TERBUKA** — dicek 2026-09-02: `HasCustomizableGrid` (fitur "grid
+   custom view/sort/group-by" yang sudah ada) TERNYATA cuma grouping VISUAL
+   (garis pemisah antar grup), **BUKAN aggregasi** (tidak ada SUM/COUNT per
+   grup) — jadi TIDAK bisa langsung dipakai ulang sbg fondasi pivot, engine
+   pivot beneran masih harus dibangun baru dari nol kalau/saat mulai.
+4. ~~**Grafik**~~ — **DIPUTUSKAN 2026-09-02**: Chart.js via CDN `<script>`
+   (bukan ApexCharts, bukan bikin sendiri) — alasan: ringan, dokumentasi
+   luas, tanpa build step tambahan.
 5. **Win-rate Sales** butuh kolom baru di `iqp_inquiry` (status
    menang/kalah eksplisit) yang belum ada di skema — perlu keputusan desain
-   tersendiri, bukan cuma laporan.
+   tersendiri, bukan cuma laporan. **MASIH TERBUKA.**
 6. **Refresh data**: real-time (query langsung tiap buka) atau snapshot
    periodik (materialized/cache, lebih cepat tapi bisa basi)? Volume data
    masih kecil (ratusan-ribuan baris) jadi real-time kemungkinan cukup untuk
-   sekarang — tapi perlu keputusan eksplisit, bukan asumsi.
+   sekarang — tapi perlu keputusan eksplisit, bukan asumsi. **MASIH TERBUKA.**
+
+**Pilot pertama BELUM ditentukan** (user 2026-09-02: "saya tentukan sendiri
+nanti") — JANGAN mulai bangun 1 laporan pun sampai user menunjuk modul mana
+duluan (kandidat yang dibahas: Finance/Posisi Kas, Sales & Margin, atau
+Procurement & Inventory — Sales & Margin dinilai risiko teknis paling kecil
+krn Inquiry/Quotation/Costing Hub semua sudah matang, tapi ini BUKAN
+keputusan final, cuma catatan diskusi).
 
 ## 6. Non-Goals (sengaja di luar cakupan dokumen ini)
 

@@ -107,3 +107,68 @@ untuk tiap group × modul, set can_access/input/approve/export. Hierarki modul
 
 Kerjakan bertahap, tunjukkan rencana tiap tahap sebelum menulis. Jawab dalam
 Bahasa Indonesia, ringkas.
+
+---
+
+## 6. MODEL ROLE LEVEL x BIDANG (ditambah 2026-09-02, dasar Sistem Report 4-Level)
+
+> Detail lengkap & status implementasi ada di `docs/reportstandard.md`
+> (dokumen INDUK utk topik ini) — bagian ini cuma ringkas sisi SECURITY-nya
+> (bukan duplikat) supaya siapa pun baca `security_brief.md` juga tahu
+> model ini ada, karena dia genuinely bagian dari desain akses/menu, bukan
+> cuma fitur report berdiri sendiri.
+
+### 6.1 2 sumbu akses, BUKAN 1
+
+Sistem akses aplikasi ini punya **2 sumbu independen**, bukan cuma "modul
+mana yang boleh diakses" (§4 di atas):
+
+1. **Sumbu BIDANG (domain/modul)** — Sales/Purchasing/Inventory/Production/
+   Finance & Accounting/HR, dst. Ini sumbu YANG SUDAH ADA (`sec_module`
+   + `sec_group_permission.can_access`, §2-§4 di atas) — menentukan modul
+   APA yang boleh dibuka user.
+2. **Sumbu LEVEL (`sec_group.mgmt_level`, skala 1-5)** — 1=Staff/2=Supervisor/
+   3=Manager/4=GM/5=Direksi (kolom sudah ada sejak awal, komentar DB-nya
+   sendiri sudah define skala ini). Sumbu ini menentukan **seberapa DALAM**
+   & **seberapa LUAS** (cakupan tim/departemen/perusahaan) data yang
+   kelihatan di DALAM bidang yang sudah diizinkan sumbu #1, DAN — poin baru
+   2026-09-02 — **MENU/item mana yang muncul**, bukan cuma data.
+
+Skema akses = **matriks 2 dimensi (bidang x level)**, bukan garis lurus.
+Contoh: Manager Purchasing (bidang=Purchasing, level=3) lihat ringkasan
+SELURUH transaksi Purchasing timnya, TAPI TIDAK lihat apa pun di bidang
+Sales — sementara Direksi (level=5) lintasi SEMUA bidang sekaligus. Detail
+per-bidang: `docs/reportstandard.md` §2.3 (tabel matrix Sales/Purchasing/
+Inventory/Production/Finance/HR x Level 1-4).
+
+### 6.2 Menu BEDA per level (keputusan user 2026-09-02) — PERLUASAN dari yang sudah ada
+
+`sec_module.min_mgmt_level` **SUDAH ADA & SUDAH DIPAKAI** (§4: "Cek akses
+modul X: ... DAN mgmt_level >= X.min_mgmt_level", diimplementasi di
+`SecUser::accessibleModules()`) — TAPI ini gating di level **MODUL**
+(seluruh Sales nongol/hilang sekaligus), bukan per-ITEM di dalam modul yang
+sudah bisa diakses.
+
+**Kebutuhan baru**: DI DALAM 1 modul yang sudah bisa diakses (mis. Sales),
+item menu yang muncul harus BEDA per level — Data Entry cuma lihat
+"Input CO"/"Input Quotation", Manager tambahan lihat "Laporan Sales"
+(ringkasan departemen), Top Management tambahan lihat entry ke laporan
+eksekutif lintas-bidang. **Ini BELUM ada mekanismenya** — `sys_app_menu`
+(tabel menu AKTUAL yang dipakai `main-menu.blade.php`, beda dari
+`sec_module` yang lebih tua) **belum punya kolom `min_mgmt_level` sendiri**
+per item, cuma warisan gate modul induknya. **Saat mulai implementasi
+report level**: kemungkinan besar butuh tambah kolom serupa
+(`sys_app_menu.min_mgmt_level`, nullable = ikut modul induk apa adanya) +
+sesuaikan `SecUser::visibleAppMenuCodes()`/`menuTree()` di
+`main-menu.blade.php` supaya filter item, bukan cuma modul — TAPI ini
+keputusan skema yang perlu dikonfirmasi user dulu (perubahan ke tabel
+menu inti, dampaknya ke SEMUA menu existing, bukan cuma report), jangan
+diimplementasi sepihak.
+
+### 6.3 Kode otorisasi Supervisor — juga bagian model security ini
+
+Level 2 (Supervisor) di §6.1 punya kemampuan KHUSUS yang levelnya lain
+tidak punya: buka layar data-entry milik bawahan pakai kode sementara
+sekali-pakai (bukan cuma "lihat data lebih luas" spt level 3-4). Detail
+mekanisme (masih desain awal, banyak keputusan detail belum final):
+`docs/reportstandard.md` §3.

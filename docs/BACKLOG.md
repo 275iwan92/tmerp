@@ -22,48 +22,61 @@
 
 ---
 
-## 1. FASE 2 — SISTEM REPORT 4 LEVEL (permintaan user 2026-09-02)
+## 1. FASE 2 — SISTEM REPORT 4 LEVEL x BIDANG (permintaan user 2026-09-02)
 
-Kerangka konsepnya sudah ditulis di `docs/reportstandard.md` (skeleton,
-BUKAN implementasi) — 4 level (Data Entry Officer/Supervisor/Manager/Top
-Management) + graphics report.
+> **UPDATE sore 2026-09-02**: sebagian besar keputusan desain di section
+> ini **SUDAH DIKUNCI** lewat diskusi lanjutan dgn user (bukan lagi
+> "terbuka") — 3 dokumen jadi rujukan lengkap, JANGAN baca cuma section
+> ini: **`docs/reportstandard.md`** (dokumen INDUK — 4 level, matrix
+> level x bidang §2.3, mekanisme kode supervisor §3, keputusan chart),
+> **`docs/topmanagementreport_tier1.md`** (katalog laporan detail level
+> Top Management per domain), **`docs/security_brief.md`** §6 (sisi
+> akses/menu-beda-per-level dari model yang sama). Ringkasan di bawah ini
+> CUMA POINTER, bukan isi lengkap.
 
-**Temuan penting saat menyusun file ini**: sudah ada dokumen perencanaan
-report yang JAUH lebih detail dari `reportstandard.md`, ditulis 2026-08-27,
-sempat terlewat karena namanya beda ("Report" vs "Report 4 Level") —
-**`docs/topmanagementreport_tier1.md`**. Isinya katalog laporan LENGKAP per
-domain (Sales & Margin, Procurement & Inventory, Finance, HR) dengan
-dimensi/ukuran/sumber data/jenis grafik untuk masing-masing, ditulis dengan
-prinsip desain **Summary (pivot+grafik) → Detail (drill-down)**. Ini secara
-efektif **katalog konten untuk level "Top Management"** dari 4 level yang
-diminta user — jangan bikin ulang dari nol, extend/rujuk dokumen itu.
+**Model final**: 2 sumbu independen — **Level** (`sec_group.mgmt_level`
+1-5: Staff/Supervisor/Manager/GM/Direksi — kolom SUDAH ADA, komentar DB-nya
+sendiri sudah define skala ini) x **Bidang** (Sales/Purchasing/Inventory/
+Production/Finance & Accounting/HR). GM = grup `OPS_MGR` yang sudah ada
+(BUKAN grup baru). Level 1-3 terkurung 1 bidang, Level 4 (Top Management,
+Direksi+GM sekaligus) lintas SEMUA bidang. Detail penuh tiap sel matrix
+(bidang x level, status ADA/belum per domain): `reportstandard.md` §2.3.
 
-**6 keputusan terbuka di `topmanagementreport_tier1.md` §5** (WAJIB
-dikonfirmasi user sebelum mulai bangun layar sungguhan):
-1. Lokasi menu — grup sidebar baru "Laporan Eksekutif" lintas-modul, atau
-   tersebar per modul dengan badge?
-2. Kontrol akses per level — reuse `sec_group.mgmt_level` yang sudah ada
-   (dipakai role-gate PPIC Production Scheduling) atau bikin dimensi baru?
-3. Engine pivot — komponen generik dipakai ulang (dimensi/ukuran
-   dikonfigurasi) atau layar custom per laporan? Terkait ke item
-   "grid custom view/sort/group-by" (§4 di bawah).
-4. Library grafik — **belum ada preseden chart di project ini sama
-   sekali** (dicek 2026-09-02, tidak ada Chart.js/ApexCharts/dsb.
-   terpasang).
-5. Win-rate Sales butuh kolom baru di `iqp_inquiry` (status menang/kalah)
-   yang belum ada — keputusan skema tersendiri, bukan cuma laporan.
-6. Refresh data — real-time query langsung atau snapshot periodik?
+**Yang SUDAH diputuskan** (bukan lagi open item):
+- Akses per level → reuse `mgmt_level` (BUKAN dimensi baru).
+- Library grafik → **Chart.js via CDN**.
+- Kode otorisasi Supervisor (bukan bagian katalog awal, muncul dari
+  penjelasan user 2026-09-02) → alur "Supervisor generate kode sekali-pakai,
+  Data Entry ketik utk buka akses edit sementara" — detail teknis
+  (durasi, tabel/session, audit trail) **masih perlu didetailkan** saat
+  mulai implementasi, tapi POLA-nya sudah dikunci.
+- Menu beda per level → **kebutuhan BARU dikonfirmasi**, ternyata BUTUH
+  perluasan skema (`sys_app_menu` belum punya gating per-item by
+  `mgmt_level`, cuma warisan dari modul induknya) — lihat
+  `security_brief.md` §6.2, JANGAN diimplementasi sepihak (ubah tabel
+  menu inti, dampaknya ke semua menu existing).
+
+**Yang MASIH terbuka** (`topmanagementreport_tier1.md` §5, `reportstandard.md` §5):
+1. Lokasi menu laporan (grup "Laporan Eksekutif" lintas-modul vs tersebar).
+2. Engine pivot/agregasi — **dicek 2026-09-02**: `HasCustomizableGrid`
+   (grid custom view/sort/group-by yang sudah ada) TERNYATA group-by-nya
+   cuma VISUAL, BUKAN agregasi SUM/COUNT — TIDAK bisa langsung jadi
+   fondasi, harus dibangun baru.
+3. Win-rate Sales butuh kolom baru `iqp_inquiry` (status menang/kalah).
+4. Refresh data — real-time vs snapshot periodik.
+5. **Katalog laporan Production** — `topmanagementreport_tier1.md` TIDAK
+   cakup domain ini (cuma Sales/Procurement-Inventory/Finance/HR) — kalau
+   Production jadi pilot, katalognya harus ditulis dulu dari nol.
 
 **Koreksi atas catatan lama**: `topmanagementreport_tier1.md` §4.1 bilang
 "laporan pipeline Customer Order belum bisa dibangun — CO belum ada layar
 sama sekali" (per 2026-08-27) — **ini sudah TIDAK BENAR**, `co/entry.blade.php`
-+ route `co.entry` sudah live (dipakai/diedit di sesi-sesi setelahnya
-termasuk hari ini). Laporan pipeline CO kemungkinan sudah bisa dibangun,
-re-scope kalau diminta.
++ route `co.entry` sudah live. Laporan pipeline CO kemungkinan sudah bisa
+dibangun, re-scope kalau diminta.
 
-**Belum ada 1 layar report/dashboard grafik pun dibangun** (per audit
-2026-09-02) — baik untuk 4-level system maupun katalog top-management di
-atas. Ini murni perencanaan, eksekusi menyusul.
+**Pilot pertama BELUM ditunjuk** ("saya tentukan sendiri nanti", user
+2026-09-02) — **belum ada 1 layar report/kode-supervisor pun dibangun**,
+JANGAN mulai modul/bidang mana pun tanpa arahan eksplisit.
 
 ---
 
