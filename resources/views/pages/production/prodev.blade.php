@@ -213,6 +213,57 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $this->sweepCandidates = $results;
     }
 
+    // ENGINE Tingkat 2 (§4.3a REVISI) -- perluasan Tingkat 1 dgn variabel shift_offset_mm
+    // (lever utama, interlock "69"). Reuse ImpositionEngine::sweepInterlock() -- lihat
+    // disclaimer "belum divalidasi dataset riil" di docblock method itu.
+    public function runEngineTingkat2(): void
+    {
+        $part = $this->part;
+        $plano = MatPlanoSize::find($this->selectedPlanoId);
+
+        if (! $part || ! $plano) {
+            return;
+        }
+
+        $bodyW = (float) ($part->cm_width ?? 0) * 10;
+        $bodyH = (float) ($part->cm_length ?? 0) * 10;
+
+        if ($bodyW <= 0 || $bodyH <= 0) {
+            session()->flash('error', 'Isi dimensi badan part (cm_width/cm_length) dulu sebelum jalankan Engine.');
+
+            return;
+        }
+
+        $flapMin = (float) ($part->flap_min_mm ?? SysConstant::number('PRODEV_FLAP_MIN_MM', 20));
+        $flapMax = (float) ($part->flap_max_mm ?? ($flapMin + 30));
+        $side = $part->flap_side ?? 'TOP';
+
+        $engine = new ImpositionEngine;
+        $results = $engine->sweepInterlock(
+            (float) $plano->width_mm, (float) $plano->height_mm,
+            $bodyW, $bodyH, $side, $flapMin, $flapMax, 5.0,
+            shiftStep: 5.0, gap: 3.0, gripper: 12.0, margin: 8.0, topN: 5
+        );
+
+        foreach ($results as $i => $r) {
+            $cells = $engine->cells($r, 8.0, 12.0, 3.0);
+            $maxW = 260;
+            $maxH = 170;
+            $scale = min($maxW / (float) $plano->width_mm, $maxH / (float) $plano->height_mm);
+            $results[$i]['boxW'] = round((float) $plano->width_mm * $scale, 1);
+            $results[$i]['boxH'] = round((float) $plano->height_mm * $scale, 1);
+            $results[$i]['cellsVisual'] = collect($cells)->map(fn ($c) => [
+                'left' => round($c['x'] * $scale, 1),
+                'top' => round($c['y'] * $scale, 1),
+                'width' => max(0, round($c['w'] * $scale, 1) - 1),
+                'height' => max(0, round($c['h'] * $scale, 1) - 1),
+                'rot' => $c['rot'],
+            ])->all();
+        }
+
+        $this->sweepCandidates = $results;
+    }
+
     public function pickCandidate(int $idx): void
     {
         $part = $this->part;
@@ -235,7 +286,11 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             'up_count' => $cand['up'],
             'efficiency_pct' => $cand['efficiency_pct'],
             'waste_pct' => $cand['waste_pct'],
-            'layout_detail' => ['layout' => $cand['layout'], 'flap_length_mm' => $cand['flap_length_mm']],
+            'layout_detail' => [
+                'layout' => $cand['layout'],
+                'flap_length_mm' => $cand['flap_length_mm'],
+                'shift_offset_mm' => $cand['shift_offset_mm'] ?? null,
+            ],
             'updated_by' => $login,
         ];
 
@@ -517,7 +572,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             {{-- ============ ENGINE TINGKAT 1 + PREVIEW ============ --}}
             <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
                 <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center justify-between">
-                    <span>🎯 Engine Imposition Tingkat 1 (Parametric Flap Sweep)</span>
+                    <span>🎯 Engine Imposition (Tingkat 1: Flap Sweep · Tingkat 2: Interlock)</span>
                     @if ($this->activeLayoutGroup)
                         <span class="text-[10.5px] font-bold {{ $this->activeLayoutGroup->status === 'CONFIRMED' ? 'text-[#0e8a4f]' : 'text-[#8a5a00]' }}">
                             {{ $this->activeLayoutGroup->status }} · {{ $this->activeLayoutGroup->up_count }} UP
@@ -535,7 +590,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             </select>
                         </div>
                         <button type="button" wire:click="runEngineTingkat1"
-                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#2c7be5] text-white cursor-pointer">▶ Jalankan Engine</button>
+                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#2c7be5] text-white cursor-pointer">▶ Tingkat 1 (Flap Sweep)</button>
+                        <button type="button" wire:click="runEngineTingkat2"
+                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#7c5cd6] text-white cursor-pointer">▶ Tingkat 2 (Interlock)</button>
 
                         @if ($this->activeLayoutGroup)
                             @if ($this->activeLayoutGroup->status === 'CONFIRMED')
@@ -552,7 +609,11 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             @foreach ($sweepCandidates as $i => $c)
                                 <div class="border {{ $i === 0 ? 'border-[#22a06b]' : 'border-[#dde3ec]' }} rounded-md p-2.5 w-[280px]">
                                     <div class="flex items-center justify-between mb-1.5">
-                                        <span class="text-[11px] font-bold text-navy">Lidah {{ $c['flap_length_mm'] }}mm · {{ $c['method'] }}</span>
+                                        <span class="text-[11px] font-bold text-navy">
+                                            Lidah {{ $c['flap_length_mm'] }}mm
+                                            @isset($c['shift_offset_mm'])· Shift {{ $c['shift_offset_mm'] }}mm @endisset
+                                            · {{ $c['method'] }}
+                                        </span>
                                         @if ($i === 0) <span class="text-[9.5px] bg-[#eaf7ee] text-[#0e8a4f] px-1.5 py-0.5 rounded font-bold">TERBAIK</span> @endif
                                     </div>
                                     <div class="bg-[#fbfcfd] border border-[#dde3ec] rounded flex items-center justify-center" style="height:180px">

@@ -168,6 +168,53 @@ class ImpositionEngine
         };
     }
 
+    /**
+     * Tingkat 2 ENGINE (docs/inquiry_product_costing/productdevelopment_tier1.md §4.3a,
+     * REVISI 2026-09-02 — shift jadi variabel UTAMA, flap-shrink SEKUNDER) — pola interlock
+     * "69": copy kedua diputar 180° & digeser (shift_offset_mm) sepanjang sisi berhimpitan
+     * supaya lidahnya saling mengunci, memperkecil jarak ulang (pitch) antar baris/kolom
+     * dibanding grid biasa (yang jaraknya = body + lidah penuh, tanpa overlap).
+     *
+     * CATATAN JUJUR: dokumen sumber (§4.3a) sendiri masih level pseudocode/observasi
+     * lapangan, BUKAN spesifikasi presisi (§7 poin 9: user akan trial engine sampai
+     * cocok dgn keputusan officer riil, belum ada dataset validasi). Model yang dipakai
+     * di sini: pitch efektif pada sumbu tempat lidah menempel = (body + flap - shift),
+     * shift dibatasi maks = flap (tak bisa menyerap lebih dari panjang lidah itu sendiri).
+     * shift=0 pada flap manapun = SAMA PERSIS dgn hasil sweepFlap() (Tingkat 1) — Tingkat 2
+     * murni MEMPERLUAS ruang pencarian Tingkat 1 dgn 1 variabel baru, bukan mekanisme lain.
+     *
+     * @return array<int, array> tiap elemen = hasil run() + 'shift_offset_mm'/'flap_length_mm'
+     */
+    public function sweepInterlock(
+        float $planoW, float $planoH, float $bodyW, float $bodyH, string $flapSide,
+        float $flapMin, float $flapMax, float $flapStep,
+        float $shiftStep, float $gap, float $gripper, float $margin,
+        int $topN = 5
+    ): array {
+        $results = [];
+
+        if ($flapMax < $flapMin || $flapStep <= 0 || $shiftStep <= 0) {
+            return $results;
+        }
+
+        for ($flap = $flapMin; $flap <= $flapMax + 0.0001; $flap += $flapStep) {
+            $maxShift = max(0.0, $flap); // tak bisa menyerap overlap lebih dari panjang lidah sendiri
+            for ($shift = 0.0; $shift <= $maxShift + 0.0001; $shift += $shiftStep) {
+                [$effW, $effH] = $this->applyFlap($bodyW, $bodyH, $flapSide, $flap - $shift);
+                $r = $this->run($planoW, $planoH, $effW, $effH, $gap, $gripper, $margin);
+                $r['flap_length_mm'] = round($flap, 2);
+                $r['shift_offset_mm'] = round($shift, 2);
+                $r['flat_w'] = $effW;
+                $r['flat_h'] = $effH;
+                $results[] = $r;
+            }
+        }
+
+        usort($results, fn (array $a, array $b) => $b['up'] <=> $a['up'] ?: $b['efficiency_pct'] <=> $a['efficiency_pct']);
+
+        return array_slice($results, 0, $topN);
+    }
+
     private function fit(float $available, float $item, float $gap): int
     {
         if ($item + $gap <= 0) {
