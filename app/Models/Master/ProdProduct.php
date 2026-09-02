@@ -4,6 +4,7 @@ namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProdProduct extends Model
 {
@@ -15,6 +16,7 @@ class ProdProduct extends Model
 
     protected $fillable = [
         'product_code',
+        'design_no',
         'product_name',
         'customer_id',
         'category_id',
@@ -61,4 +63,14 @@ class ProdProduct extends Model
 
     // Tidak ada relasi balik ke iqp_inquiry (parent_product_id, tm2sdi) di sini secara
     // sengaja — sama seperti CustCustomer, master tetap netral. Lihat IqpInquiry::parentProduct().
+
+    public function parts(): HasMany
+    {
+        return $this->hasMany(ProdPart::class, 'product_id', 'id_product');
+    }
+
+    public function layoutGroups(): HasMany
+    {
+        return $this->hasMany(ProdLayoutGroup::class, 'product_id', 'id_product');
+    }
 }
