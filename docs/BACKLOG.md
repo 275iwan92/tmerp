@@ -17,8 +17,9 @@
 >
 > **Cara pakai**: kalau mau kerjakan 1 item, cari section-nya, baca
 > rujukan filenya, verifikasi masih relevan, baru mulai. Kalau sudah
-> selesai, PINDAHKAN (bukan hapus) ke bagian "SELESAI" paling bawah tiap
-> section supaya riwayatnya tetap ada.
+> selesai, HAPUS dari section asalnya dan catat lengkap di **HISTORY
+> PENGERJAAN** (bagian paling bawah file ini) — bukan dua-duanya sekaligus,
+> supaya section angka tetap bersih isinya cuma yang masih terbuka.
 
 ---
 
@@ -83,29 +84,20 @@ JANGAN mulai modul/bidang mana pun tanpa arahan eksplisit.
 ## 2. FASE 1 (2026-09-02) — SISA YANG SENGAJA DITUNDA
 
 Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
-`docs/admindashboardstandard.md` §10-12):
+`docs/admindashboardstandard.md` §10-12) — sisa yang genuinely masih terbuka
+(item selesai sudah dipindah ke History Pengerjaan):
 
-- ~~**~97 atribut `#[Title(...)]`** — SELESAI 2026-09-02, lihat "SELESAI"
-  di bawah (solusi: str_replace di layout, bukan edit 97 file).~~
-- ~~**PDF footer** — SELESAI 2026-09-02, baca `Brand::name()`.~~
 - **Email template** (`resources/views/emails/portal/verify-email.blade.php`)
   — SENGAJA tetap hardcode "TELASIH MAKMUR" (bukan lupa): ini email portal
   karir ke CALON KARYAWAN eksternal, representasi NICKNAME company (sama
   alasan `layouts::portal.blade.php`), bukan APP_NAME aplikasi internal.
-- ~~**`fin_exchange_rate`** — SELESAI 2026-09-02, layar CRUD "Master Kurs"
-  (`master/exchange-rate.blade.php`) dibangun, pola spreadsheet-editable +
-  versioned (1 baris aktif per currency).~~
-- ~~**`geo_country.flag_emoji`** — SELESAI 2026-09-02, semua 250 baris
-  terisi (dihitung dari `iso_code` via tabel referensi ISO 3166-1 alpha-3→
-  alpha-2 + rumus Unicode, bukan tebakan).~~
-- ~~**Lapis kosmetik tema dashboard Filament** — DIPERDALAM 2026-09-02:
-  ditemukan & diperbaiki BUG ARSITEKTURAL nyata (personalisasi per-user
-  ternyata tidak jalan sama sekali krn salah tempat, lihat "SELESAI" +
-  `admindashboardstandard.md` §10.2). Masih BELUM ada screenshot visual
-  browser asli (cuma verifikasi mekanisme via HTTP kernel).~~
 - **`sys_constant_category`** baru punya 5 kategori (Branding/Finance/
   Production/Procurement/Inventory) — kategori lain (mis. HRM, kalau nanti
   ada konstanta khusus HR) belum ditambahkan, tambah manual saat perlu.
+- **Lapis kosmetik tema dashboard Filament** — mekanismenya sudah benar
+  (lihat History Pengerjaan), TAPI belum ada screenshot visual browser
+  asli (cuma verifikasi via HTTP kernel) — kalau mau yakin 100% tampilannya
+  benar, perlu login browser manual & lihat langsung tiap mode.
 
 ---
 
@@ -427,7 +419,7 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 
 ---
 
-## SELESAI (dipindahkan dari section di atas, bukan dihapus)
+## HISTORY PENGERJAAN (item selesai — dihapus dari section angka, dicatat lengkap di sini)
 
 - **§2 poin 1 — ~97 judul tab browser jadi dinamis (2026-09-02).** Solusi:
   bukan edit 97 file `#[Title('X — TELASIH MAKMUR ERP')]` satu-satu (yang
