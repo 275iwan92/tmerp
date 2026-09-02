@@ -175,8 +175,8 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_CORRECTION' => route('hrm.correction-requests'),
             'HRM_SELFSERVICE' => route('self-service.index'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
-            // Recruitment (L1-L9 minus L8 + Portal Candidate simulasi) --
-            // lihat docs/recruitment_state.yaml.
+            // Recruitment (L1-L9, L8 dibangun 2026-09-02 + Portal Candidate
+            // simulasi) -- lihat docs/recruitment_state.yaml.
             'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),
             'HRM_RCR_VACANCY' => route('hrm.recruitment.vacancy'),
             'HRM_RCR_TALENTPOOL' => route('hrm.recruitment.talent-pool'),
@@ -184,6 +184,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_RCR_INTERVIEW' => route('hrm.recruitment.interview-schedule'),
             'HRM_RCR_ASSESSMENT' => route('hrm.recruitment.assessment-result'),
             'HRM_RCR_OFFER' => route('hrm.recruitment.offer.list'),
+            'HRM_RCR_SYNCLOG' => route('hrm.recruitment.sync-log'),
             'HRM_RCR_PROVISION' => route('hrm.recruitment.hire-provision'),
             // 2026-08-30: portal simulasi internal digantikan Portal Rekrutmen
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini

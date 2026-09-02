@@ -14,6 +14,39 @@
 
 ## 2026-09-02
 
+- **Recruitment L8 (Rekap Sync Log) dibangun.** Menu placeholder
+  `HRM_RCR_SYNCLOG` sudah ada sejak 2026-08-29 (status NOT_BUILT, sengaja
+  dilewati) — data `tm2hrr.rcr_sync_log` **memang sudah terisi** (3 baris
+  nyata dari `PortalSyncService`, jadwal tiap 2 menit), jadi tinggal
+  dibuatkan grid, bukan bangun dari nol. Layar baru
+  `resources/views/pages/recruitment/sync-log.blade.php`, murni **read-only**
+  (kandidat, lowongan, backend FIREBASE/MARIADB, hasil OK/ERROR, waktu,
+  catatan error) — SENGAJA tidak ada Aksi buka/edit, karena layar Offer yang
+  jadi kandidat tujuan link `mount()`-nya bikin baris `AppOffer` baru kalau
+  belum ada (efek samping tak diinginkan cuma dari klik baris log). Route
+  `hrm.recruitment.sync-log`, menu status diflip ke READY_FOR_QC (migration
+  `2026_09_02_000018`). Diverifikasi via HTTP kernel (bukan browser login) —
+  200, render kandidat+backend dgn benar.
+- **§4/§7 — koreksi catatan "13 kategori COA kosong belum ada layar".**
+  Ternyata **layarnya SUDAH ADA** (`master/mat-category.blade.php`, section
+  "Default Akuntansi" utk kategori Level 1, dibangun 2026-08-26 bersamaan
+  redesign `mat_category`) — catatan lama di `BACKLOG.md` salah, sempat
+  dikira belum dibangun. Dicek ulang ke DB: 18 kategori Level-1 total, 12
+  masih kosong `default_coa_account_id`/`default_stock_asset_account_id`
+  (akun GR/IR universal sudah terisi semua di 813). BACKLOG.md dikoreksi
+  supaya tidak salah lagi — item pengisian akun tetap TERBUKA (keputusan
+  bisnis user, bukan kode), cuma "perlu bangun layar"-nya yang ditutup.
+- **§10 — Audit `class="grid"` tech debt SELESAI** (murni audit, TIDAK
+  diperbaiki — sesuai scope item ini). Ditemukan lewat grep sistematis:
+  beberapa file (`master/customer`, `employee`, `supplier`,
+  `production/wo-entry`, `master/raw-material/entry`, `pur/pr/entry`) sudah
+  pakai workaround `[display:grid]` (AMAN). File yang MASIH pakai
+  `class="grid grid-cols-N"` mentah (N≠4, kena override diam-diam ke
+  4-kolom oleh `.grid{grid-cols-4}` unlayered di `app.css`): daftar lengkap
+  8 file/13 lokasi di `BACKLOG.md` §10 — termasuk `components/form/date-picker.blade.php`
+  (dampak terluas, dipakai lintas modul) dan kalender Interview Recruitment.
+  Belum diverifikasi visual di browser, keputusan perbaiki-atau-tidak
+  menyusul terpisah.
 - **§12.5 — `sys_holiday` dibangun** (tabel hari libur nasional, sebelumnya
   tidak ada sama sekali). Migration `2026_09_02_000015` bikin tabel
   `tm2mst.sys_holiday` (id_holiday, holiday_date unique, holiday_name,

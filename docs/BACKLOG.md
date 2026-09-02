@@ -135,12 +135,16 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
   ditemukan di dump lama) belum di-port jadi PHP Service. **Cek dulu**
   apakah bagian ini sudah tercakup oleh Stock In/Out yang sekarang live —
   kemungkinan sebagian sudah, catatan sumbernya sebelum Stock In dibangun.
-- **13 kategori `doc_rmprefix1`** belum punya default COA account
-  (`default_stock_asset_account_id`/`default_gr_ir_account_id`) — baru 5
-  kategori (Kertas/Board, Tinta/Chemical, + GR/IR universal) yang di-seed;
-  sisanya (Gasoline, Solasi, Plastik, CTP Plate, Pack Material, ATK, 2×
-  Spare Part, Tools, Laptop/IT, Jasa, Peralatan Kebersihan) butuh review
-  manual user per kategori, bukan tebakan.
+- **12 dari 18 kategori Level-1 `mat_category`** masih kosong default COA
+  account (`default_coa_account_id`/`default_stock_asset_account_id`) —
+  layar isinya **SUDAH ADA** (`master/mat-category.blade.php`, bagian
+  "Default Akuntansi" muncul otomatis utk kategori Level 1, dicek ulang
+  2026-09-02 — sempat salah dicatat seolah belum dibangun). Kategori kosong:
+  Gasoline, Solasi, Plastik, CTP Plate, Pack Material, Stationery/ATK, 2×
+  Spare Part (Machine/Vehicle), Tools/Equipment, Laptop/Desktop/Networking,
+  Jasa/Service, Peralatan Kebersihan — murni tinggal user isi manual per
+  kategori (keputusan akun, bukan kode), akun GR/IR universal (813) sudah
+  terisi semua.
 
 ---
 
@@ -202,6 +206,15 @@ sebelum eksekusi):
 
 ## 7. FINANCE & ACCOUNTING (tm2acc)
 
+- **Aset Tetap (Fixed Asset)** — modul **belum ada sama sekali** (dicek
+  2026-09-02: cuma akun COA "ASET TETAP PABRIK"/"Akumulasi Penyusutan
+  Mesin" di `fin_account`, bukan tabel register). Menu placeholder
+  `ACC_FIXEDASSET` (NOT_BUILT) sudah ditaruh di grup ACC (migration
+  `2026_09_02_000019`), permintaan user. Butuh desain dulu sebelum
+  dibangun: skema register (kode aset, tgl/nilai perolehan, metode &
+  umur penyusutan, lokasi/departemen pemegang, link ke akun aset vs
+  akumulasi penyusutan di COA), siapa yang input, apakah auto-jurnal
+  penyusutan bulanan (mirip `JournalPostingService` PV) atau manual.
 - **Auto-jurnal Delivery/Invoice** — PV & Stock Out(RM) sudah auto-posting
   (`JournalPostingService`), tapi Delivery(DO)/Invoice sengaja ditunda
   karena butuh mekanisme snapshot Costing V2 di titik shipment (Keputusan B
@@ -223,15 +236,14 @@ sebelum eksekusi):
   diimplementasikan sama sekali. Termasuk di dalamnya: enkripsi data
   gaji at-rest (algoritma/key management/kolom mana yang kena — belum ada
   keputusan desain apa pun, jangan mulai tanpa konfirmasi).
-- **13 kategori `doc_rmprefix1` tanpa default COA** — sama item dengan §4
-  Procurement (mempengaruhi Finance juga karena ini soal akun jurnal).
+- **12 kategori `mat_category` tanpa default COA** — sama item dengan §4
+  Procurement (mempengaruhi Finance juga karena ini soal akun jurnal),
+  layarnya sudah ada, tinggal user isi.
 
 ---
 
 ## 8. HRM / RECRUITMENT (tm2hrm, tm2hrr)
 
-- **Recruitment L8 (Sync Log)** — sengaja dilewati saat modul dibangun
-  (2026-08-29), belum ada; L1-L9 lain (minus L8) sudah live.
 - **`org_position` masih ada posisi HR Manager/Dept Head yang tidak
   ter-mapping** ke pegawai asli — approval Recruitment saat ini jalan
   lewat tabel terpisah (`rcr_approver_assignment`, role→user langsung)
@@ -267,9 +279,25 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 ## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
 
 - **`class="grid"` + `grid-cols-N` Tailwind mentah tanpa `.two`/`.three`**
-  — ditemukan di puluhan file Blade lain (FORM_UI_STANDARD.md §2), belum
-  diaudit penuh. Kebanyakan kebetulan aman (`grid-cols-4` cocok dgn
-  default), tapi rapuh kalau default `.grid` berubah nanti.
+  — **AUDIT SELESAI 2026-09-02** (cuma list, BELUM diperbaiki — keputusan
+  perbaiki-atau-tidak menyusul). Sebagian file sudah pakai workaround
+  `[display:grid]` (bukan class `grid` biasa) jadi AMAN — `master/customer`,
+  `master/employee`, `master/supplier`, `production/wo-entry`,
+  `master/raw-material/entry`, `pur/pr/entry`. Yang **MASIH KENA** (pakai
+  `class="grid grid-cols-N"` literal, N≠4, tanpa `.two`/`.three`/`.five` —
+  akan tampil sebagai grid 4-kolom yang salah krn `.grid{grid-cols-4}`
+  unlayered SELALU menang, lihat `FORM_UI_STANDARD.md` §2):
+  `production/scheduling-board.blade.php:865` (grid-cols-2),
+  `production/rule-library.blade.php:230,245` (grid-cols-2),
+  `production/mts-forecast.blade.php:238` (grid-cols-2),
+  `components/form/date-picker.blade.php:87,92` (grid-cols-7 — dipakai
+  di banyak layar via `<x-form.date-picker>`, potensi dampak terluas),
+  `recruitment/interview-schedule.blade.php:315,320,336,342,348`
+  (grid-cols-3 & grid-cols-7, kalender interview), `careers/landing.blade.php:38`
+  (`md:grid-cols-2`, halaman publik — cek dulu apakah pakai `app.css` yang
+  sama sebelum asumsikan kena). **Belum diverifikasi visual di browser**
+  (audit murni grep+baca CSS) — kalau mau perbaiki, verifikasi dulu satu
+  per satu sebelum ganti ke `[display:grid]`.
 - **Halaman transaksi iframe** (Inquiry, Stock In, Quotation, dst) —
   belum ikut sistem tema `sys_theme` (themestandard.md §6), masih warna
   Tailwind literal.
