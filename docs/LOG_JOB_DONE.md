@@ -12,6 +12,74 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`)
+
+- **ProDev Fase 1 TUNTAS** (`docs/inquiry_product_costing/productdevelopment_tier1.md`
+  jadi spesifikasi resminya, sudah dikunci sesi sebelumnya). Rangkaian 6 commit
+  (`98abe9a`..`031c5e4`), semua diverifikasi HTTP kernel 200 + `Livewire::test()`
+  end-to-end (bukan asumsi):
+  1. **Skema DB** — ALTER `prod_part` (14 kolom teknis baru: mastercard_code,
+     die_code/die_w_cm/die_h_cm, sheet_raw_w_cm/h_cm, color_set_1/2 JSON, 6 kolom
+     flap) + 5 tabel baru `prod_layout_group`/`prod_layout_group_part`/
+     `prod_part_attachment`/`prod_part_finishing`/`ref_finishing_type`(8 seed)/
+     `mat_flap_rule`(1 placeholder). **Temuan penting**: `prod_part_process`
+     TERNYATA sudah ada dari DDL awal TIER_3A (bukan migration Laravel) dgn
+     skema lebih lengkap dari rencana — dipakai apa adanya (bukan duplikasi),
+     cuma ditambah FK `machine_id` yg tadinya logis. `printsize_p/l`,
+     `joint_type`, `pack_qty` di `prod_part` juga direuse (bukan kolom baru).
+  2. **Model Eloquent**: `ProdPartProcess`/`ProdLayoutGroup`/`ProdPartAttachment`/
+     `ProdPartFinishing`/`RefFinishingType`/`MatFlapRule`/`ProdMastercardSignoff`
+     baru + `ProdPart::$fillable` diperluas besar (banyak kolom lama existing
+     ternyata tak pernah masuk fillable, jadi tak pernah bisa diisi lewat layar
+     apapun sebelumnya).
+  3. **ENGINE Tingkat 1** (`ImpositionEngine::sweepFlap()`) — parametric flap
+     sweep, reuse `run()` existing (3 orientasi TEGAK/PUTAR/CAMPUR), ranking
+     top-5 by UP lalu efisiensi.
+  4. **Layar `production/prodev`** (route `production.prodev`) — workbench
+     pilih part + edit spesifikasi teknis + jalankan engine + preview visual
+     SVG-style top-5 kandidat + pilih 1 (Engine suggests, Officer confirms) →
+     tersimpan `prod_layout_group` + routing (`prod_part_process`) + finishing
+     (`prod_part_finishing`) inline + upload referensi JPEG/PDF/AI
+     (`WithFileUploads`, batas `PRODEV_UPLOAD_MAX_MB`). Bug ditemukan+diperbaiki:
+     `withTimestamps(false)` di relasi many-to-many `prod_layout_group_part`
+     ternyata TETAP menyalakan kolom timestamp (bukan false-kan) — pivot tak
+     punya `updated_at`, query gagal; fix: hapus `withTimestamps()` total.
+  5. **Cetak Master Card** (`production.prodev.print`) — komponen
+     `resources/views/components/print/*`, 5 kolom tanda tangan dari
+     `prod_mastercard_signoff` (model baru). Menu `PROD_CARD`/`PROD_LAYOUT`
+     (`sys_app_menu`) diaktifkan SETELAH verifikasi lolos (keduanya arah ke
+     layar workbench yang sama).
+  6. **Costing 4 tipe part baru** (`docs/inquiry_product_costing/gemini_spark_productcosting.md`
+     §IV jadi acuan formula hasil audit `calc_cogs` V1 asli):
+     SHEET (identik SHEET_DIGITAL, dialiaskan bukan diduplikasi — diekstrak
+     `computeSheetGeometry()` reusable), KRAFT (literal §IV.2.B, area/10000
+     TANPA pembagi rim 500), DC+SHEET/DC+SF (Paper+Cetak+J36 Laminasi+J37 SF EF
+     +Plong+Tooling — DITANDAI "BELUM DIVERIFIKASI Excel" di `description_calc`,
+     dokumen sumber sendiri mencatat rumus RM tak konsisten di 3 titik V1).
+     **Side-fix**: jalur ivory/AP di `calculateDcPart()` (tipe DC, sudah lama
+     live) ternyata salah pakai `PLANO_REF_AREA`(8611, harusnya cuma duplex) —
+     dikoreksi ke /10000 sesuai §IV.2.A, ditemukan saat cross-check formula
+     KRAFT yg share paper-cost logic. Test lama yg assert "SHEET belum
+     diimplementasi" direvisi pakai kode BOGUS (semua 3 test lolos, termasuk
+     regresi byte-presisi Excel SHEET_DIGITAL — refactor tidak mengganggu).
+  7. **Toggle Manual/Ambil-Data per-part** di `inquiry/costing` — pilih Master
+     Card/layout CONFIRMED dari dropdown → plano/cut auto-fill dari
+     `prod_layout_group` + HPP LANGSUNG terhitung (tanpa klik "Hitung" terpisah,
+     tujuan eksplisit: 1 officer bukan 2 spt sebelumnya). Field terkait
+     di-disable saat mode PRODEV.
+  8. **ENGINE Tingkat 2** (`ImpositionEngine::sweepInterlock()`) — perluasan
+     Tingkat 1 dgn variabel `shift_offset_mm` (lever utama, sesuai observasi
+     user "kebanyakan kasus geser bukan kecilkan lidah") + `flap_length`
+     (sekunder). Model pitch efektif = body+flap-shift, DICATAT JUJUR di
+     docblock sbg interpretasi (dokumen sumber §4.3a level pseudocode/observasi
+     lapangan, bukan spek presisi — user akan trial sampai cocok data riil).
+
+  **Migration**: `2026_09_02_000021` s/d `2026_09_02_000031` (11 file — skema
+  ProDev, kolom Costing baru, aktivasi menu, `is_engine_ready` 4 part_type).
+  **Belum dikerjakan** (dicatat `docs/BACKLOG.md`, follow-up bukan blocker
+  Fase 1): Tool #10 Intra-Product Combiner, Tool #2 Pcs→Plano, Tool #4
+  Die-Rule Estimator, alokasi biaya proporsional multi-part layout group.
+
 ## 2026-09-02
 
 - **Recruitment L8 (Rekap Sync Log) dibangun.** Menu placeholder

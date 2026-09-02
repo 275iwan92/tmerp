@@ -24,6 +24,46 @@
 
 ---
 
+## 0. PRODUCT DEVELOPMENT — FOLLOW-UP FASE 1 (2026-09-02)
+
+Fase 1 ProDev SUDAH SELESAI & LIVE (lihat `docs/LOG_JOB_DONE.md` tanggal
+2026-09-02 "ProDev Fase 1 TUNTAS", spesifikasi lengkap
+`docs/inquiry_product_costing/productdevelopment_tier1.md`). Item di bawah
+ini ada di katalog tools §4.3 dokumen itu tapi TIDAK termasuk checklist
+"Fase 1 SELESAI kalau" eksplisit — follow-up, bukan blocker:
+
+- **Tool #10 — Intra-Product Part Combiner** (prioritas tertinggi dari sisa
+  katalog, per urutan kerja resmi tier1 §7 poin 1): coba semua kombinasi
+  gabung/pisah part dalam 1 `prod_product`, ranking by biaya kertas+plate
+  total, hasilkan `prod_layout_group` yang menaungi >1 part. Perlu algoritma
+  2D packing heterogen (rectangle berbeda ukuran dalam 1 plano) — beda &
+  lebih kompleks dari `sweepFlap`/`sweepInterlock` (homogen, 1 ukuran
+  diulang). Baca §4.2b tier1 doc dulu (aturan gabung/pisah = keputusan
+  engine, bukan aturan tetap skema).
+- **Tool #2 — Pcs→Plano (Best Sheet Finder)**: dari ukuran dus, cari otomatis
+  plano standar (`mat_plano_size`) mana yang waste/biaya kertas termurah.
+  Relatif sederhana — loop `ImpositionEngine::sweepFlap()`/`sweepInterlock()`
+  utk TIAP baris `mat_plano_size` (bukan cuma yang dipilih officer di layar
+  ProDev sekarang), lalu ranking gabungan across-plano. Layar ProDev
+  (`resources/views/pages/production/prodev.blade.php::runEngineTingkat1/2()`)
+  sudah punya semua building block, tinggal loop tambahan.
+- **Tool #4 — Die-Rule Estimator**: hitung total meter lari pisau
+  potong+lipat+perforasi dari geometri part (pakai `die_w_cm`/`die_h_cm`/body
+  dims yg sudah ada di `prod_part`) → langsung jadi biaya tooling pengganti
+  `i_pisau_faktor` manual di Costing sekarang.
+- **Alokasi biaya proporsional `prod_layout_group` multi-part** (§4.2b/§5.1
+  tier1 doc): CostingEngine belum punya logic ini — baru relevan setelah
+  Tool #10 bisa menghasilkan group berisi >1 part (sekarang tiap group cuma
+  1 part krn combiner belum ada). Formula sudah didesain di dokumen
+  (proporsional berdasar luas area × `qty_up_in_group`), tinggal
+  diimplementasi begitu Tool #10 jadi.
+- **DC+SHEET/DC+SF formula** (`CostingEngine::calculateDcSheetPart()`) masih
+  DITANDAI belum diverifikasi ke Excel/sumber asli (lihat docblock class) —
+  kalau ada Excel riil kasus DC+SHEET/DC+SF, cross-check dulu sebelum dipakai
+  harga produksi sungguhan.
+
+---
+
 ## 1. FASE 2 — SISTEM REPORT 4 LEVEL x BIDANG (permintaan user 2026-09-02)
 
 > **UPDATE sore 2026-09-02**: sebagian besar keputusan desain di section

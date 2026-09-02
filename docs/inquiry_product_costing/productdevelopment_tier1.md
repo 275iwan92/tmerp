@@ -1,9 +1,25 @@
 # Product Development — Sub-Modul Baru (Tier 1: Arsitektur & Scope)
 
-> **Status: DESAIN, BELUM DIKERJAKAN.** Dokumen ini murni hasil riset & sintesis
-> (permintaan user 2026-09-02, "baca 2 folder lalu diskusikan") — bukan rencana
-> yang sudah disetujui utk langsung dieksekusi. Baca §7 (Pertanyaan Terbuka)
-> sebelum mulai coding apa pun dari dokumen ini.
+> **Status FASE 1: SELESAI & LIVE (2026-09-02, sesi autonomous scheduled task
+> `tmerp-backlog-autowork-1700`).** Checklist eksplisit tercapai: skema DB
+> (§4.2/4.2a) + model Eloquent + ENGINE Tingkat 1 & Tingkat 2 (§4.3a) + layar
+> workbench `production/prodev` (route `production.prodev`, menu `PROD_CARD`/
+> `PROD_LAYOUT` sudah `activate=true`) + cetak Master Card
+> (`production.prodev.print`) + 4 tipe part Costing baru (SHEET/KRAFT/
+> DC+SHEET/DC+SF) + toggle Manual/Ambil-Data per-part di `inquiry/costing`.
+> Semua diverifikasi HTTP kernel 200 + `Livewire::test()` end-to-end (bukan
+> asumsi). Detail lengkap tiap commit: lihat `docs/LOG_JOB_DONE.md` tanggal
+> 2026-09-02 (entri "ProDev Fase 1"). **BELUM dikerjakan** (dicatat di
+> `docs/BACKLOG.md`, bukan blocker Fase 1 sesuai checklist eksplisit di §nya
+> sendiri): Tool #10 (Intra-Product Combiner, gabung/pisah part), Tool #2
+> (Pcs→Plano/Best Sheet Finder), Tool #4 (Die-Rule Estimator), alokasi biaya
+> proporsional utk `prod_layout_group` multi-part (baru relevan setelah Tool
+> #10 ada — saat ini tiap group cuma 1 part).
+>
+> Dokumen di bawah ini TETAP dipertahankan APA ADANYA sbg catatan desain asli
+> (termasuk kalimat "belum dikerjakan" pada bagian-bagian yang SEKARANG sudah
+> dikerjakan) — jangan bingung, cek status live di atas dulu sebelum percaya
+> frasa "belum" di bagian manapun di bawah.
 >
 > **Sumber**: `docs/imposition_nesting/*` (riset software prepress industri),
 > `docs/inquiry_product_costing/gemini_spark_productcosting.md` (reverse-
