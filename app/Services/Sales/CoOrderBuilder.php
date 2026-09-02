@@ -66,9 +66,13 @@ class CoOrderBuilder
             }
 
             // co_id "terakhir menyerap" -- convenience lookup di iqp_inquiry, lihat
-            // migration 2026_08_20_000008 & IqpInquiry::lastCo().
+            // migration 2026_08_20_000008 & IqpInquiry::lastCo(). sub_state=>CONVERTED
+            // (win-rate, docs/BACKLOG.md §3 "Win-rate Sales") -- kolom & value CONVERTED
+            // TERNYATA sudah ada di skema (enum-teks sub_state) sejak awal, cuma tak
+            // pernah ada 1 pun titik kode yang menuliskannya -- titik natural utk itu
+            // adalah SAAT CO pertama kali lahir dari Quotation ini (deal resmi menang).
             $quotation->items->pluck('inquiry_id')->filter()->unique()->each(
-                fn ($id) => \App\Models\Sdi\IqpInquiry::where('id_inquiry', $id)->update(['co_id' => $order->id_order])
+                fn ($id) => \App\Models\Sdi\IqpInquiry::where('id_inquiry', $id)->update(['co_id' => $order->id_order, 'sub_state' => 'CONVERTED'])
             );
 
             return $order;

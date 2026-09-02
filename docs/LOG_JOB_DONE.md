@@ -12,6 +12,24 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #2)
+
+- **§3/§1 — Win-Rate Sales dibangun.** Temuan: `iqp_inquiry.sub_state` SUDAH
+  punya value `CONVERTED`/`LOST` di skema sejak awal (enum-teks, dipakai
+  badge/filter di banyak layar) — TAPI 0 titik kode yang pernah menuliskan
+  kedua value itu (grep dipastikan dulu sebelum tambah kolom baru, sesuai
+  CLAUDE.md §7). 2 titik tulis baru: `CoOrderBuilder::findOrCreateFromQuotation()`
+  set `sub_state=CONVERTED` bersamaan `co_id` (saat CO pertama lahir dari
+  Quotation = deal resmi menang), `inquiry/form.blade.php::markLost()` (tombol
+  "❌ Tandai Kalah" baru, mirror pola `cancel()` existing, reuse kolom
+  `cancel_reason` utk alasan kalah — beda dari `cancel()`: LOST boleh dari
+  sub_state manapun sepanjang belum terminal, bukan cuma dari state tertentu).
+  Layar baru `sales/win-rate` (route `sales.win-rate`, menu `SALES_WINRATE` di
+  grup Laporan Sales): stat card won/lost/win-rate%, breakdown per PIC Sales,
+  detail deal kalah + alasan. Diverifikasi `Livewire::test()` end-to-end
+  (buat inquiry->confirm->markLost->cek report) + HTTP kernel 200.
+  `npm run build` dijalankan.
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2)
 
 - **§10 — `class="grid" grid-cols-N` literal DIPERBAIKI** (audit 2026-09-02

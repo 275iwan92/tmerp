@@ -104,7 +104,10 @@ Direksi+GM sekaligus) lintas SEMUA bidang. Detail penuh tiap sel matrix
    (grid custom view/sort/group-by yang sudah ada) TERNYATA group-by-nya
    cuma VISUAL, BUKAN agregasi SUM/COUNT — TIDAK bisa langsung jadi
    fondasi, harus dibangun baru.
-3. Win-rate Sales butuh kolom baru `iqp_inquiry` (status menang/kalah).
+3. ~~Win-rate Sales butuh kolom baru `iqp_inquiry`~~ **SELESAI 2026-09-02**:
+   kolomnya (`sub_state` CONVERTED/LOST) TERNYATA sudah ada sejak awal,
+   tinggal titik tulisnya — layar `sales/win-rate` sudah live, lihat
+   `docs/LOG_JOB_DONE.md`.
 4. Refresh data — real-time vs snapshot periodik.
 5. **Katalog laporan Production** — `topmanagementreport_tier1.md` TIDAK
    cakup domain ini (cuma Sales/Procurement-Inventory/Finance/HR) — kalau
@@ -157,9 +160,6 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
   maksudnya field tambahan atau alur terpisah — perlu klarifikasi ulang
   scope-nya sebelum eksekusi (catatan lama 2026-08-27, kemungkinan sudah
   berubah konteksnya sejak CO dibangun).
-- **Win-rate Sales** — butuh field baru di `iqp_inquiry` (status
-  menang/kalah eksplisit), lihat §1 poin 5 di atas.
-
 ---
 
 ## 4. PROCUREMENT (tm2pur)

@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/inquiry/imposition', 'pages::inquiry.imposition-list')->name('inquiry.imposition.list');
             Route::livewire('/inquiry/{inquiry}/imposition', 'pages::inquiry.imposition')->name('inquiry.imposition');
             Route::livewire('/inquiry/{inquiry}/nota', 'pages::inquiry.nota')->name('inquiry.nota');
+            Route::livewire('/sales/win-rate', 'pages::sales.win-rate')->name('sales.win-rate');
 
             Route::livewire('/quotation', 'pages::quotation.list')->name('quotation.list');
             Route::livewire('/quotation/{quotation}/edit', 'pages::quotation.entry')->name('quotation.entry');

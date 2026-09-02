@@ -87,6 +87,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             // modul "Dispatch" berdiri sendiri, digabung ke sini 2026-08-28 (lihat
             // migration move_dispatch_menu_into_sales_delivery).
             'SALES_DO' => route('dispatch.do.index'),
+            'SALES_WINRATE' => route('sales.win-rate'),
             'PROC_PR' => route('pur.pr.list'),
             'PROC_PR_APPR' => route('pur.pr.approval'),
             'PROC_PO' => route('pur.po.list'),

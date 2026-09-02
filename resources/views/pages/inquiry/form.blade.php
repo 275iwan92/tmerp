@@ -82,6 +82,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public string $cancel_reason = '';
 
+    // Win-rate Sales (docs/BACKLOG.md §3) -- sub_state=LOST, terpisah dari
+    // CANCELLED (batal sepihak internal) krn LOST = kalah bersaing/ditolak
+    // customer, dipakai laporan win-rate (sales.win-rate).
+    public bool $showLostForm = false;
+
+    public string $lost_reason = '';
+
     /** @var array<int, array{id: ?int, qty: string, is_primary: bool, discount_item_type: string, discount_item_value: string}> */
     public array $tiers = [];
 
@@ -1128,6 +1135,39 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->showCancelForm = false;
         $this->flash = 'Inkuiri '.$this->inquiry_no.' dibatalkan.';
     }
+
+    public function openLostForm(): void
+    {
+        $this->showLostForm = true;
+    }
+
+    public function dismissLostForm(): void
+    {
+        $this->showLostForm = false;
+        $this->lost_reason = '';
+    }
+
+    // sub_state='LOST' (win-rate Sales) -- beda dari cancel(): boleh dari sub_state
+    // manapun selama sudah stat_confirm & belum terminal (CANCELLED/CONVERTED/LOST),
+    // krn "kalah" bisa terjadi kapan saja sepanjang pipeline (quoted, proving, dst).
+    public function markLost(): void
+    {
+        if (! $this->stat_confirm || in_array($this->sub_state, ['CANCELLED', 'CONVERTED', 'LOST'], true)) {
+            return;
+        }
+
+        $this->validate(['lost_reason' => ['required', 'string', 'max:255']]);
+
+        $this->inquiry->update([
+            'cancel_reason' => $this->lost_reason,
+            'sub_state' => 'LOST',
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->sub_state = 'LOST';
+        $this->showLostForm = false;
+        $this->flash = 'Inkuiri '.$this->inquiry_no.' ditandai kalah (LOST).';
+    }
 };
 ?>
 
@@ -1169,6 +1209,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         ✖ Batalkan
                     </button>
                 @endif
+                @if($stat_confirm && ! in_array($sub_state, ['CANCELLED', 'CONVERTED', 'LOST'], true))
+                    <button type="button" class="btn d" wire:click="openLostForm">
+                        ❌ Tandai Kalah
+                    </button>
+                @endif
                 <div style="margin-left:auto"></div>
                 @if ($id)
                     <a href="{{ route('inquiry.imposition', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🔀 Imposition</a>
@@ -1187,6 +1232,20 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     <div style="display:flex;gap:8px">
                         <button type="button" class="btn d xs" wire:click="cancel">Ya, batalkan inkuiri</button>
                         <button type="button" class="btn g xs" wire:click="dismissCancelForm">Batal</button>
+                    </div>
+                </div>
+            @endif
+
+            @if ($showLostForm)
+                <div class="body" style="background:#fff4e5;border-bottom:1px solid #ffd9a0">
+                    <div class="f" style="margin-bottom:8px">
+                        <label>Alasan Kalah *</label>
+                        <textarea wire:model="lost_reason" rows="2" placeholder="mis. Harga kompetitor lebih rendah, customer batal order — wajib diisi, tercatat di riwayat &amp; laporan win-rate"></textarea>
+                        @error('lost_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    </div>
+                    <div style="display:flex;gap:8px">
+                        <button type="button" class="btn d xs" wire:click="markLost">Ya, tandai kalah</button>
+                        <button type="button" class="btn g xs" wire:click="dismissLostForm">Batal</button>
                     </div>
                 </div>
             @endif
