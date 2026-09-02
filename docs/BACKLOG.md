@@ -17,9 +17,10 @@
 >
 > **Cara pakai**: kalau mau kerjakan 1 item, cari section-nya, baca
 > rujukan filenya, verifikasi masih relevan, baru mulai. Kalau sudah
-> selesai, HAPUS dari section asalnya dan catat lengkap di **HISTORY
-> PENGERJAAN** (bagian paling bawah file ini) — bukan dua-duanya sekaligus,
-> supaya section angka tetap bersih isinya cuma yang masih terbuka.
+> selesai, HAPUS dari section asalnya di sini dan catat lengkap di
+> **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah, bukan
+> ditulis di dua tempat) — supaya file ini tetap ramping, cuma isi item
+> yang MASIH terbuka.
 
 ---
 
@@ -419,53 +420,8 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 
 ---
 
-## HISTORY PENGERJAAN (item selesai — dihapus dari section angka, dicatat lengkap di sini)
+## HISTORY PENGERJAAN
 
-- **§2 poin 1 — ~97 judul tab browser jadi dinamis (2026-09-02).** Solusi:
-  bukan edit 97 file `#[Title('X — TELASIH MAKMUR ERP')]` satu-satu (yang
-  tidak mungkin krn PHP attribute wajib constant expression) — literal
-  "TELASIH MAKMUR"/"TELASIH MAKMUR ERP" di dalam string attribute yang
-  SUDAH ADA dijadikan placeholder, di-cari-ganti SEKALI di titik render
-  `<title>` (`layouts::shell`/`guest`/`app`, `str_replace([...], [Brand::name(),...], $title)`).
-  0 dari 97 file individual disentuh. `main-menu.blade.php` sedikit beda
-  pola (`'TELASIH MAKMUR — ERP'`, bukan `'X — TELASIH MAKMUR ERP'`) —
-  diseragamkan ke `'Home — TELASIH MAKMUR ERP'` supaya konsisten. Detail:
-  `docs/configurationstandard.md` §5.
-- **Koreksi nama company (2026-09-02)**: `org_company.company_name` dulu
-  "CV Telasih Makmur Group" (salah) → **"CV. Langgeng Jaya Makmur"** (nama
-  legal terdaftar sebenarnya). "Telasih Makmur" tetap dipakai sebagai
-  NICKNAME company di permukaan customer-facing (portal karir, dst) —
-  TIDAK dihapus, cuma diklarifikasi bukan nama legal. APP_NAME ("ERP TM",
-  identitas aplikasi internal) tidak terpengaruh, konsep terpisah.
-- **§2 — PDF footer dinamis** (2026-09-02): `exports/generic-grid-pdf.blade.php`
-  sekarang baca `Brand::name()`.
-- **§2 — Master Kurs (`fin_exchange_rate`) dapat layar CRUD** (2026-09-02):
-  `resources/views/pages/master/exchange-rate.blade.php`, pola spreadsheet-
-  editable sama spt Master Currency, versioned (1 baris `activate=1` per
-  currency, baris lama otomatis nonaktif saat baris baru diaktifkan).
-  **Bonus temuan**: menu "Master Currency" (`MD_CURRENCY`) ternyata
-  **link mati sejak dibuat 2026-08-30** (tidak pernah dipetakan ke route di
-  `main-menu.blade.php`) — diperbaiki bersamaan.
-- **§2 — `geo_country.flag_emoji` terisi semua 250 baris** (2026-09-02):
-  DIHITUNG, bukan ditebak — `iso_code` (ISO 3166-1 alpha-3, sudah ada)
-  dipetakan ke alpha-2 lewat tabel referensi ISO baku, lalu emoji dihitung
-  via rumus Unicode Regional Indicator Symbol (deterministik, 0 karakter
-  emoji diketik manual). 0 baris NULL tersisa.
-- **§2 — BUG ARSITEKTURAL Filament ditemukan & diperbaiki (2026-09-02,
-  temuan terbesar hari ini)**: saat verifikasi lebih dalam lapis kosmetik
-  tema (5 mode x 4 halaman, bukan cuma 1 seperti sebelumnya), ketahuan
-  personalisasi aksen/mode dashboard **TIDAK PERNAH benar-benar jalan**
-  sejak dibangun kemarin — `AdminPanelProvider::panel()` cuma dieksekusi
-  SEKALI saat boot (`Filament::registerPanel()` via `app()->resolving()`),
-  JAUH SEBELUM auth resolve utk request itu, jadi `Auth::user()` di dalam
-  `panel()` SELALU null. Semua user sebenarnya melihat aksen/mode DEFAULT
-  yang sama, walau preferensi tersimpan benar di DB & form Save tidak
-  error — nyaris lolos tak ketahuan kalau cuma dites 1 mode. **Diperbaiki**:
-  personalisasi dipindah total ke render hook (`filament.partials.theme-matrix.blade.php`,
-  HEAD_END) yang TERBUKTI jalan per-request — aksen via `Color::hex()`
-  dipanggil ulang di situ (override CSS var `--primary-*` via cascade
-  urutan render), dark/light via script inline set `localStorage`+toggle
-  class `.dark` langsung. Diverifikasi ulang 20 kombinasi (5 mode x 4
-  halaman), 0 gagal. **Pelajaran dicatat** di `admindashboardstandard.md`
-  §10.2 utk Resource/Page Filament lain: jangan pernah panggil
-  `Auth::user()`/logic per-user di dalam `PanelProvider::panel()`.
+Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
+2026-09-02) supaya file ini tetap ramping. Item selesai dihapus dari
+section angka di atas dan dicatat lengkap di sana, BUKAN di sini.
