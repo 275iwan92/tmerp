@@ -72,9 +72,8 @@ atas. Ini murni perencanaan, eksekusi menyusul.
 Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
 `docs/admindashboardstandard.md` §10-12):
 
-- **~97 atribut `#[Title('...— TELASIH MAKMUR ERP')]`** per layar Volt
-  (judul tab browser) — belum dibuat dinamis (`#[Title]` PHP attribute
-  wajib constant expression, tidak bisa query DB langsung di situ).
+- ~~**~97 atribut `#[Title(...)]`** — SELESAI 2026-09-02, lihat "SELESAI"
+  di bawah (solusi: str_replace di layout, bukan edit 97 file).~~
 - **PDF footer** (`resources/views/exports/generic-grid-pdf.blade.php`) dan
   **email template** (`resources/views/emails/portal/verify-email.blade.php`)
   — masih hardcode "TELASIH MAKMUR", belum baca `Brand::`.
@@ -413,4 +412,19 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 
 ## SELESAI (dipindahkan dari section di atas, bukan dihapus)
 
-*(kosong — belum ada item dari file ini yang selesai dikerjakan)*
+- **§2 poin 1 — ~97 judul tab browser jadi dinamis (2026-09-02).** Solusi:
+  bukan edit 97 file `#[Title('X — TELASIH MAKMUR ERP')]` satu-satu (yang
+  tidak mungkin krn PHP attribute wajib constant expression) — literal
+  "TELASIH MAKMUR"/"TELASIH MAKMUR ERP" di dalam string attribute yang
+  SUDAH ADA dijadikan placeholder, di-cari-ganti SEKALI di titik render
+  `<title>` (`layouts::shell`/`guest`/`app`, `str_replace([...], [Brand::name(),...], $title)`).
+  0 dari 97 file individual disentuh. `main-menu.blade.php` sedikit beda
+  pola (`'TELASIH MAKMUR — ERP'`, bukan `'X — TELASIH MAKMUR ERP'`) —
+  diseragamkan ke `'Home — TELASIH MAKMUR ERP'` supaya konsisten. Detail:
+  `docs/configurationstandard.md` §5.
+- **Koreksi nama company (2026-09-02)**: `org_company.company_name` dulu
+  "CV Telasih Makmur Group" (salah) → **"CV. Langgeng Jaya Makmur"** (nama
+  legal terdaftar sebenarnya). "Telasih Makmur" tetap dipakai sebagai
+  NICKNAME company di permukaan customer-facing (portal karir, dst) —
+  TIDAK dihapus, cuma diklarifikasi bukan nama legal. APP_NAME ("ERP TM",
+  identitas aplikasi internal) tidak terpengaruh, konsep terpisah.

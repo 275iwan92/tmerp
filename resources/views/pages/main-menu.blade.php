@@ -18,10 +18,12 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 // #[Title] PHP attribute WAJIB constant expression -- TIDAK BISA panggil
-// Brand::name() (query DB) di sini, jadi tetap literal statis. Judul tab
-// browser masih "TELASIH MAKMUR", beda dari brand di topbar/body yang sudah
-// dinamis -- disengaja, di luar cakupan (lihat docs/configurationstandard.md).
-new #[Layout('layouts::shell')] #[Title('TELASIH MAKMUR — ERP')] class extends Component
+// Brand::name() (query DB) langsung di sini. SOLUSI 2026-09-02 (bukan lagi
+// "di luar cakupan"): literal "TELASIH MAKMUR ERP" di string ini cuma
+// PLACEHOLDER, diganti live jadi APP_NAME sungguhan oleh layouts::shell/
+// guest/app (str_replace di <title>, lihat komentar di sana) -- jangan
+// hapus/ubah literalnya sembarangan, string INI yang dicari-ganti.
+new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 

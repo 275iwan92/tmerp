@@ -172,13 +172,26 @@ dibaca dari `sys_constant` lewat `SysConstant::text()`. Dipakai di:
   `->brandLogo()`/`->favicon()` dihitung dari `Brand::` per request (lihat
   `admindashboardstandard.md` §11 untuk detail sisi Filament-nya).
 
+**Judul tab browser SUDAH dinamis (2026-09-02), TANPA edit 97 file** — solusi:
+`#[Title]` PHP attribute memang wajib *constant expression* (tidak bisa
+panggil `Brand::name()` langsung), TAPI string literalnya cuma perlu jadi
+1 PLACEHOLDER yang di-cari-ganti sekali di titik render `<title>`.
+`layouts::shell`/`guest`/`app` (3 file) sekarang jalankan
+`str_replace(['TELASIH MAKMUR ERP', 'TELASIH MAKMUR'], [Brand::name(), Brand::name()], $title)`
+sebelum echo — literal "TELASIH MAKMUR"/"TELASIH MAKMUR ERP" di 97
+`#[Title(...)]` yang ADA SEKARANG otomatis ikut berubah, **TIDAK PERLU
+DIEDIT SATU-SATU**. Kalau bikin layar baru, tulis `#[Title('X — TELASIH
+MAKMUR ERP')]` seperti biasa (pola existing) — placeholder-nya otomatis
+ke-substitusi, jangan taruh nama app literal lain.
+
 **Sengaja TIDAK diubah jadi dinamis** (di luar cakupan, prioritas rendah):
-~97 atribut PHP `#[Title('... — TELASIH MAKMUR ERP')]` per layar Volt (judul
-tab browser) — `#[Title]` WAJIB *constant expression*, TIDAK BISA panggil
-`Brand::name()` (query DB) di dalamnya, jadi tetap literal statis kecuali
-diganti manual 1-per-1 nanti. PDF footer (`exports/generic-grid-pdf.blade.php`)
-dan email `verify-email.blade.php` juga belum diwire — flag ini kalau
-diminta eksplisit nanti.
+PDF footer (`exports/generic-grid-pdf.blade.php`) dan email
+`verify-email.blade.php` — flag ini kalau diminta eksplisit nanti.
+`layouts::portal.blade.php` (portal karir eksternal) **sengaja TIDAK
+disentuh** — "Telasih Makmur" di situ representasi NICKNAME company ke
+calon karyawan/customer eksternal (nama legal terdaftar: **CV. Langgeng
+Jaya Makmur**, `org_company.company_name` — dikoreksi 2026-09-02),
+konsepnya beda dari APP_NAME aplikasi internal, jangan digabung.
 
 ---
 
