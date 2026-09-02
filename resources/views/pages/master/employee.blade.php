@@ -924,7 +924,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="grid gap-2.5">
                         <x-form.input label="Kota Lahir" wire:model="birth_place" />
-                        <x-form.input label="Tanggal Lahir (sesuai KTP)" name="birth_date" type="date" wire:model="birth_date" />
+                        <x-form.date-picker label="Tanggal Lahir (sesuai KTP)" name="birth_date" wire:model="birth_date" />
                         <x-form.input label="NIK KTP" name="nik_ktp" wire:model="nik_ktp" />
                         <x-form.input label="No. Kartu Keluarga (KK)" name="no_kk" wire:model="no_kk" />
                         <x-form.input label="NPWP" wire:model="npwp_number" />
@@ -942,9 +942,9 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Status Kerja</div>
                     <div class="grid three gap-2.5">
-                        <x-form.input label="Tanggal Bergabung *" name="join_date" type="date" wire:model="join_date" />
+                        <x-form.date-picker label="Tanggal Bergabung *" name="join_date" wire:model="join_date" />
                         <x-form.select label="Status Kerja *" wire:model="work_status" :options="$workStatuses" :selected="$work_status" :placeholder="false" />
-                        <x-form.input label="Berlaku Sejak" type="date" wire:model="work_status_since" />
+                        <x-form.date-picker label="Berlaku Sejak" wire:model="work_status_since" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Kontak Darurat</div>
@@ -1165,7 +1165,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.input label="Penyelenggara" wire:model="edu_organizer" />
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Tanggal *" name="edu_activity_date" type="date" wire:model="edu_activity_date" />
+                            <x-form.date-picker label="Tanggal *" name="edu_activity_date" wire:model="edu_activity_date" />
                         </div>
                         <div class="flex-1">
                             <x-form.input label="Biaya (Rp)" type="number" step="1" min="0" wire:model="edu_cost" />
@@ -1192,7 +1192,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.input label="Nama Lengkap *" name="fam_full_name" wire:model="fam_full_name" />
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Tanggal Lahir" type="date" wire:model="fam_birth_date" />
+                            <x-form.date-picker label="Tanggal Lahir" wire:model="fam_birth_date" />
                         </div>
                         <div class="flex-1">
                             <x-form.input label="NIK" wire:model="fam_nik" />
@@ -1262,16 +1262,16 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Mulai *" name="ctr_start_date" type="date" wire:model="ctr_start_date" />
+                            <x-form.date-picker label="Mulai *" name="ctr_start_date" wire:model="ctr_start_date" />
                         </div>
                         <div class="flex-1">
-                            <x-form.input label="Selesai (kosong = TETAP)" name="ctr_end_date" type="date" wire:model="ctr_end_date" />
+                            <x-form.date-picker label="Selesai (kosong = TETAP)" name="ctr_end_date" wire:model="ctr_end_date" />
                         </div>
                     </div>
                     <x-form.input label="Nominal Gaji (Rp) *" type="number" step="1" min="0" wire:model="ctr_salary_amount" />
                     <x-form.checkbox label="Masa Probation" wire:model.live="ctr_is_probation" />
                     @if ($ctr_is_probation)
-                        <x-form.input label="Probation Selesai *" name="ctr_probation_end_date" type="date" wire:model="ctr_probation_end_date" />
+                        <x-form.date-picker label="Probation Selesai *" name="ctr_probation_end_date" wire:model="ctr_probation_end_date" />
                     @endif
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                         <button type="button" wire:click="$set('showContractModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
@@ -1289,7 +1289,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Tambah Catatan Kedisiplinan</div>
                 <form wire:submit="saveDisciplinary" class="p-4 flex flex-col gap-3">
                     <x-form.select label="Tipe *" wire:model="dis_type" :options="array_combine($disciplinaryTypes, $disciplinaryTypes)" :placeholder="false" />
-                    <x-form.input label="Tanggal Kejadian *" type="date" wire:model="dis_incident_date" />
+                    <x-form.date-picker label="Tanggal Kejadian *" wire:model="dis_incident_date" />
                     <x-form.textarea label="Alasan *" name="dis_reason" wire:model="dis_reason" rows="2" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                         <button type="button" wire:click="$set('showDisciplinaryModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>

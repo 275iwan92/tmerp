@@ -27,7 +27,7 @@
                 <x-form.select wire:model="gender" :options="['LAKI_LAKI' => 'Laki-laki', 'PEREMPUAN' => 'Perempuan']"><x-slot:label>Jenis Kelamin *</x-slot:label></x-form.select>
                 <x-form.input label="Agama *" wire:model="religion" />
             </div>
-            <x-form.input label="Tanggal Lahir *" type="date" wire:model="birth_date" />
+            <x-form.date-picker label="Tanggal Lahir *" wire:model="birth_date" />
             <div class="grid two">
                 <x-form.input label="Email" type="email" wire:model="email" readonly class="bg-[#f8fafc]" />
                 <x-form.input label="No. HP *" wire:model="phone" />
@@ -53,7 +53,7 @@
         <h2 class="text-sm font-bold text-navy mb-3 pb-2 border-b border-[#eef1f5]">2. Data Keluarga</h2>
         <div class="grid two mb-4">
             <x-form.select wire:model="marital_status" :options="['LAJANG' => 'Lajang', 'MENIKAH' => 'Menikah', 'DUDA' => 'Duda', 'JANDA' => 'Janda']" placeholder="— pilih —"><x-slot:label>Status Pernikahan *</x-slot:label></x-form.select>
-            <x-form.input label="Tanggal Menikah/Bercerai (wajib kalau bukan Lajang)" type="date" wire:model="marital_date" />
+            <x-form.date-picker label="Tanggal Menikah/Bercerai (wajib kalau bukan Lajang)" wire:model="marital_date" />
         </div>
 
         <p class="text-[10.5px] font-bold text-muted uppercase mb-2">Susunan Keluarga</p>
@@ -211,14 +211,14 @@
                 <p class="text-[10px] font-bold text-muted uppercase mt-2 mb-1">Jabatan Awal</p>
                 <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 130px 130px;">
                     <x-form.input wire:model="workExp.{{ $i }}.position" placeholder="Jabatan Awal" />
-                    <x-form.input type="date" wire:model="workExp.{{ $i }}.start_date" />
-                    <x-form.input type="date" wire:model="workExp.{{ $i }}.end_date" />
+                    <x-form.date-picker wire:model="workExp.{{ $i }}.start_date" />
+                    <x-form.date-picker wire:model="workExp.{{ $i }}.end_date" />
                 </div>
                 <p class="text-[10px] font-bold text-muted uppercase mt-2 mb-1">Jabatan Terakhir</p>
                 <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 130px 130px;">
                     <x-form.input wire:model="workExp.{{ $i }}.position_end" placeholder="Jabatan Terakhir" />
-                    <x-form.input type="date" wire:model="workExp.{{ $i }}.position_end_start_date" />
-                    <x-form.input type="date" wire:model="workExp.{{ $i }}.position_end_end_date" />
+                    <x-form.date-picker wire:model="workExp.{{ $i }}.position_end_start_date" />
+                    <x-form.date-picker wire:model="workExp.{{ $i }}.position_end_end_date" />
                 </div>
                 <div class="grid gap-2 mb-2" style="grid-template-columns:1fr 1fr 1fr 1fr;">
                     <x-form.input wire:model="workExp.{{ $i }}.subordinate_count_start" placeholder="Bawahan (awal)" />
@@ -384,7 +384,7 @@
             <x-form.input label="Dari mana Anda menerima info lowongan di perusahaan kami? *" wire:model="source_of_info" />
             <div class="grid two">
                 <x-form.input label="Gaji yang diinginkan *" type="number" wire:model="expected_salary" />
-                <x-form.input label="Kesediaan mulai bekerja *" type="date" wire:model="availability_date" />
+                <x-form.date-picker label="Kesediaan mulai bekerja *" wire:model="availability_date" />
             </div>
             <x-form.input label="Fasilitas yang diinginkan *" wire:model="expected_facility" />
         </div>

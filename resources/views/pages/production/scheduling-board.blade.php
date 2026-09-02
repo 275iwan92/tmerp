@@ -751,7 +751,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
         <div class="flex items-center gap-2 flex-wrap mb-3.5">
             <button type="button" wire:click="shiftDate(-1)" class="px-2.5 py-1.5 rounded-md text-xs font-semibold border border-[#c7cfda] bg-white cursor-pointer">‹</button>
-            <input type="date" wire:model.live="date" class="px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+            <x-form.date-picker wire:model.live="date" class="w-[130px]" />
             <button type="button" wire:click="shiftDate(1)" class="px-2.5 py-1.5 rounded-md text-xs font-semibold border border-[#c7cfda] bg-white cursor-pointer">›</button>
 
             <select wire:model.live="filterMachine" class="px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">

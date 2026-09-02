@@ -438,14 +438,14 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
             <div class="grid">
-                <x-form.input label="Tanggal PR" type="date" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
+                <x-form.date-picker label="Tanggal PR" value="{{ $this->pr->i_doc_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.select :disabled="$this->pr->status !== 'DRAFT'" wire:change="updateHeader('i_department_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :selected="$this->pr->i_department_id" :options="$this->departments->pluck('department_name', 'department_id')->all()">
                     <x-slot:label>Departemen Peminta <span class="text-[#a3241f]">*</span></x-slot:label>
                 </x-form.select>
                 <x-form.input label="Sumber" readonly value="MANUAL" class="bg-[#f8fafc]" />
-                <x-form.input label="Tgl Dibutuhkan" type="date" value="{{ $this->pr->i_need_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
+                <x-form.date-picker label="Tgl Dibutuhkan" value="{{ $this->pr->i_need_date?->format('Y-m-d') }}" :disabled="$this->pr->status !== 'DRAFT'"
                     wire:change="updateHeader('i_need_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
             <div class="mt-3">

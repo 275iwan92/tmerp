@@ -241,7 +241,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📌 MPS - Kanban Board</b>
-        <input type="date" wire:model.live="date" class="bg-white/10 text-white text-[11px] font-bold px-3 py-1.5 rounded-md border-none">
+        <x-form.date-picker wire:model.live="date" class="w-[120px] !bg-white/10 !text-white text-[11px] font-bold px-3 py-1.5 rounded-md border-none">
         <a href="{{ route('production.scheduling-board') }}" class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-[#43508a] rounded-full hover:brightness-110 no-underline">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 MPS - Gantt Chart</span>
         </a>

@@ -383,7 +383,7 @@ new #[Title('Jadwal Interview — TELASIH MAKMUR ERP')] class extends Component
                 @error('form') <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $message }}</p> @enderror
                 <div class="space-y-3">
                     <div class="grid two">
-                        <x-form.input label="Tanggal" type="date" wire:model="schedulingDate" />
+                        <x-form.date-picker label="Tanggal" wire:model="schedulingDate" />
                         <x-form.input label="Jam" type="time" wire:model="schedulingTime" />
                     </div>
                     <x-form.select wire:model="interviewer_id" :options="$this->interviewers->all()" placeholder="— pilih interviewer —">

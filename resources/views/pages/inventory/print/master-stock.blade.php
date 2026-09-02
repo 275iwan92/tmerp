@@ -236,14 +236,8 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
     <div class="no-print max-w-[1100px] mx-auto my-4 px-4">
         <div class="bg-white border border-[#d7dbe2] rounded-lg shadow-sm p-4">
             <div class="flex flex-wrap items-end gap-3">
-                <div class="flex flex-col gap-1 shrink-0">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
-                    <input type="date" wire:model.live="dateFrom" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
-                <div class="flex flex-col gap-1 shrink-0">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Sampai Tanggal</label>
-                    <input type="date" wire:model.live="dateTo" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
+                <div class="shrink-0"><x-form.date-picker label="Dari Tanggal" wire:model.live="dateFrom" /></div>
+                <div class="shrink-0"><x-form.date-picker label="Sampai Tanggal" wire:model.live="dateTo" /></div>
                 <div class="flex flex-col gap-1 shrink-0">
                     <label class="text-[10px] text-muted uppercase font-semibold">Gudang</label>
                     <select wire:model.live="warehouseId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">

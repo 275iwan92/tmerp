@@ -1265,12 +1265,10 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                             </div>
                             <div class="[display:grid] grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Kirim Ke Vendor</label>
-                                    <input type="date" wire:model="subDueOut" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <x-form.date-picker label="Kirim Ke Vendor" wire:model="subDueOut" />
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Estimasi Kembali</label>
-                                    <input type="date" wire:model="subDueReturn" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                    <x-form.date-picker label="Estimasi Kembali" wire:model="subDueReturn" />
                                 </div>
                             </div>
                             <div>

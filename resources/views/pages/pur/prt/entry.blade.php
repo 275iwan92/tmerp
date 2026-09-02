@@ -376,7 +376,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Dokumen</h3>
             <div class="grid">
                 <x-form.input label="Supplier" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
-                <x-form.input label="Tanggal Retur" type="date" value="{{ $this->prt->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                <x-form.date-picker label="Tanggal Retur" value="{{ $this->prt->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @if ($this->prt->i_source === 'QC_REJECT')
                     <x-form.input label="Ref. PV" readonly value="{{ $this->prt->sourcePv?->doc_no }}" class="bg-[#f8fafc]" />
@@ -386,7 +386,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
                 <x-form.select label="Disposisi *" :disabled="$readOnly" wire:change="updateHeader('i_disposition', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :placeholder="false" :selected="$this->prt->i_disposition" :options="['CREDIT_NOTE' => 'Credit Note', 'REPLACEMENT' => 'Ganti Barang']" />
                 @if ($this->prt->i_disposition === 'REPLACEMENT')
-                    <x-form.input label="Batas Waktu Pengganti" type="date" value="{{ $this->prt->replacement_due_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                    <x-form.date-picker label="Batas Waktu Pengganti" value="{{ $this->prt->replacement_due_date?->format('Y-m-d') }}" :disabled="$readOnly"
                         wire:change="updateHeader('replacement_due_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @endif
             </div>
@@ -495,11 +495,11 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
             <div class="grid">
                 <x-form.input label="Metode Komunikasi" value="{{ $this->prt->comm_method }}" :disabled="$readOnly" placeholder="Email / Telp / WA" wire:change="updateHeader('comm_method', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.input label="PIC Supplier" value="{{ $this->prt->supplier_pic }}" :disabled="$readOnly" wire:change="updateHeader('supplier_pic', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="Tgl Kirim Fisik" type="date" value="{{ $this->prt->physical_return_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('physical_return_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                <x-form.date-picker label="Tgl Kirim Fisik" value="{{ $this->prt->physical_return_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('physical_return_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.input label="Ekspedisi" value="{{ $this->prt->expedition }}" :disabled="$readOnly" wire:change="updateHeader('expedition', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @if ($this->prt->i_disposition === 'CREDIT_NOTE')
                     <x-form.input label="No. CN Supplier" value="{{ $this->prt->cn_supplier_no }}" :disabled="$readOnly" wire:change="updateHeader('cn_supplier_no', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                    <x-form.input label="Tgl CN Diterima" type="date" value="{{ $this->prt->cn_received_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('cn_received_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                    <x-form.date-picker label="Tgl CN Diterima" value="{{ $this->prt->cn_received_date?->format('Y-m-d') }}" :disabled="$readOnly" wire:change="updateHeader('cn_received_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 @endif
             </div>
             <div class="mt-3">

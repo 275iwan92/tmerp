@@ -491,7 +491,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                             <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="!font-mono" />
                         </div>
                         <div class="flex-1 min-w-[140px]">
-                            <x-form.input label="Tanggal Dokumen *" type="date" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
+                            <x-form.date-picker label="Tanggal Dokumen *" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
                         </div>
                         <div class="flex-1 min-w-[220px] flex flex-col gap-1">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Ref. Stock Out *</label>

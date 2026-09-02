@@ -317,9 +317,9 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
             <div class="grid">
                 <x-form.input label="Supplier" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
-                <x-form.input label="Tanggal PQ" type="date" value="{{ $this->pq->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
+                <x-form.date-picker label="Tanggal PQ" value="{{ $this->pq->i_doc_date?->format('Y-m-d') }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="Berlaku s/d" type="date" value="{{ $this->pq->i_quotation_valid_until?->format('Y-m-d') }}" :disabled="$readOnly"
+                <x-form.date-picker label="Berlaku s/d" value="{{ $this->pq->i_quotation_valid_until?->format('Y-m-d') }}" :disabled="$readOnly"
                     wire:change="updateHeader('i_quotation_valid_until', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.select label="PR Acuan (opsional)" :disabled="$readOnly" wire:change="updateHeader('i_pr_id', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     placeholder="— tidak ada —" :selected="$this->pq->i_pr_id" :options="$this->openRequisitions->pluck('doc_no', 'pr_id')->all()" />

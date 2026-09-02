@@ -1097,8 +1097,8 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     <div class="grid two gap-2.5 mb-3">
-                        <x-form.input label="Dari Tanggal" type="date" wire:model="leave_date_from" name="leave_date_from" />
-                        <x-form.input label="Sampai Tanggal" type="date" wire:model="leave_date_to" name="leave_date_to" />
+                        <x-form.date-picker label="Dari Tanggal" wire:model="leave_date_from" name="leave_date_from" />
+                        <x-form.date-picker label="Sampai Tanggal" wire:model="leave_date_to" name="leave_date_to" />
                     </div>
 
                     @if ($leave_type === 'CUTI')
@@ -1231,7 +1231,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Izin Keluar Area Kerja</div>
                         <div class="text-xs text-[#78350f] bg-[#fffbeb] border-l-4 border-[#f59e0b] px-3.5 py-2.5 rounded-r-md mb-3">Wajib disetujui <b>Atasan Langsung DAN HRD</b> sebelum meninggalkan area pabrik.</div>
-                        <div class="mb-3"><x-form.input label="Tanggal" type="date" wire:model="op_permit_date" name="op_permit_date" /></div>
+                        <div class="mb-3"><x-form.date-picker label="Tanggal" wire:model="op_permit_date" name="op_permit_date" /></div>
                         <div class="grid two gap-2.5 mb-3">
                             <x-form.input label="Jam Keluar" type="time" wire:model="op_out_time" name="op_out_time" />
                             <x-form.input label="Jam Kembali" type="time" wire:model="op_return_time" />
@@ -1421,13 +1421,13 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     @if ($famreq_type === 'MENINGGAL')
                         <x-form.select label="Pilih Anggota Keluarga" wire:model="famreq_family_id" name="famreq_family_id"
                             :options="$this->employee->families->where('is_deceased', false)->mapWithKeys(fn ($f) => [$f->family_id => $f->full_name.' ('.$f->relation.')'])->all()" />
-                        <x-form.input label="Tanggal Meninggal" type="date" wire:model="famreq_deceased_date" name="famreq_deceased_date" />
+                        <x-form.date-picker label="Tanggal Meninggal" wire:model="famreq_deceased_date" name="famreq_deceased_date" />
                         <div><label class="text-xs text-muted block mb-1">Upload Surat Kematian</label><input type="file" wire:model="famreq_attachment" class="w-full text-[12px]"></div>
                     @else
                         <x-form.select label="Hubungan" wire:model="famreq_relation" :placeholder="false"
                             :options="$famreq_type === 'PASANGAN' ? ['SUAMI' => 'Suami', 'ISTRI' => 'Istri'] : ['ANAK' => 'Anak']" />
                         <x-form.input label="Nama Lengkap" wire:model="famreq_full_name" name="famreq_full_name" />
-                        <x-form.input label="Tanggal Lahir" type="date" wire:model="famreq_birth_date" />
+                        <x-form.date-picker label="Tanggal Lahir" wire:model="famreq_birth_date" />
                         <div><label class="text-xs text-muted block mb-1">Upload Akta / Buku Nikah</label><input type="file" wire:model="famreq_attachment" class="w-full text-[12px]"></div>
                     @endif
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showFamilyReqModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Kirim Pengajuan</button></div>
@@ -1441,7 +1441,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] p-5">
                 <div class="text-base font-bold text-[#991b1b] mb-3">Pengajuan Pengunduran Diri</div>
                 <form wire:submit="saveResign" class="flex flex-col gap-3">
-                    <x-form.input label="Tanggal Efektif" type="date" wire:model="resign_effective_date" name="resign_effective_date" />
+                    <x-form.date-picker label="Tanggal Efektif" wire:model="resign_effective_date" name="resign_effective_date" />
                     <x-form.textarea label="Alasan" wire:model="resign_reason" rows="3" name="resign_reason" />
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showResignModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#991b1b] text-white cursor-pointer">Kirim Pengajuan</button></div>
                 </form>
@@ -1455,7 +1455,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-base font-bold text-[#0f172a] mb-3">Upload Dokumen — {{ $doc_type }}</div>
                 <form wire:submit="saveDoc" class="flex flex-col gap-3">
                     <x-form.input label="Nomor Dokumen" wire:model="doc_document_no" />
-                    <x-form.input label="Masa Berlaku (jika ada)" type="date" wire:model="doc_expiry_date" />
+                    <x-form.date-picker label="Masa Berlaku (jika ada)" wire:model="doc_expiry_date" />
                     <div><label class="text-xs text-muted block mb-1">File (JPG/PNG/PDF, maks 5MB)</label><input type="file" wire:model="doc_file" class="w-full text-[12px]">@error('doc_file') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showDocModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan &amp; Upload</button></div>
                 </form>
@@ -1471,7 +1471,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.input label="Nama Pelatihan / Sertifikasi" wire:model="edu_activity_name" name="edu_activity_name" />
                     <x-form.input label="Penyelenggara" wire:model="edu_organizer" />
                     <div class="grid two gap-2.5">
-                        <x-form.input label="Tanggal" type="date" wire:model="edu_activity_date" name="edu_activity_date" />
+                        <x-form.date-picker label="Tanggal" wire:model="edu_activity_date" name="edu_activity_date" />
                         <x-form.input label="Biaya (Rp)" type="number" wire:model="edu_cost" />
                     </div>
                     <x-form.select label="Ditanggung Oleh" wire:model="edu_funded_by" :placeholder="false"

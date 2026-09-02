@@ -562,9 +562,9 @@ new #[Title('Shift Roster — TELASIH MAKMUR ERP')] class extends Component
                     <span class="text-[10px] font-bold px-2.5 py-1 rounded-md uppercase {{ $batchStatus === 'CONFIRMED' ? 'bg-[#e2f4e6] text-[#1e7d3a]' : 'bg-[#fff8e7] text-[#b45309]' }}">{{ $batchStatus === 'CONFIRMED' ? 'CONFIRMED & PUBLISHED' : 'DRAFT' }}</span>
 
                     <span class="text-xs text-muted ml-2">Periode:</span>
-                    <input type="date" wire:model.live="dateFrom" class="px-2 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                    <x-form.date-picker wire:model.live="dateFrom" class="w-[130px]" />
                     <span class="text-xs text-muted">s/d</span>
-                    <input type="date" wire:model.live="dateTo" class="px-2 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                    <x-form.date-picker wire:model.live="dateTo" class="w-[130px]" />
 
                     <span class="flex-1"></span>
 

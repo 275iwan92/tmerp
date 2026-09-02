@@ -108,7 +108,7 @@ new #[Layout('layouts::guest')] #[Title('Setup Keamanan Akun — TELASIH MAKMUR 
             @endif
 
             <form wire:submit="submit">
-                <x-form.input legacy="field" label="Tanggal lahir" type="date" wire:model="birthDate" name="birthDate"
+                <x-form.date-picker legacy="field" label="Tanggal lahir" wire:model="birthDate" name="birthDate"
                     :hint="$birthDateFromEmployee ? 'Diambil dari data karyawan Anda. Salah? Ubah di sini — perubahan akan direview HR dulu sebelum berlaku.' : null" />
                 <x-form.input legacy="field" label="Nama ibu kandung" wire:model="motherName" placeholder="Nama lengkap ibu kandung Anda" name="motherName" />
                 <x-form.input legacy="field" label="Nomor HP terdaftar" wire:model="phone" placeholder="08xxxxxxxxxx" name="phone"

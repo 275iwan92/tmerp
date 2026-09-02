@@ -204,9 +204,9 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Quotation</h3>
                     <div class="grid">
                         <x-form.input label="No. Quotation" readonly value="{{ $this->quotation->quotation_no }}" class="bg-[#f8fafc]" />
-                        <x-form.input label="Tanggal" type="date" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
+                        <x-form.date-picker label="Tanggal" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('issued_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                        <x-form.input label="Berlaku s/d" type="date" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
+                        <x-form.date-picker label="Berlaku s/d" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('valid_until', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                         <x-form.select label="Termin Pembayaran" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]"
                             :selected="$this->quotation->payment_term" :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')->all()" />

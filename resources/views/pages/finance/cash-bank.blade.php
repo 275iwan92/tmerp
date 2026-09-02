@@ -470,7 +470,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                         <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="font-mono" />
                         <x-form.select label="Tipe Transaksi *" wire:model.live="voucher_type" :disabled="$readOnly" :placeholder="false"
                             :options="['BKM' => 'Bukti Kas Masuk (BKM)', 'BKK' => 'Bukti Kas Keluar (BKK)', 'BBM' => 'Bukti Bank Masuk (BBM)', 'BBK' => 'Bukti Bank Keluar (BBK)']" />
-                        <x-form.input label="Tanggal Pembukuan *" type="date" wire:model="entry_date" :disabled="$readOnly" />
+                        <x-form.date-picker label="Tanggal Pembukuan *" wire:model="entry_date" :disabled="$readOnly" />
                         <x-form.select label="Akun Kas/Bank Utama *" wire:model.live="main_account_id" :disabled="$readOnly"
                             :options="$this->cashBankAccounts->mapWithKeys(fn ($a) => [$a->account_id => $a->account_code.' — '.$a->account_name])" :selected="$main_account_id" />
                         <x-form.input label="Mitra / Penerima" wire:model="partner_name" :disabled="$readOnly" placeholder="Nama perusahaan / individu" />

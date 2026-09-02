@@ -324,7 +324,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                          di sini (lihat catatan flex di atas). --}}
                     <div class="grid three">
                         <x-form.input label="No. CO" readonly value="{{ $this->order->co_no }}" class="bg-[#f8fafc]" />
-                        <x-form.input label="CO Date" type="date" value="{{ $this->order->co_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                        <x-form.date-picker label="CO Date" value="{{ $this->order->co_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('co_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                         <x-form.input label="Ref. Quotation" readonly value="{{ $this->order->quotation->quotation_no }}" class="bg-[#f8fafc]" />
 
@@ -418,7 +418,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         <td class="px-2 py-2 text-right">{{ number_format($item->discount_pct, 1) }}%</td>
                                         <td class="px-2 py-2 text-right font-bold text-navy">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                         <td class="px-2 py-2 text-center">
-                                            <x-form.input type="date" value="{{ $item->due_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
+                                            <x-form.date-picker value="{{ $item->due_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
                                                 wire:change="updateItem({{ $item->id_item }}, 'due_date', $event.target.value)" class="!py-1 text-[11px] disabled:bg-[#f8fafc]" />
                                         </td>
                                         <td class="px-2 py-2 text-center">
@@ -462,7 +462,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                                         :placeholder="false" :selected="$d->shipment_type" :options="['FULL' => 'FULL', 'PARTIAL' => 'PARTIAL']" />
                                                 </td>
                                                 <td class="px-2 py-1.5">
-                                                    <x-form.input type="date" value="{{ $d->ship_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_date', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]" />
+                                                    <x-form.date-picker value="{{ $d->ship_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_date', $event.target.value)" class="!py-1 disabled:bg-[#f8fafc]" />
                                                 </td>
                                                 <td class="px-2 py-1.5 text-right">
                                                     <x-form.input type="number" step="0.01" value="{{ $d->ship_qty }}" :disabled="$this->order->doc_status !== 'DRAFT'" wire:change="updateDelivery({{ $d->id_delivery }}, 'ship_qty', $event.target.value)" class="w-20 !py-1 text-right disabled:bg-[#f8fafc]" />

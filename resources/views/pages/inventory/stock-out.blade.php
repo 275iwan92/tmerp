@@ -407,7 +407,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="font-mono" />
                         </div>
                         <div class="flex-1 min-w-[140px]">
-                            <x-form.input label="Tanggal Dokumen *" name="doc_date" type="date" wire:model="doc_date" :disabled="$readOnly" />
+                            <x-form.date-picker label="Tanggal Dokumen *" name="doc_date" wire:model="doc_date" :disabled="$readOnly" />
                         </div>
                         <div class="flex-1 min-w-[180px]">
                             <x-form.select label="Gudang Sumber *" name="warehouse_id" wire:model="warehouse_id" :disabled="$readOnly"

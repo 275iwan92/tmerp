@@ -167,7 +167,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
                     :selected="$this->offer->employment_type" :options="['TETAP' => 'Tetap', 'KONTRAK' => 'Kontrak', 'HARIAN' => 'Harian', 'BORONGAN' => 'Borongan']" :placeholder="false">
                     <x-slot:label>Jenis Kontrak</x-slot:label>
                 </x-form.select>
-                <x-form.input label="Tanggal Mulai" type="date" value="{{ $this->offer->start_date?->format('Y-m-d') }}" :disabled="$this->offer->status !== 'DRAFT'"
+                <x-form.date-picker label="Tanggal Mulai" value="{{ $this->offer->start_date?->format('Y-m-d') }}" :disabled="$this->offer->status !== 'DRAFT'"
                     wire:change="updateField('start_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
         </div>

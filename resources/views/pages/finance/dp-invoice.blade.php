@@ -587,10 +587,10 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
 
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Tanggal Faktur DP" type="date" wire:model="entry_date" />
+                            <x-form.date-picker label="Tanggal Faktur DP" wire:model="entry_date" />
                         </div>
                         <div class="flex-1">
-                            <x-form.input label="Tanggal Jatuh Tempo DP" type="date" wire:model="due_date" name="due_date" />
+                            <x-form.date-picker label="Tanggal Jatuh Tempo DP" wire:model="due_date" name="due_date" />
                         </div>
                     </div>
 

@@ -123,9 +123,9 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <label class="text-[10.5px] text-muted font-semibold">Dari</label>
-                    <input type="date" wire:model.live="dateFrom" class="px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <x-form.date-picker wire:model.live="dateFrom" class="w-[130px]" />
                     <label class="text-[10.5px] text-muted font-semibold">s/d</label>
-                    <input type="date" wire:model.live="dateTo" class="px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <x-form.date-picker wire:model.live="dateTo" class="w-[130px]" />
                 </div>
                 @if ($search !== '' || $dateFrom !== '' || $dateTo !== '')
                     <x-slot:tools>

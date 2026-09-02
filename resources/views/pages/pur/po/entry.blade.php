@@ -299,7 +299,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Umum</h3>
             <div class="grid">
                 <x-form.input label="Supplier" readonly value="{{ $this->supplier?->supplier_name }} ({{ $this->supplier?->supplier_code }})" class="bg-[#f8fafc]" />
-                <x-form.input label="Tanggal PO" type="date" value="{{ $this->po->i_doc_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
+                <x-form.date-picker label="Tanggal PO" value="{{ $this->po->i_doc_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
                     wire:change="updateHeader('i_doc_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <x-form.select label="Tipe PO" :disabled="$this->po->status !== 'DRAFT'" wire:change="updateHeader('i_po_type', $event.target.value)" class="disabled:bg-[#f8fafc]"
                     :placeholder="false" :selected="$this->po->i_po_type" :options="['LOCAL' => 'Local', 'IMPORT' => 'Import']" />
@@ -307,7 +307,7 @@ new #[Title('Purchase Order Entry — TELASIH MAKMUR ERP')] class extends Compon
                     :placeholder="false" :selected="$this->po->i_procure_type" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" />
                 <x-form.input label="Syarat Bayar" value="{{ $this->po->i_payment_term }}" placeholder="mis. Net 30" :disabled="$this->po->status !== 'DRAFT'"
                     wire:change="updateHeader('i_payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="Tgl Kirim" type="date" value="{{ $this->po->i_delivery_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
+                <x-form.date-picker label="Tgl Kirim" value="{{ $this->po->i_delivery_date?->format('Y-m-d') }}" :disabled="$this->po->status !== 'DRAFT'"
                     wire:change="updateHeader('i_delivery_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
                 <div class="col-span-2">
                     <x-form.input label="Kirim Ke" value="{{ $this->po->i_ship_to }}" :disabled="$this->po->status !== 'DRAFT'"

@@ -254,7 +254,7 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
                     <x-form.input legacy label="Qty Order (PCS) *" type="number" step="0.0001" min="0" wire:model="qty" :disabled="$readOnly" name="qty" />
                 </div>
                 <div class="grid three" style="margin-top:10px">
-                    <x-form.input legacy label="Deadline Quotation" type="date" wire:model="deadline_quotation" :disabled="$readOnly" />
+                    <x-form.date-picker legacy label="Deadline Quotation" wire:model="deadline_quotation" :disabled="$readOnly" />
                 </div>
             </div>
         </div>

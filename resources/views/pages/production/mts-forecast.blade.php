@@ -237,13 +237,11 @@ new #[Title('Forecast MTS — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Periode Mulai</label>
-                            <input type="date" wire:model="periodStart" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                            <x-form.date-picker label="Periode Mulai" wire:model="periodStart" />
                             @error('periodStart') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Periode Selesai</label>
-                            <input type="date" wire:model="periodEnd" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                            <x-form.date-picker label="Periode Selesai" wire:model="periodEnd" />
                             @error('periodEnd') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
                         </div>
                     </div>

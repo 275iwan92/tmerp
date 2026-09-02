@@ -597,7 +597,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                             <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="!font-mono" />
                         </div>
                         <div class="flex-1 min-w-[140px]">
-                            <x-form.input label="Tanggal Dokumen *" type="date" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
+                            <x-form.date-picker label="Tanggal Dokumen *" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
                         </div>
                         <div class="flex-1 min-w-[160px]">
                             <x-form.select label="Jenis *" wire:model="doc_kind" :disabled="$readOnly || $editingId" :placeholder="false"
@@ -624,10 +624,10 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                                     <x-form.input label="Petugas Opname *" wire:model="opn_officer" :disabled="$readOnly" name="opn_officer" />
                                 </div>
                                 <div class="flex-1 min-w-[180px]">
-                                    <x-form.input label="Mulai Hitung *" type="datetime-local" wire:model="opn_start" :disabled="$readOnly" />
+                                    <x-form.date-picker mode="datetime" label="Mulai Hitung *" wire:model="opn_start" :disabled="$readOnly" />
                                 </div>
                                 <div class="flex-1 min-w-[180px]">
-                                    <x-form.input label="Selesai Hitung *" type="datetime-local" wire:model="opn_stop" :disabled="$readOnly" />
+                                    <x-form.date-picker mode="datetime" label="Selesai Hitung *" wire:model="opn_stop" :disabled="$readOnly" />
                                 </div>
                                 <div class="flex-1 min-w-[180px]">
                                     <x-form.input label="Saksi *" wire:model="opn_witness" :disabled="$readOnly" />

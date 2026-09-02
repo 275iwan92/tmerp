@@ -203,14 +203,8 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-[11px] text-navy font-semibold mt-1">{{ $this->material['code'] }} — {{ $this->material['name'] }}</div>
                     @endif
                 </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Dari Tanggal</label>
-                    <input type="date" wire:model.live="dateFrom" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Sampai Tanggal</label>
-                    <input type="date" wire:model.live="dateTo" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                </div>
+                <x-form.date-picker label="Dari Tanggal" wire:model.live="dateFrom" />
+                <x-form.date-picker label="Sampai Tanggal" wire:model.live="dateTo" />
                 <button type="button" onclick="window.print()" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer" @disabled(! $materialId)>🖨️ Cetak</button>
             </div>
         </div>

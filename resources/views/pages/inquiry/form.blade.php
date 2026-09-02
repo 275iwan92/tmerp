@@ -1195,7 +1195,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 <div class="sec-title">Header Inkuiri</div>
                 <div class="grid">
                     <x-form.input legacy label="No. Inkuiri (auto)" value="{{ $inquiry_no ?: 'belum tersimpan' }}" readonly />
-                    <x-form.input legacy label="Tanggal" type="date" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
+                    <x-form.date-picker legacy label="Tanggal" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
                     <x-form.select legacy label="Sumber" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
                         :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
                     <x-form.input legacy label="PIC Sales" wire:model="pic_sales" placeholder="Nama PIC Sales" :disabled="$readOnly" />
@@ -1204,9 +1204,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         <x-form.toggle-option legacy :active="! $is_prospect" style="flex:1" wire:click="setProspect(false)" :disabled="$readOnly">Tidak — customer terdaftar</x-form.toggle-option>
                         <x-form.toggle-option legacy :active="$is_prospect" style="flex:1" wire:click="setProspect(true)" :disabled="$readOnly">Ya — belum terdaftar</x-form.toggle-option>
                     </x-form.toggle-group>
-                    <x-form.input legacy col2 wire:model="deadline_quotation" type="date" :disabled="$readOnly" name="deadline_quotation">
+                    <x-form.date-picker legacy col2 wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
                         <x-slot:label>Deadline Quotation <span class="hint" style="font-weight:400">(min. +14 hari kerja)</span></x-slot:label>
-                    </x-form.input>
+                    </x-form.date-picker>
 
                     @if ($is_prospect)
                         <x-form.input legacy col2 label="Nama Calon Customer" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
@@ -1275,7 +1275,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         <div class="grid two">
                             <x-form.input legacy col2 label="Deskripsi bahan customer *" wire:model="cust_material_spec"
                                 placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" :disabled="$readOnly" name="cust_material_spec" />
-                            <x-form.input legacy label="ETA bahan tiba" type="date" wire:model="cust_material_eta" :disabled="$readOnly" />
+                            <x-form.date-picker legacy label="ETA bahan tiba" wire:model="cust_material_eta" :disabled="$readOnly" />
                         </div>
                         <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling &amp; spoilage dihitung Costing.</div>
                     </div>

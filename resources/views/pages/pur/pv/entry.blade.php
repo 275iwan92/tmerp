@@ -253,7 +253,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
     <div class="max-w-[1500px] mx-auto my-5 px-4">
         {{-- HEADER --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid gap-3">
-            <x-form.input label="Tanggal Terima" type="date" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" />
+            <x-form.date-picker label="Tanggal Terima" value="{{ $this->pv->i_doc_date?->format('Y-m-d') }}" wire:change="updateHeader('i_doc_date', $event.target.value)" />
             <x-form.input label="Surat Jalan Utama" value="{{ $this->pv->i_supplier_do_no }}" wire:change="updateHeader('i_supplier_do_no', $event.target.value)" />
             <x-form.input label="No Kendaraan" value="{{ $this->pv->i_vehicle_no }}" wire:change="updateHeader('i_vehicle_no', $event.target.value)" />
             <div>

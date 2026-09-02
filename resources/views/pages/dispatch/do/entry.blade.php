@@ -253,9 +253,9 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
             <h3 class="text-xs text-navy uppercase font-bold mb-3">Informasi Dokumen</h3>
             <div class="grid three">
                 <x-form.input label="No. Delivery Order" readonly value="{{ $this->do->do_no ?: '(auto saat Confirm)' }}" class="bg-[#f8fafc]" />
-                <x-form.input label="Tanggal DO" type="date" value="{{ $this->do->do_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
+                <x-form.date-picker label="Tanggal DO" value="{{ $this->do->do_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
                     wire:change="updateHeader('do_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                <x-form.input label="Rencana Kirim" type="date" value="{{ $this->do->scheduled_ship_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
+                <x-form.date-picker label="Rencana Kirim" value="{{ $this->do->scheduled_ship_date?->format('Y-m-d') }}" :disabled="$this->do->status !== 'DRAFT'"
                     wire:change="updateHeader('scheduled_ship_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
             </div>
         </div>

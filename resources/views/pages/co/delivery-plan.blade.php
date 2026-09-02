@@ -324,7 +324,7 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.input wire:model="splitQty" placeholder="Kosong = pindah semua qty">
                         <x-slot:label>Qty Split <span class="text-muted font-normal">(kosongkan kalau cuma mau pindah tanggal)</span></x-slot:label>
                     </x-form.input>
-                    <x-form.input label="Tanggal Baru *" type="date" wire:model="splitDate" />
+                    <x-form.date-picker label="Tanggal Baru *" wire:model="splitDate" />
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" wire:click="closeSplitModal" class="text-xs font-semibold px-3.5 py-2 rounded border border-[#d7dbe2] cursor-pointer">Batal</button>
