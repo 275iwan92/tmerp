@@ -181,10 +181,13 @@ duplikasi:
    nullable, isi salah satu. Pola upload ikuti yang sudah established di
    Master Employee (`WithFileUploads` Livewire trait,
    `->store("prodev/{id}/attachment", 'public')`, lihat
-   `resources/views/pages/master/employee.blade.php:499`) — **AI file
-   TIDAK bisa di-preview inline browser** (bukan format native web), cuma
-   disimpan+bisa didownload; JPEG/PDF bisa preview inline
-   (`<img>`/embed PDF).
+   `resources/views/pages/master/employee.blade.php:499`).
+   **[KEPUTUSAN 2026-09-02]** AI file **TIDAK wajib** disertai PDF export
+   — kalau preview AI sulit (memang tidak bisa inline browser, bukan
+   format native web), **cukup JPEG** yang jadi sumber preview visual.
+   Jadi: JPEG = wajib ada kalau mau preview visual (dipakai `<img>`),
+   AI/PDF = opsional, boleh nempel sbg referensi/download tambahan tanpa
+   perlu preview.
 4. **`prod_part_finishing`** (keputusan user 2026-09-02 §7 poin 5) — jenis
    finishing sbg data terstruktur, bukan teks bebas: `id_part` FK, `seq`,
    `finishing_type` (Laminating Doff/Glossy, UV Spot, Hot Print, Varnish,
@@ -331,32 +334,73 @@ dibutuhkan** di `prod_part`: `flap_side` (enum TOP/BOTTOM/LEFT/RIGHT),
 `flap_length_mm` (nilai desain saat ini), `flap_min_mm`/`flap_max_mm`
 (rentang yang masih valid struktural).
 
-**Tingkat 2 — Interlock/"69" Pattern (LEBIH RUMIT, butuh geometri
-tambahan + algoritma baru, bukan sekadar extend yang ada)**
+**Tingkat 2 — Interlock/"69" Pattern, DIREVISI 2026-09-02: SHIFT jadi
+lever UTAMA, flap-shrink jadi lever SEKUNDER**
 
-Pola "69" = 2 unit diputar 180° satu sama lain sehingga lidah unit kedua
-"masuk" ke celah kosong di sebelah badan unit pertama — jaraknya (pitch)
-antar unit jadi LEBIH PENDEK dari body+lidah biasa. Ini beda dari Tingkat 1
-krn butuh tau **bentuk lidah itu sendiri** (bukan cuma panjangnya):
-lebar lidah (`flap_width_mm`) dan seberapa jauh lidah itu dari sudut
-(`flap_offset_mm`) — model bentuk part disederhanakan jadi **badan persegi
-+ 1 persegi kecil (lidah) nempel di 1 sisi**, BUKAN import polygon dieline
-penuh (itu Tool #8, jauh lebih besar effort-nya).
+Klarifikasi user: dari kasus-kasus yang sudah dia lihat, **kebanyakan
+solusi interlock adalah GESER posisi** (translasi kiri-kanan/atas-bawah
+unit yang diputar 180°, PANJANG LIDAH TETAP), bukan mengecilkan lidah —
+tapi **ADA JUGA** kasus yang memang perlu dikecilkan. Jadi algoritmanya
+perlu 2 variabel independen yang dicoba BERSAMAAN, bukan cuma 1:
+
+1. **`shift_offset_mm`** — geser unit kedua sepanjang sisi yang
+   berhimpitan (variabel UTAMA, sesuai observasi user) — dicoba dalam
+   rentang `[0, body_length]`, step tertentu.
+2. **`flap_length`** — dalam rentang `[flap_min_mm, flap_max_mm]`
+   (variabel SEKUNDER dari Tingkat 1, tetap dicoba tapi bukan fokus
+   utama).
 
 ```
-pitch_interlock = body_length - overlap
-overlap = min(flap_length - clearance_minimum, ruang_notch_tersedia)
-// ruang_notch_tersedia dihitung dari flap_width & flap_offset unit tetangga
+untuk shift in range(0, body_length_mm, step=5mm):
+    untuk flap in range(flap_min_mm, flap_max_mm, step=5mm):
+        pitch = body_length - overlap(shift, flap, flap_width_mm, flap_offset_mm)
+        hasil = hitung_up(plano, body_dim, pitch, ...)  // coba row-interlock & col-interlock, x rotate 90°
+        simpan {shift, flap, hasil.up, hasil.efficiency}
 
-coba pola interlock arah baris DAN arah kolom, masing2 x rotate 90°
-bandingkan up count vs hasil Tingkat 1, menang yg UP-nya lebih banyak
+urutkan semua hasil by up DESC, efficiency DESC
+tampilkan TOP 3-5 ke officer dgn preview visual (termasuk yg shift-only,
+flap tetap — sesuai pola yg PALING SERING user lihat)
 ```
+
+Field geometri part yang dibutuhkan sama seperti draf sebelumnya
+(`flap_width_mm`, `flap_offset_mm`) — model **badan persegi + 1 persegi
+kecil (lidah) nempel di 1 sisi**, BUKAN import polygon dieline penuh
+(itu Tool #8, effort jauh lebih besar).
+
+**Soal "ENGINE dengan AI" — pendapat saya (diminta menimbang, bukan
+sekadar setuju)**: masalah ini ("geser + kadang kecilkan, dalam rentang
+terbatas, cari kombinasi terbaik") secara teknis adalah **masalah
+optimasi geometri/kombinatorial klasik**, BUKAN kasus yang butuh Machine
+Learning:
+- Esko sendiri ("AI-driven" di marketing mereka) intinya tetap algoritma
+  pencarian/heuristik di baliknya, bukan neural network yang belajar dari
+  data training — dicek langsung ke dokumentasi ArtiosCAD (§7 poin 7),
+  tidak ada indikasi model ML di balik fitur nesting-nya.
+- **Belum ada data training** (Anda sendiri bilang "contoh kasus belum
+  saya dapat") — ML butuh puluhan-ratusan contoh riil berlabel sebelum
+  bisa diandalkan; loop pencarian 2-variabel (`shift` × `flap`) di atas
+  **tidak butuh data training sama sekali**, langsung hitung matematis.
+- **Explainability**: kalau engine salah pilih layout (berdampak ke harga
+  jual), loop pencarian bisa dijelaskan persis ("shift 15mm + flap 25mm
+  menang krn UP=6 vs alternatif UP=4") — model ML "black box" jauh lebih
+  susah diaudit officer/Direksi saat harga dipertanyakan.
+
+**Rekomendasi saya**: bangun sbg **algoritma pencarian deterministik**
+(loop 2-variabel di atas, "terasa pintar" krn eksplorasi kombinasi yang
+manusia malas coba manual, TAPI bukan ML) — BUKAN model AI/ML
+sungguhan. Kalau nanti sudah terkumpul banyak data trial riil (officer
+pilih opsi mana dari rekomendasi top-3/5 tiap kali), BARU pertimbangkan
+lapisan ML KECIL di atasnya (murni utk ranking "opsi mana yg biasanya
+dipilih officer", bukan menggantikan perhitungan geometri) — itu pun
+baru masuk akal setelah ada riwayat data, bukan sekarang. **Ini rekomendasi
+saya, keputusan akhir tetap di Anda** — kalau tetap mau explore arah ML
+sekarang, saya perlu tahu dulu infrastruktur/budget training data yang
+tersedia sebelum bisa kasih rencana konkret.
 
 **Rekomendasi urutan kerja**: Tingkat 1 dulu (cepat, langsung pakai engine
-existing, jawab 80% kasus yg user contohkan) → baru Tingkat 2 kalau
-Tingkat 1 belum cukup memuaskan hasil nyata di lapangan. Tingkat 2 BUTUH
-data baru (`flap_width_mm`, `flap_offset_mm`) yang belum tentu gampang
-diisi officer tanpa training tambahan (perlu ukur dari dieline asli).
+existing) → Tingkat 2 (loop shift+flap gabungan) begitu field geometri
+(`flap_width_mm`, `flap_offset_mm`) siap diisi officer (perlu training
+singkat cara ukur dari dieline).
 
 **Soal batas `flap_min_mm`/`flap_max_mm`** [KEPUTUSAN 2026-09-02]: ini
 ATURAN TEKNIK (kekuatan lem/struktur, beda per material/jenis lem), bukan
@@ -510,12 +554,12 @@ Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
    anak** — jadi `prod_part_finishing` (bukan `finishing_notes` teks di
    §4.2), 1 baris per jenis finishing, siap dikaitkan ke biaya/urutan
    proses masing-masing di Costing/routing nanti.
-6. ~~Batas upload file?~~ **[TERJAWAB 2026-09-02]**: **25MB**
-   (`PRODEV_UPLOAD_MAX_MB`, §4.2c — riset saya ke kebijakan upload printer
-   packaging lain menghasilkan range 25-100MB, user pilih titik awal
-   25MB), disimpan sbg `sys_constant` biar admin bisa naikkan tanpa
-   deploy. Sub-pertanyaan "AI wajib disertai PDF export?" **masih
-   terbuka** — belum dijawab eksplisit.
+6. ~~Batas upload file? AI wajib disertai PDF export?~~ **[TERJAWAB
+   2026-09-02]**: batas **25MB** (`PRODEV_UPLOAD_MAX_MB`, §4.2c — riset
+   saya ke kebijakan upload printer packaging lain menghasilkan range
+   25-100MB, user pilih titik awal 25MB). AI **TIDAK wajib** disertai PDF
+   — kalau preview-nya sulit, **cukup JPEG** sbg sumber preview visual
+   (§4.2a poin 3), AI/PDF opsional sbg referensi/download saja.
 7. ~~Sumber dokumen & kepercayaan angka 12-22%?~~ **[TERJAWAB 2026-09-02]**:
    dikonfirmasi dari Gemini (diminta riset ke Esko). Saya cross-check
    langsung ke `docs.esko.com` — **konsep mekanismenya valid** (Esko
@@ -540,11 +584,25 @@ Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
    jadi fallback global SEMENTARA sampai formula & `mat_flap_rule` siap.
    **Angka riil dari tim produksi Telasih Makmur sendiri masih jadi
    prasyarat** sebelum dipakai kalkulasi harga sungguhan.
-9. **Berapa banyak contoh kasus flap/interlock riil dibutuhkan sebelum
-   ENGINE Tingkat 1 dianggap cukup teruji?** — beda dari
-   `CostingEngine.php` SHEET_DIGITAL yang sudah diverifikasi byte-presisi
-   ke 1 Excel asli, engine imposition ini BELUM ada data pembanding riil
-   sama sekali. **Masih terbuka.**
+9. ~~Berapa banyak contoh kasus riil dibutuhkan sebelum engine teruji?~~
+   **[TERJAWAB 2026-09-02, sebagian]**: belum ada contoh kasus siap
+   (beda dari `CostingEngine.php` SHEET_DIGITAL yg sudah diverifikasi ke
+   1 Excel asli) — user akan **trial ENGINE langsung sampai match dgn
+   keputusan ProDev officer riil** (bukan verifikasi di depan pakai
+   dataset). Observasi user yang PENTING & sudah masuk desain (§4.3a
+   Tingkat 2 direvisi): **kebanyakan kasus = GESER posisi (shift), bukan
+   kecilkan lidah** — cuma sebagian yang genuinely butuh flap dikecilkan.
+   Ini kenapa Tingkat 2 sekarang loop 2 variabel (`shift_offset_mm` +
+   `flap_length`) bersamaan, bukan cuma flap seperti draf awal.
+10. **[BARU] "ENGINE dengan AI"?** User usul pakai AI/ML utk masalah ini
+    (scope terbatas ke imposition/nesting saja). **Rekomendasi saya:
+    TIDAK** — ini masalah optimasi geometri klasik (2 variabel, bisa
+    dihitung langsung), bukan kasus yang butuh ML (blm ada data training,
+    ML "black box" susah diaudit utk keputusan yg pengaruhi harga jual).
+    Alternatif yang saya usulkan: algoritma pencarian deterministik yg
+    "terasa pintar" (eksplorasi kombinasi byk) tapi tetap bisa dijelaskan
+    — detail alasan di §4.3a. **Keputusan akhir tetap di user** — ini
+    baru pendapat saya, belum final.
 
 ---
 
