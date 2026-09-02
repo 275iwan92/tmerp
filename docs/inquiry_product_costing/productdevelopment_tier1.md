@@ -85,31 +85,98 @@ didiskusikan — BUKAN keputusan final).
   dipanggil) — ini natural jadi Master Data-nya sendiri, bukan child dari 1
   Inquiry doang (beda dari `iqp_layout` sekarang yang 1:1 ke `iqp_part`).
 
-### 4.2 Master Card = Output Utama
+**KOREKSI PENTING (keputusan user 2026-09-02, DIKUNCI):** Master Card
+**BUKAN layar input** — ini **hasil PRINT OUT** dari data yang dikerjakan
+di layar ProDev, persis pola dokumen cetak lain di aplikasi ini (Nota
+Quotation, Nota CO, dst — lihat `docs/printnotastandard.md`, komponen
+reusable `resources/views/components/print/*`). Alurnya:
+
+```
+Inquiry Product ──(spec dasar: dimensi, qty, customer)──► ProDev Submodule
+                                                              │
+                                          Officer INPUT + MENATA desain
+                                          di sini, dibantu TOOLS & ENGINE
+                                          dengan PREVIEW ON SCREEN (§4.3)
+                                                              │
+                                                    ┌─────────┴─────────┐
+                                                    ▼                   ▼
+                                          Tabel data (boleh jadi   Tombol "Cetak
+                                          Master Data tm2mst,      Master Card"
+                                          REUSABLE lintas Inquiry) (dokumen resmi
+                                                                   utk approval)
+```
+
+Jadi **layar ProDev = tempat kerja** (form input + canvas tools interaktif
++ upload file, lihat §4.2b), **Master Card = tombol cetak** dari data yang
+sama — sama seperti CO Entry punya data + tombol cetak Surat Jalan, bukan
+2 layar terpisah yang masing-masing minta input sendiri.
+
+**REVISI KEDUA (keputusan user 2026-09-02, DIKUNCI) — datanya BUKAN tabel
+baru berdiri sendiri, tapi PERLUASAN grup tabel Master Product yang SUDAH
+ADA** (`prod_product`/`prod_part`, domain `tm2mst`), termasuk **urutan
+proses (routing)** jadi bagian resmi skema Master Product, bukan cuma
+teks di `vw_master_card.urutan_pekerjaan`. Ini justru LEBIH konsisten
+dengan arsitektur "Master netral, single source of truth" CLAUDE.md §2 —
+Master Card bukan entity baru, ini **profil teknis lengkap dari
+`prod_part` yang sudah ada**, yang selama ini cuma diisi kolom identitas +
+akuntansi (lihat §2, `ProdProduct`/`ProdPart` fillable sekarang MINIM
+sekali — tidak ada 1 pun kolom teknis produksi).
+
+**Temuan penting saat investigasi**: `sys_app_menu` **SUDAH PUNYA** slot
+`PROD_CARD` ("Master Card & Layout") sejak lama, sengaja **disembunyikan**
+(`activate=false`) via migration `2026_08_28_000026_hide_master_card_layout_rename_crew.php`
+dengan komentar eksplisit *"tinggal dinyalakan lagi kapan pun (mis. saat
+Master Card mulai digarap)"* — momen itu SEKARANG. Tidak perlu bikin menu
+baru dari nol, tinggal aktifkan slot yang sudah disiapkan.
+
+### 4.2 Skema Tabel: Perluasan Grup Master Product
 
 Dibongkar langsung dari 5 file riil `docs/attachments/MC-*.xlsx` (bukan
-tebakan) + divalidasi silang ke `vw_master_card` (kolom yang SUDAH ada di
-DB ditandai ✅, yang BELUM ada ditandai ❌):
+tebakan), dipetakan ke KOLOM BARU yang perlu ditambah ke `prod_part`
+(via ALTER, bukan tabel terpisah) + 3 tabel anak baru (routing, layout,
+attachment) — **✅ = tambah kolom baru ke `prod_part`**, **cek dulu** =
+mungkin sudah ada jalan lain (mat_grammage dsb), perlu verifikasi sebelum
+duplikasi:
 
-| Field Master Card (form riil) | Contoh nilai riil | Kolom `vw_master_card`? |
+| Field Master Card (form riil) | Contoh nilai riil | Rencana kolom |
 |---|---|---|
-| Kode Item (kode mnemonic pendek) | `MKR-TTP ALS ECLS`, `SJJ-OSM N100 CV DS3146` | ✅ `kode_item` |
-| No. Desain | `DS003047` | ✅ `no_desain` |
-| Nama Barang | `ALSAMSI EXCLUSIVE TOP` | ✅ `nama_barang` |
-| Nama Pelanggan | `PAK MUKRI`, `PT. SELATAN JADI JAYA` | ✅ `nama_pelanggan` |
-| Dimensi P/L/T | `24,8 / 19 / 3,4 cm` | ✅ `dimensi` (perlu cek: 1 kolom gabungan atau perlu dipecah 3?) |
-| **Kode Pisau** (nama/referensi fisik pisau pond) | `PISAU ALSAMSI TOP ISI 4 MATA` | ✅ `kode_pisau` |
-| **Ukuran Pisau** (dimensi fisik pisau, beda dari ukuran cetak!) | `83,4 x 70,1 cm` | ❌ **TIDAK ADA** di view — gap nyata |
-| Material + Kualitas (gsm) | `DUPLEX IKA DP`, `350 gsm` | Sebagian (lihat `mat_grammage` di Costing, belum tentu sinkron ke sini) |
-| Ukuran Bahan (raw sheet sblm potong) | `84,5 x 72 cm` | ❌ **TIDAK ADA** — cuma `ukuran_cetak` |
-| Ukuran Cetak | `84,5 x 72 cm` | ✅ `ukuran_cetak` |
-| Jenis Finishing (bisa multi: Laminating + UV + Hotprint) | `Laminating Doff, UV Spot, Hot Print Gold Puyeh` | ✅ `jenis_finishing` |
-| Bentuk Sambungan (Single/Double Join) | `Double Join` | ✅ `bentuk_sambungan` |
-| **Isi dalam Satu Cetakan = hasil UP** | `4 UP`, `1/2 UP`, `1 SET`, `8 UP` | ✅ `isi_satu_cetakan` — **ini persis output `ImpositionEngine::run()['up']`**, konfirmasi imposition MEMANG harus masuk sini |
-| Warna Pertama/Kedua (Unit 1-4 = CMYK/spot) | `Black/Cyan/Magenta/Yellow` | ✅ `warna_cs`/`warna_ks` |
-| **Urutan Pekerjaan (Routing)** — persis proses produksi step-by-step | `Potong → Cetak Lithrone G40 → QC → Laminating → Plong → Kupas → Lem → Hitung → Pack` | ✅ `urutan_pekerjaan` — **ini bisa jadi basis routing WO otomatis**, saat ini `WoGenerationService` belum baca dari sini |
-| ACC Email / ACC Digital / Box Polos / Di ACC Oleh / Tgl ACC | tanggal+nama approver per channel | Sebagian via `prod_mastercard_signoff` (perlu cek granularitasnya cukup atau tidak) |
-| Pack Qty | `10 pcs/pack`, `600 pcs/pack` | ✅ `pack_qty` |
+| Kode Item (kode mnemonic pendek) | `MKR-TTP ALS ECLS`, `SJJ-OSM N100 CV DS3146` | ✅ `prod_part.mastercard_code` (beda dari `part_code` internal yg sudah ada) |
+| No. Desain | `DS003047` | ✅ `prod_part.design_no` |
+| Nama Barang, Nama Pelanggan, Dimensi P/L/T | — | Sudah ada semua: `part_name`, `product.customer_id`, dimensi di `prod_product.cm_length/width/height` (perlu cek: dimensi di Master Card level PART atau PRODUCT — data riil nunjuk ke level produk jadi, kemungkinan tetap di `prod_product`) |
+| **Kode Pisau** (nama/referensi fisik pisau pond) | `PISAU ALSAMSI TOP ISI 4 MATA` | ✅ `prod_part.die_code` (text) |
+| **Ukuran Pisau** (dimensi fisik pisau — beda dari ukuran cetak!) | `83,4 x 70,1 cm` | ✅ `prod_part.die_w_cm`/`die_h_cm` — **gap nyata, belum ada sama sekali di skema manapun** |
+| Material + Kualitas (gsm) | `DUPLEX IKA DP`, `350 gsm` | Cek dulu: link ke `mat_grammage`/`mat_raw` (tm2mst, sudah ada di Costing) via FK, JANGAN duplikasi teks bebas |
+| Ukuran Bahan (raw sheet sblm potong) | `84,5 x 72 cm` | ✅ `prod_part.sheet_raw_w_cm`/`sheet_raw_h_cm` — gap nyata |
+| Ukuran Cetak | `84,5 x 72 cm` | ✅ `prod_part.print_area_w_cm`/`print_area_h_cm` |
+| Jenis Finishing (bisa multi: Laminating + UV + Hotprint) | `Laminating Doff, UV Spot, Hot Print Gold Puyeh` | ✅ `prod_part.finishing_notes` (text) — ATAU child table `prod_part_finishing` kalau mau tiap finishing punya biaya/urutan sendiri (lebih tepat kalau finishing juga masuk hitungan Costing per-item, bukan cuma catatan) |
+| Bentuk Sambungan (Single/Double Join) | `Double Join` | ✅ `prod_part.join_type` |
+| **Isi dalam Satu Cetakan = hasil UP** | `4 UP`, `1/2 UP`, `1 SET`, `8 UP` | Bukan kolom manual — **hasil `ImpositionEngine`**, disimpan di tabel anak `prod_part_layout` (§4.2a), bukan diketik officer |
+| Warna Pertama/Kedua (Unit 1-4 = CMYK/spot) | `Black/Cyan/Magenta/Yellow` | ✅ `prod_part.color_set_1`/`color_set_2` (JSON array) |
+| **Urutan Pekerjaan (Routing)** | `Potong → Cetak → QC → Laminating → Plong → Kupas → Lem → Hitung → Pack` | ❌ **BUKAN kolom teks** — tabel anak baru **`prod_part_process`** (§4.2a), 1 baris per langkah, `seq` + FK `process_id` (`prod_process`, sudah ada tapi baru lookup flat) + `machine_id`/notes opsional. Ini yang ditekankan user barusan: routing harus jadi DATA terstruktur, bukan teks, supaya `WoGenerationService` bisa baca langsung |
+| ACC Email / ACC Digital / Box Polos / Di ACC Oleh / Tgl ACC | tanggal+nama approver per channel | Perluas `prod_mastercard_signoff` (sudah ada) — cek granularitas cukup atau perlu kolom channel (EMAIL/DIGITAL/BOX_POLOS) |
+| Pack Qty | `10 pcs/pack`, `600 pcs/pack` | ✅ `prod_part.pack_qty` |
+
+### 4.2a Tabel Anak Baru
+
+1. **`prod_part_process`** (routing/urutan proses, PALING PENTING sesuai
+   penekanan user) — `id_part` FK ke `prod_part`, `seq` (urutan), `process_id`
+   FK ke `prod_process` (lookup existing), `machine_id` FK opsional ke
+   `prod_machine`, `notes`. Dipakai ulang sbg TEMPLATE saat WO Generation
+   (`WoGenerationService`) — bukan diketik ulang tiap kali.
+2. **`prod_part_layout`** — hasil `ImpositionEngine` per part (plano
+   size/method/up_count/efficiency_pct/layout_detail JSON) — pada dasarnya
+   `iqp_layout` yang ada sekarang dipindah/diduplikasi ke level Master
+   Product (reusable), bukan 1:1 ke 1 Inquiry part saja.
+3. **`prod_part_attachment`** (BARU, permintaan user barusan) — upload
+   file JPEG/PDF/AI (Adobe Illustrator) per part: `id_part` FK,
+   `file_type` (JPEG/PDF/AI), `file_path`, `original_filename`,
+   `uploaded_by`/`uploaded_at`. Pola upload ikuti yang sudah established
+   di Master Employee (`WithFileUploads` Livewire trait,
+   `->store("prodev/{id_part}/attachment", 'public')`, lihat
+   `resources/views/pages/master/employee.blade.php:499`) — **AI file
+   TIDAK bisa di-preview inline browser** (bukan format native web),
+   cuma disimpan+bisa didownload; JPEG/PDF bisa preview inline
+   (`<img>`/embed PDF).
 
 **Temuan penting**: `Kode Pisau` (nama/rujukan pisau, string) dan
 `Ukuran Pisau` (dimensi fisik pisau pond, BEDA dari ukuran cetak — pisau
@@ -147,22 +214,26 @@ Ini BUKAN 1-2 hari kerja kalau mau serius — realistis dikerjakan bertahap.
 Inquiry Product (iqp_part: flat_w/flat_h, qty, spec kasar)
         │
         ▼
-Product Development
-  Input: spec dari Inquiry + (opsional) dieline/CAD
-  Proses: Tools #1-#9 di atas → interaktif, preview visual
-  Output: MASTER CARD (kode_item, kode_pisau+ukuran_pisau, material,
-          ukuran_bahan, ukuran_cetak, isi_satu_cetakan/UP, warna,
-          urutan_pekerjaan/routing) — REUSABLE, bukan cuma milik 1 Inquiry
+Product Development  (layar kerja, prod_part diperluas + 3 tabel anak)
+  Input: spec dari Inquiry + upload JPEG/PDF/AI (prod_part_attachment)
+  Proses: Tools #1-#9 §4.3 → interaktif, preview visual live di layar
+  Output: prod_part (kolom teknis terisi) + prod_part_process (routing
+          terstruktur) + prod_part_layout (hasil imposition) — REUSABLE,
+          bukan cuma milik 1 Inquiry
+        │
+        ├─ tombol "Cetak Master Card" → dokumen PDF resmi (§4.1),
+        │  komponen reusable spt Nota lain, utk approval multi-role
         │
         ├──────────────► Product Costing
         │                 Mode MANUAL: officer isi i_cut_per_plano/
         │                 i_isi_per_lb/dst sendiri (spt sekarang)
-        │                 Mode AMBIL DATA: tarik otomatis dari Master
-        │                 Card (isi_satu_cetakan → i_isi_per_lb, dst)
+        │                 Mode AMBIL DATA: tarik otomatis dari
+        │                 prod_part_layout (up_count → i_isi_per_lb, dst)
         │
         └──────────────► Production (WO Generation)
-                          Routing (urutan_pekerjaan) → jadi dasar WO steps
-                          Kode Pisau/Ukuran Pisau → validasi mesin/tooling
+                          prod_part_process (routing terstruktur, bukan
+                          teks) → jadi dasar WO steps langsung
+                          die_code/die_w_cm/die_h_cm → validasi mesin/tooling
 ```
 
 ---
@@ -209,45 +280,61 @@ scope dokumen ini):
 
 ## 6. Perubahan pada Kode Existing yang Perlu Didiskusikan
 
-**BUKAN keputusan final** — ini opsi yang perlu di-ACC user dulu:
+**Sebagian sudah DIKUNCI user (2026-09-02), sebagian masih opsi:**
 
-1. **Pindah Imposition dari Inquiry ke Product Development?** Kalau ya:
-   `iqp_layout` (1:1 ke `iqp_part`, nempel 1 Inquiry) kemungkinan perlu jadi
-   tabel Master Data baru (mis. `mat_master_card` + child layout/routing di
-   `tm2mst`, REUSABLE lintas Inquiry) — bukan cuma pindah lokasi file/layar,
-   tapi perubahan skema data (dari "milik 1 part" jadi "master data
-   independen yang di-link ke part").
-2. **Master Card jadi Master Data baru di `tm2mst`** (sejalan prinsip
-   arsitektur CLAUDE.md §2 — "master netral, single source of truth") —
-   perlu skema tabel baru (bukan cuma view `vw_master_card` yang sekarang
-   READ-ONLY dari sumber lain, jadi tabel yang benar2 diinput lewat layar
-   Product Development).
-3. **`WoGenerationService` baca routing dari Master Card** — perubahan ke
-   Production module, di luar scope Product Development sendiri tapi
-   konsekuensi lanjutannya.
+1. **[DIKUNCI] Skema data = perluasan `prod_product`/`prod_part`** (bukan
+   tabel Master Data baru terpisah) + 3 tabel anak baru
+   (`prod_part_process`, `prod_part_layout`, `prod_part_attachment`) — lihat
+   §4.2/4.2a. `vw_master_card` (view lama) kemungkinan besar PENSIUN
+   digantikan query langsung ke `prod_part`+relasinya, atau di-rewrite jadi
+   view di atas skema baru — perlu dicek dulu apa saja yang masih bergantung
+   ke view lama sebelum diubah/dihapus.
+2. **[DIKUNCI] Imposition pindah dari Inquiry ke Product Development** —
+   `iqp_layout` (1:1 ke `iqp_part`, nempel 1 Inquiry) digantikan
+   `prod_part_layout` (di `prod_part`, REUSABLE lintas Inquiry). Perlu
+   keputusan teknis: `iqp_layout` yang sudah ada datanya (kalau ada)
+   di-migrasi atau dibiarkan legacy?
+3. **[BELUM DIPUTUSKAN] `WoGenerationService` baca routing dari
+   `prod_part_process`** — perubahan ke Production module, di luar scope
+   Product Development sendiri tapi konsekuensi lanjutannya. `prd_wo`
+   sekarang 1:1 ke `iqp_part` (bukan `prod_part` langsung) — perlu jalur
+   penghubung yang jelas (`iqp_part` snapshot dari `prod_part` yang mana),
+   lihat gap sudah dicatat di `production_scheduling_wo_generation_delta.md`.
+4. **[BELUM DIPUTUSKAN] Aktivasi menu `PROD_CARD`/`PROD_LAYOUT`** — tinggal
+   flip `activate=true` + arahkan route ke layar ProDev baru (bukan bikin
+   kode menu baru), tapi perlu dipastikan dulu layar barunya sudah siap
+   sebelum menu di-unhide (supaya tidak nunjuk ke halaman kosong).
 
 Ini semua **perubahan arsitektural** (skema data, bukan cuma tambah layar)
-— sesuai CLAUDE.md §7.1, ini kelas keputusan yang WAJIB dikonfirmasi user
-dulu, bukan dijalankan diam-diam.
+— sesuai CLAUDE.md §7.1, item yang masih "BELUM DIPUTUSKAN" WAJIB
+dikonfirmasi user dulu sebelum dieksekusi.
 
 ---
 
 ## 7. Pertanyaan Terbuka / Keputusan yang Dibutuhkan
 
 1. **Prioritas tool** — dari 9 tool §4.3, mana yang mau dikerjakan duluan?
-   Realistis bertahap: Tool #1 (pindah rumah) → #2 (Pcs→Plano, ekstensi
-   natural dari #1) → #4 (Die-Rule, dampak langsung ke HPP) → baru yang
-   lebih rumit (#3/#6/#8, butuh representasi geometri).
-2. **Skema Master Card final** — apakah jadi tabel Master Data baru di
-   `tm2mst` (rekomendasi saya, sejalan arsitektur), atau tetap sekitar view
-   `vw_master_card` yang ada + di-upgrade jadi read-write?
+   Realistis bertahap: Tool #1 (pindah rumah + skema baru) → #2 (Pcs→Plano,
+   ekstensi natural dari #1) → #4 (Die-Rule, dampak langsung ke HPP) → baru
+   yang lebih rumit (#3/#6/#8, butuh representasi geometri).
+2. **Dimensi Master Card di level Part atau Product?** Data riil MC-*.xlsx
+   nunjuk ke 1 produk jadi (bukan per-komponen), tapi skema `prod_part`
+   sudah ada existing sbg unit kerja Costing/Production — perlu diputuskan
+   apakah Master Card = 1 baris per `prod_part`, atau perlu level baru
+   di atas part (mis. 1 Master Card bisa mencakup >1 part kalau produknya
+   multi-komponen, spt outer+inner box).
 3. **Sumber `Kode Item`** (kode mnemonic spt `MKR-TTP ALS ECLS`) — apakah
    ini digenerate otomatis dari aturan tertentu (customer+produk+desain),
    atau selalu manual diketik desainer? Perlu tahu polanya dari lebih
    banyak contoh sebelum bisa auto-generate.
 4. **Toggle Manual/Ambil-Data di Costing** — per-part atau per-costing
    (§5.1)?
-5. **Sumber dokumen** (`imposition_nesting`, `gemini_spark_productcosting.md`,
+5. **Finishing jadi kolom teks atau tabel anak?** (§4.2 baris Jenis
+   Finishing) — tergantung apakah tiap jenis finishing butuh biaya/urutan
+   sendiri di Costing/routing, atau cukup catatan deskriptif saja.
+6. **Batas upload file** (§4.2a) — ukuran maks, apakah AI wajib disertai
+   PDF export (utk preview) atau cukup file AI mentah tersimpan?
+7. **Sumber dokumen** (`imposition_nesting`, `gemini_spark_productcosting.md`,
    `mockup_mastercard.jpg`) — dari riset user sendiri atau AI lain (Gemini)?
    Perlu tahu tingkat kepercayaan formulanya, terutama klaim hemat 12-22%
    dari Interlocking Nesting (ini angka umum industri, belum tentu pas
