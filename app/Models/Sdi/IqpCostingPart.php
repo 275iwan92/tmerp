@@ -18,6 +18,8 @@ class IqpCostingPart extends Model
         'costing_id',
         'part_id',
         'no_urut',
+        'data_source',
+        'prod_layout_group_id',
         'part_name',
         'part_type_code',
         'qty_per_set',
@@ -156,4 +158,6 @@ class IqpCostingPart extends Model
 
     // grammage_id -> mat_grammage (tm2mst) & part_type_code -> prod_part_type (tm2mst):
     // cross-DB, relasi logical (Eloquent query terpisah), bukan Eloquent relation fisik.
+    // prod_layout_group_id -> prod_layout_group (tm2mst) sama polanya (§5.1 toggle
+    // Manual/Ambil-Data) -- lihat CostingLayoutSource::resolve() di layar costing.
 }

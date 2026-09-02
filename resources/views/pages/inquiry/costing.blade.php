@@ -3,6 +3,7 @@
 use App\Models\Master\MatCoatingRate;
 use App\Models\Master\MatGrammage;
 use App\Models\Master\MatSheetRate;
+use App\Models\Master\ProdLayoutGroup;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPartCoating;
@@ -156,6 +157,56 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         return IqpPart::where('inquiry_id', $this->inquiryId)->orderBy('part_seq')->get();
     }
 
+    // docs/inquiry_product_costing/productdevelopment_tier1.md §5.1 -- daftar
+    // Master Card/layout yang SUDAH dikonfirmasi ProDev, siap ditarik officer
+    // Costing (mode "Ambil Data"). Lintas-DB (tm2mst), query terpisah -- CLAUDE.md §2 pola 1.
+    #[Computed]
+    public function availableLayoutGroups()
+    {
+        return ProdLayoutGroup::with('product')->where('status', 'CONFIRMED')->orderByDesc('id_layout_group')->limit(100)->get();
+    }
+
+    // Toggle Manual <-> Ambil Data per part (keputusan user: per-part, bukan
+    // per-costing -- tier1 §7 poin 4). Balik ke MANUAL cuma lepas link, TIDAK
+    // menghapus nilai i_panjang_plano_cm/dst yang sudah ke-auto-fill (officer
+    // tetap bisa lanjut edit manual dari titik itu).
+    public function toggleDataSource(int $partId): void
+    {
+        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
+
+        if ($part->data_source === 'PRODEV') {
+            $part->update(['data_source' => 'MANUAL', 'prod_layout_group_id' => null]);
+        } else {
+            $part->update(['data_source' => 'PRODEV']);
+        }
+
+        unset($this->costing);
+    }
+
+    // Tarik plano/UP dari prod_layout_group terpilih -> auto-fill + langsung
+    // hitung ulang HPP (tujuan eksplisit user: 1 officer, tanpa langkah "Hitung"
+    // terpisah lagi setelah pilih layout -- tier1 §5.1).
+    public function pickLayoutGroup(int $partId, int $groupId): void
+    {
+        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
+        $group = ProdLayoutGroup::find($groupId);
+
+        if (! $group) {
+            return;
+        }
+
+        $part->update([
+            'data_source' => 'PRODEV',
+            'prod_layout_group_id' => $group->id_layout_group,
+            'i_panjang_plano_cm' => round($group->plano_w_mm / 10, 4),
+            'i_lebar_plano_cm' => round($group->plano_h_mm / 10, 4),
+            'i_cut_per_plano' => $group->up_count ?: 1,
+        ]);
+
+        unset($this->costing);
+        $this->hitung();
+    }
+
     public function removePart(int $partId): void
     {
         IqpCostingPart::whereKey($partId)->where('costing_id', $this->costingId)->delete();
@@ -198,6 +249,16 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         if (! in_array($field, $allowed, true)) {
             return;
+        }
+
+        // Mode Ambil Data (§5.1): plano/cut sumbernya prod_layout_group, bukan input
+        // manual -- toleransi guard di sini, UI sudah disable field-nya juga.
+        $lockedWhenProdev = ['i_panjang_plano_cm', 'i_lebar_plano_cm', 'i_cut_per_plano'];
+        if (in_array($field, $lockedWhenProdev, true)) {
+            $isProdev = IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->value('data_source') === 'PRODEV';
+            if ($isProdev) {
+                return;
+            }
         }
 
         IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->update([$field => $value === '' ? null : $value]);
@@ -355,8 +416,34 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                             wire:change="updatePart({{ $part->id_costing_part }}, 'part_name', $event.target.value)"
                             class="!py-1.5 font-semibold" />
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#d8ecff] text-[#1560a8]">{{ $part->part_type_code }}</span>
-                        <button type="button" wire:click="removePart({{ $part->id_costing_part }})" class="text-red-500 text-xs cursor-pointer px-2">✕ Hapus</button>
+
+                        @unless (in_array($part->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true))
+                            <button type="button" wire:click="toggleDataSource({{ $part->id_costing_part }})"
+                                class="text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer {{ $part->data_source === 'PRODEV' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#f4f6fa] text-muted border border-[#d7dbe2]' }}">
+                                {{ $part->data_source === 'PRODEV' ? '🔗 Ambil Data (ProDev)' : '✎ Manual' }}
+                            </button>
+                        @endunless
+
+                        <button type="button" wire:click="removePart({{ $part->id_costing_part }})" class="text-red-500 text-xs cursor-pointer px-2 ml-auto">✕ Hapus</button>
                     </div>
+
+                    @if ($part->data_source === 'PRODEV')
+                        <div class="bg-[#f0f7f4] border border-[#c6e5d5] rounded-md p-2.5 mb-3 flex items-center gap-2">
+                            <span class="text-[11px] text-[#177a4b] font-semibold">Sumber Layout:</span>
+                            <select onchange="if(this.value) $wire.pickLayoutGroup({{ $part->id_costing_part }}, parseInt(this.value))"
+                                class="text-[11px] px-2 py-1 border border-[#c3d8f5] rounded flex-1 max-w-[360px]">
+                                <option value="">— pilih Master Card/Layout terkonfirmasi —</option>
+                                @foreach ($this->availableLayoutGroups as $g)
+                                    <option value="{{ $g->id_layout_group }}" @selected($part->prod_layout_group_id === $g->id_layout_group)>
+                                        {{ $g->mastercard_code }} · {{ $g->product?->product_name }} · {{ $g->up_count }} UP
+                                    </option>
+                                @endforeach
+                            </select>
+                            @if (! $part->prod_layout_group_id)
+                                <span class="text-[10.5px] text-[#8a5a00]">Pilih layout dulu, plano/cut &amp; HPP terisi otomatis.</span>
+                            @endif
+                        </div>
+                    @endif
 
                     @if ($part->part_type_code === 'DC')
                     <div class="grid grid-cols-4 gap-2.5 mb-3">
@@ -365,14 +452,14 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                         <div class="flex flex-col gap-1">
                             <label class="text-[10px] text-muted uppercase font-semibold">Plano P×L (cm)</label>
                             <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_panjang_plano_cm }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_panjang_plano_cm', $event.target.value)" class="w-1/2 !py-1.5" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_lebar_plano_cm }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_lebar_plano_cm', $event.target.value)" class="w-1/2 !py-1.5" />
+                                <x-form.input type="number" step="0.01" value="{{ $part->i_panjang_plano_cm }}" @disabled($part->data_source === 'PRODEV') wire:change="updatePart({{ $part->id_costing_part }}, 'i_panjang_plano_cm', $event.target.value)" class="w-1/2 !py-1.5 disabled:bg-[#eef0f3]" />
+                                <x-form.input type="number" step="0.01" value="{{ $part->i_lebar_plano_cm }}" @disabled($part->data_source === 'PRODEV') wire:change="updatePart({{ $part->id_costing_part }}, 'i_lebar_plano_cm', $event.target.value)" class="w-1/2 !py-1.5 disabled:bg-[#eef0f3]" />
                             </div>
                         </div>
                         <div class="flex flex-col gap-1">
                             <label class="text-[10px] text-muted uppercase font-semibold">Cut / Isi</label>
                             <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_cut_per_plano }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_cut_per_plano', $event.target.value)" class="w-1/2 !py-1.5" />
+                                <x-form.input type="number" step="0.01" value="{{ $part->i_cut_per_plano }}" @disabled($part->data_source === 'PRODEV') wire:change="updatePart({{ $part->id_costing_part }}, 'i_cut_per_plano', $event.target.value)" class="w-1/2 !py-1.5 disabled:bg-[#eef0f3]" />
                                 <x-form.input type="number" step="0.01" value="{{ $part->i_isi_per_lb }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_isi_per_lb', $event.target.value)" class="w-1/2 !py-1.5" />
                             </div>
                         </div>
