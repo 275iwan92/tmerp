@@ -139,6 +139,9 @@ class CostingEngineTest extends TestCase
         $this->assertSame('CALCULATED', $costing->doc_status);
     }
 
+    // 2026-09-02: SHEET, KRAFT, DC+SHEET, DC+SF diimplementasikan (lihat
+    // CostingEngine docblock) -- test ini di-repurpose pakai kode BOGUS yang
+    // genuinely tak dikenal, supaya default => throw branch tetap teruji.
     public function test_engine_rejects_unimplemented_part_type(): void
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
@@ -146,25 +149,25 @@ class CostingEngineTest extends TestCase
 
         Livewire::test('pages::inquiry.form', ['mode' => 'NEW'])
             ->set('inquiry_date', now()->toDateString())
-            ->set('product_draft_name', 'Box Test Costing SHEET')
+            ->set('product_draft_name', 'Box Test Costing BOGUS')
             ->call('setProspect', true)
-            ->set('prospect_name', 'Prospek Test Costing SHEET')
+            ->set('prospect_name', 'Prospek Test Costing BOGUS')
             ->set('tiers.0.qty', 500)
             ->set('parts.0.part_name', 'Body')
             ->call('save')
             ->assertHasNoErrors();
 
-        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing SHEET')->latest('id_inquiry')->firstOrFail();
+        $this->inquiry = IqpInquiry::where('product_draft_name', 'Box Test Costing BOGUS')->latest('id_inquiry')->firstOrFail();
 
         $component = Livewire::test('pages::inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]);
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
 
         $component->call('addPart');
         $part = $costing->parts()->firstOrFail();
-        DB::connection('tm2sdi')->table('iqp_costing_part')->where('id_costing_part', $part->id_costing_part)->update(['part_type_code' => 'SHEET']);
+        DB::connection('tm2sdi')->table('iqp_costing_part')->where('id_costing_part', $part->id_costing_part)->update(['part_type_code' => 'BOGUS']);
 
         $component->call('hitung');
-        $component->assertSet('engineError', "part_type_code 'SHEET' belum diimplementasi CostingEngine (baru DC & SHEET_DIGITAL).");
+        $component->assertSet('engineError', "part_type_code 'BOGUS' belum diimplementasi CostingEngine.");
 
         $costing->refresh();
         $this->assertSame('DRAFT', $costing->doc_status);

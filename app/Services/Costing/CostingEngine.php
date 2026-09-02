@@ -13,21 +13,38 @@ use App\Models\Sdi\IqpCostingPart;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Port dari method Scriptcase `calc_cogs` (docs/productcosting_tier1-4.md).
- * part_type DC dan SHEET_DIGITAL yang diimplementasikan — part_type lain
- * (DC+SF, DC+SHEET, KRAFT, SHEET polos) sengaja dilempar exception, lihat
- * ProdPartType::is_engine_ready.
+ * Port dari method Scriptcase `calc_cogs` (docs/productcosting_tier1-4.md,
+ * docs/inquiry_product_costing/gemini_spark_productcosting.md §IV). Semua 6
+ * part_type_code kini diimplementasikan: DC, SHEET_DIGITAL, SHEET, KRAFT,
+ * DC+SHEET, DC+SF (2026-09-02) — lihat ProdPartType::is_engine_ready per tipe.
  *
  * SHEET_DIGITAL diverifikasi byte-presisi terhadap Excel asli
  * "OB COCO TOKYO FLAT 427X220X172MM 1800 BOX ....xlsx" (blok UJK, kolom A-H) —
- * lihat tests/Feature/CostingEngineTest.php.
+ * lihat tests/Feature/CostingEngineTest.php. SHEET (polos) pakai method yang
+ * SAMA (formula identik per gemini_spark §IV.3).
  *
- * DC: dua formula (area cetak, konversi ongkos cetak/plong per-pc) TIDAK
- * dirinci eksplisit di dokumen sumber (yang jadi acuan cuma "sumber kebenaran:
- * calc_cogs v14/v16" — file itu tidak tersedia di repo ini) — diisi dengan
- * asumsi paling masuk akal dari nama kolom. WAJIB diverifikasi ke source
- * asli/Excel NS40 sebelum dipakai harga produksi sungguhan (masih pending,
- * beda dari SHEET_DIGITAL yang sudah punya bukti Excel).
+ * DC: formula sudah dikoreksi 2026-09-02 (jalur ivory/AP salah pakai
+ * PLANO_REF_AREA/8611, seharusnya /10000 sesuai gemini_spark §IV.2.A — lihat
+ * komentar di calculateDcPart()). Jalur duplex TETAP diasumsikan (dokumen
+ * sumber calc_cogs v14/v16 asli tidak tersedia di repo) — WAJIB diverifikasi
+ * ke Excel/source asli sebelum dipakai harga produksi sungguhan.
+ *
+ * KRAFT: diimplementasikan literal dari gemini_spark §IV.2.B (area/10000,
+ * TANPA pembagi rim 500 — beda dari ivory/AP yg masih pakai /500). Proses
+ * pakai bucket i_ongkos_* yang sama dgn SHEET_DIGITAL (corrugated).
+ *
+ * DC+SHEET/DC+SF: formula §IV.3 (Paper+Cetak+J36 Laminasi+J37 SF EF+Plong+
+ * Tooling) direkonstruksi dari audit — dokumen sumber SENDIRI mencatat
+ * inkonsistensi rumus running-meter di 3 titik V1 (§V) dan variabel J36/J38
+ * yang tidak lengkap didefinisikan (flag F_sheet/F_sf, rate R_lam_sh/R_lam_sf
+ * tidak ketemu di skema). Interpretasi yang dipakai di sini: J36 = kontribusi
+ * sheet ke HPP part DC ini dihitung pakai geometri+RM+discount YANG SAMA
+ * dgn SHEET_DIGITAL (computeSheetGeometry(), sudah terverifikasi Excel utk
+ * kasus SHEET_DIGITAL — dipakai ulang krn strukturnya identik), J37 pakai
+ * rate baru i_sf_ef_rate_override (NULL/0 = tidak ada kontribusi SF, aman
+ * default). BELUM ADA bukti Excel utk 2 tipe ini — TANDAI BELUM
+ * DIVERIFIKASI, jangan dipakai harga produksi sungguhan tanpa cross-check
+ * manual dulu (docs/inquiry_product_costing/productdevelopment_tier1.md §5.2).
  */
 class CostingEngine
 {
@@ -49,8 +66,13 @@ class CostingEngine
             foreach ($parts as $part) {
                 match ($part->part_type_code) {
                     'DC' => $this->calculateDcPart($part),
-                    'SHEET_DIGITAL' => $this->calculateSheetDigitalPart($part, $primaryQty),
-                    default => throw new \RuntimeException("part_type_code '{$part->part_type_code}' belum diimplementasi CostingEngine (baru DC & SHEET_DIGITAL)."),
+                    // SHEET & SHEET_DIGITAL pakai formula IDENTIK (gemini_spark_productcosting.md
+                    // §IV.3: "Tipe SHEET & SHEET_DIGITAL: HPP = Cost_sheet/pc + Cost_process/pc")
+                    // -- bukan 2 blok formula terpisah, cukup 1 method dipakai utk 2 kode.
+                    'SHEET_DIGITAL', 'SHEET' => $this->calculateSheetDigitalPart($part, $primaryQty),
+                    'KRAFT' => $this->calculateKraftPart($part, $primaryQty),
+                    'DC+SHEET', 'DC+SF' => $this->calculateDcSheetPart($part, $primaryQty),
+                    default => throw new \RuntimeException("part_type_code '{$part->part_type_code}' belum diimplementasi CostingEngine."),
                 };
             }
 
@@ -86,14 +108,19 @@ class CostingEngine
         $paperCostPc = 0.0;
 
         if ($grammage && (float) $grammage->duplex_price_list > 0) {
-            // Jalur A: duplex
+            // Jalur A: duplex (harga per rim ukuran plano acuan 79x109=8611cm² -- PLANO_REF_AREA)
             $dcOverride = (float) $part->i_dc_persen_override;
             $dcPct = $dcOverride > 0 ? $dcOverride : (float) $grammage->duplex_dc_pct;
             $dcf = 1 + ($dcPct / 100);
             $paperCostPc = ($areaCetakCm2 / $planoRefArea) * (float) $grammage->duplex_price_list * $dcf / $rim / $cut / $isi;
         } elseif ($grammage && (float) $grammage->ivory_ap_price_per_kg > 0) {
-            // Jalur B: ivory/AP
-            $paperCostPc = ($areaCetakCm2 / $planoRefArea) * (float) $grammage->ivory_ap_price_per_kg * ((float) $grammage->grammage_value / 2) / $rim / $cut / $isi;
+            // Jalur B: ivory/AP -- harga per KG (bukan per rim ukuran acuan), area dinormalisasi
+            // ke m² (10000cm²), BUKAN PLANO_REF_AREA. TEMUAN 2026-09-02 dari audit
+            // gemini_spark_productcosting.md §IV.2.A: kode versi sebelumnya keliru pakai
+            // $planoRefArea (8611, dimaksudkan cuma utk duplex) di jalur ini juga -- dikoreksi
+            // di sini. Formula SHEET_DIGITAL & KRAFT juga pakai /10000 utk alasan sama
+            // (konversi cm²->m², bukan referensi ukuran plano tertentu).
+            $paperCostPc = ($areaCetakCm2 / 10000) * (float) $grammage->ivory_ap_price_per_kg * ((float) $grammage->grammage_value / 2) / $rim / $cut / $isi;
         }
 
         // SESI 3 — proses dasar (ASUMSI konversi per-pc, lihat catatan class-level)
@@ -151,10 +178,15 @@ class CostingEngine
     }
 
     /**
-     * Formula geometri+harga SHEET_DIGITAL (§B.5 + §B.2 productcosting_tier1-4.md),
-     * diverifikasi byte-presisi ke Excel "OB COCO TOKYO..." blok UJK (kolom A-H).
+     * Geometri+RM+diskon+harga sheet corrugated (§B.5 + §B.2 productcosting_tier1-4.md),
+     * diverifikasi byte-presisi ke Excel "OB COCO TOKYO..." blok UJK (kolom A-H) utk
+     * kasus SHEET_DIGITAL. Diekstrak jadi method terpisah (2026-09-02) supaya bisa
+     * dipakai ulang oleh calculateDcSheetPart() (J36 laminasi flat, gemini_spark §IV.3) --
+     * strukturnya identik, cuma beda makna hasil akhirnya (material vs kontribusi laminasi).
+     *
+     * @return array{panjang_sheet_cm: float, lebar_sheet_cm: float, isi_trim: float, lebar_trim_cm: float, running_meter: float, discount_rm: float, sheet_cost_pc: float}
      */
-    protected function calculateSheetDigitalPart(IqpCostingPart $part, float $qty): void
+    protected function computeSheetGeometry(IqpCostingPart $part, float $qty): array
     {
         $machineWidth = SysConstant::number('SHEET_MACHINE_WIDTH_CM', 180);
         $gap = SysConstant::number('SHEET_TRIM_GAP_CM', 2);
@@ -189,7 +221,7 @@ class CostingEngine
         $supplierCode = $part->supplier_sheet_code ?: 'UJK';
         $discountRm = MatSheetDiscountTier::lookup($supplierCode, $runningMeter);
         if ($discountRm === null) {
-            throw new \RuntimeException("Running meter {$runningMeter} di bawah tier diskon minimum (KURANG) untuk supplier '{$supplierCode}' — volume order belum cukup utk SHEET, pertimbangkan part_type lain.");
+            throw new \RuntimeException("Running meter {$runningMeter} di bawah tier diskon minimum (KURANG) untuk supplier '{$supplierCode}' — volume order belum cukup, pertimbangkan part_type lain.");
         }
 
         // Harga sheet (§B.2)
@@ -198,6 +230,31 @@ class CostingEngine
             throw new \RuntimeException('sheet_rate_id belum diisi/tidak ditemukan.');
         }
         $sheetCostPc = (($lebarTrimCm * $panjangSheetCm) / 10000) * (float) $sheetRate->index_substance / $isiTrim * (1 - $discountRm);
+
+        return [
+            'panjang_sheet_cm' => $panjangSheetCm,
+            'lebar_sheet_cm' => $lebarSheetCm,
+            'isi_trim' => $isiTrim,
+            'lebar_trim_cm' => $lebarTrimCm,
+            'running_meter' => $runningMeter,
+            'discount_rm' => $discountRm,
+            'sheet_cost_pc' => $sheetCostPc,
+        ];
+    }
+
+    /**
+     * Formula SHEET_DIGITAL & SHEET (§B.5 + §B.2, formula identik keduanya).
+     */
+    protected function calculateSheetDigitalPart(IqpCostingPart $part, float $qty): void
+    {
+        $geo = $this->computeSheetGeometry($part, $qty);
+        $panjangSheetCm = $geo['panjang_sheet_cm'];
+        $lebarSheetCm = $geo['lebar_sheet_cm'];
+        $isiTrim = $geo['isi_trim'];
+        $lebarTrimCm = $geo['lebar_trim_cm'];
+        $runningMeter = $geo['running_meter'];
+        $discountRm = $geo['discount_rm'];
+        $sheetCostPc = $geo['sheet_cost_pc'];
 
         // Ongkos proses SHEET (§B.1 tabel part_type) — print dikali 2
         $printCostPc = (float) $part->i_ongkos_print_pc * 2;
@@ -237,7 +294,138 @@ class CostingEngine
             'c_tooling_cost_order' => 0,
             'c_process_cost_pc' => $processCostPc,
             'c_total_part_cost_pc' => $totalPartCostPc,
-            'description_calc' => 'CostingEngine v1 (SHEET_DIGITAL) · '.now()->toDateTimeString(),
+            'description_calc' => "CostingEngine v1 ({$part->part_type_code}) · ".now()->toDateTimeString(),
+        ])->save();
+    }
+
+    /**
+     * KRAFT (§IV.2.B gemini_spark_productcosting.md, literal): kertas kraft
+     * per-kg TANPA pembagi rim 500 (beda dari ivory/AP yg masih /500) +
+     * proses corrugated (bucket i_ongkos_* sama dgn SHEET_DIGITAL/SHEET).
+     * TOOL_SKIP sama seperti SHEET (§B.1) — tak ada film/plate/pisau kraft.
+     */
+    protected function calculateKraftPart(IqpCostingPart $part, float $qty): void
+    {
+        $cut = max((float) $part->i_cut_per_plano, 0.0001);
+        $isi = max((float) $part->i_isi_per_lb, 0.0001);
+        $areaCetakCm2 = (float) $part->i_panjang_plano_cm * (float) $part->i_lebar_plano_cm;
+
+        $grammage = $part->grammage_id ? MatGrammage::find($part->grammage_id) : null;
+        $paperCostPc = 0.0;
+
+        if ($grammage && (float) $grammage->ivory_ap_price_per_kg > 0) {
+            // §IV.2.B: Cost_paper/pc = (P×L/10000) × H_kg × (G/2) / (C_plano × I_lb) -- TANPA /500.
+            $paperCostPc = ($areaCetakCm2 / 10000) * (float) $grammage->ivory_ap_price_per_kg * ((float) $grammage->grammage_value / 2) / $cut / $isi;
+        }
+
+        $processCostPc = (float) $part->i_ongkos_diecut_pc
+            + (float) $part->i_ongkos_slitter_pc
+            + (float) $part->i_ongkos_slotter_pc
+            + (float) $part->i_ongkos_join_pc
+            + (float) $part->i_ongkos_partisi_pc
+            + (float) $part->i_ongkos_layer_pc
+            + (float) $part->i_ongkos_qc_pack_pc
+            + (float) $part->i_ongkos_kirim_pc;
+
+        $totalPartCostPc = $paperCostPc + $processCostPc;
+
+        $part->fill([
+            'c_area_cetak_cm2' => $areaCetakCm2,
+            'c_paper_cost_pc' => $paperCostPc,
+            'c_cetak_cost_pc' => $processCostPc,
+            'c_plong_cost_pc' => 0,
+            'c_lem_cost_pc' => 0,
+            'c_total_coating_pc' => 0,
+            'c_film_cost_order' => 0,
+            'c_plate_cost_order' => 0,
+            'c_knife_cost_order' => 0,
+            'c_tooling_cost_order' => 0,
+            'c_process_cost_pc' => $processCostPc,
+            'c_total_part_cost_pc' => $totalPartCostPc,
+            'description_calc' => 'CostingEngine v1 (KRAFT) · '.now()->toDateTimeString(),
+        ])->save();
+    }
+
+    /**
+     * DC+SHEET / DC+SF (§IV.3, lihat disclaimer BELUM DIVERIFIKASI di docblock class).
+     * HPP = Cost_paper/pc + Cost_cetak + J36(Laminasi Flat) + J37(SF EF) + Cost_plong + Cost_tooling.
+     */
+    protected function calculateDcSheetPart(IqpCostingPart $part, float $qty): void
+    {
+        $rim = SysConstant::number('RIM_SHEETS', 500);
+        $filmRateDefault = SysConstant::number('FILM_RATE_DEFAULT', 55);
+        $filmFactorDefault = SysConstant::number('FILM_FACTOR_DEFAULT', 0.25);
+        $platePerColor = SysConstant::number('PLATE_PER_COLOR', 90000);
+
+        $cut = max((float) $part->i_cut_per_plano, 0.0001);
+        $isi = max((float) $part->i_isi_per_lb, 0.0001);
+        $areaCetakCm2 = (float) $part->i_panjang_plano_cm * (float) $part->i_lebar_plano_cm;
+
+        // Cost_paper/pc -- formula duplex/ivory sama persis dgn calculateDcPart().
+        $grammage = $part->grammage_id ? MatGrammage::find($part->grammage_id) : null;
+        $paperCostPc = 0.0;
+
+        if ($grammage && (float) $grammage->duplex_price_list > 0) {
+            $dcOverride = (float) $part->i_dc_persen_override;
+            $dcPct = $dcOverride > 0 ? $dcOverride : (float) $grammage->duplex_dc_pct;
+            $dcf = 1 + ($dcPct / 100);
+            $planoRefArea = SysConstant::number('PLANO_REF_AREA', 8611);
+            $paperCostPc = ($areaCetakCm2 / $planoRefArea) * (float) $grammage->duplex_price_list * $dcf / $rim / $cut / $isi;
+        } elseif ($grammage && (float) $grammage->ivory_ap_price_per_kg > 0) {
+            $paperCostPc = ($areaCetakCm2 / 10000) * (float) $grammage->ivory_ap_price_per_kg * ((float) $grammage->grammage_value / 2) / $rim / $cut / $isi;
+        }
+
+        $cetakCostPc = (float) $part->i_ongkos_cetak_rim / $cut / $isi;
+        $plongCostPc = (float) $part->i_ongkos_plong_lb / $isi;
+
+        // J36 -- Laminasi Flat: kontribusi sheet corrugated yg dilaminasi ke part DC ini,
+        // pakai geometri+RM+diskon yang SAMA dgn SHEET_DIGITAL (computeSheetGeometry()).
+        $lamFlatCostPc = $this->computeSheetGeometry($part, $qty)['sheet_cost_pc'];
+
+        // J37 -- SF EF: (A_cetak/10000) x Rate_sf x (1/I_lb). NULL/0 rate = tidak ada
+        // kontribusi (default aman utk DC+SHEET murni yg tak pakai layer SF).
+        $sfEfRate = (float) ($part->i_sf_ef_rate_override ?? 0);
+        $sfEfCostPc = ($areaCetakCm2 / 10000) * $sfEfRate / $isi;
+
+        // Tooling -- order-level, formula sama calculateDcPart().
+        $ff = $part->i_film_faktor !== null ? (float) $part->i_film_faktor : $filmFactorDefault;
+        $frate = $part->i_film_rate !== null ? (float) $part->i_film_rate : $filmRateDefault;
+        $filmCostOrder = ($ff ** 2) * $areaCetakCm2 * $frate;
+
+        $plateRate = $part->i_ongkos_plate_warna !== null && (float) $part->i_ongkos_plate_warna > 0
+            ? (float) $part->i_ongkos_plate_warna
+            : $platePerColor;
+        $plateCostOrder = $plateRate * (int) $part->i_jumlah_warna;
+
+        $pisauRate = $part->i_pisau_rate_rp !== null
+            ? (float) $part->i_pisau_rate_rp
+            : (float) (ProdPartType::where('part_type_code', $part->part_type_code)->value('pisau_rate_rp') ?? 0);
+        $knifeCostOrder = (float) $part->i_pisau_faktor * $pisauRate;
+
+        $toolingCostOrder = $filmCostOrder + $plateCostOrder + $knifeCostOrder;
+
+        // Bucket "finishing" header roll-up dipakai ulang utk J36+J37 (sama pola
+        // SHEET_DIGITAL mendaur ulang c_paper_cost_pc/c_cetak_cost_pc sbg bucket generik).
+        $lamAndSfPc = $lamFlatCostPc + $sfEfCostPc;
+        $processCostPc = $cetakCostPc + $plongCostPc;
+        $totalPartCostPc = $paperCostPc + $processCostPc + $lamAndSfPc;
+
+        $part->fill([
+            'c_area_cetak_cm2' => $areaCetakCm2,
+            'c_paper_cost_pc' => $paperCostPc,
+            'c_cetak_cost_pc' => $cetakCostPc,
+            'c_plong_cost_pc' => $plongCostPc,
+            'c_lem_cost_pc' => 0,
+            'c_lam_flat_cost_pc' => $lamFlatCostPc,
+            'c_sf_ef_cost_pc' => $sfEfCostPc,
+            'c_total_coating_pc' => $lamAndSfPc,
+            'c_film_cost_order' => $filmCostOrder,
+            'c_plate_cost_order' => $plateCostOrder,
+            'c_knife_cost_order' => $knifeCostOrder,
+            'c_tooling_cost_order' => $toolingCostOrder,
+            'c_process_cost_pc' => $processCostPc + $lamAndSfPc,
+            'c_total_part_cost_pc' => $totalPartCostPc,
+            'description_calc' => "CostingEngine v1 ({$part->part_type_code}) — BELUM DIVERIFIKASI Excel · ".now()->toDateTimeString(),
         ])->save();
     }
 
