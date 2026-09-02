@@ -153,6 +153,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/purchasing/prt-approval', 'pages::pur.prt.approval')->name('pur.prt.approval');
             Route::livewire('/purchasing/report/outstanding-pr', 'pages::pur.report.outstanding-pr')->name('pur.report.outstanding-pr');
             Route::livewire('/purchasing/report/outstanding-po', 'pages::pur.report.outstanding-po')->name('pur.report.outstanding-po');
+            Route::livewire('/purchasing/report/outstanding-pv', 'pages::pur.report.outstanding-pv')->name('pur.report.outstanding-pv');
         });
 
         Route::middleware('module:INV')->group(function () {

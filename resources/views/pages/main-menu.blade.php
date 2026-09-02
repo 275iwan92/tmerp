@@ -98,6 +98,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'PROC_RET_APPR' => route('pur.prt.approval'),
             'PROC_MON_PR' => route('pur.report.outstanding-pr'),
             'PROC_MON_PO' => route('pur.report.outstanding-po'),
+            'PROC_MON_PV' => route('pur.report.outstanding-pv'),
             'MD_PROD' => route('master.produk'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),

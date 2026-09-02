@@ -12,6 +12,23 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #3)
+
+- **§7 — Outstanding PV report dibangun.** Prasyarat sudah terpenuhi
+  (Stock Out live sejak 2026-08-22) tapi 1 keputusan desain masih terbuka
+  (3 opsi tracking serah-terima gudang->departemen peminta) — diputuskan
+  OTONOM (low-risk/reversibel, murni pilihan teknis bukan kebijakan bisnis):
+  opsi PALING SEDERHANA, flag header-level `pv_receipt.is_handed_over`
+  (+`handed_over_at`/`handed_over_by`), konsisten gaya Outstanding PR/PO
+  existing yang juga header-level (bukan opsi per-line `c_qty_received` atau
+  dokumen baru "Bukti Serah Terima Barang" — keduanya lebih rumit tanpa
+  kebutuhan granularitas jelas). Layar baru `pur/report/outstanding-pv`
+  (route `pur.report.outstanding-pv`): PV POSTED yg belum diserahkan, badge
+  merah kalau menunggu >3 hari, tombol "✓ Sudah Diserahkan". Menu
+  `PROC_MON_PV` (placeholder sejak 2026-08-21) di-flip READY_FOR_QC.
+  Diverifikasi `Livewire::test()` (toggle + restore state PV dummy existing
+  ke nilai asli, bukan tebakan) + HTTP kernel 200. `npm run build` dijalankan.
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #2)
 
 - **§3/§1 — Win-Rate Sales dibangun.** Temuan: `iqp_inquiry.sub_state` SUDAH

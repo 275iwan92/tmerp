@@ -263,14 +263,10 @@ sebelum eksekusi):
   2026-08-28) — prasyarat "DO belum ada" di catatan lama SUDAH TERPENUHI,
   tapi status mekanisme snapshot Costing V2 itu sendiri **belum
   dikonfirmasi ada atau tidak** — cek dulu sebelum mulai.
-- **Outstanding PV report** — user minta diingatkan, sengaja ditunda
-  sampai Stock Out dibangun (**Stock Out SUDAH live sejak 2026-08-22** —
-  item ini sudah UNBLOCKED secara prasyarat). Masih butuh 1 keputusan
-  desain sebelum bisa dibangun: bagaimana cara track serah-terima barang
-  dari gudang ke departemen peminta setelah PV di-posting (3 opsi pernah
-  diajukan: kolom qty-per-line spt `c_qty_received`, dokumen baru "Bukti
-  Serah Terima Barang", atau flag simpel per-PV — user belum memilih).
-  Menu placeholder `PROC_MON_PV` (NOT_BUILT) sudah ada slotnya.
+- ~~Outstanding PV report~~ **SELESAI 2026-09-02** — keputusan desain diambil
+  otonom (flag simpel per-PV, opsi paling sederhana dari 3 yg diajukan,
+  konsisten gaya Outstanding PR/PO existing yg header-level). Lihat
+  `docs/LOG_JOB_DONE.md`.
 - **Payroll (tm2pyr) — SELURUH MODUL belum dibangun** (bukan cuma
   enkripsi). CLAUDE.md §2 sendiri menandai ini requirement yang belum
   diimplementasikan sama sekali. Termasuk di dalamnya: enkripsi data

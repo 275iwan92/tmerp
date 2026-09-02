@@ -18,12 +18,15 @@ class PvReceipt extends Model
         'i_supplier_do_no', 'i_vehicle_no', 'i_notes',
         'c_po_count', 'c_po_doc_list',
         'status', 'posted_at', 'posted_by', 'rm_stock_doc_id',
+        'is_handed_over', 'handed_over_at', 'handed_over_by',
         'created_by', 'updated_by',
     ];
 
     protected $casts = [
         'i_doc_date' => 'date',
         'posted_at' => 'datetime',
+        'is_handed_over' => 'boolean',
+        'handed_over_at' => 'datetime',
     ];
 
     public function lines(): HasMany
