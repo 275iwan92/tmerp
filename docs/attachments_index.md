@@ -30,6 +30,13 @@
 | `DAFTAR REKENING KARYAWAN (BCA).xlsx` | Daftar rekening bank BCA karyawan utk transfer gaji | ⬜ Belum dibongkar isinya | Referensi field rekening bank kalau modul Payroll butuh data transfer |
 | `8. GAJI KARYAWAN PERIODE 22 - 28 AGUSTUS 2026 WEEKLY 1657.xlsb` | Contoh data payroll mingguan riil (periode 22-28 Agu 2026, paling baru) | ⬜ Belum dibongkar isinya | Referensi struktur data Payroll saat digarap |
 | `JD & KPI - STAFF FINANCE.pdf` | Job Description (Daily/Weekly/Monthly/Seasonal) + tabel KPI berbobot (Kedisiplinan 20%, Ketepatan Penagihan 30%, Akurasi Transaksi 25%, Ketepatan Laporan 25%) utk posisi Staff Finance (No. Dok 010/XI/TM-HRD/2025) | ⬜ Belum dipakai bangun layar | Kalau modul HR nanti punya fitur JD/KPI per posisi — belum ada layarnya sama sekali saat ini |
+| `MC-ALSAMSI EXCLUSIVE TOP (DS003047).xlsx` | Master Card riil (sheet "MC" form lengkap + sheet "Data" 1-baris flat) — No Desain, Nama Barang, Customer, Dimensi P/L/T, Kode+Ukuran Pisau, Material+Kualitas, Ukuran Bahan+Cetak, Finishing, Isi/Lembar (UP), Warna CS/KS, Urutan Pekerjaan (routing), ACC Email/Digital/Box Polos | ✅ SUDAH dibongkar & dipetakan ke `vw_master_card` | `docs/inquiry_product_costing/productdevelopment_tier1.md` §4.2 |
+| `MC-OUTER ALSAMSI CREAM LOCK.xlsx` | Master Card riil kedua, struktur sama persis dgn file di atas, contoh kasus SF E/Flute + Single Face | ✅ SUDAH dibongkar | `productdevelopment_tier1.md` §4.2 |
+| `MC-Osima MS N100 CV (DS003146).xlsx` | Master Card riil, contoh kasus SH B/C Flute 1-UP | ✅ SUDAH dibongkar | `productdevelopment_tier1.md` §4.2 |
+| `MC-YAMA Din170 MF (DS003026) B.xlsx` | Master Card riil, contoh kasus 1/2 UP | ✅ SUDAH dibongkar | `productdevelopment_tier1.md` §4.2 |
+| `MC-Yahya 250g (24pcs) C22 (DS002159) 1020x650mm.xlsx` | Master Card riil, contoh kasus 8-UP + histori revisi bahan (kolom Keterangan) | ✅ SUDAH dibongkar | `productdevelopment_tier1.md` §4.2 |
+| `mockup_mastercard.jpg` | Mockup layar target Master Card — form kiri (field sama spt MC-*.xlsx) + panel kanan **preview visual layout imposition interlocking** (4-UP), 4 role approval (Product Development/Sales/QC/Plant Manager) | ✅ Jadi acuan visual §4.3 | `productdevelopment_tier1.md` |
+| `mockup_product_costing_v1_scriptcase.png` | Screenshot UI ASLI form HPP V1 ScriptCase (`frm_hpp`+`frm_hpp_parts`) — data riil "SHEET Outer Box/OB" | ✅ Jadi acuan cross-check `gemini_spark_productcosting.md` | `productdevelopment_tier1.md` §5.2 |
 
 ## Catatan tambahan
 
