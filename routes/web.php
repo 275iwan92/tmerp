@@ -140,6 +140,7 @@ Route::middleware('auth')->group(function () {
         Route::middleware('module:PROC')->group(function () {
             Route::livewire('/purchasing/pr', 'pages::pur.pr.index')->name('pur.pr.list');
             Route::livewire('/purchasing/pr/{pr}/edit', 'pages::pur.pr.entry')->name('pur.pr.entry');
+            Route::livewire('/purchasing/pr/{pr}/print', 'pages::pur.pr.print')->name('pur.pr.print');
             Route::livewire('/purchasing/pr-approval', 'pages::pur.pr.approval')->name('pur.pr.approval');
             Route::livewire('/purchasing/po', 'pages::pur.po.index')->name('pur.po.list');
             Route::livewire('/purchasing/po/{po}/edit', 'pages::pur.po.entry')->name('pur.po.entry');
@@ -149,6 +150,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/purchasing/pv/{pv}/edit', 'pages::pur.pv.entry')->name('pur.pv.entry');
             Route::livewire('/purchasing/pq', 'pages::pur.pq.index')->name('pur.pq.list');
             Route::livewire('/purchasing/pq/{pq}/edit', 'pages::pur.pq.entry')->name('pur.pq.entry');
+            Route::livewire('/purchasing/pq/{pq}/print', 'pages::pur.pq.print')->name('pur.pq.print');
             Route::livewire('/purchasing/prt', 'pages::pur.prt.index')->name('pur.prt.list');
             Route::livewire('/purchasing/prt/{prt}/edit', 'pages::pur.prt.entry')->name('pur.prt.entry');
             Route::livewire('/purchasing/prt-approval', 'pages::pur.prt.approval')->name('pur.prt.approval');

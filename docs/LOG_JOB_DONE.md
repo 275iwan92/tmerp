@@ -12,6 +12,19 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #5)
+
+- **§12.7 — Cetak PR & PQ dibangun, melengkapi PO** (jadi 3/3 dokumen
+  transaksi Procurement kini punya print). PR (`pur/pr/print.blade.php`,
+  dokumen internal departemen->approval, gate APPROVED ke atas) & PQ
+  (`pur/pq/print.blade.php`, rekap penawaran 1 supplier per dokumen, gate
+  CONFIRMED — PQ BUKAN RFQ letter ke supplier, arahnya catat HASIL
+  penawaran yg sudah masuk, dipakai bandingkan >1 PQ utk 1 PR yang sama).
+  Diverifikasi Livewire::test(): PR pakai data riil (APPROVED->200,
+  DRAFT->redirect), PQ tak ada 1 baris pun di DB jadi pakai fixture
+  sementara di dalam transaction yang di-rollback (DRAFT->redirect,
+  CONFIRMED->200, 0 data tertinggal). `npm run build` dijalankan.
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #4)
 
 - **§12.7 — Cetak Purchase Order (PO) dibangun.** Dari 3 dokumen transaksi

@@ -302,6 +302,10 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
                 default => 'bg-[#eef1f5] text-[#4b5568]',
             } }}">{{ $this->pq->status }}</span>
+        @if ($this->pq->status === 'CONFIRMED')
+            <a href="{{ route('pur.pq.print', ['pq' => $this->pqId]) }}" target="_blank"
+                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 Cetak PQ</a>
+        @endif
         <a href="{{ route('pur.pq.list') }}" title="Kembali ke Daftar PQ"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>

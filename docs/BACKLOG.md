@@ -451,10 +451,11 @@ Nota Alokasi/Label Rak Inventory, Period Manager (buka/tutup periode stok
 valuation (`StockValuationService`, saat ini cuma AVG), Forecast Engine &
 Flow Engine (state-machine) mockup produksi lama (kemungkinan besar sudah
 digantikan oleh `production_scheduling_tier*.md` yang jauh lebih baru —
-cek dulu sebelum kerjakan, potensi duplikat), print PR/PQ (PO **SUDAH
-SELESAI 2026-09-02**, lihat `docs/LOG_JOB_DONE.md` — `pur/po/print.blade.php`),
-Setup > Audit Trail Viewer & generic Lookup Master maintainer (sebagian sudah
-tercakup Configuration hari ini, sebagian belum).
+cek dulu sebelum kerjakan, potensi duplikat). ~~print PR/PO/PQ~~ **SEMUA
+SELESAI 2026-09-02** (lihat `docs/LOG_JOB_DONE.md` — `pur/po/print.blade.php`,
+`pur/pr/print.blade.php`, `pur/pq/print.blade.php`). Sisa: Setup > Audit
+Trail Viewer & generic Lookup Master maintainer (sebagian sudah tercakup
+Configuration hari ini, sebagian belum).
 
 ### 12.8 Catatan konsistensi (bukan actionable, cuma disclosure)
 
