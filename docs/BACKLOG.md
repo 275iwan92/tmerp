@@ -255,11 +255,10 @@ sebelum eksekusi):
   tapi kanal HP-nya sendiri belum dibangun sama sekali.
 - **Master Komponen / arah final Master Card** — pertanyaan lama (Jo,
   2026-08-18) soal di mana data product/part/material/proses seharusnya
-  diinput (WO vs Costing) kemungkinan **sudah terjawab implisit** oleh
-  pembangunan WO Detail tab Master Card (2026-08-28, baca dari
-  `vw_master_card` + berbagai tabel existing, field kosong tampil
-  "— belum diisi" apa adanya) — verifikasi ke Jo apakah ini sudah
-  dianggap cukup atau masih ada yang kurang sebelum menutup item ini.
+  diinput (WO vs Costing). **DITUNDA (keputusan user 2026-09-02)**: akan
+  dibahas nanti bersamaan modul **Sales — Product Costing**, bukan ditutup
+  dari sisi WO Detail Master Card saja. Jangan asumsikan tab Master Card
+  (2026-08-28) sudah jadi jawaban final sebelum diskusi itu terjadi.
 
 ---
 
