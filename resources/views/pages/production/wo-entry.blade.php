@@ -15,6 +15,7 @@ use App\Models\Prd\PrdWoOperation;
 use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Prd\PrdWoOperationOutputDefect;
 use App\Models\Master\SupSupplier;
+use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPartMaterial;
 use App\Services\Pur\SubcontractPoService;
 use Carbon\Carbon;
@@ -216,20 +217,28 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     // Bill of Material -- versi grid (Material&Spec di kiri, lalu Qty
     // Kebutuhan/Tersedia/Harus Dibeli) per instruksi user 2026-08-28.
     // Qty Tersedia diambil LIVE dari v_rm_available (tm2inv, sudah ada sejak
-    // modul Inventory dibangun -- bukan skema baru). Qty Kebutuhan SENGAJA
-    // masih simplifikasi (= qty WO, bukan qty per lembar/plano hasil
-    // Imposition) -- perhitungan presisi butuh qty_factor per proses yang
-    // masih jadi gap terbuka (delta doc §3), dicatat bukan disembunyikan.
-    // "Qty Harus Dibeli" = selisih kebutuhan-tersedia (shortfall sederhana,
-    // BUKAN MRP netting penuh lintas-WO -- itu F10 yang sengaja dideferred).
+    // modul Inventory dibangun -- bukan skema baru).
+    // FIX 2026-09-02 (docs/BACKLOG.md §6): Qty Kebutuhan SEBELUMNYA = qty WO
+    // mentah (1:1, seolah 1 lembar bahan baku = 1 pcs jadi) -- salah utk part
+    // yang di-imposition >1 UP per lembar. Sekarang dibagi up_count dari
+    // iqp_layout CONFIRMED milik source_iqp_part_id (kalau ada) -- 1000 pcs
+    // WO dgn 5 UP/lembar = 200 lembar kebutuhan, bukan 1000. Fallback up_count=1
+    // (qty_kebutuhan = qty WO apa adanya) kalau imposition belum
+    // dikonfirmasi -- BUKAN MRP/qty_factor per proses penuh (itu tetap gap,
+    // lihat delta doc §3), tapi lebih presisi dari sebelumnya.
     #[Computed]
     public function billOfMaterialRows()
     {
-        return $this->billOfMaterial->map(function ($mat) {
+        $layout = $this->workOrder->source_iqp_part_id
+            ? IqpLayout::where('part_id', $this->workOrder->source_iqp_part_id)->where('stat_confirm', true)->first()
+            : null;
+        $upCount = $layout && $layout->up_count > 0 ? (int) $layout->up_count : 1;
+
+        return $this->billOfMaterial->map(function ($mat) use ($upCount) {
             $rawmat = $mat->rawmat_id ? MatRaw::find($mat->rawmat_id) : null;
             $unit = $rawmat?->uom_stock ?: 'Pcs';
 
-            $qtyKebutuhan = (float) $this->workOrder->qty;
+            $qtyKebutuhan = ceil((float) $this->workOrder->qty / $upCount);
             $qtyTersedia = $mat->rawmat_id
                 ? (float) DB::connection('tm2inv')->table('v_rm_available')->where('material_id', $mat->rawmat_id)->sum('qty_available')
                 : 0.0;

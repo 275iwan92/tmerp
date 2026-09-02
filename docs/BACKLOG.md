@@ -227,8 +227,9 @@ sebelum eksekusi):
 - Reroute-Subkontrak di dialog "Sisip Hot Job" masih cuma tampil opsi,
   belum bisa benar-benar di-apply (butuh generate PO Subkontrak otomatis
   dari situ, beda dari alur Breakdown→Subkontrak yang sudah ada).
-- Qty Kebutuhan di tab Bill of Material WO Detail belum dikalikan faktor
-  Imposition (`qty_factor`/`i_cut_per_plano`) — masih qty order mentah.
+- ~~Qty Kebutuhan BOM belum dikalikan faktor Imposition~~ **SELESAI
+  2026-09-02** — dibagi `up_count` dari `iqp_layout` CONFIRMED (fallback
+  qty mentah kalau imposition belum dikonfirmasi). Lihat `docs/LOG_JOB_DONE.md`.
 - `prod_part_artwork` kosong di semua baris — Master Card tab tidak bisa
   tampilkan foto produk/dieline asli, masih placeholder.
 - **F10-F14 & F18-F20** (MRP netting, Material Substitution/Cutting Yield

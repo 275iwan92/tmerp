@@ -12,6 +12,21 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #6)
+
+- **§6 Production — Qty Kebutuhan BOM WO Detail diperbaiki.**
+  `production/wo-entry.blade.php::billOfMaterialRows()` sebelumnya
+  `qty_kebutuhan = qty WO` mentah (1:1, asumsi 1 lembar bahan baku = 1 pcs
+  jadi) — salah utk part yang di-imposition >1 UP per lembar (mis. 500 WO
+  dgn 8 UP/lembar harusnya butuh 63 lembar, bukan 500). Fix: dibagi
+  `up_count` dari `iqp_layout` CONFIRMED milik `source_iqp_part_id`
+  (fallback up_count=1 kalau imposition belum dikonfirmasi -- tetap qty
+  mentah, bukan crash/kosong). Diverifikasi `Livewire::test()`: kasus
+  unconfirmed (fallback benar, 500 tetap 500) + kasus confirmed dipaksa
+  dalam transaction rollback (500/8 dibulatkan ke atas = 63, sesuai
+  ekspektasi). Bukan MRP/qty_factor per proses penuh (tetap gap terbuka,
+  BACKLOG §6 F10), tapi jauh lebih presisi dari sebelumnya.
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #5)
 
 - **§12.7 — Cetak PR & PQ dibangun, melengkapi PO** (jadi 3/3 dokumen
