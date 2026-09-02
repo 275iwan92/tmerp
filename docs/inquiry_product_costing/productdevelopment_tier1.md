@@ -254,6 +254,85 @@ Tool #10 lebih sederhana dari itu (masih bounding-box W×H, "cuma" kombinasi
 gabung/pisah + bandingkan total biaya) — realistis jadi titik mulai paling
 masuk akal krn langsung jawab masalah inti yang diangkat user.
 
+### 4.3a Desain Algoritma ENGINE (klarifikasi user 2026-09-02)
+
+User kasih contoh konkret: lidah (flap) 5cm → cuma dapat 1 UP; lidah
+dipendekkan ke 2,5cm → bisa 2 UP (rotate) atau malah 3 UP (kombinasi 1
+horizontal + 2 vertical via rotate 90°); atau pola "69" (2 unit diputar
+180° saling mengunci, sebagian pindah posisi). Harapannya ENGINE "sepintar
+AI" — paham trade-off ini sendiri, bukan officer coba-coba manual.
+
+Ini **BUKAN 1 masalah, tapi 2 tingkat kesulitan berbeda** — saya pisahkan
+supaya jujur soal mana yang realistis dikerjakan cepat vs mana yang
+riset/effort besar:
+
+**Tingkat 1 — Parametric Sweep (REALISTIS, extension langsung dari
+`ImpositionEngine` yang sudah ada, TIDAK butuh data geometri baru selain
+1 rentang angka)**
+
+Prinsip: lidah bukan angka TETAP, tapi **variabel dalam rentang yang masih
+valid secara struktural** (`flap_min_mm` s.d. `flap_max_mm` — d ibawah
+`flap_min` sambungan lem tidak kuat, di atas `flap_max` boros bahan/tidak
+sesuai desain awal). Engine tinggal **loop nilai lidah dalam rentang itu**,
+tiap nilai hitung ulang pakai `ImpositionEngine::run()` yang SUDAH ADA
+(sudah otomatis coba TEGAK/PUTAR/CAMPUR tiap panggilan), lalu ranking hasil
+by UP count:
+
+```
+untuk flap in range(flap_min_mm, flap_max_mm, step=5mm):
+    dim_efektif = body_dim + flap   // tergantung flap_side (atas/bawah/kiri/kanan)
+    hasil = ImpositionEngine::run(plano, dim_efektif, ...)   // sudah coba 3 orientasi
+    simpan {flap, hasil.up, hasil.method, hasil.efficiency}
+
+urutkan semua hasil by up DESC, efficiency DESC
+tampilkan TOP 3-5 ke officer dengan preview visual tiap opsi
+officer PILIH salah satu (Engine suggests, Officer confirms — pola yang
+SUDAH terkunci di CLAUDE.md §4 utk scheduling/routing, dilanjutkan di sini)
+```
+
+Ini persis menjawab contoh user (lidah 5cm→1up vs 2,5cm→2-3up) — TINGGAL
+loop nilai lidah, tidak perlu algoritma baru sama sekali. **Field baru yang
+dibutuhkan** di `prod_part`: `flap_side` (enum TOP/BOTTOM/LEFT/RIGHT),
+`flap_length_mm` (nilai desain saat ini), `flap_min_mm`/`flap_max_mm`
+(rentang yang masih valid struktural).
+
+**Tingkat 2 — Interlock/"69" Pattern (LEBIH RUMIT, butuh geometri
+tambahan + algoritma baru, bukan sekadar extend yang ada)**
+
+Pola "69" = 2 unit diputar 180° satu sama lain sehingga lidah unit kedua
+"masuk" ke celah kosong di sebelah badan unit pertama — jaraknya (pitch)
+antar unit jadi LEBIH PENDEK dari body+lidah biasa. Ini beda dari Tingkat 1
+krn butuh tau **bentuk lidah itu sendiri** (bukan cuma panjangnya):
+lebar lidah (`flap_width_mm`) dan seberapa jauh lidah itu dari sudut
+(`flap_offset_mm`) — model bentuk part disederhanakan jadi **badan persegi
++ 1 persegi kecil (lidah) nempel di 1 sisi**, BUKAN import polygon dieline
+penuh (itu Tool #8, jauh lebih besar effort-nya).
+
+```
+pitch_interlock = body_length - overlap
+overlap = min(flap_length - clearance_minimum, ruang_notch_tersedia)
+// ruang_notch_tersedia dihitung dari flap_width & flap_offset unit tetangga
+
+coba pola interlock arah baris DAN arah kolom, masing2 x rotate 90°
+bandingkan up count vs hasil Tingkat 1, menang yg UP-nya lebih banyak
+```
+
+**Rekomendasi urutan kerja**: Tingkat 1 dulu (cepat, langsung pakai engine
+existing, jawab 80% kasus yg user contohkan) → baru Tingkat 2 kalau
+Tingkat 1 belum cukup memuaskan hasil nyata di lapangan. Tingkat 2 BUTUH
+data baru (`flap_width_mm`, `flap_offset_mm`) yang belum tentu gampang
+diisi officer tanpa training tambahan (perlu ukur dari dieline asli).
+
+**Soal batas `flap_min_mm`/`flap_max_mm`**: ini ATURAN TEKNIK (kekuatan
+lem/struktur, beda per material/jenis lem), bukan angka bebas. Ada
+preseden di kode: `MatFluteAllowance` (`app/Models/Master/MatFluteAllowance.php`)
+sudah jadi tabel serupa utk geometri corrugated (dipakai `CostingEngine.php`
+SHEET_DIGITAL, sudah diverifikasi byte-presisi ke Excel asli) — bisa
+dicontoh polanya bikin tabel sejenis utk aturan lidah, ATAU lebih simpel:
+officer isi `flap_min_mm`/`flap_max_mm` manual per part (compromise MVP,
+tidak butuh tabel referensi baru dulu). **Ini salah satu pertanyaan di
+§7.**
+
 ### 4.4 Data Flow In/Out
 
 ```
@@ -264,7 +343,8 @@ Product Development  (layar kerja, prod_part diperluas + 3 tabel anak)
   Input: spec dari Inquiry + upload JPEG/PDF/AI (prod_part_attachment)
   Proses: Tools #1-#9 §4.3 → interaktif, preview visual live di layar
   Output: prod_part (kolom teknis terisi) + prod_part_process (routing
-          terstruktur) + prod_part_layout (hasil imposition) — REUSABLE,
+          terstruktur) + prod_layout_group (hasil ENGINE §4.3a: pilihan
+          flap/orientasi terbaik, bisa gabung >1 part) — REUSABLE,
           bukan cuma milik 1 Inquiry
         │
         ├─ tombol "Cetak Master Card" → dokumen PDF resmi (§4.1),
@@ -273,8 +353,9 @@ Product Development  (layar kerja, prod_part diperluas + 3 tabel anak)
         ├──────────────► Product Costing
         │                 Mode MANUAL: officer isi i_cut_per_plano/
         │                 i_isi_per_lb/dst sendiri (spt sekarang)
-        │                 Mode AMBIL DATA: tarik otomatis dari
-        │                 prod_part_layout (up_count → i_isi_per_lb, dst)
+        │                 Mode AMBIL DATA (default/diutamakan, §5.1):
+        │                 auto-calculate dari prod_layout_group — TIDAK
+        │                 butuh officer Costing terpisah, rumus di-hidden
         │
         └──────────────► Production (WO Generation)
                           prod_part_process (routing terstruktur, bukan
@@ -295,16 +376,25 @@ Instruksi eksplisit user: **HARUS 2 mode**, bukan cuma auto-pull:
   `costing.blade.php`. Tetap dipertahankan utk kasus: quick quote tanpa
   Product Development dulu, atau produk one-off yang tidak perlu Master
   Card permanen.
-- **Mode Ambil Data**: kalau Inquiry punya Master Card terkait (dari
-  Product Development), field-field imposition (`isi_satu_cetakan` →
-  `i_isi_per_lb`, dst) **ditarik otomatis**, officer tinggal cek/override
-  kalau perlu. Ini butuh field baru di `iqp_costing_part` (link ke Master
-  Card id) + toggle UI "Manual / Ambil dari Master Card".
+- **Mode Ambil Data** (klarifikasi user 2026-09-02 — ini yang DIUTAMAKAN,
+  bukan cuma opsi tambahan): kalau Inquiry punya `prod_layout_group`
+  terkait (dari Product Development), SEMUA parameter imposition
+  (`isi_satu_cetakan` → `i_isi_per_lb`, ukuran plano/cetak, dst) **ditarik
+  otomatis dan HPP langsung ke-KALKULASI** — rumus di-hidden dari officer,
+  bukan sekadar auto-fill field yang lalu masih perlu di-"Hitung HPP"
+  manual. **Tujuan eksplisit user**: pekerjaan yang tadinya butuh 2 orang
+  (1 officer ProDev + 1 officer Costing terpisah) jadi bisa dikerjakan
+  **1 orang saja** — begitu layout dikonfirmasi di ProDev, HPP sudah jadi,
+  officer yang sama tinggal lanjut isi margin/tolerance/tier harga (bagian
+  yang MEMANG masih perlu keputusan manusia, bukan bisa diotomasi).
 
 **Belum diputuskan** (perlu didiskusikan, BUKAN saya putuskan sendiri):
 apakah toggle ini per-part atau per-costing (1 costing bisa campur part
 manual + part ambil-data)? Kemungkinan besar per-part, konsisten dgn
-`iqp_costing_part` yang sudah granular per part.
+`iqp_costing_part` yang sudah granular per part. Juga: kalau 1
+`prod_layout_group` menaungi >1 part (§4.2b), CostingEngine WAJIB alokasi
+biaya plano proporsional per part — bukan cuma "tarik data", ada logic
+kalkulasi baru yang perlu ditulis.
 
 ### 5.2 Formula Gap yang Sudah Terisi dari `gemini_spark_productcosting.md`
 
@@ -337,9 +427,10 @@ scope dokumen ini):
    ke view lama sebelum diubah/dihapus.
 2. **[DIKUNCI] Imposition pindah dari Inquiry ke Product Development** —
    `iqp_layout` (1:1 ke `iqp_part`, nempel 1 Inquiry) digantikan
-   `prod_part_layout` (di `prod_part`, REUSABLE lintas Inquiry). Perlu
-   keputusan teknis: `iqp_layout` yang sudah ada datanya (kalau ada)
-   di-migrasi atau dibiarkan legacy?
+   `prod_layout_group` (+ junction `prod_layout_group_part`, di `tm2mst`,
+   REUSABLE lintas Inquiry, bisa menaungi >1 part — §4.2b). Perlu keputusan
+   teknis: `iqp_layout` yang sudah ada datanya (kalau ada) di-migrasi atau
+   dibiarkan legacy?
 3. **[BELUM DIPUTUSKAN] `WoGenerationService` baca routing dari
    `prod_part_process`** — perubahan ke Production module, di luar scope
    Product Development sendiri tapi konsekuensi lanjutannya. `prd_wo`
@@ -360,20 +451,16 @@ dikonfirmasi user dulu sebelum dieksekusi.
 ## 7. Pertanyaan Terbuka / Keputusan yang Dibutuhkan
 
 1. **Prioritas tool** — dari 10 tool §4.3, mana yang mau dikerjakan duluan?
-   Realistis bertahap: Tool #1 (pindah rumah + skema baru) → #10
-   (Intra-Product Combiner, akar masalah yang diangkat user) → #2
-   (Pcs→Plano) → #4 (Die-Rule, dampak langsung ke HPP) → baru yang lebih
-   rumit (#3/#6/#8, butuh representasi geometri).
+   Realistis bertahap: Tool #1 (pindah rumah + skema baru) → **Tingkat 1
+   ENGINE §4.3a** (parametric flap sweep, langsung jawab contoh user) →
+   #10 (Intra-Product Combiner) → #2 (Pcs→Plano) → #4 (Die-Rule) → baru
+   yang lebih rumit (Tingkat 2 ENGINE/interlock, #3/#6/#8).
 2. ~~Dimensi Master Card di level Part atau Product?~~ **[TERJAWAB
-   2026-09-02, §4.2b]**: 1 Inquiry = 1 Product (FK tunggal, sudah
-   tervalidasi), 1 Product = multi Part (masing-masing part definisinya
-   sendiri jelas), TAPI layout/Master Card = `prod_layout_group` yang bisa
-   menaungi 1 atau lebih part — keputusan gabung/pisah adalah OUTPUT
-   engine (Tool #10), bukan aturan tetap di skema.
-3. **Sumber `Kode Item`** (kode mnemonic spt `MKR-TTP ALS ECLS`) — apakah
-   ini digenerate otomatis dari aturan tertentu (customer+produk+desain),
-   atau selalu manual diketik desainer? Perlu tahu polanya dari lebih
-   banyak contoh sebelum bisa auto-generate.
+   2026-09-02, §4.2b]**.
+3. ~~Sumber `Kode Item`?~~ **[TERJAWAB 2026-09-02]**: ditunda, pakai
+   nomor urut sementara (PK `id` auto-increment yang sudah ada, mis.
+   tampilkan `MC-{id}` apa adanya) — pola penamaan mnemonic final
+   diputuskan belakangan, TIDAK memblokir pengembangan sekarang.
 4. **Toggle Manual/Ambil-Data di Costing** — per-part atau per-costing
    (§5.1)?
 5. **Finishing jadi kolom teks atau tabel anak?** (§4.2 baris Jenis
@@ -387,6 +474,19 @@ dikonfirmasi user dulu sebelum dieksekusi.
    dari Interlocking Nesting (ini angka umum industri, belum tentu pas
    dgn mesin/spesifikasi CV. Telasih Makmur — jangan dipakai mentah-mentah
    sbg target performa).
+8. **[BARU] `flap_min_mm`/`flap_max_mm` (§4.3a) — dari tabel aturan
+   teknik (pola `MatFluteAllowance`) atau diisi manual per part oleh
+   officer?** Tabel referensi lebih konsisten/aman (tidak bisa asal isi
+   angka salah), tapi butuh data riil dari user (aturan lem/struktur per
+   material — belum ada di dokumen manapun yang saya baca) sebelum bisa
+   dibangun. Manual per part lebih cepat dibangun tapi rawan human-error.
+9. **[BARU] Berapa banyak contoh kasus flap/interlock riil dibutuhkan
+   sebelum ENGINE Tingkat 1 dianggap cukup teruji?** — beda dari
+   `CostingEngine.php` SHEET_DIGITAL yang sudah diverifikasi byte-presisi
+   ke 1 Excel asli, engine imposition ini BELUM ada data pembanding riil
+   sama sekali — perlu tau apakah ada dokumen/kasus serupa
+   `docs/attachments/` yang bisa jadi bahan verifikasi sebelum dipakai
+   produksi sungguhan.
 
 ---
 
