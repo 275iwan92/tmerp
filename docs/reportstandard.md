@@ -24,6 +24,21 @@ kalau diminta eksplisit oleh user dengan scoping di atas dijawab dulu.
 
 ---
 
+## 1a. SUDAH ADA: katalog laporan Top Management (`topmanagementreport_tier1.md`)
+
+**Ditemukan 2026-09-02 saat menyusun `docs/BACKLOG.md`** — dokumen ini
+(`reportstandard.md`) awalnya ditulis tanpa tahu `docs/topmanagementreport_tier1.md`
+sudah ada (ditulis 2026-08-27). Dokumen itu **jauh lebih detail** untuk
+konten level "Top Management" (level 4 di §2 bawah): katalog laporan
+lengkap per domain (Sales & Margin, Procurement & Inventory, Finance, HR)
+dengan dimensi/ukuran/sumber-data/grafik per laporan, prinsip desain
+Summary(pivot)→Detail(drill-down). **Baca itu dulu** kalau mulai dari level
+Top Management — jangan bikin katalog laporan baru dari nol. Dokumen ini
+(`reportstandard.md`) fokus ke bagian yang BELUM ada di sana: level 1-3
+(Data Entry/Supervisor/Manager) dan kerangka konsep 4-level-nya sendiri.
+
+---
+
 ## 2. KONSEP 4 LEVEL (kerangka, belum ada gate teknis)
 
 | Level | Peran | Cakupan data (rencana) |

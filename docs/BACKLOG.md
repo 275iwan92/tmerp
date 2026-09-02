@@ -1,0 +1,296 @@
+# BACKLOG — SEMUA YANG SUDAH DIRENCANAKAN TAPI BELUM DIKERJAKAN
+**ERP Cetak Offset & Packaging — PT. Telasih Makmur**
+
+> Dibuat 2026-09-02 (permintaan user: "catat dulu dalam satu file... semua
+> apa yang harusnya di kerjakan dan belum di kerjakan"). **Satu file untuk
+> SEMUA item tertunda lintas modul** — bukan cuma Fase 2 (Report System),
+> tapi juga item lama dari sesi-sesi sebelumnya yang belum pernah
+> dikumpulkan di satu tempat.
+>
+> **Sumber**: gabungan dari (a) `docs/*.md` (bagian "yang sengaja belum
+> dikerjakan"/GAP di tiap standar & spec Tier), dan (b) memori sesi Claude
+> Code sebelumnya (`project_*` notes). Item dari sumber (b) **belum
+> di-verifikasi ulang ke kode terkini** — beberapa mungkin sudah
+> terselesaikan tanpa tercatat di sini (sudah ditandai kalau saya temukan
+> indikasi itu saat menyusun file ini), jadi **cek kondisi kode dulu**
+> sebelum mulai kerjakan item apa pun dari sini, jangan langsung percaya.
+>
+> **Cara pakai**: kalau mau kerjakan 1 item, cari section-nya, baca
+> rujukan filenya, verifikasi masih relevan, baru mulai. Kalau sudah
+> selesai, PINDAHKAN (bukan hapus) ke bagian "SELESAI" paling bawah tiap
+> section supaya riwayatnya tetap ada.
+
+---
+
+## 1. FASE 2 — SISTEM REPORT 4 LEVEL (permintaan user 2026-09-02)
+
+Kerangka konsepnya sudah ditulis di `docs/reportstandard.md` (skeleton,
+BUKAN implementasi) — 4 level (Data Entry Officer/Supervisor/Manager/Top
+Management) + graphics report.
+
+**Temuan penting saat menyusun file ini**: sudah ada dokumen perencanaan
+report yang JAUH lebih detail dari `reportstandard.md`, ditulis 2026-08-27,
+sempat terlewat karena namanya beda ("Report" vs "Report 4 Level") —
+**`docs/topmanagementreport_tier1.md`**. Isinya katalog laporan LENGKAP per
+domain (Sales & Margin, Procurement & Inventory, Finance, HR) dengan
+dimensi/ukuran/sumber data/jenis grafik untuk masing-masing, ditulis dengan
+prinsip desain **Summary (pivot+grafik) → Detail (drill-down)**. Ini secara
+efektif **katalog konten untuk level "Top Management"** dari 4 level yang
+diminta user — jangan bikin ulang dari nol, extend/rujuk dokumen itu.
+
+**6 keputusan terbuka di `topmanagementreport_tier1.md` §5** (WAJIB
+dikonfirmasi user sebelum mulai bangun layar sungguhan):
+1. Lokasi menu — grup sidebar baru "Laporan Eksekutif" lintas-modul, atau
+   tersebar per modul dengan badge?
+2. Kontrol akses per level — reuse `sec_group.mgmt_level` yang sudah ada
+   (dipakai role-gate PPIC Production Scheduling) atau bikin dimensi baru?
+3. Engine pivot — komponen generik dipakai ulang (dimensi/ukuran
+   dikonfigurasi) atau layar custom per laporan? Terkait ke item
+   "grid custom view/sort/group-by" (§4 di bawah).
+4. Library grafik — **belum ada preseden chart di project ini sama
+   sekali** (dicek 2026-09-02, tidak ada Chart.js/ApexCharts/dsb.
+   terpasang).
+5. Win-rate Sales butuh kolom baru di `iqp_inquiry` (status menang/kalah)
+   yang belum ada — keputusan skema tersendiri, bukan cuma laporan.
+6. Refresh data — real-time query langsung atau snapshot periodik?
+
+**Koreksi atas catatan lama**: `topmanagementreport_tier1.md` §4.1 bilang
+"laporan pipeline Customer Order belum bisa dibangun — CO belum ada layar
+sama sekali" (per 2026-08-27) — **ini sudah TIDAK BENAR**, `co/entry.blade.php`
++ route `co.entry` sudah live (dipakai/diedit di sesi-sesi setelahnya
+termasuk hari ini). Laporan pipeline CO kemungkinan sudah bisa dibangun,
+re-scope kalau diminta.
+
+**Belum ada 1 layar report/dashboard grafik pun dibangun** (per audit
+2026-09-02) — baik untuk 4-level system maupun katalog top-management di
+atas. Ini murni perencanaan, eksekusi menyusul.
+
+---
+
+## 2. FASE 1 (2026-09-02) — SISA YANG SENGAJA DITUNDA
+
+Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
+`docs/admindashboardstandard.md` §10-12):
+
+- **~97 atribut `#[Title('...— TELASIH MAKMUR ERP')]`** per layar Volt
+  (judul tab browser) — belum dibuat dinamis (`#[Title]` PHP attribute
+  wajib constant expression, tidak bisa query DB langsung di situ).
+- **PDF footer** (`resources/views/exports/generic-grid-pdf.blade.php`) dan
+  **email template** (`resources/views/emails/portal/verify-email.blade.php`)
+  — masih hardcode "TELASIH MAKMUR", belum baca `Brand::`.
+- **`fin_exchange_rate`** (tabel kurs baru) — belum ada layar CRUD, isi
+  manual lewat tinker/DB untuk sekarang.
+- **`geo_country.flag_emoji`** — kolom sudah ada, 250 baris semuanya NULL,
+  belum diisi (tidak ada sumber data reliable untuk auto-isi massal).
+- **Lapis kosmetik tema dashboard Filament** (mode pastel/bright/black,
+  `admindashboardstandard.md` §10.2) — baru diverifikasi render (status
+  200 + atribut ada), belum di-screenshot visual per mode/per layar
+  Filament (Resource table, form, widget) untuk pastikan tidak ada bagian
+  yang kelihatan pecah.
+- **`sys_constant_category`** baru punya 5 kategori (Branding/Finance/
+  Production/Procurement/Inventory) — kategori lain (mis. HRM, kalau nanti
+  ada konstanta khusus HR) belum ditambahkan, tambah manual saat perlu.
+
+---
+
+## 3. SALES / INQUIRY / CUSTOMER ORDER (tm2sdi)
+
+- **Marketing Management** (CLAUDE.md §2, ditambahkan 2026-08-30) — modul
+  BARU, belum ada 1 baris kode/dokumen Tier pun. Cakupan yang dideskripsikan
+  user: log aktivitas sales (email/kirim quotation/kunjungan per customer)
+  + tracking supply chain customer reguler/berkala. **Belum di-scoping
+  detail** — kalau mulai dikerjakan, treat seperti modul baru (baca/tulis
+  Tier doc dulu, jangan langsung bikin skema dari 1 paragraf deskripsi).
+- **Manual input Customer Order & Product Costing** — user minta CO dan
+  Costing bisa diisi manual (bukan cuma hasil engine/turunan Inquiry).
+  Costing Hub saat ini engine-driven penuh. CO sudah ada layarnya
+  (`co/entry.blade.php`) tapi belum jelas apakah "manual input" di sini
+  maksudnya field tambahan atau alur terpisah — perlu klarifikasi ulang
+  scope-nya sebelum eksekusi (catatan lama 2026-08-27, kemungkinan sudah
+  berubah konteksnya sejak CO dibangun).
+- **Win-rate Sales** — butuh field baru di `iqp_inquiry` (status
+  menang/kalah eksplisit), lihat §1 poin 5 di atas.
+
+---
+
+## 4. PROCUREMENT (tm2pur)
+
+- **Purchase Receive — 3 alur, baru 1 yang ada**: PV/SPB saat ini cuma
+  cover "Receiving dari PO" (supplier vs PO). **Belum dibangun**:
+  "Receiving dari Customer" (consignment, customer kirim bahan sendiri,
+  butuh stok terpisah/`ownership_type` — skema belum diputuskan) dan
+  "Receiving dari Subkontraktor" (SFG kembali dari pihak ketiga, masuk
+  `sfg_stock`). Detail lengkap: `docs/SIDEBAR_MENU_STANDARD.md` §6/§6a.
+- **`StockConfirmService`** (auto Confirm→Stock IN) — trigger legacy SQL
+  (`trg_rm_stock_confirm`/`trg_fg_stock_confirm`/`trg_sfg_stock_confirm`,
+  ditemukan di dump lama) belum di-port jadi PHP Service. **Cek dulu**
+  apakah bagian ini sudah tercakup oleh Stock In/Out yang sekarang live —
+  kemungkinan sebagian sudah, catatan sumbernya sebelum Stock In dibangun.
+- **13 kategori `doc_rmprefix1`** belum punya default COA account
+  (`default_stock_asset_account_id`/`default_gr_ir_account_id`) — baru 5
+  kategori (Kertas/Board, Tinta/Chemical, + GR/IR universal) yang di-seed;
+  sisanya (Gasoline, Solasi, Plastik, CTP Plate, Pack Material, ATK, 2×
+  Spare Part, Tools, Laptop/IT, Jasa, Peralatan Kebersihan) butuh review
+  manual user per kategori, bukan tebakan.
+
+---
+
+## 5. INVENTORY (tm2inv)
+
+- Sebagian besar sudah live (Stock In/Out/Return/Adjustment+Approval,
+  3 kelas RM/FG/SFG). Yang tersisa mengikuti dari gap Procurement di atas
+  (Purchase Receive 3-alur → tujuan akhirnya nulis ke `sfg_stock`).
+
+---
+
+## 6. PRODUCTION SCHEDULING / PPIC (tm2prd)
+
+Modul paling matang cakupannya tapi masih banyak sisa — daftar dari
+`project_production_scheduling_spec` (memori sesi, verifikasi ulang ke kode
+sebelum eksekusi):
+
+- `MachineCalendarService` masih jam tetap 08:00-20:00 Senin-Sabtu, belum
+  sadar `emp_shift_roster` untuk kapasitas MESIN (baru dipakai utk validasi
+  crew manual).
+- Rate Band untuk task `resource_type=MANUAL` masih throw error (belum
+  ditangani).
+- `RateBandResolver` masih pakai qty target operasi utk hitung rate
+  historis, bukan qty_good hasil Output (F15) yang sekarang sudah ada
+  datanya real.
+- `SchedulingRuleEngine::applySequencing()` masih 1-rule-only.
+- Decision Feedback calibration loop masih sebatas log, belum ada loop
+  belajar sungguhan.
+- MTS Forecast → WO auto-replenishment generator belum ditulis (entry +
+  accuracy tracking sudah ada, trigger generate WO-nya belum).
+- **Simulation Sandbox penuh** ("Submit ke Master Schedule", Tier1 §5A.1 —
+  tarik CO ke sandbox → PDR suggest → review → Submit) belum ada sama
+  sekali — Worklist WO + WO Detail sudah jadi fondasi natural utk ini.
+- WO-part convergence (1 operasi hilir dilayani >1 WO, mis. Badan+Tutup
+  ketemu di Packing) — skema saat ini 1 `iqp_part` = 1 `prd_wo`, belum
+  bisa model ini, butuh desain tabel baru (`prd_wo_convergence` atau
+  sejenis).
+- `iqp_part` → `prod_part` (master part reusable lintas-order) belum
+  ter-link — `prod_part` sendiri ternyata tidak pernah terisi.
+- Reroute-Subkontrak di dialog "Sisip Hot Job" masih cuma tampil opsi,
+  belum bisa benar-benar di-apply (butuh generate PO Subkontrak otomatis
+  dari situ, beda dari alur Breakdown→Subkontrak yang sudah ada).
+- Qty Kebutuhan di tab Bill of Material WO Detail belum dikalikan faktor
+  Imposition (`qty_factor`/`i_cut_per_plano`) — masih qty order mentah.
+- `prod_part_artwork` kosong di semua baris — Master Card tab tidak bisa
+  tampilkan foto produk/dieline asli, masih placeholder.
+- **F10-F14 & F18-F20** (MRP netting, Material Substitution/Cutting Yield
+  engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
+  Interruption Profile reporting) — semua secara eksplisit ditunda user,
+  belum digarap sama sekali.
+- **Maintenance submodule** (`PROD_MTN_SCH`/`PROD_MTN_PREV`) — di luar
+  cakupan modul Production Scheduling menurut Tier1 §6 sendiri, belum ada
+  spec sama sekali.
+- `PROD_MON_WO` sekarang sudah kepakai (Screen #3 Monitoring Dashboard) —
+  **BUKAN lagi item terbuka**, catatan lama yang bilang ini ambigu sudah
+  usang.
+
+---
+
+## 7. FINANCE & ACCOUNTING (tm2acc)
+
+- **Auto-jurnal Delivery/Invoice** — PV & Stock Out(RM) sudah auto-posting
+  (`JournalPostingService`), tapi Delivery(DO)/Invoice sengaja ditunda
+  karena butuh mekanisme snapshot Costing V2 di titik shipment (Keputusan B
+  `FIN_TIER_1.md`: COGS diakui saat DO, bukan saat Stock-Out RM). **DO
+  sekarang sudah ada layarnya** (`dispatch/do/entry.blade.php`, live sejak
+  2026-08-28) — prasyarat "DO belum ada" di catatan lama SUDAH TERPENUHI,
+  tapi status mekanisme snapshot Costing V2 itu sendiri **belum
+  dikonfirmasi ada atau tidak** — cek dulu sebelum mulai.
+- **Outstanding PV report** — user minta diingatkan, sengaja ditunda
+  sampai Stock Out dibangun (**Stock Out SUDAH live sejak 2026-08-22** —
+  item ini sudah UNBLOCKED secara prasyarat). Masih butuh 1 keputusan
+  desain sebelum bisa dibangun: bagaimana cara track serah-terima barang
+  dari gudang ke departemen peminta setelah PV di-posting (3 opsi pernah
+  diajukan: kolom qty-per-line spt `c_qty_received`, dokumen baru "Bukti
+  Serah Terima Barang", atau flag simpel per-PV — user belum memilih).
+  Menu placeholder `PROC_MON_PV` (NOT_BUILT) sudah ada slotnya.
+- **Payroll (tm2pyr) — SELURUH MODUL belum dibangun** (bukan cuma
+  enkripsi). CLAUDE.md §2 sendiri menandai ini requirement yang belum
+  diimplementasikan sama sekali. Termasuk di dalamnya: enkripsi data
+  gaji at-rest (algoritma/key management/kolom mana yang kena — belum ada
+  keputusan desain apa pun, jangan mulai tanpa konfirmasi).
+- **13 kategori `doc_rmprefix1` tanpa default COA** — sama item dengan §4
+  Procurement (mempengaruhi Finance juga karena ini soal akun jurnal).
+
+---
+
+## 8. HRM / RECRUITMENT (tm2hrm, tm2hrr)
+
+- **Recruitment L8 (Sync Log)** — sengaja dilewati saat modul dibangun
+  (2026-08-29), belum ada; L1-L9 lain (minus L8) sudah live.
+- **`org_position` masih ada posisi HR Manager/Dept Head yang tidak
+  ter-mapping** ke pegawai asli — approval Recruitment saat ini jalan
+  lewat tabel terpisah (`rcr_approver_assignment`, role→user langsung)
+  sebagai workaround, bukan lewat `org_position` yang seharusnya jadi
+  sumber kebenaran jangka panjang. Perlu HR data-cleanup tersendiri, di
+  luar cakupan Recruitment itu sendiri.
+- **Flutter mobile channel** untuk Portal Rekrutmen — dicatat sebagai
+  rencana di CLAUDE.md §2, backend Firestore sudah siap dipakai bareng,
+  tapi kanal HP-nya sendiri belum dibangun sama sekali.
+- **Master Komponen / arah final Master Card** — pertanyaan lama (Jo,
+  2026-08-18) soal di mana data product/part/material/proses seharusnya
+  diinput (WO vs Costing) kemungkinan **sudah terjawab implisit** oleh
+  pembangunan WO Detail tab Master Card (2026-08-28, baca dari
+  `vw_master_card` + berbagai tabel existing, field kosong tampil
+  "— belum diisi" apa adanya) — verifikasi ke Jo apakah ini sudah
+  dianggap cukup atau masih ada yang kurang sebelum menutup item ini.
+
+---
+
+## 9. MIGRASI FILAMENT `/admin` (lintas-modul)
+
+Baru HRM (2 Resource + 1 Page) yang dipindah sebagai bukti pola —
+**Sales/Procurement/Inventory/Production/Finance/9 layar Recruitment
+lain/Setup masih 100% di shell lama.** Pola & 2 gotcha crash yang sudah
+terpecahkan (generator `--cluster` crash, tipe union `$navigationGroup`)
+didokumentasikan di `docs/admindashboardstandard.md` §6 — dipakai ulang
+begitu modul berikutnya digarap. **Jangan mulai modul berikutnya tanpa
+arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
+`admindashboardstandard.md` §12, dipertegas ulang di sini).
+
+---
+
+## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
+
+- **`class="grid"` + `grid-cols-N` Tailwind mentah tanpa `.two`/`.three`**
+  — ditemukan di puluhan file Blade lain (FORM_UI_STANDARD.md §2), belum
+  diaudit penuh. Kebanyakan kebetulan aman (`grid-cols-4` cocok dgn
+  default), tapi rapuh kalau default `.grid` berubah nanti.
+- **Halaman transaksi iframe** (Inquiry, Stock In, Quotation, dst) —
+  belum ikut sistem tema `sys_theme` (themestandard.md §6), masih warna
+  Tailwind literal.
+- **Rename `is_active`→`activate` global** — sudah selesai di semua DB
+  KECUALI `sec_user.active` (kolom legacy terpisah, sengaja tidak diubah,
+  BUKAN item terbuka — dicatat di sini supaya tidak disangka lupa).
+- **WYSIWYG template-editor untuk Nota/print** — ide sempat dilontarkan
+  saat print/nota component diekstrak (2026-08-28), sengaja ditunda
+  (keputusan setingkat modul baru, belum diminta).
+- **QUEUE item #9 lama (theme picker penuh via `sys_user_menu`)** —
+  memori 2026-08-20 bilang ini masih pending, TAPI sistem tema (matrix
+  4 mode x 3 corak, picker di dropdown avatar) sudah selesai dibangun
+  2026-08-31 (`themestandard.md`) — **kemungkinan besar sudah usang/
+  terselesaikan**, verifikasi dulu sebelum menganggap ini masih terbuka.
+
+---
+
+## 11. KEBIJAKAN BESAR — DIPUTUSKAN TAPI BELUM DIEKSEKUSI
+
+- **Semua menu aplikasi jadi Bahasa Inggris** (keputusan user 2026-08-29,
+  bukan cuma grup HRM) — belum dieksekusi. Butuh rencana tersendiri
+  (kemungkinan per-modul: pilih 1 modul, translate `sys_app_menu.label`
+  lewat migration, verifikasi, `npm run build`, lanjut modul berikutnya).
+  **Jangan lakukan mass-rename sebagai efek samping tugas lain** — hanya
+  item BARU yang sudah pakai Inggris sejak keputusan ini (mis. "Help &
+  Support", "Configuration" yang dibangun hari ini), label lama tetap
+  Indonesia sampai giliran modul itu tiba.
+
+---
+
+## SELESAI (dipindahkan dari section di atas, bukan dihapus)
+
+*(kosong — belum ada item dari file ini yang selesai dikerjakan)*
