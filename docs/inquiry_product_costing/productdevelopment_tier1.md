@@ -162,20 +162,28 @@ duplikasi:
    penekanan user) — `id_part` FK ke `prod_part`, `seq` (urutan), `process_id`
    FK ke `prod_process` (lookup existing), `machine_id` FK opsional ke
    `prod_machine`, `notes`. Dipakai ulang sbg TEMPLATE saat WO Generation
-   (`WoGenerationService`) — bukan diketik ulang tiap kali.
-2. **`prod_part_layout`** — hasil `ImpositionEngine` per part (plano
-   size/method/up_count/efficiency_pct/layout_detail JSON) — pada dasarnya
-   `iqp_layout` yang ada sekarang dipindah/diduplikasi ke level Master
-   Product (reusable), bukan 1:1 ke 1 Inquiry part saja.
-3. **`prod_part_attachment`** (BARU, permintaan user barusan) — upload
-   file JPEG/PDF/AI (Adobe Illustrator) per part: `id_part` FK,
-   `file_type` (JPEG/PDF/AI), `file_path`, `original_filename`,
-   `uploaded_by`/`uploaded_at`. Pola upload ikuti yang sudah established
-   di Master Employee (`WithFileUploads` Livewire trait,
-   `->store("prodev/{id_part}/attachment", 'public')`, lihat
+   (`WoGenerationService`) — bukan diketik ulang tiap kali. **SELALU per
+   part** (tiap part definisi routing-nya sendiri, tidak digabung — beda
+   dari layout di poin 2).
+2. **`prod_layout_group`** (REVISI 2026-09-02, lihat §4.2b) — 1 Master
+   Card = 1 baris di sini, BUKAN 1:1 ke `prod_part`. `id_product` FK,
+   `mastercard_code`, plano size/method/up_count/efficiency_pct/
+   `layout_detail` JSON, `status` (DRAFT/CONFIRMED). **1 group bisa
+   menaungi 1 ATAU LEBIH part** — keputusan gabung/pisah adalah hasil
+   ENGINE (§4.2b), bukan aturan tetap di skema.
+   + **`prod_layout_group_part`** (junction): `id_layout_group` FK,
+   `part_id` FK, `qty_up_in_group` (berapa banyak part ini muncul dalam 1
+   plano gabungan itu). Menggantikan rencana `prod_part_layout` di draf
+   sebelumnya (SALAH, ditulis 1:1 per part — dikoreksi user).
+3. **`prod_part_attachment`** — upload file JPEG/PDF/AI (Adobe
+   Illustrator): bisa nempel ke `part_id` (dieline/artwork 1 part) ATAU
+   ke `id_layout_group` (preview gabungan hasil nesting) — 2 kolom FK
+   nullable, isi salah satu. Pola upload ikuti yang sudah established di
+   Master Employee (`WithFileUploads` Livewire trait,
+   `->store("prodev/{id}/attachment", 'public')`, lihat
    `resources/views/pages/master/employee.blade.php:499`) — **AI file
-   TIDAK bisa di-preview inline browser** (bukan format native web),
-   cuma disimpan+bisa didownload; JPEG/PDF bisa preview inline
+   TIDAK bisa di-preview inline browser** (bukan format native web), cuma
+   disimpan+bisa didownload; JPEG/PDF bisa preview inline
    (`<img>`/embed PDF).
 
 **Temuan penting**: `Kode Pisau` (nama/rujukan pisau, string) dan
@@ -183,6 +191,40 @@ duplikasi:
 biasanya lebih besar dari area cetak krn ada margin gripper) adalah 2
 **field terpisah** di form asli. `vw_master_card` baru punya yang pertama.
 Ini konfirmasi ada gap kolom nyata, bukan cuma gap layar.
+
+### 4.2b Keputusan Gabung vs Pisah = Output ENGINE (klarifikasi user 2026-09-02)
+
+**Masalah di sistem manual lama**: Master Card bisa berisi 1 part atau
+gabungan >1 part TANPA aturan konsisten — kadang gabung, kadang pisah,
+tergantung kebiasaan desainer saat itu. Ini bukan sekadar soal tampilan,
+tapi **soal ekonomi**: gabung 2 part (mis. outer box + inner box) dalam 1
+plano bisa menghemat kertas/plate/make-ready dibanding cetak terpisah —
+TAPI tidak selalu, tergantung ukuran & sisa area masing-masing part.
+
+**Aturan yang DIKUNCI**:
+- **1 `iqp_inquiry` = 1 `prod_product`** (sudah tervalidasi ke kode:
+  `iqp_inquiry.parent_product_id` FK tunggal ke `prod_product`, bukan
+  many-to-many — arsitektur existing SUDAH benar, tidak perlu diubah).
+- **1 `prod_product` = bisa multi `prod_part`** (juga sudah existing,
+  `prod_part.product_id` FK).
+- **Tiap `prod_part` WAJIB punya definisi sendiri yang jelas** (dimensi,
+  material, dst — via kolom §4.2) — identitas part TIDAK PERNAH digabung/
+  dikaburkan, apa pun hasil keputusan layout.
+- **Penyusunan dieline/layout (gabung atau pisah) adalah keputusan
+  ProDev**, dibantu ENGINE yang membandingkan skenario: (a) tiap part 1
+  plano sendiri-sendiri, vs (b) kombinasi part mana digabung ke plano
+  mana — lalu **rekomendasikan yang paling ekonomis** (biaya kertas +
+  plate + make-ready terendah). Officer tetap bisa override rekomendasi
+  engine.
+
+**Konsekuensi ke Costing (§5)**: kalau 2+ part berbagi 1 `prod_layout_group`
+(1 plano gabungan), biaya kertas/plate plano itu HARUS dialokasikan
+proporsional ke tiap part (mis. berdasar luas area yang dipakai per part
+dalam layout, via `qty_up_in_group` × luas part ÷ total luas terpakai) —
+**bukan tiap part dihitung seolah-olah punya plano sendiri-sendiri**, itu
+akan melipatgandakan biaya kertas secara keliru. Ini butuh logic baru di
+`CostingEngine.php`, belum ada sama sekali sekarang (engine sekarang
+selalu asumsi 1 part = 1 plano independen).
 
 ### 4.3 TOOLS & ENGINE Catalog (dengan PREVIEW ON SCREEN)
 
@@ -201,12 +243,16 @@ visual di layar** (bukan cuma angka) — ini poin eksplisit user.
 | 7 | **3D/Visual simulation per-copy** | Preview visual tiap unit di lembar (bukan cuma bounding box kotak) sebelum di-approve | Sebagian (`ImpositionEngine::cells()` sudah kasih koordinat per-cell utk render, tapi masih kotak polos, belum bentuk dieline asli) | Heidelberg Signa Station Packaging Pro "reliable visual monitoring as 3D simulation for each copy" |
 | 8 | **CAD import** (dieline dari software desain) | Import bentuk dieline asli (bukan cuma bounding-box W×H) supaya nesting/interlock presisi | ❌ Belum — `iqp_part.flat_w`/`flat_h` cuma 2 angka, tidak ada bentuk polygon | Heidelberg "import and processing of all common CAD data formats" · Esko ArtiosCAD (native) |
 | 9 | **Auto-trigger dari MIS/order data** | Layout otomatis ke-generate begitu data order masuk, tanpa staff harus buka tool manual | ❌ Belum (relevan kalau Tool #2/#5 sudah jalan, baru worth diotomatisasi) | Kodak Pandora "SmartLayout... automatically build layouts via your MIS system" |
+| 10 | **Intra-Product Part Combiner** (BARU, klarifikasi user 2026-09-02, §4.2b) | Beda dari Tool #5 (gang-run LINTAS order/produk) — ini gang-run ANTAR-PART dalam 1 produk yang SAMA (mis. outer+inner box 1 order). Coba semua kombinasi gabung/pisah part dalam `prod_product` yang sama, ranking by biaya kertas+plate total, hasilkan 1/lebih `prod_layout_group` | ❌ Belum — ini akar masalah yang diangkat user (kelemahan sistem manual: gabung/pisah tanpa aturan), **prioritas tertinggi** dari 10 tool ini | Konsep gabungan Esko Phoenix combination-run + Insoft Imp cost-based imposition, diterapkan ke skala intra-product bukan lintas-order |
 
 **Catatan jujur**: Tool #3 (Interlocking), #6, #8 (CAD import bentuk asli,
 bukan bounding-box) itu levelnya signifikan lebih rumit — butuh representasi
 GEOMETRI POLYGON asli (bukan cuma W×H persegi panjang), rendering SVG/canvas
 interaktif, dan kemungkinan library geometri (clipping/rotation polygon).
 Ini BUKAN 1-2 hari kerja kalau mau serius — realistis dikerjakan bertahap.
+Tool #10 lebih sederhana dari itu (masih bounding-box W×H, "cuma" kombinasi
+gabung/pisah + bandingkan total biaya) — realistis jadi titik mulai paling
+masuk akal krn langsung jawab masalah inti yang diangkat user.
 
 ### 4.4 Data Flow In/Out
 
@@ -313,16 +359,17 @@ dikonfirmasi user dulu sebelum dieksekusi.
 
 ## 7. Pertanyaan Terbuka / Keputusan yang Dibutuhkan
 
-1. **Prioritas tool** — dari 9 tool §4.3, mana yang mau dikerjakan duluan?
-   Realistis bertahap: Tool #1 (pindah rumah + skema baru) → #2 (Pcs→Plano,
-   ekstensi natural dari #1) → #4 (Die-Rule, dampak langsung ke HPP) → baru
-   yang lebih rumit (#3/#6/#8, butuh representasi geometri).
-2. **Dimensi Master Card di level Part atau Product?** Data riil MC-*.xlsx
-   nunjuk ke 1 produk jadi (bukan per-komponen), tapi skema `prod_part`
-   sudah ada existing sbg unit kerja Costing/Production — perlu diputuskan
-   apakah Master Card = 1 baris per `prod_part`, atau perlu level baru
-   di atas part (mis. 1 Master Card bisa mencakup >1 part kalau produknya
-   multi-komponen, spt outer+inner box).
+1. **Prioritas tool** — dari 10 tool §4.3, mana yang mau dikerjakan duluan?
+   Realistis bertahap: Tool #1 (pindah rumah + skema baru) → #10
+   (Intra-Product Combiner, akar masalah yang diangkat user) → #2
+   (Pcs→Plano) → #4 (Die-Rule, dampak langsung ke HPP) → baru yang lebih
+   rumit (#3/#6/#8, butuh representasi geometri).
+2. ~~Dimensi Master Card di level Part atau Product?~~ **[TERJAWAB
+   2026-09-02, §4.2b]**: 1 Inquiry = 1 Product (FK tunggal, sudah
+   tervalidasi), 1 Product = multi Part (masing-masing part definisinya
+   sendiri jelas), TAPI layout/Master Card = `prod_layout_group` yang bisa
+   menaungi 1 atau lebih part — keputusan gabung/pisah adalah OUTPUT
+   engine (Tool #10), bukan aturan tetap di skema.
 3. **Sumber `Kode Item`** (kode mnemonic spt `MKR-TTP ALS ECLS`) — apakah
    ini digenerate otomatis dari aturan tertentu (customer+produk+desain),
    atau selalu manual diketik desainer? Perlu tahu polanya dari lebih
