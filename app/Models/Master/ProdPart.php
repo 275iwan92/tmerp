@@ -98,8 +98,7 @@ class ProdPart extends Model
     public function layoutGroups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(ProdLayoutGroup::class, 'prod_layout_group_part', 'part_id', 'id_layout_group')
-            ->withPivot('qty_up_in_group')
-            ->withTimestamps(false);
+            ->withPivot('qty_up_in_group');
     }
 
     // Kode Item Master Card sementara (tier1 §7 poin 3) -- pola mnemonic final blm

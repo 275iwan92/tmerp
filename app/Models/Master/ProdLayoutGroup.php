@@ -54,8 +54,7 @@ class ProdLayoutGroup extends Model
     public function parts(): BelongsToMany
     {
         return $this->belongsToMany(ProdPart::class, 'prod_layout_group_part', 'id_layout_group', 'part_id')
-            ->withPivot('qty_up_in_group')
-            ->withTimestamps(false);
+            ->withPivot('qty_up_in_group');
     }
 
     public function attachments(): HasMany

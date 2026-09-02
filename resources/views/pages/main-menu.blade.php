@@ -120,6 +120,8 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'MD_HOLIDAY' => route('master.holiday'),
             'PROD_MST_PROCESS' => route('production.master-process'),
             'PROD_MST_CREW' => route('production.master-crew'),
+            'PROD_CARD' => route('production.prodev'),
+            'PROD_LAYOUT' => route('production.prodev'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),
