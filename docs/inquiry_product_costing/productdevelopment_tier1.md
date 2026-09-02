@@ -560,15 +560,24 @@ Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
    25-100MB, user pilih titik awal 25MB). AI **TIDAK wajib** disertai PDF
    — kalau preview-nya sulit, **cukup JPEG** sbg sumber preview visual
    (§4.2a poin 3), AI/PDF opsional sbg referensi/download saja.
-7. ~~Sumber dokumen & kepercayaan angka 12-22%?~~ **[TERJAWAB 2026-09-02]**:
-   dikonfirmasi dari Gemini (diminta riset ke Esko). Saya cross-check
-   langsung ke `docs.esko.com` — **konsep mekanismenya valid** (Esko
-   ArtiosCAD Layout Rubber tool memang punya rotasi/tumbling + hitung
-   efisiensi), **TAPI angka 12-22% TIDAK ditemukan di dokumentasi resmi
-   Esko manapun** yang saya akses — kemungkinan estimasi Gemini sendiri,
-   bukan statistik resmi. Keputusan user: pakai dulu sbg target awal
-   (`PRODEV_INTERLOCK_SAVING_MIN/MAX_PCT`, §4.2c), **adjust nanti kalau
-   trial nyata kurang efektif** — bukan angka final.
+7. ~~Sumber dokumen & kepercayaan angka 12-22%?~~ **[TERJAWAB 2026-09-02,
+   DIPERKUAT dgn riset lanjutan]**: dikonfirmasi dari Gemini (diminta
+   riset ke Esko). Cross-check langsung ke `docs.esko.com` — **konsep
+   mekanismenya valid** (ArtiosCAD Layout Rubber tool memang punya
+   rotasi/tumbling + hitung efisiensi), tapi angka 12-22% ITU SENDIRI
+   TIDAK ditemukan sbg 1 statistik resmi tunggal. **Riset putaran ke-2**
+   (sisa waktu sblm task 15:45): ketemu **studi kasus RIIL Esko Phoenix**
+   (folding carton converter, 3000+ SKU/bulan) — items per sheet naik
+   **2,1 → 2,5**, setara **~16-19% penghematan material** (dihitung dari
+   angka itu, bukan diklaim langsung oleh Esko sbg %). Plus 1 sumber
+   independen (industri die-cutting web-fed): **hingga 18%** pengurangan
+   board dari nesting+eliminasi gripper margin. **2 sumber independen
+   riil mendarat di ~16-19%, PAS di tengah 12-22%** — menaikkan
+   kepercayaan range ini jadi estimasi wajar (bukan lagi angka tanpa
+   dasar sama sekali), meski tetap BUKAN jaminan utk mesin/spesifikasi
+   Telasih Makmur sendiri. `PRODEV_INTERLOCK_SAVING_MIN/MAX_PCT`
+   (§4.2c) tetap dipakai, **adjust nanti kalau trial nyata beda** —
+   bukan angka final. Sources: [Esko Phoenix Case Study](https://www.esko.com/en/resources/large-folding-carton-converter-phoenix).
 8. ~~`flap_min_mm`/`flap_max_mm` — tabel referensi atau manual per
    part?~~ **[TERJAWAB]**: **tabel referensi** (pola `MatFluteAllowance`)
    — `mat_flap_rule` (§4.2a poin 5). Riset saya ke Esko/standar industri
@@ -619,3 +628,8 @@ Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
 - [ArtiosCAD Layout Rubber tool](https://docs.esko.com/docs/en-us/artioscad/14.1/userguide/en-us/common/ac/topic/UG4_Manufacturing_id1286088UNG28.html) — Esko, konfirmasi rotasi/tumbling + efficiency %, **TIDAK ada angka hemat 12-22%**
 - [instantprint file size guide](https://www.instantprint.co.uk/printspiration/print-design-tips/file-type-and-size-guide), [PakFactory artwork guide](https://pakfactory.com/guide-to-preparing-files-for-print) — dasar range 25-100MB batas upload
 - Pencarian glue flap minimum mm (Sttark, Bailipack, JohnsByrne, 3M/OZPak spec) — **TIDAK ketemu angka mm universal yang bisa diverifikasi**, dicatat sbg temuan negatif (bukan diabaikan)
+
+**Ronde 3 (perkuat estimasi 12-22%, 2026-09-02 sore):**
+
+- [Esko Phoenix Case Study — Large Folding Carton Converter](https://www.esko.com/en/resources/large-folding-carton-converter-phoenix) — studi kasus RIIL, items/sheet 2,1→2,5 (≈16-19% hemat material), sumber paling kuat yang ditemukan sejauh ini
+- Industri die-cutting web-fed (hingga 18% pengurangan board dari nesting+eliminasi gripper margin) — sumber independen ke-2, rentang serupa
