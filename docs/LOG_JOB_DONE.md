@@ -12,6 +12,19 @@
 
 ---
 
+## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #4)
+
+- **§12.7 — Cetak Purchase Order (PO) dibangun.** Dari 3 dokumen transaksi
+  yang belum punya print sama sekali (PR/PO/PQ), PO dikerjakan duluan
+  (paling kritis — dikirim ke supplier eksternal). Pola identik
+  `quotation/print.blade.php` (komponen `resources/views/components/print/*`).
+  Gate cetak: hanya setelah `status` APPROVED ke atas (bukan DRAFT/SUBMITTED),
+  redirect balik ke entry kalau dicoba akses langsung saat masih draft — sama
+  alasan quotation harus PUBLISHED dulu. Tombol "🖨 Cetak PO" baru di toolbar
+  `pur/po/entry.blade.php`. Diverifikasi `Livewire::test()` (PO RECEIVED ->
+  200, PO DRAFT -> redirect ke entry) + HTTP kernel 200. `npm run build`
+  dijalankan. PR & PQ print MASIH terbuka (dicatat `docs/BACKLOG.md` §12.7).
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #3)
 
 - **§7 — Outstanding PV report dibangun.** Prasyarat sudah terpenuhi
