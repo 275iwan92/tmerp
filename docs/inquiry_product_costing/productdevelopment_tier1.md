@@ -206,6 +206,27 @@ biasanya lebih besar dari area cetak krn ada margin gripper) adalah 2
 **field terpisah** di form asli. `vw_master_card` baru punya yang pertama.
 Ini konfirmasi ada gap kolom nyata, bukan cuma gap layar.
 
+### 4.2c Konstanta Engine — SUDAH DIBUAT di `sys_constant` (2026-09-02)
+
+Keputusan user: 3 angka placeholder (batas upload, estimasi hemat
+interlock, lidah minimum) **WAJIB gampang di-adjust admin TANPA deploy
+kode** — bukan hardcode PHP. Sudah dieksekusi (bukan cuma rencana),
+migration `2026_09_02_000020_seed_prodev_engine_constants.php`, tampil
+otomatis di layar Configuration (`category_code='PRODUCTION'`,
+`constant_group='PRODEV'`, pola persis sama dgn konstanta `COSTING` yang
+sudah dipakai `CostingEngine.php` via `SysConstant::number()`):
+
+| `constant_key` | Nilai awal | Catatan |
+|---|---|---|
+| `PRODEV_UPLOAD_MAX_MB` | 25 | Batas upload JPEG/PDF/AI (§4.2a poin 3) — user: "start with 25MB dulu" |
+| `PRODEV_INTERLOCK_SAVING_MIN_PCT` | 12 | Estimasi hemat Interlocking Nesting, batas bawah (§4.3 Tool #3) — angka riset luar, BUKAN resmi Esko (§7 poin 7), user: "pakai saja 12-22% nanti kalau kurang efektif ditentukan lagi" |
+| `PRODEV_INTERLOCK_SAVING_MAX_PCT` | 22 | Pasangan di atas, batas atas |
+| `PRODEV_FLAP_MIN_MM` | 20 (2cm) | Lidah minimum DEFAULT/FALLBACK global (§4.3a, §7 poin 8) — user tegaskan **seharusnya bergantung panjang & lebar tutup** (formula, bukan angka flat), 2cm cuma titik awal sampai `mat_flap_rule` (§4.2a poin 5) terisi & logic formulanya ditulis |
+
+Dipakai via `SysConstant::number('PRODEV_FLAP_MIN_MM', 20)` dst — pola
+identik yang sudah dipakai `CostingEngine.php` (`RIM_SHEETS`,
+`PLANO_REF_AREA`, dst), tidak perlu mekanisme baru.
+
 ### 4.2b Keputusan Gabung vs Pisah = Output ENGINE (klarifikasi user 2026-09-02)
 
 **Masalah di sistem manual lama**: Master Card bisa berisi 1 part atau
@@ -489,31 +510,41 @@ Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
    anak** — jadi `prod_part_finishing` (bukan `finishing_notes` teks di
    §4.2), 1 baris per jenis finishing, siap dikaitkan ke biaya/urutan
    proses masing-masing di Costing/routing nanti.
-6. **Batas upload file** (§4.2a) — ukuran maks, apakah AI wajib disertai
-   PDF export (utk preview) atau cukup file AI mentah tersimpan? **Masih
-   terbuka.**
-7. **Sumber dokumen** (`imposition_nesting`, `gemini_spark_productcosting.md`,
-   `mockup_mastercard.jpg`) — dari riset user sendiri atau AI lain (Gemini)?
-   Perlu tahu tingkat kepercayaan formulanya, terutama klaim hemat 12-22%
-   dari Interlocking Nesting (ini angka umum industri, belum tentu pas
-   dgn mesin/spesifikasi CV. Telasih Makmur — jangan dipakai mentah-mentah
-   sbg target performa). **Masih terbuka.**
+6. ~~Batas upload file?~~ **[TERJAWAB 2026-09-02]**: **25MB**
+   (`PRODEV_UPLOAD_MAX_MB`, §4.2c — riset saya ke kebijakan upload printer
+   packaging lain menghasilkan range 25-100MB, user pilih titik awal
+   25MB), disimpan sbg `sys_constant` biar admin bisa naikkan tanpa
+   deploy. Sub-pertanyaan "AI wajib disertai PDF export?" **masih
+   terbuka** — belum dijawab eksplisit.
+7. ~~Sumber dokumen & kepercayaan angka 12-22%?~~ **[TERJAWAB 2026-09-02]**:
+   dikonfirmasi dari Gemini (diminta riset ke Esko). Saya cross-check
+   langsung ke `docs.esko.com` — **konsep mekanismenya valid** (Esko
+   ArtiosCAD Layout Rubber tool memang punya rotasi/tumbling + hitung
+   efisiensi), **TAPI angka 12-22% TIDAK ditemukan di dokumentasi resmi
+   Esko manapun** yang saya akses — kemungkinan estimasi Gemini sendiri,
+   bukan statistik resmi. Keputusan user: pakai dulu sbg target awal
+   (`PRODEV_INTERLOCK_SAVING_MIN/MAX_PCT`, §4.2c), **adjust nanti kalau
+   trial nyata kurang efektif** — bukan angka final.
 8. ~~`flap_min_mm`/`flap_max_mm` — tabel referensi atau manual per
    part?~~ **[TERJAWAB]**: **tabel referensi** (pola `MatFluteAllowance`)
-   — tabel baru mis. `mat_flap_rule` (material/jenis lem → flap_min_mm/
-   flap_max_mm). **Butuh data riil dari user** (aturan lem/struktur per
-   material) sebelum tabel ini bisa diisi — belum ada di dokumen manapun
-   yang sudah dibaca, jadi ini jadi prasyarat sebelum ENGINE Tingkat 1
-   bisa jalan produksi sungguhan (bisa mulai dgn placeholder/default dulu
-   utk pengembangan, tapi jangan dipakai kalkulasi harga riil sebelum
-   angka aslinya masuk).
-9. **[BARU] Berapa banyak contoh kasus flap/interlock riil dibutuhkan
-   sebelum ENGINE Tingkat 1 dianggap cukup teruji?** — beda dari
+   — `mat_flap_rule` (§4.2a poin 5). Riset saya ke Esko/standar industri
+   **tidak ketemu 1 angka mm universal yang bisa dipercaya** (proprietary
+   tiap converter) — 1 angka yang sempat ketemu ("1.5× tebal board") GAGAL
+   diverifikasi ulang ke sumber aslinya (dicoba fetch 2×, gagal), jadi
+   TIDAK dipakai. **Cek ulang ke 5 file MC-*.xlsx juga TIDAK BISA dipakai**
+   — `Ukuran Pisau` di situ adalah ukuran 1 PLAT PISAU utk SEMUA up
+   sekaligus (mis. 4-UP), bukan 1 unit+lidah, jadi tidak bisa dihitung
+   mundur tanpa menebak susunan barisnya. Keputusan user: **seharusnya
+   FORMULA bergantung panjang & lebar tutup** (bukan 1 angka flat per
+   material) — belum diimplementasi, `PRODEV_FLAP_MIN_MM=20` (2cm, §4.2c)
+   jadi fallback global SEMENTARA sampai formula & `mat_flap_rule` siap.
+   **Angka riil dari tim produksi Telasih Makmur sendiri masih jadi
+   prasyarat** sebelum dipakai kalkulasi harga sungguhan.
+9. **Berapa banyak contoh kasus flap/interlock riil dibutuhkan sebelum
+   ENGINE Tingkat 1 dianggap cukup teruji?** — beda dari
    `CostingEngine.php` SHEET_DIGITAL yang sudah diverifikasi byte-presisi
    ke 1 Excel asli, engine imposition ini BELUM ada data pembanding riil
-   sama sekali — perlu tau apakah ada dokumen/kasus serupa
-   `docs/attachments/` yang bisa jadi bahan verifikasi sebelum dipakai
-   produksi sungguhan. **Masih terbuka.**
+   sama sekali. **Masih terbuka.**
 
 ---
 
@@ -524,3 +555,9 @@ Sebagian besar sudah dijawab user via pertanyaan pilihan-ganda
 - [Prinect Signa Station Packaging Pro](https://www.heidelberg.com/global/en/software/workflow/prinect_modules/packaging_workflow_1/prinect_signa_station_packaging_pro/product_information_113/prinect_signa_station_packaging_pro.jsp) — Heidelberg
 - [InSoft Automation — Imp](https://insoftautomation.com/) · [Latest Update (No-Mix-Gang)](https://insoftautomation.com/latest-update/)
 - [Packaging Layout Automation (PLA) — Pandora 11.0](https://workflowhelp.kodak.com/display/PANDORA110/Packaging+Layout+Automation+(PLA)+Software+User+Guide) — Kodak
+
+**Ronde 2 (verifikasi klaim §7 poin 6-8):**
+
+- [ArtiosCAD Layout Rubber tool](https://docs.esko.com/docs/en-us/artioscad/14.1/userguide/en-us/common/ac/topic/UG4_Manufacturing_id1286088UNG28.html) — Esko, konfirmasi rotasi/tumbling + efficiency %, **TIDAK ada angka hemat 12-22%**
+- [instantprint file size guide](https://www.instantprint.co.uk/printspiration/print-design-tips/file-type-and-size-guide), [PakFactory artwork guide](https://pakfactory.com/guide-to-preparing-files-for-print) — dasar range 25-100MB batas upload
+- Pencarian glue flap minimum mm (Sttark, Bailipack, JohnsByrne, 3M/OZPak spec) — **TIDAK ketemu angka mm universal yang bisa diverifikasi**, dicatat sbg temuan negatif (bukan diabaikan)
