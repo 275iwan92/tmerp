@@ -112,6 +112,11 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'INV_REF_WH' => route('master.warehouse.list'),
             'MD_MACHINE' => route('master.machine'),
             'MD_SHIFT' => route('master.shift'),
+            // MD_CURRENCY ternyata belum pernah dipetakan sejak dibuat
+            // 2026-08-30 (link mati) -- ditemukan & diperbaiki 2026-09-02
+            // sekalian nambah MD_EXCHRATE (Master Kurs, baru).
+            'MD_CURRENCY' => route('master.currency'),
+            'MD_EXCHRATE' => route('master.exchange-rate'),
             'PROD_MST_PROCESS' => route('production.master-process'),
             'PROD_MST_CREW' => route('production.master-crew'),
             'ACC_COA' => route('finance.coa'),

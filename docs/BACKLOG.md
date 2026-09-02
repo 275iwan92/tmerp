@@ -74,18 +74,22 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
 
 - ~~**~97 atribut `#[Title(...)]`** — SELESAI 2026-09-02, lihat "SELESAI"
   di bawah (solusi: str_replace di layout, bukan edit 97 file).~~
-- **PDF footer** (`resources/views/exports/generic-grid-pdf.blade.php`) dan
-  **email template** (`resources/views/emails/portal/verify-email.blade.php`)
-  — masih hardcode "TELASIH MAKMUR", belum baca `Brand::`.
-- **`fin_exchange_rate`** (tabel kurs baru) — belum ada layar CRUD, isi
-  manual lewat tinker/DB untuk sekarang.
-- **`geo_country.flag_emoji`** — kolom sudah ada, 250 baris semuanya NULL,
-  belum diisi (tidak ada sumber data reliable untuk auto-isi massal).
-- **Lapis kosmetik tema dashboard Filament** (mode pastel/bright/black,
-  `admindashboardstandard.md` §10.2) — baru diverifikasi render (status
-  200 + atribut ada), belum di-screenshot visual per mode/per layar
-  Filament (Resource table, form, widget) untuk pastikan tidak ada bagian
-  yang kelihatan pecah.
+- ~~**PDF footer** — SELESAI 2026-09-02, baca `Brand::name()`.~~
+- **Email template** (`resources/views/emails/portal/verify-email.blade.php`)
+  — SENGAJA tetap hardcode "TELASIH MAKMUR" (bukan lupa): ini email portal
+  karir ke CALON KARYAWAN eksternal, representasi NICKNAME company (sama
+  alasan `layouts::portal.blade.php`), bukan APP_NAME aplikasi internal.
+- ~~**`fin_exchange_rate`** — SELESAI 2026-09-02, layar CRUD "Master Kurs"
+  (`master/exchange-rate.blade.php`) dibangun, pola spreadsheet-editable +
+  versioned (1 baris aktif per currency).~~
+- ~~**`geo_country.flag_emoji`** — SELESAI 2026-09-02, semua 250 baris
+  terisi (dihitung dari `iso_code` via tabel referensi ISO 3166-1 alpha-3→
+  alpha-2 + rumus Unicode, bukan tebakan).~~
+- ~~**Lapis kosmetik tema dashboard Filament** — DIPERDALAM 2026-09-02:
+  ditemukan & diperbaiki BUG ARSITEKTURAL nyata (personalisasi per-user
+  ternyata tidak jalan sama sekali krn salah tempat, lihat "SELESAI" +
+  `admindashboardstandard.md` §10.2). Masih BELUM ada screenshot visual
+  browser asli (cuma verifikasi mekanisme via HTTP kernel).~~
 - **`sys_constant_category`** baru punya 5 kategori (Branding/Finance/
   Production/Procurement/Inventory) — kategori lain (mis. HRM, kalau nanti
   ada konstanta khusus HR) belum ditambahkan, tambah manual saat perlu.
@@ -428,3 +432,35 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
   NICKNAME company di permukaan customer-facing (portal karir, dst) —
   TIDAK dihapus, cuma diklarifikasi bukan nama legal. APP_NAME ("ERP TM",
   identitas aplikasi internal) tidak terpengaruh, konsep terpisah.
+- **§2 — PDF footer dinamis** (2026-09-02): `exports/generic-grid-pdf.blade.php`
+  sekarang baca `Brand::name()`.
+- **§2 — Master Kurs (`fin_exchange_rate`) dapat layar CRUD** (2026-09-02):
+  `resources/views/pages/master/exchange-rate.blade.php`, pola spreadsheet-
+  editable sama spt Master Currency, versioned (1 baris `activate=1` per
+  currency, baris lama otomatis nonaktif saat baris baru diaktifkan).
+  **Bonus temuan**: menu "Master Currency" (`MD_CURRENCY`) ternyata
+  **link mati sejak dibuat 2026-08-30** (tidak pernah dipetakan ke route di
+  `main-menu.blade.php`) — diperbaiki bersamaan.
+- **§2 — `geo_country.flag_emoji` terisi semua 250 baris** (2026-09-02):
+  DIHITUNG, bukan ditebak — `iso_code` (ISO 3166-1 alpha-3, sudah ada)
+  dipetakan ke alpha-2 lewat tabel referensi ISO baku, lalu emoji dihitung
+  via rumus Unicode Regional Indicator Symbol (deterministik, 0 karakter
+  emoji diketik manual). 0 baris NULL tersisa.
+- **§2 — BUG ARSITEKTURAL Filament ditemukan & diperbaiki (2026-09-02,
+  temuan terbesar hari ini)**: saat verifikasi lebih dalam lapis kosmetik
+  tema (5 mode x 4 halaman, bukan cuma 1 seperti sebelumnya), ketahuan
+  personalisasi aksen/mode dashboard **TIDAK PERNAH benar-benar jalan**
+  sejak dibangun kemarin — `AdminPanelProvider::panel()` cuma dieksekusi
+  SEKALI saat boot (`Filament::registerPanel()` via `app()->resolving()`),
+  JAUH SEBELUM auth resolve utk request itu, jadi `Auth::user()` di dalam
+  `panel()` SELALU null. Semua user sebenarnya melihat aksen/mode DEFAULT
+  yang sama, walau preferensi tersimpan benar di DB & form Save tidak
+  error — nyaris lolos tak ketahuan kalau cuma dites 1 mode. **Diperbaiki**:
+  personalisasi dipindah total ke render hook (`filament.partials.theme-matrix.blade.php`,
+  HEAD_END) yang TERBUKTI jalan per-request — aksen via `Color::hex()`
+  dipanggil ulang di situ (override CSS var `--primary-*` via cascade
+  urutan render), dark/light via script inline set `localStorage`+toggle
+  class `.dark` langsung. Diverifikasi ulang 20 kombinasi (5 mode x 4
+  halaman), 0 gagal. **Pelajaran dicatat** di `admindashboardstandard.md`
+  §10.2 utk Resource/Page Filament lain: jangan pernah panggil
+  `Auth::user()`/logic per-user di dalam `PanelProvider::panel()`.

@@ -114,6 +114,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
             Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
             Route::livewire('/master/currency', 'pages::master.currency')->name('master.currency');
+            Route::livewire('/master/exchange-rate', 'pages::master.exchange-rate')->name('master.exchange-rate');
             Route::livewire('/master/machine', 'pages::master.machine')->name('master.machine');
             Route::livewire('/master/shift', 'pages::master.shift')->name('master.shift');
 

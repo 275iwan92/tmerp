@@ -15,7 +15,7 @@
 <body>
     <h1>{{ $title }}</h1>
     <div class="meta">
-        Dicetak {{ now()->translatedFormat('d M Y H:i') }} — TELASIH MAKMUR ERP
+        Dicetak {{ now()->translatedFormat('d M Y H:i') }} — {{ \App\Support\Branding\Brand::name() }}
         @if ($truncated ?? false)
             <br><span style="color:#c0392b">⚠ Data dipotong ke {{ number_format($rowLimit) }} baris pertama (PDF tak cocok utk data sangat besar — pakai Excel/CSV utk data lengkap).</span>
         @endif

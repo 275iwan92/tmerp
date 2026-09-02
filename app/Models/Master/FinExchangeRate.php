@@ -35,6 +35,13 @@ class FinExchangeRate extends Model
         return $this->belongsTo(FinCurrency::class, 'currency_id', 'id_currency');
     }
 
+    // Accessor virtual utk kontrak HasSpreadsheetGrid (spreadsheetRows() baca
+    // $row->{$key} langsung) -- grid tampilkan kode currency, bukan FK id.
+    public function getCurrencyCodeAttribute(): ?string
+    {
+        return $this->currency?->currency_code;
+    }
+
     public static function currentRate(int $currencyId, float $default = 0.0): float
     {
         return (float) (static::query()

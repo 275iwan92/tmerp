@@ -259,28 +259,59 @@ di `<html>`) sebelum tombol Save bawaan Filament diklik (baru situ tersimpan
 permanen ke DB) — persis cara mockup ("ikutin mockup... begitu pula cara
 user menggantinya", instruksi user 2026-09-02).
 
-### 10.2 2 lapis implementasi — native Filament + kosmetik custom
+### 10.2 BUG ARSITEKTURAL nyata ditemukan & diperbaiki 2026-09-02 — `panel()` TIDAK jalan per-request
 
-**Lapis 1 (native, robust, di-generate Filament sendiri):**
-- **Aksen** → `Panel::colors(['primary' => Color::hex($hex)])`, dihitung per
-  request dari `Auth::user()->admin_theme_accent` di `AdminPanelProvider::panel()`
-  (map lengkap: `AdminPanelProvider::ACCENT_HEX`). Ini cara BENAR ganti
-  warna Filament — semua komponen (tombol/link/badge/nav aktif) otomatis
-  ikut, tidak perlu override CSS manual satu-satu.
-- **Dark/Light** → `Panel::darkMode()` (toggle-able, BUKAN lagi `darkMode(false)`
-  spt sebelum 2026-09-02) + `->defaultThemeMode(ThemeMode::Dark|Light)`
-  dihitung dari `admin_theme_mode` (`dark`/`black` → Dark, sisanya → Light).
-  Kontras teks dijamin BENAR oleh CSS dark-mode bawaan Filament sendiri.
+**Versi awal (SALAH, sempat live beberapa jam)**: personalisasi aksen/mode
+dihitung DI DALAM `AdminPanelProvider::panel()` (`Auth::user()->admin_theme_*`,
+lalu `->colors()`/`->defaultThemeMode()`). Ini SALAH — **`panel()` cuma
+dieksekusi SEKALI**, saat `PanelRegistry` PERTAMA KALI di-resolve dari
+container (`Filament::registerPanel()` → `app()->resolving(PanelRegistry::class, ...)`,
+lihat `vendor/filament/filament/src/Facades/Filament.php`), **jauh sebelum**
+middleware auth/session jalan untuk request itu. `Auth::user()` di dalam
+`panel()` **SELALU null** — akibatnya SEMUA user melihat aksen/mode yang
+SAMA (default statis), bukan preferensi masing-masing, meski tersimpan
+benar di DB dan form Save tidak error. Ketahuan lewat verifikasi silang 5
+mode × 4 halaman (bukan cuma 1 mode), bukan laporan user.
+
+**Perbaikan**: personalisasi dipindah SEPENUHNYA ke render hook HEAD_END
+(`filament.partials.theme-matrix.blade.php`) — render hook TERBUKTI jalan
+per-request (Blade di-render sesudah auth mapan). Mekanismenya:
+- **Aksen** → `Filament\Support\Colors\Color::hex($hex)` (fungsi PALET
+  YANG SAMA dipakai `Panel::colors()` internal, `App\Support\Branding\DashboardAccent::hex()`
+  utk lookup key→hex) dipanggil ULANG di render hook, hasil 11-shade
+  `--primary-50`..`--primary-950` di-echo sbg `<style>:root{...}</style>`
+  di HEAD_END — cascade CSS menang krn dirender PALING AKHIR (sama
+  selector `:root`, urutan sumber menentukan). `panel()` sendiri cuma set
+  default statis (blue) utk guest/fallback.
+- **Dark/Light** → `Panel::darkMode()` (toggle-able) TETAP dipanggil di
+  `panel()` (WAJIB, kalau `darkMode(false)` Filament maksa
+  `localStorage.theme='light'` tiap load, lihat `layout/base.blade.php`) —
+  TAPI keputusan mode aktual (`.dark` class + `localStorage.theme`)
+  di-set oleh script inline di render hook yang sama, dihitung dari user
+  yang benar-benar login. `->defaultThemeMode()` di `panel()` **dihapus**
+  (percuma, sama masalahnya dgn `->colors()`).
+
+**Diverifikasi ulang** (bukan cuma 1x): `Livewire::test()`/HTTP-kernel
+lintas 5 mode x 4 halaman (`/admin`, 2 Resource HRM, `/admin/profile`),
+cek isi script (`isDark` flag benar) + `--primary-500` OKLCH hue beda
+antar 2 aksen berbeda pada baris TERAKHIR (bukan cuma ada, tapi ada di
+posisi yang MENANG cascade). 0 gagal dari 20 kombinasi.
+
+**Pelajaran umum** (berlaku ke Resource/Page Filament lain juga): **jangan
+pernah panggil `Auth::user()`/logic per-user di dalam `PanelProvider::panel()`**
+— method ini SETARA konfigurasi statis boot-time, BUKAN lifecycle
+per-request. Personalisasi apa pun yang butuh user login HARUS lewat
+render hook, middleware, atau titik lain yang benar-benar jalan sesudah
+auth resolve.
 
 **Lapis 2 (kosmetik, best-effort, custom CSS):** variasi background per mode
 yang Filament sendiri TIDAK punya (pastel tint, glass blur ala mockup, OLED
-hitam pekat) — `resources/views/filament/partials/theme-matrix.blade.php`,
-didaftarkan via `->renderHook(PanelsRenderHook::HEAD_END, ...)`. Target CSS
-cuma container besar yang nama class-nya dipastikan stabil (`body.fi-body`,
-`.fi-sidebar`, `.fi-topbar`, `.fi-main`) — **BUKAN klaim override semua
-komponen Filament**, kalau ada komponen dalam yang belum ikut ganti
-background saat mode pastel/bright/black, itu memang belum tercakup lapis
-ini (bukan bug tersembunyi, keputusan sadar batasi scope).
+hitam pekat) — SAMA render hook di atas. Target CSS cuma container besar
+yang nama class-nya dipastikan stabil (`body.fi-body`, `.fi-sidebar`,
+`.fi-topbar`, `.fi-main`) — **BUKAN klaim override semua komponen
+Filament**, kalau ada komponen dalam yang belum ikut ganti background saat
+mode pastel/bright/black, itu memang belum tercakup lapis ini (bukan bug
+tersembunyi, keputusan sadar batasi scope).
 
 ### 10.3 Kenapa BUKAN tabel lookup spt `sys_theme`
 
@@ -318,8 +349,11 @@ caching di titik ini, query langsung tiap request).
 - `composer.json` mengunci `"filament/filament": "^5.7"` — jangan upgrade
   major version tanpa sepengetahuan user (breaking changes API besar antar
   major Filament).
-- Lapis 2 tema (§10.2) belum diuji visual lintas SEMUA layar Filament
-  (Resource table, form, widget) — cuma diverifikasi render (status 200,
-  atribut `data-fi-theme` ada) via HTTP kernel, bukan screenshot visual per
-  mode. Kalau ada bagian yang kelihatan pecah di mode tertentu, itu perluasan
-  selector CSS di §10.2, bukan rombak arsitektur.
+- Lapis 2 tema (§10.2, background per mode) & mekanisme aksen/dark-mode
+  **sudah diverifikasi lebih dalam** 2026-09-02 (20 kombinasi 5 mode x 4
+  halaman, cek isi script + posisi cascade CSS var yang menang) — TAPI ini
+  masih verifikasi MEKANISME (HTTP kernel, bukan browser sungguhan), BUKAN
+  screenshot visual asli. Kalau ada komponen Filament dalam yang kelihatan
+  pecah/kurang kontras di mode tertentu pas dilihat user, itu perluasan
+  selector CSS §10.2, bukan rombak arsitektur (arsitektur inti — akar
+  masalah "panel() bukan per-request" — sudah dipastikan benar).

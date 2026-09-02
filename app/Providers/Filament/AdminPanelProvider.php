@@ -5,7 +5,6 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\Auth\Login;
 use App\Support\Branding\Brand;
-use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -21,7 +20,6 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 // FASE MIGRASI FILAMENT (2026-08-30, keputusan user "migrasi total" via
@@ -44,29 +42,20 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 // disesuaikan ke `login`, bukan `email`.
 class AdminPanelProvider extends PanelProvider
 {
-    // 7 aksen mockup docs/mockups/mockup_dashboardcolor.html -> hex. 'blue'
-    // sengaja SAMA dgn --sh-accent shell lama (bukan mockup persis #2563eb)
-    // supaya default (user belum pernah ganti) tetap terasa 1 aplikasi.
-    private const ACCENT_HEX = [
-        'blue' => '#2f6fed',
-        'green' => '#059669',
-        'red' => '#dc2626',
-        'purple' => '#8b5cf6',
-        'amber' => '#f59e0b',
-        'cyan' => '#06b6d4',
-        'mono' => '#64748b',
-    ];
-
     public function panel(Panel $panel): Panel
     {
-        // Preferensi warna dashboard PERSONAL (docs/admindashboardstandard.md
-        // §10) -- beda dari brand/font (Brand::, aplikasi-wide). Dihitung per
-        // request dari user login, guest/belum login jatuh ke default
-        // light+blue (sama spt sebelumnya, ->darkMode(false) lama).
-        $user = Auth::guard('web')->user();
-        $accentKey = $user?->admin_theme_accent ?? 'blue';
-        $mode = $user?->admin_theme_mode ?? 'light';
-
+        // PENTING (ditemukan & diperbaiki 2026-09-02): panel() TIDAK jalan
+        // per-request meski terlihat begitu -- PanelProvider::register() cuma
+        // daftar closure ke Filament::registerPanel(), yg dieksekusi via
+        // app()->resolving(PanelRegistry::class, ...) SEKALI SAJA (pertama
+        // kali PanelRegistry di-resolve dari container, jauh sebelum
+        // middleware auth/session jalan utk request itu). Auth::user() di
+        // SINI SELALU null -- personalisasi per-user (accent/dark-mode)
+        // TIDAK BOLEH dihitung di method ini. Sudah dipindah ke render hook
+        // filament.partials.theme-matrix (HEAD_END, lihat di bawah) yang
+        // TERBUKTI jalan per-request (diverifikasi Livewire::test() lintas
+        // 5 mode). Di sini cukup default statis (blue/light, sama spt semua
+        // user sebelum fitur personalisasi ada).
         return $panel
             ->default()
             ->id('admin')
@@ -79,24 +68,22 @@ class AdminPanelProvider extends PanelProvider
             ->brandName(Brand::name())
             ->when(Brand::logoUrl(), fn (Panel $p, string $url) => $p->brandLogo($url))
             ->favicon(Brand::logoUrl() ?? asset('favicon.ico'))
-            // Accent warna dashboard (docs/admindashboardstandard.md §10) --
-            // dulu hardcode #2f6fed sama semua user, sekarang per-user lewat
-            // profil (sec_user.admin_theme_accent), native Filament ->colors()
-            // supaya SEMUA komponen (tombol/link/badge/nav aktif) ikut benar
-            // tanpa perlu override CSS manual satu-satu.
+            // Accent warna default (blue, sama dgn --sh-accent shell lama) --
+            // ini BUKAN accent final yang dilihat user login (itu di-override
+            // per-user oleh render hook theme-matrix di bawah, oklch(--primary-*)
+            // var yang sama dihasilkan Color::generatePalette() ulang di sana).
+            // Tetap dibutuhkan sbg fallback utk guest/halaman login (belum ada
+            // user utk dipersonalisasi).
             ->colors([
-                'primary' => Color::hex(self::ACCENT_HEX[$accentKey] ?? self::ACCENT_HEX['blue']),
+                'primary' => Color::hex(\App\Support\Branding\DashboardAccent::hex('blue')),
             ])
-            // Dark mode Filament (docs/admindashboardstandard.md §10, revisi
-            // 2026-09-02): DULU dipaksa terang total (->darkMode(false)) krn
-            // belum ada preferensi personal. SEKARANG ->darkMode() (toggle-able)
-            // + ->defaultThemeMode() dihitung dari sec_user.admin_theme_mode --
-            // mode dark/black nyalakan class Filament .dark asli (kontras teks
-            // dijamin benar oleh Filament sendiri), pastel/bright/light tetap
-            // mode terang Filament + lapisan kosmetik background dari
-            // filament.partials.theme-matrix (lihat render hook HEAD_END di bawah).
+            // ->darkMode() (BUKAN darkMode(false)) WAJIB tetap enabled --
+            // kalau false, Filament maksa localStorage.theme='light' tiap load
+            // (lihat layout/base.blade.php), yang akan menimpa override render
+            // hook. Default mode di sini juga cuma fallback guest (light) --
+            // mode final per-user diatur render hook (set localStorage + toggle
+            // class .dark langsung, override urutan render Filament sendiri).
             ->darkMode()
-            ->defaultThemeMode(in_array($mode, ['dark', 'black'], true) ? ThemeMode::Dark : ThemeMode::Light)
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => view('filament.partials.theme-matrix')->render())
             ->profile(EditProfile::class, isSimple: false)
             ->sidebarCollapsibleOnDesktop()
