@@ -123,6 +123,51 @@ class ImpositionEngine
         return $cells;
     }
 
+    /**
+     * Tingkat 1 ENGINE (docs/inquiry_product_costing/productdevelopment_tier1.md §4.3a) --
+     * parametric sweep: lidah (flap) bukan angka tetap tapi variabel dalam rentang valid
+     * struktural [flapMin, flapMax]. Tiap nilai lidah dihitung ulang pakai run() (yang sudah
+     * otomatis coba TEGAK/PUTAR/CAMPUR), lalu di-ranking by UP DESC, efficiency DESC.
+     * Officer pilih salah satu dari top-N ("Engine suggests, Officer confirms" CLAUDE.md §4).
+     *
+     * @return array<int, array> tiap elemen = hasil run() + 'flap_length_mm'/'flat_w'/'flat_h'
+     */
+    public function sweepFlap(
+        float $planoW, float $planoH, float $bodyW, float $bodyH, string $flapSide,
+        float $flapMin, float $flapMax, float $step, float $gap, float $gripper, float $margin,
+        int $topN = 5
+    ): array {
+        $results = [];
+
+        if ($flapMax < $flapMin || $step <= 0) {
+            return $results;
+        }
+
+        for ($flap = $flapMin; $flap <= $flapMax + 0.0001; $flap += $step) {
+            [$flatW, $flatH] = $this->applyFlap($bodyW, $bodyH, $flapSide, $flap);
+            $r = $this->run($planoW, $planoH, $flatW, $flatH, $gap, $gripper, $margin);
+            $r['flap_length_mm'] = round($flap, 2);
+            $r['flat_w'] = $flatW;
+            $r['flat_h'] = $flatH;
+            $results[] = $r;
+        }
+
+        usort($results, fn (array $a, array $b) => $b['up'] <=> $a['up'] ?: $b['efficiency_pct'] <=> $a['efficiency_pct']);
+
+        return array_slice($results, 0, $topN);
+    }
+
+    /**
+     * Dimensi bentangan (flat) efektif = body + lidah, tergantung sisi tempat lidah menempel.
+     */
+    private function applyFlap(float $bodyW, float $bodyH, string $flapSide, float $flap): array
+    {
+        return match ($flapSide) {
+            'LEFT', 'RIGHT' => [$bodyW + $flap, $bodyH],
+            default => [$bodyW, $bodyH + $flap], // TOP|BOTTOM
+        };
+    }
+
     private function fit(float $available, float $item, float $gap): int
     {
         if ($item + $gap <= 0) {
