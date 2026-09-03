@@ -68,16 +68,22 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     {
         return [
             'SALES_INQ' => route('inquiry.hub'),
-            // Pro-Dev (2026-09-03, koreksi user): SALES_IMPO dulu nunjuk ke
-            // inquiry.imposition.list (Imposition Engine lama, per-Inquiry) --
-            // sekarang dialihkan ke layar ProDev workbench (production.prodev,
-            // dibangun sesi otonom 2026-09-02/03) sesuai desain
+            // Pro-Dev (2026-09-03, koreksi user, DIKOREKSI LAGI hari sama):
+            // SALES_IMPO dulu nunjuk ke inquiry.imposition.list (Imposition
+            // Engine lama, per-Inquiry) -- sempat dialihkan LANGSUNG ke layar
+            // ProDev workbench (production.prodev) sesuai desain
             // productdevelopment_tier1.md §6 poin 2 "Imposition pindah dari
-            // Inquiry ke Product Development". Layar lama TETAP ADA di repo
-            // (route inquiry.imposition.list tidak dihapus), cuma sudah tidak
-            // ditaut dari menu manapun. Product Costing tetap module:COSTING
-            // (Sisi A rahasia, CLAUDE.md §4), cuma label dipendekkan "Pro-Cost".
-            'SALES_IMPO' => route('production.prodev'),
+            // Inquiry ke Product Development". TERNYATA itu melanggar
+            // griduistandard.md (grid dulu, baru klik-2x buka detail/tools/
+            // engine) -- user menegaskan ulang butuh GRID depan (ringkasan
+            // pekerjaan + status confirm per part) sebelum masuk workbench,
+            // bukan langsung nyemplung form. Sekarang -> production.prodev.list
+            // (grid baru, prodev-list.blade.php), yang barisnya double-click ke
+            // production.prodev per-part. Layar lama (inquiry.imposition.list)
+            // TETAP ADA di repo, cuma tidak ditaut dari menu manapun. Product
+            // Costing tetap module:COSTING (Sisi A rahasia, CLAUDE.md §4), cuma
+            // label dipendekkan "Pro-Cost".
+            'SALES_IMPO' => route('production.prodev.list'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
@@ -131,8 +137,8 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'MD_HOLIDAY' => route('master.holiday'),
             'PROD_MST_PROCESS' => route('production.master-process'),
             'PROD_MST_CREW' => route('production.master-crew'),
-            'PROD_CARD' => route('production.prodev'),
-            'PROD_LAYOUT' => route('production.prodev'),
+            'PROD_CARD' => route('production.prodev.list'),
+            'PROD_LAYOUT' => route('production.prodev.list'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),

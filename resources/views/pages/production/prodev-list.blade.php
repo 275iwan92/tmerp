@@ -1,0 +1,160 @@
+<?php
+
+use App\Models\Master\ProdPart;
+use App\Models\Sdi\IqpPart;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+
+// Worklist "Pro-Dev" (menu SALES_IMPO/PROD_CARD/PROD_LAYOUT) -- GRID depan
+// sebelum masuk workbench ProDev (production.prodev). Sebelumnya menu
+// langsung nyemplung ke form/workbench (koreksi user 2026-09-03 di
+// main-menu.blade.php), yang ternyata melanggar griduistandard.md §pola
+// dasar: grid dulu (ringkasan pekerjaan + status confirm) baru double-click
+// buka detail/tools/engine -- ditegaskan ulang user di sesi ini. Grid ini
+// murni ↗ Buka (tanpa ✓ Confirm/+ New Record, §griduistandard.md#7 --
+// confirm layout terjadi di dalam workbench lewat ENGINE, bukan flip status
+// sederhana di grid; part baru murni lahir dari Inquiry "Kirim ke ProDev"
+// atau dummy seed, bukan dari grid ini).
+new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
+{
+    #[Url]
+    public string $search = '';
+
+    public function open(int $id): void
+    {
+        $this->redirect(route('production.prodev', ['part' => $id]));
+    }
+
+    #[Computed]
+    public function parts()
+    {
+        return ProdPart::with(['product', 'layoutGroups'])
+            ->when($this->search !== '', function ($q) {
+                $q->where(function ($qq) {
+                    $qq->where('part_name', 'like', "%{$this->search}%")
+                        ->orWhere('part_code', 'like', "%{$this->search}%")
+                        ->orWhere('mastercard_code', 'like', "%{$this->search}%")
+                        ->orWhereHas('product', fn ($q2) => $q2->where('product_name', 'like', "%{$this->search}%"));
+                });
+            })
+            ->orderByDesc('id_part')
+            ->limit(200)
+            ->get();
+    }
+
+    // Mode #1 (dari Inquiry BARU) kalau ada minimal 1 iqp_part yang nunjuk balik
+    // ke prod_part ini via prod_part_id (sama pola dgn originInquiryParts() di
+    // prodev.blade.php) -- selain itu Mode #2 (manual/standalone).
+    #[Computed]
+    public function originPartIds()
+    {
+        return IqpPart::whereNotNull('prod_part_id')
+            ->distinct()
+            ->pluck('prod_part_id')
+            ->flip();
+    }
+
+    public function isFromInquiry(ProdPart $part): bool
+    {
+        return $this->originPartIds->has($part->id_part);
+    }
+
+    public function layoutStatus(ProdPart $part): string
+    {
+        $latest = $part->layoutGroups->sortByDesc('id_layout_group')->first();
+
+        if (! $latest) {
+            return 'BELUM MULAI';
+        }
+
+        return $latest->status === 'CONFIRMED' ? 'CONFIRMED' : 'DRAFT';
+    }
+
+    public function layoutStatusBadgeClass(string $status): string
+    {
+        return match ($status) {
+            'CONFIRMED' => 'bg-[#e9f9ef] text-[#16a34a]',
+            'DRAFT' => 'bg-[#fef6e7] text-[#b45309]',
+            default => 'bg-[#eef0f3] text-[#8a8f98]',
+        };
+    }
+
+    #[Computed]
+    public function statTotal(): int
+    {
+        return $this->parts->count();
+    }
+
+    #[Computed]
+    public function statConfirmed(): int
+    {
+        return $this->parts->filter(fn ($p) => $this->layoutStatus($p) === 'CONFIRMED')->count();
+    }
+
+    #[Computed]
+    public function statPending(): int
+    {
+        return $this->statTotal - $this->statConfirmed;
+    }
+};
+?>
+
+<div>
+    <div class="max-w-[1400px] mx-auto my-5 px-4">
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="total" label="Total Part" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" label="Sudah Confirm" :value="$this->statConfirmed" subtitle="LAYOUT TERKONFIRMASI" />
+            <x-grid.stat-box tone="warn" label="Belum Confirm" :value="$this->statPending" />
+        </x-grid.stat-row>
+
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+            <x-grid.toolbar>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama/kode part atau produk…"
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+            </x-grid.toolbar>
+
+            <x-grid.table-shell>
+                <table class="w-full border-collapse text-[12.5px]">
+                    <thead>
+                        <tr>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Part</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[180px]">Produk</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Asal</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[120px]">Status Layout</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->parts as $p)
+                            @php($status = $this->layoutStatus($p))
+                            <tr wire:key="pdp-{{ $p->id_part }}" wire:dblclick="open({{ $p->id_part }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Pro-Dev">
+                                <x-grid.identity-cell :id="$p->id_part" :name="$p->part_name" :code="$p->displayMastercardCode()" />
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->product?->product_name ?: '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    @if ($this->isFromInquiry($p))
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#eaf2ff] text-[#1d4ed8]">📥 Inquiry</span>
+                                    @else
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">✎ Manual</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->layoutStatusBadgeClass($status) }}">{{ $status }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                    <x-grid.action-icon icon="↗" title="Buka Pro-Dev" action="open({{ $p->id_part }})" />
+                                </td>
+                            </tr>
+                        @empty
+                            <x-grid.empty-row :colspan="5" message="Belum ada Part. Kirim part dari Inquiry Product (mode BARU) atau lewat dummy seed." />
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-grid.table-shell>
+        </div>
+    </div>
+</div>

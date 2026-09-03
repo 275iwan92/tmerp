@@ -230,6 +230,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
             Route::livewire('/production/master-crew', 'pages::production.master-crew')->name('production.master-crew');
+            Route::livewire('/production/prodev-list', 'pages::production.prodev-list')->name('production.prodev.list');
             Route::livewire('/production/prodev/{part?}', 'pages::production.prodev')->name('production.prodev')->where('part', '[0-9]+');
             Route::livewire('/production/prodev/{part}/print', 'pages::production.prodev-print')->name('production.prodev.print')->where('part', '[0-9]+');
         });
