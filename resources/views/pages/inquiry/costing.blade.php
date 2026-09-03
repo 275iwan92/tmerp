@@ -390,10 +390,47 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         return $this->redirect(route('quotation.entry', ['quotation' => $quotation->id_quotation]));
     }
+
+    // Wizard step-bar lintas modul, pola sama dgn inquiry/form.blade.php &
+    // production/prodev.blade.php::wizardSteps() (user 2026-09-03).
+    #[Computed]
+    public function wizardSteps(): array
+    {
+        $prodPartId = IqpPart::where('inquiry_id', $this->inquiryId)
+            ->whereNotNull('prod_part_id')
+            ->value('prod_part_id');
+
+        return [
+            'inquiry' => [
+                'label' => '1. Inquiry',
+                'url' => route('inquiry.form', ['id' => $this->inquiryId]),
+            ],
+            'development' => [
+                'label' => '2. Development',
+                'url' => $prodPartId ? route('production.prodev', ['part' => $prodPartId]) : null,
+                'reason' => 'Belum ada part yang dikirim ke ProDev.',
+            ],
+            'costing' => [
+                'label' => '3. Costing',
+                'url' => route('inquiry.costing', ['inquiry' => $this->inquiryId]),
+            ],
+            'mastercard' => [
+                'label' => 'Master Card',
+                'url' => $prodPartId ? route('production.prodev.print', ['part' => $prodPartId]) : null,
+                'reason' => 'Belum ada part yang dikirim ke ProDev.',
+            ],
+            'analytics' => [
+                'label' => 'Analytics',
+                'url' => null,
+                'reason' => 'Modul Analytics belum dibangun.',
+            ],
+        ];
+    }
 };
 ?>
 
 <div>
+    <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" />
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧮 TELASIH MAKMUR — Costing (HPP)</b>
         <span class="text-xs text-white/75">{{ $this->costing->inquiry?->inquiry_no ?? '—' }} · {{ $this->costing->inquiry?->product_draft_name }}</span>

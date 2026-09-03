@@ -105,6 +105,49 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public ?string $flash = null;
 
+    // Wizard step-bar lintas modul (mockup_FORM_prodev_header.png, user
+    // 2026-09-03 "ya, bikin step-bar lintas modul juga") -- pola SAMA dgn
+    // prodev.blade.php::wizardSteps(), job aktif = inquiry ini. Development/
+    // Master Card cuma reachable kalau minimal 1 part sudah "Kirim ke ProDev"
+    // (prod_part_id terisi) -- ambil part PERTAMA yg sudah terkirim.
+    #[Computed]
+    public function wizardSteps(): array
+    {
+        if (! $this->inquiry) {
+            return [];
+        }
+
+        $prodPartId = IqpPart::where('inquiry_id', $this->inquiry->id_inquiry)
+            ->whereNotNull('prod_part_id')
+            ->value('prod_part_id');
+
+        return [
+            'inquiry' => [
+                'label' => '1. Inquiry',
+                'url' => route('inquiry.form', ['id' => $this->inquiry->id_inquiry]),
+            ],
+            'development' => [
+                'label' => '2. Development',
+                'url' => $prodPartId ? route('production.prodev', ['part' => $prodPartId]) : null,
+                'reason' => 'Belum ada part yang dikirim ke ProDev (tombol "Kirim ke ProDev" di baris part, perlu Confirm dulu).',
+            ],
+            'costing' => [
+                'label' => '3. Costing',
+                'url' => route('inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]),
+            ],
+            'mastercard' => [
+                'label' => 'Master Card',
+                'url' => $prodPartId ? route('production.prodev.print', ['part' => $prodPartId]) : null,
+                'reason' => 'Belum ada part yang dikirim ke ProDev.',
+            ],
+            'analytics' => [
+                'label' => 'Analytics',
+                'url' => null,
+                'reason' => 'Modul Analytics belum dibangun.',
+            ],
+        ];
+    }
+
     public function mount(): void
     {
         $this->mode = strtoupper($this->mode ?: 'NEW');
@@ -1233,6 +1276,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 ?>
 
 <div>
+    @if ($this->inquiry)
+        <x-prodev.wizard-bar current="inquiry" :steps="$this->wizardSteps" />
+    @endif
     <header class="app-header">
         <b>{{ $mode === 'NEW' ? '✨ Inkuiri Produk Baru' : ($mode === 'RECALC' ? '🔁 Hitung Ulang Harga' : '✏️ Ubah Spesifikasi') }}</b>
         <span class="pill {{ strtolower($mode) }}">{{ $mode }}</span>

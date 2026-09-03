@@ -45,6 +45,43 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
         return OrgCompany::where('activate', true)->first();
     }
 
+    // Wizard step-bar lintas modul (user 2026-09-03), print:hidden -- tidak
+    // pernah ikut tercetak/PDF, murni navigasi on-screen. Pola sama dgn
+    // prodev.blade.php::wizardSteps(), job aktif = part ini.
+    #[Computed]
+    public function wizardSteps(): array
+    {
+        $origin = \App\Models\Sdi\IqpPart::where('prod_part_id', $this->partId)->whereHas(
+            'inquiry', fn ($q) => $q->where('stat_confirm', true)->whereNotIn('sub_state', ['DRAFT', 'CANCELLED', 'LOST'])
+        )->value('inquiry_id');
+
+        return [
+            'inquiry' => [
+                'label' => '1. Inquiry',
+                'url' => $origin ? route('inquiry.form', ['id' => $origin]) : null,
+                'reason' => 'Part ini Mode #2 (manual/standalone) -- tidak berasal dari Inquiry mana pun.',
+            ],
+            'development' => [
+                'label' => '2. Development',
+                'url' => route('production.prodev', ['part' => $this->partId]),
+            ],
+            'costing' => [
+                'label' => '3. Costing',
+                'url' => $origin ? route('inquiry.costing', ['inquiry' => $origin]) : null,
+                'reason' => 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.',
+            ],
+            'mastercard' => [
+                'label' => 'Master Card',
+                'url' => route('production.prodev.print', ['part' => $this->partId]),
+            ],
+            'analytics' => [
+                'label' => 'Analytics',
+                'url' => null,
+                'reason' => 'Modul Analytics belum dibangun.',
+            ],
+        ];
+    }
+
     #[Computed]
     public function signoffs()
     {
@@ -69,6 +106,10 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
+<div>
+<div class="print:hidden">
+    <x-prodev.wizard-bar current="mastercard" :steps="$this->wizardSteps" />
+</div>
 <x-print.document :theme="['accent' => '#8a5a00', 'accent-soft' => '#fdf3e2']" info="{{ $this->part->displayMastercardCode() }}">
     <x-slot:toolbar>
         <a href="{{ route('production.prodev', ['part' => $this->partId]) }}" class="sc">← Kembali ke ProDev</a>
@@ -176,3 +217,4 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
         </x-print.footer>
     </x-print.sheet>
 </x-print.document>
+</div>

@@ -105,6 +105,263 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         };
     }
 
+    // Redesign form (mockup_FORM_prodev_2/header.png, user 2026-09-03) --
+    // seluruh isi konten (kartu/border/teks) ikut tema tm2sys.sys_theme yang
+    // dipilih user (bukan cuma chrome header yg sudah otomatis ikut lewat
+    // --color-navy/--color-accent global, lihat themestandard.md §6 "halaman
+    // iframe belum digarap" -- layar ini jadi INSTANCE PERTAMA yg digarap).
+    #[Computed]
+    public function theme(): \App\Models\Sys\SysTheme
+    {
+        return \App\Support\ActiveTheme::resolve();
+    }
+
+    // "AI Waste Reduction" (mockup panel Efficiency Metrics) -- BUKAN angka
+    // dikarang: baseline = ImpositionEngine::run() TANPA shift/interlock pada
+    // flap+plano YANG SAMA dgn layout aktif (persis apa yg Tingkat 1 hasilkan),
+    // dibandingkan ke waste_pct SUNGGUHAN yg tersimpan di layout aktif (bisa
+    // dari Tingkat 1/2/Best Sheet). delta negatif = layout aktif lebih hemat
+    // drpd grid standar polos, exact makna "AI Waste Reduction -12.6%" mockup.
+    #[Computed]
+    public function wasteReductionVsStandard(): ?array
+    {
+        $group = $this->activeLayoutGroup;
+        $part = $this->part;
+
+        if (! $group || ! $part || ! $group->plano_w_mm || ! $group->plano_h_mm) {
+            return null;
+        }
+
+        $bodyW = (float) ($part->cm_width ?? 0) * 10;
+        $bodyH = (float) ($part->cm_length ?? 0) * 10;
+
+        if ($bodyW <= 0 || $bodyH <= 0) {
+            return null;
+        }
+
+        $flapLen = (float) (data_get($group->layout_detail, 'flap_length_mm') ?? $part->flap_length_mm ?? 0);
+        $side = $part->flap_side ?? 'TOP';
+
+        $engine = new ImpositionEngine;
+        [$flatW, $flatH] = $engine->applyFlap($bodyW, $bodyH, $side, $flapLen);
+        $baseline = $engine->run((float) $group->plano_w_mm, (float) $group->plano_h_mm, $flatW, $flatH, $this->gapMm(), $this->gripperMm(), $this->marginMm());
+
+        $activeWaste = (float) $group->waste_pct;
+        $baselineWaste = (float) $baseline['waste_pct'];
+        $deltaPct = $baselineWaste > 0 ? round((($activeWaste - $baselineWaste) / $baselineWaste) * 100, 1) : 0.0;
+
+        return [
+            'baseline_waste_pct' => $baselineWaste,
+            'active_waste_pct' => $activeWaste,
+            'delta_pct' => $deltaPct,
+            'is_improvement' => $deltaPct < -0.05,
+        ];
+    }
+
+    // Tab "1-Up Dieline" (viewer, mockup) -- geometri 1 unit (badan+lidah),
+    // REAL dari field part yg sama dipakai Engine, bukan gambar statis.
+    #[Computed]
+    public function dielineOneUp(): ?array
+    {
+        $part = $this->part;
+
+        if (! $part) {
+            return null;
+        }
+
+        $bodyWmm = (float) ($part->cm_width ?? 0) * 10;
+        $bodyHmm = (float) ($part->cm_length ?? 0) * 10;
+
+        if ($bodyWmm <= 0 || $bodyHmm <= 0) {
+            return null;
+        }
+
+        $side = $part->flap_side ?? 'TOP';
+        $flap = (float) ($part->flap_length_mm ?? 0);
+
+        $engine = new ImpositionEngine;
+        [$flatW, $flatH] = $engine->applyFlap($bodyWmm, $bodyHmm, $side, $flap);
+
+        $maxPx = 300;
+        $scale = min($maxPx / max($flatW, 1), $maxPx / max($flatH, 1));
+
+        return [
+            'flat_w_mm' => round($flatW, 1),
+            'flat_h_mm' => round($flatH, 1),
+            'body_w_mm' => round($bodyWmm, 1),
+            'body_h_mm' => round($bodyHmm, 1),
+            'flap_mm' => round($flap, 1),
+            'side' => $side,
+            'flat_w_px' => round($flatW * $scale, 1),
+            'flat_h_px' => round($flatH * $scale, 1),
+            'body_w_px' => round($bodyWmm * $scale, 1),
+            'body_h_px' => round($bodyHmm * $scale, 1),
+            'flap_px' => round($flap * $scale, 1),
+        ];
+    }
+
+    // Wizard step-bar lintas modul (mockup_FORM_prodev_header.png, user
+    // 2026-09-03 "ya, bikin step-bar lintas modul juga") -- dihitung per job
+    // AKTIF (part yg sedang dibuka). Inquiry/Costing cuma reachable kalau job
+    // ini Mode #1 (originInquiryParts non-empty, ambil inquiry_id pertama --
+    // 1 part reusable bisa >1 inquiry, dipakai yg PERTAMA/terbaru sbg wakil).
+    #[Computed]
+    public function wizardSteps(): array
+    {
+        if (! $this->part) {
+            return [];
+        }
+
+        $origin = $this->originInquiryParts->first();
+        $inquiryId = $origin['inquiry_id'] ?? null;
+
+        return [
+            'inquiry' => [
+                'label' => '1. Inquiry',
+                'url' => $inquiryId ? route('inquiry.form', ['id' => $inquiryId]) : null,
+                'reason' => 'Part ini Mode #2 (manual/standalone) -- tidak berasal dari Inquiry mana pun.',
+            ],
+            'development' => [
+                'label' => '2. Development',
+                'url' => route('production.prodev', ['part' => $this->partId]),
+            ],
+            'costing' => [
+                'label' => '3. Costing',
+                'url' => $inquiryId ? route('inquiry.costing', ['inquiry' => $inquiryId]) : null,
+                'reason' => 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.',
+            ],
+            'mastercard' => [
+                'label' => 'Master Card',
+                'url' => route('production.prodev.print', ['part' => $this->partId]),
+            ],
+            'analytics' => [
+                'label' => 'Analytics',
+                'url' => null,
+                'reason' => 'Modul Analytics belum dibangun.',
+            ],
+        ];
+    }
+
+    #[Computed]
+    public function jobOptions()
+    {
+        return ProdPart::with('product')
+            ->orderByDesc('id_part')
+            ->limit(150)
+            ->get()
+            ->map(fn (ProdPart $p) => [
+                'id' => $p->id_part,
+                'label' => ($p->product?->product_name ?: $p->part_name).' · '.$p->displayMastercardCode(),
+            ]);
+    }
+
+    public function switchJob(int $partId): void
+    {
+        $this->redirect(route('production.prodev', ['part' => $partId]));
+    }
+
+    // Highlight kartu Nesting Strategy mana yg lagi aktif (mockup) -- 'interlock'
+    // kalau layout tersimpan punya shift_offset_mm > 0 (hasil Tingkat 2), selain
+    // itu 'standard' (Tingkat 1, termasuk hasil Cari Plano Termurah/Tool #2 yg
+    // internal-nya juga sweepFlap tanpa shift).
+    public function activeNestingMethod(): ?string
+    {
+        $group = $this->activeLayoutGroup;
+
+        if (! $group) {
+            return null;
+        }
+
+        $shift = (float) (data_get($group->layout_detail, 'shift_offset_mm') ?? 0);
+
+        return $shift > 0 ? 'interlock' : 'standard';
+    }
+
+    // "Sisa Bahan per Lembar" (Stock Specifications, mockup) -- luas plano
+    // dikurangi luas terpakai layout aktif, REAL dari up_count x flat area.
+    public function planoWasteAreaCm2(): ?float
+    {
+        $group = $this->activeLayoutGroup;
+        $part = $this->part;
+
+        if (! $group || ! $part || ! $group->plano_w_mm || ! $group->plano_h_mm) {
+            return null;
+        }
+
+        $bodyW = (float) ($part->cm_width ?? 0) * 10;
+        $bodyH = (float) ($part->cm_length ?? 0) * 10;
+        $flap = (float) (data_get($group->layout_detail, 'flap_length_mm') ?? $part->flap_length_mm ?? 0);
+        $side = $part->flap_side ?? 'TOP';
+
+        $engine = new ImpositionEngine;
+        [$flatW, $flatH] = $engine->applyFlap($bodyW, $bodyH, $side, $flap);
+
+        $planoAreaMm2 = (float) $group->plano_w_mm * (float) $group->plano_h_mm;
+        $usedAreaMm2 = $flatW * $flatH * (int) $group->up_count;
+
+        return round(max(0, $planoAreaMm2 - $usedAreaMm2) / 100, 1); // mm2 -> cm2
+    }
+
+    // Viewer "2D Sheet" (mockup) saat TIDAK sedang milih kandidat baru --
+    // regenerasi cell dari layout_detail YANG SUDAH TERSIMPAN (bukan gambar
+    // statis) via ImpositionEngine::cells() yang SAMA dipakai runEngine*().
+    // Garis crease (badan<->lidah) dihitung dari rasio flap/(body+flap) pada
+    // sumbu tempat lidah nempel -- utk layout 'grid' semua cell rot-nya sama
+    // (lihat ImpositionEngine::cells()), utk 'mix' tiap cell bisa beda, jadi
+    // rasio dihitung PER CELL berdasar cell['rot']-nya sendiri (akurat utk 2 kasus).
+    #[Computed]
+    public function activeLayoutCells(): ?array
+    {
+        $group = $this->activeLayoutGroup;
+        $part = $this->part;
+
+        if (! $group || ! $part || ! $group->layout_detail || ! $group->plano_w_mm || ! $group->plano_h_mm) {
+            return null;
+        }
+
+        $layout = $group->layout_detail['layout'] ?? null;
+
+        if (! $layout) {
+            return null;
+        }
+
+        $engine = new ImpositionEngine;
+        $cells = $engine->cells(['layout' => $layout], $this->marginMm(), $this->gripperMm(), $this->gapMm());
+
+        $bodyW = (float) ($part->cm_width ?? 0) * 10;
+        $bodyH = (float) ($part->cm_length ?? 0) * 10;
+        $flap = (float) (data_get($group->layout_detail, 'flap_length_mm') ?? 0);
+        $side = $part->flap_side ?? 'TOP';
+        $flapOnStartEdge = in_array($side, ['TOP', 'LEFT'], true); // flap digambar di edge x=0/y=0 cell
+        $flapAlongWidth = in_array($side, ['LEFT', 'RIGHT'], true); // sumbu lidah = W (LEFT/RIGHT) atau H (TOP/BOTTOM)
+
+        $maxW = 640;
+        $maxH = 380;
+        $scale = min($maxW / (float) $group->plano_w_mm, $maxH / (float) $group->plano_h_mm);
+
+        return [
+            'boxW' => round((float) $group->plano_w_mm * $scale, 1),
+            'boxH' => round((float) $group->plano_h_mm * $scale, 1),
+            'gripperPx' => round($this->gripperMm() * $scale, 1),
+            'cells' => collect($cells)->map(function ($c) use ($scale, $flap, $flapAlongWidth, $flapOnStartEdge) {
+                // rot=false: sumbu asli. rot=true (dirotasi 90deg oleh engine): sumbu W/H tertukar.
+                $creaseIsVertical = $c['rot'] ? ! $flapAlongWidth : $flapAlongWidth; // garis crease vertikal (memisah kiri/kanan) kalau sumbu lidah = W
+                $dim = $creaseIsVertical ? $c['w'] : $c['h'];
+                $frac = $dim > 0 ? min(1, max(0, $flap / $dim)) : 0;
+
+                return [
+                    'left' => round($c['x'] * $scale, 1),
+                    'top' => round($c['y'] * $scale, 1),
+                    'width' => max(0, round($c['w'] * $scale, 1) - 1),
+                    'height' => max(0, round($c['h'] * $scale, 1) - 1),
+                    'rot' => $c['rot'],
+                    'crease_vertical' => $creaseIsVertical,
+                    'crease_pct' => round(($flapOnStartEdge ? $frac : 1 - $frac) * 100, 2),
+                ];
+            })->all(),
+        ];
+    }
+
     // GAP ditemukan user 2026-09-03 (mode #1 hanya bikin LINK, tak pernah
     // TAMPILKAN data asalnya) -- reverse-lookup semua iqp_part (bisa >1, part
     // reusable lintas-order) yg nunjuk ke prod_part ini via prod_part_id, lalu
@@ -143,6 +400,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     ->values();
 
                 return [
+                    'inquiry_id' => $ip->inquiry_id,
                     'inquiry_no' => $ip->inquiry?->inquiry_no,
                     'customer_name' => $ip->inquiry?->customer?->customer_name,
                     'part_name' => $ip->part_name,
@@ -199,6 +457,30 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     public function uploadMaxMb(): float
     {
         return SysConstant::number('PRODEV_UPLOAD_MAX_MB', 25);
+    }
+
+    // Parameter fisik mesin cetak (gap antar-unit, gripper margin, margin tepi
+    // plano) -- SEBELUMNYA hardcode 3.0/12.0/8.0 tersebar di 4 method beda,
+    // dipindah ke sys_constant (migration 2026_09_03_000014, pola sama
+    // PRODEV_FLAP_MIN_MM) supaya 1 sumber kebenaran & bisa di-adjust admin
+    // tanpa deploy. Ditampilkan sbg "Machine Specifications" (redesign
+    // mockup_FORM_prodev_2.png) -- angka NYATA yg dipakai Engine, bukan dekorasi.
+    #[Computed]
+    public function gapMm(): float
+    {
+        return (float) SysConstant::number('PRODEV_GAP_MM', 3.0);
+    }
+
+    #[Computed]
+    public function gripperMm(): float
+    {
+        return (float) SysConstant::number('PRODEV_GRIPPER_MM', 12.0);
+    }
+
+    #[Computed]
+    public function marginMm(): float
+    {
+        return (float) SysConstant::number('PRODEV_MARGIN_MM', 8.0);
     }
 
     public function updateField(string $field, $value): void
@@ -264,11 +546,11 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $results = $engine->sweepFlap(
             (float) $plano->width_mm, (float) $plano->height_mm,
             $bodyW, $bodyH, $side, $flapMin, $flapMax, 5.0,
-            gap: 3.0, gripper: 12.0, margin: 8.0, topN: 5
+            gap: $this->gapMm(), gripper: $this->gripperMm(), margin: $this->marginMm(), topN: 5
         );
 
         foreach ($results as $i => $r) {
-            $cells = $engine->cells($r, 8.0, 12.0, 3.0);
+            $cells = $engine->cells($r, $this->marginMm(), $this->gripperMm(), $this->gapMm());
             $maxW = 260;
             $maxH = 170;
             $scale = min($maxW / (float) $plano->width_mm, $maxH / (float) $plano->height_mm);
@@ -315,11 +597,11 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $results = $engine->sweepInterlock(
             (float) $plano->width_mm, (float) $plano->height_mm,
             $bodyW, $bodyH, $side, $flapMin, $flapMax, 5.0,
-            shiftStep: 5.0, gap: 3.0, gripper: 12.0, margin: 8.0, topN: 5
+            shiftStep: 5.0, gap: $this->gapMm(), gripper: $this->gripperMm(), margin: $this->marginMm(), topN: 5
         );
 
         foreach ($results as $i => $r) {
-            $cells = $engine->cells($r, 8.0, 12.0, 3.0);
+            $cells = $engine->cells($r, $this->marginMm(), $this->gripperMm(), $this->gapMm());
             $maxW = 260;
             $maxH = 170;
             $scale = min($maxW / (float) $plano->width_mm, $maxH / (float) $plano->height_mm);
@@ -367,12 +649,12 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $engine = new ImpositionEngine;
         $results = $engine->bestSheet(
             $this->planoSizes, $bodyW, $bodyH, $side, $flapMin, $flapMax, 5.0,
-            gap: 3.0, gripper: 12.0, margin: 8.0, targetQty: null, topN: 5
+            gap: $this->gapMm(), gripper: $this->gripperMm(), margin: $this->marginMm(), targetQty: null, topN: 5
         );
 
         foreach ($results as $i => $r) {
             $plano = MatPlanoSize::find($r['plano_size_id']);
-            $cells = $engine->cells($r, 8.0, 12.0, 3.0);
+            $cells = $engine->cells($r, $this->marginMm(), $this->gripperMm(), $this->gapMm());
             $maxW = 260;
             $maxH = 170;
             $scale = min($maxW / (float) $plano->width_mm, $maxH / (float) $plano->height_mm);
@@ -412,7 +694,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $engine = new ImpositionEngine;
         $dieRuleMeter = $engine->dieRuleMeterLari(
             $cand['layout'], $cand['up'], $cand['flap_length_mm'], $part->flap_side ?? 'TOP',
-            (float) ($part->cm_width ?? 0) * 10, (float) ($part->cm_length ?? 0) * 10, 3.0
+            (float) ($part->cm_width ?? 0) * 10, (float) ($part->cm_length ?? 0) * 10, $this->gapMm()
         );
 
         $payload = [
@@ -496,7 +778,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $this->combineResult = $engine->combinePair(
             (float) $plano->width_mm, (float) $plano->height_mm,
             $flatWA, $flatHA, $qtyA, $flatWB, $flatHB, $qtyB,
-            gap: 3.0, gripper: 12.0, margin: 8.0, splitStep: 10.0
+            gap: $this->gapMm(), gripper: $this->gripperMm(), margin: $this->marginMm(), splitStep: 10.0
         );
         $this->combineResult['part_a_name'] = $partA->part_name;
         $this->combineResult['part_b_name'] = $partB->part_name;
@@ -696,18 +978,35 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 };
 ?>
 
-<div>
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
+@php($__pdTheme = $this->theme)
+<div class="pd-wb min-h-screen bg-[var(--pd-bg)] text-[var(--pd-ink)]" style="
+    --pd-bg: {{ $__pdTheme->mode === 'dark' ? ($__pdTheme->content_bg_color ?: '#12162a') : ($__pdTheme->content_bg_color ?: '#eef1f6') }};
+    --pd-surface: {{ $__pdTheme->mode === 'dark' ? '#1b2140' : '#ffffff' }};
+    --pd-surface-alt: {{ $__pdTheme->mode === 'dark' ? '#20264a' : '#f4f6fa' }};
+    --pd-border: {{ $__pdTheme->mode === 'dark' ? '#2a3157' : '#d7dbe2' }};
+    --pd-ink: {{ $__pdTheme->mode === 'dark' ? '#c7cee8' : '#3a4256' }};
+    --pd-ink-strong: {{ $__pdTheme->mode === 'dark' ? '#eef1ff' : '#1c2440' }};
+    --pd-muted: {{ $__pdTheme->mode === 'dark' ? '#8089ac' : '#8a92ad' }};
+    --pd-input-bg: {{ $__pdTheme->mode === 'dark' ? '#161b36' : '#ffffff' }};
+    --pd-info-bg: {{ $__pdTheme->mode === 'dark' ? '#132540' : '#eef3fb' }};
+    --pd-info-bg-strong: {{ $__pdTheme->mode === 'dark' ? '#183055' : '#e0ecfa' }};
+    --pd-info-border: {{ $__pdTheme->mode === 'dark' ? '#25406b' : '#c3d8f5' }};
+    --pd-info-ink: {{ $__pdTheme->mode === 'dark' ? '#8fc1ff' : '#1560a8' }};
+">
+    @if ($this->part)
+        <x-prodev.wizard-bar current="development" :steps="$this->wizardSteps" :jobs="$this->jobOptions" :selected-job-id="$this->partId" />
+    @endif
+
+    <div class="bg-[var(--pd-surface)] border-b border-[var(--pd-border)] px-5 py-2 flex items-center gap-3.5">
         <a href="{{ route('production.prodev.list') }}" wire:navigate
-            class="text-white/80 text-xs px-2.5 py-1.5 rounded-md no-underline hover:bg-white/10 hover:text-white shrink-0" title="Kembali ke daftar Pro-Dev">← Daftar Part</a>
-        <b class="text-[15px]">🛠️ TELASIH MAKMUR — Product Development</b>
+            class="text-[var(--pd-muted)] text-xs px-2.5 py-1.5 rounded-md no-underline hover:bg-[var(--pd-surface-alt)] hover:text-[var(--pd-ink-strong)] shrink-0" title="Kembali ke daftar Pro-Dev">← Daftar Part</a>
         @if ($this->part)
-            <span class="text-xs text-white/75">{{ $this->part->displayMastercardCode() }} · {{ $this->part->part_name }}</span>
+            <span class="text-xs text-[var(--pd-ink)] font-semibold">{{ $this->part->displayMastercardCode() }} · {{ $this->part->part_name }}</span>
             <span class="text-[10.5px] font-bold px-2.5 py-1 rounded-full {{ $this->layoutStatusBadgeClass() }}">{{ $this->layoutStatusLabel() }}</span>
             <a href="{{ route('production.prodev.print', ['part' => $this->partId]) }}" target="_blank"
-                class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Cetak Master Card</a>
+                class="ml-auto bg-accent text-white text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Cetak Master Card</a>
         @endif
-    </header>
+    </div>
 
     <div class="max-w-[1320px] mx-auto my-5 px-4">
 
@@ -725,13 +1024,13 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             sini (snapshot/beku, CLAUDE.md §4), field teknis ProDev sendiri di bawah
             tetap fully-editable seperti biasa. --}}
             @if ($this->originInquiryParts->isNotEmpty())
-                <div class="bg-[#eef3fb] border border-[#c3d8f5] rounded-md overflow-hidden">
-                    <h3 class="text-xs text-[#1560a8] uppercase font-bold px-3.5 py-2 bg-[#e0ecfa] border-b border-[#c3d8f5]">
+                <div class="bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] rounded-md overflow-hidden">
+                    <h3 class="text-xs text-[var(--pd-info-ink)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-info-bg-strong)] border-b border-[var(--pd-info-border)]">
                         📥 Referensi Inquiry Asal (read-only, sudah CONFIRMED)
                     </h3>
                     <div class="p-3.5 flex flex-col gap-2.5">
                         @foreach ($this->originInquiryParts as $oi)
-                            <div class="text-[11.5px] text-[#1560a8] {{ ! $loop->last ? 'pb-2.5 border-b border-[#c3d8f5]' : '' }}">
+                            <div class="text-[11.5px] text-[var(--pd-info-ink)] {{ ! $loop->last ? 'pb-2.5 border-b border-[var(--pd-info-border)]' : '' }}">
                                 <div class="font-bold mb-1">
                                     {{ $oi['inquiry_no'] }} · {{ $oi['customer_name'] }} · {{ $oi['part_name'] }}
                                     @if ($oi['type_name'])<span class="opacity-70">({{ $oi['type_name'] }})</span>@endif
@@ -751,76 +1050,76 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             @endif
 
             {{-- ============ SPESIFIKASI TEKNIS ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📋 Spesifikasi Teknis (Master Card)</h3>
+            <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📋 Spesifikasi Teknis (Master Card)</h3>
                 <div class="p-3.5 grid three gap-2.5">
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Kode Item</label>
                         <input type="text" value="{{ $this->part->mastercard_code }}" placeholder="{{ $this->part->displayMastercardCode() }}"
-                            wire:change="updateField('mastercard_code', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                            wire:change="updateField('mastercard_code', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Kode Pisau (Die Code)</label>
-                        <input type="text" value="{{ $this->part->die_code }}" wire:change="updateField('die_code', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <input type="text" value="{{ $this->part->die_code }}" wire:change="updateField('die_code', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Bentuk Sambungan (Join Type)</label>
-                        <input type="text" value="{{ $this->part->joint_type }}" wire:change="updateField('joint_type', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <input type="text" value="{{ $this->part->joint_type }}" wire:change="updateField('joint_type', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
 
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Ukuran Pisau W x H (cm)</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->die_w_cm }}" wire:change="updateField('die_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->die_h_cm }}" wire:change="updateField('die_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->die_w_cm }}" wire:change="updateField('die_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->die_h_cm }}" wire:change="updateField('die_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Ukuran Bahan Mentah W x H (cm)</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Ukuran Cetak P x L (cm)</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->printsize_p }}" wire:change="updateField('printsize_p', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->printsize_l }}" wire:change="updateField('printsize_l', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->printsize_p }}" wire:change="updateField('printsize_p', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->printsize_l }}" wire:change="updateField('printsize_l', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Dimensi Badan (Body) P x L (cm) — dasar Engine</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->cm_length }}" wire:change="updateField('cm_length', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->cm_width }}" wire:change="updateField('cm_width', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->cm_length }}" wire:change="updateField('cm_length', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->cm_width }}" wire:change="updateField('cm_width', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Pack Qty (pcs/pack)</label>
-                        <input type="number" value="{{ $this->part->pack_qty }}" wire:change="updateField('pack_qty', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <input type="number" value="{{ $this->part->pack_qty }}" wire:change="updateField('pack_qty', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
 
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Warna Unit 1-4 Sisi Pertama (pisah koma)</label>
                         <input type="text" value="{{ implode(', ', $this->part->color_set_1 ?? []) }}" placeholder="Black, Cyan, Magenta, Yellow"
-                            wire:change="updateColorSet('color_set_1', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                            wire:change="updateColorSet('color_set_1', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Warna Unit 1-4 Sisi Kedua (pisah koma)</label>
                         <input type="text" value="{{ implode(', ', $this->part->color_set_2 ?? []) }}"
-                            wire:change="updateColorSet('color_set_2', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                            wire:change="updateColorSet('color_set_2', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
                 </div>
 
-                <h4 class="text-[11px] text-navy uppercase font-bold px-3.5 py-1.5 bg-[#f8fafc] border-y border-[#eef1f5]">🔖 Lidah / Flap (Engine §4.3a)</h4>
+                <h4 class="text-[11px] text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-1.5 bg-[var(--pd-surface-alt)] border-y border-[var(--pd-border)]">🔖 Lidah / Flap (Engine §4.3a)</h4>
                 <div class="p-3.5 grid three gap-2.5">
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Sisi Lidah</label>
-                        <select wire:change="updateField('flap_side', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <select wire:change="updateField('flap_side', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                             @foreach (['TOP', 'BOTTOM', 'LEFT', 'RIGHT'] as $side)
                                 <option value="{{ $side }}" @selected($this->part->flap_side === $side)>{{ $side }}</option>
                             @endforeach
@@ -828,115 +1127,276 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Panjang Lidah Saat Ini (mm)</label>
-                        <input type="number" step="0.1" value="{{ $this->part->flap_length_mm }}" wire:change="updateField('flap_length_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <input type="number" step="0.1" value="{{ $this->part->flap_length_mm }}" wire:change="updateField('flap_length_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Rentang Valid Min-Max (mm)</label>
                         <div class="flex gap-1.5">
                             <input type="number" step="0.1" value="{{ $this->part->flap_min_mm }}" placeholder="default {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_FLAP_MIN_MM', 20), 0) }}"
-                                wire:change="updateField('flap_min_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->flap_max_mm }}" wire:change="updateField('flap_max_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] w-1/2">
+                                wire:change="updateField('flap_min_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->flap_max_mm }}" wire:change="updateField('flap_max_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Lebar Lidah (mm, Tingkat 2)</label>
-                        <input type="number" step="0.1" value="{{ $this->part->flap_width_mm }}" wire:change="updateField('flap_width_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <input type="number" step="0.1" value="{{ $this->part->flap_width_mm }}" wire:change="updateField('flap_width_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Offset Lidah (mm, Tingkat 2)</label>
-                        <input type="number" step="0.1" value="{{ $this->part->flap_offset_mm }}" wire:change="updateField('flap_offset_mm', $event.target.value)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <input type="number" step="0.1" value="{{ $this->part->flap_offset_mm }}" wire:change="updateField('flap_offset_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                     </div>
                 </div>
             </div>
 
-            {{-- ============ IMPOSITION (§2 Master Card "Isi Dalam Satu Cetakan") ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center justify-between">
-                    <span>🎯 Isi Dalam Satu Cetakan (Imposition)</span>
-                    @if ($this->activeLayoutGroup)
-                        <span class="text-[10.5px] font-bold {{ $this->activeLayoutGroup->status === 'CONFIRMED' ? 'text-[#0e8a4f]' : 'text-[#8a5a00]' }}">
-                            {{ $this->activeLayoutGroup->status }} · {{ $this->activeLayoutGroup->up_count }} UP
-                        </span>
-                    @endif
-                </h3>
-                <div class="p-3.5">
-                    <div class="flex items-end gap-2.5 mb-3">
-                        <div class="flex flex-col gap-0.5">
-                            <label class="text-[11px] text-muted font-semibold">Ukuran Plano</label>
-                            <select wire:model="selectedPlanoId" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
-                                @foreach ($this->planoSizes as $p)
-                                    <option value="{{ $p->id_plano_size }}">{{ $p->plano_name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <button type="button" wire:click="runEngineTingkat1" title="Jalankan Engine Imposition (Tingkat 1: Flap Sweep) pada plano yang dipilih"
-                            class="px-4 py-1.5 rounded text-[11.5px] font-bold bg-[#2c7be5] text-white cursor-pointer">▶ Imposition</button>
-                        <button type="button" wire:click="runEngineTingkat2" title="Lanjutan (Tingkat 2): sweep interlock, geser lidah supaya saling mengunci"
-                            class="px-3 py-1.5 rounded text-[10.5px] font-semibold bg-[#f4f6fa] border border-[#d7dbe2] text-[#7c5cd6] cursor-pointer">Tingkat 2 (Interlock)</button>
-                        <button type="button" wire:click="runEngineBestSheet" title="Tool #2 -- coba SEMUA plano aktif, bukan cuma yg dipilih di dropdown di atas"
-                            class="px-3 py-1.5 rounded text-[10.5px] font-semibold bg-[#f4f6fa] border border-[#d7dbe2] text-[#8a5a00] cursor-pointer">Cari Plano Termurah</button>
+            {{-- ============ IMPOSITION (§2 Master Card "Isi Dalam Satu Cetakan") ============
+            Redesign 2026-09-03 (user, ikut mockup_FORM_prodev_2.png): 3 kolom --
+            Nesting Strategy+Machine/Stock Specs (kiri) | Viewer 2D/1-Up/3D (tengah) |
+            Efficiency Metrics (kanan). Semua wire:click METHOD SAMA PERSIS dgn
+            sebelumnya (runEngineTingkat1/2/BestSheet, pickCandidate, confirmLayout,
+            unlockLayout) -- cuma tatanan UI yg berubah. --}}
+            <div class="flex flex-col lg:flex-row gap-3.5 items-start" x-data="{ tab: 'sheet', zoom: 100, showCut: true, showCrease: true, showGripper: true }">
 
-                        @if ($this->activeLayoutGroup)
-                            @if ($this->activeLayoutGroup->status === 'CONFIRMED')
-                                <button type="button" wire:click="unlockLayout" class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#f4f6fa] border border-[#d7dbe2] text-navy cursor-pointer">🔓 Buka Kunci</button>
-                            @else
-                                <button type="button" wire:click="confirmLayout" class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Konfirmasi Layout</button>
-                            @endif
-                        @endif
+                {{-- ---- KIRI: Nesting Strategy + Machine Specs + Stock Specs ---- --}}
+                <div class="w-full lg:w-[280px] shrink-0 flex flex-col gap-3.5">
+                    <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">⚡ Nesting Strategy</h3>
+                        <div class="p-2.5 flex flex-col gap-1.5">
+                            <button type="button" wire:click="runEngineTingkat1" title="Standard Step-and-Repeat -- grid orthogonal tanpa rotasi/interlock (Tingkat 1)"
+                                class="text-left px-2.5 py-2 rounded-md border cursor-pointer {{ $this->activeNestingMethod() === 'standard' ? 'border-accent bg-[var(--pd-info-bg)]' : 'border-[var(--pd-border)] bg-[var(--pd-surface)] hover:bg-[var(--pd-surface-alt)]' }}">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">Standard Step-and-Repeat</span>
+                                    @if ($this->activeNestingMethod() === 'standard')<span class="text-[9px] font-bold text-accent">AKTIF</span>@endif
+                                </div>
+                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">Matrix bounding-box orthogonal, tanpa rotasi/interlock. Baseline.</div>
+                            </button>
+                            <button type="button" wire:click="runEngineTingkat2" title="AI Interlocking -- sweep interlock 180°, geser lidah supaya saling mengunci (Tingkat 2)"
+                                class="text-left px-2.5 py-2 rounded-md border cursor-pointer {{ $this->activeNestingMethod() === 'interlock' ? 'border-accent bg-[var(--pd-info-bg)]' : 'border-[var(--pd-border)] bg-[var(--pd-surface)] hover:bg-[var(--pd-surface-alt)]' }}">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">AI Interlocking</span>
+                                    @if ($this->activeNestingMethod() === 'interlock')<span class="text-[9px] font-bold text-accent">AKTIF</span>@endif
+                                </div>
+                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">Interlock 180°, kunci lidah ke kontur negatif tetangga. Perkiraan hemat {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_INTERLOCK_SAVING_MIN_PCT', 12), 0) }}–{{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_INTERLOCK_SAVING_MAX_PCT', 22), 0) }}%.</div>
+                            </button>
+                            <div class="text-left px-2.5 py-2 rounded-md border border-[var(--pd-border)] opacity-50" title="Segera hadir -- pola brick-offset belum ada di ImpositionEngine">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11.5px] font-bold text-[var(--pd-ink-strong)]">Staggered Brick Offset</span>
+                                    <span class="text-[9px] font-bold text-muted">SEGERA HADIR</span>
+                                </div>
+                                <div class="text-[10.5px] text-muted mt-0.5 leading-snug">Pola geser bata per-baris utk kontur asimetris. Belum diimplementasi.</div>
+                            </div>
+                            <button type="button" wire:click="runEngineBestSheet" title="Tool #2 -- coba SEMUA plano aktif, ranking lintas-plano by biaya"
+                                class="text-left px-2.5 py-1.5 rounded-md text-[10.5px] font-semibold text-accent hover:bg-[var(--pd-surface-alt)] cursor-pointer mt-0.5">🔍 Cari Plano Termurah (semua ukuran)</button>
+                        </div>
                     </div>
 
-                    @if (count($sweepCandidates) > 0)
-                        <div class="text-[11px] text-muted mb-2">Top {{ count($sweepCandidates) }} hasil (ranking UP terbanyak, lalu efisiensi tertinggi) — pilih salah satu:</div>
-                        <div class="flex gap-2.5 flex-wrap">
-                            @foreach ($sweepCandidates as $i => $c)
-                                <div class="border {{ $i === 0 ? 'border-[#22a06b]' : 'border-[#dde3ec]' }} rounded-md p-2.5 w-[280px]">
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <span class="text-[11px] font-bold text-navy">
-                                            @isset($c['plano_name']){{ $c['plano_name'] }} · @endisset
-                                            Lidah {{ $c['flap_length_mm'] }}mm
-                                            @isset($c['shift_offset_mm'])· Shift {{ $c['shift_offset_mm'] }}mm @endisset
-                                            · {{ $c['method'] }}
-                                        </span>
-                                        @if ($i === 0) <span class="text-[9.5px] bg-[#eaf7ee] text-[#0e8a4f] px-1.5 py-0.5 rounded font-bold">TERBAIK</span> @endif
-                                    </div>
-                                    <div class="bg-[#fbfcfd] border border-[#dde3ec] rounded flex items-center justify-center" style="height:180px">
-                                        <div class="relative bg-white border-2 border-navy" style="width:{{ $c['boxW'] }}px;height:{{ $c['boxH'] }}px">
-                                            @foreach ($c['cellsVisual'] as $cell)
-                                                <div class="absolute {{ $cell['rot'] ? 'bg-[#7c5cd6]/15 border border-[#7c5cd6]' : 'bg-[#2c7be5]/15 border border-[#2c7be5]' }}"
-                                                    style="left:{{ $cell['left'] }}px;top:{{ $cell['top'] }}px;width:{{ $cell['width'] }}px;height:{{ $cell['height'] }}px"></div>
-                                            @endforeach
+                    <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">🖨️ Machine Specifications</h3>
+                        <div class="p-3 flex flex-col gap-1.5 text-[11.5px]">
+                            <div class="flex items-center justify-between"><span class="text-muted">Gap Antar-Unit</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gapMm(), 1) }} mm</b></div>
+                            <div class="flex items-center justify-between"><span class="text-muted">Gripper Margin</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gripperMm(), 1) }} mm</b></div>
+                            <div class="flex items-center justify-between"><span class="text-muted">Margin Tepi Plano</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->marginMm(), 1) }} mm</b></div>
+                            <div class="text-[10px] text-muted mt-1 leading-snug">Parameter fisik mesin cetak sheetfed, dipakai semua kalkulasi Engine di panel ini (sys_constant PRODEV_*, admin bisa adjust dari Configuration).</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📦 Stock Specifications</h3>
+                        <div class="p-3 flex flex-col gap-2">
+                            <div class="flex flex-col gap-0.5">
+                                <label class="text-[10.5px] text-muted font-semibold">Ukuran Plano (Sheet Size)</label>
+                                <select wire:model="selectedPlanoId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[12.5px]">
+                                    @foreach ($this->planoSizes as $p)
+                                        <option value="{{ $p->id_plano_size }}">{{ $p->plano_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex flex-col gap-0.5">
+                                <label class="text-[10.5px] text-muted font-semibold">Ukuran Bahan Mentah W × H (cm)</label>
+                                <div class="flex gap-1.5">
+                                    <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[12.5px] w-1/2">
+                                    <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[12.5px] w-1/2">
+                                </div>
+                            </div>
+                            @if ($this->planoWasteAreaCm2() !== null)
+                                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-[var(--pd-border)]">
+                                    <span class="text-muted">Sisa Bahan / Lembar</span>
+                                    <b class="text-[var(--pd-ink-strong)]">{{ number_format($this->planoWasteAreaCm2(), 0) }} cm²</b>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ---- TENGAH: Viewer 2D Sheet / 1-Up Dieline / 3D Mockup ---- --}}
+                <div class="flex-1 min-w-0 flex flex-col gap-3.5 w-full">
+                    <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                        <div class="flex items-center justify-between px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click="tab = 'sheet'" :class="tab === 'sheet' ? 'bg-accent text-white' : 'text-muted hover:bg-[var(--pd-surface)]'" class="px-2.5 py-1 rounded text-[10.5px] font-bold cursor-pointer">2D Sheet</button>
+                                <button type="button" @click="tab = 'oneup'" :class="tab === 'oneup' ? 'bg-accent text-white' : 'text-muted hover:bg-[var(--pd-surface)]'" class="px-2.5 py-1 rounded text-[10.5px] font-bold cursor-pointer">1-Up Dieline</button>
+                                <button type="button" disabled title="Segera hadir -- render 3D mockup belum ada mesinnya" class="px-2.5 py-1 rounded text-[10.5px] font-bold text-muted opacity-50 cursor-not-allowed">3D Mockup</button>
+                            </div>
+                            <div class="flex items-center gap-1.5" x-show="tab === 'sheet'">
+                                <button type="button" @click="zoom = Math.max(40, zoom - 20)" class="w-6 h-6 rounded border border-[var(--pd-border)] text-[var(--pd-ink)] text-xs cursor-pointer">−</button>
+                                <span class="text-[10.5px] text-muted w-9 text-center" x-text="zoom + '%'"></span>
+                                <button type="button" @click="zoom = Math.min(200, zoom + 20)" class="w-6 h-6 rounded border border-[var(--pd-border)] text-[var(--pd-ink)] text-xs cursor-pointer">+</button>
+                            </div>
+                        </div>
+
+                        <div class="p-3.5" x-show="tab === 'sheet'">
+                            @if (count($sweepCandidates) > 0)
+                                <div class="text-[11px] text-muted mb-2">Top {{ count($sweepCandidates) }} hasil (ranking UP terbanyak, lalu efisiensi tertinggi) — pilih salah satu:</div>
+                                <div class="flex gap-2.5 flex-wrap">
+                                    @foreach ($sweepCandidates as $i => $c)
+                                        <div class="border {{ $i === 0 ? 'border-[#22a06b]' : 'border-[var(--pd-border)]' }} rounded-md p-2.5 w-[280px]">
+                                            <div class="flex items-center justify-between mb-1.5">
+                                                <span class="text-[11px] font-bold text-[var(--pd-ink-strong)]">
+                                                    @isset($c['plano_name']){{ $c['plano_name'] }} · @endisset
+                                                    Lidah {{ $c['flap_length_mm'] }}mm
+                                                    @isset($c['shift_offset_mm'])· Shift {{ $c['shift_offset_mm'] }}mm @endisset
+                                                    · {{ $c['method'] }}
+                                                </span>
+                                                @if ($i === 0) <span class="text-[9.5px] bg-[#eaf7ee] text-[#0e8a4f] px-1.5 py-0.5 rounded font-bold">TERBAIK</span> @endif
+                                            </div>
+                                            <div class="bg-[#fbfcfd] border border-[var(--pd-border)] rounded flex items-center justify-center" style="height:180px">
+                                                <div class="relative bg-white border-2 border-navy" style="width:{{ $c['boxW'] }}px;height:{{ $c['boxH'] }}px">
+                                                    @foreach ($c['cellsVisual'] as $cell)
+                                                        <div class="absolute {{ $cell['rot'] ? 'bg-[#7c5cd6]/15 border border-[#7c5cd6]' : 'bg-[#2c7be5]/15 border border-[#2c7be5]' }}"
+                                                            style="left:{{ $cell['left'] }}px;top:{{ $cell['top'] }}px;width:{{ $cell['width'] }}px;height:{{ $cell['height'] }}px"></div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between mt-1.5 text-[11px]">
+                                                <span><b>{{ $c['up'] }}</b> up · {{ number_format($c['efficiency_pct'], 0) }}% efisien
+                                                    @isset($c['gross_sheets'])· {{ $c['gross_sheets'] }} lembar dibutuhkan @endisset
+                                                </span>
+                                                <button type="button" wire:click="pickCandidate({{ $i }})" class="text-[11px] font-bold text-accent cursor-pointer">Pilih →</button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="flex items-center justify-between mt-1.5 text-[11px]">
-                                        <span><b>{{ $c['up'] }}</b> up · {{ number_format($c['efficiency_pct'], 0) }}% efisien
-                                            @isset($c['gross_sheets'])· {{ $c['gross_sheets'] }} lembar dibutuhkan @endisset
-                                        </span>
-                                        <button type="button" wire:click="pickCandidate({{ $i }})" class="text-[11px] font-bold text-accent cursor-pointer">Pilih →</button>
+                                    @endforeach
+                                </div>
+                            @elseif ($this->activeLayoutCells())
+                                @php($__al = $this->activeLayoutCells())
+                                <div class="flex items-center gap-3 mb-2 text-[10.5px]">
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCut"> <span class="text-muted">Cut Knife</span></label>
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCrease"> <span class="text-muted">Crease</span></label>
+                                    <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showGripper"> <span class="text-muted">Gripper</span></label>
+                                </div>
+                                <div class="bg-[#fbfcfd] border border-[var(--pd-border)] rounded overflow-auto p-4 flex items-center justify-center" style="min-height:340px">
+                                    <div class="relative bg-white border-2 border-navy origin-center" :style="`width:{{ $__al['boxW'] }}px;height:{{ $__al['boxH'] }}px;transform:scale(${zoom / 100})`">
+                                        <div class="absolute inset-x-0 top-0 bg-[#f2c94c]/15 border-b border-dashed border-[#c99a1f]" x-show="showGripper" style="height:{{ $__al['gripperPx'] }}px"></div>
+                                        @foreach ($__al['cells'] as $cell)
+                                            <div class="absolute border border-accent bg-accent/10" x-show="showCut"
+                                                style="left:{{ $cell['left'] }}px;top:{{ $cell['top'] }}px;width:{{ $cell['width'] }}px;height:{{ $cell['height'] }}px">
+                                                <div class="absolute border-dashed border-[#c0392b]" x-show="showCrease"
+                                                    style="{{ $cell['crease_vertical'] ? "left:{$cell['crease_pct']}%;top:0;bottom:0;border-left-width:1.5px" : "top:{$cell['crease_pct']}%;left:0;right:0;border-top-width:1.5px" }}"></div>
+                                            </div>
+                                        @endforeach
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-                    @elseif ($this->activeLayoutGroup)
-                        <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[#f0f7f4] border border-[#c3e6d1] text-[#0e5c38]">
-                            Layout aktif: <b>{{ $this->activeLayoutGroup->method }} = {{ $this->activeLayoutGroup->up_count }} up</b>
-                            (efisiensi {{ number_format($this->activeLayoutGroup->efficiency_pct, 0) }}%, lidah {{ $this->part->flap_length_mm }}mm).
-                            @if ($this->activeLayoutGroup->die_rule_meter)
-                                Estimasi meter lari pisau (Tool #4): <b>{{ number_format($this->activeLayoutGroup->die_rule_meter, 2) }} m</b>.
+                                <div class="text-[11px] text-muted mt-2">🔵 Cut Knife (biru) · 🔴 Crease (merah putus-putus) · 🟡 Gripper margin (kuning, area tak-tercetak).</div>
+                            @else
+                                <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">
+                                    Belum ada layout tersimpan. Pilih strategi nesting di kiri, lalu klik salah satu kartu utk jalankan Engine.
+                                </div>
                             @endif
-                            Jalankan Engine lagi kalau mau coba opsi lain.
                         </div>
-                    @else
-                        <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[#e8f4ff] border border-[#b8d9f5] text-[#1560a8]">
-                            Belum ada layout tersimpan. Isi dimensi badan (cm_length/cm_width) &amp; rentang lidah di atas, lalu klik Jalankan Engine.
+
+                        <div class="p-3.5" x-show="tab === 'oneup'">
+                            @if ($this->dielineOneUp())
+                                @php($__du = $this->dielineOneUp())
+                                <div class="bg-[#fbfcfd] border border-[var(--pd-border)] rounded flex items-center justify-center p-6" style="min-height:340px">
+                                    <div class="relative bg-white border-2 border-navy" style="width:{{ $__du['flat_w_px'] }}px;height:{{ $__du['flat_h_px'] }}px">
+                                        @php($__isVert = in_array($__du['side'], ['LEFT', 'RIGHT']))
+                                        <div class="absolute bg-accent/10 border border-accent"
+                                            style="{{ $__du['side'] === 'TOP' ? "left:0;right:0;top:0;height:{$__du['flap_px']}px" : ($__du['side'] === 'BOTTOM' ? "left:0;right:0;bottom:0;height:{$__du['flap_px']}px" : ($__du['side'] === 'LEFT' ? "top:0;bottom:0;left:0;width:{$__du['flap_px']}px" : "top:0;bottom:0;right:0;width:{$__du['flap_px']}px")) }}"></div>
+                                        <div class="absolute {{ $__isVert ? 'top-0 bottom-0' : 'left-0 right-0' }} border-dashed border-[#c0392b]"
+                                            style="{{ $__isVert
+                                                ? ($__du['side'] === 'LEFT' ? "left:{$__du['flap_px']}px;border-left-width:1.5px" : "right:{$__du['flap_px']}px;border-right-width:1.5px")
+                                                : ($__du['side'] === 'TOP' ? "top:{$__du['flap_px']}px;border-top-width:1.5px" : "bottom:{$__du['flap_px']}px;border-bottom-width:1.5px") }}"></div>
+                                        <div class="absolute inset-0 flex items-center justify-center text-[10.5px] text-muted font-semibold">Badan {{ $__du['body_w_mm'] }} × {{ $__du['body_h_mm'] }} mm</div>
+                                    </div>
+                                </div>
+                                <div class="text-[11px] text-muted mt-2">Lidah ({{ $__du['side'] }}): <b class="text-[var(--pd-ink-strong)]">{{ $__du['flap_mm'] }}mm</b> · Flat total: <b class="text-[var(--pd-ink-strong)]">{{ $__du['flat_w_mm'] }} × {{ $__du['flat_h_mm'] }} mm</b></div>
+                            @else
+                                <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">
+                                    Isi dimensi badan (cm_length/cm_width) di atas dulu.
+                                </div>
+                            @endif
                         </div>
-                    @endif
+                    </div>
+                </div>
+
+                {{-- ---- KANAN: Efficiency Metrics ---- --}}
+                <div class="w-full lg:w-[270px] shrink-0 flex flex-col gap-3.5">
+                    <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)] flex items-center justify-between">
+                            <span>📊 Efficiency Metrics</span>
+                            @if ($this->activeLayoutGroup)
+                                <span class="text-[9.5px] font-bold {{ $this->activeLayoutGroup->status === 'CONFIRMED' ? 'text-[#0e8a4f]' : 'text-[#8a5a00]' }}">{{ $this->activeLayoutGroup->status }}</span>
+                            @endif
+                        </h3>
+                        <div class="p-3.5 flex flex-col gap-3">
+                            @if ($this->activeLayoutGroup)
+                                <div class="[display:grid] [grid-template-columns:1fr_1fr] gap-2.5">
+                                    <div class="bg-[var(--pd-surface-alt)] rounded-md p-2.5">
+                                        <div class="text-[9px] text-muted uppercase font-bold">UPS / Mata</div>
+                                        <div class="text-xl font-black text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->up_count }}</div>
+                                        <div class="text-[9px] text-muted">per Plano</div>
+                                    </div>
+                                    <div class="bg-[var(--pd-surface-alt)] rounded-md p-2.5">
+                                        <div class="text-[9px] text-muted uppercase font-bold">Sheet Yield</div>
+                                        <div class="text-xl font-black text-[#0e8a4f]">{{ number_format($this->activeLayoutGroup->efficiency_pct, 1) }}%</div>
+                                        <div class="text-[9px] text-muted">Efisiensi Area</div>
+                                    </div>
+                                </div>
+
+                                @if ($this->wasteReductionVsStandard())
+                                    @php($__wr = $this->wasteReductionVsStandard())
+                                    <div class="rounded-md p-2.5 {{ $__wr['is_improvement'] ? 'bg-[#0f2a1e] text-[#5fe3a0]' : 'bg-[var(--pd-surface-alt)] text-[var(--pd-ink)]' }}">
+                                        <div class="text-[9px] uppercase font-bold opacity-80">AI Waste Reduction</div>
+                                        <div class="text-lg font-black">{{ $__wr['delta_pct'] > 0 ? '+' : '' }}{{ $__wr['delta_pct'] }}%</div>
+                                        <div class="text-[9.5px] opacity-80 leading-snug">
+                                            @if ($__wr['is_improvement'])
+                                                Dibanding grid standar ({{ $__wr['baseline_waste_pct'] }}% waste), strategi aktif hemat waste jadi {{ $__wr['active_waste_pct'] }}%.
+                                            @else
+                                                Sama dengan/di atas baseline grid standar ({{ $__wr['baseline_waste_pct'] }}% waste).
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+
+                                <div class="flex flex-col gap-1.5 text-[11px] pt-1 border-t border-[var(--pd-border)]">
+                                    <div class="flex items-center justify-between"><span class="text-muted">Pisau Pond</span><b class="text-[var(--pd-ink-strong)]">{{ $this->part->die_w_cm ?? '—' }} × {{ $this->part->die_h_cm ?? '—' }} cm</b></div>
+                                    <div class="flex items-center justify-between"><span class="text-muted">Plano Press Sheet</span><b class="text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->plano_w_mm / 10 }} × {{ $this->activeLayoutGroup->plano_h_mm / 10 }} cm</b></div>
+                                    <div class="flex items-center justify-between"><span class="text-muted">Metode</span><b class="text-[var(--pd-ink-strong)]">{{ $this->activeLayoutGroup->method }}</b></div>
+                                    @if ($this->activeLayoutGroup->die_rule_meter)
+                                        <div class="flex items-center justify-between"><span class="text-muted">Meter Lari Pisau</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->activeLayoutGroup->die_rule_meter, 2) }} m</b></div>
+                                    @endif
+                                </div>
+
+                                @if ($this->activeLayoutGroup->status === 'CONFIRMED')
+                                    <button type="button" wire:click="unlockLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[var(--pd-surface-alt)] border border-[var(--pd-border)] text-[var(--pd-ink-strong)] cursor-pointer">🔓 Buka Kunci</button>
+                                @else
+                                    <button type="button" wire:click="confirmLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Konfirmasi Layout</button>
+                                @endif
+
+                                <a href="{{ $this->wizardSteps['costing']['url'] ?? route('inquiry.costing.list') }}" wire:navigate
+                                    class="text-center px-3 py-1.5 rounded text-[11px] font-bold bg-accent text-white no-underline hover:brightness-110">Hitung Product Costing →</a>
+                            @else
+                                <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">
+                                    Belum ada layout tersimpan. Isi dimensi badan (cm_length/cm_width) &amp; rentang lidah di kartu Spesifikasi Teknis, lalu jalankan Nesting Strategy di kiri.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {{-- ============ TOOL #10: INTRA-PRODUCT PART COMBINER ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">
+            <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">
                     🧩 Tool #10 — Gabung Part dalam Produk Sama
                 </h3>
                 <div class="p-3.5">
@@ -946,7 +1406,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         <div class="flex items-end gap-2.5 mb-3">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Gabung dengan part</label>
-                                <select wire:model="combineWithPartId" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] min-w-[220px]">
+                                <select wire:model="combineWithPartId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] min-w-[220px]">
                                     <option value="">— pilih part pasangan —</option>
                                     @foreach ($this->combinableParts as $cp)
                                         <option value="{{ $cp->id_part }}">{{ $cp->part_name }}</option>
@@ -985,27 +1445,27 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             </div>
 
             {{-- ============ ROUTING (URUTAN PROSES) ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">🔀 Urutan Proses (Routing)</h3>
+            <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">🔀 Urutan Proses (Routing)</h3>
                 <div class="p-3.5">
                     <table class="w-full text-xs mb-2.5">
                         <thead>
                             <tr>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Seq</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Proses</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Mesin</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Catatan</th>
-                                <th class="border-b border-[#e2e7ee]"></th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Seq</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Proses</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Mesin</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Catatan</th>
+                                <th class="border-b border-[var(--pd-border)]"></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->part->processes as $pp)
                                 <tr wire:key="proc-{{ $pp->id_part_process }}">
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5]">{{ $pp->step_seq }}</td>
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5] font-semibold">{{ $pp->process?->process_name }}</td>
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5]">{{ $pp->machine?->machine_name ?? '—' }}</td>
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5] text-muted">{{ $pp->note }}</td>
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5] text-right">
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)]">{{ $pp->step_seq }}</td>
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)] font-semibold">{{ $pp->process?->process_name }}</td>
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)]">{{ $pp->machine?->machine_name ?? '—' }}</td>
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-muted">{{ $pp->note }}</td>
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-right">
                                         <button type="button" wire:click="removeProcess({{ $pp->id_part_process }})" class="text-[11px] text-[#c0392b] cursor-pointer">hapus</button>
                                     </td>
                                 </tr>
@@ -1015,42 +1475,42 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         </tbody>
                     </table>
                     <div class="flex items-end gap-2 flex-wrap">
-                        <select wire:model="newProcessId" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <select wire:model="newProcessId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                             <option value="">— Proses —</option>
                             @foreach ($this->processOptions as $po)
                                 <option value="{{ $po->id_process }}">{{ $po->process_name }}</option>
                             @endforeach
                         </select>
-                        <select wire:model="newMachineId" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <select wire:model="newMachineId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                             <option value="">— Mesin (opsional) —</option>
                             @foreach ($this->machineOptions as $mo)
                                 <option value="{{ $mo->machine_id }}">{{ $mo->machine_name }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="newProcessNotes" placeholder="Catatan (opsional)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] flex-1 min-w-[140px]">
+                        <input type="text" wire:model="newProcessNotes" placeholder="Catatan (opsional)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] flex-1 min-w-[140px]">
                         <button type="button" wire:click="addProcess" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ Tambah</button>
                     </div>
                 </div>
             </div>
 
             {{-- ============ FINISHING ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">✨ Finishing</h3>
+            <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">✨ Finishing</h3>
                 <div class="p-3.5">
                     <table class="w-full text-xs mb-2.5">
                         <thead>
                             <tr>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Jenis</th>
-                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#e2e7ee]">Catatan</th>
-                                <th class="border-b border-[#e2e7ee]"></th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Jenis</th>
+                                <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[var(--pd-border)]">Catatan</th>
+                                <th class="border-b border-[var(--pd-border)]"></th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->part->finishings as $f)
                                 <tr wire:key="fin-{{ $f->id_part_finishing }}">
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5] font-semibold">{{ $f->finishingType?->finishing_name }}</td>
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5] text-muted">{{ $f->notes }}</td>
-                                    <td class="px-2 py-1.5 border-b border-[#eef1f5] text-right">
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)] font-semibold">{{ $f->finishingType?->finishing_name }}</td>
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-muted">{{ $f->notes }}</td>
+                                    <td class="px-2 py-1.5 border-b border-[var(--pd-border)] text-right">
                                         <button type="button" wire:click="removeFinishing({{ $f->id_part_finishing }})" class="text-[11px] text-[#c0392b] cursor-pointer">hapus</button>
                                     </td>
                                 </tr>
@@ -1060,31 +1520,31 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         </tbody>
                     </table>
                     <div class="flex items-end gap-2 flex-wrap">
-                        <select wire:model="newFinishingTypeId" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <select wire:model="newFinishingTypeId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                             <option value="">— Jenis Finishing —</option>
                             @foreach ($this->finishingOptions as $fo)
                                 <option value="{{ $fo->id_finishing_type }}">{{ $fo->finishing_name }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="newFinishingNotes" placeholder="mis. Gold Puyeh (opsional)" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] flex-1 min-w-[140px]">
+                        <input type="text" wire:model="newFinishingNotes" placeholder="mis. Gold Puyeh (opsional)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] flex-1 min-w-[140px]">
                         <button type="button" wire:click="addFinishing" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ Tambah</button>
                     </div>
                 </div>
             </div>
 
             {{-- ============ ATTACHMENT ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">📎 Referensi (JPEG wajib utk preview, PDF/AI opsional)</h3>
+            <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
+                <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">📎 Referensi (JPEG wajib utk preview, PDF/AI opsional)</h3>
                 <div class="p-3.5">
                     <div class="flex gap-2.5 flex-wrap mb-3">
                         @forelse ($this->part->attachments as $att)
-                            <div class="border border-[#dde3ec] rounded-md p-2 w-[140px]" wire:key="att-{{ $att->id_attachment }}">
+                            <div class="border border-[var(--pd-border)] rounded-md p-2 w-[140px]" wire:key="att-{{ $att->id_attachment }}">
                                 @if ($att->file_type === 'JPEG')
                                     <img src="{{ asset('storage/'.$att->file_path) }}" class="w-full h-[90px] object-cover rounded mb-1.5" alt="preview">
                                 @else
-                                    <div class="w-full h-[90px] bg-[#f4f6fa] rounded mb-1.5 flex items-center justify-center text-2xl">📄</div>
+                                    <div class="w-full h-[90px] bg-[var(--pd-surface-alt)] rounded mb-1.5 flex items-center justify-center text-2xl">📄</div>
                                 @endif
-                                <div class="text-[10px] font-bold text-navy truncate">{{ $att->original_filename }}</div>
+                                <div class="text-[10px] font-bold text-[var(--pd-ink-strong)] truncate">{{ $att->original_filename }}</div>
                                 <div class="flex items-center justify-between mt-1">
                                     <span class="text-[9px] bg-[#eef1f5] px-1.5 py-0.5 rounded font-bold">{{ $att->file_type }}</span>
                                     <button type="button" wire:click="deleteAttachment({{ $att->id_attachment }})" class="text-[10px] text-[#c0392b] cursor-pointer">hapus</button>
@@ -1095,7 +1555,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         @endforelse
                     </div>
                     <div class="flex items-end gap-2 flex-wrap">
-                        <select wire:model="newAttachmentType" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px]">
+                        <select wire:model="newAttachmentType" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
                             <option value="JPEG">JPEG (preview)</option>
                             <option value="PDF">PDF</option>
                             <option value="AI">AI</option>

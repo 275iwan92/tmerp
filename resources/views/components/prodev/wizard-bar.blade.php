@@ -1,0 +1,65 @@
+{{--
+    Wizard step-bar lintas modul (mockup_FORM_prodev_header.png, user 2026-09-03)
+    -- dipakai di Inquiry Product, Pro-Dev, Product Costing, Master Card supaya
+    officer bisa lompat antar tahap job yang SAMA tanpa balik ke grid dulu.
+    Presentasi murni: host page yang hitung $steps/$jobs/$jobUrls, komponen ini
+    cuma render. Warna pakai bg-navy/text-accent (sudah otomatis ikut
+    tm2sys.sys_theme lewat --color-navy/--color-accent global, lihat
+    theme-vars.blade.php) -- BUKAN palet gelap/hijau statis dari mockup asli.
+
+    Props:
+    - current: string, key step aktif (inquiry|development|costing|mastercard|analytics)
+    - steps: array<string,array{label:string,url:?string}> keyed by step key.
+             url null = step ini tidak reachable utk job yang sedang aktif
+             (mis. Mode #2 part tanpa inquiry -> Inquiry/Costing null).
+    - jobs: Collection/array of object{id,label,sublabel} -- daftar job utk dropdown.
+    - selectedJobId: mixed, id job yang sedang aktif (buat highlight di dropdown).
+    - jobSwitchRoute: string, nama route Livewire `switchJob` di host (dipanggil
+      wire:click, host yang tentukan redirect kemana sesuai step aktif).
+--}}
+@props(['current', 'steps', 'jobs' => [], 'selectedJobId' => null, 'jobSwitchMethod' => 'switchJob'])
+
+<div class="bg-navy text-white px-5 py-2.5 flex items-center gap-1 flex-wrap sticky top-0 z-50 border-b border-white/10">
+    <div class="flex items-center gap-1.5 mr-3 shrink-0">
+        <div class="w-6 h-6 rounded bg-accent flex items-center justify-center text-[11px] font-black">P</div>
+        <div class="leading-none">
+            <div class="text-[11px] font-black tracking-wide">TMERP</div>
+            <div class="text-[8.5px] text-white/50 -mt-0.5">ProDev Suite</div>
+        </div>
+    </div>
+
+    <nav class="flex items-center gap-0.5 bg-black/20 rounded-md p-0.5 mr-3">
+        @foreach ($steps as $key => $step)
+            @if ($step['url'])
+                <a href="{{ $step['url'] }}" wire:navigate
+                    class="px-2.5 py-1.5 rounded text-[10.5px] font-bold no-underline whitespace-nowrap {{ $key === $current ? 'bg-accent text-white' : 'text-white/65 hover:text-white hover:bg-white/10' }}">
+                    {{ $step['label'] }}
+                </a>
+            @else
+                <span class="px-2.5 py-1.5 rounded text-[10.5px] font-bold whitespace-nowrap text-white/25 cursor-not-allowed" title="{{ $step['reason'] ?? 'Tidak tersedia untuk job ini' }}">
+                    {{ $step['label'] }}
+                </span>
+            @endif
+        @endforeach
+    </nav>
+
+    @if (count($jobs) > 0)
+        <select wire:change="{{ $jobSwitchMethod }}($event.target.value)"
+            class="bg-black/25 border border-white/15 text-white text-[10.5px] font-semibold rounded-md px-2 py-1.5 mr-auto max-w-[220px]">
+            @foreach ($jobs as $job)
+                <option value="{{ $job['id'] }}" @selected((string) $job['id'] === (string) $selectedJobId)>{{ $job['label'] }}</option>
+            @endforeach
+        </select>
+    @else
+        <span class="mr-auto"></span>
+    @endif
+
+    <span class="flex items-center gap-1.5 text-[10px] font-bold text-[#5fe3a0] bg-[#1c3a2a] px-2.5 py-1.5 rounded-md shrink-0" title="Imposition engine (App\Services\Imposition\ImpositionEngine) live &amp; dipakai perhitungan nyata di layar ini.">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#5fe3a0]"></span> ENGINE AKTIF
+    </span>
+
+    <button type="button" disabled title="Segera hadir -- belum ada mesinnya"
+        class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">🧭 Advisor</button>
+    <button type="button" disabled title="Segera hadir -- belum ada mesinnya"
+        class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">⬇ Export Paths</button>
+</div>
