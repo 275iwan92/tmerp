@@ -499,8 +499,9 @@ Billing (AR-lite, Modul 6 terpisah).
 
 File ini sendiri berfungsi sebagai daftar centang ⬜/🟡 raksasa. Layar yang
 masih ⬜ (belum dibangun) di luar yang sudah tercatat di section lain file
-ini: Prove Warna (versioning v1/v2/v3), Nota Quotation & Nota CO print,
-Nota Alokasi/Label Rak Inventory, Period Manager (buka/tutup periode stok
+ini: Prove Warna (versioning v1/v2/v3), ~~Nota CO print~~ **SELESAI
+2026-09-03** (`co/print.blade.php`, Quotation print sudah ada duluan —
+lihat `docs/LOG_JOB_DONE.md`), Nota Alokasi/Label Rak Inventory, Period Manager (buka/tutup periode stok
 — `PeriodService::assertOpen()` belum dipanggil di mana pun), FIFO/LIFO
 valuation (`StockValuationService`, saat ini cuma AVG), Forecast Engine &
 Flow Engine (state-machine) mockup produksi lama (kemungkinan besar sudah

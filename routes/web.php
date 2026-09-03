@@ -72,6 +72,7 @@ Route::middleware('auth')->group(function () {
 
             Route::livewire('/co', 'pages::co.list')->name('co.list');
             Route::livewire('/co/{order}/edit', 'pages::co.entry')->name('co.entry');
+            Route::livewire('/co/{order}/print', 'pages::co.print')->name('co.print');
             Route::livewire('/co/delivery-plan', 'pages::co.delivery-plan')->name('co.delivery-plan');
 
             // Delivery (DO/Surat Jalan) -- sebelumnya modul "Dispatch" berdiri sendiri,

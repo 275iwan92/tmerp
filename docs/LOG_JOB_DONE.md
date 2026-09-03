@@ -12,6 +12,19 @@
 
 ---
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #8)
+
+- **§12.7 — Cetak Nota Customer Order (CO) dibangun.** Quotation print sudah
+  ada duluan, CO belum — pola identik (komponen
+  `resources/views/components/print/*`). `co/print.blade.php`: header+
+  parties (customer+alamat kirim)+rincian item+totals (pakai
+  `CoOrder::totals()` yang sudah ada, termasuk PPh23 jasa)+signatures. Gate
+  cetak: `doc_status=CONFIRMED` saja (CO cuma 2 status total). Tombol
+  "🖨 Cetak Nota" baru di toolbar `co/entry.blade.php`. Diverifikasi
+  `Livewire::test()` (CO CONFIRMED->200; tak ada CO DRAFT di DB utk uji
+  redirect langsung, tapi gate logic identik 4 print page lain yg sudah
+  diverifikasi sebelumnya). `npm run build` dijalankan.
+
 ## 2026-09-02/03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #7)
 
 - **§6 Production — Rate Band `resource_type=MANUAL` tak lagi selalu throw.**

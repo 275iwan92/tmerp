@@ -297,6 +297,10 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                     ✓ Confirm CO
                 </button>
             @endif
+            @if ($this->order->doc_status === 'CONFIRMED')
+                <a href="{{ route('co.print', ['order' => $this->orderId]) }}" target="_blank"
+                    class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 Cetak Nota</a>
+            @endif
             <a href="{{ route('co.list') }}" title="Kembali ke menu grid"
                 class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
                 <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
