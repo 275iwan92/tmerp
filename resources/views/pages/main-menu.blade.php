@@ -671,14 +671,18 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </template>
         </div>
         @if (Auth::user()->is_admin)
-            {{-- "Configuration" -- instruksi user 2026-09-02: 1 layar (bukan
+            {{-- "Settings" (label diganti dari "Configuration" 2026-09-03 --
+            nama "Configuration" dipindah jadi nama grup baru di dropdown
+            profil, lihat popup menu di atas, supaya tidak dobel nama di 2
+            tempat beda konteks) -- instruksi user 2026-09-02: 1 layar (bukan
             grup ber-sub-item spt Security di bawahnya), edit sys_constant
             (identitas app/logo/font, semua konstanta sistem) + bahasa/
             terjemahan. Dipasak TEPAT DI ATAS "Security", is_admin only sama
-            spt Security. docs/configurationstandard.md. --}}
+            spt Security. docs/configurationstandard.md. Route/kode menu
+            (SET_CONFIG, setup.configuration) TIDAK berubah, cuma label. --}}
             <div class="side-footer">
-                <button type="button" class="side-cap-btn" @click="openTab('SET_CONFIG')" title="Configuration">
-                    <span class="side-cap">Configuration</span>
+                <button type="button" class="side-cap-btn" @click="openTab('SET_CONFIG')" title="Settings">
+                    <span class="side-cap">Settings</span>
                     <i class="fa-solid fa-sliders"></i>
                 </button>
             </div>
@@ -779,18 +783,12 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                         <div class="um-sep"></div>
                         <div class="um-cap">Akun</div>
                         @if (Auth::user()->employee_id)
-                            {{-- Akun tertaut karyawan -- "Edit profil"/"Ubah password" DIGABUNG ke
-                            Portal Karyawan tab Security (instruksi user 2026-08-29 "jadikan satu").
-                            Instruksi user 2026-08-30: SEMUA urusan user profile pakai layar pop up
-                            KECUALI security -- jadi Portal Karyawan sekarang popup (iframe lebar
-                            proporsional, bukan navigasi keluar shell), sementara link Security
-                            tetap navigasi biasa (dikecualikan, +tetap ada gate admin terpisah
-                            "Account Security" di sidebar kiri paling bawah -- lihat di atas). --}}
-                            <button type="button" class="um-item" @click="ddOpen = false; portalOpen = true"><i class="fa-solid fa-id-card"></i> Portal Karyawan</button>
+                            {{-- Akun tertaut karyawan -- Security TETAP di sini (dikecualikan dari
+                            grup Configuration di bawah, instruksi user 2026-09-03). --}}
                             <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="fa-solid fa-shield-halved"></i> My Security</a>
                         @else
                             {{-- Fallback KHUSUS akun tanpa employee_id (mis. admin teknis) --
-                            Portal Karyawan sama sekali tidak bisa diakses akun ini. --}}
+                            Portal Karyawan/User Configuration sama sekali tidak bisa diakses akun ini. --}}
                             <button type="button" class="um-item" @click="ddOpen = false; profileOpen = true"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
                             <button type="button" class="um-item" @click="ddOpen = false; passwordOpen = true"><i class="fa-solid fa-key"></i> Ubah password</button>
                         @endif
@@ -800,7 +798,6 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                             cuma utk user yg cuma dapat akses modul SETUP tanpa is_admin penuh. --}}
                             <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
                         @endif
-                        <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
                         {{-- Bantuan & Support -- GABUNGAN (2026-08-30, instruksi user "Combine Help
                         and support yang ticketing and Help and support yang menjelaskan segala
                         hal") dari 2 menu terpisah sebelumnya (Panduan Penggunaan + modal tiket
@@ -813,46 +810,64 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                             @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
                             <i class="fa-solid fa-circle-question"></i> Bantuan &amp; Support <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
                         </button>
-                        <div class="um-item" style="cursor:default"><i class="fa-solid fa-globe"></i> Bahasa
-                            <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
-                                <button type="button" class="um-flag active" @click.stop="toast('Bahasa: Indonesia')">🇮🇩</button>
-                                <button type="button" class="um-flag" @click.stop="toast('Bahasa: English')">🇬🇧</button>
-                            </span>
-                        </div>
-                        <div class="um-cap">Tema</div>
-                        <div class="um-theme-matrix" @click.stop>
-                            <div class="utm-hdr">
-                                <span></span>
-                                @foreach ($this->themeMatrix['hues'] as $h)<span>{{ $h }}</span>@endforeach
+                        <div class="um-sep"></div>
+                        {{-- Grup "Configuration" (instruksi user 2026-09-03, "agar menghemat menu") --
+                        gabungan Tema+Bahasa+Portal Karyawan+Aktivitas saya yang tadinya 4 item/blok
+                        terpisah (Tema-nya sendiri makan banyak ruang vertikal, matrix 4x3) jadi 1
+                        grup collapsible (default tertutup, klik utk buka) -- pola sama spt caption
+                        grup sidebar yang bisa diciutkan. NAMA "Configuration" sengaja dibebaskan
+                        dari menu sidebar kiri (yang lama dipindah jadi "Settings", lihat migration
+                        terkait) supaya tidak dobel nama di 2 tempat beda konteks. --}}
+                        <button type="button" class="um-item" @click.stop="configOpen = !configOpen">
+                            <i class="fa-solid fa-sliders"></i> Configuration
+                            <i class="fa-solid fa-chevron-down" style="margin-left:auto;font-size:10px;transition:transform .15s" :style="configOpen ? 'transform:rotate(180deg)' : ''"></i>
+                        </button>
+                        <div x-show="configOpen" @click.stop>
+                            @if (Auth::user()->employee_id)
+                                <button type="button" class="um-item" style="padding-left:28px" @click="ddOpen = false; portalOpen = true"><i class="fa-solid fa-id-card"></i> User Configuration</button>
+                            @endif
+                            <button type="button" class="um-item" style="padding-left:28px" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
+                            <div class="um-item" style="cursor:default;padding-left:28px"><i class="fa-solid fa-globe"></i> Bahasa
+                                <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
+                                    <button type="button" class="um-flag active" @click.stop="toast('Bahasa: Indonesia')">🇮🇩</button>
+                                    <button type="button" class="um-flag" @click.stop="toast('Bahasa: English')">🇬🇧</button>
+                                </span>
                             </div>
-                            @foreach ($this->themeMatrix['matrix'] as $row)
-                                <div class="utm-row">
-                                    <span class="utm-lbl">{{ $row['label'] }}</span>
-                                    @foreach ($row['cells'] as $cell)
-                                        @if ($cell)
-                                            <button type="button" class="um-swatch {{ $cell['code'] === $this->currentThemeCode() ? 'active' : '' }}"
-                                                title="{{ $cell['name'] }}" style="background:{{ $cell['primary'] }}"
-                                                @click="$wire.setTheme('{{ $cell['code'] }}').then(() => location.reload())"></button>
-                                        @else
-                                            <span class="utm-empty"></span>
-                                        @endif
-                                    @endforeach
+                            <div class="um-cap" style="padding-left:28px">Tema</div>
+                            <div class="um-theme-matrix" @click.stop>
+                                <div class="utm-hdr">
+                                    <span></span>
+                                    @foreach ($this->themeMatrix['hues'] as $h)<span>{{ $h }}</span>@endforeach
                                 </div>
-                            @endforeach
-                        </div>
-                        @if (! empty($this->themeMatrix['classic']))
-                            <div class="um-cap">Klasik</div>
-                            <div class="um-theme-grid" @click.stop>
-                                @foreach ($this->themeMatrix['classic'] as $t)
-                                    <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
-                                        title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? 'gelap' : 'terang' }})"
-                                        style="background:{{ $t['primary'] }}"
-                                        @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
-                                        @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
-                                    </button>
+                                @foreach ($this->themeMatrix['matrix'] as $row)
+                                    <div class="utm-row">
+                                        <span class="utm-lbl">{{ $row['label'] }}</span>
+                                        @foreach ($row['cells'] as $cell)
+                                            @if ($cell)
+                                                <button type="button" class="um-swatch {{ $cell['code'] === $this->currentThemeCode() ? 'active' : '' }}"
+                                                    title="{{ $cell['name'] }}" style="background:{{ $cell['primary'] }}"
+                                                    @click="$wire.setTheme('{{ $cell['code'] }}').then(() => location.reload())"></button>
+                                            @else
+                                                <span class="utm-empty"></span>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 @endforeach
                             </div>
-                        @endif
+                            @if (! empty($this->themeMatrix['classic']))
+                                <div class="um-cap" style="padding-left:28px">Klasik</div>
+                                <div class="um-theme-grid" @click.stop>
+                                    @foreach ($this->themeMatrix['classic'] as $t)
+                                        <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
+                                            title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? 'gelap' : 'terang' }})"
+                                            style="background:{{ $t['primary'] }}"
+                                            @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
+                                            @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
                         <div class="um-sep"></div>
                         <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> Keluar aplikasi</button>
                     </div>
@@ -1030,15 +1045,18 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
         </div>
     </div></div>
 
-    {{-- Modal Portal Karyawan -- instruksi user 2026-08-30: pop up lebar
-    proporsional tanpa scroll ganda (bukan lagi navigasi <a href> keluar
-    shell). Iframe di-lazy-load (:src cuma diisi saat portalOpen=true) supaya
-    tidak ikut ke-load diam-diam waktu shell pertama render. --}}
+    {{-- Modal "User Configuration" (label diganti dari "Portal Karyawan"
+    2026-09-03, bagian grup dropdown "Configuration" -- lihat popup menu di
+    atas) -- instruksi user 2026-08-30: pop up lebar proporsional tanpa
+    scroll ganda (bukan lagi navigasi <a href> keluar shell). Iframe
+    di-lazy-load (:src cuma diisi saat portalOpen=true) supaya tidak ikut
+    ke-load diam-diam waktu shell pertama render. Variabel Alpine
+    `portalOpen` & route `self-service.index` TIDAK berubah, cuma label. --}}
     @if (Auth::user()->employee_id)
         <div class="mov" :class="{ on: portalOpen }"><div class="modal wide">
-            <div class="mh"><h3>Portal Karyawan</h3><button type="button" class="x" @click="portalOpen = false">&times;</button></div>
+            <div class="mh"><h3>User Configuration</h3><button type="button" class="x" @click="portalOpen = false">&times;</button></div>
             <div class="mb">
-                <iframe :src="portalOpen ? '{{ route('self-service.index') }}' : ''" title="Portal Karyawan"></iframe>
+                <iframe :src="portalOpen ? '{{ route('self-service.index') }}' : ''" title="User Configuration"></iframe>
             </div>
         </div></div>
     @endif
