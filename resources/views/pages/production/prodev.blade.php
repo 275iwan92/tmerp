@@ -31,8 +31,6 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
     public ?int $partId = null;
 
-    public string $search = '';
-
     public ?int $selectedPlanoId = null;
 
     public array $sweepCandidates = [];
@@ -63,18 +61,6 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     }
 
     #[Computed]
-    public function parts()
-    {
-        return ProdPart::with('product')
-            ->when($this->search !== '', fn ($q) => $q->where('part_name', 'like', "%{$this->search}%")
-                ->orWhere('part_code', 'like', "%{$this->search}%")
-                ->orWhereHas('product', fn ($q2) => $q2->where('product_name', 'like', "%{$this->search}%")))
-            ->orderByDesc('id_part')
-            ->limit(60)
-            ->get();
-    }
-
-    #[Computed]
     public function part(): ?ProdPart
     {
         if (! $this->partId) {
@@ -95,6 +81,28 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     public function activeLayoutGroup(): ?ProdLayoutGroup
     {
         return $this->part?->layoutGroups->sortByDesc('id_layout_group')->first();
+    }
+
+    // Status ringkas buat badge di header (selalu kelihatan tanpa scroll,
+    // user 2026-09-03 minta -- sebelumnya cuma ada di dalam section Engine
+    // Imposition, harus scroll dulu). Sama persis 3 nilai yg dipakai grid
+    // production.prodev.list (prodev-list.blade.php::layoutStatus()).
+    public function layoutStatusLabel(): string
+    {
+        return match ($this->activeLayoutGroup?->status) {
+            'CONFIRMED' => 'CONFIRMED',
+            'DRAFT' => 'DRAFT',
+            default => 'BELUM MULAI',
+        };
+    }
+
+    public function layoutStatusBadgeClass(): string
+    {
+        return match ($this->layoutStatusLabel()) {
+            'CONFIRMED' => 'bg-[#1c3a2a] text-[#5fe3a0]',
+            'DRAFT' => 'bg-[#4a3a12] text-[#f0c46a]',
+            default => 'bg-white/10 text-white/70',
+        };
     }
 
     // GAP ditemukan user 2026-09-03 (mode #1 hanya bikin LINK, tak pernah
@@ -191,15 +199,6 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     public function uploadMaxMb(): float
     {
         return SysConstant::number('PRODEV_UPLOAD_MAX_MB', 25);
-    }
-
-    public function switchPart(int $id): void
-    {
-        $this->partId = $id;
-        $this->sweepCandidates = [];
-        $this->combineWithPartId = null;
-        $this->combineResult = null;
-        unset($this->part, $this->activeLayoutGroup, $this->combinableParts);
     }
 
     public function updateField(string $field, $value): void
@@ -699,9 +698,12 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
+        <a href="{{ route('production.prodev.list') }}" wire:navigate
+            class="text-white/80 text-xs px-2.5 py-1.5 rounded-md no-underline hover:bg-white/10 hover:text-white shrink-0" title="Kembali ke daftar Pro-Dev">← Daftar Part</a>
         <b class="text-[15px]">🛠️ TELASIH MAKMUR — Product Development</b>
         @if ($this->part)
             <span class="text-xs text-white/75">{{ $this->part->displayMastercardCode() }} · {{ $this->part->part_name }}</span>
+            <span class="text-[10.5px] font-bold px-2.5 py-1 rounded-full {{ $this->layoutStatusBadgeClass() }}">{{ $this->layoutStatusLabel() }}</span>
             <a href="{{ route('production.prodev.print', ['part' => $this->partId]) }}" target="_blank"
                 class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Cetak Master Card</a>
         @endif
@@ -712,25 +714,6 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         @if (session('error'))
             <div class="bg-[#fdecea] border border-[#f3b8b0] text-[#a1362b] text-xs px-3.5 py-2.5 rounded-md mb-3.5">{{ session('error') }}</div>
         @endif
-
-        {{-- ============ PART PICKER ============ --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-3 mb-4">
-            <div class="flex items-center gap-2 mb-2">
-                <span class="text-[10.5px] text-muted uppercase font-semibold">Cari Part:</span>
-                <input type="text" wire:model.live.debounce.400ms="search" placeholder="Nama/kode part atau produk..."
-                    class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] flex-1 max-w-[320px]">
-            </div>
-            <div class="flex items-center gap-2 flex-wrap">
-                @forelse ($this->parts as $p)
-                    <button type="button" wire:click="switchPart({{ $p->id_part }})"
-                        class="text-xs font-semibold px-3 py-1.5 rounded-full border cursor-pointer {{ $this->partId === $p->id_part ? 'bg-navy text-white border-navy' : 'bg-[#f4f6fa] text-navy border-[#d7dbe2]' }}">
-                        {{ $p->part_name }} <span class="opacity-70">· {{ $p->product?->product_name }}</span>
-                    </button>
-                @empty
-                    <span class="text-xs text-muted">Belum ada Part di Master Produk.</span>
-                @endforelse
-            </div>
-        </div>
 
         @if ($this->part)
         <div class="flex flex-col gap-3.5">
@@ -867,10 +850,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                 </div>
             </div>
 
-            {{-- ============ ENGINE TINGKAT 1 + PREVIEW ============ --}}
+            {{-- ============ IMPOSITION (§2 Master Card "Isi Dalam Satu Cetakan") ============ --}}
             <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
                 <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2] flex items-center justify-between">
-                    <span>🎯 Engine Imposition (Tingkat 1: Flap Sweep · Tingkat 2: Interlock)</span>
+                    <span>🎯 Isi Dalam Satu Cetakan (Imposition)</span>
                     @if ($this->activeLayoutGroup)
                         <span class="text-[10.5px] font-bold {{ $this->activeLayoutGroup->status === 'CONFIRMED' ? 'text-[#0e8a4f]' : 'text-[#8a5a00]' }}">
                             {{ $this->activeLayoutGroup->status }} · {{ $this->activeLayoutGroup->up_count }} UP
@@ -887,12 +870,12 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                 @endforeach
                             </select>
                         </div>
-                        <button type="button" wire:click="runEngineTingkat1"
-                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#2c7be5] text-white cursor-pointer">▶ Tingkat 1 (Flap Sweep)</button>
-                        <button type="button" wire:click="runEngineTingkat2"
-                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#7c5cd6] text-white cursor-pointer">▶ Tingkat 2 (Interlock)</button>
+                        <button type="button" wire:click="runEngineTingkat1" title="Jalankan Engine Imposition (Tingkat 1: Flap Sweep) pada plano yang dipilih"
+                            class="px-4 py-1.5 rounded text-[11.5px] font-bold bg-[#2c7be5] text-white cursor-pointer">▶ Imposition</button>
+                        <button type="button" wire:click="runEngineTingkat2" title="Lanjutan (Tingkat 2): sweep interlock, geser lidah supaya saling mengunci"
+                            class="px-3 py-1.5 rounded text-[10.5px] font-semibold bg-[#f4f6fa] border border-[#d7dbe2] text-[#7c5cd6] cursor-pointer">Tingkat 2 (Interlock)</button>
                         <button type="button" wire:click="runEngineBestSheet" title="Tool #2 -- coba SEMUA plano aktif, bukan cuma yg dipilih di dropdown di atas"
-                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#b6852a] text-white cursor-pointer">▶ Cari Plano Termurah</button>
+                            class="px-3 py-1.5 rounded text-[10.5px] font-semibold bg-[#f4f6fa] border border-[#d7dbe2] text-[#8a5a00] cursor-pointer">Cari Plano Termurah</button>
 
                         @if ($this->activeLayoutGroup)
                             @if ($this->activeLayoutGroup->status === 'CONFIRMED')
