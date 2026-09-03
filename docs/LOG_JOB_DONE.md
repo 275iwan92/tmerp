@@ -12,6 +12,78 @@
 
 ---
 
+## 2026-09-03 (ProDev §0 follow-up — instruksi user "kenapa tidak diselesaikan, coba selesaikan")
+
+- **R30 — Tool #2 (Pcs→Plano/Best Sheet Finder).** `ImpositionEngine::bestSheet()`
+  baru — loop SEMUA `mat_plano_size` aktif (bukan cuma yang dipilih officer
+  di dropdown), tiap plano dicoba `sweepFlap()` sendiri (top-1), ranking
+  lintas-plano by biaya: `targetQty` diisi → Gross Sheets × luas plano
+  (formula Modul B `docs/imposition_nesting/prepress_imposition_packaging_guide.md`,
+  akurat memperhitungkan sisa di lembar terakhir); kosong → fallback luas/pc
+  (proxy krn `mat_plano_size` sendiri tak simpan harga, asumsi material sama
+  di semua opsi). UI: tombol "▶ Cari Plano Termurah" di layar ProDev, reuse
+  penuh render candidate card yang sudah ada (shape hasil identik
+  `sweepFlap()` + extra key), `pickCandidate()` disesuaikan pakai
+  `plano_size_id` milik kandidat (bisa beda dari dropdown) alih-alih selalu
+  `selectedPlanoId`.
+- **R30 — Tool #4 (Die-Rule Estimator).** `ImpositionEngine::dieRuleMeterLari()`
+  baru — cutting rule pakai prinsip **Common Knife** (Esko ArtiosCAD: garis
+  potong internal grid dipakai BERSAMA 2 sel bertetangga, formula
+  `(cols+1)×gridH + (rows+1)×gridW`, bukan jumlah perimeter tiap unit yang
+  dobel-hitung garis bersama) + crease rule per-unit (garis lipat
+  badan↔lidah). Perforasi sengaja 0 (tidak ada data source geometri
+  perforasi di skema manapun, tidak ditebak). Method MIX (grid utama+rotasi)
+  dihitung 2 grid terpisah dijumlah, TANPA optimasi Common Knife di batas
+  antar-blok (overestimate kecil, didokumentasikan sbg batasan sadar).
+  Auto-dipanggil tiap `pickCandidate()` (bukan langkah manual terpisah),
+  hasil tersimpan `prod_layout_group.die_rule_meter` (kolom baru, migration
+  `2026_09_03_000008_add_prodev_tools_columns`).
+- **R30 — Tool #10 (Intra-Product Part Combiner), MVP 2-part.**
+  `ImpositionEngine::combinePair()` baru — BUKAN general heterogeneous
+  bin-packing (NP-hard, di luar scope), tapi **guillotine vertical-split**
+  (perluasan LANGSUNG dari metode CAMPUR yang sudah ada di `run()`): area
+  usable dibagi 2 kolom via sweep X, tiap X dihitung up count masing² part
+  (coba 2 orientasi). Keputusan pakai `qty_per_sku` (ProdPart, field lama yg
+  ternyata belum pernah dipakai) sbg bobot rasio kebutuhan riil antar-part
+  dlm 1 set produk — metrik "sets per sheet" = MIN(up_A/qtyA, up_B/qtyB),
+  dibandingkan `area_per_set` gabung vs pisah (baseline: tiap part dapat
+  plano sendiri). **Bug ditemukan & diperbaiki saat testing**: sweep awalnya
+  mulai dari `bodyWA` mentah (asumsi non-rotasi), part yang cuma muat kalau
+  diputar 90° (mis. lebih lebar dari areaW tapi lebih pendek dari areaH)
+  ter-skip dari eksplorasi — diperbaiki pakai `min(bodyW,bodyH)` sbg starting
+  point sweep (regression test ditambahkan). UI: card baru "🧩 Tool #10 —
+  Gabung Part dalam Produk Sama" (pilih part pasangan dari produk yang sama,
+  bandingkan GABUNG vs PISAH, tombol "Terapkan" bikin `prod_layout_group`
+  BARU menaungi 2 part — tidak menimpa group solo existing masing² part,
+  riwayat solo tetap ada). Layout gabungan tetap lewat alur konfirmasi yang
+  sama (`confirmLayout()`, generik utk semua method) sebelum tampil di
+  picker Costing.
+- **R30 — Alokasi biaya proporsional multi-part (§4.2b).**
+  `ProdLayoutGroup::effectiveCutFor(ProdPart $part)` baru — derivasi
+  matematis: "cut efektif" = totalLuasTerpakaiGroup ÷ luasPartSendiri (proxy
+  independen dari up_count, terbukti aljabar) supaya formula CostingEngine
+  **existing** (`paperCostPc = ... / cut / isi`) TIDAK PERLU diubah sama
+  sekali, otomatis menghasilkan alokasi proporsional by luas yang benar.
+  Group solo (1 part) fallback ke `up_count` apa adanya (perilaku lama
+  identik, tak ada regresi). `costing.blade.php::pickLayoutGroup()` diperluas
+  terima `$prodPartId` opsional — WAJIB diisi kalau group Tool #10 (>1 part),
+  guard menolak (session flash error) kalau belum dipilih; UI dropdown baru
+  "Part dalam Layout Gabungan" muncul otomatis saat group multi-part.
+  `i_pisau_faktor` juga auto-terisi dari `die_rule_meter` (Tool #4) dgn
+  alokasi proporsional serupa. **Bug ditemukan & diperbaiki saat testing**:
+  guard "wajib pilih part" awalnya TIDAK PERNAH ke-trigger krn fallback
+  `$group->parts->first()` dipakai bahkan saat `$prodPartId` null — diperbaiki
+  supaya fallback cuma jalan utk group solo. Kolom baru
+  `iqp_costing_part.prodev_part_id` (migration
+  `2026_09_03_000009_add_prodev_part_id_to_iqp_costing_part`, referensi
+  by-ID lintas-DB tm2sdi→tm2mst, BUKAN FK fisik, murni utk picker UI sticky).
+  Diverifikasi end-to-end via `Livewire::test()` + tinker sintetis (guard
+  ditolak tanpa prodPartId, alokasi dgn prodPartId=A dan =B, angka cocok
+  derivasi manual). Full test suite 93/100 lolos (7 gagal `CareersPortalTest`
+  krn Firebase Emulator tidak menyala, tidak terkait perubahan ini).
+
+---
+
 ## 2026-09-03 (lanjutan — instruksi user langsung, item tambahan)
 
 - **R29 — Default periode Accounting/Stock Opname/Payroll di `sys_constant`.**
