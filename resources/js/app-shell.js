@@ -22,6 +22,15 @@ document.addEventListener('alpine:init', () => {
         nosidebar: false,
         notopbar: false,
 
+        // Default awal sidebar TERTUTUP di layar sempit (<768px, breakpoint sama
+        // dgn @media di app.css) supaya topbar/avatar dropdown tidak kegencet saat
+        // load pertama. Toggle ☰ ("nosidebar") tetap sama, ini cuma nilai awal.
+        init() {
+            if (window.matchMedia('(max-width: 767px)').matches) {
+                this.nosidebar = true;
+            }
+        },
+
         activeMod: 'HOME',
         openTabs: [],
         activeTabCode: null,

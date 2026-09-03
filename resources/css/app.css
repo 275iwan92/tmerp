@@ -529,7 +529,24 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .av-dot.hide { @apply hidden; }
 
 /* ============================================================
- * Auth (login + forgot-password) — dipindah verbatim dari
+ * Shell responsive (mobile/layar sempit) — qc_feedback.md 2026-08-30:
+ * aside 262px fixed + flex row bikin topbar (termasuk avatar dropdown)
+ * kegencet/terdorong keluar viewport di layar sempit, avatar dropdown
+ * jadi tidak bisa dibuka. Fix: di bawah 768px, aside jadi overlay
+ * (position:fixed) alih-alih ikut flex row -- .main dapat FULL lebar
+ * viewport, topbar/avatar tidak lagi diperas. Reuse toggle ☰ ("nosidebar")
+ * yang SUDAH ADA (tb-btn @click="nosidebar = !nosidebar") -- app-shell.js
+ * cuma nambah default awal (tertutup di layar sempit saat load), TIDAK ada
+ * class/state baru. Scoped murni di dalam @media -- desktop (>=768px)
+ * TIDAK berubah sama sekali.
+ * ============================================================ */
+@media (max-width: 767px) {
+    .shell aside { @apply fixed inset-y-0 left-0 z-[60]; box-shadow: 4px 0 24px rgba(0, 0, 0, .35); }
+    /* mode "mini" tak relevan di mobile, treat sama spt nosidebar (tersembunyi penuh) */
+    .shell.mini aside { @apply w-0; }
+    .shell .main { @apply w-full; }
+}
+
  * docs/mockups/login.html & forgot-password.html. Di-scope di bawah
  * .authpage (nama generik .btn/.field/.input/.row dipakai mockup ini
  * akan bentrok kalau tidak di-scope).
