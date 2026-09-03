@@ -15,6 +15,7 @@
 }
 
 html, body { @apply h-full m-0; }
+[x-cloak] { display: none !important; }
 
 /* layouts/guest.blade.php (login/register/forgot-password) — halaman penuh
  * layar, TIDAK boleh mewarisi padding-bottom 40px dari body generik di bawah

@@ -1441,12 +1441,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     <div class="ptype-box">
                                         <div style="flex:1">
                                             <label>Tipe Produk</label>
-                                            <select wire:change="selectPartType({{ $i }}, $event.target.value)" @if($readOnly) disabled @endif>
-                                                <option value="">— pilih tipe produk —</option>
-                                                @foreach ($typeOptions as $code => $t)
-                                                    <option value="{{ $code }}" @selected($part['type_code'] === $code)>{{ $t['name'] }}</option>
-                                                @endforeach
-                                            </select>
+                                            <div style="display:flex;gap:6px;align-items:center">
+                                                <select x-ref="typeSelect" wire:change="selectPartType({{ $i }}, $event.target.value)" @if($readOnly) disabled @endif style="flex:1">
+                                                    <option value="">— pilih tipe produk —</option>
+                                                    @foreach ($typeOptions as $code => $t)
+                                                        <option value="{{ $code }}" @selected($part['type_code'] === $code)>{{ $t['name'] }}</option>
+                                                    @endforeach
+                                                </select>
+                                                {{-- Popup picker visual (TAMBAHAN, bukan pengganti dropdown di atas --
+                                                permintaan user 2026-09-03: sales baru gampang kenali tipe produk dari
+                                                gambar, ala Pacdora. Reuse TMDieline.svg() yang sudah ada (dieline-part.js),
+                                                bukan aset gambar baru -- thumbnail = dieline asli tipe itu, bukan generik. --}}
+                                                @unless($readOnly)
+                                                <button type="button" @click="pickerOpen = true" title="Pilih visual (gambar)"
+                                                    style="flex-shrink:0;width:34px;height:34px;border:1px solid #c7cfda;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px">🖼️</button>
+                                                @endunless
+                                            </div>
                                         </div>
                                         @if ($selectedType && ! empty($selectedType['sizes']))
                                             <div class="f size-pick" style="width:220px">
@@ -1459,6 +1469,32 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                 </select>
                                             </div>
                                         @endif
+                                    </div>
+
+                                    {{-- Modal picker visual (gambar dieline per tipe) -- overlay, tidak
+                                    mengubah layout field manapun di bawah. Pilih kartu = SAMA PERSIS
+                                    hasilnya dgn pilih dari <select> teks di atas (pickType() cuma
+                                    trigger event 'change' di select yg sama), field dimensi tetap
+                                    full-editable sesudahnya, tidak ada yg terkunci. --}}
+                                    <div x-show="pickerOpen" x-cloak @keydown.escape.window="pickerOpen = false"
+                                        style="position:fixed;inset:0;z-index:200;background:rgba(15,22,45,.45);display:flex;align-items:center;justify-content:center;padding:24px"
+                                        @click.self="pickerOpen = false">
+                                        <div style="background:#fff;border-radius:12px;width:100%;max-width:820px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
+                                            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
+                                                <b style="font-size:14px;color:#2c3e69">Pilih Tipe Produk (Visual)</b>
+                                                <button type="button" @click="pickerOpen = false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#8a94a6;line-height:1">&times;</button>
+                                            </div>
+                                            <div style="overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
+                                                <template x-for="item in typeList" :key="item.code">
+                                                    <button type="button" @click="pickType(item.code)"
+                                                        :style="typeCode === item.code ? 'border-color:#2c7be5;background:#eef3fb' : 'border-color:#e3e7f0;background:#fff'"
+                                                        style="border-width:2px;border-style:solid;border-radius:8px;padding:8px;cursor:pointer;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center">
+                                                        <div style="width:100%;height:90px;background:#fbfcfd;border:1px solid #eef0f3;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px" x-html="item.svg || '<span style=\'font-size:22px;color:#c7cfda\'>&#128196;</span>'"></div>
+                                                        <span style="font-size:11px;color:#2c3e69;font-weight:600;line-height:1.25" x-text="item.name"></span>
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div class="sec-title">Dimensi</div>
