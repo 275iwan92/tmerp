@@ -560,8 +560,16 @@ File ini sendiri berfungsi sebagai daftar centang ⬜/🟡 raksasa. Layar yang
 masih ⬜ (belum dibangun) di luar yang sudah tercatat di section lain file
 ini: Prove Warna (versioning v1/v2/v3), ~~Nota CO print~~ **SELESAI
 2026-09-03** (`co/print.blade.php`, Quotation print sudah ada duluan —
-lihat `docs/LOG_JOB_DONE.md`), Nota Alokasi/Label Rak Inventory, Period Manager (buka/tutup periode stok
-— `PeriodService::assertOpen()` belum dipanggil di mana pun), FIFO/LIFO
+lihat `docs/LOG_JOB_DONE.md`), Nota Alokasi Inventory (masih belum jelas —
+"posisi stok transaksional" yg dulunya dimaksud di mockup TIDAK relevan lagi
+setelah Inventory ledger jadi, perlu klarifikasi ulang maksudnya kalau mau
+dikerjakan), ~~Label Rak~~ **SELESAI 2026-09-03** (`master/warehouse/print-labels.blade.php`,
+tombol "🏷 Cetak Label Rak" di layar edit gudang — bentuk beda dari Nota
+transaksi lain, grid kartu label siap gunting bukan 1 dokumen formal, TIDAK
+pakai komponen `resources/views/components/print/*`. Lihat `docs/LOG_JOB_DONE.md`.
+Period Manager (buka/tutup periode stok — `PeriodService` genuinely TAK
+PERNAH DIBUAT, bukan cuma "belum dipanggil" seperti catatan lama bilang —
+dicek 2026-09-03, 0 file ditemukan), FIFO/LIFO
 valuation (`StockValuationService`, saat ini cuma AVG), Forecast Engine &
 Flow Engine (state-machine) mockup produksi lama (kemungkinan besar sudah
 digantikan oleh `production_scheduling_tier*.md` yang jauh lebih baru —

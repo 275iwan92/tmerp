@@ -130,6 +130,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/master/warehouse', 'pages::master.warehouse.index')->name('master.warehouse.list');
             Route::livewire('/master/warehouse/create', 'pages::master.warehouse.entry')->name('master.warehouse.create');
             Route::livewire('/master/warehouse/{warehouse}/edit', 'pages::master.warehouse.entry')->name('master.warehouse.edit');
+            Route::livewire('/master/warehouse/{warehouse}/print-labels', 'pages::master.warehouse.print-labels')->name('master.warehouse.print-labels');
         });
 
         Route::middleware('module:FINACC')->group(function () {

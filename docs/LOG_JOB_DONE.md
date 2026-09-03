@@ -67,6 +67,26 @@
   11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
   melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #14)
+
+- **§12.7 — Cetak Label Rak (Warehouse) dibangun.** Item `checklistmockuperp.md`
+  "[P] Nota Alokasi / Label Rak — sengaja ditunda, diprioritaskan Form/Grid
+  dulu" (Form+Grid Warehouse sudah lama live) — Label Rak dikerjakan (Nota
+  Alokasi TERPISAH, maknanya sendiri sudah tidak jelas pasca-Inventory
+  ledger jadi, dicatat perlu klarifikasi ulang bukan dikerjakan asal tebak).
+  Layar baru `master/warehouse/print-labels.blade.php`: grid kartu label
+  kecil siap gunting per `wh_loc` aktif (kode lokasi besar, row-col-stack,
+  nama lokasi), 4 kolom, print CSS `@media print` dgn `@page A4`. SENGAJA
+  TIDAK pakai komponen `resources/views/components/print/*` (dirancang utk
+  1 dokumen formal header+parties+items+signatures, bentuk beda total dari
+  lembar label). Tombol "🏷 Cetak Label Rak" baru di toolbar
+  `master/warehouse/entry.blade.php` (hanya muncul saat edit gudang
+  existing). Diverifikasi `Livewire::test()` (gudang riil dgn 3 lokasi ->
+  200) + HTTP kernel 200. `npm run build` dijalankan.
+  **Koreksi sekalian**: `PeriodService` yang disebut BACKLOG lama TERNYATA
+  tak pernah dibuat sama sekali (0 file), bukan cuma "belum dipanggil" --
+  catatan lama diperbaiki.
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #13)
 
 - **§6 Production — Reroute-Subkontrak "Sisip Hot Job" kini bisa benar-benar

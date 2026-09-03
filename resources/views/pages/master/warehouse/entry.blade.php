@@ -148,6 +148,10 @@ new #[Title('Form Gudang — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🏬 {{ $isEdit ? 'Edit Gudang: '.$warehouse_code : 'Gudang Baru' }}</b>
+        @if ($isEdit)
+            <a href="{{ route('master.warehouse.print-labels', ['warehouse' => $warehouseId]) }}" target="_blank"
+                class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🏷 Cetak Label Rak</a>
+        @endif
         <a href="{{ route('master.warehouse.list') }}" title="Kembali ke Daftar Gudang"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
