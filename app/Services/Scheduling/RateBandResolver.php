@@ -14,10 +14,13 @@ use Illuminate\Support\Facades\DB;
  * `max_speed_per_hour` di tm2mst.prod_machine) bila data historis belum
  * cukup (di bawah `rate_band_min_datapoint`).
  *
- * CATATAN IMPLEMENTASI: query historis mengasumsikan qty & durasi aktual
- * tersimpan di prd_wo_operation (actual_start/actual_finish/qty) untuk task
- * yang sudah DONE/QC_PASSED. Sesuaikan bila skema Production Output
- * Recording (F15) akhirnya disimpan di tabel terpisah.
+ * FIX 2026-09-03 (docs/BACKLOG.md §6): rate historis sekarang dihitung dari
+ * qty_good AKTUAL (`prd_wo_operation_output`, F15 Production Output
+ * Recording -- sudah ada datanya real sejak F15 dibangun) dibagi durasi
+ * aktual -- BUKAN lagi qty TARGET operasi (`prd_wo_operation.qty`, rencana,
+ * bisa beda dari hasil nyata krn reject/waste). Fallback ke qty target HANYA
+ * kalau task DONE/QC_PASSED tapi genuinely 0 baris F15 tercatat (data
+ * legacy/gap pencatatan, bukan kasus normal).
  */
 class RateBandResolver
 {
@@ -81,7 +84,8 @@ class RateBandResolver
             ->whereIn('task_status', ['DONE', 'QC_PASSED'])
             ->whereNotNull('actual_start')
             ->whereNotNull('actual_finish')
-            ->select(['qty', 'actual_start', 'actual_finish'])
+            ->select(['operation_id', 'qty', 'actual_start', 'actual_finish'])
+            ->with('outputs:operation_id,qty_good')
             ->limit(200) // rolling window praktis, jangan tarik seluruh histori tanpa batas
             ->orderByDesc('actual_finish')
             ->get();
@@ -93,7 +97,16 @@ class RateBandResolver
         $rates = $rows->map(function ($row) {
             $hours = $row->actual_start->diffInMinutes($row->actual_finish, true) / 60;
 
-            return $hours > 0 ? ((float) $row->qty / $hours) : null;
+            if ($hours <= 0) {
+                return null;
+            }
+
+            // qty_good aktual (F15) diutamakan; fallback qty target hanya kalau
+            // genuinely tak ada 1 pun baris Production Output tercatat.
+            $qtyGood = (float) $row->outputs->sum('qty_good');
+            $qty = $qtyGood > 0 ? $qtyGood : (float) $row->qty;
+
+            return $qty / $hours;
         })->filter();
 
         if ($rates->isEmpty()) {

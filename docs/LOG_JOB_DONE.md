@@ -12,6 +12,61 @@
 
 ---
 
+## 2026-09-03 (kerja langsung sesuai instruksi user, di luar sesi autonomous)
+
+- **§6 Production — `RateBandResolver` prioritas qty_good F15 di atas qty
+  target.** Sebelumnya rate historis dihitung dari `prd_wo_operation.qty`
+  (rencana/target operasi) — SALAH kalau hasil aktual beda dari rencana
+  (reject/waste). Sekarang: `historicalRate()` eager-load relasi
+  `outputs()` (`prd_wo_operation_output`, F15 Production Output Recording),
+  pakai `SUM(qty_good)` aktual per baris kalau ADA, fallback ke qty target
+  HANYA kalau genuinely 0 baris F15 tercatat (data legacy/gap pencatatan,
+  bukan kasus normal). Diverifikasi 2 skenario via tinker sintetis (insert
+  5 baris `DONE` dlm transaction, di-rollback): (a) ada F15 qty_good=100 x
+  5, qty target=1000 x5, durasi 2 jam/baris → rate = 50/jam (qty_good yang
+  dipakai, BUKAN 500/jam dari qty target) ✅; (b) tanpa F15 sama sekali →
+  fallback qty target = 500/jam ✅. Plus 6 test `ProductionWoGenerationTest`
+  tetap lolos. `git commit`-nya sempat tertinggal uncommitted di working
+  tree sesi lain (`tmerp-b5`) — diverifikasi ulang & di-commit sesi ini
+  atas permintaan user "commit all... update backlog dulu".
+- **Sidebar Sales: "Imposition Engine"→"Pro-Dev", "Product Costing"→
+  "Pro-Cost".** Permintaan user (screenshot sidebar) — menu setelah
+  Inquiry Product harus Pro-Dev, bukan Imposition Engine lama. `SALES_IMPO`
+  dialihkan dari `inquiry.imposition.list` ke layar ProDev workbench baru
+  (`production.prodev`), sesuai `productdevelopment_tier1.md` §6 poin 2
+  ("Imposition pindah dari Inquiry ke Product Development"). **Gap nyata
+  ditemukan & diperbaiki sekalian**: `SALES_STAFF`/`SALES_SPV` TIDAK punya
+  akses modul PROD sama sekali — kalau cuma ganti label tanpa ini, klik
+  "Pro-Dev" akan 403. Menu duplikat `PROD_CARD`/`PROD_LAYOUT` (grup
+  Production) disembunyikan (nunjuk layar sama).
+- **Dropdown profil direstrukturisasi + sidebar "Configuration"→"Settings".**
+  Permintaan user "agar menghemat menu": grup baru collapsible
+  "Configuration" di dropdown avatar menggabung Tema (matrix 4x3, makan
+  byk ruang vertikal) + Bahasa + Portal Karyawan (dilabeli ulang **"User
+  Configuration"**, termasuk judul modal+iframe title) + Aktivitas saya —
+  default tertutup, klik utk buka. My Security & Bantuan/Support TETAP di
+  luar grup. Sidebar kiri: "Security" tidak berubah, "Configuration"→
+  **"Settings"** (`sys_app_menu.SET_CONFIG.label`, route/kode tidak
+  berubah) — nama "Configuration" dibebaskan drpd dobel makna dgn grup
+  dropdown baru.
+- **7 akun contoh UAT lintas 4 level + panel referensi di layar login.**
+  Permintaan user: `operator`(L1, grup SALES_STAFF)/`supervs`(L2, grup
+  SALES_SPV)/`mgr-sal`,`mgr-pur`,`mgr-inv`,`mgr-acc`(L3, 1 per bidang, 4
+  grup BARU `MGR_SALES`/`MGR_PUR`/`MGR_INV`/`MGR_ACC` krn belum ada
+  sebelumnya)/`direksi`(grup DIREKSI existing) — semua password
+  `contoh!23`. Panel collapsible "🧪 Akun Uji Coba (UAT)" ditambahkan ke
+  `login.blade.php` (ada catatan wajib dicopot sebelum rilis produksi).
+  Diverifikasi: 7x password-check OK, end-to-end HTTP kernel `operator` →
+  `/production/prodev` = 200 (sebelumnya 403 sebelum fix modul PROD di
+  atas).
+- **Backup dokumentasi**: reorganisasi `docs/` (DDL→`docs/ddl/`, mockup
+  dipluralkan `docs/mockups/`, file inquiry/costing dikumpulkan ke
+  `docs/inquiry_product_costing/`) + referensi baru (5 Master Card riil
+  `docs/attachments/MC-*.xlsx`, Blueprint arsitektur, materi persiapan
+  modul Payroll/Time Attendance `docs/payroll_timeattendance/` — Tier1-4 +
+  11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
+  melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #8)
 
 - **§12.7 — Cetak Nota Customer Order (CO) dibangun.** Quotation print sudah

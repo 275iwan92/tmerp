@@ -24,14 +24,16 @@
 
 ---
 
-## RINGKASAN STATUS (2026-09-03 pagi, utk didiskusikan — pakai nomor R# saat bahas)
+## RINGKASAN STATUS (update 2026-09-03 pagi, utk didiskusikan — pakai nomor R# saat bahas)
 
 > Snapshot setelah task otonom `tmerp-backlog-autowork-1700` jalan ~13 jam
-> nonstop semalam (mulai 2026-09-02 15:45). Nomor di bawah **beda skema**
-> dari nomor section (0-12) di bawahnya — sengaja, supaya "bahas R3" tidak
-> ketuker sama "section 3 SALES". Update lagi tiap ada progres besar.
+> nonstop semalam (mulai 2026-09-02 15:45) + lanjutan pagi ini (2 sesi
+> paralel — `tmerp-b5` terus kerja BACKLOG, sesi lain kerjakan permintaan
+> UI/UAT langsung dari user). Nomor di bawah **beda skema** dari nomor
+> section (0-12) di bawahnya — sengaja, supaya "bahas R3" tidak ketuker
+> sama "section 3 SALES". Update lagi tiap ada progres besar.
 
-**SUDAH SELESAI semalam** (14 commit, semua terverifikasi test, bukan asumsi):
+**SUDAH SELESAI** (20+ commit total, semua terverifikasi test, bukan asumsi):
 
 - **R1.** ProDev + Product Costing Engine (misi utama) — TUNTAS. Skema DB,
   Engine Tingkat 1+2, layar workbench, cetak Master Card, 4 tipe part
@@ -39,10 +41,20 @@
 - **R2.** Grid tech-debt `class="grid"` — 9 lokasi/6 file diperbaiki.
 - **R3.** Win-Rate Sales report (baru).
 - **R4.** Outstanding PV report (baru).
-- **R5.** Cetak PO/PR/PQ — trio lengkap.
+- **R5.** Cetak PO/PR/PQ **+ Cetak Nota CO** — 4 dokumen transaksi lengkap.
 - **R6.** BOM Qty Kebutuhan — dibagi UP count imposition (bug nyata).
-- **R7.** Rate Band task MANUAL (§6) — sedang finalisasi commit saat
-  ringkasan ini ditulis, kemungkinan besar sudah masuk saat dibaca.
+- **R7.** Rate Band task MANUAL **+ prioritas qty_good F15 di atas qty
+  target** (§6) — 2 fix, keduanya SELESAI & diverifikasi (termasuk
+  fallback legacy kalau F15 kosong).
+- **R19.** [BARU] Sidebar Sales: "Imposition Engine"→"Pro-Dev",
+  "Product Costing"→"Pro-Cost" (repoint ke layar ProDev baru + fix gap
+  akses modul PROD utk staf/supervisor Sales).
+- **R20.** [BARU] Dropdown profil direstrukturisasi jadi grup collapsible
+  "Configuration" (Tema+Bahasa+User Configuration+Aktivitas saya); sidebar
+  kiri "Configuration"→"Settings" (Security tetap).
+- **R21.** [BARU] 7 akun contoh UAT lintas 4 level (operator/supervs/
+  4x manager per-bidang/direksi, password sama) + panel referensi di
+  layar login.
 
 **MASIH TERBUKA** (kategori besar, lihat section angka di bawah utk detail):
 
@@ -55,19 +67,21 @@
   manual input CO/Costing. Lihat §3.
 - **R11.** Procurement — Purchase Receive 3-alur (baru 1/3), StockConfirmService,
   12 kategori COA kosong. Lihat §4.
-- **R12.** Production Scheduling — modul paling banyak sisa (~10 item lain
-  selain R7: Machine Calendar, Simulation Sandbox, WO-convergence, F10-F20,
-  dll). Lihat §6.
+- **R12.** Production Scheduling — masih ~8 item lain (Machine Calendar,
+  Simulation Sandbox, WO-convergence, F10-F20, dll). Lihat §6.
 - **R13.** Finance — Fixed Asset (0%), Auto-jurnal DO/Invoice, seluruh
   AR/AP belum ada. **Payroll SENGAJA di-skip total** (aturan CLAUDE.md,
-  butuh keputusan desain enkripsi dulu). Lihat §7.
+  butuh keputusan desain enkripsi dulu — TAPI materi referensi baru sudah
+  masuk repo `docs/payroll_timeattendance/`, belum diverifikasi/dipakai).
+  Lihat §7.
 - **R14.** HRM — `org_position` mapping, Flutter mobile channel. Lihat §8.
 - **R15.** Migrasi Filament `/admin` — baru HRM, modul lain 100% shell
   lama. Lihat §9.
 - **R16.** Tech debt — iframe belum ikut tema, WYSIWYG print editor,
   `sys_user_menu` nganggur (keputusan pakai/hapus blm diambil). Lihat §10.
 - **R17.** Rename semua menu ke Bahasa Inggris — diputuskan, belum
-  dieksekusi. Lihat §11.
+  dieksekusi (`tmerp-b5` sengaja TIDAK mengeksekusi ini otonom, dianggap
+  perubahan UX besar yang perlu sign-off user dulu). Lihat §11.
 - **R18.** Katalog §12 — banyak item Procurement/Finance/HR/Delivery
   eksplisit di luar scope v1, plus keputusan bisnis Inquiry/CO yang masih
   menggantung (§12.2).
@@ -260,9 +274,13 @@ sebelum eksekusi):
   Production Output difilter `resource_type=MANUAL`+`process_name` (rate =
   properti proses, BUKAN per-operator individual — itu tetap gap, butuh
   desain agregasi rate crew multi-orang). Lihat `docs/LOG_JOB_DONE.md`.
-- `RateBandResolver` masih pakai qty target operasi utk hitung rate
-  historis, bukan qty_good hasil Output (F15) yang sekarang sudah ada
-  datanya real.
+- ~~`RateBandResolver` masih pakai qty target operasi utk hitung rate
+  historis, bukan qty_good hasil Output (F15)~~ **SELESAI 2026-09-03** —
+  rate historis sekarang prioritas qty_good aktual (`prd_wo_operation_output`
+  F15), fallback ke qty target HANYA kalau genuinely 0 baris F15 tercatat
+  (legacy/gap pencatatan). Diverifikasi 2 skenario (qty_good dipakai +
+  fallback legacy) via tinker sintetis dlm transaction rollback, plus 6
+  test `ProductionWoGenerationTest` tetap lolos. Lihat `docs/LOG_JOB_DONE.md`.
 - `SchedulingRuleEngine::applySequencing()` masih 1-rule-only.
 - Decision Feedback calibration loop masih sebatas log, belum ada loop
   belajar sungguhan.
