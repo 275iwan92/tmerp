@@ -241,7 +241,7 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
     x-on:wo-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📌 MPS - Kanban Board</b>
-        <x-form.date-picker wire:model.live="date" class="w-[120px] !bg-white/10 !text-white text-[11px] font-bold px-3 py-1.5 rounded-md border-none">
+        <x-form.date-picker wire:model.live="date" class="w-[120px] !bg-white/10 !text-white text-[11px] font-bold px-3 py-1.5 rounded-md border-none" />
         <a href="{{ route('production.scheduling-board') }}" class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-3 py-1 bg-[#43508a] rounded-full hover:brightness-110 no-underline">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">📅 MPS - Gantt Chart</span>
         </a>
@@ -299,16 +299,14 @@ new #[Title('MPS - Kanban Board — TELASIH MAKMUR ERP')] class extends Componen
 
             {{-- Kolom per Mesin --}}
             @foreach ($this->machines as $machine)
-                @php($ops = $this->machineOperations->get($machine->machine_id, collect()))
-                @php($idle = $this->machineIsIdle($machine->machine_id))
                 <div class="bg-[#e7eaf1] rounded-[10px] w-[250px] shrink-0 flex flex-col max-h-[calc(100vh-230px)]">
-                    <div class="px-3 py-2.5 rounded-t-[10px] flex items-center justify-between {{ $idle ? 'bg-[#fdecec]' : 'bg-[#dde1ea]' }}">
+                    <div class="px-3 py-2.5 rounded-t-[10px] flex items-center justify-between {{ $this->machineIsIdle($machine->machine_id) ? 'bg-[#fdecec]' : 'bg-[#dde1ea]' }}">
                         <div><div class="font-extrabold text-[12.5px] text-navy">{{ $machine->machine_name }}</div><span class="block text-[8.6px] font-bold text-muted uppercase tracking-wide">{{ $machine->machine_code }}</span></div>
-                        <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full {{ $idle ? 'bg-[#dc2626] text-white' : 'bg-navy/10 text-navy' }}">{{ $ops->count() }}</span>
+                        <span class="text-[9.5px] font-bold px-2 py-0.5 rounded-full {{ $this->machineIsIdle($machine->machine_id) ? 'bg-[#dc2626] text-white' : 'bg-navy/10 text-navy' }}">{{ $this->machineOperations->get($machine->machine_id, collect())->count() }}</span>
                     </div>
                     <div class="p-2 flex flex-col gap-2 overflow-y-auto min-h-[70px] flex-1"
                         x-on:dragover.prevent x-on:drop="$wire.moveOperation(draggedId, {{ $machine->machine_id }}); draggedId = null">
-                        @forelse ($ops as $op)
+                        @forelse ($this->machineOperations->get($machine->machine_id, collect()) as $op)
                             <div draggable="true" title="Seret kartu ini ke kolom mesin lain untuk pindahkan tugasnya" x-on:dragstart="draggedId = {{ $op->operation_id }}"
                                 class="bg-white rounded-lg shadow-sm border-l-4 {{ $this->cardBorderClasses($op->task_status) }} px-2.5 py-2 cursor-grab hover:shadow-md">
                                 <div class="flex items-center justify-between gap-1.5 mb-1">

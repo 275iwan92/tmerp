@@ -32,7 +32,7 @@ class RateBandResolver
      */
     public function resolve(int $machineId, string $processName): float
     {
-        $historical = $this->historicalRate($machineId, $processName);
+        $historical = $this->historicalRate($processName, machineId: $machineId);
 
         if ($historical !== null && $historical['datapoint_count'] >= $this->minDataPoint) {
             return $historical['rate'];
@@ -41,10 +41,42 @@ class RateBandResolver
         return $this->masterFallbackRate($machineId, $processName);
     }
 
-    private function historicalRate(int $machineId, string $processName): ?array
+    /**
+     * Rate Band utk task MANUAL (resource_type=MANUAL, tanpa machine_id) --
+     * docs/BACKLOG.md §6 "Rate Band MANUAL masih throw error". Sebelumnya
+     * SELALU throw (0% task manual bisa di-backward-schedule). Sekarang pakai
+     * histori Production Output yang sama seperti jalur MACHINE, cuma
+     * di-filter resource_type=MANUAL & process_name (BUKAN per-employee --
+     * itu tetap gap terbuka, butuh desain agregasi rate crew multi-orang yang
+     * belum diputuskan; di sini rate = properti inheren proses tsb, sama
+     * spirit-nya dgn "1 mesin = 1 rate" tapi utk "1 proses manual = 1 rate").
+     * Fallback: exception jelas (bukan angka ngasal) kalau histori < minDataPoint --
+     * PPIC/Plant Manager perlu catat cukup Production Output F15 dulu.
+     *
+     * @return float unit per jam
+     */
+    public function resolveManual(string $processName): float
+    {
+        $historical = $this->historicalRate($processName, resourceType: 'MANUAL');
+
+        if ($historical !== null && $historical['datapoint_count'] >= $this->minDataPoint) {
+            return $historical['rate'];
+        }
+
+        $found = $historical['datapoint_count'] ?? 0;
+
+        throw new \RuntimeException(
+            "Rate Band manual utk proses '{$processName}' belum punya cukup histori Production Output ".
+            "(butuh minimal {$this->minDataPoint} data poin DONE/QC_PASSED, ada {$found}) — ".
+            'catat Production Output (F15) dulu, atau PPIC/Plant Manager input estimasi manual sementara.'
+        );
+    }
+
+    private function historicalRate(string $processName, ?int $machineId = null, ?string $resourceType = null): ?array
     {
         $rows = PrdWoOperation::query()
-            ->where('machine_id', $machineId)
+            ->when($machineId !== null, fn ($q) => $q->where('machine_id', $machineId))
+            ->when($resourceType !== null, fn ($q) => $q->where('resource_type', $resourceType))
             ->where('process_name', $processName)
             ->whereIn('task_status', ['DONE', 'QC_PASSED'])
             ->whereNotNull('actual_start')

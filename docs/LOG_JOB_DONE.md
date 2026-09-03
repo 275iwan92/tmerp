@@ -12,6 +12,36 @@
 
 ---
 
+## 2026-09-02/03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #7)
+
+- **§6 Production — Rate Band `resource_type=MANUAL` tak lagi selalu throw.**
+  `RateBandResolver::resolveManual()` baru: histori Production Output
+  (`prd_wo_operation` DONE/QC_PASSED) difilter `resource_type=MANUAL`+
+  `process_name` (rate = properti proses, sama spirit jalur MACHINE yang
+  properti mesin — BUKAN per-operator individual, itu tetap gap terbuka,
+  butuh desain agregasi rate crew multi-orang yang belum diputuskan).
+  `BackwardSchedulingService::resolveRateForTask()` pakai ini utk task
+  manual, ganti exception permanen sebelumnya. Diverifikasi: tanpa histori
+  -> exception informatif (bukan diam-diam salah hitung), dgn histori
+  sintetis dlm transaction rollback -> rate terhitung benar (100qty/2jam x6
+  data poin = 50/jam, sesuai).
+- **BUG NYATA ditemukan & diperbaiki saat investigasi test tak
+  terkait**: `production/monitoring-dashboard.blade.php` (Screen #3 MPS
+  Kanban Board) rusak TOTAL sejak refactor date-picker custom 2026-09-02 --
+  tag `<x-form.date-picker ...>` di header dibuka TANPA `/>` atau penutup,
+  bikin seluruh konten setelahnya (termasuk link "MPS - Gantt Chart") ikut
+  jadi slot content komponen itu, Blade compiler kehilangan jejak nesting
+  @if/@foreach di bawahnya -> "unexpected end of file" tiap kali layar ini
+  dirender (test smoke-check `test_screen3_monitoring_dashboard_renders`
+  gagal). Fix: tutup tag `/>`. Sekaligus perbaiki 2 inline `@php(...)`
+  tepat setelah `@foreach` (gotcha terdokumentasi
+  `feedback_livewire_wirekey_inline_php_gotcha`, walau bukan akar masalah
+  di kasus ini) jadi pemanggilan method langsung inline. Grep dilakukan ke
+  seluruh `resources/views` cari pola tag serupa -- cuma 1 kecocokan lain
+  (`inquiry/form.blade.php:1266`), dicek TERNYATA closed dgn benar
+  (`x-slot:label`, false positive). Semua 6 test `ProductionWoGenerationTest`
+  lolos setelah fix (sebelumnya 5/6). `npm run build` dijalankan.
+
 ## 2026-09-02 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #6)
 
 - **§6 Production — Qty Kebutuhan BOM WO Detail diperbaiki.**

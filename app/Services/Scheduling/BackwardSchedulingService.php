@@ -80,16 +80,14 @@ class BackwardSchedulingService
 
     private function resolveRateForTask(PrdWoOperation $task): float
     {
-        if ($task->resource_type !== 'MACHINE' || ! $task->machine_id) {
-            // Manual job — rate resolver untuk resource_type=MANUAL masih Tier2 lanjutan
-            // (rate per-orang, bukan per-mesin). Sementara pakai exception eksplisit
-            // supaya tak diam-diam salah hitung.
-            throw new \RuntimeException(
-                "Rate Band untuk task manual (operation_id={$task->operation_id}) belum ".
-                'diimplementasi di RateBandResolver — perlu perluasan skema per-operator.'
-            );
+        if ($task->resource_type === 'MACHINE' && $task->machine_id) {
+            return $this->rateBandResolver->resolve((int) $task->machine_id, $task->process_name);
         }
 
-        return $this->rateBandResolver->resolve((int) $task->machine_id, $task->process_name);
+        // Manual job (docs/BACKLOG.md §6, FIX 2026-09-02) -- rate = properti proses
+        // (histori Production Output difilter resource_type=MANUAL+process_name),
+        // BUKAN per-operator individual (itu tetap gap terbuka, butuh desain agregasi
+        // rate crew multi-orang yang belum diputuskan -- lihat docblock resolveManual()).
+        return $this->rateBandResolver->resolveManual($task->process_name);
     }
 }
