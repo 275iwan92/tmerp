@@ -244,6 +244,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             'i_dim_panjang_mm', 'i_dim_lebar_mm', 'i_dim_tinggi_mm', 'i_lidah_lem_mm', 'flute_type', 'sheet_rate_id',
             'supplier_sheet_code', 'i_isi_per_lb_kerja', 'i_ongkos_print_pc', 'i_ongkos_diecut_pc', 'i_ongkos_slitter_pc',
             'i_ongkos_slotter_pc', 'i_ongkos_join_pc', 'i_ongkos_partisi_pc', 'i_ongkos_layer_pc', 'i_ongkos_qc_pack_pc',
+            'i_ongkos_kupas_pc', 'i_ongkos_packing_pc', 'jenis_packing',
             'i_ongkos_kirim_pc',
         ];
 
@@ -539,8 +540,18 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                                 <x-form.input type="number" step="0.01" value="{{ $part->i_ongkos_layer_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_layer_pc', $event.target.value)" class="w-1/3 !py-1.5" />
                             </div>
                         </div>
-                        <x-form.input label="QC+Pak /pc" type="number" step="0.01" value="{{ $part->i_ongkos_qc_pack_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_qc_pack_pc', $event.target.value)" class="!py-1.5" />
+                        <x-form.input label="QC /pc" type="number" step="0.01" value="{{ $part->i_ongkos_qc_pack_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_qc_pack_pc', $event.target.value)" class="!py-1.5" />
                         <x-form.input label="Kirim /pc" type="number" step="0.01" value="{{ $part->i_ongkos_kirim_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_kirim_pc', $event.target.value)" class="!py-1.5" />
+                    </div>
+
+                    {{-- Gap analysis 2026-09-03 (perbandingan vs legacy ScriptCase "Kalkulasih HPP"):
+                    Ongkos Kupas belum ada sama sekali, QC+Packing tadinya 1 kolom (di atas, sekarang
+                    QC saja). Jenis Packing free-text (bukan dropdown) -- belum ada daftar baku jenis
+                    packing yang dikonfirmasi user, jangan menebak opsinya. --}}
+                    <div class="grid grid-cols-3 gap-2.5 mb-3">
+                        <x-form.input label="Kupas /pc" type="number" step="0.01" value="{{ $part->i_ongkos_kupas_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_kupas_pc', $event.target.value)" class="!py-1.5" />
+                        <x-form.input label="Packing /pc" type="number" step="0.01" value="{{ $part->i_ongkos_packing_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_packing_pc', $event.target.value)" class="!py-1.5" />
+                        <x-form.input label="Jenis Packing" value="{{ $part->jenis_packing }}" placeholder="mis. Karton/Plastik" wire:change="updatePart({{ $part->id_costing_part }}, 'jenis_packing', $event.target.value)" class="!py-1.5" />
                     </div>
                     @endif
 

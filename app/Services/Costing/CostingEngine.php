@@ -265,7 +265,9 @@ class CostingEngine
             + (float) $part->i_ongkos_join_pc
             + (float) $part->i_ongkos_partisi_pc
             + (float) $part->i_ongkos_layer_pc
+            + (float) $part->i_ongkos_kupas_pc
             + (float) $part->i_ongkos_qc_pack_pc
+            + (float) $part->i_ongkos_packing_pc
             + (float) $part->i_ongkos_kirim_pc;
 
         // SHEET: TOOL_SKIP (§B.1) — tooling sengaja 0, tak ada film/plate/pisau.
@@ -324,7 +326,9 @@ class CostingEngine
             + (float) $part->i_ongkos_join_pc
             + (float) $part->i_ongkos_partisi_pc
             + (float) $part->i_ongkos_layer_pc
+            + (float) $part->i_ongkos_kupas_pc
             + (float) $part->i_ongkos_qc_pack_pc
+            + (float) $part->i_ongkos_packing_pc
             + (float) $part->i_ongkos_kirim_pc;
 
         $totalPartCostPc = $paperCostPc + $processCostPc;
