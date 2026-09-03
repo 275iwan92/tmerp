@@ -194,6 +194,31 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
 
                     <div class="divider"><span>atau</span></div>
                     <div class="reg">Belum punya akun? <a href="{{ route('register', ['lang' => $lang]) }}">Daftar</a></div>
+
+                    {{-- Akun contoh UAT (permintaan user 2026-09-03) -- 7 akun lintas 4 level
+                         (operator/supervs/4x manager per-bidang/direksi), password sama supaya
+                         tim UAT gampang coba lintas role. HAPUS/sembunyikan panel ini sebelum
+                         rilis produksi sungguhan -- ini sengaja terlihat di layar login demi
+                         kemudahan UAT, bukan pola yang aman utk end-user asli. --}}
+                    <div class="uat-box" x-data="{ open: false }">
+                        <button type="button" class="uat-toggle" @click="open = !open" title="Daftar akun contoh untuk UAT (User Acceptance Test)">
+                            🧪 Akun Uji Coba (UAT) <span x-text="open ? '▲' : '▼'"></span>
+                        </button>
+                        <div class="uat-panel" x-show="open" x-cloak x-transition>
+                            <p class="uat-note">Semua password sama: <code>contoh!23</code></p>
+                            <table class="uat-table">
+                                <tbody>
+                                    <tr><td>Level 1 — Operator</td><td><code>operator</code></td></tr>
+                                    <tr><td>Level 2 — Supervisor</td><td><code>supervs</code></td></tr>
+                                    <tr><td>Level 3 — Manager Sales</td><td><code>mgr-sal</code></td></tr>
+                                    <tr><td>Level 3 — Manager Purchasing</td><td><code>mgr-pur</code></td></tr>
+                                    <tr><td>Level 3 — Manager Inventory</td><td><code>mgr-inv</code></td></tr>
+                                    <tr><td>Level 3 — Manager Finance & Acc.</td><td><code>mgr-acc</code></td></tr>
+                                    <tr><td>Level 4 — Direksi</td><td><code>direksi</code></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

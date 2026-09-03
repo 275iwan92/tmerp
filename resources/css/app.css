@@ -636,6 +636,21 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .authpage .reg { @apply text-center text-[13.5px] text-[var(--ap-ink)]; }
 .authpage .reg a { @apply text-[var(--ap-blue)] no-underline font-bold; }
 .authpage .reg a:hover { @apply underline; }
+
+/* Panel akun contoh UAT (login.blade.php, 2026-09-03) — sengaja terlihat
+ * di layar login demi kemudahan tim UAT coba lintas level, HAPUS sebelum
+ * rilis produksi sungguhan. */
+.authpage .uat-box { @apply mt-4 w-full; }
+.authpage .uat-toggle { @apply w-full flex items-center justify-center gap-1.5 text-xs font-semibold text-[var(--ap-muted)] bg-transparent border border-dashed border-[var(--ap-border)] rounded-lg py-2 cursor-pointer; }
+.authpage .uat-toggle:hover { @apply text-[var(--ap-blue)] border-[var(--ap-blue)]; }
+.authpage .uat-panel { @apply mt-2 p-3 rounded-lg border border-[var(--ap-border)] bg-[#f8fafc]; }
+.authpage .uat-note { @apply text-[11.5px] text-[var(--ap-muted)] mb-2; }
+.authpage .uat-note code { @apply bg-[#e2e8f0] px-1.5 py-0.5 rounded font-mono text-[11px]; }
+.authpage .uat-table { @apply w-full text-[11.5px] border-collapse; }
+.authpage .uat-table td { @apply py-1 border-b border-[var(--ap-border)] text-[var(--ap-ink)]; }
+.authpage .uat-table td:first-child { @apply text-[var(--ap-muted)]; }
+.authpage .uat-table td:last-child { @apply text-right; }
+.authpage .uat-table td code { @apply bg-[#e2e8f0] px-1.5 py-0.5 rounded font-mono text-[11px] font-semibold; }
 @media (max-width: 860px) { .authpage .hero-panel, .authpage .grip { @apply hidden; } .authpage .hero-side { width: 100% !important; @apply max-w-none; } }
 
 /* ---- Register (register.html) — panel lebar tetap, tanpa grip ---- */
