@@ -5,6 +5,7 @@ use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CoOrderExternalCost;
 use App\Models\Sdi\CoOrderItem;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
@@ -35,6 +36,17 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
     public function totals(): array
     {
         return $this->order->totals();
+    }
+
+    // Guard Confirm (keputusan user 2026-09-03): due_date WAJIB terisi di semua
+    // baris PRODUCT sebelum CO boleh Confirm -- supaya ENGINE CPDEL (confirmCo()
+    // di bawah) selalu punya tanggal utk dasar jadwal, tidak ada lagi CO
+    // CONFIRMED dgn due_date kosong yg bikin item itu tak pernah muncul di
+    // grid Customer Plan Delivery.
+    #[Computed]
+    public function itemsMissingDueDate()
+    {
+        return $this->order->items->where('line_kind', 'PRODUCT')->whereNull('due_date');
     }
 
     #[Computed]
@@ -267,13 +279,47 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         unset($this->order);
     }
 
+    // ENGINE Customer Plan Delivery (CPDEL, keputusan user 2026-09-03): begitu CO
+    // Confirm, tiap item PRODUCT yang belum punya baris co_order_delivery sama
+    // sekali (Sales tidak sempat isi manual lewat "+ Jadwal Kirim" saat Draft)
+    // di-auto-isi 1 baris DEFAULT: qty penuh @ due_date item. Item yang SUDAH
+    // punya baris manual (hasil "+ Jadwal Kirim") tidak disentuh -- itu override
+    // Sales, engine cuma mengisi yang kosong. due_date WAJIB terisi utk Confirm
+    // sama sekali (lihat itemsMissingDueDate() guard di bawah & tombol Confirm
+    // di blade) -- jadi TIDAK ADA lagi kasus CO CONFIRMED dgn due_date kosong.
+    // Hasilnya lanjut diatur (Split/Gabung) di layar Customer Plan Delivery
+    // (co/delivery-plan.blade.php).
     public function confirmCo(): void
     {
-        if ($this->order->doc_status !== 'DRAFT' || $this->order->items->isEmpty()) {
+        if ($this->order->doc_status !== 'DRAFT'
+            || $this->order->items->isEmpty()
+            || $this->itemsMissingDueDate->isNotEmpty()) {
             return;
         }
 
-        $this->order->update(['doc_status' => 'CONFIRMED', 'updated_by' => Auth::user()->login]);
+        $login = Auth::user()->login;
+
+        DB::connection('tm2sdi')->transaction(function () use ($login) {
+            $this->order->update(['doc_status' => 'CONFIRMED', 'updated_by' => $login]);
+
+            $itemsNeedingSchedule = $this->order->items
+                ->where('line_kind', 'PRODUCT')
+                ->filter(fn ($item) => $item->deliveries->isEmpty());
+
+            foreach ($itemsNeedingSchedule as $item) {
+                CoOrderDelivery::create([
+                    'order_id' => $this->orderId,
+                    'item_id' => $item->id_item,
+                    'shipment_type' => 'FULL',
+                    'ship_date' => $item->due_date,
+                    'ship_qty' => $item->qty,
+                    'status' => 'PLANNED',
+                    'created_by' => $login,
+                    'updated_by' => $login,
+                ]);
+            }
+        });
+
         unset($this->order);
     }
 };
@@ -291,8 +337,13 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                 <div class="text-sm font-extrabold">{{ number_format($this->totals['net_receivable'], 0, ',', '.') }}</div>
             </div>
             @if ($this->order->doc_status === 'DRAFT')
+                @if ($this->itemsMissingDueDate->isNotEmpty())
+                    <span class="text-[10.5px] font-semibold text-[#ffd7a8]" title="{{ $this->itemsMissingDueDate->pluck('description')->implode(', ') }}">
+                        ⚠ {{ $this->itemsMissingDueDate->count() }} item belum ada Due Date
+                    </span>
+                @endif
                 <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
-                    @disabled($this->order->items->isEmpty())
+                    @disabled($this->order->items->isEmpty() || $this->itemsMissingDueDate->isNotEmpty())
                     class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                     ✓ Confirm CO
                 </button>
@@ -423,7 +474,11 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                         <td class="px-2 py-2 text-right font-bold text-navy">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                                         <td class="px-2 py-2 text-center">
                                             <x-form.date-picker value="{{ $item->due_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
-                                                wire:change="updateItem({{ $item->id_item }}, 'due_date', $event.target.value)" class="!py-1 text-[11px] disabled:bg-[#f8fafc]" />
+                                                wire:change="updateItem({{ $item->id_item }}, 'due_date', $event.target.value)"
+                                                class="!py-1 text-[11px] disabled:bg-[#f8fafc] {{ $item->line_kind === 'PRODUCT' && ! $item->due_date && $this->order->doc_status === 'DRAFT' ? '!border-red-400' : '' }}" />
+                                            @if ($item->line_kind === 'PRODUCT' && ! $item->due_date && $this->order->doc_status === 'DRAFT')
+                                                <div class="text-[9.5px] text-red-500 mt-0.5">wajib diisi</div>
+                                            @endif
                                         </td>
                                         <td class="px-2 py-2 text-center">
                                             @if ($item->quotation_item_id === null && $this->order->doc_status === 'DRAFT')

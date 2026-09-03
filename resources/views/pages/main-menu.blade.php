@@ -85,11 +85,17 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             // per-inquiry) -> punya list sungguhan, tak perlu numpang Inquiry Hub.
             'SALES_QUOT' => route('quotation.list'),
             'SALES_SO' => route('co.list'),
-            'SALES_PLAN' => route('co.delivery-plan'),
+            // Plan Delivery -> Customer Plan Delivery (CPDEL), dipindah ke grup
+            // Sales Order (keputusan user 2026-09-03, lihat migration
+            // rename_cpdel_and_regroup_delivery_menu).
+            'SALES_CPDEL' => route('co.delivery-plan'),
             // Delivery Order/Surat Jalan (DO+SJ 1 tabel 2 cetakan) -- sebelumnya
             // modul "Dispatch" berdiri sendiri, digabung ke sini 2026-08-28 (lihat
-            // migration move_dispatch_menu_into_sales_delivery).
+            // migration move_dispatch_menu_into_sales_delivery). "Delivery Notes"
+            // (SALES_DN, ditambah 2026-09-03) reuse grid yang sama -- lihat catatan
+            // di migration rename_cpdel_and_regroup_delivery_menu.
             'SALES_DO' => route('dispatch.do.index'),
+            'SALES_DN' => route('dispatch.do.index'),
             'SALES_WINRATE' => route('sales.win-rate'),
             'PROC_PR' => route('pur.pr.list'),
             'PROC_PR_APPR' => route('pur.pr.approval'),

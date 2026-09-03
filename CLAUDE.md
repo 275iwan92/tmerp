@@ -224,6 +224,62 @@ transaksi = `iqp_costing`, ikut inquiry).
     harga per qty-tier (toleransi/margin/pembulatan/PPN). SUDAH LENGKAP,
     4 tipe part (DC/SHEET_DIGITAL/KRAFT/DC+SHEET).
   - Detail lengkap: memory `project_inqprod_engine_goal.md`.
+- **[VITAL] Alur Quotation & Customer Order — dari InqProd berharga sampai CO**
+  (dikunci user 2026-09-03, jangan tanya ulang ke user soal ini):
+  - **Prasyarat:** InqProd sudah melewati ProDev+ProCost (sudah ada harga/HPP)
+    dan **disetujui Sales** (bukan Direksi lagi — publish costing = beda
+    tahap, lihat §4 "Costing rahasia" di bawah).
+  - **Langkah 1 — SALES QUOTATION**: Sales pilih-pilih InqProd yang mana saja
+    masuk quotation (via `availableInquiries` — inquiry customer sama, costing
+    `published_flag=true`, belum ditarik ke quotation ini); sisanya (header,
+    harga, qty, diskon per baris) **AUTO** dari snapshot InqProd tapi **BOLEH
+    diedit** sebelum publish. **SUDAH ADA & jalan**: `quotation/entry.blade.php`
+    + `App\Services\Sales\QuotationBuilder`.
+  - **Langkah 2 — Customer OK → CUSTOMER ORDER Mode #1 (auto dari Quotation)**:
+    1 CO = 1 Quotation (locked 2026-08-20, FK `co_order.quotation_id` NOT
+    NULL + UNIQUE ke `quo_quotation`). Item CO = **snapshot** item Quotation
+    saat CO lahir (bukan live-linked — prinsip snapshot §4). **SUDAH ADA &
+    jalan**: `App\Services\Sales\CoOrderBuilder::findOrCreateFromQuotation()`
+    dipanggil begitu Quotation berstatus `PUBLISHED`.
+  - **Customer Order Mode #2 (manual/standalone)** — pembuatan CO **tanpa**
+    lewat Quotation, meniru alur manual versi sebelumnya (ScriptCase V1), TAPI
+    dengan syarat **Master Product (`prod_product`) harus dibuat dulu**
+    sebelum baris CO bisa diisi (beda dari baris manual di CO Mode #1 yang
+    sekarang bebas free-text `description`, lihat `co/entry.blade.php::
+    addItem()`). **STATUS 2026-09-03: BELUM ADA** — 0 jalur kode bikin CO
+    tanpa Quotation, dan skema `co_order.quotation_id` saat ini **NOT NULL**
+    sehingga CO tanpa Quotation mustahil tanpa migration (jadikan nullable +
+    validasi baru: kalau `quotation_id` null maka tiap baris **wajib**
+    `product_id` terisi dari Master Product). Ini gap nyata, target scope
+    berikutnya — jangan asumsikan sudah bisa.
+  - **Pola sama seperti ProDev/ProCost**: 2 mode = 2 JALUR INPUT, bukan 2
+    alur bisnis berbeda — tujuan akhir (dokumen CO valid, siap CPDEL) harus
+    sama, cuma titik masuknya beda (dari Quotation vs manual+Master Product).
+  - **Langkah 3 — CO CONFIRMED → CUSTOMER PLAN DELIVERY (CPDEL)**: nama baru
+    utk "Plan Delivery" (rename 2026-09-03, & dipindah dari grup menu
+    "Delivery" ke grup **"Sales Order"**, satu grup dgn Customer Order —
+    lihat `sidebarmenustandard.md`/migration `rename_cpdel_and_regroup_
+    delivery_menu`). **ENGINE** (baru 2026-09-03): begitu CO `confirmCo()`,
+    tiap `co_order_item` PRODUCT yang belum punya jadwal manual di-auto-buat
+    1 baris `co_order_delivery` (qty penuh @ `due_date` item) — item yang
+    sudah diisi manual via tab Delivery CO Entry TIDAK ditimpa. **`due_date`
+    WAJIB terisi di semua baris PRODUCT sebelum CO bisa di-Confirm** (guard
+    tambahan 2026-09-03, `itemsMissingDueDate` — tombol Confirm CO disabled +
+    warning kalau ada yang kosong) — jadi **TIDAK ADA lagi CO CONFIRMED
+    dengan due_date kosong**. **SUDAH ADA & jalan**:
+    `co/entry.blade.php::confirmCo()`. Grid CPDEL
+    (`co/delivery-plan.blade.php`) sendiri **sudah live sejak 2026-08-20**
+    dan punya 3 aksi per baris: **Split** (pecah qty+tanggal), **Gabung/Join**
+    (baris item+CO sama → baris tanggal-paling-awal), atau **biarkan** hasil
+    default engine — cocok mockup `co_delivery_plan_mockup.html`.
+  - **Menu grup "Delivery"** (setelah CPDEL pindah ke "Sales Order") WAJIB
+    berisi **Delivery Order** + **Delivery Notes** (2 item terpisah, keputusan
+    user 2026-09-03) — meng-override keputusan lama 2026-08-28 yang sengaja
+    TIDAK memberi Surat Jalan menu sendiri. Delivery Notes utk sekarang reuse
+    grid `dispatch.do.index` yang sama (belum ada layar terpisah).
+  - Detail & riwayat: memory `project_quotation_co_flow.md`,
+    `project_cpdel_engine.md`; dokumen gabungan lengkap
+    `docs/SALES_QUO_ORDER, CPDEL.md`.
 - **Costing rahasia (Sisi A):** HPP/margin hanya Costing+Direksi. Publish (approve
   Direksi) = deklasifikasi harga ke Sisi B (Sales).
 - **Due date** = 14 hari kerja dari **approval prove FISIK** (bukan PO/mockup).

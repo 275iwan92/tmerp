@@ -10,14 +10,18 @@ use Illuminate\Support\Facades\Auth;
 // penjadwalan (split/gabung/geser tanggal kirim). TIDAK menyentuh stok/COGS
 // sama sekali -- itu domain Delivery Order/Dispatch (belum dibangun,
 // financeaccounting_tier1.md Keputusan B: HPP diakui saat DO terbit). Hanya CO yang sudah
-// CONFIRMED yang muncul di sini -- CO masih DRAFT jadwalnya diedit di tab
-// "Delivery" milik CO Entry sendiri (co/entry.blade.php), layar ini yang
-// mengelola KELANJUTANNYA sesudah CO fix (kondisi lapangan berubah: truk
-// penuh, prioritas geser, dst). Tidak ada tombol Confirm/Create DO/Print di
-// sini (sesuai mockup) -- baris berubah jadi SHIPPED otomatis nanti begitu DO
-// terbit (fase Dispatch). Toolbar cuma search (§6 GRID_UI_STANDARD, baris tak
-// pernah dibuat dari grid ini sendiri -- lahir dari tab Delivery CO Entry).
-new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
+// CONFIRMED yang muncul di sini. Rename "Plan Delivery" -> "Customer Plan
+// Delivery" (CPDEL, keputusan user 2026-09-03) -- baris awal skrng datang dari
+// ENGINE otomatis (co/entry.blade.php::confirmCo(), full qty @ due_date per
+// item) begitu CO Confirm, BUKAN cuma manual dari tab "Delivery" CO Entry lagi
+// (manual masih tersedia sbg override saat CO Draft, engine cuma isi item yg
+// belum disentuh manual). Layar ini yang mengelola KELANJUTANNYA sesudah CO
+// fix (kondisi lapangan berubah: truk penuh, prioritas geser, dst) -- SALES
+// bisa SPLIT/GABUNG baris atau biarkan seperti hasil engine. Tidak ada tombol
+// Confirm/Create DO/Print di sini (sesuai mockup) -- baris berubah jadi
+// SHIPPED otomatis nanti begitu DO terbit (fase Dispatch). Toolbar cuma
+// search (§6 GRID_UI_STANDARD).
+new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $search = '';
 
@@ -227,7 +231,7 @@ new #[Title('Plan Delivery — TELASIH MAKMUR ERP')] class extends Component
         </x-grid.stat-row>
 
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#eef3fb] border border-[#c8ddfb] text-[#1d4ed8]">
-            Jadwal awal diisi dari tab "Delivery" di CO Entry saat CO masih Draft. Di sini Anda cuma atur ULANG logistiknya (pecah/gabung baris, geser tanggal) sesudah CO fix — qty &amp; harga tetap dari CO, tidak bisa diubah di sini. Baris berubah jadi SHIPPED otomatis begitu Delivery Order diterbitkan (belum dibangun).
+            Jadwal awal dibuat OTOMATIS saat CO di-Confirm (qty penuh @ Due Date per produk) — atau manual dari tab "Delivery" di CO Entry kalau Sales sudah atur lebih dulu saat CO masih Draft. Di sini Anda atur ULANG logistiknya (pecah/gabung baris, geser tanggal) sesudah CO fix — qty &amp; harga tetap dari CO, tidak bisa diubah di sini. Baris berubah jadi SHIPPED otomatis begitu Delivery Order diterbitkan.
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
