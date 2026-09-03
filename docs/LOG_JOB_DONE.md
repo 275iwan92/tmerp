@@ -67,6 +67,17 @@
   11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
   melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #9)
+
+- **§4 Procurement — `StockConfirmService` TERNYATA sudah selesai**, koreksi
+  catatan lama. Item BACKLOG bilang "belum di-port jadi PHP Service" dan
+  minta dicek dulu — dicek: `App\Services\Inventory\StockPostingService.php`
+  docblock-nya sendiri eksplisit "Port dari trigger legacy
+  trg_rm_stock_confirm/trg_fg_stock_confirm/trg_sfg_stock_confirm", RM/FG/SFG
+  lengkap + auto-jurnal Stock Out. Catatan lama ditulis SEBELUM Stock In/Out
+  dibangun (2026-08-22), sudah usang total. Murni koreksi dokumentasi, tidak
+  ada kode ditulis.
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #8)
 
 - **§12.7 — Cetak Nota Customer Order (CO) dibangun.** Quotation print sudah

@@ -234,11 +234,13 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
   butuh stok terpisah/`ownership_type` — skema belum diputuskan) dan
   "Receiving dari Subkontraktor" (SFG kembali dari pihak ketiga, masuk
   `sfg_stock`). Detail lengkap: `docs/SIDEBAR_MENU_STANDARD.md` §6/§6a.
-- **`StockConfirmService`** (auto Confirm→Stock IN) — trigger legacy SQL
-  (`trg_rm_stock_confirm`/`trg_fg_stock_confirm`/`trg_sfg_stock_confirm`,
-  ditemukan di dump lama) belum di-port jadi PHP Service. **Cek dulu**
-  apakah bagian ini sudah tercakup oleh Stock In/Out yang sekarang live —
-  kemungkinan sebagian sudah, catatan sumbernya sebelum Stock In dibangun.
+- ~~`StockConfirmService`~~ **TERNYATA SUDAH SELESAI** (dicek 2026-09-03) —
+  `App\Services\Inventory\StockPostingService.php` docblock-nya SENDIRI
+  eksplisit bilang "Port dari trigger legacy trg_rm_stock_confirm/
+  trg_fg_stock_confirm/trg_sfg_stock_confirm" — sudah diporting lengkap
+  (RM/FG/SFG, termasuk auto-jurnal Stock Out). Catatan lama di sini ditulis
+  SEBELUM Stock In/Out dibangun, sudah usang, koreksi-nya baru dilakukan
+  sekarang.
 - **12 dari 18 kategori Level-1 `mat_category`** masih kosong default COA
   account (`default_coa_account_id`/`default_stock_asset_account_id`) —
   layar isinya **SUDAH ADA** (`master/mat-category.blade.php`, bagian
