@@ -306,9 +306,16 @@ sebelum eksekusi):
   sejenis).
 - `iqp_part` → `prod_part` (master part reusable lintas-order) belum
   ter-link — `prod_part` sendiri ternyata tidak pernah terisi.
-- Reroute-Subkontrak di dialog "Sisip Hot Job" masih cuma tampil opsi,
-  belum bisa benar-benar di-apply (butuh generate PO Subkontrak otomatis
-  dari situ, beda dari alur Breakdown→Subkontrak yang sudah ada).
+- ~~Reroute-Subkontrak di dialog "Sisip Hot Job" masih cuma tampil opsi~~
+  **SELESAI 2026-09-03** — `SubcontractPoService` direfactor (logic PR+PO
+  diekstrak jadi `createPo()` generik, dipakai `createFromBreakdown()` DAN
+  `createFromReroute()` baru). Sub-form vendor/estimasi/tanggal muncul inline
+  di dialog saat opsi "Reroute subkontrak" dipilih. **Keputusan arsitektural
+  otonom** (dicatat, low-risk/reversibel): `PrdWoOperation::TRANSITIONS`
+  ditambah `PENDING`/`ASSIGNED` → `SUBCONTRACT` (sebelumnya cuma reachable
+  dari `BREAKDOWN`) — reroute hot job BEDA skenario dari breakdown fisik
+  mesin, task belum jalan sama sekali, tak ada insiden kerusakan yg perlu
+  dilink. Lihat `docs/LOG_JOB_DONE.md`.
 - ~~Qty Kebutuhan BOM belum dikalikan faktor Imposition~~ **SELESAI
   2026-09-02** — dibagi `up_count` dari `iqp_layout` CONFIRMED (fallback
   qty mentah kalau imposition belum dikonfirmasi). Lihat `docs/LOG_JOB_DONE.md`.

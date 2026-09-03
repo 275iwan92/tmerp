@@ -7,6 +7,7 @@ use App\Models\Master\ProdMachine;
 use App\Models\Prd\PrdCrewAssignment;
 use App\Models\Prd\PrdWo;
 use App\Models\Prd\PrdWoOperation;
+use App\Services\Pur\SubcontractPoService;
 use App\Services\Scheduling\InterruptionOptionGenerator;
 use App\Services\Scheduling\PdrEngine;
 use Carbon\Carbon;
@@ -95,6 +96,23 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
     public bool $hotOptionsLoaded = false;
 
     public ?int $hotSelectedOption = null;
+
+    // Reroute Subkontrak (docs/BACKLOG.md §6, 2026-09-03) -- form vendor/estimasi
+    // muncul kalau opsi terpilih requires_subcontract_po=true. Pola SAMA persis
+    // form Breakdown->Subkontrak di wo-entry.blade.php (subVendorId/dst).
+    public bool $hotShowSubcontractForm = false;
+
+    public ?int $subVendorId = null;
+
+    public string $subVendorName = '';
+
+    public string $subVendorQuery = '';
+
+    public float $subEstimatedCost = 0;
+
+    public string $subDueOut = '';
+
+    public string $subDueReturn = '';
 
     private function offsetDivisionId(): ?int
     {
@@ -564,6 +582,8 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         $this->reset([
             'hotWoId', 'hotOperationId', 'hotCustomerId', 'hotCustomerName',
             'hotCustQuery', 'hotOptions', 'hotOptionsLoaded', 'hotSelectedOption',
+            'hotShowSubcontractForm', 'subVendorId', 'subVendorName', 'subVendorQuery',
+            'subEstimatedCost', 'subDueOut', 'subDueReturn',
         ]);
         $this->hotSource = 'DIREKSI';
         $this->showHotJobDialog = true;
@@ -572,6 +592,11 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
     public function closeHotJobDialog(): void
     {
         $this->showHotJobDialog = false;
+    }
+
+    public function cancelSubcontractForm(): void
+    {
+        $this->reset(['hotShowSubcontractForm', 'subVendorId', 'subVendorName', 'subVendorQuery', 'subEstimatedCost', 'subDueOut', 'subDueReturn']);
     }
 
     // Livewire lifecycle hook -- otomatis terpanggil saat wire:model.live="hotWoId" berubah.
@@ -681,8 +706,13 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
         $option = $this->hotOptions[$this->hotSelectedOption];
 
+        // Reroute subkontrak (docs/BACKLOG.md §6, 2026-09-03): opsi ini TIDAK
+        // punya displaced_operation_id (antrean existing tak disentuh sama
+        // sekali) -- HOT TASK itu sendiri yang dialihkan ke subkontraktor.
+        // Butuh input vendor/estimasi/tanggal dulu -- tampilkan sub-form,
+        // JANGAN apply langsung (beda dari cabang non-subkontrak di bawah).
         if ($option['requires_subcontract_po']) {
-            $this->dispatch('board-toast', message: 'Reroute subkontrak belum aktif -- perlu fitur PO Subkontrak (Tier1 §9.3), belum dibangun.');
+            $this->hotShowSubcontractForm = true;
 
             return;
         }
@@ -729,6 +759,96 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
         $this->showHotJobDialog = false;
         $this->dispatch('board-toast', message: "🔥 {$wo->wo_no} disisip -- {$displaced->wo->wo_no} digeser ".number_format($option['impact_hours'], 1).' jam.');
+    }
+
+    #[Computed]
+    public function vendorResults()
+    {
+        if ($this->subVendorId || mb_strlen($this->subVendorQuery) < 2) {
+            return collect();
+        }
+
+        return \App\Models\Master\SupSupplier::query()
+            ->where('is_subcon', true)
+            ->where('activate', true)
+            ->where(function ($q) {
+                $q->where('supplier_name', 'like', "%{$this->subVendorQuery}%")
+                    ->orWhere('supplier_code', 'like', "%{$this->subVendorQuery}%");
+            })
+            ->limit(8)
+            ->get();
+    }
+
+    public function selectVendor(int $id): void
+    {
+        $v = \App\Models\Master\SupSupplier::find($id);
+        if ($v) {
+            $this->subVendorId = $v->id_supplier;
+            $this->subVendorName = $v->supplier_name;
+            $this->subVendorQuery = '';
+        }
+    }
+
+    public function clearVendor(): void
+    {
+        $this->subVendorId = null;
+        $this->subVendorName = '';
+    }
+
+    // Reroute Subkontrak (docs/BACKLOG.md §6) -- HOT TASK dialihkan ke
+    // subkontraktor, antrean existing mesin sama sekali tak disentuh (beda
+    // dari applyHotJobOption() cabang non-subkontrak yg geser task lain).
+    public function confirmRerouteSubcontract(): void
+    {
+        if (! Auth::user()->isOpsManagerOrAbove()) {
+            $this->dispatch('board-toast', message: 'Hanya Manager Operasional ke atas yang bisa menyetujui PO Subkontrak.');
+
+            return;
+        }
+        if (! $this->subVendorId || $this->subEstimatedCost <= 0 || ! $this->subDueOut || ! $this->subDueReturn) {
+            $this->dispatch('board-toast', message: 'Lengkapi vendor, estimasi biaya, dan tanggal kirim/kembali dulu.');
+
+            return;
+        }
+        if ($this->hotSelectedOption === null || ! isset($this->hotOptions[$this->hotSelectedOption])) {
+            return;
+        }
+
+        $option = $this->hotOptions[$this->hotSelectedOption];
+        $wo = PrdWo::find($this->hotWoId);
+        $op = PrdWoOperation::find($this->hotOperationId);
+
+        if (! $wo || ! $op) {
+            $this->dispatch('board-toast', message: 'Data sudah berubah, cari opsi ulang.');
+            $this->hotOptionsLoaded = false;
+            $this->hotShowSubcontractForm = false;
+
+            return;
+        }
+
+        $po = app(SubcontractPoService::class)->createFromReroute(
+            $op,
+            $this->subVendorId,
+            $this->subEstimatedCost,
+            Carbon::parse($this->subDueOut),
+            Carbon::parse($this->subDueReturn),
+            Auth::user()->login,
+            Auth::user()->name ?? Auth::user()->login,
+        );
+
+        app(InterruptionOptionGenerator::class)->recordDecision(
+            eventType: 'INTERRUPTION',
+            woId: $wo->wo_id,
+            customerId: $this->hotSource === 'CUSTOMER' ? $this->hotCustomerId : null,
+            machineId: $op->machine_id,
+            optionsPresented: $this->hotOptions,
+            optionChosen: $option['label'],
+            chosenBy: Auth::user()->login,
+        );
+
+        $this->showHotJobDialog = false;
+        $this->hotShowSubcontractForm = false;
+        $this->dispatch('board-toast', message: "🔥 {$wo->wo_no} direroute ke subkontraktor {$this->subVendorName} -- PO {$po->doc_no} terbit, antrean mesin tak digeser.");
     }
 };
 ?>
@@ -929,11 +1049,53 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                                     </div>
                                                 @else
                                                     <div class="text-muted">Tidak ada job lain tergeser.</div>
-                                                    <div class="mt-0.5 text-[#1d4ed8]">⚠ Perlu PO Subkontrak (biaya belum dihitung otomatis) -- belum bisa diterapkan di iterasi ini</div>
+                                                    <div class="mt-0.5 text-[#1d4ed8]">⚠ Perlu PO Subkontrak -- pilih lalu isi vendor/estimasi di bawah</div>
                                                 @endif
                                             </div>
                                         </label>
                                     @endforeach
+                                </div>
+                            @endif
+
+                            @if ($hotShowSubcontractForm)
+                                <div class="mt-3 border border-[#c7d2fe] bg-[#eef2ff] rounded-lg p-3">
+                                    <div class="text-[11px] font-bold text-[#3730a3] uppercase mb-2">Reroute Subkontrak — Isi Detail</div>
+                                    <div class="[display:grid] grid-cols-2 gap-2 mb-2">
+                                        <div class="relative">
+                                            <label class="text-[10px] text-muted font-semibold">Vendor Subkontraktor</label>
+                                            @if ($subVendorId)
+                                                <div class="flex items-center justify-between px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-white">
+                                                    <span>{{ $subVendorName }}</span>
+                                                    <button type="button" wire:click="clearVendor" class="text-[#dc2626] text-[11px] cursor-pointer">✕</button>
+                                                </div>
+                                            @else
+                                                <input type="text" wire:model.live.debounce.400ms="subVendorQuery" autocomplete="off" placeholder="Ketik nama/kode vendor subkon…" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                                @if ($this->vendorResults->isNotEmpty())
+                                                    <div class="absolute z-10 w-full bg-white border border-[#c7cfda] rounded-md shadow-md mt-1 max-h-32 overflow-y-auto">
+                                                        @foreach ($this->vendorResults as $v)
+                                                            <button type="button" wire:click="selectVendor({{ $v->id_supplier }})" class="block w-full text-left px-2.5 py-1.5 text-xs hover:bg-[#f4f6fa] cursor-pointer">{{ $v->supplier_name }} <span class="text-muted">({{ $v->supplier_code }})</span></button>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-muted font-semibold">Estimasi Biaya (Rp)</label>
+                                            <input type="number" step="0.01" wire:model="subEstimatedCost" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-muted font-semibold">Tanggal Kirim ke Vendor</label>
+                                            <input type="date" wire:model="subDueOut" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] text-muted font-semibold">Tanggal Kembali</label>
+                                            <input type="date" wire:model="subDueReturn" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end gap-2">
+                                        <button type="button" wire:click="cancelSubcontractForm" class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal Subkontrak</button>
+                                        <button type="button" wire:click="confirmRerouteSubcontract" class="px-3 py-1.5 rounded-md text-[11px] font-semibold text-white bg-[#4338ca] hover:bg-[#3730a3] cursor-pointer">Terbitkan PO Subkontrak</button>
+                                    </div>
                                 </div>
                             @endif
                         </div>
@@ -942,10 +1104,12 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="flex justify-end gap-2 px-4 py-3 border-t border-[#eef1f5]">
                     <button type="button" wire:click="closeHotJobDialog" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                    <button type="button" wire:click="applyHotJobOption" @if ($hotSelectedOption === null) disabled @endif
-                        class="px-4 py-2 rounded-md text-xs font-semibold text-white {{ $hotSelectedOption === null ? 'bg-[#9ca3af] cursor-not-allowed' : 'bg-[#dc2626] hover:bg-[#b91c1c] cursor-pointer' }}">
-                        Terapkan Opsi Terpilih
-                    </button>
+                    @unless ($hotShowSubcontractForm)
+                        <button type="button" wire:click="applyHotJobOption" @if ($hotSelectedOption === null) disabled @endif
+                            class="px-4 py-2 rounded-md text-xs font-semibold text-white {{ $hotSelectedOption === null ? 'bg-[#9ca3af] cursor-not-allowed' : 'bg-[#dc2626] hover:bg-[#b91c1c] cursor-pointer' }}">
+                            Terapkan Opsi Terpilih
+                        </button>
+                    @endunless
                 </div>
             </div>
         </div>

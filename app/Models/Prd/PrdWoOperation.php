@@ -40,9 +40,19 @@ class PrdWoOperation extends Model
     ];
 
     // Tier2 §2 — state machine Task. Guard wajib di service layer, bukan cuma UI.
+    // PENDING/ASSIGNED -> SUBCONTRACT DITAMBAH 2026-09-03 (docs/BACKLOG.md §6
+    // "Reroute-Subkontrak di dialog Sisip Hot Job cuma tampil opsi, belum bisa
+    // di-apply") -- keputusan otonom, dicatat jelas krn ini perluasan state
+    // machine (arsitektural): sebelumnya SUBCONTRACT cuma reachable dari
+    // BREAKDOWN (mesin rusak fisik). Reroute Hot Job BEDA skenario -- task
+    // belum jalan sama sekali (PENDING/ASSIGNED), cuma digeser krn slotnya
+    // direbut hot job lain, PPIC putuskan alihkan ke subkontraktor drpd
+    // tunggu slot kosong lagi. Tidak ada breakdown fisik, jadi butuh jalur
+    // masuk SUBCONTRACT yang tak lewat BREAKDOWN. Rendah risiko/reversibel
+    // (nambah transisi baru, tidak mengubah data/alur existing manapun).
     public const TRANSITIONS = [
-        'PENDING' => ['ASSIGNED'],
-        'ASSIGNED' => ['RUNNING', 'PENDING'],       // batal-assign kembali ke PENDING
+        'PENDING' => ['ASSIGNED', 'SUBCONTRACT'],
+        'ASSIGNED' => ['RUNNING', 'PENDING', 'SUBCONTRACT'],       // batal-assign kembali ke PENDING
         'RUNNING' => ['DONE', 'BREAKDOWN'],
         'BREAKDOWN' => ['PENDING', 'SUBCONTRACT'],   // reroute mesin lain / subkontrak
         'SUBCONTRACT' => ['QC_HOLD'],

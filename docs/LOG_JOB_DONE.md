@@ -67,6 +67,36 @@
   11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
   melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #13)
+
+- **§6 Production — Reroute-Subkontrak "Sisip Hot Job" kini bisa benar-benar
+  di-apply (bukan cuma tampil opsi).** Sebelumnya `applyHotJobOption()`
+  langsung toast "belum aktif" kalau opsi ke-3 (subkontrak) dipilih. Fix:
+  1. `SubcontractPoService` direfactor -- logic pembuatan PR+PO diekstrak
+     jadi `createPo()` privat generik (TIDAK terikat `PrdBreakdownEvent`),
+     dipakai `createFromBreakdown()` (existing) DAN `createFromReroute()`
+     (baru). Beda dari Breakdown: opsi "Reroute subkontrak" (InterruptionOptionGenerator
+     opsi ke-3, "tidak ada job lain tergeser") mengalihkan HOT TASK itu
+     sendiri ke subkontraktor, BUKAN menggeser task lain di antrean --
+     antrean mesin existing sama sekali tak disentuh.
+  2. **Keputusan arsitektural otonom** (dicatat jelas, dinilai low-risk/
+     reversibel): `PrdWoOperation::TRANSITIONS` ditambah `PENDING`/`ASSIGNED`
+     → `SUBCONTRACT` (sebelumnya CUMA reachable dari `BREAKDOWN`, state
+     machine dari Tier2 §2) -- reroute hot job task belum pernah jalan sama
+     sekali, tak ada insiden fisik yang perlu di-link, beda skenario dari
+     breakdown mesin rusak.
+  3. UI `scheduling-board.blade.php`: pilih opsi subkontrak + klik "Terapkan"
+     -> sub-form vendor/estimasi biaya/tanggal kirim-kembali muncul inline
+     (pola sama persis form Breakdown->Subkontrak di `wo-entry.blade.php`,
+     termasuk gate `isOpsManagerOrAbove()`) -> "Terbitkan PO Subkontrak"
+     panggil `createFromReroute()`.
+  Diverifikasi `Livewire::test()` end-to-end (transaction rollback,
+  0 data tertinggal): generate 3 opsi (opsi ke-3 `requires_subcontract_po`
+  benar), pilih+Terapkan -> sub-form muncul (bukan langsung apply), isi
+  vendor+estimasi+tanggal -> Terbitkan -> PO SUBCONTRACT terbit + operation
+  transisi ke status SUBCONTRACT, sesuai ekspektasi penuh. `npm run build`
+  dijalankan.
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #12)
 
 - **§6 Production — `SchedulingRuleEngine::applySequencing()` tak lagi
