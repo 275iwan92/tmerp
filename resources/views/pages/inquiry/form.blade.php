@@ -2,6 +2,8 @@
 
 use App\Models\Master\CustCustomer;
 use App\Models\Master\MatRaw;
+use App\Models\Master\ProdPart;
+use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeSize;
 use App\Models\Sdi\IqpExternalCost;
@@ -1104,6 +1106,59 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->flash = 'Inkuiri '.$this->inquiry_no.' dikonfirmasi — status SUBMITTED, form terkunci.';
     }
 
+    // Mode #1 -- link Inquiry(BARU) -> ProDev yg SEBELUMNYA TIDAK ADA SAMA
+    // SEKALI (CLAUDE.md §4 "VITAL", gap ditemukan 2026-09-03). Seed prod_product
+    // (draft, kalau iqp_inquiry belum punya parent_product_id) + prod_part dari
+    // dims kasar iqp_part.dieline_spec['dims'] (product_length/width/height,
+    // mm->cm), lalu bawa officer langsung ke ProDev part itu. ProDev TETAP
+    // yang isi detail teknis lengkap (die_w_cm, flap, dst) -- di sini cuma
+    // titik masuk, bukan auto-lengkapi semuanya.
+    public function sendToProDev(int $index): void
+    {
+        $row = $this->parts[$index] ?? null;
+
+        if (! $row || ! $row['id']) {
+            $this->flash = 'Simpan inquiry dulu (tombol Simpan) sebelum kirim part ke ProDev.';
+
+            return;
+        }
+
+        $part = IqpPart::findOrFail($row['id']);
+
+        if (! $this->inquiry->parent_product_id) {
+            $product = ProdProduct::create([
+                'product_code' => 'DRAFT-'.$this->inquiry->id_inquiry,
+                'product_name' => $this->inquiry->product_draft_name ?: $this->inquiry_no,
+                'customer_id' => $this->inquiry->customer_id,
+                'activate' => true,
+                'created_by' => Auth::user()->login,
+                'updated_by' => Auth::user()->login,
+            ]);
+            $this->inquiry->update(['parent_product_id' => $product->id_product]);
+        } else {
+            $this->inquiry->refresh();
+        }
+
+        if (! $part->prod_part_id) {
+            $dims = $part->dieline_spec['dims'] ?? [];
+
+            $prodPart = ProdPart::create([
+                'product_id' => $this->inquiry->parent_product_id,
+                'part_code' => 'P'.$part->id_part,
+                'part_name' => $part->part_name,
+                'cm_length' => isset($dims['product_length']) ? round(((float) $dims['product_length']) / 10, 2) : null,
+                'cm_width' => isset($dims['product_width']) ? round(((float) $dims['product_width']) / 10, 2) : null,
+                'cm_height' => isset($dims['product_height']) ? round(((float) $dims['product_height']) / 10, 2) : null,
+                'activate' => true,
+                'created_by' => Auth::user()->login,
+                'updated_by' => Auth::user()->login,
+            ]);
+            $part->update(['prod_part_id' => $prodPart->id_part]);
+        }
+
+        $this->redirect(route('production.prodev', ['part' => $part->prod_part_id]));
+    }
+
     public function openCancelForm(): void
     {
         $this->showCancelForm = true;
@@ -1407,8 +1462,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     <div class="partcard" wire:key="part-{{ $part['id'] ?? 'new-'.$i }}">
                         <div class="parthd">
                             <span class="pnm">{{ $part['part_name'] !== '' ? $part['part_name'] : 'Part '.($i + 1) }}</span>
+                            {{-- Mode #1 -- kirim part ini ke ProDev (CLAUDE.md §4 VITAL, link yg
+                            sebelumnya tidak ada). Cuma tampil kalau part sudah tersimpan (punya id). --}}
+                            @if ($part['id'])
+                                <button type="button" class="btn xs" style="margin-left:auto" wire:click="sendToProDev({{ $i }})">🏭 Kirim ke ProDev</button>
+                            @endif
                             @if (count($parts) > 1)
-                                <button type="button" class="btn d xs" style="margin-left:auto" wire:click="removePart({{ $i }})" @if($readOnly) disabled @endif>✕ hapus part</button>
+                                <button type="button" class="btn d xs" @if(! $part['id']) style="margin-left:auto" @endif wire:click="removePart({{ $i }})" @if($readOnly) disabled @endif>✕ hapus part</button>
                             @endif
                         </div>
                         <div class="partbody">

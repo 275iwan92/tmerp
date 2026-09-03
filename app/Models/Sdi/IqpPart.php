@@ -17,6 +17,7 @@ class IqpPart extends Model
 
     protected $fillable = [
         'inquiry_id',
+        'prod_part_id',
         'part_seq',
         'part_code',
         'part_name',

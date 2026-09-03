@@ -218,6 +218,14 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
   maksudnya field tambahan atau alur terpisah — perlu klarifikasi ulang
   scope-nya sebelum eksekusi (catatan lama 2026-08-27, kemungkinan sudah
   berubah konteksnya sejak CO dibangun).
+- **Sembunyikan formula ProCost** (instruksi user 2026-09-03) — breakdown
+  rumus kalkulasi HPP di `inquiry/costing.blade.php` HARUS disembunyikan dari
+  UI, cuma login `johiwan` (level administrator) yang boleh lihat dari
+  desktop. Ini LEBIH KETAT dari aturan lama CLAUDE.md §4 "Costing rahasia
+  Sisi A" (role Costing+Direksi secara umum) — di sini spesifik 1 login.
+  **Belum dikerjakan.** Sebelum eksekusi: klarifikasi apakah literal
+  `login === 'johiwan'` atau maksudnya `is_admin` (nama login dipakai sbg
+  contoh vs syarat harfiah) — lihat memory `feedback_procost_formula_hide_admin_only.md`.
 ---
 
 ## 4. PROCUREMENT (tm2pur)
