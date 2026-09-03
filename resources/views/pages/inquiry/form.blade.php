@@ -1123,6 +1123,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             return;
         }
 
+        if (! $this->stat_confirm) {
+            $this->flash = 'Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).';
+
+            return;
+        }
+
         $part = IqpPart::findOrFail($row['id']);
 
         if (! $this->inquiry->parent_product_id) {
@@ -1463,8 +1469,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         <div class="parthd">
                             <span class="pnm">{{ $part['part_name'] !== '' ? $part['part_name'] : 'Part '.($i + 1) }}</span>
                             {{-- Mode #1 -- kirim part ini ke ProDev (CLAUDE.md §4 VITAL, link yg
-                            sebelumnya tidak ada). Cuma tampil kalau part sudah tersimpan (punya id). --}}
-                            @if ($part['id'])
+                            sebelumnya tidak ada). WAJIB Inquiry sudah CONFIRMED (stat_confirm),
+                            bukan cuma tersimpan -- selaras "Confirm Inquiry = spec sudah FIX, boleh
+                            diproses" (inquiryproduct_flow.md §3) & panel referensi read-only di
+                            ProDev yg cuma nampilin Inquiry CONFIRMED (user 2026-09-03, biar tidak
+                            kirim spec yg masih bisa berubah). --}}
+                            @if ($part['id'] && $stat_confirm)
                                 <button type="button" class="btn xs" style="margin-left:auto" wire:click="sendToProDev({{ $i }})">🏭 Kirim ke ProDev</button>
                             @endif
                             @if (count($parts) > 1)

@@ -9,6 +9,7 @@ use App\Models\Master\ProdPartFinishing;
 use App\Models\Master\ProdPartProcess;
 use App\Models\Master\ProdProcess;
 use App\Models\Master\RefFinishingType;
+use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
 use App\Services\Imposition\ImpositionEngine;
 use Illuminate\Support\Facades\Auth;
@@ -94,6 +95,57 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     public function activeLayoutGroup(): ?ProdLayoutGroup
     {
         return $this->part?->layoutGroups->sortByDesc('id_layout_group')->first();
+    }
+
+    // GAP ditemukan user 2026-09-03 (mode #1 hanya bikin LINK, tak pernah
+    // TAMPILKAN data asalnya) -- reverse-lookup semua iqp_part (bisa >1, part
+    // reusable lintas-order) yg nunjuk ke prod_part ini via prod_part_id, lalu
+    // ambil label param dari ProdType (dieline_spec['dims'] cuma simpan
+    // key=>value mentah, labelnya ada di prod_type_param). READ-ONLY, murni
+    // referensi -- ProDev tetap yg isi field teknisnya sendiri (§4.4 data flow).
+    #[Computed]
+    public function originInquiryParts()
+    {
+        if (! $this->part) {
+            return collect();
+        }
+
+        return IqpPart::with('inquiry.customer')
+            ->where('prod_part_id', $this->part->id_part)
+            // HANYA Inquiry yang CONFIRMED & masih HIDUP -- pola PERSIS sama
+            // dgn costing-list.blade.php/imposition-list.blade.php
+            // (whereNotIn sub_state DRAFT/CANCELLED/LOST), bukan ditemukan
+            // sendiri. GOTCHA yg sempat kelewat: stat_confirm TETAP true
+            // SELAMANYA walau Inquiry belakangan di-CANCEL/LOST (yg berubah
+            // cuma sub_state, lihat cancel()/markLost() di inquiry/form.blade.php)
+            // -- cek stat_confirm SAJA TIDAK CUKUP, harus digabung sub_state.
+            ->whereHas('inquiry', fn ($q) => $q->where('stat_confirm', true)
+                ->whereNotIn('sub_state', ['DRAFT', 'CANCELLED', 'LOST']))
+            ->orderByDesc('id_part')
+            ->get()
+            ->map(function (IqpPart $ip) {
+                $spec = $ip->dieline_spec ?? [];
+                $typeCode = $spec['type_code'] ?? null;
+                $type = $typeCode ? \App\Models\Master\ProdType::with('params')->find($typeCode) : null;
+                $dims = $spec['dims'] ?? [];
+
+                $dimRows = collect($type?->params ?? [])
+                    ->filter(fn ($p) => array_key_exists($p->param_key, $dims) && $dims[$p->param_key] !== '' && $dims[$p->param_key] !== null)
+                    ->map(fn ($p) => ['label' => $p->param_label, 'value' => $dims[$p->param_key], 'uom' => $p->unit])
+                    ->values();
+
+                return [
+                    'inquiry_no' => $ip->inquiry?->inquiry_no,
+                    'customer_name' => $ip->inquiry?->customer?->customer_name,
+                    'part_name' => $ip->part_name,
+                    'type_name' => $type?->type_name,
+                    'dims' => $dimRows,
+                    'flat_w' => $ip->flat_w,
+                    'flat_h' => $ip->flat_h,
+                    'flat_area' => $ip->flat_area,
+                    'qty_per_sku' => $ip->qty_per_sku,
+                ];
+            });
     }
 
     #[Computed]
@@ -535,6 +587,19 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             return;
         }
 
+        // GUARD ditemukan user 2026-09-03 -- kalau Costing SUDAH menarik layout
+        // ini (Ambil Data, pickLayoutGroup() di costing.blade.php), unlock+ubah
+        // di sini bikin HPP yang sudah dihitung (bahkan mungkin sudah masuk
+        // Quotation ke customer) diam-diam basi TANPA peringatan siapa pun.
+        // Cross-DB tm2mst->tm2sdi, query terpisah (CLAUDE.md §2 pola 1).
+        $usedByCosting = \App\Models\Sdi\IqpCostingPart::where('prod_layout_group_id', $group->id_layout_group)->exists();
+
+        if ($usedByCosting) {
+            session()->flash('error', 'Layout ini SUDAH ditarik Costing (Ambil Data) -- buka kunci akan bikin HPP yang sudah dihitung jadi basi tanpa peringatan. Koordinasi dgn Costing dulu, atau jalankan Engine lagi (otomatis bikin layout BARU, bukan timpa yang lama).');
+
+            return;
+        }
+
         $group->update(['status' => 'DRAFT', 'confirmed_by' => null, 'confirmed_at' => null]);
         unset($this->activeLayoutGroup, $this->part);
     }
@@ -669,6 +734,38 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
         @if ($this->part)
         <div class="flex flex-col gap-3.5">
+
+            {{-- ============ REFERENSI INQUIRY ASAL (Mode #1, read-only) ============
+            Cuma tampil kalau ADA iqp_part yang link ke prod_part ini DAN Inquiry-nya
+            CONFIRMED (bukan draft/cancelled/lost, lihat originInquiryParts()). Murni
+            referensi biar ProDev tak perlu tanya-tanya Sales -- TIDAK bisa diedit dari
+            sini (snapshot/beku, CLAUDE.md §4), field teknis ProDev sendiri di bawah
+            tetap fully-editable seperti biasa. --}}
+            @if ($this->originInquiryParts->isNotEmpty())
+                <div class="bg-[#eef3fb] border border-[#c3d8f5] rounded-md overflow-hidden">
+                    <h3 class="text-xs text-[#1560a8] uppercase font-bold px-3.5 py-2 bg-[#e0ecfa] border-b border-[#c3d8f5]">
+                        📥 Referensi Inquiry Asal (read-only, sudah CONFIRMED)
+                    </h3>
+                    <div class="p-3.5 flex flex-col gap-2.5">
+                        @foreach ($this->originInquiryParts as $oi)
+                            <div class="text-[11.5px] text-[#1560a8] {{ ! $loop->last ? 'pb-2.5 border-b border-[#c3d8f5]' : '' }}">
+                                <div class="font-bold mb-1">
+                                    {{ $oi['inquiry_no'] }} · {{ $oi['customer_name'] }} · {{ $oi['part_name'] }}
+                                    @if ($oi['type_name'])<span class="opacity-70">({{ $oi['type_name'] }})</span>@endif
+                                </div>
+                                <div class="flex flex-wrap gap-x-4 gap-y-1">
+                                    @foreach ($oi['dims'] as $d)
+                                        <span>{{ $d['label'] }}: <b>{{ $d['value'] }}{{ $d['uom'] ? ' '.$d['uom'] : '' }}</b></span>
+                                    @endforeach
+                                    @if ($oi['flat_w'])<span>Flat W: <b>{{ $oi['flat_w'] }}mm</b></span>@endif
+                                    @if ($oi['flat_h'])<span>Flat H: <b>{{ $oi['flat_h'] }}mm</b></span>@endif
+                                    @if ($oi['qty_per_sku'])<span>Qty/Set: <b>{{ $oi['qty_per_sku'] }}</b></span>@endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
 
             {{-- ============ SPESIFIKASI TEKNIS ============ --}}
             <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
