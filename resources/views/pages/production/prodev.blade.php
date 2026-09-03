@@ -36,6 +36,11 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
     public array $sweepCandidates = [];
 
+    // Tool #10 (Intra-Product Part Combiner, BACKLOG.md §0/§4.2b).
+    public ?int $combineWithPartId = null;
+
+    public ?array $combineResult = null;
+
     public ?int $newProcessId = null;
 
     public ?int $newMachineId = null;
@@ -97,6 +102,21 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         return MatPlanoSize::where('activate', true)->orderBy('sort_order')->get();
     }
 
+    // Tool #10 -- part LAIN dalam produk yg SAMA (§4.2b: gabung/pisah cuma
+    // relevan intra-product, beda dari Tool #5 gang-run lintas-produk).
+    #[Computed]
+    public function combinableParts()
+    {
+        if (! $this->part) {
+            return collect();
+        }
+
+        return ProdPart::where('product_id', $this->part->product_id)
+            ->where('id_part', '!=', $this->part->id_part)
+            ->orderBy('part_name')
+            ->get();
+    }
+
     #[Computed]
     public function processOptions()
     {
@@ -125,7 +145,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     {
         $this->partId = $id;
         $this->sweepCandidates = [];
-        unset($this->part, $this->activeLayoutGroup);
+        $this->combineWithPartId = null;
+        $this->combineResult = null;
+        unset($this->part, $this->activeLayoutGroup, $this->combinableParts);
     }
 
     public function updateField(string $field, $value): void
@@ -264,11 +286,67 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
         $this->sweepCandidates = $results;
     }
 
+    // Tool #2 (Pcs->Plano / Best Sheet Finder, BACKLOG.md §0) -- BEDA dari
+    // Tingkat1/2 yg mengunci 1 plano dulu (selectedPlanoId), di sini LOOP semua
+    // plano aktif & ranking lintas-plano by biaya (ImpositionEngine::bestSheet()).
+    // Hasil disimpan ke sweepCandidates yang SAMA (bukan property baru) supaya
+    // pickCandidate()/render candidate card reuse penuh -- 1 elemen bestSheet()
+    // shape-nya identik sweepFlap() + extra key plano_size_id/plano_name/cost_metric.
+    public function runEngineBestSheet(): void
+    {
+        $part = $this->part;
+
+        if (! $part) {
+            return;
+        }
+
+        $bodyW = (float) ($part->cm_width ?? 0) * 10;
+        $bodyH = (float) ($part->cm_length ?? 0) * 10;
+
+        if ($bodyW <= 0 || $bodyH <= 0) {
+            session()->flash('error', 'Isi dimensi badan part (cm_width/cm_length) dulu sebelum jalankan Engine.');
+
+            return;
+        }
+
+        $flapMin = (float) ($part->flap_min_mm ?? SysConstant::number('PRODEV_FLAP_MIN_MM', 20));
+        $flapMax = (float) ($part->flap_max_mm ?? ($flapMin + 30));
+        $side = $part->flap_side ?? 'TOP';
+
+        $engine = new ImpositionEngine;
+        $results = $engine->bestSheet(
+            $this->planoSizes, $bodyW, $bodyH, $side, $flapMin, $flapMax, 5.0,
+            gap: 3.0, gripper: 12.0, margin: 8.0, targetQty: null, topN: 5
+        );
+
+        foreach ($results as $i => $r) {
+            $plano = MatPlanoSize::find($r['plano_size_id']);
+            $cells = $engine->cells($r, 8.0, 12.0, 3.0);
+            $maxW = 260;
+            $maxH = 170;
+            $scale = min($maxW / (float) $plano->width_mm, $maxH / (float) $plano->height_mm);
+            $results[$i]['boxW'] = round((float) $plano->width_mm * $scale, 1);
+            $results[$i]['boxH'] = round((float) $plano->height_mm * $scale, 1);
+            $results[$i]['cellsVisual'] = collect($cells)->map(fn ($c) => [
+                'left' => round($c['x'] * $scale, 1),
+                'top' => round($c['y'] * $scale, 1),
+                'width' => max(0, round($c['w'] * $scale, 1) - 1),
+                'height' => max(0, round($c['h'] * $scale, 1) - 1),
+                'rot' => $c['rot'],
+            ])->all();
+        }
+
+        $this->sweepCandidates = $results;
+    }
+
     public function pickCandidate(int $idx): void
     {
         $part = $this->part;
         $cand = $this->sweepCandidates[$idx] ?? null;
-        $plano = MatPlanoSize::find($this->selectedPlanoId);
+        // Kandidat dari Tool #2 (bestSheet) bawa plano_size_id sendiri (bisa beda
+        // dari selectedPlanoId officer) -- kandidat Tingkat1/2 tidak, fallback ke
+        // selectedPlanoId spt semula.
+        $plano = MatPlanoSize::find($cand['plano_size_id'] ?? $this->selectedPlanoId);
 
         if (! $part || ! $cand || ! $plano) {
             return;
@@ -276,6 +354,15 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
         $existing = $part->layoutGroups->sortByDesc('id_layout_group')->first();
         $login = Auth::user()->login;
+
+        // Tool #4 (Die-Rule Estimator, BACKLOG.md §0) -- otomatis dihitung begitu
+        // officer pilih kandidat, bukan langkah manual terpisah. Common Knife
+        // (cutting) + crease per-unit, lihat docblock dieRuleMeterLari().
+        $engine = new ImpositionEngine;
+        $dieRuleMeter = $engine->dieRuleMeterLari(
+            $cand['layout'], $cand['up'], $cand['flap_length_mm'], $part->flap_side ?? 'TOP',
+            (float) ($part->cm_width ?? 0) * 10, (float) ($part->cm_length ?? 0) * 10, 3.0
+        );
 
         $payload = [
             'product_id' => $part->product_id,
@@ -286,6 +373,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             'up_count' => $cand['up'],
             'efficiency_pct' => $cand['efficiency_pct'],
             'waste_pct' => $cand['waste_pct'],
+            'die_rule_meter' => $dieRuleMeter,
             'layout_detail' => [
                 'layout' => $cand['layout'],
                 'flap_length_mm' => $cand['flap_length_mm'],
@@ -310,7 +398,120 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
         $part->update(['flap_length_mm' => $cand['flap_length_mm'], 'updated_by' => $login]);
 
+        // Sinkronkan dropdown plano ke plano yg BENAR-BENAR dipakai kandidat --
+        // penting utk hasil Tool #2 (bestSheet) yg bisa datang dari plano BEDA
+        // dari yg sebelumnya terpilih di dropdown.
+        $this->selectedPlanoId = $plano->id_plano_size;
         $this->sweepCandidates = [];
+        unset($this->part, $this->activeLayoutGroup);
+    }
+
+    // Tool #10 -- MVP 2-part (BACKLOG.md §0, "prioritas tertinggi", lihat
+    // disclaimer & formula lengkap di ImpositionEngine::combinePair()). Dimensi
+    // flat tiap part pakai lidah TERAKHIR yg sudah pernah dipilih (flap_length_mm
+    // tersimpan dari sweep solo sebelumnya via pickCandidate()) -- kalau part
+    // belum pernah di-sweep solo, flap_length_mm masih null = dipakai sbg 0
+    // (body mentah tanpa lidah, applyFlap(...,0) = body tak berubah).
+    public function runToolCombine(): void
+    {
+        $partA = $this->part;
+        $partB = $this->combineWithPartId ? ProdPart::find($this->combineWithPartId) : null;
+        $plano = MatPlanoSize::find($this->selectedPlanoId);
+
+        if (! $partA || ! $partB || ! $plano) {
+            session()->flash('error', 'Pilih part pasangan (produk yang sama) dulu sebelum jalankan Tool #10.');
+
+            return;
+        }
+
+        $bodyWA = (float) ($partA->cm_width ?? 0) * 10;
+        $bodyHA = (float) ($partA->cm_length ?? 0) * 10;
+        $bodyWB = (float) ($partB->cm_width ?? 0) * 10;
+        $bodyHB = (float) ($partB->cm_length ?? 0) * 10;
+
+        if ($bodyWA <= 0 || $bodyHA <= 0 || $bodyWB <= 0 || $bodyHB <= 0) {
+            session()->flash('error', 'Isi dimensi badan KEDUA part (cm_width/cm_length) dulu sebelum jalankan Tool #10.');
+
+            return;
+        }
+
+        $engine = new ImpositionEngine;
+        [$flatWA, $flatHA] = $engine->applyFlap($bodyWA, $bodyHA, $partA->flap_side ?? 'TOP', (float) ($partA->flap_length_mm ?? 0));
+        [$flatWB, $flatHB] = $engine->applyFlap($bodyWB, $bodyHB, $partB->flap_side ?? 'TOP', (float) ($partB->flap_length_mm ?? 0));
+
+        $qtyA = (float) ($partA->qty_per_sku ?: 1);
+        $qtyB = (float) ($partB->qty_per_sku ?: 1);
+
+        $this->combineResult = $engine->combinePair(
+            (float) $plano->width_mm, (float) $plano->height_mm,
+            $flatWA, $flatHA, $qtyA, $flatWB, $flatHB, $qtyB,
+            gap: 3.0, gripper: 12.0, margin: 8.0, splitStep: 10.0
+        );
+        $this->combineResult['part_a_name'] = $partA->part_name;
+        $this->combineResult['part_b_name'] = $partB->part_name;
+    }
+
+    // Terapkan rekomendasi COMBINED -- bikin 1 prod_layout_group BARU (bukan
+    // timpa group solo existing masing² part, biar riwayat solo tetap ada)
+    // menaungi KEDUA part sekaligus, qty_up_in_group dari hasil split.
+    public function confirmCombine(): void
+    {
+        $partA = $this->part;
+        $partB = $this->combineWithPartId ? ProdPart::find($this->combineWithPartId) : null;
+        $plano = MatPlanoSize::find($this->selectedPlanoId);
+        $result = $this->combineResult;
+
+        if (! $partA || ! $partB || ! $plano || ! $result || $result['recommend'] !== 'COMBINED' || ! $result['combined']) {
+            return;
+        }
+
+        $login = Auth::user()->login;
+        $c = $result['combined'];
+
+        $bodyWA = (float) ($partA->cm_width ?? 0) * 10;
+        $bodyHA = (float) ($partA->cm_length ?? 0) * 10;
+        $bodyWB = (float) ($partB->cm_width ?? 0) * 10;
+        $bodyHB = (float) ($partB->cm_length ?? 0) * 10;
+        $engine = new ImpositionEngine;
+        [$flatWA, $flatHA] = $engine->applyFlap($bodyWA, $bodyHA, $partA->flap_side ?? 'TOP', (float) ($partA->flap_length_mm ?? 0));
+        [$flatWB, $flatHB] = $engine->applyFlap($bodyWB, $bodyHB, $partB->flap_side ?? 'TOP', (float) ($partB->flap_length_mm ?? 0));
+        $usedAreaMm2 = $c['up_a'] * $flatWA * $flatHA + $c['up_b'] * $flatWB * $flatHB;
+        $planoAreaMm2 = (float) $plano->width_mm * (float) $plano->height_mm;
+        $efficiencyPct = $planoAreaMm2 > 0 ? round(min(100, max(0, $usedAreaMm2 / $planoAreaMm2 * 100)), 2) : 0;
+
+        $group = ProdLayoutGroup::create([
+            'product_id' => $partA->product_id,
+            'plano_size_id' => $plano->id_plano_size,
+            'plano_w_mm' => $plano->width_mm,
+            'plano_h_mm' => $plano->height_mm,
+            'method' => 'COMBINED_SPLIT',
+            'up_count' => $c['up_a'] + $c['up_b'],
+            'efficiency_pct' => $efficiencyPct,
+            'waste_pct' => round(100 - $efficiencyPct, 2),
+            // die_rule_meter TIDAK dihitung otomatis di sini -- Common Knife
+            // formula Tool #4 (dieRuleMeterLari()) butuh struktur `layout`
+            // grid/mix tunggal dari run(), belum ada varian utk 2-region split
+            // gabungan. Officer isi manual di Costing kalau perlu, atau susulan.
+            'layout_detail' => [
+                'type' => 'combined_split',
+                'split_x_mm' => $c['split_x_mm'],
+                'part_a' => ['id' => $partA->id_part, 'up' => $c['up_a']],
+                'part_b' => ['id' => $partB->id_part, 'up' => $c['up_b']],
+                'sets_per_sheet' => $c['sets_per_sheet'],
+                'saving_pct_vs_separate' => $result['saving_pct'],
+            ],
+            'status' => 'DRAFT',
+            'created_by' => $login,
+            'updated_by' => $login,
+        ]);
+        $group->update(['mastercard_code' => "MC-{$group->id_layout_group}"]);
+        $group->parts()->attach([
+            $partA->id_part => ['qty_up_in_group' => $c['up_a']],
+            $partB->id_part => ['qty_up_in_group' => $c['up_b']],
+        ]);
+
+        $this->combineResult = null;
+        $this->combineWithPartId = null;
         unset($this->part, $this->activeLayoutGroup);
     }
 
@@ -593,6 +794,8 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#2c7be5] text-white cursor-pointer">▶ Tingkat 1 (Flap Sweep)</button>
                         <button type="button" wire:click="runEngineTingkat2"
                             class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#7c5cd6] text-white cursor-pointer">▶ Tingkat 2 (Interlock)</button>
+                        <button type="button" wire:click="runEngineBestSheet" title="Tool #2 -- coba SEMUA plano aktif, bukan cuma yg dipilih di dropdown di atas"
+                            class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#b6852a] text-white cursor-pointer">▶ Cari Plano Termurah</button>
 
                         @if ($this->activeLayoutGroup)
                             @if ($this->activeLayoutGroup->status === 'CONFIRMED')
@@ -610,6 +813,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                 <div class="border {{ $i === 0 ? 'border-[#22a06b]' : 'border-[#dde3ec]' }} rounded-md p-2.5 w-[280px]">
                                     <div class="flex items-center justify-between mb-1.5">
                                         <span class="text-[11px] font-bold text-navy">
+                                            @isset($c['plano_name']){{ $c['plano_name'] }} · @endisset
                                             Lidah {{ $c['flap_length_mm'] }}mm
                                             @isset($c['shift_offset_mm'])· Shift {{ $c['shift_offset_mm'] }}mm @endisset
                                             · {{ $c['method'] }}
@@ -625,7 +829,9 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                         </div>
                                     </div>
                                     <div class="flex items-center justify-between mt-1.5 text-[11px]">
-                                        <span><b>{{ $c['up'] }}</b> up · {{ number_format($c['efficiency_pct'], 0) }}% efisien</span>
+                                        <span><b>{{ $c['up'] }}</b> up · {{ number_format($c['efficiency_pct'], 0) }}% efisien
+                                            @isset($c['gross_sheets'])· {{ $c['gross_sheets'] }} lembar dibutuhkan @endisset
+                                        </span>
                                         <button type="button" wire:click="pickCandidate({{ $i }})" class="text-[11px] font-bold text-accent cursor-pointer">Pilih →</button>
                                     </div>
                                 </div>
@@ -635,12 +841,65 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[#f0f7f4] border border-[#c3e6d1] text-[#0e5c38]">
                             Layout aktif: <b>{{ $this->activeLayoutGroup->method }} = {{ $this->activeLayoutGroup->up_count }} up</b>
                             (efisiensi {{ number_format($this->activeLayoutGroup->efficiency_pct, 0) }}%, lidah {{ $this->part->flap_length_mm }}mm).
+                            @if ($this->activeLayoutGroup->die_rule_meter)
+                                Estimasi meter lari pisau (Tool #4): <b>{{ number_format($this->activeLayoutGroup->die_rule_meter, 2) }} m</b>.
+                            @endif
                             Jalankan Engine lagi kalau mau coba opsi lain.
                         </div>
                     @else
                         <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[#e8f4ff] border border-[#b8d9f5] text-[#1560a8]">
                             Belum ada layout tersimpan. Isi dimensi badan (cm_length/cm_width) &amp; rentang lidah di atas, lalu klik Jalankan Engine.
                         </div>
+                    @endif
+                </div>
+            </div>
+
+            {{-- ============ TOOL #10: INTRA-PRODUCT PART COMBINER ============ --}}
+            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
+                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">
+                    🧩 Tool #10 — Gabung Part dalam Produk Sama
+                </h3>
+                <div class="p-3.5">
+                    @if ($this->combinableParts->isEmpty())
+                        <div class="text-[11.5px] text-muted">Produk ini cuma punya 1 part terdaftar — tidak ada pasangan utk digabung.</div>
+                    @else
+                        <div class="flex items-end gap-2.5 mb-3">
+                            <div class="flex flex-col gap-0.5">
+                                <label class="text-[11px] text-muted font-semibold">Gabung dengan part</label>
+                                <select wire:model="combineWithPartId" class="px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] min-w-[220px]">
+                                    <option value="">— pilih part pasangan —</option>
+                                    @foreach ($this->combinableParts as $cp)
+                                        <option value="{{ $cp->id_part }}">{{ $cp->part_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="button" wire:click="runToolCombine" @disabled(! $combineWithPartId)
+                                class="px-3.5 py-1.5 rounded text-[11px] font-bold bg-[#0e8a6b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">▶ Bandingkan Gabung vs Pisah</button>
+                        </div>
+
+                        @if ($combineResult)
+                            @if ($combineResult['recommend'] === 'NONE')
+                                <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[#fdecea] border border-[#f3c4bd] text-[#9a3324]">
+                                    Kedua part tidak muat digabung sama sekali di plano {{ $this->planoSizes->firstWhere('id_plano_size', $selectedPlanoId)?->plano_name }} (dicoba 2 orientasi). Coba plano lain di dropdown Engine Imposition di atas.
+                                </div>
+                            @else
+                                <div class="text-[11.5px] px-2.5 py-2.5 rounded-md leading-relaxed {{ $combineResult['recommend'] === 'COMBINED' ? 'bg-[#f0f7f4] border border-[#c3e6d1] text-[#0e5c38]' : 'bg-[#fff8ec] border border-[#f0dcae] text-[#8a5a00]' }}">
+                                    <div class="font-bold mb-1">
+                                        Rekomendasi: {{ $combineResult['recommend'] === 'COMBINED' ? '✓ GABUNG' : '✕ PISAH (tetap sendiri²)' }}
+                                        @if ($combineResult['recommend'] === 'COMBINED')
+                                            — hemat {{ $combineResult['saving_pct'] }}% luas dibanding cetak terpisah
+                                        @endif
+                                    </div>
+                                    @if ($combineResult['combined'])
+                                        <div>Split di X={{ $combineResult['combined']['split_x_mm'] }}mm: <b>{{ $combineResult['part_a_name'] }}</b> {{ $combineResult['combined']['up_a'] }} up, <b>{{ $combineResult['part_b_name'] }}</b> {{ $combineResult['combined']['up_b'] }} up ({{ $combineResult['combined']['sets_per_sheet'] }} set produk jadi/lembar).</div>
+                                    @endif
+                                    <div class="text-[10.5px] opacity-80 mt-1">Pisah: {{ $combineResult['part_a_name'] }} {{ $combineResult['separate']['up_a'] }} up solo, {{ $combineResult['part_b_name'] }} {{ $combineResult['separate']['up_b'] }} up solo (masing² plano sendiri).</div>
+                                    @if ($combineResult['recommend'] === 'COMBINED')
+                                        <button type="button" wire:click="confirmCombine" class="mt-2 px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Terapkan — Buat Layout Gabungan</button>
+                                    @endif
+                                </div>
+                            @endif
+                        @endif
                     @endif
                 </div>
             </div>
