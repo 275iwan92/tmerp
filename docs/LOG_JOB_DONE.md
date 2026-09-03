@@ -12,6 +12,58 @@
 
 ---
 
+## 2026-09-03 (lanjutan diskusi backlog — instruksi user langsung per item)
+
+- **R27 — Dropdown avatar jadi data-driven dari `sys_user_menu`.** BACKLOG
+  §10 "QUEUE item #9" akhirnya tuntas. `sys_user_menu` sudah ada 10 baris
+  sejak lama tapi isinya usang (pra-QC-001/002/003, pra-grup Configuration
+  2026-09-03) dan `main-menu.blade.php` tidak pernah membacanya (0
+  referensi, dropdown 100% hardcode Blade). Migration
+  `2026_09_03_000004_make_avatar_dropdown_data_driven` truncate+reseed 8
+  item flat akurat (Chat/Notif/AI drawer, My Security, Edit profil/Ubah
+  password, Pengaturan Setup, Bantuan & Support) + kolom `visibility` baru
+  (`all`/`employee_linked`/`non_employee_linked`/`setup_non_admin`) karena
+  kondisi tampil aslinya (employee_id terisi/tidak, canSetup tanpa
+  is_admin) tak tertangkap `admin_only` saja. Model baru
+  `App\Models\Sys\SysUserMenu`. `main-menu.blade.php` dapat computed
+  property `userMenuItems()` (filter visibility + group by section) dan
+  loop `@foreach`/`@switch` generik menggantikan blok hardcode lama; 2 item
+  bespoke (My Security route params, Bantuan & Support window.open+ctx
+  dinamis) tetap special-case by `code`. **Keputusan scope sadar**: widget
+  Configuration (Theme matrix 4x3/Bahasa/User Configuration nested) TETAP
+  hardcode — terlalu bespoke (loop custom `$this->themeMatrix`, bukan
+  label+aksi flat) utk direpresentasikan sbg baris generik, jadi bukan
+  "setengah dikerjakan", ini keputusan yang disengaja. Diverifikasi via
+  `Livewire::test()`: akun `johiwan` (employee_id=1) → My Security tampil,
+  Edit profil/Ubah password tersembunyi; akun `rina` (employee_id null) →
+  sebaliknya. `MainMenuShellSmokeTest` (3 test) tetap lolos. Tidak perlu
+  `npm run build` (semua class yang dipakai sudah ada di app.css sebelumnya,
+  tak ada class Tailwind baru).
+- **R28 — Shell responsive di layar sempit (qc_feedback.md, 2026-08-30).**
+  Instruksi user "jalankan jika tidak mengubah layout yang sekarang". Root
+  cause: `.shell` flex row dgn `aside` 262px FIXED + tanpa `@media`
+  breakpoint sama sekali → di layar <768px sidebar mendorong topbar
+  (termasuk avatar dropdown) keluar viewport, secara visual/interaktif tak
+  terjangkau. Fix di-scope MURNI di dalam `@media (max-width: 767px)` baru
+  (`resources/css/app.css`, ditaruh setelah blok `.shell` selesai): `aside`
+  jadi `position: fixed` (overlay di atas konten, z-index 60, box-shadow)
+  alih-alih ikut flex row, `.shell .main` dapat `width: 100%`. TIDAK ada
+  class/state Alpine baru — reuse toggle ☰ (`nosidebar`) yang SUDAH ADA
+  sebelumnya (`tb-btn @click="nosidebar = !nosidebar"`, CSS
+  `.shell.nosidebar aside{width:0}` sudah lama ada), cuma nambah `init()`
+  di `app-shell.js` supaya nilai awal `nosidebar` TERTUTUP saat page load
+  pertama di layar sempit (`window.matchMedia('(max-width: 767px)')`).
+  Desktop (>=768px) tidak tersentuh sama sekali — semua rule baru murni di
+  dalam media query yang tadinya tidak ada. `npm run build` dijalankan &
+  diverifikasi masuk ke CSS/JS terkompilasi (grep `767px`/`matchMedia`).
+  **Batasan**: verifikasi visual browser (login) TIDAK dilakukan Claude
+  Code (kredensial tidak boleh diotomatisasi) — user disarankan cek
+  langsung di HP/window sempit sebelum dianggap final. Tidak ada backdrop
+  dismiss-on-outside-click (tap ☰ lagi utk tutup) — minimal viable, bisa
+  disempurnakan kalau ada QC lanjutan.
+
+---
+
 ## 2026-09-03 (kerja langsung sesuai instruksi user, di luar sesi autonomous)
 
 - **§6 Production — `RateBandResolver` prioritas qty_good F15 di atas qty

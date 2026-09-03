@@ -68,6 +68,10 @@
   benar-benar di-apply (PO Subkontrak nyata terbit), termasuk perluasan
   state machine `PrdWoOperation::TRANSITIONS` (keputusan arsitektural
   otonom, dicatat & low-risk).
+- **R27.** Dropdown avatar (Pesan & Info + Akun) jadi data-driven dari
+  `sys_user_menu` — QUEUE item #9 lama akhirnya tuntas.
+- **R28.** Shell responsive di layar sempit (<768px, `qc_feedback.md`) —
+  sidebar jadi overlay, topbar/avatar dropdown tidak lagi kegencet.
 
 **MASIH TERBUKA** (kategori besar, lihat section angka di bawah utk detail):
 
@@ -92,8 +96,8 @@
 - **R14.** HRM — `org_position` mapping, Flutter mobile channel. Lihat §8.
 - **R15.** Migrasi Filament `/admin` — baru HRM, modul lain 100% shell
   lama. Lihat §9.
-- **R16.** Tech debt — iframe belum ikut tema, WYSIWYG print editor,
-  `sys_user_menu` nganggur (keputusan pakai/hapus blm diambil). Lihat §10.
+- **R16.** Tech debt — iframe belum ikut tema, WYSIWYG print editor. Lihat
+  §10. (`sys_user_menu` SELESAI 2026-09-03, dicoret dari sini.)
 - **R17.** Rename semua menu ke Bahasa Inggris — diputuskan, belum
   dieksekusi (`tmerp-b5` sengaja TIDAK mengeksekusi ini otonom, dianggap
   perubahan UX besar yang perlu sign-off user dulu). Lihat §11.
@@ -435,21 +439,13 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 - **WYSIWYG template-editor untuk Nota/print** — ide sempat dilontarkan
   saat print/nota component diekstrak (2026-08-28), sengaja ditunda
   (keputusan setingkat modul baru, belum diminta).
-- **QUEUE item #9 lama — VERIFIKASI SELESAI 2026-09-02, hasilnya SETENGAH
-  usang, setengah MASIH nyata terbuka**: item ini dulu 2 bagian jadi 1
-  ("refactor dropdown avatar jadi data-driven dari `sys_user_menu`" +
-  "modal picker tema di atasnya"). Bagian **picker tema SUDAH selesai**
-  (`themestandard.md`, dibangun 2026-08-31) — TAPI implementasinya lewat
-  grid HARDCODE di dropdown avatar, BUKAN lewat `sys_user_menu`. Dicek
-  langsung: tabel `tm2sys.sys_user_menu` **memang ada & berisi 10 baris**,
-  tapi `main-menu.blade.php` **tidak pernah membacanya sama sekali** (0
-  referensi) — dropdown avatar masih 100% tombol Blade hardcode. Jadi
-  bagian "refactor jadi data-driven" dari item #9 **belum pernah
-  dikerjakan**, tabelnya nganggur berisi data yang tidak dipakai apa pun.
-  File `QUEUE.md` sumber aslinya sudah tidak ada lagi (digantikan
-  `BACKLOG.md` ini). **Keputusan menyusul**: apakah refactor ini masih mau
-  dikerjakan (buat dropdown data-driven) atau `sys_user_menu` dianggap
-  usang & boleh diabaikan/dihapus — belum diputuskan, jangan asumsikan.
+- ~~QUEUE item #9 lama~~ **SELESAI 2026-09-03** — instruksi user "jalankan":
+  8 item flat dropdown avatar (Pesan & Info + Akun) sekarang data-driven dari
+  `sys_user_menu` (`App\Models\Sys\SysUserMenu`, reseed data akurat + kolom
+  `visibility` baru utk kondisi employee_id/canSetup). Widget Configuration
+  (Theme matrix/Bahasa/User Configuration) SENGAJA tetap hardcode — terlalu
+  bespoke utk baris generik, bukan gap, keputusan sadar scope. Lihat
+  `docs/LOG_JOB_DONE.md`.
 
 ---
 

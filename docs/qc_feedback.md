@@ -18,16 +18,18 @@
 
 ## Belum Dikerjakan
 
-### Shell (sidebar+topbar) tidak responsive di layar sempit/mobile — 2026-08-30
-- **Layar:** Seluruh app (main-menu.blade.php / .shell)
-- **Jenis:** Bug
-- **Deskripsi:** `.shell` pakai `flex` dgn `aside` lebar tetap 262px, TIDAK ADA `@media` breakpoint sama sekali di `resources/css/app.css` utk layar sempit. Di layar sempit/HP, sidebar makan hampir semua lebar, topbar (termasuk avatar dropdown) kegencet/kedorong nyaris tak kelihatan — user report dropdown avatar tidak bisa dibuka sama sekali di layar sempit. Ditemukan 2026-08-30 waktu user coba fitur Help & Support di layar sempit.
-- **Kenapa belum dikerjakan sekarang:** perbaikan yang benar (sidebar jadi off-canvas drawer di mobile, hamburger toggle, dst.) menyentuh shell inti yang dipakai SEMUA layar aplikasi — risiko regresi lebih besar dari sekadar 1 fitur, perlu sesi/scope sendiri, bukan tambahan cepat.
-- **Sementara:** pakai jendela browser lebar desktop biasa (bukan HP/window sempit) — semua fitur sesi-sesi sebelumnya juga diasumsikan & diuji di lebar desktop, bukan cuma Help & Support.
+*(kosong)*
 
 ---
 
 ## Selesai
+
+### Shell (sidebar+topbar) tidak responsive di layar sempit/mobile — 2026-09-03
+- **Layar:** Seluruh app (main-menu.blade.php / .shell)
+- **Jenis:** Bug
+- **Deskripsi:** `.shell` pakai `flex` dgn `aside` lebar tetap 262px, TIDAK ADA `@media` breakpoint sama sekali di `resources/css/app.css` utk layar sempit. Di layar sempit/HP, sidebar makan hampir semua lebar, topbar (termasuk avatar dropdown) kegencet/kedorong nyaris tak kelihatan — user report dropdown avatar tidak bisa dibuka sama sekali di layar sempit. Ditemukan 2026-08-30 waktu user coba fitur Help & Support di layar sempit.
+- **Perbaikan:** Instruksi user 2026-09-03 "jalankan jika tidak mengubah layout yang sekarang" -- fix di-scope MURNI di dalam `@media (max-width: 767px)` baru (`resources/css/app.css`): `aside` jadi `position: fixed` (overlay di atas konten) alih-alih ikut flex row, `.main` dapat lebar penuh viewport. Reuse toggle hamburger ☰ yang SUDAH ADA (`nosidebar`, `resources/js/app-shell.js`) -- cuma nambah `init()` supaya default TERTUTUP saat load pertama di layar sempit (`window.matchMedia('(max-width: 767px)')`). Tidak ada markup/class baru, tidak ada perubahan JS logic selain nilai awal. Desktop (>=768px) tidak berubah sama sekali (diverifikasi: aturan lama di luar media query baru tidak disentuh). `npm run build` dijalankan, media query terverifikasi masuk ke CSS terkompilasi. Verifikasi visual browser (login) TIDAK dilakukan Claude Code (kredensial tidak boleh diotomatisasi, lihat aturan) -- user disarankan cek langsung di HP/window sempit.
+- **Sementara (sebelum fix ini):** pakai jendela browser lebar desktop biasa (bukan HP/window sempit).
 
 ### QC-002 — 2026-08-30
 - **Layar:** Dropdown profil (topbar) + sidebar kiri (`main-menu.blade.php`)
