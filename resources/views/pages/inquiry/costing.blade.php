@@ -163,7 +163,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function availableLayoutGroups()
     {
-        return ProdLayoutGroup::with('product')->where('status', 'CONFIRMED')->orderByDesc('id_layout_group')->limit(100)->get();
+        return ProdLayoutGroup::with(['product', 'parts'])->where('status', 'CONFIRMED')->orderByDesc('id_layout_group')->limit(100)->get();
     }
 
     // Toggle Manual <-> Ambil Data per part (keputusan user: per-part, bukan
@@ -185,22 +185,59 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
     // Tarik plano/UP dari prod_layout_group terpilih -> auto-fill + langsung
     // hitung ulang HPP (tujuan eksplisit user: 1 officer, tanpa langkah "Hitung"
-    // terpisah lagi setelah pilih layout -- tier1 §5.1).
-    public function pickLayoutGroup(int $partId, int $groupId): void
+    // terpisah lagi setelah pilih layout -- tier1 §5.1). $prodPartId WAJIB diisi
+    // kalau group menaungi >1 part (Tool #10, BACKLOG.md §0) -- dipakai
+    // ProdLayoutGroup::effectiveCutFor() utk alokasi biaya proporsional by luas
+    // (§4.2b), BUKAN qty_up_in_group mentah (itu akan melipatgandakan biaya
+    // kertas keliru kalau tiap part yg berbagi 1 plano dihitung seolah dpt
+    // plano sendiri-sendiri).
+    public function pickLayoutGroup(int $partId, int $groupId, ?int $prodPartId = null): void
     {
         $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
-        $group = ProdLayoutGroup::find($groupId);
+        $group = ProdLayoutGroup::with('parts')->find($groupId);
 
         if (! $group) {
             return;
         }
 
+        $isMulti = $group->parts->count() > 1;
+        // Group SOLO: aman auto-pakai satu-satunya part (perilaku lama, tak ada
+        // ambiguitas). Group MULTI: JANGAN fallback ke first() -- kalau
+        // prodPartId tak diisi eksplisit, biarkan null supaya guard di bawah
+        // menolak (alokasi proporsional wajib tau part mana, tak boleh nebak).
+        $prodPart = $prodPartId
+            ? $group->parts->firstWhere('id_part', $prodPartId)
+            : ($isMulti ? null : $group->parts->first());
+
+        if ($isMulti && ! $prodPart) {
+            session()->flash('error', 'Layout ini menaungi lebih dari 1 part (Tool #10) -- pilih part yang direpresentasikan baris costing ini dulu.');
+
+            return;
+        }
+
+        $effectiveCut = $prodPart ? $group->effectiveCutFor($prodPart) : ($group->up_count ?: 1);
+
+        // Tool #4 (die_rule_meter) -- SOLO group: langsung dipakai penuh (cuma 1
+        // part pemilik plano). Group MULTI-part: dialokasi proporsional by
+        // share luas yang SAMA dgn effectiveCutFor() (null kalau belum pernah
+        // dihitung, mis. hasil Tool #10 COMBINED_SPLIT -- lihat catatan di
+        // prodev.blade.php::confirmCombine(), TIDAK ditebak/dipaksa ada).
+        $pisauFaktor = $part->i_pisau_faktor;
+        if ($group->die_rule_meter !== null) {
+            $ownUpInGroup = $prodPart?->pivot->qty_up_in_group ?? $group->up_count;
+            $pisauFaktor = $isMulti && $effectiveCut > 0
+                ? round((float) $group->die_rule_meter * $ownUpInGroup / $effectiveCut, 4)
+                : (float) $group->die_rule_meter;
+        }
+
         $part->update([
             'data_source' => 'PRODEV',
             'prod_layout_group_id' => $group->id_layout_group,
+            'prodev_part_id' => $prodPart?->id_part,
             'i_panjang_plano_cm' => round($group->plano_w_mm / 10, 4),
             'i_lebar_plano_cm' => round($group->plano_h_mm / 10, 4),
-            'i_cut_per_plano' => $group->up_count ?: 1,
+            'i_cut_per_plano' => $effectiveCut ?: 1,
+            'i_pisau_faktor' => $pisauFaktor,
         ]);
 
         unset($this->costing);
@@ -444,6 +481,28 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                                 <span class="text-[10.5px] text-[#8a5a00]">Pilih layout dulu, plano/cut &amp; HPP terisi otomatis.</span>
                             @endif
                         </div>
+
+                        @php($selectedGroup = $part->prod_layout_group_id ? $this->availableLayoutGroups->firstWhere('id_layout_group', $part->prod_layout_group_id) : null)
+                        @if ($selectedGroup && $selectedGroup->parts->count() > 1)
+                            {{-- Layout Tool #10 (COMBINED_SPLIT) menaungi >1 part -- officer WAJIB
+                            pilih part mana yg direpresentasikan baris costing ini, supaya biaya
+                            kertas/plate teralokasi proporsional by luas (§4.2b), bukan dobel-hitung. --}}
+                            <div class="bg-[#fff8ec] border border-[#f0dcae] rounded-md p-2.5 mb-3 flex items-center gap-2">
+                                <span class="text-[11px] text-[#8a5a00] font-semibold">Part dalam Layout Gabungan:</span>
+                                <select onchange="if(this.value) $wire.pickLayoutGroup({{ $part->id_costing_part }}, {{ $selectedGroup->id_layout_group }}, parseInt(this.value))"
+                                    class="text-[11px] px-2 py-1 border border-[#e6cd8f] rounded flex-1 max-w-[320px]">
+                                    <option value="">— pilih part —</option>
+                                    @foreach ($selectedGroup->parts as $gp)
+                                        <option value="{{ $gp->id_part }}" @selected($part->prodev_part_id === $gp->id_part)>
+                                            {{ $gp->part_name }} ({{ $gp->pivot->qty_up_in_group }} up)
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @if (! $part->prodev_part_id)
+                                    <span class="text-[10.5px] text-[#9a3324]">Belum dipilih — biaya BELUM teralokasi proporsional.</span>
+                                @endif
+                            </div>
+                        @endif
                     @endif
 
                     @if ($part->part_type_code === 'DC')

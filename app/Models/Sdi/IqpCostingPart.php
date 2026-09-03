@@ -20,6 +20,7 @@ class IqpCostingPart extends Model
         'no_urut',
         'data_source',
         'prod_layout_group_id',
+        'prodev_part_id',
         'part_name',
         'part_type_code',
         'qty_per_set',
