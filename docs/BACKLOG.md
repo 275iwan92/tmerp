@@ -24,16 +24,16 @@
 
 ---
 
-## RINGKASAN STATUS (update 2026-09-03 pagi, utk didiskusikan — pakai nomor R# saat bahas)
+## RINGKASAN STATUS (update 2026-09-03 siang, utk didiskusikan — pakai nomor R# saat bahas)
 
 > Snapshot setelah task otonom `tmerp-backlog-autowork-1700` jalan ~13 jam
-> nonstop semalam (mulai 2026-09-02 15:45) + lanjutan pagi ini (2 sesi
+> nonstop semalam (mulai 2026-09-02 15:45) + lanjutan pagi/siang ini (2 sesi
 > paralel — `tmerp-b5` terus kerja BACKLOG, sesi lain kerjakan permintaan
 > UI/UAT langsung dari user). Nomor di bawah **beda skema** dari nomor
 > section (0-12) di bawahnya — sengaja, supaya "bahas R3" tidak ketuker
 > sama "section 3 SALES". Update lagi tiap ada progres besar.
 
-**SUDAH SELESAI** (20+ commit total, semua terverifikasi test, bukan asumsi):
+**SUDAH SELESAI** (30+ commit total, semua terverifikasi test, bukan asumsi):
 
 - **R1.** ProDev + Product Costing Engine (misi utama) — TUNTAS. Skema DB,
   Engine Tingkat 1+2, layar workbench, cetak Master Card, 4 tipe part
@@ -46,15 +46,28 @@
 - **R7.** Rate Band task MANUAL **+ prioritas qty_good F15 di atas qty
   target** (§6) — 2 fix, keduanya SELESAI & diverifikasi (termasuk
   fallback legacy kalau F15 kosong).
-- **R19.** [BARU] Sidebar Sales: "Imposition Engine"→"Pro-Dev",
+- **R19.** Sidebar Sales: "Imposition Engine"→"Pro-Dev",
   "Product Costing"→"Pro-Cost" (repoint ke layar ProDev baru + fix gap
   akses modul PROD utk staf/supervisor Sales).
-- **R20.** [BARU] Dropdown profil direstrukturisasi jadi grup collapsible
+- **R20.** Dropdown profil direstrukturisasi jadi grup collapsible
   "Configuration" (Tema+Bahasa+User Configuration+Aktivitas saya); sidebar
   kiri "Configuration"→"Settings" (Security tetap).
-- **R21.** [BARU] 7 akun contoh UAT lintas 4 level (operator/supervs/
+- **R21.** 7 akun contoh UAT lintas 4 level (operator/supervs/
   4x manager per-bidang/direksi, password sama) + panel referensi di
   layar login.
+- **R22.** [BARU] `StockConfirmService` — koreksi dokumentasi, ternyata
+  sudah lengkap (`StockPostingService`), bukan gap nyata.
+- **R23.** [BARU] `MachineCalendarService` — sadar hari libur nasional
+  (`sys_holiday`) + jam kerja per-mesin dari `emp_shift_roster`+
+  `emp_shift_detail` (fallback jam default kalau mesin tak pakai roster).
+- **R24.** [BARU] Master Card tab WO Detail — artwork nyata (query
+  `prod_part_artwork` + fallback referensi ProDev), bukan placeholder statis.
+- **R25.** [BARU] `SchedulingRuleEngine::applySequencing()` — terapkan
+  SEMUA rule SEQUENCING aktif (bukan cuma rule pertama), chained sort.
+- **R26.** [BARU] Reroute-Subkontrak dialog "Sisip Hot Job" — kini bisa
+  benar-benar di-apply (PO Subkontrak nyata terbit), termasuk perluasan
+  state machine `PrdWoOperation::TRANSITIONS` (keputusan arsitektural
+  otonom, dicatat & low-risk).
 
 **MASIH TERBUKA** (kategori besar, lihat section angka di bawah utk detail):
 
@@ -65,10 +78,12 @@
   pilot module belum ditunjuk user. Lihat §1.
 - **R10.** Sales — Marketing Management (modul baru, 0%), klarifikasi
   manual input CO/Costing. Lihat §3.
-- **R11.** Procurement — Purchase Receive 3-alur (baru 1/3), StockConfirmService,
-  12 kategori COA kosong. Lihat §4.
-- **R12.** Production Scheduling — masih ~8 item lain (Machine Calendar,
-  Simulation Sandbox, WO-convergence, F10-F20, dll). Lihat §6.
+- **R11.** Procurement — Purchase Receive 3-alur (baru 1/3), 12 kategori
+  COA kosong (`StockConfirmService` sudah dicoret, lihat R22). Lihat §4.
+- **R12.** Production Scheduling — sisa item makin sedikit (Simulation
+  Sandbox, WO-part convergence, F10-F20, Decision Feedback learning loop
+  [sengaja ditunda, butuh data historis dulu], MTS auto-replenishment).
+  Lihat §6.
 - **R13.** Finance — Fixed Asset (0%), Auto-jurnal DO/Invoice, seluruh
   AR/AP belum ada. **Payroll SENGAJA di-skip total** (aturan CLAUDE.md,
   butuh keputusan desain enkripsi dulu — TAPI materi referensi baru sudah
