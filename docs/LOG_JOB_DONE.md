@@ -67,6 +67,30 @@
   11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
   melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #10)
+
+- **§6 Production — `MachineCalendarService` kini sadar hari libur & shift
+  per-mesin.** 2 perbaikan:
+  1. `isWorkingDay()` cek `sys_holiday` (dibangun 2026-09-02, sebelumnya
+     "belum ada 1 modul pun yang membacanya") -- hari libur nasional
+     otomatis dilewati saat backward-schedule, bukan cuma Minggu.
+  2. `subtractWorkingTime()` terima parameter `machineId` opsional
+     (`BackwardSchedulingService` kirim `$task->machine_id`, null utk task
+     MANUAL). Kalau diisi: jam kerja hari itu diambil dari
+     `emp_shift_roster` (siapa dijadwalkan di mesin ini tanggal itu) +
+     `emp_shift_detail` (jam mulai/selesai shift per hari-dlm-minggu) —
+     union rentang terluas kalau >1 shift di-roster hari yg sama
+     (disederhanakan sengaja, tak hitung gap antar-shift presisi). Mesin
+     yang TAK PERNAH pakai fitur roster (0 baris histori) fallback ke jam
+     default global (backward-compatible, tidak break scheduling existing).
+     Mesin yang PUNYA histori roster tapi kosong di 1 tanggal spesifik =
+     dianggap hari libur mesin itu (staffing-driven, bukan asumsi).
+  Diverifikasi 4 skenario via tinker (2 dgn transaction rollback): (a) jalur
+  lama tanpa machineId tetap identik (08:00-20:00, backward-compat), (b)
+  hari libur sintetis terlewati benar, (c) window sempit 09:00-11:00 dari
+  roster terpakai persis, (d) hari tanpa roster utk mesin yg PUNYA histori
+  roster ditolak (didorong ke hari kerja sebelumnya) — semua sesuai ekspektasi.
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #9)
 
 - **§4 Procurement — `StockConfirmService` TERNYATA sudah selesai**, koreksi

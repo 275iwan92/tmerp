@@ -44,7 +44,7 @@ class BackwardSchedulingService
             $durationInterval = CarbonInterval::seconds((int) round($durationHours * 3600));
 
             $targetFinish = $cursor->copy();
-            $targetStart = $this->calendar->subtractWorkingTime($targetFinish, $durationInterval);
+            $targetStart = $this->calendar->subtractWorkingTime($targetFinish, $durationInterval, $task->machine_id);
 
             $task->target_finish = $targetFinish;
             $task->target_start = $targetStart;

@@ -268,9 +268,13 @@ Modul paling matang cakupannya tapi masih banyak sisa — daftar dari
 `project_production_scheduling_spec` (memori sesi, verifikasi ulang ke kode
 sebelum eksekusi):
 
-- `MachineCalendarService` masih jam tetap 08:00-20:00 Senin-Sabtu, belum
-  sadar `emp_shift_roster` untuk kapasitas MESIN (baru dipakai utk validasi
-  crew manual).
+- ~~`MachineCalendarService` masih jam tetap 08:00-20:00~~ **SELESAI
+  2026-09-03** — 2 bagian: (1) hari libur nasional `sys_holiday` kini
+  dipakai di `isWorkingDay()`; (2) `subtractWorkingTime()` terima
+  `machineId` opsional, kalau diisi jam kerja diambil dari
+  `emp_shift_roster`+`emp_shift_detail` (union rentang shift yg di-roster
+  hari itu, mesin tanpa histori roster fallback ke jam default). Lihat
+  `docs/LOG_JOB_DONE.md`.
 - ~~Rate Band `resource_type=MANUAL` masih throw error~~ **SELESAI
   2026-09-02** — `RateBandResolver::resolveManual()` baru, histori
   Production Output difilter `resource_type=MANUAL`+`process_name` (rate =

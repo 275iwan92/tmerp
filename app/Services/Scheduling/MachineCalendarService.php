@@ -2,18 +2,30 @@
 
 namespace App\Services\Scheduling;
 
+use App\Models\Master\SysHoliday;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Machine Calendar — jam kerja efektif per mesin per shift.
  * Sumber: production_scheduling_tier1.md §4 istilah baku.
  *
- * CATATAN JUJUR: implementasi di bawah masih SEDERHANA (satu jam kerja tetap
- * per hari, Senin-Sabtu). Integrasi penuh ke `emp_shift_roster` (HRM) —
- * dicatat sebagai temuan cross-modul wajib di production_scheduling_tier3.md
- * §12 poin 2 — BELUM dikerjakan di sini. Sambungkan saat digarap terpisah,
- * jangan anggap versi ini final.
+ * FIX 2026-09-03 (docs/BACKLOG.md §6, 2 bagian):
+ * 1. Hari libur nasional -- `sys_holiday` (dibangun 2026-09-02, sebelumnya
+ *    "belum ada 1 modul pun yang membacanya") kini dipakai di `isWorkingDay()`.
+ * 2. Kesadaran shift per-MESIN -- kalau `machineId` diberikan ke
+ *    `subtractWorkingTime()`, jam kerja hari itu diambil dari
+ *    `emp_shift_roster` (siapa dijadwalkan di mesin ini hari itu) + jam
+ *    shift dari `emp_shift_detail` (union rentang terluas dari semua shift
+ *    yang di-roster hari itu -- BUKAN penjumlahan window terpisah persis
+ *    per shift, disederhanakan sengaja, lihat catatan di `machineWorkingWindow()`).
+ *    Kalau mesin itu TAK PERNAH punya 1 pun baris roster (belum pakai
+ *    fitur roster), fallback ke jam default global (backward-compatible).
+ *    Kalau mesin PUNYA histori roster tapi genuinely kosong di tanggal itu,
+ *    dianggap hari libur mesin tsb (bukan default, staffing-driven).
+ *    `machineId` null (dipanggil tanpa mesin, mis. task MANUAL) = perilaku
+ *    lama apa adanya.
  */
 class MachineCalendarService
 {
@@ -36,7 +48,7 @@ class MachineCalendarService
      * Geser suatu titik waktu MUNDUR sejauh $duration, melompati jam non-kerja.
      * Dipakai Backward Scheduling (Tier2 §4.1) untuk hitung target_start dari target_finish.
      */
-    public function subtractWorkingTime(Carbon $from, CarbonInterval $duration): Carbon
+    public function subtractWorkingTime(Carbon $from, CarbonInterval $duration, ?int $machineId = null): Carbon
     {
         $remaining = $duration->copy();
         $cursor = $from->copy();
@@ -47,8 +59,17 @@ class MachineCalendarService
         while ($remaining->totalSeconds > 0 && $safetyCounter < 1000) {
             $safetyCounter++;
 
-            $dayShiftStart = $cursor->copy()->setTimeFrom($this->shiftStart);
-            $dayShiftEnd = $cursor->copy()->setTimeFrom($this->shiftEnd);
+            $window = $machineId ? $this->machineWorkingWindow($cursor, $machineId) : null;
+
+            if ($window === false) {
+                // Mesin ini pakai roster tapi genuinely tak ada shift hari ini -- hari libur mesin.
+                $cursor = $cursor->copy()->subDay()->setTimeFrom($this->shiftEnd);
+
+                continue;
+            }
+
+            $dayShiftStart = $window ? $window['start'] : $cursor->copy()->setTimeFrom($this->shiftStart);
+            $dayShiftEnd = $window ? $window['end'] : $cursor->copy()->setTimeFrom($this->shiftEnd);
 
             if (! $this->isWorkingDay($cursor)) {
                 $cursor = $cursor->copy()->subDay()->setTimeFrom($this->shiftEnd);
@@ -81,10 +102,56 @@ class MachineCalendarService
         return $cursor;
     }
 
+    /**
+     * @return array{start: Carbon, end: Carbon}|false|null null = mesin belum pernah
+     *         pakai roster (fallback jam default), false = mesin pakai roster tapi
+     *         kosong hari ini (hari libur mesin), array = window kerja hari ini.
+     */
+    private function machineWorkingWindow(Carbon $date, int $machineId): array|false|null
+    {
+        $hasAnyRosterHistory = DB::connection('tm2mst')->table('emp_shift_roster')
+            ->where('machine_id', $machineId)
+            ->exists();
+
+        if (! $hasAnyRosterHistory) {
+            return null;
+        }
+
+        $shiftIds = DB::connection('tm2mst')->table('emp_shift_roster')
+            ->where('machine_id', $machineId)
+            ->whereDate('roster_date', $date->toDateString())
+            ->pluck('shift_id')
+            ->unique();
+
+        if ($shiftIds->isEmpty()) {
+            return false;
+        }
+
+        $details = DB::connection('tm2mst')->table('emp_shift_detail')
+            ->whereIn('shift_id', $shiftIds)
+            ->where('day_of_week', $date->dayOfWeek)
+            ->whereNotNull('start_time')
+            ->whereNotNull('end_time')
+            ->get(['start_time', 'end_time']);
+
+        if ($details->isEmpty()) {
+            return false;
+        }
+
+        // Union rentang terluas (earliest start .. latest end) -- penyederhanaan sengaja
+        // kalau ada >1 shift di-roster hari yg sama (mis. shift pagi+siang berurutan);
+        // TIDAK menghitung gap kosong antar-shift secara presisi.
+        $starts = $details->map(fn ($d) => $date->copy()->setTimeFromTimeString($d->start_time));
+        $ends = $details->map(fn ($d) => $date->copy()->setTimeFromTimeString($d->end_time));
+
+        return ['start' => $starts->min(), 'end' => $ends->max()];
+    }
+
     private function isWorkingDay(Carbon $date): bool
     {
-        // Senin(1)-Sabtu(6) kerja, Minggu(0) libur. Sesuaikan bila ada kalender
-        // libur nasional/khusus perusahaan — sumber data belum ditentukan.
-        return $date->dayOfWeek !== Carbon::SUNDAY;
+        // Senin(1)-Sabtu(6) kerja, Minggu(0) libur, dikurangi hari libur nasional
+        // (sys_holiday, dibangun 2026-09-02) -- libur khusus perusahaan di luar itu
+        // masih belum ada sumber datanya.
+        return $date->dayOfWeek !== Carbon::SUNDAY && ! SysHoliday::isHoliday($date->toDateString());
     }
 }
