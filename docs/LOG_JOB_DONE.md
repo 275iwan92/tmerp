@@ -12,6 +12,51 @@
 
 ---
 
+## 2026-09-03 (lanjutan — panel referensi ProDev + guard integritas data)
+
+User menunjuk gap nyata: link Mode #1 (Inquiry->ProDev) yang dibangun sesi
+sebelumnya cuma bikin KONEKSI (`iqp_part.prod_part_id`), tidak pernah
+TAMPILKAN datanya ke officer ProDev. Plus 2 pertanyaan tajam soal integritas
+data yang berujung ke 2 guard baru:
+
+- **Panel "📥 Referensi Inquiry Asal"** (read-only) di layar ProDev —
+  reverse-lookup `iqp_part` yang `prod_part_id`-nya nunjuk ke part aktif,
+  tampilkan Inquiry No/Customer/Tipe Produk/semua dim param (label dari
+  `prod_type_param`)/Flat W-H/Qty per Set. TIDAK PERNAH bisa diedit dari
+  sini (prinsip snapshot/beku) — kalau ProDev butuh angka beda, isi field
+  miliknya sendiri (`prod_part`, kolom terpisah total).
+- **Filter status diperbaiki**: hanya Inquiry CONFIRMED & masih hidup
+  (`whereNotIn sub_state ['DRAFT','CANCELLED','LOST']`, pola PERSIS sama
+  dengan `costing-list.blade.php`/`imposition-list.blade.php`, bukan
+  reinvent). Bug ditemukan: `stat_confirm` tetap `true` selamanya walau
+  Inquiry belakangan di-CANCEL/LOST (yang berubah cuma `sub_state`) — cek
+  `stat_confirm` saja tidak cukup.
+- **Tombol "Kirim ke ProDev"** sekarang wajib `stat_confirm=true` (dulu
+  cukup part tersimpan) — guard di UI dan server-side.
+- **Guard baru `unlockLayout()`**: tolak buka kunci layout yang SUDAH
+  ditarik Costing (`IqpCostingPart.prod_layout_group_id`) — sebelumnya
+  tanpa syarat sama sekali, risiko HPP yang sudah dihitung (bahkan sudah
+  masuk Quotation ke customer) diam-diam basi tanpa peringatan siapa pun.
+- **Audit menyeluruh batas antar-tahap** (diminta user setelah menegur
+  "kenapa saya yang beritahu, harusnya kamu sarankan"): dikonfirmasi SEMUA
+  4 batas pipeline (Inquiry->ProDev, ProDev->ProCost, ProCost->Quotation,
+  Quotation->CO) sekarang konsisten gate confirmed/published — 3 dari 4
+  sudah benar sejak awal (bukan buatan sesi ini), cuma Inquiry->ProDev yang
+  genuinely bolong sampai diperbaiki hari ini.
+- **Insiden data test bocor ke DB nyata**: sisa script tinker testing
+  (7 baris lintas 5 tabel) sempat ketinggalan di database dev SUNGGUHAN,
+  ditemukan user LANGSUNG di layar ProDev (chip pencarian). Sudah di-scan
+  penuh & dibersihkan, diverifikasi ulang bersih. Root cause: 1 script
+  crash di tengah (helper assertion Livewire dipanggil dari tinker mentah,
+  bukan test PHPUnit sungguhan) sebelum sempat jalankan kode cleanup-nya
+  sendiri.
+
+Test baru/diperbarui: `InquirySendToProdevTest` (+2 skenario: guard
+confirm, panel referensi confirmed vs cancelled), `ProdevUnlockLayoutGuardTest`
+baru. Full suite: 103 test, 94 passed, 9 skipped (Firebase, tidak terkait), 0 gagal.
+
+---
+
 ## 2026-09-03 (lanjutan — Mode #1 InqProd/ProDev, picker visual, formula hide)
 
 - **Popup picker visual Tipe Produk (InqProd, ala Pacdora).** Tombol 🖼️ baru
