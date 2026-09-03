@@ -12,6 +12,29 @@
 
 ---
 
+## 2026-09-03 (lanjutan — instruksi user langsung, item tambahan)
+
+- **R29 — Default periode Accounting/Stock Opname/Payroll di `sys_constant`.**
+  Permintaan user: tahun buku accounting 1 Jan-31 Des
+  (`FISCAL_YEAR_START/END_MONTH/DAY`, kategori FINANCE), stock opname tiap
+  tanggal 1 (`STOCK_OPNAME_DAY_OF_MONTH`, kategori INVENTORY), gajian
+  bulanan tiap akhir bulan (`PAYROLL_MONTHLY_CUTOFF_DAY='END_OF_MONTH'`,
+  disimpan sbg teks krn 28-31 dinamis per bulan, bukan angka tetap), gajian
+  mingguan tiap Jumat (`PAYROLL_WEEKLY_CUTOFF_DOW=5`, kategori PAYROLL).
+  Migration `2026_09_03_000007_seed_default_period_constants`. **Ini murni
+  konfigurasi NILAI**, BUKAN membangun `PeriodService`/engine buka-tutup
+  periode (item itu terpisah, masih 0%, lihat BACKLOG.md §12.7). Diverifikasi
+  via `SysConstant::text()`/`number()` di tinker.
+- **Worktree cleanup.** 2 folder `.claude/worktrees/festive-feynman-7f63e0`
+  dan `sleepy-solomon-81458e` (sisa sesi agent lain, ditemukan sesi
+  sebelumnya) dicek: tidak ada perubahan uncommitted, commit HEAD
+  masing-masing sudah ada di `origin/main` dan
+  `origin/claude/exciting-hypatia-1d0d5a` — aman dihapus via
+  `git worktree remove` (bukan `rm -rf` manual, supaya registry git ikut
+  bersih), termasuk sisa `node_modules` yang nyangkut di salah satunya.
+
+---
+
 ## 2026-09-03 (lanjutan diskusi backlog — instruksi user langsung per item)
 
 - **R27 — Dropdown avatar jadi data-driven dari `sys_user_menu`.** BACKLOG

@@ -72,6 +72,9 @@
   `sys_user_menu` — QUEUE item #9 lama akhirnya tuntas.
 - **R28.** Shell responsive di layar sempit (<768px, `qc_feedback.md`) —
   sidebar jadi overlay, topbar/avatar dropdown tidak lagi kegencet.
+- **R29.** Costing Hub: tambah Ongkos Kupas + pisah QC/Packing (gap analysis
+  vs legacy ScriptCase) + default periode Accounting/Stock Opname/Payroll
+  di `sys_constant` + keputusan desain enkripsi Payroll (`VERBA_SANCTA`).
 
 **MASIH TERBUKA** (kategori besar, lihat section angka di bawah utk detail):
 
@@ -187,12 +190,8 @@ Direksi+GM sekaligus) lintas SEMUA bidang. Detail penuh tiap sel matrix
    (grid custom view/sort/group-by yang sudah ada) TERNYATA group-by-nya
    cuma VISUAL, BUKAN agregasi SUM/COUNT — TIDAK bisa langsung jadi
    fondasi, harus dibangun baru.
-3. ~~Win-rate Sales butuh kolom baru `iqp_inquiry`~~ **SELESAI 2026-09-02**:
-   kolomnya (`sub_state` CONVERTED/LOST) TERNYATA sudah ada sejak awal,
-   tinggal titik tulisnya — layar `sales/win-rate` sudah live, lihat
-   `docs/LOG_JOB_DONE.md`.
-4. Refresh data — real-time vs snapshot periodik.
-5. **Katalog laporan Production** — `topmanagementreport_tier1.md` TIDAK
+3. Refresh data — real-time vs snapshot periodik.
+4. **Katalog laporan Production** — `topmanagementreport_tier1.md` TIDAK
    cakup domain ini (cuma Sales/Procurement-Inventory/Finance/HR) — kalau
    Production jadi pilot, katalognya harus ditulis dulu dari nol.
 
@@ -253,13 +252,6 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
   butuh stok terpisah/`ownership_type` — skema belum diputuskan) dan
   "Receiving dari Subkontraktor" (SFG kembali dari pihak ketiga, masuk
   `sfg_stock`). Detail lengkap: `docs/SIDEBAR_MENU_STANDARD.md` §6/§6a.
-- ~~`StockConfirmService`~~ **TERNYATA SUDAH SELESAI** (dicek 2026-09-03) —
-  `App\Services\Inventory\StockPostingService.php` docblock-nya SENDIRI
-  eksplisit bilang "Port dari trigger legacy trg_rm_stock_confirm/
-  trg_fg_stock_confirm/trg_sfg_stock_confirm" — sudah diporting lengkap
-  (RM/FG/SFG, termasuk auto-jurnal Stock Out). Catatan lama di sini ditulis
-  SEBELUM Stock In/Out dibangun, sudah usang, koreksi-nya baru dilakukan
-  sekarang.
 - **12 dari 18 kategori Level-1 `mat_category`** masih kosong default COA
   account (`default_coa_account_id`/`default_stock_asset_account_id`) —
   layar isinya **SUDAH ADA** (`master/mat-category.blade.php`, bagian
@@ -287,31 +279,6 @@ Modul paling matang cakupannya tapi masih banyak sisa — daftar dari
 `project_production_scheduling_spec` (memori sesi, verifikasi ulang ke kode
 sebelum eksekusi):
 
-- ~~`MachineCalendarService` masih jam tetap 08:00-20:00~~ **SELESAI
-  2026-09-03** — 2 bagian: (1) hari libur nasional `sys_holiday` kini
-  dipakai di `isWorkingDay()`; (2) `subtractWorkingTime()` terima
-  `machineId` opsional, kalau diisi jam kerja diambil dari
-  `emp_shift_roster`+`emp_shift_detail` (union rentang shift yg di-roster
-  hari itu, mesin tanpa histori roster fallback ke jam default). Lihat
-  `docs/LOG_JOB_DONE.md`.
-- ~~Rate Band `resource_type=MANUAL` masih throw error~~ **SELESAI
-  2026-09-02** — `RateBandResolver::resolveManual()` baru, histori
-  Production Output difilter `resource_type=MANUAL`+`process_name` (rate =
-  properti proses, BUKAN per-operator individual — itu tetap gap, butuh
-  desain agregasi rate crew multi-orang). Lihat `docs/LOG_JOB_DONE.md`.
-- ~~`RateBandResolver` masih pakai qty target operasi utk hitung rate
-  historis, bukan qty_good hasil Output (F15)~~ **SELESAI 2026-09-03** —
-  rate historis sekarang prioritas qty_good aktual (`prd_wo_operation_output`
-  F15), fallback ke qty target HANYA kalau genuinely 0 baris F15 tercatat
-  (legacy/gap pencatatan). Diverifikasi 2 skenario (qty_good dipakai +
-  fallback legacy) via tinker sintetis dlm transaction rollback, plus 6
-  test `ProductionWoGenerationTest` tetap lolos. Lihat `docs/LOG_JOB_DONE.md`.
-- ~~`SchedulingRuleEngine::applySequencing()` masih 1-rule-only~~ **SELESAI
-  2026-09-03** — sekarang terapkan SEMUA rule SEQUENCING aktif utk resource
-  yg sama (bukan cuma `->first()`), urutan `rule_id` ASC = kriteria utama,
-  rule berikutnya = tie-breaker (chained stable sort). `prd_scheduling_rule`
-  tak punya kolom priority eksplisit, jadi urutan pembuatan dipakai sbg
-  proxy. Lihat `docs/LOG_JOB_DONE.md`.
 - Decision Feedback calibration loop masih sebatas log, belum ada loop
   belajar sungguhan.
 - MTS Forecast → WO auto-replenishment generator belum ditulis (entry +
@@ -325,29 +292,6 @@ sebelum eksekusi):
   sejenis).
 - `iqp_part` → `prod_part` (master part reusable lintas-order) belum
   ter-link — `prod_part` sendiri ternyata tidak pernah terisi.
-- ~~Reroute-Subkontrak di dialog "Sisip Hot Job" masih cuma tampil opsi~~
-  **SELESAI 2026-09-03** — `SubcontractPoService` direfactor (logic PR+PO
-  diekstrak jadi `createPo()` generik, dipakai `createFromBreakdown()` DAN
-  `createFromReroute()` baru). Sub-form vendor/estimasi/tanggal muncul inline
-  di dialog saat opsi "Reroute subkontrak" dipilih. **Keputusan arsitektural
-  otonom** (dicatat, low-risk/reversibel): `PrdWoOperation::TRANSITIONS`
-  ditambah `PENDING`/`ASSIGNED` → `SUBCONTRACT` (sebelumnya cuma reachable
-  dari `BREAKDOWN`) — reroute hot job BEDA skenario dari breakdown fisik
-  mesin, task belum jalan sama sekali, tak ada insiden kerusakan yg perlu
-  dilink. Lihat `docs/LOG_JOB_DONE.md`.
-- ~~Qty Kebutuhan BOM belum dikalikan faktor Imposition~~ **SELESAI
-  2026-09-02** — dibagi `up_count` dari `iqp_layout` CONFIRMED (fallback
-  qty mentah kalau imposition belum dikonfirmasi). Lihat `docs/LOG_JOB_DONE.md`.
-- ~~`prod_part_artwork` kosong — Master Card tab masih placeholder statis~~
-  **SELESAI 2026-09-03** — sekarang query nyata + fallback ke referensi
-  ProDev (`prod_part_attachment` JPEG, dibangun sesi ProDev Fase 1) kalau
-  artwork resmi belum ada, dijembatani product_id+part_code (pola existing
-  di file yg sama, iqp_part->prod_part FK asli tetap belum ada — gap itu
-  sendiri MASIH terbuka, lihat item WO-part convergence di bawah). `prod_part_artwork`
-  itu sendiri MASIH kosong (0 baris) — cuma layarnya sekarang genuinely
-  bisa tampilkan begitu ada yg diisi (lewat proses approval artwork resmi,
-  belum ada layar utk itu) ATAU sementara pakai referensi ProDev. Lihat
-  `docs/LOG_JOB_DONE.md`.
 - **F10-F14 & F18-F20** (MRP netting, Material Substitution/Cutting Yield
   engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
   Interruption Profile reporting) — semua secara eksplisit ditunda user,
@@ -380,10 +324,6 @@ sebelum eksekusi):
   2026-08-28) — prasyarat "DO belum ada" di catatan lama SUDAH TERPENUHI,
   tapi status mekanisme snapshot Costing V2 itu sendiri **belum
   dikonfirmasi ada atau tidak** — cek dulu sebelum mulai.
-- ~~Outstanding PV report~~ **SELESAI 2026-09-02** — keputusan desain diambil
-  otonom (flag simpel per-PV, opsi paling sederhana dari 3 yg diajukan,
-  konsisten gaya Outstanding PR/PO existing yg header-level). Lihat
-  `docs/LOG_JOB_DONE.md`.
 - **Payroll (tm2pyr) — SELURUH MODUL belum dibangun** (bukan cuma
   enkripsi). CLAUDE.md §2 sendiri menandai ini requirement yang belum
   diimplementasikan sama sekali. **UPDATE 2026-09-03**: keputusan desain
@@ -442,13 +382,6 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 - **WYSIWYG template-editor untuk Nota/print** — ide sempat dilontarkan
   saat print/nota component diekstrak (2026-08-28), sengaja ditunda
   (keputusan setingkat modul baru, belum diminta).
-- ~~QUEUE item #9 lama~~ **SELESAI 2026-09-03** — instruksi user "jalankan":
-  8 item flat dropdown avatar (Pesan & Info + Akun) sekarang data-driven dari
-  `sys_user_menu` (`App\Models\Sys\SysUserMenu`, reseed data akurat + kolom
-  `visibility` baru utk kondisi employee_id/canSetup). Widget Configuration
-  (Theme matrix/Bahasa/User Configuration) SENGAJA tetap hardcode — terlalu
-  bespoke utk baris generik, bukan gap, keputusan sadar scope. Lihat
-  `docs/LOG_JOB_DONE.md`.
 
 ---
 
@@ -557,25 +490,19 @@ Billing (AR-lite, Modul 6 terpisah).
 
 File ini sendiri berfungsi sebagai daftar centang ⬜/🟡 raksasa. Layar yang
 masih ⬜ (belum dibangun) di luar yang sudah tercatat di section lain file
-ini: Prove Warna (versioning v1/v2/v3), ~~Nota CO print~~ **SELESAI
-2026-09-03** (`co/print.blade.php`, Quotation print sudah ada duluan —
-lihat `docs/LOG_JOB_DONE.md`), Nota Alokasi Inventory (masih belum jelas —
-"posisi stok transaksional" yg dulunya dimaksud di mockup TIDAK relevan lagi
-setelah Inventory ledger jadi, perlu klarifikasi ulang maksudnya kalau mau
-dikerjakan), ~~Label Rak~~ **SELESAI 2026-09-03** (`master/warehouse/print-labels.blade.php`,
-tombol "🏷 Cetak Label Rak" di layar edit gudang — bentuk beda dari Nota
-transaksi lain, grid kartu label siap gunting bukan 1 dokumen formal, TIDAK
-pakai komponen `resources/views/components/print/*`. Lihat `docs/LOG_JOB_DONE.md`.
-Period Manager (buka/tutup periode stok — `PeriodService` genuinely TAK
-PERNAH DIBUAT, bukan cuma "belum dipanggil" seperti catatan lama bilang —
-dicek 2026-09-03, 0 file ditemukan), FIFO/LIFO
+ini: Prove Warna (versioning v1/v2/v3), Nota Alokasi Inventory (masih belum
+jelas — "posisi stok transaksional" yg dulunya dimaksud di mockup TIDAK
+relevan lagi setelah Inventory ledger jadi, perlu klarifikasi ulang
+maksudnya kalau mau dikerjakan), Period Manager (buka/tutup periode stok —
+`PeriodService` genuinely TAK PERNAH DIBUAT, bukan cuma "belum dipanggil"
+seperti catatan lama bilang — dicek 2026-09-03, 0 file ditemukan — TAPI
+default konstanta periode Accounting/Stock Opname/Payroll sudah ada di
+`sys_constant`, lihat `docs/LOG_JOB_DONE.md` 2026-09-03), FIFO/LIFO
 valuation (`StockValuationService`, saat ini cuma AVG), Forecast Engine &
 Flow Engine (state-machine) mockup produksi lama (kemungkinan besar sudah
 digantikan oleh `production_scheduling_tier*.md` yang jauh lebih baru —
-cek dulu sebelum kerjakan, potensi duplikat). ~~print PR/PO/PQ~~ **SEMUA
-SELESAI 2026-09-02** (lihat `docs/LOG_JOB_DONE.md` — `pur/po/print.blade.php`,
-`pur/pr/print.blade.php`, `pur/pq/print.blade.php`). Sisa: Setup > Audit
-Trail Viewer & generic Lookup Master maintainer (sebagian sudah tercakup
+cek dulu sebelum kerjakan, potensi duplikat). Sisa: Setup > Audit Trail
+Viewer & generic Lookup Master maintainer (sebagian sudah tercakup
 Configuration hari ini, sebagian belum).
 
 ### 12.8 Catatan konsistensi (bukan actionable, cuma disclosure)
