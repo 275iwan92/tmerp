@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 8 — Laporan Harian Terlambat & Tidak Masuk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 8: Daily Discipline Report</span>
+        </div>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded font-semibold">🖨️ Cetak Laporan PDF</button>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6">
+        <!-- Summary Dashboard Widgets -->
+        <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-emerald-500">
+                <span class="text-xs text-slate-500 uppercase font-semibold block">Total Hadir Tepat Waktu</span>
+                <span class="text-2xl font-extrabold text-emerald-600">42 Karyawan</span>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-amber-500">
+                <span class="text-xs text-slate-500 uppercase font-semibold block">Total Terlambat Hari Ini</span>
+                <span class="text-2xl font-extrabold text-amber-600">4 Karyawan</span>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-rose-500">
+                <span class="text-xs text-slate-500 uppercase font-semibold block">Total Tidak Masuk (Alpha)</span>
+                <span class="text-2xl font-extrabold text-rose-600">2 Karyawan</span>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-purple-500">
+                <span class="text-xs text-slate-500 uppercase font-semibold block">Izin / Sakit / Cuti Approved</span>
+                <span class="text-2xl font-extrabold text-purple-600">4 Karyawan</span>
+            </div>
+        </div>
+
+        <!-- Section Terlambat -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-base font-bold text-amber-800 mb-3 flex items-center space-x-2">
+                <span>⚠️ Daftar Karyawan Terlambat (25 Agustus 2026)</span>
+            </h2>
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-amber-50 text-amber-900 uppercase">
+                        <th class="p-2 border">NIK</th>
+                        <th class="p-2 border">Nama Karyawan</th>
+                        <th class="p-2 border">Shift</th>
+                        <th class="p-2 border">Jam Shift</th>
+                        <th class="p-2 border">Scan Finger / GPS In</th>
+                        <th class="p-2 border">Durasi Telat</th>
+                        <th class="p-2 border">Kategori Keterlambatan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr>
+                        <td class="p-2 border font-mono">EMP-034</td>
+                        <td class="p-2 border font-medium">Annisa Kusuma</td>
+                        <td class="p-2 border">Shift 1</td>
+                        <td class="p-2 border font-mono">07:30 WIB</td>
+                        <td class="p-2 border font-mono text-red-600">09:35:00 WIB</td>
+                        <td class="p-2 border font-bold text-red-600">125 Menit</td>
+                        <td class="p-2 border"><span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">T+15 (> 15 mnt)</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Section Tidak Masuk -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-base font-bold text-rose-800 mb-3 flex items-center space-x-2">
+                <span>🚫 Daftar Karyawan Tidak Masuk Kerja (Alpha / Sakit / Izin)</span>
+            </h2>
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-rose-50 text-rose-900 uppercase">
+                        <th class="p-2 border">NIK</th>
+                        <th class="p-2 border">Nama Karyawan</th>
+                        <th class="p-2 border">Divisi</th>
+                        <th class="p-2 border">Status Kehadiran</th>
+                        <th class="p-2 border">Keterangan / Dokumen Pendukung</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr>
+                        <td class="p-2 border font-mono">EMP-012</td>
+                        <td class="p-2 border font-medium">Lukman Firmansyah</td>
+                        <td class="p-2 border">Digital</td>
+                        <td class="p-2 border"><span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">S (Sakit Approved)</span></td>
+                        <td class="p-2 border text-slate-600">Surat Dokter Klinik Blimbing + Kwitansi Terlampir</td>
+                    </tr>
+                    <tr>
+                        <td class="p-2 border font-mono">EMP-022</td>
+                        <td class="p-2 border font-medium">Budi Santoso</td>
+                        <td class="p-2 border">Cetak</td>
+                        <td class="p-2 border"><span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">A (Alpha / Tanpa Keterangan)</span></td>
+                        <td class="p-2 border text-red-500 font-bold">Belum Ada Pengajuan / Konfirmasi HRD</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

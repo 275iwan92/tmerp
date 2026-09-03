@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 7 — Master Employee & Rekening Bank</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 7: Master Karyawan & Rekening Bank</span>
+        </div>
+        <button onclick="openAddModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded font-semibold">+ Tambah Karyawan Baru</button>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center pb-4 border-b mb-4">
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900">Master Data Karyawan & Rekening Bank</h1>
+                    <p class="text-xs text-slate-500">Pengaturan data finansial, status kerja, dan metode pembayaran gaji (Bank Transfer vs Cash)</p>
+                </div>
+                <div class="flex space-x-2 text-xs">
+                    <input type="text" placeholder="🔍 Cari NIK / Nama / Bank..." class="border px-3 py-1.5 rounded w-56">
+                    <select class="border px-2 py-1.5 rounded"><option>Metode: Semua</option><option>Bank Transfer</option><option>Cash</option></select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 uppercase">
+                            <th class="p-2.5 border">NIK</th>
+                            <th class="p-2.5 border">Nama Lengkap</th>
+                            <th class="p-2.5 border">Divisi / Posisi</th>
+                            <th class="p-2.5 border">Status Kerja</th>
+                            <th class="p-2.5 border">Metode Gaji</th>
+                            <th class="p-2.5 border">Detail Rekening Bank</th>
+                            <th class="p-2.5 border text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-2.5 border font-mono font-bold">EMP-003</td>
+                            <td class="p-2.5 border font-medium">Gani Cahyono</td>
+                            <td class="p-2.5 border">Staff / Mingguan</td>
+                            <td class="p-2.5 border"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold">AKTIF</span></td>
+                            <td class="p-2.5 border"><span class="bg-blue-100 text-blue-800 text-[10px] px-2 py-0.5 rounded font-bold">BANK TRANSFER</span></td>
+                            <td class="p-2.5 border">
+                                <p class="font-bold">BCA - 1234567890</p>
+                                <p class="text-[10px] text-slate-500">a.n. GANI CAHYONO</p>
+                            </td>
+                            <td class="p-2.5 border text-center"><button class="text-blue-600 underline">Edit</button></td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-2.5 border font-mono font-bold">EMP-004</td>
+                            <td class="p-2.5 border font-medium">Toni Wandoyo</td>
+                            <td class="p-2.5 border">Cetak / Operator</td>
+                            <td class="p-2.5 border"><span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded font-bold">AKTIF</span></td>
+                            <td class="p-2.5 border"><span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded font-bold">CASH (TUNAI)</span></td>
+                            <td class="p-2.5 border text-slate-400 font-italic">Tidak Ada Rekening Bank</td>
+                            <td class="p-2.5 border text-center"><button class="text-blue-600 underline">Edit</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function openAddModal() { alert('Modal Tambah Karyawan & No Rekening Siap Ditampilkan!'); }
+    </script>
+</body>
+</html>

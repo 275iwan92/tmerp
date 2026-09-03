@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 4 — Cetak Slip Gaji Resmi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            header, .no-print { display: none !important; }
+            body { background: white; }
+            .print-container { shadow: none; border: none; padding: 0; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center no-print">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 4: Cetak Slip Gaji</span>
+        </div>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2 rounded font-semibold flex items-center space-x-1">
+            <span>🖨️ Cetak Slip Gaji / Save PDF</span>
+        </button>
+    </header>
+
+    <main class="max-w-3xl mx-auto my-6">
+        <div class="bg-white border p-8 rounded-lg shadow-md print-container">
+            <!-- Header Slip -->
+            <div class="flex justify-between items-start border-b-2 border-slate-900 pb-4 mb-4">
+                <div>
+                    <h1 class="font-extrabold text-lg text-slate-900 tracking-tight">PT. TELASIH MAKMUR</h1>
+                    <p class="text-[11px] text-slate-600">Offset Printing & Packaging — Malang, Jawa Timur</p>
+                </div>
+                <div class="text-right">
+                    <span class="bg-slate-100 text-slate-800 font-bold text-xs px-2.5 py-1 rounded border">SLIP GAJI KARYAWAN</span>
+                    <p class="text-[10px] text-slate-500 mt-1">Periode: 22 - 28 Agustus 2026</p>
+                </div>
+            </div>
+
+            <!-- Identitas -->
+            <div class="grid grid-cols-2 gap-4 text-xs mb-6 bg-slate-50 p-3 rounded border">
+                <div>
+                    <p><span class="text-slate-500">NIK:</span> <strong>EMP-003</strong></p>
+                    <p><span class="text-slate-500">Nama:</span> <strong>Gani Cahyono</strong></p>
+                    <p><span class="text-slate-500">Divisi / Posisi:</span> Staff / Mingguan</p>
+                </div>
+                <div>
+                    <p><span class="text-slate-500">Metode Pembayaran:</span> <strong class="text-emerald-700">BANK BCA (123-456-7890)</strong></p>
+                    <p><span class="text-slate-500">Status Kehadiran:</span> 6 Hari Hadir, 0 Telat, 0 Alpha</p>
+                </div>
+            </div>
+
+            <!-- Table Rincian -->
+            <div class="grid grid-cols-2 gap-6 text-xs mb-6">
+                <!-- Pendapatan -->
+                <div>
+                    <h3 class="font-bold border-b text-emerald-700 pb-1 mb-2 uppercase tracking-wider text-[11px]">(+) PENDAPATAN</h3>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between"><span>Gaji Pokok (6 Hari)</span><span class="font-mono">Rp 1.200.000</span></div>
+                        <div class="flex justify-between"><span>Tunjangan Keahlian</span><span class="font-mono">Rp 300.000</span></div>
+                        <div class="flex justify-between"><span>Uang Lembur (180 mnt)</span><span class="font-mono">Rp 85.000</span></div>
+                        <div class="flex justify-between"><span>Uang Roti (Lembur > 2 jam)</span><span class="font-mono">Rp 5.000</span></div>
+                        <div class="flex justify-between font-bold border-t pt-1 text-slate-900"><span>TOTAL GROSS</span><span class="font-mono">Rp 1.590.000</span></div>
+                    </div>
+                </div>
+
+                <!-- Potongan -->
+                <div>
+                    <h3 class="font-bold border-b text-rose-700 pb-1 mb-2 uppercase tracking-wider text-[11px]">(-) POTONGAN & DENDA</h3>
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between"><span>Potongan Prorata KJK</span><span class="font-mono">Rp 0</span></div>
+                        <div class="flex justify-between"><span>Denda Keterlambatan T+5</span><span class="font-mono">Rp 0</span></div>
+                        <div class="flex justify-between"><span>Potongan BPJS Ketenagakerjaan</span><span class="font-mono">Rp 25.000</span></div>
+                        <div class="flex justify-between font-bold border-t pt-1 text-slate-900"><span>TOTAL POTONGAN</span><span class="font-mono">Rp 25.000</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Net Salary -->
+            <div class="bg-emerald-50 border border-emerald-300 p-4 rounded-lg flex justify-between items-center mb-6">
+                <div>
+                    <span class="text-xs font-bold text-emerald-800 uppercase block">GAJI BERSIH DITERIMA (NET SALARY)</span>
+                    <span class="text-[10px] text-emerald-600">Ditransfer ke Rekening BCA a.n Gani Cahyono</span>
+                </div>
+                <span class="text-2xl font-extrabold font-mono text-emerald-900">Rp 1.565.000</span>
+            </div>
+
+            <!-- Tanda Tangan -->
+            <div class="grid grid-cols-2 text-center text-xs text-slate-500 pt-4 border-t">
+                <div>
+                    <p>Penerima,</p>
+                    <div class="h-12"></div>
+                    <p class="font-bold text-slate-800">( Gani Cahyono )</p>
+                </div>
+                <div>
+                    <p>Finance / Payroll Dept,</p>
+                    <div class="h-12"></div>
+                    <p class="font-bold text-slate-800">( Staff Finance )</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

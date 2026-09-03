@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 2 — Review Grid Presensi & Override</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 2: Presensi Review & Override</span>
+        </div>
+        <a href="mockup_03_payroll_batch.html" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded font-semibold">Lanjut ke Payroll Run Batch →</a>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center pb-4 border-b mb-4">
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900">Review Daily Attendance & Form Override</h1>
+                    <p class="text-xs text-slate-500">Auto-matching shift aktif (Termasuk Shift 3 Cross-Day Malam ke Pagi)</p>
+                </div>
+                <div class="flex space-x-2 text-xs">
+                    <input type="date" value="2026-08-25" class="border px-2 py-1 rounded">
+                    <select class="border px-2 py-1 rounded"><option>Semua Divisi</option></select>
+                </div>
+            </div>
+
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600">
+                        <th class="p-2 border">NIK / Nama</th>
+                        <th class="p-2 border">Shift Active</th>
+                        <th class="p-2 border">Finger In</th>
+                        <th class="p-2 border">Finger Out</th>
+                        <th class="p-2 border">Telat (Mnt)</th>
+                        <th class="p-2 border">Status Calculated</th>
+                        <th class="p-2 border text-center">Aksi Override</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr>
+                        <td class="p-2 border font-medium">EMP-003 / Gani Cahyono</td>
+                        <td class="p-2 border"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">SHIFT-1 (07:30-16:30)</span></td>
+                        <td class="p-2 border font-mono">07:28:12</td>
+                        <td class="p-2 border font-mono">16:32:05</td>
+                        <td class="p-2 border">0</td>
+                        <td class="p-2 border"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold">H (Hadir)</span></td>
+                        <td class="p-2 border text-center"><button onclick="openModal('EMP-003')" class="text-blue-600 underline">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td class="p-2 border font-medium">EMP-011 / M Khoirul Aminudin</td>
+                        <td class="p-2 border"><span class="bg-purple-50 text-purple-700 px-2 py-0.5 rounded">SHIFT-3 (22:00-06:00)</span></td>
+                        <td class="p-2 border font-mono">21:54:10</td>
+                        <td class="p-2 border font-mono">06:02:40 (H+1)</td>
+                        <td class="p-2 border">0</td>
+                        <td class="p-2 border"><span class="bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold">H (Hadir)</span></td>
+                        <td class="p-2 border text-center"><button onclick="openModal('EMP-011')" class="text-blue-600 underline">Edit</button></td>
+                    </tr>
+                    <tr class="bg-red-50">
+                        <td class="p-2 border font-medium">EMP-034 / Annisa Kusuma</td>
+                        <td class="p-2 border"><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">SHIFT-1 (07:30-16:30)</span></td>
+                        <td class="p-2 border font-mono text-red-600">09:35:00</td>
+                        <td class="p-2 border font-mono">16:30:00</td>
+                        <td class="p-2 border font-bold text-red-600">125</td>
+                        <td class="p-2 border"><span class="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">A (Alpha/Late)</span></td>
+                        <td class="p-2 border text-center"><button onclick="openModal('EMP-034')" class="bg-blue-600 text-white px-2 py-0.5 rounded font-semibold">✏️ Override Form FDT</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="modal" class="fixed inset-0 bg-slate-900/50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 class="font-bold text-sm mb-3">Override Status Presensi Harian</h3>
+            <div class="space-y-3 text-xs mb-4">
+                <div>
+                    <label class="block font-semibold">Status Baru:</label>
+                    <select class="w-full border rounded p-1.5"><option>IS - Izin Disetujui (Form FDT No. 034 Terlampir)</option></select>
+                </div>
+                <div>
+                    <label class="block font-semibold">Alasan Audit Trail (Min 10 Karakter):</label>
+                    <textarea class="w-full border rounded p-2" placeholder="Masukkan alasan resmi..."></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 text-xs">
+                <button onclick="closeModal()" class="px-3 py-1.5 bg-slate-200 rounded">Batal</button>
+                <button onclick="closeModal()" class="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold">Simpan Override</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() { document.getElementById('modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+    </script>
+</body>
+</html>

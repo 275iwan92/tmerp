@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 3 — Payroll Batch Execution Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 3: Payroll Batch Engine</span>
+        </div>
+        <div class="space-x-2 text-xs">
+            <a href="mockup_04_payslip_print.html" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded font-semibold">Cetak Slip Gaji →</a>
+            <a href="mockup_05_bank_transfer.html" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded font-semibold">Payroll Bank Transfer →</a>
+            <a href="mockup_06_cash_disbursement.html" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded font-semibold">Payroll Cash Roster →</a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="flex justify-between items-center pb-4 border-b mb-6">
+                <div>
+                    <h1 class="text-lg font-bold text-slate-900">Eksekusi Kalkulasi Gaji Batch (Periode Mingguan / Bulanan)</h1>
+                    <p class="text-xs text-slate-500">Mengevaluasi presensi harian terhadap `pyr_status_rule` dan memisahkan metode pembayaran (Bank vs Cash)</p>
+                </div>
+                <span class="bg-amber-100 text-amber-800 font-bold text-xs px-3 py-1 rounded-full border border-amber-300">Status: DRAFT</span>
+            </div>
+
+            <div class="bg-slate-50 border p-5 rounded-lg mb-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="font-bold text-sm">Jalankan Async Payroll Engine</h2>
+                        <p class="text-xs text-slate-500">Menghitung Gaji Pokok, Tunjangan, Overtime, Uang Roti, Denda T+5, dan Potongan Prorata</p>
+                    </div>
+                    <button onclick="runBatch()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded shadow">⚡ Run Calculation Batch</button>
+                </div>
+
+                <div id="prog-box" class="mt-4 hidden">
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span>Memproses 52 Karyawan...</span>
+                        <span id="p-txt">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                        <div id="p-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="result-summary" class="grid grid-cols-4 gap-4 opacity-40 pointer-events-none mb-6">
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <span class="text-xs text-blue-600 font-semibold block uppercase">Total Pegawai</span>
+                    <span class="text-xl font-extrabold text-blue-900">52 Org</span>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+                    <span class="text-xs text-emerald-600 font-semibold block uppercase">Gaji via Bank Transfer</span>
+                    <span class="text-xl font-extrabold text-emerald-900">38 Org (Rp 36.800.000)</span>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg">
+                    <span class="text-xs text-amber-600 font-semibold block uppercase">Gaji via Cash (Tunai)</span>
+                    <span class="text-xl font-extrabold text-amber-900">14 Org (Rp 10.470.000)</span>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                    <span class="text-xs text-purple-600 font-semibold block uppercase">Total Gaji Bersih</span>
+                    <span class="text-xl font-extrabold text-purple-900">Rp 47.270.000</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button id="btn-lock" disabled onclick="finalizePayroll()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-5 py-2.5 rounded font-semibold disabled:opacity-40">🔒 Finalize & Lock Payroll</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function runBatch() {
+            document.getElementById('prog-box').classList.remove('hidden');
+            let p = 0;
+            const inv = setInterval(() => {
+                p += 25;
+                document.getElementById('p-bar').style.width = p + '%';
+                document.getElementById('p-txt').innerText = p + '%';
+                if (p >= 100) {
+                    clearInterval(inv);
+                    document.getElementById('result-summary').classList.remove('opacity-40', 'pointer-events-none');
+                    document.getElementById('btn-lock').disabled = false;
+                    alert('Kalkulasi Selesai dalam 0.38 detik!');
+                }
+            }, 150);
+        }
+
+        function finalizePayroll() {
+            alert('Payroll Locked! Snapshot nilai disimpan ke `pyr_payslip`. Modul Cetak & Transfer Siap Ditampilkan.');
+        }
+    </script>
+</body>
+</html>

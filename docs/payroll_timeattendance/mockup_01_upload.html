@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 1 — Import Data Presensi Fingerprint</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 1: Import Raw Finger Data</span>
+        </div>
+        <span class="text-xs text-slate-400">Role: Payroll Officer / HR Admin</span>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h1 class="text-lg font-bold text-slate-900 mb-1">Unggah File Presensi Fingerprint</h1>
+            <p class="text-xs text-slate-500 mb-6">Mendukung format file hasil ekspor mesin presensi (.csv, .txt, .xlsx). Sistem akan mencocokkan ID Finger ke NIK Karyawan secara otomatis.</p>
+
+            <div class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-500 transition bg-slate-50 cursor-pointer" onclick="document.getElementById('file-input').click()">
+                <div class="text-4xl mb-2">📁</div>
+                <p class="text-sm font-semibold text-slate-700">Klik atau seret file hasil tarikan mesin finger ke sini</p>
+                <p class="text-xs text-slate-400 mt-1">Format yang didukung: .csv, .txt, .xlsx (Maksimal 10 MB)</p>
+                <input type="file" id="file-input" class="hidden" onchange="handleFileSelect(event)">
+            </div>
+
+            <div id="upload-progress" class="mt-6 hidden">
+                <div class="flex justify-between text-xs font-semibold mb-1">
+                    <span id="file-name" class="text-blue-600">DATAFINGER_AUG2026.csv</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="preview-section" class="bg-white rounded-lg shadow p-6 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-bold text-slate-800">Preview Data Log Fingerprint (152 Records)</h2>
+                <button onclick="processToDatabase()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded font-semibold shadow">
+                    💾 Simpan & Eksekusi Matching Shift →
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 uppercase">
+                            <th class="p-2 border">ID Finger</th>
+                            <th class="p-2 border">NIK / Nama Karyawan</th>
+                            <th class="p-2 border">Scan Timestamp</th>
+                            <th class="p-2 border">Device ID</th>
+                            <th class="p-2 border">Status Raw</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        <tr>
+                            <td class="p-2 border font-mono">003</td>
+                            <td class="p-2 border font-medium">EMP-003 / Gani Cahyono</td>
+                            <td class="p-2 border font-mono">2026-08-25 07:28:12</td>
+                            <td class="p-2 border">DEV-FRONT-01</td>
+                            <td class="p-2 border"><span class="bg-green-100 text-green-800 text-[10px] px-2 py-0.5 rounded font-bold">IN</span></td>
+                        </tr>
+                        <tr>
+                            <td class="p-2 border font-mono">011</td>
+                            <td class="p-2 border font-medium">EMP-011 / M Khoirul Aminudin</td>
+                            <td class="p-2 border font-mono">2026-08-25 21:54:10</td>
+                            <td class="p-2 border">DEV-PROD-02</td>
+                            <td class="p-2 border"><span class="bg-purple-100 text-purple-800 text-[10px] px-2 py-0.5 rounded font-bold">IN (Shift 3)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            document.getElementById('file-name').innerText = file.name;
+            document.getElementById('upload-progress').classList.remove('hidden');
+            let p = 0;
+            const inv = setInterval(() => {
+                p += 20;
+                document.getElementById('progress-bar').style.width = p + '%';
+                document.getElementById('progress-percent').innerText = p + '%';
+                if (p >= 100) {
+                    clearInterval(inv);
+                    document.getElementById('preview-section').classList.remove('hidden');
+                }
+            }, 150);
+        }
+
+        function processToDatabase() {
+            alert('Data presensi berhasil disimpan ke tabel `att_finger_raw` dan dipetakan ke shift aktif!');
+            window.location.href = 'mockup_02_daily_grid.html';
+        }
+    </script>
+</body>
+</html>

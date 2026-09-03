@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul 11 — Panel Approval HRD Perizinan & Presensi GPS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+    <header class="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <span class="text-xl font-bold text-blue-400">TELASIH MAKMUR ERP</span>
+            <span class="text-xs bg-slate-800 px-2 py-1 rounded text-slate-300">Modul 11: HR Approval Workflow</span>
+        </div>
+        <span class="text-xs text-emerald-400 font-bold">Role: HR Manager / Admin</span>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h1 class="text-lg font-bold text-slate-900 mb-1">Verifikasi & Approval HRD</h1>
+            <p class="text-xs text-slate-500 mb-6">Mengevaluasi pengajuan perizinan karyawan dan persetujuan presensi GPS luar radius</p>
+
+            <div class="flex border-b space-x-4 text-xs font-bold mb-4">
+                <button class="pb-2 border-b-2 border-blue-600 text-blue-600">Pending Leave Requests (2)</button>
+                <button class="pb-2 text-slate-400 hover:text-slate-600">Pending GPS Location Approvals (1)</button>
+            </div>
+
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="bg-slate-100 text-slate-600 uppercase">
+                        <th class="p-2.5 border">Tgl Pengajuan</th>
+                        <th class="p-2.5 border">NIK / Nama</th>
+                        <th class="p-2.5 border">Jenis</th>
+                        <th class="p-2.5 border">Rentang Tanggal</th>
+                        <th class="p-2.5 border">Alasan & Dokumen</th>
+                        <th class="p-2.5 border text-center">Aksi HRD</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y">
+                    <tr>
+                        <td class="p-2.5 border font-mono">2026-08-25</td>
+                        <td class="p-2.5 border font-medium">EMP-012 / Lukman Firmansyah</td>
+                        <td class="p-2.5 border"><span class="bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-bold">Sakit (S)</span></td>
+                        <td class="p-2.5 border font-mono">2026-08-25 s.d 2026-08-26</td>
+                        <td class="p-2.5 border">
+                            <p>Demam Tinggi (Surat Dokter & Kwitansi Klinik Blimbing)</p>
+                            <a href="#" class="text-blue-600 underline text-[10px]">📄 Lihat Lampiran Dokumen</a>
+                        </td>
+                        <td class="p-2.5 border text-center space-x-1">
+                            <button onclick="approve()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded font-bold text-[11px]">Approve ✅</button>
+                            <button onclick="reject()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1 rounded font-bold text-[11px]">Reject ❌</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        function approve() { alert('Pengajuan resmi DISATUJUI oleh HRD! System otomatis mengubah status di Daily Attendance Grid.'); }
+        function reject() { alert('Pengajuan DITOLAK!'); }
+    </script>
+</body>
+</html>
