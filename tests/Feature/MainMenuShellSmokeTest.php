@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Sys\SecUser;
+use App\Support\Branding\Brand;
 use Tests\TestCase;
 
 class MainMenuShellSmokeTest extends TestCase
@@ -15,7 +16,11 @@ class MainMenuShellSmokeTest extends TestCase
         $response = $this->get('/menu');
 
         $response->assertOk();
-        $response->assertSee('TELASIH MAKMUR');
+        // FIX 2026-09-03: brand name dulu literal "TELASIH MAKMUR" hardcode di
+        // <title>, sekarang configurable via Brand::name() (docs/configurationstandard.md,
+        // dibangun sesi sebelumnya) -- default "ERP TM", bisa diganti admin.
+        // Assert dinamis, bukan string usang.
+        $response->assertSee(Brand::name());
         // Modul dari sys_app_menu harus muncul di mega menu (admin bypass semua izin).
         $response->assertSee('Sales');
         $response->assertSee('Procurement');
