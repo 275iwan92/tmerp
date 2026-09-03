@@ -102,6 +102,7 @@ return new class extends Migration
                 $created[] = [
                     'inquiry_id' => $inquiryId,
                     'part_id' => $partId,
+                    'type' => $type,
                     'confirmed' => $confirmed,
                     'product_draft_name' => $prodName,
                     'customer_id' => $custId,
@@ -109,9 +110,16 @@ return new class extends Migration
             }
         }
 
-        // ProDev Mode #1: ambil 25 dari inkuiri yang CONFIRMED (36 tersedia),
-        // 16 pertama -> layout DRAFT, 9 sisanya -> layout CONFIRMED.
-        $confirmedPool = array_values(array_filter($created, fn ($r) => $r['confirmed']));
+        // ProDev Mode #1: HANYA boleh bersumber dari inkuiri tipe NEW/REVISE yang
+        // CONFIRMED (CLAUDE.md §4 LOCKED -- Mode #1 = "utk Inquiry BARU"; REVISE
+        // masuk akal juga krn spec-nya BERUBAH, jadi Master Card lama tak lagi
+        // valid, perlu ProDev ulang). RECALC (spec SAMA, cuma harga bahan
+        // berubah) SENGAJA DIKECUALIKAN -- tidak ada alasan re-run ProDev kalau
+        // desain fisiknya tidak berubah sama sekali, layout lama masih valid.
+        // Pool: 17 NEW-confirmed + 10 REVISE-confirmed = 27, cukup utk 25 --
+        // 9 RECALC-confirmed & sisa 2 REVISE-confirmed sengaja dibiarkan
+        // "confirmed tapi belum dikirim ke ProDev" (backlog realistis).
+        $confirmedPool = array_values(array_filter($created, fn ($r) => $r['confirmed'] && in_array($r['type'], ['NEW', 'REVISE'], true)));
         $mode1 = array_slice($confirmedPool, 0, 25);
 
         foreach ($mode1 as $idx => $row) {
