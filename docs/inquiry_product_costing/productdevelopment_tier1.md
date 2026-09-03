@@ -1,5 +1,35 @@
 # Product Development — Sub-Modul Baru (Tier 1: Arsitektur & Scope)
 
+# 🛑🛑🛑 WAJIB BACA — MODE #1 vs MODE #2, JANGAN SAMPAI SALAH LAGI 🛑🛑🛑
+
+# ProDev & ProCost PUNYA 2 MODE INDEPENDEN. INI KESALAHAN FATAL 2026-09-03
+# YANG TIDAK BOLEH TERULANG. BACA CLAUDE.md §4 "VITAL" SEBELUM MENYENTUH
+# LAYAR PRODEV/PROCOST APA PUN.
+
+> ### MODE #1 — INTEGRASI (utk Inquiry doc-type **BARU**)
+> Inquiry Product → ProDev (imposition/nesting, ambil `iqp_part`) → ProCost
+> (Ambil Data dari `prod_layout_group`). **STATUS 2026-09-03: link Inquiry→
+> ProDev BELUM ADA** — 0 jalur kode bikin `prod_part` baru, 0 link dari layar
+> Inquiry ke ProDev. Link ProDev→ProCost ("Ambil Data") SUDAH ADA & jalan.
+>
+> ### MODE #2 — MANUAL/STANDALONE (mencerminkan proses riil skrng: Excel + Adobe Illustrator)
+> ProDev **TIDAK melihat Inquiry Product sama sekali** — berdiri sendiri.
+> ProCost punya padanannya: officer input semua parameter manual (panjang/
+> lebar/running meter/dst) dibantu **tabel NILAI DEFAULT**. Ini BUKAN gap,
+> BUKAN "versi belum lengkap" dari Mode #1 — 2 pintu masuk SAH & SENGAJA
+> terpisah. **JANGAN pernah usulkan "perbaiki" Mode #2 supaya lihat Inquiry**
+> — itu justru merusaknya.
+>
+> **Syarat mutlak**: HPP hasil Mode #1 & Mode #2 harus SAMA utk geometri
+> setara — 2 jalur INPUT DATA ke `CostingEngine` yang sama, bukan 2 logika
+> harga berbeda.
+>
+> Detail lengkap: `CLAUDE.md` §4 (bullet "[VITAL] ProDev & ProCost — 2 mode
+> independen"), memory `project_prodev_procost_2mode_architecture.md` +
+> `feedback_prodev_must_pull_from_inquiry_new.md`.
+
+---
+
 > **Status FASE 1: SELESAI & LIVE (2026-09-02, sesi autonomous scheduled task
 > `tmerp-backlog-autowork-1700`).** Checklist eksplisit tercapai: skema DB
 > (§4.2/4.2a) + model Eloquent + ENGINE Tingkat 1 & Tingkat 2 (§4.3a) + layar
@@ -9,12 +39,12 @@
 > DC+SHEET/DC+SF) + toggle Manual/Ambil-Data per-part di `inquiry/costing`.
 > Semua diverifikasi HTTP kernel 200 + `Livewire::test()` end-to-end (bukan
 > asumsi). Detail lengkap tiap commit: lihat `docs/LOG_JOB_DONE.md` tanggal
-> 2026-09-02 (entri "ProDev Fase 1"). **BELUM dikerjakan** (dicatat di
-> `docs/BACKLOG.md`, bukan blocker Fase 1 sesuai checklist eksplisit di §nya
-> sendiri): Tool #10 (Intra-Product Combiner, gabung/pisah part), Tool #2
-> (Pcs→Plano/Best Sheet Finder), Tool #4 (Die-Rule Estimator), alokasi biaya
-> proporsional utk `prod_layout_group` multi-part (baru relevan setelah Tool
-> #10 ada — saat ini tiap group cuma 1 part).
+> 2026-09-02 (entri "ProDev Fase 1"). **UPDATE 2026-09-03**: Tool #10
+> (Intra-Product Combiner), Tool #2 (Best Sheet Finder), Tool #4 (Die-Rule
+> Estimator), alokasi biaya proporsional multi-part — SEMUA SUDAH SELESAI
+> (lihat `docs/LOG_JOB_DONE.md` tanggal 2026-09-03 "R30"). **GAP PALING
+> KRITIS SEKARANG**: link Inquiry(BARU)→ProDev Mode #1 di atas — belum ada
+> sama sekali, ini yang harus dikerjakan berikutnya, bukan tool ProDev lagi.
 >
 > Dokumen di bawah ini TETAP dipertahankan APA ADANYA sbg catatan desain asli
 > (termasuk kalimat "belum dikerjakan" pada bagian-bagian yang SEKARANG sudah

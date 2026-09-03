@@ -166,6 +166,38 @@ transaksi = `iqp_costing`, ikut inquiry).
 - **Rate fluktuatif** (coating/film/sheet): pola versioned + `is_active`; **1 baris
   `is_active=1` per jenis** = harga berlaku. `effective_date` untuk riwayat.
 - **Engine pattern:** "engine suggests, officer confirms" (scheduling, imposition, routing).
+- **[VITAL] ProDev & ProCost — 2 mode independen, JANGAN dicampur** (dikunci user
+  2026-09-03, jangan tanya ulang ke user soal ini):
+  - **Inquiry Product punya 3 doc-type** (`inquiryproduct_flow.md` §6, locked Jo):
+    **BARU** (dari nol, Master Product belum ada), **REVISI** (reorder, spec
+    BERUBAH), **REKALKULASI** (reorder, spec SAMA, cuma harga bahan naik/turun).
+    `iqp_costing.calc_type` di kode SAAT INI hardcode `'NEW'` — 3 mode ini baru
+    konsep dokumen, belum ada percabangan behavior nyata.
+  - **ProDev Mode #1 (integrasi)** — utk Inquiry BARU: ProDev **HARUS** ambil/
+    berawal dari `iqp_part` (seed `prod_part` baru dari spec kasar Inquiry).
+    **STATUS 2026-09-03: LINK INI BELUM ADA** — 0 jalur kode bikin `prod_part`
+    baru, 0 link dari layar Inquiry mana pun ke ProDev. Ini gap nyata yang
+    perlu diperbaiki, bukan sudah selesai.
+  - **ProDev Mode #2 (manual/standalone)** — ProDev bekerja SENDIRI, **TIDAK
+    melihat Inquiry Product sama sekali** — mencerminkan proses manual riil
+    yang SEKARANG masih pakai Excel + Adobe Illustrator (didigitalkan apa
+    adanya). Ini BUKAN gap, BUKAN sesuatu yang perlu "diperbaiki" jadi kayak
+    Mode #1 — 2 pintu masuk yang SENGAJA terpisah & sah keduanya.
+  - **ProCost Mode #1 (Ambil Data)** — tarik dari `prod_layout_group` yang
+    CONFIRMED di ProDev. **SUDAH ADA & jalan** (`costing.blade.php::
+    pickLayoutGroup()`), bukan sesuatu yang baru dibangun.
+  - **ProCost Mode #2 (manual/standalone)** — officer input SEMUA parameter
+    sendiri (panjang, lebar, running meter, dst), dibantu **tabel NILAI
+    DEFAULT** (referensi nilai awal — perlu diklarifikasi apakah maksudnya
+    `sys_constant` category=PRODUCTION/group=COSTING yang sudah ada, atau
+    tabel lain yang belum dibangun — JANGAN asumsi, cek/tanya dulu kalau
+    relevan). Ini toggle `data_source=MANUAL` yang sudah ada di Costing Hub.
+  - **Syarat mutlak**: HPP hasil Mode #1 dan Mode #2 **HARUS SAMA** utk
+    geometri yang setara — keduanya cuma 2 JALUR INPUT DATA ke `CostingEngine`
+    yang SAMA, bukan 2 logika harga berbeda.
+  - Detail lengkap & riwayat investigasi: memory
+    `project_prodev_procost_2mode_architecture.md` +
+    `feedback_prodev_must_pull_from_inquiry_new.md`.
 - **Costing rahasia (Sisi A):** HPP/margin hanya Costing+Direksi. Publish (approve
   Direksi) = deklasifikasi harga ke Sisi B (Sales).
 - **Due date** = 14 hari kerja dari **approval prove FISIK** (bukan PO/mockup).
