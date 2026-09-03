@@ -67,6 +67,21 @@
   11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
   melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #12)
+
+- **§6 Production — `SchedulingRuleEngine::applySequencing()` tak lagi
+  1-rule-only.** Sebelumnya `$rules->first()` -- rule SEQUENCING ke-2/ke-3
+  dst utk resource yang sama diam-diam diabaikan. Fix: SEMUA rule aktif
+  diterapkan, urutan `rule_id` ASC (rule dibuat lebih dulu = kriteria
+  UTAMA, berikutnya = tie-breaker) via chained stable sort (dijalankan
+  MUNDUR -- tie-breaker duluan, utama terakhir -- supaya multi-key sort
+  benar; usort/uasort PHP 8+ terjamin stabil). `prd_scheduling_rule` tak
+  punya kolom priority eksplisit, urutan pembuatan dipakai sbg proxy
+  (1 rule = perilaku identik sebelumnya, backward-compatible). Diverifikasi
+  via tinker (2 rule sintetis dlm transaction rollback + 4 operation
+  in-memory qty berduplikat): hasil urutan 3,2,4,1 -- persis sesuai
+  ekspektasi qty ASC utama + seq_no DESC tie-break.
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #11)
 
 - **§6 Production — Master Card tab WO Detail kini tampilkan artwork

@@ -287,7 +287,12 @@ sebelum eksekusi):
   (legacy/gap pencatatan). Diverifikasi 2 skenario (qty_good dipakai +
   fallback legacy) via tinker sintetis dlm transaction rollback, plus 6
   test `ProductionWoGenerationTest` tetap lolos. Lihat `docs/LOG_JOB_DONE.md`.
-- `SchedulingRuleEngine::applySequencing()` masih 1-rule-only.
+- ~~`SchedulingRuleEngine::applySequencing()` masih 1-rule-only~~ **SELESAI
+  2026-09-03** — sekarang terapkan SEMUA rule SEQUENCING aktif utk resource
+  yg sama (bukan cuma `->first()`), urutan `rule_id` ASC = kriteria utama,
+  rule berikutnya = tie-breaker (chained stable sort). `prd_scheduling_rule`
+  tak punya kolom priority eksplisit, jadi urutan pembuatan dipakai sbg
+  proxy. Lihat `docs/LOG_JOB_DONE.md`.
 - Decision Feedback calibration loop masih sebatas log, belum ada loop
   belajar sungguhan.
 - MTS Forecast → WO auto-replenishment generator belum ditulis (entry +

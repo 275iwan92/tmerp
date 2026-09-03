@@ -64,21 +64,37 @@ class SchedulingRuleEngine
      *
      * @param  Collection<int, PrdWoOperation>  $sortedByPriority  sudah terurut dari rank()
      */
+    /**
+     * FIX 2026-09-03 (docs/BACKLOG.md §6 "applySequencing masih 1-rule-only"):
+     * dulu cuma `$rules->first()` -- rule SEQUENCING ke-2/ke-3 dst utk resource
+     * yang sama diam-diam diabaikan. `prd_scheduling_rule` TAK PUNYA kolom
+     * priority/sort_order eksplisit, jadi urutan aplikasi rule dipakai
+     * `rule_id` ASC (rule yang dibuat lebih dulu = kriteria UTAMA, rule
+     * berikutnya = tie-breaker) -- dijalankan MUNDUR (tie-breaker duluan,
+     * utama terakhir) supaya multi-key sort benar via stable sort PHP 8+
+     * (usort/uasort terjamin stabil sejak PHP 8.0, dipakai Collection::sortBy).
+     * 1 rule = perilaku identik sebelumnya (backward-compatible).
+     */
     public function applySequencing(Collection $sortedByPriority, int $machineId, string $processName): Collection
     {
-        $rules = $this->activeRulesFor($machineId, $processName, 'SEQUENCING');
+        $rules = $this->activeRulesFor($machineId, $processName, 'SEQUENCING')->sortBy('rule_id');
 
         if ($rules->isEmpty() || $sortedByPriority->count() < 2) {
             return $sortedByPriority;
         }
 
-        $rule = $rules->first();
-        $field = $rule->condition_field;
-        $direction = $rule->condition_operator === 'SORT_DESC' ? 'desc' : 'asc';
+        $result = $sortedByPriority;
 
-        return $direction === 'asc'
-            ? $sortedByPriority->sortBy(fn (PrdWoOperation $t) => data_get($t, $field))->values()
-            : $sortedByPriority->sortByDesc(fn (PrdWoOperation $t) => data_get($t, $field))->values();
+        foreach ($rules->reverse() as $rule) {
+            $field = $rule->condition_field;
+            $direction = $rule->condition_operator === 'SORT_DESC' ? 'desc' : 'asc';
+
+            $result = $direction === 'asc'
+                ? $result->sortBy(fn (PrdWoOperation $t) => data_get($t, $field))->values()
+                : $result->sortByDesc(fn (PrdWoOperation $t) => data_get($t, $field))->values();
+        }
+
+        return $result;
     }
 
     private function activeRulesFor(int $machineId, string $processName, string $type): Collection
