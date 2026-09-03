@@ -166,6 +166,18 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         return ProdLayoutGroup::with(['product', 'parts'])->where('status', 'CONFIRMED')->orderByDesc('id_layout_group')->limit(100)->get();
     }
 
+    // Instruksi user 2026-09-03: sembunyikan FORMULA/breakdown HPP (bukan field
+    // input, bukan harga jual final -- itu tetap kelihatan spy staf Costing tetap
+    // bisa kerja normal atur margin/toleransi) dari siapa pun KECUALI login
+    // literal 'johiwan'. LEBIH KETAT dari aturan lama CLAUDE.md §4 "Costing
+    // rahasia Sisi A" (grup Costing+Direksi umum) -- ini 1 login spesifik,
+    // sesuai instruksi user, JANGAN dilonggarkan sendiri ke is_admin/grup.
+    #[Computed]
+    public function canSeeFormula(): bool
+    {
+        return Auth::user()->login === 'johiwan';
+    }
+
     // Toggle Manual <-> Ambil Data per part (keputusan user: per-part, bukan
     // per-costing -- tier1 §7 poin 4). Balik ke MANUAL cuma lepas link, TIDAK
     // menghapus nilai i_panjang_plano_cm/dst yang sudah ke-auto-fill (officer
@@ -615,22 +627,29 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     @if ($part->c_total_part_cost_pc !== null)
-                        @if ($part->part_type_code === 'SHEET_DIGITAL')
-                            <div class="bg-[#eef3fb] border border-[#c3d8f5] rounded-md px-3 py-2 text-[11.5px] text-[#1560a8] flex gap-4 flex-wrap mb-2">
-                                <span>Sheet {{ $part->c_panjang_sheet_cm }}×{{ $part->c_lebar_sheet_cm }}cm</span>
-                                <span>Isi trim: <b>{{ $part->c_isi_trim }}</b></span>
-                                <span>Lebar trim: <b>{{ $part->c_lebar_trim_cm }}cm</b></span>
-                                <span>Running meter: <b>{{ number_format($part->c_running_meter, 2) }}</b></span>
-                                <span>Diskon/surcharge: <b>{{ $part->c_discount_rm }}</b></span>
+                        @if ($this->canSeeFormula)
+                            @if ($part->part_type_code === 'SHEET_DIGITAL')
+                                <div class="bg-[#eef3fb] border border-[#c3d8f5] rounded-md px-3 py-2 text-[11.5px] text-[#1560a8] flex gap-4 flex-wrap mb-2">
+                                    <span>Sheet {{ $part->c_panjang_sheet_cm }}×{{ $part->c_lebar_sheet_cm }}cm</span>
+                                    <span>Isi trim: <b>{{ $part->c_isi_trim }}</b></span>
+                                    <span>Lebar trim: <b>{{ $part->c_lebar_trim_cm }}cm</b></span>
+                                    <span>Running meter: <b>{{ number_format($part->c_running_meter, 2) }}</b></span>
+                                    <span>Diskon/surcharge: <b>{{ $part->c_discount_rm }}</b></span>
+                                </div>
+                            @endif
+                            <div class="mt-1 bg-[#f0f7f4] border border-[#c6e5d5] rounded-md px-3 py-2 text-[11.5px] text-[#177a4b] flex gap-4 flex-wrap">
+                                <span>Bahan: <b>{{ number_format($part->c_paper_cost_pc, 2) }}</b></span>
+                                <span>Proses: <b>{{ number_format($part->c_cetak_cost_pc + $part->c_plong_cost_pc + $part->c_lem_cost_pc, 2) }}</b></span>
+                                <span>Coating: <b>{{ number_format($part->c_total_coating_pc, 2) }}</b></span>
+                                <span>Tooling (order): <b>{{ number_format($part->c_tooling_cost_order, 0) }}</b></span>
+                                <span>Total/pc (tanpa tooling): <b>{{ number_format($part->c_total_part_cost_pc, 2) }}</b></span>
+                            </div>
+                        @else
+                            {{-- Instruksi user 2026-09-03: breakdown formula HPP cuma login johiwan --}}
+                            <div class="mt-1 bg-[#f4f6fa] border border-[#d7dbe2] rounded-md px-3 py-2 text-[11.5px] text-muted flex items-center gap-1.5">
+                                🔒 Detail perhitungan disembunyikan — sudah dihitung, hasil akhir ada di Ladder Harga di bawah.
                             </div>
                         @endif
-                        <div class="mt-1 bg-[#f0f7f4] border border-[#c6e5d5] rounded-md px-3 py-2 text-[11.5px] text-[#177a4b] flex gap-4 flex-wrap">
-                            <span>Bahan: <b>{{ number_format($part->c_paper_cost_pc, 2) }}</b></span>
-                            <span>Proses: <b>{{ number_format($part->c_cetak_cost_pc + $part->c_plong_cost_pc + $part->c_lem_cost_pc, 2) }}</b></span>
-                            <span>Coating: <b>{{ number_format($part->c_total_coating_pc, 2) }}</b></span>
-                            <span>Tooling (order): <b>{{ number_format($part->c_tooling_cost_order, 0) }}</b></span>
-                            <span>Total/pc (tanpa tooling): <b>{{ number_format($part->c_total_part_cost_pc, 2) }}</b></span>
-                        </div>
                     @endif
                 </div>
             @empty
@@ -663,7 +682,13 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                                 <x-form.select wire:change="updateTier({{ $tier->id_price_tier }}, 'rounding_mode', $event.target.value)" class="!py-1" :placeholder="false"
                                     :selected="$tier->rounding_mode" :options="['NEAREST' => 'NEAREST', 'UP' => 'UP', 'DOWN' => 'DOWN']" />
                             </td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $tier->c_hpp_pc !== null ? number_format($tier->c_hpp_pc, 2) : '—' }}</td>
+                            <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                @if ($this->canSeeFormula)
+                                    {{ $tier->c_hpp_pc !== null ? number_format($tier->c_hpp_pc, 2) : '—' }}
+                                @else
+                                    🔒
+                                @endif
+                            </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5] font-bold text-navy">{{ $tier->price_per_pcs !== null ? number_format($tier->price_per_pcs, 2) : '—' }}</td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $tier->c_after_ppn_pc !== null ? number_format($tier->c_after_ppn_pc, 2) : '—' }}</td>
                         </tr>
