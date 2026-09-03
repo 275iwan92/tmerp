@@ -443,6 +443,28 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
         return $names->isNotEmpty() ? $names->implode(', ') : 'Pengguna';
     }
 
+    // Item FLAT dropdown avatar (Pesan & Info + Akun), sumbernya sys_user_menu
+    // -- lihat App\Models\Sys\SysUserMenu docblock kenapa Configuration/Theme
+    // TIDAK ikut sini (tetap hardcode di bawah, terlalu bespoke).
+    #[Computed]
+    public function userMenuItems()
+    {
+        $user = Auth::user();
+
+        return \App\Models\Sys\SysUserMenu::query()
+            ->where('activate', 1)
+            ->whereIn('section', ['Pesan & Info', 'Akun'])
+            ->orderBy('sort_order')
+            ->get()
+            ->filter(fn ($item) => match ($item->visibility) {
+                'employee_linked' => (bool) $user->employee_id,
+                'non_employee_linked' => ! $user->employee_id,
+                'setup_non_admin' => $user->canSetup() && ! $user->is_admin,
+                default => true,
+            })
+            ->groupBy('section');
+    }
+
     public function saveProfile(): void
     {
         $this->validate([
@@ -772,45 +794,36 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                         </div>
                     </div>
                     <div class="um-list">
-                        <div class="um-cap">Pesan &amp; info</div>
-                        <button type="button" class="um-item" @click="ddOpen = false; chatOpen = true"><i class="fa-solid fa-comment-dots"></i> Chat
-                            @if ($this->unreadChatCount > 0)<span class="um-count">{{ $this->unreadChatCount }}</span>@endif
-                        </button>
-                        <button type="button" class="um-item" @click="ddOpen = false; notifOpen = true"><i class="fa-solid fa-bell"></i> Notifikasi
-                            @if ($this->unreadNotifCount > 0)<span class="um-count">{{ $this->unreadNotifCount }}</span>@endif
-                        </button>
-                        <button type="button" class="um-item" @click="ddOpen = false; aiOpen = true"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--sh-violet)"></i> Asisten AI</button>
-                        <div class="um-sep"></div>
-                        <div class="um-cap">Akun</div>
-                        @if (Auth::user()->employee_id)
-                            {{-- Akun tertaut karyawan -- Security TETAP di sini (dikecualikan dari
-                            grup Configuration di bawah, instruksi user 2026-09-03). --}}
-                            <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="fa-solid fa-shield-halved"></i> My Security</a>
-                        @else
-                            {{-- Fallback KHUSUS akun tanpa employee_id (mis. admin teknis) --
-                            Portal Karyawan/User Configuration sama sekali tidak bisa diakses akun ini. --}}
-                            <button type="button" class="um-item" @click="ddOpen = false; profileOpen = true"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
-                            <button type="button" class="um-item" @click="ddOpen = false; passwordOpen = true"><i class="fa-solid fa-key"></i> Ubah password</button>
-                        @endif
-                        @if (Auth::user()->canSetup() && ! Auth::user()->is_admin)
-                            {{-- Full admin (is_admin) sudah punya jalur sendiri: "Account Security"
-                            dipasak di bagian bawah sidebar kiri (lihat <aside> di atas). Item ini
-                            cuma utk user yg cuma dapat akses modul SETUP tanpa is_admin penuh. --}}
-                            <button type="button" class="um-item" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-gear"></i> Pengaturan (Setup)</button>
-                        @endif
-                        {{-- Bantuan & Support -- GABUNGAN (2026-08-30, instruksi user "Combine Help
-                        and support yang ticketing and Help and support yang menjelaskan segala
-                        hal") dari 2 menu terpisah sebelumnya (Panduan Penggunaan + modal tiket
-                        Help & Support) jadi SATU tempat (resources/views/pages/help/index.blade.php,
-                        3 sub-menu: Tiket/Cara Pakai/Modul). target="_blank" (bukan openTab() shell)
-                        -- halaman referensi enak dibuka di tab terpisah sambil tetap kerja di tab
-                        utama. Konteks layar aktif ikut terbawa ke tab Tiket (sama spirit dgn
-                        partials/f1-help-hotkey.blade.php yg pakai document.title). --}}
-                        <button type="button" class="um-item" title="Jalan pintas: tekan F1 di mana saja"
-                            @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
-                            <i class="fa-solid fa-circle-question"></i> Bantuan &amp; Support <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
-                        </button>
-                        <div class="um-sep"></div>
+                        {{-- Item flat (Pesan & Info + Akun) data-driven dari sys_user_menu
+                        (App\Models\Sys\SysUserMenu, BACKLOG.md §10 "QUEUE item #9") -- label/
+                        icon/urutan/tampil-tidaknya bisa diubah lewat DB tanpa deploy. Widget
+                        Configuration (Theme/Bahasa/User Configuration) di bawah TETAP hardcode,
+                        terlalu bespoke utk baris generik. --}}
+                        @foreach ($this->userMenuItems as $section => $items)
+                            <div class="um-cap">{{ $section === 'Pesan & Info' ? 'Pesan & info' : $section }}</div>
+                            @foreach ($items as $item)
+                                @switch($item->code)
+                                    @case('UM_HELP')
+                                        {{-- Bespoke: target="_blank" + ctx dinamis dari tab aktif (2026-08-30). --}}
+                                        <button type="button" class="um-item" title="Jalan pintas: tekan F1 di mana saja"
+                                            @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
+                                            <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
+                                        </button>
+                                        @break
+                                    @case('UM_MYSECURITY')
+                                        <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="{{ $item->icon }}"></i> {{ $item->label }}</a>
+                                        @break
+                                    @default
+                                        <button type="button" class="um-item"
+                                            @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">
+                                            <i class="{{ $item->icon }}"></i> {{ $item->label }}
+                                            @if ($item->badge_source === 'chat' && $this->unreadChatCount > 0)<span class="um-count">{{ $this->unreadChatCount }}</span>@endif
+                                            @if ($item->badge_source === 'notif' && $this->unreadNotifCount > 0)<span class="um-count">{{ $this->unreadNotifCount }}</span>@endif
+                                        </button>
+                                @endswitch
+                            @endforeach
+                            <div class="um-sep"></div>
+                        @endforeach
                         {{-- Grup "Configuration" (instruksi user 2026-09-03, "agar menghemat menu") --
                         gabungan Tema+Bahasa+Portal Karyawan+Aktivitas saya yang tadinya 4 item/blok
                         terpisah (Tema-nya sendiri makan banyak ruang vertikal, matrix 4x3) jadi 1
