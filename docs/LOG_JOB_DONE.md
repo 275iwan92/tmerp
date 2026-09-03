@@ -67,6 +67,22 @@
   11 mockup HTML + DDL, **belum dipakai/diverifikasi**, CLAUDE.md tetap
   melarang mulai implementasi Payroll tanpa keputusan desain eksplisit).
 
+## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #11)
+
+- **§6 Production — Master Card tab WO Detail kini tampilkan artwork
+  nyata (bukan placeholder statis).** `wo-entry.blade.php` sebelumnya
+  SELALU render "Artwork belum tersimpan" tanpa 1 pun query ke DB (murni
+  dekoratif). Fix: 3 computed baru -- `prodPartForArtwork()` (jembatan
+  iqp_part->prod_part via `product_id`+`part_code` teks, pola SAMA yg
+  sudah dipakai file ini utk lookup rate mesin/karyawan, BUKAN bikin pola
+  baru), `officialArtwork()` (query nyata ke `prod_part_artwork`, tabelnya
+  sendiri masih 0 baris tapi sekarang genuinely reachable), `prodevArtwork()`
+  (fallback ke `prod_part_attachment` JPEG dari ProDev Fase 1 kalau artwork
+  resmi belum ada, dgn badge peringatan "belum resmi"). Diverifikasi
+  `Livewire::test()`: kasus tanpa data (null aman, tak crash) + kasus
+  dgn attachment ProDev sintetis dlm transaction rollback (fallback
+  terdeteksi benar). `npm run build` dijalankan.
+
 ## 2026-09-03 (sesi autonomous scheduled task `tmerp-backlog-autowork-1700`, lanjutan Fase 2 #10)
 
 - **§6 Production — `MachineCalendarService` kini sadar hari libur & shift

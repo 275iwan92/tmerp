@@ -307,8 +307,16 @@ sebelum eksekusi):
 - ~~Qty Kebutuhan BOM belum dikalikan faktor Imposition~~ **SELESAI
   2026-09-02** — dibagi `up_count` dari `iqp_layout` CONFIRMED (fallback
   qty mentah kalau imposition belum dikonfirmasi). Lihat `docs/LOG_JOB_DONE.md`.
-- `prod_part_artwork` kosong di semua baris — Master Card tab tidak bisa
-  tampilkan foto produk/dieline asli, masih placeholder.
+- ~~`prod_part_artwork` kosong — Master Card tab masih placeholder statis~~
+  **SELESAI 2026-09-03** — sekarang query nyata + fallback ke referensi
+  ProDev (`prod_part_attachment` JPEG, dibangun sesi ProDev Fase 1) kalau
+  artwork resmi belum ada, dijembatani product_id+part_code (pola existing
+  di file yg sama, iqp_part->prod_part FK asli tetap belum ada — gap itu
+  sendiri MASIH terbuka, lihat item WO-part convergence di bawah). `prod_part_artwork`
+  itu sendiri MASIH kosong (0 baris) — cuma layarnya sekarang genuinely
+  bisa tampilkan begitu ada yg diisi (lewat proses approval artwork resmi,
+  belum ada layar utk itu) ATAU sementara pakai referensi ProDev. Lihat
+  `docs/LOG_JOB_DONE.md`.
 - **F10-F14 & F18-F20** (MRP netting, Material Substitution/Cutting Yield
   engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
   Interruption Profile reporting) — semua secara eksplisit ditunda user,

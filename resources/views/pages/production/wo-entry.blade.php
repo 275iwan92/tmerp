@@ -201,6 +201,58 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             ->first();
     }
 
+    // docs/BACKLOG.md §6 "prod_part_artwork kosong -- Master Card tab tak bisa
+    // tampilkan foto produk/dieline asli". FIX 2026-09-03: query nyata (blade
+    // sebelumnya placeholder statis TANPA query sama sekali) + fallback ke
+    // referensi ProDev (prod_part_attachment JPEG, dibangun sesi ini) kalau
+    // artwork resmi belum ada. Jembatan iqp_part->prod_part pakai pola SAMA
+    // yang SUDAH established di file ini (product_id+part_code teks, lihat
+    // targetDefaultRates() di bawah) -- part_id FK asli iqp_part->prod_part
+    // memang belum ada (BACKLOG §6 gap lama), bukan bikin pola baru.
+    #[Computed]
+    public function prodPartForArtwork(): ?object
+    {
+        if (! $this->workOrder->product_id || ! $this->workOrder->part_code) {
+            return null;
+        }
+
+        return DB::connection('tm2mst')->table('prod_part')
+            ->where('product_id', $this->workOrder->product_id)
+            ->where('part_code', $this->workOrder->part_code)
+            ->first();
+    }
+
+    #[Computed]
+    public function officialArtwork(): ?object
+    {
+        $part = $this->prodPartForArtwork;
+
+        if (! $part) {
+            return null;
+        }
+
+        return DB::connection('tm2mst')->table('prod_part_artwork')
+            ->where('part_id', $part->id_part)
+            ->where('activate', true)
+            ->first();
+    }
+
+    #[Computed]
+    public function prodevArtwork(): ?object
+    {
+        $part = $this->prodPartForArtwork;
+
+        if (! $part) {
+            return null;
+        }
+
+        return DB::connection('tm2mst')->table('prod_part_attachment')
+            ->where('part_id', $part->id_part)
+            ->where('file_type', 'JPEG')
+            ->orderByDesc('uploaded_at')
+            ->first();
+    }
+
     #[Computed]
     public function masterCardSignoff()
     {
@@ -854,15 +906,24 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     {{-- PART #5: artwork + dieline (potong/lipat) + anotasi dimensi --}}
                     <div class="p-3 border-b md:border-b-0 md:border-r border-[#eef1f5] bg-[#fbfcfe]">
                         <div class="relative bg-white border border-[#e2e6ee] rounded-lg overflow-hidden aspect-[4/5] flex items-center justify-center p-5">
-                            <div class="relative w-full h-full border-2 border-navy rounded-sm bg-[repeating-linear-gradient(115deg,#f4f6fa_0_10px,#eef1f6_10px_20px)]">
-                                <div class="absolute border-b-[1.5px] border-dashed border-[#2c7be5]" style="left:0;right:0;top:24%"></div>
-                                <div class="absolute border-b-[1.5px] border-dashed border-[#2c7be5]" style="left:0;right:0;bottom:22%"></div>
-                                <div class="absolute inset-0 border-2 border-[#dc2626] rounded-sm pointer-events-none"></div>
-                                <div class="absolute inset-0 flex items-center justify-center text-center px-3">
-                                    <span class="text-[10.5px] font-semibold text-[#8a94a6]">Artwork belum tersimpan<br><span class="font-mono text-[9px]">prod_part_artwork</span></span>
+                            @if ($this->officialArtwork)
+                                <img src="{{ asset('storage/'.$this->officialArtwork->artwork_path) }}" class="w-full h-full object-contain" alt="Artwork resmi">
+                            @elseif ($this->prodevArtwork)
+                                <img src="{{ asset('storage/'.$this->prodevArtwork->file_path) }}" class="w-full h-full object-contain" alt="Referensi ProDev">
+                            @else
+                                <div class="relative w-full h-full border-2 border-navy rounded-sm bg-[repeating-linear-gradient(115deg,#f4f6fa_0_10px,#eef1f6_10px_20px)]">
+                                    <div class="absolute border-b-[1.5px] border-dashed border-[#2c7be5]" style="left:0;right:0;top:24%"></div>
+                                    <div class="absolute border-b-[1.5px] border-dashed border-[#2c7be5]" style="left:0;right:0;bottom:22%"></div>
+                                    <div class="absolute inset-0 border-2 border-[#dc2626] rounded-sm pointer-events-none"></div>
+                                    <div class="absolute inset-0 flex items-center justify-center text-center px-3">
+                                        <span class="text-[10.5px] font-semibold text-[#8a94a6]">Artwork belum tersimpan<br><span class="font-mono text-[9px]">prod_part_artwork</span></span>
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
                         </div>
+                        @if (! $this->officialArtwork && $this->prodevArtwork)
+                            <div class="text-[9.5px] text-[#8a5a00] bg-[#fff5e0] rounded px-2 py-1 mt-1.5">⚠ Referensi dari ProDev, belum jadi artwork resmi (`prod_part_artwork`).</div>
+                        @endif
                         <div class="flex gap-3 text-[9.5px] text-[#556] mt-2 flex-wrap">
                             <span class="flex items-center gap-1"><span class="w-3.5 h-0 border-t-2 border-[#dc2626] inline-block"></span> Potong (putus)</span>
                             <span class="flex items-center gap-1"><span class="w-3.5 h-0 border-t-2 border-dashed border-[#2c7be5] inline-block"></span> Lipat (tidak putus)</span>
