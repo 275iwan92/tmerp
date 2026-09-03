@@ -68,13 +68,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     {
         return [
             'SALES_INQ' => route('inquiry.hub'),
-            // Imposition & Product Costing (2026-08-22): masing-masing punya worklist
-            // GRID sendiri sekarang (inquiry.imposition.list / inquiry.costing.list) --
-            // dulu sempat di-alias ke Inquiry Hub yang sama persis, terlihat identik/
-            // membingungkan (3 menu -> 1 layar yang sama). Grid double-click membuka
-            // layar per-inquiry yang SUDAH ADA sebelumnya (inquiry.imposition/inquiry.costing),
-            // tidak diubah. Costing tetap module:COSTING (Sisi A rahasia, CLAUDE.md §4).
-            'SALES_IMPO' => route('inquiry.imposition.list'),
+            // Pro-Dev (2026-09-03, koreksi user): SALES_IMPO dulu nunjuk ke
+            // inquiry.imposition.list (Imposition Engine lama, per-Inquiry) --
+            // sekarang dialihkan ke layar ProDev workbench (production.prodev,
+            // dibangun sesi otonom 2026-09-02/03) sesuai desain
+            // productdevelopment_tier1.md §6 poin 2 "Imposition pindah dari
+            // Inquiry ke Product Development". Layar lama TETAP ADA di repo
+            // (route inquiry.imposition.list tidak dihapus), cuma sudah tidak
+            // ditaut dari menu manapun. Product Costing tetap module:COSTING
+            // (Sisi A rahasia, CLAUDE.md §4), cuma label dipendekkan "Pro-Cost".
+            'SALES_IMPO' => route('production.prodev'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
