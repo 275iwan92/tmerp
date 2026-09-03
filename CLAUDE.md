@@ -206,10 +206,14 @@ transaksi = `iqp_costing`, ikut inquiry).
     (verdict eksplisit user), improvisasi di atasnya SANGAT boleh; (2)
     **saran-saja** (bukan blokir/auto-koreksi, pola sama "engine suggests,
     officer confirms") kalau dimensi terlalu sempit/tidak simetris — BELUM
-    ADA (0 logic ditemukan, target scope baru); (3) upload JPEG sbg simulasi
-    3D, rujukan software **Pacdora** — BELUM ADA (0 upload capability di
-    layar ini), cakupan persis (referensi gambar vs simulasi fold 3D
-    sungguhan) belum dijelaskan user, klarifikasi dulu sebelum bangun.
+    ADA (0 logic ditemukan, target scope baru); (3) **mockup generator 3D**
+    ala **Pacdora** (dikonfirmasi user via screenshot pacdora.com/mockups,
+    "ENGINE nya adalah mockup generator") — BUKAN simulasi fold-fisika dari
+    nol: pilih template box per Tipe Produk (sudah ada dropdown-nya) → upload
+    desain 2D/JPEG → di-composite ke template 3D siap-pakai → render foto
+    produk realistis. BELUM ADA (0 upload capability di layar ini), butuh
+    keputusan desain terpisah (bikin sendiri library template shell vs pakai
+    API mockup pihak ke-3) sebelum mulai bangun.
   - **ProDev Engine** (`ImpositionEngine.php`) — GOAL: dari geometri 1 part,
     cari layout produksi FISIK paling hemat bahan+plate+tooling (plano,
     UP/orientasi, interlock, gabungan antar-part, meter-lari-pisau). Output
