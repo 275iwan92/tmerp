@@ -12,6 +12,42 @@
 
 ---
 
+## 2026-09-03 (lanjutan — Mode #1 InqProd/ProDev, picker visual, formula hide)
+
+- **Popup picker visual Tipe Produk (InqProd, ala Pacdora).** Tombol 🖼️ baru
+  di sebelah dropdown "Tipe Produk" (`inquiry/form.blade.php`) buka modal
+  grid kartu, tiap kartu render thumbnail dieline ASLI (reuse
+  `TMDieline.svg()` yang sudah ada, bukan aset gambar baru) dgn dims default
+  dari preset ukuran pertama/param default. Pilih kartu = trigger event
+  'change' di `<select>` yang sama (`pickType()` di Alpine,
+  `dieline-part.js`) — 100% reuse `selectPartType()` Livewire existing,
+  dropdown teks lama TETAP ada tak disentuh, semua field dimensi tetap
+  full-editable sesudahnya. `[x-cloak]{display:none!important}` ditambah ke
+  app.css (dipakai modal ini). Smoke-tested via `Livewire::test()`.
+- **Link Mode #1 Inquiry(BARU) → ProDev, gap kritis dari CLAUDE.md §4
+  VITAL.** Tombol "🏭 Kirim ke ProDev" per part (muncul setelah part
+  tersimpan). `sendToProDev()`: auto-buat `prod_product` DRAFT kalau
+  `iqp_inquiry.parent_product_id` masih kosong, prod_part baru di bawahnya
+  seed `cm_length`/`cm_width`/`cm_height` dari
+  `iqp_part.dieline_spec['dims']` (mm→cm) kalau ada — field teknis ProDev
+  lain (die_w_cm, flap, dst) sengaja dibiarkan kosong, itu memang tugas
+  ProDev. Idempoten (panggil ulang tak bikin dobel). Kolom baru
+  `iqp_part.prod_part_id` (referensi by-ID lintas-DB, bukan FK fisik).
+  Route `production.prodev` diubah terima `{part?}` di URI (dulu query
+  string yg tak nyampai ke Livewire mount()). Test baru
+  `InquirySendToProdevTest` (termasuk cek idempoten).
+- **Sembunyikan formula/breakdown HPP ProCost, cuma login johiwan.**
+  `costing.blade.php` dapat `canSeeFormula()` (`Auth::user()->login ===
+  'johiwan'`, literal per instruksi user, bukan is_admin/grup). Digate:
+  breakdown Bahan/Proses/Coating/Tooling per part + kolom HPP/pc di Ladder
+  Harga per Tier (tampil 🔒 utk user lain). SENGAJA TIDAK digate: input
+  margin%/toleransi%/rounding + harga jual final (Harga Jual/pc, Incl PPN)
+  — kalau ikut disembunyikan, staf Costing lain tak bisa kerja sama sekali.
+  Lebih ketat dari aturan lama CLAUDE.md §4 "Costing rahasia Sisi A"
+  (grup Costing+Direksi umum, di sini 1 login spesifik).
+
+---
+
 ## 2026-09-03 (ProDev §0 follow-up — instruksi user "kenapa tidak diselesaikan, coba selesaikan")
 
 - **R30 — Tool #2 (Pcs→Plano/Best Sheet Finder).** `ImpositionEngine::bestSheet()`
