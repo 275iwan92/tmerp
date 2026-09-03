@@ -34,11 +34,48 @@ class CareersPortalTest extends TestCase
     {
         parent::setUp();
 
-        $this->withSession([]); // pastikan session store terpasang di request test (register()/login() panggil request()->session())
-
+        // nationalId/email diisi DULU (murni lokal, tak butuh Firestore) --
+        // tearDown() membaca kedua properti typed ini tanpa syarat, jadi kalau
+        // skip check di bawah dijalankan SEBELUM baris ini, tearDown() pecah
+        // dgn "must not be accessed before initialization" (ditemukan nyata
+        // saat verifikasi perubahan ini).
         $suffix = substr(md5(static::class.microtime()), 0, 8);
         $this->nationalId = '99'.str_pad((string) (crc32($suffix) % 100000000000000), 14, '0', STR_PAD_LEFT);
         $this->email = "test.{$suffix}@example.com";
+
+        // Skip (bukan FAIL) kalau Firebase Local Emulator Suite tidak menyala --
+        // instruksi user 2026-09-03: "gimana supaya kedepan ini tidak terjadi".
+        // Sengaja TIDAK mock FirestoreRestClient (risiko mock menyimpang dari
+        // perilaku Firestore asli, kasih rasa aman palsu) -- test ini exercise
+        // integrasi REAL begitu emulator hidup, cuma di-skip rapi (bukan
+        // "cURL error 7" yang bikin bingung) kalau emulator memang belum
+        // dinyalakan manual (`firebase emulators:start --only firestore,auth`
+        // dari folder firebase/, lihat CLAUDE.md §2).
+        $this->skipUnlessFirestoreEmulatorReachable();
+
+        $this->withSession([]); // pastikan session store terpasang di request test (register()/login() panggil request()->session())
+    }
+
+    protected function skipUnlessFirestoreEmulatorReachable(): void
+    {
+        $host = config('recruitment.firebase.firestore_emulator_host');
+
+        if (! $host) {
+            $this->markTestSkipped('FIRESTORE_EMULATOR_HOST tidak diset di .env -- lihat CLAUDE.md §2.');
+        }
+
+        [$ip, $port] = array_pad(explode(':', $host, 2), 2, 80);
+        $conn = @fsockopen($ip, (int) $port, $errno, $errstr, 0.5);
+
+        if (! $conn) {
+            $this->markTestSkipped(
+                "Firebase Local Emulator Suite tidak menyala di {$host} -- jalankan ".
+                "'firebase emulators:start --only firestore,auth' dari folder firebase/ dulu ".
+                '(CLAUDE.md §2, sengaja TIDAK auto-start).'
+            );
+        }
+
+        fclose($conn);
     }
 
     protected function tearDown(): void
