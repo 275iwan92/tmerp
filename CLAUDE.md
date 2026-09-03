@@ -198,6 +198,28 @@ transaksi = `iqp_costing`, ikut inquiry).
   - Detail lengkap & riwayat investigasi: memory
     `project_prodev_procost_2mode_architecture.md` +
     `feedback_prodev_must_pull_from_inquiry_new.md`.
+- **[VITAL] 3 ENGINE inti — InqProd, ProDev, ProCost — masing-masing GOAL-nya**
+  (dikunci user 2026-09-03, pelengkap poin di atas):
+  - **InqProd Engine** (`inquiry/form.blade.php`) — GOAL: (1) picker visual
+    tipe produk + live dieline preview + dimensi gampang di-adjust + preset
+    "Ukuran Pasaran" — **SUDAH ADA & DIVERIFIKASI BAGUS, JANGAN DIUBAH**
+    (verdict eksplisit user), improvisasi di atasnya SANGAT boleh; (2)
+    **saran-saja** (bukan blokir/auto-koreksi, pola sama "engine suggests,
+    officer confirms") kalau dimensi terlalu sempit/tidak simetris — BELUM
+    ADA (0 logic ditemukan, target scope baru); (3) upload JPEG sbg simulasi
+    3D, rujukan software **Pacdora** — BELUM ADA (0 upload capability di
+    layar ini), cakupan persis (referensi gambar vs simulasi fold 3D
+    sungguhan) belum dijelaskan user, klarifikasi dulu sebelum bangun.
+  - **ProDev Engine** (`ImpositionEngine.php`) — GOAL: dari geometri 1 part,
+    cari layout produksi FISIK paling hemat bahan+plate+tooling (plano,
+    UP/orientasi, interlock, gabungan antar-part, meter-lari-pisau). Output
+    `prod_layout_group`. SUDAH LENGKAP (Tingkat 1/2 + Tool #2/#4/#10,
+    2026-09-03).
+  - **ProCost Engine** (`CostingEngine.php`) — GOAL: dari parameter produksi
+    (sumber Mode #1 ATAU #2, HARUS hasil sama) hitung HPP akurat + ladder
+    harga per qty-tier (toleransi/margin/pembulatan/PPN). SUDAH LENGKAP,
+    4 tipe part (DC/SHEET_DIGITAL/KRAFT/DC+SHEET).
+  - Detail lengkap: memory `project_inqprod_engine_goal.md`.
 - **Costing rahasia (Sisi A):** HPP/margin hanya Costing+Direksi. Publish (approve
   Direksi) = deklasifikasi harga ke Sisi B (Sales).
 - **Due date** = 14 hari kerja dari **approval prove FISIK** (bukan PO/mockup).

@@ -18,7 +18,11 @@
 
 ## Belum Dikerjakan
 
-*(kosong)*
+### Dropdown "Ukuran Pasaran" (Inquiry NEW) — pilihan hilang setelah dipilih — 2026-09-03
+- **Layar:** `inquiry/form.blade.php` — Part N, section Tipe Produk, dropdown "⭐ Ukuran Pasaran" (mis. "Serum 30ml (40x40x110)")
+- **Jenis:** Bug
+- **Deskripsi:** User pilih 1 opsi (mis. "Skincare 50ml") → dimensi & preview dieline BENAR ter-update, TAPI dropdown-nya sendiri balik nampilin placeholder "— pilih ukuran umum —" (bukan tetap nampilin opsi yang baru dipilih). Root cause SUDAH ditemukan (dicek langsung ke kode, bukan tebakan): `<select wire:change="applySizePreset(...)">` di `form.blade.php:1454` TIDAK punya `@selected(...)` di `<option>`-nya sama sekali — beda dari dropdown "Tipe Produk" persis di atasnya yang punya `@selected($part['type_code'] === $code)`. Perlu properti Livewire yang nyimpen preset id yang lagi dipilih (per part), baru `@selected` bisa dipasang.
+- **Kenapa belum dikerjakan sekarang:** instruksi user eksplisit "check ini nanti masukkan ke backlog" — dicatat dulu, bukan prioritas saat ini. Layar dieline/dimensi/preset ini SENDIRI dinyatakan user "sudah bagus, jangan diubah" di luar bug spesifik ini — jangan refactor lebih luas dari yang perlu saat akhirnya dikerjakan.
 
 ---
 
