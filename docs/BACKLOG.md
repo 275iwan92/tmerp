@@ -386,9 +386,12 @@ sebelum eksekusi):
   `docs/LOG_JOB_DONE.md`.
 - **Payroll (tm2pyr) — SELURUH MODUL belum dibangun** (bukan cuma
   enkripsi). CLAUDE.md §2 sendiri menandai ini requirement yang belum
-  diimplementasikan sama sekali. Termasuk di dalamnya: enkripsi data
-  gaji at-rest (algoritma/key management/kolom mana yang kena — belum ada
-  keputusan desain apa pun, jangan mulai tanpa konfirmasi).
+  diimplementasikan sama sekali. **UPDATE 2026-09-03**: keputusan desain
+  enkripsi SUDAH DIKUNCI (scope kolom, lokasi kunci `VERBA_SANCTA` di
+  `sys_constant`, algoritma) — baca `docs/payroll_encryption_decision.md`
+  SEBELUM mulai modul ini. Kunci sendiri sudah tersimpan di DB (prasyarat),
+  TAPI modul Payroll (skema tabel, model, service, UI) masih 0% — dokumen
+  itu murni catatan desain, bukan implementasi.
 - **12 kategori `mat_category` tanpa default COA** — sama item dengan §4
   Procurement (mempengaruhi Finance juga karena ini soal akun jurnal),
   layarnya sudah ada, tinggal user isi.
