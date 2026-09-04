@@ -569,7 +569,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             @forelse ($this->costing->parts as $part)
-                <div class="border-b border-[#d7dbe2] last:border-b-0 p-4" wire:key="part-{{ $part->id_costing_part }}">
+                <div class="border-b border-[#d7dbe2] last:border-b-0 p-4" wire:key="part-{{ $part->id_costing_part }}" x-data="{ zoomArtwork: false }">
                     <div class="flex items-center gap-2 mb-3">
                         <x-form.input value="{{ $part->part_name }}" placeholder="Nama part (mis. Bag Atas)"
                             wire:change="updatePart({{ $part->id_costing_part }}, 'part_name', $event.target.value)"
@@ -585,6 +585,28 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
                         <button type="button" wire:click="removePart({{ $part->id_costing_part }})" class="text-red-500 text-xs cursor-pointer px-2 ml-auto">✕ Hapus</button>
                     </div>
+
+                    {{-- Artwork/desain dari Inquiry (permintaan user 2026-09-04: "info
+                    artwork harus mengalir ke ProDev dan ProCost") -- baca langsung dari
+                    iqp_part.artwork_path via relasi inquiryPart(), sama file yg diupload
+                    sales di Inquiry, tidak disalin ulang. Null kalau part costing ini
+                    dibuat manual (bukan dari addPartFromInquiry()) atau inquiry-nya
+                    memang belum ada artwork. --}}
+                    @php($artworkUrl = $part->inquiryPart?->artwork_path ? asset('storage/'.$part->inquiryPart->artwork_path) : null)
+                    @if ($artworkUrl)
+                        <div class="flex items-center gap-2.5 bg-[#f4f6fa] border border-[#d7dbe2] rounded-md p-2 mb-3">
+                            <img src="{{ $artworkUrl }}" @click="zoomArtwork = true"
+                                class="w-12 h-12 object-cover rounded border border-[#d7dbe2] cursor-zoom-in flex-shrink-0" alt="artwork">
+                            <div class="min-w-0">
+                                <div class="text-[10px] font-bold text-navy uppercase tracking-wide">📎 Artwork dari Inquiry</div>
+                                <div class="text-[11px] text-muted truncate" title="{{ $part->inquiryPart->artwork_original_filename }}">{{ $part->inquiryPart->artwork_original_filename }}</div>
+                            </div>
+                        </div>
+                        <div x-show="zoomArtwork" x-cloak @click.self="zoomArtwork = false" @keydown.escape.window="zoomArtwork = false"
+                             class="fixed inset-0 z-[250] bg-black/70 flex items-center justify-center p-6">
+                            <img src="{{ $artworkUrl }}" class="max-w-[90vw] max-h-[88vh] rounded-lg shadow-2xl" alt="artwork ukuran penuh">
+                        </div>
+                    @endif
 
                     @if ($part->data_source === 'PRODEV')
                         <div class="bg-[#f0f7f4] border border-[#c6e5d5] rounded-md p-2.5 mb-3 flex items-center gap-2">
