@@ -234,6 +234,20 @@ Dari kerja Configuration/branding hari ini (`docs/configurationstandard.md`,
   maksudnya field tambahan atau alur terpisah — perlu klarifikasi ulang
   scope-nya sebelum eksekusi (catatan lama 2026-08-27, kemungkinan sudah
   berubah konteksnya sejak CO dibangun).
+- **ProCost belum konsumsi "urutan proses" sbg parameter HPP** (dicatat
+  2026-09-04, keputusan user: "keputusan spt bahan baku, urutan proses,
+  jumlah UP dan lain sebagainya menjadi masukan parameter bagi procost").
+  Bahan baku & jumlah UP **SUDAH LIVE** (via `addPartFromInquiry()` /
+  toggle "Ambil Data (ProDev)" → `prod_layout_group.up_count`), tapi
+  `CostingEngine.php` hitung `c_process_cost_pc` murni dari field RATE
+  manual per part (`i_ongkos_cetak_rim`/`i_ongkos_plong_lb`/dst, diisi/
+  di-override officer Costing) — **TIDAK membaca** urutan/jumlah step dari
+  `iqp_part_process` atau routing ProDev sama sekali. Perlu keputusan
+  desain dulu sebelum eksekusi: apakah tiap `process_name`/step routing
+  punya rate default (dari master `prod_process`?), gimana konflik dgn
+  rate manual yang sudah ada (override vs auto-fill), berlaku Mode #1
+  ProCost saja atau juga Mode #2. Detail & status per-parameter lengkap:
+  `docs/inquiry_product_costing/inquiryproduct_rules.md` §4.
 ---
 
 ## 4. PROCUREMENT (tm2pur)
