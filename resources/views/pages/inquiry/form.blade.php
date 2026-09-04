@@ -912,6 +912,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'materials' => [$this->blankMaterialRow(true)],
             'processes' => [],
         ];
+
+        // Tipe Produk level Inquiry (2026-09-04) -- part baru ikut tipe yg
+        // sudah dipilih part lain (konsisten dgn setSharedProductType()),
+        // supaya "+ Tambah Part" manual tidak nyasar balik ke gerbang "pilih
+        // tipe dulu" padahal Inquiry-nya sudah punya tipe. Kosong kalau
+        // memang belum ada tipe sama sekali (Inquiry baru).
+        $sharedTypeCode = $this->parts[0]['type_code'] ?? '';
+
+        if ($sharedTypeCode !== '') {
+            $newIndex = count($this->parts) - 1;
+            $this->selectPartType($newIndex, $sharedTypeCode);
+
+            if (! $this->typeNeedsRoleChoice($sharedTypeCode)) {
+                $this->applyRoleToPart($newIndex, 'monoform');
+            }
+        }
     }
 
     protected function blankMaterialRow(bool $isPrimary = false): array
@@ -1088,7 +1104,6 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         $roles = $suggestion['roles'];
-        $sourceTypeCode = $this->parts[$index]['type_code'];
 
         // Part yg lagi diedit belum punya role -> isi part INI dulu pakai role
         // pertama yg hilang, drpd bikin part baru sementara part yg dipilih
@@ -1107,10 +1122,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         // officer isi manual dulu sampai itu dikonfirmasi (drpd nebak formula
         // yg bisa menghasilkan dieline salah).
         foreach ($roles as $role) {
+            // addPart() otomatis mewarisi Tipe Produk part[0] (lihat catatannya),
+            // tidak perlu dipanggil ulang manual di sini.
             $this->addPart();
-            $newIndex = count($this->parts) - 1;
-            $this->selectPartType($newIndex, $sourceTypeCode);
-            $this->applyRoleToPart($newIndex, $role);
+            $this->applyRoleToPart(count($this->parts) - 1, $role);
         }
     }
 
@@ -1146,14 +1161,51 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             return;
         }
 
-        $typeCode = $this->productCategoryMap()[$category]['type_code'];
-
         if (! isset($this->parts[0])) {
             $this->addPart();
         }
 
-        $this->selectPartType(0, $typeCode);
-        $this->applyPartTemplate(0);
+        $this->setSharedProductType($this->productCategoryMap()[$category]['type_code']);
+    }
+
+    // ================= TIPE PRODUK level Inquiry, bukan per-part (2026-09-04) =================
+    // Permintaan user: "tipe produk harusnya di luar part... diecut baru jalan
+    // ketika part dipilih spt body atau lid. Tapi jika MonoForm maka auto
+    // diecut muncul dan pilihan part juga MonoForm." Klarifikasi eksplisit
+    // user: yang TIDAK BOLEH diubah adalah kemampuan render diecut (TMDieline
+    // DSL) -- ini murni relokasi alur pemilihan UI, TMDieline.svg()/flat() &
+    // dieline_spec sama sekali tidak disentuh. 1 Tipe Produk berlaku utk semua
+    // Part dalam 1 Inquiry (koheren krn satu2nya template multi-part yg
+    // didukung sekarang -- Box with Lid/Round Box/Shallow Box -- generatornya
+    // memang dipakai bareng Body+Lid, bukan tipe berbeda per part).
+    public function setSharedProductType(string $typeCode): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $autoRole = $typeCode !== '' && ! $this->typeNeedsRoleChoice($typeCode);
+
+        foreach ($this->parts as $i => $part) {
+            $this->selectPartType($i, $typeCode);
+
+            if ($autoRole) {
+                // Tipe 1-bentuk (non multi-part) -- tak perlu tanya Peran Part,
+                // dieline langsung aktif begitu tipe dipilih.
+                $this->applyRoleToPart($i, 'monoform');
+            } else {
+                $this->parts[$i]['part_role'] = '';
+            }
+        }
+    }
+
+    protected function typeNeedsRoleChoice(string $typeCode): bool
+    {
+        if (! isset($this->partTemplateMap()[$typeCode])) {
+            return false;
+        }
+
+        return (bool) ProdType::where('type_code', $typeCode)->value('has_multi_part');
     }
 
     // Ganti tipe produk part: reset dims ke default prod_type_param milik tipe baru.
@@ -2577,6 +2629,39 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     </div>
                 </div>
 
+                {{-- Tipe Produk level Inquiry (permintaan user 2026-09-04: "tipe produk
+                harusnya di luar part, bukan di dalam"). Berlaku utk SEMUA Part sekaligus
+                (setSharedProductType()) -- koheren krn satu2nya template multi-part yg
+                didukung (Box with Lid/Round Box/Shallow Box) generatornya memang dipakai
+                bareng Body+Lid, bukan tipe berbeda per part. Kategori Produk di atas cuma
+                jalan pintas ke field yg sama ini. --}}
+                <div class="grid" style="margin-top:10px">
+                    <div class="f col2">
+                        <label>Tipe Produk <span class="hint" style="font-weight:400">(berlaku utk semua Part)</span></label>
+                        <select wire:change="setSharedProductType($event.target.value)"
+                                x-data x-effect="$el.value = @js($parts[0]['type_code'] ?? '')"
+                                @if($readOnly) disabled @endif>
+                            <option value="">— pilih tipe produk —</option>
+                            @foreach ($this->productTypeOptions as $code => $t)
+                                <option value="{{ $code }}">{{ $t['name'] }}</option>
+                            @endforeach
+                        </select>
+                        <div class="hint">Kategori Produk di atas cuma jalan pintas — bisa juga pilih langsung di sini.</div>
+                    </div>
+                    @php($headerPartTpl = $this->partTemplateSuggestion(0))
+                    @if ($headerPartTpl)
+                        <div class="f col2">
+                            <label>&nbsp;</label>
+                            <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0">
+                                <span>🧩 Tipe ini biasanya {{ $headerPartTpl['total'] }} part: <b>{{ $headerPartTpl['labels'] }}</b>.</span>
+                                @unless($readOnly)
+                                    <button type="button" class="btn g xs" wire:click="applyPartTemplate(0)">Tambahkan Otomatis</button>
+                                @endunless
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
                 {{-- Baris 3: Catatan Sales + tickmark Sumber Bahan (permintaan user
                 2026-09-04: "tickmark default un-tick utk customer bawa raw material
                 sendiri" -- checkbox tunggal gantikan radio 2 pilihan, lebih ringkas lagi
@@ -2808,82 +2893,34 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                  wire:key="dieline-{{ $i }}-{{ $part['dims_version'] ?? 0 }}"
                                  x-data="dielinePart(@js($typeOptions), @js($this->partAlpineInit($i)))"
                                  data-index="{{ $i }}">
+                                @if (empty($part['type_code']))
+                                    {{-- Tipe Produk sekarang dipilih di Header (permintaan user 2026-09-04:
+                                    "tipe produk harusnya di luar part") -- berlaku utk semua Part, bukan
+                                    per-part lagi. Kemampuan render dieline (TMDieline) TIDAK disentuh, ini
+                                    murni relokasi alur pemilihan (klarifikasi eksplisit user). --}}
+                                    <div class="note o" style="flex:1">📋 Pilih <b>Tipe Produk</b> dulu di bagian atas (dekat Kategori Produk) sebelum mengisi part ini.</div>
+                                @elseif (empty($part['part_role']) && ! $part['id'])
+                                    {{-- Diecut baru aktif setelah Peran Part dipilih (permintaan user:
+                                    "diecut baru jalan ketika part dipilih spt body atau lid"). Gerbang
+                                    ini SENGAJA dilewati kalau part SUDAH PERNAH TERSIMPAN ($part['id']
+                                    ada) -- data lama dari sblm fitur Peran Part ada TETAP TAMPIL apa
+                                    adanya, drpd nyembunyiin data lengkap cuma krn belum pernah diberi
+                                    role secara retroaktif. Cek "dims kosong" TIDAK bisa dipakai di sini
+                                    (selectPartType() selalu isi dims dgn default begitu tipe dipilih,
+                                    jadi part BARU pun langsung py dims non-kosong -- id_part null/ada
+                                    itu sinyal yg benar2 bedain "belum pernah disimpan" vs "sudah").
+                                    Tipe
+                                    non-multi-part auto-isi MonoForm dari setSharedProductType(), jadi
+                                    cabang ini praktis cuma kejadian utk tipe multi-part (Box with
+                                    Lid/Round Box/Shallow Box) yg belum ditentukan bagiannya. --}}
+                                    <div class="note b" style="flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                        <span>🏷️ Pilih <b>Peran Part</b> ini dulu (ikon 🏷️ di sebelah Nama Part) — dimensi &amp; preview dieline aktif setelah peran ditentukan.</span>
+                                        @unless($readOnly)
+                                            <button type="button" class="btn g xs" wire:click="openRolePicker({{ $i }})">Pilih Peran Part</button>
+                                        @endunless
+                                    </div>
+                                @else
                                 <div style="flex:1">
-                                    <div class="ptype-box">
-                                        <div style="flex:1">
-                                            <label>Tipe Produk</label>
-                                            <div style="display:flex;gap:6px;align-items:center">
-                                                <select x-ref="typeSelect" wire:change="selectPartType({{ $i }}, $event.target.value)" @if($readOnly) disabled @endif style="flex:1">
-                                                    <option value="">— pilih tipe produk —</option>
-                                                    @foreach ($typeOptions as $code => $t)
-                                                        <option value="{{ $code }}" @selected($part['type_code'] === $code)>{{ $t['name'] }}</option>
-                                                    @endforeach
-                                                </select>
-                                                {{-- Popup picker visual (TAMBAHAN, bukan pengganti dropdown di atas --
-                                                permintaan user 2026-09-03: sales baru gampang kenali tipe produk dari
-                                                gambar, ala Pacdora. Reuse TMDieline.svg() yang sudah ada (dieline-part.js),
-                                                bukan aset gambar baru -- thumbnail = dieline asli tipe itu, bukan generik. --}}
-                                                @unless($readOnly)
-                                                <button type="button" @click="pickerOpen = true" title="Pilih visual (gambar)"
-                                                    style="flex-shrink:0;width:34px;height:34px;border:1px solid #c7cfda;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px">🖼️</button>
-                                                @endunless
-                                            </div>
-                                        </div>
-                                        @if ($selectedType && ! empty($selectedType['sizes']))
-                                            <div class="f size-pick" style="width:220px">
-                                                <label>⭐ Ukuran Pasaran</label>
-                                                <select wire:change="applySizePreset({{ $i }}, $event.target.value)"
-                                                        x-data x-effect="$el.value = @js($part['size_preset_id'] ?? '')"
-                                                        @if($readOnly) disabled @endif>
-                                                    <option value="">— pilih ukuran umum —</option>
-                                                    @foreach ($selectedType['sizes'] as $size)
-                                                        <option value="{{ $size['id'] }}">{{ $size['label'] }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    {{-- Saran template multi-part (permintaan user 2026-09-04: "part-part
-                                    ini harusnya sudah diketahui saat Tipe Produk dipilih") -- cuma tampil
-                                    utk tipe yg namanya sendiri eksplisit multi-part (Box with Lid, Round
-                                    Box, Sleeve, dst), engine suggests/officer confirms, TIDAK otomatis. --}}
-                                    @php($partTpl = $this->partTemplateSuggestion($i))
-                                    @if ($partTpl)
-                                        <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px">
-                                            <span>🧩 Tipe <b>{{ $selectedType['name'] ?? $part['type_code'] }}</b> biasanya {{ $partTpl['total'] }} part: <b>{{ $partTpl['labels'] }}</b>{{ empty($part['part_role']) ? '' : ' (tambahan, part ini sudah '.ucfirst($part['part_role']).')' }}.</span>
-                                            @unless($readOnly)
-                                                <button type="button" class="btn g xs" wire:click="applyPartTemplate({{ $i }})">Tambahkan Otomatis</button>
-                                            @endunless
-                                        </div>
-                                    @endif
-
-                                    {{-- Modal picker visual (gambar dieline per tipe) -- overlay, tidak
-                                    mengubah layout field manapun di bawah. Pilih kartu = SAMA PERSIS
-                                    hasilnya dgn pilih dari <select> teks di atas (pickType() cuma
-                                    trigger event 'change' di select yg sama), field dimensi tetap
-                                    full-editable sesudahnya, tidak ada yg terkunci. --}}
-                                    <div x-show="pickerOpen" x-cloak @keydown.escape.window="pickerOpen = false"
-                                        style="position:fixed;inset:0;z-index:200;background:rgba(15,22,45,.45);display:flex;align-items:center;justify-content:center;padding:24px"
-                                        @click.self="pickerOpen = false">
-                                        <div style="background:#fff;border-radius:12px;width:100%;max-width:820px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
-                                            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
-                                                <b style="font-size:14px;color:#2c3e69">Pilih Tipe Produk (Visual)</b>
-                                                <button type="button" @click="pickerOpen = false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#8a94a6;line-height:1">&times;</button>
-                                            </div>
-                                            <div style="overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
-                                                <template x-for="item in typeList" :key="item.code">
-                                                    <button type="button" @click="pickType(item.code)"
-                                                        :style="typeCode === item.code ? 'border-color:#2c7be5;background:#eef3fb' : 'border-color:#e3e7f0;background:#fff'"
-                                                        style="border-width:2px;border-style:solid;border-radius:8px;padding:8px;cursor:pointer;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center">
-                                                        <div style="width:100%;height:90px;background:#fbfcfd;border:1px solid #eef0f3;border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:4px" x-html="item.svg || '<span style=\'font-size:22px;color:#c7cfda\'>&#128196;</span>'"></div>
-                                                        <span style="font-size:11px;color:#2c3e69;font-weight:600;line-height:1.25" x-text="item.name"></span>
-                                                    </button>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <div class="sec-title">Dimensi</div>
                                     <div class="grid">
                                         @forelse ($selectedType['params'] ?? [] as $param)
@@ -3130,6 +3167,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     <div class="dcut" x-ref="preview"></div>
                                     <div class="legend">🔴 potong &nbsp; 🟢 lipat &nbsp; ⚪ overflow &nbsp; 🔵 lubang/jilid</div>
                                 </div>
+                                @endif
                             </div>
                         </div>
                     </div>
