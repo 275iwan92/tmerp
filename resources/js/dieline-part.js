@@ -85,6 +85,17 @@ document.addEventListener('alpine:init', () => {
             this.recalc();
         },
 
+        // Terapkan saran ukuran dari analisis DPI artwork (form.blade.php ::
+        // suggestSizeFromArtwork()) -- paksa Manual dulu (Flat W/H readonly saat
+        // Auto), baru isi & hitung ulang Area + redraw.
+        applyArtworkSize(w, h) {
+            this.flatManual = true;
+            this.setFlatField('fw', w);
+            this.setFlatField('fh', h);
+            this.setFlatField('fa', ((+w || 0) * (+h || 0)).toFixed(2));
+            this.redraw();
+        },
+
         onFlatManualInput() {
             if (!this.flatManual) return;
             const fw = this.$refs.fw ? this.$refs.fw.value : '';

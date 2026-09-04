@@ -1047,9 +1047,154 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         $this->parts[$index]['suggestions'] = [
             'color' => $colorSourcePath ? $this->analyzeImageColors($colorSourcePath) : null,
+            'size' => $colorSourcePath ? $this->suggestSizeFromArtwork($colorSourcePath) : null,
             'material' => $typeCode !== '' ? $this->suggestMaterialFromHistory($typeCode) : null,
             'finishing' => $typeCode !== '' ? $this->suggestFinishingFromHistory($typeCode) : null,
         ];
+    }
+
+    // Ukuran fisik HANYA disarankan kalau file punya metadata DPI asli (JFIF/pHYs)
+    // -- keputusan user 2026-09-04: drpd nebak dari resolusi pixel mentah (bisa
+    // meleset >4x antara file 72dpi vs 300dpi), TIDAK tampilkan saran sama sekali
+    // kalau metadata-nya tidak ada. Diasumsikan artwork = bentangan/flat (yg
+    // dicetak), bukan dimensi luar box jadi -- makanya target-nya Flat W/H, bukan
+    // field Panjang/Lebar produk.
+    protected function suggestSizeFromArtwork(?string $absolutePath): ?array
+    {
+        if (! $absolutePath || ! is_file($absolutePath)) {
+            return null;
+        }
+
+        $info = @getimagesize($absolutePath);
+
+        if (! $info) {
+            return null;
+        }
+
+        $dpi = match ($info[2]) {
+            IMAGETYPE_JPEG => $this->readJpegDpi($absolutePath),
+            IMAGETYPE_PNG => $this->readPngDpi($absolutePath),
+            default => null,
+        };
+
+        if (! $dpi || $dpi['dpi_x'] <= 0 || $dpi['dpi_y'] <= 0) {
+            return null;
+        }
+
+        return [
+            'width_mm' => round(($info[0] / $dpi['dpi_x']) * 25.4, 1),
+            'height_mm' => round(($info[1] / $dpi['dpi_y']) * 25.4, 1),
+            'dpi_x' => (int) round($dpi['dpi_x']),
+            'dpi_y' => (int) round($dpi['dpi_y']),
+        ];
+    }
+
+    // JFIF APP0 segment (bukan EXIF -- kebanyakan export Illustrator/Photoshop
+    // simpan density di sini): units 1=dots/inch, 2=dots/cm.
+    protected function readJpegDpi(string $path): ?array
+    {
+        $fh = @fopen($path, 'rb');
+
+        if (! $fh) {
+            return null;
+        }
+
+        try {
+            if (fread($fh, 2) !== "\xFF\xD8") {
+                return null;
+            }
+
+            while (! feof($fh)) {
+                $marker = fread($fh, 2);
+
+                if (strlen($marker) < 2 || $marker[0] !== "\xFF" || $marker === "\xFF\xDA") {
+                    break;
+                }
+
+                $lenRaw = fread($fh, 2);
+
+                if (strlen($lenRaw) < 2) {
+                    break;
+                }
+
+                $segLen = unpack('n', $lenRaw)[1];
+
+                if ($marker === "\xFF\xE0" && $segLen >= 14) {
+                    $payload = fread($fh, $segLen - 2);
+
+                    if (substr($payload, 0, 5) === "JFIF\0") {
+                        $units = ord($payload[7]);
+                        $x = unpack('n', substr($payload, 8, 2))[1];
+                        $y = unpack('n', substr($payload, 10, 2))[1];
+
+                        return match ($units) {
+                            1 => ['dpi_x' => $x, 'dpi_y' => $y],
+                            2 => ['dpi_x' => $x * 2.54, 'dpi_y' => $y * 2.54],
+                            default => null,
+                        };
+                    }
+
+                    continue;
+                }
+
+                fseek($fh, $segLen - 2, SEEK_CUR);
+            }
+
+            return null;
+        } finally {
+            fclose($fh);
+        }
+    }
+
+    // Chunk pHYs (pixels-per-unit) -- unit specifier 1=meter, selain itu "unknown"
+    // (rasio doang, bukan skala dunia nyata) jadi diabaikan.
+    protected function readPngDpi(string $path): ?array
+    {
+        $fh = @fopen($path, 'rb');
+
+        if (! $fh) {
+            return null;
+        }
+
+        try {
+            if (fread($fh, 8) !== "\x89PNG\r\n\x1a\n") {
+                return null;
+            }
+
+            while (! feof($fh)) {
+                $lenRaw = fread($fh, 4);
+
+                if (strlen($lenRaw) < 4) {
+                    break;
+                }
+
+                $len = unpack('N', $lenRaw)[1];
+                $type = fread($fh, 4);
+
+                if ($type === 'pHYs' && $len === 9) {
+                    $chunk = fread($fh, 9);
+                    $ppuX = unpack('N', substr($chunk, 0, 4))[1];
+                    $ppuY = unpack('N', substr($chunk, 4, 4))[1];
+                    $unit = ord($chunk[8]);
+
+                    if ($unit === 1 && $ppuX > 0 && $ppuY > 0) {
+                        return ['dpi_x' => $ppuX * 0.0254, 'dpi_y' => $ppuY * 0.0254];
+                    }
+
+                    return null;
+                }
+
+                if ($type === 'IDAT') {
+                    break;
+                }
+
+                fseek($fh, $len + 4, SEEK_CUR);
+            }
+
+            return null;
+        } finally {
+            fclose($fh);
+        }
     }
 
     protected function storedArtworkAbsolutePath(?string $path): ?string
@@ -2149,6 +2294,21 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     @endif
 
                                     <div class="sec-title">Bentangan (Flat) — dipakai Costing</div>
+                                    @if ($part['suggestions']['size'] ?? null)
+                                        @php($sugSize = $part['suggestions']['size'])
+                                        <div class="note o" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                            <span>📐 Ukuran terbaca dari metadata DPI artwork ({{ $sugSize['dpi_x'] }}×{{ $sugSize['dpi_y'] }} dpi): <b>{{ $sugSize['width_mm'] }} × {{ $sugSize['height_mm'] }} mm</b> — asumsi ini bentangan/flat yg dicetak, bukan dimensi luar box.
+                                            @if ($sugSize['dpi_x'] == 72 || $sugSize['dpi_x'] == 96)
+                                                ⚠️ {{ $sugSize['dpi_x'] }} dpi biasanya cuma default layar/software, BUKAN skala cetak asli — kemungkinan besar tidak akurat, jangan langsung dipakai.
+                                            @else
+                                                Tetap cek ulang manual sebelum konfirmasi ke customer.
+                                            @endif
+                                            </span>
+                                            @unless($readOnly)
+                                                <button type="button" class="btn g xs" @click="applyArtworkSize({{ $sugSize['width_mm'] }}, {{ $sugSize['height_mm'] }})">Pakai ke Flat W/H</button>
+                                            @endunless
+                                        </div>
+                                    @endif
                                     <div class="grid">
                                         <div class="f">
                                             <label>Flat Width (mm)</label>
