@@ -476,21 +476,24 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         ])->values()->all();
     }
 
+    // Tanpa gerbang panjang query lagi (dulu min. 2 karakter) -- permintaan user
+    // 2026-09-04: "dropdown yang langsung bisa discroll tapi bisa diketik juga".
+    // Query kosong = browse (list default, alfabetis); diketik = filter nama/kode.
     #[Computed]
     public function customerResults()
     {
-        if ($this->is_prospect || $this->customer_id || mb_strlen($this->custQuery) < 2) {
+        if ($this->is_prospect || $this->customer_id) {
             return collect();
         }
 
         return CustCustomer::query()
             ->where('activate', true)
-            ->where(function ($q) {
-                $q->where('customer_name', 'like', "%{$this->custQuery}%")
+            ->when($this->custQuery !== '', fn ($q) => $q->where(function ($q2) {
+                $q2->where('customer_name', 'like', "%{$this->custQuery}%")
                     ->orWhere('customer_code', 'like', "%{$this->custQuery}%");
-            })
+            }))
             ->orderBy('customer_name')
-            ->limit(8)
+            ->limit(30)
             ->get();
     }
 
@@ -2172,16 +2175,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         </div>
                     </div>
 
-                    <x-form.toggle-group legacy col2 label="Prospek?">
-                        <x-form.toggle-option legacy :active="! $is_prospect" style="flex:1" wire:click="setProspect(false)" :disabled="$readOnly">Tidak — customer terdaftar</x-form.toggle-option>
-                        <x-form.toggle-option legacy :active="$is_prospect" style="flex:1" wire:click="setProspect(true)" :disabled="$readOnly">Ya — belum terdaftar</x-form.toggle-option>
-                    </x-form.toggle-group>
-                    <x-form.date-picker legacy col2 wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
-                        <x-slot:label>Tanggal Kebutuhan Pelanggan <span class="hint" style="font-weight:400">(kapan customer butuh barangnya)</span></x-slot:label>
-                    </x-form.date-picker>
-
+                    {{-- Prospek? dihapus (permintaan user 2026-09-04: "sudah diwakili oleh
+                    New Customer") -- kasus "customer belum terdaftar" sekarang lewat quick-add
+                    Customer Master sungguhan (openNewCustomerModal(), lihat combobox di bawah),
+                    bukan lagi placeholder nama tanpa record. is_prospect/prospect_name TETAP
+                    ada di properti/kolom DB (backward-compat baca inquiry lama yg masih
+                    is_prospect=true) tapi tidak lagi bisa di-set true dari layar ini. --}}
                     @if ($is_prospect)
-                        <x-form.input legacy col2 label="Nama Calon Customer" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
+                        <x-form.input legacy col2 label="Nama Calon Customer (data lama)" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
                     @elseif ($customer_id)
                         <div class="f col2">
                             <label>Customer</label>
@@ -2193,33 +2194,40 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             </div>
                         </div>
                     @else
-                        <div class="f col2 ac-wrap">
-                            <label>Customer / Calon Customer</label>
-                            <input type="text" wire:model.live.debounce.400ms="custQuery" autocomplete="off"
-                                   placeholder="Ketik nama / kode customer…" @if($readOnly) disabled @endif>
+                        {{-- Combobox scroll+search (permintaan user 2026-09-04: "dropdown yang
+                        langsung bisa discroll tapi bisa diketik juga, New Customer paling atas").
+                        Buka/tutup murni Alpine (x-data lokal, tanpa roundtrip Livewire) supaya
+                        instan; isi list (customerResults) tetap dari Livewire, termasuk saat
+                        query kosong (browse) maupun diketik (filter). --}}
+                        <div class="f col2 ac-wrap" x-data="{ open: false }" @click.outside="open = false">
+                            <label>Customer</label>
+                            <input type="text" wire:model.live.debounce.300ms="custQuery" autocomplete="off"
+                                   @focus="open = true" @click="open = true"
+                                   placeholder="Ketik utk cari, atau scroll pilih…" @if($readOnly) disabled @endif>
                             @error('customer_id') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                            @if ($custQuery && mb_strlen($custQuery) >= 2)
-                                <div class="ac-box on">
-                                    @forelse ($this->customerResults as $c)
-                                        <div class="ac-i" wire:click="selectCustomer({{ $c->id_customer }})">
-                                            <b>{!! $this->highlightMatch($c->customer_name, $custQuery) !!}</b>
-                                            <span class="cd">{{ $c->customer_code }}</span>
-                                        </div>
-                                    @empty
-                                        <div class="ac-none">Tidak ditemukan.</div>
-                                    @endforelse
-                                    @unless($readOnly)
-                                        <div class="ac-i" style="color:#1560a8;font-weight:700" wire:click="openNewCustomerModal">
-                                            ＋ Buat Customer Baru{{ mb_strlen($custQuery) >= 2 ? ': "'.$custQuery.'"' : '' }}
-                                        </div>
-                                    @endunless
-                                </div>
-                            @endif
+                            <div class="ac-box" :class="open ? 'on' : ''">
+                                @unless($readOnly)
+                                    <div class="ac-i" style="color:#1560a8;font-weight:700" wire:click="openNewCustomerModal" @click="open = false">
+                                        ＋ Buat Customer Baru{{ mb_strlen($custQuery) >= 2 ? ': "'.$custQuery.'"' : '' }}
+                                    </div>
+                                @endunless
+                                @forelse ($this->customerResults as $c)
+                                    <div class="ac-i" wire:click="selectCustomer({{ $c->id_customer }})" @click="open = false">
+                                        <b>{!! $this->highlightMatch($c->customer_name, $custQuery) !!}</b>
+                                        <span class="cd">{{ $c->customer_code }}</span>
+                                    </div>
+                                @empty
+                                    <div class="ac-none">Tidak ditemukan.</div>
+                                @endforelse
+                            </div>
                         </div>
                     @endif
+                    <x-form.date-picker legacy col2 wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
+                        <x-slot:label>Tanggal Kebutuhan Pelanggan <span class="hint" style="font-weight:400">(kapan customer butuh barangnya)</span></x-slot:label>
+                    </x-form.date-picker>
 
                     @php $productDraftHint = 'Nama sementara selama quotation. Karakter khusus (/@#%"\';) tidak diperbolehkan.'; @endphp
-                    <x-form.input legacy col2 label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
+                    <x-form.input legacy col4 label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
                         placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
                         :hint="$productDraftHint" />
                     <x-form.textarea legacy col4 label="Catatan Sales" wire:model="sales_note" rows="2" placeholder="opsional" :disabled="$readOnly" />
