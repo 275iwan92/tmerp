@@ -213,6 +213,16 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     // production/prodev.blade.php (type_code+dims -> label param ProdType),
     // ditambah geometri kotak flat utk preview 2D (flat_w/flat_h SUDAH
     // tersimpan riil di iqp_part, bukan dihitung ulang/dikarang).
+    //
+    // Follow-up 2026-09-04 (user: "tidak ada gambar layout... tidak diecut
+    // nya yang sudah di define... sertakan lebih banyak informasi"):
+    // - dieline_spec/dieline_dims dikirim mentah ke component supaya JS bisa
+    //   panggil window.TMDieline.svg() (resources/js/tmdieline.js) -- diecut
+    //   ASLI (garis potong/lipat/lubang) yang dibekukan saat part ini dibuat,
+    //   BUKAN kotak polos flat_w x flat_h seperti sebelumnya.
+    // - color/materials/processes ditambahkan -- cek komentar di
+    //   components/inquiry/readonly-summary.blade.php soal processes yang
+    //   (jujur) memang selalu kosong utk NEW (tidak ada UI isi di form ini).
     public function partSummary(IqpPart $part): array
     {
         $spec = $part->dieline_spec ?? [];
@@ -239,6 +249,29 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'qty_per_sku' => $part->qty_per_sku,
             'flat_w_px' => $scale > 0 ? round($flatW * $scale, 1) : 0,
             'flat_h_px' => $scale > 0 ? round($flatH * $scale, 1) : 0,
+            // Diecut asli (DSL prod_type.dieline_spec dibekukan + dims part ini)
+            // -- null kalau tipe tak punya elements (mis. Mode manual/flat_manual).
+            'dieline_spec' => ! empty($spec['elements']) ? $spec : null,
+            'dieline_dims' => ! empty($dims) ? $dims : (object) [],
+            'color' => $this->colorBreakdown($part->cfg_color),
+            'cfg_color' => $part->cfg_color,
+            'cfg_ink' => $part->cfg_ink,
+            'materials' => $part->materials->map(fn (IqpPartMaterial $m) => [
+                'layer_seq' => $m->layer_seq,
+                'name' => $m->rawmat_name,
+                'gram_weight' => $m->gram_weight,
+                'flute_type' => $m->flute_type,
+                'size_p' => $m->size_p,
+                'size_l' => $m->size_l,
+                'is_primary' => (bool) $m->is_primary,
+                'material_source' => $m->material_source,
+            ])->values()->all(),
+            'processes' => $part->processes->map(fn ($p) => [
+                'step_seq' => $p->step_seq,
+                'process_name' => $p->process_name,
+                'flow_type' => $p->flow_type,
+                'qty_factor' => $p->qty_factor,
+            ])->values()->all(),
         ];
     }
 
@@ -269,6 +302,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'parts' => fn ($q) => $q->orderBy('part_seq'),
                 'parts.materials' => fn ($q) => $q->orderBy('layer_seq'),
                 'parts.materials.rawMaterial',
+                'parts.processes' => fn ($q) => $q->orderBy('step_seq'),
                 'toolings',
                 'externalCosts',
             ])->findOrFail($this->id);
