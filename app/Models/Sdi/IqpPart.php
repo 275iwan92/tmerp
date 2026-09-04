@@ -29,6 +29,8 @@ class IqpPart extends Model
         'flat_w',
         'flat_h',
         'flat_area',
+        'artwork_path',
+        'artwork_original_filename',
         'created_by',
         'updated_by',
     ];

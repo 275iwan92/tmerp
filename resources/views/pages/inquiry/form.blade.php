@@ -3,6 +3,7 @@
 use App\Models\Master\CustCustomer;
 use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
+use App\Models\Master\ProdPartAttachment;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeSize;
@@ -10,18 +11,24 @@ use App\Models\Sdi\IqpExternalCost;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sdi\IqpPartMaterial;
+use App\Models\Sdi\IqpPartProcess;
 use App\Models\Sdi\IqpTier;
 use App\Models\Sdi\IqpTooling;
+use App\Models\Sys\SysConstant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 {
+    use WithFileUploads;
+
     #[Url]
     public ?int $id = null;
 
@@ -122,8 +129,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     /** @var array<int, array{id: ?int, qty: string, is_primary: bool, discount_item_type: string, discount_item_value: string}> */
     public array $tiers = [];
 
-    /** @var array<int, array{id: ?int, part_name: string, part_type: string, type_code: string, qty_per_sku: string, dims: array, flat_manual: bool, flat_w: string, flat_h: string, flat_area: string, cfg_color: string, cfg_ink: string, materials: array}> */
+    /** @var array<int, array{id: ?int, part_name: string, part_type: string, type_code: string, qty_per_sku: string, dims: array, flat_manual: bool, flat_w: string, flat_h: string, flat_area: string, cfg_color: string, cfg_ink: string, artwork_path: ?string, artwork_original_filename: ?string, suggestions: ?array, materials: array}> */
     public array $parts = [];
+
+    // Temp upload artwork per index part (Livewire WithFileUploads) -- lihat
+    // uploadArtwork() & suggestion engine kertas/finishing/tinta di bawah.
+    public array $artworkUploads = [];
 
     /** @var array<int, array{id: ?int, tooling_kind: string, tooling_status: string, is_new_charge: bool, cost: string, remark: string}> */
     public array $toolings = [];
@@ -391,6 +402,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'dims_version' => 0,
             'cfg_color' => $p->cfg_color ?? '4/4',
             'cfg_ink' => $p->cfg_ink ?? '',
+            'artwork_path' => $p->artwork_path,
+            'artwork_original_filename' => $p->artwork_original_filename,
+            'suggestions' => null,
             'materials' => $p->materials->map(fn (IqpPartMaterial $m) => [
                 'id' => $m->id_part_material,
                 'rawmat_id' => $m->rawmat_id,
@@ -412,6 +426,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         foreach ($this->parts as $i => $part) {
             if (empty($part['materials'])) {
                 $this->parts[$i]['materials'] = [$this->blankMaterialRow(true)];
+            }
+
+            if (! empty($part['type_code'])) {
+                $this->refreshArtworkSuggestions($i);
             }
         }
 
@@ -704,6 +722,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'dims_version' => 0,
             'cfg_color' => '4/4',
             'cfg_ink' => '',
+            'artwork_path' => null,
+            'artwork_original_filename' => null,
+            'suggestions' => null,
             'materials' => [$this->blankMaterialRow(true)],
         ];
     }
@@ -751,6 +772,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->parts[$index]['flat_area'] = '';
         $this->parts[$index]['size_preset_id'] = '';
         $this->parts[$index]['dims_version'] = ($this->parts[$index]['dims_version'] ?? 0) + 1;
+
+        $this->refreshArtworkSuggestions($index);
 
         if ($typeCode === '') {
             return;
@@ -908,6 +931,249 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $isPrimary = $this->parts[$partIndex]['materials'][$matIndex]['is_primary'];
         $this->parts[$partIndex]['materials'][$matIndex] = $this->blankMaterialRow($isPrimary);
         $this->parts[$partIndex]['materials'][$matIndex]['id'] = $id;
+    }
+
+    // ================= ARTWORK per part (iqp_part.artwork_path) =================
+    // Upload gambar desain/artwork customer (permintaan user 2026-09-04) --
+    // referensi visual sales & dasar engine saran default di bawah. Part harus
+    // sudah tersimpan (punya id) dulu, sama pola dgn sendToProDev().
+
+    #[Computed]
+    public function artworkMaxMb(): float
+    {
+        return SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10);
+    }
+
+    public function uploadArtwork(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index]) || ! $this->parts[$index]['id']) {
+            return;
+        }
+
+        $file = $this->artworkUploads[$index] ?? null;
+
+        if (! $file) {
+            return;
+        }
+
+        $this->validate([
+            "artworkUploads.{$index}" => 'image|mimes:jpg,jpeg,png|max:'.($this->artworkMaxMb * 1024),
+        ]);
+
+        $partId = $this->parts[$index]['id'];
+        $oldPath = $this->parts[$index]['artwork_path'] ?? null;
+
+        $path = $file->store("inquiry/{$partId}/artwork", 'public');
+
+        if ($oldPath) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        IqpPart::whereKey($partId)->update([
+            'artwork_path' => $path,
+            'artwork_original_filename' => $file->getClientOriginalName(),
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->parts[$index]['artwork_path'] = $path;
+        $this->parts[$index]['artwork_original_filename'] = $file->getClientOriginalName();
+        unset($this->artworkUploads[$index]);
+
+        $this->refreshArtworkSuggestions($index);
+    }
+
+    public function removeArtwork(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index]) || ! $this->parts[$index]['id']) {
+            return;
+        }
+
+        $path = $this->parts[$index]['artwork_path'] ?? null;
+
+        if ($path) {
+            Storage::disk('public')->delete($path);
+        }
+
+        IqpPart::whereKey($this->parts[$index]['id'])->update([
+            'artwork_path' => null,
+            'artwork_original_filename' => null,
+        ]);
+
+        $this->parts[$index]['artwork_path'] = null;
+        $this->parts[$index]['artwork_original_filename'] = null;
+
+        $this->refreshArtworkSuggestions($index);
+    }
+
+    // ================= SARAN OTOMATIS: kertas/finishing/tinta (permintaan user 2026-09-04) =================
+    // Engine "suggests, officer confirms" (pola sama scheduling/imposition/routing,
+    // CLAUDE.md §4) -- BUKAN auto-terapkan. Jenis kertas & finishing TIDAK bisa
+    // disimpulkan dari pixel gambar (itu keputusan produksi, bukan konten visual),
+    // jadi sumbernya histori Inquiry lain dgn Tipe Produk sama (dieline_spec->type_code).
+    // Notasi warna/tinta didekati dari analisis warna artwork -- heuristik kasar
+    // (jumlah warna dominan & grayscale-atau-tidak), selalu tampil sbg saran yg
+    // wajib dicek ulang officer, bukan deteksi presisi cetak.
+
+    protected function refreshArtworkSuggestions(int $index): void
+    {
+        $row = $this->parts[$index] ?? null;
+
+        if (! $row) {
+            return;
+        }
+
+        $typeCode = $row['type_code'] ?? '';
+
+        $this->parts[$index]['suggestions'] = [
+            'color' => $this->suggestColorFromArtwork($row['artwork_path'] ?? null),
+            'material' => $typeCode !== '' ? $this->suggestMaterialFromHistory($typeCode) : null,
+            'finishing' => $typeCode !== '' ? $this->suggestFinishingFromHistory($typeCode) : null,
+        ];
+    }
+
+    protected function suggestColorFromArtwork(?string $path): ?array
+    {
+        if (! $path || ! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        $full = Storage::disk('public')->path($path);
+        $info = @getimagesize($full);
+
+        if (! $info) {
+            return null;
+        }
+
+        $img = match ($info[2]) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($full),
+            IMAGETYPE_PNG => @imagecreatefrompng($full),
+            default => null,
+        };
+
+        if (! $img) {
+            return null;
+        }
+
+        // Downsample ke grid kecil -- cukup utk gambaran warna, jauh lebih cepat
+        // & noise kompresi JPEG teredam dibanding scan pixel penuh.
+        $sw = 40;
+        $sh = 40;
+        $sample = imagecreatetruecolor($sw, $sh);
+        imagecopyresampled($sample, $img, 0, 0, 0, 0, $sw, $sh, imagesx($img), imagesy($img));
+        imagedestroy($img);
+
+        $colors = [];
+        $isGrayscale = true;
+
+        for ($y = 0; $y < $sh; $y++) {
+            for ($x = 0; $x < $sw; $x++) {
+                $rgb = imagecolorat($sample, $x, $y);
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+
+                if (abs($r - $g) > 12 || abs($g - $b) > 12 || abs($r - $b) > 12) {
+                    $isGrayscale = false;
+                }
+
+                // Kuantisasi tiap channel ke kelipatan 32 -- variasi gradasi/kompresi
+                // kecil tidak dihitung sbg warna baru terus-terusan.
+                $colors[intdiv($r, 32).'-'.intdiv($g, 32).'-'.intdiv($b, 32)] = true;
+            }
+        }
+
+        imagedestroy($sample);
+
+        $distinct = count($colors);
+
+        $code = match (true) {
+            $isGrayscale && $distinct <= 3 => '1/0',
+            ! $isGrayscale && $distinct <= 4 => '2/0',
+            ! $isGrayscale && $distinct <= 10 => '4/0',
+            default => '4/4',
+        };
+
+        return [
+            'code' => $code,
+            'distinct_colors' => $distinct,
+            'is_grayscale' => $isGrayscale,
+        ];
+    }
+
+    protected function suggestMaterialFromHistory(string $typeCode): ?array
+    {
+        $top = IqpPartMaterial::query()
+            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_material.part_id')
+            ->where('iqp_part.dieline_spec->type_code', $typeCode)
+            ->whereNotNull('iqp_part_material.rawmat_id')
+            ->selectRaw('iqp_part_material.rawmat_id, iqp_part_material.rawmat_name, count(*) as cnt')
+            ->groupBy('iqp_part_material.rawmat_id', 'iqp_part_material.rawmat_name')
+            ->orderByDesc('cnt')
+            ->first();
+
+        if (! $top) {
+            return null;
+        }
+
+        $total = IqpPartMaterial::query()
+            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_material.part_id')
+            ->where('iqp_part.dieline_spec->type_code', $typeCode)
+            ->whereNotNull('iqp_part_material.rawmat_id')
+            ->count();
+
+        return [
+            'rawmat_id' => $top->rawmat_id,
+            'rawmat_name' => $top->rawmat_name,
+            'pct' => $total > 0 ? (int) round($top->cnt / $total * 100) : 0,
+        ];
+    }
+
+    protected function suggestFinishingFromHistory(string $typeCode): ?array
+    {
+        $top = IqpPartProcess::query()
+            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_process.part_id')
+            ->where('iqp_part.dieline_spec->type_code', $typeCode)
+            ->whereNotNull('iqp_part_process.process_name')
+            ->selectRaw('iqp_part_process.process_name, count(*) as cnt')
+            ->groupBy('iqp_part_process.process_name')
+            ->orderByDesc('cnt')
+            ->first();
+
+        if (! $top) {
+            return null;
+        }
+
+        $total = IqpPartProcess::query()
+            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_process.part_id')
+            ->where('iqp_part.dieline_spec->type_code', $typeCode)
+            ->count();
+
+        return [
+            'process_name' => $top->process_name,
+            'pct' => $total > 0 ? (int) round($top->cnt / $total * 100) : 0,
+        ];
+    }
+
+    public function applySuggestedColor(int $index, string $code): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        $this->parts[$index]['cfg_color'] = $code;
+    }
+
+    public function applySuggestedMaterial(int $index, int $rawmatId): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        if (empty($this->parts[$index]['materials'])) {
+            $this->addMaterialRow($index);
+        }
+
+        $this->selectMaterial($index, 0, $rawmatId);
     }
 
     // ================= TOOLING (iqp_tooling, Tier1 F6) =================
@@ -1368,6 +1634,21 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             $part->update(['prod_part_id' => $prodPart->id_part]);
         }
 
+        // Artwork yg diupload di Inquiry ikut jadi Referensi ProDev otomatis --
+        // 1 file yg sama (disk 'public'), bukan disalin fisik. Permintaan user
+        // 2026-09-04: "sangat membantu ProDev dan ProCost".
+        if ($part->artwork_path
+            && ! ProdPartAttachment::where('part_id', $part->prod_part_id)->where('file_path', $part->artwork_path)->exists()) {
+            ProdPartAttachment::create([
+                'part_id' => $part->prod_part_id,
+                'file_type' => 'JPEG',
+                'file_path' => $part->artwork_path,
+                'original_filename' => $part->artwork_original_filename,
+                'uploaded_at' => now(),
+                'uploaded_by' => Auth::user()->login,
+            ]);
+        }
+
         $this->redirect(route('production.prodev', ['part' => $part->prod_part_id]));
     }
 
@@ -1728,6 +2009,29 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     <label>Qty per Set</label>
                                     <input type="number" min="0" step="0.01" wire:model.blur="parts.{{ $i }}.qty_per_sku" @if($readOnly) disabled @endif>
                                 </div>
+                                <div class="f">
+                                    <label>Artwork / Desain</label>
+                                    @if ($part['artwork_path'])
+                                        <div style="display:flex;gap:6px;align-items:center">
+                                            <img src="{{ asset('storage/'.$part['artwork_path']) }}" style="width:34px;height:34px;object-fit:cover;border-radius:4px;border:1px solid #c7cfda;flex-shrink:0" alt="artwork">
+                                            <div style="flex:1;min-width:0">
+                                                <div style="font-size:10.5px;font-weight:600;color:#334;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ $part['artwork_original_filename'] }}">{{ $part['artwork_original_filename'] }}</div>
+                                                @unless($readOnly)
+                                                    <button type="button" class="btn d xs" wire:click="removeArtwork({{ $i }})" style="margin-top:2px">✕ hapus</button>
+                                                @endunless
+                                            </div>
+                                        </div>
+                                    @elseif(! $part['id'])
+                                        <div class="hint">Simpan part dulu utk upload</div>
+                                    @elseif(! $readOnly)
+                                        <div style="display:flex;gap:4px;align-items:center">
+                                            <input type="file" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="font-size:11px;flex:1;min-width:0">
+                                            <button type="button" class="btn g xs" wire:click="uploadArtwork({{ $i }})" wire:loading.attr="disabled" wire:target="artworkUploads.{{ $i }}">↑</button>
+                                        </div>
+                                        <div class="hint">JPG/PNG, maks {{ $this->artworkMaxMb }}MB</div>
+                                        @error('artworkUploads.'.$i) <div style="font-size:10px;color:#c0392b">{{ $message }}</div> @enderror
+                                    @endif
+                                </div>
                             </div>
 
                             @php($typeOptions = $this->productTypeOptions)
@@ -1850,6 +2154,15 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     </div>
 
                                     <div class="sec-title">Bahan (Material)</div>
+                                    @if (($part['suggestions']['material'] ?? null) && empty($part['materials'][0]['rawmat_id'] ?? null))
+                                        @php($sugMat = $part['suggestions']['material'])
+                                        <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                            <span>💡 Saran bahan dari histori: <b>{{ $sugMat['rawmat_name'] }}</b> (dipakai {{ $sugMat['pct'] }}% Inquiry Tipe Produk ini sebelumnya)</span>
+                                            @unless($readOnly)
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedMaterial({{ $i }}, {{ $sugMat['rawmat_id'] }})">Pakai</button>
+                                            @endunless
+                                        </div>
+                                    @endif
                                     <div class="hint" style="margin-bottom:6px">Pilih dari master bahan baku — brand &amp; jenis bahan otomatis terisi.</div>
                                     <table>
                                         <thead>
@@ -1914,6 +2227,19 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     </button>
 
                                     <div class="sec-title">Cetak / Warna</div>
+                                    @if ($part['suggestions']['color'] ?? null)
+                                        @php($sugColor = $part['suggestions']['color'])
+                                        <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                            <span>💡 Saran notasi warna dari analisis artwork: <b>{{ $sugColor['code'] }}</b> ({{ $sugColor['distinct_colors'] }} warna terdeteksi{{ $sugColor['is_grayscale'] ? ', hitam-putih' : '' }}) — perkiraan kasar, cek ulang sebelum dipakai.</span>
+                                            @unless($readOnly)
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedColor({{ $i }}, '{{ $sugColor['code'] }}')">Pakai</button>
+                                            @endunless
+                                        </div>
+                                    @endif
+                                    @if ($part['suggestions']['finishing'] ?? null)
+                                        @php($sugFin = $part['suggestions']['finishing'])
+                                        <div class="note y">📋 Saran finishing dari histori: <b>{{ $sugFin['process_name'] }}</b> (dipakai {{ $sugFin['pct'] }}% Inquiry Tipe Produk ini sebelumnya) — blm ada field finishing di Inquiry, terapkan manual nanti di ProDev.</div>
+                                    @endif
                                     <div class="grid">
                                         <div class="f">
                                             <label>Notasi Warna</label>
