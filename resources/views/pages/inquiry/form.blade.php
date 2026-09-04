@@ -935,8 +935,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     // ================= ARTWORK per part (iqp_part.artwork_path) =================
     // Upload gambar desain/artwork customer (permintaan user 2026-09-04) --
-    // referensi visual sales & dasar engine saran default di bawah. Part harus
-    // sudah tersimpan (punya id) dulu, sama pola dgn sendToProDev().
+    // referensi visual sales & dasar engine saran default di bawah. BISA
+    // dipakai SEBELUM part/inquiry pernah disimpan sama sekali (revisi
+    // 2026-09-04 ke-2: user keberatan harus Simpan dulu) -- file ditahan
+    // sbg temp upload Livewire (preview via temporaryUrl(), analisis warna
+    // baca langsung dari file temp), baru dipindah ke storage permanen +
+    // ditulis ke iqp_part.artwork_path saat part beneran disimpan
+    // (persistPendingArtwork(), dipanggil dari persistParts()).
 
     #[Computed]
     public function artworkMaxMb(): float
@@ -944,65 +949,76 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         return SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10);
     }
 
-    public function uploadArtwork(int $index): void
+    // Livewire lifecycle hook -- otomatis terpanggil begitu file dipilih di
+    // wire:model="artworkUploads.{index}" (tidak perlu tombol Upload terpisah).
+    public function updatedArtworkUploads($value, $key): void
     {
-        if ($this->readOnly || ! isset($this->parts[$index]) || ! $this->parts[$index]['id']) {
+        $index = (int) $key;
+
+        if ($this->readOnly || ! isset($this->parts[$index]) || ! $value) {
             return;
         }
 
-        $file = $this->artworkUploads[$index] ?? null;
-
-        if (! $file) {
-            return;
-        }
-
-        $this->validate([
-            "artworkUploads.{$index}" => 'image|mimes:jpg,jpeg,png|max:'.($this->artworkMaxMb * 1024),
+        $this->validateOnly("artworkUploads.{$key}", [
+            "artworkUploads.{$key}" => 'image|mimes:jpg,jpeg,png|max:'.($this->artworkMaxMb * 1024),
         ]);
 
-        $partId = $this->parts[$index]['id'];
-        $oldPath = $this->parts[$index]['artwork_path'] ?? null;
-
-        $path = $file->store("inquiry/{$partId}/artwork", 'public');
-
-        if ($oldPath) {
-            Storage::disk('public')->delete($oldPath);
-        }
-
-        IqpPart::whereKey($partId)->update([
-            'artwork_path' => $path,
-            'artwork_original_filename' => $file->getClientOriginalName(),
-            'updated_by' => Auth::user()->login,
-        ]);
-
-        $this->parts[$index]['artwork_path'] = $path;
-        $this->parts[$index]['artwork_original_filename'] = $file->getClientOriginalName();
-        unset($this->artworkUploads[$index]);
+        $this->parts[$index]['artwork_original_filename'] = $value->getClientOriginalName();
 
         $this->refreshArtworkSuggestions($index);
     }
 
     public function removeArtwork(int $index): void
     {
-        if ($this->readOnly || ! isset($this->parts[$index]) || ! $this->parts[$index]['id']) {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
             return;
         }
+
+        unset($this->artworkUploads[$index]);
 
         $path = $this->parts[$index]['artwork_path'] ?? null;
 
         if ($path) {
             Storage::disk('public')->delete($path);
-        }
 
-        IqpPart::whereKey($this->parts[$index]['id'])->update([
-            'artwork_path' => null,
-            'artwork_original_filename' => null,
-        ]);
+            if ($this->parts[$index]['id']) {
+                IqpPart::whereKey($this->parts[$index]['id'])->update([
+                    'artwork_path' => null,
+                    'artwork_original_filename' => null,
+                ]);
+            }
+        }
 
         $this->parts[$index]['artwork_path'] = null;
         $this->parts[$index]['artwork_original_filename'] = null;
 
         $this->refreshArtworkSuggestions($index);
+    }
+
+    // Dipanggil dari persistParts() sesudah $part punya id_part pasti (part baru
+    // maupun lama) -- pindahkan temp upload (kalau ada) ke storage permanen.
+    protected function persistPendingArtwork(IqpPart $part, int $index): void
+    {
+        $file = $this->artworkUploads[$index] ?? null;
+
+        if (! $file) {
+            return;
+        }
+
+        $oldPath = $part->artwork_path;
+        $path = $file->store("inquiry/{$part->id_part}/artwork", 'public');
+
+        if ($oldPath && $oldPath !== $path) {
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $part->update([
+            'artwork_path' => $path,
+            'artwork_original_filename' => $file->getClientOriginalName(),
+        ]);
+
+        $this->parts[$index]['artwork_path'] = $path;
+        unset($this->artworkUploads[$index]);
     }
 
     // ================= SARAN OTOMATIS: kertas/finishing/tinta (permintaan user 2026-09-04) =================
@@ -1023,21 +1039,34 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         $typeCode = $row['type_code'] ?? '';
+        $pendingFile = $this->artworkUploads[$index] ?? null;
+
+        $colorSourcePath = $pendingFile
+            ? $pendingFile->getRealPath()
+            : $this->storedArtworkAbsolutePath($row['artwork_path'] ?? null);
 
         $this->parts[$index]['suggestions'] = [
-            'color' => $this->suggestColorFromArtwork($row['artwork_path'] ?? null),
+            'color' => $colorSourcePath ? $this->analyzeImageColors($colorSourcePath) : null,
             'material' => $typeCode !== '' ? $this->suggestMaterialFromHistory($typeCode) : null,
             'finishing' => $typeCode !== '' ? $this->suggestFinishingFromHistory($typeCode) : null,
         ];
     }
 
-    protected function suggestColorFromArtwork(?string $path): ?array
+    protected function storedArtworkAbsolutePath(?string $path): ?string
     {
         if (! $path || ! Storage::disk('public')->exists($path)) {
             return null;
         }
 
-        $full = Storage::disk('public')->path($path);
+        return Storage::disk('public')->path($path);
+    }
+
+    protected function analyzeImageColors(?string $full): ?array
+    {
+        if (! $full || ! is_file($full)) {
+            return null;
+        }
+
         $info = @getimagesize($full);
 
         if (! $info) {
@@ -1408,6 +1437,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 $keepIds[] = $part->id_part;
             }
 
+            $this->persistPendingArtwork($part, $index);
             $this->persistPartMaterials($part, $index);
         }
 
@@ -1994,11 +2024,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     <label>Qty per Set</label>
                                     <input type="number" min="0" step="0.01" wire:model.blur="parts.{{ $i }}.qty_per_sku" @if($readOnly) disabled @endif>
                                 </div>
-                                <div class="f">
+                                <div class="f" x-data="{ zoom: false }">
                                     <label>Artwork / Desain</label>
-                                    @if ($part['artwork_path'])
+                                    @php($artworkPreviewUrl = isset($artworkUploads[$i]) ? $artworkUploads[$i]->temporaryUrl() : ($part['artwork_path'] ? asset('storage/'.$part['artwork_path']) : null))
+                                    @if ($artworkPreviewUrl)
                                         <div style="display:flex;gap:6px;align-items:center">
-                                            <img src="{{ asset('storage/'.$part['artwork_path']) }}" style="width:34px;height:34px;object-fit:cover;border-radius:4px;border:1px solid #c7cfda;flex-shrink:0" alt="artwork">
+                                            <img src="{{ $artworkPreviewUrl }}" @click="zoom = true" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #c7cfda;flex-shrink:0;cursor:zoom-in" alt="artwork">
                                             <div style="flex:1;min-width:0">
                                                 <div style="font-size:10.5px;font-weight:600;color:#334;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="{{ $part['artwork_original_filename'] }}">{{ $part['artwork_original_filename'] }}</div>
                                                 @unless($readOnly)
@@ -2006,16 +2037,18 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                 @endunless
                                             </div>
                                         </div>
-                                    @elseif(! $part['id'])
-                                        <div style="border:1px dashed #c7cfda;border-radius:6px;padding:5px 7px;background:#f7f8fa;font-size:10.5px;color:#6b7280;line-height:1.3">
-                                            📎 Klik <b>Simpan</b> dulu, baru upload artwork bisa dipakai
+                                        <div x-show="zoom" x-cloak @click.self="zoom = false" @keydown.escape.window="zoom = false"
+                                             style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
+                                            <img src="{{ $artworkPreviewUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork ukuran penuh">
                                         </div>
                                     @elseif(! $readOnly)
-                                        <div style="display:flex;gap:4px;align-items:center">
-                                            <input type="file" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="font-size:11px;flex:1;min-width:0">
-                                            <button type="button" class="btn g xs" wire:click="uploadArtwork({{ $i }})" wire:loading.attr="disabled" wire:target="artworkUploads.{{ $i }}">↑</button>
-                                        </div>
-                                        <div class="hint">JPG/PNG, maks {{ $this->artworkMaxMb }}MB</div>
+                                        <input type="file" x-ref="artworkInput{{ $i }}" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="display:none">
+                                        <button type="button" class="btn g" style="display:inline-flex;align-items:center;gap:6px;width:fit-content"
+                                                @click="$refs['artworkInput{{ $i }}'].click()">
+                                            📎 Upload Artwork
+                                        </button>
+                                        <div wire:loading wire:target="artworkUploads.{{ $i }}" class="hint" style="color:#1560a8">⏳ mengunggah &amp; menganalisis…</div>
+                                        <div wire:loading.remove wire:target="artworkUploads.{{ $i }}" class="hint">JPG/PNG, maks {{ $this->artworkMaxMb }}MB — preview &amp; saran otomatis langsung jalan</div>
                                         @error('artworkUploads.'.$i) <div style="font-size:10px;color:#c0392b">{{ $message }}</div> @enderror
                                     @endif
                                 </div>
