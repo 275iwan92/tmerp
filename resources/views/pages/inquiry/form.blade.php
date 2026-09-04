@@ -2244,12 +2244,28 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 terpisah "Sifat Order & Pajak", tapi setelah Skema PPN/PPh23 disembunyikan
                 (commit 8e0c7ef) cuma sisa 2 field kecil, 1 kartu penuh jadi boros ruang. --}}
                 <div class="sec-title">Sifat Order</div>
-                <div class="grid two">
-                    <x-form.toggle-group legacy label="Sumber Bahan" :hint="$material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA.'">
-                        <x-form.toggle-option legacy :active="$material_source === 'OWN'" style="flex:1" wire:click="setMaterialSource('OWN')" :disabled="$readOnly">Perusahaan (OWN)</x-form.toggle-option>
-                        <x-form.toggle-option legacy :active="$material_source === 'CUSTOMER'" style="flex:1" wire:click="setMaterialSource('CUSTOMER')" :disabled="$readOnly">Customer sediakan</x-form.toggle-option>
-                    </x-form.toggle-group>
-                    <x-form.input legacy label="Jenis Pekerjaan" value="{{ $this->jobNature() }}" readonly hint="Otomatis dari sumber bahan (PRODUCT / JASA)." />
+                {{-- Radio (bukan toggle-button lebar) + "Jenis Pekerjaan" dihapus
+                (permintaan user 2026-09-04: "ga perlu melebar" + "jenis pekerjaan
+                tidak diperlukan lagi krn sudah diwakili sumber bahan -- bahan dari
+                customer = jasa, krn cuma ongkos cetak/finishing"). jobNature() TETAP
+                jalan di background (dipakai save() nulis job_nature), cuma UI
+                display-nya yg dilepas -- klik radio pakai method setMaterialSource()
+                yg sama persis dgn toggle-button lama, bukan wire:model radio
+                langsung (jaga2 morph-sync, sama alasan kayak <select> di memory
+                feedback_livewire_select_morph_bug). --}}
+                <div class="f">
+                    <label>Sumber Bahan</label>
+                    <div style="display:flex;gap:18px;align-items:center;padding:5px 0">
+                        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px;color:#233;cursor:pointer">
+                            <input type="radio" @checked($material_source === 'OWN') wire:click="setMaterialSource('OWN')" @if($readOnly) disabled @endif>
+                            Perusahaan (OWN)
+                        </label>
+                        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px;color:#233;cursor:pointer">
+                            <input type="radio" @checked($material_source === 'CUSTOMER') wire:click="setMaterialSource('CUSTOMER')" @if($readOnly) disabled @endif>
+                            Customer sediakan
+                        </label>
+                    </div>
+                    <div class="hint">{{ $material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA (cuma ongkos cetak/finishing).' }}</div>
                 </div>
                 {{-- Skema PPN & PPh23 disembunyikan dari layar Inquiry (permintaan user
                 2026-09-04: "belum perlu saat input inquiry, pindah nanti di CO seperti
