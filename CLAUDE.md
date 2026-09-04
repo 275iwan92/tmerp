@@ -171,8 +171,17 @@ transaksi = `iqp_costing`, ikut inquiry).
   - **Inquiry Product punya 3 doc-type** (`inquiryproduct_flow.md` §6, locked Jo):
     **BARU** (dari nol, Master Product belum ada), **REVISI** (reorder, spec
     BERUBAH), **REKALKULASI** (reorder, spec SAMA, cuma harga bahan naik/turun).
-    `iqp_costing.calc_type` di kode SAAT INI hardcode `'NEW'` — 3 mode ini baru
-    konsep dokumen, belum ada percabangan behavior nyata.
+    `iqp_costing.calc_type` di kode SAAT INI hardcode `'NEW'` (kolom Costing
+    ini spesifik belum ikut bercabang). **Koreksi 2026-09-04** (klaim lama di
+    sini sempat bilang "3 mode cuma konsep, belum ada percabangan behavior
+    nyata" — SALAH, sudah diverifikasi ke kode): REVISI & REKALKULASI adalah
+    **layar Livewire terpisah** (`inquiry/revise.blade.php` route
+    `inquiry.revise`, `inquiry/recalc.blade.php` route `inquiry.recalc`),
+    BUKAN mode di `form.blade.php`. REVISI punya scope selector nyata
+    (MATERIAL/DIMENSION/ARTWORK/COLOR/PROCESS, `inquiryproduct_delta_revise.md`)
+    yang mengunci/membuka blok edit; REKALKULASI 100% read-only reuse kecuali
+    Qty Order. Detail UI/UX & status implementasi lengkap:
+    `docs/inquiry_product_costing/inquiryproduct_rules.md`.
   - **ProDev Mode #1 (integrasi)** — utk Inquiry BARU: ProDev **HARUS** ambil/
     berawal dari `iqp_part` (seed `prod_part` baru dari spec kasar Inquiry).
     **STATUS 2026-09-03: LINK INI BELUM ADA** — 0 jalur kode bikin `prod_part`
