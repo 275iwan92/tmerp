@@ -2064,15 +2064,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         <x-form.toggle-option legacy :active="$material_source === 'CUSTOMER'" style="flex:1" wire:click="setMaterialSource('CUSTOMER')" :disabled="$readOnly">Customer sediakan</x-form.toggle-option>
                     </x-form.toggle-group>
                     <x-form.input legacy label="Jenis Pekerjaan" value="{{ $this->jobNature() }}" readonly hint="Otomatis dari sumber bahan (PRODUCT / JASA)." />
-                    <x-form.toggle-group legacy label="Skema PPN">
-                        <x-form.toggle-option legacy :active="$tax_scheme === 'PPN'" style="flex:1" wire:click="setTaxScheme('PPN')" :disabled="$readOnly">PPN</x-form.toggle-option>
-                        <x-form.toggle-option legacy :active="$tax_scheme === 'NON_PPN'" style="flex:1" wire:click="setTaxScheme('NON_PPN')" :disabled="$readOnly">NON_PPN</x-form.toggle-option>
-                    </x-form.toggle-group>
-                    <x-form.toggle-group legacy label="PPh23 (jasa)" hint="Hanya relevan bila Jenis Pekerjaan = JASA.">
-                        <x-form.toggle-option legacy :active="! $pph_applicable" style="flex:1" wire:click="setPph(false)" :disabled="$readOnly || $this->jobNature() !== 'JASA'">Tidak</x-form.toggle-option>
-                        <x-form.toggle-option legacy :active="$pph_applicable" style="flex:1" wire:click="setPph(true)" :disabled="$readOnly || $this->jobNature() !== 'JASA'">Ya</x-form.toggle-option>
-                    </x-form.toggle-group>
                 </div>
+                {{-- Skema PPN & PPh23 disembunyikan dari layar Inquiry (permintaan user
+                2026-09-04: "belum perlu saat input inquiry, pindah nanti di CO seperti
+                halnya discount... ini hal yang pasti") -- properti/validasi/kolom DB
+                TETAP ada, cuma UI-nya dilepas (pola sama persis dgn Diskon Dokumen,
+                commit 4990a82). Default tax_scheme='PPN' & pph_applicable otomatis dari
+                Sumber Bahan (setMaterialSource()) tetap jalan di background. --}}
 
                 @if ($material_source === 'CUSTOMER')
                     <div style="margin-top:6px">
