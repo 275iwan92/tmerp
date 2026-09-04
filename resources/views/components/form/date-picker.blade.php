@@ -51,7 +51,7 @@
     <div class="relative flex items-center">
         <input type="text" readonly x-bind:value="display" @click="toggle()"
             placeholder="{{ $isDatetime ? 'Pilih tanggal & jam...' : 'Pilih tanggal...' }}"
-            @if ($attributes->has('disabled')) disabled @endif
+            @if ($attributes->get('disabled')) disabled @endif
             class="{{ $triggerClass }}">
         <span class="absolute right-2.5 text-[13px] text-[#697386] pointer-events-none">{{ $isDatetime ? '🕒' : '📅' }}</span>
     </div>

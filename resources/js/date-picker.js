@@ -18,6 +18,11 @@ document.addEventListener('alpine:init', () => {
     const MONTHS_LONG = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     const DAY_LABELS = ['Mg', 'Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb'];
+    // Nama hari penuh utk ditampilkan di teks terpilih (permintaan user
+    // 2026-09-04: "date & time picker yang ada hari nya", ref mockup
+    // UIUX_components_part1.html) -- DAY_LABELS di atas cuma header grid
+    // kalender (2 huruf), ini utk display value ("Jumat, 4 Sep 2026").
+    const DAY_NAMES_LONG = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     const pad = (n) => String(n).padStart(2, '0');
 
     Alpine.data('tmDatePicker', (opts = {}) => ({
@@ -62,7 +67,8 @@ document.addEventListener('alpine:init', () => {
         formatDisplay(v) {
             const p = v ? this.parseIso(v) : null;
             if (!p) return '';
-            let out = `${p.d} ${MONTHS_SHORT[p.m]} ${p.y}`;
+            const dow = DAY_NAMES_LONG[new Date(p.y, p.m, p.d).getDay()];
+            let out = `${dow}, ${p.d} ${MONTHS_SHORT[p.m]} ${p.y}`;
             if (this.mode === 'datetime') out += ` ${pad(p.h)}:${pad(p.i)}`;
             return out;
         },
