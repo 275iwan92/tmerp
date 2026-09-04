@@ -20,6 +20,7 @@ use App\Models\Sys\SysConstant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -76,6 +77,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     public string $source = 'EMAIL';
 
     public string $pic_sales = '';
+
+    // Picker visual Peran Part (permintaan user 2026-09-04: "kasih gambar di
+    // samping nama biar mudah dipahami sales junior") -- null = tertutup,
+    // isinya index part yg lagi diisi. Dropdown murni tidak bisa nampilkan
+    // icon (keterbatasan <select> native), makanya popup kartu spt picker
+    // Tipe Produk yg sudah ada.
+    public ?int $rolePickerPartIndex = null;
 
     // Picker PIC Sales (permintaan user 2026-09-04: auto dari login + bisa
     // diubah dari daftar sales internal/external, master baru `sales_person`).
@@ -440,6 +448,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'dims_version' => 0,
             'cfg_color' => $p->cfg_color ?? '4/4',
             'cfg_ink' => $p->cfg_ink ?? '',
+            'part_role' => '',
             'artwork_path' => $p->artwork_path,
             'artwork_original_filename' => $p->artwork_original_filename,
             'suggestions' => null,
@@ -899,6 +908,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'artwork_path' => null,
             'artwork_original_filename' => null,
             'suggestions' => null,
+            'part_role' => '',
             'materials' => [$this->blankMaterialRow(true)],
             'processes' => [],
         ];
@@ -928,6 +938,156 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         unset($this->parts[$index]);
         $this->parts = array_values($this->parts);
+    }
+
+    // ================= PERAN PART -> AUTO NAMA (2026-09-04) =================
+    // Istilah dari riset glosarium packaging (Esko ArtiosCAD, corrugated box
+    // glossary) -- Body dipakai jg utk produk 1-part yg berbentuk container,
+    // Utama khusus utk produk NON-container (poster/label/hang tag) yg "Body"
+    // terasa janggal. Left/Right selaras branch_code (L/R) yg sudah ada di
+    // iqp_part_process. Nama hasil generate BEKU (tidak auto-update lagi kalau
+    // Nama Produk diedit belakangan) -- keputusan eksplisit user, biar tidak
+    // berubah tak terduga. Duplikat role di part lain otomatis diberi angka.
+    protected function partRoleOptions(): array
+    {
+        return [
+            'body' => ['label' => 'Body', 'icon' => '📦', 'desc' => 'Bagian struktural utama'],
+            'lid' => ['label' => 'Lid', 'icon' => '🔝', 'desc' => 'Tutup terpisah'],
+            'base' => ['label' => 'Base', 'icon' => '⬇️', 'desc' => 'Alas terpisah'],
+            'sleeve' => ['label' => 'Sleeve', 'icon' => '🧦', 'desc' => 'Selongsong luar'],
+            'tray' => ['label' => 'Tray', 'icon' => '🍱', 'desc' => 'Baki dalam'],
+            'insert' => ['label' => 'Insert', 'icon' => '🧩', 'desc' => 'Fitment/pengganjal dalam'],
+            'divider' => ['label' => 'Divider', 'icon' => '🗂️', 'desc' => 'Sekat antar-kompartemen'],
+            'left' => ['label' => 'Left', 'icon' => '◀️', 'desc' => 'Sisi kiri'],
+            'right' => ['label' => 'Right', 'icon' => '▶️', 'desc' => 'Sisi kanan'],
+            'utama' => ['label' => 'Utama', 'icon' => '1️⃣', 'desc' => 'Bukan container (poster/label/hang tag)'],
+        ];
+    }
+
+    public function openRolePicker(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        $this->rolePickerPartIndex = $index;
+    }
+
+    public function closeRolePicker(): void
+    {
+        $this->rolePickerPartIndex = null;
+    }
+
+    public function selectPartRole(string $role): void
+    {
+        $index = $this->rolePickerPartIndex;
+
+        if ($this->readOnly || $index === null || ! isset($this->parts[$index]) || ! isset($this->partRoleOptions()[$role])) {
+            return;
+        }
+
+        $this->applyRoleToPart($index, $role);
+        $this->rolePickerPartIndex = null;
+    }
+
+    protected function applyRoleToPart(int $index, string $role): void
+    {
+        $productSlug = Str::slug($this->product_draft_name, '') ?: 'produk';
+        $base = $productSlug.'-'.$role;
+
+        $existingNames = collect($this->parts)
+            ->reject(fn ($p, $i) => $i === $index)
+            ->pluck('part_name')
+            ->filter();
+
+        $candidate = $base;
+        $n = 2;
+
+        while ($existingNames->contains($candidate)) {
+            $candidate = $base.'-'.$n;
+            $n++;
+        }
+
+        $this->parts[$index]['part_role'] = $role;
+        $this->parts[$index]['part_name'] = $candidate;
+    }
+
+    // ================= TEMPLATE MULTI-PART per Tipe Produk (2026-09-04) =================
+    // Permintaan user: "part-part ini harusnya sudah diketahui saat Tipe Produk
+    // dipilih -- misal box sepatu [Box with Lid] sudah tahu part-partnya".
+    // Cakupan SENGAJA dibatasi ke tipe yang namanya sendiri sudah eksplisit
+    // menyebut struktur multi-part (Box with Lid, Round Box/Hat Box, Polygonal
+    // Box with Lid, Sleeve, Match Box "Tray & Sleeve") -- tipe lain (geometris/
+    // kartu/dsb) TIDAK ditebak, drpd saran salah. Pola "engine suggests, officer
+    // confirms" (keputusan user): tampil sbg banner + tombol, TIDAK otomatis
+    // langsung nambah part tanpa diklik.
+    protected function partTemplateMap(): array
+    {
+        $bodyLid = [['role' => 'body', 'label' => 'Body'], ['role' => 'lid', 'label' => 'Lid']];
+
+        return [
+            'BOX_WITH_LID' => $bodyLid,
+            'ROUND_BOX' => $bodyLid,
+            'POLYGONAL_BOX_LID' => $bodyLid,
+            'SLEEVE' => [['role' => 'sleeve', 'label' => 'Sleeve'], ['role' => 'tray', 'label' => 'Tray']],
+            'MATCH_BOX' => [['role' => 'tray', 'label' => 'Tray'], ['role' => 'sleeve', 'label' => 'Sleeve']],
+        ];
+    }
+
+    public function partTemplateSuggestion(int $index): ?array
+    {
+        $row = $this->parts[$index] ?? null;
+
+        if (! $row || empty($row['type_code'])) {
+            return null;
+        }
+
+        $template = $this->partTemplateMap()[$row['type_code']] ?? null;
+
+        if (! $template) {
+            return null;
+        }
+
+        $existingRoles = collect($this->parts)->pluck('part_role')->filter()->all();
+        $missing = collect($template)->reject(fn ($t) => in_array($t['role'], $existingRoles, true));
+
+        if ($missing->isEmpty()) {
+            return null;
+        }
+
+        return [
+            'labels' => $missing->pluck('label')->implode(' + '),
+            'roles' => $missing->pluck('role')->values()->all(),
+            'total' => count($template),
+        ];
+    }
+
+    public function applyPartTemplate(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        $suggestion = $this->partTemplateSuggestion($index);
+
+        if (! $suggestion) {
+            return;
+        }
+
+        $roles = $suggestion['roles'];
+
+        // Part yg lagi diedit belum punya role -> isi part INI dulu pakai role
+        // pertama yg hilang, drpd bikin part baru sementara part yg dipilih
+        // sendiri masih tanpa nama/role.
+        if (empty($this->parts[$index]['part_role'])) {
+            $firstRole = array_shift($roles);
+            $this->applyRoleToPart($index, $firstRole);
+        }
+
+        foreach ($roles as $role) {
+            $this->addPart();
+            $this->applyRoleToPart(count($this->parts) - 1, $role);
+        }
     }
 
     // Ganti tipe produk part: reset dims ke default prod_type_param milik tipe baru.
@@ -2510,7 +2670,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             <div class="grid" style="margin-bottom:8px">
                                 <div class="f">
                                     <label>Nama Part</label>
-                                    <input type="text" wire:model.blur="parts.{{ $i }}.part_name" placeholder="mis. Body" @if($readOnly) disabled @endif>
+                                    <div style="display:flex;gap:6px;align-items:center">
+                                        <input type="text" wire:model.blur="parts.{{ $i }}.part_name" placeholder="mis. Body" style="flex:1" @if($readOnly) disabled @endif>
+                                        @unless($readOnly)
+                                            <button type="button" wire:click="openRolePicker({{ $i }})" title="Pilih peran part (nama terisi otomatis)"
+                                                style="flex-shrink:0;width:34px;height:34px;border:1px solid #c7cfda;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px">🏷️</button>
+                                        @endunless
+                                    </div>
                                 </div>
                                 <div class="f">
                                     <label>Tipe Part</label>
@@ -2595,6 +2761,20 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                             </div>
                                         @endif
                                     </div>
+
+                                    {{-- Saran template multi-part (permintaan user 2026-09-04: "part-part
+                                    ini harusnya sudah diketahui saat Tipe Produk dipilih") -- cuma tampil
+                                    utk tipe yg namanya sendiri eksplisit multi-part (Box with Lid, Round
+                                    Box, Sleeve, dst), engine suggests/officer confirms, TIDAK otomatis. --}}
+                                    @php($partTpl = $this->partTemplateSuggestion($i))
+                                    @if ($partTpl)
+                                        <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px">
+                                            <span>🧩 Tipe <b>{{ $selectedType['name'] ?? $part['type_code'] }}</b> biasanya {{ $partTpl['total'] }} part: <b>{{ $partTpl['labels'] }}</b>{{ empty($part['part_role']) ? '' : ' (tambahan, part ini sudah '.ucfirst($part['part_role']).')' }}.</span>
+                                            @unless($readOnly)
+                                                <button type="button" class="btn g xs" wire:click="applyPartTemplate({{ $i }})">Tambahkan Otomatis</button>
+                                            @endunless
+                                        </div>
+                                    @endif
 
                                     {{-- Modal picker visual (gambar dieline per tipe) -- overlay, tidak
                                     mengubah layout field manapun di bawah. Pilih kartu = SAMA PERSIS
@@ -2878,6 +3058,37 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 </button>
             </div>
         </div>
+
+        {{-- Popup Peran Part (permintaan user 2026-09-04: "kasih gambar di samping
+        nama biar mudah dipahami sales junior, icon tidak terlalu kecil tapi jelas")
+        -- <select> native tidak bisa nampilkan icon, jadi popup kartu (pola sama
+        dgn "Pilih Tipe Produk (Visual)" di atas). Klik kartu -> selectPartRole()
+        generate nama part = {slug nama produk}-{role}, beku setelah digenerate
+        (tidak auto-update lagi kalau Nama Produk diedit belakangan). --}}
+        @if ($rolePickerPartIndex !== null)
+            <div style="position:fixed;inset:0;z-index:200;background:rgba(15,22,45,.45);display:flex;align-items:center;justify-content:center;padding:24px"
+                 wire:click.self="closeRolePicker">
+                <div style="background:#fff;border-radius:12px;width:100%;max-width:620px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
+                        <div>
+                            <b style="font-size:14px;color:#2c3e69">Pilih Peran Part</b>
+                            <div class="hint" style="margin:2px 0 0">Nama part terisi otomatis: nama-produk-{peran}</div>
+                        </div>
+                        <button type="button" wire:click="closeRolePicker" style="background:none;border:none;font-size:20px;cursor:pointer;color:#8a94a6;line-height:1">&times;</button>
+                    </div>
+                    <div style="overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
+                        @foreach ($this->partRoleOptions() as $roleKey => $role)
+                            <button type="button" wire:click="selectPartRole('{{ $roleKey }}')"
+                                style="border:2px solid #e3e7f0;border-radius:8px;padding:12px 8px;cursor:pointer;background:#fff;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center">
+                                <span style="font-size:40px;line-height:1">{{ $role['icon'] }}</span>
+                                <span style="font-size:12.5px;color:#2c3e69;font-weight:700">{{ $role['label'] }}</span>
+                                <span style="font-size:10px;color:#8a94a6;line-height:1.3">{{ $role['desc'] }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="card">
             <h3>Status Tooling <span style="font-weight:400;color:#889">(plat/pisau/film — cek aus saat repeat order)</span></h3>
