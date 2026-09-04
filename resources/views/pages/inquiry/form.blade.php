@@ -28,6 +28,24 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     #[Url]
     public string $mode = 'NEW';
 
+    // Cross-nav read-only (wizard-bar dari ProDev/Costing/Master Card, user
+    // 2026-09-04: "SELALU bisa klik ke Inquiry Product, TAPI view only saat
+    // di ProDev"). Beda dari readOnly biasa (yg dipicu stat_confirm) --
+    // $view=true MEMAKSA readOnly=true APAPUN status stat_confirm-nya, dan
+    // kalau tidak ada $id sama sekali (job Mode #2, murni manual di ProDev,
+    // tidak pernah lewat Inquiry) TIDAK memulai draft baru spt biasa --
+    // tampil pesan "tidak ada Inquiry" (lihat noInquiryForView di bawah).
+    #[Url]
+    public bool $view = false;
+
+    // Dibawa dari ProDev/Master Card via wizard-bar khusus utk job Mode #2
+    // (tanpa Inquiry) -- satu-satunya cara balik ke Development/Master Card
+    // dari sini kalau $inquiry null (lihat wizardSteps() & noInquiryForView).
+    #[Url]
+    public ?int $fromPart = null;
+
+    public bool $noInquiryForView = false;
+
     public ?IqpInquiry $inquiry = null;
 
     public bool $readOnly = false;
@@ -113,8 +131,29 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     #[Computed]
     public function wizardSteps(): array
     {
+        // Job Mode #2 (noInquiryForView): tidak ada inquiry sama sekali, tapi
+        // wizard-bar TETAP tampil (user 2026-09-04: "SELALU bisa klik") --
+        // Development/Master Card balik ke $fromPart yg dibawa ProDev, Inquiry
+        // step-nya sendiri ('1. Inquiry') tetap disorot aktif tanpa url baru
+        // (kita memang sedang di sini, murni nampilin "tidak ada data").
         if (! $this->inquiry) {
-            return [];
+            if (! $this->noInquiryForView) {
+                return [];
+            }
+
+            return [
+                'inquiry' => ['label' => '1. Inquiry', 'url' => null, 'reason' => 'Sedang di sini -- part ini Mode #2 (manual), tidak ada Inquiry.'],
+                'development' => [
+                    'label' => '2. Development',
+                    'url' => $this->fromPart ? route('production.prodev', ['part' => $this->fromPart]) : null,
+                ],
+                'costing' => ['label' => '3. Costing', 'url' => null, 'reason' => 'Part ini Mode #2 (manual) -- tidak ada Inquiry utk dihitung Costing-nya.'],
+                'mastercard' => [
+                    'label' => 'Master Card',
+                    'url' => $this->fromPart ? route('production.prodev.print', ['part' => $this->fromPart]) : null,
+                ],
+                'analytics' => ['label' => 'Analytics', 'url' => null, 'reason' => 'Modul Analytics belum dibangun.'],
+            ];
         }
 
         $prodPartId = IqpPart::where('inquiry_id', $this->inquiry->id_inquiry)
@@ -163,6 +202,16 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'externalCosts',
             ])->findOrFail($this->id);
             $this->fillFromInquiry();
+
+            if ($this->view) {
+                $this->readOnly = true; // cross-nav paksa read-only, apapun stat_confirm
+            }
+        } elseif ($this->view) {
+            // Cross-nav dari ProDev/Costing tapi part-nya Mode #2 (murni manual,
+            // TIDAK PERNAH lewat Inquiry) -- jangan mulai draft baru spt biasa,
+            // tampilkan pesan "tidak ada Inquiry" (lihat blok noInquiryForView).
+            $this->noInquiryForView = true;
+            $this->readOnly = true;
         } else {
             $this->inquiry_date = now()->toDateString();
             $this->addTier();
@@ -1276,9 +1325,23 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 ?>
 
 <div>
-    @if ($this->inquiry)
+    @if ($this->inquiry || $noInquiryForView)
         <x-prodev.wizard-bar current="inquiry" :steps="$this->wizardSteps" />
     @endif
+    @if ($noInquiryForView)
+        <div class="max-w-[720px] mx-auto my-10 px-4">
+            <div class="card">
+                <h3>📋 Inquiry Product</h3>
+                <div class="body">
+                    <div class="note b">
+                        Part ini dibuat <b>manual (Mode #2 / standalone)</b> langsung di Pro-Dev —
+                        tidak pernah lewat Inquiry Product, jadi tidak ada data Inquiry untuk
+                        ditampilkan di sini.
+                    </div>
+                </div>
+            </div>
+        </div>
+    @else
     <header class="app-header">
         <b>{{ $mode === 'NEW' ? '✨ Inkuiri Produk Baru' : ($mode === 'RECALC' ? '🔁 Hitung Ulang Harga' : '✏️ Ubah Spesifikasi') }}</b>
         <span class="pill {{ strtolower($mode) }}">{{ $mode }}</span>
@@ -1935,4 +1998,5 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         </div>
 
     </div>
+    @endif
 </div>

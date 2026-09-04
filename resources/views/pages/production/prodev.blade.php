@@ -217,9 +217,16 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
         return [
             'inquiry' => [
+                // SELALU ada url (user 2026-09-04: "SELALU bisa klik ke Inquiry
+                // Product") -- Mode #2 pun tetap diarahkan ke inquiry.form,
+                // yang menampilkan pesan "tidak ada Inquiry" (noInquiryForView)
+                // alih-alih tombol mati. view=1 + from_part = wajib supaya
+                // form.blade.php tahu ini cross-nav (readOnly paksa) & tahu
+                // jalan balik ke Development/Master Card part ini.
                 'label' => '1. Inquiry',
-                'url' => $inquiryId ? route('inquiry.form', ['id' => $inquiryId]) : null,
-                'reason' => 'Part ini Mode #2 (manual/standalone) -- tidak berasal dari Inquiry mana pun.',
+                'url' => $inquiryId
+                    ? route('inquiry.form', ['id' => $inquiryId, 'view' => 1])
+                    : route('inquiry.form', ['view' => 1, 'from_part' => $this->partId]),
             ],
             'development' => [
                 'label' => '2. Development',
@@ -1056,61 +1063,61 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Kode Item</label>
                         <input type="text" value="{{ $this->part->mastercard_code }}" placeholder="{{ $this->part->displayMastercardCode() }}"
-                            wire:change="updateField('mastercard_code', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                            wire:change="updateField('mastercard_code', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Kode Pisau (Die Code)</label>
-                        <input type="text" value="{{ $this->part->die_code }}" wire:change="updateField('die_code', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <input type="text" value="{{ $this->part->die_code }}" wire:change="updateField('die_code', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Bentuk Sambungan (Join Type)</label>
-                        <input type="text" value="{{ $this->part->joint_type }}" wire:change="updateField('joint_type', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <input type="text" value="{{ $this->part->joint_type }}" wire:change="updateField('joint_type', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
 
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Ukuran Pisau W x H (cm)</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->die_w_cm }}" wire:change="updateField('die_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->die_h_cm }}" wire:change="updateField('die_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->die_w_cm }}" wire:change="updateField('die_w_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->die_h_cm }}" wire:change="updateField('die_h_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Ukuran Bahan Mentah W x H (cm)</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Ukuran Cetak P x L (cm)</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->printsize_p }}" wire:change="updateField('printsize_p', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->printsize_l }}" wire:change="updateField('printsize_l', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->printsize_p }}" wire:change="updateField('printsize_p', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->printsize_l }}" wire:change="updateField('printsize_l', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Dimensi Badan (Body) P x L (cm) — dasar Engine</label>
                         <div class="flex gap-1.5">
-                            <input type="number" step="0.1" value="{{ $this->part->cm_length }}" wire:change="updateField('cm_length', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->cm_width }}" wire:change="updateField('cm_width', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->cm_length }}" wire:change="updateField('cm_length', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->cm_width }}" wire:change="updateField('cm_width', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Pack Qty (pcs/pack)</label>
-                        <input type="number" value="{{ $this->part->pack_qty }}" wire:change="updateField('pack_qty', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <input type="number" value="{{ $this->part->pack_qty }}" wire:change="updateField('pack_qty', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
 
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Warna Unit 1-4 Sisi Pertama (pisah koma)</label>
                         <input type="text" value="{{ implode(', ', $this->part->color_set_1 ?? []) }}" placeholder="Black, Cyan, Magenta, Yellow"
-                            wire:change="updateColorSet('color_set_1', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                            wire:change="updateColorSet('color_set_1', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Warna Unit 1-4 Sisi Kedua (pisah koma)</label>
                         <input type="text" value="{{ implode(', ', $this->part->color_set_2 ?? []) }}"
-                            wire:change="updateColorSet('color_set_2', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                            wire:change="updateColorSet('color_set_2', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
                 </div>
@@ -1119,7 +1126,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                 <div class="p-3.5 grid three gap-2.5">
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Sisi Lidah</label>
-                        <select wire:change="updateField('flap_side', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <select wire:change="updateField('flap_side', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                             @foreach (['TOP', 'BOTTOM', 'LEFT', 'RIGHT'] as $side)
                                 <option value="{{ $side }}" @selected($this->part->flap_side === $side)>{{ $side }}</option>
                             @endforeach
@@ -1127,24 +1134,24 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Panjang Lidah Saat Ini (mm)</label>
-                        <input type="number" step="0.1" value="{{ $this->part->flap_length_mm }}" wire:change="updateField('flap_length_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <input type="number" step="0.1" value="{{ $this->part->flap_length_mm }}" wire:change="updateField('flap_length_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5"></div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Rentang Valid Min-Max (mm)</label>
                         <div class="flex gap-1.5">
                             <input type="number" step="0.1" value="{{ $this->part->flap_min_mm }}" placeholder="default {{ number_format(\App\Models\Sys\SysConstant::number('PRODEV_FLAP_MIN_MM', 20), 0) }}"
-                                wire:change="updateField('flap_min_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
-                            <input type="number" step="0.1" value="{{ $this->part->flap_max_mm }}" wire:change="updateField('flap_max_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] w-1/2">
+                                wire:change="updateField('flap_min_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
+                            <input type="number" step="0.1" value="{{ $this->part->flap_max_mm }}" wire:change="updateField('flap_max_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] w-1/2">
                         </div>
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Lebar Lidah (mm, Tingkat 2)</label>
-                        <input type="number" step="0.1" value="{{ $this->part->flap_width_mm }}" wire:change="updateField('flap_width_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <input type="number" step="0.1" value="{{ $this->part->flap_width_mm }}" wire:change="updateField('flap_width_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                     <div class="flex flex-col gap-0.5">
                         <label class="text-[11px] text-muted font-semibold">Offset Lidah (mm, Tingkat 2)</label>
-                        <input type="number" step="0.1" value="{{ $this->part->flap_offset_mm }}" wire:change="updateField('flap_offset_mm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <input type="number" step="0.1" value="{{ $this->part->flap_offset_mm }}" wire:change="updateField('flap_offset_mm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                     </div>
                 </div>
             </div>
@@ -1205,7 +1212,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         <div class="p-3 flex flex-col gap-2">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[10.5px] text-muted font-semibold">Ukuran Plano (Sheet Size)</label>
-                                <select wire:model="selectedPlanoId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[12.5px]">
+                                <select wire:model="selectedPlanoId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[12.5px]">
                                     @foreach ($this->planoSizes as $p)
                                         <option value="{{ $p->id_plano_size }}">{{ $p->plano_name }}</option>
                                     @endforeach
@@ -1214,8 +1221,8 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[10.5px] text-muted font-semibold">Ukuran Bahan Mentah W × H (cm)</label>
                                 <div class="flex gap-1.5">
-                                    <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[12.5px] w-1/2">
-                                    <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[12.5px] w-1/2">
+                                    <input type="number" step="0.1" value="{{ $this->part->sheet_raw_w_cm }}" wire:change="updateField('sheet_raw_w_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[12.5px] w-1/2">
+                                    <input type="number" step="0.1" value="{{ $this->part->sheet_raw_h_cm }}" wire:change="updateField('sheet_raw_h_cm', $event.target.value)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[12.5px] w-1/2">
                                 </div>
                             </div>
                             @if ($this->planoWasteAreaCm2() !== null)
@@ -1407,7 +1414,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         <div class="flex items-end gap-2.5 mb-3">
                             <div class="flex flex-col gap-0.5">
                                 <label class="text-[11px] text-muted font-semibold">Gabung dengan part</label>
-                                <select wire:model="combineWithPartId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] min-w-[220px]">
+                                <select wire:model="combineWithPartId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] min-w-[220px]">
                                     <option value="">— pilih part pasangan —</option>
                                     @foreach ($this->combinableParts as $cp)
                                         <option value="{{ $cp->id_part }}">{{ $cp->part_name }}</option>
@@ -1476,19 +1483,19 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         </tbody>
                     </table>
                     <div class="flex items-end gap-2 flex-wrap">
-                        <select wire:model="newProcessId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <select wire:model="newProcessId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                             <option value="">— Proses —</option>
                             @foreach ($this->processOptions as $po)
                                 <option value="{{ $po->id_process }}">{{ $po->process_name }}</option>
                             @endforeach
                         </select>
-                        <select wire:model="newMachineId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <select wire:model="newMachineId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                             <option value="">— Mesin (opsional) —</option>
                             @foreach ($this->machineOptions as $mo)
                                 <option value="{{ $mo->machine_id }}">{{ $mo->machine_name }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="newProcessNotes" placeholder="Catatan (opsional)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] flex-1 min-w-[140px]">
+                        <input type="text" wire:model="newProcessNotes" placeholder="Catatan (opsional)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] flex-1 min-w-[140px]">
                         <button type="button" wire:click="addProcess" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ Tambah</button>
                     </div>
                 </div>
@@ -1521,13 +1528,13 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         </tbody>
                     </table>
                     <div class="flex items-end gap-2 flex-wrap">
-                        <select wire:model="newFinishingTypeId" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <select wire:model="newFinishingTypeId" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                             <option value="">— Jenis Finishing —</option>
                             @foreach ($this->finishingOptions as $fo)
                                 <option value="{{ $fo->id_finishing_type }}">{{ $fo->finishing_name }}</option>
                             @endforeach
                         </select>
-                        <input type="text" wire:model="newFinishingNotes" placeholder="mis. Gold Puyeh (opsional)" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px] flex-1 min-w-[140px]">
+                        <input type="text" wire:model="newFinishingNotes" placeholder="mis. Gold Puyeh (opsional)" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px] flex-1 min-w-[140px]">
                         <button type="button" wire:click="addFinishing" class="px-3 py-1.5 rounded text-[11px] font-bold bg-navy text-white cursor-pointer">+ Tambah</button>
                     </div>
                 </div>
@@ -1556,7 +1563,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                         @endforelse
                     </div>
                     <div class="flex items-end gap-2 flex-wrap">
-                        <select wire:model="newAttachmentType" class="px-2 py-1.5 border border-[var(--pd-border)] bg-[var(--pd-input-bg)] text-[var(--pd-ink)] rounded text-[13px]">
+                        <select wire:model="newAttachmentType" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] placeholder:!text-[var(--pd-muted)] rounded text-[13px]">
                             <option value="JPEG">JPEG (preview)</option>
                             <option value="PDF">PDF</option>
                             <option value="AI">AI</option>

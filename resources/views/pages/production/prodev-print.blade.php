@@ -57,9 +57,12 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
 
         return [
             'inquiry' => [
+                // SELALU ada url (user 2026-09-04) -- lihat catatan sama di
+                // production/prodev.blade.php::wizardSteps().
                 'label' => '1. Inquiry',
-                'url' => $origin ? route('inquiry.form', ['id' => $origin]) : null,
-                'reason' => 'Part ini Mode #2 (manual/standalone) -- tidak berasal dari Inquiry mana pun.',
+                'url' => $origin
+                    ? route('inquiry.form', ['id' => $origin, 'view' => 1])
+                    : route('inquiry.form', ['view' => 1, 'from_part' => $this->partId]),
             ],
             'development' => [
                 'label' => '2. Development',

@@ -424,7 +424,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         return [
             'inquiry' => [
                 'label' => '1. Inquiry',
-                'url' => route('inquiry.form', ['id' => $this->inquiryId]),
+                'url' => route('inquiry.form', ['id' => $this->inquiryId, 'view' => 1]),
             ],
             'development' => [
                 'label' => '2. Development',
