@@ -7,6 +7,7 @@ use App\Models\Master\ProdPartAttachment;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeSize;
+use App\Models\Master\RefFinishingType;
 use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpExternalCost;
 use App\Models\Sdi\IqpInquiry;
@@ -454,6 +455,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'query' => '',
                 'is_primary' => (bool) $m->is_primary,
             ])->values()->all(),
+            'processes' => $p->processes->map(fn (IqpPartProcess $pr) => [
+                'id' => $pr->id_part_process,
+                'process_name' => $pr->process_name,
+            ])->values()->all(),
         ])->values()->all();
 
         if (empty($this->parts)) {
@@ -895,6 +900,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'artwork_original_filename' => null,
             'suggestions' => null,
             'materials' => [$this->blankMaterialRow(true)],
+            'processes' => [],
         ];
     }
 
@@ -1046,6 +1052,57 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         foreach ($this->parts[$partIndex]['materials'] as $j => $row) {
             $this->parts[$partIndex]['materials'][$j]['is_primary'] = ($j === $matIndex);
         }
+    }
+
+    // ================= FINISHING TAMBAHAN per part (iqp_part_process, 2026-09-04) =================
+    // Master-detail: tiap part boleh punya berapa pun baris finishing (hot print,
+    // UV spot, emboss, dst) -- permintaan user "master detail bisa ditambah apa
+    // saja, buat dropdown nya". Dropdown sumber ref_finishing_type (tm2mst, master
+    // yg SAMA sudah dipakai ProDev utk ProdPartFinishing -- reuse, bukan bikin
+    // master baru). Disimpan ke iqp_part_process.process_name sbg snapshot teks
+    // (kolom ini memang didesain snapshot, bukan FK ketat) -- process_id TETAP
+    // kosong krn itu FK ke prod_process (proses produksi umum: CETAK/PLONG/dst,
+    // master BEDA dari ref_finishing_type/finishing dekoratif) -- jangan dipaksa
+    // jadi satu, salah semantik.
+
+    #[Computed]
+    public function finishingTypeOptions()
+    {
+        return RefFinishingType::where('activate', true)->orderBy('finishing_name')->get();
+    }
+
+    public function addFinishingRow(int $partIndex): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex])) {
+            return;
+        }
+
+        $this->parts[$partIndex]['processes'][] = ['id' => null, 'process_name' => ''];
+    }
+
+    public function removeFinishingRow(int $partIndex, int $procIndex): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['processes'][$procIndex])) {
+            return;
+        }
+
+        unset($this->parts[$partIndex]['processes'][$procIndex]);
+        $this->parts[$partIndex]['processes'] = array_values($this->parts[$partIndex]['processes']);
+    }
+
+    public function applySuggestedFinishing(int $partIndex, string $processName): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex])) {
+            return;
+        }
+
+        foreach ($this->parts[$partIndex]['processes'] as $row) {
+            if ($row['process_name'] === $processName) {
+                return;
+            }
+        }
+
+        $this->parts[$partIndex]['processes'][] = ['id' => null, 'process_name' => $processName];
     }
 
     public function materialResults(int $partIndex, int $matIndex)
@@ -1753,9 +1810,33 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
             $this->persistPendingArtwork($part, $index);
             $this->persistPartMaterials($part, $index);
+            $this->persistPartProcesses($part, $index);
         }
 
         $this->inquiry->parts()->whereNotIn('id_part', $keepIds)->delete();
+    }
+
+    // Baris finishing tambahan (2026-09-04) -- tak ada urutan/branch/flow ditrack
+    // di UI ini (itu domain ProDev routing), replace-all per save cukup utk
+    // catatan finishing di Inquiry, sama pola dgn revise.blade.php.
+    protected function persistPartProcesses(IqpPart $part, int $partIndex): void
+    {
+        $part->processes()->delete();
+
+        foreach ($this->parts[$partIndex]['processes'] as $seq => $row) {
+            if (trim($row['process_name'] ?? '') === '') {
+                continue;
+            }
+
+            $part->processes()->create([
+                'branch_code' => 'MAIN',
+                'step_seq' => $seq + 1,
+                'flow_type' => 'LINEAR',
+                'process_name' => $row['process_name'],
+                'created_by' => Auth::user()->login,
+                'updated_by' => Auth::user()->login,
+            ]);
+        }
     }
 
     protected function persistToolings(): void
@@ -2363,70 +2444,45 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 @enderror
                 {{-- Compact (permintaan user 2026-09-04): qty order maks 8-9 digit (puluhan
                 juta), input selebar tabel penuh cuma buang ruang -- dibungkus max-width
-                supaya tabel & input-nya tetap ringkas. Sisa ruang kanan (kartu ini tetap
-                selebar kartu lain di halaman biar rapi sejajar) dipakai preview artwork
-                Part 1 (permintaan user: "sisa kanan bisa dipakai utk hal lain, misal
-                preview image") -- baca state $parts[0]/$artworkUploads[0] yg SAMA dgn
-                field upload di section Part & Dieline di bawah, bukan upload terpisah,
-                jadi otomatis sinkron begitu artwork diupload/diganti di sana. --}}
-                <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
-                    <div>
-                        <div style="max-width:400px">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th style="width:36px">Seq</th>
-                                        <th style="width:140px">Qty (pcs)</th>
-                                        <th style="width:90px">Utama</th>
-                                        <th style="width:34px"></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($tiers as $i => $tier)
-                                        <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>
-                                                <input type="number" step="1" min="0" max="999999999" wire:model.blur="tiers.{{ $i }}.qty"
-                                                       placeholder="mis. 10000" @if($readOnly) disabled @endif>
-                                            </td>
-                                            <td style="text-align:center">
-                                                <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}" style="white-space:nowrap"
-                                                        wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
-                                                    {{ $tier['is_primary'] ? '✓ Utama' : 'Pilih' }}
-                                                </button>
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
-                                                        @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
-                            ＋ Tambah Tier
-                        </button>
-                    </div>
-
-                    @php($firstPart = $parts[0] ?? null)
-                    @php($firstArtworkUrl = $firstPart ? (isset($artworkUploads[0]) ? $artworkUploads[0]->temporaryUrl() : (($firstPart['artwork_path'] ?? null) ? asset('storage/'.$firstPart['artwork_path']) : null)) : null)
-                    <div style="flex:1;min-width:170px" x-data="{ zoom: false }">
-                        <div class="hint" style="text-transform:uppercase;font-weight:700;letter-spacing:.4px;margin-bottom:6px">Preview Artwork Part 1</div>
-                        @if ($firstArtworkUrl)
-                            <img src="{{ $firstArtworkUrl }}" @click="zoom = true"
-                                 style="width:130px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #c7cfda;cursor:zoom-in" alt="artwork">
-                            <div x-show="zoom" x-cloak @click.self="zoom = false" @keydown.escape.window="zoom = false"
-                                 style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
-                                <img src="{{ $firstArtworkUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork ukuran penuh">
-                            </div>
-                        @else
-                            <div style="width:130px;height:130px;background:#f4f6fa;border:1px dashed #c7cfda;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px">
-                                <span class="hint" style="margin:0">Belum ada artwork — upload di bagian Part &amp; Dieline di bawah</span>
-                            </div>
-                        @endif
-                    </div>
+                supaya tabel & input-nya tetap ringkas. Preview artwork yg sempat dipasang
+                di ruang kanan DICOPOT LAGI (user: "ternyata jelek, hapus saja" -- keputusan
+                soal isi ruang kanan ditunda dulu, "nanti diatur lagi"). --}}
+                <div style="max-width:400px">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:36px">Seq</th>
+                                <th style="width:140px">Qty (pcs)</th>
+                                <th style="width:90px">Utama</th>
+                                <th style="width:34px"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($tiers as $i => $tier)
+                                <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>
+                                        <input type="number" step="1" min="0" max="999999999" wire:model.blur="tiers.{{ $i }}.qty"
+                                               placeholder="mis. 10000" @if($readOnly) disabled @endif>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}" style="white-space:nowrap"
+                                                wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
+                                            {{ $tier['is_primary'] ? '✓ Utama' : 'Pilih' }}
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
+                                                @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
+                <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
+                    ＋ Tambah Tier
+                </button>
             </div>
         </div>
 
@@ -2717,7 +2773,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     @endif
                                     @if ($part['suggestions']['finishing'] ?? null)
                                         @php($sugFin = $part['suggestions']['finishing'])
-                                        <div class="note y">📋 Saran finishing dari histori: <b>{{ $sugFin['process_name'] }}</b> (dipakai {{ $sugFin['pct'] }}% Inquiry Tipe Produk ini sebelumnya) — blm ada field finishing di Inquiry, terapkan manual nanti di ProDev.</div>
+                                        <div class="note y" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                                            <span>📋 Saran finishing dari histori: <b>{{ $sugFin['process_name'] }}</b> (dipakai {{ $sugFin['pct'] }}% Inquiry Tipe Produk ini sebelumnya).</span>
+                                            @unless($readOnly)
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedFinishing({{ $i }}, '{{ $sugFin['process_name'] }}')">Tambah ke Finishing</button>
+                                            @endunless
+                                        </div>
                                     @endif
                                     <div class="grid">
                                         <div class="f">
@@ -2749,6 +2810,57 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                    placeholder="mis. Pantone 485 C" @if($readOnly) disabled @endif>
                                         </div>
                                     </div>
+
+                                    {{-- Finishing Tambahan (permintaan user 2026-09-04: "master detail bisa
+                                    ditambah apa saja, misal hot spot dan lain finishing, buat dropdown nya")
+                                    -- master-detail: berapa pun baris, tiap baris pilih dari dropdown
+                                    ref_finishing_type (master yg sama dipakai ProDev). Mengisi gap yg
+                                    sebelumnya dicatat di readonly-summary.blade.php ("form Inquiry BARU
+                                    belum punya UI proses/finishing"). --}}
+                                    <div class="sec-title">Finishing Tambahan</div>
+                                    <div class="hint" style="margin-bottom:6px">Opsional — proses dekoratif tambahan (hot print, UV spot, emboss, laminating, dll), boleh lebih dari satu.</div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width:32px">#</th>
+                                                <th>Jenis Finishing</th>
+                                                <th style="width:36px"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse ($part['processes'] as $j => $proc)
+                                                <tr wire:key="fin-{{ $i }}-{{ $proc['id'] ?? 'new-'.$j }}">
+                                                    <td>{{ $j + 1 }}</td>
+                                                    <td>
+                                                        <select wire:model="parts.{{ $i }}.processes.{{ $j }}.process_name"
+                                                                x-data x-effect="$el.value = @js($proc['process_name'])" @if($readOnly) disabled @endif>
+                                                            <option value="">— pilih jenis finishing —</option>
+                                                            @php($knownNames = $this->finishingTypeOptions->pluck('finishing_name'))
+                                                            @if ($proc['process_name'] !== '' && ! $knownNames->contains($proc['process_name']))
+                                                                {{-- Nilai lama di luar daftar ref_finishing_type (mis. proses umum
+                                                                spt "Cetak"/"Plong" dari data lama) -- tetap ditampilkan apa adanya
+                                                                drpd diam-diam kosong & ke-drop pas simpan ulang. --}}
+                                                                <option value="{{ $proc['process_name'] }}">{{ $proc['process_name'] }} (data lama)</option>
+                                                            @endif
+                                                            @foreach ($this->finishingTypeOptions as $ft)
+                                                                <option value="{{ $ft->finishing_name }}">{{ $ft->finishing_name }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn d xs" wire:click="removeFinishingRow({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>✕</button>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="3" style="text-align:center;color:#8a94a6;font-size:11.5px">Belum ada finishing tambahan.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                    @unless($readOnly)
+                                        <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addFinishingRow({{ $i }})">
+                                            ＋ Tambah Finishing
+                                        </button>
+                                    @endunless
                                 </div>
 
                                 <div style="width:360px;flex-shrink:0">
