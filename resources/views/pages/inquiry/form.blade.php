@@ -700,6 +700,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'flat_w' => '',
             'flat_h' => '',
             'flat_area' => '',
+            'size_preset_id' => '',
             'dims_version' => 0,
             'cfg_color' => '4/4',
             'cfg_ink' => '',
@@ -748,6 +749,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->parts[$index]['flat_w'] = '';
         $this->parts[$index]['flat_h'] = '';
         $this->parts[$index]['flat_area'] = '';
+        $this->parts[$index]['size_preset_id'] = '';
         $this->parts[$index]['dims_version'] = ($this->parts[$index]['dims_version'] ?? 0) + 1;
 
         if ($typeCode === '') {
@@ -787,6 +789,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 : (string) ($val->value_str ?? '');
         }
 
+        $this->parts[$index]['size_preset_id'] = $sizeId;
         $this->parts[$index]['dims_version'] = ($this->parts[$index]['dims_version'] ?? 0) + 1;
     }
 
@@ -1757,7 +1760,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                         @if ($selectedType && ! empty($selectedType['sizes']))
                                             <div class="f size-pick" style="width:220px">
                                                 <label>⭐ Ukuran Pasaran</label>
-                                                <select wire:change="applySizePreset({{ $i }}, $event.target.value)" @if($readOnly) disabled @endif>
+                                                <select wire:change="applySizePreset({{ $i }}, $event.target.value)"
+                                                        x-data x-effect="$el.value = @js($part['size_preset_id'] ?? '')"
+                                                        @if($readOnly) disabled @endif>
                                                     <option value="">— pilih ukuran umum —</option>
                                                     @foreach ($selectedType['sizes'] as $size)
                                                         <option value="{{ $size['id'] }}">{{ $size['label'] }}</option>
