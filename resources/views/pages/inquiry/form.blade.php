@@ -361,7 +361,15 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         } else {
             $this->inquiry_date = now()->toDateString();
             $this->pic_sales = Auth::user()->name;
-            $this->addTier();
+
+            // 3 preset qty umum (permintaan user 2026-09-04) supaya sales tak mulai
+            // dari kosong -- tetap bebas ditambah/dikurang/diedit spt biasa, baris
+            // pertama (10rb) otomatis Utama (default addTier() yg sudah ada).
+            foreach (['10000', '50000', '200000'] as $presetQty) {
+                $this->addTier();
+                $this->tiers[count($this->tiers) - 1]['qty'] = $presetQty;
+            }
+
             $this->addPart();
         }
     }
@@ -2352,37 +2360,42 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 @error('tiers')
                     <div class="note o">{{ $message }}</div>
                 @enderror
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:44px">Seq</th>
-                            <th>Qty (pcs)</th>
-                            <th style="width:120px">Utama</th>
-                            <th style="width:40px"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($tiers as $i => $tier)
-                            <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
-                                <td>{{ $i + 1 }}</td>
-                                <td>
-                                    <input type="number" step="1" min="0" wire:model.blur="tiers.{{ $i }}.qty"
-                                           placeholder="mis. 10000" @if($readOnly) disabled @endif>
-                                </td>
-                                <td style="text-align:center">
-                                    <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}"
-                                            wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
-                                        {{ $tier['is_primary'] ? '✓ Utama' : 'Jadikan Utama' }}
-                                    </button>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
-                                            @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
-                                </td>
+                {{-- Compact (permintaan user 2026-09-04): qty order maks 8-9 digit (puluhan
+                juta), input selebar tabel penuh cuma buang ruang -- dibungkus max-width
+                supaya tabel & input-nya tetap ringkas, bukan melebar sampai ujung kartu. --}}
+                <div style="max-width:400px">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:36px">Seq</th>
+                                <th style="width:140px">Qty (pcs)</th>
+                                <th style="width:90px">Utama</th>
+                                <th style="width:34px"></th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach ($tiers as $i => $tier)
+                                <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
+                                    <td>{{ $i + 1 }}</td>
+                                    <td>
+                                        <input type="number" step="1" min="0" max="999999999" wire:model.blur="tiers.{{ $i }}.qty"
+                                               placeholder="mis. 10000" @if($readOnly) disabled @endif>
+                                    </td>
+                                    <td style="text-align:center">
+                                        <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}" style="white-space:nowrap"
+                                                wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
+                                            {{ $tier['is_primary'] ? '✓ Utama' : 'Pilih' }}
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
+                                                @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
                 <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
                     ＋ Tambah Tier
                 </button>
