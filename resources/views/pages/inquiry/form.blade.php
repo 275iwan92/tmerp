@@ -2222,8 +2222,39 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     <x-form.input legacy col2 label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
                         placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
                         :hint="$productDraftHint" />
-                    <x-form.textarea legacy col2 label="Catatan Sales" wire:model="sales_note" rows="2" placeholder="opsional" :disabled="$readOnly" />
+                    <x-form.textarea legacy col4 label="Catatan Sales" wire:model="sales_note" rows="2" placeholder="opsional" :disabled="$readOnly" />
                 </div>
+
+                {{-- Digabung ke kartu Header Inkuiri (permintaan user 2026-09-04: "layout
+                yang di NEW inquiry product dibuat compact tapi padat jelas") -- dulu kartu
+                terpisah "Sifat Order & Pajak", tapi setelah Skema PPN/PPh23 disembunyikan
+                (commit 8e0c7ef) cuma sisa 2 field kecil, 1 kartu penuh jadi boros ruang. --}}
+                <div class="sec-title">Sifat Order</div>
+                <div class="grid two">
+                    <x-form.toggle-group legacy label="Sumber Bahan" :hint="$material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA.'">
+                        <x-form.toggle-option legacy :active="$material_source === 'OWN'" style="flex:1" wire:click="setMaterialSource('OWN')" :disabled="$readOnly">Perusahaan (OWN)</x-form.toggle-option>
+                        <x-form.toggle-option legacy :active="$material_source === 'CUSTOMER'" style="flex:1" wire:click="setMaterialSource('CUSTOMER')" :disabled="$readOnly">Customer sediakan</x-form.toggle-option>
+                    </x-form.toggle-group>
+                    <x-form.input legacy label="Jenis Pekerjaan" value="{{ $this->jobNature() }}" readonly hint="Otomatis dari sumber bahan (PRODUCT / JASA)." />
+                </div>
+                {{-- Skema PPN & PPh23 disembunyikan dari layar Inquiry (permintaan user
+                2026-09-04: "belum perlu saat input inquiry, pindah nanti di CO seperti
+                halnya discount... ini hal yang pasti") -- properti/validasi/kolom DB
+                TETAP ada, cuma UI-nya dilepas (pola sama persis dgn Diskon Dokumen,
+                commit 4990a82). Default tax_scheme='PPN' & pph_applicable otomatis dari
+                Sumber Bahan (setMaterialSource()) tetap jalan di background. --}}
+
+                @if ($material_source === 'CUSTOMER')
+                    <div style="margin-top:6px">
+                        <div class="sec-title">Spesifikasi Bahan Customer <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">(wajib bila bahan dari customer)</span></div>
+                        <div class="grid two">
+                            <x-form.input legacy col2 label="Deskripsi bahan customer *" wire:model="cust_material_spec"
+                                placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" :disabled="$readOnly" name="cust_material_spec" />
+                            <x-form.date-picker legacy label="ETA bahan tiba" wire:model="cust_material_eta" :disabled="$readOnly" />
+                        </div>
+                        <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling &amp; spoilage dihitung Costing.</div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -2284,37 +2315,6 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 </div>
             </div>
         @endif
-
-        <div class="card">
-            <h3>Sifat Order &amp; Pajak <span style="font-weight:400;color:#889">(menentukan struktur biaya &amp; pajak)</span></h3>
-            <div class="body">
-                <div class="grid">
-                    <x-form.toggle-group legacy label="Sumber Bahan" :hint="$material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA.'">
-                        <x-form.toggle-option legacy :active="$material_source === 'OWN'" style="flex:1" wire:click="setMaterialSource('OWN')" :disabled="$readOnly">Perusahaan (OWN)</x-form.toggle-option>
-                        <x-form.toggle-option legacy :active="$material_source === 'CUSTOMER'" style="flex:1" wire:click="setMaterialSource('CUSTOMER')" :disabled="$readOnly">Customer sediakan</x-form.toggle-option>
-                    </x-form.toggle-group>
-                    <x-form.input legacy label="Jenis Pekerjaan" value="{{ $this->jobNature() }}" readonly hint="Otomatis dari sumber bahan (PRODUCT / JASA)." />
-                </div>
-                {{-- Skema PPN & PPh23 disembunyikan dari layar Inquiry (permintaan user
-                2026-09-04: "belum perlu saat input inquiry, pindah nanti di CO seperti
-                halnya discount... ini hal yang pasti") -- properti/validasi/kolom DB
-                TETAP ada, cuma UI-nya dilepas (pola sama persis dgn Diskon Dokumen,
-                commit 4990a82). Default tax_scheme='PPN' & pph_applicable otomatis dari
-                Sumber Bahan (setMaterialSource()) tetap jalan di background. --}}
-
-                @if ($material_source === 'CUSTOMER')
-                    <div style="margin-top:6px">
-                        <div class="sec-title">Spesifikasi Bahan Customer <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#8a94a6">(wajib bila bahan dari customer)</span></div>
-                        <div class="grid two">
-                            <x-form.input legacy col2 label="Deskripsi bahan customer *" wire:model="cust_material_spec"
-                                placeholder="mis. Art Carton 260gsm, 65×100cm, brand APP, 50 rim" :disabled="$readOnly" name="cust_material_spec" />
-                            <x-form.date-picker legacy label="ETA bahan tiba" wire:model="cust_material_eta" :disabled="$readOnly" />
-                        </div>
-                        <div class="note b" style="margin-top:6px">Bahan customer → HPP material = 0; masuk via Receiving non-costed (consignment). Handling &amp; spoilage dihitung Costing.</div>
-                    </div>
-                @endif
-            </div>
-        </div>
 
         <div class="card">
             <h3>Qty Order Berjenjang <span style="font-weight:400;color:#889">(Costing hitung HPP per tier — tepat 1 UTAMA)</span></h3>
