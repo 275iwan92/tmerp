@@ -1925,7 +1925,6 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             <th style="width:44px">Seq</th>
                             <th>Qty (pcs)</th>
                             <th style="width:120px">Utama</th>
-                            <th style="width:190px">Diskon Item</th>
                             <th style="width:40px"></th>
                         </tr>
                     </thead>
@@ -1942,20 +1941,6 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                             wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
                                         {{ $tier['is_primary'] ? '✓ Utama' : 'Jadikan Utama' }}
                                     </button>
-                                </td>
-                                <td>
-                                    <div style="display:flex;gap:3px;align-items:center;flex-wrap:wrap">
-                                        <button type="button" class="btn xs {{ $tier['discount_item_type'] === '' ? 'p' : 'g' }}"
-                                                wire:click="setTierDiscountType({{ $i }}, '')" @if($readOnly) disabled @endif>—</button>
-                                        <button type="button" class="btn xs {{ $tier['discount_item_type'] === 'PERCENT' ? 'p' : 'g' }}"
-                                                wire:click="setTierDiscountType({{ $i }}, 'PERCENT')" @if($readOnly) disabled @endif>%</button>
-                                        <button type="button" class="btn xs {{ $tier['discount_item_type'] === 'AMOUNT' ? 'p' : 'g' }}"
-                                                wire:click="setTierDiscountType({{ $i }}, 'AMOUNT')" @if($readOnly) disabled @endif>Rp</button>
-                                        @if ($tier['discount_item_type'])
-                                            <input type="number" step="0.01" min="0" wire:model.blur="tiers.{{ $i }}.discount_item_value"
-                                                   placeholder="0" style="width:80px" @if($readOnly) disabled @endif>
-                                        @endif
-                                    </div>
                                 </td>
                                 <td>
                                     <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
@@ -2022,7 +2007,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                             </div>
                                         </div>
                                     @elseif(! $part['id'])
-                                        <div class="hint">Simpan part dulu utk upload</div>
+                                        <div style="border:1px dashed #c7cfda;border-radius:6px;padding:5px 7px;background:#f7f8fa;font-size:10.5px;color:#6b7280;line-height:1.3">
+                                            📎 Klik <b>Simpan</b> dulu, baru upload artwork bisa dipakai
+                                        </div>
                                     @elseif(! $readOnly)
                                         <div style="display:flex;gap:4px;align-items:center">
                                             <input type="file" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="font-size:11px;flex:1;min-width:0">
@@ -2353,40 +2340,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             </div>
         </div>
 
-        <div class="card">
-            <h3>Diskon Dokumen <span style="font-weight:400;color:#889">(level dokumen — dibawa ke Customer Order)</span></h3>
-            <div class="body">
-                <div class="grid">
-                    <div class="f">
-                        <label>Diskon Dokumen</label>
-                        <div style="display:flex;gap:6px">
-                            <button type="button" class="btn xs {{ $discount_doc_type === '' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setDiscountDocType('')" @if($readOnly) disabled @endif>—</button>
-                            <button type="button" class="btn xs {{ $discount_doc_type === 'PERCENT' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setDiscountDocType('PERCENT')" @if($readOnly) disabled @endif>%</button>
-                            <button type="button" class="btn xs {{ $discount_doc_type === 'AMOUNT' ? 'p' : 'g' }}" style="flex:1"
-                                    wire:click="setDiscountDocType('AMOUNT')" @if($readOnly) disabled @endif>Rp</button>
-                        </div>
-                    </div>
-                    @if ($discount_doc_type)
-                        <div class="f">
-                            <label>Nilai Diskon {{ $discount_doc_type === 'PERCENT' ? '(%)' : '(Rp)' }}</label>
-                            <input type="number" step="0.01" min="0" wire:model.blur="discount_doc_value" @if($readOnly) disabled @endif>
-                            @error('discount_doc_value') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
-                        </div>
-                    @endif
-                    <div class="f">
-                        <label>Diskon Qty (%) <span style="font-weight:400;color:#889">(occasional)</span></label>
-                        <input type="number" step="0.01" min="0" wire:model.blur="discount_qty_value" placeholder="mis. 3" @if($readOnly) disabled @endif>
-                    </div>
-                    <div class="f">
-                        <label>Ambang Tonase (ton)</label>
-                        <input type="number" step="0.01" min="0" wire:model.blur="discount_qty_min_ton" placeholder="mis. 5" @if($readOnly) disabled @endif>
-                        <div class="hint">Diskon qty aktif otomatis saat tonase total ≥ ambang ini (aturan detail menyusul).</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {{-- Diskon Dokumen disembunyikan dari layar Inquiry (permintaan user 2026-09-04:
+        "belum perlu discount" tahap ini) -- properti/logika/kolom DB TETAP ada
+        (tidak dihapus, cuma UI-nya), krn ini bagian desain LOCKED CLAUDE.md §4
+        ("Diskon jarang: item di iqp_tier, dokumen kolom-kembar header↔co_order")
+        yg dipakai Quotation/CO nanti. Nilainya tetap NULL default spt biasa. --}}
 
         <div class="card">
             <h3>Biaya Eksternal / Pihak Ketiga <span style="font-weight:400;color:#889">(bila sudah ditentukan sejak awal)</span></h3>
