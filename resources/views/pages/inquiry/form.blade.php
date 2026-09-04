@@ -360,6 +360,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             $this->noInquiryForView = true;
         } else {
             $this->inquiry_date = now()->toDateString();
+            // Default +14 hari kerja kalender (permintaan user 2026-09-04: "tgl
+            // kebutuhan customer default 14 hari dari today, bisa diedit") -- tetap
+            // field date-picker biasa, cuma pre-fill, sales bebas ubah.
+            $this->deadline_quotation = now()->addDays(14)->toDateString();
             $this->pic_sales = Auth::user()->name;
 
             // 3 preset qty umum (permintaan user 2026-09-04) supaya sales tak mulai
@@ -2163,7 +2167,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
             <div class="body">
                 <div class="sec-title">Header Inkuiri</div>
-                <div class="grid">
+
+                {{-- Baris 1 (permintaan user 2026-09-04): No.Inkuiri, Tgl Dokumen, Tgl
+                Kebutuhan Pelanggan, Sales, Sumber -- 5 kolom (.grid.five, sudah ada di
+                app.css, dipakai persis utk kasus 5-field-1-baris spt ini). --}}
+                <div class="grid five">
                     <div class="f">
                         <label>No. Inkuiri</label>
                         <div style="padding:6px 0;font-size:12.5px;font-weight:700;color:{{ $inquiry_no ? '#1c2440' : '#9aa3b5' }}">
@@ -2171,8 +2179,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         </div>
                     </div>
                     <x-form.date-picker legacy label="Tanggal" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
-                    <x-form.select legacy label="Sumber" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
-                        :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
+                    <x-form.date-picker legacy wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
+                        <x-slot:label>Tgl Kebutuhan Pelanggan</x-slot:label>
+                    </x-form.date-picker>
                     <div class="f">
                         <label>PIC Sales</label>
                         <div style="display:flex;gap:6px;align-items:center">
@@ -2182,7 +2191,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             @endunless
                         </div>
                     </div>
+                    <x-form.select legacy label="Sumber" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
+                        :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
+                </div>
 
+                {{-- Baris 2: Customer + Nama Produk (draft), sejajar. --}}
+                <div class="grid two" style="margin-top:10px">
                     {{-- Prospek? dihapus (permintaan user 2026-09-04: "sudah diwakili oleh
                     New Customer") -- kasus "customer belum terdaftar" sekarang lewat quick-add
                     Customer Master sungguhan (openNewCustomerModal(), lihat combobox di bawah),
@@ -2190,9 +2204,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     ada di properti/kolom DB (backward-compat baca inquiry lama yg masih
                     is_prospect=true) tapi tidak lagi bisa di-set true dari layar ini. --}}
                     @if ($is_prospect)
-                        <x-form.input legacy col2 label="Nama Calon Customer (data lama)" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
+                        <x-form.input legacy label="Nama Calon Customer (data lama)" wire:model="prospect_name" placeholder="Nama prospek…" :disabled="$readOnly" name="prospect_name" />
                     @elseif ($customer_id)
-                        <div class="f col2">
+                        <div class="f">
                             <label>Customer</label>
                             <div style="display:flex;gap:6px;align-items:center">
                                 <input type="text" value="{{ $customer_name }}" readonly class="cust-ok">
@@ -2207,7 +2221,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         Buka/tutup murni Alpine (x-data lokal, tanpa roundtrip Livewire) supaya
                         instan; isi list (customerResults) tetap dari Livewire, termasuk saat
                         query kosong (browse) maupun diketik (filter). --}}
-                        <div class="f col2 ac-wrap" x-data="{ open: false }" @click.outside="open = false">
+                        <div class="f ac-wrap" x-data="{ open: false }" @click.outside="open = false">
                             <label>Customer</label>
                             <input type="text" wire:model.live.debounce.300ms="custQuery" autocomplete="off"
                                    @focus="open = true" @click="open = true"
@@ -2230,50 +2244,37 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                             </div>
                         </div>
                     @endif
-                    <x-form.date-picker legacy col2 wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
-                        <x-slot:label>Tanggal Kebutuhan Pelanggan <span class="hint" style="font-weight:400">(kapan customer butuh barangnya)</span></x-slot:label>
-                    </x-form.date-picker>
 
-                    {{-- Nama Produk + Catatan Sales -- 1 baris dibagi 2 (permintaan user
-                    2026-09-04), keduanya autogrow: mulai 1 baris, tinggi nambah sendiri
-                    kalau isinya melebihi lebar kotak (bukan textarea tetap 2 baris +
-                    resize handle manual spt sebelumnya). Nama Produk jadi <textarea>
-                    (bukan <input>) krn <input> tidak pernah bisa wrap/tambah tinggi --
-                    itu keterbatasan HTML, bukan pilihan desain. --}}
+                    {{-- Nama Produk autogrow: mulai 1 baris, tinggi nambah sendiri kalau
+                    isinya melebihi lebar kotak (bukan <input> krn <input> tidak pernah
+                    bisa wrap/tambah tinggi -- keterbatasan HTML, bukan pilihan desain). --}}
                     @php $productDraftHint = 'Nama sementara selama quotation. Karakter khusus (/@#%"\';) tidak diperbolehkan.'; @endphp
-                    <x-form.textarea legacy col2 autogrow label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
+                    <x-form.textarea legacy autogrow label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
                         placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
                         :hint="$productDraftHint" />
-                    <x-form.textarea legacy col2 autogrow label="Catatan Sales" wire:model="sales_note" placeholder="opsional" :disabled="$readOnly" />
                 </div>
 
-                {{-- Digabung ke kartu Header Inkuiri (permintaan user 2026-09-04: "layout
-                yang di NEW inquiry product dibuat compact tapi padat jelas") -- dulu kartu
-                terpisah "Sifat Order & Pajak", tapi setelah Skema PPN/PPh23 disembunyikan
-                (commit 8e0c7ef) cuma sisa 2 field kecil, 1 kartu penuh jadi boros ruang. --}}
-                <div class="sec-title">Sifat Order</div>
-                {{-- Radio (bukan toggle-button lebar) + "Jenis Pekerjaan" dihapus
-                (permintaan user 2026-09-04: "ga perlu melebar" + "jenis pekerjaan
-                tidak diperlukan lagi krn sudah diwakili sumber bahan -- bahan dari
-                customer = jasa, krn cuma ongkos cetak/finishing"). jobNature() TETAP
-                jalan di background (dipakai save() nulis job_nature), cuma UI
-                display-nya yg dilepas -- klik radio pakai method setMaterialSource()
-                yg sama persis dgn toggle-button lama, bukan wire:model radio
-                langsung (jaga2 morph-sync, sama alasan kayak <select> di memory
-                feedback_livewire_select_morph_bug). --}}
-                <div class="f">
-                    <label>Sumber Bahan</label>
-                    <div style="display:flex;gap:18px;align-items:center;padding:5px 0">
-                        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px;color:#233;cursor:pointer">
-                            <input type="radio" @checked($material_source === 'OWN') wire:click="setMaterialSource('OWN')" @if($readOnly) disabled @endif>
-                            Perusahaan (OWN)
+                {{-- Baris 3: Catatan Sales + tickmark Sumber Bahan (permintaan user
+                2026-09-04: "tickmark default un-tick utk customer bawa raw material
+                sendiri" -- checkbox tunggal gantikan radio 2 pilihan, lebih ringkas lagi
+                krn cuma 2 kemungkinan (OWN/CUSTOMER). "Jenis Pekerjaan" TETAP dihapus dari
+                UI (sudah diwakili checkbox ini), jobNature() tetap jalan di background
+                (dipakai save() nulis job_nature). Checkbox pakai wire:click ke
+                setMaterialSource() yg sama (bukan wire:model checkbox langsung) --
+                konsisten sama toggle/radio lain di file ini, jaga2 morph-sync spt
+                memory feedback_livewire_select_morph_bug. --}}
+                <div class="grid two" style="margin-top:10px">
+                    <x-form.textarea legacy autogrow label="Catatan Sales" wire:model="sales_note" placeholder="opsional" :disabled="$readOnly" />
+                    <div class="f">
+                        <label>Sumber Bahan</label>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:7px 0">
+                            <input type="checkbox" @checked($material_source === 'CUSTOMER')
+                                   wire:click="setMaterialSource('{{ $material_source === 'CUSTOMER' ? 'OWN' : 'CUSTOMER' }}')"
+                                   @if($readOnly) disabled @endif>
+                            <span style="font-size:12.5px;color:#233">Customer bawa bahan baku sendiri</span>
                         </label>
-                        <label style="display:flex;align-items:center;gap:6px;font-weight:400;font-size:12.5px;color:#233;cursor:pointer">
-                            <input type="radio" @checked($material_source === 'CUSTOMER') wire:click="setMaterialSource('CUSTOMER')" @if($readOnly) disabled @endif>
-                            Customer sediakan
-                        </label>
+                        <div class="hint">{{ $material_source === 'OWN' ? 'Tidak dicentang → bahan dari perusahaan, order bersifat PRODUCT.' : 'Dicentang → bahan dari customer, order bersifat JASA (cuma ongkos cetak/finishing).' }}</div>
                     </div>
-                    <div class="hint">{{ $material_source === 'OWN' ? 'Bahan dari perusahaan → order bersifat PRODUCT.' : 'Bahan dari customer → order bersifat JASA (cuma ongkos cetak/finishing).' }}</div>
                 </div>
                 {{-- Skema PPN & PPh23 disembunyikan dari layar Inquiry (permintaan user
                 2026-09-04: "belum perlu saat input inquiry, pindah nanti di CO seperti
@@ -2362,43 +2363,70 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 @enderror
                 {{-- Compact (permintaan user 2026-09-04): qty order maks 8-9 digit (puluhan
                 juta), input selebar tabel penuh cuma buang ruang -- dibungkus max-width
-                supaya tabel & input-nya tetap ringkas, bukan melebar sampai ujung kartu. --}}
-                <div style="max-width:400px">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th style="width:36px">Seq</th>
-                                <th style="width:140px">Qty (pcs)</th>
-                                <th style="width:90px">Utama</th>
-                                <th style="width:34px"></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($tiers as $i => $tier)
-                                <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
-                                    <td>{{ $i + 1 }}</td>
-                                    <td>
-                                        <input type="number" step="1" min="0" max="999999999" wire:model.blur="tiers.{{ $i }}.qty"
-                                               placeholder="mis. 10000" @if($readOnly) disabled @endif>
-                                    </td>
-                                    <td style="text-align:center">
-                                        <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}" style="white-space:nowrap"
-                                                wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
-                                            {{ $tier['is_primary'] ? '✓ Utama' : 'Pilih' }}
-                                        </button>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
-                                                @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                supaya tabel & input-nya tetap ringkas. Sisa ruang kanan (kartu ini tetap
+                selebar kartu lain di halaman biar rapi sejajar) dipakai preview artwork
+                Part 1 (permintaan user: "sisa kanan bisa dipakai utk hal lain, misal
+                preview image") -- baca state $parts[0]/$artworkUploads[0] yg SAMA dgn
+                field upload di section Part & Dieline di bawah, bukan upload terpisah,
+                jadi otomatis sinkron begitu artwork diupload/diganti di sana. --}}
+                <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+                    <div>
+                        <div style="max-width:400px">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:36px">Seq</th>
+                                        <th style="width:140px">Qty (pcs)</th>
+                                        <th style="width:90px">Utama</th>
+                                        <th style="width:34px"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($tiers as $i => $tier)
+                                        <tr wire:key="tier-row-{{ $tier['id'] ?? 'new-'.$i }}">
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>
+                                                <input type="number" step="1" min="0" max="999999999" wire:model.blur="tiers.{{ $i }}.qty"
+                                                       placeholder="mis. 10000" @if($readOnly) disabled @endif>
+                                            </td>
+                                            <td style="text-align:center">
+                                                <button type="button" class="btn xs {{ $tier['is_primary'] ? 'p' : 'g' }}" style="white-space:nowrap"
+                                                        wire:click="setPrimaryTier({{ $i }})" @if($readOnly) disabled @endif>
+                                                    {{ $tier['is_primary'] ? '✓ Utama' : 'Pilih' }}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn d xs" wire:click="removeTier({{ $i }})"
+                                                        @if($readOnly || count($tiers) <= 1) disabled @endif>✕</button>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
+                            ＋ Tambah Tier
+                        </button>
+                    </div>
+
+                    @php($firstPart = $parts[0] ?? null)
+                    @php($firstArtworkUrl = $firstPart ? (isset($artworkUploads[0]) ? $artworkUploads[0]->temporaryUrl() : (($firstPart['artwork_path'] ?? null) ? asset('storage/'.$firstPart['artwork_path']) : null)) : null)
+                    <div style="flex:1;min-width:170px" x-data="{ zoom: false }">
+                        <div class="hint" style="text-transform:uppercase;font-weight:700;letter-spacing:.4px;margin-bottom:6px">Preview Artwork Part 1</div>
+                        @if ($firstArtworkUrl)
+                            <img src="{{ $firstArtworkUrl }}" @click="zoom = true"
+                                 style="width:130px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #c7cfda;cursor:zoom-in" alt="artwork">
+                            <div x-show="zoom" x-cloak @click.self="zoom = false" @keydown.escape.window="zoom = false"
+                                 style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
+                                <img src="{{ $firstArtworkUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork ukuran penuh">
+                            </div>
+                        @else
+                            <div style="width:130px;height:130px;background:#f4f6fa;border:1px dashed #c7cfda;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px">
+                                <span class="hint" style="margin:0">Belum ada artwork — upload di bagian Part &amp; Dieline di bawah</span>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                <button type="button" class="btn g" style="margin-top:8px" wire:click="addTier" @if($readOnly) disabled @endif>
-                    ＋ Tambah Tier
-                </button>
             </div>
         </div>
 
