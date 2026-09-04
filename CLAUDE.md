@@ -212,7 +212,19 @@ transaksi = `iqp_costing`, ikut inquiry).
   - **InqProd Engine** (`inquiry/form.blade.php`) — GOAL: (1) picker visual
     tipe produk + live dieline preview + dimensi gampang di-adjust + preset
     "Ukuran Pasaran" — **SUDAH ADA & DIVERIFIKASI BAGUS, JANGAN DIUBAH**
-    (verdict eksplisit user), improvisasi di atasnya SANGAT boleh; (2)
+    (verdict eksplisit user), improvisasi di atasnya SANGAT boleh. **Koreksi
+    2026-09-04**: yang dikunci itu KEMAMPUAN RENDER dieline (TMDieline DSL,
+    `resources/js/tmdieline.js` — sungguhan tidak disentuh), BUKAN lokasi UI
+    pemilihan Tipe Produk. Tipe Produk sudah dipindah dari per-Part ke level
+    Inquiry (1 tipe berlaku semua Part, dipilih di Header dekat "Kategori
+    Produk" — sales-facing shortcut baru), dan tiap Part sekarang gerbang
+    dulu di "Peran Part" (Body/Lid/Sleeve/dst — istilah dari riset Esko
+    ArtiosCAD/glosarium packaging) sebelum Dimensi & Preview Dieline live
+    aktif; tipe non-multi-part auto-role "MonoForm" (istilah dari "Mono
+    Carton"), dieline langsung aktif. Galeri visual popup (gambar dieline ala
+    Pacdora) sementara dilepas dari scope saat pemindahan ini, belum
+    dibangun ulang di lokasi baru. Detail lengkap: memory
+    `project_prodtype_multipart_category_system.md`. (2)
     **saran-saja** (bukan blokir/auto-koreksi, pola sama "engine suggests,
     officer confirms") kalau dimensi terlalu sempit/tidak simetris — BELUM
     ADA (0 logic ditemukan, target scope baru); (3) **mockup generator 3D**
