@@ -451,7 +451,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div>
-    <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" />
+    <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" :back-url="route('inquiry.costing.list')" />
 
     @if ($view)
         {{-- ============ CROSS-NAV READ-ONLY (wizard-bar, user 2026-09-04) ============

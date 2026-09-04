@@ -16,8 +16,15 @@
     - selectedJobId: mixed, id job yang sedang aktif (buat highlight di dropdown).
     - jobSwitchRoute: string, nama route Livewire `switchJob` di host (dipanggil
       wire:click, host yang tentukan redirect kemana sesuai step aktif).
+    - backUrl: string, tujuan grid modul ini (production.prodev.list utk ProDev
+      & Master Card, inquiry.hub utk Inquiry, inquiry.costing.list utk Costing).
+      SATU tombol Back seragam di kanan-atas dipasang di sini (bukan diulang
+      per-layar/per-cabang kondisional) supaya tidak pernah hilang di state
+      apa pun (user 2026-09-04: kejadian nyata -- cabang "noInquiryForView"
+      di inquiry/form.blade.php sempat tak punya tombol back sama sekali).
+    - backLabel: string, default "Kembali ke Grid".
 --}}
-@props(['current', 'steps', 'jobs' => [], 'selectedJobId' => null, 'jobSwitchMethod' => 'switchJob'])
+@props(['current', 'steps', 'jobs' => [], 'selectedJobId' => null, 'jobSwitchMethod' => 'switchJob', 'backUrl' => null, 'backLabel' => 'Kembali ke Grid'])
 
 <div class="bg-navy text-white px-5 py-2.5 flex items-center gap-1 flex-wrap sticky top-0 z-50 border-b border-white/10">
     <div class="flex items-center gap-1.5 mr-3 shrink-0">
@@ -73,4 +80,11 @@
         class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">🧭 Advisor</button>
     <button type="button" disabled title="Segera hadir -- belum ada mesinnya"
         class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">⬇ Export Paths</button>
+
+    @if ($backUrl)
+        <a href="{{ $backUrl }}" wire:navigate title="{{ $backLabel }}"
+            class="flex items-center gap-1.5 text-[10.5px] font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md no-underline shrink-0">
+            ← {{ $backLabel }}
+        </a>
+    @endif
 </div>

@@ -111,7 +111,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
 <div class="print:hidden">
-    <x-prodev.wizard-bar current="mastercard" :steps="$this->wizardSteps" />
+    <x-prodev.wizard-bar current="mastercard" :steps="$this->wizardSteps" :back-url="route('production.prodev.list')" />
 </div>
 <x-print.document :theme="['accent' => '#8a5a00', 'accent-soft' => '#fdf3e2']" info="{{ $this->part->displayMastercardCode() }}">
     <x-slot:toolbar>

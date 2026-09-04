@@ -1001,12 +1001,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     --pd-info-ink: {{ $__pdTheme->mode === 'dark' ? '#8fc1ff' : '#1560a8' }};
 ">
     @if ($this->part)
-        <x-prodev.wizard-bar current="development" :steps="$this->wizardSteps" :jobs="$this->jobOptions" :selected-job-id="$this->partId" />
+        <x-prodev.wizard-bar current="development" :steps="$this->wizardSteps" :jobs="$this->jobOptions" :selected-job-id="$this->partId" :back-url="route('production.prodev.list')" />
     @endif
 
     <div class="bg-[var(--pd-surface)] border-b border-[var(--pd-border)] px-5 py-2 flex items-center gap-3.5">
-        <a href="{{ route('production.prodev.list') }}" wire:navigate
-            class="text-[var(--pd-muted)] text-xs px-2.5 py-1.5 rounded-md no-underline hover:bg-[var(--pd-surface-alt)] hover:text-[var(--pd-ink-strong)] shrink-0" title="Kembali ke daftar Pro-Dev">← Daftar Part</a>
         @if ($this->part)
             <span class="text-xs text-[var(--pd-ink)] font-semibold">{{ $this->part->displayMastercardCode() }} · {{ $this->part->part_name }}</span>
             <span class="text-[10.5px] font-bold px-2.5 py-1 rounded-full {{ $this->layoutStatusBadgeClass() }}">{{ $this->layoutStatusLabel() }}</span>

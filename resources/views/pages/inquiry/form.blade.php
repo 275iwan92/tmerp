@@ -206,16 +206,21 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             if ($this->view) {
                 $this->readOnly = true; // cross-nav paksa read-only, apapun stat_confirm
             }
-        } elseif ($this->view) {
-            // Cross-nav dari ProDev/Costing tapi part-nya Mode #2 (murni manual,
-            // TIDAK PERNAH lewat Inquiry) -- jangan mulai draft baru spt biasa,
-            // tampilkan pesan "tidak ada Inquiry" (lihat blok noInquiryForView).
-            $this->noInquiryForView = true;
-            $this->readOnly = true;
         } else {
+            // Cross-nav ($view=true) tapi part-nya Mode #2 (murni manual, TIDAK
+            // PERNAH lewat Inquiry) -- user 2026-09-04: layar Inquiry Product
+            // TETAP tampil PENUH spt biasa (jangan diganti kartu ringkasan
+            // custom, form aslinya "SUDAH ADA & DIVERIFIKASI BAGUS" CLAUDE.md
+            // §4, tidak boleh disubstitusi), cuma KOSONG+TERKUNCI + 1 banner
+            // penjelas di atasnya kenapa kosong (noInquiryForView, lihat blade).
             $this->inquiry_date = now()->toDateString();
             $this->addTier();
             $this->addPart();
+
+            if ($this->view) {
+                $this->noInquiryForView = true;
+                $this->readOnly = true;
+            }
         }
     }
 
@@ -1326,22 +1331,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
 <div>
     @if ($this->inquiry || $noInquiryForView)
-        <x-prodev.wizard-bar current="inquiry" :steps="$this->wizardSteps" />
+        <x-prodev.wizard-bar current="inquiry" :steps="$this->wizardSteps" :back-url="route('inquiry.hub')" />
     @endif
-    @if ($noInquiryForView)
-        <div class="max-w-[720px] mx-auto my-10 px-4">
-            <div class="card">
-                <h3>📋 Inquiry Product</h3>
-                <div class="body">
-                    <div class="note b">
-                        Part ini dibuat <b>manual (Mode #2 / standalone)</b> langsung di Pro-Dev —
-                        tidak pernah lewat Inquiry Product, jadi tidak ada data Inquiry untuk
-                        ditampilkan di sini.
-                    </div>
-                </div>
-            </div>
-        </div>
-    @else
+    {{-- Mode #2 cross-nav (user 2026-09-04, "harusnya muncul spt attachment #2
+    dalam mode view/readonly"): TETAP layar Inquiry Product ASLI (form ini
+    "SUDAH ADA & DIVERIFIKASI BAGUS", CLAUDE.md §4 -- jangan disubstitusi
+    kartu ringkasan custom), cuma kosong+terkunci + 1 banner penjelas. --}}
     <header class="app-header">
         <b>{{ $mode === 'NEW' ? '✨ Inkuiri Produk Baru' : ($mode === 'RECALC' ? '🔁 Hitung Ulang Harga' : '✏️ Ubah Spesifikasi') }}</b>
         <span class="pill {{ strtolower($mode) }}">{{ $mode }}</span>
@@ -1355,7 +1350,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             <div class="note g">✅ {{ $flash }}</div>
         @endif
 
-        @if ($readOnly)
+        @if ($noInquiryForView)
+            <div class="note b">
+                📋 Part ini dibuat <b>manual (Mode #2 / standalone)</b> langsung di Pro-Dev — tidak
+                pernah lewat Inquiry Product. Form di bawah kosong &amp; terkunci (lihat-saja),
+                bukan draf baru yang bisa disimpan.
+            </div>
+        @elseif ($readOnly)
             <div class="note o">🔒 Inkuiri ini sudah dikonfirmasi (status <b>{{ $sub_state }}</b>) — dibuka lihat-saja, tidak bisa diedit.</div>
         @else
             <div class="note y">
@@ -1998,5 +1999,4 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         </div>
 
     </div>
-    @endif
 </div>
