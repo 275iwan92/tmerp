@@ -266,6 +266,50 @@ new #[Title('TELASIH MAKMUR — RECALC')] class extends Component
 
                 @foreach ($this->reuseParts as $part)
                     <div class="sec-title">{{ $part->part_name }} @if($part->part_type)({{ $part->part_type }})@endif</div>
+
+                    {{-- Preview artwork + diecut (permintaan user 2026-09-04: "RECALC harus
+                    ada preview image dan die cut nya juga agar tidak salah" -- RECALC 100%
+                    reuse spec dari inquiry baku, jadi officer perlu cek visual cepat sebelum
+                    submit, bukan cuma baca teks "Shallow Box" dari kolom Dieline/Tipe di
+                    bawah yg gampang salah baca kalau ada banyak tipe mirip). --}}
+                    <div style="display:flex;gap:14px;margin-bottom:10px" x-data="{ zoomArt: false }">
+                        @if ($part->artwork_path)
+                            <div style="width:110px;flex-shrink:0">
+                                <div class="hint" style="margin-bottom:4px">Artwork</div>
+                                <img src="{{ asset('storage/'.$part->artwork_path) }}" @click="zoomArt = true"
+                                     style="width:110px;height:110px;object-fit:cover;border-radius:6px;border:1px solid #c7cfda;cursor:zoom-in" alt="artwork">
+                                <div x-show="zoomArt" x-cloak @click.self="zoomArt = false" @keydown.escape.window="zoomArt = false"
+                                     style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
+                                    <img src="{{ asset('storage/'.$part->artwork_path) }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork ukuran penuh">
+                                </div>
+                            </div>
+                        @else
+                            <div style="width:110px;flex-shrink:0">
+                                <div class="hint" style="margin-bottom:4px">Artwork</div>
+                                <div style="width:110px;height:110px;background:#f4f6fa;border:1px solid #c7cfda;border-radius:6px;display:flex;align-items:center;justify-content:center">
+                                    <span class="hint">Tak ada</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        @php($hasDieline = ! empty($part->dieline_spec['elements'] ?? null))
+                        <div style="width:150px;flex-shrink:0">
+                            <div class="hint" style="margin-bottom:4px">Diecut</div>
+                            @if ($hasDieline)
+                                <div style="width:150px;height:150px;background:#fff;border:1px solid #c7cfda;border-radius:6px;display:flex;align-items:center;justify-content:center;padding:6px"
+                                     x-data="{ svg: null }"
+                                     x-init="svg = window.TMDieline ? window.TMDieline.svg(@js($part->dieline_spec), @js($part->dieline_spec['dims'] ?? (object) [])) : null">
+                                    <div x-show="svg" x-html="svg" style="width:100%;height:100%"></div>
+                                    <div x-show="!svg" class="hint">Gagal memuat.</div>
+                                </div>
+                            @else
+                                <div style="width:150px;height:150px;background:#f4f6fa;border:1px solid #c7cfda;border-radius:6px;display:flex;align-items:center;justify-content:center">
+                                    <span class="hint">Tak ada diecut</span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
                     <div class="reuse">
                         <div class="k"><label>Dimensi</label><div class="v mono">{{ $part->flat_w ?? '—' }} × {{ $part->flat_h ?? '—' }} cm</div><div class="rz">✓ reuse</div></div>
                         <div class="k"><label>Dieline / Tipe</label><div class="v mono">{{ $part->dieline_spec['type_code'] ?? '—' }}</div><div class="rz">✓ reuse</div></div>

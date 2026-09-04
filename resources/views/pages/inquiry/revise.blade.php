@@ -5,18 +5,23 @@ use App\Models\Master\ProdType;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sdi\IqpPartMaterial;
+use App\Models\Sys\SysConstant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 // Layar REVISE (docs/mockups/inquiry_revise_v2.html) — ubah spec via copy-record
 // + versi baru. Scope manual (R-REV-1, docs/inquiryproduct_delta_revise.md) menentukan
 // blok edit apa yang tampil; field di luar scope tetap reuse verbatim dari baku.
 new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 {
+    use WithFileUploads;
+
     #[Url]
     public ?int $id = null;
 
@@ -38,6 +43,13 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
     /** @var array<int, array> */
     public array $parts = [];
+
+    // Temp upload artwork baru per index part -- hanya relevan/ditampilkan saat
+    // scope ARTWORK aktif (permintaan user 2026-09-04: "REVISE juga harus ada
+    // upload image jika terjadi perubahan image"). Pola sama persis dgn
+    // inquiry/form.blade.php (temp upload Livewire, preview via temporaryUrl(),
+    // dipindah ke storage permanen saat Simpan Draft).
+    public array $artworkUploads = [];
 
     public ?string $flash = null;
 
@@ -68,6 +80,15 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                 foreach ($this->parts[$i]['materials'] as $j => $m) {
                     $this->parts[$i]['materials'][$j]['id'] = null;
                 }
+
+                // Artwork LAMA jangan langsung jadi artwork_path draft baru (2 versi
+                // Inquiry akan berbagi 1 file fisik, resiko salah hapus) -- pindah ke
+                // source_artwork_* dulu, persistPendingArtwork() yg urus salin fisik
+                // saat disimpan kalau memang tidak diganti manual.
+                $this->parts[$i]['source_artwork_path'] = $p['artwork_path'];
+                $this->parts[$i]['source_artwork_original_filename'] = $p['artwork_original_filename'];
+                $this->parts[$i]['artwork_path'] = null;
+                $this->parts[$i]['artwork_original_filename'] = null;
             }
 
             $this->design_number = $this->source->design_number ?? '';
@@ -94,6 +115,14 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             'flat_area' => $p->flat_area !== null ? rtrim(rtrim((string) $p->flat_area, '0'), '.') : '',
             'cfg_color' => $p->cfg_color ?? '',
             'cfg_ink' => $p->cfg_ink ?? '',
+            'artwork_path' => $p->artwork_path,
+            'artwork_original_filename' => $p->artwork_original_filename,
+            // Dipakai HANYA sbg fallback saat draft baru (lihat mount() cabang
+            // source_id) -- salin fisik ke path baru saat disimpan kalau sales
+            // TIDAK upload artwork baru, drpd 2 versi Inquiry berbagi 1 file
+            // (hapus/ganti di 1 versi bisa merusak versi lain).
+            'source_artwork_path' => null,
+            'source_artwork_original_filename' => null,
             'materials' => $p->materials->map(fn (IqpPartMaterial $m) => [
                 'id' => $m->id_part_material,
                 'rawmat_id' => $m->rawmat_id,
@@ -221,6 +250,127 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         $this->parts[$partIndex]['materials'][$matIndex]['query'] = '';
     }
 
+    // ================= ARTWORK BARU (scope ARTWORK) =================
+    // Upload dipakai HANYA kalau sales mencentang scope Artwork (menandakan
+    // desain memang berubah) -- lihat blok "@if (in_array('ARTWORK', $scope..."
+    // di template. Pola upload sama persis inquiry/form.blade.php (temp upload
+    // Livewire, preview via temporaryUrl(), analisis warna baca file temp) --
+    // TIDAK porting suggestion engine bahan/finishing dari histori (di luar
+    // scope revisi 2026-09-04, REVISE sudah punya alur substitusi bahan sendiri
+    // di blok scope MATERIAL).
+
+    #[Computed]
+    public function artworkMaxMb(): float
+    {
+        return SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10);
+    }
+
+    public function updatedArtworkUploads($value, $key): void
+    {
+        $index = (int) $key;
+
+        if ($this->readOnly || ! isset($this->parts[$index]) || ! $value) {
+            return;
+        }
+
+        $this->validateOnly("artworkUploads.{$key}", [
+            "artworkUploads.{$key}" => 'image|mimes:jpg,jpeg,png|max:'.($this->artworkMaxMb * 1024),
+        ]);
+
+        $this->parts[$index]['artwork_original_filename'] = $value->getClientOriginalName();
+        $this->parts[$index]['artwork_color_suggestion'] = $this->analyzeImageColors($value->getRealPath());
+    }
+
+    public function removeArtwork(int $index): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$index])) {
+            return;
+        }
+
+        unset($this->artworkUploads[$index]);
+
+        $path = $this->parts[$index]['artwork_path'] ?? null;
+
+        if ($path) {
+            Storage::disk('public')->delete($path);
+
+            if ($this->parts[$index]['id']) {
+                IqpPart::whereKey($this->parts[$index]['id'])->update([
+                    'artwork_path' => null,
+                    'artwork_original_filename' => null,
+                ]);
+            }
+        }
+
+        $this->parts[$index]['artwork_path'] = null;
+        $this->parts[$index]['artwork_original_filename'] = null;
+        $this->parts[$index]['artwork_color_suggestion'] = null;
+    }
+
+    // Sama persis logika analisis warna di inquiry/form.blade.php (GD, downsample
+    // 40x40, kuantisasi /32) -- saran KASAR jumlah warna/grayscale, bukan deteksi
+    // presisi cetak. Tidak diekstrak ke trait/service bersama (2 file kecil,
+    // duplikasi < abstraksi prematur, lihat CLAUDE.md §7.2).
+    protected function analyzeImageColors(?string $full): ?array
+    {
+        if (! $full || ! is_file($full)) {
+            return null;
+        }
+
+        $info = @getimagesize($full);
+
+        if (! $info) {
+            return null;
+        }
+
+        $img = match ($info[2]) {
+            IMAGETYPE_JPEG => @imagecreatefromjpeg($full),
+            IMAGETYPE_PNG => @imagecreatefrompng($full),
+            default => null,
+        };
+
+        if (! $img) {
+            return null;
+        }
+
+        $sw = 40;
+        $sh = 40;
+        $sample = imagecreatetruecolor($sw, $sh);
+        imagecopyresampled($sample, $img, 0, 0, 0, 0, $sw, $sh, imagesx($img), imagesy($img));
+        imagedestroy($img);
+
+        $colors = [];
+        $isGrayscale = true;
+
+        for ($y = 0; $y < $sh; $y++) {
+            for ($x = 0; $x < $sw; $x++) {
+                $rgb = imagecolorat($sample, $x, $y);
+                $r = ($rgb >> 16) & 0xFF;
+                $g = ($rgb >> 8) & 0xFF;
+                $b = $rgb & 0xFF;
+
+                if (abs($r - $g) > 12 || abs($g - $b) > 12 || abs($r - $b) > 12) {
+                    $isGrayscale = false;
+                }
+
+                $colors[intdiv($r, 32).'-'.intdiv($g, 32).'-'.intdiv($b, 32)] = true;
+            }
+        }
+
+        imagedestroy($sample);
+
+        $distinct = count($colors);
+
+        $code = match (true) {
+            $isGrayscale && $distinct <= 3 => '1/0',
+            ! $isGrayscale && $distinct <= 4 => '2/0',
+            ! $isGrayscale && $distinct <= 10 => '4/0',
+            default => '4/4',
+        };
+
+        return ['code' => $code, 'distinct_colors' => $distinct, 'is_grayscale' => $isGrayscale];
+    }
+
     // ================= PROSES (scope PROCESS) =================
 
     public function addProcessRow(int $partIndex): void
@@ -343,11 +493,57 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                 $keepIds[] = $part->id_part;
             }
 
+            $this->persistPendingArtwork($part, $index);
             $this->persistPartMaterials($part, $index);
             $this->persistPartProcesses($part, $index);
         }
 
         $this->inquiry->parts()->whereNotIn('id_part', $keepIds)->delete();
+    }
+
+    // Prioritas: (1) upload baru sesi ini menang -- pindah dari temp ke storage
+    // permanen. (2) kalau tidak ada upload baru TAPI part ini py source_artwork_path
+    // (draft baru dari REVISE, artwork lama belum diganti), salin fisik file lama
+    // ke path baru milik part INI -- SENGAJA disalin bukan direuse path yg sama,
+    // supaya versi lama & baru independen (hapus/ganti artwork di 1 versi tidak
+    // pernah merusak versi lain, lihat catatan di mount()/fillPartsFrom()).
+    protected function persistPendingArtwork(IqpPart $part, int $index): void
+    {
+        $file = $this->artworkUploads[$index] ?? null;
+
+        if ($file) {
+            $oldPath = $part->artwork_path;
+            $path = $file->store("inquiry/{$part->id_part}/artwork", 'public');
+
+            if ($oldPath && $oldPath !== $path) {
+                Storage::disk('public')->delete($oldPath);
+            }
+
+            $part->update([
+                'artwork_path' => $path,
+                'artwork_original_filename' => $file->getClientOriginalName(),
+            ]);
+
+            $this->parts[$index]['artwork_path'] = $path;
+            unset($this->artworkUploads[$index]);
+
+            return;
+        }
+
+        $sourcePath = $this->parts[$index]['source_artwork_path'] ?? null;
+
+        if (! $part->artwork_path && $sourcePath && Storage::disk('public')->exists($sourcePath)) {
+            $newPath = "inquiry/{$part->id_part}/artwork/".basename($sourcePath);
+            Storage::disk('public')->copy($sourcePath, $newPath);
+
+            $part->update([
+                'artwork_path' => $newPath,
+                'artwork_original_filename' => $this->parts[$index]['source_artwork_original_filename'] ?? null,
+            ]);
+
+            $this->parts[$index]['artwork_path'] = $newPath;
+            $this->parts[$index]['artwork_original_filename'] = $this->parts[$index]['source_artwork_original_filename'] ?? null;
+        }
     }
 
     protected function persist(string $subState): void
@@ -548,6 +744,51 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             <div class="eb">
                 <div class="t">🎨 Artwork — Identitas Desain Baru</div>
                 <x-form.input legacy label="No. Design / Proof" wire:model="design_number" placeholder="mis. DS003480" :disabled="$readOnly" />
+
+                @foreach ($parts as $i => $part)
+                    <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px" x-data="{ zoomOld: false, zoomNew: false }">
+                        @if ($part['source_artwork_path'] ?? null)
+                            <div style="width:150px">
+                                <div class="hint" style="margin-bottom:4px">Artwork Lama (v{{ $source->revision_no }})</div>
+                                <img src="{{ asset('storage/'.$part['source_artwork_path']) }}" @click="zoomOld = true"
+                                     style="width:150px;height:150px;object-fit:cover;border-radius:6px;border:1px solid #c7cfda;cursor:zoom-in" alt="artwork lama">
+                                <div x-show="zoomOld" x-cloak @click.self="zoomOld = false" @keydown.escape.window="zoomOld = false"
+                                     style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
+                                    <img src="{{ asset('storage/'.$part['source_artwork_path']) }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork lama ukuran penuh">
+                                </div>
+                            </div>
+                        @endif
+
+                        <div style="width:150px">
+                            <div class="hint" style="margin-bottom:4px">Artwork Baru</div>
+                            @php($newPreviewUrl = isset($artworkUploads[$i]) ? $artworkUploads[$i]->temporaryUrl() : (($part['artwork_path'] ?? null) ? asset('storage/'.$part['artwork_path']) : null))
+                            @if ($newPreviewUrl)
+                                <img src="{{ $newPreviewUrl }}" @click="zoomNew = true"
+                                     style="width:150px;height:150px;object-fit:cover;border-radius:6px;border:2px solid #22a06b;cursor:zoom-in" alt="artwork baru">
+                                <div x-show="zoomNew" x-cloak @click.self="zoomNew = false" @keydown.escape.window="zoomNew = false"
+                                     style="position:fixed;inset:0;z-index:250;background:rgba(15,22,45,.72);display:flex;align-items:center;justify-content:center;padding:24px">
+                                    <img src="{{ $newPreviewUrl }}" style="max-width:90vw;max-height:88vh;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.4)" alt="artwork baru ukuran penuh">
+                                </div>
+                                @unless($readOnly)
+                                    <button type="button" class="btn d xs" wire:click="removeArtwork({{ $i }})" style="margin-top:4px;width:150px">✕ hapus</button>
+                                @endunless
+                                @if ($part['artwork_color_suggestion'] ?? null)
+                                    @php($sc = $part['artwork_color_suggestion'])
+                                    <div class="hint" style="margin-top:4px">💡 Saran warna: <b>{{ $sc['code'] }}</b> ({{ $sc['distinct_colors'] }} warna{{ $sc['is_grayscale'] ? ', B/W' : '' }})</div>
+                                @endif
+                            @elseif(! $readOnly)
+                                <input type="file" x-ref="artworkInput{{ $i }}" wire:model="artworkUploads.{{ $i }}" accept=".jpg,.jpeg,.png" style="display:none">
+                                <button type="button" class="btn g xs" style="width:150px" @click="$refs['artworkInput{{ $i }}'].click()">📎 Upload Artwork Baru</button>
+                                <div wire:loading wire:target="artworkUploads.{{ $i }}" class="hint" style="color:#1560a8">⏳ mengunggah…</div>
+                                @error('artworkUploads.'.$i) <div style="font-size:10px;color:#c0392b">{{ $message }}</div> @enderror
+                            @else
+                                <div class="hint">Belum ada artwork baru.</div>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+
                 <div class="note b" style="margin-top:10px">Artwork baru akan melalui proof ulang (modul Proof/Prove) sebelum quotation — di luar layar ini.</div>
             </div>
         @endif
