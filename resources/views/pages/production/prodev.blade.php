@@ -227,7 +227,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             ],
             'costing' => [
                 'label' => '3. Costing',
-                'url' => $inquiryId ? route('inquiry.costing', ['inquiry' => $inquiryId]) : null,
+                'url' => $inquiryId ? route('inquiry.costing', ['inquiry' => $inquiryId, 'view' => 1]) : null,
                 'reason' => 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.',
             ],
             'mastercard' => [
@@ -1382,7 +1382,8 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                     <button type="button" wire:click="confirmLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Konfirmasi Layout</button>
                                 @endif
 
-                                <a href="{{ $this->wizardSteps['costing']['url'] ?? route('inquiry.costing.list') }}" wire:navigate
+                                @php($__costingOriginId = $this->originInquiryParts->first()['inquiry_id'] ?? null)
+                                <a href="{{ $__costingOriginId ? route('inquiry.costing', ['inquiry' => $__costingOriginId]) : route('inquiry.costing.list') }}" wire:navigate
                                     class="text-center px-3 py-1.5 rounded text-[11px] font-bold bg-accent text-white no-underline hover:brightness-110">Hitung Product Costing →</a>
                             @else
                                 <div class="text-[11.5px] px-2.5 py-2 rounded-md leading-relaxed bg-[var(--pd-info-bg)] border border-[var(--pd-info-border)] text-[var(--pd-info-ink)]">

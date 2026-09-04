@@ -133,7 +133,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             ],
             'costing' => [
                 'label' => '3. Costing',
-                'url' => route('inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry]),
+                'url' => route('inquiry.costing', ['inquiry' => $this->inquiry->id_inquiry, 'view' => 1]),
             ],
             'mastercard' => [
                 'label' => 'Master Card',

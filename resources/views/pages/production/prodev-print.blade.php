@@ -67,7 +67,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             ],
             'costing' => [
                 'label' => '3. Costing',
-                'url' => $origin ? route('inquiry.costing', ['inquiry' => $origin]) : null,
+                'url' => $origin ? route('inquiry.costing', ['inquiry' => $origin, 'view' => 1]) : null,
                 'reason' => 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.',
             ],
             'mastercard' => [

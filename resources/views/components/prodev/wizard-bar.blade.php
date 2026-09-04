@@ -28,7 +28,11 @@
         </div>
     </div>
 
-    <nav class="flex items-center gap-0.5 bg-black/20 rounded-md p-0.5 mr-3">
+    {{-- Step TANPA url (mis. Mode #2 tanpa Inquiry) TETAP bisa diklik (user
+    2026-09-04: "harus bisa klik dan lihat detail" -- jangan pernah bikin nav
+    item mati total) -- klik nunjukkan alasan singkat di popover, bukan
+    navigasi ke data yang memang tidak ada. --}}
+    <nav class="flex items-center gap-0.5 bg-black/20 rounded-md p-0.5 mr-3" x-data="{ tip: null }">
         @foreach ($steps as $key => $step)
             @if ($step['url'])
                 <a href="{{ $step['url'] }}" wire:navigate
@@ -36,9 +40,16 @@
                     {{ $step['label'] }}
                 </a>
             @else
-                <span class="px-2.5 py-1.5 rounded text-[10.5px] font-bold whitespace-nowrap text-white/25 cursor-not-allowed" title="{{ $step['reason'] ?? 'Tidak tersedia untuk job ini' }}">
-                    {{ $step['label'] }}
-                </span>
+                <div class="relative">
+                    <button type="button" @click="tip = (tip === '{{ $key }}' ? null : '{{ $key }}')"
+                        class="px-2.5 py-1.5 rounded text-[10.5px] font-bold whitespace-nowrap text-white/40 hover:text-white/70 hover:bg-white/10 cursor-pointer">
+                        {{ $step['label'] }}
+                    </button>
+                    <div x-show="tip === '{{ $key }}'" @click.outside="tip = null" x-cloak
+                        class="absolute left-0 top-full mt-1.5 w-56 bg-[#0f1830] border border-white/15 text-white/85 text-[11px] leading-snug rounded-md p-2.5 shadow-lg z-50">
+                        {{ $step['reason'] ?? 'Tidak tersedia untuk job ini.' }}
+                    </div>
+                </div>
             @endif
         @endforeach
     </nav>

@@ -15,6 +15,7 @@ use App\Services\Costing\CostingEngine;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
@@ -25,9 +26,25 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
     public string $engineError = '';
 
+    // Cross-nav read-only (wizard-bar, user 2026-09-04): "harus bisa klik
+    // Costing dari Inquiry/ProDev, lihat status/harga, TIDAK bisa mengubah;
+    // kalau belum diproses tulis 'belum diproses', kalau sudah confirm
+    // (published) baru kelihatan harganya." Beda dari entry primer via grid
+    // Costing (inquiry.costing.list) yang tetap full engine spt biasa.
+    #[Url]
+    public bool $view = false;
+
     public function mount(int $inquiry): void
     {
         $this->inquiryId = $inquiry;
+
+        if ($this->view) {
+            // JANGAN firstOrCreate -- cuma numpang lihat, tidak boleh bikin
+            // draft costing baru sbg side-effect dari navigasi pasif.
+            $this->costingId = (int) (IqpCosting::where('inquiry_id', $inquiry)->value('id_costing') ?? 0);
+
+            return;
+        }
 
         $costing = IqpCosting::firstOrCreate(
             ['inquiry_id' => $inquiry],
@@ -68,8 +85,12 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     }
 
     #[Computed]
-    public function costing(): IqpCosting
+    public function costing(): ?IqpCosting
     {
+        if (! $this->costingId) {
+            return null; // hanya kejadian di mode cross-nav read-only ($view=true) tanpa costing sama sekali
+        }
+
         return IqpCosting::with(['parts.coatings', 'priceTiers', 'inquiry'])->findOrFail($this->costingId);
     }
 
@@ -431,6 +452,57 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
     <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" />
+
+    @if ($view)
+        {{-- ============ CROSS-NAV READ-ONLY (wizard-bar, user 2026-09-04) ============
+        Bukan entry primer (grid Costing) -- cuma numpang lihat status/harga dari
+        Inquiry/ProDev, TIDAK BISA mengubah apa pun, tidak ada tombol edit sama
+        sekali. Sisi A rahasia (CLAUDE.md §4) tetap dijaga: HPP/breakdown TIDAK
+        ditampilkan di sini (beda dari $this->canSeeFormula di mode edit yg cuma
+        gate utk johiwan) -- yg boleh kelihatan di ringkasan ini cuma status +
+        harga jual final per tier (price_per_pcs), SETELAH published. --}}
+        <div class="max-w-[720px] mx-auto my-10 px-4">
+            <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
+                <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">🧮 Product Costing (lihat saja)</h3>
+                <div class="p-4">
+                    @if (! $this->costing)
+                        <div class="text-[12.5px] px-3 py-3 rounded-md leading-relaxed bg-[#eef0f3] text-[#5a6272]">
+                            ⏳ <b>Belum Diproses</b> — Costing utk Inquiry ini belum pernah dibuka/dihitung Tim Costing.
+                        </div>
+                    @elseif (! $this->costing->published_flag)
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#fff3d6] text-[#8a5a00]">{{ $this->costing->doc_status }}</span>
+                        </div>
+                        <div class="text-[12.5px] px-3 py-3 rounded-md leading-relaxed bg-[#eef0f3] text-[#5a6272]">
+                            ⏳ <b>Belum Diproses</b> — Costing masih dikerjakan Tim Costing, belum di-publish Direksi. Harga baru kelihatan di sini setelah publish.
+                        </div>
+                    @else
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c]">{{ $this->costing->doc_status }} · PUBLISHED</span>
+                        </div>
+                        <table class="w-full text-[12.5px]">
+                            <thead>
+                                <tr>
+                                    <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#eef1f5]">Qty</th>
+                                    <th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#eef1f5]">Harga / pcs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($this->costing->priceTiers as $tier)
+                                    <tr class="{{ $tier->is_primary ? 'bg-[#eef5ff]' : '' }}">
+                                        <td class="px-2 py-1.5 border-b border-[#eef1f5] font-semibold">{{ number_format($tier->qty_pcs) }}{{ $tier->is_primary ? ' ★' : '' }}</td>
+                                        <td class="px-2 py-1.5 border-b border-[#eef1f5] text-right font-bold text-navy">{{ $tier->price_per_pcs !== null ? 'Rp '.number_format($tier->price_per_pcs, 2) : '—' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="2" class="text-center py-4 text-muted">Belum ada tier qty.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    @endif
+                </div>
+            </div>
+        </div>
+    @else
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧮 TELASIH MAKMUR — Costing (HPP)</b>
         <span class="text-xs text-white/75">{{ $this->costing->inquiry?->inquiry_no ?? '—' }} · {{ $this->costing->inquiry?->product_draft_name }}</span>
@@ -737,4 +809,5 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
     </div>
+    @endif
 </div>
