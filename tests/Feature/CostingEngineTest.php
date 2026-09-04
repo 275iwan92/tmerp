@@ -56,7 +56,11 @@ class CostingEngineTest extends TestCase
 
         $costing = IqpCosting::where('inquiry_id', $this->inquiry->id_inquiry)->firstOrFail();
         $this->assertSame('DRAFT', $costing->doc_status);
-        $this->assertSame(1, $costing->priceTiers()->count());
+        // 3 preset qty default (form.blade.php, permintaan user 2026-09-04) --
+        // bukan lagi 1 tier kosong. Baris pertama (tiers.0) di-override qty=1000
+        // di atas, tetap yang dipakai $tier di bawah (assertSame ini cuma cek
+        // total count, bukan tier mana yang dipakai).
+        $this->assertSame(3, $costing->priceTiers()->count());
 
         // 3) Tambah 1 part DC, isi rate, tambah 1 coating layer.
         $component->call('addPart');

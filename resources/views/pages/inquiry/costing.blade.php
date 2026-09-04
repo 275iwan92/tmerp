@@ -4,6 +4,7 @@ use App\Models\Master\MatCoatingRate;
 use App\Models\Master\MatGrammage;
 use App\Models\Master\MatSheetRate;
 use App\Models\Master\ProdLayoutGroup;
+use App\Models\Master\ProdPartProcess;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPartCoating;
@@ -185,6 +186,88 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     public function availableLayoutGroups()
     {
         return ProdLayoutGroup::with(['product', 'parts'])->where('status', 'CONFIRMED')->orderByDesc('id_layout_group')->limit(100)->get();
+    }
+
+    // BACKLOG.md §3 "ProCost belum konsumsi urutan proses" -- urutan proses
+    // (prod_part_process, tm2mst, diisi officer ProDev lewat prodev.blade.php
+    // ::addProcess(), SUDAH hidup sejak 2026-09-02) kini jadi masukan parameter
+    // Costing, TAPI bukan auto-hitung angka: prod_process/prod_part_process
+    // TIDAK punya kolom rate Rupiah sama sekali (satu-satunya "rate" yg ada,
+    // process-rate.blade.php::target_qty_per_hour, itu KECEPATAN produksi utk
+    // WO Generation, besaran beda total, bukan biaya) -- menebak angka HPP dari
+    // situ salah & berbahaya (CLAUDE.md §4 "Costing rahasia"). Konsumsi yang
+    // jujur & aman: validasi silang 2 arah terhadap 3 field ongkos manual DC
+    // (cetak/plong/lem) -- "engine suggests (warning), officer confirms (isi)",
+    // pola yang sama dipakai di seluruh fitur baru sesi ini. Scope DC saja:
+    // proses SHEET_DIGITAL/KRAFT (diecut/slitter/slotter/join/partisi/layer/
+    // packing/kirim) TIDAK punya padanan nama di master prod_process saat ini
+    // (isinya migrasi offset lama: CETAK/PLONG/LEM MESIN/POTONG/UV/dst) --
+    // jangan dipaksa map, itu cuma tebakan.
+    protected const DC_PROCESS_FIELD_MAP = [
+        'CETAK' => ['field' => 'i_ongkos_cetak_rim', 'label' => 'Ongkos Cetak /rim'],
+        'PLONG' => ['field' => 'i_ongkos_plong_lb', 'label' => 'Ongkos Plong /lb'],
+        'LEM MESIN' => ['field' => 'i_ongkos_lem_pc', 'label' => 'Ongkos Lem /pc'],
+    ];
+
+    // Routing per prodev_part_id, di-load sekali per request (bukan per-part
+    // N+1) -- dikelompokkan supaya partRoutingLabel()/routingWarningsFor() di
+    // Blade tinggal ambil dari cache computed ini.
+    #[Computed]
+    public function partRouting()
+    {
+        $prodevPartIds = $this->costing?->parts->pluck('prodev_part_id')->filter()->unique()->values() ?? collect();
+
+        if ($prodevPartIds->isEmpty()) {
+            return collect();
+        }
+
+        return ProdPartProcess::whereIn('part_id', $prodevPartIds)
+            ->with('process')
+            ->orderBy('step_seq')
+            ->get()
+            ->groupBy('part_id');
+    }
+
+    public function routingNamesFor(IqpCostingPart $part)
+    {
+        if (! $part->prodev_part_id) {
+            return collect();
+        }
+
+        return ($this->partRouting[$part->prodev_part_id] ?? collect())
+            ->pluck('process.process_name')
+            ->filter()
+            ->map(fn ($name) => strtoupper(trim($name)))
+            ->unique()
+            ->values();
+    }
+
+    public function routingWarningsFor(IqpCostingPart $part): array
+    {
+        if ($part->part_type_code !== 'DC' || ! $part->prodev_part_id) {
+            return [];
+        }
+
+        $routingNames = $this->routingNamesFor($part);
+
+        if ($routingNames->isEmpty()) {
+            return [];
+        }
+
+        $warnings = [];
+
+        foreach (self::DC_PROCESS_FIELD_MAP as $processName => $meta) {
+            $inRouting = $routingNames->contains($processName);
+            $filled = (float) $part->{$meta['field']} > 0;
+
+            if ($inRouting && ! $filled) {
+                $warnings[] = "Proses {$processName} ada di routing ProDev tapi \"{$meta['label']}\" masih 0 — isi dulu.";
+            } elseif (! $inRouting && $filled) {
+                $warnings[] = "\"{$meta['label']}\" terisi tapi proses {$processName} tidak ada di routing ProDev — cek kembali, mungkin sisa data lama.";
+            }
+        }
+
+        return $warnings;
     }
 
     // Instruksi user 2026-09-03: sembunyikan FORMULA/breakdown HPP (bukan field
@@ -669,6 +752,25 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                         <x-form.input label="Jumlah Warna" type="number" value="{{ $part->i_jumlah_warna }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_jumlah_warna', $event.target.value)" class="!py-1.5" />
                     </div>
 
+                    @if ($part->prodev_part_id)
+                        @php($routingNames = $this->routingNamesFor($part))
+                        @php($routingWarnings = $this->routingWarningsFor($part))
+                        <div class="flex items-center gap-1.5 flex-wrap text-[10.5px] mb-1.5">
+                            <span class="font-bold text-muted uppercase">Urutan Proses (ProDev):</span>
+                            @forelse ($routingNames as $name)
+                                <span class="px-1.5 py-0.5 rounded bg-[#eef3fb] text-[#2c3e69] font-semibold">{{ $name }}</span>
+                            @empty
+                                <span class="text-[#8a5a00]">belum ada routing tercatat di ProDev untuk part ini</span>
+                            @endforelse
+                        </div>
+                        @if ($routingWarnings)
+                            <div class="bg-[#fff8ec] border border-[#f0dcae] rounded-md p-2 mb-1.5 space-y-0.5">
+                                @foreach ($routingWarnings as $w)
+                                    <div class="text-[10.5px] text-[#8a5a00]">⚠ {{ $w }}</div>
+                                @endforeach
+                            </div>
+                        @endif
+                    @endif
                     <div class="grid grid-cols-3 gap-2.5 mb-3">
                         <x-form.input label="Ongkos Cetak /rim" type="number" step="0.01" value="{{ $part->i_ongkos_cetak_rim }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_cetak_rim', $event.target.value)" class="!py-1.5" />
                         <x-form.input label="Ongkos Plong /lb" type="number" step="0.01" value="{{ $part->i_ongkos_plong_lb }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_plong_lb', $event.target.value)" class="!py-1.5" />
