@@ -95,6 +95,9 @@
   + Tool #10 (Intra-Product Part Combiner) + alokasi biaya proporsional
   multi-part di Costing — SEMUA §0 follow-up TUNTAS (kecuali item DC+SHEET
   formula yg memang menunggu Excel sumber, bukan kerjaan kode).
+- **R31.** Dokumentasi per-layar (127 file) + flow per-modul (12 file) +
+  database/tabel (12 file) + katalog komponen UI/UX (6 file) + index master
+  — lihat `docs/LOG_JOB_DONE.md` 2026-09-05.
 
 **MASIH TERBUKA** (kategori besar, lihat section angka di bawah utk detail):
 
@@ -124,9 +127,6 @@
 - **R18.** Katalog §12 — banyak item Procurement/Finance/HR/Delivery
   eksplisit di luar scope v1, plus keputusan bisnis Inquiry/CO yang masih
   menggantung (§12.2).
-- **R31.** [BARU 2026-09-04] Dokumentasi per-layar (md per screen, utk user
-  koreksi) + flow per-modul + standarisasi UI/UX & detail komponen
-  (termasuk admin dashboard Filament) — belum mulai. Lihat §13.
 
 ---
 
@@ -542,63 +542,6 @@ Recruitment sudah dibuka lagi & dibangun penuh sejak keputusan
 "DEC-SCOPE-OPEN" 2026-08-26. Dicatat apa adanya sesuai sumbernya, bukan
 diselaraskan paksa — kalau baca dokumen lama soal 3 modul ini, cek dulu
 tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
-
----
-
-## 13. DOKUMENTASI PER-LAYAR, FLOW PER-MODUL & STANDARISASI UI/UX (permintaan user 2026-09-04)
-
-**Belum mulai** — 3 permintaan terpisah, dicatat verbatim supaya scope tidak
-melenceng saat mulai dikerjakan:
-
-1. **Dokumentasi per-layar** — 1 file `.md` per layar (Livewire SFC di
-   `resources/views/pages/**` + Resource Filament di `/admin`), isinya
-   deskripsi field/aksi/alur yang SUNGGUH ADA di kode saat ini (bukan
-   rencana/mockup) — tujuan eksplisit user: "**agar saya bisa benahi isi
-   md file jika ternyata menyimpang**", jadi dokumen ini jadi alat verifikasi
-   dua-arah (Claude tulis apa yang dilihat di kode, user koreksi kalau
-   keliru/kurang), bukan spec yang didikte dari awal. Ikuti konvensi
-   penamaan `sys_app_menu.doc_slug` yang sudah ada (CLAUDE.md §6) — jangan
-   bikin skema penamaan baru.
-2. **Flow per-modul** — dokumen alur kerja lintas-layar per modul (Sales,
-   Procurement, Inventory, Production, Finance, HRM, dst) — beda level dari
-   poin 1 (per-layar) — ini mengikat urutan/keterkaitan antar-layar dalam 1
-   modul (mis. Inquiry → Quotation → CO → CPDEL → DO, atau ProDev → ProCost).
-   Kemungkinan besar overlap dgn dokumen Tier1/Tier2 yang sudah ada per
-   modul — **cek dulu yang sudah ada di `/docs` sebelum bikin baru**,
-   jangan duplikat, cukup lengkapi/perbarui yang sudah ada kalau relevan.
-3. **Standarisasi UI/UX + detail komponen** — beda dari poin 1/2, ini
-   dokumen DESAIN SISTEM (bukan per-layar): styling/pola/komponen yang
-   dipakai berulang lintas modul, level detail sampai component. Sebagian
-   BESAR kemungkinan sudah ada tersebar (`griduistandard.md`,
-   `printnotastandard.md`, `ganttboardstandard.md`, `kanbanboardstandard.md`,
-   `spreadsheetgridstandard.md`, `themestandard.md`,
-   `admindashboardstandard.md`, `uistandardindex.md` sbg peta) — task ini
-   kemungkinan besar **konsolidasi & lengkapi**, bukan mulai dari nol.
-   **Admin dashboard (Filament) WAJIB masuk cakupan** secara eksplisit
-   (permintaan user) — `admindashboardstandard.md` sudah ada tapi baru
-   HRM cluster yang jadi bukti pola (lihat §9), pastikan detail komponen
-   Filament (Resource/Cluster/Page/Widget) ikut terdokumentasi setara
-   dgn pola shell lama.
-
-**Syarat tambahan dari user (2026-09-04, susulan)**:
-- **Prefix nama file wajib** — supaya gampang dicari (konsisten dgn konvensi
-  `doc_slug`/prefix yang sudah ada di project, CLAUDE.md §6). Perlu
-  ditentukan skema prefix per kategori (mis. `screen_*` utk poin 1,
-  `flow_*` utk poin 2, `uistandard_*`/nama existing yang sudah prefix-
-  konsisten utk poin 3) sebelum mulai generate file — jangan mulai nulis
-  file lalu baru mikir prefix belakangan.
-- **Wajib ada file index** — 1 file `.md` yang mendaftar SEMUA file `.md`
-  hasil task ini (dan idealnya seluruh `/docs`, bukan cuma yang baru),
-  supaya user bisa navigasi tanpa buka folder satu-satu. Pola serupa sudah
-  ada (`docs/attachments_index.md`, `uistandardindex.md`) — reuse pola itu,
-  jangan bikin format index baru yang beda gaya.
-
-**Belum diputuskan**: urutan pengerjaan 3 poin di atas, modul mana duluan
-utk poin 1/2 (kandidat wajar: mulai dari modul yang paling matang/stabil
-dulu, mis. Sales/Inquiry atau HRM), dan apakah poin 1 mencakup SEMUA layar
-sekaligus (besar) atau bertahap per-modul menyusul poin 2. **Jangan mulai
-otonom tanpa arahan** — scope-nya besar & lintas seluruh aplikasi, beda
-kelas dari item BACKLOG lain yang biasanya 1 fitur/1 modul.
 
 ---
 

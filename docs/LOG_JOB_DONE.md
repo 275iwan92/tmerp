@@ -12,6 +12,62 @@
 
 ---
 
+## 2026-09-05 — Dokumentasi massal per-layar, flow modul, database, katalog UI/UX
+
+Permintaan user (BACKLOG.md §13 lama, dieksekusi penuh hari ini setelah
+"kerjakan tanpa saya... Do it now" + "Auto Run even run out of tokens"):
+4 kategori dokumen baru, ditulis murni dari BACA KODE SUNGGUHAN (bukan
+didikte spek duluan) — tujuan eksplisit user: "agar saya bisa benahi isi
+md file jika ternyata menyimpang".
+
+**Hasil**: 157 file baru + 1 index master.
+- **127 file `docs/screens/screen_*.md`** — 1 per layar Livewire SFC
+  (`resources/views/pages/**`, 119 file) + Resource/Page Filament
+  (`app/Filament/**`, 8 file). Isi: Field & Kolom, Aksi/Method, Tabel &
+  Model, Alur/Business Logic, Catatan gap.
+- **12 file `docs/flows/flow_*.md`** — 1 per modul (System&Setup, Careers
+  Portal Publik, Recruitment Internal, Inquiry Product, Sales Order &
+  Delivery, Finance&Accounting, HRM, Inventory, Master Data, Production
+  Scheduling, Procurement, Admin Dashboard Filament) — tabel "tahap->
+  layar->aktor" tiap modul.
+- **12 file `docs/database/db_*.md`** — 1 per koneksi tm2* (mst/sdi/sys/
+  pur/inv/prd/acc/hrr/hrm/pyr/old/crp), daftar tabel+kolom dari DDL dump
+  (grep+sed CREATE TABLE, skip INSERT data) atau migration kalau dump tak
+  tersedia/stale.
+- **6 file `docs/uistandard/uistandard_component_*.md`** — katalog ~45
+  komponen Blade reusable (`resources/views/components/**`) dgn props+
+  contoh pakai nyata, melengkapi (bukan duplikat) 7 dokumen standar
+  konsep yang sudah ada.
+- **`docs/index_master.md`** — index semua 157 file di atas + pointer ke
+  85 dokumen Tier/standar lama.
+
+**Konvensi**: prefix `screen_`/`flow_`/`db_`/`uistandard_`, underscore
+konsisten (bukan hyphen — dinormalisasi manual di akhir, 28 file sempat
+salah pakai hyphen dari sub-agent).
+
+**Metodologi**: 14 sub-agent paralel (Agent tool, background) dibagi per
+modul/kategori — 3 gelombang kena rate-limit sesi Claude (bukan bug kode)
+dan di-resume dgn instruksi presisi file mana yang sudah/belum selesai;
+sisa gap kecil (13 file: 1 auth, 1 WO detail besar, 3 PR procurement, 5
+flow, 5 database hrm/hrr/pyr/old/crp) ditutup manual langsung oleh sesi
+utama, bukan sub-agent, setelah retry ke-2 sub-agent juga kena rate limit.
+
+**3 temuan penting selama proses** (dicatat di file terkait, BUKAN
+diperbaiki di sesi ini — murni tugas dokumentasi):
+1. `co/list.blade.php::confirmOrder()` kemungkinan bypass auto-generate
+   CPDEL yang ada di `co/entry.blade.php::confirmCo()` — potensi
+   inkonsistensi, lihat `screen_co_list.md`.
+2. Dump DDL `docs/ddl/tm2hrr.sql` **STALE** (0 tabel) padahal modul
+   Recruitment live dgn 18+ tabel nyata (sumber kebenaran: migration
+   `2026_08_29_000003_create_recruitment_tm2hrr_schema.php`) — disarankan
+   refresh dump.
+3. Database `tm2hrm` fisik ada (koneksi `hrm` terdefinisi) tapi **0 model**
+   Eloquent memakainya — semua fitur HRM (org_*/emp_*) berjalan di tm2mst.
+
+Lihat `docs/index_master.md` untuk peta lengkap.
+
+---
+
 ## 2026-09-03 (lanjutan — panel referensi ProDev + guard integritas data)
 
 User menunjuk gap nyata: link Mode #1 (Inquiry->ProDev) yang dibangun sesi
