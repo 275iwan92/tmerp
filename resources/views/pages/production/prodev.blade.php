@@ -985,7 +985,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 };
 ?>
 
-@php($__pdTheme = $this->theme)
+@php $__pdTheme = $this->theme; @endphp
 <div class="pd-wb min-h-screen bg-[var(--pd-bg)] text-[var(--pd-ink)]" style="
     --pd-bg: {{ $__pdTheme->mode === 'dark' ? ($__pdTheme->content_bg_color ?: '#12162a') : ($__pdTheme->content_bg_color ?: '#eef1f6') }};
     --pd-surface: {{ $__pdTheme->mode === 'dark' ? '#1b2140' : '#ffffff' }};
@@ -1282,7 +1282,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                     @endforeach
                                 </div>
                             @elseif ($this->activeLayoutCells())
-                                @php($__al = $this->activeLayoutCells())
+                                @php $__al = $this->activeLayoutCells(); @endphp
                                 <div class="flex items-center gap-3 mb-2 text-[10.5px]">
                                     <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCut"> <span class="text-muted">Cut Knife</span></label>
                                     <label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" x-model="showCrease"> <span class="text-muted">Crease</span></label>
@@ -1310,10 +1310,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
                         <div class="p-3.5" x-show="tab === 'oneup'">
                             @if ($this->dielineOneUp())
-                                @php($__du = $this->dielineOneUp())
+                                @php $__du = $this->dielineOneUp(); @endphp
                                 <div class="bg-[#fbfcfd] border border-[var(--pd-border)] rounded flex items-center justify-center p-6" style="min-height:340px">
                                     <div class="relative bg-white border-2 border-navy" style="width:{{ $__du['flat_w_px'] }}px;height:{{ $__du['flat_h_px'] }}px">
-                                        @php($__isVert = in_array($__du['side'], ['LEFT', 'RIGHT']))
+                                        @php $__isVert = in_array($__du['side'], ['LEFT', 'RIGHT']); @endphp
                                         <div class="absolute bg-accent/10 border border-accent"
                                             style="{{ $__du['side'] === 'TOP' ? "left:0;right:0;top:0;height:{$__du['flap_px']}px" : ($__du['side'] === 'BOTTOM' ? "left:0;right:0;bottom:0;height:{$__du['flap_px']}px" : ($__du['side'] === 'LEFT' ? "top:0;bottom:0;left:0;width:{$__du['flap_px']}px" : "top:0;bottom:0;right:0;width:{$__du['flap_px']}px")) }}"></div>
                                         <div class="absolute {{ $__isVert ? 'top-0 bottom-0' : 'left-0 right-0' }} border-dashed border-[#c0392b]"
@@ -1358,7 +1358,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                 </div>
 
                                 @if ($this->wasteReductionVsStandard())
-                                    @php($__wr = $this->wasteReductionVsStandard())
+                                    @php $__wr = $this->wasteReductionVsStandard(); @endphp
                                     <div class="rounded-md p-2.5 {{ $__wr['is_improvement'] ? 'bg-[#0f2a1e] text-[#5fe3a0]' : 'bg-[var(--pd-surface-alt)] text-[var(--pd-ink)]' }}">
                                         <div class="text-[9px] uppercase font-bold opacity-80">AI Waste Reduction</div>
                                         <div class="text-lg font-black">{{ $__wr['delta_pct'] > 0 ? '+' : '' }}{{ $__wr['delta_pct'] }}%</div>
@@ -1387,7 +1387,7 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                                     <button type="button" wire:click="confirmLayout" class="px-3 py-1.5 rounded text-[11px] font-bold bg-[#22a06b] text-white cursor-pointer">✓ Konfirmasi Layout</button>
                                 @endif
 
-                                @php($__costingOriginId = $this->originInquiryParts->first()['inquiry_id'] ?? null)
+                                @php $__costingOriginId = $this->originInquiryParts->first()['inquiry_id'] ?? null; @endphp
                                 <a href="{{ $__costingOriginId ? route('inquiry.costing', ['inquiry' => $__costingOriginId]) : route('inquiry.costing.list') }}" wire:navigate
                                     class="text-center px-3 py-1.5 rounded text-[11px] font-bold bg-accent text-white no-underline hover:brightness-110">Hitung Product Costing →</a>
                             @else

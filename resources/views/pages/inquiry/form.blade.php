@@ -35,8 +35,18 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     // kalau tidak ada $id sama sekali (job Mode #2, murni manual di ProDev,
     // tidak pernah lewat Inquiry) TIDAK memulai draft baru spt biasa --
     // tampil pesan "tidak ada Inquiry" (lihat noInquiryForView di bawah).
-    #[Url]
-    public bool $view = false;
+    // NAMA PROPERTI SENGAJA BUKAN "$view" -- ditemukan bug nyata 2026-09-04:
+    // Livewire/Blade rendering pipeline internal punya variabel bernama $view
+    // sendiri (View instance) yang di-extract() ke scope template SEBELUM
+    // properti publik component (extract() default EXTR_SKIP -- tidak
+    // menimpa variabel yang sudah ada), jadi property public $view diam-diam
+    // TERTUTUPI, @if($view)/@if(!$view) di Blade jadi baca objek View
+    // (selalu truthy) bukan nilai boolean kita -- KEDUA cabang if/else
+    // ke-render bersamaan (dikonfirmasi via marker debug manual). costing.
+    // blade.php kebetulan lolos dgn nama sama (mungkin beda urutan properti/
+    // extract) tapi JANGAN pernah pakai "view" sbg nama properti Livewire.
+    #[Url(as: 'view')]
+    public bool $crossView = false;
 
     // Dibawa dari ProDev/Master Card via wizard-bar khusus utk job Mode #2
     // (tanpa Inquiry) -- satu-satunya cara balik ke Development/Master Card
@@ -187,6 +197,67 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         ];
     }
 
+    // Tema (sys_theme) buat ringkasan cross-nav read-only (pola sama persis
+    // production/prodev.blade.php::theme()) -- form input ASLI di bawah
+    // (mode edit) SENGAJA tidak disentuh, tetap warna literal spt sebelumnya
+    // (CLAUDE.md §4 "JANGAN DIUBAH").
+    #[Computed]
+    public function theme(): \App\Models\Sys\SysTheme
+    {
+        return \App\Support\ActiveTheme::resolve();
+    }
+
+    // Ringkasan Box Style + Dieline per part (user 2026-09-04: "boleh
+    // improve dari attachment #1 [mockup Esko-style]" -- BUKAN reuse form
+    // input asli). Sama persis logika originInquiryParts() di
+    // production/prodev.blade.php (type_code+dims -> label param ProdType),
+    // ditambah geometri kotak flat utk preview 2D (flat_w/flat_h SUDAH
+    // tersimpan riil di iqp_part, bukan dihitung ulang/dikarang).
+    public function partSummary(IqpPart $part): array
+    {
+        $spec = $part->dieline_spec ?? [];
+        $typeCode = $spec['type_code'] ?? null;
+        $type = $typeCode ? ProdType::with('params')->find($typeCode) : null;
+        $dims = $spec['dims'] ?? [];
+
+        $dimRows = collect($type?->params ?? [])
+            ->filter(fn ($p) => array_key_exists($p->param_key, $dims) && $dims[$p->param_key] !== '' && $dims[$p->param_key] !== null)
+            ->map(fn ($p) => ['label' => $p->param_label, 'value' => $dims[$p->param_key], 'uom' => $p->unit])
+            ->values();
+
+        $flatW = (float) ($part->flat_w ?? 0);
+        $flatH = (float) ($part->flat_h ?? 0);
+        $maxPx = 260;
+        $scale = ($flatW > 0 && $flatH > 0) ? min($maxPx / $flatW, $maxPx / $flatH) : 0;
+
+        return [
+            'type_name' => $type?->type_name,
+            'dims' => $dimRows,
+            'flat_w' => $flatW,
+            'flat_h' => $flatH,
+            'flat_area' => $part->flat_area,
+            'qty_per_sku' => $part->qty_per_sku,
+            'flat_w_px' => $scale > 0 ? round($flatW * $scale, 1) : 0,
+            'flat_h_px' => $scale > 0 ? round($flatH * $scale, 1) : 0,
+        ];
+    }
+
+    // Dipakai <x-inquiry.readonly-summary :parts="$this->partSummaries" /> --
+    // anonymous component tak bisa panggil method Livewire ($this->partSummary()
+    // langsung), jadi dihitung di sini & dikirim sbg array biasa.
+    #[Computed]
+    public function partSummaries(): array
+    {
+        if (! $this->inquiry) {
+            return [];
+        }
+
+        return $this->inquiry->parts->map(fn (IqpPart $part) => [
+            'part' => $part,
+            'summary' => $this->partSummary($part),
+        ])->all();
+    }
+
     public function mount(): void
     {
         $this->mode = strtoupper($this->mode ?: 'NEW');
@@ -201,26 +272,27 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'toolings',
                 'externalCosts',
             ])->findOrFail($this->id);
-            $this->fillFromInquiry();
 
-            if ($this->view) {
-                $this->readOnly = true; // cross-nav paksa read-only, apapun stat_confirm
+            if ($this->crossView) {
+                // Cross-nav read-only (user 2026-09-04, koreksi eksplisit: "JANGAN
+                // pakai layar inquiry product yang original karena itu untuk
+                // inputan... boleh improve dari attachment #1", mockup Esko-style
+                // Step 1) -- JANGAN isi state form editable sama sekali, dirender
+                // via ringkasan terpisah (lihat blok @if($crossView) di template) yang
+                // baca $this->inquiry (relasi Eloquent) langsung, bukan array
+                // $parts/$tiers/dst yang dipakai form input.
+                return;
             }
+
+            $this->fillFromInquiry();
+        } elseif ($this->crossView) {
+            // Cross-nav tapi part-nya Mode #2 (murni manual, TIDAK PERNAH lewat
+            // Inquiry) -- tidak ada apa pun utk diringkas, tandai saja.
+            $this->noInquiryForView = true;
         } else {
-            // Cross-nav ($view=true) tapi part-nya Mode #2 (murni manual, TIDAK
-            // PERNAH lewat Inquiry) -- user 2026-09-04: layar Inquiry Product
-            // TETAP tampil PENUH spt biasa (jangan diganti kartu ringkasan
-            // custom, form aslinya "SUDAH ADA & DIVERIFIKASI BAGUS" CLAUDE.md
-            // §4, tidak boleh disubstitusi), cuma KOSONG+TERKUNCI + 1 banner
-            // penjelas di atasnya kenapa kosong (noInquiryForView, lihat blade).
             $this->inquiry_date = now()->toDateString();
             $this->addTier();
             $this->addPart();
-
-            if ($this->view) {
-                $this->noInquiryForView = true;
-                $this->readOnly = true;
-            }
         }
     }
 
@@ -1330,13 +1402,29 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 ?>
 
 <div>
-    @if ($this->inquiry || $noInquiryForView)
+    @if ($this->crossView)
+        {{-- User 2026-09-04, koreksi eksplisit: "JANGAN pakai layar inquiry
+        product yang original karena itu untuk inputan... boleh improve dari
+        attachment #1" (mockup_FORM_prodev_!.png, Esko-style Step 1). Markup
+        BESAR dipindah ke component terpisah <x-inquiry.readonly-summary>
+        (bukan inline di sini) -- ditemukan bug nyata: cabang if/else besar
+        di file 1900+ baris ini sempat merender KEDUA cabang sekaligus,
+        pindah ke component kecil terbukti menghilangkan gejalanya. --}}
         <x-prodev.wizard-bar current="inquiry" :steps="$this->wizardSteps" :back-url="route('inquiry.hub')" />
+        @php $__theme = $this->theme; @endphp
+        <div class="pd-wb min-h-screen bg-[var(--pd-bg)] text-[var(--pd-ink)]" style="
+            --pd-bg: {{ $__theme->mode === 'dark' ? ($__theme->content_bg_color ?: '#12162a') : ($__theme->content_bg_color ?: '#eef1f6') }};
+            --pd-surface: {{ $__theme->mode === 'dark' ? '#1b2140' : '#ffffff' }};
+            --pd-surface-alt: {{ $__theme->mode === 'dark' ? '#20264a' : '#f4f6fa' }};
+            --pd-border: {{ $__theme->mode === 'dark' ? '#2a3157' : '#d7dbe2' }};
+            --pd-ink: {{ $__theme->mode === 'dark' ? '#c7cee8' : '#3a4256' }};
+            --pd-ink-strong: {{ $__theme->mode === 'dark' ? '#eef1ff' : '#1c2440' }};
+            --pd-muted: {{ $__theme->mode === 'dark' ? '#8089ac' : '#8a92ad' }};
+        ">
+            <x-inquiry.readonly-summary :inquiry="$this->inquiry" :parts="$this->partSummaries" />
+        </div>
     @endif
-    {{-- Mode #2 cross-nav (user 2026-09-04, "harusnya muncul spt attachment #2
-    dalam mode view/readonly"): TETAP layar Inquiry Product ASLI (form ini
-    "SUDAH ADA & DIVERIFIKASI BAGUS", CLAUDE.md §4 -- jangan disubstitusi
-    kartu ringkasan custom), cuma kosong+terkunci + 1 banner penjelas. --}}
+    @if (! $this->crossView)
     <header class="app-header">
         <b>{{ $mode === 'NEW' ? '✨ Inkuiri Produk Baru' : ($mode === 'RECALC' ? '🔁 Hitung Ulang Harga' : '✏️ Ubah Spesifikasi') }}</b>
         <span class="pill {{ strtolower($mode) }}">{{ $mode }}</span>
@@ -1350,13 +1438,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             <div class="note g">✅ {{ $flash }}</div>
         @endif
 
-        @if ($noInquiryForView)
-            <div class="note b">
-                📋 Part ini dibuat <b>manual (Mode #2 / standalone)</b> langsung di Pro-Dev — tidak
-                pernah lewat Inquiry Product. Form di bawah kosong &amp; terkunci (lihat-saja),
-                bukan draf baru yang bisa disimpan.
-            </div>
-        @elseif ($readOnly)
+        @if ($readOnly)
             <div class="note o">🔒 Inkuiri ini sudah dikonfirmasi (status <b>{{ $sub_state }}</b>) — dibuka lihat-saja, tidak bisa diedit.</div>
         @else
             <div class="note y">
@@ -1999,4 +2081,5 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         </div>
 
     </div>
+    @endif
 </div>
