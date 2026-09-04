@@ -7,6 +7,7 @@ use App\Models\Master\ProdPartAttachment;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeSize;
+use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpExternalCost;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
@@ -75,6 +76,12 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     public string $pic_sales = '';
 
+    // Picker PIC Sales (permintaan user 2026-09-04: auto dari login + bisa
+    // diubah dari daftar sales internal/external, master baru `sales_person`).
+    public bool $showSalesPicker = false;
+
+    public string $salesQuery = '';
+
     public string $custQuery = '';
 
     public ?int $customer_id = null;
@@ -84,6 +91,23 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     public bool $is_prospect = false;
 
     public string $prospect_name = '';
+
+    // Quick-add Customer Master dari dropdown pencarian (permintaan user
+    // 2026-09-04: "+ New Customer... popup isi nama customer dan hal penting
+    // lainnya"). Field wajib Customer Master di luar ini (approval_status,
+    // tax_profile, credit_rating, kyc_status) di-default konservatif saat
+    // simpan, lihat saveNewCustomer().
+    public bool $showNewCustomerModal = false;
+
+    public string $newCustName = '';
+
+    public string $newCustType = 'local';
+
+    public string $newCustPhone = '';
+
+    public string $newCustEmail = '';
+
+    public string $newCustAddress = '';
 
     public ?string $deadline_quotation = null;
 
@@ -336,6 +360,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             $this->noInquiryForView = true;
         } else {
             $this->inquiry_date = now()->toDateString();
+            $this->pic_sales = Auth::user()->name;
             $this->addTier();
             $this->addPart();
         }
@@ -508,6 +533,135 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->customer_id = null;
         $this->customer_name = '';
         $this->custQuery = '';
+    }
+
+    // ================= QUICK-ADD CUSTOMER (dari dropdown pencarian, 2026-09-04) =================
+
+    public function openNewCustomerModal(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->newCustName = $this->custQuery;
+        $this->newCustType = 'local';
+        $this->newCustPhone = '';
+        $this->newCustEmail = '';
+        $this->newCustAddress = '';
+        $this->showNewCustomerModal = true;
+    }
+
+    public function closeNewCustomerModal(): void
+    {
+        $this->showNewCustomerModal = false;
+    }
+
+    public function setNewCustType(string $value): void
+    {
+        $this->newCustType = $value;
+    }
+
+    public function saveNewCustomer(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $data = $this->validate([
+            'newCustName' => ['required', 'string', 'max:200'],
+            'newCustType' => ['required', 'in:local,import'],
+            'newCustPhone' => ['nullable', 'string', 'max:50'],
+            'newCustEmail' => ['nullable', 'email', 'max:150'],
+            'newCustAddress' => ['nullable', 'string'],
+        ], [], [
+            'newCustName' => 'Nama Customer',
+            'newCustType' => 'Tipe Customer',
+            'newCustPhone' => 'No. Telp',
+            'newCustEmail' => 'Email',
+            'newCustAddress' => 'Alamat',
+        ]);
+
+        // Field wajib Customer Master di luar yg diisi di popup (approval_status/
+        // tax_profile/credit_rating/kyc_status) DI-DEFAULT KONSERVATIF -- customer
+        // ini masih "DRAFT/belum divalidasi", BUKAN otomatis boleh transaksi penuh
+        // (credit_rating='C' = risiko tertinggi, kyc_status='PENDING'). Finance/
+        // Credit Control tetap review manual via layar Master Customer (alur
+        // approval_status DRAFT->CREDIT_CHECK->APPROVED yg sudah ada, tidak
+        // di-bypass oleh quick-add ini).
+        $customer = CustCustomer::create([
+            'customer_code' => $this->generateQuickCustomerCode(),
+            'customer_name' => $data['newCustName'],
+            'customer_type' => $data['newCustType'],
+            'phone' => $data['newCustPhone'] ?: null,
+            'email' => $data['newCustEmail'] ?: null,
+            'default_address' => $data['newCustAddress'] ?: null,
+            'approval_status' => 'DRAFT',
+            'tax_profile' => 'PPN_11',
+            'credit_rating' => 'C',
+            'kyc_status' => 'PENDING',
+            'is_prospect' => false,
+            'activate' => true,
+            'created_by' => Auth::user()->login,
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->selectCustomer($customer->id_customer);
+        $this->showNewCustomerModal = false;
+        $this->flash = "Customer baru \"{$customer->customer_name}\" ({$customer->customer_code}) dibuat -- status DRAFT, perlu direview Finance/Credit di Master Customer sebelum transaksi penuh.";
+    }
+
+    protected function generateQuickCustomerCode(): string
+    {
+        $prefix = 'QC'.now()->format('ym');
+
+        $last = CustCustomer::where('customer_code', 'like', "{$prefix}%")
+            ->orderByDesc('customer_code')
+            ->value('customer_code');
+
+        $seq = $last ? ((int) substr($last, -4)) + 1 : 1;
+
+        return $prefix.str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+    }
+
+    // ================= PICKER PIC SALES (master sales_person, 2026-09-04) =================
+
+    public function openSalesPicker(): void
+    {
+        if ($this->readOnly) {
+            return;
+        }
+
+        $this->salesQuery = '';
+        $this->showSalesPicker = true;
+    }
+
+    public function closeSalesPicker(): void
+    {
+        $this->showSalesPicker = false;
+    }
+
+    #[Computed]
+    public function salesPersonResults()
+    {
+        return SalesPerson::query()
+            ->where('activate', true)
+            ->when($this->salesQuery !== '', fn ($q) => $q->where('sales_name', 'like', "%{$this->salesQuery}%"))
+            ->orderBy('sales_type')
+            ->orderBy('sales_name')
+            ->limit(20)
+            ->get();
+    }
+
+    public function selectSalesPerson(int $id): void
+    {
+        $sp = SalesPerson::find($id);
+
+        if (! $sp) {
+            return;
+        }
+
+        $this->pic_sales = $sp->sales_name;
+        $this->showSalesPicker = false;
     }
 
     // Tombol toggle (bukan <select>) sengaja dipakai untuk properti dua/tiga-pilihan ini:
@@ -1999,18 +2153,31 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             <div class="body">
                 <div class="sec-title">Header Inkuiri</div>
                 <div class="grid">
-                    <x-form.input legacy label="No. Inkuiri (auto)" value="{{ $inquiry_no ?: 'belum tersimpan' }}" readonly />
+                    <div class="f">
+                        <label>No. Inkuiri</label>
+                        <div style="padding:6px 0;font-size:12.5px;font-weight:700;color:{{ $inquiry_no ? '#1c2440' : '#9aa3b5' }}">
+                            {{ $inquiry_no ?: 'Otomatis saat disimpan' }}
+                        </div>
+                    </div>
                     <x-form.date-picker legacy label="Tanggal" wire:model="inquiry_date" :disabled="$readOnly" name="inquiry_date" />
                     <x-form.select legacy label="Sumber" wire:model="source" x-data x-effect="$el.value = @js($source)" :disabled="$readOnly" :placeholder="false"
                         :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
-                    <x-form.input legacy label="PIC Sales" wire:model="pic_sales" placeholder="Nama PIC Sales" :disabled="$readOnly" />
+                    <div class="f">
+                        <label>PIC Sales</label>
+                        <div style="display:flex;gap:6px;align-items:center">
+                            <input type="text" value="{{ $pic_sales }}" readonly style="flex:1;background:#f7f8fa">
+                            @unless($readOnly)
+                                <button type="button" class="btn g xs" wire:click="openSalesPicker" title="Ubah PIC Sales">✎</button>
+                            @endunless
+                        </div>
+                    </div>
 
                     <x-form.toggle-group legacy col2 label="Prospek?">
                         <x-form.toggle-option legacy :active="! $is_prospect" style="flex:1" wire:click="setProspect(false)" :disabled="$readOnly">Tidak — customer terdaftar</x-form.toggle-option>
                         <x-form.toggle-option legacy :active="$is_prospect" style="flex:1" wire:click="setProspect(true)" :disabled="$readOnly">Ya — belum terdaftar</x-form.toggle-option>
                     </x-form.toggle-group>
                     <x-form.date-picker legacy col2 wire:model="deadline_quotation" :disabled="$readOnly" name="deadline_quotation">
-                        <x-slot:label>Deadline Quotation <span class="hint" style="font-weight:400">(min. +14 hari kerja)</span></x-slot:label>
+                        <x-slot:label>Tanggal Kebutuhan Pelanggan <span class="hint" style="font-weight:400">(kapan customer butuh barangnya)</span></x-slot:label>
                     </x-form.date-picker>
 
                     @if ($is_prospect)
@@ -2041,6 +2208,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     @empty
                                         <div class="ac-none">Tidak ditemukan.</div>
                                     @endforelse
+                                    @unless($readOnly)
+                                        <div class="ac-i" style="color:#1560a8;font-weight:700" wire:click="openNewCustomerModal">
+                                            ＋ Buat Customer Baru{{ mb_strlen($custQuery) >= 2 ? ': "'.$custQuery.'"' : '' }}
+                                        </div>
+                                    @endunless
                                 </div>
                             @endif
                         </div>
@@ -2054,6 +2226,64 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 </div>
             </div>
         </div>
+
+        {{-- Popup pilih PIC Sales (permintaan user 2026-09-04) --}}
+        @if ($showSalesPicker)
+            <div style="position:fixed;inset:0;z-index:200;background:rgba(15,22,45,.45);display:flex;align-items:center;justify-content:center;padding:24px"
+                 wire:click.self="closeSalesPicker">
+                <div style="background:#fff;border-radius:12px;width:100%;max-width:420px;max-height:70vh;display:flex;flex-direction:column;overflow:hidden">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
+                        <b style="font-size:14px;color:#2c3e69">Pilih PIC Sales</b>
+                        <button type="button" wire:click="closeSalesPicker" style="border:none;background:none;font-size:18px;cursor:pointer;line-height:1">✕</button>
+                    </div>
+                    <div style="padding:12px 18px 0">
+                        <input type="text" wire:model.live.debounce.300ms="salesQuery" placeholder="Cari nama sales…" autocomplete="off">
+                    </div>
+                    <div style="overflow-y:auto;padding:10px 18px 18px">
+                        @forelse ($this->salesPersonResults as $sp)
+                            <div wire:click="selectSalesPerson({{ $sp->id_sales_person }})"
+                                 style="padding:8px 10px;border-radius:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px"
+                                 onmouseover="this.style.background='#f4f6fa'" onmouseout="this.style.background='transparent'">
+                                <span style="font-size:12.5px;color:#2c3e69">{{ $sp->sales_name }}</span>
+                                <span style="font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0;{{ $sp->sales_type === 'INTERNAL' ? 'background:#eaf7ee;color:#1f8a4c' : 'background:#fff4e5;color:#8a4b00' }}">{{ $sp->sales_type }}</span>
+                            </div>
+                        @empty
+                            <div class="hint">Tidak ada hasil.</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Popup quick-add Customer Master (permintaan user 2026-09-04) --}}
+        @if ($showNewCustomerModal)
+            <div style="position:fixed;inset:0;z-index:200;background:rgba(15,22,45,.45);display:flex;align-items:center;justify-content:center;padding:24px"
+                 wire:click.self="closeNewCustomerModal">
+                <div style="background:#fff;border-radius:12px;width:100%;max-width:460px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e3e7f0">
+                        <b style="font-size:14px;color:#2c3e69">Buat Customer Baru</b>
+                        <button type="button" wire:click="closeNewCustomerModal" style="border:none;background:none;font-size:18px;cursor:pointer;line-height:1">✕</button>
+                    </div>
+                    <div style="padding:16px 18px;overflow-y:auto">
+                        <div class="note b" style="margin-bottom:10px">Customer dibuat status <b>DRAFT</b> — Finance/Credit tetap perlu review lengkap di Master Customer sebelum bisa transaksi penuh.</div>
+                        <div class="grid" style="grid-template-columns:1fr">
+                            <x-form.input legacy label="Nama Customer *" wire:model="newCustName" placeholder="Nama perusahaan/customer" name="newCustName" />
+                            <x-form.toggle-group legacy label="Tipe">
+                                <x-form.toggle-option legacy :active="$newCustType === 'local'" style="flex:1" wire:click="setNewCustType('local')">Lokal</x-form.toggle-option>
+                                <x-form.toggle-option legacy :active="$newCustType === 'import'" style="flex:1" wire:click="setNewCustType('import')">Import</x-form.toggle-option>
+                            </x-form.toggle-group>
+                            <x-form.input legacy label="No. Telp" wire:model="newCustPhone" placeholder="0812xxxxxxxx" name="newCustPhone" />
+                            <x-form.input legacy label="Email" wire:model="newCustEmail" placeholder="opsional" name="newCustEmail" />
+                            <x-form.textarea legacy label="Alamat" wire:model="newCustAddress" rows="2" placeholder="opsional" />
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;justify-content:flex-end;padding:12px 18px;border-top:1px solid #e3e7f0;background:#f9fafb">
+                        <button type="button" class="btn g" wire:click="closeNewCustomerModal">Batal</button>
+                        <button type="button" class="btn p" wire:click="saveNewCustomer">Simpan &amp; Pakai</button>
+                    </div>
+                </div>
+            </div>
+        @endif
 
         <div class="card">
             <h3>Sifat Order &amp; Pajak <span style="font-weight:400;color:#889">(menentukan struktur biaya &amp; pajak)</span></h3>
