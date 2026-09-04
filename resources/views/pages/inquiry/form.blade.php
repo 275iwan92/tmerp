@@ -960,7 +960,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'divider' => ['label' => 'Divider', 'icon' => '🗂️', 'desc' => 'Sekat antar-kompartemen'],
             'left' => ['label' => 'Left', 'icon' => '◀️', 'desc' => 'Sisi kiri'],
             'right' => ['label' => 'Right', 'icon' => '▶️', 'desc' => 'Sisi kanan'],
-            'utama' => ['label' => 'Utama', 'icon' => '1️⃣', 'desc' => 'Bukan container (poster/label/hang tag)'],
+            'monoform' => ['label' => 'MonoForm', 'icon' => '1️⃣', 'desc' => 'Bukan container, 1 lembar (poster/label/hang tag) — istilah dari "Mono Carton"'],
         ];
     }
 
@@ -1015,12 +1015,20 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     // ================= TEMPLATE MULTI-PART per Tipe Produk (2026-09-04) =================
     // Permintaan user: "part-part ini harusnya sudah diketahui saat Tipe Produk
     // dipilih -- misal box sepatu [Box with Lid] sudah tahu part-partnya".
-    // Cakupan SENGAJA dibatasi ke tipe yang namanya sendiri sudah eksplisit
-    // menyebut struktur multi-part (Box with Lid, Round Box/Hat Box, Polygonal
-    // Box with Lid, Sleeve, Match Box "Tray & Sleeve") -- tipe lain (geometris/
-    // kartu/dsb) TIDAK ditebak, drpd saran salah. Pola "engine suggests, officer
-    // confirms" (keputusan user): tampil sbg banner + tombol, TIDAK otomatis
-    // langsung nambah part tanpa diklik.
+    // Revisi (sesi sama, setelah ditemukan prod_type.has_multi_part SUDAH ADA &
+    // terisi data kanonik): map di bawah cuma didaftar utk tipe yg (a) flag
+    // has_multi_part=true DI DB *dan* (b) dieline_spec-nya sungguhan sudah
+    // dibangun (gen+elements nyata, dicek manual satu-satu) *dan* (c) makna
+    // "2 bagian"-nya cocok pola Body+Lid (BUKAN tipe cetak commercial spt Buku/
+    // Kalender/Majalah yg has_multi_part=true-nya berarti multi-HALAMAN, beda
+    // konsep sama sekali). SLEEVE SENGAJA DIHAPUS dari map ini -- data kanonik
+    // bilang has_multi_part=false utk SLEEVE (beda dari asumsi awal saya),
+    // partTemplateSuggestion() di bawah cross-check ke DB jadi keputusan akhir
+    // ada di situ, bukan di map lokal ini. MATCH_BOX/POLYGONAL_BOX_LID dibuang
+    // krn dieline_spec-nya kosong (0 elements, belum pernah dibangun) --
+    // percuma disarankan kalau preview-nya bakal blank. Pola "engine suggests,
+    // officer confirms" (keputusan user): tampil sbg banner + tombol, TIDAK
+    // otomatis langsung nambah part tanpa diklik.
     protected function partTemplateMap(): array
     {
         $bodyLid = [['role' => 'body', 'label' => 'Body'], ['role' => 'lid', 'label' => 'Lid']];
@@ -1028,9 +1036,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         return [
             'BOX_WITH_LID' => $bodyLid,
             'ROUND_BOX' => $bodyLid,
-            'POLYGONAL_BOX_LID' => $bodyLid,
-            'SLEEVE' => [['role' => 'sleeve', 'label' => 'Sleeve'], ['role' => 'tray', 'label' => 'Tray']],
-            'MATCH_BOX' => [['role' => 'tray', 'label' => 'Tray'], ['role' => 'sleeve', 'label' => 'Sleeve']],
+            'SHALLOW_BOX' => $bodyLid,
         ];
     }
 
@@ -1045,6 +1051,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $template = $this->partTemplateMap()[$row['type_code']] ?? null;
 
         if (! $template) {
+            return null;
+        }
+
+        // Cross-check ke data kanonik has_multi_part -- kalau master data
+        // diubah nanti (mis. tipe ini dikoreksi jadi bukan multi-part), saran
+        // otomatis berhenti sendiri tanpa perlu ubah kode di sini.
+        if (! ProdType::where('type_code', $row['type_code'])->value('has_multi_part')) {
             return null;
         }
 
@@ -1075,6 +1088,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         $roles = $suggestion['roles'];
+        $sourceTypeCode = $this->parts[$index]['type_code'];
 
         // Part yg lagi diedit belum punya role -> isi part INI dulu pakai role
         // pertama yg hilang, drpd bikin part baru sementara part yg dipilih
@@ -1084,10 +1098,62 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             $this->applyRoleToPart($index, $firstRole);
         }
 
+        // Part tambahan (mis. Lid) ikut Tipe Produk yg SAMA dgn part sumber --
+        // BOX_WITH_LID/ROUND_BOX/SHALLOW_BOX generatornya (TRAY/CYLINDER) memang
+        // dipakai bareng utk Body maupun Lid, cuma beda dimensi (bukan tipe
+        // berbeda). Dimensi TIDAK di-otak-atik otomatis di sini -- ditemukan
+        // param `lid_height` sudah ada di skema BOX_WITH_LID/ROUND_BOX tapi
+        // belum jelas apakah generator dieline-nya sungguhan memakainya;
+        // officer isi manual dulu sampai itu dikonfirmasi (drpd nebak formula
+        // yg bisa menghasilkan dieline salah).
         foreach ($roles as $role) {
             $this->addPart();
-            $this->applyRoleToPart(count($this->parts) - 1, $role);
+            $newIndex = count($this->parts) - 1;
+            $this->selectPartType($newIndex, $sourceTypeCode);
+            $this->applyRoleToPart($newIndex, $role);
         }
+    }
+
+    // ================= KATEGORI PRODUK PASAR (2026-09-04) =================
+    // Permintaan user: "pindah ke atas, pilihan lebih detail di pasaran umum
+    // spt box kosmetik" -- lapisan BARU di atas Part, bahasa yg dikenal sales
+    // (bukan istilah teknis dieline spt "Box with Lid"/"Shallow Box"). Pola
+    // interaksi disamakan dgn "Ukuran Pasaran" yg sudah ada (dropdown ringkas
+    // setelah pilih -> isi nilai default, bukan modal baru). Daftar TETAP di
+    // kode dulu (keputusan user, upgrade ke Master screen kalau daftarnya
+    // sering berubah). 1 kategori = 1 struktur default (keputusan user) --
+    // pilih kategori -> set Tipe Produk Part 1 + langsung terapkan template
+    // Body/Lid kalau tipe itu multi-part (reuse applyPartTemplate() yg sama).
+    // Officer tetap bebas edit part/tipe manual sesudahnya, ini cuma starting
+    // point, bukan kunci mati.
+    protected function productCategoryMap(): array
+    {
+        return [
+            'BOX_KOSMETIK' => ['label' => 'Box Kosmetik', 'type_code' => 'BOX_WITH_LID'],
+            'BOX_SEPATU' => ['label' => 'Box Sepatu', 'type_code' => 'BOX_WITH_LID'],
+            'BOX_KUE' => ['label' => 'Box Kue / Pizza', 'type_code' => 'SHALLOW_BOX'],
+            'BOX_MAKANAN' => ['label' => 'Box Makanan (Tuck End)', 'type_code' => 'CARD_BOX'],
+            'BOX_FARMASI' => ['label' => 'Kemasan Farmasi / Obat', 'type_code' => 'STE_BOX'],
+            'BOX_SOUVENIR' => ['label' => 'Box Souvenir / Gift', 'type_code' => 'GIFT_BOX'],
+            'BOX_SILINDER' => ['label' => 'Box Silinder / Tube', 'type_code' => 'ROUND_BOX'],
+            'HANG_TAG' => ['label' => 'Hang Tag / Label Produk', 'type_code' => 'HANG_TAG'],
+        ];
+    }
+
+    public function applyProductCategory(string $category): void
+    {
+        if ($this->readOnly || $category === '' || ! isset($this->productCategoryMap()[$category])) {
+            return;
+        }
+
+        $typeCode = $this->productCategoryMap()[$category]['type_code'];
+
+        if (! isset($this->parts[0])) {
+            $this->addPart();
+        }
+
+        $this->selectPartType(0, $typeCode);
+        $this->applyPartTemplate(0);
     }
 
     // Ganti tipe produk part: reset dims ke default prod_type_param milik tipe baru.
@@ -2436,8 +2502,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         :selected="$source" :options="['EMAIL' => 'EMAIL', 'WA' => 'WA', 'PHONE' => 'PHONE', 'VISIT' => 'VISIT', 'MARKETPLACE' => 'MARKETPLACE']" />
                 </div>
 
-                {{-- Baris 2: Customer + Nama Produk (draft), sejajar. --}}
-                <div class="grid two" style="margin-top:10px">
+                {{-- Baris 2: Customer + Nama Produk (draft) + Kategori Produk, sejajar. --}}
+                <div class="grid three" style="margin-top:10px">
                     {{-- Prospek? dihapus (permintaan user 2026-09-04: "sudah diwakili oleh
                     New Customer") -- kasus "customer belum terdaftar" sekarang lewat quick-add
                     Customer Master sungguhan (openNewCustomerModal(), lihat combobox di bawah),
@@ -2493,6 +2559,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     <x-form.textarea legacy autogrow label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
                         placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
                         :hint="$productDraftHint" />
+
+                    {{-- Kategori Produk Pasar (permintaan user 2026-09-04: "pindah ke atas,
+                    pilihan lebih detail di pasaran umum spt box kosmetik") -- dropdown ringkas
+                    (pola sama "Ukuran Pasaran"), pilih -> Tipe Produk Part 1 + template Body/
+                    Lid (kalau relevan) langsung terisi. Cuma starting point, bisa diedit
+                    manual per part sesudahnya -- lihat applyProductCategory(). --}}
+                    <div class="f">
+                        <label>Kategori Produk <span class="hint" style="font-weight:400">(opsional, isi cepat Part 1)</span></label>
+                        <select wire:change="applyProductCategory($event.target.value)" @if($readOnly) disabled @endif>
+                            <option value="">— pilih kategori pasar —</option>
+                            @foreach ($this->productCategoryMap() as $catCode => $cat)
+                                <option value="{{ $catCode }}">{{ $cat['label'] }}</option>
+                            @endforeach
+                        </select>
+                        <div class="hint">Isi cepat Tipe Produk &amp; part umum — tetap bisa diedit manual di bawah.</div>
+                    </div>
                 </div>
 
                 {{-- Baris 3: Catatan Sales + tickmark Sumber Bahan (permintaan user
