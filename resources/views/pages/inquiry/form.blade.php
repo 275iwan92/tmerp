@@ -2226,11 +2226,17 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         <x-slot:label>Tanggal Kebutuhan Pelanggan <span class="hint" style="font-weight:400">(kapan customer butuh barangnya)</span></x-slot:label>
                     </x-form.date-picker>
 
+                    {{-- Nama Produk + Catatan Sales -- 1 baris dibagi 2 (permintaan user
+                    2026-09-04), keduanya autogrow: mulai 1 baris, tinggi nambah sendiri
+                    kalau isinya melebihi lebar kotak (bukan textarea tetap 2 baris +
+                    resize handle manual spt sebelumnya). Nama Produk jadi <textarea>
+                    (bukan <input>) krn <input> tidak pernah bisa wrap/tambah tinggi --
+                    itu keterbatasan HTML, bukan pilihan desain. --}}
                     @php $productDraftHint = 'Nama sementara selama quotation. Karakter khusus (/@#%"\';) tidak diperbolehkan.'; @endphp
-                    <x-form.input legacy col4 label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
+                    <x-form.textarea legacy col2 autogrow label="Nama Produk (draft)" wire:model="product_draft_name" maxlength="150"
                         placeholder="mis. Box Kosmetik Serum 30ml" :disabled="$readOnly" name="product_draft_name"
                         :hint="$productDraftHint" />
-                    <x-form.textarea legacy col4 label="Catatan Sales" wire:model="sales_note" rows="2" placeholder="opsional" :disabled="$readOnly" />
+                    <x-form.textarea legacy col2 autogrow label="Catatan Sales" wire:model="sales_note" placeholder="opsional" :disabled="$readOnly" />
                 </div>
 
                 {{-- Digabung ke kartu Header Inkuiri (permintaan user 2026-09-04: "layout
