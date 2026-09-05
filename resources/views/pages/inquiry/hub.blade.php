@@ -214,20 +214,44 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 <div>
     <div class="hub">
         {{-- shrink-0 -- .hub flex-col 100dvh (kompak 1-layar, 2026-08-24): cuma
-        .qwrap yang boleh scroll/menyusut, kotak statistik ikut pola .pick/h1/.lead
-        (flex-shrink-0), jangan sampai ikut kena kompres duluan. --}}
-        <x-grid.stat-row :count="4" class="shrink-0">
-            <x-grid.stat-box tone="warn" label="NEW belum confirm" :value="$this->statUnconfirmedByType('NEW')" />
-            <x-grid.stat-box tone="warn" label="REVISE belum confirm" :value="$this->statUnconfirmedByType('REVISE')" />
-            <x-grid.stat-box tone="warn" label="RECALC belum confirm" :value="$this->statUnconfirmedByType('RECALC')" />
-            <x-grid.stat-box tone="total" label="Total inquiry tahun ini" :value="$this->statTotalThisYear" />
-        </x-grid.stat-row>
-        <x-grid.stat-row :count="4" class="shrink-0">
-            <x-grid.stat-box tone="extra" label="NEW sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('NEW')" />
-            <x-grid.stat-box tone="extra" label="REVISE sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('REVISE')" />
-            <x-grid.stat-box tone="extra" label="RECALC sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('RECALC')" />
-            <x-grid.stat-box tone="active" label="Sudah di-approve tahun ini" :value="$this->statApprovedThisYear" />
-        </x-grid.stat-row>
+        .qwrap yang boleh scroll/menyusut. 8 kotak statistik (2 baris) makan
+        banyak tempat di layar sekompak ini -- dibuat bisa diciutkan (feedback
+        user: "terlihat sempit", minta bisa di-minimize spy grid lebih penuh).
+        Ingat pilihan user via localStorage (per-browser, bukan per-akun),
+        default terbuka supaya tidak ada yang berubah kalau belum pernah disentuh. --}}
+        <div class="shrink-0" x-data="{
+                open: true,
+                init() {
+                    try {
+                        const saved = localStorage.getItem('tmerp.inquiryHub.statOpen');
+                        if (saved !== null) this.open = saved === '1';
+                    } catch (e) {}
+                },
+                toggle() {
+                    this.open = !this.open;
+                    try { localStorage.setItem('tmerp.inquiryHub.statOpen', this.open ? '1' : '0'); } catch (e) {}
+                },
+            }">
+            <button type="button" @click="toggle()"
+                class="w-full flex items-center justify-between px-3 py-1.5 mb-1.5 rounded-md bg-[#f4f6fa] border border-[#e2e7ee] text-[11px] font-bold text-navy cursor-pointer">
+                <span>📊 Ringkasan</span>
+                <span class="text-muted font-semibold" x-text="open ? '▾ Ciutkan' : '▸ Tampilkan'"></span>
+            </button>
+            <div x-show="open" x-cloak>
+                <x-grid.stat-row :count="4">
+                    <x-grid.stat-box tone="warn" label="NEW belum confirm" :value="$this->statUnconfirmedByType('NEW')" />
+                    <x-grid.stat-box tone="warn" label="REVISE belum confirm" :value="$this->statUnconfirmedByType('REVISE')" />
+                    <x-grid.stat-box tone="warn" label="RECALC belum confirm" :value="$this->statUnconfirmedByType('RECALC')" />
+                    <x-grid.stat-box tone="total" label="Total inquiry tahun ini" :value="$this->statTotalThisYear" />
+                </x-grid.stat-row>
+                <x-grid.stat-row :count="4">
+                    <x-grid.stat-box tone="extra" label="NEW sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('NEW')" />
+                    <x-grid.stat-box tone="extra" label="REVISE sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('REVISE')" />
+                    <x-grid.stat-box tone="extra" label="RECALC sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('RECALC')" />
+                    <x-grid.stat-box tone="active" label="Sudah di-approve tahun ini" :value="$this->statApprovedThisYear" />
+                </x-grid.stat-row>
+            </div>
+        </div>
 
         <div class="pick">
             <div class="opt n">
