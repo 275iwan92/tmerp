@@ -54,6 +54,22 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
 
     public string $newAttachmentType = 'JPEG';
 
+    // Machine Specifications inline-edit (user 2026-09-04: "gripper margin,
+    // gap dibuat adjustable by user" -- opsi yg dipilih via AskUserQuestion:
+    // edit LANGSUNG dari panel ini, tulis ke sys_constant GLOBAL yang sama
+    // (PRODEV_GAP_MM dst) -- jadi mengubah nilai di sini mempengaruhi SEMUA
+    // job ProDev, bukan cuma job yg sedang dibuka (bukan per-job override).
+    // Digerbang canEditMachineSpecs() -- permission SAMA dgn akses layar
+    // Configuration (setup/configuration-constants.blade.php), supaya tidak
+    // ada 2 aturan berbeda utk mengubah baris sys_constant yang sama.
+    public bool $editingMachineSpecs = false;
+
+    public string $editGapMm = '';
+
+    public string $editGripperMm = '';
+
+    public string $editMarginMm = '';
+
     public function mount(?int $part = null): void
     {
         $this->partId = $part ?? ProdPart::orderByDesc('id_part')->value('id_part');
@@ -488,6 +504,59 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     public function marginMm(): float
     {
         return (float) SysConstant::number('PRODEV_MARGIN_MM', 8.0);
+    }
+
+    // Sama persis gate akses layar Configuration (App\Models\Sys\SecUser::
+    // canSetup() = is_admin OR modul SETUP) -- gap/gripper/margin adalah
+    // sys_constant global yg dipakai SEMUA job ProDev, jadi tidak dibuka utk
+    // sembarang officer.
+    public function canEditMachineSpecs(): bool
+    {
+        return (bool) Auth::user()?->canSetup();
+    }
+
+    public function startEditMachineSpecs(): void
+    {
+        if (! $this->canEditMachineSpecs()) {
+            return;
+        }
+
+        $this->editGapMm = (string) $this->gapMm();
+        $this->editGripperMm = (string) $this->gripperMm();
+        $this->editMarginMm = (string) $this->marginMm();
+        $this->editingMachineSpecs = true;
+    }
+
+    public function cancelEditMachineSpecs(): void
+    {
+        $this->editingMachineSpecs = false;
+    }
+
+    public function saveMachineSpecs(): void
+    {
+        if (! $this->canEditMachineSpecs()) {
+            return;
+        }
+
+        $validated = validator([
+            'gap' => $this->editGapMm,
+            'gripper' => $this->editGripperMm,
+            'margin' => $this->editMarginMm,
+        ], [
+            'gap' => ['required', 'numeric', 'min:0'],
+            'gripper' => ['required', 'numeric', 'min:0'],
+            'margin' => ['required', 'numeric', 'min:0'],
+        ])->validate();
+
+        $login = Auth::user()->login;
+
+        SysConstant::where('constant_key', 'PRODEV_GAP_MM')->update(['constant_number' => $validated['gap'], 'updated_by' => $login]);
+        SysConstant::where('constant_key', 'PRODEV_GRIPPER_MM')->update(['constant_number' => $validated['gripper'], 'updated_by' => $login]);
+        SysConstant::where('constant_key', 'PRODEV_MARGIN_MM')->update(['constant_number' => $validated['margin'], 'updated_by' => $login]);
+
+        unset($this->gapMm, $this->gripperMm, $this->marginMm);
+        $this->editingMachineSpecs = false;
+        session()->flash('success', 'Machine Specifications tersimpan — berlaku untuk semua job ProDev, tidak cuma job ini.');
     }
 
     public function updateField(string $field, $value): void
@@ -1019,6 +1088,10 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
             <div class="bg-[#fdecea] border border-[#f3b8b0] text-[#a1362b] text-xs px-3.5 py-2.5 rounded-md mb-3.5">{{ session('error') }}</div>
         @endif
 
+        @if (session('success'))
+            <div class="bg-[#eafaf1] border border-[#a8e6c1] text-[#1e7a44] text-xs px-3.5 py-2.5 rounded-md mb-3.5">{{ session('success') }}</div>
+        @endif
+
         @if ($this->part)
         <div class="flex flex-col gap-3.5">
 
@@ -1196,12 +1269,47 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
                     </div>
 
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">🖨️ Machine Specifications</h3>
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)] flex items-center justify-between">
+                            <span>🖨️ Machine Specifications</span>
+                            @if ($this->canEditMachineSpecs() && ! $editingMachineSpecs)
+                                <button type="button" wire:click="startEditMachineSpecs" class="text-[10px] font-bold text-accent normal-case cursor-pointer">✎ Edit</button>
+                            @endif
+                        </h3>
                         <div class="p-3 flex flex-col gap-1.5 text-[11.5px]">
-                            <div class="flex items-center justify-between"><span class="text-muted">Gap Antar-Unit</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gapMm(), 1) }} mm</b></div>
-                            <div class="flex items-center justify-between"><span class="text-muted">Gripper Margin</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gripperMm(), 1) }} mm</b></div>
-                            <div class="flex items-center justify-between"><span class="text-muted">Margin Tepi Plano</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->marginMm(), 1) }} mm</b></div>
-                            <div class="text-[10px] text-muted mt-1 leading-snug">Parameter fisik mesin cetak sheetfed, dipakai semua kalkulasi Engine di panel ini (sys_constant PRODEV_*, admin bisa adjust dari Configuration).</div>
+                            @if ($editingMachineSpecs)
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[10.5px] text-muted font-semibold">Gap Antar-Unit (mm)</label>
+                                    <input type="number" step="0.1" min="0" wire:model="editGapMm" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] rounded text-[12.5px]">
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[10.5px] text-muted font-semibold">Gripper Margin (mm)</label>
+                                    <input type="number" step="0.1" min="0" wire:model="editGripperMm" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] rounded text-[12.5px]">
+                                </div>
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[10.5px] text-muted font-semibold">Margin Tepi Plano (mm)</label>
+                                    <input type="number" step="0.1" min="0" wire:model="editMarginMm" class="px-2 py-1.5 border !border-[var(--pd-border)] !bg-[var(--pd-input-bg)] !text-[var(--pd-ink-strong)] rounded text-[12.5px]">
+                                </div>
+                                @error('gap')<div class="text-[10.5px] text-red-600">{{ $message }}</div>@enderror
+                                @error('gripper')<div class="text-[10.5px] text-red-600">{{ $message }}</div>@enderror
+                                @error('margin')<div class="text-[10.5px] text-red-600">{{ $message }}</div>@enderror
+                                <div class="flex gap-1.5 mt-1">
+                                    <button type="button" wire:click="saveMachineSpecs" class="flex-1 px-2 py-1.5 rounded bg-accent text-white text-[11px] font-bold cursor-pointer">Simpan</button>
+                                    <button type="button" wire:click="cancelEditMachineSpecs" class="flex-1 px-2 py-1.5 rounded border border-[var(--pd-border)] text-[var(--pd-ink-strong)] text-[11px] font-bold cursor-pointer">Batal</button>
+                                </div>
+                                <div class="text-[10px] text-muted mt-1 leading-snug">⚠️ Mengubah nilai di sini mengubah default GLOBAL (sys_constant PRODEV_*) — berlaku utk SEMUA job ProDev, bukan cuma job ini.</div>
+                            @else
+                                <div class="flex items-center justify-between"><span class="text-muted">Gap Antar-Unit</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gapMm(), 1) }} mm</b></div>
+                                <div class="flex items-center justify-between"><span class="text-muted">Gripper Margin</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->gripperMm(), 1) }} mm</b></div>
+                                <div class="flex items-center justify-between"><span class="text-muted">Margin Tepi Plano</span><b class="text-[var(--pd-ink-strong)]">{{ number_format($this->marginMm(), 1) }} mm</b></div>
+                                <div class="text-[10px] text-muted mt-1 leading-snug">
+                                    Parameter fisik mesin cetak sheetfed, dipakai semua kalkulasi Engine di panel ini (sys_constant PRODEV_*).
+                                    @if ($this->canEditMachineSpecs())
+                                        Berlaku global (semua job) -- klik "Edit" di atas, atau lewat layar Configuration.
+                                    @else
+                                        Admin bisa adjust dari layar Configuration.
+                                    @endif
+                                </div>
+                            @endif
                         </div>
                     </div>
 
