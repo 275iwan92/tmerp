@@ -414,3 +414,25 @@ task Antrean via engine, edit Est Mulai tervalidasi, **konflik operator ditolak*
 tak bisa diedit). Test ini cek method Livewire (PHP/DB/engine) — interaksi DataTables/Alpine di
 browser (sort/filter/klik 2x edit) belum ada automated test-nya (`Livewire::test()` tak menjalankan
 JS), diverifikasi manual dulu. Regresi penuh 82/82 setelah ini.
+
+---
+
+## 11. Kolom Spoilage & Waste di Bill of Process (2026-09-05, placeholder)
+
+Permintaan user: tiap baris Bill of Process (`prd_wo_operation`) butuh estimasi **Spoilage**
+(makeready) & **Waste** (running) — **rumusan/formula perhitungan otomatis MENYUSUL** (belum
+diminta di pass ini), jadi migration `2026_09_05_000001` cuma nambah 4 kolom nullable:
+`spoilage_qty`/`spoilage_uom`/`waste_qty`/`waste_uom` (DECIMAL 18,4 + VARCHAR 20), isi manual dulu
+via dblclick (pola sama `rate_band_value`). **Tiap proses boleh beda satuan** (mis. CETAK = lembar,
+LAMINASI/COATING = meter, LEM = kg) — sengaja TIDAK dipaksa 1 UOM seragam, sama prinsip Bill of
+Material (§5 poin 4) — UOM dropdown dari `tm2mst.uom_unit.uom_code` (LOGICAL FK lintas-DB).
+
+**Beda dgn konsep "waste" yang SUDAH ADA** — jangan disamakan: `PrdScrapType::waste()` +
+`prd_wo_operation_output_defect` (F15) adalah catatan **AKTUAL** hasil produksi (dicatat operator
+pas proses SELESAI jalan, per shift, bisa berkali-kali). Kolom baru ini adalah **ESTIMASI/rencana**
+di tahap planning Bill of Process (sebelum task jalan) — 2 tabel & 2 tujuan berbeda meski istilah
+"waste" sama. Riset referensi Esko (software prepress/planning packaging) dicoba tapi dokumentasi
+teknis detail soal field spoilage/waste per-proses ada di balik portal berlogin (`docs.esko.com`)
+— tidak ketemu spesifikasi publik yang bisa dikutip; desain kolom di atas (qty+uom terpisah per
+baris, bukan 1 field global) berdasar praktik umum industri percetakan (makeready vs running
+waste/spoilage berbeda satuan tiap tahap proses), bukan hasil salin dari dokumen Esko spesifik.

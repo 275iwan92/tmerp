@@ -7,6 +7,7 @@ use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdPartProcessEmployeeRate;
 use App\Models\Master\ProdPartProcessMachineRate;
 use App\Models\Master\ProdProcess;
+use App\Models\Master\UomUnit;
 use App\Models\Prd\PrdBreakdownEvent;
 use App\Models\Prd\PrdCrewAssignment;
 use App\Models\Prd\PrdScrapType;
@@ -343,6 +344,15 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
         return ProdMachine::where('division_id', $offsetDivisionId)->where('activate', true)->orderBy('machine_name')->get();
     }
 
+    // Satuan Spoilage/Waste per baris Bill of Process -- tiap proses boleh
+    // beda (lembar/meter/kg dst, permintaan user 2026-09-05), bukan 1 UOM
+    // seragam. Lintas-DB (tm2prd -> tm2mst), disimpan sbg uom_code teks.
+    #[Computed]
+    public function uomOptions()
+    {
+        return UomUnit::where('activate', true)->orderBy('uom_name')->get();
+    }
+
     #[Computed]
     public function rejectTypes()
     {
@@ -445,7 +455,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
 
     public function updateOperationField(int $operationId, string $field, $value): void
     {
-        if (! $this->canEditRouting || ! in_array($field, ['process_name', 'machine_id', 'resource_type', 'rate_band_value'], true)) {
+        if (! $this->canEditRouting || ! in_array($field, ['process_name', 'machine_id', 'resource_type', 'rate_band_value', 'spoilage_qty', 'spoilage_uom', 'waste_qty', 'waste_uom'], true)) {
             return;
         }
 
@@ -458,8 +468,10 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             }
         } elseif ($field === 'machine_id') {
             $op->machine_id = $value ?: null;
-        } elseif ($field === 'rate_band_value') {
-            $op->rate_band_value = $value !== '' ? $value : null;
+        } elseif (in_array($field, ['rate_band_value', 'spoilage_qty', 'waste_qty'], true)) {
+            $op->{$field} = $value !== '' ? $value : null;
+        } elseif (in_array($field, ['spoilage_uom', 'waste_uom'], true)) {
+            $op->{$field} = $value ?: null;
         } else {
             $op->process_name = $value;
         }
@@ -1020,6 +1032,8 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                             <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">Est. Mulai</th>
                             <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[13%]">Est. Selesai</th>
                             <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[12%]">Target Kecepatan</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[10%]">Spoilage</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[10%]">Waste</th>
                             <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[9%]">Status</th>
                             <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5]">Link &amp; Act</th>
                         </tr>
@@ -1118,6 +1132,42 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                     </template>
                                 </td>
 
+                                {{-- Spoilage: qty+uom, formula menyusul -- sementara isi manual --}}
+                                <td class="px-3 py-1.5 border-b border-[#eef1f5]" x-data="{ editing: false }">
+                                    <template x-if="!editing">
+                                        <span @dblclick="editing = @js($this->canEditRouting)" class="cursor-pointer border-b border-dashed border-transparent hover:border-[#c7cfda]">{{ $op->spoilage_qty !== null ? number_format((float) $op->spoilage_qty, 0, ',', '.') . ' ' . ($op->spoilage_uom ?? '') : '—' }}</span>
+                                    </template>
+                                    <template x-if="editing">
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" step="0.01" autofocus value="{{ $op->spoilage_qty }}" wire:change="updateOperationField({{ $op->operation_id }}, 'spoilage_qty', $event.target.value)" class="w-14 px-1.5 py-1 border border-accent rounded text-[11px]">
+                                            <select wire:change="updateOperationField({{ $op->operation_id }}, 'spoilage_uom', $event.target.value)" @change="editing = false" @blur="editing = false" class="w-16 px-1 py-1 border border-accent rounded text-[11px]">
+                                                <option value="">—</option>
+                                                @foreach ($this->uomOptions as $u)
+                                                    <option value="{{ $u->uom_code }}" @selected($op->spoilage_uom === $u->uom_code)>{{ $u->uom_code }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </template>
+                                </td>
+
+                                {{-- Waste: qty+uom, formula menyusul -- sementara isi manual --}}
+                                <td class="px-3 py-1.5 border-b border-[#eef1f5]" x-data="{ editing: false }">
+                                    <template x-if="!editing">
+                                        <span @dblclick="editing = @js($this->canEditRouting)" class="cursor-pointer border-b border-dashed border-transparent hover:border-[#c7cfda]">{{ $op->waste_qty !== null ? number_format((float) $op->waste_qty, 0, ',', '.') . ' ' . ($op->waste_uom ?? '') : '—' }}</span>
+                                    </template>
+                                    <template x-if="editing">
+                                        <div class="flex items-center gap-1">
+                                            <input type="number" step="0.01" autofocus value="{{ $op->waste_qty }}" wire:change="updateOperationField({{ $op->operation_id }}, 'waste_qty', $event.target.value)" class="w-14 px-1.5 py-1 border border-accent rounded text-[11px]">
+                                            <select wire:change="updateOperationField({{ $op->operation_id }}, 'waste_uom', $event.target.value)" @change="editing = false" @blur="editing = false" class="w-16 px-1 py-1 border border-accent rounded text-[11px]">
+                                                <option value="">—</option>
+                                                @foreach ($this->uomOptions as $u)
+                                                    <option value="{{ $u->uom_code }}" @selected($op->waste_uom === $u->uom_code)>{{ $u->uom_code }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </template>
+                                </td>
+
                                 <td class="px-3 py-1.5 border-b border-[#eef1f5]">
                                     <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full {{ $this->statusBadgeClasses($op->task_status) }}">{{ $op->task_status }}</span>
                                     @if (! $op->outputs->isEmpty())
@@ -1149,7 +1199,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="7" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
+                            <tr><td colspan="9" class="text-center py-8 text-muted">Belum ada task/operation.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -15,7 +15,7 @@ Layar kerja utama 1 Work Order — dipakai PPIC/Operator/QA/Manajer Operasional.
 
 ## Field & Kolom
 - Header aksi: `updatePriority` (NORMAL/URGENT/SUPER_URGENT).
-- Bill of Process per baris (`PrdWoOperation`): `process_name`, `resource_type` (MACHINE/MANUAL), `machine_id`, `rate_band_value` (target/jam, bisa "Ambil Default" dari `prod_part_process_machine_rate`/`_employee_rate`), operator (crew `OPERATOR_UTAMA`), `target_start`/`target_finish` (override cepat via dblclick).
+- Bill of Process per baris (`PrdWoOperation`): `process_name`, `resource_type` (MACHINE/MANUAL), `machine_id`, `rate_band_value` (target/jam, bisa "Ambil Default" dari `prod_part_process_machine_rate`/`_employee_rate`), operator (crew `OPERATOR_UTAMA`), `target_start`/`target_finish` (override cepat via dblclick), `spoilage_qty`+`spoilage_uom`, `waste_qty`+`waste_uom` (kolom estimasi, ditambah 2026-09-05 — **cuma kolom, formula/perhitungan otomatis BELUM ada**, isi manual dulu; UOM lintas-proses SENGAJA boleh beda, mis. CETAK=lembar vs LAMINASI=meter — dropdown dari `tm2mst.uom_unit`). Beda dari `waste` scope di `PrdScrapType`/F15 (defect AKTUAL saat produksi jalan) — dua konsep ini kolom/tabel terpisah, jangan disamakan.
 - Modal Breakdown & Subcontract: `breakdownDowntimeMinutes`, `rerouteChoice` (MACHINE_ALT/SUBCONTRACT), `altMachineId`, vendor search (`subVendorId/Name/Query`), `subDueOut`/`subDueReturn`, `subEstimatedCost`.
 - Modal Catat Output (F15): `outputQtyGood`, `outputDefectRows[]` (multi-tipe reject/waste dalam 1 entri: `category`, `scrap_type_id`, `qty`), `outputShiftNote`, `outputNotes`.
 - Modal QC Reject: `qcRejectReason` (wajib min 5 karakter).
