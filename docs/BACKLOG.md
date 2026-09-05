@@ -365,7 +365,20 @@ sebelum eksekusi):
   dijumlah vs window terpanjang, PAT-5/PAT+5 prorata vs zero-total, aturan
   tidak-finger ke-3+) belum dikonfirmasi ke bisnis. GPS mobile clock-in/ESS
   approval workflow (fitur v4.0 di paket referensi) sengaja tidak
-  diprioritaskan, lihat §12.5.
+  diprioritaskan, lihat §12.5. **UPDATE 2026-09-05 lanjutan (sore)**: user
+  menulis alur bisnis lengkap end-to-end (bukan cuma hitung gaji) —
+  `pyr_payroll_run` didesain ulang total: periode **WEEKLY atau MONTHLY**
+  (bukan tahun+bulan, dari sampel Excel riil `docs/attachments/*GAJI
+  KARYAWAN*.xlsb` yang semuanya "WEEKLY"), + siklus status penuh DRAFT→
+  CALCULATED (bisa diulang, estimasi H-1 & proses ulang H)→VERIFIED (cek
+  jam masuk/keluar semua/random sample)→CONFIRMED (kunci presensi)→PAID
+  (transfer/cash)→CLOSED (slip terkirim, next_run_id periode berikutnya
+  auto-dibuat DRAFT kosong). `emp_employee.payment_frequency` baru
+  (WEEKLY/MONTHLY, default MONTHLY) menentukan pegawai masuk run yang mana.
+  Diuji end-to-end via tinker (lifecycle penuh 1 pegawai). **Belum**:
+  layar UI utk tiap tahap, hook `JournalPostingService` saat CLOSED, dan
+  generator bank-transfer/cash-disbursement fisik (baru pencatatan status
+  PAID). Detail: `docs/LOG_JOB_DONE.md` entri lanjutan hari yang sama.
 - **12 kategori `mat_category` tanpa default COA** — sama item dengan §4
   Procurement (mempengaruhi Finance juga karena ini soal akun jurnal),
   layarnya sudah ada, tinggal user isi.
@@ -439,6 +452,55 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
     seperti pola kerja rekonsiliasi PowerGrid+Filament (§12 griduistandard.md).
   - Belum ada scope/urutan modul yang ditentukan — ini masih ITEM
     BACKLOG terbuka, bukan tugas yang sudah mulai dikerjakan.
+
+  **Temuan konkret dari audit awal 2026-09-05** (screenshot user: header
+  form entry + footer pagination grid) — dicatat di sini, **BELUM
+  dikerjakan**:
+  - **Header form entry (ikon+judul+doc_no+badge status+tombol
+    cetak+tombol Back) — 0 komponen reusable.** Struktur identik di-copy-
+    paste manual di ≥6 layar (`pur/pr/entry.blade.php:404-424`,
+    `pur/po/entry.blade.php:258-278`, `co/entry.blade.php:328-361`,
+    `pur/pq/entry.blade.php:295-311`, `pur/prt/entry.blade.php:343-357`,
+    `quotation/entry.blade.php:177-184+`). Variasi yang harus diakomodasi
+    komponen barunya: badge status via `match()` inline berbeda-beda tone
+    per file (padahal cuma 4 tone yang sama: abu DRAFT/kuning
+    SUBMITTED/hijau approved-selesai/merah reject-cancel), label+emoji
+    tombol cetak beda (`🖨 Cetak PR` vs `🖨️ Preview Cetak`), kondisi
+    kemunculan tombol cetak beda (`@unless` vs `@if`), sebagian layar (CO,
+    Quotation) tambah elemen ekstra kanan (ringkasan angka, tombol
+    wire:click) di wrapper `ml-auto flex items-center gap-4` sendiri.
+  - **Komponen `<x-form.badge>` sudah dibuat (fase componentization
+    lama) TAPI 0 pemakaian di seluruh codebase** — persis dibuat untuk
+    kasus badge status di atas, menganggur begitu saja. Prioritaskan
+    "colokkan" komponen ini dulu ke 6 layar di atas sebelum bikin
+    komponen header baru dari nol.
+  - **Tombol Back — instruksi eksplisit user: standarkan juga** (bukan
+    cuma didokumentasikan). Polanya sudah tertulis detail di
+    `FORM_UI_STANDARD.md` §1 (pill navy `bg-[#43508a]` + lingkaran panah
+    putih `w-6 h-6`, kapan pakai `ml-auto` vs tidak) tapi **belum ada
+    komponen `<x-form.back-button>` yang mengeksekusinya** — semua 6+
+    layar di atas menulis ulang markup pill yang sama persis manual.
+    Jadikan bagian dari komponen header form (§ di atas), atau komponen
+    berdiri sendiri kalau ternyata dipakai di luar konteks header juga
+    (cek dulu — ada pengecualian tercatat: `inquiry/form.blade.php` dkk
+    pakai sistem visual beda, `master/supplier.blade.php`/
+    `master/employee.blade.php` tombol "Kembali" untuk toggle state
+    bukan navigasi, JANGAN ikut disamakan).
+  - **Footer pagination — komponennya SUDAH ada & baik**
+    (`components/grid/pagination-footer.blade.php`, dipakai konsisten 12
+    layar) — TAPI **belum di-rollout ke semua grid**. Ditemukan ≥8 layar
+    lain yang punya pagination tapi TIDAK pakai komponen ini (masih
+    default Laravel `{{ $this->rows->links() }}` atau markup lain):
+    `hrm/position.blade.php` (dikonfirmasi — pakai `->links()` polos,
+    baris 227), `recruitment/assessment-result.blade.php`,
+    `recruitment/candidate-review/list.blade.php`,
+    `recruitment/offer/list.blade.php`,
+    `recruitment/requisition/list.blade.php`,
+    `recruitment/talent-pool.blade.php`, `recruitment/vacancy.blade.php`,
+    `setup/support-tickets.blade.php` (7 terakhir baru terdeteksi lewat
+    grep `->paginate(`, **belum diverifikasi 1-per-1 ke kode** — cek dulu
+    sebelum migrasi, mungkin ada yang sengaja beda karena bukan grid
+    ScriptCase-style biasa).
 
 ---
 
