@@ -11,7 +11,14 @@ description: Landing page Inquiry — pilih tipe dokumen (NEW/RECALC/REVISE), pi
 **Modul**: Inquiry Product
 
 ## Tujuan
-Halaman pertama modul Inquiry. Sales memilih salah satu dari 3 jalur dokumen — **NEW** (Produk Baru, dari nol), **RECALC** (Hitung Ulang Harga, spec sama cuma harga bahan berubah — lewati Design), **REVISE** (Ubah Spesifikasi, ada perubahan dimensi/bahan/warna/finishing) — lalu memulai dokumen baru ("+ Buat data baru") atau membuka salah satu inkuiri tersimpan ("📂 Pilih data tersimpan"). Untuk RECALC/REVISE, "+ Buat data baru" membuka picker modal untuk memilih inquiry existing sebagai sumber salinan (karena RECALC/REVISE mereorder produk yang sudah ada, bukan dari nol). Bagian bawah halaman adalah worklist tabel semua inkuiri tersimpan dengan filter search/status/tipe, klik 2x untuk membuka.
+Halaman pertama modul Inquiry. Sales memilih salah satu dari 3 jalur dokumen — **NEW** (Produk Baru, dari nol), **RECALC** (Hitung Ulang Harga, spec sama cuma harga bahan berubah — lewati Design), **REVISE** (Ubah Spesifikasi, ada perubahan dimensi/bahan/warna/finishing) — lalu memulai dokumen baru ("+ Buat data baru") atau membuka salah satu inkuiri tersimpan ("📂 Pilih data tersimpan"). Untuk RECALC/REVISE, "+ Buat data baru" membuka picker modal untuk memilih inquiry existing sebagai sumber salinan (karena RECALC/REVISE mereorder produk yang sudah ada, bukan dari nol). Paling atas ada 8 stat box (2 baris x 4) ringkasan backlog & KPI tahunan. Bagian bawah halaman adalah worklist tabel semua inkuiri tersimpan dengan filter search/status/tipe, klik 2x untuk membuka.
+
+## Stat Box (2026-09-05)
+Baris 1 (backlog "belum confirm", bukan year-filtered — semua yang masih jadi tunggakan saat ini):
+`NEW belum confirm` / `REVISE belum confirm` / `RECALC belum confirm` (`stat_confirm=0` per `inquiry_type`, `sub_state` CANCELLED/LOST dikecualikan) + `Total inquiry tahun ini` (semua tipe, filter `inquiry_date` tahun berjalan).
+
+Baris 2 (backlog "sudah diberi harga tapi belum ke customer", bukan year-filtered untuk 3 kotak pertama):
+`NEW/REVISE/RECALC sudah harga, belum ke customer` (`sub_state='PRICE_APPROVED'` persis per `inquiry_type` — Direksi sudah publish harga, TAPI belum masuk Quotation/`QUOTED`) + `Sudah di-approve tahun ini` (`is_approved=1`, filter `inquiry_date` tahun berjalan — KPI kumulatif, beda dari 3 kotak sebelahnya karena `is_approved` tetap 1 meski `sub_state` sudah lanjut ke QUOTED/CONVERTED).
 
 ## Field & Kolom
 FORM (state UI, bukan field dokumen):
@@ -39,6 +46,8 @@ Modal picker ("Pilih produk existing"): daftar kandidat mirip worklist tapi ring
 - `selectPickerRow(int $id)` — pilih kandidat di modal.
 - `confirmPicker()` — redirect ke `inquiry.recalc` atau `inquiry.revise` dengan param `source_id` = inquiry sumber salinan.
 - `#[Computed] pickerCandidates()` — daftar kandidat modal (hanya inquiry yang sudah punya `inquiry_no`, limit 50).
+- `statUnconfirmedByType(string $type)` / `statPricedNotQuotedByType(string $type)` — hitung stat box baris 1/2 per tipe (bukan `#[Computed]`, dipanggil langsung dgn parameter di Blade).
+- `#[Computed] statTotalThisYear()` / `#[Computed] statApprovedThisYear()` — hitung 2 stat box KPI tahunan.
 
 ## Tabel & Model yang Disentuh
 - `App\Models\Sdi\IqpInquiry` (`iqp_inquiry`, koneksi sdi) — satu-satunya model dipakai di layar ini. Eager-load `customer` (lintas-DB ke tm2mst, pola 1), `tiers` (filter `is_primary=true`, dalam tm2sdi ke `iqp_tier`), `parts` (order `part_seq`, limit 1, dalam tm2sdi ke `iqp_part`).
