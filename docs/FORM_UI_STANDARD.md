@@ -194,3 +194,23 @@ target_finish) & `production/wo-entry.blade.php` (baris 1021/1034, pola sama)
 beda paradigma interaksi (dblclick reveal native input, langsung commit on
 blur) dari popover date-picker (klik buka, pilih, popover nutup). Native
 `type="datetime-local"` tetap dipakai di situ.
+
+---
+
+## 4. Scrollbar tipis standar — class `.tm-scroll` (komponen bersama dgn Grid)
+
+**(2026-09-05)** Sama komponen dengan `docs/griduistandard.md` §13 — 1
+definisi CSS tunggal di `resources/css/app.css` (class `.tm-scroll`), dipakai
+lintas Grid **dan** Form supaya scrollbar-nya konsisten & tidak ada yang
+balik ke scrollbar tebal bawaan browser. Jangan buat aturan scrollbar
+terpisah khusus Form — tambahkan `tm-scroll` ke elemen yang sudah
+`overflow-y-auto`/`overflow-x-auto`, definisi warnanya otomatis ikut (terang
+via `--color-muted`/`--color-accent`, atau gelap kalau berada di dalam
+`.shell` via `--side-hover`/`--side-muted`).
+
+Belum ada popover/panel Form yang benar-benar overflow saat ini (popover
+`date-picker.blade.php` masih `overflow-hidden` murni untuk sudut
+membulat, isinya muat tanpa scroll) — tapi begitu komponen §3 yang scroll
+beneran dibangun (dropdown searchable item 5, dropdown tick-mark item 12,
+dst.), WAJIB pasang `tm-scroll` di panel/list hasilnya, contek pola
+`components/grid/column-modal.blade.php`.

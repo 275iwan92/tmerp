@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="overflow-x-auto">
+    <div class="overflow-x-auto tm-scroll">
         <table class="w-full border-collapse text-[12.5px]">
             <thead>
                 <tr>

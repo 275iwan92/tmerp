@@ -6,6 +6,6 @@
     "sticky top-0 z-[1]" manual (jumlah & lebar kolom beda-beda per grid,
     tak cukup digeneralisasi jadi 1 component tanpa slot kompleks).
 --}}
-<div class="max-h-[65vh] overflow-auto">
+<div class="max-h-[65vh] overflow-auto tm-scroll">
     {{ $slot }}
 </div>

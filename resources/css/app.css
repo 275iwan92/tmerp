@@ -340,11 +340,18 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .mod-title .ic { @apply text-lg w-[22px] text-center flex-shrink-0; }
 .shell.mini .mod-title { @apply justify-center pt-4 px-0 pb-2.5; }
 .shell.mini .mod-title .lbl { @apply hidden; }
-.shell .side-nav { @apply flex-1 overflow-y-auto pt-1 px-2 pb-3; scrollbar-width: thin; scrollbar-color: var(--side-hover) transparent; }
-.shell .side-nav::-webkit-scrollbar { width: 6px; }
-.shell .side-nav::-webkit-scrollbar-track { background: transparent; }
-.shell .side-nav::-webkit-scrollbar-thumb { background: var(--side-hover); border-radius: 999px; }
-.shell .side-nav::-webkit-scrollbar-thumb:hover { background: var(--side-muted); }
+.shell .side-nav { @apply flex-1 overflow-y-auto pt-1 px-2 pb-3; }
+
+/* Scrollbar tipis standar (docs/griduistandard.md §13, docs/FORM_UI_STANDARD.md §4).
+   Base warna terang (--color-muted/--color-accent, global lintas layout) --
+   .shell override ke warna sidebar gelap (--side-hover/--side-muted) supaya
+   1 class ini dipakai baik di grid/form terang maupun sidebar gelap. */
+.tm-scroll { scrollbar-width: thin; scrollbar-color: var(--tm-scroll-thumb, var(--color-muted)) transparent; }
+.tm-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.tm-scroll::-webkit-scrollbar-track { background: transparent; }
+.tm-scroll::-webkit-scrollbar-thumb { background: var(--tm-scroll-thumb, var(--color-muted)); border-radius: 999px; }
+.tm-scroll::-webkit-scrollbar-thumb:hover { background: var(--tm-scroll-thumb-hover, var(--color-accent)); }
+.shell .tm-scroll { --tm-scroll-thumb: var(--side-hover); --tm-scroll-thumb-hover: var(--side-muted); }
 .shell .side-cap { @apply text-[10px] tracking-[.7px] uppercase text-[var(--side-muted)] pt-[11px] px-3 pb-[5px] font-bold whitespace-nowrap; }
 .shell.mini .side-cap { @apply hidden; }
 .shell .side-cap-btn { @apply flex items-center gap-1.5 w-full bg-transparent border-none text-left cursor-pointer; font-family: inherit; }

@@ -381,6 +381,43 @@ cuma dipasang kalau grid itu punya kolom `activate`).
 
 ---
 
+## 13. Scrollbar tipis standar — class `.tm-scroll` (dipakai ulang lintas Grid & Form)
+
+**(2026-09-05)** Awalnya dibuat khusus utk sidebar (scrollbar tebal bawaan
+browser dinilai jelek oleh user), lalu diangkat jadi **1 komponen CSS
+standar** yang harus dipakai di SEMUA area scroll Grid & Form — bukan
+di-copy-paste ulang per file. Definisi tunggal di `resources/css/app.css`:
+
+```css
+.tm-scroll { scrollbar-width: thin; scrollbar-color: var(--tm-scroll-thumb, var(--color-muted)) transparent; }
+.tm-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.tm-scroll::-webkit-scrollbar-track { background: transparent; }
+.tm-scroll::-webkit-scrollbar-thumb { background: var(--tm-scroll-thumb, var(--color-muted)); border-radius: 999px; }
+.tm-scroll::-webkit-scrollbar-thumb:hover { background: var(--tm-scroll-thumb-hover, var(--color-accent)); }
+.shell .tm-scroll { --tm-scroll-thumb: var(--side-hover); --tm-scroll-thumb-hover: var(--side-muted); }
+```
+
+**Cara pakai**: tinggal tambah class `tm-scroll` ke elemen mana pun yang
+sudah punya `overflow-auto`/`overflow-x-auto`/`overflow-y-auto` — TIDAK
+mengubah properti `overflow` itu sendiri (jadi tidak mengulang gotcha §10
+tempat `overflow-x-auto` di toolbar tanpa sengaja bikin `overflow-y` ikut
+`auto` dan memotong dropdown `position:absolute`).
+
+**Sudah dipasang di (jadi otomatis konsisten, jangan pasang ulang manual
+per grid baru — cukup pastikan wrapper-nya lewat komponen ini):**
+- `components/grid/table-shell.blade.php` — wrapper `max-h-[65vh] overflow-auto` semua grid (`<x-grid.table-shell>`).
+- `components/grid/spreadsheet-table.blade.php` — wrapper `overflow-x-auto`.
+- `components/grid/toolbar.blade.php` — wrapper `overflow-x-auto` (toolbar sempit di layar kecil).
+- `components/grid/column-modal.blade.php` & `sort-modal.blade.php` — 2 listbox dual-listbox Kolom + listbox modal Sort.
+- Sidebar (`main-menu.blade.php::side-nav`) — pemicu awal, sekarang jadi konsumen biasa dari komponen yang sama (bukan aturan terpisah lagi).
+
+**Kalau bikin wrapper scroll baru di Grid** (listbox baru, panel baru,
+dsb.) — WAJIB tambahkan `tm-scroll` ke class-nya, jangan biarkan scrollbar
+default browser muncul lagi. Lihat juga `docs/FORM_UI_STANDARD.md` §4 utk
+sisi Form (popover date-picker, dropdown searchable, dst.).
+
+---
+
 ## 1. Tidak ada header halaman
 
 Shell (`layouts.shell`, lihat `docs/customer_fix_nav_address.md` §A) sudah

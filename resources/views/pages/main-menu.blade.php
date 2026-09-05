@@ -682,7 +682,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </template>
             <span class="lbl" x-text="currentModule ? currentModule.label.toUpperCase() : 'HOME'"></span>
         </div>
-        <div class="side-nav">
+        <div class="side-nav tm-scroll">
             <template x-if="activeMod === 'HOME'">
                 <div class="side-hint">Modul <b>Home</b>. Pilih modul lain di atas untuk menampilkan submenunya di sini.</div>
             </template>

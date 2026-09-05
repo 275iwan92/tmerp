@@ -7,7 +7,7 @@
             </div>
             <div class="p-4">
                 <div class="text-[10px] font-bold text-muted uppercase mb-2">Kolom (dari yang tampil)</div>
-                <div class="border border-[#e2e7ee] rounded-md h-[180px] overflow-y-auto mb-3">
+                <div class="border border-[#e2e7ee] rounded-md h-[180px] overflow-y-auto tm-scroll mb-3">
                     <div wire:click="$set('sortModalColumn', null)" class="px-2.5 py-1.5 text-[12px] cursor-pointer border-b border-[#f3f4f6] {{ ! $sortModalColumn ? 'bg-[#eaf2ff] font-semibold text-[#1d4ed8]' : 'hover:bg-[#f4f5f8]' }}">Tidak diurutkan</div>
                     @foreach ($gridVisibleColumns as $key)
                         @continue(($columnDefs[$key]['sortable'] ?? true) === false)

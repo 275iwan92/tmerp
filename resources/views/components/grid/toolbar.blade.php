@@ -12,7 +12,7 @@
 {{-- $attributes->merge(...) supaya layar report yang butuh flex-wrap (2 baris
      filter: search + rentang tanggal) bisa tambah class tanpa fork component. --}}
 @props([])
-<div {{ $attributes->merge(['class' => 'flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto']) }}>
+<div {{ $attributes->merge(['class' => 'flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2 overflow-x-auto tm-scroll']) }}>
     {{ $slot }}
     <span class="flex-1"></span>
     {{ $tools ?? '' }}

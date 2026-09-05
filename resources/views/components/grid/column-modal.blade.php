@@ -10,7 +10,7 @@
                     <div>
                         <div class="text-[10px] font-bold text-muted uppercase mb-1.5">Tersedia</div>
                         <input type="text" wire:model.live.debounce.150ms="columnModalSearch" placeholder="Cari kolom…" class="w-full mb-1.5 px-2 py-1.5 border border-[#d7dbe2] rounded text-[12px]">
-                        <div class="border border-[#e2e7ee] rounded-md h-[230px] overflow-y-auto bg-[#fafbfd]">
+                        <div class="border border-[#e2e7ee] rounded-md h-[230px] overflow-y-auto tm-scroll bg-[#fafbfd]">
                             @foreach ($columnDefs as $key => $def)
                                 @continue(in_array($key, $columnModalSelected, true))
                                 @continue($columnModalSearch !== '' && ! str_contains(mb_strtolower($def['label']), mb_strtolower($columnModalSearch)))
@@ -28,7 +28,7 @@
                     <div>
                         <div class="text-[10px] font-bold text-muted uppercase mb-1.5">Tampil ({{ count($columnModalSelected) }})</div>
                         <input type="text" disabled placeholder="klik utk hapus →" class="w-full mb-1.5 px-2 py-1.5 border border-[#e2e7ee] rounded text-[12px] bg-[#f8fafc] text-muted/70">
-                        <div class="border border-[#e2e7ee] rounded-md h-[230px] overflow-y-auto bg-[#fafbfd]">
+                        <div class="border border-[#e2e7ee] rounded-md h-[230px] overflow-y-auto tm-scroll bg-[#fafbfd]">
                             @foreach ($columnModalSelected as $key)
                                 <div wire:click="removeColumnFromSelection('{{ $key }}')" wire:key="col-sel-{{ $key }}"
                                     class="group px-2.5 py-1.5 text-[12px] cursor-pointer hover:bg-[#fdecec] border-b border-[#f3f4f6] flex items-center justify-between">
