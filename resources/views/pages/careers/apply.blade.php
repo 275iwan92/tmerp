@@ -3,6 +3,7 @@
 use App\Models\Hrr\VacVacancy;
 use App\Services\Portal\CandidateAuthService;
 use App\Services\Recruitment\FirebaseSyncAdapter;
+use App\Support\Recruitment\CandidateFormOptions;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -158,21 +159,10 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
 
     public ?string $lastSubmissionUuid = null;
 
-    protected const WILLING_ITEMS = [
-        'probation' => 'Mengikuti masa percobaan',
-        'training' => 'Mengikuti training sesuai ketentuan Perusahaan',
-        'overtime' => 'Bekerja lembur (termasuk Sabtu/Minggu/hari besar)',
-        'guarantee_docs' => 'Menyerahkan jaminan Ijazah/BPKB jika dibutuhkan',
-        'resign_notice' => 'Mengajukan permohonan tertulis 1 (satu) bulan sebelumnya apabila hendak mengundurkan diri',
-        'obey_rules' => 'Mematuhi segala peraturan perusahaan yang berlaku',
-        'resign_if_married_pregnant' => 'Bersedia mengundurkan diri jika menikah dengan rekan sekerja atau hamil sebelum masa kerja 1 (satu) tahun',
-        'relocation' => 'Bersedia setiap saat dipindah/ditugaskan ke bagian/cabang lain',
-    ];
-
     public function mount(string $vacancy_code, CandidateAuthService $auth): void
     {
         $this->vacancy_code = $vacancy_code;
-        $this->willingness = array_fill_keys(array_keys(self::WILLING_ITEMS), false);
+        $this->willingness = array_fill_keys(array_keys(CandidateFormOptions::WILLING_ITEMS), false);
         $this->family = [
             ['relation_type' => 'FATHER', 'name' => '', 'gender' => 'L', 'age' => '', 'last_education' => '', 'current_job' => '', 'current_employer' => ''],
             ['relation_type' => 'MOTHER', 'name' => '', 'gender' => 'P', 'age' => '', 'last_education' => '', 'current_job' => '', 'current_employer' => ''],
@@ -235,7 +225,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
     #[Computed]
     public function willingItems(): array
     {
-        return self::WILLING_ITEMS;
+        return CandidateFormOptions::WILLING_ITEMS;
     }
 
     #[Computed]
@@ -322,7 +312,7 @@ new #[Layout('layouts::portal')] #[Title('Lamar Posisi')] class extends Componen
         // dicentang (instruksi user "tidak terkecuali"), gabung ke bag error
         // yang SAMA supaya kandidat lihat SEMUA kekurangan dalam 1 alert.
         $validator->after(function ($v) {
-            if (in_array(false, $this->willingness, true) || count($this->willingness) < count(self::WILLING_ITEMS)) {
+            if (in_array(false, $this->willingness, true) || count($this->willingness) < count(CandidateFormOptions::WILLING_ITEMS)) {
                 $v->errors()->add('willingness', 'Semua poin Kesediaan & Pernyataan wajib dicentang.');
             }
         });
