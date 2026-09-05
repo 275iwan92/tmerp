@@ -12,6 +12,72 @@
 
 ---
 
+## 2026-09-05 (lanjutan sore) — Payroll: redesain siklus payroll_run sesuai alur bisnis lengkap
+
+Setelah fondasi pagi (entri di bawah), user menulis alur bisnis end-to-end
+secara eksplisit dalam bentuk diskusi (bukan spek formal): upload Excel jadi
+raw data → olah jadi laporan terlambat/tidak-masuk → status "tidak masuk"
+masih bisa diubah manual oleh HR (Alpha→Izin/Cuti/Sakit) → H-1 proses
+estimasi total gaji → H diproses ulang + dicek (semua atau random sample
+jam masuk/keluar) → confirm → bayar (transfer bank/cash) → kirim slip
+(elektronik/cetak) → tutup periode → masuk jurnal accounting → data jadi
+histori, periode baru otomatis dibuat kosong. Periode ada 2 jenis: WEEKLY
+dan MONTHLY.
+
+Sebelum redesain, sempat dicek 1 sampel Excel gaji riil (`docs/attachments/
+8. GAJI KARYAWAN PERIODE 22-28 AGUSTUS 2026 WEEKLY 1657.xlsb`, dibuka pakai
+Python pyxlsb karena PhpSpreadsheet tidak punya reader utk `.xlsb`) —
+mengonfirmasi periode memang WEEKLY (bukan bulanan seperti asumsi pagi),
+dan menemukan struktur nyata: sheet `TA` (presensi harian mentah, jam
+in/out per tanggal), `REKAP ABSEN` (rekap mingguan per pegawai persis
+mirip `pyr_payslip`+detail), `TOTAL` (target pembanding UAT), `slip`
+(payslip cetak), `Perubahan Gaji` (master gaji per pegawai, GAJI POKOK
+disimpan sbg nilai HARIAN langsung bukan bulanan/30), `REFF_KEAHLIAN`
+(TJ_KEAHLIAN look-up per posisi, bukan bebas per pegawai — belum diadopsi
+sesi ini, dicatat sbg gap). `LEMBUR /JAM` di sheet `Perubahan Gaji` juga
+menjawab Open Item Tier 2 §4.4 (nominal lembur/jam) yang sebelumnya
+dianggap belum ada aturannya — belum diimplementasikan ke `PayrollEngineService`
+sesi ini, masih pakai `emp_overtime_request.duration_minutes` manual.
+
+**Migration** `2026_09_05_000008_extend_payroll_run_lifecycle.php`:
+- `pyr_payroll_run`: drop `period_year`/`period_month`/unique lama, tambah
+  `period_type` (WEEKLY|MONTHLY) + `period_start`/`period_end` (date range,
+  bukan tahun+bulan) + unique baru `(period_type, period_start)`. Tambah
+  kolom siklus penuh: `verification_method`/`verified_sample_employee_ids`/
+  `verified_by`/`verified_at`, `confirmed_by`/`confirmed_at`, `paid_by`/
+  `paid_at`, `payslip_sent_at`, `closed_by`/`closed_at`, `next_run_id`.
+- `tm2mst.emp_employee`: tambah `payment_frequency` (WEEKLY|MONTHLY,
+  default MONTHLY) — menentukan pegawai ikut `pyr_payroll_run` jenis mana,
+  supaya 1 pegawai tidak bisa kena double-run weekly+monthly sekaligus.
+
+**`PayrollEngineService` dirombak** dari `run()`/`markReviewed()`/`finalize()`
+jadi method per-tahap sesuai state machine: `calculate()` (idempotent,
+boleh dipanggil ulang selama status DRAFT/CALCULATED — H-1 & H sama-sama
+panggil ini), `verify($method, $sampleIds, $by)`, `confirm()`, `markPaid()`,
+`markPayslipsSent()`, `close()` (otomatis `firstOrCreate` periode berikutnya
+kosong via `PyrPayrollRun::nextPeriodStart()/nextPeriodEnd()` — +7 hari utk
+WEEKLY, +1 bulan utk MONTHLY). Tiap transisi divalidasi guard status
+(`RuntimeException` kalau lompat tahap, mis. confirm sebelum verify).
+
+Diuji end-to-end via tinker: 1 pegawai WEEKLY, kalkulasi H-1 (2 hari data)
+→ tambah 1 hari Alpha → recalculate H (denda ikut update ke 100000) →
+confirm ditolak sebelum verify (guard bekerja) → verify RANDOM_SAMPLE →
+confirm → markPaid → markPayslipsSent → close → periode berikutnya
+terverifikasi otomatis dibuat (WEEKLY 2026-08-22..28 → next 2026-08-29..
+09-04, status DRAFT) → recalculate ditolak setelah close (presensi
+terkunci). Re-query DB pasca cleanup: 0 baris tersisa di 3 tabel terkait.
+Test suite penuh: 96 passed/9 skipped/0 failed (tidak berubah).
+
+**Belum dikerjakan** (dicatat eksplisit, bukan diam-diam dilewati):
+TJ_KEAHLIAN look-up per posisi (`REFF_KEAHLIAN`), lembur per jam dari rate
+riil (`LEMBUR /JAM`), hook `JournalPostingService` saat CLOSED, generator
+fisik bank-transfer/cash-disbursement (baru pencatatan status `PAID`),
+pembedaan kanal kirim slip (elektronik vs cetak) per pegawai, dan
+tentu saja seluruh layar UI (upload Excel, grid review, tombol per-tahap
+lifecycle).
+
+---
+
 ## 2026-09-05 — Payroll (tm2pyr) fondasi: skema DB, enkripsi, engine presensi & payroll
 
 Permintaan user ("baca folder docs/payroll_timeattendance, lalu kerjakan").

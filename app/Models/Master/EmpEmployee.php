@@ -47,6 +47,7 @@ class EmpEmployee extends Model
         'emergency_contact_phone',
         'default_machine_id',
         'default_shift_id',
+        'payment_frequency',
         'activate',
         'created_by',
         'updated_by',

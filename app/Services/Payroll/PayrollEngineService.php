@@ -14,28 +14,36 @@ use App\Models\Pyr\PyrStatusRule;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-// docs/attendancepayroll_tier3.md §5.2 -- job payroll run per periode bulanan.
+// Alur bisnis lengkap (ditulis user 2026-09-05, menggantikan asumsi awal
+// Tier3 §5.2 yang cuma DRAFT->CALCULATED->REVIEWED->FINALIZED bulanan):
+// DRAFT (periode dibuat kosong) -> CALCULATED (estimasi H-1, boleh
+// dijalankan ulang mis. proses ulang H) -> VERIFIED (HR cek jam masuk/
+// keluar semua pegawai atau sample random) -> CONFIRMED (presensi dikunci,
+// lanjut ke pembayaran) -> PAID (transfer bank/cash dieksekusi) -> CLOSED
+// (slip terkirim, masuk jurnal, next_run_id dibuat otomatis kosong).
 // Baca att_daily_status (tm2mst) via Eloquent query terpisah (CLAUDE.md §2
 // pola 1 default, bukan VIEW cross-DB -- payroll run bukan hot-path).
 class PayrollEngineService
 {
     private const COMPONENTS = ['POKOK', 'TJ_KEAHLIAN', 'TJ_LOYALITAS', 'TJ_PRESTASI', 'BONUS_PAGI', 'BONUS_HADIR'];
 
-    public function run(int $periodYear, int $periodMonth, string $triggeredBy): PyrPayrollRun
+    // Dipanggil H-1 (estimasi) maupun H (proses ulang) -- idempotent,
+    // payslip di-updateOrCreate tiap kali dipanggil selama status masih
+    // DRAFT/CALCULATED (belum VERIFIED).
+    public function calculate(string $periodType, Carbon $periodStart, Carbon $periodEnd, string $triggeredBy): PyrPayrollRun
     {
         $run = PyrPayrollRun::firstOrCreate(
-            ['period_year' => $periodYear, 'period_month' => $periodMonth],
-            ['run_status' => 'DRAFT', 'triggered_by' => $triggeredBy],
+            ['period_type' => $periodType, 'period_start' => $periodStart->toDateString()],
+            ['period_end' => $periodEnd->toDateString(), 'run_status' => 'DRAFT', 'triggered_by' => $triggeredBy, 'triggered_at' => now()],
         );
 
-        if ($run->run_status === 'FINALIZED') {
-            throw new \RuntimeException('Payroll run periode ini sudah FINALIZED -- buat run baru untuk revisi (Tier 3 §5.2).');
+        if (! in_array($run->run_status, ['DRAFT', 'CALCULATED'], true)) {
+            throw new \RuntimeException("Payroll run sudah {$run->run_status} -- presensi terkunci, tidak bisa dihitung ulang.");
         }
 
-        $periodStart = $run->periodStart();
-        $periodEnd = $run->periodEnd();
-
-        EmpEmployee::where('activate', true)->pluck('employee_id')
+        EmpEmployee::where('activate', true)
+            ->where('payment_frequency', $periodType)
+            ->pluck('employee_id')
             ->each(fn (int $employeeId) => $this->calculateForEmployee($run, $employeeId, $periodStart, $periodEnd));
 
         $run->update(['run_status' => 'CALCULATED']);
@@ -43,18 +51,68 @@ class PayrollEngineService
         return $run->fresh();
     }
 
-    public function markReviewed(PyrPayrollRun $run): void
+    // HR cek jam masuk/keluar tiap pegawai (FULL) atau sample acak
+    // (RANDOM_SAMPLE) sebelum presensi dikunci.
+    public function verify(PyrPayrollRun $run, string $method, ?array $sampleEmployeeIds, string $verifiedBy): void
     {
-        $run->update(['run_status' => 'REVIEWED']);
-    }
-
-    public function finalize(PyrPayrollRun $run, string $finalizedBy): void
-    {
-        if ($run->run_status !== 'REVIEWED') {
-            throw new \RuntimeException('Payroll run harus melalui REVIEWED sebelum FINALIZED (Tier 3 §5.2 step 7).');
+        if ($run->run_status !== 'CALCULATED') {
+            throw new \RuntimeException('Payroll run harus CALCULATED dulu sebelum diverifikasi.');
         }
 
-        $run->update(['run_status' => 'FINALIZED', 'finalized_by' => $finalizedBy, 'finalized_at' => now()]);
+        $run->update([
+            'run_status' => 'VERIFIED',
+            'verification_method' => $method,
+            'verified_sample_employee_ids' => $method === 'RANDOM_SAMPLE' ? $sampleEmployeeIds : null,
+            'verified_by' => $verifiedBy,
+            'verified_at' => now(),
+        ]);
+    }
+
+    // Mengunci presensi periode ini -- setelah CONFIRMED, calculate() ditolak.
+    public function confirm(PyrPayrollRun $run, string $confirmedBy): void
+    {
+        if ($run->run_status !== 'VERIFIED') {
+            throw new \RuntimeException('Payroll run harus VERIFIED dulu sebelum dikonfirmasi.');
+        }
+
+        $run->update(['run_status' => 'CONFIRMED', 'confirmed_by' => $confirmedBy, 'confirmed_at' => now()]);
+    }
+
+    // Transfer bank / pembagian cash sudah dieksekusi di luar sistem (atau
+    // via generator terpisah, belum dibangun) -- ini murni pencatatan status.
+    public function markPaid(PyrPayrollRun $run, string $paidBy): void
+    {
+        if ($run->run_status !== 'CONFIRMED') {
+            throw new \RuntimeException('Payroll run harus CONFIRMED dulu sebelum dibayar.');
+        }
+
+        $run->update(['run_status' => 'PAID', 'paid_by' => $paidBy, 'paid_at' => now()]);
+    }
+
+    // Slip elektronik dikirim / dicetak untuk yang cash -- pencatatan waktu
+    // distribusi, belum membedakan kanal per pegawai (next iteration).
+    public function markPayslipsSent(PyrPayrollRun $run): void
+    {
+        $run->update(['payslip_sent_at' => now()]);
+    }
+
+    // Tutup periode: masuk jurnal (hook JournalPostingService menyusul,
+    // belum dipasang di sini), lalu auto-buat periode berikutnya kosong
+    // (DRAFT) supaya "siap ke next periode" tanpa langkah manual tambahan.
+    public function close(PyrPayrollRun $run, string $closedBy): PyrPayrollRun
+    {
+        if ($run->run_status !== 'PAID') {
+            throw new \RuntimeException('Payroll run harus PAID dulu sebelum ditutup.');
+        }
+
+        $nextRun = PyrPayrollRun::firstOrCreate(
+            ['period_type' => $run->period_type, 'period_start' => $run->nextPeriodStart()->toDateString()],
+            ['period_end' => $run->nextPeriodEnd()->toDateString(), 'run_status' => 'DRAFT', 'triggered_by' => $closedBy, 'triggered_at' => now()],
+        );
+
+        $run->update(['run_status' => 'CLOSED', 'closed_by' => $closedBy, 'closed_at' => now(), 'next_run_id' => $nextRun->id_run]);
+
+        return $nextRun;
     }
 
     private function calculateForEmployee(PyrPayrollRun $run, int $employeeId, Carbon $periodStart, Carbon $periodEnd): void
