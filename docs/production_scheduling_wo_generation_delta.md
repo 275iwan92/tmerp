@@ -436,3 +436,64 @@ teknis detail soal field spoilage/waste per-proses ada di balik portal berlogin 
 — tidak ketemu spesifikasi publik yang bisa dikutip; desain kolom di atas (qty+uom terpisah per
 baris, bukan 1 field global) berdasar praktik umum industri percetakan (makeready vs running
 waste/spoilage berbeda satuan tiap tahap proses), bukan hasil salin dari dokumen Esko spesifik.
+
+---
+
+## 12. Substitusi Bahan di Bill of Material (2026-09-05, didiskusikan sebelum dibangun)
+
+Permintaan user: row action di Bill of Material WO Detail utk substitusi bahan — pilih bahan
+pengganti, ukurannya muncul, dapat estimasi output (pcs), krn bahan pengganti bisa lebih kecil/besar
+dari yang di-quote. Didiskusikan dulu (bukan langsung dibangun) krn 2 hal arsitektural: (1)
+`iqp_part_material` adalah snapshot Inquiry yang harus tetap beku (prinsip snapshot §4) — substitusi
+TIDAK BOLEH menimpanya langsung; (2) bahan pengganti biasa beda harga → geser HPP yang sudah
+disepakati ke customer (prinsip "Costing rahasia" §4).
+
+**Temuan penting sblm desain**: `mat_raw.cm_length`/`cm_width` (ukuran fisik bahan di Master)
+**kosong di seluruh 5.894 baris** (audit 2026-09-05) — ukuran bahan nyatanya cuma teks bebas di
+`material_name` (mis. "IVORY 350 GR 27 X 35"). Jadi "ukuran otomatis muncul" saat pilih bahan
+pengganti **belum bisa dari Master** — user isi manual di modal (form Panjang/Lebar mm), bukan gap
+yang diselesaikan pass ini (perlu proyek data-cleanup Master Bahan Baku terpisah kalau mau ini
+otomatis penuh). Sebaliknya, `iqp_part_material.size_p`/`size_l` (ukuran bahan ASLI, snapshot Inquiry
+costing) memang sudah terisi — jadi sisi "asli" tidak bermasalah, cuma sisi "pengganti" yang manual.
+
+**Keputusan user (AskUserQuestion, 2026-09-05):**
+1. **Master-detail dgn undo** — `iqp_part_material` (master, dibaca saja) ← banyak baris di tabel
+   baru `prd_wo_material_substitution` (detail/histori, boleh diajukan berkali-kali/ditolak). Cuma
+   1 baris `is_active=true` per baris BOM yg override tampilan; undo = set `is_active=false` lagi
+   (BUKAN hapus/pengajuan baru).
+2. **Approval oleh Manager Operasional ke atas** (`SecUser::isOpsManagerOrAbove()`) — role yang SAMA
+   dgn approve Subkontrak PO (komentar method itu bahkan sudah menyebut "approve substitusi bahan"
+   sblm fitur ini dibangun — konsisten sama intent desain lama). Approve & undo pakai gate yg sama.
+3. **Nilai cost WAJIB dihitung** sblm approval — `total_cost_delta` = (qty kebutuhan baru × harga
+   satuan pengganti) − (qty kebutuhan asli × harga satuan asli), dari `mat_raw.avg_unitprice`
+   (fallback `last_unitprice`). Kalau salah satu bahan tak tertaut ke Master (`rawmat_id` NULL,
+   umum di data lama) → tampil "tidak bisa dihitung", bukan dipaksa 0 diam-diam.
+4. **Preview bebas sebelum submit** — PPIC bisa ganti2 bahan/ukuran & lihat live UP-count/pcs/cost
+   delta di modal, TIDAK tersimpan apa pun sampai klik "Ajukan Substitusi" (baris PENDING, belum
+   efektif sampai di-approve).
+
+**Cara hitung UP-count/pcs baru**: reuse `ImpositionEngine::run()` yang sama dipakai ProDev/
+Imposition (BUKAN algoritma baru) — plano diganti ukuran bahan pengganti (dari input manual di
+atas), flat/gap/gripper/margin TETAP dari `iqp_layout` CONFIRMED milik part ini (itu batasan fisik
+part & mesin, bukan bahannya). Kalau layout part belum dikonfirmasi ATAU bahan pengganti terlalu
+kecil (`up<=0`, part tidak muat) → preview tampil pesan error, tombol Ajukan disabled.
+
+**Skema**: migration `2026_09_05_000002_create_prd_wo_material_substitution.php`, model
+`App\Models\Prd\PrdWoMaterialSubstitution`. Kolom kunci: `iqp_part_material_id` (logical FK ke
+master), `substitute_rawmat_id`+`substitute_length_mm`/`width_mm` (manual), `computed_up_count`/
+`_efficiency_pct`/`_waste_pct`/`_qty_output_pcs` (snapshot hasil hitung SAAT pengajuan — bukan
+dihitung ulang live tiap render, supaya approver lihat angka yg sama persis diajukan PPIC),
+`original_unit_cost`/`substitute_unit_cost`/`total_cost_delta`, `approval_status` (PENDING/APPROVED/
+REJECTED), `is_active`, `undone_by`/`undone_at`.
+
+**UI**: `wo-entry.blade.php` tab Bill of Material — kolom "Aksi" baru per baris (tombol "🔁
+Substitusi", disembunyikan kalau baris itu masih ada pengajuan PENDING). Baris detail di bawah baris
+BOM (pola master-detail visual) tampil status PENDING (+ Approve/Tolak kalau user Manager Operasional
+ke atas) atau AKTIF (+ tombol "↩ Batalkan"/undo). Modal substitusi: search bahan (pola sama search
+vendor Subkontrak), input ukuran manual, preview live, textarea alasan.
+
+Diverifikasi end-to-end via `Livewire::actingAs()` + `Livewire::test()` di tinker (submit→PENDING→
+approve→BOM override tampil→undo→BOM balik ke asli, termasuk jalur cost_delta null krn bahan asli
+WO uji tak tertaut Master) — bukan test PHPUnit permanen (scope diskusi/prototipe sesi ini,
+pertimbangkan tambah test permanen kalau fitur ini dipakai serius). Regresi `ProductionWo*`
+23/23 tetap lolos setelah perubahan.

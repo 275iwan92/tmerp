@@ -12,12 +12,14 @@ use App\Models\Prd\PrdBreakdownEvent;
 use App\Models\Prd\PrdCrewAssignment;
 use App\Models\Prd\PrdScrapType;
 use App\Models\Prd\PrdWo;
+use App\Models\Prd\PrdWoMaterialSubstitution;
 use App\Models\Prd\PrdWoOperation;
 use App\Models\Prd\PrdWoOperationOutput;
 use App\Models\Prd\PrdWoOperationOutputDefect;
 use App\Models\Master\SupSupplier;
 use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPartMaterial;
+use App\Services\Imposition\ImpositionEngine;
 use App\Services\Pur\SubcontractPoService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -106,6 +108,33 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     // (bukan diekstrak ke trait/service) supaya masing2 layar tetap berdiri
     // sendiri, pola sama beberapa computed lain di codebase ini.
     public bool $showDeliveryModal = false;
+
+    // Substitusi Bahan (Bill of Material) -- didiskusikan dgn user 2026-09-05
+    // sebelum dibangun (docs/production_scheduling_wo_generation_delta.md §12).
+    // Master-detail: `iqp_part_material` (snapshot Inquiry, tm2sdi) TETAP BEKU,
+    // tidak pernah ditimpa -- substitusi dicatat sbg baris terpisah
+    // (PrdWoMaterialSubstitution), 1 `is_active` per baris BOM, bisa di-undo
+    // (bukan pengajuan baru). Preview bebas sebelum submit (keputusan user) --
+    // properti di bawah cuma state modal, TIDAK tersimpan apa pun sampai
+    // submitSubstitution() dipanggil.
+    public ?int $substitutionPartMaterialId = null;
+
+    public ?int $substituteRawmatId = null;
+
+    public string $substituteRawmatName = '';
+
+    public string $substituteMaterialQuery = '';
+
+    public ?float $substituteLengthMm = null;
+
+    public ?float $substituteWidthMm = null;
+
+    public string $substitutionReason = '';
+
+    // Modal tolak substitusi -- pola sama qcRejectOperationId/qcRejectReason.
+    public ?int $rejectingSubstitutionId = null;
+
+    public string $substitutionRejectReason = '';
 
     public function mount(?int $wo = null): void
     {
@@ -279,15 +308,73 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
     // (qty_kebutuhan = qty WO apa adanya) kalau imposition belum
     // dikonfirmasi -- BUKAN MRP/qty_factor per proses penuh (itu tetap gap,
     // lihat delta doc §3), tapi lebih presisi dari sebelumnya.
+    // Diekstrak dari billOfMaterialRows() (dulu inline) krn dipakai juga oleh
+    // substitutionPreview() -- sumber flat/gap/gripper/margin part ini utk
+    // hitung ulang UP-count kalau plano diganti (ImpositionEngine::run()).
+    #[Computed]
+    public function confirmedLayout(): ?IqpLayout
+    {
+        return $this->workOrder->source_iqp_part_id
+            ? IqpLayout::where('part_id', $this->workOrder->source_iqp_part_id)->where('stat_confirm', true)->first()
+            : null;
+    }
+
+    // Semua baris substitusi (histori lengkap: PENDING/APPROVED/REJECTED,
+    // aktif atau sudah di-undo) milik 1 baris BOM -- sengaja query langsung
+    // (BUKAN #[Computed]) supaya tidak perlu urus invalidasi cache manual
+    // setelah submit/approve/reject/undo (aksi2 itu tidak menyentuh computed
+    // lain yang butuh disegarkan di render yang sama, pola dipertahankan
+    // simpel drpd tiru unset($this->workOrder) di tempat lain file ini).
+    public function substitutionsForLine(int $partMaterialId)
+    {
+        return PrdWoMaterialSubstitution::where('wo_id', $this->workOrder->wo_id)
+            ->where('iqp_part_material_id', $partMaterialId)
+            ->orderByDesc('created_at')
+            ->get();
+    }
+
+    public function activeSubstitutionFor(int $partMaterialId): ?PrdWoMaterialSubstitution
+    {
+        return $this->substitutionsForLine($partMaterialId)->firstWhere('is_active', true);
+    }
+
+    public function pendingSubstitutionFor(int $partMaterialId): ?PrdWoMaterialSubstitution
+    {
+        return $this->substitutionsForLine($partMaterialId)->firstWhere('approval_status', 'PENDING');
+    }
+
     #[Computed]
     public function billOfMaterialRows()
     {
-        $layout = $this->workOrder->source_iqp_part_id
-            ? IqpLayout::where('part_id', $this->workOrder->source_iqp_part_id)->where('stat_confirm', true)->first()
-            : null;
+        $layout = $this->confirmedLayout;
         $upCount = $layout && $layout->up_count > 0 ? (int) $layout->up_count : 1;
 
         return $this->billOfMaterial->map(function ($mat) use ($upCount) {
+            $active = $this->activeSubstitutionFor($mat->id_part_material);
+
+            // Substitusi APPROVED aktif menimpa TAMPILAN baris ini saja --
+            // iqp_part_material (snapshot Inquiry) di baliknya tidak berubah.
+            if ($active) {
+                $rawmat = MatRaw::find($active->substitute_rawmat_id);
+                $unit = $rawmat?->uom_stock ?: 'Pcs';
+                $subUpCount = $active->computed_up_count > 0 ? $active->computed_up_count : $upCount;
+
+                $qtyKebutuhan = ceil((float) $this->workOrder->qty / $subUpCount);
+                $qtyTersedia = (float) DB::connection('tm2inv')->table('v_rm_available')->where('material_id', $active->substitute_rawmat_id)->sum('qty_available');
+                $qtyHarusDibeli = max(0, $qtyKebutuhan - $qtyTersedia);
+
+                return (object) [
+                    'id_part_material' => $mat->id_part_material,
+                    'name' => $active->substitute_rawmat_name,
+                    'spec' => "🔁 Pengganti dari: {$mat->rawmat_name}",
+                    'unit' => $unit,
+                    'qty_kebutuhan' => $qtyKebutuhan,
+                    'qty_tersedia' => $qtyTersedia,
+                    'qty_harus_dibeli' => $qtyHarusDibeli,
+                    'is_substituted' => true,
+                ];
+            }
+
             $rawmat = $mat->rawmat_id ? MatRaw::find($mat->rawmat_id) : null;
             $unit = $rawmat?->uom_stock ?: 'Pcs';
 
@@ -298,6 +385,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
             $qtyHarusDibeli = max(0, $qtyKebutuhan - $qtyTersedia);
 
             return (object) [
+                'id_part_material' => $mat->id_part_material,
                 'name' => $mat->rawmat_name,
                 'spec' => trim(collect([
                     $mat->gram_weight ? number_format((float) $mat->gram_weight, 0, ',', '.').' gsm' : null,
@@ -308,8 +396,257 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                 'qty_kebutuhan' => $qtyKebutuhan,
                 'qty_tersedia' => $qtyTersedia,
                 'qty_harus_dibeli' => $qtyHarusDibeli,
+                'is_substituted' => false,
             ];
         });
+    }
+
+    #[Computed]
+    public function substituteMaterialResults()
+    {
+        if (! $this->substituteMaterialQuery || mb_strlen($this->substituteMaterialQuery) < 2) {
+            return collect();
+        }
+
+        return MatRaw::where('activate', true)
+            ->where(function ($q) {
+                $q->where('material_name', 'like', "%{$this->substituteMaterialQuery}%")
+                    ->orWhere('material_code', 'like', "%{$this->substituteMaterialQuery}%");
+            })
+            ->orderBy('material_name')
+            ->limit(15)
+            ->get();
+    }
+
+    // Preview bebas sebelum submit (keputusan user 2026-09-05) -- dihitung
+    // ulang tiap kali user ganti bahan/ukuran di modal, TIDAK menyimpan apa
+    // pun. Reuse ImpositionEngine::run() yang sama dipakai ProDev/Imposition,
+    // cuma planoW/H diganti ukuran bahan pengganti (flat/gap/gripper/margin
+    // part TETAP dari layout confirmed asli -- itu batasan fisik part &
+    // mesin, bukan bahannya).
+    #[Computed]
+    public function substitutionPreview(): ?array
+    {
+        if (! $this->substitutionPartMaterialId || ! $this->substituteRawmatId || ! $this->substituteLengthMm || ! $this->substituteWidthMm) {
+            return null;
+        }
+
+        $layout = $this->confirmedLayout;
+        if (! $layout) {
+            return ['error' => 'Layout Imposition part ini belum dikonfirmasi -- tidak bisa hitung UP-count.'];
+        }
+
+        $result = app(ImpositionEngine::class)->run(
+            (float) $this->substituteLengthMm, (float) $this->substituteWidthMm,
+            (float) $layout->flat_w_mm, (float) $layout->flat_h_mm,
+            (float) $layout->gap_mm, (float) $layout->gripper_mm, (float) $layout->margin_mm
+        );
+
+        if ($result['up'] <= 0) {
+            return ['error' => 'Bahan pengganti terlalu kecil -- part tidak muat sama sekali di ukuran ini.'];
+        }
+
+        $mat = $this->billOfMaterial->firstWhere('id_part_material', $this->substitutionPartMaterialId);
+        $originalUpCount = $layout->up_count > 0 ? (int) $layout->up_count : 1;
+        $originalRawmat = $mat?->rawmat_id ? MatRaw::find($mat->rawmat_id) : null;
+        $substituteRawmat = MatRaw::find($this->substituteRawmatId);
+
+        $qtyKebutuhanBaru = ceil((float) $this->workOrder->qty / $result['up']);
+        $qtyKebutuhanAsli = ceil((float) $this->workOrder->qty / $originalUpCount);
+        $qtyTersediaSubstitute = (float) DB::connection('tm2inv')->table('v_rm_available')->where('material_id', $this->substituteRawmatId)->sum('qty_available');
+
+        $originalUnitCost = $originalRawmat ? (float) ($originalRawmat->avg_unitprice ?: $originalRawmat->last_unitprice ?: 0) : null;
+        $substituteUnitCost = $substituteRawmat ? (float) ($substituteRawmat->avg_unitprice ?: $substituteRawmat->last_unitprice ?: 0) : null;
+
+        $costDelta = ($originalUnitCost !== null && $substituteUnitCost !== null)
+            ? ($qtyKebutuhanBaru * $substituteUnitCost) - ($qtyKebutuhanAsli * $originalUnitCost)
+            : null;
+
+        return [
+            'up_count' => $result['up'],
+            'efficiency_pct' => $result['efficiency_pct'],
+            'waste_pct' => $result['waste_pct'],
+            'qty_kebutuhan_baru' => $qtyKebutuhanBaru,
+            'qty_tersedia_substitute' => $qtyTersediaSubstitute,
+            'qty_output_pcs' => floor($qtyTersediaSubstitute * $result['up']),
+            'original_unit_cost' => $originalUnitCost,
+            'substitute_unit_cost' => $substituteUnitCost,
+            'cost_delta' => $costDelta,
+        ];
+    }
+
+    public function openSubstitution(int $partMaterialId): void
+    {
+        $this->substitutionPartMaterialId = $partMaterialId;
+        $this->substituteRawmatId = null;
+        $this->substituteRawmatName = '';
+        $this->substituteMaterialQuery = '';
+        $this->substituteLengthMm = null;
+        $this->substituteWidthMm = null;
+        $this->substitutionReason = '';
+    }
+
+    public function closeSubstitution(): void
+    {
+        $this->substitutionPartMaterialId = null;
+    }
+
+    public function selectSubstituteMaterial(int $id): void
+    {
+        $m = MatRaw::find($id);
+        if (! $m) {
+            return;
+        }
+
+        $this->substituteRawmatId = $m->material_id;
+        $this->substituteRawmatName = $m->material_name;
+        $this->substituteMaterialQuery = '';
+
+        // Saran awal kalau kebetulan cm_length/cm_width sudah terisi di Master
+        // -- audit 2026-09-05: 0 dari 5.894 baris mat_raw yang terisi saat ini,
+        // jadi hampir selalu tetap harus diisi/dikoreksi manual di bawah.
+        if ((float) $m->cm_length > 0 && (float) $m->cm_width > 0) {
+            $this->substituteLengthMm = (float) $m->cm_length * 10;
+            $this->substituteWidthMm = (float) $m->cm_width * 10;
+        }
+    }
+
+    public function clearSubstituteMaterial(): void
+    {
+        $this->substituteRawmatId = null;
+        $this->substituteRawmatName = '';
+        $this->substituteLengthMm = null;
+        $this->substituteWidthMm = null;
+    }
+
+    public function submitSubstitution(): void
+    {
+        if (! $this->substituteRawmatId || ! $this->substituteLengthMm || ! $this->substituteWidthMm) {
+            $this->dispatch('wo-toast', message: 'Pilih bahan pengganti dan isi ukurannya dulu.');
+
+            return;
+        }
+
+        if ($this->pendingSubstitutionFor($this->substitutionPartMaterialId)) {
+            $this->dispatch('wo-toast', message: 'Sudah ada pengajuan substitusi lain yang masih menunggu approval utk baris ini.');
+
+            return;
+        }
+
+        $preview = $this->substitutionPreview;
+        if (! $preview || isset($preview['error'])) {
+            $this->dispatch('wo-toast', message: $preview['error'] ?? 'Belum bisa dihitung -- lengkapi data dulu.');
+
+            return;
+        }
+
+        $mat = $this->billOfMaterial->firstWhere('id_part_material', $this->substitutionPartMaterialId);
+
+        PrdWoMaterialSubstitution::create([
+            'wo_id' => $this->workOrder->wo_id,
+            'iqp_part_material_id' => $this->substitutionPartMaterialId,
+            'original_rawmat_id' => $mat?->rawmat_id,
+            'substitute_rawmat_id' => $this->substituteRawmatId,
+            'substitute_rawmat_name' => $this->substituteRawmatName,
+            'substitute_length_mm' => $this->substituteLengthMm,
+            'substitute_width_mm' => $this->substituteWidthMm,
+            'computed_up_count' => $preview['up_count'],
+            'computed_efficiency_pct' => $preview['efficiency_pct'],
+            'computed_waste_pct' => $preview['waste_pct'],
+            'computed_qty_output_pcs' => $preview['qty_output_pcs'],
+            'original_unit_cost' => $preview['original_unit_cost'],
+            'substitute_unit_cost' => $preview['substitute_unit_cost'],
+            'total_cost_delta' => $preview['cost_delta'],
+            'reason' => $this->substitutionReason ?: null,
+            'approval_status' => 'PENDING',
+            'is_active' => false,
+            'created_by' => Auth::user()->login,
+        ]);
+
+        $this->closeSubstitution();
+        $this->dispatch('wo-toast', message: 'Pengajuan substitusi terkirim, menunggu approval Manager Operasional ke atas.');
+    }
+
+    // Approval substitusi bahan -- Manager Operasional ke atas (keputusan user
+    // 2026-09-05, gate sama createSubcontractPo() krn substitusi bisa geser HPP).
+    public function approveSubstitution(int $id): void
+    {
+        if (! Auth::user()->isOpsManagerOrAbove()) {
+            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa approve substitusi bahan.');
+
+            return;
+        }
+
+        $sub = PrdWoMaterialSubstitution::findOrFail($id);
+
+        // Jaga invarian "cuma 1 is_active per baris BOM" -- nonaktifkan
+        // substitusi aktif lain (kalau ada) di baris yang sama.
+        PrdWoMaterialSubstitution::where('iqp_part_material_id', $sub->iqp_part_material_id)
+            ->where('is_active', true)
+            ->update(['is_active' => false, 'updated_by' => Auth::user()->login]);
+
+        $sub->update([
+            'approval_status' => 'APPROVED',
+            'approved_by' => Auth::user()->login,
+            'approved_at' => now(),
+            'is_active' => true,
+        ]);
+
+        $this->dispatch('wo-toast', message: "Substitusi ke {$sub->substitute_rawmat_name} disetujui & aktif.");
+    }
+
+    public function openRejectSubstitution(int $id): void
+    {
+        $this->rejectingSubstitutionId = $id;
+        $this->substitutionRejectReason = '';
+    }
+
+    public function submitRejectSubstitution(): void
+    {
+        if (! Auth::user()->isOpsManagerOrAbove()) {
+            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa menolak substitusi bahan.');
+
+            return;
+        }
+
+        if (mb_strlen(trim($this->substitutionRejectReason)) < 5) {
+            $this->dispatch('wo-toast', message: 'Alasan penolakan minimal 5 karakter.');
+
+            return;
+        }
+
+        $sub = PrdWoMaterialSubstitution::findOrFail($this->rejectingSubstitutionId);
+        $sub->update([
+            'approval_status' => 'REJECTED',
+            'approved_by' => Auth::user()->login,
+            'approved_at' => now(),
+            'rejection_reason' => $this->substitutionRejectReason,
+        ]);
+
+        $this->rejectingSubstitutionId = null;
+        $this->dispatch('wo-toast', message: 'Pengajuan substitusi ditolak.');
+    }
+
+    // Undo -- BUKAN pengajuan baru, cuma nonaktifkan substitusi aktif & balik
+    // tampilan BOM ke bahan original. Gate sama seperti approve (keputusan
+    // user: approve & undo sama2 wilayah Manager Operasional krn sama2
+    // mempengaruhi HPP yang sedang aktif dipakai).
+    public function undoSubstitution(int $id): void
+    {
+        if (! Auth::user()->isOpsManagerOrAbove()) {
+            $this->dispatch('wo-toast', message: 'Hanya Manager Operasional ke atas yang bisa membatalkan substitusi aktif.');
+
+            return;
+        }
+
+        $sub = PrdWoMaterialSubstitution::findOrFail($id);
+        $sub->update([
+            'is_active' => false,
+            'undone_by' => Auth::user()->login,
+            'undone_at' => now(),
+        ]);
+
+        $this->dispatch('wo-toast', message: 'Substitusi dibatalkan, kembali ke bahan asli.');
     }
 
     public function updatePriority(string $value): void
@@ -1217,29 +1554,73 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[32%]">Material &amp; Spesifikasi</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[18%]">Qty Kebutuhan</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[20%]">Qty Tersedia (Gudang)</th>
-                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[18%]">Qty Harus Dibeli</th>
+                            <th class="text-left px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[28%]">Material &amp; Spesifikasi</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[16%]">Qty Kebutuhan</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[18%]">Qty Tersedia (Gudang)</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[16%]">Qty Harus Dibeli</th>
+                            <th class="text-right px-3 py-1.5 bg-[#fafbfd] text-[#667] text-[10.5px] uppercase tracking-wide border-b border-[#eef1f5] w-[12%]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->billOfMaterialRows as $i => $row)
+                            @php($subs = $this->substitutionsForLine($row->id_part_material))
+                            @php($pendingSub = $subs->firstWhere('approval_status', 'PENDING'))
+                            @php($activeSub = $subs->firstWhere('is_active', true))
                             <tr wire:key="bom-{{ $i }}">
-                                <td class="px-3 py-1.5 border-b border-[#eef1f5]">
+                                <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }}">
                                     <div class="bg-[#fbfcfe] border border-[#eef1f6] rounded-md px-2 py-1">
                                         <div class="font-bold text-[11.5px]">{{ $row->name }}</div>
                                         @if ($row->spec)
-                                            <div class="text-[9.7px] text-muted">{{ $row->spec }}</div>
+                                            <div class="text-[9.7px] {{ $row->is_substituted ? 'text-[#a3241f] font-semibold' : 'text-muted' }}">{{ $row->spec }}</div>
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-3 py-1.5 border-b border-[#eef1f5] text-right"><span class="font-bold">{{ number_format($row->qty_kebutuhan, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
-                                <td class="px-3 py-1.5 border-b border-[#eef1f5] text-right"><span class="font-bold {{ $row->qty_tersedia < $row->qty_kebutuhan ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">{{ number_format($row->qty_tersedia, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
-                                <td class="px-3 py-1.5 border-b border-[#eef1f5] text-right"><span class="font-bold {{ $row->qty_harus_dibeli > 0 ? 'text-[#a3241f]' : 'text-[#a3aabb]' }}">{{ number_format($row->qty_harus_dibeli, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
+                                <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }} text-right"><span class="font-bold">{{ number_format($row->qty_kebutuhan, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
+                                <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }} text-right"><span class="font-bold {{ $row->qty_tersedia < $row->qty_kebutuhan ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">{{ number_format($row->qty_tersedia, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
+                                <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }} text-right"><span class="font-bold {{ $row->qty_harus_dibeli > 0 ? 'text-[#a3241f]' : 'text-[#a3aabb]' }}">{{ number_format($row->qty_harus_dibeli, 0, ',', '.') }}</span> <span class="text-[9.5px] text-muted font-bold">{{ $row->unit }}</span></td>
+                                <td class="px-3 py-1.5 border-b {{ $subs->isEmpty() ? 'border-[#eef1f5]' : 'border-transparent' }} text-right">
+                                    @if (! $pendingSub)
+                                        <button type="button" wire:click="openSubstitution({{ $row->id_part_material }})" title="Substitusi bahan" class="text-[10.5px] font-semibold px-2 py-1 rounded bg-[#eef3fb] text-[#2f6fed] cursor-pointer">🔁 Substitusi</button>
+                                    @endif
+                                </td>
                             </tr>
+                            @if ($pendingSub || $activeSub)
+                                <tr wire:key="bom-{{ $i }}-sub" class="bg-[#fafbfd]">
+                                    <td colspan="5" class="px-3 py-1.5 border-b border-[#eef1f5]">
+                                        @if ($pendingSub)
+                                            <div class="flex items-center justify-between gap-2 flex-wrap text-[10.5px]">
+                                                <div>
+                                                    <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#fef3c7] text-[#92400e]">⏳ PENDING</span>
+                                                    <span class="ml-1.5">Usul ganti ke <strong>{{ $pendingSub->substitute_rawmat_name }}</strong> ({{ number_format((float) $pendingSub->substitute_length_mm, 0) }}×{{ number_format((float) $pendingSub->substitute_width_mm, 0) }}mm, UP {{ $pendingSub->computed_up_count }})</span>
+                                                    @if ($pendingSub->total_cost_delta !== null)
+                                                        <span class="ml-1.5 font-semibold {{ $pendingSub->total_cost_delta > 0 ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">({{ $pendingSub->total_cost_delta > 0 ? '+' : '' }}Rp{{ number_format((float) $pendingSub->total_cost_delta, 0, ',', '.') }} vs asli)</span>
+                                                    @endif
+                                                </div>
+                                                @if (Auth::user()->isOpsManagerOrAbove())
+                                                    <div class="flex items-center gap-1.5 shrink-0">
+                                                        <button type="button" wire:click="approveSubstitution({{ $pendingSub->id }})" class="px-2 py-1 rounded bg-[#0e7a44] text-white font-semibold cursor-pointer">Approve</button>
+                                                        <button type="button" wire:click="openRejectSubstitution({{ $pendingSub->id }})" class="px-2 py-1 rounded bg-[#dc2626] text-white font-semibold cursor-pointer">Tolak</button>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted italic shrink-0">Menunggu approval Manager Operasional ke atas</span>
+                                                @endif
+                                            </div>
+                                        @elseif ($activeSub)
+                                            <div class="flex items-center justify-between gap-2 flex-wrap text-[10.5px]">
+                                                <div>
+                                                    <span class="font-bold px-1.5 py-0.5 rounded-full bg-[#dbeafe] text-[#1d4ed8]">🔁 AKTIF</span>
+                                                    <span class="ml-1.5">Disetujui {{ $activeSub->approved_by }} · {{ $activeSub->approved_at?->format('d/m H:i') }} · estimasi output {{ number_format((float) $activeSub->computed_qty_output_pcs, 0, ',', '.') }} pcs dari stok saat ini</span>
+                                                </div>
+                                                @if (Auth::user()->isOpsManagerOrAbove())
+                                                    <button type="button" wire:click="undoSubstitution({{ $activeSub->id }})" class="px-2 py-1 rounded bg-[#e6eaf0] text-[#333] font-semibold cursor-pointer shrink-0">↩ Batalkan</button>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                         @empty
-                            <tr><td colspan="4" class="text-center py-8 text-muted">Belum ada Bill of Material.</td></tr>
+                            <tr><td colspan="5" class="text-center py-8 text-muted">Belum ada Bill of Material.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -1314,6 +1695,114 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
                         <button type="button" wire:click="$set('qcRejectOperationId', null)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                         <button type="button" wire:click="submitQcReject" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">Tolak</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Substitusi Bahan modal -- preview bebas sblm submit (keputusan user
+         2026-09-05): pilih bahan pengganti, isi ukuran (manual, krn
+         mat_raw.cm_length/cm_width kosong di seluruh Master saat ini), hasil
+         hitung UP-count/pcs/delta cost muncul LIVE sblm diajukan. Submit =
+         baris PENDING, belum efektif sampai di-approve Manager Operasional. --}}
+    @if ($substitutionPartMaterialId)
+        <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeSubstitution">
+            <div class="bg-white rounded-xl w-[480px] max-w-[95vw] max-h-[90vh] overflow-y-auto shadow-2xl">
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
+                    <span>🔁 Substitusi Bahan</span>
+                    <button type="button" wire:click="closeSubstitution" class="text-white/70 hover:text-white cursor-pointer">✕</button>
+                </div>
+                <div class="p-4 space-y-3.5">
+                    <div class="relative">
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Bahan Pengganti</label>
+                        @if ($substituteRawmatId)
+                            <div class="flex items-center gap-1.5">
+                                <input type="text" value="{{ $substituteRawmatName }}" readonly class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-[#f7f7f5]">
+                                <button type="button" wire:click="clearSubstituteMaterial" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
+                            </div>
+                        @else
+                            <input type="text" wire:model.live.debounce.400ms="substituteMaterialQuery" autocomplete="off" placeholder="Ketik nama/kode bahan…" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                            @if ($substituteMaterialQuery && mb_strlen($substituteMaterialQuery) >= 2)
+                                <div class="absolute left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
+                                    @forelse ($this->substituteMaterialResults as $m)
+                                        <div wire:click="selectSubstituteMaterial({{ $m->material_id }})" class="px-2.5 py-1.5 text-xs cursor-pointer hover:bg-[#f4f5f8] flex items-center justify-between">
+                                            <span>{{ $m->material_name }}</span>
+                                            <span class="text-muted text-[10px]">{{ $m->material_code }}</span>
+                                        </div>
+                                    @empty
+                                        <div class="px-2.5 py-1.5 text-xs text-muted">Tidak ditemukan.</div>
+                                    @endforelse
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+
+                    <div class="[display:grid] grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Panjang (mm)</label>
+                            <input type="number" step="1" wire:model.live.debounce.400ms="substituteLengthMm" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Lebar (mm)</label>
+                            <input type="number" step="1" wire:model.live.debounce.400ms="substituteWidthMm" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-muted italic -mt-2">Ukuran bahan diisi manual — data ukuran fisik belum lengkap di Master Bahan Baku.</p>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Alasan Substitusi</label>
+                        <textarea wire:model="substitutionReason" rows="2" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="mis. Stok bahan asli kosong, dipakai punya sejenis…"></textarea>
+                    </div>
+
+                    @php($preview = $this->substitutionPreview)
+                    @if ($preview && isset($preview['error']))
+                        <p class="text-[11px] text-[#a3241f] bg-[#fbeaea] border border-[#f3c9c9] rounded-md px-3 py-2">⚠ {{ $preview['error'] }}</p>
+                    @elseif ($preview)
+                        <div class="bg-[#f7f9fc] border border-[#e5e9f0] rounded-md p-3 text-[11px] space-y-1">
+                            <div class="flex justify-between"><span class="text-muted">UP-count baru</span><span class="font-bold">{{ $preview['up_count'] }} ({{ $preview['efficiency_pct'] }}% efisien, {{ $preview['waste_pct'] }}% waste layout)</span></div>
+                            <div class="flex justify-between"><span class="text-muted">Qty Kebutuhan (lembar) baru</span><span class="font-bold">{{ number_format($preview['qty_kebutuhan_baru'], 0, ',', '.') }}</span></div>
+                            <div class="flex justify-between"><span class="text-muted">Stok bahan pengganti saat ini</span><span class="font-bold">{{ number_format($preview['qty_tersedia_substitute'], 0, ',', '.') }}</span></div>
+                            <div class="flex justify-between"><span class="text-muted">Estimasi Output dari stok itu</span><span class="font-bold">{{ number_format($preview['qty_output_pcs'], 0, ',', '.') }} pcs</span></div>
+                            <div class="flex justify-between border-t border-[#e5e9f0] pt-1 mt-1">
+                                <span class="text-muted">Delta Biaya vs bahan asli</span>
+                                @if ($preview['cost_delta'] !== null)
+                                    <span class="font-bold {{ $preview['cost_delta'] > 0 ? 'text-[#a3241f]' : 'text-[#0e7a44]' }}">{{ $preview['cost_delta'] > 0 ? '+' : '' }}Rp{{ number_format($preview['cost_delta'], 0, ',', '.') }}</span>
+                                @else
+                                    <span class="text-muted italic">tidak bisa dihitung (harga bahan belum ada)</span>
+                                @endif
+                            </div>
+                        </div>
+                    @else
+                        <p class="text-[11px] text-muted italic">Pilih bahan pengganti & isi ukuran utk lihat hasil hitung.</p>
+                    @endif
+
+                    <div class="flex justify-end gap-2 pt-3 mt-1 border-t border-[#eef1f5]">
+                        <button type="button" wire:click="closeSubstitution" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                        <button type="button" wire:click="submitSubstitution" @disabled(! $preview || isset($preview['error']))
+                            class="px-4 py-2 rounded-md text-xs font-semibold text-white {{ (! $preview || isset($preview['error'])) ? 'bg-[#9ca3af] cursor-not-allowed' : 'bg-[#2f6fed] hover:bg-[#2559c9] cursor-pointer' }}">
+                            Ajukan Substitusi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Tolak Substitusi modal -- pola sama QC Reject modal. --}}
+    @if ($rejectingSubstitutionId)
+        <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('rejectingSubstitutionId', null)">
+            <div class="bg-white rounded-xl w-[420px] max-w-[95vw] shadow-2xl">
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
+                    <span>Tolak Substitusi Bahan</span>
+                    <button type="button" wire:click="$set('rejectingSubstitutionId', null)" class="text-white/70 hover:text-white cursor-pointer">✕</button>
+                </div>
+                <div class="p-4">
+                    <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Alasan Penolakan</label>
+                    <textarea wire:model="substitutionRejectReason" rows="3" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs" placeholder="mis. Delta biaya terlalu besar, cari alternatif lain…"></textarea>
+                    <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
+                        <button type="button" wire:click="$set('rejectingSubstitutionId', null)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                        <button type="button" wire:click="submitRejectSubstitution" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#dc2626] text-white cursor-pointer">Tolak</button>
                     </div>
                 </div>
             </div>
