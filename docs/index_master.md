@@ -72,15 +72,15 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 ### 1.6 Inquiry Product (9)
 | File | Deskripsi |
 |---|---|
-| `screen_inquiry_hub.md` | Landing page Inquiry — pilih tipe dokumen (NEW/RECALC/REVISE), worklist. |
-| `screen_inquiry_form.md` | Entry Inquiry Product BARU — header, qty tier, part & dieline, bahan, tooling. |
-| `screen_inquiry_revise.md` | REVISI — copy-record + versi baru, scope selector Material/Dimensi/Artwork/Warna/Proses. |
-| `screen_inquiry_recalc.md` | REKALKULASI — reuse spec/dieline/material/proses, refresh harga bahan & qty. |
+| `screen_inqprod_grid.md` | Landing page Inquiry — pilih tipe dokumen (NEW/RECALC/REVISE), worklist. |
+| `screen_inqprod_new.md` | Entry Inquiry Product BARU — header, qty tier, part & dieline, bahan, tooling. |
+| `screen_inqprod_revise.md` | REVISI — copy-record + versi baru, scope selector Material/Dimensi/Artwork/Warna/Proses. |
+| `screen_inqprod_recalc.md` | REKALKULASI — reuse spec/dieline/material/proses, refresh harga bahan & qty. |
 | `screen_inquiry_imposition_list.md` | Worklist Imposition Engine. |
 | `screen_inquiry_imposition.md` | Imposition Engine per-inquiry — layout produksi (plano/UP/orientasi). |
-| `screen_inquiry_costing_list.md` | Worklist Product Costing. |
-| `screen_inquiry_costing.md` | Costing (HPP) per-inquiry — CostingEngine, coating, ladder harga per qty-tier. |
-| `screen_inquiry_nota.md` | Cetak Nota Inquiry — harga per jenjang qty + spek teknis + dieline. |
+| `screen_procost_grid.md` | Worklist Product Costing. |
+| `screen_procost_form.md` | Costing (HPP) per-inquiry — CostingEngine, coating, ladder harga per qty-tier. |
+| `printout_inqprod_nota.md` | Cetak Nota Inquiry — harga per jenjang qty + spek teknis + dieline. |
 
 ### 1.7 Sales Order & Delivery (12)
 | File | Deskripsi |
@@ -149,9 +149,9 @@ description: Index master seluruh dokumen /docs — layar, flow modul, database/
 ### 1.12 Production Scheduling & Product Development (15)
 | File | Deskripsi |
 |---|---|
-| `screen_production_prodev_list.md` | Grid worklist Pro-Dev (prod_part), asal Inquiry vs Manual. |
-| `screen_production_prodev.md` | Workbench ProDev — Imposition Engine (Tingkat 1/2, Best Sheet, Combiner). |
-| `screen_production_prodev_print.md` | Cetak Master Card. |
+| `screen_prodev_grid.md` | Grid worklist Pro-Dev (prod_part), asal Inquiry vs Manual. |
+| `screen_prodev_form.md` | Workbench ProDev — Imposition Engine (Tingkat 1/2, Best Sheet, Combiner). |
+| `screen_prodev_print.md` | Cetak Master Card. |
 | `screen_production_master_process.md` | Master Proses produksi (Cetak/Laminasi/Potong/dst). |
 | `screen_production_master_crew.md` | Master Crew (regu/operator). |
 | `screen_production_scrap_type.md` | Master Tipe Scrap (REJECT/WASTE). |

@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_revise
+name: screen_inqprod_revise
 description: Layar REVISI — ubah spesifikasi via copy-record + versi baru, scope selector (Material/Dimensi/Artwork/Warna/Proses) menentukan blok edit yang aktif.
 ---
 

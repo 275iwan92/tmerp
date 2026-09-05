@@ -1,7 +1,12 @@
 ---
 name: screen_inquiry_imposition-list
-description: Worklist Imposition Engine — daftar inquiry yang perlu/sudah diimposisi (layout produksi), gerbang ke layar imposition per-inquiry.
+description: "[LEGACY/TIDAK AKTIF] Worklist Imposition Engine lama — digantikan screen_prodev_grid.md. Lihat catatan status di bawah."
 ---
+
+> **[LEGACY — TIDAK AKTIF, 2026-09-05]** Digantikan oleh grid **ProDev**
+> (`screen_prodev_grid.md`, route `production.prodev` list). File ini
+> (route `inquiry.imposition.list`) ditinggal, TIDAK dihapus, TIDAK ikut
+> pola rename `screen_prodev_*`. Jangan bangun fitur baru di layar ini.
 
 # Imposition Engine (Worklist)
 

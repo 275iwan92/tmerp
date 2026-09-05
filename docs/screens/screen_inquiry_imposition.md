@@ -1,7 +1,13 @@
 ---
 name: screen_inquiry_imposition
-description: Layar Imposition Engine per-inquiry — hitung layout produksi (plano/UP/orientasi) per part dan konfirmasi hasilnya.
+description: "[LEGACY/TIDAK AKTIF] Layar Imposition Engine per-inquiry lama — digantikan screen_prodev_form.md. Lihat catatan status di bawah."
 ---
+
+> **[LEGACY — TIDAK AKTIF, 2026-09-05]** Digantikan oleh **ProDev Workbench**
+> (`screen_prodev_form.md`, route `production.prodev`) yang sekarang jadi
+> jalur aktif utk Imposition Engine. File ini (route `inquiry.imposition`)
+> ditinggal, TIDAK dihapus (masih bisa jadi referensi historis), TIDAK ikut
+> pola rename `screen_prodev_*`. Jangan bangun fitur baru di layar ini.
 
 # Imposition Engine (Per-Inquiry)
 

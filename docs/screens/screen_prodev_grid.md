@@ -1,5 +1,5 @@
 ---
-name: screen_production_prodev_list
+name: screen_prodev_grid
 description: Grid worklist Pro-Dev (daftar prod_part) sebelum masuk workbench ProDev, menampilkan asal part (Inquiry vs Manual) dan status layout.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_costing
+name: screen_procost_form
 description: Layar Costing (HPP) per-inquiry — hitung struktur biaya per part (DC/SHEET_DIGITAL), coating, dan ladder harga per qty-tier via CostingEngine.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_recalc
+name: screen_inqprod_recalc
 description: Layar REKALKULASI — repeat order harga baru, 100% reuse spec/dieline/material/proses dari inquiry baku, cuma refresh harga bahan & qty.
 ---
 
@@ -42,4 +42,4 @@ Layar entry doc-type **REKALKULASI** — dipakai Sales untuk repeat order di man
 
 ## Catatan
 - Preview artwork+diecut ditambahkan 2026-09-04 atas permintaan user ("RECALC harus ada preview image dan die cut nya juga agar tidak salah") — karena RECALC 100% reuse spec teks yang gampang salah baca kalau ada banyak tipe mirip.
-- Kolom Proses menampilkan "belum ada data (modul routing proses belum digarap)" bila kosong — bukan bug, memang belum ada isian di form BARU untuk field ini (lihat catatan serupa di `screen_inquiry_form.md`).
+- Kolom Proses menampilkan "belum ada data (modul routing proses belum digarap)" bila kosong — bukan bug, memang belum ada isian di form BARU untuk field ini (lihat catatan serupa di `screen_inqprod_new.md`).

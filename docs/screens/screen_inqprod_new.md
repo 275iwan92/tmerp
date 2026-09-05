@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_form
+name: screen_inqprod_new
 description: Layar entry Inquiry Product BARU (dan render dasar mode NEW/RECALC/REVISE lama) — header, qty tier, part & dieline visual, bahan, tooling, biaya eksternal.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_nota
+name: printout_inqprod_nota
 description: Cetak Nota Inquiry (dokumen pelanggan) — harga per jenjang qty (bila sudah published) + spesifikasi teknis + dieline.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: screen_production_prodev_print
+name: screen_prodev_print
 description: Dokumen cetak Master Card -- hasil print out data prod_part & relasinya yang dikerjakan di layar ProDev, bukan layar input.
 ---
 

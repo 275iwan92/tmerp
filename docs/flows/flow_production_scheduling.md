@@ -11,9 +11,9 @@ Koneksi utama `prd` (tm2prd) untuk WO/scheduling; `mst` (tm2mst) untuk ProDev pa
 
 | Tahap | Layar | Aktor |
 |---|---|---|
-| 1. Rancang layout produksi | `screen_production_prodev` (workbench: dimensi part, Engine Tingkat 1/2, Tool #2/#4/#10) | ProDev Officer |
-| 2. Lihat worklist part ProDev | `screen_production_prodev-list` | ProDev Officer, Supervisor |
-| 3. Cetak Master Card | `screen_production_prodev-print` | ProDev Officer |
+| 1. Rancang layout produksi | `screen_prodev_form` (workbench: dimensi part, Engine Tingkat 1/2, Tool #2/#4/#10) | ProDev Officer |
+| 2. Lihat worklist part ProDev | `screen_prodev_grid` | ProDev Officer, Supervisor |
+| 3. Cetak Master Card | `screen_prodev_print` | ProDev Officer |
 | 4. Master data pendukung ProDev | `screen_production_master-process` (proses), `screen_production_master-crew` (SDM), `screen_production_scrap-type` (jenis reject/waste), `screen_production_process-rate` (target rate mesin/pegawai) | PPIC Admin |
 | 5. Forecast permintaan | `screen_production_mts-forecast` (MTS) | PPIC/Demand Planner |
 | 6. Susun Master Production Schedule | `screen_production_mps-spreadsheet` | PPIC |

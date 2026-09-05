@@ -36,7 +36,7 @@ Pembeda kunci: REKALKULASI tidak punya satu pun field spec yang editable (kalau 
 
 ## Alur Detail
 
-1. **Hub** (`inquiry.hub`): Sales pilih salah satu dari 3 kartu jenis dokumen. Untuk **BARU**, tombol "+ Buat data baru" langsung membuka `inquiry.form` kosong. Untuk **REKALKULASI**/**REVISI**, "+ Buat data baru" membuka modal picker yang memilih inquiry existing sebagai sumber salinan (proksi Master Product — modul Master Product/Quotation-source belum sepenuhnya menggantikan peran ini, lihat `screen_inquiry_hub.md`), lalu redirect ke `inquiry.recalc`/`inquiry.revise` dengan param `source_id`. "📂 Pilih data tersimpan" membuka worklist bawah — klik 2x baris routing otomatis sesuai `inquiry_type` tersimpan (RECALC->`inquiry.recalc`, REVISE->`inquiry.revise`, default->`inquiry.form`).
+1. **Hub** (`inquiry.hub`): Sales pilih salah satu dari 3 kartu jenis dokumen. Untuk **BARU**, tombol "+ Buat data baru" langsung membuka `inquiry.form` kosong. Untuk **REKALKULASI**/**REVISI**, "+ Buat data baru" membuka modal picker yang memilih inquiry existing sebagai sumber salinan (proksi Master Product — modul Master Product/Quotation-source belum sepenuhnya menggantikan peran ini, lihat `screen_inqprod_grid.md`), lalu redirect ke `inquiry.recalc`/`inquiry.revise` dengan param `source_id`. "📂 Pilih data tersimpan" membuka worklist bawah — klik 2x baris routing otomatis sesuai `inquiry_type` tersimpan (RECALC->`inquiry.recalc`, REVISE->`inquiry.revise`, default->`inquiry.form`).
 
 2. **Isi spec** (salah satu dari 3 layar, tergantung doc-type):
    - **BARU** (`inquiry.form`): header (customer/PIC Sales/Kategori Produk/Tipe Produk level-Inquiry), Qty Order berjenjang (tier, tepat 1 Utama), Part & Dieline (gerbang Peran Part -> Dimensi & Preview Dieline live, bahan, warna, finishing tambahan, artwork + saran otomatis), Tooling, Biaya Eksternal. Simpan bebas berkali-kali (`save()`) selama belum `stat_confirm`.
@@ -64,12 +64,12 @@ Pembeda kunci: REKALKULASI tidak punya satu pun field spec yang editable (kalau 
 - Modul Analytics (langkah terakhir wizard-bar) belum dibangun — semua link `null` dengan `reason` penjelas.
 
 ## Layar terkait (dokumentasi detail per-layar)
-- `docs/screens/screen_inquiry_hub.md`
-- `docs/screens/screen_inquiry_form.md`
-- `docs/screens/screen_inquiry_recalc.md`
-- `docs/screens/screen_inquiry_revise.md`
+- `docs/screens/screen_inqprod_grid.md`
+- `docs/screens/screen_inqprod_new.md`
+- `docs/screens/screen_inqprod_recalc.md`
+- `docs/screens/screen_inqprod_revise.md`
 - `docs/screens/screen_inquiry_imposition_list.md`
 - `docs/screens/screen_inquiry_imposition.md`
-- `docs/screens/screen_inquiry_costing_list.md`
-- `docs/screens/screen_inquiry_costing.md`
-- `docs/screens/screen_inquiry_nota.md`
+- `docs/screens/screen_procost_grid.md`
+- `docs/screens/screen_procost_form.md`
+- `docs/screens/printout_inqprod_nota.md`

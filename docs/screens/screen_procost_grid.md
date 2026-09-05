@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_costing-list
+name: screen_procost_grid
 description: Worklist Product Costing — daftar inquiry yang perlu/sudah dihitung HPP-nya, gerbang ke layar costing per-inquiry.
 ---
 

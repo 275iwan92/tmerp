@@ -1,5 +1,5 @@
 ---
-name: screen_inquiry_hub
+name: screen_inqprod_grid
 description: Landing page Inquiry — pilih tipe dokumen (NEW/RECALC/REVISE), picker produk existing, dan worklist inkuiri tersimpan.
 ---
 
