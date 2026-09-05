@@ -73,6 +73,28 @@ spt Inventory — sengaja belum disentuh sejak sesi 2026-08-22 (scope waktu
 itu cuma Inventory). Sudah diseragamkan (`SALES_MON.label` = "Laporan"),
 konsisten lintas modul sekarang.
 
+**Procurement (`PROC`) — PENGECUALIAN eksplisit 2026-09-05, tidak ada grup
+"Laporan" sama sekali**: atas instruksi user (screenshot sidebar), grup
+"Transaksi" tunggal dipecah jadi 4 grup per-TAHAP ALUR (bukan per jenis
+dokumen), dan tiap laporan Outstanding dilebur masuk ke grup tahap yang
+relevan alih-alih grup "Laporan" terpisah:
+```
+Requisition   <- PROC_GRP_REQUISITION (id 210, dulu "Transaksi")
+  Purchase Requisition (PR) / PR Approval Center / Outstanding PR
+Order         <- PROC_GRP_ORDER (id 280, dulu "Laporan")
+  Purchase Quotation / Purchase Order / PO Approval Center / Outstanding PO
+Receive       <- PROC_GRP_RECEIVE (baru)
+  Purchase Receive / Outstanding PV
+Return        <- PROC_GRP_RETURN (baru)
+  Purchase Return / Persetujuan Purchase Return
+```
+Ini SENGAJA menyimpang dari aturan §1/§7 ("wajib tepat 1 grup Laporan,
+jangan campur laporan ke grup transaksi") — kalau modul lain diminta pola
+serupa (laporan dilebur ke grup tahap alur, bukan grup laporan sendiri),
+perlakukan sebagai pengecualian per-modul juga (instruksi eksplisit user),
+bukan default baru yang otomatis menggantikan pola §1. Migration rujukan:
+`2026_09_05_000008_regroup_procurement_menu_by_stage.php`.
+
 ---
 
 ## 2. Nama item laporan = nama asli layarnya, tanpa awalan "Laporan" berulang
