@@ -352,14 +352,20 @@ sebelum eksekusi):
   2026-08-28) — prasyarat "DO belum ada" di catatan lama SUDAH TERPENUHI,
   tapi status mekanisme snapshot Costing V2 itu sendiri **belum
   dikonfirmasi ada atau tidak** — cek dulu sebelum mulai.
-- **Payroll (tm2pyr) — SELURUH MODUL belum dibangun** (bukan cuma
-  enkripsi). CLAUDE.md §2 sendiri menandai ini requirement yang belum
-  diimplementasikan sama sekali. **UPDATE 2026-09-03**: keputusan desain
-  enkripsi SUDAH DIKUNCI (scope kolom, lokasi kunci `VERBA_SANCTA` di
-  `sys_constant`, algoritma) — baca `docs/payroll_encryption_decision.md`
-  SEBELUM mulai modul ini. Kunci sendiri sudah tersimpan di DB (prasyarat),
-  TAPI modul Payroll (skema tabel, model, service, UI) masih 0% — dokumen
-  itu murni catatan desain, bukan implementasi.
+- **Payroll (tm2pyr) — fondasi (skema+enkripsi+engine) SUDAH ADA, UI masih
+  0%.** **UPDATE 2026-09-05**: `docs/LOG_JOB_DONE.md` entri "Payroll (tm2pyr)
+  fondasi" — skema `tm2pyr.pyr_*` + `tm2mst.att_*`/`emp_overtime_request`
+  live, `App\Casts\PayrollEncrypted` (AES-256-GCM, VERBA_SANCTA) terpasang &
+  diverifikasi, `AttendanceCalculationService` + `PayrollEngineService`
+  jalan end-to-end (diuji tinker). **Yang MASIH belum ada**: 11 layar
+  Livewire (import finger, grid review harian, payroll batch UI, cetak
+  payslip, generator bank-transfer/cash-disbursement — lihat mockup di
+  `docs/payroll_timeattendance/mockup_*.html`), UI pengajuan/approval
+  `emp_overtime_request`, beberapa `[DELTA-CONFIRM]`/Open Item Tier 2 (KJK
+  dijumlah vs window terpanjang, PAT-5/PAT+5 prorata vs zero-total, aturan
+  tidak-finger ke-3+) belum dikonfirmasi ke bisnis. GPS mobile clock-in/ESS
+  approval workflow (fitur v4.0 di paket referensi) sengaja tidak
+  diprioritaskan, lihat §12.5.
 - **12 kategori `mat_category` tanpa default COA** — sama item dengan §4
   Procurement (mempengaruhi Finance juga karena ini soal akun jurnal),
   layarnya sudah ada, tinggal user isi.

@@ -23,15 +23,35 @@ class EmpDisciplinary extends Model
         'related_leave_request_id',
         'sanksi_referensi',
         'issued_by',
+        'effective_end',
+        'working_days_target',
+        'working_days_counted',
     ];
 
     protected $casts = [
         'incident_date' => 'date',
+        'effective_end' => 'date',
         'created_at' => 'datetime',
     ];
 
     public function employee(): BelongsTo
     {
         return $this->belongsTo(EmpEmployee::class, 'employee_id', 'employee_id');
+    }
+
+    // SP1/SP2/SKR/DRM aktif pada tanggal tsb -- effective_end NULL berarti
+    // masih berjalan (Tier 2 §6 / Tier 3 emp_disciplinary_status).
+    public function coversDate(\DateTimeInterface $date): bool
+    {
+        if (! in_array($this->type, ['SP1', 'SP2', 'SP3', 'SKR', 'DRM'], true)) {
+            return false;
+        }
+
+        $start = $this->incident_date;
+        if ($start && $date < $start) {
+            return false;
+        }
+
+        return ! $this->effective_end || $date <= $this->effective_end;
     }
 }

@@ -12,6 +12,81 @@
 
 ---
 
+## 2026-09-05 — Payroll (tm2pyr) fondasi: skema DB, enkripsi, engine presensi & payroll
+
+Permintaan user ("baca folder docs/payroll_timeattendance, lalu kerjakan").
+Modul Payroll sebelumnya 0% dibangun (`tm2pyr` 0 tabel) -- sesi ini membangun
+FONDASI (skema + engine), BUKAN layar UI (11 mockup di `docs/payroll_timeattendance/`
+masih menyusul iterasi berikutnya, sesuai prinsip iterasi kecil CLAUDE.md §7).
+
+**Temuan sebelum mulai coding** (lihat memory `project_payroll_reference_package_findings`):
+`docs/payroll_timeattendance/` sudah dikonfirmasi `payroll_encryption_decision.md`
+sbg materi REFERENSI formula (bukan kode siap pakai) -- skemanya (`is_active`,
+`employee_id` PK) melanggar konvensi proyek & tidak implementasi enkripsi sama
+sekali. Dokumen KANONIK yang dipakai sbg acuan implementasi sungguhan:
+`docs/attendancepayroll_tier1..4.md` (v1.0, berbasis SOP asli perusahaan) +
+`docs/payroll_encryption_decision.md`. Drift arsitektur ditemukan & diterima
+user: `tm2hrm` tetap kosong (0 tabel), tabel presensi baru ikut ditaruh di
+`tm2mst` (konsisten dgn `emp_employee`/`emp_shift` yang sudah live di sana),
+bukan `tm2hrm` sesuai CLAUDE.md §2 asli.
+
+**Dibangun**:
+- **Migration tm2mst**: `att_finger_import`, `att_finger_raw`,
+  `emp_overtime_request` (baru), `att_daily_status`; `emp_disciplinary`
+  ditambah `effective_end`/`working_days_target`/`working_days_counted`
+  (reuse tabel existing utk tracking SP1/SP2 "berturut-turut", bukan bikin
+  tabel duplikat `emp_disciplinary_status`).
+- **Migration tm2pyr**: `pyr_employee_salary` (tabel BARU, gap yang
+  ditemukan saat implementasi -- Tier 3 doc tak pernah mendefinisikan tempat
+  nilai gaji_pokok/tunjangan per pegawai utk formula prorata), `pyr_status_rule`,
+  `pyr_denda_rule` (diseed penuh dari Tier 2 §4.1-4.3), `pyr_payroll_run`,
+  `pyr_payslip`, `pyr_payslip_detail`.
+- **Enkripsi**: `App\Casts\PayrollEncrypted` (AES-256-GCM via `openssl_*`,
+  key `SysConstant::text('VERBA_SANCTA')` di-derive sha256) tepat sesuai
+  `payroll_encryption_decision.md` §3 -- diterapkan ke `pyr_employee_salary.
+  basic_salary_monthly` & `pyr_payslip.total_pokok`/`total_gaji_bersih`.
+  Diverifikasi round-trip via tinker + cek RAW DB (ciphertext, bukan
+  plaintext) -- lihat memory `feedback_verify_test_cleanup_in_db`.
+- **`App\Services\Hrm\AttendanceCalculationService`** -- evaluasi status
+  harian (H/T-5/T+5/T+15/PA/PAT-5/PAT+5/KJK/A/F/FF/I/IS/S/C/CL) dari
+  finger raw + `emp_shift_roster`/`emp_shift_detail` + `emp_leave_request`,
+  termasuk counter toleransi tidak-finger (F/FF, max 2x/periode) & counter
+  pelanggaran T+5 (>3x/periode). SP1/SP2/SP3 SENGAJA tidak dievaluasi di
+  sini (layer tambahan di step payroll run, Tier 2 §7).
+- **`App\Services\Payroll\PayrollEngineService`** -- job payroll run per
+  periode bulanan: baca `att_daily_status` (Eloquent query terpisah,
+  BUKAN VIEW cross-DB -- bukan hot-path), terapkan `pyr_status_rule`+
+  `pyr_denda_rule`+efek SP1/SP2 (potongan 50% x N hari kerja berturut,
+  counter persisten di `emp_disciplinary.working_days_counted`)/SP3
+  (zero-total), tulis `pyr_payslip`+`pyr_payslip_detail`. Diuji end-to-end
+  via tinker (1 pegawai, 3 hari: H/T+15/A) -- hasil kalkulasi prorata &
+  denda diverifikasi manual cocok dgn rule matrix.
+
+**Simplifikasi/gap yang disadari, perlu diketahui sesi berikutnya**:
+- KJK (keluar-masuk tengah shift) diasumsikan DIJUMLAH semua window
+  (bukan window terpanjang) -- ini `[DELTA-CONFIRM]` di Tier 2 §3, belum
+  final dari bisnis.
+- PAT-5/PAT+5 pakai prorata (bukan zero-total) -- `[DELTA-CONFIRM]` Tier 2
+  §4.2, belum dikonfirmasi Telma/Jo.
+- Tidak-finger ke-3+ dlm periode -- Open Item, direklasifikasi ke Alpha
+  (belum ada aturan resmi lain).
+- "Uang Roti" (Rp5.000, lembur>2jam, Staff/SPV Produksi) pakai heuristik
+  cocok nama departemen/posisi (`str_contains` "PRODUKSI"/"STAFF"/"SPV") --
+  belum ada flag role eksplisit di `org_position`.
+- `emp_overtime_request` (tabel baru) BELUM ada UI pengajuan/approval --
+  saat ini cuma dipakai kalau ada baris `status=APPROVED` yg diisi manual/seed.
+- 11 mockup layar (`docs/payroll_timeattendance/mockup_*.html`) BELUM
+  dibangun jadi Livewire -- termasuk import finger, review grid harian,
+  payroll batch UI, cetak payslip, generator bank-transfer/cash-disbursement.
+  GPS mobile clock-in & ESS approval workflow (fitur v4.0 di paket referensi)
+  SENGAJA tidak diprioritaskan -- `BACKLOG.md` §12.5 lama sudah mencatat
+  "GPS/selfie mobile clock-in -- tidak diminta, tidak dibangun".
+
+Test suite penuh dijalankan setelah perubahan: 96 passed / 9 skipped (baseline
+Firebase emulator off, tidak berubah dari sebelumnya), 0 failed.
+
+---
+
 ## 2026-09-05 — Dokumentasi massal per-layar, flow modul, database, katalog UI/UX
 
 Permintaan user (BACKLOG.md §13 lama, dieksekusi penuh hari ini setelah
