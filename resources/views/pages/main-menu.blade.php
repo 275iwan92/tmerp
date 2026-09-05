@@ -199,6 +199,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),
             'HRM_RCR_VACANCY' => route('hrm.recruitment.vacancy'),
             'HRM_RCR_TALENTPOOL' => route('hrm.recruitment.talent-pool'),
+            'HRM_RCR_REVIEW' => route('hrm.recruitment.candidate-review.list'),
             'HRM_RCR_PIPELINE' => route('hrm.recruitment.pipeline-board'),
             'HRM_RCR_INTERVIEW' => route('hrm.recruitment.interview-schedule'),
             'HRM_RCR_ASSESSMENT' => route('hrm.recruitment.assessment-result'),

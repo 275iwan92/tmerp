@@ -2,6 +2,7 @@
 
 use App\Exceptions\Portal\CandidateAlreadyExistsException;
 use App\Mail\Portal\CandidateEmailVerification;
+use App\Models\Master\GeoCity;
 use App\Services\Portal\CandidateAuthService;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -31,13 +32,16 @@ new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
     public function register(CandidateAuthService $auth): void
     {
         $this->validate([
-            'national_id' => ['required', 'digits:16'],
+            'national_id' => ['required', 'digits:16', function (string $attribute, mixed $value, \Closure $fail) {
+                $this->validateNikStructure($value, $fail);
+            }],
             'name' => ['required', 'min:3'],
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'regex:/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/'],
             'phone' => ['required', 'min:9', 'max:15'],
             'password' => ['required', 'min:8', 'confirmed'],
         ], [
             'national_id.digits' => 'No. KTP harus 16 digit angka.',
+            'email.regex' => 'Email harus punya domain lengkap, mis. nama@contoh.com.',
         ]);
 
         try {
@@ -64,6 +68,32 @@ new #[Layout('layouts::portal')] #[Title('Daftar Akun')] class extends Component
         session()->regenerate();
 
         $this->registered = true;
+    }
+
+    // NIK tidak punya check-digit/checksum, tapi punya struktur baku (Dukcapil):
+    // 4 digit awal = kode wilayah provinsi+kab/kota, 6 digit berikut = tanggal
+    // lahir DDMMYY (perempuan: DD+40). Ini menyaring input asal-asalan (mis.
+    // "9999999999999999") tanpa perlu database NIK asli.
+    private function validateNikStructure(string $value, \Closure $fail): void
+    {
+        $regionCode = substr($value, 0, 4);
+
+        if (! GeoCity::where('city_code', 'bps:'.$regionCode)->exists()) {
+            $fail('Kode wilayah pada No. KTP (4 digit awal) tidak dikenali.');
+
+            return;
+        }
+
+        $day = (int) substr($value, 6, 2);
+        $month = (int) substr($value, 8, 2);
+
+        if ($day > 40) {
+            $day -= 40; // penanda jenis kelamin perempuan
+        }
+
+        if ($month < 1 || $month > 12 || ! checkdate($month, $day, 2000)) {
+            $fail('Tanggal lahir pada No. KTP tidak valid.');
+        }
     }
 };
 ?>
