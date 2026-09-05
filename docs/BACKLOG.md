@@ -416,6 +416,29 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 - **WYSIWYG template-editor untuk Nota/print** — ide sempat dilontarkan
   saat print/nota component diekstrak (2026-08-28), sengaja ditunda
   (keputusan setingkat modul baru, belum diminta).
+- **[BARU 2026-09-05] Standarkan SEMUA komponen UI, bukan cuma per-kasus
+  saat ditemukan** (instruksi eksplisit user setelah komponen scrollbar
+  `.tm-scroll` diangkat jadi standar bersama Grid+Form —
+  `griduistandard.md` §13, `FORM_UI_STANDARD.md` §4). Pola yang sama harus
+  ditempuh utk elemen UI lain yang saat ini masih ditempel manual/beda-beda
+  per file, alih-alih 1 komponen reusable:
+  - Audit lintas `docs/uistandardindex.md` — cek tiap `*standard.md` sudah
+    benar-benar ditegakkan di SEMUA layar turunannya (grid/form/print/
+    gantt/kanban/admin dashboard), bukan cuma di layar contoh yang ditulis
+    saat standar itu dibuat.
+  - Cari pola visual/interaksi yang berulang di ≥2 layar tapi masih
+    di-copy-paste (bukan `<x-...>` component/class bersama) — kandidat
+    kuat: border-radius/shadow modal, warna badge status, tombol
+    icon-only, spacing card statistik, dst. — index sendiri sudah
+    menegaskan "jangan ekstrak standar dari 1 contoh", jadi baru jadi
+    komponen begitu polanya kepakai berkali-kali (persis kasus tm-scroll).
+  - Kalau ditemukan gap (dokumen bilang standar X, tapi kode Y tidak
+    ikut), JANGAN langsung refactor massal sendiri — laporkan dulu daftar
+    gap-nya ke user (dampaknya lintas banyak layar, berpotensi
+    architectural), baru eksekusi per-batch setelah dikonfirmasi, sama
+    seperti pola kerja rekonsiliasi PowerGrid+Filament (§12 griduistandard.md).
+  - Belum ada scope/urutan modul yang ditentukan — ini masih ITEM
+    BACKLOG terbuka, bukan tugas yang sudah mulai dikerjakan.
 
 ---
 
