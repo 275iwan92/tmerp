@@ -87,6 +87,44 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
         return self::TYPE_LABELS[$type] ?? $type;
     }
 
+    // ============== Stat box (griduistandard.md §2) ==============
+    // Baris 1: backlog "belum confirm" per tipe (stat_confirm=0, CANCELLED/LOST
+    // dikecualikan -- itu sudah selesai/mati, bukan lagi tunggakan) + total
+    // tahun berjalan (by inquiry_date). Baris 2: backlog "sudah diberi harga
+    // tapi belum ke customer" -- sub_state PRICE_APPROVED persis (Direksi sudah
+    // publish, TAPI belum QUOTED) per tipe + total sudah di-approve Direksi
+    // tahun ini (is_approved=1, beda dari sub_state krn is_approved tetap 1
+    // walau sub_state sudah lanjut ke QUOTED/CONVERTED -- ini KPI kumulatif,
+    // bukan backlog aktif spt 3 kotak sebelahnya).
+    public function statUnconfirmedByType(string $type): int
+    {
+        return IqpInquiry::where('inquiry_type', $type)
+            ->where('stat_confirm', false)
+            ->whereNotIn('sub_state', ['CANCELLED', 'LOST'])
+            ->count();
+    }
+
+    #[Computed]
+    public function statTotalThisYear(): int
+    {
+        return IqpInquiry::whereYear('inquiry_date', now()->year)->count();
+    }
+
+    public function statPricedNotQuotedByType(string $type): int
+    {
+        return IqpInquiry::where('inquiry_type', $type)
+            ->where('sub_state', 'PRICE_APPROVED')
+            ->count();
+    }
+
+    #[Computed]
+    public function statApprovedThisYear(): int
+    {
+        return IqpInquiry::whereYear('inquiry_date', now()->year)
+            ->where('is_approved', true)
+            ->count();
+    }
+
     #[Computed]
     public function inquiries()
     {
@@ -175,6 +213,22 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
 
 <div>
     <div class="hub">
+        {{-- shrink-0 -- .hub flex-col 100dvh (kompak 1-layar, 2026-08-24): cuma
+        .qwrap yang boleh scroll/menyusut, kotak statistik ikut pola .pick/h1/.lead
+        (flex-shrink-0), jangan sampai ikut kena kompres duluan. --}}
+        <x-grid.stat-row :count="4" class="shrink-0">
+            <x-grid.stat-box tone="warn" label="NEW belum confirm" :value="$this->statUnconfirmedByType('NEW')" />
+            <x-grid.stat-box tone="warn" label="REVISE belum confirm" :value="$this->statUnconfirmedByType('REVISE')" />
+            <x-grid.stat-box tone="warn" label="RECALC belum confirm" :value="$this->statUnconfirmedByType('RECALC')" />
+            <x-grid.stat-box tone="total" label="Total inquiry tahun ini" :value="$this->statTotalThisYear" />
+        </x-grid.stat-row>
+        <x-grid.stat-row :count="4" class="shrink-0">
+            <x-grid.stat-box tone="extra" label="NEW sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('NEW')" />
+            <x-grid.stat-box tone="extra" label="REVISE sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('REVISE')" />
+            <x-grid.stat-box tone="extra" label="RECALC sudah harga, belum ke customer" :value="$this->statPricedNotQuotedByType('RECALC')" />
+            <x-grid.stat-box tone="active" label="Sudah di-approve tahun ini" :value="$this->statApprovedThisYear" />
+        </x-grid.stat-row>
+
         <div class="pick">
             <div class="opt n">
                 <div class="ico">✨</div><span class="tag">NEW</span>
