@@ -7,10 +7,12 @@ use App\Models\Master\EmpDisciplinary;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrDendaRule;
 use App\Models\Pyr\PyrEmployeeSalary;
+use App\Models\Pyr\PyrBpjsRate;
 use App\Models\Pyr\PyrOvertimeRate;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
 use App\Models\Pyr\PyrPayslipDetail;
+use App\Models\Pyr\PyrPph21TerBracket;
 use App\Models\Pyr\PyrStatusRule;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -38,6 +40,11 @@ class PayrollEngineService
 {
     private const COMPONENTS = ['POKOK', 'TJ_KEAHLIAN', 'TJ_LOYALITAS', 'TJ_PRESTASI', 'BONUS_PAGI', 'BONUS_HADIR'];
 
+    public function __construct(
+        private readonly Pph21TerService $pph21Service = new Pph21TerService(),
+        private readonly BpjsCalculatorService $bpjsService = new BpjsCalculatorService(),
+    ) {}
+
     // Dipanggil H-1 (estimasi) maupun H (proses ulang) -- idempotent,
     // payslip di-updateOrCreate tiap kali dipanggil selama status masih
     // DRAFT/CALCULATED (belum VERIFIED).
@@ -58,12 +65,14 @@ class PayrollEngineService
         $statusRules = PyrStatusRule::all();
         $dendaRules = PyrDendaRule::all();
         $overtimeRates = PyrOvertimeRate::all();
+        $pph21Brackets = PyrPph21TerBracket::all();
+        $bpjsRates = PyrBpjsRate::all();
 
         EmpEmployee::where('activate', true)
             ->where('payment_frequency', $periodType)
             ->pluck('employee_id')
             ->each(fn (int $employeeId) => $this->calculateForEmployee(
-                $run, $employeeId, $periodStart, $periodEnd, $statusRules, $dendaRules, $overtimeRates,
+                $run, $employeeId, $periodStart, $periodEnd, $statusRules, $dendaRules, $overtimeRates, $pph21Brackets, $bpjsRates,
             ));
 
         $run->update(['run_status' => 'CALCULATED']);
@@ -150,6 +159,8 @@ class PayrollEngineService
         Collection $statusRules,
         Collection $dendaRules,
         Collection $overtimeRates,
+        Collection $pph21Brackets,
+        Collection $bpjsRates,
     ): void {
         $salary = PyrEmployeeSalary::activeFor($employeeId);
         if (! $salary) {
@@ -162,7 +173,7 @@ class PayrollEngineService
                 [
                     'total_pokok' => 0, 'total_tj_keahlian' => 0, 'total_tj_loyalitas' => 0, 'total_tj_prestasi' => 0,
                     'total_bonus_pagi' => 0, 'total_bonus_hadir' => 0, 'total_uang_roti' => 0, 'total_overtime_pay' => 0,
-                    'total_denda' => 0, 'total_gaji_bersih' => 0,
+                    'total_denda' => 0, 'total_bpjs_employee' => 0, 'total_pph21' => 0, 'total_gaji_bersih' => 0,
                     'has_anomaly' => true, 'anomaly_note' => 'Belum ada pyr_employee_salary aktif utk pegawai ini',
                 ],
             );
@@ -211,8 +222,35 @@ class PayrollEngineService
             }
         }
 
+        // BPJS/PPh21 -- opt-in per pegawai (permintaan user 2026-09-07:
+        // "tidak semua aktif mengikuti aturan ini"), dasar potongan dihitung
+        // dari total periode ini (bukan per-hari, sesuai sifatnya sbg
+        // potongan bulanan/periode, bukan harian).
+        $bpjsAmount = 0.0;
+        $pph21Amount = 0.0;
+
+        if ($salary->bpjs_active) {
+            $bpjsBase = $totals['POKOK'] + $totals['TJ_KEAHLIAN'] + $totals['TJ_LOYALITAS'] + $totals['TJ_PRESTASI'];
+            $bpjs = $this->bpjsService->calculate($bpjsBase, $periodEnd, $bpjsRates);
+            $bpjsAmount = $bpjs['employee']['total'];
+            if ($bpjsAmount > 0) {
+                $details[] = $this->periodDetailRow($periodEnd, 'BPJS', -$bpjsAmount, sprintf('JHT %s + JP %s + Kes %s', $bpjs['employee']['jht'], $bpjs['employee']['jp'], $bpjs['employee']['kes']));
+            }
+        }
+
+        if ($salary->pph21_active && $salary->ptkp_status) {
+            $pph21Gross = $totals['POKOK'] + $totals['TJ_KEAHLIAN'] + $totals['TJ_LOYALITAS'] + $totals['TJ_PRESTASI']
+                + $totals['BONUS_PAGI'] + $totals['BONUS_HADIR'] + $totals['UANG_ROTI'] + $totals['OVERTIME'];
+            $pph21 = $this->pph21Service->calculateTax($pph21Gross, $salary->ptkp_status, $periodEnd, $pph21Brackets);
+            $pph21Amount = $pph21['tax_amount'];
+            if ($pph21Amount > 0) {
+                $details[] = $this->periodDetailRow($periodEnd, 'PPH21', -$pph21Amount, "TER Kategori {$pph21['category']} ({$pph21['rate_percentage']}%)");
+            }
+        }
+
         $totalGajiBersih = $totals['POKOK'] + $totals['TJ_KEAHLIAN'] + $totals['TJ_LOYALITAS'] + $totals['TJ_PRESTASI']
-            + $totals['BONUS_PAGI'] + $totals['BONUS_HADIR'] + $totals['UANG_ROTI'] + $totals['OVERTIME'] - $totals['DENDA'];
+            + $totals['BONUS_PAGI'] + $totals['BONUS_HADIR'] + $totals['UANG_ROTI'] + $totals['OVERTIME']
+            - $totals['DENDA'] - $bpjsAmount - $pph21Amount;
 
         $payslip = PyrPayslip::updateOrCreate(
             ['id_run' => $run->id_run, 'employee_id' => $employeeId],
@@ -226,6 +264,8 @@ class PayrollEngineService
                 'total_uang_roti' => round($totals['UANG_ROTI'], 2),
                 'total_overtime_pay' => round($totals['OVERTIME'], 2),
                 'total_denda' => round($totals['DENDA'], 2),
+                'total_bpjs_employee' => round($bpjsAmount, 2),
+                'total_pph21' => round($pph21Amount, 2),
                 'total_gaji_bersih' => round($totalGajiBersih, 2),
                 'has_anomaly' => false,
                 'anomaly_note' => null,
@@ -377,6 +417,20 @@ class PayrollEngineService
         return [
             'attendance_date' => $daily->attendance_date,
             'status_code' => $daily->status_code,
+            'component_code' => $componentCode,
+            'amount' => $amount,
+            'note' => $note,
+        ];
+    }
+
+    // BPJS/PPh21 dipotong per PERIODE (bukan per hari) -- pakai tanggal akhir
+    // periode + status_code sintetis 'PERIODE' supaya tetap muat di skema
+    // pyr_payslip_detail yang mewajibkan attendance_date+status_code.
+    private function periodDetailRow(Carbon $periodEnd, string $componentCode, float $amount, ?string $note = null): array
+    {
+        return [
+            'attendance_date' => $periodEnd->toDateString(),
+            'status_code' => 'PERIODE',
             'component_code' => $componentCode,
             'amount' => $amount,
             'note' => $note,

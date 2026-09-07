@@ -29,6 +29,8 @@ class PyrPayslip extends Model
         'total_uang_roti',
         'total_overtime_pay',
         'total_denda',
+        'total_bpjs_employee',
+        'total_pph21',
         'total_gaji_bersih',
         'has_anomaly',
         'anomaly_note',
@@ -44,6 +46,8 @@ class PyrPayslip extends Model
         'total_uang_roti' => 'decimal:2',
         'total_overtime_pay' => 'decimal:2',
         'total_denda' => 'decimal:2',
+        'total_bpjs_employee' => 'decimal:2',
+        'total_pph21' => 'decimal:2',
         'total_gaji_bersih' => PayrollEncrypted::class,
         'has_anomaly' => 'boolean',
     ];

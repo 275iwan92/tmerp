@@ -12,6 +12,68 @@
 
 ---
 
+## 2026-09-07 (lanjutan 2) — Payroll: BPJS + PPh21 TER, opt-in per pegawai + layar Master Gaji
+
+User minta pasang BPJS & PPh21 (gap yang ditemukan sesi ini, lihat entri
+"layar pertama" di bawah) dengan syarat eksplisit: **flag per pegawai**
+("tidak semua aktif mengikuti aturan ini tetapi boleh dimudahkan agar
+kedepan tinggal di-set mana yang pakai mana yang tidak").
+
+**Skema baru** (migration `2026_09_07_000005`/`000006`): `pyr_employee_salary`
+dapat `ptkp_status` (TK/0..K/3) + `bpjs_active`/`pph21_active` (boolean,
+default **FALSE** -- opt-in, bukan otomatis semua kena potong). Dua tabel
+rate baru (bukan hardcode, sesuai instruksi "DON'T HARDCODE" sebelumnya):
+`pyr_pph21_ter_bracket` (kategori A/B/C x batas-atas-bruto x tarif, PP
+58/2023 & PMK 168/2023, diseed dari nilai di
+`Pph21TerService`/`BpjsCalculatorService` milik paket referensi) dan
+`pyr_bpjs_rate` (JHT/JP/JKK/JKM/Kes, employee+company, dgn plafon). Kolom
+baru `pyr_payslip.total_bpjs_employee`/`total_pph21`.
+
+**Service baru** `App\Services\Payroll\Pph21TerService`/`BpjsCalculatorService`
+(namespace kita, formula sama tapi baca dari tabel bukan `match()`/`const`
+spt aslinya). Diintegrasikan ke `PayrollEngineService::calculateForEmployee()`:
+dasar BPJS = POKOK+TJ_KEAHLIAN+TJ_LOYALITAS+TJ_PRESTASI (setara "gaji
+pokok+tunjangan tetap"), dasar PPh21 = itu + BONUS_PAGI+BONUS_HADIR+
+UANG_ROTI+OVERTIME (gross penuh, sesuai referensi). Kedua potongan HANYA
+dihitung kalau flag terkait aktif; PPh21 juga butuh `ptkp_status` terisi
+(divalidasi di layar, guard `pph21_active && !ptkp_status` diblokir dgn
+pesan error, bukan diam-diam skip).
+
+**[DELTA-CONFIRM] penting, dicatat eksplisit di kode & di sini**: TER PPh21
+dirancang utk penghasilan BULANAN. Kalau `pph21_active` dinyalakan utk
+pegawai `payment_frequency=WEEKLY`, bracket dicocokkan langsung ke bruto
+mingguan TANPA konversi ke setara bulanan -- ini secara sistematis
+MERINGANKAN pajak dibanding metodologi resmi DJP (kena bracket lebih rendah
+dari yang seharusnya). Belum dikonfirmasi ke akuntan/konsultan pajak.
+**Rekomendasi: PPh21 hanya dinyalakan utk pegawai MONTHLY sampai ini
+diklarifikasi.**
+
+**Layar baru** `resources/views/pages/hrm/payroll-employee-salary.blade.php`
+("Master Gaji & Pajak Pegawai", menu baru `HRM_PAYROLL_SALARY` di grup
+Payroll yang sudah ada, sort_order=5 sebelum "Perhitungan Gaji" placeholder)
+-- grid semua pegawai aktif + status gaji (Belum diatur / nilai gaji pokok/
+PTKP/toggle BPJS/PPh21 badge), modal form Atur Gaji & Pajak yang menegakkan
+prinsip rate versioned (CLAUDE.md §4: rate lama `activate=false`+
+`effective_to` diisi, insert baris baru, bukan overwrite).
+
+Diuji via tinker (BPJS Rp8jt gaji -> JHT 160rb+JP 80rb+Kes 80rb = 320rb
+tepat sesuai hitungan manual; PPh21 kategori A ~1.5% = 120rb tepat; pegawai
+dgn flag OFF dapat 0 utk keduanya) dan `Livewire::test` utk layar form
+(validasi PTKP wajib kalau PPh21 aktif terbukti bekerja, save berhasil
+setelah dilengkapi). Data test dibersihkan, diverifikasi 0 baris tersisa.
+`npm run build` dijalankan. Test suite 100 passed/9 skipped/0 failed.
+
+**Catatan kolaborasi**: `main-menu.blade.php` sedang di-edit sesi lain
+(refactor menu Configuration/lang_code) saat commit ini dibuat -- baris
+`'HRM_PAYROLL_SALARY' => route(...)` SUDAH ditambahkan di file lokal
+(disk), TAPI SENGAJA tidak ikut di-commit sesi ini supaya tidak mengganggu
+WIP sesi lain (lihat [[project_multisession_collision_20260831]]) -- akan
+ikut ke-commit begitu sesi lain commit filenya, atau di-commit menyusul
+sesi berikutnya kalau belum. Menu-nya TETAP JALAN lokal krn sudah tersimpan
+di disk, cuma belum tercatat di git history.
+
+---
+
 ## 2026-09-07 (lanjutan) — Payroll: layar pertama, Presensi Harian (`hrm.attendance-daily`)
 
 User minta baca isi kode `docs/payroll_timeattendance/tm2hrm_laravel_php83.zip`
