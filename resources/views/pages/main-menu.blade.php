@@ -210,7 +210,10 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             // Profesional publik (URL sama, di luar auth) -- iframe tab ini
             // sekarang menampilkan landing page publik itu, bukan wizard KTP-only lama.
             'HRM_RCR_PORTAL' => route('careers.landing'),
-            'SET_CONFIG' => route('setup.configuration'),
+            'SET_CONFIG' => route('setup.identification'),
+            'SET_LANG' => route('setup.language'),
+            'SET_LOCALIZATION' => route('setup.localization'),
+            'SET_CONSTANTS' => route('setup.constants'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),
             'SET_PERM' => route('security.index', ['tab' => 'perms']),
@@ -706,20 +709,28 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </template>
         </div>
         @if (Auth::user()->is_admin)
-            {{-- "Settings" (label diganti dari "Configuration" 2026-09-03 --
-            nama "Configuration" dipindah jadi nama grup baru di dropdown
-            profil, lihat popup menu di atas, supaya tidak dobel nama di 2
-            tempat beda konteks) -- instruksi user 2026-09-02: 1 layar (bukan
-            grup ber-sub-item spt Security di bawahnya), edit sys_constant
-            (identitas app/logo/font, semua konstanta sistem) + bahasa/
-            terjemahan. Dipasak TEPAT DI ATAS "Security", is_admin only sama
-            spt Security. docs/configurationstandard.md. Route/kode menu
-            (SET_CONFIG, setup.configuration) TIDAK berubah, cuma label. --}}
-            <div class="side-footer">
-                <button type="button" class="side-cap-btn" @click="openTab('SET_CONFIG')" title="Settings">
+            {{-- "Settings" -- dipecah dari 1 layar gado-gado (Identitas
+            Aplikasi + Bahasa+Terjemahan + Semua Konstanta digabung 1 route)
+            jadi MENU GROUP beranak (mirror pola "Security" di bawahnya)
+            2026-09-07: Identifikasi/Language/Localization/Constants masing2
+            route+layar sendiri. docs/configurationstandard.md. Dipasak TEPAT
+            DI ATAS "Security", is_admin only sama spt Security. --}}
+            <div class="side-footer" x-data="{ open: false }">
+                <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
                     <span class="side-cap">Settings</span>
-                    <i class="fa-solid fa-sliders"></i>
+                    <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
                 </button>
+                <template x-for="it in [
+                    { code: 'SET_CONFIG', label: 'Identifikasi', icon: 'fa-solid fa-id-badge' },
+                    { code: 'SET_LANG', label: 'Language', icon: 'fa-solid fa-language' },
+                    { code: 'SET_LOCALIZATION', label: 'Localization', icon: 'fa-solid fa-globe' },
+                    { code: 'SET_CONSTANTS', label: 'Constants', icon: 'fa-solid fa-sliders' },
+                ]" :key="it.code">
+                    <button type="button" class="leaf" x-show="open" :class="{ active: activeTabCode === it.code }" @click="openTab(it.code)">
+                        <span class="lic"><i :class="it.icon"></i></span>
+                        <span class="lbl" x-text="it.label"></span>
+                    </button>
+                </template>
             </div>
             {{-- "Security" -- instruksi user 2026-08-30: dipasak PALING BAWAH
             sidebar kiri, HANYA utk is_admin, dan berupa MENU GROUP (bukan 1

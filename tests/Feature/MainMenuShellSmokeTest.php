@@ -48,4 +48,31 @@ class MainMenuShellSmokeTest extends TestCase
 
         $this->get('/security?tab=groups')->assertOk()->assertSee('Grup');
     }
+
+    // Settings dipecah 2026-09-07 dari 1 layar gado-gado (setup.configuration)
+    // jadi 4 route+layar sendiri -- docs/configurationstandard.md.
+    public function test_settings_submenus_each_open_own_screen(): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+
+        $this->get('/setup/identification')->assertOk()->assertSee('Identitas Aplikasi');
+        $this->get('/setup/language')->assertOk()->assertSee('Language');
+        $this->get('/setup/localization')->assertOk()->assertSee('Terjemahan Teks UI');
+        $this->get('/setup/constants')->assertOk()->assertSee('Constants');
+    }
+
+    public function test_settings_group_leaves_appear_in_sidebar_shell(): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+
+        $response = $this->get('/menu');
+
+        $response->assertOk();
+        $response->assertSee('Identifikasi');
+        $response->assertSee("label: 'Language'", false);
+        $response->assertSee("label: 'Localization'", false);
+        $response->assertSee("label: 'Constants'", false);
+    }
 }

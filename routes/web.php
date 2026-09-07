@@ -94,7 +94,10 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');
-        Route::livewire('/setup/configuration', 'pages::setup.configuration')->name('setup.configuration')->middleware('admin');
+        Route::livewire('/setup/identification', 'pages::setup.identification')->name('setup.identification')->middleware('admin');
+        Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
+        Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
+        Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
         Route::livewire('/setup/support-tickets', 'pages::setup.support-tickets')->name('setup.support-tickets')->middleware('admin');
 
         // Help Center -- panduan pakai aplikasi (bukan tiket support, itu modal

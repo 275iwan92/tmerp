@@ -1,14 +1,23 @@
 # STANDAR — CONFIGURATION (KONSTANTA SISTEM, BRANDING, BAHASA)
 **ERP Cetak Offset & Packaging — PT. Telasih Makmur**
 
-> Dibuat 2026-09-02 (keputusan user). Layar **Configuration** ada di **shell
-> LAMA** (`resources/views/pages/setup/configuration.blade.php`, route
-> `/setup/configuration`), dipasak sidebar kiri bawah TEPAT DI ATAS grup
-> "Security", `is_admin` only — **BUKAN** bagian panel Filament `/admin`
-> (jangan bingung dengan `admindashboardstandard.md`, itu dokumen lain untuk
-> topik lain: chrome navigasi Filament + tema warna dashboard personal).
-> Filament **membaca** branding dari sini (lihat §5), tapi **mengedit**-nya
-> tetap di shell lama.
+> Dibuat 2026-09-02 (keputusan user). **Dipecah 2026-09-07**: dulu 1 layar
+> gado-gado (`setup/configuration.blade.php`, route `/setup/configuration`)
+> menumpuk 3 bagian di 1 halaman scroll — sekarang jadi grup sidebar
+> **"Settings"** (mirror pola grup "Security" tepat di bawahnya) dengan 4
+> submenu/route/layar sendiri-sendiri, semua di **shell LAMA**, dipasak
+> sidebar kiri bawah TEPAT DI ATAS grup "Security", `is_admin` only —
+> **BUKAN** bagian panel Filament `/admin` (jangan bingung dengan
+> `admindashboardstandard.md`, itu dokumen lain untuk topik lain: chrome
+> navigasi Filament + tema warna dashboard personal). Filament **membaca**
+> branding dari sini (lihat §5), tapi **mengedit**-nya tetap di shell lama.
+>
+> | Submenu sidebar | Kode menu | Route | File |
+> |---|---|---|---|
+> | Identifikasi | `SET_CONFIG` | `setup.identification` | `setup/identification.blade.php` |
+> | Language | `SET_LANG` | `setup.language` | `setup/language.blade.php` |
+> | Localization | `SET_LOCALIZATION` | `setup.localization` | `setup/localization.blade.php` |
+> | Constants | `SET_CONSTANTS` | `setup.constants` | `setup/constants.blade.php` |
 
 ---
 
@@ -96,17 +105,15 @@ reliable untuk auto-isi 250 baris).
 
 ---
 
-## 3. LAYAR CONFIGURATION
+## 3. LAYAR SETTINGS (4 route mandiri)
 
-`resources/views/pages/setup/configuration.blade.php` (parent, form Branding
-biasa) + 2 komponen Livewire anak (`configuration-languages.blade.php`,
-`configuration-constants.blade.php`, di-`@livewire()` embed) — **kenapa 2
-komponen terpisah, bukan 1**: `App\Livewire\Concerns\HasSpreadsheetGrid`
-(lihat `spreadsheetgridstandard.md`) cuma mendukung **1 grid per komponen**
-(kontraknya method abstrak tanpa parameter) — sys_constant dan sys_languages
-butuh 2 instance trait yang beda, jadi harus 2 komponen Livewire.
+4 route Livewire berdiri sendiri (bukan lagi 1 parent + komponen anak
+`@livewire()` embed) — masing-masing sudah 1 concern per layar sejak
+dipecah 2026-09-07, jadi tidak lagi kena batasan "1 grid per komponen"
+`HasSpreadsheetGrid` (`spreadsheetgridstandard.md`) yang dulu memaksa
+Bahasa+Terjemahan+Constants jadi komponen anak terpisah di 1 halaman.
 
-### 3.1 Identitas Aplikasi (Branding)
+### 3.1 Identifikasi (dulu "Identitas Aplikasi")
 
 Form biasa (bukan spreadsheet) — APP_NAME, APP_TAGLINE, Logo (upload,
 `WithFileUploads`, `storage/app/public/branding/`), Font (`<select>` preset
@@ -118,14 +125,20 @@ multi-company) tetap di `tm2mst.org_company`, **tidak disentuh** oleh
 Configuration. APP_NAME murni identitas produk/aplikasi (contoh: "ERP TM"),
 tampil di topbar shell lama, halaman login, dan brand Filament `/admin`.
 
-### 3.2 Bahasa
+### 3.2 Language
 
 Lihat §2.3. Grid spreadsheet-editable (code/name/decimal_separator/
-thousand_separator/is_default) + grid custom terjemahan (bukan
-spreadsheet-editable — bentuknya beda, 1 baris trans_key = N kolom 1 per
-bahasa, di luar kontrak `HasSpreadsheetGrid`).
+thousand_separator/is_default) — `setup.language`, `sys_languages`.
 
-### 3.3 Semua Konstanta Sistem
+### 3.3 Localization (dulu bagian bawah "Bahasa")
+
+`setup.localization` — grid custom terjemahan (bukan spreadsheet-editable —
+bentuknya beda, 1 baris `trans_key` = N kolom 1 per bahasa, di luar kontrak
+`HasSpreadsheetGrid`), `sys_translations`. Kolom bahasa dibangun live dari
+`SysLanguage::all()` — tambah baris baru di layar Language → kolom baru
+otomatis muncul di sini.
+
+### 3.4 Constants (dulu "Semua Konstanta Sistem")
 
 **SEMUA** baris `sys_constant` dalam **1 grid** (bukan 1 tab/komponen per
 kategori — `HasSpreadsheetGrid` cuma 1 grid per komponen, lihat pengantar

@@ -1,17 +1,26 @@
 ---
 name: screen_setup_configuration
-description: Layar induk Configuration — Identitas Aplikasi (nama/tagline/font/logo) plus 2 sub-komponen anak Bahasa & Semua Konstanta
+description: Layar Identifikasi — identitas aplikasi (nama/tagline/font/logo). Dulu layar induk "Configuration" gado-gado, dipecah 2026-09-07 jadi 4 route sendiri (lihat docs/configurationstandard.md)
 ---
 
-# Configuration
+# Identifikasi
 
-**File**: `resources/views/pages/setup/configuration.blade.php`
-**Route**: `/setup/configuration` -> name `setup.configuration` (middleware `admin`)
+> **DIPECAH 2026-09-07**: dulu 1 layar "Configuration" menggabung Identitas
+> Aplikasi + Bahasa + Terjemahan + Semua Konstanta dalam 1 route. Sekarang
+> jadi grup sidebar "Settings" (mirror "Security") dengan 4 submenu route
+> sendiri-sendiri: **Identifikasi** (dokumen ini), **Language**
+> (`screen_setup_configuration_languages.md`), **Localization**, **Constants**
+> (`screen_setup_configuration_constants.md`). Detail lengkap:
+> `docs/configurationstandard.md` §3.
+
+**File**: `resources/views/pages/setup/identification.blade.php`
+**Route**: `/setup/identification` -> name `setup.identification` (middleware `admin`)
+**Kode menu**: `SET_CONFIG` (label sidebar "Identifikasi")
 **Koneksi DB utama**: sys (tm2sys, via `SysConstant`)
 **Modul**: System & Setup
 
 ## Tujuan
-Layar admin-only untuk mengelola identitas aplikasi (nama, tagline, font, logo — dipakai di topbar, halaman login, dan panel Filament `/admin`; BUKAN nama company, itu tetap di Master Organization untuk struktur HR & kop dokumen cetak) plus meng-host 2 sub-komponen Livewire anak: Bahasa (`configuration-languages`) dan Semua Konstanta Sistem (`configuration-constants`). Section Bahasa & Konstanta dipecah jadi komponen terpisah karena trait `HasSpreadsheetGrid` yang dipakai hanya mendukung 1 grid per komponen.
+Layar admin-only untuk mengelola identitas aplikasi (nama, tagline, font, logo — dipakai di topbar, halaman login, dan panel Filament `/admin`; BUKAN nama company, itu tetap di Master Organization untuk struktur HR & kop dokumen cetak). Berdiri sendiri sejak 2026-09-07 (dulu bagian pertama layar Configuration gado-gado).
 
 ## Field & Kolom
 Form Identitas Aplikasi (bukan grid):

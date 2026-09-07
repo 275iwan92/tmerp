@@ -8,15 +8,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
-// Layar Configuration (docs/configurationstandard.md) -- shell lama, gerbang
-// is_admin (route middleware('admin')), sidebar-nya nempel PERSIS di atas
-// grup "Security" (main-menu.blade.php) sesuai instruksi user 2026-09-02.
-// Section "Identitas Aplikasi" (APP_NAME/logo/font) pakai form biasa (bukan
-// spreadsheet) -- cuma segelintir field bernama, form lebih ramah drpd grid
-// generik. Section Bahasa & Semua Konstanta ada di komponen anak terpisah
-// (configuration-languages.blade.php / configuration-constants.blade.php)
-// krn HasSpreadsheetGrid cuma mendukung 1 grid per komponen.
-new #[Title('Configuration — TELASIH MAKMUR ERP')] class extends Component
+// Layar Identifikasi (dulu section pertama setup.configuration, dipecah jadi
+// route sendiri 2026-09-07 -- docs/configurationstandard.md). Identitas
+// APLIKASI (nama app/tagline/font/logo) -- BUKAN identitas perusahaan
+// (org_company, dipakai kop cetak dokumen, punya layar/UI sendiri terpisah).
+new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 
@@ -90,7 +86,7 @@ new #[Title('Configuration — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div>
-    <div class="max-w-[1100px] mx-auto my-5 px-4 flex flex-col gap-5">
+    <div class="max-w-[1100px] mx-auto my-5 px-4">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Identitas Aplikasi</div>
@@ -134,18 +130,6 @@ new #[Title('Configuration — TELASIH MAKMUR ERP')] class extends Component
                     <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">💾 Simpan Identitas Aplikasi</button>
                 </div>
             </form>
-        </div>
-
-        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Bahasa</div>
-            <p class="text-[11px] text-muted mb-4">Daftar bahasa aktif + format angka regional + terjemahan teks UI.</p>
-            @livewire('pages::setup.configuration-languages')
-        </div>
-
-        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Semua Konstanta Sistem</div>
-            <p class="text-[11px] text-muted mb-4">Semua baris <code>sys_constant</code> — kolom Kategori bisa diurutkan/diisi ulang untuk mengelompokkan tampilan.</p>
-            @livewire('pages::setup.configuration-constants')
         </div>
 
     </div>

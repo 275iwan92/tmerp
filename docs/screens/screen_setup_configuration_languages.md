@@ -1,17 +1,31 @@
 ---
 name: screen_setup_configuration_languages
-description: Sub-komponen daftar bahasa aktif (sys_languages) + grid terjemahan teks UI (sys_translations) per key x per bahasa
+description: 2 layar terpisah sejak 2026-09-07 — Language (sys_languages) dan Localization (sys_translations, grid terjemahan per key x per bahasa)
 ---
 
-# Configuration — Bahasa
+# Language & Localization
 
-**File**: `resources/views/pages/setup/configuration-languages.blade.php`
-**Route**: TBD - cek routes/web.php (tidak punya route sendiri — dirender sebagai komponen Livewire anak lewat `@livewire('pages::setup.configuration-languages')` di dalam `resources/views/pages/setup/configuration.blade.php`, yang route-nya `/setup/configuration` -> `setup.configuration`)
-**Koneksi DB utama**: sys (tm2sys, via `SysLanguage`/`SysTranslation`)
-**Modul**: System & Setup
+> **DIPECAH 2026-09-07** dari 1 komponen gabungan jadi 2 route sendiri
+> (lihat `docs/configurationstandard.md` §3.2-3.3). Dulu tidak punya route
+> sendiri (di-embed di layar Configuration gado-gado).
 
-## Tujuan
-Sub-komponen Configuration (`docs/configurationstandard.md` §3) berisi 2 bagian: (1) grid spreadsheet-editable daftar bahasa aktif + format angka regional (`sys_languages`, sudah ada tabelnya), dan (2) grid terjemahan teks UI (`sys_translations`, dipakai layar login/forgot-password) berbentuk 1 baris per `trans_key` dengan 1 kolom per bahasa aktif. Menambah bahasa baru di grid pertama otomatis menambah 1 kolom baru di grid terjemahan bawahnya (dibangun live dari `SysLanguage::all()`, bukan daftar statis) — cara "Add new country language" terwujud tanpa infrastruktur baru.
+## Language
+
+**File**: `resources/views/pages/setup/language.blade.php`
+**Route**: `/setup/language` -> name `setup.language` (middleware `admin`)
+**Kode menu**: `SET_LANG`
+**Koneksi DB utama**: sys (tm2sys, via `SysLanguage`)
+
+Grid spreadsheet-editable daftar bahasa aktif + format angka regional (code/name/decimal_separator/thousand_separator/is_default). Menambah baris di sini otomatis menambah 1 kolom baru di grid Localization.
+
+## Localization
+
+**File**: `resources/views/pages/setup/localization.blade.php`
+**Route**: `/setup/localization` -> name `setup.localization` (middleware `admin`)
+**Kode menu**: `SET_LOCALIZATION`
+**Koneksi DB utama**: sys (tm2sys, via `SysTranslation`)
+
+Grid terjemahan teks UI (`sys_translations`, dipakai layar login/forgot-password lewat `SysTranslation::forLang()`) berbentuk 1 baris per `trans_key` dengan 1 kolom per bahasa aktif — bukan spreadsheet-editable biasa (di luar kontrak `HasSpreadsheetGrid`), kolom bahasa dibangun live dari `SysLanguage::all()`.
 
 ## Field & Kolom
 **Grid 1 — Bahasa Tersedia** (spreadsheet-editable):

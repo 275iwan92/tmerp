@@ -5,15 +5,16 @@ use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysConstantCategory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
-// Sub-komponen Configuration (docs/configurationstandard.md §3) -- SEMUA
-// baris sys_constant, 1 grid (bukan tab/komponen terpisah per kategori --
-// HasSpreadsheetGrid cuma bisa 1 grid per komponen, lihat catatan trait).
+// Layar Constants (dulu section "Semua Konstanta Sistem" di
+// setup.configuration, dipecah jadi route sendiri 2026-09-07 --
+// docs/configurationstandard.md). SEMUA baris sys_constant, 1 grid (bukan tab
+// terpisah per kategori -- HasSpreadsheetGrid cuma bisa 1 grid per komponen).
 // "Tabular per kategori" (keputusan user 2026-09-02) diwujudkan lewat kolom
-// Kategori yang bisa difilter/diurutkan, BUKAN tab terpisah -- lebih simpel,
-// tanpa perlu N komponen Livewire per kategori.
-new class extends Component
+// Kategori yang bisa difilter/diurutkan, BUKAN tab terpisah.
+new #[Title('Constants — TELASIH MAKMUR ERP')] class extends Component
 {
     use HasSpreadsheetGrid;
 
@@ -96,11 +97,17 @@ new class extends Component
 ?>
 
 <div>
-    <x-grid.spreadsheet-table
-        grid-key="{{ $this->spreadsheetKey() }}"
-        :columns="$this->spreadsheetColumns()"
-        :rows="$this->spreadsheetRows()"
-        :new-row-defaults="$this->spreadsheetNewRowDefaults()"
-        :errors="$this->spreadsheetErrors"
-        :version="$this->spreadsheetVersion" />
+    <div class="max-w-[1100px] mx-auto my-5 px-4">
+        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Constants</div>
+            <p class="text-[11px] text-muted mb-4">Semua baris <code>sys_constant</code> — kolom Kategori bisa diurutkan/diisi ulang untuk mengelompokkan tampilan.</p>
+            <x-grid.spreadsheet-table
+                grid-key="{{ $this->spreadsheetKey() }}"
+                :columns="$this->spreadsheetColumns()"
+                :rows="$this->spreadsheetRows()"
+                :new-row-defaults="$this->spreadsheetNewRowDefaults()"
+                :errors="$this->spreadsheetErrors"
+                :version="$this->spreadsheetVersion" />
+        </div>
+    </div>
 </div>

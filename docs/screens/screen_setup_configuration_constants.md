@@ -1,17 +1,21 @@
 ---
 name: screen_setup_configuration_constants
-description: Sub-komponen spreadsheet-grid untuk mengelola semua baris sys_constant (semua kategori dalam 1 grid, difilter kolom Kategori)
+description: Layar Constants — semua baris sys_constant (semua kategori dalam 1 grid, difilter kolom Kategori). Berdiri sendiri sejak 2026-09-07
 ---
 
-# Configuration — Semua Konstanta Sistem
+# Constants
 
-**File**: `resources/views/pages/setup/configuration-constants.blade.php`
-**Route**: TBD - cek routes/web.php (tidak punya route sendiri — dirender sebagai komponen Livewire anak lewat `@livewire('pages::setup.configuration-constants')` di dalam `resources/views/pages/setup/configuration.blade.php`, yang route-nya `/setup/configuration` -> `setup.configuration`)
+> **DIPECAH 2026-09-07**: dulu sub-komponen anak layar Configuration
+> gado-gado, sekarang route sendiri. Lihat `docs/configurationstandard.md` §3.4.
+
+**File**: `resources/views/pages/setup/constants.blade.php`
+**Route**: `/setup/constants` -> name `setup.constants` (middleware `admin`)
+**Kode menu**: `SET_CONSTANTS`
 **Koneksi DB utama**: sys (tm2sys, via `SysConstant`/`SysConstantCategory`)
 **Modul**: System & Setup
 
 ## Tujuan
-Sub-komponen Configuration (`docs/configurationstandard.md` §3) yang menampilkan SEMUA baris `sys_constant` (lintas kategori) dalam 1 grid spreadsheet-editable (pola `spreadsheetgridstandard.md`), bukan tab/komponen terpisah per kategori — karena trait `HasSpreadsheetGrid` hanya mendukung 1 grid per komponen Livewire. Pengelompokan per kategori dicapai lewat kolom `category_code` yang bisa difilter/diurutkan.
+Menampilkan SEMUA baris `sys_constant` (lintas kategori) dalam 1 grid spreadsheet-editable (pola `spreadsheetgridstandard.md`), bukan tab/komponen terpisah per kategori — karena trait `HasSpreadsheetGrid` hanya mendukung 1 grid per komponen Livewire. Pengelompokan per kategori dicapai lewat kolom `category_code` yang bisa difilter/diurutkan.
 
 ## Field & Kolom
 Grid spreadsheet-editable (`x-grid.spreadsheet-table`), kolom:

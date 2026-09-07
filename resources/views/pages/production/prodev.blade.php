@@ -60,8 +60,8 @@ new #[Title('Product Development — TELASIH MAKMUR ERP')] class extends Compone
     // (PRODEV_GAP_MM dst) -- jadi mengubah nilai di sini mempengaruhi SEMUA
     // job ProDev, bukan cuma job yg sedang dibuka (bukan per-job override).
     // Digerbang canEditMachineSpecs() -- permission SAMA dgn akses layar
-    // Configuration (setup/configuration-constants.blade.php), supaya tidak
-    // ada 2 aturan berbeda utk mengubah baris sys_constant yang sama.
+    // Constants (setup/constants.blade.php), supaya tidak ada 2 aturan
+    // berbeda utk mengubah baris sys_constant yang sama.
     public bool $editingMachineSpecs = false;
 
     public string $editGapMm = '';
