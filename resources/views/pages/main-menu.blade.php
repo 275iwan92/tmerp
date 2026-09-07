@@ -194,6 +194,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_CORRECTION' => route('hrm.correction-requests'),
             'HRM_SELFSERVICE' => route('self-service.index'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
+            'HRM_ATTENDANCE' => route('hrm.attendance-daily'),
             // Recruitment (L1-L9, L8 dibangun 2026-09-02 + Portal Candidate
             // simulasi) -- lihat docs/recruitment_state.yaml.
             'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),

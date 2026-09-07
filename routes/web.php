@@ -194,6 +194,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
             Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
+            Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
 
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --
             // portal simulasi (Portal Candidate) sengaja di bawah middleware

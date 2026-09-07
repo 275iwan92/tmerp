@@ -12,6 +12,56 @@
 
 ---
 
+## 2026-09-07 (lanjutan) — Payroll: layar pertama, Presensi Harian (`hrm.attendance-daily`)
+
+User minta baca isi kode `docs/payroll_timeattendance/tm2hrm_laravel_php83.zip`
+(sebelumnya cuma dilihat daftar filenya) -- dibaca via ekstrak ke scratchpad
+(bukan disalin ke repo). Isinya: `Pph21TerService`/`BpjsCalculatorService`
+(formula pajak/BPJS riil, BELUM diadopsi ke engine kita -- gap besar utk
+dicatat terpisah), `GpsHaversineService` (koordinat kantor riil Jl. Raden
+Panji Suroso, radius 50m -- fitur GPS tetap tidak diprioritaskan sesuai
+§12.5), `ElectronicSignatureService`, dan Filament Resources (`EmployeeResource`,
+`AttendanceDailyResource`) + Livewire GPS clock-in view. User lalu eksplisit:
+"saya mau kamu ambil interface nya saja" -- backend/model/migration paket
+referensi TETAP tidak dipakai (skema beda konvensi, engine kita jauh lebih
+detail), tapi field/kolom/badge-style dari `AttendanceDailyResource` dijadikan
+acuan tampilan.
+
+**Dibangun**: `resources/views/pages/hrm/attendance-daily.blade.php` (Livewire
+v4 SFC, pola sama `hrm/leave-requests.blade.php`) -- grid presensi harian
+dengan filter tanggal (date-picker dari-sampai) + cari nama/kode, stat-box
+(Hadir/Terlambat/Tidak Masuk/Lembur), kolom shift/masuk/pulang/telat/lembur/
+status(badge warna per kategori)/sumber(Otomatis vs Manual), tombol "Hitung
+Ulang Presensi" (panggil `AttendanceCalculationService::calculateForDate()`
+utk semua pegawai aktif dlm rentang tanggal), dan modal Override Status
+(pilih status baru + alasan wajib min 10 karakter -> `att_daily_status.source
+= MANUAL_OVERRIDE` + `override_by`/`override_reason`, sesuai alur "Alpha bisa
+diubah manual jadi Izin/Cuti/Sakit" yang ditulis user 2026-09-05).
+
+Route `hrm.attendance-daily` didaftarkan di `routes/web.php` (grup
+`module:HRM`), ditautkan ke menu **placeholder yang SUDAH ADA** sejak
+2026-08-24 (`HRM_ATTENDANCE` id=973, dulu `NOT_BUILT`) via `code=>route` map
+di `main-menu.blade.php` (pola sama seperti `HRM_LEAVE_APPROVAL` -- kolom
+`target` di `sys_app_menu` TIDAK dipakai utk resolve route, jangan tertipu
+kolom itu kosong). Migration `2026_09_07_000004` set status jadi `READY_FOR_QC`.
+
+Diverifikasi via `Livewire::test('pages::hrm.attendance-daily')` (BUKAN
+browser -- domain custom `tmerp.test` tidak bisa diakses dari Browser pane
+sandboxed sesi ini, `navigate`/`preview_start` ditolak; ini beda dari kasus
+"browser login diblokir" yang biasa dicatat, di sini akses domainnya sendiri
+gagal). Verifikasi: mount() set date range default, grid menampilkan data
+seed 4 pegawai (termasuk badge "Alpha"), override Alpha->Izin Disetujui
+berhasil (source berubah MANUAL_OVERRIDE, override_by terisi login user).
+`npm run build` dijalankan (kelas Tailwind baru). Data seed dibersihkan,
+diverifikasi 0 baris tersisa. Test suite 100 passed/9 skipped/0 failed.
+
+**Belum**: layar upload Excel/finger raw (jadi tombol "Hitung Ulang" saat ini
+cuma mengolah ulang data yang SUDAH ada di `att_finger_raw`/`emp_leave_request`,
+bukan menerima file baru), PPh21/BPJS (gap besar terpisah, lihat entri di
+atas), 10 layar mockup lain.
+
+---
+
 ## 2026-09-07 — Payroll: HIGH IMPROVEMENT engine setelah pelajari stored procedure sistem lama
 
 User minta pelajari dump `docs/ddl/tmhrm.sql` (8000+ baris, termasuk 3 stored
