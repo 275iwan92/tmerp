@@ -636,6 +636,62 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 
 ---
 
+## 13. I18N APP-WIDE — ROLLOUT BERTAHAP 7 MALAM (mulai 2026-09-07)
+
+> Kerangka i18n (`App\Support\Localization\Translator`, `sec_user.lang_code`,
+> `sys_translations`) sudah dibangun 2026-09-07 (lihat
+> `docs/configurationstandard.md` §2.3 + memory `project_i18n_shell_framework`)
+> — baru cakup ~8 string chrome shell paling dasar. **Keputusan user
+> 2026-09-07**: lanjutkan perluasan cakupan **bertahap 1 malam/hari** (bukan
+> 1 sesi maraton), dieksekusi via **scheduled task** (fitur bawaan Claude
+> Code, tersimpan `~/.claude/scheduled-tasks/`) jam **21:00 WIB** (Sabtu
+> 22:30, Minggu 20:00 — jadwal khusus permintaan user), **target 7 hari
+> kalender** (Senin 2026-09-07 s/d Minggu 2026-09-13), **maks ~2 jam kerja
+> per malam** (batasi token, jangan maraton).
+>
+> **PENTING — realistis, bukan overclaim**: 7 malam ini TIDAK akan menutup
+> SEMUA string aplikasi (ratusan file) — cakupannya sengaja dibatasi ke
+> layar/komponen paling sering dipakai (leverage tertinggi dulu). Malam ke-7
+> WAJIB checkpoint jujur (persentase progress + daftar yang masih tersisa),
+> bukan klaim "selesai". Kalau mau lanjut sesudah hari ke-7, itu keputusan
+> baru user, bukan otomatis diperpanjang.
+>
+> **Ritual penutup WAJIB tiap malam** (checklist untuk agent yang jalan):
+> 1. Kerjakan HANYA scope malam itu (lihat tabel di bawah) — jangan melebar.
+> 2. Tambah baris `sys_translations` (id+en) via migration baru
+>    (`database/migrations/2026_09_0X_..._seed_i18n_night_N.php`), ganti
+>    string literal Blade relevan jadi `Translator::t('key', 'default lama')`
+>    (import `use App\Support\Localization\Translator;`).
+> 3. `php artisan test` (minimal file terkait area yg disentuh malam itu) +
+>    `npm run build` (kalau ada perubahan class Tailwind).
+> 4. **Centang** ⬜→✅ baris malam itu di tabel bawah ini (edit file ini
+>    langsung), tulis 1-2 kalimat ringkasan di kolom Catatan (key apa saja,
+>    file apa saja, ada blocker atau tidak).
+> 5. `git add` (spesifik, bukan `-A`) + commit + **push** ke `origin`
+>    (CLAUDE.md §7.11 — wajib tiap sesi kerja selesai, bukan cuma diminta).
+> 6. Kalau mepet 2 jam sebelum scope selesai: STOP, commit apa yang sudah
+>    beres, catat sisa di kolom Catatan sbg "belum tuntas: ...", JANGAN
+>    lanjut lewat batas waktu.
+>
+> | # | Tanggal (WIB) | Jam | Scope | Status | Catatan |
+> |---|---|---|---|---|---|
+> | 1 | Sen 2026-09-07 | 21:00 | **Komponen shared** (leverage tertinggi — dipakai puluhan layar sekaligus): `components/grid/*`, `components/form/*`, pagination footer, badge status generik, tombol generik (Simpan/Batal/Hapus/Tambah/Cari/Export/Refresh), modal konfirmasi Ya/Tidak/Batal, pesan validasi generik. Key prefix `shared_*`. | ⬜ | |
+> | 2 | Sel 2026-09-08 | 21:00 | **Sisa chrome shell** yang belum ditarik malam sebelumnya (dari sesi 2026-09-07): drawer Notifikasi, drawer Chat, drawer Asisten AI, command palette (Ctrl+K), Help Center index. Audit ulang `main-menu.blade.php` cari string yg lolos. Key prefix `shell_*` (lanjutan). | ⬜ | |
+> | 3 | Rab 2026-09-09 | 21:00 | **Sales inti**: Inquiry Hub grid (`inquiry/hub.blade.php`), header+toolbar Inquiry form (BUKAN detail teknis dieline/costing formula), Quotation list, CO list — label & tombol saja. Key prefix `sales_*`. | ⬜ | |
+> | 4 | Kam 2026-09-10 | 21:00 | **Procurement inti**: PR/PO/PV/PQ/PRT list+entry — toolbar & label status saja (bukan field kalkulasi). Key prefix `proc_*`. | ⬜ | |
+> | 5 | Jum 2026-09-11 | 21:00 | **Inventory + Production inti**: grid Stock In/Out/Adjustment, Master Card, WO Worklist — toolbar & label status. Key prefix `inv_*`/`prod_*`. | ⬜ | |
+> | 6 | Sab 2026-09-12 | **22:30** | **Finance + HRM inti**: COA, Cash & Bank, grid Employee, Attendance — toolbar & label status. Key prefix `fin_*`/`hrm_*`. | ⬜ | |
+> | 7 | Min 2026-09-13 | **20:00** | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. | ⬜ | |
+>
+> Riwayat lengkap tiap malam (bukan cuma centang) pindah ke
+> `docs/LOG_JOB_DONE.md` begitu selesai, sama seperti item backlog lain.
+> Terkait: memory `project_i18n_shell_framework`,
+> `project_settings_menu_datadriven`, §11 di atas (kebijakan menu Inggris —
+> BEDA sumbu, jangan digabung: itu soal `sys_app_menu.label`, ini soal
+> `sys_translations`/`Translator::t()`).
+
+---
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
