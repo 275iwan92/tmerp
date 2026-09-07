@@ -45,6 +45,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         'must_change_password',
         'approval_status',
         'theme_code',
+        'lang_code',
         'admin_theme_mode',
         'admin_theme_accent',
         'pswd_last_updated',

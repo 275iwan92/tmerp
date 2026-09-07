@@ -78,9 +78,38 @@ lang_code+trans_key) isi teksnya. Sudah dipakai `login.blade.php`/
 
 **"Add new country language"** (keputusan user 2026-09-02) terwujud dari
 infrastruktur yang sudah ada ini, BUKAN sistem baru: tambah 1 baris di
-`sys_languages` lewat grid "Bahasa" di Configuration → kolom baru otomatis
-muncul di grid "Terjemahan Teks UI" di bawahnya (dibangun live dari
-`SysLanguage::all()`, bukan daftar hardcode) → isi terjemahan per key manual.
+`sys_languages` lewat layar Language (`setup.language`) → kolom baru
+otomatis muncul di grid Localization (`setup.localization`, dibangun live
+dari `SysLanguage::all()`, bukan daftar hardcode) → isi terjemahan per key
+manual.
+
+**Kerangka i18n app-wide shell PASCA-LOGIN (BARU 2026-09-07)** — beda dari
+`SysTranslation::forLang()` yang dipakai `login.blade.php`/
+`forgot-password.blade.php` (guest, lang dari query string `#[Url]`),
+`App\Support\Localization\Translator` adalah titik akses utk teks UI shell
+SETELAH login (dropdown avatar, sidebar chrome), lang dari preferensi
+TERSIMPAN per user (`sec_user.lang_code`, migration
+`2026_09_07_000008_add_lang_code_to_sec_user`) — bukan session/query string.
+Dipakai: `Translator::t('key', 'fallback')` (cache per-request per-lang),
+`Translator::setLang($code)` (validasi thd `sys_languages`, dipanggil
+`main-menu.blade.php::setLang()` lalu `location.reload()`, mirror pola
+`setTheme()`/`ActiveTheme`). Picker Bahasa di dropdown profil (dulu 2 tombol
+bendera dummy, cuma toast) sekarang benar2 ganti `sec_user.lang_code` +
+render ulang shell, dan daftar bahasanya `SysLanguage::all()` live (bukan 2
+bendera hardcode) — tambah baris bahasa baru otomatis nongol sbg tombol baru.
+
+**SCOPE SAAT INI — BARU KERANGKA, BELUM PENUH** (keputusan user 2026-09-07,
+"buat kerangkanya, masukkan yang perlu-perlu dahulu" — bukan proyek 1 sesi):
+baru ~8 key `shell_*` utk string chrome PALING dasar (label Home, Logout,
+caption Tema/Bahasa/Klasik/section dropdown — lihat pemakaian `Translator::t()`
+di `main-menu.blade.php`). **Ratusan file Blade transaksi/master/laporan
+lainnya MASIH 100% hardcode Indonesia**, belum ditarik ke `sys_translations`
+sama sekali — switch bahasa TIDAK mengubah tampilan modul Sales/Inventory/dst,
+cuma chrome shell. Menambah cakupan = tambah baris `sys_translations` key
+baru + ganti string literal Blade layar itu jadi `Translator::t(...)`,
+diulang per layar. Terkait [[project_english_menu_policy]] (rencana lama yang
+belum dieksekusi) — kerangka ini FONDASI-nya, eksekusi penuh masih rencana
+terpisah.
 
 ### 2.4 `tm2mst.fin_exchange_rate` (BARU — kebutuhan Finance/Accounting)
 

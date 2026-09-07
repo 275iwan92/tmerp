@@ -102,4 +102,37 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertFalse($children->contains('code', 'SET_THEME'));
         $this->assertFalse($children->contains('code', 'SET_MENU'));
     }
+
+    // Kerangka i18n app-wide (2026-09-07, App\Support\Localization\Translator)
+    // -- picker Bahasa di dropdown profil dulu dummy (cuma toast, tidak
+    // menyimpan/mengubah apapun). Sekarang persist ke sec_user.lang_code +
+    // beberapa string chrome shell paling dasar (Tema/Bahasa/Logout/dst)
+    // sungguh berubah. TIDAK ada RefreshDatabase di project ini (test jalan
+    // atas DB real) -- WAJIB revert lang_code di finally, jangan tinggalkan
+    // akun demo dalam state 'en'.
+    public function test_setting_language_persists_and_switches_shell_chrome(): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+        $originalLang = $admin->lang_code;
+
+        try {
+            $component = \Livewire\Livewire::test('pages::main-menu');
+            $component->call('setLang', 'en');
+
+            $admin->refresh();
+            $this->assertSame('en', $admin->lang_code);
+
+            $component2 = \Livewire\Livewire::test('pages::main-menu');
+            $component2->assertSee('Theme');
+            $component2->assertSee('Log out');
+
+            // Kode bahasa tak dikenal (bukan dari sys_languages) HARUS ditolak.
+            $component2->call('setLang', 'zz-INVALID');
+            $admin->refresh();
+            $this->assertSame('en', $admin->lang_code);
+        } finally {
+            $admin->update(['lang_code' => $originalLang]);
+        }
+    }
 }

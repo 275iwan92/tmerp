@@ -8,6 +8,7 @@ use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
 use App\Models\Sys\SysNotification;
 use App\Support\Branding\Brand;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -195,6 +196,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_SELFSERVICE' => route('self-service.index'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
             'HRM_ATTENDANCE' => route('hrm.attendance-daily'),
+            'HRM_PAYROLL_SALARY' => route('hrm.payroll.employee-salary'),
             // Recruitment (L1-L9, L8 dibangun 2026-09-02 + Portal Candidate
             // simulasi) -- lihat docs/recruitment_state.yaml.
             'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),
@@ -421,6 +423,32 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
         Auth::user()->update(['theme_code' => $code]);
     }
 
+    // Kerangka i18n (2026-09-07) -- mirror pola setTheme()/currentThemeCode()
+    // di atas, cuma target kolomnya sec_user.lang_code. Lihat
+    // App\Support\Localization\Translator utk cakupan & alasan baru shell
+    // chrome yang ditarik (BELUM semua layar).
+    public function currentLangCode(): string
+    {
+        return \App\Support\Localization\Translator::lang();
+    }
+
+    public function setLang(string $code): void
+    {
+        \App\Support\Localization\Translator::setLang($code);
+    }
+
+    // Flag emoji cuma UI sugar (bukan kolom DB, sys_languages tak punya kolom
+    // flag) -- daftar bahasa AKTUAL tetap dari tabel (Settings > Language),
+    // menambah baris baru otomatis nongol di sini dgn fallback ikon globe.
+    #[Computed]
+    public function availableLanguages()
+    {
+        $flags = ['id' => '🇮🇩', 'en' => '🇬🇧'];
+
+        return \App\Models\Sys\SysLanguage::orderByDesc('is_default')->orderBy('code')->get()
+            ->map(fn ($l) => ['code' => $l->code, 'name' => $l->name, 'flag' => $flags[$l->code] ?? null]);
+    }
+
     public function quickToggleTheme(): void
     {
         $current = \App\Support\ActiveTheme::resolve();
@@ -461,16 +489,31 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     }
 
     // Item FLAT dropdown avatar (Pesan & Info + Akun), sumbernya sys_user_menu
-    // -- lihat App\Models\Sys\SysUserMenu docblock kenapa Configuration/Theme
+    // -- lihat App\Models\Sys\SysUserMenu docblock kenapa widget Theme/Bahasa
     // TIDAK ikut sini (tetap hardcode di bawah, terlalu bespoke).
     #[Computed]
     public function userMenuItems()
+    {
+        return $this->visibleUserMenuItems(['Pesan & Info', 'Akun'])->groupBy('section');
+    }
+
+    // Sub-item dalam grup collapsible "Configuration" (Aktivitas saya, User
+    // Configuration) -- section SENDIRI (bukan ikut 'Akun') 2026-09-07 supaya
+    // tetap dirender nested di dalam collapse, bukan ikut nongol di list flat
+    // atas. Widget Tema/Bahasa TETAP hardcode (bukan baris label+klik biasa).
+    #[Computed]
+    public function configMenuItems()
+    {
+        return $this->visibleUserMenuItems(['Configuration']);
+    }
+
+    protected function visibleUserMenuItems(array $sections)
     {
         $user = Auth::user();
 
         return \App\Models\Sys\SysUserMenu::query()
             ->where('activate', 1)
-            ->whereIn('section', ['Pesan & Info', 'Akun'])
+            ->whereIn('section', $sections)
             ->orderBy('sort_order')
             ->get()
             ->filter(fn ($item) => match ($item->visibility) {
@@ -478,8 +521,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 'non_employee_linked' => ! $user->employee_id,
                 'setup_non_admin' => $user->canSetup() && ! $user->is_admin,
                 default => true,
-            })
-            ->groupBy('section');
+            });
     }
 
     public function saveProfile(): void
@@ -658,7 +700,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 ?>
 
 <div class="shell"
-     x-data="appShell(@js($this->menuTree), @js($this->flatItems), 'Home')"
+     x-data="appShell(@js($this->menuTree), @js($this->flatItems), @js(Translator::t('shell_home', 'Home')))"
      :class="{ mini: mini, nosidebar: nosidebar, notopbar: notopbar }"
      @keydown.ctrl.k.window.prevent="paletteOpen ? closePalette() : openPalette()"
      @keydown.cmd.k.window.prevent="paletteOpen ? closePalette() : openPalette()"
@@ -805,7 +847,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                         Configuration (Theme/Bahasa/User Configuration) di bawah TETAP hardcode,
                         terlalu bespoke utk baris generik. --}}
                         @foreach ($this->userMenuItems as $section => $items)
-                            <div class="um-cap">{{ $section === 'Pesan & Info' ? 'Pesan & info' : $section }}</div>
+                            <div class="um-cap">{{ match ($section) { 'Pesan & Info' => Translator::t('shell_section_pesan_info', 'Pesan & info'), 'Akun' => Translator::t('shell_section_akun', 'Akun'), default => $section } }}</div>
                             @foreach ($items as $item)
                                 @switch($item->code)
                                     @case('UM_HELP')
@@ -837,21 +879,30 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                         dari menu sidebar kiri (yang lama dipindah jadi "Settings", lihat migration
                         terkait) supaya tidak dobel nama di 2 tempat beda konteks. --}}
                         <button type="button" class="um-item" @click.stop="configOpen = !configOpen">
-                            <i class="fa-solid fa-sliders"></i> Configuration
+                            <i class="fa-solid fa-sliders"></i> {{ Translator::t('shell_section_configuration', 'Configuration') }}
                             <i class="fa-solid fa-chevron-down" style="margin-left:auto;font-size:10px;transition:transform .15s" :style="configOpen ? 'transform:rotate(180deg)' : ''"></i>
                         </button>
                         <div x-show="configOpen" @click.stop>
-                            @if (Auth::user()->employee_id)
-                                <button type="button" class="um-item" style="padding-left:28px" @click="ddOpen = false; portalOpen = true"><i class="fa-solid fa-id-card"></i> User Configuration</button>
-                            @endif
-                            <button type="button" class="um-item" style="padding-left:28px" @click="ddOpen = false; openTab('SET_USER')"><i class="fa-solid fa-clock-rotate-left"></i> Aktivitas saya</button>
-                            <div class="um-item" style="cursor:default;padding-left:28px"><i class="fa-solid fa-globe"></i> Bahasa
+                            {{-- 2026-09-07: dulu 2 button hardcode di sini, sekarang
+                            data-driven dari sys_user_menu (section "Configuration") --
+                            lihat configMenuItems() & migration
+                            add_activity_and_portal_config_user_menu. --}}
+                            @foreach ($this->configMenuItems as $item)
+                                <button type="button" class="um-item" style="padding-left:28px"
+                                    @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">
+                                    <i class="{{ $item->icon }}"></i> {{ $item->label }}
+                                </button>
+                            @endforeach
+                            <div class="um-item" style="cursor:default;padding-left:28px"><i class="fa-solid fa-globe"></i> {{ Translator::t('shell_language', 'Bahasa') }}
                                 <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
-                                    <button type="button" class="um-flag active" @click.stop="toast('Bahasa: Indonesia')">🇮🇩</button>
-                                    <button type="button" class="um-flag" @click.stop="toast('Bahasa: English')">🇬🇧</button>
+                                    @foreach ($this->availableLanguages as $lang)
+                                        <button type="button" class="um-flag {{ $lang['code'] === $this->currentLangCode() ? 'active' : '' }}"
+                                            title="{{ $lang['name'] }}"
+                                            @click.stop="$wire.setLang('{{ $lang['code'] }}').then(() => location.reload())">{{ $lang['flag'] ?? '🌐' }}</button>
+                                    @endforeach
                                 </span>
                             </div>
-                            <div class="um-cap" style="padding-left:28px">Tema</div>
+                            <div class="um-cap" style="padding-left:28px">{{ Translator::t('shell_theme', 'Tema') }}</div>
                             <div class="um-theme-matrix" @click.stop>
                                 <div class="utm-hdr">
                                     <span></span>
@@ -873,7 +924,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                                 @endforeach
                             </div>
                             @if (! empty($this->themeMatrix['classic']))
-                                <div class="um-cap" style="padding-left:28px">Klasik</div>
+                                <div class="um-cap" style="padding-left:28px">{{ Translator::t('shell_classic', 'Klasik') }}</div>
                                 <div class="um-theme-grid" @click.stop>
                                     @foreach ($this->themeMatrix['classic'] as $t)
                                         <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
@@ -887,7 +938,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                             @endif
                         </div>
                         <div class="um-sep"></div>
-                        <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> Keluar aplikasi</button>
+                        <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> {{ Translator::t('shell_logout', 'Keluar aplikasi') }}</button>
                     </div>
                 </div>
             </div>
