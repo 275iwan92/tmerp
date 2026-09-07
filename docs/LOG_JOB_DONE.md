@@ -3,6 +3,71 @@
 
 ---
 
+## 2026-09-07 (lanjutan 6) — Payroll: Modul 07 (Rekening Bank) + Modul 09 (GPS Clock-in sungguhan)
+
+User minta selesaikan 2 item tersisa dari checklist 11-mockup: "selesaikan
+point no 7 dan no 9". Modul 09 sebelumnya cuma simulasi Artifact (respons
+sesi sebelumnya) + SENGAJA ditunda di BACKLOG §12.5 -- kali ini dibangun
+BACKEND SUNGGUHAN atas permintaan eksplisit kedua kalinya.
+
+**Modul 07 — Master Karyawan & Rekening Bank**
+(`resources/views/pages/hrm/payroll-employee-bank.blade.php`, menu
+`HRM_PAYROLL_BANK` grup Payroll sort=7): grid semua pegawai aktif + kolom
+Metode Gaji (badge Bank Transfer/Cash, DITURUNKAN dari ada/tidaknya
+`emp_bank_account` aktif+primary -- bukan kolom baru, konsisten dgn pola
+`payroll-bank-transfer.blade.php`/`payroll-cash-roster.blade.php` yang
+sudah pakai cara sama) + Detail Rekening + filter Bank/Cash. Modal edit:
+kosongkan Nama Bank = pegawai jadi Cash (rekening lama dinonaktifkan bukan
+dihapus, jejak histori tetap ada).
+
+**Modul 09 — Mobile GPS Clock-in (backend sungguhan)**:
+- Tabel baru `sys_geofence_location` (tm2mst) -- titik kantor DATA-DRIVEN
+  (bukan hardcode), diseed 1 baris "Pabrik Panji Suroso Malang" pakai
+  koordinat riil dari `docs/payroll_timeattendance/tm2hrm_laravel_php83.zip
+  ::GpsHaversineService` (-7.94220500, 112.65106000, radius 50m) --
+  memungkinkan tambah lokasi pabrik lain tanpa ubah kode.
+- Tabel baru `att_mobile_gps_log` -- setiap tap Absen Masuk/Pulang dicatat
+  (lat/lng, jarak, status IN_RADIUS/OUT_OF_RADIUS, status approval HR).
+- `att_finger_raw.id_import` diubah NULLABLE (raw SQL `MODIFY`, doctrine/dbal
+  TIDAK terpasang di proyek ini jadi tidak bisa pakai `->change()`) --
+  scan dari GPS bukan bagian 1 batch upload file, NULL = sumbernya GPS.
+- `App\Services\Hrm\GpsHaversineService` (namespace kita, formula sama
+  paket referensi, baca titik geofence dari tabel bukan `const` PHP).
+- `resources/views/pages/self-service/clock-in.blade.php` (route
+  `self-service.clock-in`, layout `layouts::app` polos tanpa sidebar --
+  ini halaman mobile mandiri) -- pakai `navigator.geolocation` browser
+  ASLI (Alpine `x-data`), bukan koordinat simulasi kayak Artifact
+  sebelumnya. **Kalau DALAM radius**: langsung tulis `att_finger_raw` +
+  panggil `AttendanceCalculationService::calculateForDate()` -- GPS jadi
+  SUMBER PRESENSI YANG SETARA data mesin finger fisik, bukan cuma catatan
+  terpisah. **Kalau DI LUAR radius**: cuma tercatat PENDING, presensi
+  BELUM ditulis sama sekali sampai disetujui HR (Tier1 doc:
+  "PENDING_HR_LOCATION_APPROVAL").
+- `resources/views/pages/hrm/gps-approval.blade.php` (menu
+  `HRM_GPS_APPROVAL`, grup Time Attendance) -- approve/reject log GPS
+  PENDING; approve BARU menulis `att_finger_raw`+memicu kalkulasi (pola
+  sama `hrm/leave-requests.blade.php`).
+- Menu `HRM_CLOCKIN` (link cepat ke `self-service.clock-in`) ditambah di
+  grup Time Attendance utk QC/testing -- pemakaian riil pegawai via
+  bookmark/QR code HP, bukan navigasi sidebar desktop.
+
+Diuji via `Livewire::test` mensimulasikan browser (`checkLocation()`
+dipanggil langsung dgn koordinat, bukan lewat JS Geolocation asli krn
+tinker tidak punya browser): (1) koordinat PERSIS titik kantor -> jarak
+0m, AUTO_APPROVED, `att_finger_raw`+`att_daily_status` langsung
+terbentuk; (2) koordinat ~6.8km dari kantor -> PENDING, `att_finger_raw`
+**belum** ada (gerbang bekerja benar); (3) HR approve via
+`hrm.gps-approval` -> BARU `att_finger_raw`+`att_daily_status` terbentuk.
+Rekening bank tersimpan & terbaca benar di grid. Data test dibersihkan,
+diverifikasi 0 baris tersisa. Test suite 101 passed/9 skipped/0 failed.
+`npm run build` dijalankan.
+
+**Catatan status**: mismatch Uang Roti (Operator vs "Staff/SPV" per Tier2
+§4.4, ditemukan sesi sebelumnya) MASIH belum diputuskan user -- belum
+diubah.
+
+---
+
 ## 2026-09-07 (lanjutan 5) — Payroll: Modul 01 Upload Presensi + validasi data riil vs Excel HR
 
 User menunjuk ulang checklist 11-mockup ("saya tidak melihat menu untuk

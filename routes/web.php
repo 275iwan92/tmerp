@@ -130,6 +130,7 @@ Route::middleware('auth')->group(function () {
         // module: gate), tapi personal & hanya milik akun sendiri. Guard
         // "linked employee" ditangani di dalam komponen (masteremployee_tier1.md §5.1).
         Route::livewire('/self-service', 'pages::self-service.index')->name('self-service.index');
+        Route::livewire('/self-service/clock-in', 'pages::self-service.clock-in')->name('self-service.clock-in');
 
         // Personal, bukan modul administratif -- sama pola dgn self-service (tanpa module: gate).
         Route::livewire('/notifications', 'pages::notification.index')->name('notifications.index');
@@ -218,6 +219,8 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/hrm/attendance-upload', 'pages::hrm.attendance-upload')->name('hrm.attendance-upload');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary');
+            Route::livewire('/hrm/payroll/employee-bank', 'pages::hrm.payroll-employee-bank')->name('hrm.payroll.employee-bank');
+            Route::livewire('/hrm/gps-approval', 'pages::hrm.gps-approval')->name('hrm.gps-approval');
             Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run');
             Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->where('payslip', '[0-9]+');
             Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer');

@@ -11,6 +11,7 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @include('partials.theme-vars')
+        @include('partials.pwa-head')
 
         @livewireStyles
     </head>
