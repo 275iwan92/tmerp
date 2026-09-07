@@ -58,13 +58,12 @@ mewakili sesuatu yang benar-benar belum ada.
 karena kategorinya beda tahap alur (lihat [[project-sidebar-groups-collapsible]]):
 ```
 Inquiry & Quotation          <- grup input (tahap sebelum order)
-  Inquiry Product / Imposition Engine / Product Costing / Quotation
+  Inquiry Product / Pro-Dev / Pro-Cost / Quotation / Nota Inquiry / Win-Rate Sales
 Sales Order                  <- grup input (order sudah jadi)
-  Customer Order
+  Customer Order / Customer Plan Delivery / Daftar Sales Order /
+  Monitoring Order / Laporan Penjualan
 Delivery                     <- grup input (pengiriman)
-  Plan Delivery / Delivery Order
-Laporan                       <- grup laporan (diseragamkan dari "Monitoring &
-                                  Laporan" 2026-09-02, konsisten dgn modul lain)
+  Delivery Order / Delivery Notes
 ```
 
 **Catatan konsistensi — SELESAI 2026-09-02**: Sales dulu pakai label
@@ -72,6 +71,21 @@ Laporan                       <- grup laporan (diseragamkan dari "Monitoring &
 spt Inventory — sengaja belum disentuh sejak sesi 2026-08-22 (scope waktu
 itu cuma Inventory). Sudah diseragamkan (`SALES_MON.label` = "Laporan"),
 konsisten lintas modul sekarang.
+
+**Sales (`SALES`) — PENGECUALIAN eksplisit 2026-09-05, grup "Laporan" DIHAPUS
+total**: atas instruksi user (screenshot sidebar, sama pola dgn Procurement
+di bawah), grup `SALES_MON` (id 180, "Laporan") dihapus, 4 item lamanya
+dipindah ke grup tahap alur yang paling relevan isi laporannya (BUKAN grup
+baru — 3 grup tahap Sales sudah ada sejak awal):
+- **Win-Rate Sales** → `Inquiry & Quotation` (938) — laporan ini soal hasil
+  konversi Inquiry (CONVERTED/LOST), bukan soal Sales Order/Delivery.
+- **Daftar Sales Order**, **Monitoring Order**, **Laporan Penjualan** →
+  `Sales Order` (939) — ketiganya laporan soal status/rekap Customer Order.
+
+Ini SENGAJA menyimpang dari aturan §1/§7 sama seperti pengecualian
+Procurement di bawah — perlakukan sebagai keputusan per-modul (instruksi
+eksplisit user), bukan default baru. Migration rujukan:
+`2026_09_05_000009_move_sales_reports_into_stage_groups.php`.
 
 **Procurement (`PROC`) — PENGECUALIAN eksplisit 2026-09-05, tidak ada grup
 "Laporan" sama sekali**: atas instruksi user (screenshot sidebar), grup
