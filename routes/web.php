@@ -196,6 +196,11 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary');
+            Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run');
+            Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->where('payslip', '[0-9]+');
+            Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer');
+            Route::livewire('/hrm/payroll/cash-roster', 'pages::hrm.payroll-cash-roster')->name('hrm.payroll.cash-roster');
+            Route::livewire('/hrm/discipline-report', 'pages::hrm.discipline-report')->name('hrm.discipline-report');
 
             // Recruitment (L1-L9 minus L8, lihat docs/recruitment_state.yaml) --
             // portal simulasi (Portal Candidate) sengaja di bawah middleware

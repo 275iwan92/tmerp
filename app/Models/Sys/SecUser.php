@@ -231,6 +231,19 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         return $this->is_admin || $this->hasGroup('OPS_MGR', 'DIREKSI') || $this->maxMgmtLevel() >= 4;
     }
 
+    // Gate nominal gaji individu (permintaan user 2026-09-07): "HR officer
+    // tidak semua dia bisa melihat gaji, terutama yang bulanan ... HR officer
+    // hanya jalankan proses dan hanya tahu total secara keseluruhan". Belum
+    // ada sec_group khusus "Payroll Officer" -- sementara reuse DIREKSI +
+    // MGR_ACC (Finance & Accounting, sesuai actor Tier1 "Payroll Officer/
+    // Staff Finance") sbg pemegang akses penuh. Pengecualian per-pegawai
+    // (Satpam/Security) ditangani terpisah di layar (lihat payroll-employee-
+    // salary.blade.php::canViewSalary()), BUKAN di sini -- ini cuma gate role.
+    public function canViewPayrollAmounts(): bool
+    {
+        return (bool) $this->is_admin || $this->hasGroup('DIREKSI', 'MGR_ACC');
+    }
+
     // employee_id -> tm2mst.emp_employee (LOGICAL, lintas-DB) -- dipakai Flow
     // Engine utk resolusi "posisi user login ini" saat menyusun antrian approval
     // (PrApproval, dst). Query terpisah, bukan join, sesuai CLAUDE.md §2.

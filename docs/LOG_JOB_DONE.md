@@ -1,6 +1,95 @@
 # LOG JOB DONE — RIWAYAT ITEM YANG SUDAH DIKERJAKAN
 **ERP Cetak Offset & Packaging — PT. Telasih Makmur**
 
+---
+
+## 2026-09-07 (lanjutan 3) — Payroll: 5 layar flow (03/05/06/08 + slip) + gate visibilitas HR + temuan PPh21/enkripsi
+
+User menegaskan menu harus SEIRAMA urutan checklist 11-mockup yang sudah
+disampaikan, dan minta interfacenya MENGIKUTI mockup `docs/payroll_
+timeattendance/mockup_0{3,4,5,6,7,8}_*.html` persis (bukan desain bebas).
+Dikerjakan berurutan tanpa jeda tanya lagi sesuai instruksi eksplisit.
+
+**5 layar baru** (field/kolom/warna badge disalin dari mockup masing-masing,
+mesin di baliknya tetap `PayrollEngineService`/`AttendanceCalculationService`
+kita, bukan skema `tm2hrm` di paket referensi):
+- `hrm/payroll-batch-run.blade.php` (mockup_03) — pilih periode WEEKLY/
+  MONTHLY, tombol "Jalankan Kalkulasi" (panggil `calculate()`), ringkasan
+  Bank vs Cash (dari `emp_bank_account` primary+aktif, BUKAN kolom
+  `payment_method` yg tidak ada di skema kita) + tombol lifecycle penuh
+  (Verifikasi FULL/RANDOM_SAMPLE → Konfirmasi → Tandai Dibayar → Tandai Slip
+  Terkirim → Tutup Periode) -- lebih panjang dari mockup yg cuma DRAFT->lock,
+  krn siklus kita sendiri sudah lebih detail (redesain 2026-09-05).
+- `hrm/payroll-payslip-print.blade.php` (mockup_04) — pakai kerangka
+  `components/print/*` (printnotastandard.md) spt Nota CO, bukan HTML bebas.
+- `hrm/payroll-bank-transfer.blade.php` (mockup_05) — daftar pegawai
+  berekening + total + export CSV (format generik, BUKAN format kliring
+  resmi BCA/Mandiri -- itu perlu spek resmi bank, dicatat sbg open item).
+- `hrm/payroll-cash-roster.blade.php` (mockup_06) — pegawai tanpa rekening +
+  kalkulator pecahan uang (greedy 100k/50k/20k/10k/5k/2k/1k) + lembar serah
+  terima printable.
+- `hrm/discipline-report.blade.php` (mockup_08) — 4 stat widget + tabel
+  Terlambat + tabel Tidak Masuk, dari `att_daily_status` per tanggal.
+
+Menu diurutkan ULANG (permintaan eksplisit "menu harus seirama proses
+flow"): grup **Time Attendance** (id 924, presensi dulu) skr sort=15,
+grup **Payroll** (id 974, kalkulasi->transfer/cash) sort=20 (sebelumnya
+kebalik, Payroll nongol duluan di sidebar padahal presensi harus jalan
+dulu). `HRM_PAYROLL_CALC` ("Perhitungan Gaji") placeholder lama diaktifkan
+(bukan dibuat baru). 3 menu baru: `HRM_DISCIPLINE_REPORT` (grup Time
+Attendance), `HRM_PAYROLL_BANKXFER`+`HRM_PAYROLL_CASHROSTER` (grup Payroll).
+Slip Gaji sengaja TIDAK dapat menu sendiri (dibuka kontekstual dari baris
+payroll run, pola sama Nota CO).
+
+**Gate visibilitas HR vs Payroll/Finance** (temuan user 2026-09-07, terpisah
+dari soal menu): "HR officer tidak semua dia bisa melihat gaji, terutama
+yang bulanan kecuali satpam (security) ... HR officer hanya jalankan proses
+dan hanya tahu total secara keseluruhan." -> `SecUser::canViewPayrollAmounts()`
+baru (is_admin/DIREKSI/MGR_ACC — belum ada sec_group "Payroll Officer"
+sendiri, direkomendasikan dibuat kalau perlu granularitas lebih jauh),
+diterapkan di `hrm/payroll-employee-salary.blade.php::canViewSalary()`:
+nominal gaji individu di-mask kecuali viewer role di atas ATAU posisi
+pegawainya mengandung SATPAM/SECURITY (dicek 2x: render + guard di
+openForm()/save(), bertahan kalau dipanggil langsung).
+
+**2 temuan/keputusan dicatat** (bukan kode, murni klarifikasi bisnis dari
+user, meng-update entri PPh21 sebelumnya):
+1. **PPh21 TETAP bulanan** meski ada siklus gaji mingguan — bukan bug yg
+   perlu diperbaiki. Alasan user: hampir semua pegawai siklus WEEKLY masih
+   di bawah UMR (PPh21 otomatis 0% di bracket manapun), dan kalaupun ada yg
+   di atas UMR, mereka umumnya belum punya NPWP (PPh21 tidak bisa dijalankan
+   tanpa NPWP). Kesimpulan: `[DELTA-CONFIRM]` soal konversi TER
+   mingguan->bulanan di `Pph21TerService` **TIDAK PERLU dikerjakan** --
+   secara praktik tidak akan pernah terpakai. Tetap disarankan `pph21_active`
+   hanya utk MONTHLY sampai ada kasus nyata yg membutuhkan sebaliknya.
+2. **Konfirmasi enkripsi gaji** (pertanyaan user, dijawab bukan kode baru):
+   `pyr_employee_salary.basic_salary_monthly` dan `pyr_payslip.total_pokok`/
+   `total_gaji_bersih` SUDAH terenkripsi AES-256-GCM sejak fondasi awal
+   (`App\Casts\PayrollEncrypted`, `docs/payroll_encryption_decision.md`).
+   Kolom lain (BPJS/PPh21/overtime/tunjangan/denda) TETAP plaintext sesuai
+   scope keputusan asli ("mulai sempit dulu") -- gate visibilitas HR di atas
+   adalah lapisan TAMBAHAN (kontrol akses UI), bukan pengganti enkripsi.
+
+Diuji end-to-end via `Livewire::test`: 2 pegawai WEEKLY (1 berekening BCA, 1
+tanpa rekening) -> calculate->verify->confirm->markPaid via layar batch-run
+-> payslip print tampil benar (nama+bank) -> bank-transfer HANYA
+menampilkan pegawai berekening -> cash-roster HANYA menampilkan yg tanpa
+rekening -> discipline-report menampilkan Alpha pegawai kedua. Sempat
+ketemu 1 kejadian nyata anomaly-gate bekerja benar (bukan bug): test
+pertama pakai MONTHLY tanpa sadar ikut memproses 135+ pegawai riil yg
+belum py `pyr_employee_salary` -> `confirm()` ditolak krn 142 anomali --
+diperbaiki dgn isolasi test ke WEEKLY. Data test dibersihkan, diverifikasi
+0 baris tersisa + `payment_frequency` 2 pegawai dikembalikan ke MONTHLY.
+`npm run build` dijalankan. Test suite 101 passed/9 skipped/0 failed.
+
+**Belum**: Modul 07 (Master Karyawan + Rekening, mockup_07) -- data rekening
+sudah ada (`emp_bank_account`, dipakai bank-transfer/cash-roster di atas)
+dan form gaji/PTKP sudah ada (Master Gaji & Pajak Pegawai, entri
+sebelumnya), TAPI belum ada 1 layar CRUD Rekening Bank per pegawai yang
+persis meniru tabel mockup_07 (kolom Metode Gaji + Detail Rekening + Aksi
+Edit). PPh21/BPJS Master Karyawan+Rekening tetap prioritas berikutnya kalau
+diminta.
+
 > Dipisah dari `docs/BACKLOG.md` 2026-09-02 (permintaan user: "pindahkan ke
 > file LOG Job Done md file, untuk yang sudah sehingga file backlog md
 > mengecil") — supaya `BACKLOG.md` tetap ramping, cuma isi item yang MASIH

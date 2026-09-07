@@ -197,6 +197,10 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
             'HRM_ATTENDANCE' => route('hrm.attendance-daily'),
             'HRM_PAYROLL_SALARY' => route('hrm.payroll.employee-salary'),
+            'HRM_PAYROLL_CALC' => route('hrm.payroll.batch-run'),
+            'HRM_PAYROLL_BANKXFER' => route('hrm.payroll.bank-transfer'),
+            'HRM_PAYROLL_CASHROSTER' => route('hrm.payroll.cash-roster'),
+            'HRM_DISCIPLINE_REPORT' => route('hrm.discipline-report'),
             // Recruitment (L1-L9, L8 dibangun 2026-09-02 + Portal Candidate
             // simulasi) -- lihat docs/recruitment_state.yaml.
             'HRM_RCR_REQUISITION' => route('hrm.recruitment.requisition.list'),

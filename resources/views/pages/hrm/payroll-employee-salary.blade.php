@@ -13,6 +13,16 @@ use Livewire\Component;
 // "tidak semua aktif mengikuti aturan ini tetapi boleh dimudahkan agar
 // kedepan tinggal di-set mana yang pakai mana yang tidak") -- default OFF,
 // HR yang menyalakan per pegawai lewat form ini.
+//
+// VISIBILITY GATE (permintaan user 2026-09-07): "HR officer tidak semua dia
+// bisa melihat gaji, terutama yang bulanan kecuali satpam (security). Jadi
+// HR officer hanya jalankan proses dan hanya tahu total secara keseluruhan."
+// -> nominal gaji individu di-mask ("Dilindungi") utk viewer yang BUKAN
+// SecUser::canViewPayrollAmounts() (is_admin/DIREKSI/MGR_ACC), KECUALI
+// posisi pegawainya Satpam/Security -- itu tetap kelihatan siapa pun yang
+// akses layar ini. Guard diterapkan 2x: render (sembunyikan tombol edit)
+// DAN di openForm()/save() (bertahan kalau dipanggil langsung, bukan cuma
+// UI hidden).
 new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends Component
 {
     private const PTKP_OPTIONS = [
@@ -80,9 +90,27 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
         return self::PTKP_OPTIONS;
     }
 
+    public function canViewSalary(EmpEmployee $employee): bool
+    {
+        if (Auth::user()->canViewPayrollAmounts()) {
+            return true;
+        }
+
+        $positionName = mb_strtoupper($employee->position?->position_name ?? '');
+
+        return str_contains($positionName, 'SATPAM') || str_contains($positionName, 'SECURITY');
+    }
+
     public function openForm(int $employeeId): void
     {
-        $employee = EmpEmployee::findOrFail($employeeId);
+        $employee = EmpEmployee::with('position')->findOrFail($employeeId);
+
+        if (! $this->canViewSalary($employee)) {
+            session()->flash('error', 'Anda tidak punya akses melihat/mengatur gaji pegawai ini.');
+
+            return;
+        }
+
         $salary = PyrEmployeeSalary::activeFor($employeeId);
 
         $this->editingEmployeeId = $employeeId;
