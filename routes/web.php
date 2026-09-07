@@ -4,6 +4,27 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/menu');
 
+// PWA manifest -- dibuat dinamis (bukan public/manifest.json statis) supaya
+// nama aplikasi ikut Brand::name() (tm2sys.sys_constant APP_NAME, bisa
+// diedit lewat layar Configuration) tanpa perlu sinkron 2 tempat. Ikon
+// masih placeholder statis (navy + "TM", lihat public/images/pwa-icon-*.png)
+// -- BELUM auto-generate dari APP_LOGO_PATH kalau ada logo custom diupload,
+// itu butuh resize/crop terpisah, dicatat sbg simplifikasi.
+Route::get('/manifest.json', function () {
+    return response()->json([
+        'name' => \App\Support\Branding\Brand::name(),
+        'short_name' => 'ERP TM',
+        'start_url' => '/menu',
+        'display' => 'standalone',
+        'background_color' => '#2c3e69',
+        'theme_color' => '#2c3e69',
+        'icons' => [
+            ['src' => asset('images/pwa-icon-192.png'), 'sizes' => '192x192', 'type' => 'image/png', 'purpose' => 'any maskable'],
+            ['src' => asset('images/pwa-icon-512.png'), 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'any maskable'],
+        ],
+    ])->header('Content-Type', 'application/manifest+json');
+})->name('pwa.manifest');
+
 // Portal Rekrutmen Profesional (publik, DI LUAR middleware 'auth' internal --
 // akun kandidat TERPISAH dari sec_user, lihat App\Services\Portal\CandidateAuthService
 // + docs/recruitmentportal_web_tier1.md). Alamat SENGAJA dipertahankan sama

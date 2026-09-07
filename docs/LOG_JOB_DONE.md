@@ -3,6 +3,56 @@
 
 ---
 
+## 2026-09-07 (lanjutan 4) — PWA: app bisa "Install" ke layar utama HP + simulasi mobile clock-in
+
+User minta lanjut "sampai level mobile", simulasinya ditaruh langsung di
+chat (bukan cuma dokumen), plus langkah instalasi ke HP.
+
+**Simulasi (Artifact, bukan bagian repo)**: preview interaktif clock-in
+geofencing (mockup_09) -- kartu jarak-ke-kantor real-time (disimulasikan,
+koordinat & radius 50m persis dari `docs/payroll_timeattendance/
+tm2hrm_laravel_php83.zip::GpsHaversineService`), tombol Absen Masuk yang
+hidup/mati sesuai simulasi radius, + panduan instalasi Android/iOS
+tab-switch di sampingnya. Backend GPS log SENGAJA tidak dibangun (tetap di
+luar prioritas per BACKLOG §12.5, "GPS/selfie tidak diminta") -- ini murni
+preview visual+UX, ditandai jelas di halamannya sendiri.
+
+**PWA sungguhan dipasang ke app** (bukan cuma simulasi) supaya langkah
+instalasi yang diberikan ke user benar-benar bisa dipraktikkan:
+- `routes/web.php::pwa.manifest` (`GET /manifest.json`, publik) -- manifest
+  DINAMIS (bukan file statis `public/manifest.json`) supaya nama app ikut
+  `Brand::name()` (bisa diedit lewat layar Configuration) tanpa sinkron 2
+  tempat. `background_color`/`theme_color` pakai navy asli app (`#2c3e69`,
+  `resources/css/app.css --color-navy`), BUKAN warna simulasi Artifact di
+  atas (itu sengaja beda palet, murni demo kreatif terpisah).
+- `public/sw.js` -- service worker MINIMAL (cuma pass-through fetch, TANPA
+  caching agresif) -- cukup utk syarat "installable" Chrome/Android, sengaja
+  tidak cache apa pun krn app ini Livewire server-rendered (cache-first bisa
+  menyajikan HTML/CSRF token basi).
+- `public/images/pwa-icon-{192,512}.png` -- ikon placeholder (navy + "TM",
+  dibuat via PHP GD, BUKAN logo asli perusahaan -- `Brand::hasLogo()` kalau
+  ada logo custom diupload TIDAK otomatis dipakai di sini, itu butuh resize/
+  crop terpisah yang belum dibangun, dicatat sbg simplifikasi).
+- `resources/views/partials/pwa-head.blade.php` (baru) -- tag `<link
+  rel="manifest">`+meta theme-color+apple-touch-icon+registrasi service
+  worker, di-`@include` di `layouts/shell.blade.php` DAN `layouts/guest.blade.php`
+  (jadi bisa diinstall dari halaman login juga, bukan cuma setelah masuk).
+
+Diverifikasi lewat Browser pane nyata (bukan simulasi) ke `http://tmerp.test`
+(bukan https -- Herd pakai sertifikat lokal yang tidak dipercaya browser
+pane ini, http polos berhasil): `/manifest.json` mengembalikan JSON benar,
+`/images/pwa-icon-192.png` render ikon navy+TM dgn bersih, halaman login
+otomatis fetch `/manifest.json` (200 OK) membuktikan tag `<link>` terpasang
+& terbaca browser. Test suite penuh 101 passed/9 skipped/0 failed (layout
+inti disentuh, wajib dicek).
+
+**Cara install nyata (bukan simulasi) utk end user**: Android Chrome ->
+titik tiga -> "Instal aplikasi"/"Tambahkan ke layar utama"; iPhone Safari ->
+ikon Bagikan -> "Tambah ke Layar Utama". Ikon "TM" navy akan muncul di
+layar utama HP, buka app dlm mode standalone (tanpa address bar browser).
+
+---
+
 ## 2026-09-07 (lanjutan 3) — Payroll: 5 layar flow (03/05/06/08 + slip) + gate visibilitas HR + temuan PPh21/enkripsi
 
 User menegaskan menu harus SEIRAMA urutan checklist 11-mockup yang sudah
