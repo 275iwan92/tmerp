@@ -27,8 +27,11 @@ class PyrPayslip extends Model
         'total_bonus_pagi',
         'total_bonus_hadir',
         'total_uang_roti',
+        'total_overtime_pay',
         'total_denda',
         'total_gaji_bersih',
+        'has_anomaly',
+        'anomaly_note',
     ];
 
     protected $casts = [
@@ -39,8 +42,10 @@ class PyrPayslip extends Model
         'total_bonus_pagi' => 'decimal:2',
         'total_bonus_hadir' => 'decimal:2',
         'total_uang_roti' => 'decimal:2',
+        'total_overtime_pay' => 'decimal:2',
         'total_denda' => 'decimal:2',
         'total_gaji_bersih' => PayrollEncrypted::class,
+        'has_anomaly' => 'boolean',
     ];
 
     public function run(): BelongsTo

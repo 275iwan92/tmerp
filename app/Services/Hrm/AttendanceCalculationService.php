@@ -10,6 +10,7 @@ use App\Models\Master\EmpLeaveRequest;
 use App\Models\Master\EmpOvertimeRequest;
 use App\Models\Master\EmpShiftDetail;
 use App\Models\Master\EmpShiftRoster;
+use App\Models\Master\SysHoliday;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -55,7 +56,7 @@ class AttendanceCalculationService
             $lateSeq = $this->countPriorLateViolations($employeeId, $periodStart, $date) + 1;
         }
 
-        $overtimeMinutes = $this->resolveOvertimeMinutes($employeeId, $date);
+        [$overtimeMinutes, $overtimeType] = $this->resolveOvertime($employeeId, $date);
         $isUangRoti = $overtimeMinutes > 120 && $this->isProductionStaffOrSpv($employeeId);
 
         return $this->save(
@@ -70,6 +71,7 @@ class AttendanceCalculationService
             $minutesEarly,
             $minutesOut,
             $overtimeMinutes,
+            $overtimeType,
             $isUangRoti,
             $lateSeq,
         );
@@ -88,6 +90,13 @@ class AttendanceCalculationService
     {
         if ($leave->converted_to_izin) {
             return $leave->is_paid ? 'IS' : 'I';
+        }
+
+        // Tier 2 §4.1: SAKIT wajib surat dokter -- tanpa dokumen direklasifikasi
+        // ke Alpha (dikonfirmasi silang thd sp_process_attlogs sistem lama,
+        // yang juga membedakan efek payroll sakit dgn/tanpa surat dokter).
+        if ($leave->leave_type === 'SAKIT' && ! $leave->attachment_surat_dokter) {
+            return 'A';
         }
 
         return match ($leave->leave_type) {
@@ -211,12 +220,32 @@ class AttendanceCalculationService
         return $this->save($employeeId, $date, $priorToleranceEvents === 0 ? 'F' : 'FF');
     }
 
-    private function resolveOvertimeMinutes(int $employeeId, Carbon $date): int
+    // Tipe lembur (dasar multiplier pyr_overtime_rate) -- diadopsi dari pola
+    // sistem lama sp_process_attlogs: AWAL/sebelum shift = EARLY, sisanya
+    // dibedakan hari Minggu/libur nasional vs hari kerja biasa (tarif lembur
+    // hari libur lebih tinggi per kebiasaan UU Ketenagakerjaan).
+    /**
+     * @return array{0: int, 1: ?string} [overtime_minutes, overtime_type]
+     */
+    private function resolveOvertime(int $employeeId, Carbon $date): array
     {
-        return (int) EmpOvertimeRequest::where('employee_id', $employeeId)
+        $overtime = EmpOvertimeRequest::where('employee_id', $employeeId)
             ->whereDate('overtime_date', $date)
             ->where('status', 'APPROVED')
-            ->value('duration_minutes');
+            ->first();
+
+        if (! $overtime || $overtime->duration_minutes <= 0) {
+            return [0, null];
+        }
+
+        $type = match (true) {
+            $overtime->ot_type === 'AWAL' => 'EARLY',
+            $date->dayOfWeek === Carbon::SUNDAY => 'SUNDAY',
+            SysHoliday::isHoliday($date->toDateString()) => 'HOLIDAY',
+            default => 'WORKDAY',
+        };
+
+        return [(int) $overtime->duration_minutes, $type];
     }
 
     // Heuristik "Staff & SPV Produksi" (Tier 2 §4.4) -- belum ada flag role
@@ -244,6 +273,7 @@ class AttendanceCalculationService
         int $minutesEarly = 0,
         int $minutesOut = 0,
         int $overtimeMinutes = 0,
+        ?string $overtimeType = null,
         bool $isUangRoti = false,
         ?int $lateViolationSeq = null,
     ): AttDailyStatus {
@@ -259,6 +289,7 @@ class AttendanceCalculationService
                 'minutes_early_leave' => $minutesEarly,
                 'minutes_out_during_shift' => $minutesOut,
                 'overtime_minutes' => $overtimeMinutes,
+                'overtime_type' => $overtimeType,
                 'is_uang_roti' => $isUangRoti,
                 'late_violation_seq_in_period' => $lateViolationSeq,
                 'source' => 'AUTO',

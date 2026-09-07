@@ -27,6 +27,7 @@ class AttDailyStatus extends Model
         'minutes_early_leave',
         'minutes_out_during_shift',
         'overtime_minutes',
+        'overtime_type',
         'is_uang_roti',
         'late_violation_seq_in_period',
         'source',

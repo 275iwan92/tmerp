@@ -7,6 +7,7 @@ use App\Models\Master\EmpDisciplinary;
 use App\Models\Master\EmpEmployee;
 use App\Models\Pyr\PyrDendaRule;
 use App\Models\Pyr\PyrEmployeeSalary;
+use App\Models\Pyr\PyrOvertimeRate;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
 use App\Models\Pyr\PyrPayslipDetail;
@@ -23,6 +24,16 @@ use Illuminate\Support\Collection;
 // (slip terkirim, masuk jurnal, next_run_id dibuat otomatis kosong).
 // Baca att_daily_status (tm2mst) via Eloquent query terpisah (CLAUDE.md §2
 // pola 1 default, bukan VIEW cross-DB -- payroll run bukan hot-path).
+//
+// HIGH IMPROVEMENT 2026-09-07 (dipicu mempelajari stored procedure sistem
+// lama docs/ddl/tmhrm.sql): rule matrix (status/denda/overtime) di-preload
+// SEKALI per run ke memori (bukan query per baris presensi -- dulu bisa
+// ribuan query kecil utk 137 pegawai x banyak hari x 6 komponen), tambah
+// pembayaran lembur per jam data-driven (pyr_overtime_rate, sebelumnya
+// cuma Uang Roti flat), dan payslip anomali (has_anomaly/anomaly_note)
+// supaya pegawai tanpa pyr_employee_salary aktif TETAP KELIHATAN di run
+// (dulu senyap diskip total), plus guard confirm() menolak kalau masih
+// ada anomali belum diselesaikan.
 class PayrollEngineService
 {
     private const COMPONENTS = ['POKOK', 'TJ_KEAHLIAN', 'TJ_LOYALITAS', 'TJ_PRESTASI', 'BONUS_PAGI', 'BONUS_HADIR'];
@@ -41,10 +52,19 @@ class PayrollEngineService
             throw new \RuntimeException("Payroll run sudah {$run->run_status} -- presensi terkunci, tidak bisa dihitung ulang.");
         }
 
+        // Preload sekali per run -- rule matrix kecil (belasan status x 6
+        // komponen + denda + overtime), jauh lebih murah dari query per
+        // baris presensi x per komponen.
+        $statusRules = PyrStatusRule::all();
+        $dendaRules = PyrDendaRule::all();
+        $overtimeRates = PyrOvertimeRate::all();
+
         EmpEmployee::where('activate', true)
             ->where('payment_frequency', $periodType)
             ->pluck('employee_id')
-            ->each(fn (int $employeeId) => $this->calculateForEmployee($run, $employeeId, $periodStart, $periodEnd));
+            ->each(fn (int $employeeId) => $this->calculateForEmployee(
+                $run, $employeeId, $periodStart, $periodEnd, $statusRules, $dendaRules, $overtimeRates,
+            ));
 
         $run->update(['run_status' => 'CALCULATED']);
 
@@ -69,10 +89,17 @@ class PayrollEngineService
     }
 
     // Mengunci presensi periode ini -- setelah CONFIRMED, calculate() ditolak.
+    // Ditolak juga kalau masih ada payslip anomali (mis. pegawai tanpa rate
+    // gaji aktif) -- HR harus selesaikan dulu, bukan lolos senyap ke pembayaran.
     public function confirm(PyrPayrollRun $run, string $confirmedBy): void
     {
         if ($run->run_status !== 'VERIFIED') {
             throw new \RuntimeException('Payroll run harus VERIFIED dulu sebelum dikonfirmasi.');
+        }
+
+        $anomalyCount = $run->payslips()->where('has_anomaly', true)->count();
+        if ($anomalyCount > 0) {
+            throw new \RuntimeException("Masih ada {$anomalyCount} payslip anomali (lihat pyr_payslip.anomaly_note) -- selesaikan dulu sebelum konfirmasi.");
         }
 
         $run->update(['run_status' => 'CONFIRMED', 'confirmed_by' => $confirmedBy, 'confirmed_at' => now()]);
@@ -115,12 +142,31 @@ class PayrollEngineService
         return $nextRun;
     }
 
-    private function calculateForEmployee(PyrPayrollRun $run, int $employeeId, Carbon $periodStart, Carbon $periodEnd): void
-    {
+    private function calculateForEmployee(
+        PyrPayrollRun $run,
+        int $employeeId,
+        Carbon $periodStart,
+        Carbon $periodEnd,
+        Collection $statusRules,
+        Collection $dendaRules,
+        Collection $overtimeRates,
+    ): void {
         $salary = PyrEmployeeSalary::activeFor($employeeId);
         if (! $salary) {
-            // Belum punya master gaji aktif -- payslip tidak dibuat, HR harus
-            // lengkapi pyr_employee_salary dulu sebelum pegawai ini bisa digaji.
+            // Dulu: diam-diam di-skip, pegawai "hilang" tanpa jejak dari run.
+            // Sekarang: tetap dibuatkan payslip (angka 0) + ditandai anomali,
+            // supaya HR lihat & lengkapi datanya, bukan menyadari belakangan
+            // pas pegawai komplain tidak digaji.
+            PyrPayslip::updateOrCreate(
+                ['id_run' => $run->id_run, 'employee_id' => $employeeId],
+                [
+                    'total_pokok' => 0, 'total_tj_keahlian' => 0, 'total_tj_loyalitas' => 0, 'total_tj_prestasi' => 0,
+                    'total_bonus_pagi' => 0, 'total_bonus_hadir' => 0, 'total_uang_roti' => 0, 'total_overtime_pay' => 0,
+                    'total_denda' => 0, 'total_gaji_bersih' => 0,
+                    'has_anomaly' => true, 'anomaly_note' => 'Belum ada pyr_employee_salary aktif utk pegawai ini',
+                ],
+            );
+
             return;
         }
 
@@ -133,14 +179,14 @@ class PayrollEngineService
             ->whereIn('type', ['SP1', 'SP2', 'SP3'])
             ->get();
 
-        $totals = array_fill_keys([...self::COMPONENTS, 'UANG_ROTI', 'DENDA'], 0.0);
+        $totals = array_fill_keys([...self::COMPONENTS, 'UANG_ROTI', 'OVERTIME', 'DENDA'], 0.0);
         $details = [];
 
         foreach ($dailyStatuses as $daily) {
             $spMultiplier = $this->applySpMultiplier($activeDisciplinaries, $daily);
 
             foreach (self::COMPONENTS as $component) {
-                $amount = round($this->componentAmount($component, $daily, $salary) * $spMultiplier, 2);
+                $amount = round($this->componentAmount($component, $daily, $salary, $statusRules) * $spMultiplier, 2);
                 $totals[$component] += $amount;
                 if ($amount != 0.0) {
                     $details[] = $this->detailRow($daily, $component, $amount);
@@ -152,7 +198,13 @@ class PayrollEngineService
                 $details[] = $this->detailRow($daily, 'UANG_ROTI', 5000, 'Lembur > 2 jam, Staff/SPV Produksi (Tier 2 §4.4)');
             }
 
-            $denda = $this->dendaFor($daily);
+            $overtimePay = $this->overtimePay($daily, $salary, $overtimeRates);
+            if ($overtimePay > 0) {
+                $totals['OVERTIME'] += $overtimePay;
+                $details[] = $this->detailRow($daily, 'OVERTIME', $overtimePay, "Lembur {$daily->overtime_minutes} menit ({$daily->overtime_type})");
+            }
+
+            $denda = $this->dendaFor($daily, $dendaRules);
             if ($denda > 0) {
                 $totals['DENDA'] += $denda;
                 $details[] = $this->detailRow($daily, 'DENDA', -$denda);
@@ -160,7 +212,7 @@ class PayrollEngineService
         }
 
         $totalGajiBersih = $totals['POKOK'] + $totals['TJ_KEAHLIAN'] + $totals['TJ_LOYALITAS'] + $totals['TJ_PRESTASI']
-            + $totals['BONUS_PAGI'] + $totals['BONUS_HADIR'] + $totals['UANG_ROTI'] - $totals['DENDA'];
+            + $totals['BONUS_PAGI'] + $totals['BONUS_HADIR'] + $totals['UANG_ROTI'] + $totals['OVERTIME'] - $totals['DENDA'];
 
         $payslip = PyrPayslip::updateOrCreate(
             ['id_run' => $run->id_run, 'employee_id' => $employeeId],
@@ -172,8 +224,11 @@ class PayrollEngineService
                 'total_bonus_pagi' => round($totals['BONUS_PAGI'], 2),
                 'total_bonus_hadir' => round($totals['BONUS_HADIR'], 2),
                 'total_uang_roti' => round($totals['UANG_ROTI'], 2),
+                'total_overtime_pay' => round($totals['OVERTIME'], 2),
                 'total_denda' => round($totals['DENDA'], 2),
                 'total_gaji_bersih' => round($totalGajiBersih, 2),
+                'has_anomaly' => false,
+                'anomaly_note' => null,
             ],
         );
 
@@ -184,9 +239,9 @@ class PayrollEngineService
         }
     }
 
-    private function componentAmount(string $component, AttDailyStatus $daily, PyrEmployeeSalary $salary): float
+    private function componentAmount(string $component, AttDailyStatus $daily, PyrEmployeeSalary $salary, Collection $statusRules): float
     {
-        $effect = PyrStatusRule::effectFor($daily->status_code, $component, $daily->attendance_date);
+        $effect = $this->lookupStatusEffect($statusRules, $daily->status_code, $component, $daily->attendance_date);
 
         $dailyRate = match ($component) {
             'POKOK' => $salary->dailyBasicSalary(),
@@ -205,18 +260,21 @@ class PayrollEngineService
         };
     }
 
+    private function lookupStatusEffect(Collection $statusRules, string $statusCode, string $componentCode, $date): string
+    {
+        $rule = $statusRules->first(fn (PyrStatusRule $r) => $r->status_code === $statusCode
+            && $r->component_code === $componentCode
+            && $r->effective_from <= $date
+            && (! $r->effective_to || $r->effective_to >= $date));
+
+        return $rule->effect ?? 'FULL';
+    }
+
     // Formula prorata Tier 2 §3 -- menit_hilang menggabungkan telat + pulang
     // awal + KJK ("PAT-5/PAT+5 akumulasi keduanya"), dibagi durasi_shift_menit.
     private function prorata(float $dailyRate, AttDailyStatus $daily): float
     {
-        if (! $daily->shift_start || ! $daily->shift_end) {
-            return $dailyRate;
-        }
-
-        $start = Carbon::parse($daily->shift_start);
-        $end = Carbon::parse($daily->shift_end);
-        $shiftMinutes = $end->lt($start) ? $start->diffInMinutes($end->addDay()) : $start->diffInMinutes($end);
-
+        $shiftMinutes = $this->shiftDurationMinutes($daily);
         if ($shiftMinutes <= 0) {
             return $dailyRate;
         }
@@ -227,9 +285,52 @@ class PayrollEngineService
         return max(0.0, round($dailyRate - $potongan, 2));
     }
 
-    private function dendaFor(AttDailyStatus $daily): float
+    private function shiftDurationMinutes(AttDailyStatus $daily): int
     {
-        $rule = PyrDendaRule::forStatus($daily->status_code, $daily->attendance_date);
+        if (! $daily->shift_start || ! $daily->shift_end) {
+            return 0;
+        }
+
+        $start = Carbon::parse($daily->shift_start);
+        $end = Carbon::parse($daily->shift_end);
+
+        return $end->lt($start) ? $start->diffInMinutes($end->copy()->addDay()) : $start->diffInMinutes($end);
+    }
+
+    // Lembur per jam (HIGH IMPROVEMENT 2026-09-07, sebelumnya tidak ada sama
+    // sekali) -- tarif/jam diturunkan dari gaji pokok harian dibagi durasi
+    // shift AKTUAL hari itu (bukan angka "8 jam" hardcode, ikut shift
+    // masing-masing pegawai), dikalikan multiplier data-driven pyr_overtime_rate
+    // sesuai tipe hari (WORKDAY/EARLY/HOLIDAY/SUNDAY -- pola diadopsi dari
+    // sp_process_attlogs sistem lama, docs/ddl/tmhrm.sql).
+    private function overtimePay(AttDailyStatus $daily, PyrEmployeeSalary $salary, Collection $overtimeRates): float
+    {
+        if ($daily->overtime_minutes <= 0 || ! $daily->overtime_type) {
+            return 0.0;
+        }
+
+        $shiftMinutes = $this->shiftDurationMinutes($daily);
+        if ($shiftMinutes <= 0) {
+            return 0.0;
+        }
+
+        $hourlyRate = ($salary->dailyBasicSalary() / $shiftMinutes) * 60;
+
+        $rate = $overtimeRates->first(fn (PyrOvertimeRate $r) => $r->overtime_type === $daily->overtime_type
+            && $r->effective_from <= $daily->attendance_date
+            && (! $r->effective_to || $r->effective_to >= $daily->attendance_date));
+
+        $multiplier = $rate ? (float) $rate->multiplier : 1.0;
+
+        return round(($daily->overtime_minutes / 60) * $hourlyRate * $multiplier, 2);
+    }
+
+    private function dendaFor(AttDailyStatus $daily, Collection $dendaRules): float
+    {
+        $rule = $dendaRules->first(fn (PyrDendaRule $r) => $r->status_code === $daily->status_code
+            && $r->effective_from <= $daily->attendance_date
+            && (! $r->effective_to || $r->effective_to >= $daily->attendance_date));
+
         if (! $rule) {
             return 0.0;
         }

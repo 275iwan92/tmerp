@@ -12,6 +12,82 @@
 
 ---
 
+## 2026-09-07 — Payroll: HIGH IMPROVEMENT engine setelah pelajari stored procedure sistem lama
+
+User minta pelajari dump `docs/ddl/tmhrm.sql` (8000+ baris, termasuk 3 stored
+procedure produksi nyata: `sp_process_attlogs`, `sp_patch_att_summ_by_emp`,
+`sp_attendance_exception_report`, plus data INSERT riil ~1200 baris
+`tma_attendance_summary`) dan `docs/ddl/tmprd.sql` (`sp_updwo` ternyata stub
+kosong, tidak relevan). Instruksi eksplisit: "HIGH IMPROVEMENT dengan
+KETELITIAN tinggi, SIMPLE CEPAT AKURAT, semua angka dalam table jangan
+hardcode, pastikan ini jadi ENGINE PAYROLL."
+
+Sistem lama ini (`tmhrm`/`tmmst`/`tmpyr`, koneksi/skema BEDA dari V2 kita)
+ternyata jauh lebih matang dari perkiraan — bukan cuma dokumen desain, tapi
+kode produksi nyata dgn `payroll_periods.payroll_cycle ENUM('WEEKLY','MONTHLY')`
+(memvalidasi redesain 2026-09-05 di bawah), `tma_rawdata` ("Temporary table
+upload from Excel" — persis pola upload yg diminta user), `tma_attendance_codes`
+(master kode absensi data-driven: effect_type NONE/DEDUCTION/BONUS/WARNING,
+deduction_minutes/amt/percent — tabel `tma_attendance_codes_copy` bahkan
+sudah pakai vocabulary status PERSIS sama dgn yang dipakai di sini: H/S/I/IS/
+A/F/FF/C/CL/DRM/SKR/SP1-3/KJK/PA/T+15/PAT-5/PAT+5), dan `tma_attendance_summary`
+dgn `payroll_ready`/`anomaly_days`/`anomaly_notes` (gate anti-garbage-in).
+
+**3 perbaikan konkret diadopsi ke `PayrollEngineService`/`AttendanceCalculationService`:**
+
+1. **Performa (CEPAT)** — dulu `PyrStatusRule::effectFor()`/`PyrDendaRule::forStatus()`
+   query DB per baris presensi x per komponen (bisa ribuan query kecil utk
+   137 pegawai x banyak hari x 6 komponen per run). Sekarang `pyr_status_rule`/
+   `pyr_denda_rule`/`pyr_overtime_rate` (baru, lihat poin 2) di-preload SEKALI
+   di awal `calculate()` ke `Collection` in-memory, dioper ke semua method
+   privat — 0 query tambahan per baris.
+2. **Lembur per jam (AKURAT + DON'T HARDCODE, gap nyata sebelumnya)** — dulu
+   lembur cuma dapat Uang Roti flat Rp5.000 (Tier 2 §4.4), TIDAK ADA
+   pembayaran lembur per jam sama sekali. Sekarang: `att_daily_status`
+   dapat kolom `overtime_type` (WORKDAY/HOLIDAY/SUNDAY/EARLY, diklasifikasi
+   `AttendanceCalculationService::resolveOvertime()` — EARLY dari
+   `ot_type=AWAL`, SUNDAY/HOLIDAY dari `Carbon::dayOfWeek`+`SysHoliday::isHoliday()`,
+   sisanya WORKDAY), tabel baru `pyr_overtime_rate` (multiplier per tipe,
+   **data-driven, bukan hardcode** — diseed 1.5x kerja/early, 2.0x libur/
+   Minggu, ditandai `[DELTA-CONFIRM]` krn belum dikonfirmasi user angka
+   pastinya utk CV Telasih Makmur). Tarif/jam diturunkan dari gaji pokok
+   harian dibagi **durasi shift aktual hari itu** (bukan asumsi "8 jam"
+   hardcode). `pyr_payslip.total_overtime_pay` kolom baru, terpisah dari
+   Uang Roti.
+3. **Anomaly gate (AKURAT, gap nyata sebelumnya)** — dulu kalau pegawai tidak
+   punya `pyr_employee_salary` aktif, payslip-nya DIAM-DIAM tidak dibuat sama
+   sekali (pegawai "hilang" tanpa jejak dari payroll run). Sekarang tetap
+   dibuatkan payslip (angka 0) + `has_anomaly=true`+`anomaly_note` (kolom
+   baru `pyr_payslip`), dan `confirm()` MENOLAK kalau masih ada payslip
+   anomali di run tsb (`RuntimeException`, hitung jumlahnya).
+
+**1 perbaikan akurasi tambahan** (ditemukan cross-check ke `sp_process_attlogs`
+sistem lama, ternyata sudah tertulis di Tier 2 §4.1 sendiri tapi belum
+diimplementasikan): SAKIT tanpa lampiran surat dokter (`attachment_surat_dokter`
+kosong) sekarang direklasifikasi ke Alpha (`AttendanceCalculationService::
+mapLeaveToStatusCode()`), bukan otomatis dapat status S penuh POKOK.
+
+**Sengaja TIDAK diadopsi** dari sistem lama (dicatat biar jelas ini pilihan
+sadar, bukan kelalaian): pola `tma_so_ass.group_emp_id` (daftar employee_id
+dipisah `;` dalam 1 kolom teks, di-query pakai `FIND_IN_SET` — anti-pattern
+relasional, `emp_shift_roster` kita yang 1-baris-per-pegawai-per-tanggal
+lebih benar); model `disciplinary_points` akumulatif (kita pakai event
+diskret SP1/SP2/SP3 sesuai Tier 2 §6 yang sudah dikonfirmasi bisnis,
+tidak diganti tanpa alasan kuat); sub-tipe IJIN berdasar jam (Awal/Tengah/
+Akhir Shift, kode 03/04/05) — granularitas ekstra yang belum diminta.
+
+Diuji tinker: 2 pegawai WEEKLY, pegawai A lembur WORKDAY 60mnt (15.000,
+1.5x dari tarif/jam Rp10.000) + lembur SUNDAY 60mnt (20.000, 2.0x) =
+total_overtime_pay 35.000 (cocok hitungan manual); pegawai B sengaja tanpa
+`pyr_employee_salary` → payslip anomali dibuat otomatis, `confirm()`
+terbukti menolak. Re-query DB pasca cleanup: 0 baris tersisa. Test suite
+penuh: 98 passed/9 skipped/0 failed.
+
+**Belum dikerjakan**: hourly-rate basis utk TJ_KEAHLIAN via lookup posisi
+(`REFF_KEAHLIAN`, dicatat 2026-09-05) masih belum diadopsi; seluruh layar UI.
+
+---
+
 ## 2026-09-05 (lanjutan sore) — Payroll: redesain siklus payroll_run sesuai alur bisnis lengkap
 
 Setelah fondasi pagi (entri di bawah), user menulis alur bisnis end-to-end
