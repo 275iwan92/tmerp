@@ -3,6 +3,75 @@
 
 ---
 
+## 2026-09-07 (lanjutan 5) — Payroll: Modul 01 Upload Presensi + validasi data riil vs Excel HR
+
+User menunjuk ulang checklist 11-mockup ("saya tidak melihat menu untuk
+upload excel") -- benar, Modul 01 belum pernah dibangun (cuma 02-06+08 di
+sesi sebelumnya). Sekalian diminta baca `docs/attachments/` utk simulasi
+data riil dan "pencocokan hasil datanya" -- validasi UAT yang sejak awal
+sesi ini direncanakan tapi belum pernah dieksekusi dgn data sungguhan.
+
+**Modul 01 dibangun**: `resources/views/pages/hrm/attendance-upload.blade.php`
+(menu baru `HRM_ATTENDANCE_UPLOAD`, grup Time Attendance sort=15 -- SEBELUM
+"Presensi" sort=20, sesuai urutan flow). Terima `.csv/.txt/.xlsx` dgn kolom
+wajib `device_pin,tanggal,jam_masuk,jam_keluar`, preview tabel + highlight
+baris tidak dikenal, tombol "Simpan & Eksekusi Matching Shift" -> insert
+`att_finger_import`+`att_finger_raw` lalu langsung panggil
+`AttendanceCalculationService::calculateForDate()` per pegawai+tanggal.
+Parsing pakai `fgetcsv` manual (csv/txt) + `PhpOffice\PhpSpreadsheet\IOFactory`
+langsung (xlsx) -- **BUKAN** `Maatwebsite\Excel::toArray()` spt rencana awal,
+ternyata API v4 minta instance class `Concerns\Import` utk kasus sesimpel
+ini, ribet tanpa manfaat tambahan. Kolom `emp_employee.device_pin` baru
+ditambah (prasyarat matching, sebelumnya tidak ada sama sekali).
+
+**Validasi data riil** (permintaan eksplisit "migrasi dan proses sebagai
+ujud simulasi dan pencocokan hasil datanya"): diambil dari sheet `TA`
+(presensi harian mentah) + `REKAP ABSEN` file
+`docs/attachments/8. GAJI KARYAWAN PERIODE 22 - 28 AGUSTUS 2026 WEEKLY
+1657.xlsb` (dibuka via Python pyxlsb) utk 2 pegawai riil: MAHMUD SUPA'AT
+(device asli 354) & HERU KURNIAWAN (device asli 421), periode 22-28 Agustus
+2026. Migration `2026_09_07_000013`/`000014` (PERMANEN, bukan tinker
+sekali-pakai -- sesuai `feedback_keep_dummy_data.md`) menyeed 2 employee
+baru (kode VAL-001/VAL-002, JELAS ditandai "bukan pegawai produksi
+sungguhan" di komentar), shift 07:30-15:30 sesuai jadwal asli, gaji pokok
+ESTIMASI (Rp3.200.000/bulan -- BUKAN angka rahasia HR asli, formula rate
+asli mereka berbasis faktor-jabatan yg tidak terbaca dari file export),
+dan `emp_overtime_request` APPROVED sesuai selisih jam pulang riil vs
+shift (60/180/180/60 menit di 24/26/27/28 Agustus).
+
+Upload dijalankan via `Livewire::test` dgn CSV berisi jam riil dari sheet
+`TA` (bukan data karangan) -- hasil:
+
+| Yang divalidasi | Hasil Engine | Excel Asli (REKAP ABSEN) | Verdict |
+|---|---|---|---|
+| Status hadir 5 hari kerja | H semua, 0 telat | SAKIT/IJIN/ALPHA/SP = 0 | ✅ Cocok |
+| Deteksi lembur (jumlah hari) | 4 hari (60/180/180/60 mnt) | `L. BIASA` = 4 | ✅ Cocok |
+| Uang Roti (jumlah hari >120mnt) | terdeteksi 2 hari benar secara logika | `U. ROTI` = 2 | ✅ Logika cocok |
+| **Uang Roti (nominal masuk payslip)** | **Rp0** (role tidak lolos filter) | **Rp10.000** | ❌ **TIDAK cocok** |
+| Denda | Rp0 | Rp0 | ✅ Cocok |
+| Gaji Pokok/TJ Keahlian (Rupiah) | dari rate estimasi | dari formula faktor-jabatan rahasia | ⚠️ Tidak bisa divalidasi (rate asli tidak terbaca dari file export, cuma hasil akhir) |
+
+**Temuan nyata dari mismatch Uang Roti**: `AttendanceCalculationService::
+isProductionStaffOrSpv()` mensyaratkan posisi pegawai mengandung kata
+"STAFF" atau "SPV" (mengikuti bunyi literal Tier 2 §4.4 "Staff & SPV
+Produksi") -- posisi yg dipakai pegawai uji (`Senior Heidelberg Operator`,
+level Operator) TIDAK lolos filter itu, padahal Excel HR ASLI tetap
+memberi Uang Roti ke pegawai level Operator ini. Ini indikasi nyata dokumen
+Tier 2 (sumbernya PPTX lama) mungkin salah tulis "Staff & SPV" padahal
+praktik riil di lapangan mencakup Operator juga -- **BELUM diperbaiki di
+kode** (tidak mau ubah aturan bisnis sepihak tanpa konfirmasi), dicatat
+sbg pertanyaan konkret utk user: apakah Uang Roti berlaku utk SEMUA role
+Produksi (termasuk Operator), bukan cuma Staff/SPV?
+
+Data simulasi (2 pegawai, presensi, payroll run WEEKLY id_run=8 status
+CALCULATED) SENGAJA TIDAK dibersihkan -- tetap ada di database supaya bisa
+dilihat langsung lewat layar Presensi Harian & Payroll Batch Run yang
+sudah dibangun. Test suite penuh 101 passed/9 skipped/0 failed (tidak
+berubah, upload screen belum ada automated test tersendiri). `npm run
+build` dijalankan.
+
+---
+
 ## 2026-09-07 (lanjutan 4) — PWA: app bisa "Install" ke layar utama HP + simulasi mobile clock-in
 
 User minta lanjut "sampai level mobile", simulasinya ditaruh langsung di

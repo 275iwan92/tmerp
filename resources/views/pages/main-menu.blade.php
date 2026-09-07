@@ -195,6 +195,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_CORRECTION' => route('hrm.correction-requests'),
             'HRM_SELFSERVICE' => route('self-service.index'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
+            'HRM_ATTENDANCE_UPLOAD' => route('hrm.attendance-upload'),
             'HRM_ATTENDANCE' => route('hrm.attendance-daily'),
             'HRM_PAYROLL_SALARY' => route('hrm.payroll.employee-salary'),
             'HRM_PAYROLL_CALC' => route('hrm.payroll.batch-run'),

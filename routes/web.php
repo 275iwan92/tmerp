@@ -215,6 +215,7 @@ Route::middleware('auth')->group(function () {
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
             Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
+            Route::livewire('/hrm/attendance-upload', 'pages::hrm.attendance-upload')->name('hrm.attendance-upload');
             Route::livewire('/hrm/attendance-daily', 'pages::hrm.attendance-daily')->name('hrm.attendance-daily');
             Route::livewire('/hrm/payroll/employee-salary', 'pages::hrm.payroll-employee-salary')->name('hrm.payroll.employee-salary');
             Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run');

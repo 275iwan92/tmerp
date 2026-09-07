@@ -18,6 +18,7 @@ class EmpEmployee extends Model
     protected $fillable = [
         'legacy_employee_id',
         'employee_code',
+        'device_pin',
         'company_id',
         'position_id',
         'full_name',
