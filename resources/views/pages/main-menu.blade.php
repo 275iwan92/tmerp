@@ -709,56 +709,36 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </template>
         </div>
         @if (Auth::user()->is_admin)
-            {{-- "Settings" -- dipecah dari 1 layar gado-gado (Identitas
-            Aplikasi + Bahasa+Terjemahan + Semua Konstanta digabung 1 route)
-            jadi MENU GROUP beranak (mirror pola "Security" di bawahnya)
-            2026-09-07: Identifikasi/Language/Localization/Constants masing2
-            route+layar sendiri. docs/configurationstandard.md. Dipasak TEPAT
-            DI ATAS "Security", is_admin only sama spt Security. --}}
-            <div class="side-footer" x-data="{ open: false }">
-                <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
-                    <span class="side-cap">Settings</span>
-                    <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
-                </button>
-                <template x-for="it in [
-                    { code: 'SET_CONFIG', label: 'Identifikasi', icon: 'fa-solid fa-id-badge' },
-                    { code: 'SET_LANG', label: 'Language', icon: 'fa-solid fa-language' },
-                    { code: 'SET_LOCALIZATION', label: 'Localization', icon: 'fa-solid fa-globe' },
-                    { code: 'SET_CONSTANTS', label: 'Constants', icon: 'fa-solid fa-sliders' },
-                ]" :key="it.code">
-                    <button type="button" class="leaf" x-show="open" :class="{ active: activeTabCode === it.code }" @click="openTab(it.code)">
-                        <span class="lic"><i :class="it.icon"></i></span>
-                        <span class="lbl" x-text="it.label"></span>
-                    </button>
-                </template>
-            </div>
-            {{-- "Security" -- instruksi user 2026-08-30: dipasak PALING BAWAH
-            sidebar kiri, HANYA utk is_admin, dan berupa MENU GROUP (bukan 1
-            tombol) berisi sub-item Account/Group/Group per Submodule/
-            Migration/Support Tickets -- ini pintu masuk ke tab2 yang SUDAH
-            ADA di security.index (SET_USER/SET_GROUP/SET_PERM/SET_MIGRATION)
-            + setup.support-tickets, cuma dipecah jadi leaf terpisah (dulu
-            digabung 1 tombol yg selalu lompat ke tab 'users' saja). Portal
-            Karyawan tab Security (profil+password non-admin) TIDAK
-            berubah/tidak kena gate ini. --}}
-            <div class="side-footer" x-data="{ open: false }">
-                <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
-                    <span class="side-cap">Security</span>
-                    <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
-                </button>
-                <template x-for="it in [
-                    { code: 'SET_USER', label: 'Account', icon: 'fa-solid fa-user-gear' },
-                    { code: 'SET_GROUP', label: 'Group', icon: 'fa-solid fa-people-group' },
-                    { code: 'SET_PERM', label: 'Group per Submodule', icon: 'fa-solid fa-diagram-project' },
-                    { code: 'SET_MIGRATION', label: 'Migration', icon: 'fa-solid fa-database' },
-                    { code: 'SET_TICKETS', label: 'Support Tickets', icon: 'fa-solid fa-ticket' },
-                ]" :key="it.code">
-                    <button type="button" class="leaf" x-show="open" :class="{ active: activeTabCode === it.code }" @click="openTab(it.code)">
-                        <span class="lic"><i :class="it.icon"></i></span>
-                        <span class="lbl" x-text="it.label"></span>
-                    </button>
-                </template>
-            </div>
+            {{-- Footer "Settings"/"Security" -- 2026-09-07: dulu 2 array Alpine
+            literal hardcode di sini (label/icon/urutan tulis manual di Blade,
+            beda sumber dari sys_app_menu.label yang dibaca modul lain) --
+            sekarang 100% data-driven dari sys_app_menu lewat setupGroups
+            (code SETUP -> group SET_GRP_SETTINGS/SET_GRP_SECURITY -> leaf
+            item, migration 2026_09_07_000004). Supaya menu ini gampang
+            dikonfigurasi (ubah label/icon/urutan/tambah-hapus item) cukup
+            edit baris tabel, TIDAK perlu sentuh Blade lagi -- sama seperti
+            semua modul lain. Markup persis mirror blok `sidebarGroups` di
+            atas. docs/sidebarmenustandard.md. is_admin only (SETUP module
+            gate) -- Portal Karyawan tab Security (profil+password non-admin)
+            TIDAK berubah/tidak kena gate ini. --}}
+            <template x-for="grp in setupGroups" :key="grp.id">
+                <div class="side-footer" x-data="{ open: false }">
+                    <template x-if="grp.menuType === 'group'">
+                        <button type="button" class="side-cap-btn" @click="open = !open" :title="open ? 'Ciutkan' : 'Buka'">
+                            <span class="side-cap" x-text="grp.label"></span>
+                            <i class="fa-solid fa-chevron-down chev" :class="{ collapsed: !open }"></i>
+                        </button>
+                    </template>
+                    <template x-for="it in (grp.menuType === 'group' ? grp.children : [grp])" :key="it.id">
+                        <button type="button" class="leaf" x-show="grp.menuType !== 'group' || open"
+                            :class="{ active: activeTabCode === it.code, 'not-built': !it.isClickable }" :title="it.statusLabel" @click="openTab(it.code)">
+                            <span class="lic"><i :class="it.icon || 'fa-solid fa-file-lines'"></i></span>
+                            <span class="lbl" x-text="it.label"></span>
+                            <span class="status-dot" :style="{ background: it.statusColor }"></span>
+                        </button>
+                    </template>
+                </div>
+            </template>
         @endif
     </aside>
 

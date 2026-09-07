@@ -62,17 +62,44 @@ class MainMenuShellSmokeTest extends TestCase
         $this->get('/setup/constants')->assertOk()->assertSee('Constants');
     }
 
+    // 2026-09-07: footer "Settings"/"Security" dulu 2 array Alpine literal
+    // hardcode di main-menu.blade.php -- sekarang 100% data-driven dari
+    // sys_app_menu (SET_GRP_SETTINGS/SET_GRP_SECURITY, migration
+    // 2026_09_07_000004) supaya gampang dikonfigurasi lewat tabel, bukan
+    // edit Blade. Assert LANGSUNG ke computed menuTree() (bukan scraping
+    // HTML/JSON mentah -- rapuh terhadap perubahan serialisasi Alpine).
     public function test_settings_group_leaves_appear_in_sidebar_shell(): void
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $response = $this->get('/menu');
+        $component = \Livewire\Livewire::test('pages::main-menu');
+        $tree = collect($component->instance()->menuTree());
 
-        $response->assertOk();
-        $response->assertSee('Identifikasi');
-        $response->assertSee("label: 'Language'", false);
-        $response->assertSee("label: 'Localization'", false);
-        $response->assertSee("label: 'Constants'", false);
+        $setup = $tree->firstWhere('code', 'SETUP');
+        $this->assertNotNull($setup, 'Modul SETUP harus ada di menuTree() utk admin.');
+
+        $children = collect($setup['children']);
+        $settingsGroup = $children->firstWhere('code', 'SET_GRP_SETTINGS');
+        $securityGroup = $children->firstWhere('code', 'SET_GRP_SECURITY');
+        $this->assertNotNull($settingsGroup);
+        $this->assertNotNull($securityGroup);
+        $this->assertSame('group', $settingsGroup['menuType']);
+        $this->assertSame('group', $securityGroup['menuType']);
+
+        $this->assertSame(
+            ['Identifikasi', 'Language', 'Localization', 'Constants'],
+            collect($settingsGroup['children'])->pluck('label')->all()
+        );
+        $this->assertSame(
+            ['Account', 'Group', 'Group per Submodule', 'Migration', 'Support Tickets'],
+            collect($securityGroup['children'])->pluck('label')->all()
+        );
+
+        // SET_THEME/SET_MENU (dead entries lama, NOT_BUILT tanpa route nyata)
+        // sengaja dinonaktifkan (migration 2026_09_07_000005) supaya tidak
+        // ikut nongol di footer sbg efek samping data-driven-nya SETUP.
+        $this->assertFalse($children->contains('code', 'SET_THEME'));
+        $this->assertFalse($children->contains('code', 'SET_MENU'));
     }
 }

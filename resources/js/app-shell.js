@@ -67,6 +67,16 @@ document.addEventListener('alpine:init', () => {
             return this.currentModule ? this.currentModule.children : [];
         },
 
+        // Grup "Settings"/"Security" di footer sidebar (data-driven dari
+        // sys_app_menu, code SETUP -- lihat SET_GRP_SETTINGS/SET_GRP_SECURITY,
+        // migration 2026_09_07_000004) -- SETUP sengaja tidak muncul di
+        // mega-menu topbar (difilter di main-menu.blade.php), jadi diambil
+        // langsung dari menuTree, bukan lewat currentModule/selectModule.
+        get setupGroups() {
+            const setup = this.menuTree.find((m) => m.code === 'SETUP');
+            return setup ? setup.children : [];
+        },
+
         selectModule(code) {
             this.activeMod = code;
             if (code === 'HOME') this.showHome();
