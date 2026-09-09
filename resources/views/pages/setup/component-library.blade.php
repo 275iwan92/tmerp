@@ -235,7 +235,16 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
     UIUX_components_part1.html, topbar "Mode Tampilan") -- preview lebar
     layar Laptop/Tablet/Smartphone thd tab yg aktif, murni CSS max-width,
     tidak ubah data apapun. --}}
-    <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#e2e8f0] px-4 py-3 flex flex-col items-center gap-2.5 shadow-sm">
+    <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#e2e8f0] px-4 py-3 flex items-center justify-between gap-3 flex-wrap shadow-sm">
+        <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
+            <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">Mode Tampilan:</span>
+            <button type="button" @click="device = 'laptop'" :class="device === 'laptop' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">🖥️ Laptop</button>
+            <button type="button" @click="device = 'tablet'" :class="device === 'tablet' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Tablet</button>
+            <button type="button" @click="device = 'mobile'" :class="device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Smartphone</button>
+        </div>
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
             <button type="button" @click="mainTab = 'forms'" :class="mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
                 class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Forms</button>
@@ -245,15 +254,6 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                 class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Kanban</button>
             <button type="button" @click="mainTab = 'gantt'" :class="mainTab === 'gantt' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
                 class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Gantt Chart</button>
-        </div>
-        <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-            <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">Mode Tampilan:</span>
-            <button type="button" @click="device = 'laptop'" :class="device === 'laptop' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">🖥️ Laptop</button>
-            <button type="button" @click="device = 'tablet'" :class="device === 'tablet' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Tablet</button>
-            <button type="button" @click="device = 'mobile'" :class="device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Smartphone</button>
         </div>
     </div>
 
