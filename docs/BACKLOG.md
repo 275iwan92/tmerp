@@ -676,6 +676,35 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > 21:00 hari kerja + `tmerp-backlog-autowork-weekend-2200` 22:00 akhir
 > pekan, sebelumnya cuma 15:45 hari kerja).
 >
+> **TAMBAHAN SCOPE (instruksi user 2026-09-09 siang)**: selain translate
+> string ke `sys_translations`, **setiap malam juga WAJIB pastikan
+> komponen yang disentuh benar-benar TURUNAN dari library komponen shared**
+> (`resources/views/components/form/*.blade.php`,
+> `resources/views/components/grid/*.blade.php`) — showcase-nya sekarang ada
+> di **Settings > Library Component for UI/UX** (`setup/component-library.blade.php`,
+> menu `SET_UILIB`, dibangun sesi paralel 2026-09-09 pagi, 16 komponen
+> `x-form.*` baru: password-input/switch/radio-group/color-picker/
+> range-slider/number-stepper/otp-input/star-rating/masked-input/
+> searchable-select/multi-select/phone-input/currency-input/file-dropzone/
+> split-button/mini-calendar). Tujuannya: kalau nanti komponen ini perlu
+> diubah (styling/behavior), cukup ubah 1 file component, bukan cari-ganti
+> di puluhan layar. **Saat menyentuh 1 layar malam ini** (utk translate
+> string-nya), sekalian cek: kalau layar itu punya widget yang POLANYA SAMA
+> dengan salah satu komponen di library (mis. custom dropdown manual yang
+> sebetulnya cocok jadi `<x-form.searchable-select>`, toggle checkbox manual
+> yang cocok jadi `<x-form.switch>`) — migrasikan ke komponen library
+> tsb SEKALIAN (bukan proyek terpisah, cukup selagi file itu sudah dibuka).
+> **JANGAN** cari-cari gap di layar LAIN yang tidak termasuk scope malam itu
+> (itu di luar anggaran waktu ~2 jam/malam) — cukup opportunistic di file
+> yang memang sudah disentuh. Kalau ketemu gap besar/lintas-layar yang perlu
+> keputusan (refactor massal), JANGAN eksekusi sendiri — catat di §10 sbg
+> temuan baru, biar dibahas terpisah (pola audit-dulu-baru-rollout §10 yang
+> sudah ada). Konteks lengkap 3 file WIP terkait ini per 2026-09-09 13:00 —
+> `date-picker.blade.php`, `spreadsheet-table.blade.php`,
+> `component-library.blade.php` — masih ada sesi paralel aktif mengerjakannya
+> siang ini, cek `git log`/`git status` dulu sebelum malam ini menyentuh
+> ketiga file itu supaya tidak tabrakan.
+>
 > **PENTING — realistis, bukan overclaim**: 7 malam ini TIDAK akan menutup
 > SEMUA string aplikasi (ratusan file) — cakupannya sengaja dibatasi ke
 > layar/komponen paling sering dipakai (leverage tertinggi dulu). Malam ke-7
