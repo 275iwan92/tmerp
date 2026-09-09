@@ -54,6 +54,43 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
 
     public ?string $demoFileName = null;
 
+    // Tab utama (Forms/Calendar/Kanban/Gantt Chart) + device viewport switcher
+    // -- SENGAJA server-side (Livewire property), BUKAN Alpine x-data client-
+    // only spt versi awal. Ditemukan bug nyata 2026-09-09: setiap wire:click
+    // dari DALAM satu tab (mis. calSetView di tab Calendar) memicu morph
+    // Livewire atas SELURUH komponen -- morph itu memutus reaktivitas x-show/
+    // x-if Alpine utk bagian LAIN yang tak terkait (tombol switcher tab jadi
+    // macet: state Alpine brubah tapi DOM tak ikut update, dibuktikan lewat
+    // Alpine.$data() vs computed style langsung di browser). Server jadi
+    // satu-satunya sumber kebenaran menghindari SELURUH kelas bug ini --
+    // konten tab dipilih via @if PHP biasa, bukan x-show/x-if Alpine.
+    public string $mainTab = 'forms';
+
+    public string $device = 'laptop';
+
+    public function setMainTab(string $tab): void
+    {
+        if (in_array($tab, ['forms', 'calendar', 'kanban', 'gantt'], true)) {
+            $this->mainTab = $tab;
+        }
+    }
+
+    public function setDevice(string $device): void
+    {
+        if (in_array($device, ['laptop', 'tablet', 'mobile'], true)) {
+            $this->device = $device;
+        }
+    }
+
+    public function deviceMaxWidth(): string
+    {
+        return match ($this->device) {
+            'tablet' => '768px',
+            'mobile' => '390px',
+            default => '100%',
+        };
+    }
+
     // Tab Calendar (permintaan user 2026-09-09) -- replika docs/mockups/
     // mockup_UIUX_calendar.html. Data event demo di properti (bukan DB),
     // dimutasi via method di bawah -- server tetap sumber kebenaran posisi
@@ -541,50 +578,55 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
 };
 ?>
 
-<div x-data="{ mainTab: 'forms', device: 'laptop', widths: { laptop: '100%', tablet: '768px', mobile: '390px' } }">
-    {{-- Tab utama (permintaan user 2026-09-09, bentuk pill segmented spt
-    referensi screenshot "By you / Recents / By others" -- TAPI warna ikut
-    tema terang halaman ini, bukan dipaksa gelap spt referensinya, permintaan
-    lanjutan user 2026-09-09) + device viewport switcher (mockup
-    UIUX_components_part1.html, topbar "Mode Tampilan") -- preview lebar
-    layar Laptop/Tablet/Smartphone thd tab yg aktif, murni CSS max-width,
-    tidak ubah data apapun. --}}
+<div>
+    {{-- Tab utama (bentuk pill segmented spt referensi screenshot "By you /
+    Recents / By others", warna ikut tema terang halaman) + device viewport
+    switcher (mockup UIUX_components_part1.html, topbar "Mode Tampilan").
+    SENGAJA wire:click server-side (lihat catatan panjang di properti
+    $mainTab/$device PHP class atas) -- BUKAN Alpine x-data client-only,
+    supaya tidak macet setiap kali ada morph Livewire dari tab manapun. --}}
     <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#e2e8f0] px-4 py-3 flex items-center justify-between gap-3 flex-wrap shadow-sm">
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
             <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">Mode Tampilan:</span>
-            <button type="button" @click="device = 'laptop'" :class="device === 'laptop' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">🖥️ Laptop</button>
-            <button type="button" @click="device = 'tablet'" :class="device === 'tablet' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Tablet</button>
-            <button type="button" @click="device = 'mobile'" :class="device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Smartphone</button>
+            <button type="button" wire:click="setDevice('laptop')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'laptop' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">🖥️ Laptop</button>
+            <button type="button" wire:click="setDevice('tablet')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'tablet' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">📱 Tablet</button>
+            <button type="button" wire:click="setDevice('mobile')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">📱 Smartphone</button>
         </div>
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-            <button type="button" @click="mainTab = 'forms'" :class="mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Forms</button>
-            <button type="button" @click="mainTab = 'calendar'" :class="mainTab === 'calendar' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Calendar</button>
-            <button type="button" @click="mainTab = 'kanban'" :class="mainTab === 'kanban' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Kanban</button>
-            <button type="button" @click="mainTab = 'gantt'" :class="mainTab === 'gantt' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
-                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Gantt Chart</button>
+            <button type="button" wire:click="setMainTab('forms')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Forms</button>
+            <button type="button" wire:click="setMainTab('calendar')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'calendar' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Calendar</button>
+            <button type="button" wire:click="setMainTab('kanban')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'kanban' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Kanban</button>
+            <button type="button" wire:click="setMainTab('gantt')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'gantt' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Gantt Chart</button>
         </div>
     </div>
 
-    <div class="mx-auto my-5 px-4 flex flex-col gap-5 transition-[max-width] duration-300" :style="{ maxWidth: widths[device] }">
+    <div class="mx-auto my-5 px-4 flex flex-col gap-5 transition-[max-width] duration-300" style="max-width: {{ $this->deviceMaxWidth() }}">
 
+        {{-- Katalog pola widget form/interaksi yang tersedia di project ini
+        (resources/views/components/form/*.blade.php) -- acuan visual &
+        kontrak pemakaian sebelum dipakai di layar bisnis nyata. Sumber:
+        docs/mockups/UIUX_components_part1.html + mockup_UIUX_calendar.html.
+        Semua interaksi di halaman ini murni demo (tidak menulis ke
+        database). Deskripsi tiap section dipindah ke komentar (bukan
+        ditampilkan di UI) atas permintaan user 2026-09-09. --}}
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Library Component for UI/UX</div>
-            <p class="text-[11px] text-muted">Katalog pola widget form/interaksi yang tersedia di project ini (<code>resources/views/components/form/*.blade.php</code>) — acuan visual & kontrak pemakaian sebelum dipakai di layar bisnis nyata. Sumber: <code>docs/mockups/UIUX_components_part1.html</code> + <code>mockup_UIUX_calendar.html</code>. Semua interaksi di bawah ini murni demo (tidak menulis ke database). Pindah tab di atas utk lihat Forms/Calendar/Kanban/Gantt Chart.</p>
         </div>
 
-        <template x-if="mainTab === 'forms'">
-        <div class="flex flex-col gap-5">
+        {{-- SEMUA tab SELALU dirender (bukan @if yang menghapus dari DOM) --
+        tab Gantt punya <script> inline (x-gantt.board) yang HANYA jalan
+        kalau ada di HTML awal, TIDAK jalan kalau disuntik belakangan via
+        morph Livewire (browser tidak eksekusi <script> hasil innerHTML).
+        Visibilitas murni class CSS dihitung ULANG server tiap render --
+        TIDAK pakai x-show Alpine (state Alpine terbukti bisa putus/berhenti
+        reaktif thd DOM setelah morph Livewire dari tab lain, lihat catatan
+        panjang di $mainTab properti PHP atas). --}}
+        <div class="flex flex-col gap-5 {{ $mainTab === 'forms' ? '' : 'hidden' }}">
 
         <!-- A. Teks & Password -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Input Teks & Password</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.case-toggle-input</code> (baru, auto-height + tombol ganti huruf kecil/Kapital/BESAR) · <code>x-form.password-input</code> (baru, mata show/hide).</p>
+            {{-- x-form.case-toggle-input (baru, auto-height + tombol ganti huruf kecil/Kapital/BESAR) · x-form.password-input (baru, mata show/hide). --}}
             <div class="grid two gap-3.5">
                 <x-form.case-toggle-input label="Nama Lengkap" wire:model="demoName" placeholder="Masukkan nama..." />
                 <x-form.password-input label="Password" wire:model="demoPassword" placeholder="Password..." />
@@ -594,7 +636,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- B. Pilihan: Radio / Checkbox / Switch -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Pilihan (Radio / Checkbox / Switch)</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.radio-group</code>, <code>x-form.checkbox</code> (sudah ada, dipakai berjajar), <code>x-form.switch</code> — semua baru kecuali checkbox.</p>
+            {{-- x-form.radio-group, x-form.checkbox (sudah ada, dipakai berjajar), x-form.switch — semua baru kecuali checkbox. --}}
             <div class="grid three gap-3.5">
                 <x-form.radio-group label="Jenis Kelamin" name="demoGender" wire:model="demoGender" :options="['Pria' => 'Pria', 'Wanita' => 'Wanita']" :selected="$demoGender" />
                 <div class="flex flex-col gap-1">
@@ -612,7 +654,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- C. Dropdown Pintar -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Dropdown Pintar (Searchable / Multi-Select)</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.searchable-select</code> · <code>x-form.multi-select</code> — keduanya baru.</p>
+            {{-- x-form.searchable-select · x-form.multi-select — keduanya baru. --}}
             <div class="grid two gap-3.5">
                 <x-form.searchable-select label="Lokasi Domisili" wire:model="demoLocation" :options="$this->locationOptions()" placeholder="Pilih atau ketik lokasi..." />
                 <x-form.multi-select label="Kemampuan Bahasa" wire:model="demoLanguages" :options="$this->languageOptions()" :selected="['id', 'en']" placeholder="Pilih bahasa..." />
@@ -622,7 +664,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- D. Angka & Warna -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Angka, Rentang & Warna</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.number-stepper</code> · <code>x-form.range-slider</code> · <code>x-form.color-picker</code> · <code>x-form.decimal-input</code> (baru, auto-format N desimal saat blur + unit suffix) — semua baru.</p>
+            {{-- x-form.number-stepper · x-form.range-slider · x-form.color-picker · x-form.decimal-input (baru, auto-format N desimal saat blur + unit suffix) — semua baru. --}}
             <div class="grid three gap-3.5">
                 <x-form.number-stepper label="Jumlah Anak" wire:model="demoChildren" :min="0" :value="0" />
                 <x-form.range-slider label="Pengeluaran Bulanan" wire:model="demoExpense" :min="0" :max="100000000" :step="1000000" :value="15000000" format="currency" />
@@ -634,7 +676,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- E. Format Khusus -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Format Khusus (Masking & Prefix)</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.masked-input</code> · <code>x-form.phone-input</code> · <code>x-form.currency-input</code> — semua baru.</p>
+            {{-- x-form.masked-input · x-form.phone-input · x-form.currency-input — semua baru. --}}
             <div class="grid three gap-3.5">
                 <x-form.masked-input label="No. KTP" wire:model="demoNik" :segments="[6, 6, 4]" separator="." hint="Format 6.6.4 digit" />
                 <x-form.phone-input label="No. HP" wire:model="demoPhone" />
@@ -645,7 +687,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- F. Tanggal -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Tanggal</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.date-picker</code> (sudah ada, mode date/datetime) · <code>x-form.date-range</code> (baru, 2 tanggal + kalkulator durasi otomatis). Kalender penuh (bulan/minggu/hari, drag-drop event) ada di tab <b>Calendar</b>.</p>
+            {{-- x-form.date-picker (sudah ada, mode date/datetime) · x-form.date-range (baru, 2 tanggal + kalkulator durasi otomatis). Kalender penuh (bulan/minggu/hari, drag-drop event) ada di tab Calendar. --}}
             <div class="grid two gap-3.5 mb-3.5">
                 <x-form.date-picker label="Tanggal Lahir" name="demoBirthDate" mode="date" />
                 <x-form.date-picker label="Jadwal Meeting" name="demoMeetingAt" mode="datetime" />
@@ -656,7 +698,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- G. Verifikasi & Rating -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Verifikasi & Rating</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.otp-input</code> · <code>x-form.star-rating</code> — semua baru.</p>
+            {{-- x-form.otp-input · x-form.star-rating — semua baru. --}}
             <div class="grid two gap-3.5">
                 <x-form.otp-input label="OTP Code (6 Digit)" wire:model="demoOtp" :length="6" />
                 <x-form.star-rating label="Rating Pengalaman" wire:model="demoRating" :max="5" />
@@ -666,14 +708,14 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- H. Upload File -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Upload File (Drag & Drop)</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.file-dropzone</code> — baru, native Livewire <code>WithFileUploads</code> (bukan simulasi).</p>
+            {{-- x-form.file-dropzone — baru, native Livewire WithFileUploads (bukan simulasi). --}}
             <x-form.file-dropzone label="Upload Dokumen" wire:model="demoFile" accept="image/*,.pdf" :current-name="$demoFileName" />
         </div>
 
         <!-- I. Aksi & Tombol -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Aksi & Status</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.split-button</code> (baru) · <code>x-form.badge</code> (sudah ada, ditampilkan lagi sbg referensi tone).</p>
+            {{-- x-form.split-button (baru) · x-form.badge (sudah ada, ditampilkan lagi sbg referensi tone). --}}
             <div class="flex items-center gap-4 flex-wrap">
                 <div class="w-[180px]">
                     <x-form.split-button label="Save" icon="💾" wire:click="demoSave('Split Button')" :actions="$this->splitButtonActions()" />
@@ -689,7 +731,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- J. QR Code -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5" x-data="tmQrDemo()">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">QR Code Generator</div>
-            <p class="text-[11px] text-muted mb-4">Generate QR code 100% lokal di browser (npm <code>qrcode</code>) — TIDAK kirim data ke API pihak ketiga, beda dari mockup asli yang pakai CDN qrcodejs (sama-sama client-side, tapi ini bebas dependency eksternal saat runtime).</p>
+            {{-- Generate QR code 100% lokal di browser (npm qrcode) — TIDAK kirim data ke API pihak ketiga, beda dari mockup asli yang pakai CDN qrcodejs (sama-sama client-side, tapi ini bebas dependency eksternal saat runtime). --}}
             <button type="button" @click="generate('Demo QR — ' + new Date().toISOString())"
                 class="px-4 py-2 rounded-md text-xs font-semibold bg-[#059669] text-white cursor-pointer">📱 Generate QR Code Demo</button>
 
@@ -706,15 +748,14 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         </div>
 
         </div>
-        </template>
 
         <!-- Tab Calendar -->
-        <template x-if="mainTab === 'calendar'">
+        <div class="{{ $mainTab === 'calendar' ? '' : 'hidden' }}">
         <div class="flex flex-col gap-5">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Event Calendar</div>
-            <p class="text-[11px] text-muted">Replika docs/mockups/mockup_UIUX_calendar.html — navbar penuh (judul+Today+panah+judul bulan+switch Day/Week/Month) di atas 3 panel (mini-kalender+cari kiri, grid tengah, Today's Events+edit kanan), drag-drop event antar tanggal (hover cuma highlight sel tujuan, tag jadi transparan saat ditarik — persis mockup), event multi-hari melebar di baris all-day view Week (persis mockup — bukan di Month, mockup asli juga begitu). Server = sumber kebenaran (sama filosofi Kanban). Tema warna ikut terang halaman ini (mockup asli dark). Kalender ringan tanpa semua ini: <code>x-form.mini-calendar</code>.</p>
+            {{-- Replika docs/mockups/mockup_UIUX_calendar.html — navbar penuh (judul+Today+panah+judul bulan+switch Day/Week/Month) di atas 3 panel (mini-kalender+cari kiri, grid tengah, Today's Events+edit kanan), drag-drop event antar tanggal (hover cuma highlight sel tujuan, tag jadi transparan saat ditarik — persis mockup), event multi-hari melebar di baris all-day view Week (persis mockup — bukan di Month, mockup asli juga begitu). Server = sumber kebenaran (sama filosofi Kanban). Tema warna ikut terang halaman ini (mockup asli dark). Kalender ringan tanpa semua ini: x-form.mini-calendar. --}}
         </div>
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden" x-data="{ draggedId: null, hoverDate: null }">
@@ -933,15 +974,15 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         </div>
 
         </div>
-        </template>
+        </div>
 
         <!-- Tab Kanban -->
-        <template x-if="mainTab === 'kanban'">
+        <div class="{{ $mainTab === 'kanban' ? '' : 'hidden' }}">
         <div class="flex flex-col gap-5">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Kanban Board</div>
-            <p class="text-[11px] text-muted mb-4">Pola drag-drop kartu antar kolom status (docs/kanbanboardstandard.md) — BELUM ada komponen "x-kanban.board" reusable (sengaja, standar bilang tunggu kanban ke-3 dgn pola serupa sebelum diekstrak jadi komponen generik). Markup di bawah ini COPY MANUAL pola standar tsb apa adanya, bukan abstraksi baru.</p>
+            {{-- Pola drag-drop kartu antar kolom status (docs/kanbanboardstandard.md) — BELUM ada komponen "x-kanban.board" reusable (sengaja, standar bilang tunggu kanban ke-3 dgn pola serupa sebelum diekstrak jadi komponen generik). Markup di bawah ini COPY MANUAL pola standar tsb apa adanya, bukan abstraksi baru. --}}
             <div x-data="{ draggedId: null }">
                 <div class="flex gap-3 overflow-x-auto pb-2">
                     @foreach ($this->demoKanbanColumns() as $column)
@@ -972,15 +1013,15 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         </div>
 
         </div>
-        </template>
+        </div>
 
         <!-- Tab Gantt Chart -->
-        <template x-if="mainTab === 'gantt'">
+        <div class="{{ $mainTab === 'gantt' ? '' : 'hidden' }}">
         <div class="flex flex-col gap-5">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Gantt Chart</div>
-            <p class="text-[11px] text-muted mb-4">Komponen reusable "x-gantt.board" yang SUDAH ADA (docs/ganttboardstandard.md, dipakai Scheduling Board Production) — geser blok utk pindah jam mulai, tarik tepi kanan utk ubah durasi, klik utk popover detail, dobel-klik utk pindah mesin/kategori.</p>
+            {{-- Komponen reusable "x-gantt.board" yang SUDAH ADA (docs/ganttboardstandard.md, dipakai Scheduling Board Production) — geser blok utk pindah jam mulai, tarik tepi kanan utk ubah durasi, klik utk popover detail, dobel-klik utk pindah mesin/kategori. --}}
             <x-gantt.board
                 :rows="$this->demoGanttRows()"
                 resource-header-label="Mesin"
@@ -993,7 +1034,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         </div>
 
         </div>
-        </template>
+        </div>
 
     </div>
 </div>
