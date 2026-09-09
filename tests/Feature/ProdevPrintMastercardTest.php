@@ -64,4 +64,41 @@ class ProdevPrintMastercardTest extends TestCase
         $this->assertStringContainsString('--print-ink:#000000', $html);
         $this->assertStringContainsString('size:A4 landscape', $html);
     }
+
+    // Part demo id=65 ("Rigid Box Parfum #5", PDDUM1-5) -- bagian dari 33
+    // prod_part dummy seeded migration 000012 (JANGAN dihapus, lihat memory
+    // feedback_keep_dummy_data + project_prodev_inqprod_dummy_workload),
+    // DIPERKAYA (bukan dibuat baru) via migration
+    // 2026_09_09_000004_enrich_demo_mastercard_part_pddum1_5.php supaya user
+    // bisa lihat contoh printout "beneran nyata" (permintaan user 2026-09-09)
+    // -- termasuk Material dari Inquiry asal (Mode #1, inquiry 505) & artwork
+    // ter-generate. TIDAK ada tearDown yang menghapus part ini.
+    public function test_real_demo_part_65_renders_fully_populated(): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+
+        $html = Livewire::test('pages::production.prodev-print', ['part' => 65])
+            ->assertOk()
+            ->assertSee('Rigid Box Parfum #5')
+            ->assertSee('BAPAK BAMBANG')
+            ->assertSee('PISAU RBP5 STANDAR')
+            ->assertSee('DS000055')
+            // Material: read-only reference dari iqp_part_material milik Inquiry
+            // asal (Mode #1) -- BUKAN field ProdPart sendiri.
+            ->assertSee('B KRAFT 275 GR MSE 75 X 102 CM')
+            ->assertSee('275 gsm')
+            ->assertSee('BLACK')
+            ->assertSee('CYAN')
+            ->assertSee('MAGENTA')
+            ->assertSee('YELLOW')
+            ->assertSee('CETAK')
+            ->assertSee('Laminating Doff')
+            ->assertSee('Hot Print')
+            ->assertSee('Emboss')
+            ->assertDontSee('Belum ada artwork/preview tersimpan untuk part ini.')
+            ->html();
+
+        $this->assertStringContainsString('prod_part/65/artwork/demo-mastercard.jpg', $html);
+    }
 }
