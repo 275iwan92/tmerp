@@ -2,13 +2,13 @@
     <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showSortModal', false)">
         <div class="bg-white rounded-xl w-[360px] max-w-[95vw] shadow-2xl">
             <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center justify-between">
-                <span>Urutkan Data</span>
+                <span>{{ \App\Support\Localization\Translator::t('shared_sortmodal_title', 'Urutkan Data') }}</span>
                 <button type="button" wire:click="$set('showSortModal', false)" class="text-white/70 hover:text-white cursor-pointer">✕</button>
             </div>
             <div class="p-4">
-                <div class="text-[10px] font-bold text-muted uppercase mb-2">Kolom (dari yang tampil)</div>
+                <div class="text-[10px] font-bold text-muted uppercase mb-2">{{ \App\Support\Localization\Translator::t('shared_sortmodal_column_label', 'Kolom (dari yang tampil)') }}</div>
                 <div class="border border-[#e2e7ee] rounded-md h-[180px] overflow-y-auto tm-scroll mb-3">
-                    <div wire:click="$set('sortModalColumn', null)" class="px-2.5 py-1.5 text-[12px] cursor-pointer border-b border-[#f3f4f6] {{ ! $sortModalColumn ? 'bg-[#eaf2ff] font-semibold text-[#1d4ed8]' : 'hover:bg-[#f4f5f8]' }}">Tidak diurutkan</div>
+                    <div wire:click="$set('sortModalColumn', null)" class="px-2.5 py-1.5 text-[12px] cursor-pointer border-b border-[#f3f4f6] {{ ! $sortModalColumn ? 'bg-[#eaf2ff] font-semibold text-[#1d4ed8]' : 'hover:bg-[#f4f5f8]' }}">{{ \App\Support\Localization\Translator::t('shared_sortmodal_unsorted', 'Tidak diurutkan') }}</div>
                     @foreach ($gridVisibleColumns as $key)
                         @continue(($columnDefs[$key]['sortable'] ?? true) === false)
                         <div wire:click="$set('sortModalColumn', '{{ $key }}')" wire:key="sort-{{ $key }}"
@@ -24,8 +24,8 @@
                 @endif
 
                 <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
-                    <button type="button" wire:click="$set('showSortModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                    <button type="button" wire:click="applySortSelection" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Terapkan</button>
+                    <button type="button" wire:click="$set('showSortModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ \App\Support\Localization\Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                    <button type="button" wire:click="applySortSelection" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">{{ \App\Support\Localization\Translator::t('shared_btn_apply', 'Terapkan') }}</button>
                 </div>
             </div>
         </div>

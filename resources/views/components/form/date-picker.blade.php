@@ -50,7 +50,7 @@
 
     <div class="relative flex items-center">
         <input type="text" readonly x-bind:value="display" @click="toggle()"
-            placeholder="{{ $isDatetime ? 'Pilih tanggal & jam...' : 'Pilih tanggal...' }}"
+            placeholder="{{ $isDatetime ? \App\Support\Localization\Translator::t('shared_datepicker_placeholder_datetime', 'Pilih tanggal & jam...') : \App\Support\Localization\Translator::t('shared_datepicker_placeholder_date', 'Pilih tanggal...') }}"
             @if ($attributes->get('disabled')) disabled @endif
             class="{{ $triggerClass }}">
         <span class="absolute right-2.5 text-[13px] text-[#697386] pointer-events-none">{{ $isDatetime ? '🕒' : '📅' }}</span>

@@ -98,6 +98,22 @@
 - **R31.** Dokumentasi per-layar (127 file) + flow per-modul (12 file) +
   database/tabel (12 file) + katalog komponen UI/UX (6 file) + index master
   — lihat `docs/LOG_JOB_DONE.md` 2026-09-05.
+- **R32.** [BARU 2026-09-09] **Temuan + perbaikan jadwal scheduled task.**
+  Sesi `tmerp-backlog-autowork-1700` (cek status siang 2026-09-09) menemukan
+  `i18n-rollout-malam-1` (2026-09-07 21:00) & `-malam-2` (2026-09-08 21:00)
+  sempat **fire tapi 0 commit dihasilkan** (gagal diam-diam, root cause
+  belum diselidiki — bukan kerjaan kode, di luar scope Claude Code
+  menyelidiki infra scheduler). Atas instruksi user: (a) task umum
+  `tmerp-backlog-autowork` diubah dari cron harian 15:45 hari-kerja-saja
+  jadi **7 hari/minggu** (`tmerp-backlog-autowork-1700` 21:00 hari kerja +
+  `tmerp-backlog-autowork-weekend-2200` 22:00 akhir pekan, task baru); (b)
+  seluruh jadwal 7-malam i18n **direset mulai hari ini** dgn jam seragam
+  21:00 hari kerja/22:00 akhir pekan (lihat §13 utk tabel baru + WIP Malam 1
+  yang sudah mulai dikerjakan siang ini, migration
+  `2026_09_09_000001_seed_i18n_night1_shared.php` — pagination-footer/
+  column-modal/sort-modal/toolbar-buttons SELESAI, date-picker SEBAGIAN,
+  select+spreadsheet-table BELUM, akan dituntaskan `i18n-rollout-malam-1`
+  malam ini).
 
 **MASIH TERBUKA** (kategori besar, lihat section angka di bawah utk detail):
 
@@ -644,10 +660,21 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > — baru cakup ~8 string chrome shell paling dasar. **Keputusan user
 > 2026-09-07**: lanjutkan perluasan cakupan **bertahap 1 malam/hari** (bukan
 > 1 sesi maraton), dieksekusi via **scheduled task** (fitur bawaan Claude
-> Code, tersimpan `~/.claude/scheduled-tasks/`) jam **21:00 WIB** (Sabtu
-> 22:30, Minggu 20:00 — jadwal khusus permintaan user), **target 7 hari
-> kalender** (Senin 2026-09-07 s/d Minggu 2026-09-13), **maks ~2 jam kerja
-> per malam** (batasi token, jangan maraton).
+> Code, tersimpan `~/.claude/scheduled-tasks/`), **maks ~2 jam kerja per
+> malam** (batasi token, jangan maraton).
+>
+> **RESET JADWAL 2026-09-09**: Malam 1 (`i18n-rollout-malam-1`, 2026-09-07
+> 21:00) dan Malam 2 (`i18n-rollout-malam-2`, 2026-09-08 21:00) **fire tapi
+> 0 commit dihasilkan** (gagal diam-diam, ditemukan oleh sesi
+> `tmerp-backlog-autowork-1700` 2026-09-09 — root cause belum diselidiki).
+> Atas instruksi user, seluruh jadwal 7-malam **digeser mulai hari ini**
+> dengan jam seragam **21:00 WIB hari kerja / 22:00 WIB akhir pekan**
+> (menggantikan skema lama Sabtu 22:30/Minggu 20:00): Malam 1=Rab 2026-09-09,
+> ..., Malam 7=Sel 2026-09-15. Konten/scope tiap malam TIDAK berubah, cuma
+> tanggal & jam. Task otonom umum `tmerp-backlog-autowork` juga diselaraskan
+> ke pola yang sama (jalan 7 hari/minggu: `tmerp-backlog-autowork-1700`
+> 21:00 hari kerja + `tmerp-backlog-autowork-weekend-2200` 22:00 akhir
+> pekan, sebelumnya cuma 15:45 hari kerja).
 >
 > **PENTING — realistis, bukan overclaim**: 7 malam ini TIDAK akan menutup
 > SEMUA string aplikasi (ratusan file) — cakupannya sengaja dibatasi ke
@@ -675,13 +702,13 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 >
 > | # | Tanggal (WIB) | Jam | Scope | Status | Catatan |
 > |---|---|---|---|---|---|
-> | 1 | Sen 2026-09-07 | 21:00 | **Komponen shared** (leverage tertinggi — dipakai puluhan layar sekaligus): `components/grid/*`, `components/form/*`, pagination footer, badge status generik, tombol generik (Simpan/Batal/Hapus/Tambah/Cari/Export/Refresh), modal konfirmasi Ya/Tidak/Batal, pesan validasi generik. Key prefix `shared_*`. | ⬜ | |
-> | 2 | Sel 2026-09-08 | 21:00 | **Sisa chrome shell** yang belum ditarik malam sebelumnya (dari sesi 2026-09-07): drawer Notifikasi, drawer Chat, drawer Asisten AI, command palette (Ctrl+K), Help Center index. Audit ulang `main-menu.blade.php` cari string yg lolos. Key prefix `shell_*` (lanjutan). | ⬜ | |
-> | 3 | Rab 2026-09-09 | 21:00 | **Sales inti**: Inquiry Hub grid (`inquiry/hub.blade.php`), header+toolbar Inquiry form (BUKAN detail teknis dieline/costing formula), Quotation list, CO list — label & tombol saja. Key prefix `sales_*`. | ⬜ | |
-> | 4 | Kam 2026-09-10 | 21:00 | **Procurement inti**: PR/PO/PV/PQ/PRT list+entry — toolbar & label status saja (bukan field kalkulasi). Key prefix `proc_*`. | ⬜ | |
-> | 5 | Jum 2026-09-11 | 21:00 | **Inventory + Production inti**: grid Stock In/Out/Adjustment, Master Card, WO Worklist — toolbar & label status. Key prefix `inv_*`/`prod_*`. | ⬜ | |
-> | 6 | Sab 2026-09-12 | **22:30** | **Finance + HRM inti**: COA, Cash & Bank, grid Employee, Attendance — toolbar & label status. Key prefix `fin_*`/`hrm_*`. | ⬜ | |
-> | 7 | Min 2026-09-13 | **20:00** | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. | ⬜ | |
+> | 1 | Rab 2026-09-09 | 21:00 | **Komponen shared** (leverage tertinggi — dipakai puluhan layar sekaligus): `components/grid/*`, `components/form/*`, pagination footer, badge status generik, tombol generik (Simpan/Batal/Hapus/Tambah/Cari/Export/Refresh), modal konfirmasi Ya/Tidak/Batal, pesan validasi generik. Key prefix `shared_*`. | 🟡 | WIP dimulai sesi `tmerp-backlog-autowork-1700` 2026-09-09 siang (migration `2026_09_09_000001_seed_i18n_night1_shared.php` + pagination-footer/column-modal/sort-modal/toolbar-buttons SELESAI, date-picker SEBAGIAN, select+spreadsheet-table BELUM) — diselesaikan malam ini oleh `i18n-rollout-malam-1`. |
+> | 2 | Kam 2026-09-10 | 21:00 | **Sisa chrome shell** yang belum ditarik malam sebelumnya (dari sesi 2026-09-07): drawer Notifikasi, drawer Chat, drawer Asisten AI, command palette (Ctrl+K), Help Center index. Audit ulang `main-menu.blade.php` cari string yg lolos. Key prefix `shell_*` (lanjutan). | ⬜ | |
+> | 3 | Jum 2026-09-11 | 21:00 | **Sales inti**: Inquiry Hub grid (`inquiry/hub.blade.php`), header+toolbar Inquiry form (BUKAN detail teknis dieline/costing formula), Quotation list, CO list — label & tombol saja. Key prefix `sales_*`. | ⬜ | |
+> | 4 | Sab 2026-09-12 | 22:00 | **Procurement inti**: PR/PO/PV/PQ/PRT list+entry — toolbar & label status saja (bukan field kalkulasi). Key prefix `proc_*`. | ⬜ | |
+> | 5 | Min 2026-09-13 | 22:00 | **Inventory + Production inti**: grid Stock In/Out/Adjustment, Master Card, WO Worklist — toolbar & label status. Key prefix `inv_*`/`prod_*`. | ⬜ | |
+> | 6 | Sen 2026-09-14 | 21:00 | **Finance + HRM inti**: COA, Cash & Bank, grid Employee, Attendance — toolbar & label status. Key prefix `fin_*`/`hrm_*`. | ⬜ | |
+> | 7 | Sel 2026-09-15 | 21:00 | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. | ⬜ | |
 >
 > Riwayat lengkap tiap malam (bukan cuma centang) pindah ke
 > `docs/LOG_JOB_DONE.md` begitu selesai, sama seperti item backlog lain.
