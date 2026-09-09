@@ -109,29 +109,163 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
             "{$ym}-18" => [['title' => 'Cuti panjang (H1)', 'colorClass' => 'green'], ['title' => 'Serah terima shift', 'colorClass' => 'amber']],
         ];
     }
+
+    // Tab Kanban (permintaan user 2026-09-09) -- docs/kanbanboardstandard.md
+    // §1 EKSPLISIT bilang belum ada komponen x-kanban.board reusable (sengaja
+    // ditunda sampai kanban ke-3 muncul dgn pola serupa) -- markup di bawah
+    // ini COPY MANUAL pola standar §2 apa adanya, BUKAN abstraksi baru.
+    public array $demoKanbanCards = [
+        ['id' => 1, 'title' => 'Order #1001 — PT Sinar Jaya', 'stage' => 'BARU'],
+        ['id' => 2, 'title' => 'Order #1002 — CV Makmur Abadi', 'stage' => 'BARU'],
+        ['id' => 3, 'title' => 'Order #1003 — Toko Abadi Jaya', 'stage' => 'PROSES'],
+        ['id' => 4, 'title' => 'Order #1004 — PT Cipta Karya', 'stage' => 'SELESAI'],
+    ];
+
+    public function demoKanbanColumns(): array
+    {
+        return [
+            ['key' => 'BARU', 'label' => 'Baru'],
+            ['key' => 'PROSES', 'label' => 'Diproses'],
+            ['key' => 'SELESAI', 'label' => 'Selesai'],
+        ];
+    }
+
+    public function moveDemoCard(int $cardId, string $targetStage): void
+    {
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                $card['stage'] = $targetStage;
+                break;
+            }
+        }
+    }
+
+    // Tab Gantt Chart (permintaan user 2026-09-09) -- reuse komponen
+    // reusable gantt.board yang SUDAH ADA (docs/ganttboardstandard.md,
+    // dipakai Scheduling Board Production). Halaman ini yang resolve
+    // jam/durasi mentah -> posisi pixel, komponennya sendiri tidak tahu
+    // apa itu "mesin"/"proses" (aturan §2 dokumen itu).
+    public array $demoGanttBlocks = [
+        ['id' => 1, 'resource' => 'm1', 'title' => 'Cetak — Order #1001', 'category' => 'Cetak', 'start' => 8.0, 'duration' => 3.0, 'progress' => 60],
+        ['id' => 2, 'resource' => 'm1', 'title' => 'Laminasi — Order #1001', 'category' => 'Laminasi', 'start' => 11.0, 'duration' => 2.0, 'progress' => 15],
+        ['id' => 3, 'resource' => 'm2', 'title' => 'Cetak — Order #1002', 'category' => 'Cetak', 'start' => 9.0, 'duration' => 4.0, 'progress' => 80],
+    ];
+
+    protected function demoGanttResourceLabels(): array
+    {
+        return ['m1' => 'Mesin A', 'm2' => 'Mesin B'];
+    }
+
+    public function demoGanttRows(): array
+    {
+        $timelineStart = 8;
+        $pxPerHour = 70;
+        $categoryColors = ['Cetak' => ['#bfdbfe', '#1e3a8a'], 'Laminasi' => ['#fde68a', '#78350f'], 'Plong' => ['#bbf7d0', '#14532d']];
+
+        $rows = [];
+        foreach ($this->demoGanttResourceLabels() as $key => $label) {
+            $blocks = collect($this->demoGanttBlocks)
+                ->where('resource', $key)
+                ->map(function (array $b) use ($timelineStart, $pxPerHour, $categoryColors) {
+                    [$bg, $text] = $categoryColors[$b['category']] ?? ['#e5e7eb', '#374151'];
+
+                    return [
+                        'id' => $b['id'],
+                        'resource' => $b['resource'],
+                        'title' => $b['title'],
+                        'subtitle' => $b['category'],
+                        'timeLabel' => sprintf('%02d:00–%02d:00', (int) $b['start'], (int) ($b['start'] + $b['duration'])),
+                        'statusLabel' => 'Berjalan',
+                        'left' => ($b['start'] - $timelineStart) * $pxPerHour,
+                        'width' => $b['duration'] * $pxPerHour,
+                        'progress' => $b['progress'],
+                        'bg' => $bg,
+                        'text' => $text,
+                        'urgent' => false,
+                        'dashed' => false,
+                        'risk' => false,
+                        'locked' => false,
+                    ];
+                })->values()->all();
+
+            $rows[] = ['resource' => $key, 'label' => $label, 'blocks' => $blocks];
+        }
+
+        return $rows;
+    }
+
+    public function moveGanttBlock(int $id, float $newStartHour): void
+    {
+        foreach ($this->demoGanttBlocks as &$b) {
+            if ($b['id'] === $id) {
+                $b['start'] = $newStartHour;
+                break;
+            }
+        }
+    }
+
+    public function resizeGanttBlock(int $id, float $newDurationHour): void
+    {
+        foreach ($this->demoGanttBlocks as &$b) {
+            if ($b['id'] === $id) {
+                $b['duration'] = max(0.5, $newDurationHour);
+                break;
+            }
+        }
+    }
+
+    public function reassignGanttBlock(int $id, string $resourceKey, string $label): void
+    {
+        foreach ($this->demoGanttBlocks as &$b) {
+            if ($b['id'] === $id) {
+                $b['resource'] = $resourceKey;
+                $b['category'] = $label;
+                break;
+            }
+        }
+    }
 };
 ?>
 
-<div x-data="{ device: 'laptop', widths: { laptop: '100%', tablet: '768px', mobile: '390px' } }">
-    {{-- Device viewport switcher (mockup UIUX_components_part1.html, topbar
-    "Mode Tampilan") -- preview lebar layar Laptop/Tablet/Smartphone thd
-    seluruh katalog di bawah, murni CSS max-width, tidak ubah data apapun. --}}
-    <div class="sticky top-0 z-20 bg-[#1e293b] border-b border-[#334155] px-4 py-2 flex items-center justify-center gap-2">
-        <span class="text-[#94a3b8] text-[11px] font-semibold mr-1">Mode Tampilan:</span>
-        <button type="button" @click="device = 'laptop'" :class="device === 'laptop' ? 'bg-accent text-white border-accent' : 'bg-[#334155] text-[#cbd5e1] border-[#475569]'"
-            class="px-2.5 py-1 rounded-md text-[11px] font-semibold border cursor-pointer">🖥️ Laptop / Desktop</button>
-        <button type="button" @click="device = 'tablet'" :class="device === 'tablet' ? 'bg-accent text-white border-accent' : 'bg-[#334155] text-[#cbd5e1] border-[#475569]'"
-            class="px-2.5 py-1 rounded-md text-[11px] font-semibold border cursor-pointer">📱 Tablet (768px)</button>
-        <button type="button" @click="device = 'mobile'" :class="device === 'mobile' ? 'bg-accent text-white border-accent' : 'bg-[#334155] text-[#cbd5e1] border-[#475569]'"
-            class="px-2.5 py-1 rounded-md text-[11px] font-semibold border cursor-pointer">📱 Smartphone (390px)</button>
+<div x-data="{ mainTab: 'forms', device: 'laptop', widths: { laptop: '100%', tablet: '768px', mobile: '390px' } }">
+    {{-- Tab utama (permintaan user 2026-09-09, bentuk pill segmented spt
+    referensi screenshot "By you / Recents / By others" -- TAPI warna ikut
+    tema terang halaman ini, bukan dipaksa gelap spt referensinya, permintaan
+    lanjutan user 2026-09-09) + device viewport switcher (mockup
+    UIUX_components_part1.html, topbar "Mode Tampilan") -- preview lebar
+    layar Laptop/Tablet/Smartphone thd tab yg aktif, murni CSS max-width,
+    tidak ubah data apapun. --}}
+    <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#e2e8f0] px-4 py-3 flex flex-col items-center gap-2.5 shadow-sm">
+        <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
+            <button type="button" @click="mainTab = 'forms'" :class="mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Forms</button>
+            <button type="button" @click="mainTab = 'calendar'" :class="mainTab === 'calendar' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Calendar</button>
+            <button type="button" @click="mainTab = 'kanban'" :class="mainTab === 'kanban' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Kanban</button>
+            <button type="button" @click="mainTab = 'gantt'" :class="mainTab === 'gantt' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors">Gantt Chart</button>
+        </div>
+        <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
+            <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">Mode Tampilan:</span>
+            <button type="button" @click="device = 'laptop'" :class="device === 'laptop' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">🖥️ Laptop</button>
+            <button type="button" @click="device = 'tablet'" :class="device === 'tablet' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Tablet</button>
+            <button type="button" @click="device = 'mobile'" :class="device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy'"
+                class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors">📱 Smartphone</button>
+        </div>
     </div>
 
     <div class="mx-auto my-5 px-4 flex flex-col gap-5 transition-[max-width] duration-300" :style="{ maxWidth: widths[device] }">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Library Component for UI/UX</div>
-            <p class="text-[11px] text-muted">Katalog pola widget form/interaksi yang tersedia di project ini (<code>resources/views/components/form/*.blade.php</code>) — acuan visual & kontrak pemakaian sebelum dipakai di layar bisnis nyata. Sumber: <code>docs/mockups/UIUX_components_part1.html</code> + <code>mockup_UIUX_calendar.html</code>. Semua interaksi di bawah ini murni demo (tidak menulis ke database).</p>
+            <p class="text-[11px] text-muted">Katalog pola widget form/interaksi yang tersedia di project ini (<code>resources/views/components/form/*.blade.php</code>) — acuan visual & kontrak pemakaian sebelum dipakai di layar bisnis nyata. Sumber: <code>docs/mockups/UIUX_components_part1.html</code> + <code>mockup_UIUX_calendar.html</code>. Semua interaksi di bawah ini murni demo (tidak menulis ke database). Pindah tab di atas utk lihat Forms/Calendar/Kanban/Gantt Chart.</p>
         </div>
+
+        <template x-if="mainTab === 'forms'">
+        <div class="flex flex-col gap-5">
 
         <!-- A. Teks & Password -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
@@ -194,20 +328,6 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
             </div>
         </div>
 
-        <!-- F. Tanggal & Kalender -->
-        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Tanggal & Kalender</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.date-picker</code> (sudah ada, mode date/datetime) · <code>x-form.date-range</code> (baru, 2 tanggal + kalkulator durasi otomatis) · <code>x-form.mini-calendar</code> (baru, versi ringkas dari mockup kalender — month-view + event, tanpa drag&drop/multi-view; kalau butuh kalender penuh utk fitur bisnis nyata mis. cuti HRM, itu layar tersendiri).</p>
-            <div class="grid two gap-3.5 mb-3.5">
-                <x-form.date-picker label="Tanggal Lahir" name="demoBirthDate" mode="date" />
-                <x-form.date-picker label="Jadwal Meeting" name="demoMeetingAt" mode="datetime" />
-            </div>
-            <div class="mb-3.5">
-                <x-form.date-range label="Masa Kerja (Awal s.d. Akhir)" start-name="demoWorkStart" end-name="demoWorkEnd" start-label="Mulai" end-label="Selesai" />
-            </div>
-            <x-form.mini-calendar :events="$this->calendarSampleEvents()" />
-        </div>
-
         <!-- G. Verifikasi & Rating -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Verifikasi & Rating</div>
@@ -259,6 +379,89 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                 </div>
             </div>
         </div>
+
+        </div>
+        </template>
+
+        <!-- Tab Calendar -->
+        <template x-if="mainTab === 'calendar'">
+        <div class="flex flex-col gap-5">
+
+        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Tanggal & Kalender</div>
+            <p class="text-[11px] text-muted mb-4"><code>x-form.date-picker</code> (sudah ada, mode date/datetime) · <code>x-form.date-range</code> (baru, 2 tanggal + kalkulator durasi otomatis) · <code>x-form.mini-calendar</code> (baru, versi ringkas dari mockup kalender — month-view + event, tanpa drag&drop/multi-view; kalau butuh kalender penuh utk fitur bisnis nyata mis. cuti HRM, itu layar tersendiri).</p>
+            <div class="grid two gap-3.5 mb-3.5">
+                <x-form.date-picker label="Tanggal Lahir" name="demoBirthDate" mode="date" />
+                <x-form.date-picker label="Jadwal Meeting" name="demoMeetingAt" mode="datetime" />
+            </div>
+            <div class="mb-3.5">
+                <x-form.date-range label="Masa Kerja (Awal s.d. Akhir)" start-name="demoWorkStart" end-name="demoWorkEnd" start-label="Mulai" end-label="Selesai" />
+            </div>
+            <x-form.mini-calendar :events="$this->calendarSampleEvents()" />
+        </div>
+
+        </div>
+        </template>
+
+        <!-- Tab Kanban -->
+        <template x-if="mainTab === 'kanban'">
+        <div class="flex flex-col gap-5">
+
+        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Kanban Board</div>
+            <p class="text-[11px] text-muted mb-4">Pola drag-drop kartu antar kolom status (docs/kanbanboardstandard.md) — BELUM ada komponen "x-kanban.board" reusable (sengaja, standar bilang tunggu kanban ke-3 dgn pola serupa sebelum diekstrak jadi komponen generik). Markup di bawah ini COPY MANUAL pola standar tsb apa adanya, bukan abstraksi baru.</p>
+            <div x-data="{ draggedId: null }">
+                <div class="flex gap-3 overflow-x-auto pb-2">
+                    @foreach ($this->demoKanbanColumns() as $column)
+                        @php $cardsInColumn = collect($demoKanbanCards)->where('stage', $column['key']); @endphp
+                        <div class="w-[220px] shrink-0 bg-[#f4f6fa] rounded-lg p-2.5"
+                            x-on:dragover.prevent
+                            x-on:drop="$wire.moveDemoCard(draggedId, '{{ $column['key'] }}'); draggedId = null"
+                            x-bind:class="draggedId ? 'ring-2 ring-[#93c5fd]' : ''">
+                            <div class="flex items-center justify-between mb-2 px-1">
+                                <p class="text-[11px] font-bold text-navy uppercase">{{ $column['label'] }}</p>
+                                <span class="text-[10px] font-bold text-muted bg-white px-1.5 py-0.5 rounded-full">{{ $cardsInColumn->count() }}</span>
+                            </div>
+                            <div class="space-y-2 min-h-[60px]">
+                                @forelse ($cardsInColumn as $card)
+                                    <div wire:key="demo-kanban-card-{{ $card['id'] }}" draggable="true"
+                                        x-on:dragstart="draggedId = {{ $card['id'] }}"
+                                        class="bg-white border border-[#d7dbe2] rounded-md p-2.5 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md text-xs text-[#374151]">
+                                        {{ $card['title'] }}
+                                    </div>
+                                @empty
+                                    <p class="text-[10.5px] text-muted text-center py-4">Kosong</p>
+                                @endforelse
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        </div>
+        </template>
+
+        <!-- Tab Gantt Chart -->
+        <template x-if="mainTab === 'gantt'">
+        <div class="flex flex-col gap-5">
+
+        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Gantt Chart</div>
+            <p class="text-[11px] text-muted mb-4">Komponen reusable "x-gantt.board" yang SUDAH ADA (docs/ganttboardstandard.md, dipakai Scheduling Board Production) — geser blok utk pindah jam mulai, tarik tepi kanan utk ubah durasi, klik utk popover detail, dobel-klik utk pindah mesin/kategori.</p>
+            <x-gantt.board
+                :rows="$this->demoGanttRows()"
+                resource-header-label="Mesin"
+                :timeline-start="8" :timeline-end="18" :px-per-hour="70"
+                :resource-options="[['value' => 'm1', 'label' => 'Mesin A'], ['value' => 'm2', 'label' => 'Mesin B']]"
+                :label-options="['Cetak', 'Laminasi', 'Plong']"
+                label-field-name="Proses"
+                empty-message="Tidak ada data demo."
+            />
+        </div>
+
+        </div>
+        </template>
 
     </div>
 </div>
