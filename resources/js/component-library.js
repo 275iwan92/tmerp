@@ -284,6 +284,71 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 
+    // --- Textarea auto-height + case toggle (aa/Aa/AA), mockup item #1
+    // "Nama Lengkap" -- SEMPAT TERLEWAT di showcase pertama (feedback user
+    // 2026-09-09), replikasi lengkap termasuk auto-resize tinggi (tooltip
+    // mockup: "Auto-height & Case Toggle") yang di source aslinya cuma
+    // disebut di tooltip tanpa kode -- diimplementasikan sungguhan di sini. ---
+    Alpine.data('tmCaseToggleInput', (opts = {}) => ({
+        modes: ['none', 'capitalize', 'uppercase'],
+        labels: { none: 'aa', capitalize: 'Aa', uppercase: 'AA' },
+        idx: 0,
+        raw: String(opts.initial ?? ''),
+
+        transform(text, mode) {
+            if (mode === 'uppercase') return text.toUpperCase();
+            if (mode === 'capitalize') return text.replace(/\b\w/g, (c) => c.toUpperCase());
+            return text;
+        },
+
+        resize() {
+            const ta = this.$refs.ta;
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        },
+
+        init() { this.$nextTick(() => this.resize()); setModel(this.$refs.model, this.raw); },
+
+        onInput(e) {
+            this.raw = this.transform(e.target.value, this.modes[this.idx]);
+            e.target.value = this.raw;
+            this.resize();
+            setModel(this.$refs.model, this.raw);
+        },
+
+        cycle() {
+            this.idx = (this.idx + 1) % this.modes.length;
+            this.raw = this.transform(this.raw, this.modes[this.idx]);
+            this.$refs.ta.value = this.raw;
+            setModel(this.$refs.model, this.raw);
+        },
+    }));
+
+    // --- Date range (Awal s.d Akhir) + kalkulator durasi otomatis, mockup
+    // item #7 "Masa Kerja" -- SEMPAT TERLEWAT (feedback user 2026-09-09).
+    // Reuse x-form.date-picker YANG SUDAH ADA 2x (BUKAN native <input
+    // type=date> spt mockup asli -- date-picker.blade.php sendiri sudah
+    // bilang native date input tidak dipakai lagi sejak keputusan user
+    // 2026-09-02), baca 2 hidden-input anaknya via querySelectorAll scoped
+    // ke $root supaya tidak perlu Alpine store lintas-komponen. ---
+    Alpine.data('tmDateRange', () => ({
+        durationLabel: 'Pilih kedua tanggal.',
+
+        compute() {
+            const hiddens = this.$root.querySelectorAll('input[type=hidden]');
+            const start = hiddens[0]?.value;
+            const end = hiddens[1]?.value;
+            if (!start || !end) { this.durationLabel = 'Pilih kedua tanggal.'; return; }
+            const d1 = new Date(start);
+            const d2 = new Date(end);
+            if (d2 < d1) { this.durationLabel = 'Durasi: tanggal akhir tidak valid.'; return; }
+            const months = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+            const years = Math.floor(months / 12);
+            const remMonths = months % 12;
+            this.durationLabel = `Durasi: ${years} Tahun ${remMonths} Bulan`;
+        },
+    }));
+
     // --- QR code generator (npm "qrcode", lokal di browser -- TIDAK kirim
     // data form ke API pihak ketiga mana pun, beda dari mockup asli yang
     // pakai CDN qrcodejs tapi sama-sama client-side). ---

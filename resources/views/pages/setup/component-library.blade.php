@@ -47,6 +47,8 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
 
     public string $demoValuation = '';
 
+    public string $demoWeight = '';
+
     public $demoFile = null;
 
     public ?string $demoFileName = null;
@@ -110,8 +112,21 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
 };
 ?>
 
-<div>
-    <div class="max-w-[1100px] mx-auto my-5 px-4 flex flex-col gap-5">
+<div x-data="{ device: 'laptop', widths: { laptop: '100%', tablet: '768px', mobile: '390px' } }">
+    {{-- Device viewport switcher (mockup UIUX_components_part1.html, topbar
+    "Mode Tampilan") -- preview lebar layar Laptop/Tablet/Smartphone thd
+    seluruh katalog di bawah, murni CSS max-width, tidak ubah data apapun. --}}
+    <div class="sticky top-0 z-20 bg-[#1e293b] border-b border-[#334155] px-4 py-2 flex items-center justify-center gap-2">
+        <span class="text-[#94a3b8] text-[11px] font-semibold mr-1">Mode Tampilan:</span>
+        <button type="button" @click="device = 'laptop'" :class="device === 'laptop' ? 'bg-accent text-white border-accent' : 'bg-[#334155] text-[#cbd5e1] border-[#475569]'"
+            class="px-2.5 py-1 rounded-md text-[11px] font-semibold border cursor-pointer">🖥️ Laptop / Desktop</button>
+        <button type="button" @click="device = 'tablet'" :class="device === 'tablet' ? 'bg-accent text-white border-accent' : 'bg-[#334155] text-[#cbd5e1] border-[#475569]'"
+            class="px-2.5 py-1 rounded-md text-[11px] font-semibold border cursor-pointer">📱 Tablet (768px)</button>
+        <button type="button" @click="device = 'mobile'" :class="device === 'mobile' ? 'bg-accent text-white border-accent' : 'bg-[#334155] text-[#cbd5e1] border-[#475569]'"
+            class="px-2.5 py-1 rounded-md text-[11px] font-semibold border cursor-pointer">📱 Smartphone (390px)</button>
+    </div>
+
+    <div class="mx-auto my-5 px-4 flex flex-col gap-5 transition-[max-width] duration-300" :style="{ maxWidth: widths[device] }">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Library Component for UI/UX</div>
@@ -121,9 +136,9 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- A. Teks & Password -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Input Teks & Password</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.input</code> (sudah ada) · <code>x-form.password-input</code> (baru).</p>
+            <p class="text-[11px] text-muted mb-4"><code>x-form.case-toggle-input</code> (baru, auto-height + tombol ganti huruf kecil/Kapital/BESAR) · <code>x-form.password-input</code> (baru, mata show/hide).</p>
             <div class="grid two gap-3.5">
-                <x-form.input label="Nama Lengkap" wire:model="demoName" placeholder="Masukkan nama..." />
+                <x-form.case-toggle-input label="Nama Lengkap" wire:model="demoName" placeholder="Masukkan nama..." />
                 <x-form.password-input label="Password" wire:model="demoPassword" placeholder="Password..." />
             </div>
         </div>
@@ -159,11 +174,12 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- D. Angka & Warna -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Angka, Rentang & Warna</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.number-stepper</code> · <code>x-form.range-slider</code> · <code>x-form.color-picker</code> — semua baru.</p>
+            <p class="text-[11px] text-muted mb-4"><code>x-form.number-stepper</code> · <code>x-form.range-slider</code> · <code>x-form.color-picker</code> · <code>x-form.decimal-input</code> (baru, auto-format N desimal saat blur + unit suffix) — semua baru.</p>
             <div class="grid three gap-3.5">
                 <x-form.number-stepper label="Jumlah Anak" wire:model="demoChildren" :min="0" :value="0" />
                 <x-form.range-slider label="Pengeluaran Bulanan" wire:model="demoExpense" :min="0" :max="100000000" :step="1000000" :value="15000000" format="currency" />
                 <x-form.color-picker label="Warna Favorit" wire:model="demoColor" :value="$demoColor" />
+                <x-form.decimal-input label="Berat Badan" wire:model="demoWeight" unit="kg" :decimals="2" />
             </div>
         </div>
 
@@ -181,10 +197,13 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <!-- F. Tanggal & Kalender -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Tanggal & Kalender</div>
-            <p class="text-[11px] text-muted mb-4"><code>x-form.date-picker</code> (sudah ada, mode date/datetime) · <code>x-form.mini-calendar</code> (baru, versi ringkas dari mockup kalender — month-view + event, tanpa drag&drop/multi-view; kalau butuh kalender penuh utk fitur bisnis nyata mis. cuti HRM, itu layar tersendiri).</p>
+            <p class="text-[11px] text-muted mb-4"><code>x-form.date-picker</code> (sudah ada, mode date/datetime) · <code>x-form.date-range</code> (baru, 2 tanggal + kalkulator durasi otomatis) · <code>x-form.mini-calendar</code> (baru, versi ringkas dari mockup kalender — month-view + event, tanpa drag&drop/multi-view; kalau butuh kalender penuh utk fitur bisnis nyata mis. cuti HRM, itu layar tersendiri).</p>
             <div class="grid two gap-3.5 mb-3.5">
                 <x-form.date-picker label="Tanggal Lahir" name="demoBirthDate" mode="date" />
                 <x-form.date-picker label="Jadwal Meeting" name="demoMeetingAt" mode="datetime" />
+            </div>
+            <div class="mb-3.5">
+                <x-form.date-range label="Masa Kerja (Awal s.d. Akhir)" start-name="demoWorkStart" end-name="demoWorkEnd" start-label="Mulai" end-label="Selesai" />
             </div>
             <x-form.mini-calendar :events="$this->calendarSampleEvents()" />
         </div>
