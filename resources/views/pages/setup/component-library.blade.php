@@ -18,7 +18,7 @@ use Livewire\WithPagination;
 // sebelum dipakai di layar bisnis nyata. Murni referensi -- tombol
 // "Simpan"/dst di sini cuma demo dispatch app-alert, TIDAK menulis ke DB
 // mana pun.
-new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends Component
+new #[Title('DevLib UI UX')] class extends Component
 {
     use HasGridPagination;
     use WithFileUploads;
@@ -1020,10 +1020,15 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         docs/mockups/UIUX_components_part1.html + mockup_UIUX_calendar.html.
         Semua interaksi di halaman ini murni demo (tidak menulis ke
         database). Deskripsi tiap section dipindah ke komentar (bukan
-        ditampilkan di UI) atas permintaan user 2026-09-09. --}}
-        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Library Component for UI/UX</div>
-        </div>
+        ditampilkan di UI) atas permintaan user 2026-09-09.
+
+        Heading kartu "Library Component for UI/UX" dulu ada di sini
+        (kartu putih terpisah, redundan di atas SETIAP tab) -- dihapus dari
+        layar atas permintaan user 2026-09-09 (browser tab title diganti
+        "DevLib UI UX" via #[Title(...)] di atas). Dicatat di sini SEBAGAI
+        KOMENTAR saja (bukan ditampilkan di UI): halaman/tab APA PUN yang
+        ditambahkan ke layar ini WAJIB berupa referensi/katalog component
+        library UI/UX -- bukan fitur bisnis sungguhan. --}}
 
         {{-- SEMUA tab SELALU dirender (bukan @if yang menghapus dari DOM) --
         tab Gantt punya <script> inline (x-gantt.board) yang HANYA jalan

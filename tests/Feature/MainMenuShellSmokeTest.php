@@ -70,7 +70,11 @@ class MainMenuShellSmokeTest extends TestCase
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        $this->get('/setup/component-library')->assertOk()->assertSee('Library Component for UI/UX');
+        // FIX 2026-09-09: browser tab title diganti "DevLib UI UX" + kartu
+        // heading "Library Component for UI/UX" dihapus dari layar (redundan
+        // di atas tiap tab) -- assert ke title baru, bukan teks lama yg sudah
+        // tak ada di response.
+        $this->get('/setup/component-library')->assertOk()->assertSee('DevLib UI UX');
 
         $component = \Livewire\Livewire::test('pages::main-menu');
         $tree = collect($component->instance()->menuTree());
