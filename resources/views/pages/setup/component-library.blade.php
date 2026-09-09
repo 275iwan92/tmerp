@@ -722,15 +722,21 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
             {{-- TOP NAVBAR (span penuh 3 panel, persis .top-navbar mockup) --}}
             <div class="h-[56px] flex items-center gap-3 px-4 border-b border-[#e2e8f0] shrink-0">
                 <span class="text-sm font-bold text-navy shrink-0">📅 Event Calendar</span>
-                <button type="button" wire:click="calToday" class="px-3 py-1.5 rounded-md border border-[#d7dbe2] text-[11px] font-semibold cursor-pointer hover:bg-[#f4f6fa]">Today</button>
+                <button type="button" x-on:click="$wire.calToday()" class="px-3 py-1.5 rounded-md border border-[#d7dbe2] text-[11px] font-semibold cursor-pointer hover:bg-[#f4f6fa]">Today</button>
                 <div class="flex gap-1">
-                    <button type="button" wire:click="calPrev" class="w-8 h-8 rounded-md border border-[#d7dbe2] cursor-pointer hover:bg-[#f4f6fa] text-xs">❮</button>
-                    <button type="button" wire:click="calNext" class="w-8 h-8 rounded-md border border-[#d7dbe2] cursor-pointer hover:bg-[#f4f6fa] text-xs">❯</button>
+                    <button type="button" x-on:click="$wire.calPrev()" class="w-8 h-8 rounded-md border border-[#d7dbe2] cursor-pointer hover:bg-[#f4f6fa] text-xs">❮</button>
+                    <button type="button" x-on:click="$wire.calNext()" class="w-8 h-8 rounded-md border border-[#d7dbe2] cursor-pointer hover:bg-[#f4f6fa] text-xs">❯</button>
                 </div>
                 <span class="text-base font-bold text-navy min-w-[150px]">{{ $this->calTitle() }}</span>
                 <div class="ml-auto inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
+                    {{-- x-on:click="$wire..." (BUKAN wire:click polos) -- elemen ini
+                    disisipkan Alpine lewat template x-if bungkus tab Calendar, wire:click
+                    native kadang tak ter-bind andal thd konten yg disisipkan x-if
+                    (gotcha Livewire+Alpine); panggil $wire langsung dari Alpine SELALU
+                    jalan krn diproses lewat mesin directive Alpine sendiri, bukan scan
+                    terpisah Livewire. wire:key jaga identitas tiap tombol lintas-morph. --}}
                     @foreach (['day' => 'Day', 'week' => 'Week', 'month' => 'Month'] as $v => $vLabel)
-                        <button type="button" wire:click="calSetView('{{ $v }}')"
+                        <button type="button" wire:key="cal-view-{{ $v }}" x-on:click="$wire.calSetView('{{ $v }}')"
                             class="px-3.5 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $calView === $v ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">{{ $vLabel }}</button>
                     @endforeach
                 </div>
@@ -740,15 +746,15 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
 
                 {{-- LEFT PANEL (280px di mockup, w-[250px] di sini) --}}
                 <div class="w-[250px] shrink-0 border-r border-[#e2e8f0] p-5 flex flex-col gap-6 overflow-y-auto tm-scroll">
-                    <button type="button" wire:click="calCreateNew"
+                    <button type="button" x-on:click="$wire.calCreateNew()"
                         class="flex items-center justify-center gap-2 bg-accent text-white rounded-lg py-2.5 text-[13px] font-bold cursor-pointer hover:opacity-90">➕ Create Event</button>
 
                     <div>
                         <div class="flex items-center justify-between mb-3 px-0.5">
                             <span class="text-[13px] font-bold text-navy">{{ $this->calMiniLabel() }}</span>
                             <div class="flex gap-1">
-                                <button type="button" wire:click="calMiniPrevMonth" class="w-6 h-6 rounded border border-[#e2e8f0] hover:bg-[#f4f6fa] cursor-pointer text-[11px]">‹</button>
-                                <button type="button" wire:click="calMiniNextMonth" class="w-6 h-6 rounded border border-[#e2e8f0] hover:bg-[#f4f6fa] cursor-pointer text-[11px]">›</button>
+                                <button type="button" x-on:click="$wire.calMiniPrevMonth()" class="w-6 h-6 rounded border border-[#e2e8f0] hover:bg-[#f4f6fa] cursor-pointer text-[11px]">‹</button>
+                                <button type="button" x-on:click="$wire.calMiniNextMonth()" class="w-6 h-6 rounded border border-[#e2e8f0] hover:bg-[#f4f6fa] cursor-pointer text-[11px]">›</button>
                             </div>
                         </div>
                         {{-- [display:grid] BUKAN "grid" polos -- app.css .grid{grid-cols-4}
@@ -759,7 +765,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                                 <div class="text-[10px] font-bold text-muted">{{ $dn }}</div>
                             @endforeach
                             @foreach ($this->calMiniCalGrid() as $cell)
-                                <button type="button" @if ($cell) wire:click="calSelectDate('{{ $cell['dateStr'] }}')" @endif
+                                <button type="button" @if ($cell) x-on:click="$wire.calSelectDate('{{ $cell['dateStr'] }}')" @endif
                                     class="w-[26px] h-[26px] mx-auto text-[11px] rounded-full flex items-center justify-center
                                         {{ ! $cell ? 'invisible' : ($cell['isToday'] ? 'bg-accent text-white font-bold' : ($cell['isSelected'] ? 'bg-[#eaf2ff] text-accent font-bold ring-1 ring-accent' : 'text-[#374151] hover:bg-[#f4f6fa] cursor-pointer')) }}">{{ $cell['day'] ?? '' }}</button>
                             @endforeach
@@ -775,7 +781,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                         @if ($calSearchQuery !== '')
                             <div class="flex flex-col gap-1.5 mt-2.5">
                                 @forelse ($this->calSearchResults() as $ev)
-                                    <div wire:click="calOpenEdit({{ $ev['id'] }})"
+                                    <div x-on:click="$wire.calOpenEdit({{ $ev['id'] }})"
                                         class="bg-[#f9fafb] border border-[#eef1f5] rounded-lg p-2.5 cursor-pointer hover:border-accent">
                                         <div class="flex items-center gap-1.5 text-[11.5px] font-bold text-[#374151]">
                                             <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ ['green' => 'bg-[#16a34a]', 'amber' => 'bg-[#b45309]', 'red' => 'bg-[#c0392b]'][$ev['colorClass']] ?? 'bg-muted' }}"></span>
@@ -812,12 +818,12 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                                         x-on:dragleave="hoverDate = (hoverDate === '{{ $cell['dateStr'] }}') ? null : hoverDate"
                                         x-on:drop="$wire.calMoveEvent(draggedId, '{{ $cell['dateStr'] }}'); draggedId = null; hoverDate = null"
                                         x-bind:class="hoverDate === '{{ $cell['dateStr'] }}' ? 'ring-2 ring-inset ring-accent bg-[#eff6ff]' : ''">
-                                        <button type="button" wire:click="calSelectDate('{{ $cell['dateStr'] }}')"
+                                        <button type="button" x-on:click="$wire.calSelectDate('{{ $cell['dateStr'] }}')"
                                             class="w-6 h-6 rounded-full flex items-center justify-center text-[11.5px] font-semibold cursor-pointer
                                                 {{ $cell['isToday'] ? 'bg-accent text-white' : 'text-[#374151] hover:bg-[#f4f6fa]' }}">{{ $cell['day'] }}</button>
                                         @foreach ($cell['events'] as $ev)
                                             <div draggable="true" x-on:dragstart="draggedId = {{ $ev['id'] }}" x-on:dragend="draggedId = null; hoverDate = null"
-                                                x-bind:class="draggedId === {{ $ev['id'] }} ? 'opacity-40 scale-95' : ''" wire:click="calOpenEdit({{ $ev['id'] }})"
+                                                x-bind:class="draggedId === {{ $ev['id'] }} ? 'opacity-40 scale-95' : ''" x-on:click="$wire.calOpenEdit({{ $ev['id'] }})"
                                                 class="text-[10.5px] font-semibold px-1.5 py-1 rounded cursor-grab truncate transition-opacity {{ ['green' => 'bg-[#e9f9ef] text-[#16a34a]', 'amber' => 'bg-[#fef6e7] text-[#b45309]', 'red' => 'bg-[#fdecec] text-[#c0392b]'][$ev['colorClass']] ?? 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $ev['title'] }}</div>
                                         @endforeach
                                     </div>
@@ -829,7 +835,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                             @foreach ($this->calWeekDays() as $d)
                                 <div class="flex-1 text-center py-2 border-r border-[#eef1f5] last:border-r-0">
                                     <div class="text-[10px] font-bold uppercase {{ $d['isToday'] ? 'text-accent' : 'text-muted' }}">{{ $d['dayLabel'] }}</div>
-                                    <button type="button" wire:click="calSelectDate('{{ $d['dateStr'] }}')"
+                                    <button type="button" x-on:click="$wire.calSelectDate('{{ $d['dateStr'] }}')"
                                         class="w-9 h-9 mx-auto mt-1 rounded-full flex items-center justify-center text-lg font-medium cursor-pointer {{ $d['isToday'] ? 'bg-accent text-white font-bold' : 'text-[#374151] hover:bg-[#f4f6fa]' }}">{{ $d['dayNum'] }}</button>
                                 </div>
                             @endforeach
@@ -844,7 +850,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                                     x-bind:class="hoverDate === 'ad-{{ $d['dateStr'] }}' ? 'ring-2 ring-inset ring-accent bg-[#eff6ff]' : ''">
                                     @foreach ($this->calEventsOn($d['dateStr']) as $ev)
                                         <div draggable="true" x-on:dragstart="draggedId = {{ $ev['id'] }}" x-on:dragend="draggedId = null; hoverDate = null"
-                                            x-bind:class="draggedId === {{ $ev['id'] }} ? 'opacity-40 scale-95' : ''" wire:click="calOpenEdit({{ $ev['id'] }})"
+                                            x-bind:class="draggedId === {{ $ev['id'] }} ? 'opacity-40 scale-95' : ''" x-on:click="$wire.calOpenEdit({{ $ev['id'] }})"
                                             style="{{ $this->calSpanStyle($ev) }}"
                                             class="text-[10.5px] font-semibold px-1.5 py-1 rounded cursor-grab truncate transition-opacity {{ ['green' => 'bg-[#e9f9ef] text-[#16a34a]', 'amber' => 'bg-[#fef6e7] text-[#b45309]', 'red' => 'bg-[#fdecec] text-[#c0392b]'][$ev['colorClass']] ?? 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $ev['title'] }}</div>
                                     @endforeach
@@ -893,8 +899,8 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                             <div class="text-[11px] text-muted mb-4">{{ count($this->calEventsOn($calCurrentDate)) }} event</div>
                             <div class="flex flex-col gap-2.5">
                                 @forelse ($this->calEventsOn($calCurrentDate) as $ev)
-                                    <div wire:click="calOpenEdit({{ $ev['id'] }})" class="group relative bg-white border border-[#e2e8f0] rounded-lg p-3 cursor-pointer hover:border-accent transition-colors">
-                                        <button type="button" wire:click.stop="calDeleteEvent({{ $ev['id'] }})"
+                                    <div x-on:click="$wire.calOpenEdit({{ $ev['id'] }})" class="group relative bg-white border border-[#e2e8f0] rounded-lg p-3 cursor-pointer hover:border-accent transition-colors">
+                                        <button type="button" x-on:click.stop="$wire.calDeleteEvent({{ $ev['id'] }})"
                                             class="absolute top-2.5 right-2.5 text-red-500 opacity-0 group-hover:opacity-100 cursor-pointer text-xs transition-opacity">✕</button>
                                         <div class="flex items-center gap-1.5 text-[13px] font-bold text-[#374151] pr-4">
                                             <span class="w-1.5 h-1.5 rounded-full shrink-0 {{ ['green' => 'bg-[#16a34a]', 'amber' => 'bg-[#b45309]', 'red' => 'bg-[#c0392b]'][$ev['colorClass']] ?? 'bg-muted' }}"></span>
@@ -915,8 +921,8 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
                                 <x-form.input type="datetime-local" label="End Time" wire:model="calEditEnd" />
                                 <x-form.textarea wire:model="calEditDesc" placeholder="Description..." rows="3" />
                                 <div class="flex justify-end gap-2 mt-1">
-                                    <button type="button" wire:click="calCloseEdit" title="Cancel" class="w-9 h-9 rounded-md bg-[#eef1f5] text-[#4b5568] cursor-pointer hover:bg-[#e2e8f0]">✕</button>
-                                    <button type="button" wire:click="calSaveEdit" title="Save" class="w-9 h-9 rounded-md bg-accent text-white cursor-pointer hover:opacity-90">💾</button>
+                                    <button type="button" x-on:click="$wire.calCloseEdit()" title="Cancel" class="w-9 h-9 rounded-md bg-[#eef1f5] text-[#4b5568] cursor-pointer hover:bg-[#e2e8f0]">✕</button>
+                                    <button type="button" x-on:click="$wire.calSaveEdit()" title="Save" class="w-9 h-9 rounded-md bg-accent text-white cursor-pointer hover:opacity-90">💾</button>
                                 </div>
                             </div>
                         @endif
