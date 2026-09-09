@@ -369,4 +369,49 @@ document.addEventListener('alpine:init', () => {
             a.click();
         },
     }));
+
+    // --- Chart.js wrapper (tab Graphics) -- Chart.js sendiri dimuat via
+    // <script> CDN langsung di component-library.blade.php (docs/
+    // reportstandard.md: "Library grafik -> Chart.js via CDN"), bukan
+    // di-bundle Vite spt "qrcode" di atas -- library ini cuma dipakai 1
+    // layar showcase, CDN lebih ringan drpd nambah dependency npm project-
+    // wide. `config` (type/data/options) sudah lengkap dari PHP (Js::from).
+    // Chart.js v4 pakai ResizeObserver internal utk auto-resize saat parent
+    // pindah dari hidden (display:none, tab lain aktif) ke visible lagi --
+    // tak perlu re-init manual tiap ganti tab.
+    Alpine.data('tmChart', (config) => ({
+        chart: null,
+        init() {
+            // x-init terbukti terpanggil 2x thd elemen yg SAMA pada page load
+            // pertama halaman ini (root cause blm ketemu, mirip kelas bug
+            // Livewire-morph-vs-Alpine yg lain di halaman ini) -- flag di DOM
+            // node sendiri supaya idempoten total (bukan andalkan state
+            // internal Chart.js yg race dgn pemanggilan ganda ini).
+            if (this.$el.dataset.tmChartInit === '1') {
+                return;
+            }
+            this.$el.dataset.tmChartInit = '1';
+
+            // Tab Graphics disembunyikan via class "hidden" (display:none)
+            // saat tab lain aktif, termasuk saat page load pertama (default
+            // tab "forms") -- kalau Chart dibuat SAAT masih hidden, box-nya
+            // 0x0 & proporsi chart rusak PERMANEN walau parent dibuka nanti
+            // (ResizeObserver internal Chart.js tak cukup pulihkan ini).
+            // IntersectionObserver tunda pembuatan chart sampai elemen
+            // BENAR-BENAR terlihat pertama kali (apa pun sebabnya).
+            const create = () => {
+                if (this.chart || typeof Chart === 'undefined') {
+                    return;
+                }
+                this.chart = new Chart(this.$refs.canvas.getContext('2d'), config);
+            };
+
+            const io = new IntersectionObserver((entries) => {
+                if (entries[0]?.isIntersecting) {
+                    create();
+                }
+            });
+            io.observe(this.$el);
+        },
+    }));
 });

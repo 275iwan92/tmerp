@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kanban Board System</title>
+  <style>
+    :root {
+      --primary: #10b981; --primary-hover: #059669;
+      --bg-base: #12141c; --bg-surface: #181b24; --bg-card: #1e2128; 
+      --border-color: #2a2e39; --border-hover: #3b4252;
+      --text-main: #f4f4f5; --text-muted: #9ca3af; --text-darker: #6b7280;
+      
+      --trello-blue: #3b82f6; --trello-blue-hover: #2563eb;
+      --trello-btn-bg: rgba(255, 255, 255, 0.08); --trello-btn-hover: rgba(255, 255, 255, 0.15);
+      --trello-modal-bg: #1a1d26; --trello-popover-bg: #222632;
+
+      --tag-blue-bg: #1e3a8a;    --tag-blue-text: #60a5fa;
+      --tag-orange-bg: #78350f;  --tag-orange-text: #fbbf24;
+      --tag-green-bg: #064e3b;   --tag-green-text: #34d399;
+      --tag-purple-bg: #4c1d95;  --tag-purple-text: #c084fc;
+
+      --prio-high-bg: #7f1d1d;   --prio-high-text: #fca5a5;
+      --prio-med-bg: #78350f;    --prio-med-text: #fbbf24;
+      --prio-low-bg: #27272a;    --prio-low-text: #d4d4d8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    
+    body { width: 100%; height: 100vh; overflow: hidden; background-color: var(--bg-base); display: flex; flex-direction: column; color: var(--text-main); }
+
+    .top-navbar { height: 60px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; flex-shrink: 0; }
+    .nav-title { font-size: 1.1rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+    .kanban-dashboard { display: flex; flex-direction: column; height: 100%; padding: 24px; overflow: hidden;}
+    
+    .header-bar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; flex-shrink: 0; }
+    .header-title { font-size: 1.5rem; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; }
+    .header-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    .kanban-board-container { flex: 1; display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden; padding-bottom: 8px; align-items: flex-start; }
+    .kanban-board-container::-webkit-scrollbar { height: 8px; }
+    .kanban-board-container::-webkit-scrollbar-track { background: var(--bg-base); border-radius: 4px; }
+    .kanban-board-container::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+
+    .kanban-col { min-width: 300px; width: 300px; background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; max-height: 100%; flex-shrink: 0; }
+    
+    .kanban-col-header { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
+    .col-title-edit { flex: 1; padding: 2px 4px; border-radius: 4px; transition: background 0.2s; }
+    .col-title-edit:focus { background-color: rgba(255,255,255,0.1); outline: 1px solid var(--primary); cursor: text; }
+    .kanban-col-count { background-color: var(--border-color); color: var(--text-muted); font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; }
+    
+    .kanban-col-body { flex: 1; padding: 0 8px 8px 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 10px; }
+    .kanban-col-body.drag-over { background-color: rgba(255,255,255,0.02); border-radius: 8px;}
+    .kanban-col-body::-webkit-scrollbar { width: 4px; }
+    .kanban-col-body::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+    .kanban-col-footer { padding: 8px 12px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+    .btn-add-card-trigger { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; background: transparent; border: none; color: var(--text-muted); padding: 8px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: 0.2s; }
+    .btn-add-card-trigger:hover { background-color: var(--trello-btn-bg); color: var(--text-main); }
+    
+    .card-composer { display: none; flex-direction: column; gap: 8px; }
+    .card-composer.active { display: flex; }
+    .composer-input { width: 100%; background-color: var(--bg-card); border: 1px solid var(--primary); border-radius: 8px; padding: 10px; color: var(--text-main); font-size: 0.85rem; resize: none; outline: none; }
+    
+    .datetime-picker-wrap { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); color: var(--text-muted); }
+    .datetime-input { background: transparent; border: none; color: var(--text-muted); outline: none; color-scheme: dark; font-size: 0.8rem; font-family: inherit; flex: 1;}
+
+    .composer-controls { display: flex; align-items: center; gap: 8px; }
+    .btn-submit-card { background-color: var(--primary); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+    .btn-submit-card:hover { background-color: var(--primary-hover); }
+    .btn-cancel-card { background: transparent; color: var(--text-muted); border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-cancel-card:hover { color: var(--text-main); }
+
+    .add-list-wrapper { min-width: 300px; width: 300px; flex-shrink: 0; }
+    .btn-add-list { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; background-color: var(--bg-surface); border: 1px dashed var(--border-hover); color: var(--text-muted); padding: 14px 16px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-add-list:hover { background-color: var(--bg-card); color: var(--text-main); border-color: var(--primary); }
+
+    /* Kartu Kanban */
+    .kanban-card { background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; cursor: grab; transition: all 0.2s; user-select: none; }
+    .kanban-card:hover { border-color: var(--border-hover); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .kanban-card:active { cursor: grabbing; }
+    .kanban-card.dragging { opacity: 0.4; transform: scale(0.98); border-color: var(--primary); }
+
+    .k-tags-wrap { display: flex; flex-wrap: wrap; gap: 4px; }
+    .k-tag { font-size: 0.65rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+    .k-tag.blue { background-color: var(--tag-blue-bg); color: var(--tag-blue-text); }
+    .k-tag.orange { background-color: var(--tag-orange-bg); color: var(--tag-orange-text); }
+    .k-tag.green { background-color: var(--tag-green-bg); color: var(--tag-green-text); }
+    .k-tag.purple { background-color: var(--tag-purple-bg); color: var(--tag-purple-text); }
+
+    .k-title { font-size: 0.9rem; font-weight: 600; color: var(--text-main); line-height: 1.3; pointer-events: none; }
+    .k-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; pointer-events: none; }
+    
+    .k-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; pointer-events: none; }
+    .k-footer-left { display: flex; align-items: center; gap: 8px; }
+    
+    .k-priority { font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+    .k-priority.high { background-color: var(--prio-high-bg); color: var(--prio-high-text); }
+    .k-priority.medium { background-color: var(--prio-med-bg); color: var(--prio-med-text); }
+    .k-priority.low { background-color: var(--prio-low-bg); color: var(--prio-low-text); }
+
+    .k-date { font-size: 0.7rem; background: rgba(255,255,255,0.06); padding: 3px 6px; border-radius: 4px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; font-weight: 500; }
+    .k-date.overdue { background-color: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+
+    .k-avatar { width: 22px; height: 22px; border-radius: 50%; background-color: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; }
+
+    /* --- MODAL STYLING & POPOVERS --- */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+    .modal-overlay.active { display: flex; }
+    
+    .modal-content { background-color: var(--trello-modal-bg); width: 90%; max-width: 768px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 12px 32px rgba(0,0,0,0.5); border: 1px solid var(--border-color); position: relative; }
+    .modal-header { padding: 20px 24px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .modal-header-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; }
+    .modal-header-icon { font-size: 1.2rem; color: var(--primary); margin-top: 4px; }
+    .modal-title-wrap { flex: 1; }
+    .modal-title-input { width: 100%; background: transparent; border: 2px solid transparent; color: #fff; font-size: 1.2rem; font-weight: 600; padding: 4px 8px; margin-left: -8px; border-radius: 4px; outline: none; }
+    .modal-title-input:focus { border-color: var(--primary); background: var(--bg-card); }
+    .modal-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+    .btn-close-modal { background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; padding: 4px; border-radius: 4px; }
+    .btn-close-modal:hover { background: var(--trello-btn-bg); color: #fff; }
+
+    .modal-body { display: flex; flex: 1; overflow-y: auto; padding: 0 24px 24px 24px; gap: 24px; }
+    .modal-main { flex: 2; display: flex; flex-direction: column; gap: 20px; position: relative; }
+    
+    .modal-action-bar { display: flex; flex-wrap: wrap; gap: 8px; position: relative; }
+    .action-group { position: relative; }
+    .modal-btn { background-color: var(--trello-btn-bg); color: #e5e7eb; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+    .modal-btn:hover { background-color: var(--trello-btn-hover); }
+
+    .trello-popover { display: none; position: absolute; top: 110%; left: 0; width: 280px; background-color: var(--trello-popover-bg); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.6); border: 1px solid var(--border-color); z-index: 100; flex-direction: column; padding: 12px; }
+    .trello-popover.active { display: flex; }
+    .popover-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+    .popover-header-title { flex: 1; text-align: center; margin-left: 16px; }
+    .btn-close-popover { background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; }
+    .popover-input { width: 100%; background-color: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; outline: none; margin-bottom: 12px; font-size: 0.85rem; }
+    .popover-input:focus { border-color: var(--primary); }
+    .popover-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: block; }
+    
+    .modal-section-title { font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--text-main); }
+    .desc-display { background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; color: var(--text-main); font-size: 0.9rem; min-height: 70px; cursor: pointer; }
+    .desc-display:hover { background-color: rgba(255,255,255,0.06); }
+    
+    .desc-editor-wrapper { display: none; flex-direction: column; border: 2px solid var(--primary); border-radius: 6px; background-color: var(--bg-card); overflow: hidden; }
+    .desc-editor-wrapper.active { display: flex; }
+    .desc-toolbar { display: flex; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.9rem; background: var(--bg-card); }
+    .rich-textarea { width: 100%; background: transparent; border: none; padding: 12px; color: var(--text-main); font-size: 0.9rem; min-height: 100px; resize: vertical; outline: none; }
+    .desc-editor-actions { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; }
+
+    .checklist-container { margin-top: 10px; display: none; flex-direction: column; gap: 10px; }
+    .checklist-container.active { display: flex; }
+    .checklist-header { display: flex; align-items: center; justify-content: space-between; }
+    .checklist-title-area { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.95rem; }
+    .progress-bar-wrap { width: 100%; height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden; display: flex; align-items: center; }
+    .progress-bar-fill { height: 100%; background-color: var(--primary); width: 0%; transition: width 0.3s; }
+    .checklist-items { display: flex; flex-direction: column; gap: 6px; }
+    .checklist-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; padding: 4px 0; }
+    .checklist-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+    .checklist-item-text { flex: 1; color: var(--text-main); }
+    .checklist-item-text.completed { text-decoration: line-through; color: var(--text-muted); }
+    .btn-add-item-trigger { background: var(--trello-btn-bg); border: none; color: var(--text-main); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500; cursor: pointer; text-align: left; }
+    
+    .item-composer { display: none; flex-direction: column; gap: 8px; background: var(--bg-card); padding: 8px; border-radius: 6px; border: 1px solid var(--primary); }
+    .item-composer.active { display: flex; }
+    .item-composer-input { width: 100%; background: transparent; border: none; color: #fff; font-size: 0.9rem; outline: none; resize: none; }
+    .item-composer-actions { display: flex; align-items: center; justify-content: space-between; }
+
+    .modal-sidebar { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+    .comment-input-area { display: flex; gap: 12px; margin-bottom: 12px; }
+    .avatar-circle { width: 32px; height: 32px; border-radius: 50%; background-color: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+    .comment-box { flex: 1; background-color: var(--bg-card); border-radius: 8px; padding: 12px; color: var(--text-muted); font-size: 0.85rem; cursor: text; border: 1px solid var(--border-color); }
+    .activity-item { display: flex; gap: 12px; font-size: 0.85rem; }
+    .activity-text strong { color: var(--text-main); }
+    .activity-time { color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+  <div class="top-navbar">
+    <div class="nav-title">📋 Kanban Project System</div>
+    <div style="font-size: 0.85rem; color: var(--text-muted);">Workspace: Johannes Iwan</div>
+  </div>
+
+  <div class="kanban-dashboard">
+    <div class="header-bar">
+      <div>
+        <div class="header-title">Product Development Board</div>
+        <div class="header-subtitle">Manage engineering tasks, sprints, and milestones seamlessly</div>
+      </div>
+    </div>
+
+    <div class="kanban-board-container" id="kanban-board">
+      
+      <!-- KOLOM 1: BACKLOG -->
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+            <span class="col-title-edit" contenteditable="true">Backlog</span>
+            <span class="kanban-col-count">2</span>
+        </div>
+        <div class="kanban-col-body">
+          <div class="kanban-card" draggable="true" data-raw-date="2026-09-15T09:30">
+            <div class="k-tags-wrap"><span class="k-tag blue">design</span><span class="k-tag orange">ux</span></div>
+            <div class="k-title">Design new onboarding flow</div>
+            <div class="k-desc">Create wireframes and high-fidelity mockups for updated user experience...</div>
+            <div class="k-footer">
+              <div class="k-footer-left"><span class="k-priority high">High</span><span class="k-date">📅 Sep 15, 09:30</span></div>
+              <div class="k-avatar">JI</div>
+            </div>
+          </div>
+          <div class="kanban-card" draggable="true" data-raw-date="2026-09-20T14:00">
+            <div class="k-tags-wrap"><span class="k-tag purple">research</span></div>
+            <div class="k-title">Evaluate analytics providers</div>
+            <div class="k-desc">Compare Mixpanel, Amplitude, and PostHog for product telemetry needs.</div>
+            <div class="k-footer">
+              <div class="k-footer-left"><span class="k-priority medium">Medium</span><span class="k-date">📅 Sep 20, 14:00</span></div>
+              <div class="k-avatar">JI</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="kanban-col-footer">
+            <div class="card-composer">
+                <textarea class="composer-input" rows="2" placeholder="Enter a title for this card..."></textarea>
+                <div class="datetime-picker-wrap" title="Set due date">
+                    <span>⏰</span>
+                    <input type="datetime-local" class="datetime-input">
+                </div>
+                <div class="composer-controls">
+                    <button class="btn-submit-card">Save</button>
+                    <button class="btn-cancel-card">✕</button>
+                </div>
+            </div>
+            <button class="btn-add-card-trigger">➕ Add a card</button>
+        </div>
+      </div>
+
+      <!-- KOLOM 2: IN PROGRESS -->
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+            <span class="col-title-edit" contenteditable="true">In Progress</span>
+            <span class="kanban-col-count">2</span>
+        </div>
+        <div class="kanban-col-body">
+          <div class="kanban-card" draggable="true" data-raw-date="2026-09-10T10:45">
+            <div class="k-tags-wrap"><span class="k-tag green">backend</span><span class="k-tag blue">billing</span></div>
+            <div class="k-title">Implement Stripe subscription webhooks</div>
+            <div class="k-desc">Handle subscription lifecycle events to keep sync with database.</div>
+            <div class="k-footer">
+              <div class="k-footer-left"><span class="k-priority high">High</span><span class="k-date">📅 Sep 10, 10:45</span></div>
+              <div class="k-avatar">JI</div>
+            </div>
+          </div>
+          <div class="kanban-card" draggable="true" data-raw-date="2026-09-12T16:00">
+            <div class="k-tags-wrap"><span class="k-tag blue">frontend</span></div>
+            <div class="k-title">Build activity feed component</div>
+            <div class="k-desc">Real-time feed showing team deployments and status changes.</div>
+            <div class="k-footer">
+              <div class="k-footer-left"><span class="k-priority low">Low</span><span class="k-date">📅 Sep 12, 16:00</span></div>
+              <div class="k-avatar">JI</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="kanban-col-footer">
+            <div class="card-composer">
+                <textarea class="composer-input" rows="2" placeholder="Enter a title for this card..."></textarea>
+                <div class="datetime-picker-wrap" title="Set due date">
+                    <span>⏰</span>
+                    <input type="datetime-local" class="datetime-input">
+                </div>
+                <div class="composer-controls">
+                    <button class="btn-submit-card">Save</button>
+                    <button class="btn-cancel-card">✕</button>
+                </div>
+            </div>
+            <button class="btn-add-card-trigger">➕ Add a card</button>
+        </div>
+      </div>
+
+      <!-- KOLOM 3: DONE -->
+      <div class="kanban-col">
+        <div class="kanban-col-header">
+            <span class="col-title-edit" contenteditable="true">Done</span>
+            <span class="kanban-col-count">1</span>
+        </div>
+        <div class="kanban-col-body">
+          <div class="kanban-card" draggable="true" data-raw-date="2026-09-05T11:00">
+            <div class="k-tags-wrap"><span class="k-tag purple">devops</span></div>
+            <div class="k-title">Set up CI/CD pipeline</div>
+            <div class="k-desc">Automated lint, test, build, and deploy steps via GitHub Actions.</div>
+            <div class="k-footer">
+              <div class="k-footer-left"><span class="k-priority medium">Medium</span><span class="k-date">📅 Sep 5, 11:00</span></div>
+              <div class="k-avatar">JI</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="kanban-col-footer">
+            <div class="card-composer">
+                <textarea class="composer-input" rows="2" placeholder="Enter a title for this card..."></textarea>
+                <div class="datetime-picker-wrap" title="Set due date">
+                    <span>⏰</span>
+                    <input type="datetime-local" class="datetime-input">
+                </div>
+                <div class="composer-controls">
+                    <button class="btn-submit-card">Save</button>
+                    <button class="btn-cancel-card">✕</button>
+                </div>
+            </div>
+            <button class="btn-add-card-trigger">➕ Add a card</button>
+        </div>
+      </div>
+
+      <div class="add-list-wrapper" id="add-list-container">
+        <button class="btn-add-list" id="btn-add-list">➕ Add another list</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Detail -->
+  <div class="modal-overlay" id="cardDetailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <span class="modal-header-icon">☑️</span>
+          <div class="modal-title-wrap">
+            <input type="text" class="modal-title-input" id="modalCardTitle" value="">
+            <div class="modal-subtitle">in list <strong id="modalListName">Backlog</strong></div>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="closeModalBtn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-main">
+          <div class="modal-action-bar">
+             <button class="modal-btn">➕ Add</button>
+             <div class="action-group">
+                 <button class="modal-btn toggle-popover" data-target="popoverLabels">🏷️ Labels</button>
+                 <div class="trello-popover" id="popoverLabels">
+                     <div class="popover-header"><span class="popover-header-title">Labels</span><button class="btn-close-popover">✕</button></div>
+                     <input type="text" class="popover-input" placeholder="Search labels...">
+                 </div>
+             </div>
+             <div class="action-group">
+                 <button class="modal-btn toggle-popover" data-target="popoverDates">🕒 Dates</button>
+                 <div class="trello-popover" id="popoverDates" style="width: 300px;">
+                     <div class="popover-header"><span class="popover-header-title">Dates</span><button class="btn-close-popover">✕</button></div>
+                     <div style="margin-bottom: 6px; font-size: 0.8rem; color: var(--text-muted);">Due date & time</div>
+                     <input type="datetime-local" id="modalDateInput" class="popover-input" style="color-scheme: dark;">
+                     <button class="btn-submit-card" id="btnSaveDatePopover" style="width: 100%; padding: 8px;">Save</button>
+                 </div>
+             </div>
+             <div class="action-group">
+                 <button class="modal-btn toggle-popover" data-target="popoverChecklist">☑️ Checklist</button>
+                 <div class="trello-popover" id="popoverChecklist">
+                     <div class="popover-header"><span class="popover-header-title">Add checklist</span><button class="btn-close-popover">✕</button></div>
+                     <input type="text" class="popover-input" id="checklistTitleInput" value="Task Checklist">
+                     <button class="btn-submit-card" id="btnAddChecklistSubmit" style="width: 100%; padding: 8px;">Add</button>
+                 </div>
+             </div>
+             <div class="action-group">
+                 <button class="modal-btn toggle-popover" data-target="popoverMembers">👤 Members</button>
+                 <div class="trello-popover" id="popoverMembers">
+                     <div class="popover-header"><span class="popover-header-title">Members</span><button class="btn-close-popover">✕</button></div>
+                     <div style="display:flex; align-items:center; gap:8px; padding:6px; cursor:pointer;"><div class="avatar-circle">JI</div><span>Johannes Iwan</span></div>
+                 </div>
+             </div>
+          </div>
+          
+          <div>
+            <div class="modal-section-title"><span>≡</span> Description</div>
+            <div id="descDisplay" class="desc-display">Add a more detailed description...</div>
+            <div id="descEditorWrapper" class="desc-editor-wrapper">
+                <div class="desc-toolbar"><span>Tt ⌄</span><span><b>B</b></span><span><i>I</i></span></div>
+                <textarea class="rich-textarea" id="modalCardDesc"></textarea>
+                <div class="desc-editor-actions">
+                    <button class="btn-submit-card" id="btnSaveDesc">Save</button>
+                    <button class="btn-cancel-card" id="btnCancelDesc" style="font-size:0.9rem;">Cancel</button>
+                </div>
+            </div>
+          </div>
+
+          <div class="checklist-container" id="checklistContainer">
+              <div class="checklist-header">
+                  <div class="checklist-title-area"><span>☑️</span><span id="checklistHeaderTitle">Checklist</span></div>
+                  <button class="modal-btn" id="btnDeleteChecklist" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5;">Delete</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: var(--text-muted);">
+                  <span id="checklistPercentage">0%</span>
+                  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="checklistProgressBar"></div></div>
+              </div>
+              <div class="checklist-items" id="checklistItemsList"></div>
+              <button class="btn-add-item-trigger" id="btnAddItemTrigger">Add an item</button>
+              <div class="item-composer" id="itemComposer">
+                  <textarea class="item-composer-input" id="newItemText" rows="2" placeholder="Add an item"></textarea>
+                  <div class="item-composer-actions">
+                      <button class="btn-submit-card" id="btnSaveNewItem">Add</button>
+                      <button class="btn-cancel-card" id="btnCancelNewItem" style="font-size: 1rem;">✕</button>
+                  </div>
+              </div>
+          </div>
+        </div>
+
+        <div class="modal-sidebar">
+          <div>
+            <div class="modal-section-title" style="justify-content: space-between;">
+              <div><span>💬</span> Comments</div>
+            </div>
+            <div class="comment-input-area">
+              <div class="avatar-circle">JI</div>
+              <div class="comment-box" contenteditable="true">Write a comment...</div>
+            </div>
+            <div class="activity-item">
+              <div class="avatar-circle">JI</div>
+              <div class="activity-text">
+                <strong>Johannes Iwan</strong> updated this card
+                <div class="activity-time">Just now</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      
+      // --- 1. POPOVERS LOGIC ---
+      const popoverTriggers = document.querySelectorAll('.toggle-popover');
+      const allPopovers = document.querySelectorAll('.trello-popover');
+      const closePopoverBtns = document.querySelectorAll('.btn-close-popover');
+
+      function closeAllPopovers() { allPopovers.forEach(p => p.classList.remove('active')); }
+
+      popoverTriggers.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const targetPopover = document.getElementById(btn.getAttribute('data-target'));
+              const isActive = targetPopover.classList.contains('active');
+              closeAllPopovers();
+              if (!isActive) targetPopover.classList.add('active');
+          });
+      });
+
+      closePopoverBtns.forEach(btn => btn.addEventListener('click', closeAllPopovers));
+      window.addEventListener('click', (e) => { if (!e.target.closest('.action-group')) closeAllPopovers(); });
+
+      // --- 2. CHECKLIST LOGIC ---
+      const checklistContainer = document.getElementById('checklistContainer');
+      const checklistHeaderTitle = document.getElementById('checklistHeaderTitle');
+      const checklistTitleInput = document.getElementById('checklistTitleInput');
+      const btnAddChecklistSubmit = document.getElementById('btnAddChecklistSubmit');
+      const btnDeleteChecklist = document.getElementById('btnDeleteChecklist');
+      const checklistItemsList = document.getElementById('checklistItemsList');
+      const btnAddItemTrigger = document.getElementById('btnAddItemTrigger');
+      const itemComposer = document.getElementById('itemComposer');
+      const newItemText = document.getElementById('newItemText');
+      const btnSaveNewItem = document.getElementById('btnSaveNewItem');
+      const btnCancelNewItem = document.getElementById('btnCancelNewItem');
+      const checklistProgressBar = document.getElementById('checklistProgressBar');
+      const checklistPercentage = document.getElementById('checklistPercentage');
+
+      btnAddChecklistSubmit.addEventListener('click', () => {
+          const title = checklistTitleInput.value.trim() || 'Checklist';
+          checklistHeaderTitle.innerText = title;
+          checklistContainer.classList.add('active');
+          closeAllPopovers();
+          updateChecklistProgress();
+      });
+
+      btnDeleteChecklist.addEventListener('click', () => {
+          checklistContainer.classList.remove('active');
+          checklistItemsList.innerHTML = '';
+      });
+
+      btnAddItemTrigger.addEventListener('click', () => {
+          btnAddItemTrigger.style.display = 'none';
+          itemComposer.classList.add('active');
+          newItemText.focus();
+      });
+
+      btnCancelNewItem.addEventListener('click', () => {
+          itemComposer.classList.remove('active');
+          btnAddItemTrigger.style.display = 'block';
+          newItemText.value = '';
+      });
+
+      function updateChecklistProgress() {
+          const items = checklistItemsList.querySelectorAll('.checklist-item');
+          if (items.length === 0) {
+              checklistProgressBar.style.width = '0%';
+              checklistPercentage.innerText = '0%';
+              return;
+          }
+          const completed = checklistItemsList.querySelectorAll('.checklist-item input:checked').length;
+          const percent = Math.round((completed / items.length) * 100);
+          checklistProgressBar.style.width = percent + '%';
+          checklistPercentage.innerText = percent + '%';
+      }
+
+      function addNewChecklistItem(text, isChecked = false) {
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'checklist-item';
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.checked = isChecked;
+
+          const span = document.createElement('span');
+          span.className = 'checklist-item-text' + (isChecked ? ' completed' : '');
+          span.innerText = text;
+
+          checkbox.addEventListener('change', () => {
+              if(checkbox.checked) span.classList.add('completed');
+              else span.classList.remove('completed');
+              updateChecklistProgress();
+          });
+
+          itemDiv.appendChild(checkbox);
+          itemDiv.appendChild(span);
+          checklistItemsList.appendChild(itemDiv);
+          updateChecklistProgress();
+      }
+
+      btnSaveNewItem.addEventListener('click', () => {
+          const text = newItemText.value.trim();
+          if(!text) { newItemText.focus(); return; }
+          addNewChecklistItem(text);
+          newItemText.value = '';
+          newItemText.focus();
+      });
+
+      // --- 3. DRAG AND DROP FUNCTIONS ---
+      function attachCardEvents(card) {
+        card.addEventListener('dragstart', (e) => {
+          if(card.getAttribute('draggable') === 'false') { e.preventDefault(); return; }
+          card.classList.add('dragging');
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          updateCounts();
+        });
+        card.addEventListener('dblclick', () => openModal(card));
+      }
+
+      function attachColumnDropEvents(colBody) {
+        colBody.addEventListener('dragover', e => {
+          e.preventDefault();
+          colBody.classList.add('drag-over');
+          
+          const afterElement = getDragAfterElement(colBody, e.clientY);
+          const draggable = document.querySelector('.dragging');
+          
+          if (draggable) {
+            if (afterElement == null) {
+              colBody.appendChild(draggable);
+            } else {
+              colBody.insertBefore(draggable, afterElement);
+            }
+          }
+        });
+        colBody.addEventListener('dragleave', () => colBody.classList.remove('drag-over'));
+        colBody.addEventListener('drop', () => colBody.classList.remove('drag-over'));
+      }
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.kanban-card:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+          else return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+      }
+
+      function updateCounts() {
+        document.querySelectorAll('.kanban-col').forEach(col => {
+          const count = col.querySelector('.kanban-col-count');
+          if (count) count.textContent = col.querySelectorAll('.kanban-card').length;
+        });
+      }
+
+      // --- 4. MODAL LOGIC & DESC EDITOR ---
+      const modal = document.getElementById('cardDetailModal');
+      const modalTitleInput = document.getElementById('modalCardTitle');
+      const modalListName = document.getElementById('modalListName');
+      const modalDateInput = document.getElementById('modalDateInput');
+      const descDisplay = document.getElementById('descDisplay');
+      const descEditorWrapper = document.getElementById('descEditorWrapper');
+      const modalCardDesc = document.getElementById('modalCardDesc');
+      let activeCard = null;
+
+      function openModal(card) {
+        activeCard = card;
+        const titleEl = card.querySelector('.k-title');
+        const descEl = card.querySelector('.k-desc');
+        const listNameEl = card.closest('.kanban-col').querySelector('.col-title-edit');
+
+        modalTitleInput.value = titleEl ? titleEl.innerText : '';
+        descDisplay.innerText = (descEl && descEl.innerText !== 'Add a more detailed description...') ? descEl.innerText : 'Add a more detailed description...';
+        modalListName.innerText = listNameEl ? listNameEl.innerText : 'Backlog';
+        modalDateInput.value = card.getAttribute('data-raw-date') || '';
+
+        modal.classList.add('active');
+      }
+
+      function closeModal() {
+        if (activeCard) {
+          const titleEl = activeCard.querySelector('.k-title');
+          const descEl = activeCard.querySelector('.k-desc');
+          
+          if (titleEl && modalTitleInput.value.trim() !== '') {
+            titleEl.innerText = modalTitleInput.value.trim();
+          }
+          if (descEl) {
+            descEl.innerText = descDisplay.innerText;
+          }
+
+          const rawDate = modalDateInput.value;
+          activeCard.setAttribute('data-raw-date', rawDate);
+          
+          const footerLeft = activeCard.querySelector('.k-footer-left');
+          const priorityHtml = footerLeft.querySelector('.k-priority') ? footerLeft.querySelector('.k-priority').outerHTML : '';
+          
+          if (rawDate) {
+              const dueDate = new Date(rawDate);
+              const timeStr = dueDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute:'2-digit' });
+              const dateStr = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              const isOverdue = dueDate < new Date();
+              footerLeft.innerHTML = `${priorityHtml}<span class="k-date ${isOverdue ? 'overdue' : ''}">${isOverdue ? '⚠️' : '📅'} ${dateStr}, ${timeStr}</span>`;
+          } else {
+              footerLeft.innerHTML = `${priorityHtml}`;
+          }
+        }
+        modal.classList.remove('active');
+        activeCard = null;
+      }
+
+      document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+
+      document.getElementById('btnSaveDatePopover').addEventListener('click', () => {
+          closeAllPopovers();
+      });
+
+      // Logika Deskripsi
+      descDisplay.addEventListener('click', () => {
+          descDisplay.style.display = 'none';
+          descEditorWrapper.classList.add('active');
+          modalCardDesc.focus();
+          modalCardDesc.value = descDisplay.innerText === 'Add a more detailed description...' ? '' : descDisplay.innerText;
+      });
+
+      document.getElementById('btnSaveDesc').addEventListener('click', () => {
+          const val = modalCardDesc.value.trim();
+          descDisplay.innerText = val ? val : 'Add a more detailed description...';
+          descEditorWrapper.classList.remove('active');
+          descDisplay.style.display = 'block';
+      });
+
+      document.getElementById('btnCancelDesc').addEventListener('click', () => {
+          descEditorWrapper.classList.remove('active');
+          descDisplay.style.display = 'block';
+      });
+
+      // --- 5. COMPOSER LOGIC ---
+      function setupComposer(colFooter, colBody) {
+        const triggerBtn = colFooter.querySelector('.btn-add-card-trigger');
+        const composer = colFooter.querySelector('.card-composer');
+        const inputTitle = colFooter.querySelector('.composer-input');
+        const inputDate = colFooter.querySelector('.datetime-input');
+        const btnSubmit = colFooter.querySelector('.btn-submit-card');
+        const btnCancel = colFooter.querySelector('.btn-cancel-card');
+
+        triggerBtn.addEventListener('click', () => { 
+            triggerBtn.style.display = 'none'; 
+            composer.classList.add('active'); 
+            btnSubmit.innerText = 'Save'; 
+            inputTitle.focus(); 
+        });
+
+        btnCancel.addEventListener('click', () => { 
+            composer.classList.remove('active'); 
+            triggerBtn.style.display = 'flex'; 
+            btnSubmit.innerText = 'Add card'; 
+            inputTitle.value = ''; 
+            inputDate.value = ''; 
+        });
+
+        const submitCard = () => {
+            const title = inputTitle.value.trim();
+            if (!title) { inputTitle.focus(); return; }
+            
+            const card = document.createElement('div');
+            card.className = 'kanban-card';
+            card.setAttribute('draggable', 'true');
+            card.setAttribute('data-raw-date', inputDate.value);
+            
+            let dateHtml = '';
+            if (inputDate.value) {
+                const dueDate = new Date(inputDate.value);
+                const timeStr = dueDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute:'2-digit' });
+                const dateStr = dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const isOverdue = dueDate < new Date();
+                dateHtml = `<span class="k-date ${isOverdue ? 'overdue' : ''}">${isOverdue ? '⚠️' : '📅'} ${dateStr}, ${timeStr}</span>`;
+            }
+
+            card.innerHTML = `
+              <div class="k-title">${title}</div>
+              <div class="k-desc">Add a more detailed description...</div>
+              <div class="k-footer">
+                <div class="k-footer-left">${dateHtml}</div>
+              </div>
+            `;
+            
+            attachCardEvents(card);
+            colBody.appendChild(card);
+            updateCounts();
+            
+            inputTitle.value = '';
+            inputDate.value = '';
+            inputTitle.focus();
+            colBody.scrollTop = colBody.scrollHeight;
+        };
+
+        btnSubmit.addEventListener('click', submitCard);
+        inputTitle.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitCard(); } });
+      }
+
+      // --- 6. INITIALIZATION ---
+      document.querySelectorAll('.kanban-card').forEach(card => attachCardEvents(card));
+      document.querySelectorAll('.kanban-col-body').forEach(body => attachColumnDropEvents(body));
+      document.querySelectorAll('.kanban-col').forEach(col => {
+          setupComposer(col.querySelector('.kanban-col-footer'), col.querySelector('.kanban-col-body'));
+      });
+
+      // Tambah List / Kolom Baru
+      document.getElementById('btn-add-list').addEventListener('click', () => {
+        const kanbanBoard = document.getElementById('kanban-board');
+        const col = document.createElement('div');
+        col.className = 'kanban-col';
+        col.innerHTML = `
+          <div class="kanban-col-header">
+            <span class="col-title-edit" contenteditable="true">New List</span>
+            <span class="kanban-col-count">0</span>
+          </div>
+          <div class="kanban-col-body"></div>
+          <div class="kanban-col-footer">
+            <div class="card-composer">
+                <textarea class="composer-input" rows="2" placeholder="Enter a title for this card..."></textarea>
+                <div class="datetime-picker-wrap" title="Set due date">
+                    <span>⏰</span>
+                    <input type="datetime-local" class="datetime-input">
+                </div>
+                <div class="composer-controls">
+                    <button class="btn-submit-card">Save</button>
+                    <button class="btn-cancel-card">✕</button>
+                </div>
+            </div>
+            <button class="btn-add-card-trigger">➕ Add a card</button>
+          </div>
+        `;
+        kanbanBoard.insertBefore(col, document.getElementById('add-list-container'));
+        setupComposer(col.querySelector('.kanban-col-footer'), col.querySelector('.kanban-col-body'));
+        attachColumnDropEvents(col.querySelector('.kanban-col-body'));
+        kanbanBoard.scrollLeft = kanbanBoard.scrollWidth;
+      });
+
+    });
+  </script>
+</body>
+</html>

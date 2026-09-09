@@ -1,9 +1,13 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 // Layar "Library Component for UI/UX" (permintaan user 2026-09-09) --
 // showcase SEMUA pola widget dari docs/mockups/UIUX_components_part1.html
@@ -16,7 +20,9 @@ use Livewire\WithFileUploads;
 // mana pun.
 new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use WithFileUploads;
+    use WithPagination;
 
     public string $demoName = '';
 
@@ -70,7 +76,7 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
 
     public function setMainTab(string $tab): void
     {
-        if (in_array($tab, ['forms', 'calendar', 'kanban', 'gantt'], true)) {
+        if (in_array($tab, ['grid', 'forms', 'calendar', 'kanban', 'gantt', 'graphics'], true)) {
             $this->mainTab = $tab;
         }
     }
@@ -130,6 +136,12 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
             ['id' => 3, 'title' => 'Design Review', 'start' => $today->copy()->addDays(7)->format('Y-m-d').'T10:00', 'end' => $today->copy()->addDays(7)->format('Y-m-d').'T12:00', 'colorClass' => 'green', 'desc' => 'Mockup approval.'],
             ['id' => 4, 'title' => 'Cuti panjang', 'start' => $today->copy()->addDays(10)->format('Y-m-d').'T08:00', 'end' => $today->copy()->addDays(11)->format('Y-m-d').'T18:00', 'colorClass' => 'green', 'desc' => 'Liburan ke Bali.', 'span' => 2],
         ];
+
+        // Due date demo relatif ke "sekarang" (bukan tanggal statis) -- salah
+        // satu sengaja di masa lalu supaya status overdue kelihatan di kartu.
+        $this->demoKanbanCards[0]['dueDate'] = $today->copy()->addDays(2)->format('Y-m-d\TH:i');
+        $this->demoKanbanCards[1]['dueDate'] = $today->copy()->addDays(6)->format('Y-m-d\TH:i');
+        $this->demoKanbanCards[2]['dueDate'] = $today->copy()->subDay()->format('Y-m-d\TH:i');
     }
 
     public function updatedDemoFile(): void
@@ -461,31 +473,400 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         return "width: calc({$span}*100% + {$span}*2px); position: relative; z-index: 5;";
     }
 
-    // Tab Kanban (permintaan user 2026-09-09) -- docs/kanbanboardstandard.md
-    // §1 EKSPLISIT bilang belum ada komponen x-kanban.board reusable (sengaja
-    // ditunda sampai kanban ke-3 muncul dgn pola serupa) -- markup di bawah
-    // ini COPY MANUAL pola standar §2 apa adanya, BUKAN abstraksi baru.
-    public array $demoKanbanCards = [
-        ['id' => 1, 'title' => 'Order #1001 — PT Sinar Jaya', 'stage' => 'BARU'],
-        ['id' => 2, 'title' => 'Order #1002 — CV Makmur Abadi', 'stage' => 'BARU'],
-        ['id' => 3, 'title' => 'Order #1003 — Toko Abadi Jaya', 'stage' => 'PROSES'],
-        ['id' => 4, 'title' => 'Order #1004 — PT Cipta Karya', 'stage' => 'SELESAI'],
-    ];
+    // Tab Grid (2026-09-09) -- showcase pola docs/griduistandard.md (kotak
+    // statistik pastel, toolbar search, kolom identitas avatar+nama+kode,
+    // Aksi Edit+Toggle-aktif ala grid Master, footer pagination 3-bagian).
+    // Data dummy statis di memori (bukan tabel DB) -- HasGridPagination
+    // dipakai apa adanya (perPage/gridPageRange), paginasi dibangun manual
+    // di atas Collection krn sumbernya array, bukan Eloquent builder.
+    public string $demoGridSearch = '';
 
-    public function demoKanbanColumns(): array
+    protected function demoGridSourceRows(): array
     {
+        return collect(range(1, 34))->map(fn ($i) => [
+            'id' => $i,
+            'name' => 'Customer Demo '.$i,
+            'code' => 'CUST-'.str_pad((string) $i, 4, '0', STR_PAD_LEFT),
+            'city' => ['Surabaya', 'Jakarta', 'Bandung', 'Medan'][$i % 4],
+            'active' => $i % 5 !== 0,
+            'balance' => $i * 1250000,
+        ])->all();
+    }
+
+    public function demoGridItems(): LengthAwarePaginator
+    {
+        $filtered = collect($this->demoGridSourceRows())
+            ->when($this->demoGridSearch !== '', fn ($c) => $c->filter(fn ($r) => str_contains(strtolower($r['name']), strtolower($this->demoGridSearch))
+                || str_contains(strtolower($r['code']), strtolower($this->demoGridSearch))))
+            ->values();
+
+        $page = Paginator::resolveCurrentPage('page') ?: 1;
+
+        return new LengthAwarePaginator(
+            $filtered->forPage($page, $this->perPage)->values(),
+            $filtered->count(),
+            $this->perPage,
+            $page,
+            ['path' => request()->url(), 'pageName' => 'page']
+        );
+    }
+
+    // Tab Graphics (2026-09-09) -- 3 varian dasar chart via Chart.js CDN
+    // (docs/reportstandard.md: "Library grafik -> Chart.js via CDN"),
+    // ikut skill dataviz: urutan hue kategorikal TETAP (tak pernah di-cycle),
+    // 1 hue utk seri tunggal (garis), legend+tooltip bawaan Chart.js, TANPA
+    // dual-axis. Data pie sengaja dari hitungan RIIL demoKanbanCards (bukan
+    // angka acak) supaya nyambung ke tab Kanban di halaman yang sama.
+    protected function graphicsCategoricalPalette(): array
+    {
+        return ['#2563eb', '#b45309', '#16a34a', '#6d28d9', '#c0392b'];
+    }
+
+    public function graphicsPieConfig(): array
+    {
+        $columns = $this->demoKanbanColumns;
+        $palette = $this->graphicsCategoricalPalette();
+
         return [
-            ['key' => 'BARU', 'label' => 'Baru'],
-            ['key' => 'PROSES', 'label' => 'Diproses'],
-            ['key' => 'SELESAI', 'label' => 'Selesai'],
+            'type' => 'pie',
+            'data' => [
+                'labels' => collect($columns)->pluck('label')->all(),
+                'datasets' => [[
+                    'data' => collect($columns)->map(fn ($c) => count($this->demoKanbanCardsForColumn($c['key'])))->all(),
+                    'backgroundColor' => array_slice($palette, 0, count($columns)),
+                    'borderColor' => '#ffffff',
+                    'borderWidth' => 2,
+                ]],
+            ],
+            'options' => [
+                'responsive' => true,
+                'maintainAspectRatio' => false,
+                'plugins' => ['legend' => ['position' => 'bottom', 'labels' => ['font' => ['size' => 11]]]],
+            ],
         ];
     }
 
-    public function moveDemoCard(int $cardId, string $targetStage): void
+    public function graphicsBarConfig(): array
+    {
+        $labels = ['Kotak Karton', 'Kemasan Fleksibel', 'Label Cetak', 'Kemasan Rigid'];
+        $palette = $this->graphicsCategoricalPalette();
+
+        return [
+            'type' => 'bar',
+            'data' => [
+                'labels' => $labels,
+                'datasets' => [[
+                    'label' => 'Volume Produksi (unit)',
+                    'data' => [18200, 12400, 9600, 6100],
+                    'backgroundColor' => array_slice($palette, 0, count($labels)),
+                    'borderRadius' => 6,
+                ]],
+            ],
+            'options' => [
+                'responsive' => true,
+                'maintainAspectRatio' => false,
+                'plugins' => ['legend' => ['display' => false]],
+                'scales' => ['y' => ['beginAtZero' => true]],
+            ],
+        ];
+    }
+
+    public function graphicsLineConfig(): array
+    {
+        $months = collect(range(5, 0))->map(fn ($i) => now()->copy()->subMonths($i)->format('M Y'))->all();
+
+        return [
+            'type' => 'line',
+            'data' => [
+                'labels' => $months,
+                'datasets' => [[
+                    'label' => 'Omzet (Rp juta)',
+                    'data' => [820, 910, 875, 960, 1040, 1120],
+                    'borderColor' => '#2563eb',
+                    'backgroundColor' => 'rgba(37, 99, 235, 0.12)',
+                    'fill' => true,
+                    'tension' => 0.35,
+                    'pointRadius' => 4,
+                    'pointBackgroundColor' => '#2563eb',
+                ]],
+            ],
+            'options' => [
+                'responsive' => true,
+                'maintainAspectRatio' => false,
+                'plugins' => ['legend' => ['display' => false]],
+                'scales' => ['y' => ['beginAtZero' => false]],
+            ],
+        ];
+    }
+
+    // Tab Kanban (2026-09-09, rebuild penuh) -- replika docs/mockups/
+    // mockup_UIUX_kanban.html (Trello-style: kolom judul-editable, composer
+    // kartu, tag/prioritas/due-date/assignee, drag-drop antar+dalam kolom,
+    // modal detail dgn popover Labels/Dates/Checklist/Members, deskripsi
+    // inline-edit, checklist+progress bar, komentar). Komponen reusable
+    // "x-kanban.board" DIBANGUN di sesi ini atas instruksi eksplisit user,
+    // meng-override docs/kanbanboardstandard.md §1 (dulu bilang tunggu
+    // kanban ke-3) -- lihat kanbanboardstandard.md utk pola dasarnya.
+    public array $demoKanbanColumns = [
+        ['key' => 'BARU', 'label' => 'Baru'],
+        ['key' => 'PROSES', 'label' => 'Diproses'],
+        ['key' => 'SELESAI', 'label' => 'Selesai'],
+    ];
+
+    public string $kanbanView = 'board';
+
+    // Kartu modal detail Kanban SENGAJA server-side ($kanbanActiveCardId,
+    // BUKAN Alpine activeCardId lokal) -- ditemukan bug nyata 2026-09-09:
+    // modal yg dibuka via <template x-if="activeCardId===X"> "membeku" isi
+    // checklist/comment-nya begitu ada wire:click LAIN (mis. toggle item)
+    // sementara modal masih terbuka -- Alpine memperlakukan cabang x-if yg
+    // sudah true sbg "miliknya", tak ikut di-diff ulang morph Livewire thd
+    // HTML baru dari server (persis kelas bug $mainTab/x-show yg sudah
+    // didokumentasikan panjang lebar di atas, kali ini kena x-if per-kartu).
+    // Server jadi satu-satunya sumber kebenaran KARTU MANA yg terbuka.
+    public ?int $kanbanActiveCardId = null;
+
+    public function kanbanOpenCard(int $cardId): void
+    {
+        $this->kanbanActiveCardId = $cardId;
+    }
+
+    public function kanbanCloseCard(): void
+    {
+        $this->kanbanActiveCardId = null;
+    }
+
+    public array $demoKanbanCards = [
+        [
+            'id' => 1, 'columnKey' => 'BARU', 'order' => 0,
+            'title' => 'Order #1001 — PT Sinar Jaya',
+            'desc' => 'Konfirmasi desain kemasan & jadwal produksi awal sebelum masuk antrean produksi.',
+            'tags' => [['label' => 'desain', 'color' => 'blue'], ['label' => 'urgent', 'color' => 'orange']],
+            'priority' => 'high', 'dueDate' => null, 'assignee' => 'Johannes Iwan',
+            'checklistTitle' => 'Persiapan Desain', 'checklist' => [
+                ['id' => 1, 'text' => 'Kirim proof ke customer', 'done' => true],
+                ['id' => 2, 'text' => 'Approval warna dari Direksi', 'done' => false],
+            ],
+            'comments' => [
+                ['author' => 'Johannes Iwan', 'initials' => 'JI', 'text' => 'Menunggu approval customer.', 'at' => '2 hari lalu'],
+            ],
+        ],
+        [
+            'id' => 2, 'columnKey' => 'BARU', 'order' => 1,
+            'title' => 'Order #1002 — CV Makmur Abadi',
+            'desc' => 'Evaluasi ketersediaan bahan baku kraft utk kuantitas order.',
+            'tags' => [['label' => 'material', 'color' => 'purple']],
+            'priority' => 'medium', 'dueDate' => null, 'assignee' => 'Rina',
+            'checklistTitle' => null, 'checklist' => [], 'comments' => [],
+        ],
+        [
+            'id' => 3, 'columnKey' => 'PROSES', 'order' => 0,
+            'title' => 'Order #1003 — Toko Abadi Jaya',
+            'desc' => 'Proses cetak berjalan di Mesin A, target selesai akhir minggu.',
+            'tags' => [['label' => 'produksi', 'color' => 'green']],
+            'priority' => 'medium', 'dueDate' => null, 'assignee' => 'Johannes Iwan',
+            'checklistTitle' => null, 'checklist' => [], 'comments' => [],
+        ],
+        [
+            'id' => 4, 'columnKey' => 'SELESAI', 'order' => 0,
+            'title' => 'Order #1004 — PT Cipta Karya',
+            'desc' => 'Selesai produksi, menunggu jadwal pengiriman.',
+            'tags' => [['label' => 'siap-kirim', 'color' => 'blue']],
+            'priority' => 'low', 'dueDate' => null, 'assignee' => 'Rina',
+            'checklistTitle' => null, 'checklist' => [], 'comments' => [],
+        ],
+    ];
+
+    public function kanbanSetView(string $view): void
+    {
+        if (in_array($view, ['board', 'tabular'], true)) {
+            $this->kanbanView = $view;
+        }
+    }
+
+    public function demoKanbanCardsForColumn(string $columnKey): array
+    {
+        return collect($this->demoKanbanCards)->where('columnKey', $columnKey)->sortBy('order')->values()->all();
+    }
+
+    // VM per-kolom sudah membawa kartu masing-masing (pola sama gantt: HALAMAN
+    // resolve Row/Block, komponen cuma render mekanika UI) -- x-kanban.board
+    // tak perlu tahu apa itu "columnKey" cocok dgn kartu mana.
+    public function demoKanbanBoardColumns(): array
+    {
+        return collect($this->demoKanbanColumns)->map(fn ($col) => [
+            'key' => $col['key'],
+            'label' => $col['label'],
+            'cards' => $this->demoKanbanCardsForColumn($col['key']),
+        ])->all();
+    }
+
+    // $targetIndex null = taruh di akhir kolom tujuan (drop ke area kosong
+    // paling bawah). Server = sumber kebenaran posisi kartu (sama filosofi
+    // Gantt/Calendar) -- drag di layar cuma usulan visual sampai re-render.
+    public function kanbanMoveCard(int $cardId, string $targetColumnKey, ?int $targetIndex = null): void
+    {
+        $cards = collect($this->demoKanbanCards);
+        $card = $cards->firstWhere('id', $cardId);
+        if (! $card) {
+            return;
+        }
+
+        $others = $cards->reject(fn ($c) => $c['id'] === $cardId);
+        $card['columnKey'] = $targetColumnKey;
+
+        $siblings = $others->where('columnKey', $targetColumnKey)->sortBy('order')->values();
+        $insertAt = $targetIndex === null ? $siblings->count() : max(0, min($targetIndex, $siblings->count()));
+        $siblings->splice($insertAt, 0, [$card]);
+        $siblings = $siblings->values()->map(fn ($c, $i) => [...$c, 'order' => $i]);
+
+        $rest = $others->where('columnKey', '!=', $targetColumnKey);
+        $this->demoKanbanCards = $rest->merge($siblings)->values()->all();
+    }
+
+    public function kanbanAddCard(string $columnKey, string $title, ?string $dueDate = null): void
+    {
+        $title = trim($title);
+        if ($title === '') {
+            return;
+        }
+
+        $this->demoKanbanCards[] = [
+            'id' => (collect($this->demoKanbanCards)->max('id') ?? 0) + 1,
+            'columnKey' => $columnKey,
+            'order' => collect($this->demoKanbanCards)->where('columnKey', $columnKey)->count(),
+            'title' => $title, 'desc' => '', 'tags' => [], 'priority' => null,
+            'dueDate' => $dueDate ?: null, 'assignee' => null,
+            'checklistTitle' => null, 'checklist' => [], 'comments' => [],
+        ];
+    }
+
+    public function kanbanAddColumn(string $title): void
+    {
+        $title = trim($title);
+        if ($title === '') {
+            return;
+        }
+
+        $this->demoKanbanColumns[] = ['key' => 'COL_'.\Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(6)), 'label' => $title];
+    }
+
+    public function kanbanRenameColumn(string $columnKey, string $title): void
+    {
+        $title = trim($title);
+        if ($title === '') {
+            return;
+        }
+
+        foreach ($this->demoKanbanColumns as &$col) {
+            if ($col['key'] === $columnKey) {
+                $col['label'] = $title;
+                break;
+            }
+        }
+    }
+
+    public function kanbanUpdateCard(int $cardId, string $field, ?string $value): void
+    {
+        if (! in_array($field, ['title', 'desc', 'priority', 'dueDate'], true)) {
+            return;
+        }
+
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                $card[$field] = $value === '' ? null : $value;
+                break;
+            }
+        }
+    }
+
+    public function kanbanAddChecklist(int $cardId, string $title): void
     {
         foreach ($this->demoKanbanCards as &$card) {
             if ($card['id'] === $cardId) {
-                $card['stage'] = $targetStage;
+                $card['checklistTitle'] = trim($title) !== '' ? trim($title) : 'Checklist';
+                break;
+            }
+        }
+    }
+
+    public function kanbanDeleteChecklist(int $cardId): void
+    {
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                $card['checklistTitle'] = null;
+                $card['checklist'] = [];
+                break;
+            }
+        }
+    }
+
+    public function kanbanAddChecklistItem(int $cardId, string $text): void
+    {
+        $text = trim($text);
+        if ($text === '') {
+            return;
+        }
+
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                $card['checklist'][] = ['id' => (collect($card['checklist'])->max('id') ?? 0) + 1, 'text' => $text, 'done' => false];
+                break;
+            }
+        }
+    }
+
+    public function kanbanToggleChecklistItem(int $cardId, int $itemId): void
+    {
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                foreach ($card['checklist'] as &$item) {
+                    if ($item['id'] === $itemId) {
+                        $item['done'] = ! $item['done'];
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    public function kanbanAddTag(int $cardId, string $label, string $color): void
+    {
+        $label = trim($label);
+        if ($label === '' || ! in_array($color, ['blue', 'orange', 'green', 'purple'], true)) {
+            return;
+        }
+
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                $card['tags'][] = ['label' => $label, 'color' => $color];
+                break;
+            }
+        }
+    }
+
+    public function kanbanRemoveTag(int $cardId, int $tagIndex): void
+    {
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                unset($card['tags'][$tagIndex]);
+                $card['tags'] = array_values($card['tags']);
+                break;
+            }
+        }
+    }
+
+    public function kanbanAddComment(int $cardId, string $text): void
+    {
+        $text = trim($text);
+        if ($text === '') {
+            return;
+        }
+
+        foreach ($this->demoKanbanCards as &$card) {
+            if ($card['id'] === $cardId) {
+                $card['comments'][] = ['author' => 'Johannes Iwan', 'initials' => 'JI', 'text' => $text, 'at' => 'Baru saja'];
                 break;
             }
         }
@@ -593,10 +974,12 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
             <button type="button" wire:click="setDevice('mobile')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">📱 Smartphone</button>
         </div>
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-            <button type="button" wire:click="setMainTab('forms')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Forms</button>
+            <button type="button" wire:click="setMainTab('grid')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'grid' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Grid</button>
+            <button type="button" wire:click="setMainTab('forms')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Form</button>
             <button type="button" wire:click="setMainTab('calendar')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'calendar' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Calendar</button>
             <button type="button" wire:click="setMainTab('kanban')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'kanban' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Kanban</button>
             <button type="button" wire:click="setMainTab('gantt')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'gantt' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Gantt Chart</button>
+            <button type="button" wire:click="setMainTab('graphics')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'graphics' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Graphics</button>
         </div>
     </div>
 
@@ -611,6 +994,80 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         ditampilkan di UI) atas permintaan user 2026-09-09. --}}
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Library Component for UI/UX</div>
+        </div>
+
+        {{-- SEMUA tab SELALU dirender (bukan @if yang menghapus dari DOM) --
+        tab Gantt punya <script> inline (x-gantt.board) yang HANYA jalan
+        kalau ada di HTML awal, TIDAK jalan kalau disuntik belakangan via
+        morph Livewire (browser tidak eksekusi <script> hasil innerHTML).
+        Visibilitas murni class CSS dihitung ULANG server tiap render --
+        TIDAK pakai x-show Alpine (state Alpine terbukti bisa putus/berhenti
+        reaktif thd DOM setelah morph Livewire dari tab lain, lihat catatan
+        panjang di $mainTab properti PHP atas). --}}
+
+        <!-- Tab Grid -->
+        <div class="flex flex-col gap-5 {{ $mainTab === 'grid' ? '' : 'hidden' }}">
+
+        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Grid</div>
+            {{-- Showcase docs/griduistandard.md — kotak statistik pastel, toolbar
+            search minimal, kolom identitas avatar+nama+kode, Aksi Edit+Toggle-
+            aktif (pola grid Master), footer pagination 3-bagian ala ScriptCase. --}}
+        </div>
+
+        @php $gridPaginator = $this->demoGridItems(); @endphp
+        <div class="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden">
+            <x-grid.stat-row :count="3">
+                <x-grid.stat-box tone="total" label="Total Customer" :value="count($this->demoGridSourceRows())" />
+                <x-grid.stat-box tone="active" label="Aktif" :value="collect($this->demoGridSourceRows())->where('active', true)->count()" />
+                <x-grid.stat-box tone="critical" label="Nonaktif" :value="collect($this->demoGridSourceRows())->where('active', false)->count()" />
+            </x-grid.stat-row>
+
+            <x-grid.toolbar>
+                <input type="text" wire:model.live.debounce.300ms="demoGridSearch" placeholder="Cari nama/kode..."
+                    class="px-2.5 py-1.5 border border-[#d7dbe2] rounded-md text-[12px] w-56 focus:border-accent">
+                <x-slot:newRecord>
+                    <button type="button" wire:click="demoSave('Grid + New Record')" class="px-3 py-1.5 rounded-md bg-accent text-white text-[11.5px] font-semibold cursor-pointer hover:opacity-90">➕ New Record</button>
+                </x-slot:newRecord>
+            </x-grid.toolbar>
+
+            <x-grid.table-shell>
+                <table class="w-full text-[12px]">
+                    <thead>
+                        <tr>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Identitas</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Kota</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Saldo</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Status</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-center px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase w-[90px]">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($gridPaginator as $row)
+                            <tr wire:key="demo-grid-row-{{ $row['id'] }}" class="hover:bg-[#f8f9fb]">
+                                <x-grid.identity-cell :id="$row['id']" :name="$row['name']" :code="$row['code']" />
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#374151]">{{ $row['city'] }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#374151]">Rp {{ number_format($row['balance'], 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ $row['active'] ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $row['active'] ? 'Aktif' : 'Nonaktif' }}</span>
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center justify-center gap-1">
+                                        <x-grid.action-icon icon="✏️" title="Edit" action="demoSave('Grid Edit')" />
+                                        <x-grid.action-icon icon="🔁" title="Toggle Aktif" action="demoSave('Grid Toggle Aktif')" />
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <x-grid.empty-row :colspan="5" />
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-grid.table-shell>
+
+            @include('components.grid.pagination-footer', ['paginator' => $gridPaginator])
+        </div>
+
         </div>
 
         {{-- SEMUA tab SELALU dirender (bukan @if yang menghapus dari DOM) --
@@ -981,35 +1438,74 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         <div class="flex flex-col gap-5">
 
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Kanban Board</div>
-            {{-- Pola drag-drop kartu antar kolom status (docs/kanbanboardstandard.md) — BELUM ada komponen "x-kanban.board" reusable (sengaja, standar bilang tunggu kanban ke-3 dgn pola serupa sebelum diekstrak jadi komponen generik). Markup di bawah ini COPY MANUAL pola standar tsb apa adanya, bukan abstraksi baru. --}}
-            <div x-data="{ draggedId: null }">
-                <div class="flex gap-3 overflow-x-auto pb-2">
-                    @foreach ($this->demoKanbanColumns() as $column)
-                        @php $cardsInColumn = collect($demoKanbanCards)->where('stage', $column['key']); @endphp
-                        <div class="w-[220px] shrink-0 bg-[#f4f6fa] rounded-lg p-2.5"
-                            x-on:dragover.prevent
-                            x-on:drop="$wire.moveDemoCard(draggedId, '{{ $column['key'] }}'); draggedId = null"
-                            x-bind:class="draggedId ? 'ring-2 ring-[#93c5fd]' : ''">
-                            <div class="flex items-center justify-between mb-2 px-1">
-                                <p class="text-[11px] font-bold text-navy uppercase">{{ $column['label'] }}</p>
-                                <span class="text-[10px] font-bold text-muted bg-white px-1.5 py-0.5 rounded-full">{{ $cardsInColumn->count() }}</span>
-                            </div>
-                            <div class="space-y-2 min-h-[60px]">
-                                @forelse ($cardsInColumn as $card)
-                                    <div wire:key="demo-kanban-card-{{ $card['id'] }}" draggable="true"
-                                        x-on:dragstart="draggedId = {{ $card['id'] }}"
-                                        class="bg-white border border-[#d7dbe2] rounded-md p-2.5 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md text-xs text-[#374151]">
-                                        {{ $card['title'] }}
-                                    </div>
-                                @empty
-                                    <p class="text-[10.5px] text-muted text-center py-4">Kosong</p>
-                                @endforelse
-                            </div>
-                        </div>
-                    @endforeach
+            <div class="flex items-center justify-between mb-1">
+                <div class="text-sm font-bold text-navy uppercase tracking-wide">Kanban Board</div>
+                {{-- Toggle Board/Tabular SENGAJA server-side ($kanbanView, bukan Alpine
+                x-data lokal) -- konsisten dgn fix $mainTab: sibling wire:click di dalam
+                tab ini (mis. drop kartu) memicu morph Livewire penuh, yang terbukti
+                memutus reaktivitas x-show utk elemen TAK terkait (root cause bug
+                Day/Week/Month sebelumnya). --}}
+                <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
+                    <button type="button" wire:click="kanbanSetView('board')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $kanbanView === 'board' ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">Board</button>
+                    <button type="button" wire:click="kanbanSetView('tabular')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer {{ $kanbanView === 'tabular' ? 'bg-navy text-white' : 'text-muted hover:text-navy' }}">Tabular</button>
                 </div>
             </div>
+            {{-- Replika docs/mockups/mockup_UIUX_kanban.html — komponen reusable
+            "x-kanban.board" (resources/views/components/kanban/board.blade.php),
+            lihat docs/kanbanboardstandard.md. Tampilan "Tabular" = pola grid
+            griduistandard.md sbg alternatif tabel datar dari data kartu yang sama. --}}
+        </div>
+
+        <div class="{{ $kanbanView === 'board' ? '' : 'hidden' }} bg-white border border-[#e2e8f0] rounded-xl p-4 overflow-hidden">
+            <x-kanban.board :columns="$this->demoKanbanBoardColumns()" :active-card-id="$kanbanActiveCardId" />
+        </div>
+
+        <div class="{{ $kanbanView === 'tabular' ? '' : 'hidden' }} bg-white border border-[#e2e8f0] rounded-xl overflow-hidden">
+            @php
+                $kanbanRows = collect($this->demoKanbanBoardColumns())->flatMap(fn ($col) => collect($col['cards'])->map(fn ($card) => [...$card, 'columnLabel' => $col['label']]));
+                $kanbanPrioTones = ['high' => 'bg-[#fdecec] text-[#c0392b]', 'medium' => 'bg-[#fef6e7] text-[#b45309]', 'low' => 'bg-[#eef1f5] text-[#4b5568]'];
+                $kanbanPrioLabels = ['high' => 'High', 'medium' => 'Medium', 'low' => 'Low'];
+            @endphp
+            <x-grid.stat-row :count="3">
+                <x-grid.stat-box tone="total" label="Total Kartu" :value="$kanbanRows->count()" />
+                <x-grid.stat-box tone="warn" label="Prioritas Tinggi" :value="$kanbanRows->where('priority', 'high')->count()" />
+                <x-grid.stat-box tone="critical" label="Jatuh Tempo Lewat" :value="$kanbanRows->filter(fn ($c) => $c['dueDate'] && \Illuminate\Support\Carbon::parse($c['dueDate'])->isPast())->count()" />
+            </x-grid.stat-row>
+            <x-grid.table-shell>
+                <table class="w-full text-[12px]">
+                    <thead>
+                        <tr>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Kartu</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Kolom</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Prioritas</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Jatuh Tempo</th>
+                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Assignee</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($kanbanRows as $row)
+                            @php $rowOverdue = $row['dueDate'] && \Illuminate\Support\Carbon::parse($row['dueDate'])->isPast(); @endphp
+                            <tr wire:key="kanban-row-{{ $row['id'] }}" class="hover:bg-[#f8f9fb]">
+                                <x-grid.identity-cell :id="$row['id']" :name="$row['title']" :code="'#'.$row['id']" />
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#374151]">{{ $row['columnLabel'] }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    @if ($row['priority'])
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ $kanbanPrioTones[$row['priority']] }}">{{ $kanbanPrioLabels[$row['priority']] }}</span>
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] {{ $rowOverdue ? 'text-[#c0392b] font-semibold' : 'text-[#374151]' }}">
+                                    {{ $row['dueDate'] ? \Illuminate\Support\Carbon::parse($row['dueDate'])->format('d M Y, H:i') : '—' }}
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#374151]">{{ $row['assignee'] ?? '—' }}</td>
+                            </tr>
+                        @empty
+                            <x-grid.empty-row :colspan="5" />
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-grid.table-shell>
         </div>
 
         </div>
@@ -1034,6 +1530,84 @@ new #[Title('Library Component for UI/UX — TELASIH MAKMUR ERP')] class extends
         </div>
 
         </div>
+        </div>
+
+        <!-- Tab Graphics -->
+        <div class="flex flex-col gap-5 {{ $mainTab === 'graphics' ? '' : 'hidden' }}">
+
+        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Graphics</div>
+            {{-- 3 varian dasar chart via Chart.js (docs/reportstandard.md), skill
+            dataviz: hue kategorikal urutan tetap, 1 hue utk seri garis tunggal,
+            legend+tooltip bawaan, tanpa dual-axis. Chart.js CDN dimuat SEKALI di
+            sini (bagian dari HTML awal, bukan disuntik morph — sama prinsip
+            dgn catatan Gantt di atas), inisialisasi lewat Alpine.data('tmChart',...)
+            di component-library.js (pola SUDAH terbukti jalan di halaman ini). --}}
+            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">Pie — Distribusi Kartu per Kolom Kanban</div>
+                <div wire:key="chart-pie" wire:ignore class="h-[260px]" x-data="tmChart({{ Js::from($this->graphicsPieConfig()) }})" x-init="init()">
+                    <canvas x-ref="canvas"></canvas>
+                </div>
+                <details class="mt-3">
+                    <summary class="text-[11px] text-muted cursor-pointer select-none">Lihat sebagai tabel</summary>
+                    <table class="w-full text-[11.5px] mt-2">
+                        <thead><tr><th class="text-left py-1 text-muted font-semibold">Kolom</th><th class="text-right py-1 text-muted font-semibold">Jumlah Kartu</th></tr></thead>
+                        <tbody>
+                            @foreach ($this->demoKanbanColumns as $col)
+                                <tr class="border-t border-[#eef1f5]"><td class="py-1">{{ $col['label'] }}</td><td class="py-1 text-right">{{ count($this->demoKanbanCardsForColumn($col['key'])) }}</td></tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+
+            <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
+                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">Batang — Volume Produksi per Kategori</div>
+                @php $barConfig = $this->graphicsBarConfig(); @endphp
+                <div wire:key="chart-bar" wire:ignore class="h-[260px]" x-data="tmChart({{ Js::from($barConfig) }})" x-init="init()">
+                    <canvas x-ref="canvas"></canvas>
+                </div>
+                <details class="mt-3">
+                    <summary class="text-[11px] text-muted cursor-pointer select-none">Lihat sebagai tabel</summary>
+                    <table class="w-full text-[11.5px] mt-2">
+                        <thead><tr><th class="text-left py-1 text-muted font-semibold">Kategori</th><th class="text-right py-1 text-muted font-semibold">Volume (unit)</th></tr></thead>
+                        <tbody>
+                            @foreach ($barConfig['data']['labels'] as $i => $label)
+                                <tr class="border-t border-[#eef1f5]"><td class="py-1">{{ $label }}</td><td class="py-1 text-right">{{ number_format($barConfig['data']['datasets'][0]['data'][$i], 0, ',', '.') }}</td></tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </details>
+            </div>
+
+            <div class="bg-white border border-[#e2e8f0] rounded-xl p-5 lg:col-span-2">
+                <div class="text-[12.5px] font-bold text-navy uppercase tracking-wide mb-3">Garis — Tren Omzet 6 Bulan Terakhir</div>
+                @php $lineConfig = $this->graphicsLineConfig(); @endphp
+                <div wire:key="chart-line" wire:ignore class="h-[260px]" x-data="tmChart({{ Js::from($lineConfig) }})" x-init="init()">
+                    <canvas x-ref="canvas"></canvas>
+                </div>
+                <details class="mt-3">
+                    <summary class="text-[11px] text-muted cursor-pointer select-none">Lihat sebagai tabel</summary>
+                    <table class="w-full text-[11.5px] mt-2">
+                        <thead><tr>
+                            @foreach ($lineConfig['data']['labels'] as $label)
+                                <th class="text-right py-1 text-muted font-semibold px-2">{{ $label }}</th>
+                            @endforeach
+                        </tr></thead>
+                        <tbody><tr>
+                            @foreach ($lineConfig['data']['datasets'][0]['data'] as $val)
+                                <td class="text-right py-1 px-2">{{ number_format($val, 0, ',', '.') }}</td>
+                            @endforeach
+                        </tr></tbody>
+                    </table>
+                </details>
+            </div>
+        </div>
+
         </div>
 
     </div>
