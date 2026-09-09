@@ -80,6 +80,41 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertTrue(collect($settingsGroup['children'])->contains('code', 'SET_UILIB'));
     }
 
+    // Tab Calendar (2026-09-09) -- replika docs/mockups/mockup_UIUX_calendar.html
+    // (bukan lagi versi ringkas x-form.mini-calendar) -- view Day/Week/Month,
+    // drag-drop (calMoveEvent), CRUD event (calCreateNew/calSaveEdit/calDeleteEvent).
+    public function test_calendar_tab_views_and_event_crud(): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+
+        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $c->assertOk()->assertSee('Event Calendar');
+
+        foreach (['month', 'day', 'week'] as $view) {
+            $c->call('calSetView', $view)->assertOk();
+        }
+
+        $beforeCount = count($c->get('calEvents'));
+        $c->call('calCreateNew');
+        $newId = $c->get('calEditingId');
+        $this->assertNotNull($newId);
+        $this->assertCount($beforeCount + 1, $c->get('calEvents'));
+
+        $c->set('calEditTitle', 'Rapat Demo Test')->call('calSaveEdit');
+        $this->assertNull($c->get('calEditingId'));
+        $saved = collect($c->get('calEvents'))->firstWhere('id', $newId);
+        $this->assertSame('Rapat Demo Test', $saved['title']);
+
+        $targetDate = now()->addDays(5)->toDateString();
+        $c->call('calMoveEvent', $newId, $targetDate);
+        $moved = collect($c->get('calEvents'))->firstWhere('id', $newId);
+        $this->assertStringStartsWith($targetDate, $moved['start']);
+
+        $c->call('calDeleteEvent', $newId);
+        $this->assertCount($beforeCount, $c->get('calEvents'));
+    }
+
     // 2026-09-07: footer "Settings"/"Security" dulu 2 array Alpine literal
     // hardcode di main-menu.blade.php -- sekarang 100% data-driven dari
     // sys_app_menu (SET_GRP_SETTINGS/SET_GRP_SECURITY, migration
