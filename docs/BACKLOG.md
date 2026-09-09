@@ -128,10 +128,9 @@
   [sengaja ditunda, butuh data historis dulu], MTS auto-replenishment).
   Lihat §6.
 - **R13.** Finance — Fixed Asset (0%), Auto-jurnal DO/Invoice, seluruh
-  AR/AP belum ada. **Payroll SENGAJA di-skip total** (aturan CLAUDE.md,
-  butuh keputusan desain enkripsi dulu — TAPI materi referensi baru sudah
-  masuk repo `docs/payroll_timeattendance/`, belum diverifikasi/dipakai).
-  Lihat §7.
+  AR/AP belum ada. Lihat §7. (**Payroll TIDAK LAGI di-skip** — sudah
+  dibangun penuh 11/11 layar per 2026-09-07, lihat R34/§15, catatan lama
+  "sengaja di-skip total" di sini sudah usang.)
 - **R14.** HRM — `org_position` mapping, Flutter mobile channel. Lihat §8.
 - **R15.** Migrasi Filament `/admin` — baru HRM, modul lain 100% shell
   lama. Lihat §9.
@@ -143,6 +142,15 @@
 - **R18.** Katalog §12 — banyak item Procurement/Finance/HR/Delivery
   eksplisit di luar scope v1, plus keputusan bisnis Inquiry/CO yang masih
   menggantung (§12.2).
+- **R33.** [BARU 2026-09-09] **Audit keterkaitan identitas sec_user ↔
+  emp_employee** — insiden nyata ditemukan user sendiri lewat browser
+  (bukan lewat pengecekan sistematis), akun login asli tertaut ke record
+  HR dummy tanpa terdeteksi. Lihat §14.
+- **R34.** [BARU 2026-09-09] **Payroll & Time Attendance — 11/11 layar
+  SELESAI**, tapi ada 1 keputusan bisnis yang masih menggantung jawaban
+  user (eligibilitas Uang Roti) + beberapa gap kecil belum dikerjakan
+  (format transfer bank, tabel TJ_KEAHLIAN/rate lembur, logo PWA). Lihat
+  §15 utk stage/handoff lengkap.
 
 ---
 
@@ -660,8 +668,7 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > — baru cakup ~8 string chrome shell paling dasar. **Keputusan user
 > 2026-09-07**: lanjutkan perluasan cakupan **bertahap 1 malam/hari** (bukan
 > 1 sesi maraton), dieksekusi via **scheduled task** (fitur bawaan Claude
-> Code, tersimpan `~/.claude/scheduled-tasks/`), **maks ~2 jam kerja per
-> malam** (batasi token, jangan maraton).
+> Code, tersimpan `~/.claude/scheduled-tasks/`).
 >
 > **RESET JADWAL 2026-09-09**: Malam 1 (`i18n-rollout-malam-1`, 2026-09-07
 > 21:00) dan Malam 2 (`i18n-rollout-malam-2`, 2026-09-08 21:00) **fire tapi
@@ -745,6 +752,141 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > `project_settings_menu_datadriven`, §11 di atas (kebijakan menu Inggris —
 > BEDA sumbu, jangan digabung: itu soal `sys_app_menu.label`, ini soal
 > `sys_translations`/`Translator::t()`).
+
+---
+
+## 14. DATA INTEGRITY — AUDIT KETERKAITAN IDENTITAS (sec_user ↔ emp_employee ↔ dst)
+
+> **Instruksi user 2026-09-09**: "masukkan ke pekerjaan backlog bahwa hal
+> ini tidak boleh terjadi, tulis apa saja yang harus di-check agar tidak
+> terulang". **Dikerjakan (prosesnya) nanti malam** — entry ini HANYA
+> menulis rencana pengecekan, BELUM ada eksekusi apa pun.
+
+**Kronologi insiden**: user melapor lewat screenshot Self-Service Karyawan
+— header profil masih menampilkan "Budi Santoso" / "Senior Heidelberg
+Operator" padahal akun login (`sec_user` id=1, login `johiwan`) baru saja
+dibetulkan namanya jadi "Johannes Iwan". Ditemukan bahwa header itu
+sumbernya BUKAN `sec_user`, melainkan `emp_employee` (master HR) yang
+ditaut lewat `sec_user.employee_id` — dan `employee_id` itu menunjuk ke
+`emp_employee` id=1 (TM-00001) yang isinya masih 100% data dummy testing
+dari `HrmMasterSeeder.php`. Root cause ganda:
+1. **Niat seeder vs kenyataan DB sudah menyimpang tanpa jejak.**
+   `HrmMasterSeeder.php:39-42` eksplisit menaut TM-00001 ke login **`admin`**
+   (dulu juga kebetulan bernama "Budi Santoso", niatnya cuma sample data
+   testing). Tapi di DB live, `admin.employee_id` = NULL dan yang tertaut ke
+   TM-00001 justru **`johiwan`** (akun asli user) — perubahan ini tidak ada
+   di kode/migration manapun (dicek via `grep`), berarti dilakukan manual
+   (tinker/DB langsung) di sesi lampau tanpa dicatat.
+2. **Tidak ada mekanisme yang mendeteksi mismatch.** Begitu `sec_user.name`
+   dibetulkan tapi `emp_employee.full_name` yang ditaut tidak ikut, tidak
+   ada validasi/dashboard/audit apa pun yang akan bunyi — baru ketahuan
+   karena user kebetulan buka halaman itu di browser.
+
+**Yang harus DICEK malam ini** (audit dulu, jangan langsung ubah data tanpa
+lapor — ikuti pola konfirmasi yang sudah dipakai sesi ini):
+
+1. **Audit semua `sec_user` dengan `employee_id IS NOT NULL`** — bandingkan
+   `sec_user.name` vs `emp_employee.full_name` di baris yang ditaut untuk
+   TIAP baris (bukan cuma id=1). Laporkan tiap ketidakcocokan nama, jangan
+   langsung perbaiki sepihak.
+2. **Cek tabel lain yang ikut menyimpan identitas per-`employee_id`**
+   (`emp_family`, data attendance/payroll kalau sudah ada isinya untuk
+   employee_id=1, dst) — pastikan tidak ada sisa data dummy lain yang
+   nyasar ke identitas akun real user selain yang sudah dibetulkan sesi ini
+   (email, keluarga, jabatan, NIK, NPWP, telepon, tanggal join).
+3. **Cek balik akun dummy `admin`** (id_user=213, `employee_id` masih NULL)
+   — sesuai niat asli seeder, apakah dia yang seharusnya ditaut ke TM-00001
+   supaya portal self-service dummy tetap ada sample data untuk testing.
+   Kalau iya: usulkan tautkan `admin` ke TM-00001 (JANGAN hapus/ubah isi
+   TM-00001 — tetap dummy, cuma pindah pemiliknya — sesuai prinsip
+   `feedback_keep_dummy_data`).
+4. **Cari pola seeder/migration serupa** yang menautkan `employee_id`/
+   entity lain berdasarkan ASUMSI (nama kebetulan sama, urutan insert,
+   dsb.) tanpa constraint tegas — pola persis yang menyebabkan bug ini
+   (lihat komentar `HrmMasterSeeder.php:39-42`). Kalau ada pola serupa di
+   modul lain (Payroll `pyr_*`, Attendance `att_*`, Recruitment), tandai
+   sebagai fragile, jangan langsung diubah.
+5. **Usulkan (jangan langsung bangun — ini keputusan arsitektural, perlu
+   konfirmasi user dulu) mekanisme pencegahan jangka panjang**, sampaikan
+   opsi & trade-off, contoh kandidat:
+   - Artisan command audit (`php artisan data:audit-identity` atau
+     sejenis) yang expose mismatch `sec_user.name` vs
+     `emp_employee.full_name` untuk semua baris tertaut, bisa dijalankan
+     manual/terjadwal.
+   - Validasi di layar yang mengubah `employee_id` (Master Employee/
+     Security User): tampilkan preview nama employee yang akan ditaut,
+     supaya operator sadar kalau salah SEBELUM simpan.
+   - Aturan kerja (non-kode): setiap koreksi data identitas manual
+     (tinker/DB langsung, di luar migration/seeder) WAJIB cross-check
+     SEMUA tabel yang overlap (checklist poin 2 di atas) dalam satu sesi,
+     bukan reaktif menunggu user menemukan sendiri per-layar.
+6. Tulis hasil audit (temuan mismatch, keputusan `admin`↔TM-00001, opsi
+   pencegahan yang dipilih) ke `docs/LOG_JOB_DONE.md`, lalu hapus/tandai
+   selesai section ini. **Tidak ada perubahan data/kode tanpa persetujuan
+   eksplisit user** untuk temuan apa pun di luar yang sudah dikonfirmasi
+   sesi ini (email/keluarga/jabatan/NIK/NPWP/telepon/join_date TM-00001↔
+   johiwan, itu sudah selesai & tidak perlu diulang).
+
+---
+
+## 15. PAYROLL & TIME ATTENDANCE — STATUS & STAGE HANDOFF (2026-09-09)
+
+> Ditulis atas instruksi user ("buatkan stage buat saya pindah ke prompt
+> lain, agar prompt lain paham") setelah checklist 11-layar Payroll
+> selesai. Tujuannya supaya sesi/prompt berikutnya yang menyentuh modul
+> ini tidak perlu menggali ulang dari nol.
+
+**Branch kerja:** `claude/bentuk-customer-order-clarity-jnehjg` (branch
+bersama, dipakai beberapa sesi paralel — lihat peringatan multi-sesi di
+bawah). **Commit terakhir milik Payroll:** `44d0e09` "Payroll: Modul 07
+(Rekening Bank) + Modul 09 (GPS Clock-in sungguhan)".
+
+### Checklist 11 layar — SEMUA SELESAI
+01 Upload Finger/Excel · 02 Grid Presensi Harian + Override · 03 Payroll
+Batch Run · 04 Cetak Slip Gaji · 05 Generator Transfer Bank · 06 Roster
+Cash + Pecahan Uang · 07 Master Karyawan + Rekening Bank · 08 Laporan
+Kedisiplinan Harian · 09 Mobile GPS Clock-in (backend nyata, pakai
+`navigator.geolocation` browser sungguhan + geofence Haversine, BUKAN
+simulasi lagi) · 10 ESS Pengajuan Cuti/Sakit · 11 HR Approval Workflow.
+
+Termasuk: enkripsi gaji AES-256-GCM (`App\Casts\PayrollEncrypted`, key
+`VERBA_SANCTA`), BPJS + PPh21 opt-in per-karyawan (flag, bukan global),
+PWA installable di HP (manifest dinamis + service worker + ikon GD),
+validasi engine terhadap data Excel lapangan riil (`docs/attachments/`).
+
+### ⚠️ Pertanyaan bisnis TERBUKA — belum dijawab user
+**Eligibilitas Uang Roti**: engine saat ini cuma bayar ke jabatan yang
+namanya mengandung "Staff"/"SPV" (mengikuti teks literal Tier2 §4.4),
+tapi data Excel HR asli menunjukkan level **Operator** di Produksi juga
+menerima Uang Roti. **Belum diubah** — menyangkut uang, jangan ubah tanpa
+konfirmasi eksplisit user. Rujukan: memory Claude Code
+`project_payroll_real_data_validation.md`.
+
+### Gap kecil belum dikerjakan (bukan permintaan eksplisit, dicatat "belum")
+- Format file transfer bank masih CSV generik, belum format clearing
+  resmi BCA/Mandiri.
+- Tabel TJ_KEAHLIAN & rate lembur-per-jam masih free-form per-karyawan,
+  belum berbasis lookup jabatan.
+- PPh21/BPJS belum direkonsiliasi ke sistem faktor "GAJI PER JAM" di
+  slip cetak.
+- Logo perusahaan asli belum dipasang di ikon PWA (masih ikon generik
+  hasil PHP GD, `Brand::logoPath()` sudah ada tapi belum dipakai di sini).
+
+### ⚠️ Peringatan multi-sesi (per 2026-09-09)
+Working tree branch ini punya perubahan uncommitted milik sesi LAIN yang
+sedang berjalan paralel (Component Library/i18n/Kanban) — bukan bagian
+modul Payroll: `resources/js/component-library.js`,
+`date-picker.blade.php`, `spreadsheet-table.blade.php`,
+`component-library.blade.php`, `routes/web.php`, `docs/ddl/tm2sys.sql`,
+plus file baru di `docs/ddl/`, `docs/md_sales/`, `docs/mockups/`,
+`resources/views/components/kanban/`. **Sesi Payroll berikutnya jangan
+commit/revert file-file itu** — bukan tanggung jawab modul ini.
+
+### Rujukan lengkap
+`docs/LOG_JOB_DONE.md` (entri "2026-09-07 (lanjutan 6)"), memory Claude
+Code: `project_gps_clockin_and_bank_screens.md`,
+`project_payroll_flow_screens.md`, `project_payroll_foundation_built.md`,
+`project_payroll_real_data_validation.md`, `project_pwa_mobile_install.md`.
 
 ---
 
