@@ -510,6 +510,25 @@ arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
     pakai sistem visual beda, `master/supplier.blade.php`/
     `master/employee.blade.php` tombol "Kembali" untuk toggle state
     bukan navigasi, JANGAN ikut disamakan).
+    **[REFRESH 2026-09-09]** User tunjuk ulang item ini via screenshot
+    tombol Back + minta perbaikan ikon panah ("kurang tegas kurang
+    jelas") — ikon diganti Unicode `←` → Font Awesome `fa-solid
+    fa-arrow-left` (FA 6.5.1 sudah dimuat CDN app-wide, lihat
+    `FORM_UI_STANDARD.md` §1 update terbaru). **Sudah dikerjakan HARI
+    INI** di 1 tempat sbg acuan visual baru: `setup/component-library.blade.php`
+    tab Form § "Aksi & Status" (Settings > DevLib UI UX). **BELUM
+    dikerjakan**: rollout ikon baru ini ke SEMUA 25+ layar nyata yang
+    masih pakai `←` lama (daftar lengkap ada di `FORM_UI_STANDARD.md`
+    §1 "Referensi implementasi" + grep
+    `rounded-full bg-white text-\[#43508a\] text-xs font-bold">←`). **Instruksi
+    eksplisit user: kerjakan rollout ini MALAM HARI lewat mekanisme
+    autonomous/nightly autowork yang sudah ada (`tmerp-backlog-autowork-*`),
+    TANPA prompting/konfirmasi ulang ke user** — cukup ganti span ikon
+    di tiap file (persis pola baru di `FORM_UI_STANDARD.md` §1), lalu
+    `npm run build` + jalankan test suite penuh + commit per-batch wajar
+    (jangan 1 commit raksasa 25 file), TIDAK perlu tanya user dulu utk
+    perubahan mekanis sekecil ini (ganti 1 `<span>` isi ikon, tidak ada
+    keputusan desain baru).
   - **Footer pagination — komponennya SUDAH ada & baik**
     (`components/grid/pagination-footer.blade.php`, dipakai konsisten 12
     layar) — TAPI **belum di-rollout ke semua grid**. Ditemukan ≥8 layar
@@ -683,6 +702,17 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > 21:00 hari kerja + `tmerp-backlog-autowork-weekend-2200` 22:00 akhir
 > pekan, sebelumnya cuma 15:45 hari kerja).
 >
+> **RESET JADWAL #2 (2026-09-09 siang, instruksi user)**: jam mulai
+> hari-kerja digeser lagi dari 21:00 → **17:00 WIB**, akhir pekan TETAP
+> **22:00 WIB**. Durasi kerja tiap malam/sesi **dibatasi HANYA ~1 jam**
+> (turun dari ~2 jam) — TERKECUALI **hari Selasa dapat budget PENUH ~12
+> jam** (kerja maraton spt sesi `tmerp-b5` dulu). Berlaku utk task
+> `tmerp-backlog-autowork-1700`/`-weekend-2200` (recurring, cek hari via
+> `date` tiap kali jalan) DAN task `i18n-rollout-malam-1..7` (one-time,
+> jam per-tanggal sudah disesuaikan langsung: Malam 1-3/6=17:00 1 jam,
+> Malam 4-5=22:00 1 jam, **Malam 7=17:00 tapi 12 jam penuh krn jatuh hari
+> Selasa 2026-09-15**). Tabel di bawah sudah mencerminkan jam baru ini.
+>
 > **TAMBAHAN SCOPE (instruksi user 2026-09-09 siang)**: selain translate
 > string ke `sys_translations`, **setiap malam juga WAJIB pastikan
 > komponen yang disentuh benar-benar TURUNAN dari library komponen shared**
@@ -702,7 +732,7 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > yang cocok jadi `<x-form.switch>`) — migrasikan ke komponen library
 > tsb SEKALIAN (bukan proyek terpisah, cukup selagi file itu sudah dibuka).
 > **JANGAN** cari-cari gap di layar LAIN yang tidak termasuk scope malam itu
-> (itu di luar anggaran waktu ~2 jam/malam) — cukup opportunistic di file
+> (itu di luar anggaran waktu ~1 jam/malam, kecuali malam Selasa yang 12 jam) — cukup opportunistic di file
 > yang memang sudah disentuh. Kalau ketemu gap besar/lintas-layar yang perlu
 > keputusan (refactor massal), JANGAN eksekusi sendiri — catat di §10 sbg
 > temuan baru, biar dibahas terpisah (pola audit-dulu-baru-rollout §10 yang
@@ -732,19 +762,19 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 >    file apa saja, ada blocker atau tidak).
 > 5. `git add` (spesifik, bukan `-A`) + commit + **push** ke `origin`
 >    (CLAUDE.md §7.11 — wajib tiap sesi kerja selesai, bukan cuma diminta).
-> 6. Kalau mepet 2 jam sebelum scope selesai: STOP, commit apa yang sudah
->    beres, catat sisa di kolom Catatan sbg "belum tuntas: ...", JANGAN
->    lanjut lewat batas waktu.
+> 6. Kalau mepet 1 jam (atau 12 jam khusus malam Selasa) sebelum scope
+>    selesai: STOP, commit apa yang sudah beres, catat sisa di kolom
+>    Catatan sbg "belum tuntas: ...", JANGAN lanjut lewat batas waktu.
 >
-> | # | Tanggal (WIB) | Jam | Scope | Status | Catatan |
-> |---|---|---|---|---|---|
-> | 1 | Rab 2026-09-09 | 21:00 | **Komponen shared** (leverage tertinggi — dipakai puluhan layar sekaligus): `components/grid/*`, `components/form/*`, pagination footer, badge status generik, tombol generik (Simpan/Batal/Hapus/Tambah/Cari/Export/Refresh), modal konfirmasi Ya/Tidak/Batal, pesan validasi generik. Key prefix `shared_*`. | 🟡 | WIP dimulai sesi `tmerp-backlog-autowork-1700` 2026-09-09 siang (migration `2026_09_09_000001_seed_i18n_night1_shared.php` + pagination-footer/column-modal/sort-modal/toolbar-buttons SELESAI, date-picker SEBAGIAN, select+spreadsheet-table BELUM) — diselesaikan malam ini oleh `i18n-rollout-malam-1`. |
-> | 2 | Kam 2026-09-10 | 21:00 | **Sisa chrome shell** yang belum ditarik malam sebelumnya (dari sesi 2026-09-07): drawer Notifikasi, drawer Chat, drawer Asisten AI, command palette (Ctrl+K), Help Center index. Audit ulang `main-menu.blade.php` cari string yg lolos. Key prefix `shell_*` (lanjutan). | ⬜ | |
-> | 3 | Jum 2026-09-11 | 21:00 | **Sales inti**: Inquiry Hub grid (`inquiry/hub.blade.php`), header+toolbar Inquiry form (BUKAN detail teknis dieline/costing formula), Quotation list, CO list — label & tombol saja. Key prefix `sales_*`. | ⬜ | |
-> | 4 | Sab 2026-09-12 | 22:00 | **Procurement inti**: PR/PO/PV/PQ/PRT list+entry — toolbar & label status saja (bukan field kalkulasi). Key prefix `proc_*`. | ⬜ | |
-> | 5 | Min 2026-09-13 | 22:00 | **Inventory + Production inti**: grid Stock In/Out/Adjustment, Master Card, WO Worklist — toolbar & label status. Key prefix `inv_*`/`prod_*`. | ⬜ | |
-> | 6 | Sen 2026-09-14 | 21:00 | **Finance + HRM inti**: COA, Cash & Bank, grid Employee, Attendance — toolbar & label status. Key prefix `fin_*`/`hrm_*`. | ⬜ | |
-> | 7 | Sel 2026-09-15 | 21:00 | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. | ⬜ | |
+> | # | Tanggal (WIB) | Jam | Budget | Scope | Status | Catatan |
+> |---|---|---|---|---|---|---|
+> | 1 | Rab 2026-09-09 | 17:00 | 1 jam | **Komponen shared** (leverage tertinggi — dipakai puluhan layar sekaligus): `components/grid/*`, `components/form/*`, pagination footer, badge status generik, tombol generik (Simpan/Batal/Hapus/Tambah/Cari/Export/Refresh), modal konfirmasi Ya/Tidak/Batal, pesan validasi generik. Key prefix `shared_*`. | 🟡 | WIP dimulai sesi `tmerp-backlog-autowork-1700` 2026-09-09 siang (migration `2026_09_09_000001_seed_i18n_night1_shared.php` + pagination-footer/column-modal/sort-modal/toolbar-buttons SELESAI, date-picker SEBAGIAN, select+spreadsheet-table BELUM) — diselesaikan malam ini oleh `i18n-rollout-malam-1`. |
+> | 2 | Kam 2026-09-10 | 17:00 | 1 jam | **Sisa chrome shell** yang belum ditarik malam sebelumnya (dari sesi 2026-09-07): drawer Notifikasi, drawer Chat, drawer Asisten AI, command palette (Ctrl+K), Help Center index. Audit ulang `main-menu.blade.php` cari string yg lolos. Key prefix `shell_*` (lanjutan). | ⬜ | |
+> | 3 | Jum 2026-09-11 | 17:00 | 1 jam | **Sales inti**: Inquiry Hub grid (`inquiry/hub.blade.php`), header+toolbar Inquiry form (BUKAN detail teknis dieline/costing formula), Quotation list, CO list — label & tombol saja. Key prefix `sales_*`. | ⬜ | |
+> | 4 | Sab 2026-09-12 | 22:00 | 1 jam | **Procurement inti**: PR/PO/PV/PQ/PRT list+entry — toolbar & label status saja (bukan field kalkulasi). Key prefix `proc_*`. | ⬜ | |
+> | 5 | Min 2026-09-13 | 22:00 | 1 jam | **Inventory + Production inti**: grid Stock In/Out/Adjustment, Master Card, WO Worklist — toolbar & label status. Key prefix `inv_*`/`prod_*`. | ⬜ | |
+> | 6 | Sen 2026-09-14 | 17:00 | 1 jam | **Finance + HRM inti**: COA, Cash & Bank, grid Employee, Attendance — toolbar & label status. Key prefix `fin_*`/`hrm_*`. | ⬜ | |
+> | 7 | Sel 2026-09-15 | 17:00 | **12 jam penuh** (jatuh hari Selasa) | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. Budget 12 jam berlebih dari cukup utk scope ini — kalau selesai lebih awal, boleh lanjut item BACKLOG.md lain (§0-12) sampai budget habis. | ⬜ | |
 >
 > Riwayat lengkap tiap malam (bukan cuma centang) pindah ke
 > `docs/LOG_JOB_DONE.md` begitu selesai, sama seperti item backlog lain.

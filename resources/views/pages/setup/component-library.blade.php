@@ -1206,7 +1206,12 @@ new #[Title('DevLib UI UX')] class extends Component
         <!-- I. Aksi & Tombol -->
         <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
             <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Aksi & Status</div>
-            {{-- x-form.split-button (baru) · x-form.badge (sudah ada, ditampilkan lagi sbg referensi tone). --}}
+            {{-- x-form.split-button (baru) · x-form.badge (sudah ada, ditampilkan lagi sbg referensi tone)
+            · tombol "Back" (permintaan user 2026-09-09, desain lama dipakai KONSISTEN di 25+ layar
+            entry -- co/entry.blade.php, pur/po/entry.blade.php, inventory/stock-in.blade.php, dst:
+            pill biru tua + label "Back" + lingkaran putih panah ←, title="Kembali ke menu grid",
+            link ke route daftar/grid asal layar). Markup di sini APA ADANYA (copy persis, bukan
+            komponen baru) supaya jadi acuan visual yg gampang dicontek layar baru. --}}
             <div class="flex items-center gap-4 flex-wrap">
                 <div class="w-[180px]">
                     <x-form.split-button label="Save" icon="💾" wire:click="demoSave('Split Button')" :actions="$this->splitButtonActions()" />
@@ -1216,6 +1221,16 @@ new #[Title('DevLib UI UX')] class extends Component
                 <x-form.badge tone="warn">PENDING</x-form.badge>
                 <x-form.badge tone="success">APPROVED</x-form.badge>
                 <x-form.badge tone="danger">REJECTED</x-form.badge>
+                <a href="{{ route('menu') }}" title="Kembali ke menu sebelumnya"
+                    class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+                    <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+                    {{-- Ikon panah diganti Font Awesome (fa-arrow-left, SUDAH dimuat CDN di
+                    layouts/app.blade.php & shell.blade.php) -- karakter Unicode "←" polos
+                    kurang tegas/tipis di beberapa font (keluhan user 2026-09-09). Ini jadi
+                    acuan baru utk backlog ganti SEMUA 25+ tombol Back senada, lihat
+                    docs/BACKLOG.md. --}}
+                    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
+                </a>
             </div>
         </div>
 

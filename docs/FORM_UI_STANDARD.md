@@ -15,17 +15,31 @@ di atas.
 
 ## 1. Tombol Back — pill navy + lingkaran panah putih
 
+> **UPDATE 2026-09-09 (instruksi user, lihat memory `project_back_button_icon_upgrade`):**
+> ikon panah di lingkaran putih diganti dari karakter Unicode polos `←` ke
+> ikon Font Awesome `fa-solid fa-arrow-left` — user menilai karakter `←`
+> "kurang tegas kurang jelas" (render tipis/tidak konsisten tebalnya
+> tergantung font). Font Awesome 6.5.1 SUDAH dimuat via CDN di
+> `layouts/app.blade.php` & `layouts/shell.blade.php`, jadi tidak nambah
+> dependency baru. **Acuan visual terbaru ada di Settings > DevLib UI UX**
+> (`setup/component-library.blade.php`, tab Form, section "Aksi & Status")
+> — cek ke sana kalau ragu bentuk pastinya. **Rollout ke 25+ layar yang
+> masih pakai `←` lama BELUM dikerjakan** — item backlog terpisah
+> (`docs/BACKLOG.md` §10, dieksekusi nightly autowork, TANPA prompting
+> user lebih lanjut) — jangan asumsikan semua layar sudah ikut versi baru
+> ini sampai backlog itu selesai.
+
 **JANGAN** lagi pakai tombol teks polos (`← Daftar X` dalam satu kotak rata,
 `bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md`). Standar baru:
 pill navy dengan label **"Back"** (Inggris, bukan "Daftar X"/"Menu"/dsb. — label
-generik yang sama di semua layar) + lingkaran putih berisi ikon panah, tujuan
-spesifik pindah ke `title` (tooltip).
+generik yang sama di semua layar) + lingkaran putih berisi ikon panah Font
+Awesome, tujuan spesifik pindah ke `title` (tooltip).
 
 ```html
 <a href="{{ route('nama.route') }}" title="Kembali ke <tujuan spesifik>"
     class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
     <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
 </a>
 ```
 
@@ -36,7 +50,7 @@ sama persis, ganti tag jadi `<button type="button" wire:click="...">`:
 <button type="button" wire:click="backToGrid" title="Kembali ke Daftar"
     class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
     <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+    <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
 </button>
 ```
 
@@ -59,7 +73,10 @@ sama persis, ganti tag jadi `<button type="button" wire:click="...">`:
   paling kanan di dalam div itu (lihat `co/entry.blade.php`) — jangan pasang
   `ml-auto` di tombol Back-nya sendiri kalau sudah ada di dalam wrapper begini.
 - Lingkaran ikon **selalu bg putih + teks navy** (`bg-white text-[#43508a]`),
-  ukuran tetap `w-6 h-6`, isi cuma karakter `←` (bukan SVG/emoji lain).
+  ukuran tetap `w-6 h-6`, isi **ikon Font Awesome `fa-solid fa-arrow-left`**
+  (`text-[13px]`, TANPA `font-bold` — solid FA icon sudah tebal secara
+  visual) — bukan karakter Unicode `←` (versi lama, digantikan 2026-09-09)
+  ataupun SVG/emoji custom lain.
 - Warna pill **selalu `bg-[#43508a]`** (sama seperti header lain di aplikasi),
   jangan ganti warna per modul.
 
