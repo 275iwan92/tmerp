@@ -62,6 +62,24 @@ class MainMenuShellSmokeTest extends TestCase
         $this->get('/setup/constants')->assertOk()->assertSee('Constants');
     }
 
+    // "Library Component for UI/UX" (2026-09-09) -- showcase resources/views/
+    // components/form/*.blade.php baru (16 komponen, docs/mockups/UIUX_components_part1.html
+    // + mockup_UIUX_calendar.html versi ringkas), menu SET_UILIB di grup Settings.
+    public function test_component_library_screen_opens_and_is_in_settings_menu(): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+
+        $this->get('/setup/component-library')->assertOk()->assertSee('Library Component for UI/UX');
+
+        $component = \Livewire\Livewire::test('pages::main-menu');
+        $tree = collect($component->instance()->menuTree());
+        $setup = $tree->firstWhere('code', 'SETUP');
+        $settingsGroup = collect($setup['children'])->firstWhere('code', 'SET_GRP_SETTINGS');
+
+        $this->assertTrue(collect($settingsGroup['children'])->contains('code', 'SET_UILIB'));
+    }
+
     // 2026-09-07: footer "Settings"/"Security" dulu 2 array Alpine literal
     // hardcode di main-menu.blade.php -- sekarang 100% data-driven dari
     // sys_app_menu (SET_GRP_SETTINGS/SET_GRP_SECURITY, migration
@@ -88,7 +106,7 @@ class MainMenuShellSmokeTest extends TestCase
         $this->assertSame('group', $securityGroup['menuType']);
 
         $this->assertSame(
-            ['Identifikasi', 'Language', 'Localization', 'Constants'],
+            ['Identifikasi', 'Language', 'Localization', 'Constants', 'Library Component for UI/UX'],
             collect($settingsGroup['children'])->pluck('label')->all()
         );
         $this->assertSame(
