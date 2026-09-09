@@ -159,7 +159,19 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
 <div class="print:hidden">
     <x-prodev.wizard-bar current="mastercard" :steps="$this->wizardSteps" :back-url="route('production.prodev.list')" />
 </div>
-<x-print.document :theme="['accent' => '#8a5a00', 'accent-soft' => '#fdf3e2']" info="{{ $this->part->displayMastercardCode() }}">
+{{-- Permintaan user 2026-09-09: format A4 LANDSCAPE + hitam-putih/grayscale
+(BUKAN toggle opsional spt .bw Nota Inquiry -- ini format tetap utk Master
+Card), KECUALI gambar artwork/preview yang tetap berwarna asli, semua
+tulisan hitam. Theme di-set langsung ke hitam/putih (bukan andalkan class
+.bw fight inline style -- prop `theme` dirender jadi inline style di root
+.print-doc, itu SELALU menang lawan `.print-doc.bw{...}` class rule utk
+custom property yang sama, jadi cara paling tepercaya adalah set nilainya
+langsung di sini, bukan override via class). class="landscape" ubah ukuran
+fisik halaman (lihat <style> di bawah) -- @page global document.blade.php
+tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
+<x-print.document class="landscape"
+    :theme="['ink' => '#000000', 'muted' => '#555555', 'line' => '#000000', 'line2' => '#999999', 'accent' => '#000000', 'accent-soft' => '#ffffff', 'warn' => '#000000', 'gold' => '#000000', 'danger' => '#000000']"
+    info="{{ $this->part->displayMastercardCode() }}">
     <x-slot:toolbar>
         <a href="{{ route('production.prodev', ['part' => $this->partId]) }}" class="sc">← Kembali ke ProDev</a>
     </x-slot:toolbar>
@@ -292,19 +304,37 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
         .print-doc table.items{width:100%;border-collapse:collapse;font-size:8pt;border:1px solid var(--print-line)}
         .print-doc table.items td{padding:5px 8px;border-bottom:1px solid var(--print-line2);vertical-align:top}
         .print-doc table.items tbody tr:last-child td{border-bottom:none}
-        .print-doc table.items td.desc{width:38%;color:var(--print-muted);font-weight:600;background:var(--print-accent-soft)}
-        .print-doc table.items td.amt{font-weight:700}
-        .print-doc table.items td.ref{font-family:Consolas,monospace;font-weight:700;color:var(--print-accent)}
-        .print-doc table.items .sp{font-weight:400;color:var(--print-muted);font-size:6.8pt;margin-top:2px}
-        .print-doc .cap{font-size:7.4pt;color:var(--print-muted);text-align:center;padding:10px 4px}
+        {{-- Label kolom pakai abu-abu netral fix (BUKAN var(--print-accent-soft),
+        itu sekarang putih polos -- perlu kontras sendiri spy label tetap
+        kebeda dari kolom nilai walau seluruh dokumen hitam-putih). --}}
+        .print-doc table.items td.desc{width:38%;color:#000;font-weight:600;background:#eee}
+        .print-doc table.items td.amt{font-weight:700;color:#000}
+        .print-doc table.items td.ref{font-family:Consolas,monospace;font-weight:700;color:#000}
+        .print-doc table.items .sp{font-weight:400;color:#555;font-size:6.8pt;margin-top:2px}
+        .print-doc .cap{font-size:7.4pt;color:#555;text-align:center;padding:10px 4px}
 
         .print-doc .mc-top{display:grid;grid-template-columns:1.15fr 1fr;gap:10px;margin-top:2px}
-        .print-doc .mc-visual{border:1px solid var(--print-line);border-radius:4px;padding:6px;
-            display:flex;flex-direction:column;background:#0b1220}
+        .print-doc .mc-visual{border:1px solid #000;border-radius:4px;padding:6px;
+            display:flex;flex-direction:column;background:#f4f4f4}
+        {{-- Satu-satunya elemen yang SENGAJA tidak ikut hitam-putih -- artwork/
+        preview asli tetap tampil warna aslinya (permintaan user), makanya
+        TIDAK ada filter:grayscale di sini. --}}
         .print-doc .mc-visual img{width:100%;height:auto;max-height:64mm;object-fit:contain;border-radius:2px}
         .print-doc .mc-visual-empty{flex:1;min-height:50mm;display:flex;align-items:center;justify-content:center;
-            color:#8a94a6;font-size:7.6pt;text-align:center;padding:8px}
-        .print-doc .mc-visual-cap{color:#c6ccd6;font-size:6.6pt;text-align:center;margin-top:5px;letter-spacing:.3px}
+            color:#555;font-size:7.6pt;text-align:center;padding:8px}
+        .print-doc .mc-visual-cap{color:#000;font-size:6.6pt;text-align:center;margin-top:5px;letter-spacing:.3px}
+
+        {{-- Format tetap A4 LANDSCAPE (bukan portrait default document.blade.php)
+        -- override lokal, TIDAK mengubah @page global (dokumen Nota lain tetap
+        portrait). Selector sama spesifisitasnya dgn shared style tapi ditulis
+        belakangan di HTML -> menang di cascade (bukan override .bw class, ini
+        permanen bukan toggle). --}}
+        .print-doc.landscape .print-bar{width:297mm}
+        .print-doc.landscape .print-page{width:297mm;min-height:210mm}
+        @media print{
+            .print-doc.landscape .print-page{width:auto;min-height:auto}
+            @page{size:A4 landscape;margin:0}
+        }
     </style>
 </x-print.document>
 </div>

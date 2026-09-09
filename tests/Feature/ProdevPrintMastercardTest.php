@@ -46,13 +46,22 @@ class ProdevPrintMastercardTest extends TestCase
         ]);
         $this->partId = $part->id_part;
 
-        Livewire::test('pages::production.prodev-print', ['part' => $part->id_part])
+        $html = Livewire::test('pages::production.prodev-print', ['part' => $part->id_part])
             ->assertOk()
             ->assertSee('MASTER CARD / KARTU INDUK')
             ->assertSee('Test Mastercard Part')
             ->assertSee('Unit 1')
             ->assertSee('BLACK')
             ->assertSee('Mode #2 (manual/standalone)')
-            ->assertSee('Belum ada artwork/preview tersimpan untuk part ini.');
+            ->assertSee('Belum ada artwork/preview tersimpan untuk part ini.')
+            ->html();
+
+        // Permintaan user 2026-09-09: A4 landscape + hitam-putih (theme
+        // di-set langsung ke hex hitam/putih, bukan cuma class .bw, krn
+        // inline style menang lawan class rule utk custom property sama).
+        $this->assertStringContainsString('landscape', $html);
+        $this->assertStringContainsString('--print-accent:#000000', $html);
+        $this->assertStringContainsString('--print-ink:#000000', $html);
+        $this->assertStringContainsString('size:A4 landscape', $html);
     }
 }
