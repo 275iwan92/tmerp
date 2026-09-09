@@ -14,12 +14,12 @@ description: Dokumen cetak Master Card -- hasil print out data prod_part & relas
 Master Card **BUKAN layar input** — ini hasil print out dari data `prod_part` + relasinya yang dikerjakan di layar ProDev (`prodev.blade.php`). Mengikuti pola dokumen cetak standar (`docs/printnotastandard.md`), komponen reusable `resources/views/components/print/*`. Berlaku sebagai acuan resmi produksi setelah ditandatangani (sign-off) seluruh pihak terkait.
 
 ## Field & Kolom
-Read-only, ditampilkan dari relasi ProdPart:
-- Header: nama produk, customer, part name/code, dimensi (badan, bahan mentah, cetak).
-- Section 1 Spesifikasi Teknis: kode/ukuran pisau, bentuk sambungan, warna sisi 1&2, pack qty, lidah (flap).
-- Section 2 Imposition: dari `layoutGroup` terbaru (plano, metode, UP count, efisiensi %, status) — jika belum ada, tampil pesan "Belum ada hasil Engine Imposition tersimpan".
-- Section 3 Routing: daftar `processes` (seq, proses, mesin).
-- Section 4 Finishing: daftar `finishings` (jenis + catatan).
+Read-only, ditampilkan dari relasi ProdPart. **Rebuild 2026-09-09** mendekati `docs/mockups/mockup_mastercard.jpg` (layout 2-kolom):
+- Header: No. Desain, tgl cetak.
+- Kolom kiri (tabel spesifikasi ringkas): Nama Barang, Nama Pelanggan, Part (nama+kode), Dimensi P x L x T, Kode Pisau, Ukuran Pisau, **Material** & **Kualitas** (READ-ONLY dari `iqp_part_material` Inquiry asal kalau part ini Mode #1 — ProdPart sendiri TIDAK punya field material; Mode #2 tampil "—" + keterangan), Ukuran Bahan, Ukuran Cetak, Pack Qty, Jenis Finishing (nama-nama digabung).
+- Kolom kanan (`mc-visual`): gambar artwork resmi (`prod_part_artwork`) atau fallback attachment JPEG ProDev (`prod_part_attachment`, pola sama tab Master Card WO Detail) — placeholder jujur kalau belum ada gambar sama sekali. Caption di bawah gambar: plano/UP/metode dari `layoutGroup` terbaru.
+- Baris bawah 2-kolom (`.print-two`): **Warna Pertama** (tabel Unit 1-4 dari `color_set_1`) bersebelahan dengan **Urutan Pekerjaan (Routing)** (`processes`, seq+nama proses+mesin dalam 1 baris).
+- Section "Catatan Finishing" (opsional, cuma muncul kalau ada `finishings` yang punya `notes` terisi).
 - Signatures: 5 role (DESAINER/Product Development, Sales Officer, PPIC, Quality Control, Kepala Pabrik) dari `ProdMastercardSignoff` per `product_id`.
 
 ## Aksi / Method
@@ -27,17 +27,25 @@ Read-only, ditampilkan dari relasi ProdPart:
 - `part()` [Computed] — ProdPart with `product`, `processes.process`, `processes.machine`, `finishings.finishingType`, `attachments`, `layoutGroups`.
 - `layoutGroup()` [Computed] — layout group terbaru (`sortByDesc('id_layout_group')->first()`).
 - `company()` [Computed] — OrgCompany aktif pertama.
-- `wizardSteps()` [Computed] — wizard-bar lintas modul (Inquiry → Development → Costing → Master Card → Analytics); `print:hidden`, tidak ikut tercetak. Cari `inquiry_id` asal via `IqpPart::where('prod_part_id', ...)` dengan filter inquiry confirmed & bukan DRAFT/CANCELLED/LOST.
+- `originIqpPart()` [Computed] (baru 2026-09-09) — reverse-lookup `IqpPart` (dgn `materials`) via `prod_part_id`, filter inquiry confirmed & bukan DRAFT/CANCELLED/LOST. Dipakai bareng oleh `wizardSteps()` (utk `inquiry_id`) dan `originMaterial()` — dulu 2 query terpisah, sekarang 1.
+- `originMaterial()` [Computed] (baru) — material primary (atau pertama) dari `originIqpPart`, null kalau Mode #2.
+- `officialArtwork()`/`fallbackArtwork()` [Computed] (baru) — sumber gambar kolom visual, pola sama persis `wo-entry.blade.php::officialArtwork()`/`prodevArtwork()`.
+- `wizardSteps()` [Computed] — wizard-bar lintas modul (Inquiry → Development → Costing → Master Card → Analytics); `print:hidden`, tidak ikut tercetak.
 - `signoffs()` [Computed] — gabungkan 5 role tetap dengan data `ProdMastercardSignoff` yang ada (by `role_name`), tampilkan status tanda tangan.
 
 ## Tabel & Model yang Disentuh
 - `App\Models\Master\ProdPart` → tm2mst (dengan banyak relasi).
 - `App\Models\Master\ProdMastercardSignoff` → tm2mst, key `product_id`+`role_name`.
 - `App\Models\Master\OrgCompany` → tm2mst.
-- `App\Models\Sdi\IqpPart` → tm2sdi (lintas-DB logis, hanya untuk cari inquiry asal di wizard-bar).
+- `App\Models\Sdi\IqpPart` (dgn `materials`) → tm2sdi (lintas-DB logis) — cari inquiry+material asal.
+- Raw query `DB::connection('tm2mst')->table('prod_part_artwork')` (baru) — tidak ada Model Eloquent utk tabel ini, ikut pola WO Detail.
 
 ## Alur / Business Logic Penting
-Wizard-bar step "Costing" hanya aktif (punya url) jika ada Inquiry asal (`$origin`) — kalau part ini Mode #2 (manual/standalone), reason ditampilkan: "Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya." Step "Inquiry" SELALU punya url (baik ada origin maupun tidak, fallback ke form baru dengan `from_part`).
+- Wizard-bar step "Costing" hanya aktif (punya url) jika ada Inquiry asal (`$origin`) — kalau part ini Mode #2 (manual/standalone), reason ditampilkan. Step "Inquiry" SELALU punya url (fallback ke form baru dengan `from_part`).
+- **ProdPart TIDAK PUNYA field material/gramatur** (`app/Models/Master/ProdPart.php` `$fillable`, dicek 2026-09-09) — itu domain Inquiry, bukan ProDev (CLAUDE.md §4 "2 mode independen"). Material di layar ini murni REFERENSI read-only dari Inquiry asal (Mode #1), sama prinsip panel "Referensi Inquiry Asal" yang sudah ada di `prodev.blade.php` — tidak pernah bisa diedit dari sini.
+- Kotak visual TIDAK render dieline generated (`TMDieline.render()`) — `ProdPart.dieline_ref` cuma teks referensi, bukan DSL spec lengkap spt `IqpPart.dieline_spec`, jadi tidak ada data untuk dirender. Kalau perlu preview dieline sungguhan, itu ada di layar Inquiry (`printout_inqprod_nota.md`), bukan di sini.
 
 ## Catatan
 - Dokumen ini murni presentasi/cetak — semua data sudah dihasilkan sebelumnya di ProDev Engine; tidak ada logic hitung baru di sini.
+- **Gap ditemukan+diperbaiki 2026-09-09**: file ini sebelumnya tidak punya `<style>` lokal sama sekali (beda dari nota/quotation/DO print lain) — `table.items`/`.desc`/`.amt`/`.cap` tampil tanpa styling apapun sebelum rebuild ini.
+- Kotak visual mockup menampilkan pola/warna dekoratif ilustratif (bukan data nyata) — SENGAJA tidak ditiru; layar ini pakai artwork/attachment asli dari database, placeholder jujur kalau belum ada.
