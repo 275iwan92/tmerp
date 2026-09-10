@@ -1096,6 +1096,85 @@ mana yang berubah dan kapan, keputusan ada di sesi lain/user).
 7. Payroll (tm2pyr) baru masuk antrian **setelah** modul lain, sesuai
    alasan risiko tabrakan yang sudah dicatat berkali-kali di file ini.
 
+### 13.2 Audit kesiapan infrastruktur multi-bahasa (2026-09-10 23:50 WIB)
+
+> Instruksi user setelah checkpoint §13.1: "make sure app ready for
+> multilanguage" — DIBACA sebagai audit kesiapan **mekanisme/infrastruktur**
+> i18n (bukan menambah cakupan terjemahan string baru lagi, itu sudah
+> dicatat lengkap di §13.1). Ditemukan 1 bug nyata (diperbaiki malam ini)
+> + 2 gap desain yang butuh keputusan user (BELUM diperbaiki, sengaja).
+
+**BUG NYATA ditemukan & DIPERBAIKI**: `App::setLocale()` **TIDAK PERNAH**
+dipanggil di mana pun di aplikasi ini sebelum malam ini. Akibatnya
+`Carbon::translatedFormat()` (dipakai ratusan kali utk tanggal di
+hampir semua layar transaksi) SELALU render pakai `config('app.locale')`
+statis dari `.env` (`APP_LOCALE=en`) — **TERLEPAS dari `sec_user.lang_code`
+masing-masing user**. Efeknya nyata utk SEMUA user, bukan cuma yang pilih
+EN: user ber-`lang_code='id'` (default, mayoritas — kolom defaultnya
+memang 'id') tetap melihat nama hari/bulan Bahasa Inggris ("Thursday, 10
+September") walau seluruh UI di sekitarnya Bahasa Indonesia. Dibuktikan
+lewat tinker: `Carbon::parse(...)->translatedFormat('l, d F Y')` sebelum
+fix = "Thursday, 10 September 2026" (locale selalu 'en'); sesudah
+`App::setLocale('id')` = "Kamis, 10 September 2026" (benar).
+**Perbaikan**: middleware baru `App\Http\Middleware\SetUserLocale`
+(`app/Http/Middleware/SetUserLocale.php`) — baca `$request->user()->lang_code`
+(fallback `'id'` kalau guest/kosong), panggil `App::setLocale()`. Didaftarkan
+sbg alias `'locale'` di `bootstrap/app.php`, dipasang di grup route utama
+(`Route::middleware(['auth', 'locale'])` di `routes/web.php`, dulu cuma
+`'auth'`) **dan** di `authMiddleware()` panel Filament
+(`app/Providers/Filament/AdminPanelProvider.php`) supaya tanggal di
+`/admin` (Filament Table `->date()` columns, pakai Carbon jg) ikut
+konsisten. `Translator::t()` sendiri **TIDAK terpengaruh bug ini** — itu
+baca `sys_translations` langsung per `lang_code`, tidak lewat
+`App::getLocale()`, jadi teks yang sudah diterjemahkan (§0-13 di atas)
+tetap benar dari awal; ini murni soal FORMAT TANGGAL yang lolos.
+Diverifikasi: HTTP kernel riil 2 user (`lang_code` id vs en) ->
+`App::getLocale()` ikut berubah sesuai; full test suite 122 test tetap
+112 pass/1 fail (sama persis, gagalnya yg sudah dicatat §13.1, tidak
+bertambah) — 0 regresi dari perubahan middleware ini.
+
+**GAP DESAIN #1 — format angka TIDAK ikut bahasa (BELUM diperbaiki,
+butuh keputusan user)**: `sys_languages` punya kolom
+`decimal_separator`/`thousand_separator` per bahasa (EN: `.`/`,` ala
+"1,234.56", ID: `,`/`.` ala "1.234,56") yang bisa diedit lewat Setup >
+Language (`setup/language.blade.php`) — TAPI kolom ini **tidak pernah
+dibaca** oleh kode manapun. Setiap `number_format($x, 0, ',', '.')` di
+seluruh aplikasi (ratusan titik panggil, semua angka uang/qty/dst)
+HARDCODE format Indonesia, terlepas dari `lang_code` user. Ini **BUKAN
+bug sesederhana tanggal** — mengganti semua titik panggil `number_format()`
+jadi dinamis ikut `sys_languages` adalah pekerjaan besar (ratusan file)
+DAN ada pertanyaan desain nyata yang perlu dijawab user dulu: apakah
+Rupiah/angka bisnis di ERP ini **memang harus ikut format Indonesia
+SELALU** (banyak ERP perusahaan Indonesia sengaja begitu, konsisten
+dgn dokumen resmi/faktur pajak yang WAJIB format Indonesia terlepas
+bahasa UI) atau **harus ikut toggle bahasa** juga? Kalau jawabannya
+"selalu Indonesia" (dugaan paling masuk akal utk konteks ERP lokal),
+maka kolom `decimal_separator`/`thousand_separator` di `sys_languages`
+justru harusnya DIHAPUS/diabaikan (bukan gap yang perlu ditutup) —
+**JANGAN mulai kerjakan ini tanpa konfirmasi user**, sesuai arahan
+"jangan tebak keputusan arsitektural".
+
+**GAP DESAIN #2 — `sys_languages.is_default` tidak konsisten (kosmetik,
+prioritas rendah)**: baris `en` punya `is_default=1`, baris `id` py
+`is_default=0` — padahal migration `2026_09_07_000008_add_lang_code_to_sec_user.php`
+(komentarnya) menyatakan asumsi `sys_languages.is_default` SEHARUSNYA
+`id` saat itu ditulis. Ditelusuri: kolom ini **cuma dipakai utk urutan
+tampil** di 2 layar Setup (`setup/language.blade.php`,
+`setup/localization.blade.php`, `orderByDesc('is_default')`) — TIDAK
+memengaruhi `sec_user.lang_code` default (kolom itu py default `'id'`
+sendiri di level DB, independen). Jadi ini murni salah label
+display-order, bukan bug fungsional. **Tidak diubah malam ini** (data
+production, bukan kode — di luar wewenang mengubah tanpa diminta
+eksplisit), cukup dicatat di sini kalau user mau membetulkan lewat UI
+Setup > Language sendiri (centang "Default" di baris Bahasa Indonesia).
+
+**Kesimpulan kesiapan**: mekanisme INTI (`Translator::t()` + toggle
+`lang_code` + fallback aman utk key hilang + sekarang date-locale ikut
+benar) sudah **solid & production-ready** utk cakupan yang SUDAH
+diterjemahkan (§0-13). Yang BELUM "ready" murni soal **cakupan konten**
+(sudah dijelaskan detail di §13.1 — modul mana saja masih hardcode),
+bukan lagi soal mekanisme yang rusak/bocor.
+
 ---
 
 ## 14. DATA INTEGRITY — AUDIT KETERKAITAN IDENTITAS (sec_user ↔ emp_employee ↔ dst)

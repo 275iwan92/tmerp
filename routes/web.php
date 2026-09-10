@@ -65,7 +65,7 @@ Route::middleware('guest')->group(function () {
     Route::livewire('/forgot-password', 'pages::auth.forgot-password')->name('password.request');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'locale'])->group(function () {
     // Di luar force.password: halaman paksa-ganti-password sendiri, tak boleh
     // ikut digate olehnya (redirect loop) — security_defaultpassword_spec.md §6.
     Route::livewire('/password/change', 'pages::auth.password-change')->name('password.change');
