@@ -2,6 +2,7 @@
 
 use App\Livewire\Concerns\HasCustomizableGrid;
 use App\Models\Master\MatRaw;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -26,21 +27,21 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
     protected function gridColumnDefs(): array
     {
         return [
-            'item_type' => ['label' => 'Tipe'],
-            'stat_confirm' => ['label' => 'Status'],
-            'category1' => ['label' => 'Kategori'],
-            'gram_weight' => ['label' => 'Gramatur'],
-            'uom_stock' => ['label' => 'UoM'],
-            'costing_method' => ['label' => 'Metode'],
-            'cur_stock' => ['label' => 'Stok'],
-            'avg_unitprice' => ['label' => 'Harga Rata²'],
-            'last_unitprice' => ['label' => 'Harga Terakhir'],
-            'min_stock' => ['label' => 'Stok Min'],
-            'max_stock' => ['label' => 'Stok Max'],
-            'reorder_point' => ['label' => 'Reorder Point'],
-            'brand' => ['label' => 'Merek'],
-            'hs_code' => ['label' => 'HS Code'],
-            'lead_time_days' => ['label' => 'Lead Time (hari)'],
+            'item_type' => ['label' => Translator::t('mdata_rm_col_type', 'Tipe')],
+            'stat_confirm' => ['label' => Translator::t('proc_col_status', 'Status')],
+            'category1' => ['label' => Translator::t('mdata_rm_col_category', 'Kategori')],
+            'gram_weight' => ['label' => Translator::t('mdata_rm_col_grammage', 'Gramatur')],
+            'uom_stock' => ['label' => Translator::t('proc_pv_col_uom', 'UoM')],
+            'costing_method' => ['label' => Translator::t('mdata_rm_col_method', 'Metode')],
+            'cur_stock' => ['label' => Translator::t('mdata_rm_col_stock', 'Stok')],
+            'avg_unitprice' => ['label' => Translator::t('mdata_rm_col_avg_price', 'Harga Rata²')],
+            'last_unitprice' => ['label' => Translator::t('mdata_rm_col_last_price', 'Harga Terakhir')],
+            'min_stock' => ['label' => Translator::t('mdata_rm_col_min_stock', 'Stok Min')],
+            'max_stock' => ['label' => Translator::t('mdata_rm_col_max_stock', 'Stok Max')],
+            'reorder_point' => ['label' => Translator::t('mdata_rm_col_reorder_point', 'Reorder Point')],
+            'brand' => ['label' => Translator::t('mdata_rm_col_brand', 'Merek')],
+            'hs_code' => ['label' => Translator::t('mdata_rm_col_hs_code', 'HS Code')],
+            'lead_time_days' => ['label' => Translator::t('mdata_rm_col_lead_time', 'Lead Time (hari)')],
         ];
     }
 
@@ -56,7 +57,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
     protected function gridIdentitySearchColumns(): array
     {
-        return ['material_code' => 'Kode Item', 'material_name' => 'Nama Item'];
+        return ['material_code' => Translator::t('mdata_rm_search_col_code', 'Kode Item'), 'material_name' => Translator::t('mdata_rm_search_col_name', 'Nama Item')];
     }
 
     // grid_performance (globalrules.yaml): server-side pagination + WHERE.
@@ -139,11 +140,11 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
     <div class="max-w-[1500px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="5">
-            <x-grid.stat-box tone="total" label="Total Master Item" :value="number_format($this->stats['total'])" />
-            <x-grid.stat-box tone="active" label="Bahan Baku (Stok)" :value="number_format($this->stats['material'])" subtitle="MATERIAL" />
-            <x-grid.stat-box tone="extra" label="Jasa / Sample" :value="number_format($this->stats['non_material'])" subtitle="SERVICE / FREE_SAMPLE" />
-            <x-grid.stat-box tone="critical" label="Stok Kritis" :value="number_format($this->stats['low_stock'])" subtitle="≤ Reorder Point" />
-            <x-grid.stat-box tone="warn" label="Draft (Belum Confirm)" :value="number_format($this->stats['draft'])" subtitle="Belum muncul di PR/PQ/PRT" />
+            <x-grid.stat-box tone="total" label="{{ Translator::t('mdata_rm_stat_total', 'Total Master Item') }}" :value="number_format($this->stats['total'])" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('mdata_rm_stat_material', 'Bahan Baku (Stok)') }}" :value="number_format($this->stats['material'])" subtitle="MATERIAL" />
+            <x-grid.stat-box tone="extra" label="{{ Translator::t('mdata_rm_stat_service', 'Jasa / Sample') }}" :value="number_format($this->stats['non_material'])" subtitle="SERVICE / FREE_SAMPLE" />
+            <x-grid.stat-box tone="critical" label="{{ Translator::t('mdata_rm_stat_low_stock', 'Stok Kritis') }}" :value="number_format($this->stats['low_stock'])" subtitle="≤ Reorder Point" />
+            <x-grid.stat-box tone="warn" label="{{ Translator::t('mdata_rm_stat_draft', 'Draft (Belum Confirm)') }}" :value="number_format($this->stats['draft'])" subtitle="{{ Translator::t('mdata_rm_stat_draft_subtitle', 'Belum muncul di PR/PQ/PRT') }}" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
@@ -152,7 +153,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode, nama, HS code…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('mdata_rm_search_placeholder', 'Cari kode, nama, HS code…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
@@ -168,10 +169,10 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
 
             @if (count($selectedRows))
                 <div class="flex items-center gap-2.5 bg-[#fdecec] border-b border-[#f5c6c6] px-3.5 py-2 text-[12px]">
-                    <span class="font-semibold text-[#a3453f]">{{ count($selectedRows) }} item draft dipilih</span>
-                    <button type="button" wire:click="bulkDelete" wire:confirm="Hapus permanen {{ count($selectedRows) }} item draft terpilih? Tindakan ini tidak bisa dibatalkan."
-                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#c0392b] text-white cursor-pointer">🗑 Hapus</button>
-                    <button type="button" wire:click="clearSelection" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white border border-[#f5c6c6] text-[#a3453f] cursor-pointer">Batal</button>
+                    <span class="font-semibold text-[#a3453f]">{{ count($selectedRows) }} {{ Translator::t('mdata_rm_bulk_selected_suffix', 'item draft dipilih') }}</span>
+                    <button type="button" wire:click="bulkDelete" wire:confirm="{{ Translator::t('sales_co_bulk_delete_confirm_prefix', 'Hapus permanen') }} {{ count($selectedRows) }} {{ Translator::t('mdata_rm_bulk_delete_confirm_suffix', 'item draft terpilih? Tindakan ini tidak bisa dibatalkan.') }}"
+                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#c0392b] text-white cursor-pointer">🗑 {{ Translator::t('sales_co_bulk_delete_btn', 'Hapus') }}</button>
+                    <button type="button" wire:click="clearSelection" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white border border-[#f5c6c6] text-[#a3453f] cursor-pointer">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
                 </div>
             @endif
 
@@ -181,7 +182,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                     <thead>
                         <tr>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[135px]"></th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Item</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('inv_line_col_item', 'Item') }}</th>
                             @foreach ($gridVisibleColumns as $key)
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] whitespace-nowrap">
                                     <button type="button" wire:click="toggleGridSort('{{ $key }}')"
@@ -213,22 +214,22 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                         :colspan="$colspan" />
                                 @endif
                             @endif
-                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="mat-{{ $m->material_id }}" wire:dblclick="openItem({{ $m->material_id }})" title="Klik 2x untuk buka detail">
+                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="mat-{{ $m->material_id }}" wire:dblclick="openItem({{ $m->material_id }})" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
                                 <td class="px-3 py-2 whitespace-nowrap">
                                     <div class="flex items-center gap-1.5">
                                         @if (! $m->stat_confirm)
                                             <input type="checkbox" class="row-checkbox" data-id="{{ $m->material_id }}"
                                                 @click.stop="handleCheckClick($event, {{ $m->material_id }})" @checked(in_array($m->material_id, $selectedRows, true))
-                                                title="Pilih untuk hapus massal (draft) — shift+klik utk pilih rentang" class="w-3.5 h-3.5 cursor-pointer">
+                                                title="{{ Translator::t('mdata_rm_checkbox_bulk_hint', 'Pilih untuk hapus massal (draft) — shift+klik utk pilih rentang') }}" class="w-3.5 h-3.5 cursor-pointer">
                                         @else
                                             <span class="w-3.5 inline-block shrink-0"></span>
                                         @endif
                                         <x-grid.action-dropdown :actions="[
-                                            ['icon' => '✎', 'label' => 'Edit', 'action' => 'openItem('.$m->material_id.')', 'tooltip' => 'Edit item ini — atau klik 2x pada baris'],
+                                            ['icon' => '✎', 'label' => Translator::t('fin_coa_action_edit', 'Edit'), 'action' => 'openItem('.$m->material_id.')', 'tooltip' => Translator::t('mdata_rm_action_edit_tooltip', 'Edit item ini — atau klik 2x pada baris')],
                                         ]" />
                                         <x-grid.toggle-switch :on="(bool) $m->activate" action="toggleActive({{ $m->material_id }})"
-                                            :confirm="($m->activate ? 'Nonaktifkan' : 'Aktifkan').' item '.$m->material_name.'?'"
-                                            :title="$m->activate ? 'Klik untuk nonaktifkan item ini' : 'Klik untuk aktifkan item ini'" />
+                                            :confirm="($m->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' item '.$m->material_name.'?'"
+                                            :title="$m->activate ? Translator::t('mdata_rm_toggle_deactivate_title', 'Klik untuk nonaktifkan item ini') : Translator::t('mdata_rm_toggle_activate_title', 'Klik untuk aktifkan item ini')" />
                                     </div>
                                 </td>
                                 <x-grid.identity-cell :id="$m->material_id" :name="$m->material_name" :code="$m->material_code" />
@@ -237,7 +238,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                         @if ($key === 'item_type')
                                             <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#eef1f5] text-[#4b5568]">{{ $m->item_type }}</span>
                                         @elseif ($key === 'stat_confirm')
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $m->stat_confirm ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $m->stat_confirm ? 'CONFIRMED' : 'DRAFT' }}</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $m->stat_confirm ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $m->stat_confirm ? Translator::t('mdata_confirmed', 'CONFIRMED') : Translator::t('mdata_draft', 'DRAFT') }}</span>
                                         @elseif ($key === 'cur_stock')
                                             <span class="{{ $m->reorder_point && $m->cur_stock <= $m->reorder_point ? 'text-[#a3241f] font-bold' : '' }}">{{ $this->columnValue($m, $key) }}</span>
                                         @else
@@ -247,7 +248,7 @@ new #[Title('Master Item Bahan Baku — TELASIH MAKMUR ERP')] class extends Comp
                                 @endforeach
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="$colspan" message="Tidak ada item cocok." />
+                            <x-grid.empty-row :colspan="$colspan" message="{{ Translator::t('mdata_rm_empty', 'Tidak ada item cocok.') }}" />
                         @endforelse
                     </tbody>
                 </table>

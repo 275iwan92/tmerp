@@ -4,6 +4,7 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdCategory;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\UomUnit;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -287,17 +288,17 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Produk" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="Terkonfirmasi" :value="$this->statConfirmed" subtitle="SPEC TERKUNCI" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
+            <x-grid.stat-box tone="total" label="{{ Translator::t('mdata_prod_stat_total', 'Total Produk') }}" :value="$this->statTotal" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('mdata_active', 'Aktif') }}" :value="$this->statActive" />
+            <x-grid.stat-box tone="extra" label="{{ Translator::t('mdata_prod_stat_confirmed', 'Terkonfirmasi') }}" subtitle="{{ Translator::t('mdata_prod_stat_confirmed_subtitle', 'SPEC TERKUNCI') }}" :value="$this->statConfirmed" />
+            <x-grid.stat-box tone="critical" label="{{ Translator::t('mdata_inactive', 'Nonaktif') }}" :value="$this->statInactive" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama produk…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('mdata_prod_search_placeholder', 'Cari kode / nama produk…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -310,17 +311,17 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Produk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Kategori</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_prod_col_product', 'Produk') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('mdata_rm_col_category', 'Kategori') }}</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Customer</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Dimensi (cm)</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ Translator::t('mdata_prod_col_dimension', 'Dimensi (cm)') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->products as $p)
-                            <tr wire:key="prod-{{ $p->id_product }}" wire:dblclick="openModal('edit', {{ $p->id_product }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
+                            <tr wire:key="prod-{{ $p->id_product }}" wire:dblclick="openModal('edit', {{ $p->id_product }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
                                 <x-grid.identity-cell :id="$p->id_product" :name="$p->product_name ?: '—'" :code="$p->product_code" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->category->category_name ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->customer->customer_name ?? '—' }}</td>
@@ -334,20 +335,20 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex flex-wrap gap-1">
                                         @if ($p->stat_confirm)
-                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">TERKUNCI</span>
+                                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#f1ecfc] text-[#6d28d9]">{{ Translator::t('mdata_prod_locked', 'TERKUNCI') }}</span>
                                         @endif
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $p->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $p->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $p->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $p->activate ? Translator::t('mdata_active_upper', 'AKTIF') : Translator::t('mdata_inactive_upper', 'NONAKTIF') }}</span>
                                     </div>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $p->id_product }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->id_product }})"
-                                        :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' produk '.$p->product_name.'?'"
+                                    <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openModal('edit', {{ $p->id_product }})" />
+                                    <x-grid.action-icon icon="⏻" :title="$p->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $p->id_product }})"
+                                        :confirm="($p->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' produk '.$p->product_name.'?'"
                                         :variant="$p->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada produk." />
+                            <x-grid.empty-row :colspan="6" message="{{ Translator::t('mdata_prod_empty', 'Tidak ada produk.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -359,7 +360,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'form')
             <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
                 <div class="text-sm font-bold">
-                    {{ $mode === 'edit' ? 'Edit Produk' : 'Produk Baru' }}
+                    {{ $mode === 'edit' ? Translator::t('mdata_prod_edit_title', 'Edit Produk') : Translator::t('mdata_prod_new_title', 'Produk Baru') }}
                     @if ($mode === 'edit')<span class="text-xs font-normal opacity-75 ml-2">{{ $product_code }}</span>@endif
                 </div>
             </div>
@@ -457,8 +458,8 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.checkbox label="Aktif" wire:model="product_activate" />
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">{{ Translator::t('shell_btn_save', 'Simpan') }}</button>
+                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
                     </div>
             </form>
         @endif
