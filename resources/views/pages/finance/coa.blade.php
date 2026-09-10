@@ -3,6 +3,7 @@
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinAccountTree;
 use App\Models\Acc\FinCostCenter;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -102,14 +103,14 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
     public function accountTypeLabel(string $type): string
     {
         return match ($type) {
-            'ASSET' => 'ASET',
-            'LIABILITY' => 'KEWAJIBAN',
-            'EQUITY' => 'EKUITAS',
-            'REVENUE' => 'PENDAPATAN',
-            'COGS' => 'HPP (COGS)',
-            'EXPENSE' => 'BEBAN OPERASIONAL',
-            'OTHER_INCOME' => 'PENDAPATAN LAIN',
-            'OTHER_EXPENSE' => 'BEBAN LAIN',
+            'ASSET' => Translator::t('fin_coa_type_asset', 'ASET'),
+            'LIABILITY' => Translator::t('fin_coa_type_liability', 'KEWAJIBAN'),
+            'EQUITY' => Translator::t('fin_coa_type_equity', 'EKUITAS'),
+            'REVENUE' => Translator::t('fin_coa_type_revenue', 'PENDAPATAN'),
+            'COGS' => Translator::t('fin_coa_type_cogs', 'HPP (COGS)'),
+            'EXPENSE' => Translator::t('fin_coa_type_expense', 'BEBAN OPERASIONAL'),
+            'OTHER_INCOME' => Translator::t('fin_coa_type_other_income', 'PENDAPATAN LAIN'),
+            'OTHER_EXPENSE' => Translator::t('fin_coa_type_other_expense', 'BEBAN LAIN'),
             default => $type,
         };
     }
@@ -117,10 +118,10 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
     public function reconBadge($row): ?array
     {
         if (! $row->is_postable) {
-            return ['label' => 'Header', 'class' => 'bg-[#eef1f7] text-[#6b7488] border border-[#d8deeb]'];
+            return ['label' => Translator::t('fin_coa_badge_header', 'Header'), 'class' => 'bg-[#eef1f7] text-[#6b7488] border border-[#d8deeb]'];
         }
         if ($row->is_recon) {
-            $label = $row->account_type === 'LIABILITY' ? 'RECON AP' : 'RECON AR';
+            $label = $row->account_type === 'LIABILITY' ? Translator::t('fin_coa_badge_recon_ap', 'RECON AP') : Translator::t('fin_coa_badge_recon_ar', 'RECON AR');
 
             return ['label' => $label, 'class' => 'bg-[#e5edff] text-navy border border-[#c7d8fb]'];
         }
@@ -212,7 +213,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
         ]);
 
         if ($this->mode === 'edit' && $this->parent_id === $this->editingId) {
-            $this->addError('parent_id', 'Akun tidak boleh jadi parent dirinya sendiri.');
+            $this->addError('parent_id', Translator::t('fin_coa_error_self_parent', 'Akun tidak boleh jadi parent dirinya sendiri.'));
 
             return;
         }
@@ -249,17 +250,17 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
     <div class="w-full px-5 py-4.5">
 
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Akun Aktif" :value="$this->metricTotalActive" />
-            <x-grid.stat-box tone="extra" label="Akun Rekonsiliasi (AR/AP)" :value="$this->metricTotalRecon" subtitle="TERKUNCI" />
-            <x-grid.stat-box tone="warn" label="Akun HPP Produksi (COGS)" :value="$this->metricTotalCogs" />
-            <x-grid.stat-box tone="active" label="Persediaan & Tooling" :value="$this->metricTotalPersediaan" />
+            <x-grid.stat-box tone="total" label="{{ Translator::t('fin_coa_stat_active', 'Total Akun Aktif') }}" :value="$this->metricTotalActive" />
+            <x-grid.stat-box tone="extra" label="{{ Translator::t('fin_coa_stat_recon', 'Akun Rekonsiliasi (AR/AP)') }}" :value="$this->metricTotalRecon" subtitle="{{ Translator::t('fin_coa_stat_recon_subtitle', 'TERKUNCI') }}" />
+            <x-grid.stat-box tone="warn" label="{{ Translator::t('fin_coa_stat_cogs', 'Akun HPP Produksi (COGS)') }}" :value="$this->metricTotalCogs" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('fin_coa_stat_inventory', 'Persediaan & Tooling') }}" :value="$this->metricTotalPersediaan" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama akun…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('fin_coa_search_placeholder', 'Cari kode / nama akun…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -273,17 +274,17 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                     <thead>
                         <tr>
                             <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">
-                                <button type="button" wire:click="toggleDetail" title="{{ $showDetail ? 'Ciutkan baris akun postable' : 'Tampilkan semua baris' }}"
+                                <button type="button" wire:click="toggleDetail" title="{{ $showDetail ? Translator::t('fin_coa_collapse_title', 'Ciutkan baris akun postable') : Translator::t('fin_coa_expand_title', 'Tampilkan semua baris') }}"
                                     class="inline-flex items-center gap-1 cursor-pointer bg-transparent border-none text-navy text-[11px] uppercase tracking-wide font-bold p-0">
-                                    <span>{{ $showDetail ? '▾' : '▸' }}</span> Kode
+                                    <span>{{ $showDetail ? '▾' : '▸' }}</span> {{ Translator::t('fin_coa_col_code', 'Kode') }}
                                 </button>
                             </th>
-                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Nama Akun</th>
-                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tipe</th>
-                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[95px]">Saldo</th>
-                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">Recon &amp; Tagging</th>
-                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Default Cost Center</th>
-                            <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('fin_coa_col_name', 'Nama Akun') }}</th>
+                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_hub_col_type', 'Jenis') }}</th>
+                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[95px]">{{ Translator::t('fin_coa_col_balance', 'Saldo') }}</th>
+                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[160px]">{{ Translator::t('fin_coa_col_recon_tagging', 'Recon & Tagging') }}</th>
+                            <th class="text-left px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ Translator::t('fin_coa_col_default_cc', 'Default Cost Center') }}</th>
+                            <th class="text-right px-3.5 py-2.5 bg-[#f7f9fe] text-navy text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -300,12 +301,12 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                     {{ $a->account_name }}
                                     @if (! $a->activate)
-                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef0f3] text-[#8a8f98] ml-1 align-middle">NONAKTIF</span>
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#eef0f3] text-[#8a8f98] ml-1 align-middle">{{ Translator::t('fin_coa_badge_inactive', 'NONAKTIF') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">{{ $a->account_type }}</td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase {{ $a->normal_balance === 'DEBIT' ? 'bg-[#dff0ff] text-[#1d5fa8]' : 'bg-[#fdeecf] text-[#8a5a12]' }}">{{ $a->normal_balance === 'DEBIT' ? 'DEBIT' : 'KREDIT' }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase {{ $a->normal_balance === 'DEBIT' ? 'bg-[#dff0ff] text-[#1d5fa8]' : 'bg-[#fdeecf] text-[#8a5a12]' }}">{{ $a->normal_balance === 'DEBIT' ? Translator::t('fin_coa_debit', 'DEBIT') : Translator::t('fin_coa_credit', 'KREDIT') }}</span>
                                 </td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                     @if ($recon)
@@ -323,15 +324,15 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     @if ($a->is_postable)
-                                        <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $a->account_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$a->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $a->account_id }})" :variant="$a->activate ? 'danger' : 'default'" confirm="{{ $a->activate ? 'Nonaktifkan' : 'Aktifkan' }} akun {{ $a->account_code }}?" />
+                                        <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openModal('edit', {{ $a->account_id }})" />
+                                        <x-grid.action-icon icon="⏻" :title="$a->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $a->account_id }})" :variant="$a->activate ? 'danger' : 'default'" confirm="{{ $a->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} {{ Translator::t('fin_coa_account_word', 'akun') }} {{ $a->account_code }}?" />
                                     @else
                                         —
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="7" message="Tidak ada akun." />
+                            <x-grid.empty-row :colspan="7" message="{{ Translator::t('fin_coa_empty', 'Tidak ada akun.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -344,55 +345,55 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="closeModal">
             <div class="bg-white rounded-xl w-[520px] max-w-[92vw] max-h-[92vh] overflow-y-auto shadow-2xl">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2 sticky top-0">
-                    <span>{{ $mode === 'edit' ? 'Edit Akun · '.$account_code : 'Tambah Akun GL Baru' }}</span>
+                    <span>{{ $mode === 'edit' ? Translator::t('fin_coa_edit_prefix', 'Edit Akun ·').' '.$account_code : Translator::t('fin_coa_new_title', 'Tambah Akun GL Baru') }}</span>
                     <span class="ml-auto cursor-pointer opacity-85 hover:opacity-100" wire:click="closeModal">✕</span>
                 </div>
                 <form wire:submit="save" class="p-4 flex flex-col gap-3">
-                    <x-form.select label="Parent Akun" wire:model="parent_id" placeholder="— tanpa parent (root) —" name="parent_id"
+                    <x-form.select label="{{ Translator::t('fin_coa_field_parent', 'Parent Akun') }}" wire:model="parent_id" placeholder="{{ Translator::t('fin_coa_field_parent_placeholder', '— tanpa parent (root) —') }}" name="parent_id"
                         :options="$this->parentOptions->filter(fn ($p) => ! ($mode === 'edit' && $p->account_id === $editingId))->mapWithKeys(fn ($p) => [$p->account_id => $p->account_code.' — '.$p->account_name])->all()" />
 
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.input label="Kode Akun *" wire:model="account_code" maxlength="20" placeholder="mis. 115100" class="font-mono" name="account_code" />
+                            <x-form.input label="{{ Translator::t('fin_coa_field_code', 'Kode Akun *') }}" wire:model="account_code" maxlength="20" placeholder="{{ Translator::t('fin_coa_field_code_placeholder', 'mis. 115100') }}" class="font-mono" name="account_code" />
                         </div>
                         <div class="flex-[2]">
-                            <x-form.input label="Nama Akun *" wire:model="account_name" placeholder="mis. Kas Kecil Gudang" name="account_name" />
+                            <x-form.input label="{{ Translator::t('fin_coa_field_name', 'Nama Akun *') }}" wire:model="account_name" placeholder="{{ Translator::t('fin_coa_field_name_placeholder', 'mis. Kas Kecil Gudang') }}" name="account_name" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Tipe *" wire:model="account_type" name="account_type"
+                            <x-form.select label="{{ Translator::t('fin_coa_field_type', 'Tipe *') }}" wire:model="account_type" name="account_type"
                                 :options="collect($accountTypes)->mapWithKeys(fn ($t) => [$t => $this->accountTypeLabel($t)])->all()" />
                         </div>
                         <div class="flex-1">
-                            <x-form.select label="Saldo Normal *" wire:model="normal_balance" :placeholder="false" :options="['DEBIT' => 'DEBIT', 'CREDIT' => 'CREDIT']" />
+                            <x-form.select label="{{ Translator::t('fin_coa_field_normal_balance', 'Saldo Normal *') }}" wire:model="normal_balance" :placeholder="false" :options="['DEBIT' => 'DEBIT', 'CREDIT' => 'CREDIT']" />
                         </div>
                     </div>
 
                     <div class="flex gap-2.5">
                         <div class="flex-1">
-                            <x-form.select label="Default Cost Center" wire:model="default_cc_id" placeholder="— tanpa default —" name="default_cc_id"
+                            <x-form.select label="{{ Translator::t('fin_coa_col_default_cc', 'Default Cost Center') }}" wire:model="default_cc_id" placeholder="{{ Translator::t('fin_coa_field_cc_placeholder', '— tanpa default —') }}" name="default_cc_id"
                                 :options="$this->costCenterOptions->mapWithKeys(fn ($cc) => [$cc->cc_id => $cc->cc_code.' — '.$cc->cc_name])->all()" />
                         </div>
                         <div class="flex-1">
-                            <x-form.input label="Skema Pajak" wire:model="tax_scheme_code" maxlength="20" placeholder="PPN_IN / PPN_OUT / PPH22 / PPH23" class="uppercase" name="tax_scheme_code" />
+                            <x-form.input label="{{ Translator::t('fin_coa_field_tax_scheme', 'Skema Pajak') }}" wire:model="tax_scheme_code" maxlength="20" placeholder="PPN_IN / PPN_OUT / PPH22 / PPH23" class="uppercase" name="tax_scheme_code" />
                         </div>
                     </div>
 
                     <x-form.checkbox wire:model="is_recon" label-class="text-[#334]">
-                        Akun rekonsiliasi (wajib partner di tiap baris jurnal — AR/AP)
+                        {{ Translator::t('fin_coa_check_recon', 'Akun rekonsiliasi (wajib partner di tiap baris jurnal — AR/AP)') }}
                     </x-form.checkbox>
                     <x-form.checkbox wire:model="is_postable" label-class="text-[#334]">
-                        Bisa dijurnal langsung <span class="text-muted">(nonaktifkan untuk akun header/kelompok)</span>
+                        {{ Translator::t('fin_coa_check_postable', 'Bisa dijurnal langsung') }} <span class="text-muted">{{ Translator::t('fin_coa_check_postable_hint', '(nonaktifkan untuk akun header/kelompok)') }}</span>
                     </x-form.checkbox>
-                    <x-form.checkbox wire:model="coa_activate" label="Aktif" label-class="text-[#334]" />
+                    <x-form.checkbox wire:model="coa_activate" label="{{ Translator::t('fin_coa_check_active', 'Aktif') }}" label-class="text-[#334]" />
 
-                    <div class="text-[11px] text-muted leading-relaxed">Rate PPN/PPh tidak disimpan di sini — <code>Skema Pajak</code> hanya kode referensi (mis. PPN_OUT), nilai % diambil dari <code>tm2mst.fin_tax_scheme</code> saat posting voucher.</div>
+                    <div class="text-[11px] text-muted leading-relaxed">{{ Translator::t('fin_coa_tax_rate_note_prefix', 'Rate PPN/PPh tidak disimpan di sini —') }} <code>{{ Translator::t('fin_coa_field_tax_scheme', 'Skema Pajak') }}</code> {{ Translator::t('fin_coa_tax_rate_note_suffix', 'hanya kode referensi (mis. PPN_OUT), nilai % diambil dari') }} <code>tm2mst.fin_tax_scheme</code> {{ Translator::t('fin_coa_tax_rate_note_end', 'saat posting voucher.') }}</div>
 
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">{{ Translator::t('shell_btn_save', 'Simpan') }}</button>
                     </div>
                 </form>
             </div>

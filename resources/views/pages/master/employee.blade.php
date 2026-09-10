@@ -12,6 +12,7 @@ use App\Models\Master\ProdMachine;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\FamilyEmploymentCrossCheckService;
 use App\Services\Migration\EmployeeLoginProvisionService;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -286,15 +287,15 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     {
         $sp = $e->activeSpType();
         if ($sp) {
-            return ['label' => $sp.' AKTIF', 'class' => 'bg-[#fee2e2] text-[#991b1b]'];
+            return ['label' => $sp.' '.Translator::t('hrm_emp_sp_active_suffix', 'AKTIF'), 'class' => 'bg-[#fee2e2] text-[#991b1b]'];
         }
 
         $verbal = $e->verbalWarningCount();
         if ($verbal > 0) {
-            return ['label' => "Verbal: {$verbal}/6", 'class' => 'bg-[#fef3c7] text-[#b45309]'];
+            return ['label' => Translator::t('hrm_emp_verbal_prefix', 'Verbal').": {$verbal}/6", 'class' => 'bg-[#fef3c7] text-[#b45309]'];
         }
 
-        return ['label' => 'Clean / No SP', 'class' => 'bg-[#f0fdf4] text-[#166534]'];
+        return ['label' => Translator::t('hrm_emp_clean_no_sp', 'Clean / No SP'), 'class' => 'bg-[#f0fdf4] text-[#166534]'];
     }
 
     // ============== NAVIGASI GRID <-> FORM ==============
@@ -744,24 +745,24 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     @if ($panel === 'grid')
         <div class="max-w-[1400px] mx-auto my-5 px-4">
             <x-grid.stat-row :count="4">
-                <x-grid.stat-box tone="total" label="Total Headcount" :value="$this->metricTotal" />
-                <x-grid.stat-box tone="active" label="Clean / No SP" :value="$this->metricClean" />
-                <x-grid.stat-box tone="warn" label="Verbal Warning" :value="$this->metricVerbal" />
-                <x-grid.stat-box tone="critical" label="SP Aktif" :value="$this->metricSp" />
+                <x-grid.stat-box tone="total" label="{{ Translator::t('hrm_emp_stat_total', 'Total Headcount') }}" :value="$this->metricTotal" />
+                <x-grid.stat-box tone="active" label="{{ Translator::t('hrm_emp_clean_no_sp', 'Clean / No SP') }}" :value="$this->metricClean" />
+                <x-grid.stat-box tone="warn" label="{{ Translator::t('hrm_emp_stat_verbal', 'Verbal Warning') }}" :value="$this->metricVerbal" />
+                <x-grid.stat-box tone="critical" label="{{ Translator::t('hrm_emp_stat_sp', 'SP Aktif') }}" :value="$this->metricSp" />
             </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama / NIK…"
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('hrm_emp_search_placeholder', 'Cari kode / nama / NIK…') }}"
                             class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:tools>
                         <div class="flex items-center gap-1 pr-2.5 mr-1 border-r border-[#e2e7ee] shrink-0">
-                            <button type="button" wire:click="setEmployeeView('list')" title="Tampilan Daftar"
+                            <button type="button" wire:click="setEmployeeView('list')" title="{{ Translator::t('hrm_emp_view_list_title', 'Tampilan Daftar') }}"
                                 class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'list' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">☰ List</button>
-                            <button type="button" wire:click="setEmployeeView('card')" title="Tampilan Kartu"
+                            <button type="button" wire:click="setEmployeeView('card')" title="{{ Translator::t('hrm_emp_view_card_title', 'Tampilan Kartu') }}"
                                 class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer {{ $employeeView === 'card' ? 'bg-[#2c3e69] text-white' : 'bg-white border border-[#d7dbe2]' }}">▦ Card</button>
                         </div>
                     </x-slot:tools>
@@ -777,7 +778,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             @php $badge = $this->disciplineBadge($e); @endphp
                             <div wire:key="emp-card-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})"
                                 class="cursor-pointer bg-white border border-[#e2e7ee] rounded-xl overflow-hidden hover:shadow-md hover:border-accent transition-shadow"
-                                title="Klik 2x untuk buka detail">
+                                title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
                                 <div class="h-[110px] bg-[#f1f4f9] flex items-center justify-center overflow-hidden">
                                     @if ($e->photo_path)
                                         <img src="{{ asset('storage/'.$e->photo_path) }}" class="w-full h-full object-cover">
@@ -791,18 +792,18 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <div class="text-[11px] text-muted truncate mt-0.5">{{ $e->position?->department?->department_name ?: '—' }}</div>
                                     <div class="flex items-center gap-1.5 flex-wrap mt-2">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $badge['class'] }}">{{ $badge['label'] }}</span>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $this->workStatuses[$e->work_status] ?? $e->work_status }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ Translator::t('hrm_emp_workstatus_'.strtolower($e->work_status), $this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
                                     </div>
                                     <div class="flex justify-end gap-0.5 mt-2 pt-2 border-t border-[#eef1f5]">
-                                        <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $e->employee_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $e->employee_id }})"
-                                            :confirm="($e->activate ? 'Nonaktifkan' : 'Aktifkan').' employee '.$e->full_name.'?'"
+                                        <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
+                                            :confirm="($e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' employee '.$e->full_name.'?'"
                                             :variant="$e->activate ? 'danger' : 'default'" />
                                     </div>
                                 </div>
                             </div>
                         @empty
-                            <div class="col-span-full text-center py-8 text-muted text-sm">Tidak ada.</div>
+                            <div class="col-span-full text-center py-8 text-muted text-sm">{{ Translator::t('hrm_emp_none', 'Tidak ada.') }}</div>
                         @endforelse
                     </div>
                 @else
@@ -811,16 +812,16 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                         <thead>
                             <tr>
                                 <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Employee</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Departemen</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Kedisiplinan</th>
-                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status Kerja</th>
-                                <th class="text-right px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Aksi</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_emp_col_department', 'Departemen') }}</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">{{ Translator::t('hrm_emp_col_discipline', 'Kedisiplinan') }}</th>
+                                <th class="text-left px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('hrm_emp_col_work_status', 'Status Kerja') }}</th>
+                                <th class="text-right px-3.5 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->employees as $e)
                                 @php $badge = $this->disciplineBadge($e); @endphp
-                                <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]" title="Klik 2x untuk buka detail">
+                                <tr wire:key="emp-{{ $e->employee_id }}" wire:dblclick="openEdit({{ $e->employee_id }})" class="cursor-pointer hover:bg-[#f7faff]" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
                                             @if ($e->photo_path)
@@ -839,17 +840,17 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $badge['class'] }}">{{ $badge['label'] }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5]">
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $this->workStatuses[$e->work_status] ?? $e->work_status }}</span>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ Translator::t('hrm_emp_workstatus_'.strtolower($e->work_status), $this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $e->employee_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $e->employee_id }})"
-                                            :confirm="($e->activate ? 'Nonaktifkan' : 'Aktifkan').' employee '.$e->full_name.'?'"
+                                        <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
+                                            :confirm="($e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' employee '.$e->full_name.'?'"
                                             :variant="$e->activate ? 'danger' : 'default'" />
                                     </td>
                                 </tr>
                             @empty
-                                <x-grid.empty-row :colspan="5" message="Tidak ada." />
+                                <x-grid.empty-row :colspan="5" message="{{ Translator::t('hrm_emp_none', 'Tidak ada.') }}" />
                             @endforelse
                         </tbody>
                     </table>

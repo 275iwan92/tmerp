@@ -3,6 +3,7 @@
 use App\Models\Master\AttDailyStatus;
 use App\Models\Master\EmpEmployee;
 use App\Services\Hrm\AttendanceCalculationService;
+use App\Support\Localization\Translator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -18,12 +19,26 @@ use Livewire\Component;
 // generik di paket referensi).
 new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
 {
-    private const STATUS_LABELS = [
+    private const STATUS_LABEL_DEFAULTS = [
         'H' => 'Hadir', 'T-5' => 'Telat <5mnt', 'T+5' => 'Telat 6-15mnt', 'T+15' => 'Telat >15mnt',
         'PA' => 'Pulang Awal', 'PAT-5' => 'Pulang Awal + Telat<5', 'PAT+5' => 'Pulang Awal + Telat',
         'KJK' => 'Keluar Jam Kerja', 'I' => 'Izin', 'IS' => 'Izin Disetujui', 'S' => 'Sakit',
         'C' => 'Cuti', 'CL' => 'Cuti Melahirkan', 'A' => 'Alpha', 'F' => 'Tidak Finger 1x', 'FF' => 'Tidak Finger 2x',
     ];
+
+    private const STATUS_LABEL_KEYS = [
+        'H' => 'hrm_att_status_h', 'T-5' => 'hrm_att_status_t5', 'T+5' => 'hrm_att_status_t6_15', 'T+15' => 'hrm_att_status_t15',
+        'PA' => 'hrm_att_status_pa', 'PAT-5' => 'hrm_att_status_pat5', 'PAT+5' => 'hrm_att_status_pat_plus',
+        'KJK' => 'hrm_att_status_kjk', 'I' => 'hrm_att_status_i', 'IS' => 'hrm_att_status_is', 'S' => 'hrm_att_status_s',
+        'C' => 'hrm_att_status_c', 'CL' => 'hrm_att_status_cl', 'A' => 'hrm_att_status_a', 'F' => 'hrm_att_status_f', 'FF' => 'hrm_att_status_ff',
+    ];
+
+    public function statusLabel(string $code): string
+    {
+        $key = self::STATUS_LABEL_KEYS[$code] ?? null;
+
+        return $key ? Translator::t($key, self::STATUS_LABEL_DEFAULTS[$code]) : $code;
+    }
 
     public string $dateFrom = '';
 
@@ -73,7 +88,7 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
 
     public function statusOptions(): array
     {
-        return self::STATUS_LABELS;
+        return collect(self::STATUS_LABEL_DEFAULTS)->mapWithKeys(fn ($default, $code) => [$code => $this->statusLabel($code)])->all();
     }
 
     // Hitung ulang seluruh pegawai aktif utk rentang tanggal terpilih --
@@ -94,7 +109,7 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
         });
 
         unset($this->rows, $this->stats);
-        session()->flash('message', 'Presensi berhasil dihitung ulang untuk rentang tanggal terpilih.');
+        session()->flash('message', Translator::t('hrm_att_recalculate_success', 'Presensi berhasil dihitung ulang untuk rentang tanggal terpilih.'));
     }
 
     public function openOverride(int $id): void
@@ -144,10 +159,10 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
     <div class="max-w-[1400px] mx-auto my-5 px-4">
 
         <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="active" label="Hadir" :value="number_format($this->stats['hadir'])" />
-            <x-grid.stat-box tone="warn" label="Terlambat" :value="number_format($this->stats['terlambat'])" />
-            <x-grid.stat-box tone="critical" label="Tidak Masuk" :value="number_format($this->stats['tidak_masuk'])" />
-            <x-grid.stat-box tone="info" label="Lembur" :value="number_format($this->stats['lembur'])" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('hrm_att_stat_present', 'Hadir') }}" :value="number_format($this->stats['hadir'])" />
+            <x-grid.stat-box tone="warn" label="{{ Translator::t('hrm_att_stat_late', 'Terlambat') }}" :value="number_format($this->stats['terlambat'])" />
+            <x-grid.stat-box tone="critical" label="{{ Translator::t('hrm_att_stat_absent', 'Tidak Masuk') }}" :value="number_format($this->stats['tidak_masuk'])" />
+            <x-grid.stat-box tone="info" label="{{ Translator::t('hrm_att_stat_overtime', 'Lembur') }}" :value="number_format($this->stats['lembur'])" />
         </x-grid.stat-row>
 
         @if (session('message'))
@@ -155,15 +170,15 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
         @endif
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-3 flex flex-wrap items-end gap-3">
-            <x-form.date-picker label="Dari Tanggal" wire:model.live="dateFrom" name="dateFrom" />
-            <x-form.date-picker label="Sampai Tanggal" wire:model.live="dateTo" name="dateTo" />
+            <x-form.date-picker label="{{ Translator::t('hrm_att_field_date_from', 'Dari Tanggal') }}" wire:model.live="dateFrom" name="dateFrom" />
+            <x-form.date-picker label="{{ Translator::t('hrm_att_field_date_to', 'Sampai Tanggal') }}" wire:model.live="dateTo" name="dateTo" />
             <div class="flex-1 min-w-[180px]">
-                <x-form.input label="Cari Nama/Kode Pegawai" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
+                <x-form.input label="{{ Translator::t('hrm_att_field_search', 'Cari Nama/Kode Pegawai') }}" wire:model.live.debounce.400ms="search" name="search" placeholder="{{ Translator::t('hrm_att_search_placeholder', 'Ketik nama atau kode...') }}" />
             </div>
             <button type="button" wire:click="recalculate" wire:loading.attr="disabled"
                 class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer disabled:opacity-50">
-                <span wire:loading.remove wire:target="recalculate">Hitung Ulang Presensi</span>
-                <span wire:loading wire:target="recalculate">Memproses...</span>
+                <span wire:loading.remove wire:target="recalculate">{{ Translator::t('hrm_att_btn_recalculate', 'Hitung Ulang Presensi') }}</span>
+                <span wire:loading wire:target="recalculate">{{ Translator::t('hrm_att_processing', 'Memproses...') }}</span>
             </button>
         </div>
 
@@ -172,15 +187,15 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full text-xs border-collapse">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Tanggal</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Shift</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Masuk</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Pulang</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Telat (Mnt)</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Lembur</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Status</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Sumber</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_col_employee', 'Karyawan') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_col_shift', 'Shift') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_col_clock_in', 'Masuk') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_col_clock_out', 'Pulang') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_col_late_minutes', 'Telat (Mnt)') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_stat_overtime', 'Lembur') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_col_status', 'Status') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('hrm_att_col_source', 'Sumber') }}</th>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1]"></th>
                         </tr>
                     </thead>
@@ -195,7 +210,7 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 {{ $r->minutes_late > 0 ? 'text-[#c0392b] font-bold' : '' }}">{{ $r->minutes_late }}</td>
                                 <td class="px-3 py-2 text-[11px]">
                                     @if ($r->overtime_minutes > 0)
-                                        {{ $r->overtime_minutes }} mnt
+                                        {{ $r->overtime_minutes }} {{ Translator::t('hrm_att_minutes_suffix', 'mnt') }}
                                         <span class="text-muted">({{ $r->overtime_type }})</span>
                                     @else
                                         —
@@ -203,18 +218,18 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                                 <td class="px-3 py-2">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($r->status_code) }}">
-                                        {{ $r->status_code }} — {{ self::STATUS_LABELS[$r->status_code] ?? $r->status_code }}
+                                        {{ $r->status_code }} — {{ $this->statusLabel($r->status_code) }}
                                     </span>
                                 </td>
                                 <td class="px-3 py-2 text-[11px] {{ $r->source === 'MANUAL_OVERRIDE' ? 'text-[#92400e] font-semibold' : 'text-muted' }}">
-                                    {{ $r->source === 'MANUAL_OVERRIDE' ? 'Manual' : 'Otomatis' }}
+                                    {{ $r->source === 'MANUAL_OVERRIDE' ? Translator::t('hrm_att_source_manual', 'Manual') : Translator::t('hrm_att_source_auto', 'Otomatis') }}
                                 </td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✏️" title="Override Status" action="openOverride({{ $r->id_daily }})" />
+                                    <x-grid.action-icon icon="✏️" title="{{ Translator::t('hrm_att_action_override', 'Override Status') }}" action="openOverride({{ $r->id_daily }})" />
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="10" message="Tidak ada data presensi utk rentang tanggal ini." />
+                            <x-grid.empty-row :colspan="10" message="{{ Translator::t('hrm_att_empty', 'Tidak ada data presensi utk rentang tanggal ini.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -225,13 +240,13 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
     @if ($showOverrideModal)
         <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showOverrideModal', false)">
             <div class="bg-white rounded-xl w-[420px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Override Status Presensi Harian</div>
+                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">{{ Translator::t('hrm_att_override_modal_title', 'Override Status Presensi Harian') }}</div>
                 <form wire:submit="saveOverride" class="p-4 flex flex-col gap-3">
-                    <x-form.select label="Status Baru" wire:model="overrideStatus" name="overrideStatus" :options="$this->statusOptions()" :placeholder="false" />
-                    <x-form.textarea label="Alasan Audit Trail (Min 10 Karakter) *" wire:model="overrideReason" rows="3" placeholder="Masukkan alasan resmi, mis. Form FDT No. ..." name="overrideReason" />
+                    <x-form.select label="{{ Translator::t('hrm_att_field_new_status', 'Status Baru') }}" wire:model="overrideStatus" name="overrideStatus" :options="$this->statusOptions()" :placeholder="false" />
+                    <x-form.textarea label="{{ Translator::t('hrm_att_field_audit_reason', 'Alasan Audit Trail (Min 10 Karakter) *') }}" wire:model="overrideReason" rows="3" placeholder="{{ Translator::t('hrm_att_audit_reason_placeholder', 'Masukkan alasan resmi, mis. Form FDT No. ...') }}" name="overrideReason" />
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showOverrideModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">Simpan Override</button>
+                        <button type="button" wire:click="$set('showOverrideModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
+                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">{{ Translator::t('hrm_att_btn_save_override', 'Simpan Override') }}</button>
                     </div>
                 </form>
             </div>
