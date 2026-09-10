@@ -6,6 +6,7 @@ use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderExternalCost;
 use App\Models\Sdi\CoOrderItem;
 use App\Models\Sdi\QuoQuotation;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -37,15 +38,15 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
     protected function gridColumnDefs(): array
     {
         return [
-            'quotation.quotation_no' => ['label' => 'Ref. Quotation', 'sortable' => false],
-            'co_date' => ['label' => 'Tanggal'],
-            'customer_po_no' => ['label' => 'No. PO Customer'],
-            'ship_address_label' => ['label' => 'Label Alamat Kirim'],
-            'discount_doc_pct' => ['label' => 'Diskon Dokumen %'],
-            'discount_qty_pct' => ['label' => 'Diskon Qty %'],
-            'notes' => ['label' => 'Catatan'],
-            'created_by' => ['label' => 'Dibuat Oleh'],
-            'updated_by' => ['label' => 'Diubah Oleh'],
+            'quotation.quotation_no' => ['label' => Translator::t('sales_co_col_ref_quotation', 'Ref. Quotation'), 'sortable' => false],
+            'co_date' => ['label' => Translator::t('sales_co_col_date', 'Tanggal')],
+            'customer_po_no' => ['label' => Translator::t('sales_co_col_customer_po', 'No. PO Customer')],
+            'ship_address_label' => ['label' => Translator::t('sales_co_col_ship_address_label', 'Label Alamat Kirim')],
+            'discount_doc_pct' => ['label' => Translator::t('sales_co_col_discount_doc', 'Diskon Dokumen %')],
+            'discount_qty_pct' => ['label' => Translator::t('sales_co_col_discount_qty', 'Diskon Qty %')],
+            'notes' => ['label' => Translator::t('sales_co_col_notes', 'Catatan')],
+            'created_by' => ['label' => Translator::t('sales_co_col_created_by', 'Dibuat Oleh')],
+            'updated_by' => ['label' => Translator::t('sales_co_col_updated_by', 'Diubah Oleh')],
         ];
     }
 
@@ -61,7 +62,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
     protected function gridIdentitySearchColumns(): array
     {
-        return ['co_no' => 'No. CO', 'quotation.customer.customer_name' => 'Nama Customer'];
+        return ['co_no' => Translator::t('sales_co_search_col_no', 'No. CO'), 'quotation.customer.customer_name' => Translator::t('sales_co_search_col_customer', 'Nama Customer')];
     }
 
     // 'quotation.customer.customer_name' melintas tm2sdi (co_order/quo_quotation)
@@ -206,13 +207,13 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
         {{-- "grid three" bukan grid-cols-3 -- app.css .grid{} unlayered override
              grid-cols-3 Tailwind jadi 4 kolom, lihat catatan di co/entry.blade.php --}}
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Customer Order" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-            <x-grid.stat-box tone="active" label="Confirmed" :value="$this->statConfirmed" />
+            <x-grid.stat-box tone="total" label="{{ Translator::t('sales_co_stat_total', 'Total Customer Order') }}" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_co_stat_draft', 'Draft') }}" :value="$this->statDraft" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('sales_co_stat_confirmed', 'Confirmed') }}" :value="$this->statConfirmed" />
         </x-grid.stat-row>
 
         <div class="text-xs px-3.5 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fef6e7] border border-[#f5e0b3] text-[#8a4b00]">
-            CO dibuat dari Quotation yang sudah <b>PUBLISHED</b> — buka Quotation, klik "Buat Customer Order". Tidak ada "+ New Record" di sini.
+            {!! Translator::t('sales_co_no_new_record_note', 'CO dibuat dari Quotation yang sudah <b>PUBLISHED</b> — buka Quotation, klik "Buat Customer Order". Tidak ada "+ New Record" di sini.') !!}
         </div>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
@@ -222,7 +223,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. CO / customer…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('sales_co_search_placeholder', 'Cari no. CO / customer…') }}"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:tools>
@@ -234,10 +235,10 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
             @if (count($selectedRows))
                 <div class="flex items-center gap-2.5 bg-[#fdecec] border-b border-[#f5c6c6] px-3.5 py-2 text-[12px]">
-                    <span class="font-semibold text-[#a3453f]">{{ count($selectedRows) }} CO draft dipilih</span>
-                    <button type="button" wire:click="bulkDelete" wire:confirm="Hapus permanen {{ count($selectedRows) }} Customer Order draft terpilih beserta item-nya? Tindakan ini tidak bisa dibatalkan."
-                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#c0392b] text-white cursor-pointer">🗑 Hapus</button>
-                    <button type="button" wire:click="clearSelection" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white border border-[#f5c6c6] text-[#a3453f] cursor-pointer">Batal</button>
+                    <span class="font-semibold text-[#a3453f]">{{ count($selectedRows) }} {{ Translator::t('sales_co_bulk_selected_suffix', 'CO draft dipilih') }}</span>
+                    <button type="button" wire:click="bulkDelete" wire:confirm="{{ Translator::t('sales_co_bulk_delete_confirm_prefix', 'Hapus permanen') }} {{ count($selectedRows) }} {{ Translator::t('sales_co_bulk_delete_confirm_suffix', 'Customer Order draft terpilih beserta item-nya? Tindakan ini tidak bisa dibatalkan.') }}"
+                        class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-[#c0392b] text-white cursor-pointer">🗑 {{ Translator::t('sales_co_bulk_delete_btn', 'Hapus') }}</button>
+                    <button type="button" wire:click="clearSelection" class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white border border-[#f5c6c6] text-[#a3453f] cursor-pointer">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
                 </div>
             @endif
 
@@ -248,7 +249,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                         <tr>
                             <th class="px-2 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[32px]"></th>
                             <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]"></th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Customer Order</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('sales_co_col_customer_order', 'Customer Order') }}</th>
                             @foreach ($gridVisibleColumns as $key)
                                 <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] whitespace-nowrap">
                                     @if (($this->gridColumnDefs()[$key]['sortable'] ?? true) === false)
@@ -266,8 +267,8 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                     @endif
                                 </th>
                             @endforeach
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Net Receivable</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('sales_co_col_status', 'Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('sales_co_col_net_receivable', 'Net Receivable') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -284,9 +285,9 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                 @endif
                             @endif
                             @php($isOpen = in_array($o->id_order, $this->expanded, true))
-                            <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="co-{{ $o->id_order }}" wire:dblclick="openOrder({{ $o->id_order }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
                                 <td class="px-2 py-2 border-b border-[#eef1f5] text-center">
-                                    <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? 'Tutup preview item' : 'Lihat item' }}"
+                                    <button type="button" wire:click.stop="toggleExpand({{ $o->id_order }})" title="{{ $isOpen ? Translator::t('sales_co_close_item_preview', 'Tutup preview item') : Translator::t('sales_co_view_item_preview', 'Lihat item') }}"
                                         class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">
                                         <span class="inline-block transition-transform duration-150 {{ $isOpen ? 'rotate-90' : '' }}">›</span>
                                     </button>
@@ -296,13 +297,13 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                         @if ($o->doc_status === 'DRAFT')
                                             <input type="checkbox" class="row-checkbox" data-id="{{ $o->id_order }}"
                                                 @click.stop="handleCheckClick($event, {{ $o->id_order }})" @checked(in_array($o->id_order, $selectedRows, true))
-                                                title="Pilih untuk hapus massal (draft) — shift+klik utk pilih rentang" class="w-3.5 h-3.5 cursor-pointer">
+                                                title="{{ Translator::t('sales_co_checkbox_bulk_hint', 'Pilih untuk hapus massal (draft) — shift+klik utk pilih rentang') }}" class="w-3.5 h-3.5 cursor-pointer">
                                         @else
                                             <span class="w-3.5 inline-block shrink-0"></span>
                                         @endif
                                         <x-grid.action-dropdown :actions="[
-                                            ['icon' => '↗', 'label' => 'Buka', 'action' => 'openOrder('.$o->id_order.')', 'tooltip' => 'Buka Customer Order ini — atau klik 2x pada baris'],
-                                            ...($o->doc_status === 'DRAFT' ? [['icon' => '✓', 'label' => 'Confirm', 'action' => 'confirmOrder('.$o->id_order.')', 'confirm' => 'Confirm CO '.$o->co_no.'?', 'variant' => 'success', 'tooltip' => 'DRAFT → CONFIRMED']] : []),
+                                            ['icon' => '↗', 'label' => Translator::t('shared_grid_action_open', 'Buka'), 'action' => 'openOrder('.$o->id_order.')', 'tooltip' => Translator::t('sales_co_action_open_tooltip', 'Buka Customer Order ini — atau klik 2x pada baris')],
+                                            ...($o->doc_status === 'DRAFT' ? [['icon' => '✓', 'label' => Translator::t('sales_form_btn_confirm', 'Confirm'), 'action' => 'confirmOrder('.$o->id_order.')', 'confirm' => Translator::t('sales_co_action_confirm_confirm', 'Confirm CO').' '.$o->co_no.'?', 'variant' => 'success', 'tooltip' => 'DRAFT → CONFIRMED']] : []),
                                         ]" />
                                     </div>
                                 </td>
@@ -321,13 +322,13 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                         <table class="w-full text-[11.5px] border-collapse ml-8" style="width:calc(100% - 2rem)">
                                             <thead>
                                                 <tr class="text-[10px] text-muted uppercase font-bold">
-                                                    <th class="text-left px-2 py-1">Produk / Jasa</th>
-                                                    <th class="text-center px-2 py-1 w-14">Type</th>
-                                                    <th class="text-right px-2 py-1 w-28">Qty</th>
-                                                    <th class="text-right px-2 py-1 w-24">Harga</th>
-                                                    <th class="text-right px-2 py-1 w-16">Disc%</th>
-                                                    <th class="text-right px-2 py-1 w-28">Subtotal</th>
-                                                    <th class="text-center px-2 py-1 w-24">Due Date</th>
+                                                    <th class="text-left px-2 py-1">{{ Translator::t('sales_co_detail_col_product_service', 'Produk / Jasa') }}</th>
+                                                    <th class="text-center px-2 py-1 w-14">{{ Translator::t('sales_co_detail_col_type', 'Type') }}</th>
+                                                    <th class="text-right px-2 py-1 w-28">{{ Translator::t('sales_co_detail_col_qty', 'Qty') }}</th>
+                                                    <th class="text-right px-2 py-1 w-24">{{ Translator::t('sales_co_detail_col_price', 'Harga') }}</th>
+                                                    <th class="text-right px-2 py-1 w-16">{{ Translator::t('sales_co_detail_col_disc', 'Disc%') }}</th>
+                                                    <th class="text-right px-2 py-1 w-28">{{ Translator::t('sales_co_detail_col_subtotal', 'Subtotal') }}</th>
+                                                    <th class="text-center px-2 py-1 w-24">{{ Translator::t('sales_co_detail_col_due_date', 'Due Date') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -344,7 +345,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                                         <td class="px-2 py-1.5 text-center text-muted">{{ $item->due_date?->translatedFormat('d M Y') ?? '—' }}</td>
                                                     </tr>
                                                 @empty
-                                                    <tr><td colspan="7" class="text-center py-3 text-muted text-[11px]">Belum ada item.</td></tr>
+                                                    <tr><td colspan="7" class="text-center py-3 text-muted text-[11px]">{{ Translator::t('sales_co_detail_no_items', 'Belum ada item.') }}</td></tr>
                                                 @endforelse
                                             </tbody>
                                         </table>
@@ -381,7 +382,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </tr>
                             @endif
                         @empty
-                            <x-grid.empty-row :colspan="$colspan" message="Belum ada Customer Order." />
+                            <x-grid.empty-row :colspan="$colspan" message="{{ Translator::t('sales_co_empty', 'Belum ada Customer Order.') }}" />
                         @endforelse
                     </tbody>
                 </table>

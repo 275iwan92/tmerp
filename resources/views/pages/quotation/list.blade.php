@@ -4,6 +4,7 @@ use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Sales\QuotationBuilder;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -141,16 +142,16 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Quotation" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-            <x-grid.stat-box tone="active" label="Published" :value="$this->statPublished" />
+            <x-grid.stat-box tone="total" label="{{ Translator::t('sales_quo_stat_total', 'Total Quotation') }}" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_quo_stat_draft', 'Draft') }}" :value="$this->statDraft" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('sales_quo_stat_published', 'Published') }}" :value="$this->statPublished" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. quotation / customer…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('sales_quo_search_placeholder', 'Cari no. quotation / customer…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -163,16 +164,16 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Quotation</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Nilai (excl PPN)</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('sales_quo_col_quotation', 'Quotation') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_quo_col_date', 'Tanggal') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('sales_quo_col_status', 'Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('sales_quo_col_value', 'Nilai (excl PPN)') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('sales_quo_col_action', 'Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->quotations as $q)
-                            <tr wire:key="quo-{{ $q->id_quotation }}" wire:dblclick="openQuotation({{ $q->id_quotation }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                            <tr wire:key="quo-{{ $q->id_quotation }}" wire:dblclick="openQuotation({{ $q->id_quotation }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
                                 <x-grid.identity-cell :id="$q->id_quotation" :name="$q->customer?->customer_name ?? '—'" :code="$q->quotation_no" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $q->issued_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
@@ -180,15 +181,15 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="openQuotation({{ $q->id_quotation }})" />
+                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openQuotation({{ $q->id_quotation }})" />
                                     @if ($q->doc_status === 'DRAFT')
-                                        <x-grid.action-icon icon="✓" title="Confirm / Publish" action="confirmQuotation({{ $q->id_quotation }})"
-                                            confirm="Publish quotation {{ $q->quotation_no }}? Harga akan terkunci." variant="success" />
+                                        <x-grid.action-icon icon="✓" title="{{ Translator::t('sales_quo_action_confirm_publish', 'Confirm / Publish') }}" action="confirmQuotation({{ $q->id_quotation }})"
+                                            confirm="{{ Translator::t('sales_quo_confirm_publish_prefix', 'Publish quotation') }} {{ $q->quotation_no }}? {{ Translator::t('sales_quo_confirm_publish_suffix', 'Harga akan terkunci.') }}" variant="success" />
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Belum ada quotation." />
+                            <x-grid.empty-row :colspan="5" message="{{ Translator::t('sales_quo_empty', 'Belum ada quotation.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -202,10 +203,10 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
             <div class="bg-white rounded-lg p-4 w-[480px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">Pilih Customer</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ Translator::t('sales_quo_picker_title', 'Pilih Customer') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <input type="text" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="Ketik min. 2 huruf nama/kode customer..." class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-2">
+                <input type="text" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="{{ Translator::t('sales_quo_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode customer...') }}" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-2">
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->customerResults as $c)
                         <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">
@@ -214,7 +215,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                         </button>
                     @empty
                         <div class="text-[11px] text-muted text-center py-4">
-                            {{ mb_strlen(trim($customerSearch)) < 2 ? 'Ketik min. 2 huruf untuk cari.' : 'Tidak ada customer cocok.' }}
+                            {{ mb_strlen(trim($customerSearch)) < 2 ? Translator::t('sales_quo_picker_min_chars', 'Ketik min. 2 huruf untuk cari.') : Translator::t('sales_quo_picker_no_match', 'Tidak ada customer cocok.') }}
                         </div>
                     @endforelse
                 </div>

@@ -17,6 +17,7 @@ use App\Models\Sdi\IqpPartProcess;
 use App\Models\Sdi\IqpTier;
 use App\Models\Sdi\IqpTooling;
 use App\Models\Sys\SysConstant;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -2447,10 +2448,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     @endif
     @if (! $this->crossView)
     <header class="app-header">
-        <b>{{ $mode === 'NEW' ? '✨ Inkuiri Produk Baru' : ($mode === 'RECALC' ? '🔁 Hitung Ulang Harga' : '✏️ Ubah Spesifikasi') }}</b>
+        <b>{{ $mode === 'NEW' ? '✨ '.Translator::t('sales_form_title_new', 'Inkuiri Produk Baru') : ($mode === 'RECALC' ? '🔁 '.Translator::t('sales_form_title_recalc', 'Hitung Ulang Harga') : '✏️ '.Translator::t('sales_form_title_revise', 'Ubah Spesifikasi')) }}</b>
         <span class="pill {{ strtolower($mode) }}">{{ $mode }}</span>
-        <span class="sub">{{ $inquiry_no ?: 'belum tersimpan' }} · {{ $sub_state }}</span>
-        <a class="back" href="{{ route('inquiry.hub') }}">← Menu Utama</a>
+        <span class="sub">{{ $inquiry_no ?: Translator::t('sales_form_not_saved_yet', 'belum tersimpan') }} · {{ $sub_state }}</span>
+        <a class="back" href="{{ route('inquiry.hub') }}">← {{ Translator::t('sales_form_back_to_menu', 'Menu Utama') }}</a>
     </header>
 
     <div class="wrap">
@@ -2460,38 +2461,37 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         @endif
 
         @if ($readOnly)
-            <div class="note o">🔒 Inkuiri ini sudah dikonfirmasi (status <b>{{ $sub_state }}</b>) — dibuka lihat-saja, tidak bisa diedit.</div>
+            <div class="note o">🔒 {{ Translator::t('sales_form_readonly_note_prefix', 'Inkuiri ini sudah dikonfirmasi (status') }} <b>{{ $sub_state }}</b>{{ Translator::t('sales_form_readonly_note_suffix', ') — dibuka lihat-saja, tidak bisa diedit.') }}</div>
         @else
             <div class="note y">
-                👤 <b>Sales Officer</b> — isi header, tier qty, part &amp; dieline, tooling, diskon, dan biaya
-                eksternal di bawah. Costing (HPP) &amp; estimasi kecepatan akan menyusul di iterasi berikutnya.
+                👤 <b>{{ Translator::t('sales_form_sales_officer_label', 'Sales Officer') }}</b> — {!! Translator::t('sales_form_officer_hint', 'isi header, tier qty, part &amp; dieline, tooling, diskon, dan biaya eksternal di bawah. Costing (HPP) &amp; estimasi kecepatan akan menyusul di iterasi berikutnya.') !!}
             </div>
         @endif
 
         <div class="card">
             <div class="toolbar">
                 <button type="button" class="btn p" wire:click="save" @if($readOnly) disabled @endif wire:loading.attr="disabled">
-                    💾 Simpan
+                    💾 {{ Translator::t('shell_btn_save', 'Simpan') }}
                 </button>
                 @unless($stat_confirm)
                     <button type="button" class="btn s" wire:click="confirm" wire:loading.attr="disabled">
-                        ✅ Confirm
+                        ✅ {{ Translator::t('sales_form_btn_confirm', 'Confirm') }}
                     </button>
                 @endunless
                 @if($stat_confirm && ! $stat_cancel)
                     <button type="button" class="btn d" wire:click="openCancelForm">
-                        ✖ Batalkan
+                        ✖ {{ Translator::t('sales_form_btn_cancel_doc', 'Batalkan') }}
                     </button>
                 @endif
                 @if($stat_confirm && ! in_array($sub_state, ['CANCELLED', 'CONVERTED', 'LOST'], true))
                     <button type="button" class="btn d" wire:click="openLostForm">
-                        ❌ Tandai Kalah
+                        ❌ {{ Translator::t('sales_form_btn_mark_lost', 'Tandai Kalah') }}
                     </button>
                 @endif
                 <div style="margin-left:auto"></div>
                 @if ($id)
-                    <a href="{{ route('inquiry.imposition', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🔀 Imposition</a>
-                    <a href="{{ route('inquiry.nota', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🖨 Cetak Nota</a>
+                    <a href="{{ route('inquiry.imposition', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🔀 {{ Translator::t('sales_form_link_imposition', 'Imposition') }}</a>
+                    <a href="{{ route('inquiry.nota', ['inquiry' => $id]) }}" class="btn o xs" style="text-decoration:none">🖨 {{ Translator::t('sales_form_link_print_nota', 'Cetak Nota') }}</a>
                 @endif
                 <span class="pill {{ $this->statusPillClass() }}">{{ $sub_state }}</span>
             </div>
@@ -2499,13 +2499,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             @if ($showCancelForm)
                 <div class="body" style="background:#fff4e5;border-bottom:1px solid #ffd9a0">
                     <div class="f" style="margin-bottom:8px">
-                        <label>Alasan Pembatalan *</label>
-                        <textarea wire:model="cancel_reason" rows="2" placeholder="Wajib diisi — tercatat di riwayat"></textarea>
+                        <label>{{ Translator::t('sales_form_cancel_reason_label', 'Alasan Pembatalan *') }}</label>
+                        <textarea wire:model="cancel_reason" rows="2" placeholder="{{ Translator::t('sales_form_cancel_reason_placeholder', 'Wajib diisi — tercatat di riwayat') }}"></textarea>
                         @error('cancel_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
                     </div>
                     <div style="display:flex;gap:8px">
-                        <button type="button" class="btn d xs" wire:click="cancel">Ya, batalkan inkuiri</button>
-                        <button type="button" class="btn g xs" wire:click="dismissCancelForm">Batal</button>
+                        <button type="button" class="btn d xs" wire:click="cancel">{{ Translator::t('sales_form_confirm_cancel_doc', 'Ya, batalkan inkuiri') }}</button>
+                        <button type="button" class="btn g xs" wire:click="dismissCancelForm">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
                     </div>
                 </div>
             @endif
@@ -2513,19 +2513,19 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             @if ($showLostForm)
                 <div class="body" style="background:#fff4e5;border-bottom:1px solid #ffd9a0">
                     <div class="f" style="margin-bottom:8px">
-                        <label>Alasan Kalah *</label>
-                        <textarea wire:model="lost_reason" rows="2" placeholder="mis. Harga kompetitor lebih rendah, customer batal order — wajib diisi, tercatat di riwayat &amp; laporan win-rate"></textarea>
+                        <label>{{ Translator::t('sales_form_lost_reason_label', 'Alasan Kalah *') }}</label>
+                        <textarea wire:model="lost_reason" rows="2" placeholder="{{ Translator::t('sales_form_lost_reason_placeholder', 'mis. Harga kompetitor lebih rendah, customer batal order — wajib diisi, tercatat di riwayat & laporan win-rate') }}"></textarea>
                         @error('lost_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
                     </div>
                     <div style="display:flex;gap:8px">
-                        <button type="button" class="btn d xs" wire:click="markLost">Ya, tandai kalah</button>
-                        <button type="button" class="btn g xs" wire:click="dismissLostForm">Batal</button>
+                        <button type="button" class="btn d xs" wire:click="markLost">{{ Translator::t('sales_form_confirm_mark_lost', 'Ya, tandai kalah') }}</button>
+                        <button type="button" class="btn g xs" wire:click="dismissLostForm">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
                     </div>
                 </div>
             @endif
 
             <div class="body">
-                <div class="sec-title">Header Inkuiri</div>
+                <div class="sec-title">{{ Translator::t('sales_form_section_header', 'Header Inkuiri') }}</div>
 
                 {{-- Baris 1 (permintaan user 2026-09-04): No.Inkuiri, Tgl Dokumen, Tgl
                 Kebutuhan Pelanggan, Sales, Sumber -- 5 kolom (.grid.five, sudah ada di
