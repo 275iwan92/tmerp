@@ -1052,6 +1052,18 @@ panel chat menampilkan **daftar nama pengguna** yang bisa diajak ngobrol
 mulai thread. Cek dulu `resources/views/livewire/chat/chat-drawer.blade.php`
 di dalam zip utk contoh markup modal "New Chat"-nya sebelum bikin dari nol.
 
+**[TAMBAHAN instruksi user 2026-09-10] Tema WAJIB ikut pilihan tema user
+yang sedang aktif, JANGAN hardcode.** Paket referensi `tmerp-chat-module.zip`
+hardcode tema GELAP sendiri (`bg-[#101b30]`/`bg-[#1f2742]`, dst) yang beda
+total dari shell utama — ini **TIDAK BOLEH dibawa apa adanya**. Saat porting,
+warna drawer/modal chat harus tunduk ke sistem tema yang sudah ada
+(`docs/themestandard.md`: `tm2sys.sys_theme`, 4 mode Pastel/Cerah/Dark/Hitam
+x 3 corak Biru/Hijau/Merah, dipilih user lewat picker di dropdown avatar) —
+sama seperti komponen shell lain (`main-menu.blade.php`), BUKAN palet warna
+sendiri milik modul chat. Kalau user sedang pilih mode terang, drawer chat
+harus ikut terang; kalau pilih Dark/Hitam, baru ikut gelap — bukan gelap
+selalu apa pun tema aktifnya.
+
 **Scope**: chat ini **internal antar pengguna yang sedang login** ke ERP
 (karyawan/staff), BUKAN chat dengan pihak luar (customer/portal rekrutmen)
 — jangan campur dgn `recruitment/portal` atau modul lain manapun.
