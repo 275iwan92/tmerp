@@ -3,6 +3,39 @@
 
 ---
 
+## 2026-09-10 — Master Card ProDev: muat 1 lembar A4 landscape (R35)
+
+User tunjuk screenshot langsung: hasil rebuild Master Card 2026-09-09 tumpah
+ke halaman 2, padahal `docs/mockups/mockup_mastercard.jpg` jelas 1 lembar.
+Awalnya diminta "masukkan backlog, kerjakan malam hari" (dicatat sbg R35 +
+detail root cause di BACKLOG §0), lalu user susul "kerjakan sekarang saja" —
+dieksekusi langsung, tidak ditunda.
+
+**Root cause** (diverifikasi via `getBoundingClientRect()` di browser
+sungguhan, bukan tebakan): tinggi `.print-page` 233mm vs budget A4 landscape
+210mm (23mm kelebihan) — 2 penyebab utama:
+1. Tabel spesifikasi kiri 12 baris (1 pasang label-value/baris) vs mockup
+   ~7-8 baris (2 pasang/baris digabung).
+2. Section "Catatan Finishing" (ditambah sendiri di rebuild 2026-09-09)
+   TIDAK ADA sama sekali di mockup.
+
+**Perbaikan**: tabel dipadatkan jadi 7 baris 4-kolom (`<colgroup>` +
+`table-layout:fixed`, class baru `.items-2col`, colspan="3" utk baris ganjil
+Pack Qty/Jenis Finishing); section Catatan Finishing dihapus total (nama
+finishing tetap muncul digabung-koma di baris "Jenis Finishing"); padding
+tabel dipadatkan (8pt/5px8px → 7.6pt/3px7px) + strip tanda tangan diperkecil
+sedikit, keduanya SCOPED ke class `landscape` (page lain tidak terpengaruh).
+
+**Verifikasi**: dump HTML render Livewire ke file lokal, dibuka di Browser
+pane via static file di `public/` (bukan lewat login app — dihindari sesuai
+`feedback_no_credential_automation`), ukur tinggi asli via JS
+`getBoundingClientRect()`: 233mm → 197mm (natural height, min-height:210mm
+dilepas sementara saat ukur) — sisa ~13mm aman utk padding mode-print yang
+sedikit lebih kecil dari mode-layar. Test lama (2 test, 28 assertion) tetap
+lulus tanpa perubahan assertion. Commit: `d993e65`.
+
+---
+
 ## 2026-09-07 (lanjutan 6) — Payroll: Modul 07 (Rekening Bank) + Modul 09 (GPS Clock-in sungguhan)
 
 User minta selesaikan 2 item tersisa dari checklist 11-mockup: "selesaikan
