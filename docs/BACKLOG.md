@@ -478,9 +478,97 @@ begitu modul berikutnya digarap. **Jangan mulai modul berikutnya tanpa
 arahan eksplisit user soal modul mana & kapan** (aturan yang sudah ada di
 `admindashboardstandard.md` §12, dipertegas ulang di sini).
 
+### 9.1 [BELUM DIPUTUSKAN — DISKUSI DULU] Klik menu sidebar saat form/modal
+terbuka "tidak merespons" (dilaporkan user 2026-09-10)
+
+**Root cause (sudah diinvestigasi, BUKAN bug kode project):** kedua Resource
+yang sudah ada (`EmpEmployeeResource`, `OrgPositionResource`) pakai pola
+Filament **`ManageRecords` (`--simple`)** — form Edit/Create dibuka sebagai
+**modal** di atas halaman index, bukan halaman terpisah
+(`EmpEmployeeResource.php` `getPages()` cuma daftar `index`). Modal Filament
+pasang backdrop full-viewport dgn z-index di atas sidebar
+(`vendor/filament/support/resources/views/components/modal/index.blade.php`
+§160-181) — klik pertama ke sidebar kena backdrop dulu (cuma `close()` modal,
+tidak tembus ke link), klik kedua baru jalan. Ada kontributor tambahan: bug
+kecil vendor Filament sendiri (`modal.js`, referensi upstream
+filamentphp/filament#18022) yang kadang menelan 1 klik berikutnya di mana
+saja di halaman. Dikonfirmasi TIDAK ada custom overlay/CSS/JS/unsaved-changes-
+guard buatan project yang jadi penyebab — 100% perilaku bawaan pola modal
+Filament v5.
+
+**Riset banding aplikasi lain (2026-09-10):** Odoo (auto-save begitu navigasi,
+tanpa dialog), SAP Fiori classic (dialog konfirmasi "unsaved data, leave?"),
+SAP Fiori Elements draft-enabled (auto-save sbg draft → bebas navigasi kapan
+saja tanpa dialog), Dynamics 365 (dialog konfirmasi kalau auto-save off, auto-
+save kalau on). **Tidak ada satu pun yang "klik = tidak terjadi apa-apa"** —
+selalu langsung navigasi(+autosave/draft) atau muncul dialog. Jadi ekspektasi
+user (klik menu harus selalu direspons) sesuai standar industri; perilaku
+Filament panel saat ini menyimpang.
+
+**Arah yang user SETUJU secara prinsip (2026-09-10) tapi MINTA DIDISKUSIKAN
+LEBIH LANJUT dulu — JANGAN eksekusi sebelum ada konfirmasi ulang:** adopsi
+pola **auto-save sebagai draft ala SAP Fiori Elements** — perubahan tersimpan
+otomatis begitu diketik/pindah field, user bebas klik menu lain kapan saja
+tanpa dialog/blokir, karena data sudah aman. Ini kemungkinan juga berarti
+pindah dari pola `ManageRecords --simple` (modal) ke Resource dgn halaman
+Create/Edit terpisah (route sungguhan) supaya tidak ada backdrop yg menutupi
+sidebar sama sekali — tapi ini mengubah standar yg sudah didokumentasikan di
+`docs/admindashboardstandard.md` §6, berlaku ke semua Resource Filament ke
+depan (belum tentu cocok utk transaksi bernilai besar yg butuh Save eksplisit
+— lihat prinsip approval/costing rahasia §4 CLAUDE.md, perlu ditimbang saat
+diskusi). **Hal yang perlu diputuskan bareng user sebelum mulai:**
+1. Draft/auto-save berlaku utk SEMUA Resource Filament, atau cuma tertentu
+   (master kecil vs transaksi ber-approval)?
+2. Kalau pindah dari modal ke halaman Create/Edit terpisah — apa konsekuensi
+   ke UX yang sudah ada (mis. list index jadi 2 klik jauh dari form)?
+3. Auto-save di Filament (Livewire) butuh mekanisme sendiri (bukan bawaan
+   native seperti draft SAP) — perlu didesain: kapan trigger save (per
+   keystroke/blur/interval), bagaimana tandai record "draft" vs "final" di DB
+   (kolom `stat_*` yg sudah ada, atau kolom baru?), race condition kalau ada
+   2 tab/user edit record sama.
+
+**Mitigasi cepat (belum dieksekusi, dicatat utk dikerjakan nanti — TIDAK
+butuh diskusi arsitektur, reversibel, bisa jalan duluan sebelum opsi draft di
+atas diputuskan):** set `->closedByClickingAway(false)` pada `EditAction`/
+`CreateAction` di `EmpEmployeeResource`/`OrgPositionResource` (dan Resource
+`--simple` lain yg menyusul) — supaya klik di luar modal tidak diam-diam
+menutup form tanpa disadari user. Tidak menghilangkan akar masalah (backdrop
+tetap ada, klik pertama ke sidebar tetap kena backdrop dulu), tapi mencegah
+efek samping "form ke-close tanpa sadar" selagi solusi jangka panjang (draft/
+halaman terpisah) masih didiskusikan.
+
 ---
 
 ## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
+
+- **[BARU 2026-09-10] Standarisasi tombol aksi umum (Save/Cancel/Close) —
+  LOCKED di `CLAUDE.md` §3 & `docs/FORM_UI_STANDARD.md` §1a, TAPI rollout
+  perbaikan file yang menyimpang BELUM dikerjakan.** Aturan: satu kata baku
+  per aksi ikut `lang_code` (ID: Simpan/Batal/Tutup, EN: Save/Cancel/Close),
+  Back tetap "Back" di kedua bahasa (tidak ikut toggle), berlaku juga ke
+  panel Filament `/admin` (override label native Filament). Pengecualian sah:
+  "+ Tambah [objek]" (nambah baris dalam form, beda dari "+ New Record" grid).
+  **File yang perlu diperbaiki** (lihat `FORM_UI_STANDARD.md` §1a utk detail
+  lengkap tiap poin):
+  1. `components/prodev/wizard-bar.blade.php:27` — `backLabel` default
+     `"Kembali ke Grid"` → `"Back"` (dampak: ProDev workbench, Inquiry
+     Costing, Inquiry form).
+  2. `components/kanban/board.blade.php:167,269,314,364,315` — "Save"/
+     "Cancel" (EN) → "Simpan"/"Batal", supaya konsisten dgn "Batal" yg sudah
+     dipakai di baris 109/110 komponen yg sama.
+  3. `pages/setup/support-tickets.blade.php` — tombol "Close panel" → "Tutup".
+  4. `filament/forms/dashboard-theme-picker.blade.php:74` — "Save" →
+     "Simpan" (cek dulu apakah dirender via Filament Action `->label()` atau
+     Blade polos).
+  5. Panel Filament `/admin` (`EmpEmployeeResource`, `OrgPositionResource`,
+     Resource berikutnya) — pastikan tiap `EditAction`/`CreateAction`/
+     `DeleteAction` diberi `->label()` eksplisit ikut standar, jangan andalkan
+     default Filament (selalu Inggris apa pun `lang_code`).
+  **Belum termasuk** mekanisme toggle label ikut `lang_code` scr otomatis
+  (masih perlu integrasi ke `Translator::t()`, lihat
+  `project_i18n_shell_framework`) — kalau shell masih hardcode 1 bahasa per
+  layar (banyak yg masih ID-only), perbaikan poin 1-5 di atas cukup pakai
+  bahasa yg sudah dipakai layar itu dulu, toggle penuh menyusul rollout i18n.
 
 - **Halaman transaksi iframe** (Inquiry, Stock In, Quotation, dst) —
   belum ikut sistem tema `sys_theme` (themestandard.md §6), masih warna

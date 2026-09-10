@@ -98,6 +98,62 @@ ke route lain — bukan kandidat pola ini. Halaman auth (login/register/forgot-p
 
 ---
 
+## 1a. Standardisasi tombol aksi umum (Save/Cancel/Close) — LOCKED (keputusan user 2026-09-10)
+
+> Latar belakang: user menemukan tombol Back di `wizard-bar.blade.php` pakai
+> label "Kembali ke Grid" (melanggar §1 di atas) — dari situ diperluas jadi
+> aturan umum: **semua tombol aksi generik harus satu kata yang sama persis
+> di seluruh app**, bukan cuma Back. Riset banding (Odoo/SAP Fiori/Dynamics
+> 365) dipakai sebagai bahan diskusi tapi TIDAK mengubah keputusan di sini —
+> topik draft/auto-save (SAP Fiori Elements) itu keputusan TERPISAH, masih
+> menunggu diskusi lanjutan (lihat `docs/BACKLOG.md` §9.1), JANGAN dicampur
+> dengan aturan penamaan tombol di bawah ini.
+
+**Kata baku per aksi (ikut `sec_user.lang_code`, lihat memori
+`project_i18n_shell_framework` utk mekanisme Translator):**
+
+| Aksi | Label ID | Label EN |
+|---|---|---|
+| Simpan perubahan | `Simpan` | `Save` |
+| Batalkan/tutup tanpa simpan | `Batal` | `Cancel` |
+| Tutup panel/modal (bukan discard data) | `Tutup` | `Close` |
+| Kembali ke layar sebelumnya | `Back` (kedua bahasa, LOCKED §1 — tidak ikut toggle) | `Back` |
+
+**Berlaku default di SELURUH app termasuk panel Filament `/admin`** — label
+native Filament (Save/Create/Edit/Delete) di-override ikut tabel di atas,
+bukan dibiarkan default framework. **Kecuali** user eksplisit minta label/
+layout khusus utk 1 layar tertentu (pengecualian sengaja, bukan variasi bebas
+per developer).
+
+**Pengecualian yang SAH (bukan pelanggaran):** tombol "+ Tambah [objek]"
+untuk nambah baris/item DI DALAM form (mis. "+ Tambah Cabang", "+ Tambah
+Riwayat Pendidikan", "+ Tambah Proses") — ini aksi BEDA dari "+ New Record"
+level grid (LOCKED di `griduistandard.md` §6, sudah 100% patuh di kode), jadi
+boleh sebut objeknya per konteks. Jangan disamakan jadi "+ Tambah" polos.
+
+**File yang masih menyimpang (ditemukan saat audit 2026-09-10, PERLU
+diperbaiki — dicatat sbg item kerja di `docs/BACKLOG.md` §10):**
+- `components/prodev/wizard-bar.blade.php:27` — `backLabel` default
+  `"Kembali ke Grid"` → harus `"Back"` (dipakai di ProDev workbench, Inquiry
+  Costing, Inquiry form).
+- `components/kanban/board.blade.php:167,269,314,364` — label "Save" (EN)
+  padahal komponen yg sama pakai "Batal" (ID) di baris 109/110 → tidak
+  konsisten dgn dirinya sendiri; `:315` juga ada "Cancel" (EN) harusnya
+  "Batal".
+- `pages/setup/support-tickets.blade.php` — tombol "Close panel" → "Tutup"
+  (baris `>Closed<` di filter status BUKAN tombol, itu label opsi `<option>`,
+  tidak perlu diubah).
+- `filament/forms/dashboard-theme-picker.blade.php:74` — "Save" → "Simpan"
+  (atau override resmi Filament Action label kalau ini dirender lewat
+  Filament Action, bukan Blade polos — cek dulu sebelum ubah).
+- Panel Filament `/admin` secara umum: `EmpEmployeeResource`,
+  `OrgPositionResource`, dan Resource berikutnya — pastikan
+  `EditAction`/`CreateAction`/`DeleteAction` diberi `->label()` eksplisit
+  ikut tabel di atas, bukan mengandalkan default bawaan Filament (yang
+  selalu Inggris apa pun `lang_code` user).
+
+---
+
 ## 2. CSS terkait — WASPADAI `.grid { grid-cols-4 }` unlayered di app.css
 
 Kalau bikin/ubah grid di dalam layar form (mis. Header Dokumen multi-kolom),

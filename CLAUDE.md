@@ -156,6 +156,27 @@ transaksi = `iqp_costing`, ikut inquiry).
   (kolom legacy terpisah, isinya selalu sama dgn is_active lama) **tidak**
   ikut berubah. Riwayat & catatan per-fase: `docs/fieldrename_state.yaml`.
 
+### Tombol aksi (UI) — LOCKED (keputusan user 2026-09-10)
+Label tombol aksi umum (Back/Save/Cancel/Close, dst) **WAJIB satu kata yang
+sama persis di semua layar** — standardisasi memudahkan pengguna, jangan bikin
+UI tidak seragam. **Berlaku default di SELURUH aplikasi termasuk panel
+Filament `/admin`** (label native Filament seperti Save/Create/Edit/Delete
+di-override ikut standar ini, bukan dibiarkan default bawaan framework).
+**Satu-satunya pengecualian yang SAH**: user secara eksplisit minta layout/
+label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
+- Kata baku per aksi, ikut `lang_code` user ([[project_i18n_shell_framework]]):
+  ID → Simpan/Batal/Tutup, EN → Save/Cancel/Close.
+- **Back** terkecuali dari toggle bahasa — **selalu "Back"** (Inggris) di
+  kedua mode, ini LOCKED lebih dulu di `docs/FORM_UI_STANDARD.md` §1
+  (2026-08-24, sebelum keputusan i18n di atas) dan tidak berubah.
+- **Pengecualian yang SAH (bukan pelanggaran)**: tombol "+ Tambah [objek]"
+  untuk nambah baris/item DI DALAM form (mis. "+ Tambah Cabang", "+ Tambah
+  Proses") — beda aksi dari "+ New Record" level grid (LOCKED di
+  `griduistandard.md` §6), boleh sebut objeknya karena memang aksi yg
+  berbeda, bukan variasi kata untuk aksi yang sama.
+- Detail spesifikasi lengkap & daftar file yang masih menyimpang (perlu
+  perbaikan bertahap): `docs/FORM_UI_STANDARD.md` §1a, `docs/BACKLOG.md` §10.
+
 ---
 
 ## 4. PRINSIP DESAIN (LOCKED)
