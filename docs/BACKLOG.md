@@ -920,6 +920,72 @@ Code: `project_gps_clockin_and_bank_screens.md`,
 
 ---
 
+## 16. CHAT ANTAR USER — LENGKAPI "NEW CHAT" ALA WHATSAPP (instruksi user 2026-09-09)
+
+> **Permintaan user**: "untuk user profile, saya ingin membuat interface nya
+> mirip whatsapp jadi awalnya bisa ada nama-nama yang di ajak chat. Karena
+> chat ini tujuan nya komunikasi antar pengguna yang saat ini login." —
+> **BELUM dikerjakan, ini catatan backlog saja** (user eksplisit minta
+> dicatat dulu, bukan dieksekusi sekarang).
+
+**State saat ini** (`resources/views/pages/main-menu.blade.php`, panel chat
+sekitar baris 622-707 & 1010-1036, model `App\Models\Sys\SysChat{Conversation,Message,Participant}`,
+tabel `tm2sys.sys_chat_*`): panel chat HANYA menampilkan daftar **percakapan
+yang sudah ada** (`conversations()` — query `SysChatParticipant` milik user
+login, join `SysChatConversation`). **TIDAK ADA cara memulai chat baru** —
+kalau `conversations()` kosong, panel cuma menampilkan teks statis "Belum
+ada percakapan." tanpa tombol/aksi apa pun. Ini gap-nya: user tidak bisa
+memilih nama rekan kerja utk diajak ngobrol pertama kali, persis keluhan di
+atas.
+
+**Referensi implementasi SUDAH ADA, tinggal di-adaptasi** —
+`docs/mockups/tmerp-chat-module.zip` (paket referensi eksternal, di-drop ke
+repo 2026-09-07, SEBAGIAN sudah diintegrasikan jadi kode live di
+`main-menu.blade.php` tapi bagian "New Chat"-nya TIDAK ikut terbawa). Isi
+zip (`app/Livewire/Chat/ChatDrawer.php`) sudah py fitur yang persis
+diminta:
+- `public $showNewChatModal` + `public $userSearchQuery` — toggle modal
+  pencarian user.
+- `availableUsers()` (`#[Computed]`) — `SecUser::where('activate', 1)
+  ->where('login', '!=', Auth::user()->login)->where(name/login LIKE
+  %query%)->limit(10)` — daftar nama yang bisa diajak chat, filter search,
+  MAKSIMAL 10 (pertimbangkan naikkan/tambah pagination kalau user makin
+  banyak).
+- `startDirectChat($targetLogin)` — cek dulu apakah sudah ada thread 1-on-1
+  dgn user itu (`is_group=0` + kedua login jadi participant), kalau ada
+  buka thread itu, kalau belum `DB::transaction()` bikin `SysChatConversation`
+  baru + 2 baris `SysChatParticipant` (punya sendiri `last_read_at=now()`,
+  punya lawan bicara `last_read_at=null`).
+
+**Catatan porting (BUKAN drop-in langsung)**: file referensi pakai
+namespace/koneksi model GENERIK (`App\Models\SecUser`,
+`App\Models\SysChatConversation`, dst — TANPA `Sys\` + tanpa `$connection`
+eksplisit), sedangkan app ini sungguhan pakai `App\Models\Sys\SecUser` +
+`App\Models\Sys\SysChat*` dgn `$connection = 'sys'` (lihat CLAUDE.md §2:
+default DB `tm2sys`, model Sys/Master/Sdi/Acc). Referensi ini juga
+komponen Livewire TERPISAH (`<livewire:chat.chat-drawer>`) sedangkan live
+app menyatukan logicnya langsung di `pages::main-menu` (SFC) — porting
+harus disesuaikan pola arsitektur project ini (properti `showNewChatModal`/
+`userSearchQuery` + method `availableUsers()`/`startDirectChat()` masuk ke
+class Livewire yang SUDAH ADA di `main-menu.blade.php`, bukan bikin
+komponen Livewire baru terpisah), bukan copy file mentah-mentah.
+
+**Desain UI (instruksi eksplisit)**: mirip WhatsApp — state kosong/awal
+panel chat menampilkan **daftar nama pengguna** yang bisa diajak ngobrol
+(bukan cuma teks "Belum ada percakapan"), klik satu nama langsung buka/
+mulai thread. Cek dulu `resources/views/livewire/chat/chat-drawer.blade.php`
+di dalam zip utk contoh markup modal "New Chat"-nya sebelum bikin dari nol.
+
+**Scope**: chat ini **internal antar pengguna yang sedang login** ke ERP
+(karyawan/staff), BUKAN chat dengan pihak luar (customer/portal rekrutmen)
+— jangan campur dgn `recruitment/portal` atau modul lain manapun.
+
+**Belum diputuskan**: apakah daftar "New Chat" tampilkan SEMUA `sec_user`
+aktif (bisa banyak kalau perusahaan besar) atau dibatasi per-modul/per-role
+tertentu — cek dgn user kalau soal ini jadi relevan pas eksekusi.
+
+---
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
