@@ -542,8 +542,14 @@ halaman terpisah) masih didiskusikan.
 ## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
 
 - **[BARU 2026-09-10] Standarisasi tombol aksi umum (Save/Cancel/Close) —
-  LOCKED di `CLAUDE.md` §3 & `docs/FORM_UI_STANDARD.md` §1a, TAPI rollout
-  perbaikan file yang menyimpang BELUM dikerjakan.** Aturan: satu kata baku
+  LOCKED di `CLAUDE.md` §3 & `docs/FORM_UI_STANDARD.md` §1a, rollout
+  DIJADWALKAN otonom malam ini** (`button-label-standardization-rollout`,
+  one-time, fire 2026-09-10 21:07 WIB — sengaja tidak dibarengkan dgn slot
+  17:00 yg sudah dipakai `tmerp-backlog-autowork-1700` + `i18n-rollout-malam-2`
+  hari yg sama, supaya tidak 3 sesi otonom tabrakan). Prompt lengkap sudah
+  berisi 5 poin perbaikan + aturan Git Safety + instruksi lapor status di sini
+  setelah selesai — cek bagian RINGKASAN STATUS di atas begitu task ini sudah
+  jalan utk lihat hasilnya. Aturan: satu kata baku
   per aksi ikut `lang_code` (ID: Simpan/Batal/Tutup, EN: Save/Cancel/Close),
   Back tetap "Back" di kedua bahasa (tidak ikut toggle), berlaku juga ke
   panel Filament `/admin` (override label native Filament). Pengecualian sah:
