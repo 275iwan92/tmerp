@@ -1130,6 +1130,97 @@ tertentu — cek dgn user kalau soal ini jadi relevan pas eksekusi.
 
 ---
 
+## 17. KOP DOKUMEN PRINT — NAMA COMPANY HARUS BEDA PER JENIS DOKUMEN
+(instruksi user 2026-09-11, **BELUM DIEKSEKUSI** — user eksplisit minta
+audit+catat dulu, perbaikan menyusul)
+
+> **Permintaan user**: "semua print out HARUS pakai HEADER nama company
+> 'TELASIH MAKMUR' bukan CV Langgeng Jaya Makmur. Nama 'CV Langgeng Jaya
+> Makmur' digunakan hanya pada dokumen yang ada PPN nya dan itupun pada
+> bagian tertentu seperti 'Surat Jalan', 'Invoice', 'Purchase Order with
+> PPN'."
+
+**Konteks — ini MEMBALIK sebagian keputusan lama:** `docs/configurationstandard.md`
+baris 151 & 233-236 (keputusan 2026-09-02) bilang kop dokumen **sengaja**
+pakai `org_company.company_name` (nama LEGAL, "CV. Langgeng Jaya Makmur"),
+sementara "Telasih Makmur" cuma nickname buat konteks eksternal (careers
+portal, dst). Keputusan itu **kini disempurnakan**: nama legal cuma dipakai
+di dokumen yang berkaitan PPN/pajak, dokumen internal/operasional lainnya
+pakai nickname "Telasih Makmur". `docs/configurationstandard.md` §233-236
+PERLU diperbarui saat item ini dieksekusi (saat ini masih menyatakan aturan
+lama tanpa pengecualian PPN — jangan dianggap kontradiksi, itu memang belum
+di-update).
+
+**Root cause teknis:** HANYA ADA 1 baris di `tm2mst.org_company`
+(`company_id=1`, `company_code='TM'`, `company_name='CV. Langgeng Jaya
+Makmur'`, dikonfirmasi via tinker 2026-09-11). **Setiap** print blade query
+`OrgCompany::where('company_code','TM')` atau `where('activate', true)` —
+keduanya selalu balikin baris yang sama itu — lalu oper ke
+`<x-print.header :company="...">` yang render `$company->company_name` apa
+adanya (`resources/views/components/print/header.blade.php:9`). Makanya
+**SEMUA print out saat ini seragam "CV. Langgeng Jaya Makmur"**, termasuk
+Master Card (`prodev-print.blade.php`, ini yg discreenshot user) yang
+harusnya netral/internal.
+
+**Audit lengkap — 12 print template yang pakai `<x-print.header>`, hasil
+klasifikasi sesuai aturan baru user:**
+
+| # | File | Dokumen | company() saat ini | Harus jadi |
+|---|---|---|---|---|
+| 1 | `pages/co/print.blade.php:47` | Nota Customer Order | `activate=true` | **Telasih Makmur** |
+| 2 | `pages/quotation/print.blade.php:42` | Nota Quotation | `company_code='TM'` | **Telasih Makmur** |
+| 3 | `pages/pur/pr/print.blade.php:39` | Nota PR | `activate=true` | **Telasih Makmur** |
+| 4 | `pages/pur/pq/print.blade.php:58` | Nota PQ | `activate=true` | **Telasih Makmur** |
+| 5 | `pages/pur/po/print.blade.php:57` | Nota PO | `activate=true` | **KONDISIONAL** — lihat catatan PO di bawah |
+| 6 | `pages/dispatch/do/print.blade.php:41` | **DELIVERY ORDER** (dok internal) | `company_code='TM'` | **Telasih Makmur** |
+| 7 | `pages/dispatch/do/print-surat-jalan.blade.php:54` | **SURAT JALAN** | `company_code='TM'` | **TETAP CV Langgeng Jaya Makmur** (exception eksplisit user) |
+| 8 | `pages/hrm/payroll-payslip-print.blade.php:62` | Slip Gaji | `activate=true` | **Telasih Makmur** |
+| 9 | `pages/production/wo-print.blade.php:40` | Nota WO Detail | `company_code='TM'` | **Telasih Makmur** |
+| 10 | `pages/production/prodev-print.blade.php:93` | **Master Card** (discreenshot user) | `activate=true` | **Telasih Makmur** |
+| 11 | `pages/inquiry/nota.blade.php:40` | Nota Inquiry | `company_code='TM'` | **Telasih Makmur** |
+
+**Catatan PO (baris #5, satu-satunya yang butuh logika kondisional, bukan
+statis):** user bilang exception-nya "Purchase Order **with PPN**" — bukan
+semua PO. `pur_po` sudah punya kolom `c_ppn` (decimal, lihat
+`docs/ddl/tm2pur.sql:136`, dipakai di `po/entry.blade.php` bagian "Ringkasan
+Pajak"). Kemungkinan besar `c_ppn > 0` = PO ini kena PPN → pakai CV Langgeng
+Jaya Makmur; `c_ppn` 0/null → Telasih Makmur. **Perlu dikonfirmasi ke user
+apakah `c_ppn > 0` sudah cukup jadi sinyal**, atau perlu flag eksplisit
+terpisah (mis. `pur_po.is_ppn` boolean) — jangan asumsi sendiri saat eksekusi.
+
+**Invoice — BELUM ADA print template.** DP Invoice (`finance/dp-invoice.blade.php`,
+lihat `project_dp_invoice_status`) baru entry, belum ada layar cetak. Dicatat
+di sini supaya begitu Invoice print dibangun, langsung pakai nama legal CV
+Langgeng Jaya Makmur dari awal (jangan sampai lupa dan ikut default Telasih
+Makmur seperti dokumen lain).
+
+**Rekomendasi desain (BELUM diputuskan, perlu konfirmasi user sebelum
+eksekusi — sesuai CLAUDE.md §7.9 keputusan arsitektural harus dikonfirmasi
+dulu):** karena SEMUA 11 print controller query `org_company` dgn cara yg
+sama tapi sekarang butuh 2 nama berbeda tergantung jenis dokumen, opsi:
+1. **Tambah kolom baru di `org_company`** (mis. `display_name` = nickname
+   "Telasih Makmur", `company_name` tetap nama legal) — 1 baris tetap,
+   `<x-print.header>` terima prop baru `:is-ppn-document` (bool) lalu pilih
+   field yang sesuai. Paling rapi, tidak nambah baris data, tapi ubah 12 file
+   controller (tambah 1 baris prop) + migration kolom baru + komponen header.
+2. **Override per-template** — 9 file yg jadi Telasih Makmur ganti
+   `company()` return objek/array literal `company_name => 'Telasih
+   Makmur'` (bukan query DB), 2 file (Surat Jalan + PO-kondisional) TETAP
+   query `org_company` asli. Lebih cepat, tapi "Telasih Makmur" jadi
+   hardcoded string tersebar di 9 file (mirip pola yg SUDAH ada di
+   careers/auth/portal — lihat `docs/configurationstandard.md` §233-236,
+   jadi bukan preseden baru, tapi tetap bukan yang paling rapi/DRY).
+3. Kombinasi: helper method statis (mis. `OrgCompany::default()` vs
+   `OrgCompany::legal()`) dipanggil beda-beda per print controller — DRY-nya
+   di level PHP bukan di level data. Cukup ubah 1 baris per controller
+   (ganti pemanggilan method), tanpa migration baru.
+
+**Setelah dieksekusi:** update juga `docs/configurationstandard.md` §233-236
+(saat ini menyatakan kop SELALU pakai nama legal tanpa pengecualian — akan
+jadi salah/usang begitu perbaikan ini jalan).
+
+---
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
