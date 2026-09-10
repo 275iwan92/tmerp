@@ -71,8 +71,21 @@
 > versi terjadwal (keduanya sempat `lastRunAt` 21:49 tapi nihil hasil —
 > pola sama seperti insiden Malam 1/2 lama yang "fire tapi 0 commit").
 > Karena itu aman lanjut kerja penuh, bukan cuma isolasi file sempit lagi.
-
-
+>
+> **Lanjutan — user minta lagi** ("run session Thu* for now" lalu "if done
+> delete routine Thu* and delete too from backlog"). **R39. [BARU]
+> Standarisasi tombol aksi umum TUNTAS (5/5 poin)** — task terjadwal
+> `button-label-standardization-rollout` (judul `Thu2107_TombolStandardisasi`,
+> Thu*-named terakhir) juga sempat fire 21:49 tapi 0 progres, dieksekusi
+> ulang manual. Detail lengkap: `docs/LOG_JOB_DONE.md` 2026-09-10 malam
+> ("Standarisasi tombol aksi umum"). 1 koreksi manual thd draf instruksi
+> (poin 3: "Close" bukan "Tutup" krn layar itu sengaja all-English) + 2
+> perluasan opportunistic (poin 3 sekalian pagination-footer, poin 4
+> sekalian fix tombol Filament asli bukan cuma teks referensinya). **Kedua
+> task terjadwal Thu* (`i18n-rollout-malam-2` + `button-label-standardization-rollout`)
+> DIHAPUS** dari scheduled tasks sesuai instruksi user (sudah tuntas
+> dikerjakan manual malam ini, tidak perlu jadwal tersisa) — lihat §13
+> baris #2 (status ✅) dan catatan di atas §10 utk hasil masing-masing.
 
 > **Cek otonom 2026-09-10 ~07:00 WIB (`tmerp-backlog-autowork-1700`):**
 > commit terakhir saat mulai cek (`3cb7153`, 2026-09-09 15:19) sudah >15 jam
@@ -589,40 +602,13 @@ halaman terpisah) masih didiskusikan.
 
 ## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
 
-- **[BARU 2026-09-10] Standarisasi tombol aksi umum (Save/Cancel/Close) —
-  LOCKED di `CLAUDE.md` §3 & `docs/FORM_UI_STANDARD.md` §1a, rollout
-  DIJADWALKAN otonom malam ini** (`button-label-standardization-rollout`,
-  one-time, fire 2026-09-10 21:07 WIB — sengaja tidak dibarengkan dgn slot
-  17:00 yg sudah dipakai `tmerp-backlog-autowork-1700` + `i18n-rollout-malam-2`
-  hari yg sama, supaya tidak 3 sesi otonom tabrakan). Prompt lengkap sudah
-  berisi 5 poin perbaikan + aturan Git Safety + instruksi lapor status di sini
-  setelah selesai — cek bagian RINGKASAN STATUS di atas begitu task ini sudah
-  jalan utk lihat hasilnya. Aturan: satu kata baku
-  per aksi ikut `lang_code` (ID: Simpan/Batal/Tutup, EN: Save/Cancel/Close),
-  Back tetap "Back" di kedua bahasa (tidak ikut toggle), berlaku juga ke
-  panel Filament `/admin` (override label native Filament). Pengecualian sah:
-  "+ Tambah [objek]" (nambah baris dalam form, beda dari "+ New Record" grid).
-  **File yang perlu diperbaiki** (lihat `FORM_UI_STANDARD.md` §1a utk detail
-  lengkap tiap poin):
-  1. `components/prodev/wizard-bar.blade.php:27` — `backLabel` default
-     `"Kembali ke Grid"` → `"Back"` (dampak: ProDev workbench, Inquiry
-     Costing, Inquiry form).
-  2. `components/kanban/board.blade.php:167,269,314,364,315` — "Save"/
-     "Cancel" (EN) → "Simpan"/"Batal", supaya konsisten dgn "Batal" yg sudah
-     dipakai di baris 109/110 komponen yg sama.
-  3. `pages/setup/support-tickets.blade.php` — tombol "Close panel" → "Tutup".
-  4. `filament/forms/dashboard-theme-picker.blade.php:74` — "Save" →
-     "Simpan" (cek dulu apakah dirender via Filament Action `->label()` atau
-     Blade polos).
-  5. Panel Filament `/admin` (`EmpEmployeeResource`, `OrgPositionResource`,
-     Resource berikutnya) — pastikan tiap `EditAction`/`CreateAction`/
-     `DeleteAction` diberi `->label()` eksplisit ikut standar, jangan andalkan
-     default Filament (selalu Inggris apa pun `lang_code`).
-  **Belum termasuk** mekanisme toggle label ikut `lang_code` scr otomatis
-  (masih perlu integrasi ke `Translator::t()`, lihat
-  `project_i18n_shell_framework`) — kalau shell masih hardcode 1 bahasa per
-  layar (banyak yg masih ID-only), perbaikan poin 1-5 di atas cukup pakai
-  bahasa yg sudah dipakai layar itu dulu, toggle penuh menyusul rollout i18n.
+- **[SELESAI 2026-09-10 malam] Standarisasi tombol aksi umum (Save/Cancel/Close)**
+  — 5 titik yang menyimpang dari standar LOCKED (`CLAUDE.md` §3,
+  `FORM_UI_STANDARD.md` §1a) sudah diperbaiki (`button-label-standardization-rollout`,
+  dieksekusi manual krn task terjadwal 21:07 WIB fire tapi 0 progres nyata).
+  Detail lengkap: `docs/LOG_JOB_DONE.md` 2026-09-10. **Belum termasuk**
+  mekanisme toggle label ikut `lang_code` scr otomatis (masih perlu
+  integrasi ke `Translator::t()`, lihat `project_i18n_shell_framework`).
 
 - **Halaman transaksi iframe** (Inquiry, Stock In, Quotation, dst) —
   belum ikut sistem tema `sys_theme` (themestandard.md §6), masih warna
@@ -710,27 +696,24 @@ halaman terpisah) masih didiskusikan.
     perubahan mekanis sekecil ini (ganti 1 `<span>` isi ikon, tidak ada
     keputusan desain baru).
   - **Footer pagination — komponennya SUDAH ada & baik**
-    (`components/grid/pagination-footer.blade.php`, dipakai konsisten 12+
-    layar). **[SELESAI 2026-09-10 malam, 7/8]**: `hrm/position.blade.php`,
+    (`components/grid/pagination-footer.blade.php`, dipakai konsisten 13+
+    layar). **[SELESAI 2026-09-10 malam, 8/8]**: `hrm/position.blade.php`,
     `recruitment/assessment-result.blade.php`,
     `recruitment/candidate-review/list.blade.php`,
     `recruitment/offer/list.blade.php`,
     `recruitment/requisition/list.blade.php`,
-    `recruitment/talent-pool.blade.php`, `recruitment/vacancy.blade.php`
-    — pola sama semua: tambah `use App\Livewire\Concerns\HasGridPagination;`
-    (import + trait), `->paginate(20)` → `->paginate($this->perPage)`,
-    ganti `<div class="mt-3">{{ $this->rows->links() }}</div>` jadi
+    `recruitment/talent-pool.blade.php`, `recruitment/vacancy.blade.php`,
+    `setup/support-tickets.blade.php` (terakhir, tadinya sengaja dilewati
+    krn dikira tabrakan dgn `button-label-standardization-rollout` — task
+    itu ternyata tidak pernah benar-benar jalan, jadi dituntaskan sekalian
+    saat file itu disentuh utk perbaikan label tombol) — pola sama semua:
+    tambah `use App\Livewire\Concerns\HasGridPagination;` (import + trait),
+    `->paginate(20)` → `->paginate($this->perPage)`, ganti
+    `<div class="mt-3">{{ $this->rows->links() }}</div>` jadi
     `@include('components.grid.pagination-footer', ['paginator' => $this->rows])`.
-    Diverifikasi via `Livewire::test()` (7/7 render OK, footer baru
+    Diverifikasi via `Livewire::test()` (8/8 render OK, footer baru
     terkonfirmasi muncul). Tidak ada class Tailwind baru → tidak perlu
     `npm run build`.
-  - **`setup/support-tickets.blade.php` SENGAJA DILEWATI** malam ini — file
-    yang sama juga jadi target task otonom lain
-    (`button-label-standardization-rollout`, poin 3 "Close panel" →
-    "Tutup") yang terdeteksi jalan bersamaan (lihat RINGKASAN STATUS
-    21:49 WIB) — dihindari supaya tidak tabrakan edit 1 file. Rollout
-    pagination-footer ke file ini masih **TERBUKA**, kerjakan sesi
-    berikutnya (cek dulu status label tombolnya sudah beres apa belum).
 
 ---
 

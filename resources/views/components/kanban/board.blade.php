@@ -164,7 +164,7 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <button type="button" class="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                    x-on:click="if (composerTitle.trim()) { $wire.{{ $addCardMethod }}('{{ $col['key'] }}', composerTitle, composerDue); composerTitle=''; composerDue=''; composingColumn=null; }">Save</button>
+                                    x-on:click="if (composerTitle.trim()) { $wire.{{ $addCardMethod }}('{{ $col['key'] }}', composerTitle, composerDue); composerTitle=''; composerDue=''; composingColumn=null; }">Simpan</button>
                                 <button type="button" class="w-7 h-7 rounded-md text-muted hover:bg-[#e2e8f0] cursor-pointer" x-on:click="composingColumn=null; composerTitle=''; composerDue=''">✕</button>
                             </div>
                         </div>
@@ -266,7 +266,7 @@
                                     </div>
                                     <input type="datetime-local" x-model="v" class="w-full border border-[#d7dbe2] rounded px-2 py-1 text-[11px] mb-2 outline-none focus:border-accent">
                                     <button type="button" class="w-full bg-accent text-white rounded py-1.5 text-[11px] font-semibold cursor-pointer"
-                                        x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'dueDate', v); popoverOpen = null">Save</button>
+                                        x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'dueDate', v); popoverOpen = null">Simpan</button>
                                 </div>
                             </div>
 
@@ -311,8 +311,8 @@
                                     <textarea x-model="descDraft" rows="4" class="w-full p-3 text-[12px] outline-none resize-y"></textarea>
                                     <div class="flex items-center gap-2 px-3 py-2 bg-[#f9fafb]">
                                         <button type="button" class="px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                            x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'desc', descDraft); editingDesc = false">Save</button>
-                                        <button type="button" class="text-[11px] text-muted cursor-pointer" x-on:click="editingDesc = false">Cancel</button>
+                                            x-on:click="$wire.{{ $updateCardMethod }}({{ $card['id'] }}, 'desc', descDraft); editingDesc = false">Simpan</button>
+                                        <button type="button" class="text-[11px] text-muted cursor-pointer" x-on:click="editingDesc = false">Batal</button>
                                     </div>
                                 </div>
                             </template>
@@ -361,7 +361,7 @@
                             <div class="flex-1 flex flex-col gap-1.5">
                                 <textarea x-model="newComment" rows="2" placeholder="Write a comment..." class="w-full border border-[#d7dbe2] rounded-lg p-2 text-[11.5px] outline-none focus:border-accent resize-none"></textarea>
                                 <button type="button" x-show="newComment.trim() !== ''" class="self-start px-3 py-1 rounded-md bg-accent text-white text-[11px] font-semibold cursor-pointer"
-                                    x-on:click="$wire.{{ $addCommentMethod }}({{ $card['id'] }}, newComment); newComment=''">Save</button>
+                                    x-on:click="$wire.{{ $addCommentMethod }}({{ $card['id'] }}, newComment); newComment=''">Simpan</button>
                             </div>
                         </div>
                         <div class="flex flex-col gap-2.5">

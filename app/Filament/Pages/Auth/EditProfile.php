@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
+use Filament\Actions\Action;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Forms\Components\Hidden;
 use Filament\Schemas\Components\Component;
@@ -25,6 +26,14 @@ class EditProfile extends BaseEditProfile
             ...parent::form($schema)->getComponents(),
             $this->getDashboardThemeSectionComponent(),
         ]);
+    }
+
+    // Standar tombol aksi LOCKED (CLAUDE.md §3) berlaku juga di Filament --
+    // label bawaan Filament ("Save changes") di-override manual, bukan
+    // dibiarkan default framework.
+    protected function getSaveFormAction(): Action
+    {
+        return parent::getSaveFormAction()->label('Simpan');
     }
 
     protected function getDashboardThemeSectionComponent(): Component

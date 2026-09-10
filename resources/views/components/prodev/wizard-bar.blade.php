@@ -22,9 +22,10 @@
       per-layar/per-cabang kondisional) supaya tidak pernah hilang di state
       apa pun (user 2026-09-04: kejadian nyata -- cabang "noInquiryForView"
       di inquiry/form.blade.php sempat tak punya tombol back sama sekali).
-    - backLabel: string, default "Kembali ke Grid".
+    - backLabel: string, default "Back" (standar tombol aksi LOCKED, CLAUDE.md §3
+      -- Back selalu "Back" di kedua bahasa, tidak ikut toggle lang_code).
 --}}
-@props(['current', 'steps', 'jobs' => [], 'selectedJobId' => null, 'jobSwitchMethod' => 'switchJob', 'backUrl' => null, 'backLabel' => 'Kembali ke Grid'])
+@props(['current', 'steps', 'jobs' => [], 'selectedJobId' => null, 'jobSwitchMethod' => 'switchJob', 'backUrl' => null, 'backLabel' => 'Back'])
 
 <div class="bg-navy text-white px-5 py-2.5 flex items-center gap-1 flex-wrap sticky top-0 z-50 border-b border-white/10">
     <div class="flex items-center gap-1.5 mr-3 shrink-0">

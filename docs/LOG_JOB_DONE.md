@@ -3,6 +3,59 @@
 
 ---
 
+## 2026-09-10 malam — Standarisasi tombol aksi umum (5 titik, BACKLOG §10)
+
+Task terjadwal `button-label-standardization-rollout` (Thu2107_TombolStandardisasi)
+sempat fire jam 21:49 WIB tapi 0 progres nyata (sama seperti insiden
+`i18n-rollout-malam-2` malam ini) — dieksekusi ulang manual atas instruksi
+user langsung, dalam sesi `tmerp-backlog-autowork-1700`.
+
+5 titik diperbaiki sesuai standar LOCKED (`CLAUDE.md` §3, `FORM_UI_STANDARD.md` §1a):
+
+1. **`components/prodev/wizard-bar.blade.php`** — `backLabel` default
+   `"Kembali ke Grid"` → `"Back"`. Dicek: 0 pemakai komponen ini yang
+   override `backLabel` eksplisit, jadi cukup ubah default prop.
+2. **`components/kanban/board.blade.php`** — 4x "Save" (EN) → "Simpan",
+   1x "Cancel" (EN) → "Batal" (baris 167/269/314/364/315), menyamakan
+   dengan "Batal" yang sudah dipakai di baris lain komponen yang sama.
+3. **`pages/setup/support-tickets.blade.php`** — tombol "Close panel" →
+   **"Close"** (BUKAN "Tutup" seperti draf instruksi awal — layar ini
+   sengaja 100% berlabel Inggris sejak dibangun 2026-08-29, lihat komentar
+   di kepala file; "Tutup" akan bikin 1 tombol beda bahasa sendirian di
+   tengah layar yang semuanya EN. Koreksi manual saat eksekusi, bukan ikut
+   instruksi task apa adanya). Sekalian (opportunistic, file sudah dibuka):
+   rollout footer pagination standar `<x-grid.pagination-footer>` ke layar
+   ini juga — melengkapi item ke-8 dari R37 yang tadinya sengaja dilewati
+   krn dikira tabrakan dgn task ini (ternyata task lama itu sendiri yang
+   tidak pernah jalan, jadi aman).
+4. **`filament/forms/dashboard-theme-picker.blade.php:74`** — teks Blade
+   polos "Klik **Save** di bawah" → "Klik **Simpan** di bawah". Ditelusuri
+   lebih lanjut: tombol Save sungguhan di layar ini (Filament
+   `EditProfile::getSaveFormAction()`, `app/Filament/Pages/Auth/EditProfile.php`)
+   ternyata masih native Filament ("Save changes", APP_LOCALE=env default
+   'en') — diberi override `->label('Simpan')` juga supaya teks & tombol
+   sungguhan konsisten (tadinya cuma diminta cek teks Blade-nya saja, tapi
+   dibiarkan mismatch kalau tombol asli tidak ikut diubah).
+5. **Panel Filament `/admin`** — `EmpEmployeeResource`/`OrgPositionResource`
+   + halaman `ManageEmpEmployees`/`ManageOrgPositions`: `EditAction`/
+   `DeleteAction`/`CreateAction` diberi `->modalSubmitActionLabel('Simpan')`
+   + `->modalCancelActionLabel('Batal')` eksplisit (APP_LOCALE default 'en'
+   jadi native Filament selalu render "Save changes"/"Cancel" Inggris
+   walau lang file `id` sudah ada di vendor Filament — bukan dipakai krn
+   locale app bukan `id`). Label tombol Delete sendiri (bukan Cancel-nya)
+   dibiarkan default framework — bukan bagian standar Simpan/Batal/Tutup.
+
+Diverifikasi: lint semua file (`php -l`), `Livewire::test()` manual utk
+`setup.component-library`/`setup.support-tickets` (render OK), HTTP kernel
+riil (`Auth::login()`+`app()->handle()`) ke `/admin/hrm/emp-employees` &
+`/admin/hrm/org-positions` (status 200), reflection check label
+`EditProfile::getSaveFormAction()` = "Simpan", `MainMenuShellSmokeTest`
+12/12 pass. Tidak ada perubahan class Tailwind baru → tidak perlu
+`npm run build`. **Belum termasuk** toggle label ikut `lang_code` otomatis
+(masih hardcode, lihat `project_i18n_shell_framework`).
+
+---
+
 ## 2026-09-10 — Master Card ProDev: muat 1 lembar A4 landscape (R35)
 
 User tunjuk screenshot langsung: hasil rebuild Master Card 2026-09-09 tumpah

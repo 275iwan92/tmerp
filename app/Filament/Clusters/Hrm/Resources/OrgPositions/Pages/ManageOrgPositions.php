@@ -13,7 +13,11 @@ class ManageOrgPositions extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            // Standar tombol aksi LOCKED (CLAUDE.md §3) -- label modal
+            // Save/Cancel bawaan Filament di-override manual.
+            CreateAction::make()
+                ->modalSubmitActionLabel('Simpan')
+                ->modalCancelActionLabel('Batal'),
         ];
     }
 }

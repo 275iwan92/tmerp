@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Sys\SysSupportReply;
 use App\Models\Sys\SysSupportTicket;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
 new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -49,7 +51,7 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
             }))
             ->when($this->statusFilter, fn ($q) => $q->where('status', $this->statusFilter))
             ->orderByDesc('id_ticket')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -180,7 +182,7 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 
     @if ($this->selected)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('selectedId', null)">
@@ -230,7 +232,7 @@ new #[Title('Support Tickets — TELASIH MAKMUR ERP')] class extends Component
                 <x-form.textarea wire:model="resolution_note" rows="2" class="mt-3" placeholder="What was fixed / why closed…"><x-slot:label>Resolution note</x-slot:label></x-form.textarea>
 
                 <div class="flex flex-wrap justify-end gap-2 mt-4">
-                    <button type="button" wire:click="$set('selectedId', null)" class="border border-[#d7dbe2] text-xs font-bold px-3 py-2 rounded-md">Close panel</button>
+                    <button type="button" wire:click="$set('selectedId', null)" class="border border-[#d7dbe2] text-xs font-bold px-3 py-2 rounded-md">Close</button>
                     <button type="button" wire:click="setStatus('IN_PROGRESS')" class="bg-[#fff5e0] text-[#8a5a00] text-xs font-bold px-3 py-2 rounded-md">In progress</button>
                     <button type="button" wire:click="setStatus('CLOSED')" class="bg-[#eef1f5] text-[#4b5568] text-xs font-bold px-3 py-2 rounded-md">Not a bug (close)</button>
                     <button type="button" wire:click="setStatus('DONE')" class="bg-[#1f8a4c] text-white text-xs font-bold px-3 py-2 rounded-md">Mark done</button>

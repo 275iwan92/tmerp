@@ -90,8 +90,14 @@ class OrgPositionResource extends Resource
                     ->boolean(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                // Standar tombol aksi LOCKED (CLAUDE.md §3) -- label modal
+                // Save/Cancel bawaan Filament (Inggris) di-override manual,
+                // bukan dibiarkan default framework.
+                EditAction::make()
+                    ->modalSubmitActionLabel('Simpan')
+                    ->modalCancelActionLabel('Batal'),
+                DeleteAction::make()
+                    ->modalCancelActionLabel('Batal'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

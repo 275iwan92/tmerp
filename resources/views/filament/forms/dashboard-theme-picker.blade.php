@@ -71,5 +71,5 @@
         </div>
     </div>
 
-    <p class="text-xs text-gray-500 dark:text-gray-400">Perubahan langsung terlihat di halaman ini. Klik <b>Save</b> di bawah supaya tersimpan permanen.</p>
+    <p class="text-xs text-gray-500 dark:text-gray-400">Perubahan langsung terlihat di halaman ini. Klik <b>Simpan</b> di bawah supaya tersimpan permanen.</p>
 </div>
