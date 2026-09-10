@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\CndCandidate;
 use App\Models\Hrr\VacVacancy;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 new #[Title('Talent Pool — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -45,7 +47,7 @@ new #[Title('Talent Pool — TELASIH MAKMUR ERP')] class extends Component
                 $q2->where('name', 'like', "%{$this->search}%")->orWhere('national_id', 'like', "%{$this->search}%");
             }))
             ->orderBy('name')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     #[Computed]
@@ -198,7 +200,7 @@ new #[Title('Talent Pool — TELASIH MAKMUR ERP')] class extends Component
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 
     @if ($inviteCandidateId)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('inviteCandidateId', null)">

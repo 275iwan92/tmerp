@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\OrgDepartment;
 use App\Models\Master\OrgLevel;
 use App\Models\Master\OrgPosition;
@@ -17,6 +18,7 @@ use Livewire\WithPagination;
 new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -81,7 +83,7 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
                 $q2->where('position_name', 'like', "%{$this->search}%")->orWhere('position_code', 'like', "%{$this->search}%");
             }))
             ->orderBy('position_name')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     public function openNew(): void
@@ -224,7 +226,7 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 
     @if ($showModal)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('showModal', false)">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\AppApplication;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -39,7 +41,7 @@ new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Co
                 $q2->where('name', 'like', "%{$this->search}%")->orWhere('national_id', 'like', "%{$this->search}%");
             }))
             ->orderByDesc('id_application')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     public function avatarInitials(string $name): string
@@ -137,5 +139,5 @@ new #[Title('Review Formulir Kandidat — TELASIH MAKMUR ERP')] class extends Co
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 </div>

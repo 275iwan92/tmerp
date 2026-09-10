@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\AppAssessmentResult;
 use App\Models\Hrr\AppPipelineStageConfig;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
 new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -80,7 +82,7 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
             ->with('application.candidate')
             ->when($this->search, fn ($q) => $q->whereHas('application.candidate', fn ($q2) => $q2->where('name', 'like', "%{$this->search}%")))
             ->orderByDesc('id_result')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     public function openNew(int $applicationId, string $stageCode): void
@@ -188,7 +190,7 @@ new #[Title('Hasil Psikotes/Interview — TELASIH MAKMUR ERP')] class extends Co
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 
     @if ($showModal)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('showModal', false)">

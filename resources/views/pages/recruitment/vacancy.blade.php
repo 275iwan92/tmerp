@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\VacVacancy;
 use Livewire\Attributes\Computed;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 new #[Title('Posting Lowongan — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -68,7 +70,7 @@ new #[Title('Posting Lowongan — TELASIH MAKMUR ERP')] class extends Component
                 $q2->where('title', 'like', "%{$this->search}%")->orWhere('vacancy_code', 'like', "%{$this->search}%");
             }))
             ->orderByDesc('id_vacancy')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     public function openNew(): void
@@ -185,7 +187,7 @@ new #[Title('Posting Lowongan — TELASIH MAKMUR ERP')] class extends Component
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 
     @if ($showModal)
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="$set('showModal', false)">

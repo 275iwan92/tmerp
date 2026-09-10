@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\AppApplication;
 use App\Models\Hrr\AppOffer;
 use Livewire\Attributes\Computed;
@@ -11,6 +12,7 @@ use Livewire\WithPagination;
 new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -47,7 +49,7 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
             ->with('application.candidate')
             ->when($this->search, fn ($q) => $q->whereHas('application.candidate', fn ($q2) => $q2->where('name', 'like', "%{$this->search}%")))
             ->orderByDesc('id_offer')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 };
 ?>
@@ -129,5 +131,5 @@ new #[Title('Offering — TELASIH MAKMUR ERP')] class extends Component
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 </div>

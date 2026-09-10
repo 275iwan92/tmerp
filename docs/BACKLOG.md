@@ -44,6 +44,22 @@
 > §10) selesai jalan malam ini — **sesi berikutnya WAJIB `git fetch`
 > ulang** sebelum lanjut kerja dari sini, jangan percaya nomor R# di bawah
 > mentah-mentah.
+>
+> **Lanjutan 21:59 WIB — user eksplisit minta lanjut kerja** ("run now
+> cause late 17.00"), jadi sesi ini lanjut coding walau tabrakan di atas
+> belum hilang, dengan syarat pilih item yang file-nya TIDAK overlap
+> dgn 2 task lain yang terdeteksi jalan bersamaan. **R37. [BARU] Rollout
+> footer pagination `<x-grid.pagination-footer>` ke 7/8 layar yang masih
+> pakai `->links()` polos** (§10, item lama) — `hrm/position.blade.php` +
+> 6 layar `recruitment/*` (assessment-result, candidate-review/list,
+> offer/list, requisition/list, talent-pool, vacancy). Pola: tambah trait
+> `HasGridPagination`, `paginate($this->perPage)`, ganti markup footer.
+> Diverifikasi `Livewire::test()` 7/7 OK. **`setup/support-tickets.blade.php`
+> (item ke-8) SENGAJA DILEWATI** — file itu juga target
+> `button-label-standardization-rollout` yang terdeteksi jalan
+> bersamaan, dihindari supaya tidak tabrakan edit. Detail: §10. Commit
+> terisolasi (7 file recruitment/hrm saja, tidak sentuh file lain yang
+> berubah di working tree dari sesi lain).
 
 
 
@@ -683,20 +699,27 @@ halaman terpisah) masih didiskusikan.
     perubahan mekanis sekecil ini (ganti 1 `<span>` isi ikon, tidak ada
     keputusan desain baru).
   - **Footer pagination — komponennya SUDAH ada & baik**
-    (`components/grid/pagination-footer.blade.php`, dipakai konsisten 12
-    layar) — TAPI **belum di-rollout ke semua grid**. Ditemukan ≥8 layar
-    lain yang punya pagination tapi TIDAK pakai komponen ini (masih
-    default Laravel `{{ $this->rows->links() }}` atau markup lain):
-    `hrm/position.blade.php` (dikonfirmasi — pakai `->links()` polos,
-    baris 227), `recruitment/assessment-result.blade.php`,
+    (`components/grid/pagination-footer.blade.php`, dipakai konsisten 12+
+    layar). **[SELESAI 2026-09-10 malam, 7/8]**: `hrm/position.blade.php`,
+    `recruitment/assessment-result.blade.php`,
     `recruitment/candidate-review/list.blade.php`,
     `recruitment/offer/list.blade.php`,
     `recruitment/requisition/list.blade.php`,
-    `recruitment/talent-pool.blade.php`, `recruitment/vacancy.blade.php`,
-    `setup/support-tickets.blade.php` (7 terakhir baru terdeteksi lewat
-    grep `->paginate(`, **belum diverifikasi 1-per-1 ke kode** — cek dulu
-    sebelum migrasi, mungkin ada yang sengaja beda karena bukan grid
-    ScriptCase-style biasa).
+    `recruitment/talent-pool.blade.php`, `recruitment/vacancy.blade.php`
+    — pola sama semua: tambah `use App\Livewire\Concerns\HasGridPagination;`
+    (import + trait), `->paginate(20)` → `->paginate($this->perPage)`,
+    ganti `<div class="mt-3">{{ $this->rows->links() }}</div>` jadi
+    `@include('components.grid.pagination-footer', ['paginator' => $this->rows])`.
+    Diverifikasi via `Livewire::test()` (7/7 render OK, footer baru
+    terkonfirmasi muncul). Tidak ada class Tailwind baru → tidak perlu
+    `npm run build`.
+  - **`setup/support-tickets.blade.php` SENGAJA DILEWATI** malam ini — file
+    yang sama juga jadi target task otonom lain
+    (`button-label-standardization-rollout`, poin 3 "Close panel" →
+    "Tutup") yang terdeteksi jalan bersamaan (lihat RINGKASAN STATUS
+    21:49 WIB) — dihindari supaya tidak tabrakan edit 1 file. Rollout
+    pagination-footer ke file ini masih **TERBUKA**, kerjakan sesi
+    berikutnya (cek dulu status label tombolnya sudah beres apa belum).
 
 ---
 

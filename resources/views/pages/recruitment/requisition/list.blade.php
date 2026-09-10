@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Hrr\RcrRequisition;
 use App\Models\Hrr\RcrTrack;
 use App\Models\Master\OrgDepartment;
@@ -15,6 +16,7 @@ use Livewire\WithPagination;
 new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
+    use HasGridPagination;
 
     public string $search = '';
 
@@ -49,7 +51,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
                     ->orWhere('position_title', 'like', "%{$this->search}%");
             }))
             ->orderByDesc('id_requisition')
-            ->paginate(20);
+            ->paginate($this->perPage);
     }
 
     public function createNew()
@@ -174,5 +176,5 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
         </table>
     </div>
 
-    <div class="mt-3">{{ $this->rows->links() }}</div>
+    @include('components.grid.pagination-footer', ['paginator' => $this->rows])
 </div>
