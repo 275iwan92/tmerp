@@ -2,6 +2,7 @@
 
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Pur\PqQuotation;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
@@ -153,16 +154,16 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
         <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total PQ" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-            <x-grid.stat-box tone="active" label="Confirmed" :value="$this->statConfirmed" />
+            <x-grid.stat-box tone="total" label="{{ Translator::t('proc_pq_stat_total', 'Total PQ') }}" :value="$this->statTotal" />
+            <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_quo_stat_draft', 'Draft') }}" :value="$this->statDraft" />
+            <x-grid.stat-box tone="active" label="{{ Translator::t('sales_co_stat_confirmed', 'Confirmed') }}" :value="$this->statConfirmed" />
         </x-grid.stat-row>
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. PQ / item…"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('proc_pq_search_placeholder', 'Cari no. PQ / item…') }}"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
                 <x-slot:newRecord>
@@ -175,18 +176,18 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Supplier / No. PQ</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Berlaku s/d</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Total (IDR)</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Status</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('proc_pq_col_supplier_no', 'Supplier / No. PQ') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_pq_col_valid_until', 'Berlaku s/d') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('proc_pq_col_total_idr', 'Total (IDR)') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->quotations as $pq)
-                            <tr wire:key="pq-{{ $pq->pq_id }}" wire:dblclick="openPq({{ $pq->pq_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
-                                <x-grid.identity-cell :id="$pq->pq_id" :name="$this->supplierNames[$pq->i_supplier_id] ?? '—'" :code="$pq->doc_no ?: '(draft)'" />
+                            <tr wire:key="pq-{{ $pq->pq_id }}" wire:dblclick="openPq({{ $pq->pq_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
+                                <x-grid.identity-cell :id="$pq->pq_id" :name="$this->supplierNames[$pq->i_supplier_id] ?? '—'" :code="$pq->doc_no ?: Translator::t('proc_draft_placeholder', '(draft)')" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pq->i_doc_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $pq->i_quotation_valid_until?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format((float) $pq->c_total_idr, 0, ',', '.') }}</td>
@@ -194,15 +195,15 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($pq) }}">{{ $this->statusLabel($pq) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="openPq({{ $pq->pq_id }})" />
+                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPq({{ $pq->pq_id }})" />
                                     @if ($pq->status === 'DRAFT')
-                                        <x-grid.action-icon icon="✓" title="Confirm" action="confirmPq({{ $pq->pq_id }})"
-                                            confirm="Konfirmasi PQ {{ $pq->doc_no }}? Harga akan terkunci." variant="success" />
+                                        <x-grid.action-icon icon="✓" title="{{ Translator::t('sales_form_btn_confirm', 'Confirm') }}" action="confirmPq({{ $pq->pq_id }})"
+                                            confirm="{{ Translator::t('proc_pq_confirm_prefix', 'Konfirmasi PQ') }} {{ $pq->doc_no }}? {{ Translator::t('sales_quo_confirm_publish_suffix', 'Harga akan terkunci.') }}" variant="success" />
                                     @endif
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Belum ada Purchase Quotation." />
+                            <x-grid.empty-row :colspan="6" message="{{ Translator::t('proc_pq_empty', 'Belum ada Purchase Quotation.') }}" />
                         @endforelse
                     </tbody>
                 </table>
@@ -216,10 +217,10 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
         <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
             <div class="bg-white rounded-lg p-4 w-[480px] shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">PQ Baru — Pilih Supplier</h3>
+                    <h3 class="text-sm font-bold text-navy">{{ Translator::t('proc_pq_picker_title', 'PQ Baru — Pilih Supplier') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <input type="text" wire:model.live.debounce.300ms="supplierSearch" autofocus placeholder="Ketik min. 2 huruf nama/kode supplier..." class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-2">
+                <input type="text" wire:model.live.debounce.300ms="supplierSearch" autofocus placeholder="{{ Translator::t('proc_supplier_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode supplier...') }}" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-2">
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->supplierResults as $s)
                         <button type="button" wire:click="startForSupplier({{ $s->id_supplier }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">
@@ -228,7 +229,7 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                         </button>
                     @empty
                         <div class="text-[11px] text-muted text-center py-4">
-                            {{ mb_strlen(trim($supplierSearch)) < 2 ? 'Ketik min. 2 huruf untuk cari.' : 'Tidak ada supplier cocok.' }}
+                            {{ mb_strlen(trim($supplierSearch)) < 2 ? Translator::t('proc_supplier_picker_min_chars', 'Ketik min. 2 huruf untuk cari.') : Translator::t('proc_supplier_picker_no_match', 'Tidak ada supplier cocok.') }}
                         </div>
                     @endforelse
                 </div>
