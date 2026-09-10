@@ -151,6 +151,10 @@
   user (eligibilitas Uang Roti) + beberapa gap kecil belum dikerjakan
   (format transfer bank, tabel TJ_KEAHLIAN/rate lembur, logo PWA). Lihat
   §15 utk stage/handoff lengkap.
+- **R35.** [BARU 2026-09-10, PRIORITAS MALAM INI] **Master Card ProDev
+  (`prodev-print.blade.php`) tumpah ke halaman 2** — mockup aslinya 1
+  lembar, hasil rebuild 2026-09-09 tidak muat. Root cause & rencana
+  perbaikan sudah dianalisis, tinggal eksekusi. Lihat §0.
 
 ---
 
@@ -166,6 +170,39 @@ ini ada di katalog tools §4.3 dokumen itu tapi TIDAK termasuk checklist
   DITANDAI belum diverifikasi ke Excel/sumber asli (lihat docblock class) —
   kalau ada Excel riil kasus DC+SHEET/DC+SF, cross-check dulu sebelum dipakai
   harga produksi sungguhan.
+- **Master Card (`resources/views/pages/production/prodev-print.blade.php`)
+  tumpah ke halaman 2, seharusnya 1 lembar** (dicatat 2026-09-10, user
+  tunjuk langsung screenshot vs `docs/mockups/mockup_mastercard.jpg`) —
+  **root cause sudah dianalisis, R35 tinggal eksekusi malam ini**:
+  1. **Tabel spesifikasi kiri (`.mc-top table.items`) 12 baris 1-pasang/baris**
+     — mockup cuma ~8 baris krn beberapa field DIGABUNG 1 baris jadi 2-3
+     pasang label-value (mis. "No. Desain | Nama Barang | Tanggal" 1 baris,
+     "Dimensi P | Dimensi L | Dimensi T" 1 baris). Rebuild 2026-09-09
+     SENGAJA disederhanakan jadi 1-pasang/baris demi keamanan CSS (dicatat
+     saat itu sbg trade-off), TAPI ternyata itu yang bikin tidak muat 1
+     lembar — perlu dipadatkan ulang jadi multi-pasang per baris spt
+     mockup. Field yang realistis digabung: (Nama Barang+Nama Pelanggan),
+     (Dimensi P x L x T tetap 1 baris apa adanya, itu sudah 3-in-1 via
+     "x"), (Kode Pisau+Ukuran Pisau), (Material+Kualitas), (Ukuran
+     Bahan+Ukuran Cetak), (Pack Qty+Part), (Jenis Finishing tetap full-width
+     sendiri, teksnya bisa panjang).
+  2. **Section "Catatan Finishing" (number 3) TIDAK ADA di mockup sama
+     sekali** — ditambahkan sendiri 2026-09-09 supaya catatan per-finishing
+     tidak hilang (mockup cuma tampilkan "Jenis Finishing" sbg 1 baris nama
+     digabung koma, tanpa catatan detail). Ini kandidat utama utk DIHAPUS
+     atau dibuat sangat ringkas (mis. gabung ke tooltip/tidak dicetak sama
+     sekali, catatan detail cukup dilihat di layar ProDev sendiri bukan di
+     Master Card cetak) — konfirmasi ke user preferensinya yang mana kalau
+     ternyata masih belum cukup setelah langkah 1.
+  3. Setelah 1-2 diterapkan, ukur ulang tinggi konten vs 210mm (A4
+     landscape tingginya cuma segitu, BEDA dari A4 portrait 297mm yang jadi
+     asumsi awal `printnotastandard.md`) — kalau MASIH tumpah, pertimbangkan
+     kecilkan `font-size`/`padding` tabel (`table.items td{padding:5px 8px}`
+     saat ini) sebelum menambah section baru apa pun.
+  4. Data demo lengkap sudah ada utk uji visual (part id 65 "Rigid Box
+     Parfum #5", migration `2026_09_09_000004_enrich_demo_mastercard_
+     part_pddum1_5.php`, commit `3cb7153`) — buka `/production/prodev/65/
+     print` langsung, tidak perlu bikin data baru.
 
 ---
 
