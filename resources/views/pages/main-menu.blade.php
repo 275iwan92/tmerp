@@ -808,16 +808,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 </template>
             </nav>
             <div class="tb-spacer"></div>
-            <button type="button" class="tb-btn" @click="openPalette()" title="Cari / perintah (Ctrl K)"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <button type="button" class="tb-btn" @click="notopbar = true" title="Sembunyikan top bar"><i class="fa-solid fa-chevron-up"></i></button>
+            <button type="button" class="tb-btn" @click="openPalette()" title="{{ Translator::t('shell_search_command_title', 'Cari / perintah (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button type="button" class="tb-btn" @click="notopbar = true" title="{{ Translator::t('shell_hide_topbar_title', 'Sembunyikan top bar') }}"><i class="fa-solid fa-chevron-up"></i></button>
 
-            <button type="button" class="tb-btn hasbadge" @click="chatOpen = true" title="Chat">
+            <button type="button" class="tb-btn hasbadge" @click="chatOpen = true" title="{{ Translator::t('shell_chat_title', 'Chat') }}">
                 <i class="fa-solid fa-comment-dots"></i>
                 @if ($this->unreadChatCount > 0)
                     <span class="tbadge">{{ $this->unreadChatCount }}</span>
                 @endif
             </button>
-            <button type="button" class="tb-btn hasbadge" @click="notifOpen = true" title="Notifikasi">
+            <button type="button" class="tb-btn hasbadge" @click="notifOpen = true" title="{{ Translator::t('shell_notif_title', 'Notifikasi') }}">
                 <i class="fa-solid fa-bell"></i>
                 @if ($this->unreadNotifCount > 0)
                     <span class="tbadge">{{ $this->unreadNotifCount }}</span>
@@ -827,7 +827,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             {{-- Toggle cepat terang/gelap -- instruksi user 2026-08-31 "ada di dekat
             logo user". Ganti tema butuh reload penuh (theme-vars.blade.php dibaca
             saat page load, di luar boundary re-render Livewire component ini). --}}
-            <button type="button" class="tb-btn" title="{{ $this->currentThemeMode() === 'dark' ? 'Ganti ke tema terang' : 'Ganti ke tema gelap' }}"
+            <button type="button" class="tb-btn" title="{{ $this->currentThemeMode() === 'dark' ? Translator::t('shell_theme_switch_light', 'Ganti ke tema terang') : Translator::t('shell_theme_switch_dark', 'Ganti ke tema gelap') }}"
                 @click="$wire.quickToggleTheme().then(() => location.reload())">
                 <i class="fa-solid {{ $this->currentThemeMode() === 'dark' ? 'fa-sun' : 'fa-moon' }}"></i>
             </button>
@@ -844,7 +844,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     <div class="um-head">
                         <span class="um-av"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
                         <div>
-                            <div class="um-name">{{ Auth::user()->name ?: 'Pengguna' }}</div>
+                            <div class="um-name">{{ Auth::user()->name ?: Translator::t('shell_user_fallback_name', 'Pengguna') }}</div>
                             <div class="um-mail">{{ Auth::user()->email }}</div>
                             <span class="um-role">{{ $this->roleLabel() }}</span>
                         </div>
@@ -861,7 +861,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                                 @switch($item->code)
                                     @case('UM_HELP')
                                         {{-- Bespoke: target="_blank" + ctx dinamis dari tab aktif (2026-08-30). --}}
-                                        <button type="button" class="um-item" title="Jalan pintas: tekan F1 di mana saja"
+                                        <button type="button" class="um-item" title="{{ Translator::t('shell_help_f1_hint', 'Jalan pintas: tekan F1 di mana saja') }}"
                                             @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
                                             <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
                                         </button>
@@ -937,7 +937,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                                 <div class="um-theme-grid" @click.stop>
                                     @foreach ($this->themeMatrix['classic'] as $t)
                                         <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
-                                            title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? 'gelap' : 'terang' }})"
+                                            title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? Translator::t('shell_theme_mode_dark', 'gelap') : Translator::t('shell_theme_mode_light', 'terang') }})"
                                             style="background:{{ $t['primary'] }}"
                                             @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
                                             @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
@@ -952,14 +952,14 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 </div>
             </div>
         </header>
-        <div id="topbar-restore"><button type="button" @click="notopbar = false">▾ Tampilkan top bar</button></div>
+        <div id="topbar-restore"><button type="button" @click="notopbar = false">▾ {{ Translator::t('shell_show_topbar', 'Tampilkan top bar') }}</button></div>
 
         <div class="tabbar">
             <template x-for="t in openTabs" :key="t.code">
                 <div class="tab" :class="{ active: activeTabCode === t.code }" @click="activate(t.code)">
                     <i :class="t.icon || 'fa-solid fa-file-lines'"></i>
                     <span class="tlbl" x-text="t.label"></span>
-                    <button type="button" class="tx" @click.stop="closeTab(t.code)" title="Tutup">×</button>
+                    <button type="button" class="tx" @click.stop="closeTab(t.code)" title="{{ Translator::t('shell_tab_close_title', 'Tutup') }}">×</button>
                 </div>
             </template>
         </div>
@@ -968,9 +968,9 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             <div class="pane" :class="{ active: activeTabCode === null }">
                 <div class="home">
                     <div class="hero"></div>
-                    <h1>Selamat datang, {{ $this->greetName() }} 👋</h1>
-                    <p>Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar. Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.</p>
-                    <div class="hint">Ctrl+K cari cepat · <kbd>F1</kbd> bantuan · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>︿</kbd> sembunyikan top bar.</div>
+                    <h1>{{ Translator::t('shell_home_greeting', 'Selamat datang,') }} {{ $this->greetName() }} 👋</h1>
+                    <p>{!! Translator::t('shell_home_intro', 'Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar. Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.') !!}</p>
+                    <div class="hint">{!! Translator::t('shell_home_hint', 'Ctrl+K cari cepat · <kbd>F1</kbd> bantuan · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>︿</kbd> sembunyikan top bar.') !!}</div>
                 </div>
             </div>
             <template x-for="t in openTabs" :key="'pane-'+t.code">
@@ -986,9 +986,9 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     {{-- Drawer Notifikasi (sys_notifications — real) --}}
     <aside class="drawer" :class="{ on: notifOpen }">
-        <div class="dr-head"><i class="fa-solid fa-bell ico"></i><span class="dr-title">Notifikasi</span><button type="button" class="x" @click="notifOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dr-head"><i class="fa-solid fa-bell ico"></i><span class="dr-title">{{ Translator::t('shell_notif_title', 'Notifikasi') }}</span><button type="button" class="x" @click="notifOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
         <div style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--sh-border)">
-            <a wire:click="markAllNotifRead" style="font-size:12px;color:var(--sh-accent);cursor:pointer;font-weight:600">Tandai semua terbaca</a>
+            <a wire:click="markAllNotifRead" style="font-size:12px;color:var(--sh-accent);cursor:pointer;font-weight:600">{{ Translator::t('shell_notif_mark_all_read', 'Tandai semua terbaca') }}</a>
         </div>
         <div style="flex:1;overflow-y:auto;padding:6px">
             @forelse ($this->notifications as $n)
@@ -1000,17 +1000,17 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     </div>
                 </div>
             @empty
-                <div class="side-hint" style="color:var(--sh-muted)">Belum ada notifikasi.</div>
+                <div class="side-hint" style="color:var(--sh-muted)">{{ Translator::t('shell_notif_empty', 'Belum ada notifikasi.') }}</div>
             @endforelse
         </div>
         <div style="padding:8px 12px;text-align:center;border-top:1px solid var(--sh-border)">
-            <a href="{{ route('notifications.index') }}" style="font-size:12px;color:var(--sh-accent);font-weight:600;text-decoration:none">Lihat semua notifikasi →</a>
+            <a href="{{ route('notifications.index') }}" style="font-size:12px;color:var(--sh-accent);font-weight:600;text-decoration:none">{{ Translator::t('shell_notif_view_all', 'Lihat semua notifikasi →') }}</a>
         </div>
     </aside>
 
     {{-- Drawer Chat (sys_chat_* — real) --}}
     <aside class="drawer" :class="{ on: chatOpen }">
-        <div class="dr-head"><i class="fa-solid fa-comment-dots ico"></i><span class="dr-title">Chat</span><button type="button" class="x" @click="chatOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dr-head"><i class="fa-solid fa-comment-dots ico"></i><span class="dr-title">{{ Translator::t('shell_chat_title', 'Chat') }}</span><button type="button" class="x" @click="chatOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
         <div class="chat-body">
             <div class="chat-list">
                 @forelse ($this->conversations as $c)
@@ -1019,7 +1019,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                         <span>{{ Str::limit($c->last ?? '—', 24) }}</span>
                     </div>
                 @empty
-                    <div class="side-hint" style="color:var(--sh-muted);padding:12px">Belum ada percakapan.</div>
+                    <div class="side-hint" style="color:var(--sh-muted);padding:12px">{{ Translator::t('shell_chat_empty', 'Belum ada percakapan.') }}</div>
                 @endforelse
             </div>
             <div class="chat-main">
@@ -1027,11 +1027,11 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     @forelse ($this->activeMessages as $m)
                         <div class="msg {{ $m->sender === Auth::user()->login ? 'me' : 'them' }}">{{ $m->body }}</div>
                     @empty
-                        <div class="side-hint" style="color:var(--sh-muted)">{{ $activeConversationId ? 'Belum ada pesan.' : 'Pilih percakapan di sebelah kiri.' }}</div>
+                        <div class="side-hint" style="color:var(--sh-muted)">{{ $activeConversationId ? Translator::t('shell_chat_no_messages', 'Belum ada pesan.') : Translator::t('shell_chat_select_conversation', 'Pilih percakapan di sebelah kiri.') }}</div>
                     @endforelse
                 </div>
                 <form wire:submit="sendMessage" class="chat-in">
-                    <input type="text" wire:model="chatInput" placeholder="Tulis pesan…" @if(! $activeConversationId) disabled @endif>
+                    <input type="text" wire:model="chatInput" placeholder="{{ Translator::t('shell_chat_input_placeholder', 'Tulis pesan…') }}" @if(! $activeConversationId) disabled @endif>
                     <button type="submit" @if(! $activeConversationId) disabled @endif><i class="fa-solid fa-paper-plane"></i></button>
                 </form>
             </div>
@@ -1040,12 +1040,12 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
 
     {{-- Drawer Asisten AI (pratinjau, client-side saja — memetakan ke registry menu) --}}
     <aside class="drawer" :class="{ on: aiOpen }">
-        <div class="dr-head"><i class="fa-solid fa-wand-magic-sparkles ico" style="color:#7a52d0"></i><span class="dr-title">Asisten AI</span><span style="font-size:11px;color:var(--sh-muted);margin-left:4px">pratinjau</span><button type="button" class="x" @click="aiOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
+        <div class="dr-head"><i class="fa-solid fa-wand-magic-sparkles ico" style="color:#7a52d0"></i><span class="dr-title">{{ Translator::t('shell_ai_title', 'Asisten AI') }}</span><span style="font-size:11px;color:var(--sh-muted);margin-left:4px">{{ Translator::t('shell_ai_preview_badge', 'pratinjau') }}</span><button type="button" class="x" @click="aiOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
         <div class="ai-body" x-ref="aiBody">
-            <div class="ai-intro">Tanya dengan bahasa biasa — mis. <b>“buka inquiry”</b> atau <b>“pengguna”</b>, saya bantu bukakan form/grid-nya di tab. Versi ini masih pratinjau (pencocokan kata kunci, bukan LLM sungguhan).
+            <div class="ai-intro">{!! Translator::t('shell_ai_intro', 'Tanya dengan bahasa biasa — mis. <b>“buka inquiry”</b> atau <b>“pengguna”</b>, saya bantu bukakan form/grid-nya di tab. Versi ini masih pratinjau (pencocokan kata kunci, bukan LLM sungguhan).') !!}
                 <div style="margin-top:10px">
-                    <button type="button" class="ai-chip" @click="askAi('buka inquiry')">buka inquiry</button>
-                    <button type="button" class="ai-chip" @click="askAi('pengguna')">pengguna</button>
+                    <button type="button" class="ai-chip" @click="askAi('buka inquiry')">{{ Translator::t('shell_ai_chip_inquiry', 'buka inquiry') }}</button>
+                    <button type="button" class="ai-chip" @click="askAi('pengguna')">{{ Translator::t('shell_ai_chip_user', 'pengguna') }}</button>
                 </div>
             </div>
             <template x-for="(m, i) in aiMessages" :key="i">
@@ -1053,7 +1053,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </template>
         </div>
         <div class="ai-in">
-            <input type="text" x-model="aiInput" placeholder="Ketik permintaan…" @keydown.enter="askAi(aiInput); aiInput = ''">
+            <input type="text" x-model="aiInput" placeholder="{{ Translator::t('shell_ai_input_placeholder', 'Ketik permintaan…') }}" @keydown.enter="askAi(aiInput); aiInput = ''">
             <button type="button" @click="askAi(aiInput); aiInput = ''"><i class="fa-solid fa-arrow-up"></i></button>
         </div>
     </aside>
@@ -1062,13 +1062,13 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     <div class="pal-ov" :class="{ open: paletteOpen }" @click="$event.target === $el && closePalette()">
         <div class="pal">
             <div class="pal-in"><span>🔎</span>
-                <input type="text" x-ref="paletteInput" x-model="paletteQuery" placeholder="Ketik nama form, grid, atau laporan…" autocomplete="off"
+                <input type="text" x-ref="paletteInput" x-model="paletteQuery" placeholder="{{ Translator::t('shell_palette_placeholder', 'Ketik nama form, grid, atau laporan…') }}" autocomplete="off"
                        @keydown.down.prevent="paletteMove(1)" @keydown.up.prevent="paletteMove(-1)"
                        @keydown.enter="paletteChoose()" @keydown.escape="closePalette()">
             </div>
             <div class="pal-list">
                 <template x-if="paletteResults.length === 0">
-                    <div class="pal-empty">Tak ada yang cocok.</div>
+                    <div class="pal-empty">{{ Translator::t('shell_palette_no_match', 'Tak ada yang cocok.') }}</div>
                 </template>
                 <template x-for="(o, i) in paletteResults" :key="o.code">
                     <div class="pal-row" :class="{ sel: i === paletteSel }" @click="openTab(o.code); closePalette()">
@@ -1077,49 +1077,49 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     </div>
                 </template>
             </div>
-            <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> pilih</span><span><kbd>↵</kbd> buka</span><span><kbd>esc</kbd> tutup</span></div>
+            <div class="pal-foot"><span><kbd>↑</kbd><kbd>↓</kbd> {{ Translator::t('shell_palette_hint_select', 'pilih') }}</span><span><kbd>↵</kbd> {{ Translator::t('shell_palette_hint_open', 'buka') }}</span><span><kbd>esc</kbd> {{ Translator::t('shell_palette_hint_close', 'tutup') }}</span></div>
         </div>
     </div>
 
     {{-- Modal Edit profil --}}
     <div class="mov" :class="{ on: profileOpen }"><div class="modal">
-        <div class="mh"><h3>Edit profil</h3><button type="button" class="x" @click="profileOpen = false">&times;</button></div>
+        <div class="mh"><h3>{{ Translator::t('shell_profile_modal_title', 'Edit profil') }}</h3><button type="button" class="x" @click="profileOpen = false">&times;</button></div>
         <div class="mb">
             <div class="photo-row">
                 <span class="photo-big"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
-                <button type="button" class="ghost" disabled title="Belum tersedia">Ubah foto</button>
+                <button type="button" class="ghost" disabled title="{{ Translator::t('shell_not_available_yet', 'Belum tersedia') }}">{{ Translator::t('shell_profile_change_photo', 'Ubah foto') }}</button>
             </div>
             @if ($profileSaved)
-                <div class="mfield"><div class="hint ok">✅ Profil tersimpan.</div></div>
+                <div class="mfield"><div class="hint ok">✅ {{ Translator::t('shell_profile_saved', 'Profil tersimpan.') }}</div></div>
             @endif
-            <x-form.input legacy="mfield" label="Nama lengkap" wire:model="profile_name" name="profile_name" />
-            <x-form.input legacy="mfield" label="Email" type="email" wire:model="profile_email" name="profile_email" />
-            <x-form.input legacy="mfield" label="No. telepon" wire:model="profile_phone" />
-            <x-form.input legacy="mfield" label="Jabatan" value="{{ $this->roleLabel() }}" readonly />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_profile_full_name', 'Nama lengkap') }}" wire:model="profile_name" name="profile_name" />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_profile_email', 'Email') }}" type="email" wire:model="profile_email" name="profile_email" />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_profile_phone', 'No. telepon') }}" wire:model="profile_phone" />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_profile_role', 'Jabatan') }}" value="{{ $this->roleLabel() }}" readonly />
         </div>
         <div class="mf">
-            <button type="button" class="mbtn c" @click="profileOpen = false">Batal</button>
-            <button type="button" class="mbtn p" wire:click="saveProfile" wire:loading.attr="disabled">Simpan</button>
+            <button type="button" class="mbtn c" @click="profileOpen = false">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
+            <button type="button" class="mbtn p" wire:click="saveProfile" wire:loading.attr="disabled">{{ Translator::t('shell_btn_save', 'Simpan') }}</button>
         </div>
     </div></div>
 
     {{-- Modal Ubah password --}}
     <div class="mov" :class="{ on: passwordOpen }"><div class="modal">
-        <div class="mh"><h3>Ubah password</h3><button type="button" class="x" @click="passwordOpen = false">&times;</button></div>
+        <div class="mh"><h3>{{ Translator::t('shell_password_modal_title', 'Ubah password') }}</h3><button type="button" class="x" @click="passwordOpen = false">&times;</button></div>
         <div class="mb">
             @if ($passwordSaved)
-                <div class="mfield"><div class="hint ok">✅ Password diperbarui.</div></div>
+                <div class="mfield"><div class="hint ok">✅ {{ Translator::t('shell_password_updated', 'Password diperbarui.') }}</div></div>
             @endif
             @if ($passwordError)
                 <div class="mfield"><div class="hint bad">{{ $passwordError }}</div></div>
             @endif
-            <x-form.input legacy="mfield" label="Password lama" type="password" wire:model="old_password" placeholder="Password saat ini" />
-            <x-form.input legacy="mfield" label="Password baru" type="password" wire:model="new_password" placeholder="Minimal 8 karakter" name="new_password" />
-            <x-form.input legacy="mfield" label="Konfirmasi password baru" type="password" wire:model="new_password_confirmation" placeholder="Ulangi password baru" />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_password_old_label', 'Password lama') }}" type="password" wire:model="old_password" placeholder="{{ Translator::t('shell_password_old_placeholder', 'Password saat ini') }}" />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_password_new_label', 'Password baru') }}" type="password" wire:model="new_password" placeholder="{{ Translator::t('shell_password_new_placeholder', 'Minimal 8 karakter') }}" name="new_password" />
+            <x-form.input legacy="mfield" label="{{ Translator::t('shell_password_confirm_label', 'Konfirmasi password baru') }}" type="password" wire:model="new_password_confirmation" placeholder="{{ Translator::t('shell_password_confirm_placeholder', 'Ulangi password baru') }}" />
         </div>
         <div class="mf">
-            <button type="button" class="mbtn c" @click="passwordOpen = false">Batal</button>
-            <button type="button" class="mbtn p" wire:click="savePassword" wire:loading.attr="disabled">Simpan password</button>
+            <button type="button" class="mbtn c" @click="passwordOpen = false">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
+            <button type="button" class="mbtn p" wire:click="savePassword" wire:loading.attr="disabled">{{ Translator::t('shell_btn_save_password', 'Simpan password') }}</button>
         </div>
     </div></div>
 
