@@ -187,29 +187,47 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
         {{-- Layout 2-kolom ala mockup_mastercard.jpg: kiri tabel spesifikasi
         ringkas, kanan visual layout cetak (artwork resmi/referensi ProDev,
         BUKAN dieline generated -- part.dieline_ref cuma teks referensi. --}}
+        {{-- BACKLOG.md §0 R35 (2026-09-10): 12 baris 1-pasang/baris ternyata bikin
+        tumpah ke halaman 2 -- mockup cuma ~7 baris krn 2 pasang label-value
+        digabung per baris. Dipadatkan ulang jadi 4-kolom (desc/amt/desc/amt),
+        baris yg field-nya ganjil (Pack Qty, Jenis Finishing) pakai colspan="3"
+        supaya tetap sejajar dgn baris 2-pasang lain. --}}
         <div class="mc-top">
-            <table class="items">
+            <table class="items items-2col">
+                <colgroup><col style="width:14%"><col style="width:36%"><col style="width:14%"><col style="width:36%"></colgroup>
                 <tbody>
-                    <tr><td class="desc">Nama Barang</td><td class="amt">{{ $this->part->product?->product_name ?? '—' }}</td></tr>
-                    <tr><td class="desc">Nama Pelanggan</td><td class="amt">{{ $this->part->product?->customer?->customer_name ?? '—' }}</td></tr>
-                    <tr><td class="desc">Part</td><td class="amt">{{ $this->part->part_name }} <span class="ref">({{ $this->part->part_code }})</span></td></tr>
-                    <tr><td class="desc">Dimensi P x L x T</td><td class="amt">{{ $this->part->cm_length ?? '—' }} x {{ $this->part->cm_width ?? '—' }} x {{ $this->part->cm_height ?? '—' }} cm</td></tr>
-                    <tr><td class="desc">Kode Pisau</td><td class="amt">{{ $this->part->die_code ?? '—' }}</td></tr>
-                    <tr><td class="desc">Ukuran Pisau</td><td class="amt">{{ $this->part->die_w_cm ?? '—' }} x {{ $this->part->die_h_cm ?? '—' }} cm</td></tr>
+                    <tr>
+                        <td class="desc">Nama Barang</td><td class="amt">{{ $this->part->product?->product_name ?? '—' }}</td>
+                        <td class="desc">Nama Pelanggan</td><td class="amt">{{ $this->part->product?->customer?->customer_name ?? '—' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="desc">Part</td><td class="amt">{{ $this->part->part_name }} <span class="ref">({{ $this->part->part_code }})</span></td>
+                        <td class="desc">Dimensi P x L x T</td><td class="amt">{{ $this->part->cm_length ?? '—' }} x {{ $this->part->cm_width ?? '—' }} x {{ $this->part->cm_height ?? '—' }} cm</td>
+                    </tr>
+                    <tr>
+                        <td class="desc">Kode Pisau</td><td class="amt">{{ $this->part->die_code ?? '—' }}</td>
+                        <td class="desc">Ukuran Pisau</td><td class="amt">{{ $this->part->die_w_cm ?? '—' }} x {{ $this->part->die_h_cm ?? '—' }} cm</td>
+                    </tr>
                     <tr>
                         <td class="desc">Material</td>
                         <td class="amt">
                             {{ $this->originMaterial?->rawmat_name ?? '—' }}
                             @if (! $this->originIqpPart)
-                                <div class="sp">Part ini Mode #2 (manual/standalone) — belum ada Inquiry sumber material.</div>
+                                <div class="sp">Mode #2 — belum ada Inquiry sumber material.</div>
                             @endif
                         </td>
+                        <td class="desc">Kualitas</td><td class="amt">{{ $this->originMaterial?->gram_weight ? number_format((float) $this->originMaterial->gram_weight, 0).' gsm' : '—' }}</td>
                     </tr>
-                    <tr><td class="desc">Kualitas</td><td class="amt">{{ $this->originMaterial?->gram_weight ? number_format((float) $this->originMaterial->gram_weight, 0).' gsm' : '—' }}</td></tr>
-                    <tr><td class="desc">Ukuran Bahan</td><td class="amt">{{ $this->part->sheet_raw_w_cm ?? '—' }} x {{ $this->part->sheet_raw_h_cm ?? '—' }} cm</td></tr>
-                    <tr><td class="desc">Ukuran Cetak</td><td class="amt">{{ $this->part->printsize_p ?? '—' }} x {{ $this->part->printsize_l ?? '—' }} cm</td></tr>
-                    <tr><td class="desc">Pack Qty</td><td class="amt">{{ $this->part->pack_qty ?? '—' }} pcs/pack</td></tr>
-                    <tr><td class="desc">Jenis Finishing</td><td class="amt">{{ $this->part->finishings->pluck('finishingType.finishing_name')->filter()->implode(', ') ?: '—' }}</td></tr>
+                    <tr>
+                        <td class="desc">Ukuran Bahan</td><td class="amt">{{ $this->part->sheet_raw_w_cm ?? '—' }} x {{ $this->part->sheet_raw_h_cm ?? '—' }} cm</td>
+                        <td class="desc">Ukuran Cetak</td><td class="amt">{{ $this->part->printsize_p ?? '—' }} x {{ $this->part->printsize_l ?? '—' }} cm</td>
+                    </tr>
+                    <tr>
+                        <td class="desc">Pack Qty</td><td class="amt" colspan="3">{{ $this->part->pack_qty ?? '—' }} pcs/pack</td>
+                    </tr>
+                    <tr>
+                        <td class="desc">Jenis Finishing</td><td class="amt" colspan="3">{{ $this->part->finishings->pluck('finishingType.finishing_name')->filter()->implode(', ') ?: '—' }}</td>
+                    </tr>
                 </tbody>
             </table>
 
@@ -265,19 +283,6 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
             </x-print.section>
         </div>
 
-        @php($finishingNotes = $this->part->finishings->filter(fn ($f) => filled($f->notes)))
-        @if ($finishingNotes->isNotEmpty())
-            <x-print.section number="3" title="Catatan Finishing">
-                <table class="items">
-                    <tbody>
-                        @foreach ($finishingNotes as $f)
-                            <tr><td class="desc">{{ $f->finishingType?->finishing_name }}</td><td class="amt">{{ $f->notes }}</td></tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </x-print.section>
-        @endif
-
         <x-print.signatures>
             <x-slot:intro>
                 Master Card ini berlaku sebagai acuan resmi produksi setelah ditandatangani seluruh pihak berikut.
@@ -301,14 +306,23 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
         ada <style> di layar ini sebelumnya (gap terpisah dari soal mockup --
         table.items/.desc/.amt/.cap dipakai tanpa definisi CSS lokal sama
         sekali, tampil polos tanpa styling). --}}
-        .print-doc table.items{width:100%;border-collapse:collapse;font-size:8pt;border:1px solid var(--print-line)}
-        .print-doc table.items td{padding:5px 8px;border-bottom:1px solid var(--print-line2);vertical-align:top}
+        {{-- BACKLOG.md §0 R35: A4 landscape cuma 210mm tinggi -- diukur nyata via
+        browser (getBoundingClientRect), .print-page awalnya 233mm (23mm
+        kelebihan) sebelum padding tabel dipadatkan di sini. --}}
+        .print-doc table.items{width:100%;border-collapse:collapse;font-size:7.6pt;border:1px solid var(--print-line)}
+        .print-doc table.items td{padding:3px 7px;border-bottom:1px solid var(--print-line2);vertical-align:top;line-height:1.35}
         .print-doc table.items tbody tr:last-child td{border-bottom:none}
         {{-- Label kolom pakai abu-abu netral fix (BUKAN var(--print-accent-soft),
         itu sekarang putih polos -- perlu kontras sendiri spy label tetap
         kebeda dari kolom nilai walau seluruh dokumen hitam-putih). --}}
         .print-doc table.items td.desc{width:38%;color:#000;font-weight:600;background:#eee}
         .print-doc table.items td.amt{font-weight:700;color:#000}
+        {{-- .items-2col (BACKLOG.md §0 R35): 4 kolom per baris (desc/amt/desc/amt),
+        lebar diatur via <colgroup> di markup, bukan .desc{width:38%} di atas
+        (itu utk tabel 2-kolom biasa spt Warna Pertama/Routing, jangan dipakai
+        di sini -- table-layout:fixed spy colgroup jadi otoritatif). --}}
+        .print-doc table.items-2col{table-layout:fixed}
+        .print-doc table.items-2col td.desc{width:auto}
         .print-doc table.items td.ref{font-family:Consolas,monospace;font-weight:700;color:#000}
         .print-doc table.items .sp{font-weight:400;color:#555;font-size:6.8pt;margin-top:2px}
         .print-doc .cap{font-size:7.4pt;color:#555;text-align:center;padding:10px 4px}
@@ -331,6 +345,13 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
         permanen bukan toggle). --}}
         .print-doc.landscape .print-bar{width:297mm}
         .print-doc.landscape .print-page{width:297mm;min-height:210mm}
+        {{-- Muat pas 210mm tapi mepet (0mm sisa di layar, cetak asli sedikit
+        lebih longgar krn padding print-mode lebih kecil) -- kecilkan strip
+        tanda tangan sedikit lagi utk kasih jarak aman, bukan krn kurang
+        tempat tanda tangan fisik (28px masih cukup). --}}
+        .print-doc.landscape .print-sign-cell .line{height:28px;margin-bottom:2px}
+        .print-doc.landscape .print-sign-b{padding:7px 9px}
+        .print-doc.landscape .print-sign-intro{margin-bottom:5px}
         @media print{
             .print-doc.landscape .print-page{width:auto;min-height:auto}
             @page{size:A4 landscape;margin:0}
