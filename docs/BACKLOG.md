@@ -24,7 +24,46 @@
 
 ---
 
-## RINGKASAN STATUS (update 2026-09-03 15:47 WIB, utk didiskusikan — pakai nomor R# saat bahas)
+## RINGKASAN STATUS (update 2026-09-10 07:2x WIB, utk didiskusikan — pakai nomor R# saat bahas)
+
+> **Cek otonom 2026-09-10 ~07:00 WIB (`tmerp-backlog-autowork-1700`):**
+> commit terakhir saat mulai cek (`3cb7153`, 2026-09-09 15:19) sudah >15 jam
+> lalu → awalnya disimpulkan AMAN utk lanjut kerja BACKLOG. **TAPI** begitu
+> mulai kerja, `git fetch` menemukan **2 commit baru muncul di tengah jalan**
+> (`5812da8` 07:04 & `7bd4bf8` 07:10, keduanya edit `docs/BACKLOG.md`) — bukti
+> ada **sesi interaktif lain aktif bersamaan pagi ini**, merespons instruksi
+> user langsung (item #16 "New Chat" WhatsApp-style + **R35** Master Card
+> tumpah halaman 2). Sesuai aturan tabrakan ([[project_multisession_collision_20260831]]):
+> **sesi ini SENGAJA STOP mulai kerja BACKLOG baru** begitu temuan itu
+> muncul — cuma menuntaskan 1 unit kerja yang SUDAH di tangan & TERISOLASI
+> (tidak overlap file dgn sesi lain), lalu commit+push, lalu tulis ringkasan
+> ini. **R35 (Master Card, prioritas malam ini) BELUM disentuh sesi ini** —
+> dicadangkan utk sesi malam sesuai instruksi user sendiri di §0, JANGAN
+> dikerjakan siang/pagi kecuali dikonfirmasi ulang tidak ada sesi lain aktif.
+> - **R36. [BARU]** i18n Malam 1 leftover **TUNTAS**: `date-picker.blade.php`
+>   + `spreadsheet-table.blade.php` (WIP sesi 2026-09-09 siang yg sempat
+>   tertinggal uncommitted) selesai pakai `Translator::t()` penuh. Ditemukan
+>   tambahan 4 komponen `x-form.*` BARU (dibangun sesi lain 2026-09-09 pagi,
+>   belum ikut audit malam itu) masih 100% hardcode Indonesia:
+>   `searchable-select`/`multi-select`/`file-dropzone`/`mini-calendar` — semua
+>   diberi `Translator::t()` + migration follow-up
+>   `2026_09_10_000001_seed_i18n_night1_followup.php` (18 baris `sys_translations`
+>   baru, key prefix `shared_*`). Diverifikasi render via tinker (7 view OK)
+>   + `php artisan test tests/Feature/MainMenuShellSmokeTest.php` (12/12
+>   pass). Tidak ada perubahan class Tailwind → tidak perlu `npm run build`.
+>   Commit `751b1f1`. **Tabel §13 baris "Malam 1" BELUM diubah ✅** (sengaja
+>   dibiarkan 🟡 — sesi ini cuma menuntaskan sisa kerjanya, bukan
+>   me-review scope Malam 1 secara utuh; sesi berikutnya boleh centang kalau
+>   sudah yakin tidak ada string `shared_*` lain yg lolos).
+>
+> **Untuk sesi berikutnya**: cek `git log`/`git fetch` ulang dulu sebelum
+> lanjut — kalau commit terbaru masih dalam ~1 jam, kemungkinan sesi
+> interaktif di atas masih jalan. Item paling siap dikerjakan tanpa
+> analisis ulang: **R35** (Master Card, §0 — root cause sudah lengkap,
+> tinggal eksekusi) dan **item §16** (New Chat WhatsApp-style, sudah ada
+> referensi kode lengkap `tmerp-chat-module.zip`, tinggal porting).
+
+---
 
 > **Cek otonom 15:47 WIB (`tmerp-backlog-autowork-1700`, sesi `tmerp-79`):**
 > ada **3 sesi interaktif lain aktif bersamaan** (`tmerp-b8` mulai ~1 jam
