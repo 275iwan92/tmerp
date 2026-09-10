@@ -976,7 +976,7 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > | 4 | Sab 2026-09-12 | 22:00 | 1 jam | **Procurement inti**: PR/PO/PV/PQ/PRT list+entry — toolbar & label status saja (bukan field kalkulasi). Key prefix `proc_*`. | 🟡 | Dikerjakan 22:48-22:58 WIB, 2 hari lebih awal dari jadwal (task `i18n-rollout-malam-4` dihapus, dieksekusi manual atas instruksi user "run routine session name Sat and Sun"). **5/5 grid list SELESAI** (`pur/{pr,po,pv,pq,prt}/index.blade.php`): stat box, toolbar search, header tabel, tooltip aksi, badge status, modal picker (termasuk picker 2-langkah PV & 3-cabang PRT). ~85 key `proc_*` baru + reuse `shared_*`/`sales_*` yg identik (Buka, klik-2x, Batal, Confirm, Draft). **5x entry.blade.php (400-660 baris masing2, field kalkulasi harga/pajak/approval) BELUM disentuh** — sengaja, di luar budget, lihat instruksi asli "prioritaskan 1-2 dokumen dulu" — 5 list dianggap prioritas lebih tinggi (dipakai lebih sering) drpd entry. Diverifikasi `Livewire::test()` 5/5 render OK (0 raw key bocor) + `PvStockIntegrationTest` pass. Tidak ada perubahan class Tailwind. 🟡 (bukan ✅) krn scope "list+entry" cuma separuh tuntas — sesi berikutnya lanjutkan 5 entry.blade.php kalau mau dituntaskan penuh. |
 > | 5 | Min 2026-09-13 | 22:00 | 1 jam | **Inventory + Production inti**: grid Stock In/Out/Adjustment, Master Card, WO Worklist — toolbar & label status. Key prefix `inv_*`/`prod_*`. | ✅ | Dikerjakan 22:59-23:11 WIB, 3 hari lebih awal dari jadwal (task `i18n-rollout-malam-5` dihapus, dieksekusi manual atas instruksi user "run routine session name Sat and Sun"). **5/5 layar SELESAI**: `production/wo-list.blade.php` (WO Worklist, kecil, cepat), `inventory/stock-in.blade.php` + `stock-out.blade.php` + `stock-adjustment.blade.php` (grid+form 1 komponen di file yg sama, jadi keduanya ikut tersentuh — bukan cuma toolbar krn struktur file menyatukan grid+form; Stock Adjustment termasuk section approval/reject), `production/prodev-print.blade.php` (Master Card, dokumen cetak — label spesifikasi, section, tanda tangan, footer). 1 migration baru (`2026_09_10_000007_seed_i18n_night5_inventory_production.php`, ~155 key `inv_*`/`prod_*`). Diverifikasi `Livewire::test()` 5/5 render OK (0 raw key bocor) + `ProdevPrintMastercardTest`+`ProductionWorklistWoTest` 16/16 pass. Tidak ada perubahan class Tailwind. |
 > | 6 | Sen 2026-09-14 | 17:00 | 1 jam | **Finance + HRM inti**: COA, Cash & Bank, grid Employee, Attendance — toolbar & label status. Key prefix `fin_*`/`hrm_*`. | ✅ | Dikerjakan 23:17-23:28 WIB, 4 hari lebih awal dari jadwal (task `i18n-rollout-malam-6` dihapus, dieksekusi manual atas instruksi user "run routine session name Mon and Tue"). **4/4 layar SELESAI**: `finance/coa.blade.php` (stat box, header tabel, badge tipe/saldo/recon, modal tambah/edit akun lengkap), `finance/cash-bank.blade.php` (grid + form jurnal BKM/BKK/BBM/BBK, 3 tab Rincian/Pajak/Audit — label saja, TIDAK menyentuh kalkulasi debit/kredit), `hrm/attendance-daily.blade.php` (16 label status presensi H/T-5/dst, modal override), `master/employee.blade.php` **grid saja** (list+card view, form profil karyawan 1300+ baris SENGAJA tidak disentuh — di luar scope "grid"). Payroll (tm2pyr) TIDAK disentuh sama sekali sesuai instruksi. 1 migration baru (`2026_09_10_000008_seed_i18n_night6_finance_hrm.php`, ~150 key `fin_*`/`hrm_*`). Diverifikasi `Livewire::test()` 4/4 render OK (0 raw key bocor) + `MainMenuShellSmokeTest` 12/12 pass. Tidak ada perubahan class Tailwind. |
-> | 7 | Sel 2026-09-15 | 17:00 | **12 jam penuh** (jatuh hari Selasa) | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. Budget 12 jam berlebih dari cukup utk scope ini — kalau selesai lebih awal, boleh lanjut item BACKLOG.md lain (§0-12) sampai budget habis. | ⬜ | |
+> | 7 | Sel 2026-09-15 | 17:00 | **12 jam penuh** (jatuh hari Selasa) | **Master Data** (Customer/Supplier/Product/Material/UOM — toolbar & label) + **QA checkpoint**: `npm run build`, full `php artisan test`, tulis laporan status akhir DI SINI (perkiraan % string tertarik vs total, daftar area yg masih 100% hardcode, rekomendasi lanjutan) — JANGAN klaim 100% selesai. Key prefix `mdata_*`. Budget 12 jam berlebih dari cukup utk scope ini — kalau selesai lebih awal, boleh lanjut item BACKLOG.md lain (§0-12) sampai budget habis. | ✅ | Dikerjakan 23:28-23:42 WIB, **5 hari lebih awal** dari jadwal (task `i18n-rollout-malam-7` dihapus, dieksekusi manual atas instruksi user "run routine session name Mon and Tue" — budget 12 jam Selasa TIDAK dipakai literal krn hari sebenarnya Kamis, dikerjakan dgn pacing efisien normal spt malam2 lain, bukan maraton 12 jam). **Bagian A (Master Data) 5/5 grid selesai**: `raw-material/index`, `produk`, `uom` (+panel konversi), `supplier`, `customer` — toolbar/label/badge saja, form lengkap tidak disentuh. ~75 key `mdata_*` baru. **Bagian B (QA Checkpoint) lengkap** — lihat laporan detail di §13.1 di bawah: `npm run build` sukses, full test suite 122 test (112 pass, 1 fail **pre-existing tidak terkait i18n** — dicatat sbg temuan, 9 skip normal Firebase-off), total 788 key unique tertarik. Diverifikasi `Livewire::test()` 5/5 Bagian A render OK + `MasterCustomerSmokeTest`/`MasterUomSmokeTest` 8/8 pass. |
 >
 > Riwayat lengkap tiap malam (bukan cuma centang) pindah ke
 > `docs/LOG_JOB_DONE.md` begitu selesai, sama seperti item backlog lain.
@@ -984,6 +984,117 @@ tanggal & dokumen yang lebih baru sebelum percaya frasa "ditunda".
 > `project_settings_menu_datadriven`, §11 di atas (kebijakan menu Inggris —
 > BEDA sumbu, jangan digabung: itu soal `sys_app_menu.label`, ini soal
 > `sys_translations`/`Translator::t()`).
+
+### 13.1 Checkpoint Malam 7 — Status Akhir (2026-09-10 23:42 WIB)
+
+> **Konteks eksekusi**: seluruh rencana 7 malam (awalnya dijadwalkan
+> 2026-09-09 s/d 2026-09-15, 1 malam/hari) **dipercepat dan dituntaskan
+> dalam SATU sesi malam ini** (2026-09-10) atas 4 instruksi berurutan dari
+> user ("run session Thu*", "run session Fri*", "run routine Sat and Sun",
+> "run routine Mon and Tue") — bukan dijalankan otomatis sesuai jadwal
+> aslinya. Semua 5 task terjadwal (`i18n-rollout-malam-3` s/d `-malam-7`)
+> **sudah dihapus dari scheduler** karena sudah tuntas dieksekusi manual.
+
+**Ringkasan per malam — apa yang BENERAN selesai vs belum:**
+
+| Malam | Scope | Status | Catatan |
+|---|---|---|---|
+| 1 | Komponen shared (grid/form/pagination/badge/tombol) | 🟡 selesai substansi, checkbox sengaja dibiarkan 🟡 | Dikerjakan sesi lain 2026-09-09, follow-up 2026-09-10 pagi. Belum ada review menyeluruh final utk pastikan 0 string `shared_*` lolos. |
+| 2 | Sisa chrome shell (drawer notif/chat/AI, command palette, modal profil/password, Help Center chrome) | ✅ tuntas | Tab "Cara Pakai Aplikasi" & "Modul" di Help Center (ratusan baris prosa) **SENGAJA tidak disentuh** — bukan chrome. |
+| 3 | Sales inti (Inquiry Hub, header Inquiry form, Quotation list, CO list) | ✅ tuntas | ~140 key. Field kalkulasi HPP/costing formula tidak disentuh (sesuai batasan). |
+| 4 | Procurement inti (grid PR/PO/PV/PQ/PRT) | 🟡 **PARTIAL** | **5/5 grid list selesai**, **5x `entry.blade.php` (400-660 baris/file) BELUM disentuh sama sekali** — field approval/kalkulasi harga & pajak di layar entri PR/PO/PV/PQ/PRT masih 100% hardcode Indonesia. Ini gap TERBESAR dari seluruh rollout. |
+| 5 | Inventory + Production inti (Stock In/Out/Adjustment, WO Worklist, Master Card) | ✅ tuntas | Termasuk alur approval Stock Adjustment. |
+| 6 | Finance + HRM inti (COA, Cash & Bank, Attendance Daily, grid Employee) | ✅ tuntas (grid saja utk Employee) | Form profil karyawan (1300+ baris: keluarga, riwayat, dst) **SENGAJA tidak disentuh**. Payroll (tm2pyr) **tidak disentuh sama sekali** sesuai instruksi. |
+| 7A | Master Data (grid Customer/Supplier/Produk/Raw Material/UoM) | ✅ tuntas (grid saja) | Form lengkap tiap master (alamat/kontak/dimensi/dst) tidak disentuh. |
+| 7B | QA Checkpoint | ✅ selesai (laporan ini) | Lihat detail di bawah. |
+
+**Area besar yang MASIH 100% hardcode Bahasa Indonesia** (bukan generalisasi
+"sisanya", ini daftar konkret per modul):
+- **Procurement — 5 layar entry** (`pur/{pr,po,pv,pq,prt}/entry.blade.php`):
+  seluruh field kalkulasi harga, pajak, approval PR/PO/PV/PQ/PRT.
+- **Master Employee — form profil penuh** (`master/employee.blade.php`,
+  1300+ baris): tab identitas, alamat, keluarga, riwayat pendidikan,
+  kontrak, kedisiplinan detail, foto — hanya grid yang tertarik.
+- **Semua form Master Data lainnya** (Customer/Supplier/Produk/UoM/Raw
+  Material): field detail (alamat, kontak, dimensi fisik, konversi
+  satuan, dst) — hanya grid+toolbar yang tertarik.
+- **Help Center — konten edukasi** (`help/index.blade.php` tab "Cara Pakai
+  Aplikasi" & "Modul"): ratusan baris teks panduan & deskripsi modul.
+- **Payroll (tm2pyr) — seluruh 11 layar**: SENGAJA di luar scope 7 malam
+  ini (risiko tabrakan, modul sedang aktif dikembangkan terpisah).
+- **Production Scheduling** (Scheduling Board, MPS Spreadsheet, MTS
+  Forecast, Rule Library, dll) — belum tersentuh sama sekali oleh
+  rollout 7 malam ini (di luar scope yang diminta).
+- **HRM lainnya** (Recruitment 9 layar, Org Chart, Shift Roster, Leave
+  Request, Correction Request, GPS Approval) — belum tersentuh.
+- **Dispatch/Delivery, Finance lanjutan** (DP Invoice, laporan-laporan
+  Outstanding PR/PO/PV, Win-Rate) — belum tersentuh.
+- **Semua layar cetak/print** kecuali Master Card (Nota Inquiry, Nota CO,
+  cetak PO/PR/PQ/PRT, dll) — belum tersentuh.
+- **Panel Filament `/admin`** (HRM cluster) — pakai native Filament
+  labels, mekanisme i18n `Translator::t()` shell TIDAK terhubung ke panel
+  Filament (arsitektur terpisah, `APP_LOCALE` env-based, bukan
+  `sec_user.lang_code`).
+
+**Perkiraan cakupan (KASAR, bukan presisi)** — metode: hitung baris
+`sys_translations` (lang_code='id') dibagi 2 (krn tiap key = 1 baris
+id + 1 baris en):
+- **Total 788 key unik** tertarik (9 prefix domain: `sales_`134,
+  `inv_`122, `fin_`102, `shell_`91, `proc_`81, `mdata_`75, `hrm_`60,
+  `shared_`55, `prod_`52, sisanya varian lama `login_`/`btn_`/dst).
+  Dipanggil via 987 titik `Translator::t()` di seluruh Blade (reuse key
+  yang sama di banyak tempat, jadi titik panggil > jumlah key unik).
+- Total file layar (`resources/views/pages/**/*.blade.php`): **135
+  file**. Proxy kasar (grep atribut `label=`/`placeholder=`/`title=` yang
+  BELUM diwrap `Translator::t()`, TIDAK termasuk teks polos di
+  `<td>`/`<h1>`/tombol tanpa atribut/string Alpine JS): **masih ~1360
+  atribut belum tertarik** — rasio proxy ini ~42% tertarik, TAPI proxy ini
+  cuma subset kecil dari total teks UI beneran (tidak menghitung teks
+  polos/JS/komponen `<x-form.*>` internal yang jumlahnya jauh lebih
+  banyak). **Perkiraan realistis cakupan keseluruhan aplikasi: sekitar
+  15-25% dari total string UI** — MASIH SEBAGIAN KECIL, BUKAN mayoritas.
+  **Aplikasi ini TIDAK bisa diklaim "sudah multi-bahasa"** — toggle
+  `lang_code` ID/EN baru benar-benar berfungsi penuh di area shell +
+  9 modul/layar yang disebut di atas, sisanya (mayoritas modul transaksi,
+  semua form detail, semua cetak/print kecuali Master Card, Payroll,
+  Production Scheduling, Recruitment, panel Filament) masih 100%
+  hardcode Indonesia apa pun pilihan bahasa user.
+
+**QA — hasil `npm run build`**: sukses, 0 error baru (1 warning lama
+tak terkait — parsing komentar CSS di `docs/mockups/login.html`, bukan
+kode aplikasi, sudah ada sebelum sesi ini).
+
+**QA — hasil `php artisan test` (full suite)**: 122 test, **112 pass**,
+**1 fail**, 9 skip (skip normal — Firebase emulator off, baseline lama).
+**1 kegagalan**: `ProductionSchedulingBoardSmokeTest::test_board_renders_seeded_operations`
+— **BUKAN disebabkan perubahan i18n malam ini** (file yang disentuh
+malam ini tidak menyentuh Production Scheduling sama sekali). Diinvestigasi:
+data dummy WO2600231 ada di DB, tapi assert mencari string **"Plong 1"**
+(nama mesin, dari migration `2026_08_28_000002_seed_prd_scheduling_board_dummy.php`
+baris 30) sementara operasi tersimpan sekarang bernama proses **"Plong"**
+(tanpa "1") — dan employee **"Budi Santoso"** (dicari migration yg sama
+baris 68) **TIDAK DITEMUKAN** di `emp_employee` sama sekali. Indikasi kuat:
+data Master Employee/Machine sudah berubah (rename/hapus) oleh sesi lain
+sejak seeder dummy ini dibuat 2026-08-28, seeder tidak pernah di-refresh
+mengikuti perubahan itu. **Dicatat sbg temuan terpisah, TIDAK diperbaiki
+malam ini** (di luar scope i18n, perlu investigasi Master Employee/Machine
+mana yang berubah dan kapan, keputusan ada di sesi lain/user).
+
+**Rekomendasi lanjutan (kalau user mau meneruskan i18n)**, urut prioritas:
+1. **Tuntaskan 5 entry.blade.php Procurement** (gap terbesar tersisa dari
+   rencana 7-malam ini sendiri) — PR/PO/PV/PQ/PRT.
+2. **Form lengkap Master Data** (Customer/Supplier/Produk/Employee) — saat
+   ini cuma grid, form detail (mayoritas field per-master) masih hardcode.
+3. **Production Scheduling** — modul paling kompleks (Scheduling Board,
+   MPS, MTS Forecast) sama sekali belum tersentuh, volume string besar.
+4. **Recruitment (9 layar)** — modul besar berikutnya yang 100% hardcode.
+5. **Semua cetak/print selain Master Card** — Nota Inquiry/CO, cetak
+   PO/PR/PQ/PRT — dokumen resmi yang customer/supplier lihat langsung.
+6. **Panel Filament `/admin`** — perlu keputusan arsitektur terpisah dulu
+   (jembatani `Translator`/`sec_user.lang_code` ke Filament yang pakai
+   `APP_LOCALE`, bukan sekadar "lanjut key baru").
+7. Payroll (tm2pyr) baru masuk antrian **setelah** modul lain, sesuai
+   alasan risiko tabrakan yang sudah dicatat berkali-kali di file ini.
 
 ---
 
