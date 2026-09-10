@@ -4,7 +4,10 @@
     Hidden input (pola sama x-form.date-picker) menampung JSON array string
     terpilih utk wire:model (decode di sisi Livewire pakai json_decode).
 --}}
-@props(['label' => null, 'name' => null, 'options' => [], 'selected' => [], 'placeholder' => 'Pilih...', 'value' => ''])
+@props(['label' => null, 'name' => null, 'options' => [], 'selected' => [], 'placeholder' => null, 'value' => ''])
+@php
+    $placeholder = $placeholder ?? \App\Support\Localization\Translator::t('shared_multi_select_placeholder', 'Pilih...');
+@endphp
 <div class="flex flex-col gap-1 relative" x-data="tmMultiSelect({ options: @js($options), initial: @js($selected), placeholder: @js($placeholder) })" @click.outside="open = false">
     @if ($label)
         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ $label }}</label>

@@ -25,16 +25,15 @@
 
     <div class="flex items-center justify-between gap-2 px-3.5 py-2 border-b border-[#eef1f5] bg-[#fafbfd] flex-wrap">
         <div class="text-[11px] text-muted leading-relaxed">
-            🖊️ <b>Mode Spreadsheet</b> — klik sel untuk edit, drag titik biru di pojok sel aktif untuk salin nilai ke bawah.
-            Perubahan baru tersimpan setelah <b>Simpan Semua</b>.
+            🖊️ <b>{{ \App\Support\Localization\Translator::t('shared_spreadsheet_mode_label', 'Mode Spreadsheet') }}</b> — {!! \App\Support\Localization\Translator::t('shared_spreadsheet_hint_body', 'klik sel untuk edit, drag titik biru di pojok sel aktif untuk salin nilai ke bawah. Perubahan baru tersimpan setelah <b>Simpan Semua</b>.') !!}
         </div>
         <div class="flex items-center gap-2 shrink-0">
             <button type="button" @click="addRow()"
-                class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2] cursor-pointer hover:bg-[#f1f3f6]">+ Baris</button>
+                class="px-3 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2] cursor-pointer hover:bg-[#f1f3f6]">{{ \App\Support\Localization\Translator::t('shared_spreadsheet_add_row', '+ Baris') }}</button>
             <button type="button" @click="saveAll()" :disabled="dirtyCount() === 0"
                 :class="dirtyCount() === 0 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'"
                 class="px-3.5 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white border border-[#2c3e69]">
-                💾 Simpan Semua<template x-if="dirtyCount() > 0"><span x-text="' (' + dirtyCount() + ')'"></span></template>
+                💾 {{ \App\Support\Localization\Translator::t('shared_spreadsheet_save_all', 'Simpan Semua') }}<template x-if="dirtyCount() > 0"><span x-text="' (' + dirtyCount() + ')'"></span></template>
             </button>
         </div>
     </div>
@@ -102,13 +101,13 @@
                             </td>
                         </template>
                         <td class="px-1 text-center border-b border-[#eef1f5]">
-                            <button type="button" x-show="isNewRow(row)" @click="removeRow(r)" title="Batalkan baris baru"
+                            <button type="button" x-show="isNewRow(row)" @click="removeRow(r)" title="{{ \App\Support\Localization\Translator::t('shared_spreadsheet_cancel_new_row_title', 'Batalkan baris baru') }}"
                                 class="text-[#c0392b] cursor-pointer">✕</button>
                         </td>
                     </tr>
                 </template>
                 <tr x-show="rows.length === 0">
-                    <td :colspan="columns.length + 1" class="text-center py-8 text-muted text-sm">Belum ada data. Klik "+ Baris" untuk mulai.</td>
+                    <td :colspan="columns.length + 1" class="text-center py-8 text-muted text-sm">{{ \App\Support\Localization\Translator::t('shared_spreadsheet_empty', 'Belum ada data. Klik "+ Baris" untuk mulai.') }}</td>
                 </tr>
             </tbody>
         </table>

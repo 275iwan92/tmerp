@@ -59,7 +59,7 @@
     <div x-show="open" x-cloak x-transition.origin.top.left @click.stop
         class="absolute z-30 top-full left-0 mt-1 w-[260px] bg-white border border-[#d7dbe2] rounded-lg shadow-lg overflow-hidden text-xs">
         <div class="px-3 py-2 bg-[#f4f6fa] border-b border-[#e5e7eb] font-semibold text-[#374151]">
-            <span x-text="mode === 'datetime' ? 'Pilih Tanggal & Jam' : 'Pilih Tanggal'"></span>
+            <span x-text="mode === 'datetime' ? @js(\App\Support\Localization\Translator::t('shared_datepicker_header_datetime', 'Pilih Tanggal & Jam')) : @js(\App\Support\Localization\Translator::t('shared_datepicker_header_date', 'Pilih Tanggal'))"></span>
         </div>
 
         <div class="p-2">
@@ -106,7 +106,7 @@
 
         <template x-if="mode === 'datetime'">
             <div class="flex items-center gap-2 px-3 py-2 border-t border-[#e5e7eb]">
-                <span class="text-[10px] font-semibold text-[#697386] uppercase">Jam</span>
+                <span class="text-[10px] font-semibold text-[#697386] uppercase">{{ \App\Support\Localization\Translator::t('shared_datepicker_hour_label', 'Jam') }}</span>
                 <select x-model.number="selHour" @change="apply()" class="border border-[#c7cfda] rounded px-1 py-0.5 text-[11px]">
                     <template x-for="h in 24" :key="h"><option :value="h - 1" x-text="String(h - 1).padStart(2, '0')"></option></template>
                 </select>
@@ -118,8 +118,8 @@
         </template>
 
         <div class="flex items-center justify-between gap-2 px-3 py-2 border-t border-[#e5e7eb] bg-[#f9fafb]">
-            <button type="button" @click="clearValue()" class="text-[11px] font-semibold text-[#697386] hover:text-[#374151] cursor-pointer">Clear</button>
-            <button type="button" @click="today()" class="px-3 py-1 rounded bg-[#2563eb] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#1d4ed8]">Hari Ini</button>
+            <button type="button" @click="clearValue()" class="text-[11px] font-semibold text-[#697386] hover:text-[#374151] cursor-pointer">{{ \App\Support\Localization\Translator::t('shared_datepicker_clear', 'Clear') }}</button>
+            <button type="button" @click="today()" class="px-3 py-1 rounded bg-[#2563eb] text-white text-[11px] font-semibold cursor-pointer hover:bg-[#1d4ed8]">{{ \App\Support\Localization\Translator::t('shared_datepicker_today', 'Hari Ini') }}</button>
         </div>
     </div>
 
