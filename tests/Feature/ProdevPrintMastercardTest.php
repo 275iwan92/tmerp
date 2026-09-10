@@ -101,4 +101,37 @@ class ProdevPrintMastercardTest extends TestCase
 
         $this->assertStringContainsString('prod_part/65/artwork/demo-mastercard.jpg', $html);
     }
+
+    // Permintaan user 2026-09-10: "buatkan minim 5 dummy data dengan artwork"
+    // -- part 65 (test di atas) + 4 tambahan di sini via migration
+    // 2026_09_10_000002_enrich_4_more_demo_mastercard_parts.php, dipilih
+    // dari 33 prod_part dummy PDDUM% yg SUDAH ADA (bukan bikin baru), 4
+    // kategori produk berbeda supaya kelihatan variasi. Tidak ada tearDown
+    // yg menghapus part2 ini (dummy data permanen, feedback_keep_dummy_data).
+    public static function demoMastercardPartProvider(): array
+    {
+        return [
+            'Folding Box Karton Makanan #1' => [61, 'Folding Box Karton Makanan #1', 'NIKI ECO CATERING', 'IVORY 350 GR 27 X 35'],
+            'Corrugated Box Elektronik #2' => [62, 'Corrugated Box Elektronik #2', 'A-37', 'Paper Duplex 250gr 114 X 79 CM IKA DP'],
+            'Paper Bag Belanja #8' => [68, 'Paper Bag Belanja #8', 'BAPAK TANTO EDY', 'DUPLEX 350 GR 54 X 53 MSExxx'],
+            'Hang Tag Produk #9' => [69, 'Hang Tag Produk #9', 'PAK TANTO', 'IVORY 350 GR ESPRIME 79 X 109 CM'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('demoMastercardPartProvider')]
+    public function test_additional_demo_parts_render_fully_populated_with_artwork(int $partId, string $partName, string $customerName, string $materialName): void
+    {
+        $admin = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($admin);
+
+        $html = Livewire::test('pages::production.prodev-print', ['part' => $partId])
+            ->assertOk()
+            ->assertSee($partName)
+            ->assertSee($customerName)
+            ->assertSee($materialName)
+            ->assertDontSee('Belum ada artwork/preview tersimpan untuk part ini.')
+            ->html();
+
+        $this->assertStringContainsString("prod_part/{$partId}/artwork/demo-mastercard.jpg", $html);
+    }
 }
