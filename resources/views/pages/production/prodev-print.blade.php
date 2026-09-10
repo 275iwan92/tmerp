@@ -4,6 +4,7 @@ use App\Models\Master\OrgCompany;
 use App\Models\Master\ProdMastercardSignoff;
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -117,7 +118,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             'costing' => [
                 'label' => '3. Costing',
                 'url' => $origin ? route('inquiry.costing', ['inquiry' => $origin, 'view' => 1]) : null,
-                'reason' => 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.',
+                'reason' => Translator::t('prod_mc_reason_no_inquiry', 'Part ini Mode #2 (manual/standalone) -- belum ada Inquiry utk dihitung Costing-nya.'),
             ],
             'mastercard' => [
                 'label' => 'Master Card',
@@ -126,7 +127,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             'analytics' => [
                 'label' => 'Analytics',
                 'url' => null,
-                'reason' => 'Modul Analytics belum dibangun.',
+                'reason' => Translator::t('prod_mc_reason_no_analytics', 'Modul Analytics belum dibangun.'),
             ],
         ];
     }
@@ -138,11 +139,11 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             ->get()->keyBy('role_name');
 
         $roles = [
-            'DESAINER' => 'Desainer / Product Development',
-            'MARKETING' => 'Sales Officer',
-            'PPIC' => 'PPIC',
-            'QA' => 'Quality Control',
-            'PLANT_MANAGER' => 'Kepala Pabrik',
+            'DESAINER' => Translator::t('prod_mc_role_designer', 'Desainer / Product Development'),
+            'MARKETING' => Translator::t('prod_mc_role_sales', 'Sales Officer'),
+            'PPIC' => Translator::t('prod_mc_role_ppic', 'PPIC'),
+            'QA' => Translator::t('prod_mc_role_qa', 'Quality Control'),
+            'PLANT_MANAGER' => Translator::t('prod_mc_role_plant_manager', 'Kepala Pabrik'),
         ];
 
         return collect($roles)->map(fn ($label, $code) => (object) [
@@ -173,14 +174,14 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
     :theme="['ink' => '#000000', 'muted' => '#555555', 'line' => '#000000', 'line2' => '#999999', 'accent' => '#000000', 'accent-soft' => '#ffffff', 'warn' => '#000000', 'gold' => '#000000', 'danger' => '#000000']"
     info="{{ $this->part->displayMastercardCode() }}">
     <x-slot:toolbar>
-        <a href="{{ route('production.prodev', ['part' => $this->partId]) }}" class="sc">← Kembali ke ProDev</a>
+        <a href="{{ route('production.prodev', ['part' => $this->partId]) }}" class="sc">← {{ Translator::t('prod_mc_back_to_prodev', 'Kembali ke ProDev') }}</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
         <x-print.header :company="$this->company" doc-title="MASTER CARD / KARTU INDUK" :doc-no="$this->part->displayMastercardCode()">
             <x-slot:meta>
-                No. Desain: <span class="ref">{{ $this->part->product?->design_no ?? '—' }}</span>
-                · Dicetak {{ now()->format('d/m/Y H:i') }}
+                {{ Translator::t('prod_mc_design_no', 'No. Desain:') }} <span class="ref">{{ $this->part->product?->design_no ?? '—' }}</span>
+                · {{ Translator::t('prod_mc_printed_at', 'Dicetak') }} {{ now()->format('d/m/Y H:i') }}
             </x-slot:meta>
         </x-print.header>
 
@@ -197,75 +198,75 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
                 <colgroup><col style="width:14%"><col style="width:36%"><col style="width:14%"><col style="width:36%"></colgroup>
                 <tbody>
                     <tr>
-                        <td class="desc">Nama Barang</td><td class="amt">{{ $this->part->product?->product_name ?? '—' }}</td>
-                        <td class="desc">Nama Pelanggan</td><td class="amt">{{ $this->part->product?->customer?->customer_name ?? '—' }}</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_item_name', 'Nama Barang') }}</td><td class="amt">{{ $this->part->product?->product_name ?? '—' }}</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_customer_name', 'Nama Pelanggan') }}</td><td class="amt">{{ $this->part->product?->customer?->customer_name ?? '—' }}</td>
                     </tr>
                     <tr>
-                        <td class="desc">Part</td><td class="amt">{{ $this->part->part_name }} <span class="ref">({{ $this->part->part_code }})</span></td>
-                        <td class="desc">Dimensi P x L x T</td><td class="amt">{{ $this->part->cm_length ?? '—' }} x {{ $this->part->cm_width ?? '—' }} x {{ $this->part->cm_height ?? '—' }} cm</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_part', 'Part') }}</td><td class="amt">{{ $this->part->part_name }} <span class="ref">({{ $this->part->part_code }})</span></td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_dimension', 'Dimensi P x L x T') }}</td><td class="amt">{{ $this->part->cm_length ?? '—' }} x {{ $this->part->cm_width ?? '—' }} x {{ $this->part->cm_height ?? '—' }} cm</td>
                     </tr>
                     <tr>
-                        <td class="desc">Kode Pisau</td><td class="amt">{{ $this->part->die_code ?? '—' }}</td>
-                        <td class="desc">Ukuran Pisau</td><td class="amt">{{ $this->part->die_w_cm ?? '—' }} x {{ $this->part->die_h_cm ?? '—' }} cm</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_die_code', 'Kode Pisau') }}</td><td class="amt">{{ $this->part->die_code ?? '—' }}</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_die_size', 'Ukuran Pisau') }}</td><td class="amt">{{ $this->part->die_w_cm ?? '—' }} x {{ $this->part->die_h_cm ?? '—' }} cm</td>
                     </tr>
                     <tr>
-                        <td class="desc">Material</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_material', 'Material') }}</td>
                         <td class="amt">
                             {{ $this->originMaterial?->rawmat_name ?? '—' }}
                             @if (! $this->originIqpPart)
-                                <div class="sp">Mode #2 — belum ada Inquiry sumber material.</div>
+                                <div class="sp">{{ Translator::t('prod_mc_no_source_inquiry', 'Mode #2 — belum ada Inquiry sumber material.') }}</div>
                             @endif
                         </td>
-                        <td class="desc">Kualitas</td><td class="amt">{{ $this->originMaterial?->gram_weight ? number_format((float) $this->originMaterial->gram_weight, 0).' gsm' : '—' }}</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_quality', 'Kualitas') }}</td><td class="amt">{{ $this->originMaterial?->gram_weight ? number_format((float) $this->originMaterial->gram_weight, 0).' gsm' : '—' }}</td>
                     </tr>
                     <tr>
-                        <td class="desc">Ukuran Bahan</td><td class="amt">{{ $this->part->sheet_raw_w_cm ?? '—' }} x {{ $this->part->sheet_raw_h_cm ?? '—' }} cm</td>
-                        <td class="desc">Ukuran Cetak</td><td class="amt">{{ $this->part->printsize_p ?? '—' }} x {{ $this->part->printsize_l ?? '—' }} cm</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_raw_size', 'Ukuran Bahan') }}</td><td class="amt">{{ $this->part->sheet_raw_w_cm ?? '—' }} x {{ $this->part->sheet_raw_h_cm ?? '—' }} cm</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_print_size', 'Ukuran Cetak') }}</td><td class="amt">{{ $this->part->printsize_p ?? '—' }} x {{ $this->part->printsize_l ?? '—' }} cm</td>
                     </tr>
                     <tr>
-                        <td class="desc">Pack Qty</td><td class="amt" colspan="3">{{ $this->part->pack_qty ?? '—' }} pcs/pack</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_pack_qty', 'Pack Qty') }}</td><td class="amt" colspan="3">{{ $this->part->pack_qty ?? '—' }} pcs/pack</td>
                     </tr>
                     <tr>
-                        <td class="desc">Jenis Finishing</td><td class="amt" colspan="3">{{ $this->part->finishings->pluck('finishingType.finishing_name')->filter()->implode(', ') ?: '—' }}</td>
+                        <td class="desc">{{ Translator::t('prod_mc_field_finishing_type', 'Jenis Finishing') }}</td><td class="amt" colspan="3">{{ $this->part->finishings->pluck('finishingType.finishing_name')->filter()->implode(', ') ?: '—' }}</td>
                     </tr>
                 </tbody>
             </table>
 
             <div class="mc-visual">
                 @if ($this->officialArtwork)
-                    <img src="{{ asset('storage/'.$this->officialArtwork->artwork_path) }}" alt="Artwork resmi">
+                    <img src="{{ asset('storage/'.$this->officialArtwork->artwork_path) }}" alt="{{ Translator::t('prod_mc_artwork_official_alt', 'Artwork resmi') }}">
                 @elseif ($this->fallbackArtwork)
-                    <img src="{{ asset('storage/'.$this->fallbackArtwork->file_path) }}" alt="Referensi ProDev">
+                    <img src="{{ asset('storage/'.$this->fallbackArtwork->file_path) }}" alt="{{ Translator::t('prod_mc_artwork_reference_alt', 'Referensi ProDev') }}">
                 @else
-                    <div class="mc-visual-empty">Belum ada artwork/preview tersimpan untuk part ini.</div>
+                    <div class="mc-visual-empty">{{ Translator::t('prod_mc_no_artwork', 'Belum ada artwork/preview tersimpan untuk part ini.') }}</div>
                 @endif
                 <div class="mc-visual-cap">
                     @if ($this->layoutGroup)
-                        LAYOUT LEMBAR CETAK ({{ $this->layoutGroup->plano_w_mm }} x {{ $this->layoutGroup->plano_h_mm }} mm) — {{ $this->layoutGroup->up_count }} UP · {{ $this->layoutGroup->method }}
+                        {{ Translator::t('prod_mc_layout_caption', 'LAYOUT LEMBAR CETAK') }} ({{ $this->layoutGroup->plano_w_mm }} x {{ $this->layoutGroup->plano_h_mm }} mm) — {{ $this->layoutGroup->up_count }} UP · {{ $this->layoutGroup->method }}
                     @else
-                        Belum ada hasil Engine Imposition tersimpan untuk part ini.
+                        {{ Translator::t('prod_mc_no_layout', 'Belum ada hasil Engine Imposition tersimpan untuk part ini.') }}
                     @endif
                 </div>
             </div>
         </div>
 
         <div class="print-two">
-            <x-print.section number="1" title="Warna Pertama">
+            <x-print.section number="1" title="{{ Translator::t('prod_mc_section_colors', 'Warna Pertama') }}">
                 @php($colors1 = $this->part->color_set_1 ?? [])
                 @if (count($colors1))
                     <table class="items">
                         <tbody>
                             @foreach ($colors1 as $i => $c)
-                                <tr><td class="desc">Unit {{ $i + 1 }}</td><td class="amt">{{ $c }}</td></tr>
+                                <tr><td class="desc">{{ Translator::t('prod_mc_unit_label', 'Unit') }} {{ $i + 1 }}</td><td class="amt">{{ $c }}</td></tr>
                             @endforeach
                         </tbody>
                     </table>
                 @else
-                    <div class="cap">Belum diisi.</div>
+                    <div class="cap">{{ Translator::t('prod_mc_not_filled', 'Belum diisi.') }}</div>
                 @endif
             </x-print.section>
 
-            <x-print.section number="2" title="Urutan Pekerjaan (Routing)">
+            <x-print.section number="2" title="{{ Translator::t('prod_mc_section_routing', 'Urutan Pekerjaan (Routing)') }}">
                 @if ($this->part->processes->isNotEmpty())
                     <table class="items">
                         <tbody>
@@ -278,25 +279,25 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
                         </tbody>
                     </table>
                 @else
-                    <div class="cap">Belum ada routing.</div>
+                    <div class="cap">{{ Translator::t('prod_mc_no_routing', 'Belum ada routing.') }}</div>
                 @endif
             </x-print.section>
         </div>
 
         <x-print.signatures>
             <x-slot:intro>
-                Master Card ini berlaku sebagai acuan resmi produksi setelah ditandatangani seluruh pihak berikut.
+                {{ Translator::t('prod_mc_signature_intro', 'Master Card ini berlaku sebagai acuan resmi produksi setelah ditandatangani seluruh pihak berikut.') }}
             </x-slot:intro>
 
             @foreach ($this->signoffs as $s)
                 <x-print.signature role="{{ $s->label }}" name="{{ $s->signed_by ?? '( ................................. )' }}"
-                    sub="{{ $s->signed_at?->format('d/m/Y') ?? 'Belum ditandatangani' }}" />
+                    sub="{{ $s->signed_at?->format('d/m/Y') ?? Translator::t('prod_mc_not_signed_yet', 'Belum ditandatangani') }}" />
             @endforeach
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari 1">
+        <x-print.footer page="{{ Translator::t('prod_mc_footer_page', 'Halaman 1 dari 1') }}">
             {{ $this->part->displayMastercardCode() }} · {{ $this->part->product?->product_name }} ·
-            dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP
+            {{ Translator::t('prod_mc_footer_printed_at', 'dicetak') }} {{ now()->format('d/m/Y H:i') }} · {{ Translator::t('prod_mc_footer_legal_note', 'dokumen sah terbit sistem TMERP') }}
         </x-print.footer>
     </x-print.sheet>
 

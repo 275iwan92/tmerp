@@ -14,6 +14,7 @@ use App\Models\Master\ProdProduct;
 use App\Services\Flow\FlowEngineService;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
+use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -508,16 +509,16 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 
         @if ($panel === 'grid')
             <x-grid.stat-row :count="3">
-                <x-grid.stat-box tone="total" label="Total Dokumen" :value="$this->statTotal" />
-                <x-grid.stat-box tone="warn" label="Menunggu Approval" :value="$this->statPending" />
-                <x-grid.stat-box tone="active" label="Sudah Posting" :value="$this->statPosted" />
+                <x-grid.stat-box tone="total" label="{{ Translator::t('inv_stat_total_doc', 'Total Dokumen') }}" :value="$this->statTotal" />
+                <x-grid.stat-box tone="warn" label="{{ Translator::t('proc_pr_stat_submitted', 'Menunggu Approval') }}" :value="$this->statPending" />
+                <x-grid.stat-box tone="active" label="{{ Translator::t('inv_stat_posted', 'Sudah Posting') }}" :value="$this->statPosted" />
             </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
                     <div class="flex items-center gap-1.5 shrink-0">
                         <span class="text-sm">🔍</span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. dokumen / catatan…"
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('inv_search_doc_placeholder', 'Cari no. dokumen / catatan…') }}"
                             class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                     </div>
                     <x-slot:newRecord>
@@ -530,36 +531,36 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                     <table class="w-full border-collapse text-[12.5px]">
                         <thead>
                             <tr>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Dokumen</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Tanggal</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Jenis</th>
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">Status</th>
-                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Aksi</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('inv_col_document', 'Dokumen') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('proc_col_date', 'Tanggal') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('sales_hub_col_type', 'Jenis') }}</th>
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
+                                <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->documents as $d)
-                                <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
+                                <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
                                             <div class="w-8 h-8 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($d->doc_id) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($d->doc_no ?: 'DOC') }}</div>
                                             <div>
-                                                <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: '(draft)' }}</div>
+                                                <div class="font-semibold text-[13px] font-mono">{{ $d->doc_no ?: Translator::t('proc_draft_placeholder', '(draft)') }}</div>
                                                 <div class="text-[11px] text-muted">{{ $d->reason_code ?: '—' }}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $d->doc_date?->format('d/m/Y') }}</td>
-                                    <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $d->doc_cat === 'OP' ? 'Opname' : 'Adjustment' }}</td>
+                                    <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $d->doc_cat === 'OP' ? Translator::t('inv_adj_kind_opname', 'Opname') : Translator::t('inv_adj_kind_adjustment', 'Adjustment') }}</td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="↗" title="Buka" action="openEdit({{ $d->doc_id }})" />
+                                        <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $d->doc_id }})" />
                                     </td>
                                 </tr>
                             @empty
-                                <x-grid.empty-row :colspan="5" message="Belum ada dokumen Adjustment/Opname." />
+                                <x-grid.empty-row :colspan="5" message="{{ Translator::t('inv_adj_empty', 'Belum ada dokumen Adjustment/Opname.') }}" />
                             @endforelse
                         </tbody>
                     </table>
@@ -569,12 +570,12 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
             {{-- ============ FORM ============ --}}
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold flex items-center gap-2">
-                    <span>{{ $editingId ? 'Edit '.($doc_kind === 'OP' ? 'Opname' : 'Adjustment').' · '.$doc_no : ($doc_kind === 'OP' ? 'Opname' : 'Adjustment').' Baru' }}</span>
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
+                    <span>{{ $editingId ? Translator::t('inv_adj_edit_prefix', 'Edit').' '.($doc_kind === 'OP' ? Translator::t('inv_adj_kind_opname', 'Opname') : Translator::t('inv_adj_kind_adjustment', 'Adjustment')).' · '.$doc_no : ($doc_kind === 'OP' ? Translator::t('inv_adj_kind_opname', 'Opname') : Translator::t('inv_adj_kind_adjustment', 'Adjustment')).' '.Translator::t('inv_adj_new_suffix', 'Baru') }}</span>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ Translator::t('inv_stockadj_category_'.strtolower($category), self::CATEGORY_LABELS[$category]) }}</span>
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($flow_status) }}">{{ $flow_status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" title="Kembali ke Daftar"
+                    <button type="button" wire:click="backToGrid" title="{{ Translator::t('inv_back_to_list_title', 'Kembali ke Daftar') }}"
                         class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
                         <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
@@ -583,69 +584,69 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 
                 <div class="p-4 flex flex-col gap-3">
                     @if ($readOnly && $flow_status !== 'CANCELLED')
-                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 Dokumen sedang dalam proses approval / sudah diposting — lihat-saja.</div>
+                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">🔒 {{ Translator::t('inv_adj_readonly_pending', 'Dokumen sedang dalam proses approval / sudah diposting — lihat-saja.') }}</div>
                     @elseif ($flow_status === 'CANCELLED')
-                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f]">🔒 Dokumen dibatalkan — lihat-saja.</div>
+                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#fdecec] border border-[#f5c6c6] text-[#a3453f]">🔒 {{ Translator::t('inv_adj_readonly_cancelled', 'Dokumen dibatalkan — lihat-saja.') }}</div>
                     @endif
                     @if ($flow_status === 'REVISION_NEEDED')
-                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0]">↩ Dokumen ditolak & dikembalikan utk revisi — perbaiki lalu ajukan ulang.</div>
+                        <div class="text-xs px-3 py-2.5 rounded-md bg-[#f1ecfc] border border-[#ddd0f7] text-[#6b4fa0]">↩ {{ Translator::t('inv_adj_revision_note', 'Dokumen ditolak & dikembalikan utk revisi — perbaiki lalu ajukan ulang.') }}</div>
                     @endif
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide">Header</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide">{{ Translator::t('inv_section_header', 'Header') }}</div>
                     <div class="flex gap-2.5 flex-wrap">
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="No. Dokumen" value="{{ $doc_no ?: '(otomatis saat simpan)' }}" disabled class="!font-mono" />
+                            <x-form.input label="{{ Translator::t('inv_field_doc_no', 'No. Dokumen') }}" value="{{ $doc_no ?: Translator::t('inv_field_doc_no_auto', '(otomatis saat simpan)') }}" disabled class="!font-mono" />
                         </div>
                         <div class="flex-1 min-w-[140px]">
-                            <x-form.date-picker label="Tanggal Dokumen *" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
+                            <x-form.date-picker label="{{ Translator::t('inv_field_doc_date', 'Tanggal Dokumen *') }}" wire:model="doc_date" :disabled="$readOnly" name="doc_date" />
                         </div>
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.select label="Jenis *" wire:model="doc_kind" :disabled="$readOnly || $editingId" :placeholder="false"
-                                :options="['AD' => 'Adjustment (koreksi tunggal)', 'OP' => 'Stock Opname (hitung fisik terjadwal)']" />
+                            <x-form.select label="{{ Translator::t('inv_adj_field_kind', 'Jenis *') }}" wire:model="doc_kind" :disabled="$readOnly || $editingId" :placeholder="false"
+                                :options="['AD' => Translator::t('inv_adj_kind_ad_option', 'Adjustment (koreksi tunggal)'), 'OP' => Translator::t('inv_adj_kind_op_option', 'Stock Opname (hitung fisik terjadwal)')]" />
                         </div>
                         <div class="flex-1 min-w-[180px]">
-                            <x-form.select label="Gudang *" wire:model="warehouse_id" :disabled="$readOnly" name="warehouse_id"
+                            <x-form.select label="{{ Translator::t('inv_field_warehouse', 'Gudang *') }}" wire:model="warehouse_id" :disabled="$readOnly" name="warehouse_id"
                                 :options="$this->warehouses->mapWithKeys(fn ($w) => [$w->id_warehouse => $w->warehouse_code.' — '.$w->warehouse_name])->all()" />
                         </div>
                         <div class="flex-1 min-w-[180px]">
-                            <x-form.select label="Alasan *" wire:model="reason_code" :disabled="$readOnly" name="reason_code"
-                                :options="['COUNT_ERROR' => 'Salah hitung/input sebelumnya', 'DAMAGED' => 'Rusak', 'LOST' => 'Hilang', 'FOUND' => 'Ditemukan (lebih dari catatan)', 'EXPIRED' => 'Kadaluarsa', 'OTHER' => 'Lainnya']" />
+                            <x-form.select label="{{ Translator::t('inv_adj_field_reason', 'Alasan *') }}" wire:model="reason_code" :disabled="$readOnly" name="reason_code"
+                                :options="['COUNT_ERROR' => Translator::t('inv_adj_reason_count_error', 'Salah hitung/input sebelumnya'), 'DAMAGED' => Translator::t('inv_adj_reason_damaged', 'Rusak'), 'LOST' => Translator::t('inv_adj_reason_lost', 'Hilang'), 'FOUND' => Translator::t('inv_adj_reason_found', 'Ditemukan (lebih dari catatan)'), 'EXPIRED' => Translator::t('inv_adj_reason_expired', 'Kadaluarsa'), 'OTHER' => Translator::t('inv_adj_reason_other', 'Lainnya')]" />
                         </div>
                         <div class="flex-1 min-w-[160px]">
-                            <x-form.input label="Diajukan oleh" value="{{ Auth::user()->name }}" disabled />
+                            <x-form.input label="{{ Translator::t('inv_adj_field_submitted_by', 'Diajukan oleh') }}" value="{{ Auth::user()->name }}" disabled />
                         </div>
                     </div>
 
                     @if ($doc_kind === 'OP')
                         <div class="border border-[#eef1f5] rounded-md p-3 bg-[#fafbfd]">
-                            <div class="text-[10.5px] font-bold text-muted uppercase mb-2">Blok Opname</div>
+                            <div class="text-[10.5px] font-bold text-muted uppercase mb-2">{{ Translator::t('inv_adj_opname_block_title', 'Blok Opname') }}</div>
                             <div class="flex gap-2.5 flex-wrap">
                                 <div class="flex-1 min-w-[180px]">
-                                    <x-form.input label="Petugas Opname *" wire:model="opn_officer" :disabled="$readOnly" name="opn_officer" />
+                                    <x-form.input label="{{ Translator::t('inv_adj_field_officer', 'Petugas Opname *') }}" wire:model="opn_officer" :disabled="$readOnly" name="opn_officer" />
                                 </div>
                                 <div class="flex-1 min-w-[180px]">
-                                    <x-form.date-picker mode="datetime" label="Mulai Hitung *" wire:model="opn_start" :disabled="$readOnly" />
+                                    <x-form.date-picker mode="datetime" label="{{ Translator::t('inv_adj_field_start', 'Mulai Hitung *') }}" wire:model="opn_start" :disabled="$readOnly" />
                                 </div>
                                 <div class="flex-1 min-w-[180px]">
-                                    <x-form.date-picker mode="datetime" label="Selesai Hitung *" wire:model="opn_stop" :disabled="$readOnly" />
+                                    <x-form.date-picker mode="datetime" label="{{ Translator::t('inv_adj_field_stop', 'Selesai Hitung *') }}" wire:model="opn_stop" :disabled="$readOnly" />
                                 </div>
                                 <div class="flex-1 min-w-[180px]">
-                                    <x-form.input label="Saksi *" wire:model="opn_witness" :disabled="$readOnly" />
+                                    <x-form.input label="{{ Translator::t('inv_adj_field_witness', 'Saksi *') }}" wire:model="opn_witness" :disabled="$readOnly" />
                                 </div>
                                 <div class="flex items-end pb-2">
-                                    <x-form.checkbox wire:model="full_scope" :disabled="$readOnly" label="Cakupan Penuh (semua item bersaldo)" label-class="font-semibold text-[#556]" />
+                                    <x-form.checkbox wire:model="full_scope" :disabled="$readOnly" label="{{ Translator::t('inv_adj_field_full_scope', 'Cakupan Penuh (semua item bersaldo)') }}" label-class="font-semibold text-[#556]" />
                                 </div>
                             </div>
                         </div>
                     @endif
 
-                    <x-form.textarea label="Catatan / Kronologi" wire:model="notes" :disabled="$readOnly" rows="2" />
+                    <x-form.textarea label="{{ Translator::t('inv_adj_field_notes', 'Catatan / Kronologi') }}" wire:model="notes" :disabled="$readOnly" rows="2" />
 
-                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Baris Item</div>
+                    <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ Translator::t('inv_section_lines', 'Baris Item') }}</div>
                     @if (! $readOnly)
                         <div class="flex items-center gap-2 flex-wrap">
                             <div class="relative flex-1" style="max-width:380px">
-                                <input type="text" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 Cari kode / nama item utk ditambah…" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                                <input type="text" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('inv_item_search_placeholder', 'Cari kode / nama item utk ditambah…') }}" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                                 @if ($this->itemResults->isNotEmpty())
                                     <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                         @foreach ($this->itemResults as $it)
@@ -657,7 +658,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                                 @endif
                             </div>
                             @if ($doc_kind === 'OP' && $full_scope)
-                                <button type="button" wire:click="pullFullScope" wire:confirm="Tarik semua item bersaldo di gudang ini? Baris yang sudah diisi akan ditimpa." class="text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5 cursor-pointer">⤓ Tarik Semua Item Bersaldo</button>
+                                <button type="button" wire:click="pullFullScope" wire:confirm="{{ Translator::t('inv_adj_confirm_pull_full_scope', 'Tarik semua item bersaldo di gudang ini? Baris yang sudah diisi akan ditimpa.') }}" class="text-[11px] font-bold text-white bg-accent rounded px-3 py-1.5 cursor-pointer">⤓ {{ Translator::t('inv_adj_btn_pull_full_scope', 'Tarik Semua Item Bersaldo') }}</button>
                             @endif
                         </div>
                     @endif
@@ -667,13 +668,13 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                         <table class="w-full text-[12.5px] border-collapse">
                             <thead>
                                 <tr class="bg-[#fafbfd]">
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">Item</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[160px]">Lokasi *</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">Saldo Sistem</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">Hitung Fisik *</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[90px]">Selisih</th>
-                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[110px]">Nilai Selisih</th>
-                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">Alasan Baris</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ Translator::t('inv_line_col_item', 'Item') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[160px]">{{ Translator::t('inv_line_col_location', 'Lokasi *') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ Translator::t('inv_adj_col_system_balance', 'Saldo Sistem') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[100px]">{{ Translator::t('inv_adj_col_physical_count', 'Hitung Fisik *') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[90px]">{{ Translator::t('inv_adj_col_variance', 'Selisih') }}</th>
+                                    <th class="text-right px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5] w-[110px]">{{ Translator::t('inv_adj_col_variance_value', 'Nilai Selisih') }}</th>
+                                    <th class="text-left px-2 py-1.5 text-[10.5px] text-muted uppercase border-b border-[#eef1f5]">{{ Translator::t('inv_adj_col_line_reason', 'Alasan Baris') }}</th>
                                     @if (! $readOnly)
                                         <th class="w-[40px] border-b border-[#eef1f5]"></th>
                                     @endif
@@ -693,13 +694,13 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                                         <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.qty_physical" :disabled="$readOnly" class="!py-1 text-right" /></td>
                                         <td class="px-2 py-1.5 text-right font-mono font-semibold {{ $selisih > 0 ? 'text-[#16a34a]' : ($selisih < 0 ? 'text-[#c0392b]' : 'text-muted') }}">{{ $selisih > 0 ? '+' : '' }}{{ rtrim(rtrim(number_format($selisih, 2, ',', '.'), '0'), ',') }}</td>
                                         <td class="px-2 py-1.5 text-right font-mono text-muted">{{ number_format(abs($selisih * $line['unit_price']), 0, ',', '.') }}</td>
-                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.note_detail" :disabled="$readOnly" placeholder="{{ abs($selisih) > 0.0001 ? 'wajib' : 'opsional' }}" class="!py-1" /></td>
+                                        <td class="px-2 py-1.5"><x-form.input wire:model="lines.{{ $i }}.note_detail" :disabled="$readOnly" placeholder="{{ abs($selisih) > 0.0001 ? Translator::t('inv_adj_line_reason_required', 'wajib') : Translator::t('inv_adj_line_reason_optional', 'opsional') }}" class="!py-1" /></td>
                                         @if (! $readOnly)
-                                            <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="Hapus baris">✕</button></td>
+                                            <td class="px-2 py-1.5 text-center"><button type="button" wire:click="removeLine({{ $i }})" class="text-[#c0392b] cursor-pointer" title="{{ Translator::t('inv_line_remove_title', 'Hapus baris') }}">✕</button></td>
                                         @endif
                                     </tr>
                                 @empty
-                                    <tr><td colspan="8" class="text-center py-6 text-muted text-xs">Belum ada baris — cari item di atas utk ditambahkan.</td></tr>
+                                    <tr><td colspan="8" class="text-center py-6 text-muted text-xs">{{ Translator::t('inv_stockin_no_lines', 'Belum ada baris — cari item di atas utk ditambahkan.') }}</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -707,13 +708,13 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
 
                     @if ($this->approvalHistory->isNotEmpty())
                         <div class="border border-[#eef1f5] rounded-xl p-4 bg-white">
-                            <p class="text-[10.5px] font-bold text-muted uppercase mb-3">Riwayat Approval</p>
+                            <p class="text-[10.5px] font-bold text-muted uppercase mb-3">{{ Translator::t('inv_adj_approval_history_title', 'Riwayat Approval') }}</p>
                             <div class="relative pl-5 border-l-2 border-[#eef1f5] ml-1 space-y-3 text-sm">
                                 @foreach ($this->approvalHistory as $h)
                                     <div class="relative">
                                         <div class="absolute -left-[26px] top-0.5 w-3 h-3 rounded-full border-2 {{ $h->action === 'REJECTED' ? 'bg-[#fbeaea] border-[#a3241f]' : 'bg-[#eaf7ee] border-[#1f8a4c]' }}"></div>
                                         <p class="font-semibold text-xs">{{ $h->action }}{{ $h->status_to ? ' → '.$h->status_to : '' }}</p>
-                                        <p class="text-[10.5px] text-muted">Oleh: {{ $h->created_by ?? 'sistem' }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' (PLT)' : '' }}</p>
+                                        <p class="text-[10.5px] text-muted">{{ Translator::t('inv_adj_history_by_prefix', 'Oleh:') }} {{ $h->created_by ?? Translator::t('inv_adj_history_system', 'sistem') }} · {{ $h->acted_at?->translatedFormat('d M Y, H:i') }}{{ $h->is_acting ? ' ('.Translator::t('inv_adj_history_acting_suffix', 'PLT').')' : '' }}</p>
                                         @if ($h->notes)
                                             <p class="text-[10.5px] {{ $h->action === 'REJECTED' ? 'text-[#a3241f]' : 'text-muted' }} mt-0.5">"{{ $h->notes }}"</p>
                                         @endif
@@ -726,29 +727,29 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                     @if (in_array($flow_status, self::EDITABLE_STATUSES, true) && ! $readOnly)
                         <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
                             @if ($editingId)
-                                <button type="button" wire:click="cancelDoc" wire:confirm="Batalkan dokumen ini?" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">Batalkan</button>
+                                <button type="button" wire:click="cancelDoc" wire:confirm="{{ Translator::t('inv_confirm_cancel_doc', 'Batalkan dokumen ini?') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#fdecec] text-[#c0392b] cursor-pointer">{{ Translator::t('sales_form_btn_cancel_doc', 'Batalkan') }}</button>
                             @endif
-                            <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 Simpan Draft</button>
+                            <button type="button" wire:click="saveDraft" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">💾 {{ Translator::t('inv_btn_save_draft', 'Simpan Draft') }}</button>
                             @if ($editingId)
-                                <button type="button" wire:click="submitForApproval" wire:confirm="Ajukan dokumen ini utk approval? Baris tak bisa diedit lagi selama proses approval." class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">Ajukan Persetujuan</button>
+                                <button type="button" wire:click="submitForApproval" wire:confirm="{{ Translator::t('inv_adj_confirm_submit', 'Ajukan dokumen ini utk approval? Baris tak bisa diedit lagi selama proses approval.') }}" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">{{ Translator::t('inv_adj_btn_submit', 'Ajukan Persetujuan') }}</button>
                             @endif
                         </div>
                     @elseif ($this->pendingApproval)
                         <div class="border-2 border-dashed border-[#d7dbe2] rounded-xl p-4 bg-white">
-                            <p class="text-xs font-bold text-navy mb-2">Keputusan Approval — {{ $this->pendingApproval->pending_label ?? 'Menunggu keputusan Anda' }}</p>
-                            <p class="text-[11px] text-muted mb-2">Nilai absolut dokumen: <b>{{ number_format((float) $this->pendingApproval->amount_snapshot, 0, ',', '.') }}</b></p>
+                            <p class="text-xs font-bold text-navy mb-2">{{ Translator::t('inv_adj_approval_decision_title', 'Keputusan Approval —') }} {{ $this->pendingApproval->pending_label ?? Translator::t('inv_adj_awaiting_decision', 'Menunggu keputusan Anda') }}</p>
+                            <p class="text-[11px] text-muted mb-2">{{ Translator::t('inv_adj_absolute_value_label', 'Nilai absolut dokumen:') }} <b>{{ number_format((float) $this->pendingApproval->amount_snapshot, 0, ',', '.') }}</b></p>
                             @if ($approvalError)
                                 <p class="text-[11px] text-[#a3241f] mb-2">⚠ {{ $approvalError }}</p>
                             @endif
                             <div class="mb-3">
-                                <label class="text-xs text-muted">Alasan Penolakan <span class="text-[#a3241f]">(wajib, min. 10 karakter)</span></label>
+                                <label class="text-xs text-muted">{{ Translator::t('inv_adj_reject_reason_label', 'Alasan Penolakan') }} <span class="text-[#a3241f]">{{ Translator::t('inv_adj_reject_reason_hint', '(wajib, min. 10 karakter)') }}</span></label>
                                 <div class="mt-1">
-                                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="Wajib diisi bila menolak..." class="!text-sm" />
+                                    <x-form.textarea wire:model="approvalNote" rows="2" placeholder="{{ Translator::t('inv_adj_reject_reason_placeholder', 'Wajib diisi bila menolak...') }}" class="!text-sm" />
                                 </div>
                             </div>
                             <div class="flex justify-end gap-2">
-                                <button type="button" wire:click="rejectDoc" wire:confirm="Tolak dokumen ini? Akan dikembalikan ke pembuat utk revisi." class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ Tolak</button>
-                                <button type="button" wire:click="approveDoc" wire:confirm="Setujui dokumen ini?" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ Setujui</button>
+                                <button type="button" wire:click="rejectDoc" wire:confirm="{{ Translator::t('inv_adj_confirm_reject', 'Tolak dokumen ini? Akan dikembalikan ke pembuat utk revisi.') }}" class="bg-[#a3241f] text-white px-4 py-2 rounded-lg text-sm font-semibold">✕ {{ Translator::t('inv_adj_btn_reject', 'Tolak') }}</button>
+                                <button type="button" wire:click="approveDoc" wire:confirm="{{ Translator::t('inv_adj_confirm_approve', 'Setujui dokumen ini?') }}" class="bg-[#1f8a4c] text-white px-4 py-2 rounded-lg text-sm font-semibold">✓ {{ Translator::t('inv_adj_btn_approve', 'Setujui') }}</button>
                             </div>
                         </div>
                     @endif
