@@ -1081,8 +1081,13 @@ malam ini** (di luar scope i18n, perlu investigasi Master Employee/Machine
 mana yang berubah dan kapan, keputusan ada di sesi lain/user).
 
 **Rekomendasi lanjutan (kalau user mau meneruskan i18n)**, urut prioritas:
-1. **Tuntaskan 5 entry.blade.php Procurement** (gap terbesar tersisa dari
-   rencana 7-malam ini sendiri) — PR/PO/PV/PQ/PRT.
+1. ~~Tuntaskan 5 entry.blade.php Procurement~~ — **SELESAI 2026-09-11**
+   (instruksi user "run now" setelah checkpoint §13.2). PR/PO/PV/PQ/PRT
+   semua label/placeholder/tooltip/confirm/error dibungkus `Translator::t()`,
+   ~190 key baru (`2026_09_11_000001_seed_i18n_procurement_entry_screens.php`).
+   Diverifikasi render PR/PO/PV via `Livewire::test()` data live; PQ/PRT
+   (tabel kosong) pakai record dummy sementara lalu dihapus lagi (balik ke
+   0 baris). Smoke test 12/12 tetap pass. Commit `659982c`.
 2. **Form lengkap Master Data** (Customer/Supplier/Produk/Employee) — saat
    ini cuma grid, form detail (mayoritas field per-master) masih hardcode.
 3. **Production Scheduling** — modul paling kompleks (Scheduling Board,
