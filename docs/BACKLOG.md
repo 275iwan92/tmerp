@@ -708,25 +708,12 @@ halaman terpisah) masih didiskusikan.
     pakai sistem visual beda, `master/supplier.blade.php`/
     `master/employee.blade.php` tombol "Kembali" untuk toggle state
     bukan navigasi, JANGAN ikut disamakan).
-    **[REFRESH 2026-09-09]** User tunjuk ulang item ini via screenshot
-    tombol Back + minta perbaikan ikon panah ("kurang tegas kurang
-    jelas") — ikon diganti Unicode `←` → Font Awesome `fa-solid
-    fa-arrow-left` (FA 6.5.1 sudah dimuat CDN app-wide, lihat
-    `FORM_UI_STANDARD.md` §1 update terbaru). **Sudah dikerjakan HARI
-    INI** di 1 tempat sbg acuan visual baru: `setup/component-library.blade.php`
-    tab Form § "Aksi & Status" (Settings > DevLib UI UX). **BELUM
-    dikerjakan**: rollout ikon baru ini ke SEMUA 25+ layar nyata yang
-    masih pakai `←` lama (daftar lengkap ada di `FORM_UI_STANDARD.md`
-    §1 "Referensi implementasi" + grep
-    `rounded-full bg-white text-\[#43508a\] text-xs font-bold">←`). **Instruksi
-    eksplisit user: kerjakan rollout ini MALAM HARI lewat mekanisme
-    autonomous/nightly autowork yang sudah ada (`tmerp-backlog-autowork-*`),
-    TANPA prompting/konfirmasi ulang ke user** — cukup ganti span ikon
-    di tiap file (persis pola baru di `FORM_UI_STANDARD.md` §1), lalu
-    `npm run build` + jalankan test suite penuh + commit per-batch wajar
-    (jangan 1 commit raksasa 25 file), TIDAK perlu tanya user dulu utk
-    perubahan mekanis sekecil ini (ganti 1 `<span>` isi ikon, tidak ada
-    keputusan desain baru).
+    **[SELESAI 2026-09-11]** Rollout ikon `←` Unicode → Font Awesome
+    `fa-solid fa-arrow-left` ke SEMUA 24 layar nyata yang masih pakai
+    pola lama (1 lokasi acuan `component-library.blade.php` sudah lebih
+    dulu jadi 25). Diverifikasi: grep pola lama nihil hasil, `npm run
+    build` sukses, `MainMenuShellSmokeTest` 12/12 tetap pass. Detail
+    daftar file: `docs/LOG_JOB_DONE.md`.
   - **Footer pagination — komponennya SUDAH ada & baik**
     (`components/grid/pagination-footer.blade.php`, dipakai konsisten 13+
     layar). **[SELESAI 2026-09-10 malam, 8/8]**: `hrm/position.blade.php`,

@@ -3,6 +3,40 @@
 
 ---
 
+## 2026-09-11 — Rollout ikon tombol Back ke 24 layar (BACKLOG §10)
+
+Permintaan user "selesaikan yang mudah dulu" — item ini sudah pre-approved
+eksekusi mekanis tanpa konfirmasi ulang (lihat draf lama BACKLOG §10).
+Ganti `<span class="...">←</span>` (Unicode, `text-xs font-bold`) jadi
+`<span class="..."><i class="fa-solid fa-arrow-left"></i></span>` (FA 6.5.1
+CDN, sudah dimuat app-wide), persis pola acuan yang sudah lebih dulu
+diterapkan di `setup/component-library.blade.php` (2026-09-09).
+
+24 file diubah (1 lokasi acuan sudah lebih dulu benar, jadi total 25/25):
+`pur/prt/entry.blade.php`, `pur/pq/entry.blade.php`, `pur/pv/entry.blade.php`,
+`pur/po/entry.blade.php`, `pur/pr/entry.blade.php`, `finance/cash-bank.blade.php`,
+`inventory/stock-adjustment.blade.php`, `inventory/stock-out.blade.php`,
+`inventory/stock-in.blade.php`, `recruitment/candidate-review/detail.blade.php`,
+`production/wo-entry.blade.php`, `inquiry/costing.blade.php`,
+`co/entry.blade.php`, `master/warehouse/entry.blade.php`,
+`inventory/stock-return.blade.php`, `inventory/print/master-stock.blade.php`,
+`inventory/print/stock-card.blade.php`, `quotation/entry.blade.php`,
+`recruitment/offer/entry.blade.php`, `dispatch/do/entry.blade.php`,
+`recruitment/requisition/entry.blade.php`, `inventory/print/slow-moving.blade.php`,
+`notification/index.blade.php`, `master/raw-material/entry.blade.php`,
+`inquiry/imposition.blade.php`.
+
+Tidak ada perubahan class Tailwind baru (cuma isi `<span>`), tapi
+`npm run build` tetap dijalankan sesuai checklist wajib CLAUDE.md §7.10 —
+sukses. Diverifikasi: grep pola lama (`text-xs font-bold">←`) nihil hasil
+di seluruh `resources/views`; `php artisan test
+tests/Feature/MainMenuShellSmokeTest.php` 12/12 pass (murni cek regresi
+shell, bukan test spesifik tiap 24 layar — perubahan murni markup ikon,
+risiko rendah). Verifikasi visual browser tidak dilakukan (kredensial
+tidak boleh diotomatisasi, `[[feedback_no_credential_automation]]`).
+
+---
+
 ## 2026-09-10 malam — Standarisasi tombol aksi umum (5 titik, BACKLOG §10)
 
 Task terjadwal `button-label-standardization-rollout` (Thu2107_TombolStandardisasi)

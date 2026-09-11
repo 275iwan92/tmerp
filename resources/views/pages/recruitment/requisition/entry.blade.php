@@ -133,7 +133,7 @@ new #[Title('Permohonan Tenaga Kerja — TELASIH MAKMUR ERP')] class extends Com
         <a href="{{ route('hrm.recruitment.requisition.list') }}" title="Kembali"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-xs font-bold">←</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
         </a>
     </header>
 

@@ -18,11 +18,12 @@
 
 ## Belum Dikerjakan
 
-### Dropdown "Ukuran Pasaran" (Inquiry NEW) — pilihan hilang setelah dipilih — 2026-09-03
-- **Layar:** `inquiry/form.blade.php` — Part N, section Tipe Produk, dropdown "⭐ Ukuran Pasaran" (mis. "Serum 30ml (40x40x110)")
-- **Jenis:** Bug
-- **Deskripsi:** User pilih 1 opsi (mis. "Skincare 50ml") → dimensi & preview dieline BENAR ter-update, TAPI dropdown-nya sendiri balik nampilin placeholder "— pilih ukuran umum —" (bukan tetap nampilin opsi yang baru dipilih). Root cause SUDAH ditemukan (dicek langsung ke kode, bukan tebakan): `<select wire:change="applySizePreset(...)">` di `form.blade.php:1454` TIDAK punya `@selected(...)` di `<option>`-nya sama sekali — beda dari dropdown "Tipe Produk" persis di atasnya yang punya `@selected($part['type_code'] === $code)`. Perlu properti Livewire yang nyimpen preset id yang lagi dipilih (per part), baru `@selected` bisa dipasang.
-- **Kenapa belum dikerjakan sekarang:** instruksi user eksplisit "check ini nanti masukkan ke backlog" — dicatat dulu, bukan prioritas saat ini. Layar dieline/dimensi/preset ini SENDIRI dinyatakan user "sudah bagus, jangan diubah" di luar bug spesifik ini — jangan refactor lebih luas dari yang perlu saat akhirnya dikerjakan.
+### Dropdown "Ukuran Pasaran" (Inquiry NEW) — fitur hilang total, bukan sekadar bug UI — 2026-09-03, diperbarui 2026-09-11
+- **Layar:** `inquiry/form.blade.php` — dulu di section Tipe Produk per-Part, dropdown "⭐ Ukuran Pasaran" (mis. "Serum 30ml (40x40x110)")
+- **Jenis:** Bug → **naik status jadi "fitur hilang", butuh keputusan penempatan, BUKAN lagi bug kecil**
+- **Deskripsi awal (2026-09-03):** dropdown balik ke placeholder "— pilih ukuran umum —" setelah user memilih opsi, walau dimensi & dieline sudah ter-update benar. Diduga cuma kurang `@selected(...)`.
+- **Temuan ulang 2026-09-11 (dicek ke kode & git log, bukan tebakan):** seluruh blok `<select wire:change="applySizePreset(...)">` (dulu `form.blade.php:~1454`, sudah pakai pola `x-effect` Alpine yang benar sesuai `[[feedback_livewire_select_morph_bug]]`, bukan `@selected` polos — jadi diagnosis awal soal `@selected` sebenarnya keliru) **DIHAPUS TOTAL** saat redesign "Peran Part"/pemindahan Tipe Produk ke level Inquiry (commit `a1a32e5`, 2026-09-04, lihat `[[project_prodtype_multipart_category_system]]`). Method backend `applySizePreset()` + state `size_preset_id` di `iqp_part` masih ada di class Livewire tapi jadi **kode mati** — tidak dipanggil dari markup manapun lagi.
+- **Kenapa belum dikerjakan sekarang:** ini bukan lagi bug 1-baris. CLAUDE.md §4 masih mencatat preset "Ukuran Pasaran" sbg bagian goal InqProd Engine yang "SUDAH ADA & DIVERIFIKASI BAGUS, JANGAN DIUBAH" — padahal senyatanya sudah tidak ada UI-nya sejak redesign Peran Part. Perlu keputusan: (a) bangun ulang dropdown ini di lokasi baru (per-Part, setelah gerbang Peran Part, sebelum/sesudah Dimensi) — konsisten dgn catatan CLAUDE.md §4 "Galeri visual popup dieline... sementara dilepas dari scope saat pemindahan ini, belum dibangun ulang di lokasi baru", kemungkinan preset ini nasibnya sama; atau (b) fitur ini memang sengaja tidak dilanjutkan pasca-redesign — perlu konfirmasi user, jangan diasumsikan salah satu.
 
 ---
 
