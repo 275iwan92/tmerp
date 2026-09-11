@@ -43,6 +43,23 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 // disesuaikan ke `login`, bukan `email`.
 class AdminPanelProvider extends PanelProvider
 {
+    // Mitigasi cepat BACKLOG §9.1 (2026-09-10, "klik menu sidebar tidak
+    // merespons saat modal form terbuka"): root cause adalah backdrop modal
+    // ManageRecords --simple menelan klik pertama ke sidebar. Solusi jangka
+    // panjang (auto-save draft / pindah ke halaman Create-Edit terpisah)
+    // masih menunggu diskusi user -- ini cuma matikan tutup-modal-diam-diam
+    // via klik-di-luar, supaya user tidak kehilangan input tanpa sadar
+    // selagi menunggu. Method ini toggle STATIS global Filament (bukan
+    // fluent per-Action -- versi Filament ini tidak punya
+    // Action::closedByClickingAway()), jadi berlaku ke SEMUA modal panel
+    // /admin, bukan cuma EmpEmployeeResource/OrgPositionResource -- sejalan
+    // dgn niat asli backlog "dan Resource --simple lain yg menyusul".
+    // Reversibel: hapus baris ini utk kembali ke bawaan Filament.
+    public function boot(): void
+    {
+        \Filament\Support\View\Components\ModalComponent::closedByClickingAway(false);
+    }
+
     public function panel(Panel $panel): Panel
     {
         // PENTING (ditemukan & diperbaiki 2026-09-02): panel() TIDAK jalan

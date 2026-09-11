@@ -620,15 +620,22 @@ diskusi). **Hal yang perlu diputuskan bareng user sebelum mulai:**
    (kolom `stat_*` yg sudah ada, atau kolom baru?), race condition kalau ada
    2 tab/user edit record sama.
 
-**Mitigasi cepat (belum dieksekusi, dicatat utk dikerjakan nanti — TIDAK
-butuh diskusi arsitektur, reversibel, bisa jalan duluan sebelum opsi draft di
-atas diputuskan):** set `->closedByClickingAway(false)` pada `EditAction`/
-`CreateAction` di `EmpEmployeeResource`/`OrgPositionResource` (dan Resource
-`--simple` lain yg menyusul) — supaya klik di luar modal tidak diam-diam
-menutup form tanpa disadari user. Tidak menghilangkan akar masalah (backdrop
-tetap ada, klik pertama ke sidebar tetap kena backdrop dulu), tapi mencegah
-efek samping "form ke-close tanpa sadar" selagi solusi jangka panjang (draft/
-halaman terpisah) masih didiskusikan.
+**Mitigasi cepat [SELESAI 2026-09-11]** — supaya klik di luar modal tidak
+diam-diam menutup form tanpa disadari user, selagi solusi jangka panjang
+(draft/halaman terpisah) masih menunggu diskusi. **Koreksi API saat eksekusi**:
+draf di atas menyebut `->closedByClickingAway(false)` sbg method fluent per-
+`EditAction`/`CreateAction` — dicek ke vendor, method itu **TIDAK ADA** di
+`filament/actions` versi ini (bukan tebakan yang benar). Yang benar:
+`Filament\Support\View\Components\ModalComponent::closedByClickingAway()`
+adalah **static config global**, dipanggil sekali di
+`AdminPanelProvider::boot()` (baru ditambah, sebelumnya cuma ada `panel()`).
+Efeknya jadi berlaku ke SEMUA modal panel `/admin` sekaligus (bukan cuma 2
+Resource ini) — sejalan dgn niat asli "dan Resource --simple lain yg
+menyusul", jadi tidak perlu diulang tiap Resource baru. Root cause (backdrop
+z-index di atas sidebar) TIDAK hilang — mitigasi ini murni cegah "form
+ke-close tanpa sadar". Diverifikasi: `php artisan route:list --path=admin`
+(panel boot tanpa error) + tinker cek `ModalComponent::$isClosedByClickingAway`
+= `false`. Reversibel (hapus method `boot()` di provider).
 
 ---
 

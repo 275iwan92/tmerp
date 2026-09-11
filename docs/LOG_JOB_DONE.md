@@ -3,6 +3,39 @@
 
 ---
 
+## 2026-09-11 — Mitigasi cepat modal Filament tertutup tanpa sadar (BACKLOG §9.1)
+
+Bagian "mitigasi cepat" dari §9.1 (klik sidebar tidak merespons saat modal
+Edit/Create terbuka) — item auto-save/draft jangka panjang di §9.1 TETAP
+menunggu diskusi user, TIDAK disentuh.
+
+Draf backlog menyebut `->closedByClickingAway(false)` sbg method fluent di
+`EditAction`/`CreateAction`. Sempat dicoba apa adanya di 4 tempat
+(`EmpEmployeeResource`, `OrgPositionResource`, `ManageEmpEmployees`,
+`ManageOrgPositions`) — dicek ke `vendor/filament/actions`, method itu
+**tidak ada** di API Action versi ini (akan fatal error kalau dibiarkan),
+langsung di-revert sebelum sempat dites browser. Yang benar ditemukan di
+`vendor/filament/support/src/View/Components/ModalComponent.php`: static
+property/method global (`$isClosedByClickingAway`), bukan per-Action.
+
+**Perbaikan final**: tambah method `boot()` di `AdminPanelProvider.php`
+(sebelumnya cuma `panel()`) berisi
+`ModalComponent::closedByClickingAway(false)`. Efeknya global ke semua modal
+panel `/admin` (2 Resource yg ada sekarang + Resource baru ke depan), bukan
+perlu diulang per-Resource. Root cause asli (backdrop z-index menutupi
+sidebar) TIDAK berubah — ini cuma mencegah efek samping "form tertutup diam-
+diam" saat klik pertama kena backdrop.
+
+Diverifikasi: `php artisan route:list --path=admin` (8 route panel /admin
+resolve normal, provider boot tanpa fatal error) + `php artisan tinker`
+cek `ModalComponent::$isClosedByClickingAway` bernilai `false` setelah
+bootstrap. Tidak ada class Tailwind baru → tidak perlu `npm run build`. Tidak
+ada test Filament existing utk modul ini (dicek `tests/` — 0 file
+match "Filament"/"Hrm"), jadi verifikasi murni via route:list+tinker, bukan
+Livewire::test().
+
+---
+
 ## 2026-09-11 — Rollout ikon tombol Back ke 24 layar (BACKLOG §10)
 
 Permintaan user "selesaikan yang mudah dulu" — item ini sudah pre-approved
