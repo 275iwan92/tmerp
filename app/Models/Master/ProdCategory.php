@@ -15,6 +15,8 @@ class ProdCategory extends Model
     protected $fillable = [
         'category_name',
         'description',
+        'default_stock_account_id',
+        'default_cogs_account_id',
         'activate',
         'created_by',
         'updated_by',

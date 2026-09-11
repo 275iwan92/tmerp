@@ -133,11 +133,13 @@ class StockPostingService
                 // cuma Stock Out sungguhan (docType OUT, bukan BB/RETURN/AD/OP) yang
                 // masuk HPP -- Adjustment/Opname punya makna akuntansi beda (koreksi,
                 // bukan konsumsi produksi) & sengaja TIDAK dijurnal otomatis di sini.
-                // SFG pakai akun langsung dari prod_part (stock_asset_account_id/
-                // cogs_account_id, migration 2026_08_22_000022) -- TANPA fallback
-                // kategori (prod_part tidak punya tabel setara doc_rmprefix1), jadi
-                // kalau belum diisi manual per part, baris ini akan selalu dilewati +
-                // masuk peringatan "belum lengkap" -- bukan silent skip.
+                // SFG pakai ProdPart::resolveCogsAccountId()/resolveStockAccountId()
+                // (BACKLOG §12.3, 2026-09-11) -- fallback 3-lapis part -> product ->
+                // prod_category.default_*_account_id, dulunya baca kolom prod_part
+                // langsung TANPA fallback sama sekali. Kolom kategori masih kosong
+                // (belum ada UI isinya) sampai sesi berikutnya, jadi perilaku SAAT
+                // INI tidak berubah -- kalau semua lapis kosong, baris ini tetap
+                // dilewati + masuk peringatan "belum lengkap", bukan silent skip.
                 // Nilai pakai avg_unitprice SEBELUM baris ini (prevAvg) -- itu
                 // valuasi moving-average yang sah saat barang ini keluar.
                 if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT') {
@@ -223,8 +225,8 @@ class StockPostingService
         foreach ($usageJournalRows as $r) {
             if ($r['category'] === 'SFG') {
                 $part = ProdPart::find($r['item_id']);
-                $cogsAccountId = $part?->cogs_account_id;
-                $stockAccountId = $part?->stock_asset_account_id;
+                $cogsAccountId = $part?->resolveCogsAccountId();
+                $stockAccountId = $part?->resolveStockAccountId();
             } else {
                 $material = MatRaw::find($r['item_id']);
                 $prefix1 = $material ? MatCategory::level(1)->where('category_name', $material->category1)->first() : null;

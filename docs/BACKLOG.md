@@ -802,10 +802,31 @@ demand, butuh ≥1 tahun data) dan `SALES_INITIATIVE_note.md` (modul
   Billing Status, Payment Record, AR/AP Aging, Statement of Account,
   Kwitansi, GL Trial Balance dashboard) — belum ada 1 layar pun,
   Journal Entry sendiri sudah live (Cash & Bank + auto-posting).
-- **Partner Account auto-fill** (`financeaccounting_delta_partner_category_coa_v2.md`
-  §3.3) — mekanisme Observer-nya **secara eksplisit diblokir**, menunggu
-  konfirmasi state `fin_partner_account` di `tm2acc` — cek dulu sebelum
-  lanjut, mungkin sudah tidak relevan.
+- **[BARU 2026-09-11] Grup A (Kategori Produk → akun COA, §2 dokumen di atas)
+  SELESAI** — ALTER `tm2mst.prod_category` (2 kolom nullable, TANPA seed nilai),
+  resolve 3-lapis `ProdPart`/`ProdProduct::resolveStockAccountId()`/
+  `resolveCogsAccountId()`, wiring ke `StockPostingService::postUsageJournal()`
+  (dulu baca kolom `prod_part` langsung TANPA fallback sama sekali, sekarang
+  jatuh ke `product` lalu `category`). **UI layar Master Kategori Produk BELUM
+  dibangun** (ternyata belum pernah ada screen CRUD utk `prod_category` sama
+  sekali, cuma dropdown read-only di `produk.blade.php`) — kolom akun tetap
+  NULL sampai ada cara isi, tapi behavior saat ini TIDAK berubah (resolve()
+  null-safe, sama seperti sebelumnya kalau semua lapis kosong). Diverifikasi
+  tinker (resolve chain part→product→category benar) + `PvStockIntegrationTest`
+  2/2 pass. Detail: `docs/LOG_JOB_DONE.md`.
+- **Grup B (Partner Account local/import, §3.1-3.2) — TERNYATA BUKAN "boleh
+  jalan sekarang" lagi, dicabut dari kategori itu.** Verifikasi §4 (2026-09-11,
+  sesuai instruksi dokumen sendiri "jangan ALTER buta") menemukan akun `211`/
+  `212` di `fin_account` **BUKAN** "Hutang Dagang Lokal/Impor" seperti
+  diasumsikan dokumen — kenyataannya segmentasi AP di COA aktual per
+  **kategori supplier/komoditas** (Kertas & Board/Tinta & Chemical/dst),
+  bentrok konsep dgn model "4 kombinasi CUSTOMER/SUPPLIER × local/import" di
+  §3. Kemungkinan sudah digantikan mekanisme `mat_category.default_coa_account_id`
+  yang sudah ada (§4 Procurement di atas). **Butuh rekonsiliasi desain dgn
+  user sebelum lanjut** — apakah AP tetap mau disegmentasi local/import
+  (perlu akun COA baru yang belum ada) atau `fin_partner_account` cukup
+  dipetakan dari `mat_category` yang sudah jalan. §3.3 (Observer) tetap
+  diblokir seperti semula, TIDAK disentuh.
 - Blanket PO/kontrak jangka panjang, Supplier performance rating — "belum
   dibutuhkan"/"menyusul", tidak ada urgensi tercatat.
 

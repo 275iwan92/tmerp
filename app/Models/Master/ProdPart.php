@@ -108,4 +108,22 @@ class ProdPart extends Model
     {
         return $this->mastercard_code ?: "MC-{$this->id_part}";
     }
+
+    // Resolve akun 3-lapis (BACKLOG §12.3 / financeaccounting_delta_partner_category_coa_v2.md
+    // §2.4) -- part -> product -> kategori produk (fallback terakhir). Menutup gap
+    // "SFG tanpa fallback kategori" di StockPostingService::postUsageJournal() (dulu
+    // baca stock_asset_account_id/cogs_account_id langsung, TANPA fallback apa pun).
+    public function resolveStockAccountId(): ?int
+    {
+        return $this->stock_asset_account_id
+            ?? $this->product?->stock_asset_account_id
+            ?? $this->product?->category?->default_stock_account_id;
+    }
+
+    public function resolveCogsAccountId(): ?int
+    {
+        return $this->cogs_account_id
+            ?? $this->product?->cogs_account_id
+            ?? $this->product?->category?->default_cogs_account_id;
+    }
 }

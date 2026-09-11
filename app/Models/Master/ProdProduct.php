@@ -34,6 +34,8 @@ class ProdProduct extends Model
         'cur_stock',
         'default_selling_price',
         'minimum_selling_price',
+        'old_item_code',
+        'old_item_name',
         'stat_confirm',
         'activate',
         'stock_asset_account_id',
@@ -72,5 +74,18 @@ class ProdProduct extends Model
     public function layoutGroups(): HasMany
     {
         return $this->hasMany(ProdLayoutGroup::class, 'product_id', 'id_product');
+    }
+
+    // Resolve akun 3-lapis (BACKLOG §12.3 / financeaccounting_delta_partner_category_coa_v2.md
+    // §2.4) -- override milik produk sendiri menang, baru jatuh ke default kategori.
+    // Dipakai saat DO/shipment (COGS FG), BUKAN saat Stock Out SFG (itu ProdPart).
+    public function resolveStockAccountId(): ?int
+    {
+        return $this->stock_asset_account_id ?? $this->category?->default_stock_account_id;
+    }
+
+    public function resolveCogsAccountId(): ?int
+    {
+        return $this->cogs_account_id ?? $this->category?->default_cogs_account_id;
     }
 }

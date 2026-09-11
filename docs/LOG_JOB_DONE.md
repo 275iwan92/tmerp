@@ -3,6 +3,63 @@
 
 ---
 
+## 2026-09-11 — Resolve akun 3-lapis prod_category (BACKLOG §12.3 Grup A)
+
+Dari `docs/financeaccounting_delta_partner_category_coa_v2.md` §2 + §5 Grup A
+("KEPUTUSAN TERKUNCI... BOLEH JALAN SEKARANG"). Permintaan user "kerjakan yang
+bisa langsung" — ini item paling jelas pre-approved (dokumen desain sendiri
+yang bilang boleh jalan), tapi ternyata belum pernah dieksekusi.
+
+**Yang dikerjakan (Grup A langkah 1-4, TANPA langkah 5 UI):**
+1. Migration `2026_09_11_000003_add_default_account_to_prod_category.php` —
+   ALTER `tm2mst.prod_category` tambah `default_stock_account_id` +
+   `default_cogs_account_id` (nullable, TANPA seed data — lihat alasan di
+   bawah). Dijalankan (`php artisan migrate --path=...`), berhasil.
+2. `ProdPart`/`ProdProduct` (`app/Models/Master/`) — tambah
+   `resolveStockAccountId()`/`resolveCogsAccountId()`, fallback 3-lapis
+   (part/product sendiri → product → category).
+3. `StockPostingService::postUsageJournal()` (baris SFG) — ganti baca kolom
+   `prod_part` langsung jadi panggil method resolve di atas. Komentar lama
+   yang bilang "TANPA fallback kategori" diperbarui.
+
+**Kenapa langkah 5 (§2.5 UI "Master Kategori Produk") TIDAK dikerjakan**: dicek
+dulu — ternyata `prod_category` belum pernah punya screen CRUD sama sekali
+(cuma dipakai sbg dropdown read-only di `master/produk.blade.php`). Bikin
+screen baru dari nol (routing, sidebar, permission Sisi A) itu scope UI
+tersendiri yang lebih besar dari "eksekusi mekanis", jadi ditinggal sbg item
+lanjutan terpisah — kolom akun tetap NULL sampai ada cara isi, tapi TIDAK ada
+regresi (resolve() null-safe, `StockPostingService` tetap skip+warning persis
+seperti sebelum perubahan ini kalau semua lapis kosong).
+
+**Kenapa §2.3 (seed nilai default) TIDAK dikerjakan**: draf dokumen minta
+`UPDATE prod_category SET default_cogs_account_id = (account_code LIKE '51%'
+LIMIT 1)` — dicek ke `tm2acc.fin_account` aktual, account `51x` ternyata
+per JENIS BIAYA (511=Bahan Baku Kertas, 512=Tinta, 514=Tenaga Kerja, dst),
+bukan 1 akun blanket yang benar utk semua kategori produk. Mengisi asal akan
+salah secara akuntansi, jadi dibiarkan kosong (pola sama seperti gap 12
+kategori `mat_category` — keputusan akun, bukan sesuatu yang boleh ditebak
+kode).
+
+**Temuan penting soal Grup B (dicatat, TIDAK dieksekusi)**: verifikasi §4
+dokumen (`SELECT ... WHERE account_code IN ('121','211','113500')`)
+menemukan akun `211`/`212` BUKAN "Hutang Dagang Lokal/Impor" seperti
+diasumsikan draf — kenyataannya `211`=Kertas & Board, `212`=Tinta & Chemical
+(segmentasi per kategori supplier, bukan trade_type). Model "4 kombinasi
+CUSTOMER/SUPPLIER × local/import" di §3 dokumen jadi tidak match struktur COA
+riil utk sisi Supplier — kemungkinan sudah digantikan mekanisme
+`mat_category.default_coa_account_id` yang sudah ada. Dicatat di BACKLOG §12.3
+sbg item yang butuh rekonsiliasi user, dicabut dari "boleh jalan sekarang".
+
+Diverifikasi: `Schema::getColumnListing()` konfirmasi 2 kolom baru ada;
+test in-memory (part override menang atas category, product fallback jalan
+kalau part kosong) — resolve chain benar; `php artisan test
+tests/Feature/PvStockIntegrationTest.php` 2/2 pass (test yang paling dekat
+mengexercise `StockPostingService`). Tidak ada test khusus
+`postUsageJournal()` SFG branch yang sudah ada sebelumnya (dicek `tests/` —
+0 file match), jadi verifikasi murni via tinker + test integrasi terdekat.
+
+---
+
 ## 2026-09-11 — Mitigasi cepat modal Filament tertutup tanpa sadar (BACKLOG §9.1)
 
 Bagian "mitigasi cepat" dari §9.1 (klik sidebar tidak merespons saat modal
