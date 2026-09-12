@@ -8,7 +8,9 @@ use App\Models\Master\EmpShiftRoster;
 use App\Models\Master\EmpWorkCenter;
 use App\Models\Master\OrgCompany;
 use App\Models\Master\OrgDepartment;
+use App\Models\Sys\SysGridPreference;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -57,10 +59,29 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
         return $this->weekStart->copy()->addDays(6);
     }
 
+    // Ikut setelan hide/show shift milik user yang mencetak (permintaan user
+    // 2026-09-12). Sumbernya sama dengan layar roster: preferensi per user di
+    // tm2sys.sys_grid_preference, jadi cetakan tidak mungkin melenceng dari
+    // apa yang dilihat user di papan.
+    #[Computed]
+    public function hiddenShifts(): array
+    {
+        return SysGridPreference::where('user_login', Auth::user()->login)
+            ->where('grid_key', 'hrm.shift-roster.hidden-shifts')
+            ->value('visible_columns') ?? [];
+    }
+
     #[Computed]
     public function shifts()
     {
-        return EmpShift::with('details')->where('activate', true)->orderBy('shift_code')->orderBy('shift_name')->get();
+        $hidden = collect($this->hiddenShifts)->map(fn ($v) => (int) $v)->all();
+
+        return EmpShift::with('details')
+            ->where('activate', true)
+            ->when($hidden, fn ($q) => $q->whereNotIn('shift_id', $hidden))
+            ->orderBy('shift_code')
+            ->orderBy('shift_name')
+            ->get();
     }
 
     #[Computed]
@@ -179,6 +200,9 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
             </table>
             <p class="text-[9.5px] text-[#555] mt-1.5 mb-0">
                 Angka pada kolom hari = jam masuk (atas) dan jam pulang (bawah). Tanda "+1" berarti jam pulang jatuh di hari berikutnya. Jam/minggu sudah dikurangi waktu istirahat.
+                @if (count($this->hiddenShifts))
+                    <br><b>Catatan:</b> {{ count($this->hiddenShifts) }} shift disembunyikan dari dokumen ini sesuai setelan tampilan pencetak.
+                @endif
             </p>
         </x-print.section>
 

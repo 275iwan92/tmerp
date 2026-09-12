@@ -25,9 +25,13 @@ Satu penempatan ditulis menjadi **1 baris `emp_shift_roster` per hari aktif shif
 
 ## Struktur layar
 2 view dipilih lewat tab di bar atas:
-1. **Roster Mingguan** — bar Jadwal (pilih/buat/edit/hapus/cetak), filter Departemen
-   → Unit Kerja, 3 stat box (Pool Tampil / Terjadwal / Belum), papan baris-per-shift,
-   panel Pool Pegawai di kanan.
+1. **Roster Mingguan** — bar Jadwal (pilih/buat/edit/hapus/cetak), papan
+   baris-per-shift, panel Pool Pegawai di kanan yang di bagian atasnya memuat
+   filter **Departemen → Unit Kerja**.
+   Revisi user 2026-09-12: 3 kotak statistik (Pool Tampil/Terjadwal/Belum)
+   **dihapus**, dan filter Departemen/Unit Kerja **dipindah** dari strip di atas
+   papan ke atas daftar pegawai (karena filter itu yang menentukan isi Pool).
+   Angka "belum terjadwal"/"terjadwal" tetap ada sebagai 1 baris info di panel itu.
 2. **Master Shift** — kartu per shift: kode, nama, warna, kuota/unit, total jam/minggu,
    grid 7 hari (jam masuk/pulang/istirahat/LIBUR), aksi Ubah/Duplikat/Nonaktifkan/Hapus.
 
@@ -40,6 +44,12 @@ Satu penempatan ditulis menjadi **1 baris `emp_shift_roster` per hari aktif shif
 - Chip: avatar inisial, nama, kode+jabatan, badge jumlah hari, tombol × (lepas).
   Chip bergaris/berlatar kuning + ⚠ bila pegawai belum bersertifikat unit tsb.
 - Dobel-klik kolom kiri = buka modal ubah shift.
+- Tombol **👁** di kolom kiri = **sembunyikan shift** dari papan. Shift tersembunyi
+  dikumpulkan di bar kuning di atas papan (klik nama = tampilkan lagi, atau
+  "Tampilkan semua"), diberi peringatan merah bila shift yang disembunyikan masih
+  punya penempatan di minggu tsb. Kartu di view Master Shift ikut menandai
+  "disembunyikan" + punya tombol tampil/sembunyi yang sama.
+  **Setelan ini per user dan ikut terbawa ke cetakan** (lihat bagian Cetak).
 
 ### Pool Pegawai
 Pencarian nama/kode, kelompok **Jabatan / Skill Unit Kerja / Golongan**
@@ -69,8 +79,22 @@ Menyeret item yang sudah tercentang ikut membawa seluruh seleksi.
 - Rotasi: `openRotate()` + `rotatePreview` + `runRotate()` — salin roster antar minggu
   dengan pola **swap 2 shift / rotasi berputar / salin sama persis**, cakupan
   seluruh unit atau 1 unit, opsi timpa, pratinjau jumlah penempatan + bentrok.
+- Visibilitas shift: `toggleShiftVisibility(shiftId)`, `showAllShifts()`,
+  computed `visibleShifts` (= `shifts` minus `hiddenShifts`), `hiddenWithPlacements()`.
+  Hide/show adalah setelan TAMPILAN: data penempatan shift tersembunyi tetap utuh,
+  dan operasi data (assign, rotasi, cek kuota) tetap memakai daftar shift penuh.
 - Cetak: link ke `hrm.shift-roster.print` (mode `roster` = definisi shift + penempatan
   per unit kerja; mode `shift` = hanya master definisi shift), pakai `components/print/*`.
+
+### Penyimpanan setelan hide/show (per user)
+Menumpang tabel preferensi yang sudah ada: `tm2sys.sys_grid_preference` dengan
+`grid_key = 'hrm.shift-roster.hidden-shifts'`. Isi kolom JSON `visible_columns`
+untuk key ini adalah daftar **`shift_id` yang DISEMBUNYIKAN** (bukan yang tampil) —
+dipilih begitu supaya shift yang baru dibuat otomatis ikut terlihat tanpa perlu
+diatur ulang. Halaman cetak membaca baris yang sama milik user yang sedang login,
+jadi dokumen cetak tidak mungkin melenceng dari papan yang dilihat user; kalau ada
+shift yang disembunyikan, cetakan membubuhkan catatan jumlahnya di bawah tabel
+definisi jam.
 
 ## Tabel & Model
 | Tabel | Peran |

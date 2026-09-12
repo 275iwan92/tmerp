@@ -10,6 +10,7 @@ use App\Models\Master\EmpShiftRoster;
 use App\Models\Master\EmpShiftRosterBatch;
 use App\Models\Master\EmpWorkCenter;
 use App\Models\Master\OrgDepartment;
+use App\Models\Sys\SysGridPreference;
 use App\Support\ActiveTheme;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -96,10 +97,62 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
     public bool $rot_over = false;
 
+    // Shift yang disembunyikan user dari papan. Disimpan PER USER supaya halaman
+    // cetak (proses request terpisah) ikut setelan yang sama -- permintaan user
+    // 2026-09-12: "saat di cetak pun mengikuti hide and show yang sudah di set".
+    public array $hiddenShifts = [];
+
     public function mount(): void
     {
         $this->scheduleId = EmpRosterSchedule::where('activate', true)->orderBy('schedule_id')->value('schedule_id');
+        $this->hiddenShifts = self::loadHiddenShifts(Auth::user()->login);
         $this->syncScopeDefaults();
+    }
+
+    // Dipakai layar ini DAN halaman cetak. Menumpang tabel preferensi grid yang
+    // sudah ada (tm2sys.sys_grid_preference) -- isi JSON-nya di grid_key ini
+    // adalah daftar shift_id yang DISEMBUNYIKAN (bukan yang tampil), supaya
+    // shift baru otomatis ikut terlihat tanpa perlu diatur ulang.
+    public const HIDDEN_SHIFTS_KEY = 'hrm.shift-roster.hidden-shifts';
+
+    public static function loadHiddenShifts(string $userLogin): array
+    {
+        $row = SysGridPreference::where('user_login', $userLogin)
+            ->where('grid_key', self::HIDDEN_SHIFTS_KEY)
+            ->first();
+
+        return collect($row->visible_columns ?? [])->map(fn ($v) => (int) $v)->all();
+    }
+
+    public function toggleShiftVisibility(int $shiftId): void
+    {
+        $this->hiddenShifts = in_array($shiftId, $this->hiddenShifts, true)
+            ? array_values(array_diff($this->hiddenShifts, [$shiftId]))
+            : [...$this->hiddenShifts, $shiftId];
+
+        SysGridPreference::updateOrCreate(
+            ['user_login' => Auth::user()->login, 'grid_key' => self::HIDDEN_SHIFTS_KEY],
+            ['visible_columns' => array_values($this->hiddenShifts)],
+        );
+
+        unset($this->visibleShifts);
+
+        $shift = $this->shifts->firstWhere('shift_id', $shiftId);
+        $isHidden = in_array($shiftId, $this->hiddenShifts, true);
+        $this->flash(($shift?->shift_name ?? 'Shift').($isHidden ? ' disembunyikan — ikut hilang dari cetakan.' : ' ditampilkan kembali.'));
+    }
+
+    public function showAllShifts(): void
+    {
+        $this->hiddenShifts = [];
+
+        SysGridPreference::updateOrCreate(
+            ['user_login' => Auth::user()->login, 'grid_key' => self::HIDDEN_SHIFTS_KEY],
+            ['visible_columns' => []],
+        );
+
+        unset($this->visibleShifts);
+        $this->flash('Semua shift ditampilkan kembali.');
     }
 
     // ================= TEMA =================
@@ -157,6 +210,24 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function shifts()
     {
         return EmpShift::with('details')->where('activate', true)->orderBy('shift_code')->orderBy('shift_name')->get();
+    }
+
+    // Papan & legenda & cetak pakai ini. Hide/show adalah setelan TAMPILAN --
+    // data penempatan shift yang disembunyikan tetap utuh di DB, dan operasi
+    // data (assign, rotasi) tetap memakai $shifts penuh.
+    #[Computed]
+    public function visibleShifts()
+    {
+        return $this->shifts->reject(fn ($shift) => in_array($shift->shift_id, $this->hiddenShifts, true))->values();
+    }
+
+    // Shift tersembunyi yang ternyata masih punya penempatan di minggu ini --
+    // perlu diberitahu supaya user tidak salah sangka roster-nya kosong.
+    public function hiddenWithPlacements(): int
+    {
+        $board = $this->boardPlacements;
+
+        return collect($this->hiddenShifts)->sum(fn ($id) => count($board[$id] ?? []));
     }
 
     #[Computed]
@@ -1184,6 +1255,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     $rsTheme = $this->theme;
     $rsDark = $rsTheme->mode === 'dark';
     $shifts = $this->shifts;
+    $visibleShifts = $this->visibleShifts;
     $board = $this->boardPlacements;
     $locked = $this->isLocked();
 @endphp
@@ -1274,40 +1346,10 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             </div>
         </div>
 
-        {{-- ===================== FILTER + STATISTIK ===================== --}}
-        <div class="bg-[var(--rs-surface)] border-b border-[var(--rs-border)] px-4 py-2.5 flex items-end gap-4 flex-wrap">
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Departemen</label>
-                <select wire:model.live="departmentId"
-                    class="min-w-[210px] px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                    @foreach ($this->scheduleDepartments as $department)
-                        <option value="{{ $department->department_id }}">{{ $department->department_name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="flex flex-col gap-1">
-                <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Unit Kerja / Mesin</label>
-                <select wire:model.live="workCenterId"
-                    class="min-w-[240px] px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                    @forelse ($this->workCenters as $center)
-                        <option value="{{ $center->work_center_id }}">{{ $center->work_center_name }}{{ $center->machine_id ? '' : ' (non-mesin)' }}</option>
-                    @empty
-                        <option value="">Belum ada unit kerja di departemen ini</option>
-                    @endforelse
-                </select>
-            </div>
-
-            <div class="ml-auto">
-                <x-grid.stat-row :count="3">
-                    <x-grid.stat-box tone="total" label="Pool Tampil" :value="$this->poolEmployees->count()" />
-                    <x-grid.stat-box tone="active" label="Terjadwal" :value="$this->statAssigned" />
-                    <x-grid.stat-box tone="warn" label="Belum" :value="$this->statFree" />
-                </x-grid.stat-row>
-            </div>
-        </div>
-
-        {{-- ===================== PAPAN + POOL ===================== --}}
+        {{-- ===================== PAPAN + POOL =====================
+             Kotak statistik dihapus & filter Departemen/Unit Kerja dipindah ke
+             atas daftar pegawai (permintaan user 2026-09-12) -- filternya memang
+             menentukan isi Pool, jadi lebih masuk akal menempel di panel itu. --}}
         <div class="px-4 pb-7 pt-4 [display:grid] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-4 items-start">
 
             {{-- ---------- PAPAN SHIFT ---------- --}}
@@ -1315,8 +1357,24 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)] flex-wrap">
                     <h2 class="m-0 text-sm font-bold uppercase tracking-wide text-[var(--rs-ink)]">{{ $this->currentWorkCenter?->work_center_name ?: 'Pilih unit kerja' }}</h2>
                     <span class="text-[11px] text-[var(--rs-muted)]">1 penempatan = 1 minggu penuh, jam mengikuti definisi shift</span>
-                    <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam</span>
+                    <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam · 👁 = sembunyikan dari papan &amp; cetakan</span>
                 </div>
+
+                @if (count($hiddenShifts))
+                    <div class="flex items-center gap-2 flex-wrap px-3.5 py-2 border-b border-[var(--rs-border)] bg-[var(--rs-warn-bg)]">
+                        <span class="text-[11px] font-semibold text-[var(--rs-warn)]">{{ count($hiddenShifts) }} shift disembunyikan (ikut hilang saat dicetak):</span>
+                        @foreach ($shifts->whereIn('shift_id', $hiddenShifts) as $hidden)
+                            <button type="button" wire:click="toggleShiftVisibility({{ $hidden->shift_id }})" title="Tampilkan kembali"
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">
+                                <i class="w-2 h-2 rounded-sm inline-block" style="background: {{ $hidden->color() }}"></i>{{ $hidden->shift_name }} ↩
+                            </button>
+                        @endforeach
+                        @if ($this->hiddenWithPlacements())
+                            <span class="text-[11px] font-bold text-[var(--rs-bad)]">⚠ {{ $this->hiddenWithPlacements() }} penempatan minggu ini ada di shift yang disembunyikan</span>
+                        @endif
+                        <button type="button" wire:click="showAllShifts" class="ml-auto px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Tampilkan semua</button>
+                    </div>
+                @endif
 
                 <div class="overflow-x-auto">
                     <div class="min-w-[900px]">
@@ -1332,7 +1390,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                             </div>
                         </div>
 
-                        @forelse ($shifts as $shift)
+                        @forelse ($visibleShifts as $shift)
                             @php
                                 $pattern = $shift->dayPattern();
                                 $occupants = $board[$shift->shift_id] ?? [];
@@ -1350,6 +1408,10 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                                         @if ($shift->activeDayCount() === 0)
                                             <span class="text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--rs-warn-bg)] text-[var(--rs-warn)]" title="Isi jam kerja per hari di Master Shift dulu">jam kosong</span>
                                         @endif
+                                        {{-- x-on:click.stop supaya tidak ikut memicu dobel-klik "ubah shift" di sel ini --}}
+                                        <button type="button" wire:click="toggleShiftVisibility({{ $shift->shift_id }})" x-on:dblclick.stop
+                                            title="Sembunyikan shift ini dari papan &amp; cetakan"
+                                            class="ml-auto shrink-0 text-[12px] leading-none px-1 py-0.5 rounded cursor-pointer text-[var(--rs-muted)] hover:text-[var(--rs-accent)] hover:bg-[var(--rs-surface)]">👁</button>
                                     </span>
                                     <span class="text-[10px] leading-relaxed text-[var(--rs-ink-2)] font-mono">
                                         @foreach ($shift->summaryLines() as $line)
@@ -1418,14 +1480,18 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                             </div>
                         @empty
                             <div class="px-4 py-8 text-center text-sm text-[var(--rs-muted)]">
-                                Belum ada shift aktif. Buka menu <b>Master Shift</b> untuk mendefinisikan.
+                                @if (count($hiddenShifts) && $shifts->count())
+                                    Semua shift sedang disembunyikan. Klik <b>Tampilkan semua</b> di atas untuk menampilkannya lagi.
+                                @else
+                                    Belum ada shift aktif. Buka menu <b>Master Shift</b> untuk mendefinisikan.
+                                @endif
                             </div>
                         @endforelse
                     </div>
                 </div>
 
                 <div class="flex flex-wrap gap-3 items-center px-4 py-2.5 text-[11px] text-[var(--rs-muted)]">
-                    @foreach ($shifts as $shift)
+                    @foreach ($visibleShifts as $shift)
                         <span><i class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-[-1px]" style="background: {{ $shift->color() }}"></i>{{ $shift->shift_name }}</span>
                     @endforeach
                     <span><i class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-[-1px] bg-[var(--rs-warn)]"></i>Tanpa skill unit ini</span>
@@ -1441,10 +1507,31 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 </div>
 
                 <div class="px-3 py-2.5 flex flex-col gap-2 border-b border-[var(--rs-border)] bg-[var(--rs-surface-alt)]">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Departemen</label>
+                        <select wire:model.live="departmentId"
+                            class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
+                            @foreach ($this->scheduleDepartments as $department)
+                                <option value="{{ $department->department_id }}">{{ $department->department_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Unit Kerja / Mesin</label>
+                        <select wire:model.live="workCenterId"
+                            class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
+                            @forelse ($this->workCenters as $center)
+                                <option value="{{ $center->work_center_id }}">{{ $center->work_center_name }}{{ $center->machine_id ? '' : ' (non-mesin)' }}</option>
+                            @empty
+                                <option value="">Belum ada unit kerja di departemen ini</option>
+                            @endforelse
+                        </select>
+                    </div>
+
                     <div class="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-[var(--rs-accent-soft)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
-                        Filter aktif: <b>{{ $this->scheduleDepartments->firstWhere('department_id', $departmentId)?->department_name ?? '—' }}</b> →
-                        <b>{{ $this->currentWorkCenter?->work_center_name ?? '—' }}</b>{{ $skillOnly ? ' · skill cocok' : ' · semua skill' }}<br>
-                        Belum terjadwal di <b>minggu {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b> dari departemen ini
+                        Belum terjadwal di <b>minggu {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b> dari departemen ini ·
+                        terjadwal <b>{{ $this->statAssigned }}</b> di jadwal ini{{ $skillOnly ? ' · skill cocok' : ' · semua skill' }}
                     </div>
 
                     <input type="search" wire:model.live.debounce.300ms="poolSearch" placeholder="Cari nama atau kode pegawai…"
@@ -1543,6 +1630,9 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                     <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)] flex-wrap border-l-[5px]" style="border-left-color: {{ $shift->color() }}">
                         <span class="font-mono text-[11.5px] px-2 py-1 rounded border border-[var(--rs-border-strong)] bg-[var(--rs-sunken)] text-[var(--rs-ink)] w-[86px] text-center">{{ $shift->shift_code ?: '—' }}</span>
                         <span class="text-[19px] font-bold tracking-wide text-[var(--rs-ink)]">{{ $shift->shift_name }}</span>
+                        @if (in_array($shift->shift_id, $hiddenShifts, true))
+                            <span class="text-[9.5px] font-bold uppercase px-1.5 py-0.5 rounded bg-[var(--rs-warn-bg)] text-[var(--rs-warn)]" title="Tidak tampil di papan roster & cetakan">disembunyikan</span>
+                        @endif
                         <span class="text-[11.5px] text-[var(--rs-muted)]">Kuota/unit <b class="text-[var(--rs-ink-2)]">{{ $shift->capacity() }}</b></span>
                         <span class="text-[13px] font-bold px-2.5 py-1 rounded bg-[var(--rs-ok-bg)] text-[var(--rs-ok)] whitespace-nowrap">{{ $shift->activeDayCount() }} hari · {{ \App\Models\Master\EmpShift::formatMinutes($shift->weekMinutes()) }}</span>
                         @if ($used)
@@ -1551,6 +1641,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
                         <span class="ml-auto flex gap-1.5 flex-wrap">
                             <button type="button" wire:click="openShiftModal({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">✎ Ubah</button>
+                            <button type="button" wire:click="toggleShiftVisibility({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ in_array($shift->shift_id, $hiddenShifts, true) ? '👁 Tampilkan' : '👁 Sembunyikan' }}</button>
                             <button type="button" wire:click="duplicateShift({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Duplikat</button>
                             <button type="button" wire:click="toggleShiftActive({{ $shift->shift_id }})" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">{{ $shift->activate ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                             <button type="button" wire:click="deleteShift({{ $shift->shift_id }})" wire:confirm="Hapus shift {{ $shift->shift_name }}?" class="px-2.5 py-1 rounded text-xs cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-bad)]">Hapus</button>
