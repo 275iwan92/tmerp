@@ -1258,12 +1258,8 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="bg-[var(--rs-surface-alt)] border-b border-[var(--rs-border)] px-4 py-2.5 flex items-center gap-2.5 flex-wrap">
             <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">Jadwal</span>
 
-            <select wire:model.live="scheduleId"
-                class="min-w-[250px] px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                @foreach ($this->schedules as $schedule)
-                    <option value="{{ $schedule->schedule_id }}">{{ $schedule->schedule_name }}</option>
-                @endforeach
-            </select>
+            <x-form.select wire:model.live="scheduleId" liveSync :selected="$scheduleId" :placeholder="false"
+                :options="$this->schedules->pluck('schedule_name', 'schedule_id')" />
 
             <div class="text-[11px] text-[var(--rs-muted)] flex gap-3 flex-wrap">
                 <span>Cakupan <b class="text-[var(--rs-ink-2)]">{{ $this->scheduleDepartments->pluck('department_name')->implode(', ') ?: '—' }}</b></span>
@@ -1290,14 +1286,12 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             <section class="bg-[var(--rs-surface)] border border-[var(--rs-border)] rounded-lg overflow-hidden">
                 <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)] flex-wrap">
                     <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)] shrink-0">Unit Kerja / Mesin</label>
-                    <select wire:model.live="workCenterId"
-                        class="min-w-[220px] px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                        @forelse ($this->workCenters as $center)
-                            <option value="{{ $center->work_center_id }}">{{ $center->work_center_name }}{{ $center->machine_id ? '' : ' (non-mesin)' }} — {{ $center->department->department_name }}</option>
-                        @empty
-                            <option value="">Belum ada unit kerja</option>
-                        @endforelse
-                    </select>
+                    <x-form.select wire:model.live="workCenterId" liveSync :selected="$workCenterId" :placeholder="false"
+                        :options="$this->workCenters->isEmpty()
+                            ? ['' => 'Belum ada unit kerja']
+                            : $this->workCenters->mapWithKeys(fn ($center) => [
+                                $center->work_center_id => $center->work_center_name.($center->machine_id ? '' : ' (non-mesin)').' — '.$center->department->department_name,
+                            ])" />
                     <span class="text-[11px] text-[var(--rs-muted)]">1 penempatan = 1 minggu penuh, jam mengikuti definisi shift</span>
                     <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam</span>
 
@@ -1446,18 +1440,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
 
                 <div class="px-3 py-2.5 flex flex-col gap-2 border-b border-[var(--rs-border)] bg-[var(--rs-surface-alt)]">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Departemen</label>
-                        <select wire:model.live="departmentId"
-                            class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                            <option value="">Semua Departemen</option>
-                            @foreach ($this->scheduleDepartments as $department)
-                                <option value="{{ $department->department_id }}">{{ $department->department_name }}</option>
-                            @endforeach
-                        </select>
+                        <x-form.select wire:model.live="departmentId" liveSync :selected="$departmentId"
+                            placeholder="Semua Departemen"
+                            :options="$this->scheduleDepartments->pluck('department_name', 'department_id')" />
                     </div>
 
-                    <input type="search" wire:model.live.debounce.300ms="poolSearch" placeholder="Cari nama atau kode pegawai…"
-                        class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">
+                    <x-form.input type="search" wire:model.live.debounce.300ms="poolSearch"
+                        placeholder="Cari nama atau kode pegawai…" />
 
                     <div class="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-[var(--rs-accent-soft)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
                         Belum terjadwal di <b>minggu {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b>
@@ -1657,10 +1646,11 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         <label class="text-[10px] text-muted uppercase font-semibold">Cakupan Departemen *</label>
                         <div class="[display:grid] grid-cols-2 gap-1.5 max-h-[260px] overflow-y-auto">
                             @foreach (\App\Models\Master\OrgDepartment::where('activate', true)->orderBy('department_name')->get() as $department)
-                                <label class="flex items-center gap-2 text-xs px-2 py-1.5 rounded-md border border-[var(--rs-border)] bg-[var(--rs-surface-alt)] cursor-pointer">
-                                    <input type="checkbox" value="{{ $department->department_id }}" wire:model="sched_depts" class="accent-[var(--rs-accent)]">
+                                <x-form.checkbox value="{{ $department->department_id }}" wire:model="sched_depts"
+                                    class="accent-[var(--rs-accent)]"
+                                    labelClass="px-2 py-1.5 rounded-md border border-[var(--rs-border)] bg-[var(--rs-surface-alt)] cursor-pointer">
                                     {{ $department->department_name }}
-                                </label>
+                                </x-form.checkbox>
                             @endforeach
                         </div>
                         @error('sched_depts') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
@@ -1719,16 +1709,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         <div class="w-[120px]">
                             <x-form.input label="Kode *" name="shiftForm.code" wire:model="shiftForm.code" maxlength="10" />
                         </div>
-                        <div class="w-[130px] flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold">Warna</label>
-                            <input type="color" wire:model="shiftForm.color" class="w-full h-[30px] rounded border border-[var(--rs-border-strong)] bg-[var(--rs-surface)] cursor-pointer">
+                        <div class="w-[130px]">
+                            <x-form.color-picker label="Warna" name="shiftForm.color" wire:model="shiftForm.color" :value="$shiftForm['color'] ?? '#2563eb'" />
                         </div>
                         <div class="w-[120px]">
                             <x-form.input label="Kuota/Unit" name="shiftForm.cap" type="number" wire:model="shiftForm.cap" min="1" max="30" />
                         </div>
-                        <label class="flex items-center gap-2 text-xs pb-1.5 cursor-pointer text-[var(--rs-ink-2)]">
-                            <input type="checkbox" wire:model="shiftForm.active" class="accent-[var(--rs-accent)] cursor-pointer"> Aktif
-                        </label>
+                        <x-form.checkbox wire:model="shiftForm.active" class="accent-[var(--rs-accent)] cursor-pointer"
+                            labelClass="pb-1.5 cursor-pointer text-[var(--rs-ink-2)]">Aktif</x-form.checkbox>
                     </div>
 
                     <div class="flex gap-2 flex-wrap items-center mb-2.5">
@@ -1742,16 +1730,22 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                             <div wire:key="shiftday-{{ $i }}" class="border-l border-[var(--rs-border)] px-2 py-2 flex flex-col gap-1.5 {{ ($shiftForm['days'][$i]['on'] ?? false) ? '' : 'bg-[var(--rs-sunken)]' }}">
                                 <label class="flex items-center gap-1.5 text-[13px] font-bold uppercase tracking-wide cursor-pointer {{ $dayName === 'Sunday' ? 'text-[var(--rs-bad)]' : 'text-[var(--rs-ink)]' }}">
                                     {{ \App\Models\Master\EmpShift::DAY_LABELS[$dayName] }}
+                                    {{-- Sengaja TETAP raw <input> (audit componentization 2026-09-13): checkbox
+                                         ini menumpang di dalam <label> yang SUDAH membungkus teks nama hari --
+                                         x-form.checkbox selalu bikin <label> sendiri, nesting label-in-label
+                                         invalid HTML & bisa toggle ganda. --}}
                                     <input type="checkbox" wire:model.live="shiftForm.days.{{ $i }}.on" class="ml-auto accent-[var(--rs-accent)] cursor-pointer">
                                 </label>
 
                                 @if ($shiftForm['days'][$i]['on'] ?? false)
-                                    <input type="time" wire:model="shiftForm.days.{{ $i }}.in" class="w-full px-1 py-1 rounded border border-[var(--rs-border-strong)] bg-[var(--rs-surface-alt)] text-[11.5px] font-mono text-[var(--rs-ink)]">
-                                    <input type="time" wire:model="shiftForm.days.{{ $i }}.out" class="w-full px-1 py-1 rounded border border-[var(--rs-border-strong)] bg-[var(--rs-surface-alt)] text-[11.5px] font-mono text-[var(--rs-ink)]">
+                                    <x-form.input type="time" name="shiftForm.days.{{ $i }}.in" wire:model="shiftForm.days.{{ $i }}.in" />
+                                    <x-form.input type="time" name="shiftForm.days.{{ $i }}.out" wire:model="shiftForm.days.{{ $i }}.out" />
                                     <div class="flex items-center gap-1 text-[10.5px] text-[var(--rs-muted)]">
                                         Ist.
-                                        <input type="number" min="0" max="240" step="5" wire:model="shiftForm.days.{{ $i }}.brk"
-                                            class="w-[52px] px-1 py-0.5 rounded border border-[var(--rs-border-strong)] bg-[var(--rs-surface-alt)] text-[11px] font-mono text-center text-[var(--rs-ink)]"> mnt
+                                        <div class="w-[52px]">
+                                            <x-form.input type="number" name="shiftForm.days.{{ $i }}.brk" wire:model="shiftForm.days.{{ $i }}.brk" min="0" max="240" step="5" />
+                                        </div>
+                                        mnt
                                     </div>
                                 @else
                                     <span class="grid place-items-center min-h-[70px] text-[13px] tracking-widest text-[var(--rs-muted)]">LIBUR</span>
@@ -1799,49 +1793,41 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-muted uppercase font-semibold">Pola</label>
-                        <select wire:model.live="rot_mode" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                            <option value="swap">Tukar 2 shift (A ⇄ B)</option>
-                            <option value="cycle">Rotasi berputar (semua shift maju satu)</option>
-                            <option value="copy">Salin sama persis (tanpa rotasi)</option>
-                        </select>
-                    </div>
+                    {{-- 3 opsi -> x-form.toggle-group (workaround resmi bug select morph
+                         Livewire, [[feedback_livewire_select_morph_bug]]), bukan x-form.select
+                         liveSync -- itu utk select BESAR (dinamis, banyak baris). --}}
+                    <x-form.toggle-group label="Pola"
+                        :hint="match ($rot_mode) {
+                            'cycle' => 'Semua shift di minggu sumber maju satu urutan.',
+                            'copy' => 'Salin apa adanya, tanpa rotasi.',
+                            default => 'Tukar 2 shift tertentu (A ⇄ B).',
+                        }">
+                        <x-form.toggle-option wire:click="$set('rot_mode', 'swap')" :active="$rot_mode === 'swap'">Tukar</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_mode', 'cycle')" :active="$rot_mode === 'cycle'">Rotasi Berputar</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_mode', 'copy')" :active="$rot_mode === 'copy'">Salin</x-form.toggle-option>
+                    </x-form.toggle-group>
 
                     @if ($rot_mode === 'swap')
                         <div class="flex gap-3 flex-wrap items-end">
-                            <div class="flex-1 min-w-[170px] flex flex-col gap-1">
-                                <label class="text-[10px] text-muted uppercase font-semibold">Shift A</label>
-                                <select wire:model.live="rot_a" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                                    @foreach ($shifts as $shift)
-                                        <option value="{{ $shift->shift_id }}">{{ $shift->shift_name }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="flex-1 min-w-[170px]">
+                                <x-form.select label="Shift A" wire:model.live="rot_a" liveSync :selected="$rot_a" :placeholder="false"
+                                    :options="$shifts->pluck('shift_name', 'shift_id')" />
                             </div>
                             <span class="text-xl text-[var(--rs-accent)] pb-1.5">⇄</span>
-                            <div class="flex-1 min-w-[170px] flex flex-col gap-1">
-                                <label class="text-[10px] text-muted uppercase font-semibold">Shift B</label>
-                                <select wire:model.live="rot_b" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                                    @foreach ($shifts as $shift)
-                                        <option value="{{ $shift->shift_id }}">{{ $shift->shift_name }}</option>
-                                    @endforeach
-                                </select>
+                            <div class="flex-1 min-w-[170px]">
+                                <x-form.select label="Shift B" wire:model.live="rot_b" liveSync :selected="$rot_b" :placeholder="false"
+                                    :options="$shifts->pluck('shift_name', 'shift_id')" />
                             </div>
                         </div>
                     @endif
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-muted uppercase font-semibold">Cakupan</label>
-                        <select wire:model.live="rot_scope" class="px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                            <option value="all">Seluruh unit kerja di jadwal ini</option>
-                            <option value="wc">Hanya {{ $this->currentWorkCenter?->work_center_name }}</option>
-                        </select>
-                    </div>
+                    <x-form.toggle-group label="Cakupan">
+                        <x-form.toggle-option wire:click="$set('rot_scope', 'all')" :active="$rot_scope === 'all'">Seluruh unit kerja di jadwal ini</x-form.toggle-option>
+                        <x-form.toggle-option wire:click="$set('rot_scope', 'wc')" :active="$rot_scope === 'wc'">Hanya {{ $this->currentWorkCenter?->work_center_name }}</x-form.toggle-option>
+                    </x-form.toggle-group>
 
-                    <label class="flex items-center gap-2 text-xs cursor-pointer text-[var(--rs-ink-2)]">
-                        <input type="checkbox" wire:model.live="rot_over" class="accent-[var(--rs-accent)] cursor-pointer">
-                        Timpa data yang sudah ada di minggu tujuan
-                    </label>
+                    <x-form.checkbox wire:model.live="rot_over" class="accent-[var(--rs-accent)] cursor-pointer"
+                        labelClass="cursor-pointer text-[var(--rs-ink-2)]">Timpa data yang sudah ada di minggu tujuan</x-form.checkbox>
 
                     <div class="text-[11.5px] leading-snug rounded-md px-3 py-2 bg-[var(--rs-sunken)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
                         @if (! $preview['valid'])
