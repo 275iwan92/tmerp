@@ -47,21 +47,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public int $weekOffset = 0;
 
     // ---- pool ----
+    // Pool sengaja HANYA punya 2 filter (keputusan user 2026-09-13): Departemen
+    // dan pencarian nama. Filter Unit Kerja, Kelompok, dan centang "hanya yang
+    // punya skill" dihapus karena dinilai tidak praktis. $departmentId = null
+    // berarti "Semua Departemen" -- termasuk pegawai yang tidak punya departemen.
     public string $poolSearch = '';
 
-    // Lingkup daftar pegawai di Pool. 'all' = seluruh pegawai aktif lintas
-    // departemen (permintaan user 2026-09-12) -- dipakai saat HR meminjam orang
-    // dari departemen lain; yang dipinjam otomatis ditandai ⚠ belum bersertifikat
-    // kalau memang belum punya skill unit kerja tsb.
-    public string $poolScope = 'department'; // department | all
-
-    public string $groupBy = 'jabatan'; // jabatan | skill | golongan | departemen
-
-    public bool $skillOnly = true;
-
     public array $selection = [];
-
-    public array $collapsed = [];
 
     // ---- toast (mockup: notifikasi bawah layar) ----
     public string $toast = '';
@@ -191,15 +183,15 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         return OrgDepartment::whereIn('department_id', $ids)->where('activate', true)->orderBy('department_name')->get();
     }
 
+    // Departemen null (Semua Departemen) -> semua unit kerja aktif ikut tampil,
+    // supaya papan tetap bisa dipilih unitnya tanpa perlu memilih departemen.
     #[Computed]
     public function workCenters()
     {
-        if (! $this->departmentId) {
-            return collect();
-        }
-
-        return EmpWorkCenter::where('department_id', $this->departmentId)
+        return EmpWorkCenter::with('department')
             ->where('activate', true)
+            ->when($this->departmentId, fn ($q) => $q->where('department_id', $this->departmentId))
+            ->orderBy('department_id')
             ->orderBy('sort_order')
             ->orderBy('work_center_name')
             ->get();
@@ -244,19 +236,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         return EmpShift::with('details')->orderBy('activate', 'desc')->orderBy('shift_code')->orderBy('shift_name')->get();
     }
 
+    // departmentId TIDAK dipaksa ke departemen pertama -- null = Semua Departemen
+    // adalah keadaan sah (dan default saat layar dibuka). Yang dijaga hanya:
+    // kalau departemen dipilih tapi bukan bagian cakupan jadwal ini, dikembalikan
+    // ke Semua Departemen; dan unit kerja aktif harus selalu valid.
     private function syncScopeDefaults(): void
     {
-        $departments = $this->scheduleDepartments;
-
-        if ($departments->isEmpty()) {
+        if ($this->departmentId && ! $this->scheduleDepartments->firstWhere('department_id', $this->departmentId)) {
             $this->departmentId = null;
-            $this->workCenterId = null;
-
-            return;
-        }
-
-        if (! $departments->firstWhere('department_id', $this->departmentId)) {
-            $this->departmentId = $departments->first()->department_id;
         }
 
         unset($this->workCenters);
@@ -281,7 +268,6 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             $this->weekPlacements,
             $this->boardPlacements,
             $this->poolEmployees,
-            $this->poolGroups,
             $this->employeeIndex,
             $this->skillMap,
             $this->batch,
@@ -313,38 +299,6 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     {
         $this->forgetWeekData();
         $this->selection = [];
-    }
-
-    public function updatedSkillOnly(): void
-    {
-        $this->forgetWeekData();
-        $this->selection = [];
-    }
-
-    public function updatedPoolScope(): void
-    {
-        if ($this->poolScope === 'all') {
-            // Lintas departemen otomatis dikelompokkan per departemen supaya
-            // ratusan pegawai tidak jadi satu daftar panjang tanpa penanda asal.
-            if ($this->groupBy === 'jabatan') {
-                $this->groupBy = 'departemen';
-            }
-
-            // Tanpa ini, memilih "semua pegawai" nyaris tidak menampilkan orang
-            // baru: filter skill unit kerja masih memangkas hampir semuanya --
-            // padahal maksud modenya justru melihat semua orang.
-            $this->skillOnly = false;
-        }
-
-        $this->collapsed = [];
-        $this->forgetWeekData();
-        $this->selection = [];
-    }
-
-    public function updatedGroupBy(): void
-    {
-        $this->collapsed = [];
-        $this->forgetWeekData();
     }
 
     public function updatedPoolSearch(): void
@@ -427,6 +381,9 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         return $out;
     }
 
+    // $departmentId null = "Semua Departemen" (default layar dibuka) -- termasuk
+    // pegawai yang position-nya sendiri tidak punya departemen. Bukan filter
+    // tambahan, jadi selalu memuat SEMUA pegawai aktif ketika null.
     #[Computed]
     public function employeeIndex()
     {
@@ -436,20 +393,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             ->where(function ($q) use ($placedIds) {
                 $q->whereIn('employee_id', $placedIds ?: [0]);
 
-                if ($this->poolScope === 'all') {
-                    $q->orWhere('activate', true);
-                } elseif ($this->departmentId) {
+                if ($this->departmentId) {
                     $q->orWhereHas('position', fn ($p) => $p->where('department_id', $this->departmentId));
+                } else {
+                    $q->orWhere('activate', true);
                 }
             })
             ->get()
             ->keyBy('employee_id');
-    }
-
-    private function inPoolScope(EmpEmployee $employee): bool
-    {
-        return $this->poolScope === 'all'
-            || $employee->position?->department_id === $this->departmentId;
     }
 
     // employee_id => [work_center_id, ...]
@@ -471,52 +422,24 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         return in_array($workCenterId, $this->skillMap[$employeeId] ?? [], true);
     }
 
+    // Sengaja HANYA 2 filter (keputusan user 2026-09-13): departemen (lewat
+    // $employeeIndex, null = semua) dan pencarian nama/kode. Filter skill dan
+    // pengelompokan yang tadinya ada di sini dihapus -- terlalu banyak kontrol
+    // untuk sekadar memilih siapa yang mau ditarik ke papan.
     #[Computed]
     public function poolEmployees()
     {
-        if (! $this->departmentId && $this->poolScope !== 'all') {
-            return collect();
-        }
-
         $placed = array_keys($this->weekPlacements);
         $search = trim($this->poolSearch);
 
         return $this->employeeIndex
             ->filter(fn (EmpEmployee $e) => $e->activate
-                && $this->inPoolScope($e)
                 && ! in_array($e->employee_id, $placed)
-                && (! $this->skillOnly || $this->hasSkill($e->employee_id))
                 && ($search === ''
                     || str_contains(strtolower($e->full_name), strtolower($search))
                     || str_contains(strtolower((string) $e->employee_code), strtolower($search))))
             ->sortBy('full_name')
             ->values();
-    }
-
-    #[Computed]
-    public function poolGroups(): array
-    {
-        $groups = [];
-        $centerNames = EmpWorkCenter::whereIn('work_center_id', collect($this->skillMap)->flatten()->unique()->all() ?: [0])
-            ->pluck('work_center_name', 'work_center_id');
-
-        foreach ($this->poolEmployees as $employee) {
-            $keys = match ($this->groupBy) {
-                'skill' => collect($this->skillMap[$employee->employee_id] ?? [])
-                    ->map(fn ($id) => $centerNames[$id] ?? 'Tanpa unit')->all() ?: ['Belum ada skill'],
-                'golongan' => [$employee->position?->level?->level_name ?: 'Tanpa golongan'],
-                'departemen' => [$employee->position?->department?->department_name ?: 'Tanpa departemen'],
-                default => [$employee->position?->position_name ?: 'Tanpa jabatan'],
-            };
-
-            foreach ($keys as $key) {
-                $groups[$key][] = $employee;
-            }
-        }
-
-        ksort($groups);
-
-        return $groups;
     }
 
     // ================= STATISTIK =================
@@ -529,17 +452,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     #[Computed]
     public function statFree(): int
     {
-        if (! $this->departmentId && $this->poolScope !== 'all') {
-            return 0;
-        }
-
-        $placed = array_keys($this->weekPlacements);
-
-        return $this->employeeIndex
-            ->filter(fn (EmpEmployee $e) => $e->activate
-                && $this->inPoolScope($e)
-                && ! in_array($e->employee_id, $placed))
-            ->count();
+        return $this->poolEmployees->count();
     }
 
     public function shiftCount(int $shiftId): int
@@ -650,16 +563,6 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             : [...$this->selection, $employeeId];
     }
 
-    public function toggleGroup(string $groupName): void
-    {
-        $ids = collect($this->poolGroups[$groupName] ?? [])->pluck('employee_id')->all();
-        $allSelected = $ids && ! array_diff($ids, $this->selection);
-
-        $this->selection = $allSelected
-            ? array_values(array_diff($this->selection, $ids))
-            : array_values(array_unique([...$this->selection, ...$ids]));
-    }
-
     public function selectAllVisible(): void
     {
         $this->selection = $this->poolEmployees->pluck('employee_id')->map(fn ($v) => (int) $v)->all();
@@ -668,13 +571,6 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function clearSelection(): void
     {
         $this->selection = [];
-    }
-
-    public function toggleCollapse(string $groupName): void
-    {
-        $this->collapsed = in_array($groupName, $this->collapsed, true)
-            ? array_values(array_diff($this->collapsed, [$groupName]))
-            : [...$this->collapsed, $groupName];
     }
 
     // ================= PENEMPATAN =================
@@ -1384,15 +1280,24 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         </div>
 
         {{-- ===================== PAPAN + POOL =====================
-             Kotak statistik dihapus & filter Departemen/Unit Kerja dipindah ke
-             atas daftar pegawai (permintaan user 2026-09-12) -- filternya memang
-             menentukan isi Pool, jadi lebih masuk akal menempel di panel itu. --}}
+             Kotak statistik dihapus (2026-09-12). Pool sengaja HANYA punya 2
+             filter (2026-09-13): Departemen (termasuk opsi "Semua Departemen")
+             + cari nama. Unit Kerja/Mesin pindah ke sini (header papan) karena
+             itu menentukan ISI PAPAN, bukan isi Pool. --}}
         <div class="px-4 pb-7 pt-4 [display:grid] grid-cols-1 xl:grid-cols-[minmax(0,1fr)_340px] gap-4 items-start">
 
             {{-- ---------- PAPAN SHIFT ---------- --}}
             <section class="bg-[var(--rs-surface)] border border-[var(--rs-border)] rounded-lg overflow-hidden">
                 <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)] flex-wrap">
-                    <h2 class="m-0 text-sm font-bold uppercase tracking-wide text-[var(--rs-ink)]">{{ $this->currentWorkCenter?->work_center_name ?: 'Pilih unit kerja' }}</h2>
+                    <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)] shrink-0">Unit Kerja / Mesin</label>
+                    <select wire:model.live="workCenterId"
+                        class="min-w-[220px] px-2.5 py-1.5 rounded-md text-xs font-semibold bg-[var(--rs-surface-alt)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
+                        @forelse ($this->workCenters as $center)
+                            <option value="{{ $center->work_center_id }}">{{ $center->work_center_name }}{{ $center->machine_id ? '' : ' (non-mesin)' }} — {{ $center->department->department_name }}</option>
+                        @empty
+                            <option value="">Belum ada unit kerja</option>
+                        @endforelse
+                    </select>
                     <span class="text-[11px] text-[var(--rs-muted)]">1 penempatan = 1 minggu penuh, jam mengikuti definisi shift</span>
                     <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam</span>
 
@@ -1544,59 +1449,24 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Departemen</label>
                         <select wire:model.live="departmentId"
                             class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
+                            <option value="">Semua Departemen</option>
                             @foreach ($this->scheduleDepartments as $department)
                                 <option value="{{ $department->department_id }}">{{ $department->department_name }}</option>
                             @endforeach
                         </select>
                     </div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Unit Kerja / Mesin</label>
-                        <select wire:model.live="workCenterId"
-                            class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                            @forelse ($this->workCenters as $center)
-                                <option value="{{ $center->work_center_id }}">{{ $center->work_center_name }}{{ $center->machine_id ? '' : ' (non-mesin)' }}</option>
-                            @empty
-                                <option value="">Belum ada unit kerja di departemen ini</option>
-                            @endforelse
-                        </select>
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)]">Tampilkan Pegawai</label>
-                        <select wire:model.live="poolScope"
-                            class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                            <option value="department">Hanya departemen terpilih</option>
-                            <option value="all">Semua pegawai (lintas departemen)</option>
-                        </select>
-                    </div>
-
-                    <div class="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-[var(--rs-accent-soft)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
-                        Belum terjadwal di <b>minggu {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b>
-                        {{ $poolScope === 'all' ? 'dari seluruh departemen' : 'dari departemen ini' }} ·
-                        terjadwal <b>{{ $this->statAssigned }}</b> di jadwal ini{{ $skillOnly ? ' · skill cocok' : ' · semua skill' }}
-                        @if ($poolScope === 'all')
-                            <br><span class="text-[var(--rs-warn)]">Mode lintas departemen — pegawai dari departemen lain akan ditandai ⚠ bila belum bersertifikat unit ini.</span>
-                        @endif
-                    </div>
-
                     <input type="search" wire:model.live.debounce.300ms="poolSearch" placeholder="Cari nama atau kode pegawai…"
                         class="w-full px-2.5 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">
 
-                    <div class="flex items-center gap-2">
-                        <label class="text-[10px] uppercase font-bold tracking-wider text-[var(--rs-muted)] whitespace-nowrap">Kelompok</label>
-                        <select wire:model.live="groupBy" class="flex-1 px-2 py-1.5 rounded-md text-xs bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)] cursor-pointer">
-                            <option value="jabatan">Jabatan</option>
-                            <option value="departemen">Departemen</option>
-                            <option value="skill">Skill Unit Kerja</option>
-                            <option value="golongan">Golongan</option>
-                        </select>
+                    <div class="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-[var(--rs-accent-soft)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">
+                        Belum terjadwal di <b>minggu {{ $this->weekNumber() }}</b>: <b>{{ $this->statFree }}</b>
+                        {{ $departmentId ? 'dari departemen ini' : 'dari seluruh departemen' }} ·
+                        terjadwal <b>{{ $this->statAssigned }}</b> di jadwal ini
+                        @unless ($departmentId)
+                            <br><span class="text-[var(--rs-warn)]">Semua Departemen — pegawai yang belum bersertifikat unit kerja terpilih tetap bisa ditarik, ditandai ⚠.</span>
+                        @endunless
                     </div>
-
-                    <label class="flex items-center gap-2 text-xs text-[var(--rs-ink-2)] cursor-pointer">
-                        <input type="checkbox" wire:model.live="skillOnly" class="cursor-pointer accent-[var(--rs-accent)]">
-                        Hanya yang punya skill unit ini
-                    </label>
                 </div>
 
                 @if (count($selection))
@@ -1613,45 +1483,35 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                     </div>
                 @endif
 
+                {{-- Daftar flat, tanpa pengelompokan (dihapus 2026-09-13 -- dinilai
+                     tidak praktis). Departemen pegawai tetap ditampilkan sebagai
+                     info kecil per baris, terutama berguna saat "Semua Departemen"
+                     dipilih. --}}
                 <div class="max-h-[calc(100vh-300px)] overflow-y-auto">
-                    @forelse ($this->poolGroups as $groupName => $members)
-                        @php $isCollapsed = in_array($groupName, $collapsed, true); @endphp
-                        <div wire:key="grp-{{ \Illuminate\Support\Str::slug($groupName) }}">
-                            <div class="flex items-center gap-2 px-3 py-1.5 bg-[var(--rs-sunken)] border-y border-[var(--rs-border)] sticky top-0 z-[1]">
-                                <input type="checkbox" wire:click="toggleGroup(@js($groupName))" class="cursor-pointer accent-[var(--rs-accent)]"
-                                    @checked(! array_diff(collect($members)->pluck('employee_id')->all(), $selection))>
-                                <button type="button" wire:click="toggleCollapse(@js($groupName))" class="text-[10px] w-3 cursor-pointer text-[var(--rs-muted)]">{{ $isCollapsed ? '▶' : '▼' }}</button>
-                                <span class="text-[13px] font-bold uppercase tracking-wide text-[var(--rs-ink)]">{{ $groupName }}</span>
-                                <span class="ml-auto text-[10.5px] font-mono text-[var(--rs-muted)]">{{ count($members) }} org</span>
-                            </div>
-
-                            @if (! $isCollapsed)
-                                @foreach ($members as $employee)
-                                    @php $isSelected = in_array($employee->employee_id, $selection, true); @endphp
-                                    <div wire:key="pool-{{ $employee->employee_id }}" draggable="true"
-                                        wire:click="toggleSelect({{ $employee->employee_id }})"
-                                        {{-- Menyeret item yang sedang tercentang ikut membawa SELURUH seleksi
-                                             (employeeId null = pakai $selection), sama seperti mockup. --}}
-                                        x-on:dragstart="$event.dataTransfer.setData('text/plain', JSON.stringify({employeeId: {{ $isSelected ? 'null' : $employee->employee_id }}, fromBoard: false}))"
-                                        class="flex items-center gap-2.5 px-3 py-1.5 border-b border-[var(--rs-border)] cursor-grab select-none {{ $isSelected ? 'bg-[var(--rs-accent-soft)]' : 'hover:bg-[var(--rs-surface-alt)]' }}">
-                                        <input type="checkbox" @checked($isSelected) class="pointer-events-none shrink-0 accent-[var(--rs-accent)]">
-                                        <span class="w-6 h-6 rounded shrink-0 grid place-items-center text-[11px] font-bold text-white bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($employee->employee_id) }}">{{ $this->initials($employee->full_name) }}</span>
-                                        <span class="min-w-0 flex-1">
-                                            <b class="block text-[12.5px] font-semibold truncate text-[var(--rs-ink)]">{{ $employee->full_name }}</b>
-                                            <span class="text-[10px] font-mono text-[var(--rs-muted)] truncate block">{{ $employee->employee_code }} · {{ $poolScope === 'all' ? ($employee->position?->department?->department_name ?? 'tanpa departemen') : count($this->skillMap[$employee->employee_id] ?? []).' skill' }}</span>
-                                        </span>
-                                        <span class="text-[10.5px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0 bg-[var(--rs-sunken)] text-[var(--rs-ink-2)]">{{ $employee->position?->position_name ?? '—' }}</span>
-                                    </div>
-                                @endforeach
-                            @endif
+                    @forelse ($this->poolEmployees as $employee)
+                        @php
+                            $isSelected = in_array($employee->employee_id, $selection, true);
+                            $noSkill = ! $this->hasSkill($employee->employee_id);
+                        @endphp
+                        <div wire:key="pool-{{ $employee->employee_id }}" draggable="true"
+                            wire:click="toggleSelect({{ $employee->employee_id }})"
+                            {{-- Menyeret item yang sedang tercentang ikut membawa SELURUH seleksi
+                                 (employeeId null = pakai $selection), sama seperti mockup. --}}
+                            x-on:dragstart="$event.dataTransfer.setData('text/plain', JSON.stringify({employeeId: {{ $isSelected ? 'null' : $employee->employee_id }}, fromBoard: false}))"
+                            class="flex items-center gap-2.5 px-3 py-1.5 border-b border-[var(--rs-border)] cursor-grab select-none {{ $isSelected ? 'bg-[var(--rs-accent-soft)]' : 'hover:bg-[var(--rs-surface-alt)]' }}">
+                            <input type="checkbox" @checked($isSelected) class="pointer-events-none shrink-0 accent-[var(--rs-accent)]">
+                            <span class="w-6 h-6 rounded shrink-0 grid place-items-center text-[11px] font-bold text-white bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($employee->employee_id) }}">{{ $this->initials($employee->full_name) }}</span>
+                            <span class="min-w-0 flex-1">
+                                <b class="block text-[12.5px] font-semibold truncate text-[var(--rs-ink)]">{{ $employee->full_name }}{{ $noSkill ? ' ⚠' : '' }}</b>
+                                <span class="text-[10px] font-mono text-[var(--rs-muted)] truncate block">{{ $employee->employee_code }} · {{ $employee->position?->department?->department_name ?? 'tanpa departemen' }}</span>
+                            </span>
+                            <span class="text-[10.5px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded shrink-0 bg-[var(--rs-sunken)] text-[var(--rs-ink-2)]">{{ $employee->position?->position_name ?? '—' }}</span>
                         </div>
                     @empty
                         <div class="px-4 py-7 text-center text-xs leading-relaxed text-[var(--rs-muted)]">
                             Tidak ada pegawai yang cocok.<br>
-                            @if ($skillOnly)
-                                Lepas centang "Hanya yang punya skill unit ini" untuk melihat pegawai lain.
-                            @elseif ($poolScope !== 'all')
-                                Semua pegawai departemen ini sudah terjadwal minggu ini — pilih <b>Semua pegawai (lintas departemen)</b> di atas untuk meminjam dari departemen lain.
+                            @if ($departmentId)
+                                Semua pegawai departemen ini sudah terjadwal minggu ini — pilih <b>Semua Departemen</b> di atas untuk meminjam dari departemen lain.
                             @else
                                 Seluruh pegawai aktif sudah terjadwal di minggu ini.
                             @endif

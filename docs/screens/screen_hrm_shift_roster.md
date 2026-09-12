@@ -58,20 +58,23 @@ Satu penempatan ditulis menjadi **1 baris `emp_shift_roster` per hari aktif shif
 - **Setelan ini per user dan ikut terbawa ke cetakan** (lihat bagian Cetak).
 
 ### Pool Pegawai
-Di atasnya: filter **Departemen** → **Unit Kerja/Mesin**, lalu **Tampilkan Pegawai**
-(`poolScope`): `Hanya departemen terpilih` (default) atau **`Semua pegawai (lintas
-departemen)`** — permintaan user 2026-09-12, dipakai saat HR meminjam orang dari
-departemen lain. Saat mode "semua" dipilih, `groupBy` otomatis pindah ke
-**Departemen** dan **`skillOnly` otomatis dilepas** (tanpa itu filter skill
-memangkas hampir semua orang sehingga modenya terasa tidak berfungsi). Pegawai
-pinjaman tetap bisa ditempatkan dan otomatis ditandai ⚠ "belum bersertifikat
-unit ini" pada chip + di toast.
+**Revisi user 2026-09-13** — sengaja HANYA 2 filter: dropdown **Departemen**
+(opsi pertama **"Semua Departemen"** = seluruh pegawai aktif termasuk yang
+`position`-nya tidak berdepartemen, dipakai saat HR meminjam orang dari
+departemen lain) dan kotak **cari nama/kode**. Percobaan sebelumnya (dropdown
+"Tampilkan Pegawai" terpisah, filter Unit Kerja, pengelompokan Jabatan/Skill/
+Golongan, checkbox "hanya yang punya skill") dinilai user tidak praktis dan
+dihapus semua — daftar sekarang flat, tanpa header grup/collapse.
 
-Pencarian nama/kode, kelompok **Jabatan / Departemen / Skill Unit Kerja / Golongan**
-(golongan = `org_position.level`), checkbox "Hanya yang punya skill unit ini",
-header grup bisa collapse + centang-semua-grup, bar seleksi ("N pegawai dipilih",
-"Pilih semua tampil", "Batal") yang bisa di-drag sebagai satu blok.
-Menyeret item yang sudah tercentang ikut membawa seluruh seleksi.
+**Unit Kerja/Mesin pindah ke header panel papan** (bukan di Pool lagi) karena
+itu menentukan ISI PAPAN, bukan isi Pool — bisa dipilih lintas departemen
+kapan saja terlepas dari filter Departemen di Pool.
+
+Baris pegawai menampilkan departemen asalnya + jabatan; yang belum bersertifikat
+unit kerja yang sedang dibuka ditandai **⚠** di nama (konsisten dengan tanda di
+chip papan). Bar seleksi ("N pegawai dipilih", "Pilih semua tampil", "Batal")
+bisa di-drag sebagai satu blok; menyeret item yang sudah tercentang ikut
+membawa seluruh seleksi.
 
 ## Aksi / Method utama
 - `goWeek(±1)` — geser minggu, toast status isi/kosong minggu tujuan.
