@@ -58,7 +58,16 @@ Satu penempatan ditulis menjadi **1 baris `emp_shift_roster` per hari aktif shif
 - **Setelan ini per user dan ikut terbawa ke cetakan** (lihat bagian Cetak).
 
 ### Pool Pegawai
-Pencarian nama/kode, kelompok **Jabatan / Skill Unit Kerja / Golongan**
+Di atasnya: filter **Departemen** → **Unit Kerja/Mesin**, lalu **Tampilkan Pegawai**
+(`poolScope`): `Hanya departemen terpilih` (default) atau **`Semua pegawai (lintas
+departemen)`** — permintaan user 2026-09-12, dipakai saat HR meminjam orang dari
+departemen lain. Saat mode "semua" dipilih, `groupBy` otomatis pindah ke
+**Departemen** dan **`skillOnly` otomatis dilepas** (tanpa itu filter skill
+memangkas hampir semua orang sehingga modenya terasa tidak berfungsi). Pegawai
+pinjaman tetap bisa ditempatkan dan otomatis ditandai ⚠ "belum bersertifikat
+unit ini" pada chip + di toast.
+
+Pencarian nama/kode, kelompok **Jabatan / Departemen / Skill Unit Kerja / Golongan**
 (golongan = `org_position.level`), checkbox "Hanya yang punya skill unit ini",
 header grup bisa collapse + centang-semua-grup, bar seleksi ("N pegawai dipilih",
 "Pilih semua tampil", "Batal") yang bisa di-drag sebagai satu blok.
