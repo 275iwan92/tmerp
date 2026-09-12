@@ -18,6 +18,8 @@ class EmpShiftRoster extends Model
         'employee_id',
         'division_id',
         'machine_id',
+        'work_center_id',
+        'schedule_id',
         'shift_id',
         'roster_date',
         'assigned_by_role',
@@ -55,5 +57,15 @@ class EmpShiftRoster extends Model
     public function shift(): BelongsTo
     {
         return $this->belongsTo(EmpShift::class, 'shift_id', 'shift_id');
+    }
+
+    public function workCenter(): BelongsTo
+    {
+        return $this->belongsTo(EmpWorkCenter::class, 'work_center_id', 'work_center_id');
+    }
+
+    public function schedule(): BelongsTo
+    {
+        return $this->belongsTo(EmpRosterSchedule::class, 'schedule_id', 'schedule_id');
     }
 }

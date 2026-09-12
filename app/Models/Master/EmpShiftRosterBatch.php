@@ -16,6 +16,7 @@ class EmpShiftRosterBatch extends Model
 
     protected $fillable = [
         'division_id',
+        'schedule_id',
         'date_from',
         'date_to',
         'status',

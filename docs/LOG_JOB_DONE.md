@@ -3,6 +3,80 @@
 
 ---
 
+## 2026-09-12 — Roster Shift Mingguan versi mockup (ganti total papan lama) + componentization HRM
+
+Instruksi user berturut-turut: "mockup untuk jadwal roster HARUS BISA",
+"termasuk semua detail dan behaviour nya", "include print out", "theme
+mengikuti pilihan", "workcenter dan department dari master yang ada di table".
+Acuan: `docs/mockups/mockup_roster_shift.html`.
+
+**A. Fondasi database (3 migration, semua additive — 0 kolom lama dihapus/di-rename):**
+- `emp_work_center` (BARU) — unit kerja lintas semua departemen: 42 baris 1:1 dari
+  master `prod_machine` + 21 unit non-mesin per departemen (total 63). Ini yang
+  menghilangkan pemisahan "Papan PPIC (punya mesin)" vs "Grid HR (tanpa mesin)".
+- `emp_roster_schedule` + `emp_roster_schedule_department` (BARU) — konsep "Jadwal"
+  dari mockup, di-seed 3 jadwal (Offset / Digital & Indostry / Support).
+- `emp_employee_work_center_skill` (BARU) — sertifikasi pegawai per unit (182 baris,
+  146 pegawai; seed = semua unit di departemennya sendiri, bukan spesialisasi karangan).
+- `emp_shift` +`shift_code`/`color_hex`/`capacity_per_wc`, `department_id` jadi nullable
+  (katalog shift global lintas departemen). `emp_shift_detail` +`break_minutes`
+  (diturunkan dari `break_out`/`break_in` yang sudah ada). `emp_shift_roster`
+  +`work_center_id`/`schedule_id`, `division_id` jadi nullable (departemen seperti
+  Security/Admin memang `division_id` NULL — tidak mengarang divisi palsu).
+  `emp_shift_roster_batch` +`schedule_id`.
+
+**B. Layar `hrm/shift-roster.blade.php` ditulis ulang total** sesuai mockup:
+2 view (Roster Mingguan / Master Shift), bar Jadwal (pilih/buat/edit/hapus/cetak),
+filter Departemen→Unit Kerja dari master, nav minggu, 3 stat box, papan baris-per-shift
+(ringkasan jam, bar kuota, strip 7 hari + `+1` lintas hari, chip drag&drop, chip kuning
+utk yang belum bersertifikat), Pool Pegawai (cari, kelompok Jabatan/Skill/Golongan,
+collapse grup, centang grup, seleksi banyak + drag satu blok), modal Ubah/Tambah Shift
+(jam per hari + "Samakan Sen–Jum/Sen–Sab"), modal Rotasi antar minggu
+(swap 2 shift / rotasi berputar / salin, cakupan semua unit atau 1 unit, opsi timpa,
+pratinjau), toast, legenda.
+**Model penempatan**: 1 pegawai = 1 shift untuk 1 MINGGU → ditulis 1 baris
+`emp_shift_roster` per hari aktif shift, jadi `AttendanceCalculationService` tidak
+perlu diubah sama sekali.
+Lifecycle DRAFT→CONFIRMED **sengaja dipertahankan** (mockup tidak punya) karena roster
+ini sumber jam kerja payroll/attendance.
+
+**C. Cetak** (`hrm/shift-roster-print.blade.php`, route `hrm.shift-roster.print`):
+mode `roster` (definisi jam shift + penempatan per unit kerja + tanda tangan) dan mode
+`shift` (master definisi shift), pakai `components/print/*` sesuai printnotastandard.md.
+
+**D. Tema**: token CSS lokal `--rs-*` diisi dari `ActiveTheme::resolve()` (ikut pilihan
+tema user, terang/gelap + warna aksen), pola sama `production/prodev.blade.php`.
+
+**Temuan nyata dari pengujian (bukan asumsi):**
+1. **4 dari 8 shift di DB belum punya `emp_shift_detail`** (TDP1/TDP2/IND1/IND2) → 0 hari
+   aktif. Versi pertama layar ini diam-diam membuat 0 baris (seolah berhasil). Ditambah
+   guard penolakan + badge "jam kosong" di papan. Jam sebenarnya harus diisi HR.
+2. **Bug `validate()`**: atribut tanpa rule tidak ikut di data tervalidasi, sehingga flag
+   hari aktif (`days.*.on`) hilang dan simpan shift SELALU ditolak "minimal satu hari
+   harus aktif". Diperbaiki dengan menambah rule `boolean` untuk `on`.
+3. `production/scheduling-board.blade.php` disesuaikan: dropdown "operator manual"
+   (query `machine_id IS NULL`) kini dibatasi unit non-mesin di divisi OFFSET saja —
+   tanpa itu staf QC/Gudang/Admin yang sekarang bisa dijadwalkan akan bocor ke papan produksi.
+4. Komentar mockup yang bilang fitur Tukar Shift ESS "NOT-IMPLEMENTED" ternyata USANG —
+   fiturnya sudah ada di `self-service/index.blade.php` (`emp_shift_swap_request`).
+
+**Diuji** via `Livewire::test` (9 skenario: guard jam-kosong, assign, invarian 1
+shift/minggu, pindah antar shift, bulk dari seleksi, publish+lock, unlock+lepas,
+rotasi salin antar minggu, buat+edit Master Shift, render 2 mode cetak) — semua lolos,
+data uji dibersihkan dan diverifikasi ulang langsung ke DB (5 baris roster lama utuh,
+0 sisa). `npm run build` dijalankan.
+
+**Belum/keterbatasan:** verifikasi visual di browser belum dilakukan (login browser
+otomatis dilarang aturan sesi — lihat `feedback_no_browser_login_verification`), jadi
+pengecekan tampilan nyata perlu dilakukan user.
+
+Bareng sesi ini juga: **11 layar HRM dibetulkan agar konsisten pakai komponen
+`x-form.*`/`x-grid.*`** (audit menemukan `hrm/position`, `hrm/org-chart`,
+`hrm/payroll-bank-transfer`, `hrm/payroll-cash-roster`, `hrm/payroll-batch-run`,
+`hrm/discipline-report` masih raw markup; sisanya sebagian) — commit terpisah `4d3a5f3`.
+
+---
+
 ## 2026-09-11 — Resolve akun 3-lapis prod_category (BACKLOG §12.3 Grup A)
 
 Dari `docs/financeaccounting_delta_partner_category_coa_v2.md` §2 + §5 Grup A

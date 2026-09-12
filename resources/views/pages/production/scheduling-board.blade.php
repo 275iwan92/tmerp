@@ -2,6 +2,8 @@
 
 use App\Models\Master\CustCustomer;
 use App\Models\Master\EmpShiftRoster;
+use App\Models\Master\EmpWorkCenter;
+use App\Models\Master\OrgDepartment;
 use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
 use App\Models\Prd\PrdCrewAssignment;
@@ -181,9 +183,21 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
     {
         $options = $this->machines->map(fn ($m) => ['value' => 'm'.$m->machine_id, 'label' => $m->machine_name])->all();
 
+        // "Roster umum" = ter-roster hari ini tapi tidak terikat mesin tertentu.
+        // Sejak Roster Shift Mingguan (2026-09-12) SEMUA departemen bisa dijadwalkan
+        // -- termasuk QC/Gudang/Admin yang work center-nya memang tanpa mesin --
+        // jadi machine_id IS NULL saja tidak lagi cukup: tanpa filter divisi,
+        // dropdown operator manual papan produksi ini akan kemasukan staf non-produksi.
+        // Baris roster lama (work_center_id NULL) tetap diterima apa adanya.
+        $generalWorkCenterIds = EmpWorkCenter::query()
+            ->whereNull('machine_id')
+            ->whereIn('department_id', OrgDepartment::where('division_id', $this->offsetDivisionId())->pluck('department_id'))
+            ->pluck('work_center_id');
+
         $rostered = EmpShiftRoster::with('employee')
             ->where('roster_date', $this->date)
-            ->whereNull('machine_id') // roster umum -- bukan operator mesin tertentu
+            ->whereNull('machine_id')
+            ->where(fn ($q) => $q->whereNull('work_center_id')->orWhereIn('work_center_id', $generalWorkCenterIds))
             ->get();
 
         foreach ($rostered->unique('employee_id') as $roster) {

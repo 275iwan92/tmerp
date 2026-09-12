@@ -19,6 +19,7 @@ class EmpShiftDetail extends Model
         'start_time',
         'break_out',
         'break_in',
+        'break_minutes',
         'end_time',
         'description',
         'created_by',

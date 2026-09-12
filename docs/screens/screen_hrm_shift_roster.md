@@ -1,83 +1,113 @@
 ---
 name: screen_hrm_shift_roster
-description: Papan alokasi shift 2 mode — PPIC (drag-drop mesin Offset Printing, draft->confirm) dan Grid HR (klik-siklus, Digital Printing/Indostry).
+description: Roster Shift Mingguan — papan per-shift (drag pegawai = 1 minggu penuh) + Master Shift + cetak, mengikuti mockup_roster_shift.html.
 ---
 
-# Shift Roster & Alokasi Mesin
+# Roster Shift Mingguan & Master Shift
 
 **File**: `resources/views/pages/hrm/shift-roster.blade.php`
-**Route**: `hrm.shift-roster` (`/hrm/shift-roster`)
-**Koneksi DB utama**: mst (tm2mst) — lihat catatan penamaan di bawah
+**Cetak**: `resources/views/pages/hrm/shift-roster-print.blade.php`
+**Route**: `hrm.shift-roster` (`/hrm/shift-roster`), `hrm.shift-roster.print` (`/hrm/shift-roster/print?mode=roster|shift&schedule=&week=`)
+**Koneksi DB**: mst (tm2mst)
 **Modul**: HRM
+**Acuan UI**: `docs/mockups/mockup_roster_shift.html` (keputusan user 2026-09-12: "mockup untuk jadwal roster HARUS BISA", "termasuk semua detail dan behaviour nya", "include print out", "theme mengikuti pilihan", "workcenter dan department dari master yang ada di table")
 
 ## Tujuan
-Layar penjadwalan shift pegawai dengan 2 papan berbeda mode, mengacu mockup `mockup_shift_roster_v2.html` dan `masteremployee_tier2.md §A.7/A.8`:
-- **Papan PPIC (Offset Printing)** — drag-drop pegawai ke sel (mesin × shift × tanggal), lifecycle `Simpan Draft` (DRAFT) → `Publish & Confirm` (CONFIRMED, terkunci) → `Buka Kunci` (kembali DRAFT untuk revisi).
-- **Grid HR (Digital Printing/Indostry)** — tanpa dimensi mesin, klik sel untuk menyiklus ganti shift (langsung tersimpan, tanpa alur draft/confirm).
+Menjadwalkan pegawai ke shift per MINGGU, bukan per tanggal satu-satu. Menggantikan
+desain lama yang memisahkan "Papan PPIC" (mesin × tanggal × shift) dan "Grid HR"
+(klik-siklus tanpa mesin) — sekarang satu model untuk semua departemen.
 
-Drag & drop dieksekusi via Alpine (`$wire`) di Blade; state `$assign` (array in-memory) menyimpan perubahan sampai tombol Simpan/Publish ditekan — meniru mockup asli di mana drag hanya mengubah state di memori, "tersimpan" baru terjadi saat tombol ditekan. Bentrok HARD divalidasi saat Confirm (bukan saat drop — drop tetap diterima dan ditandai visual). Aktor: PPIC (papan mesin) dan HR (papan grid non-mesin).
+**Model penempatan**: 1 pegawai = 1 shift untuk 1 minggu penuh di dalam 1 Jadwal.
+Satu penempatan ditulis menjadi **1 baris `emp_shift_roster` per hari aktif shift**
+(hari libur shift tidak dibuatkan baris), sehingga
+`AttendanceCalculationService::resolveShiftDetail()` — yang cuma membaca
+`employee_id` + `roster_date` + `shift_id` — tetap bekerja tanpa perubahan.
 
-## Field & Kolom
+## Struktur layar
+2 view dipilih lewat tab di bar atas:
+1. **Roster Mingguan** — bar Jadwal (pilih/buat/edit/hapus/cetak), filter Departemen
+   → Unit Kerja, 3 stat box (Pool Tampil / Terjadwal / Belum), papan baris-per-shift,
+   panel Pool Pegawai di kanan.
+2. **Master Shift** — kartu per shift: kode, nama, warna, kuota/unit, total jam/minggu,
+   grid 7 hari (jam masuk/pulang/istirahat/LIBUR), aksi Ubah/Duplikat/Nonaktifkan/Hapus.
 
-### Kontrol umum
-- `tab` — `ppic` | `hr`
-- `dateFrom` / `dateTo` — periode 7 hari default (Senin–Minggu minggu berjalan), live update memicu `loadPeriod()`
-- Stat box (4): Total Terjadwal, Jumlah Lembur (OT), Potensi Bentrok, Pegawai di Pool
+### Papan (per baris shift)
+- Kolom kiri: titik warna + nama shift, ringkasan jam digabung ("Sen-Jum 05:00-13:15",
+  "Sab ..."), `n hari · Xj/minggu`, bar kuota `n/kuota` (warna: kurang=warn, penuh=ok,
+  lewat=bad), badge **"jam kosong"** kalau shift belum punya `emp_shift_detail`.
+- Kolom kanan: strip 7 hari berisi jam masuk/pulang per hari (`+1` bila lintas hari)
+  atau LIBUR, lalu area chip pegawai (drop zone).
+- Chip: avatar inisial, nama, kode+jabatan, badge jumlah hari, tombol × (lepas).
+  Chip bergaris/berlatar kuning + ⚠ bila pegawai belum bersertifikat unit tsb.
+- Dobel-klik kolom kiri = buka modal ubah shift.
 
-### Papan PPIC
-- `currentMachineId` — mesin aktif yang ditampilkan (tombol switch per mesin, sumber `ProdMachine::where('division_id', offsetDivisionId())->where('activate',true)`)
-- `poolSearch` — cari nama pegawai di Pool
-- `assign[machineId][date][shiftId] = [employeeId, ...]` — state penugasan in-memory
-- `otAssign["machineId|date|shiftId|employeeId"] = bool` — flag lembur per penugasan
-- `batchStatus` — DRAFT | CONFIRMED (dari `EmpShiftRosterBatch`)
-- Badge bentrok: normal (biru) / soft — dobel shift hari sama tapi beda mesin (oranye) / hard — 2 mesin berbeda, shift+tanggal sama (merah, wajib diperbaiki sebelum Confirm)
+### Pool Pegawai
+Pencarian nama/kode, kelompok **Jabatan / Skill Unit Kerja / Golongan**
+(golongan = `org_position.level`), checkbox "Hanya yang punya skill unit ini",
+header grup bisa collapse + centang-semua-grup, bar seleksi ("N pegawai dipilih",
+"Pilih semua tampil", "Batal") yang bisa di-drag sebagai satu blok.
+Menyeret item yang sudah tercentang ikut membawa seluruh seleksi.
 
-### Grid HR
-- `hrDivisionId` — pilih divisi non-OFFSET (`OrgDivision::where('division_code','!=','OFFSET')`)
-- Klik sel → siklus shift aktif divisi tsb → kosong (langsung `EmpShiftRoster::create()`/`delete()`, tanpa draft)
+## Aksi / Method utama
+- `goWeek(±1)` — geser minggu, toast status isi/kosong minggu tujuan.
+- `assignToShift(shiftId, employeeId|null, fromBoard)` — inti penempatan.
+  `employeeId=null` → pakai `$selection` (drag blok / bulk). `fromBoard=true` →
+  pindah antar shift (lepas dulu lalu tulis ulang). Guard: roster terkunci,
+  belum pilih unit, **shift tanpa hari aktif**, dan invarian 1 orang 1 shift/minggu
+  (duplikat dilewati + dilaporkan di toast). Kuota lewat DIIZINKAN tapi diberi
+  peringatan (sama seperti mockup).
+- `removePlacement(employeeId)` — hapus seluruh baris minggu itu.
+- `saveDraft()` / `confirmBatch()` / `unlockBatch()` — lifecycle DRAFT → CONFIRMED
+  per (schedule, minggu) di `emp_shift_roster_batch`, `attachBatchToWeek()` menandai
+  `batch_id` semua baris minggu tsb. **Sengaja dipertahankan** walau mockup tidak
+  punya, karena roster ini jadi sumber jam kerja attendance/payroll.
+- Jadwal: `openScheduleModal(edit)`, `saveSchedule()`, `deleteSchedule()` (hapus jadwal
+  ikut melepas seluruh baris roster-nya, dikonfirmasi lewat modal + hitungan baris).
+- Master Shift: `openShiftModal(id|null)`, `fillDays(5|6)` ("Samakan Sen-Jum/Sen-Sab"),
+  `saveShift()`, `duplicateShift()`, `deleteShift()` (tolak bila masih dipakai),
+  `toggleShiftActive()` (tolak menonaktifkan bila masih dipakai).
+- Rotasi: `openRotate()` + `rotatePreview` + `runRotate()` — salin roster antar minggu
+  dengan pola **swap 2 shift / rotasi berputar / salin sama persis**, cakupan
+  seluruh unit atau 1 unit, opsi timpa, pratinjau jumlah penempatan + bentrok.
+- Cetak: link ke `hrm.shift-roster.print` (mode `roster` = definisi shift + penempatan
+  per unit kerja; mode `shift` = hanya master definisi shift), pakai `components/print/*`.
 
-## Aksi / Method
+## Tabel & Model
+| Tabel | Peran |
+|---|---|
+| `emp_shift_roster` | baris roster per pegawai per TANGGAL (kolom baru `work_center_id`, `schedule_id`) |
+| `emp_shift_roster_batch` | lifecycle DRAFT/CONFIRMED (kolom baru `schedule_id`) |
+| `emp_shift` | katalog shift global (kolom baru `shift_code`, `color_hex`, `capacity_per_wc`; `department_id` kini nullable) |
+| `emp_shift_detail` | jam per hari (kolom baru `break_minutes`) |
+| `emp_work_center` | **baru** — unit kerja: 1:1 dari `prod_machine` untuk mesin, atau unit non-mesin per departemen |
+| `emp_roster_schedule` + `..._department` | **baru** — "Jadwal" + cakupan departemennya |
+| `emp_employee_work_center_skill` | **baru** — sertifikasi pegawai per unit kerja |
+| `emp_employee`, `org_department`, `org_position`, `prod_machine` | master sumber (tidak diubah) |
 
-### Umum
-- `mount()` — set periode default minggu berjalan, `hrDivisionId` default divisi kode `DIGITAL`, panggil `loadPeriod()`
-- `updatedDateFrom()` / `updatedDateTo()` — reload data periode
-- `loadPeriod()` — private, load `EmpShiftRosterBatch` (division OFFSET) + baris `EmpShiftRoster` (`machine_id IS NOT NULL`) ke state `$assign`/`$otAssign`
+Migration: `2026_09_12_000001_create_roster_workcenter_schedule_tables.php`,
+`..._000002_seed_roster_workcenter_schedule_data.php`,
+`..._000003_make_roster_division_nullable.php`.
 
-### Papan PPIC
-- `dropOnSlot(int $machineId, string $date, int $shiftId, array $payload)` — assign pegawai ke sel; kalau `payload['fromKey']` ada (pindah dari sel lain), detach dulu dari sel asal (termasuk carry status OT); tidak berlaku jika `batchStatus=CONFIRMED`
-- `dropOnPool(array $payload)` — lepas pegawai dari sel, kembali ke Pool
-- `removeAssignment(...)` — hapus penugasan via tombol ✕
-- `detachFromCell(...)` — private, helper hapus dari cell + carry OT flag jika dipindah
-- `toggleOt(...)` — tandai/batalkan status lembur pada 1 penugasan
-- `switchMachine(int $machineId)` — ganti mesin yang ditampilkan
-- `cellConflict(int $employeeId, string $date, int $shiftId, int $excludeMachineId)` — private, hitung bentrok hard/soft untuk 1 pegawai+tanggal terhadap semua mesin lain
-- `conflictSet` (computed) — kumpulan semua bentrok di seluruh state `$assign`
-- `chipClass(...)` — kelas CSS chip berdasar hasil `cellConflict`
-- `saveDraft()` → `persist('DRAFT')`
-- `confirmBatch()` — tolak (addError) jika ada bentrok HARD (`conflictSet` yang `hard=true`), tampilkan daftar nama+tanggal bentrok; jika bersih → `persist('CONFIRMED')`
-- `unlockBatch()` — set batch kembali ke DRAFT, hapus `confirmed_by`/`confirmed_at`
-- `persist(string $status)` — private, `firstOrNew` `EmpShiftRosterBatch` by (division_id, date_from, date_to), hapus semua `EmpShiftRoster` milik batch lalu insert ulang dari state `$assign`/`$otAssign` (`assigned_by_role='PPIC'`)
+## Tema
+Layar ini theme-aware: blok token CSS lokal (`--rs-*`) di root diisi dari
+`App\Support\ActiveTheme::resolve()` (mode terang/gelap + `primary_color`),
+pola sama dengan `production/prodev.blade.php`. Tidak ada warna surface/teks
+yang di-hardcode.
 
-### Grid HR
-- `cycleHrCell(int $employeeId, string $date)` — siklus index shift aktif (shift ke-1 → ke-2 → ... → kosong → shift ke-1), hapus baris lama lalu buat baru (`assigned_by_role='HR'`) jika index masih dalam rentang shift tersedia
-
-## Tabel & Model yang Disentuh
-- `App\Models\Master\EmpShiftRoster` — tabel `emp_shift_roster` (koneksi **`tm2mst`**, PK `roster_id`)
-- `App\Models\Master\EmpShiftRosterBatch` — batch lifecycle draft/confirm per (division, date_from, date_to), koneksi `tm2mst`
-- `App\Models\Master\EmpShift` — master shift (koneksi `tm2mst`), difilter lewat relasi department→division
-- `App\Models\Master\EmpEmployee` — pool pegawai per divisi (koneksi `tm2mst`)
-- `App\Models\Master\OrgDivision` — resolve `division_id` OFFSET/DIGITAL dsb. (koneksi `tm2mst`)
-- `App\Models\Master\ProdMachine` — daftar mesin aktif per divisi (koneksi `tm2mst`)
-- Tidak ada join lintas-DB eksplisit terlihat di file ini — semua model di namespace `Master` (asumsi konsisten koneksi `tm2mst`, TBD verifikasi eksplisit per model kalau dibutuhkan presisi 100%).
-
-## Alur / Business Logic Penting
-- **2 model bentrok berbeda tingkat keparahan**: HARD (1 orang di 2 mesin berbeda pada shift+tanggal SAMA — tabrakan fisik tidak mungkin) memblokir Confirm; SOFT (dobel shift hari yang sama tapi shift/mesin beda — kelelahan potensial) hanya peringatan visual, tidak memblokir.
-- **Drag hanya mengubah state in-memory sampai eksplisit disimpan** — desain sengaja meniru interaksi mockup HTML asli (bukan auto-save per drag), supaya user bisa bereksperimen susunan tanpa efek permanen sampai klik Simpan Draft/Publish.
-- **Confirm terkunci penuh**: semua method drag/drop/toggle OT/switch (`dropOnSlot`, `dropOnPool`, `removeAssignment`, `toggleOt`) menolak aksi (`return` awal) jika `batchStatus === 'CONFIRMED'` — harus Unlock dulu untuk revisi.
-- **Grid HR tanpa lifecycle**: berbeda total dari papan PPIC — setiap klik langsung menulis/menghapus `EmpShiftRoster` seketika, tidak ada `EmpShiftRosterBatch` yang dipakai untuk divisi non-OFFSET.
-- **`persist()` selalu hapus-lalu-insert-ulang seluruh batch** — bukan diff/update selektif, sehingga setiap Simpan Draft/Confirm menulis ulang seluruh baris `EmpShiftRoster` untuk periode+divisi tsb dari nol berdasar state `$assign` saat itu.
-
-## Catatan
-- **Ketidaksesuaian penamaan koneksi vs CLAUDE.md** (sama seperti layar HRM lain di batch ini): model-model di atas berada di namespace `App\Models\Master`, mengindikasikan koneksi `tm2mst` — bukan `tm2hrm` meski folder/route "hrm". Konsisten dengan pola prefix `emp_`/`org_`/`prod_` di CLAUDE.md §3 (Master).
-- Overtime type disimpan hardcode `'REGULER'` saat `is_overtime=true` (`persist()`) — tidak ada pilihan jenis lembur lain di UI ini.
-- Tidak ada validasi jam kerja/lembur maksimal per hari/minggu di file ini — hanya validasi bentrok penugasan (hard conflict).
+## Catatan & temuan
+- **4 dari 8 shift di DB belum punya `emp_shift_detail`** (TDP1, TDP2, IND1, IND2) →
+  0 hari aktif. Tanpa penjagaan, penempatan ke shift seperti ini menghasilkan 0 baris
+  (seolah berhasil padahal kosong). Sekarang ditolak + diberi badge "jam kosong".
+  Jam sebenarnya harus diisi HR di Master Shift — sengaja tidak dikarang di seeder.
+- Pemetaan mesin → departemen di seeder pakai pencocokan kata kunci nama mesin
+  (`prod_machine` tidak punya `department_id`). Kalau ada yang nyasar, koreksi datanya
+  di `emp_work_center`, bukan di kode.
+- Skill pegawai di-seed = semua unit kerja di departemennya sendiri (asumsi netral,
+  bukan spesialisasi karangan). HR yang mempersempit.
+- `production/scheduling-board.blade.php` ikut disesuaikan: dropdown "operator manual"
+  sekarang hanya menerima roster unit non-mesin yang departemennya ada di divisi
+  OFFSET, supaya staf non-produksi yang kini bisa dijadwalkan tidak bocor ke papan
+  produksi.
+- Fitur **Tukar Shift antar pegawai (ESS)** yang ditandai "NOT-IMPLEMENTED" di komentar
+  mockup ternyata SUDAH ADA di `self-service/index.blade.php` (`emp_shift_swap_request`).
+  Komentar di mockup itu usang — jangan dibangun ulang di layar ini.
