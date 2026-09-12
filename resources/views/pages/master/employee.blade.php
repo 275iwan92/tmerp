@@ -426,28 +426,32 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public function save(): void
     {
-        // 8 field "kunci user" wajib SAAT REGISTRASI karyawan baru (keputusan
-        // user 2026-08-27): nama, no KTP, no KK, no HP, tanggal lahir, alamat,
-        // email + nama ibu kandung (dicek terpisah di family tab, lihat
-        // showDirectory()/missingMandatoryFamily()). Karyawan lama (editingId
-        // sudah ada) TIDAK retroaktif dipaksa -- tetap nullable saat edit.
+        // Field identitas WAJIB (keputusan user 2026-09-12, berlaku SELALU --
+        // termasuk retroaktif ke karyawan lama yang datanya belum lengkap,
+        // beda dari kebijakan lama 2026-08-27 yang cuma wajib saat registrasi
+        // baru): no KTP (16 digit sesuai format NIK), no KK, tanggal lahir
+        // (umur pekerja minimal 17 tahun), no HP/WA, alamat tinggal (domisili).
+        // Nama & email tetap wajib khusus registrasi baru (kebijakan lama,
+        // tidak diubah instruksi ini). Nama ibu kandung tetap dicek terpisah
+        // di tab Keluarga (lihat showDirectory()/missingMandatoryFamily()).
         $isNew = ! $this->editingId;
-        $req = $isNew ? 'required' : 'nullable';
+        $reqNew = $isNew ? 'required' : 'nullable';
+        $minBirthDate = now()->subYears(17)->format('Y-m-d');
 
         $data = $this->validate([
             'full_name' => ['required', 'string', 'max:150'],
             'nickname' => ['nullable', 'string', 'max:50'],
             'gender' => ['required', 'in:L,P'],
             'birth_place' => ['nullable', 'string', 'max:100'],
-            'birth_date' => [$req, 'date'],
-            'nik_ktp' => [$req, 'string', 'max:20'],
-            'no_kk' => [$req, 'string', 'max:20'],
+            'birth_date' => ['required', 'date', 'before_or_equal:'.$minBirthDate],
+            'nik_ktp' => ['required', 'digits:16'],
+            'no_kk' => ['required', 'string', 'max:20'],
             'npwp_number' => ['nullable', 'string', 'max:30'],
             'religion' => ['nullable', 'string', 'in:'.implode(',', $this->religions)],
-            'phone' => [$req, 'string', 'max:30'],
-            'email_personal' => [$req, 'email', 'max:100'],
+            'phone' => ['required', 'string', 'max:30'],
+            'email_personal' => [$reqNew, 'email', 'max:100'],
             'address_detail_ktp' => ['nullable', 'string', 'max:255'],
-            'address_detail_domisili' => ['nullable', 'string', 'max:255'],
+            'address_detail_domisili' => ['required', 'string', 'max:255'],
             'join_date' => ['required', 'date'],
             'work_status' => ['required', 'in:WORKING,DIRUMAHKAN,CUTI'],
             'work_status_since' => ['nullable', 'date'],
@@ -459,14 +463,10 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'default_machine_id' => ['nullable', 'integer', 'exists:tm2mst.prod_machine,machine_id'],
             'default_shift_id' => ['nullable', 'integer', 'exists:tm2mst.emp_shift,shift_id'],
             'photo' => ['nullable', 'image', 'max:5120'],
+        ], [
+            'nik_ktp.digits' => 'NIK KTP harus tepat 16 digit angka.',
+            'birth_date.before_or_equal' => 'Karyawan minimal berusia 17 tahun (tanggal lahir maksimal '.\Carbon\Carbon::parse($minBirthDate)->translatedFormat('d M Y').').',
         ]);
-
-        // Alamat: cukup salah satu (Domisili sengaja boleh kosong = "sama dgn KTP").
-        if ($isNew && $data['address_detail_ktp'] === '' && $data['address_detail_domisili'] === '') {
-            $this->addError('address_detail_ktp', 'Alamat KTP atau Domisili wajib diisi salah satu.');
-
-            return;
-        }
 
         $payload = [
             'full_name' => $data['full_name'],
@@ -925,20 +925,20 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="grid gap-2.5">
                         <x-form.input label="Kota Lahir" wire:model="birth_place" />
-                        <x-form.date-picker label="Tanggal Lahir (sesuai KTP)" name="birth_date" wire:model="birth_date" />
-                        <x-form.input label="NIK KTP" name="nik_ktp" wire:model="nik_ktp" />
-                        <x-form.input label="No. Kartu Keluarga (KK)" name="no_kk" wire:model="no_kk" />
+                        <x-form.date-picker label="Tanggal Lahir (sesuai KTP) * — usia minimal 17 tahun" name="birth_date" wire:model="birth_date" />
+                        <x-form.input label="NIK KTP *" name="nik_ktp" wire:model="nik_ktp" maxlength="16" inputmode="numeric" hint="Wajib tepat 16 digit angka." />
+                        <x-form.input label="No. Kartu Keluarga (KK) *" name="no_kk" wire:model="no_kk" />
                         <x-form.input label="NPWP" wire:model="npwp_number" />
                     </div>
                     <div class="grid two gap-2.5">
-                        <x-form.input label="Telepon / WA (No. Smartphone Utama)" name="phone" wire:model="phone" />
+                        <x-form.input label="Telepon / WA (No. Smartphone Utama) *" name="phone" wire:model="phone" />
                         <x-form.input label="Email Pribadi" name="email_personal" type="email" wire:model="email_personal" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Alamat</div>
                     <div class="grid two gap-2.5">
                         <x-form.textarea label="Alamat KTP" name="address_detail_ktp" wire:model="address_detail_ktp" rows="2" />
-                        <x-form.textarea label="Alamat Domisili (kosongkan jika sama dgn KTP)" wire:model="address_detail_domisili" rows="2" />
+                        <x-form.textarea label="Alamat Tinggal / Domisili *" name="address_detail_domisili" wire:model="address_detail_domisili" rows="2" />
                     </div>
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">Status Kerja</div>
