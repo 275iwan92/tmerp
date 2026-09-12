@@ -165,34 +165,29 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div class="max-w-[1400px] mx-auto my-5 px-4">
-    <div class="grid three mb-3.5">
-        <div class="rounded-lg p-3.5 shadow-sm bg-[#eaf2ff] border border-[#c8ddfb]">
-            <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Posisi</p>
-            <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">{{ $this->stats['total'] }}</p>
-        </div>
-        <div class="rounded-lg p-3.5 shadow-sm bg-[#e9f9ef] border border-[#c8ecd6]">
-            <p class="text-[10.5px] font-bold uppercase text-[#2f7a52]">Aktif</p>
-            <p class="text-xl font-extrabold text-[#16a34a] mt-0.5">{{ $this->stats['active'] }}</p>
-        </div>
-        <div class="rounded-lg p-3.5 shadow-sm bg-[#fef6e7] border border-[#f5e0b3]">
-            <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Belum Ada Atasan</p>
-            <p class="text-xl font-extrabold text-[#b45309] mt-0.5">{{ $this->stats['unassigned'] }}</p>
-        </div>
-    </div>
-
-    <div class="flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3">
-        <div class="flex items-center gap-1.5 shrink-0">
-            <span class="text-sm">🔍</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama atau kode posisi…"
-                class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-        </div>
-        <span class="flex-1"></span>
-        <a href="{{ route('hrm.org-chart') }}" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded no-underline">🌳 Lihat Struktur Organisasi</a>
-        <button type="button" wire:click="openNew"
-            class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
-    </div>
+    <x-grid.stat-row :count="3">
+        <x-grid.stat-box tone="total" label="Total Posisi" :value="$this->stats['total']" />
+        <x-grid.stat-box tone="active" label="Aktif" :value="$this->stats['active']" />
+        <x-grid.stat-box tone="warn" label="Belum Ada Atasan" :value="$this->stats['unassigned']" />
+    </x-grid.stat-row>
 
     <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
+        <x-grid.toolbar>
+            <div class="flex items-center gap-1.5 shrink-0">
+                <span class="text-sm">🔍</span>
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama atau kode posisi…"
+                    class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+            </div>
+            <x-slot:tools>
+                <a href="{{ route('hrm.org-chart') }}" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded no-underline">🌳 Lihat Struktur Organisasi</a>
+            </x-slot:tools>
+            <x-slot:newRecord>
+                <button type="button" wire:click="openNew"
+                    class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+            </x-slot:newRecord>
+        </x-grid.toolbar>
+
+        <x-grid.table-shell>
         <table class="w-full text-xs">
             <thead class="text-[10px] text-muted uppercase border-b border-[#eef1f5] bg-[#f4f6fa]">
                 <tr>
@@ -214,16 +209,18 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
                         <td class="px-3 py-2">{{ $p->level->level_name ?? '—' }}</td>
                         <td class="px-3 py-2">{{ $p->reportsTo->position_name ?? '—' }}</td>
                         <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <button type="button" wire:click.stop="edit({{ $p->position_id }})" title="Edit" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-                            <button type="button" wire:click.stop="toggleActive({{ $p->position_id }})" wire:confirm="{{ $p->activate ? 'Nonaktifkan' : 'Aktifkan' }} posisi {{ $p->position_name }}?"
-                                title="{{ $p->activate ? 'Nonaktifkan' : 'Aktifkan' }}" class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $p->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+                            <x-grid.action-icon icon="✎" title="Edit" action="edit({{ $p->position_id }})" />
+                            <x-grid.action-icon icon="⏻" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->position_id }})"
+                                :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' posisi '.$p->position_name.'?'"
+                                :variant="$p->activate ? 'danger' : 'default'" />
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="px-3 py-6 text-center text-muted text-xs">Belum ada posisi.</td></tr>
+                    <x-grid.empty-row :colspan="5" message="Belum ada posisi." />
                 @endforelse
             </tbody>
         </table>
+        </x-grid.table-shell>
     </div>
 
     @include('components.grid.pagination-footer', ['paginator' => $this->rows])

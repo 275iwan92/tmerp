@@ -928,6 +928,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5 md:col-span-2">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Riwayat Pengajuan Koreksi Data</div>
+                        <x-grid.table-shell>
                         <table class="w-full text-[12.5px]">
                             <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Field</th><th class="pb-2">Nilai Baru</th><th class="pb-2">Status</th></tr></thead>
                             <tbody>
@@ -936,10 +937,11 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded {{ match ($c->status) { 'APPROVED' => 'bg-[#dcfce7] text-[#166534]', 'REJECTED' => 'bg-[#fee2e2] text-[#991b1b]', default => 'bg-[#fef3c7] text-[#92400e]' } }}">{{ $c->status }}</span>
                                     </td></tr>
                                 @empty
-                                    <tr><td colspan="3" class="text-center py-4 text-muted text-xs">Belum ada pengajuan.</td></tr>
+                                    <x-grid.empty-row :colspan="3" message="Belum ada pengajuan." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     </div>
 
                     <div class="bg-[#fff5f5] border border-[#fca5a5] rounded-xl p-4.5 md:col-span-2">
@@ -961,6 +963,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                 <button type="button" wire:click="openFamilyReq('MENINGGAL')" class="text-[11px] font-semibold bg-[#f1f5f9] text-[#334] px-3 py-1.5 rounded-md cursor-pointer">Tandai Meninggal Dunia</button>
                             </div>
                         </div>
+                        <x-grid.table-shell>
                         <table class="w-full text-[12.5px]">
                             <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Hubungan</th><th class="pb-2">Nama</th><th class="pb-2">Tanggal Lahir</th><th class="pb-2">Status</th></tr></thead>
                             <tbody>
@@ -978,10 +981,11 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center py-4 text-muted text-xs">Belum ada data keluarga.</td></tr>
+                                    <x-grid.empty-row :colspan="4" message="Belum ada data keluarga." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                         <div class="text-xs text-[#334155] bg-[#f0f9ff] border-l-4 border-accent px-3.5 py-2.5 rounded-r-md mt-3">Anggota keluarga meninggal <b>tidak dihapus</b> dari histori — demi keakuratan rekaman tunjangan &amp; klaim masa lalu.</div>
                     </div>
 
@@ -1043,6 +1047,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                             <div class="text-sm font-bold text-[#0f172a]">Riwayat Pendidikan &amp; Pengembangan</div>
                             <button type="button" wire:click="openEduModal" class="text-[11px] font-semibold bg-accent text-white px-3 py-1.5 rounded-md cursor-pointer">+ Tambah Riwayat</button>
                         </div>
+                        <x-grid.table-shell>
                         <table class="w-full text-[12.5px]">
                             <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Kegiatan</th><th class="pb-2">Tanggal</th><th class="pb-2">Biaya</th><th class="pb-2">Dibiayai</th></tr></thead>
                             <tbody>
@@ -1054,10 +1059,11 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="py-2">{{ $ed->funded_by }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center py-4 text-muted text-xs">Belum ada riwayat.</td></tr>
+                                    <x-grid.empty-row :colspan="4" message="Belum ada riwayat." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     </div>
                 </div>
             @endif
@@ -1079,13 +1085,12 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Form Pengajuan Absensi</div>
 
                     <div class="mb-3">
-                        <label class="text-xs text-muted block mb-1">Jenis Pengajuan</label>
-                        <select wire:model.live="leave_type" class="w-full px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
-                            <option value="CUTI">Cuti Tahunan (Dibayar)</option>
-                            <option value="SAKIT">Sakit</option>
-                            <option value="IZIN" @if ($this->izinLocked) disabled @endif>Izin (Non-Sakit) {{ $this->izinLocked ? '— Terkunci, sisa cuti '.$this->currentYearBalance?->remainingDays().' hari' : '' }}</option>
-                            <option value="CUTI_KHUSUS">Cuti Khusus (Nikah, Duka, dll)</option>
-                        </select>
+                        <x-form.select label="Jenis Pengajuan" wire:model.live="leave_type" :placeholder="false" :options="[
+                            'CUTI' => 'Cuti Tahunan (Dibayar)',
+                            'SAKIT' => 'Sakit',
+                            'IZIN' => 'Izin (Non-Sakit)'.($this->izinLocked ? ' — Terkunci, sisa cuti '.$this->currentYearBalance?->remainingDays().' hari' : ''),
+                            'CUTI_KHUSUS' => 'Cuti Khusus (Nikah, Duka, dll)',
+                        ]" />
                     </div>
 
                     @if ($leave_type === 'CUTI')
@@ -1103,8 +1108,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
                     @if ($leave_type === 'CUTI')
                         <div class="mb-3">
-                            <label class="text-xs text-muted block mb-1">Surat Permohonan Cuti (wajib)</label>
-                            <input type="file" wire:model="att_surat_cuti" class="w-full text-[12px]">
+                            <x-form.file-dropzone label="Surat Permohonan Cuti (wajib)" wire:model="att_surat_cuti" />
                             @error('att_surat_cuti') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                         </div>
                     @endif
@@ -1123,19 +1127,16 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         @if ($sakit_via_jkn)
                             <div class="mb-3">
-                                <label class="text-xs text-muted block mb-1">Screenshot Riwayat Aplikasi JKN</label>
-                                <input type="file" wire:model="att_jkn_screenshot" class="w-full text-[12px]">
+                                <x-form.file-dropzone label="Screenshot Riwayat Aplikasi JKN" wire:model="att_jkn_screenshot" />
                                 @error('att_jkn_screenshot') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                             </div>
                         @else
                             <div class="grid two gap-2.5 mb-3">
                                 <div>
-                                    <label class="text-xs text-muted block mb-1">Surat Keterangan Dokter</label>
-                                    <input type="file" wire:model="att_surat_dokter" class="w-full text-[12px]">
+                                    <x-form.file-dropzone label="Surat Keterangan Dokter" wire:model="att_surat_dokter" />
                                 </div>
                                 <div>
-                                    <label class="text-xs text-muted block mb-1">Kwitansi / Resep Obat</label>
-                                    <input type="file" wire:model="att_kwitansi_resep" class="w-full text-[12px]">
+                                    <x-form.file-dropzone label="Kwitansi / Resep Obat" wire:model="att_kwitansi_resep" />
                                 </div>
                             </div>
                             @error('att_surat_dokter') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
@@ -1174,8 +1175,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                 </div>
                             @endif
                             <div class="mb-3">
-                                <label class="text-xs text-muted block mb-1">Lampiran Bukti / Surat Instansi</label>
-                                <input type="file" wire:model="att_generic" class="w-full text-[12px]">
+                                <x-form.file-dropzone label="Lampiran Bukti / Surat Instansi" wire:model="att_generic" />
                                 @error('att_generic') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                             </div>
                         @endif
@@ -1192,8 +1192,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                             ]" />
                         </div>
                         <div class="mb-3">
-                            <label class="text-xs text-muted block mb-1">Lampiran Bukti Pendukung</label>
-                            <input type="file" wire:model="att_generic" class="w-full text-[12px]">
+                            <x-form.file-dropzone label="Lampiran Bukti Pendukung" wire:model="att_generic" />
                             @error('att_generic') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
                         </div>
                     @endif
@@ -1207,6 +1206,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5 mt-4">
                     <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Riwayat Pengajuan Saya</div>
+                    <x-grid.table-shell>
                     <table class="w-full text-[12.5px]">
                         <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Jenis</th><th class="pb-2">Tanggal</th><th class="pb-2">Status Gaji</th><th class="pb-2">Approval</th></tr></thead>
                         <tbody>
@@ -1218,10 +1218,11 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                     <td class="py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded {{ match ($lr->status) { 'APPROVED' => 'bg-[#dcfce7] text-[#166534]', 'REJECTED' => 'bg-[#fee2e2] text-[#991b1b]', default => 'bg-[#fef3c7] text-[#92400e]' } }}">{{ $lr->status }}</span></td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center py-4 text-muted text-xs">Belum ada pengajuan.</td></tr>
+                                <x-grid.empty-row :colspan="4" message="Belum ada pengajuan." />
                             @endforelse
                         </tbody>
                     </table>
+                    </x-grid.table-shell>
                 </div>
             @endif
 
@@ -1241,6 +1242,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Riwayat Izin Keluar</div>
+                        <x-grid.table-shell>
                         <table class="w-full text-[12.5px]">
                             <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Tanggal</th><th class="pb-2">Jam</th><th class="pb-2">Status</th></tr></thead>
                             <tbody>
@@ -1251,10 +1253,11 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded {{ match ($op->status) { 'APPROVED' => 'bg-[#dcfce7] text-[#166534]', 'REJECTED' => 'bg-[#fee2e2] text-[#991b1b]', default => 'bg-[#fef3c7] text-[#92400e]' } }}">{{ $op->status }}</span></td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="3" class="text-center py-4 text-muted text-xs">Belum ada pengajuan.</td></tr>
+                                    <x-grid.empty-row :colspan="3" message="Belum ada pengajuan." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     </div>
                 </div>
             @endif
@@ -1284,6 +1287,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
                         <div class="text-sm font-bold text-[#0f172a] mb-3 pb-2 border-b border-[#f1f5f9]">Riwayat Tukar Shift</div>
+                        <x-grid.table-shell>
                         <table class="w-full text-[12.5px]">
                             <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Tanggal Saya</th><th class="pb-2">Ditukar Dengan</th><th class="pb-2">Rekan</th><th class="pb-2">PPIC</th></tr></thead>
                             <tbody>
@@ -1295,10 +1299,11 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded {{ $s->ppic_status === 'APPROVED' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#fef3c7] text-[#92400e]' }}">{{ $s->ppic_status }}</span></td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center py-4 text-muted text-xs">Belum ada pengajuan.</td></tr>
+                                    <x-grid.empty-row :colspan="4" message="Belum ada pengajuan." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     </div>
                 </div>
             @endif
@@ -1422,13 +1427,13 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         <x-form.select label="Pilih Anggota Keluarga" wire:model="famreq_family_id" name="famreq_family_id"
                             :options="$this->employee->families->where('is_deceased', false)->mapWithKeys(fn ($f) => [$f->family_id => $f->full_name.' ('.$f->relation.')'])->all()" />
                         <x-form.date-picker label="Tanggal Meninggal" wire:model="famreq_deceased_date" name="famreq_deceased_date" />
-                        <div><label class="text-xs text-muted block mb-1">Upload Surat Kematian</label><input type="file" wire:model="famreq_attachment" class="w-full text-[12px]"></div>
+                        <x-form.file-dropzone label="Upload Surat Kematian" wire:model="famreq_attachment" />
                     @else
                         <x-form.select label="Hubungan" wire:model="famreq_relation" :placeholder="false"
                             :options="$famreq_type === 'PASANGAN' ? ['SUAMI' => 'Suami', 'ISTRI' => 'Istri'] : ['ANAK' => 'Anak']" />
                         <x-form.input label="Nama Lengkap" wire:model="famreq_full_name" name="famreq_full_name" />
                         <x-form.date-picker label="Tanggal Lahir" wire:model="famreq_birth_date" />
-                        <div><label class="text-xs text-muted block mb-1">Upload Akta / Buku Nikah</label><input type="file" wire:model="famreq_attachment" class="w-full text-[12px]"></div>
+                        <x-form.file-dropzone label="Upload Akta / Buku Nikah" wire:model="famreq_attachment" />
                     @endif
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showFamilyReqModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Kirim Pengajuan</button></div>
                 </form>
@@ -1456,7 +1461,10 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <form wire:submit="saveDoc" class="flex flex-col gap-3">
                     <x-form.input label="Nomor Dokumen" wire:model="doc_document_no" />
                     <x-form.date-picker label="Masa Berlaku (jika ada)" wire:model="doc_expiry_date" />
-                    <div><label class="text-xs text-muted block mb-1">File (JPG/PNG/PDF, maks 5MB)</label><input type="file" wire:model="doc_file" class="w-full text-[12px]">@error('doc_file') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
+                    <div>
+                        <x-form.file-dropzone label="File (JPG/PNG/PDF, maks 5MB)" wire:model="doc_file" />
+                        @error('doc_file') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                    </div>
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showDocModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan &amp; Upload</button></div>
                 </form>
             </div>
@@ -1488,7 +1496,10 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-base font-bold text-[#0f172a] mb-1">Upload Foto ID Card Baru</div>
                 <div class="text-xs text-muted mb-3">Foto akan direview HRD sebelum dicetak ulang.</div>
                 <form wire:submit="saveBadgePhoto" class="flex flex-col gap-3">
-                    <div><label class="text-xs text-muted block mb-1">Pilih File Foto (min. 600×900px, rasio 2:3)</label><input type="file" wire:model="badge_photo" class="w-full text-[12px]">@error('badge_photo') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror</div>
+                    <div>
+                        <x-form.file-dropzone label="Pilih File Foto (min. 600×900px, rasio 2:3)" wire:model="badge_photo" />
+                        @error('badge_photo') <span class="text-[11px] text-red-600">{{ $message }}</span> @enderror
+                    </div>
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showBadgeModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Kirim Foto</button></div>
                 </form>
             </div>

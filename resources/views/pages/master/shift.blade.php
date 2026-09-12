@@ -308,10 +308,10 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
                                 @foreach ($days as $i => $day)
                                     <tr wire:key="day-{{ $day['day_of_week'] }}" class="border-b border-[#eef1f5]">
                                         <td class="px-1.5 py-1 font-semibold {{ $day['day_of_week'] === 'Sunday' && empty($day['start_time']) ? 'text-muted' : '' }}">{{ $dayLabels[$day['day_of_week']] }}</td>
-                                        <td class="px-1.5 py-1"><input type="time" wire:model="days.{{ $i }}.start_time" class="w-full px-1.5 py-1 border border-[#c7cfda] rounded text-[12px]"></td>
-                                        <td class="px-1.5 py-1"><input type="time" wire:model="days.{{ $i }}.break_out" class="w-full px-1.5 py-1 border border-[#c7cfda] rounded text-[12px]"></td>
-                                        <td class="px-1.5 py-1"><input type="time" wire:model="days.{{ $i }}.break_in" class="w-full px-1.5 py-1 border border-[#c7cfda] rounded text-[12px]"></td>
-                                        <td class="px-1.5 py-1"><input type="time" wire:model="days.{{ $i }}.end_time" class="w-full px-1.5 py-1 border border-[#c7cfda] rounded text-[12px]"></td>
+                                        <td class="px-1.5 py-1"><x-form.input type="time" wire:model="days.{{ $i }}.start_time" class="!px-1.5 !py-1 !text-[12px]" /></td>
+                                        <td class="px-1.5 py-1"><x-form.input type="time" wire:model="days.{{ $i }}.break_out" class="!px-1.5 !py-1 !text-[12px]" /></td>
+                                        <td class="px-1.5 py-1"><x-form.input type="time" wire:model="days.{{ $i }}.break_in" class="!px-1.5 !py-1 !text-[12px]" /></td>
+                                        <td class="px-1.5 py-1"><x-form.input type="time" wire:model="days.{{ $i }}.end_time" class="!px-1.5 !py-1 !text-[12px]" /></td>
                                         <td class="px-1.5 py-1 text-center">
                                             <button type="button" wire:click="clearDay({{ $i }})" title="Kosongkan hari ini" class="w-7 h-7 rounded-md border border-[#c7cfda] text-[#c0392b] hover:bg-[#fdeceb] cursor-pointer">🗑</button>
                                         </td>

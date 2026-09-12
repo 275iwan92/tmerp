@@ -170,12 +170,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
             <p class="text-[11px] text-muted mb-4">Format: .csv/.txt/.xlsx dengan kolom <code class="bg-[#f4f6fa] px-1 rounded">device_pin, tanggal, jam_masuk, jam_keluar</code>. Sistem mencocokkan device_pin ke Master Karyawan secara otomatis.</p>
 
             @if (! $processed)
-                <label class="block border-2 border-dashed border-[#d7dbe2] rounded-lg p-8 text-center hover:border-accent transition cursor-pointer bg-[#fafbfd]">
-                    <div class="text-3xl mb-2">📁</div>
-                    <p class="text-xs font-semibold">Klik untuk pilih file hasil tarikan mesin finger</p>
-                    <p class="text-[11px] text-muted mt-1">Maksimal 5 MB</p>
-                    <input type="file" wire:model="file" class="hidden" accept=".csv,.txt,.xlsx">
-                </label>
+                <x-form.file-dropzone wire:model="file" accept=".csv,.txt,.xlsx" hint="Maksimal 5 MB." />
                 @error('file') <div class="text-[11px] text-red-600 mt-2">{{ $message }}</div> @enderror
 
                 <div wire:loading wire:target="file" class="text-xs text-muted mt-3">Membaca file...</div>
@@ -186,7 +181,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
                             <h2 class="text-xs font-bold">Preview Data ({{ count($preview) }} baris, {{ count($unmatched) }} device_pin tidak dikenal)</h2>
                             <button type="button" wire:click="processImport" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">💾 Simpan & Eksekusi Matching Shift</button>
                         </div>
-                        <div class="overflow-x-auto max-h-[360px] overflow-y-auto border border-[#eef1f5] rounded">
+                        <x-grid.table-shell>
                             <table class="w-full text-left text-xs border-collapse">
                                 <thead>
                                     <tr>
@@ -198,7 +193,7 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($preview as $row)
+                                    @forelse ($preview as $row)
                                         <tr class="border-b border-[#eef1f5] {{ ! $row['matched'] ? 'bg-[#fee2e2]' : '' }}">
                                             <td class="p-2 font-mono">{{ $row['device_pin'] }}</td>
                                             <td class="p-2">{{ $row['employee_name'] }}</td>
@@ -206,10 +201,12 @@ new #[Title('Upload Presensi — TELASIH MAKMUR ERP')] class extends Component
                                             <td class="p-2 font-mono">{{ $row['jam_masuk'] }}</td>
                                             <td class="p-2 font-mono">{{ $row['jam_keluar'] ?? '—' }}</td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <x-grid.empty-row :colspan="5" message="Tidak ada baris." />
+                                    @endforelse
                                 </tbody>
                             </table>
-                        </div>
+                        </x-grid.table-shell>
                     </div>
                 @endif
             @else

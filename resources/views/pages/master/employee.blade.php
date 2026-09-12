@@ -988,6 +988,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             <div class="text-xs font-bold text-navy uppercase tracking-wide">Riwayat Pendidikan &amp; Pengembangan</div>
                             <button type="button" wire:click="openEducationModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Tambah Riwayat</button>
                         </div>
+                        <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
@@ -1006,10 +1007,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5">{{ $ed->funded_by }}{{ $ed->is_bonding ? ' · Ikatan Dinas' : '' }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center py-5 text-muted text-xs">Belum ada riwayat.</td></tr>
+                                    <x-grid.empty-row :colspan="4" message="Belum ada riwayat." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     @endif
                 </div>
 
@@ -1032,6 +1034,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             <div class="text-xs font-bold text-navy uppercase tracking-wide">Anggota Keluarga</div>
                             <button type="button" wire:click="openFamilyModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Tambah Anggota</button>
                         </div>
+                        <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
@@ -1062,10 +1065,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5" class="text-center py-5 text-muted text-xs">Belum ada data keluarga.</td></tr>
+                                    <x-grid.empty-row :colspan="5" message="Belum ada data keluarga." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     @endif
                 </div>
 
@@ -1078,6 +1082,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             <div class="text-xs font-bold text-navy uppercase tracking-wide">Riwayat Kontrak Kerja</div>
                             <button type="button" wire:click="openContractModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-accent text-white">+ Kontrak Baru</button>
                         </div>
+                        <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
@@ -1106,10 +1111,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="5" class="text-center py-5 text-muted text-xs">Belum ada kontrak.</td></tr>
+                                    <x-grid.empty-row :colspan="5" message="Belum ada kontrak." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     @endif
                 </div>
 
@@ -1122,6 +1128,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                             <div class="text-xs font-bold text-navy uppercase tracking-wide">Log Kedisiplinan</div>
                             <button type="button" wire:click="openDisciplinaryModal" class="px-3 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[#fdeceb] text-[#c0392b]">⚠️ Tambah Catatan</button>
                         </div>
+                        <x-grid.table-shell>
                         <table class="w-full border-collapse text-[12px]">
                             <thead>
                                 <tr>
@@ -1140,10 +1147,11 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5">{{ $d->issued_by }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="4" class="text-center py-5 text-muted text-xs">Belum ada catatan — clean record.</td></tr>
+                                    <x-grid.empty-row :colspan="4" message="Belum ada catatan — clean record." />
                                 @endforelse
                             </tbody>
                         </table>
+                        </x-grid.table-shell>
                     @endif
                 </div>
 

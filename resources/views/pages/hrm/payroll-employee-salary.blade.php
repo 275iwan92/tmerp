@@ -253,14 +253,8 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
                     <x-form.select label="Status PTKP (wajib kalau PPh21 diaktifkan)" wire:model="ptkpStatus" name="ptkpStatus" :options="$this->ptkpOptions()" />
 
                     <div class="flex gap-4 pt-2 border-t border-[#eef1f5] mt-1">
-                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                            <input type="checkbox" wire:model="bpjsActive" class="w-4 h-4">
-                            Potong BPJS (JHT/JP/Kes)
-                        </label>
-                        <label class="flex items-center gap-2 text-xs font-semibold cursor-pointer">
-                            <input type="checkbox" wire:model="pph21Active" class="w-4 h-4">
-                            Potong PPh21 (TER)
-                        </label>
+                        <x-form.checkbox label="Potong BPJS (JHT/JP/Kes)" wire:model="bpjsActive" class="w-4 h-4" labelClass="font-semibold cursor-pointer" />
+                        <x-form.checkbox label="Potong PPh21 (TER)" wire:model="pph21Active" class="w-4 h-4" labelClass="font-semibold cursor-pointer" />
                     </div>
 
                     <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">

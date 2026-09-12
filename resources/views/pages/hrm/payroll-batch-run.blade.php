@@ -177,11 +177,8 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
             @if ($this->runs->isNotEmpty())
                 <div class="mb-4">
                     <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Pilih Periode</label>
-                    <select wire:model.live="selectedRunId" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs">
-                        @foreach ($this->runs as $r)
-                            <option value="{{ $r->id_run }}">{{ $r->period_start->format('d M Y') }} — {{ $r->period_end->format('d M Y') }} ({{ $r->run_status }})</option>
-                        @endforeach
-                    </select>
+                    <x-form.select wire:model.live="selectedRunId" :placeholder="false"
+                        :options="$this->runs->mapWithKeys(fn ($r) => [$r->id_run => $r->period_start->format('d M Y').' — '.$r->period_end->format('d M Y').' ('.$r->run_status.')'])" />
                 </div>
             @endif
 
@@ -192,8 +189,8 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
                         <p class="text-[11px] text-muted mt-0.5">Menghitung Gaji Pokok, Tunjangan, Overtime, Uang Roti, BPJS/PPh21 (kalau aktif), dan Denda</p>
                     </div>
                     <div class="flex gap-2">
-                        <input type="date" wire:model="periodStart" class="border border-[#d7dbe2] rounded text-xs px-2 py-1.5">
-                        <input type="date" wire:model="periodEnd" class="border border-[#d7dbe2] rounded text-xs px-2 py-1.5">
+                        <x-form.date-picker wire:model="periodStart" name="periodStart" />
+                        <x-form.date-picker wire:model="periodEnd" name="periodEnd" />
                         @if (! $this->run || in_array($this->run->run_status, ['DRAFT', 'CALCULATED'], true))
                             <button type="button" wire:click="calculate" wire:loading.attr="disabled" class="bg-navy text-white text-xs px-4 py-2 rounded font-semibold">⚡ Jalankan Kalkulasi</button>
                         @endif
@@ -202,24 +199,12 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             @if ($this->summary)
-                <div class="grid grid-cols-4 gap-3 mb-4">
-                    <div class="bg-[#eaf0ff] border border-[#c7d7fb] p-3 rounded-lg">
-                        <span class="text-[10px] text-[#2f6fed] font-semibold block uppercase">Total Pegawai</span>
-                        <span class="text-lg font-extrabold text-[#1e3a8a]">{{ $this->summary['total_pegawai'] }} Org</span>
-                    </div>
-                    <div class="bg-[#dcfce7] border border-[#a7e5bf] p-3 rounded-lg">
-                        <span class="text-[10px] text-[#166534] font-semibold block uppercase">Gaji via Bank Transfer</span>
-                        <span class="text-sm font-extrabold text-[#166534]">{{ $this->summary['bank_count'] }} Org (Rp {{ number_format($this->summary['bank_total'], 0, ',', '.') }})</span>
-                    </div>
-                    <div class="bg-[#fef3c7] border border-[#f5d98a] p-3 rounded-lg">
-                        <span class="text-[10px] text-[#92400e] font-semibold block uppercase">Gaji via Cash</span>
-                        <span class="text-sm font-extrabold text-[#92400e]">{{ $this->summary['cash_count'] }} Org (Rp {{ number_format($this->summary['cash_total'], 0, ',', '.') }})</span>
-                    </div>
-                    <div class="bg-[#f3e8ff] border border-[#dcc7f5] p-3 rounded-lg">
-                        <span class="text-[10px] text-[#6b21a8] font-semibold block uppercase">Total Gaji Bersih</span>
-                        <span class="text-sm font-extrabold text-[#6b21a8]">Rp {{ number_format($this->summary['grand_total'], 0, ',', '.') }}</span>
-                    </div>
-                </div>
+                <x-grid.stat-row :count="4" class="mb-4">
+                    <x-grid.stat-box tone="total" label="Total Pegawai" :value="$this->summary['total_pegawai'].' Org'" />
+                    <x-grid.stat-box tone="active" label="Gaji via Bank Transfer" :value="$this->summary['bank_count'].' Org'" :subtitle="'Rp '.number_format($this->summary['bank_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="warn" label="Gaji via Cash" :value="$this->summary['cash_count'].' Org'" :subtitle="'Rp '.number_format($this->summary['cash_total'], 0, ',', '.')" />
+                    <x-grid.stat-box tone="extra" label="Total Gaji Bersih" :value="'Rp '.number_format($this->summary['grand_total'], 0, ',', '.')" />
+                </x-grid.stat-row>
 
                 @if ($this->summary['anomaly_count'] > 0)
                     <div class="bg-[#fee2e2] border border-[#f5b5b5] text-[#991b1b] text-xs font-semibold px-3 py-2 rounded mb-4">

@@ -96,11 +96,8 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
                     <p class="text-[11px] text-muted mt-0.5">Daftar pegawai dengan rekening bank aktif utk periode terpilih</p>
                 </div>
                 <div class="flex gap-2 items-center">
-                    <select wire:model.live="runId" class="border border-[#d7dbe2] rounded text-xs px-2 py-1.5">
-                        @foreach ($this->availableRuns as $r)
-                            <option value="{{ $r->id_run }}">{{ $r->period_start->format('d M Y') }} — {{ $r->period_end->format('d M Y') }}</option>
-                        @endforeach
-                    </select>
+                    <x-form.select wire:model.live="runId" :placeholder="false"
+                        :options="$this->availableRuns->mapWithKeys(fn ($r) => [$r->id_run => $r->period_start->format('d M Y').' — '.$r->period_end->format('d M Y')])" class="shrink-0" />
                     <button type="button" wire:click="downloadCsv" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">📥 Download CSV Batch</button>
                 </div>
             </div>
@@ -110,6 +107,7 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
                 <span class="text-lg font-extrabold font-mono text-[#1e3a8a]">Rp {{ number_format($this->totalTransfer, 0, ',', '.') }}</span>
             </div>
 
+            <x-grid.table-shell>
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
@@ -134,6 +132,7 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
                     @endforelse
                 </tbody>
             </table>
+            </x-grid.table-shell>
         </div>
     </div>
 </div>

@@ -140,27 +140,23 @@ new #[Title('Struktur Organisasi — TELASIH MAKMUR ERP')] class extends Compone
 </style>
 
 <div class="max-w-full mx-auto my-5 px-4">
-    <div class="org-chart-noprint flex items-center gap-2 bg-white border border-[#d7dbe2] rounded-md px-2.5 py-2 overflow-x-auto mb-3 flex-wrap">
+    <x-grid.toolbar class="org-chart-noprint mb-3 flex-wrap rounded-md border border-[#d7dbe2]">
         <a href="{{ route('hrm.position') }}" class="text-[11px] font-bold text-navy border border-[#d7dbe2] px-2.5 py-1.5 rounded no-underline">← Master Posisi</a>
         <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-sm">🔍</span>
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nama karyawan / posisi…" class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
         </div>
-        <select wire:model.live="filterDepartmentId" class="px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
-            <option value="">▾ Semua Departemen</option>
-            @foreach ($this->departments as $id => $name)
-                <option value="{{ $id }}">{{ $name }}</option>
-            @endforeach
-        </select>
-        <span class="flex-1"></span>
-        <div class="flex items-center gap-1 bg-[#eef1f5] rounded-lg p-1">
-            <button type="button" wire:click="zoomOut" class="w-7 h-7 text-sm font-bold rounded-md hover:bg-white">−</button>
-            <span class="text-[10.5px] font-bold text-muted w-10 text-center">{{ number_format($zoom * 100, 0) }}%</span>
-            <button type="button" wire:click="zoomIn" class="w-7 h-7 text-sm font-bold rounded-md hover:bg-white">+</button>
-            <button type="button" wire:click="zoomReset" class="text-[10.5px] font-bold px-2 py-1 rounded-md hover:bg-white">Reset</button>
-        </div>
-        <button type="button" onclick="window.print()" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">🖨 Cetak</button>
-    </div>
+        <x-form.select wire:model.live="filterDepartmentId" :options="$this->departments" placeholder="▾ Semua Departemen" class="shrink-0" />
+        <x-slot:tools>
+            <div class="flex items-center gap-1 bg-[#eef1f5] rounded-lg p-1">
+                <button type="button" wire:click="zoomOut" class="w-7 h-7 text-sm font-bold rounded-md hover:bg-white">−</button>
+                <span class="text-[10.5px] font-bold text-muted w-10 text-center">{{ number_format($zoom * 100, 0) }}%</span>
+                <button type="button" wire:click="zoomIn" class="w-7 h-7 text-sm font-bold rounded-md hover:bg-white">+</button>
+                <button type="button" wire:click="zoomReset" class="text-[10.5px] font-bold px-2 py-1 rounded-md hover:bg-white">Reset</button>
+            </div>
+            <button type="button" onclick="window.print()" class="shrink-0 text-[11px] font-bold text-navy border border-[#d7dbe2] px-3 py-1.5 rounded">🖨 Cetak</button>
+        </x-slot:tools>
+    </x-grid.toolbar>
 
     <div class="bg-white border border-[#d7dbe2] rounded-md overflow-auto" style="max-height: 78vh;">
         <div class="org-chart-canvas p-8 origin-top-left" style="transform: scale({{ $zoom }}); width: max-content;">

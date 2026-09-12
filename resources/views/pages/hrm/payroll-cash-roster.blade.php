@@ -106,11 +106,8 @@ new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends 
                     <p class="text-[11px] text-muted mt-0.5">Pegawai tanpa rekening bank aktif + rincian pecahan uang</p>
                 </div>
                 <div class="flex gap-2 items-center">
-                    <select wire:model.live="runId" class="border border-[#d7dbe2] rounded text-xs px-2 py-1.5">
-                        @foreach ($this->availableRuns as $r)
-                            <option value="{{ $r->id_run }}">{{ $r->period_start->format('d M Y') }} — {{ $r->period_end->format('d M Y') }}</option>
-                        @endforeach
-                    </select>
+                    <x-form.select wire:model.live="runId" :placeholder="false"
+                        :options="$this->availableRuns->mapWithKeys(fn ($r) => [$r->id_run => $r->period_start->format('d M Y').' — '.$r->period_end->format('d M Y')])" class="shrink-0" />
                     <span class="text-[10px] font-bold px-3 py-1.5 rounded-full bg-[#fef3c7] text-[#92400e] border border-[#f5d98a]">Total Cash: Rp {{ number_format($this->totalCash, 0, ',', '.') }}</span>
                     <button type="button" onclick="window.print()" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">🖨️ Cetak Serah Terima</button>
                 </div>
@@ -125,6 +122,7 @@ new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends 
                 </div>
             </div>
 
+            <x-grid.table-shell>
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
@@ -149,6 +147,7 @@ new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends 
                     @endforelse
                 </tbody>
             </table>
+            </x-grid.table-shell>
         </div>
     </div>
 </div>

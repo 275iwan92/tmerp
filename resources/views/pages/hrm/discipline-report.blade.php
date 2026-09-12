@@ -94,27 +94,16 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
             <button type="button" onclick="window.print()" class="bg-navy text-white text-xs px-3 py-2 rounded font-semibold">🖨️ Cetak Laporan</button>
         </div>
 
-        <div class="grid grid-cols-4 gap-3 mb-4">
-            <div class="bg-white p-3 rounded-lg border-l-4 border-[#22c55e] shadow-sm">
-                <span class="text-[10px] text-muted uppercase font-semibold block">Hadir Tepat Waktu</span>
-                <span class="text-xl font-extrabold text-[#166534]">{{ $this->stats['hadir'] }} Karyawan</span>
-            </div>
-            <div class="bg-white p-3 rounded-lg border-l-4 border-[#f59e0b] shadow-sm">
-                <span class="text-[10px] text-muted uppercase font-semibold block">Terlambat</span>
-                <span class="text-xl font-extrabold text-[#92400e]">{{ $this->stats['terlambat'] }} Karyawan</span>
-            </div>
-            <div class="bg-white p-3 rounded-lg border-l-4 border-[#f43f5e] shadow-sm">
-                <span class="text-[10px] text-muted uppercase font-semibold block">Tidak Masuk (Alpha)</span>
-                <span class="text-xl font-extrabold text-[#991b1b]">{{ $this->stats['alpha'] }} Karyawan</span>
-            </div>
-            <div class="bg-white p-3 rounded-lg border-l-4 border-[#a855f7] shadow-sm">
-                <span class="text-[10px] text-muted uppercase font-semibold block">Izin/Sakit/Cuti</span>
-                <span class="text-xl font-extrabold text-[#6b21a8]">{{ $this->stats['izin_sakit_cuti'] }} Karyawan</span>
-            </div>
-        </div>
+        <x-grid.stat-row :count="4" class="mb-4">
+            <x-grid.stat-box tone="active" label="Hadir Tepat Waktu" :value="$this->stats['hadir'].' Karyawan'" />
+            <x-grid.stat-box tone="warn" label="Terlambat" :value="$this->stats['terlambat'].' Karyawan'" />
+            <x-grid.stat-box tone="critical" label="Tidak Masuk (Alpha)" :value="$this->stats['alpha'].' Karyawan'" />
+            <x-grid.stat-box tone="extra" label="Izin/Sakit/Cuti" :value="$this->stats['izin_sakit_cuti'].' Karyawan'" />
+        </x-grid.stat-row>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-4">
             <h2 class="text-xs font-bold text-[#92400e] mb-3">⚠️ Daftar Karyawan Terlambat ({{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }})</h2>
+            <x-grid.table-shell>
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
@@ -141,10 +130,12 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
                     @endforelse
                 </tbody>
             </table>
+            </x-grid.table-shell>
         </div>
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-4">
             <h2 class="text-xs font-bold text-[#991b1b] mb-3">🚫 Daftar Karyawan Tidak Masuk Kerja (Alpha/Sakit/Izin/Cuti)</h2>
+            <x-grid.table-shell>
             <table class="w-full text-left text-xs border-collapse">
                 <thead>
                     <tr>
@@ -167,6 +158,7 @@ new #[Title('Laporan Kedisiplinan Harian — TELASIH MAKMUR ERP')] class extends
                     @endforelse
                 </tbody>
             </table>
+            </x-grid.table-shell>
         </div>
     </div>
 </div>
