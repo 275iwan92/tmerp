@@ -102,6 +102,8 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     // 2026-09-12: "saat di cetak pun mengikuti hide and show yang sudah di set".
     public array $hiddenShifts = [];
 
+    public bool $showVisibilityModal = false;
+
     public function mount(): void
     {
         $this->scheduleId = EmpRosterSchedule::where('activate', true)->orderBy('schedule_id')->value('schedule_id');
@@ -1357,24 +1359,20 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 <div class="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-[var(--rs-border)] flex-wrap">
                     <h2 class="m-0 text-sm font-bold uppercase tracking-wide text-[var(--rs-ink)]">{{ $this->currentWorkCenter?->work_center_name ?: 'Pilih unit kerja' }}</h2>
                     <span class="text-[11px] text-[var(--rs-muted)]">1 penempatan = 1 minggu penuh, jam mengikuti definisi shift</span>
-                    <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam · 👁 = sembunyikan dari papan &amp; cetakan</span>
-                </div>
+                    <span class="ml-auto text-[11px] text-[var(--rs-muted)]">Dobel-klik kolom shift = ubah jam</span>
 
-                @if (count($hiddenShifts))
-                    <div class="flex items-center gap-2 flex-wrap px-3.5 py-2 border-b border-[var(--rs-border)] bg-[var(--rs-warn-bg)]">
-                        <span class="text-[11px] font-semibold text-[var(--rs-warn)]">{{ count($hiddenShifts) }} shift disembunyikan (ikut hilang saat dicetak):</span>
-                        @foreach ($shifts->whereIn('shift_id', $hiddenShifts) as $hidden)
-                            <button type="button" wire:click="toggleShiftVisibility({{ $hidden->shift_id }})" title="Tampilkan kembali"
-                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">
-                                <i class="w-2 h-2 rounded-sm inline-block" style="background: {{ $hidden->color() }}"></i>{{ $hidden->shift_name }} ↩
-                            </button>
-                        @endforeach
-                        @if ($this->hiddenWithPlacements())
-                            <span class="text-[11px] font-bold text-[var(--rs-bad)]">⚠ {{ $this->hiddenWithPlacements() }} penempatan minggu ini ada di shift yang disembunyikan</span>
+                    {{-- Satu ikon saja (permintaan user 2026-09-12: bar daftar shift
+                         tersembunyi terlalu boros tempat) -- daftar & checkbox-nya
+                         pindah ke popup. --}}
+                    <button type="button" wire:click="$set('showVisibilityModal', true)"
+                        title="Atur shift yang tampil / disembunyikan"
+                        class="relative shrink-0 px-2 py-1 rounded-md text-[13px] leading-none cursor-pointer border {{ count($hiddenShifts) ? 'bg-[var(--rs-warn-bg)] border-[var(--rs-warn)] text-[var(--rs-warn)]' : 'bg-[var(--rs-surface)] border-[var(--rs-border-strong)] text-[var(--rs-muted)]' }}">
+                        👁
+                        @if (count($hiddenShifts))
+                            <span class="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full text-[9.5px] font-bold grid place-items-center text-white {{ $this->hiddenWithPlacements() ? 'bg-[var(--rs-bad)]' : 'bg-[var(--rs-warn)]' }}">{{ count($hiddenShifts) }}</span>
                         @endif
-                        <button type="button" wire:click="showAllShifts" class="ml-auto px-2 py-0.5 rounded text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Tampilkan semua</button>
-                    </div>
-                @endif
+                    </button>
+                </div>
 
                 <div class="overflow-x-auto">
                     <div class="min-w-[900px]">
@@ -1481,7 +1479,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                         @empty
                             <div class="px-4 py-8 text-center text-sm text-[var(--rs-muted)]">
                                 @if (count($hiddenShifts) && $shifts->count())
-                                    Semua shift sedang disembunyikan. Klik <b>Tampilkan semua</b> di atas untuk menampilkannya lagi.
+                                    Semua shift sedang disembunyikan. Klik ikon <b>👁</b> di kanan atas papan untuk menampilkannya lagi.
                                 @else
                                     Belum ada shift aktif. Buka menu <b>Master Shift</b> untuk mendefinisikan.
                                 @endif
@@ -1669,6 +1667,62 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             <p class="text-xs text-[var(--rs-muted)] m-0">
                 Total {{ $this->allShifts->count() }} shift · {{ $shifts->count() }} aktif. Kode shift dipakai sebagai kunci di papan roster — ubah kode hanya sebelum jadwal dipublikasikan.
             </p>
+        </div>
+    @endif
+
+    {{-- ===================== POPUP: TAMPIL / SEMBUNYI SHIFT ===================== --}}
+    @if ($showVisibilityModal)
+        <div class="fixed inset-0 bg-black/50 z-[70] p-5 overflow-auto" wire:click.self="$set('showVisibilityModal', false)">
+            <div class="max-w-[520px] mx-auto rounded-xl border border-[var(--rs-border)] bg-[var(--rs-surface)] text-[var(--rs-ink)]">
+                <div class="flex items-center gap-2.5 px-4 py-3 border-b border-[var(--rs-border)]">
+                    <h3 class="m-0 text-base font-bold uppercase tracking-wide">Tampilkan / Sembunyikan Shift</h3>
+                    <button type="button" wire:click="$set('showVisibilityModal', false)" class="ml-auto text-xl leading-none cursor-pointer text-[var(--rs-muted)]">×</button>
+                </div>
+
+                <div class="px-4 py-3">
+                    <p class="mt-0 mb-3 text-[11.5px] text-[var(--rs-muted)]">
+                        Centang = tampil di papan <b>dan</b> di hasil cetak. Setelan ini milik akun Anda sendiri.
+                    </p>
+
+                    <div class="flex flex-col gap-1 max-h-[340px] overflow-y-auto">
+                        @foreach ($shifts as $shift)
+                            @php
+                                $isHidden = in_array($shift->shift_id, $hiddenShifts, true);
+                                $placed = $this->shiftCount($shift->shift_id);
+                            @endphp
+                            <label wire:key="vis-{{ $shift->shift_id }}"
+                                class="flex items-center gap-2.5 px-2.5 py-2 rounded-md border cursor-pointer {{ $isHidden ? 'border-[var(--rs-warn)] bg-[var(--rs-warn-bg)]' : 'border-[var(--rs-border)] bg-[var(--rs-surface-alt)]' }}">
+                                <input type="checkbox" wire:click="toggleShiftVisibility({{ $shift->shift_id }})" @checked(! $isHidden)
+                                    class="cursor-pointer accent-[var(--rs-accent)]">
+                                <i class="w-2.5 h-2.5 rounded-sm shrink-0 inline-block" style="background: {{ $shift->color() }}"></i>
+                                <span class="min-w-0 flex-1">
+                                    <b class="block text-[12.5px] font-semibold truncate">{{ $shift->shift_name }}</b>
+                                    <span class="text-[10px] font-mono text-[var(--rs-muted)]">{{ $shift->shift_code }} · {{ implode(', ', $shift->summaryLines()) }}</span>
+                                </span>
+                                @if ($isHidden && $placed)
+                                    <span class="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded text-white bg-[var(--rs-bad)]" title="Penempatan minggu ini di unit kerja yang sedang dibuka">⚠ {{ $placed }} orang</span>
+                                @elseif ($placed)
+                                    <span class="shrink-0 text-[10px] font-mono text-[var(--rs-muted)]">{{ $placed }} orang</span>
+                                @endif
+                                @if ($isHidden)
+                                    <span class="shrink-0 text-[9.5px] font-bold uppercase text-[var(--rs-warn)]">disembunyikan</span>
+                                @endif
+                            </label>
+                        @endforeach
+                    </div>
+
+                    @if ($this->hiddenWithPlacements())
+                        <div class="mt-3 text-[11px] leading-snug rounded-md px-2.5 py-2 bg-[var(--rs-bad-bg)] border border-[var(--rs-bad)] text-[var(--rs-bad)]">
+                            ⚠ Ada <b>{{ $this->hiddenWithPlacements() }} penempatan</b> minggu ini di shift yang disembunyikan — datanya tetap tersimpan, tapi tidak muncul di papan maupun cetakan.
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex gap-2 justify-end px-4 py-3 border-t border-[var(--rs-border)] bg-[var(--rs-surface-alt)] rounded-b-xl">
+                    <button type="button" wire:click="showAllShifts" class="mr-auto px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">Tampilkan semua</button>
+                    <button type="button" wire:click="$set('showVisibilityModal', false)" class="px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-accent text-white">Tutup</button>
+                </div>
+            </div>
         </div>
     @endif
 

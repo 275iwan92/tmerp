@@ -44,12 +44,18 @@ Satu penempatan ditulis menjadi **1 baris `emp_shift_roster` per hari aktif shif
 - Chip: avatar inisial, nama, kode+jabatan, badge jumlah hari, tombol × (lepas).
   Chip bergaris/berlatar kuning + ⚠ bila pegawai belum bersertifikat unit tsb.
 - Dobel-klik kolom kiri = buka modal ubah shift.
-- Tombol **👁** di kolom kiri = **sembunyikan shift** dari papan. Shift tersembunyi
-  dikumpulkan di bar kuning di atas papan (klik nama = tampilkan lagi, atau
-  "Tampilkan semua"), diberi peringatan merah bila shift yang disembunyikan masih
-  punya penempatan di minggu tsb. Kartu di view Master Shift ikut menandai
-  "disembunyikan" + punya tombol tampil/sembunyi yang sama.
-  **Setelan ini per user dan ikut terbawa ke cetakan** (lihat bagian Cetak).
+- Tombol **👁** di kolom kiri tiap baris = sembunyikan shift itu dari papan.
+- **Ikon 👁 di kanan atas panel papan** (dengan badge jumlah; badge merah bila shift
+  tersembunyi masih memuat penempatan) membuka **popup "Tampilkan / Sembunyikan
+  Shift"**: daftar semua shift aktif dengan **checkbox** (centang = tampil di papan
+  DAN di cetakan), ringkasan jam, jumlah orang terpasang, label "disembunyikan",
+  peringatan merah bila ada penempatan yang ikut tersembunyi, plus tombol
+  "Tampilkan semua". Revisi user 2026-09-12: bentuk sebelumnya (bar kuning berisi
+  daftar chip shift tersembunyi di atas papan) dinilai boros tempat dan diganti
+  ikon+popup ini.
+- Kartu di view Master Shift ikut menandai "disembunyikan" + punya tombol
+  tampil/sembunyi yang sama.
+- **Setelan ini per user dan ikut terbawa ke cetakan** (lihat bagian Cetak).
 
 ### Pool Pegawai
 Pencarian nama/kode, kelompok **Jabatan / Skill Unit Kerja / Golongan**
