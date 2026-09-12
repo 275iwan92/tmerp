@@ -4,8 +4,10 @@ use App\Models\Sys\SecGroup;
 use App\Models\Sys\SecGroupPermission;
 use App\Models\Sys\SecModule;
 use App\Models\Sys\SecUser;
+use App\Services\Migration\CustomerOrderMigrationService;
 use App\Services\Migration\EmployeeLoginProvisionService;
 use App\Services\Migration\EmployeeMigrationService;
+use App\Services\Migration\PurchaseOrderMigrationService;
 use App\Services\Migration\VendorMigrationService;
 use App\Services\Security\PasswordResetService;
 use Illuminate\Support\Facades\Auth;
@@ -368,24 +370,100 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
     // biasa (hilang saat reload halaman, itu memang yang diharapkan).
     public ?array $migrationReport = null;
 
-    public bool $migrationRunning = false;
-
     public function runVendorMigration(): void
     {
-        $this->migrationRunning = true;
         $this->migrationReport = app(VendorMigrationService::class)->run(Auth::user()->login);
-        $this->migrationRunning = false;
     }
 
     public ?array $employeeMigrationReport = null;
 
-    public bool $employeeMigrationRunning = false;
-
     public function runEmployeeMigration(): void
     {
-        $this->employeeMigrationRunning = true;
         $this->employeeMigrationReport = app(EmployeeMigrationService::class)->run(Auth::user()->login);
-        $this->employeeMigrationRunning = false;
+    }
+
+    public ?array $rawMaterialMigrationReport = null;
+
+    public function runRawMaterialMigration(): void
+    {
+        $this->rawMaterialMigrationReport = app(\App\Services\Migration\RawMaterialMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $productMigrationReport = null;
+
+    public function runProductMigration(): void
+    {
+        $this->productMigrationReport = app(\App\Services\Migration\ProductMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $coOrderMigrationReport = null;
+
+    public function runCoOrderMigration(): void
+    {
+        $this->coOrderMigrationReport = app(CustomerOrderMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $poOrderMigrationReport = null;
+
+    public function runPoOrderMigration(): void
+    {
+        $this->poOrderMigrationReport = app(PurchaseOrderMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $prMigrationReport = null;
+
+    public function runPrMigration(): void
+    {
+        $this->prMigrationReport = app(\App\Services\Migration\PurchaseRequisitionMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $receiveMigrationReport = null;
+
+    public function runReceiveMigration(): void
+    {
+        $this->receiveMigrationReport = app(\App\Services\Migration\PurchaseReceiveMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $paymentMigrationReport = null;
+
+    public function runPaymentMigration(): void
+    {
+        $this->paymentMigrationReport = app(\App\Services\Migration\PurchasePaymentMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $dnoteMigrationReport = null;
+
+    public function runDnoteMigration(): void
+    {
+        $this->dnoteMigrationReport = app(\App\Services\Migration\DeliveryNoteMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $cinvMigrationReport = null;
+
+    public function runCinvMigration(): void
+    {
+        $this->cinvMigrationReport = app(\App\Services\Migration\CustomerInvoiceMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $uomMigrationReport = null;
+
+    public function runUomMigration(): void
+    {
+        $this->uomMigrationReport = app(\App\Services\Migration\UomMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $lookupMigrationReport = null;
+
+    public function runLookupMigration(): void
+    {
+        $this->lookupMigrationReport = app(\App\Services\Migration\SupportingLookupMigrationService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $masterCardMigrationReport = null;
+
+    public function runMasterCardMigration(): void
+    {
+        $this->masterCardMigrationReport = app(\App\Services\Migration\MasterCardMigrationService::class)->run(Auth::user()->login);
     }
 
     public ?array $loginProvisionReport = null;
@@ -730,6 +808,247 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                     @endif
                 </div>
+
+                <div class="box" style="margin-top:16px">
+                    <h3>tm2old.mst_item (bahan baku) → mat_raw</h3>
+                    <p class="note">Kriteria: <code>material_class='RAW MATERIAL'</code> atau <code>as_mat=1</code>. Kode item &gt;60 karakter dipotong + diberi akhiran angka untuk <code>material_code</code> (teks asli tetap utuh di <code>old_item_code</code>).</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runRawMaterialMigration" wire:loading.attr="disabled"
+                            wire:confirm="Jalankan migrasi bahan baku dari tm2old.mst_item sekarang?">
+                            <span wire:loading.remove wire:target="runRawMaterialMigration">▶ Jalankan Migrasi</span>
+                            <span wire:loading wire:target="runRawMaterialMigration">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($rawMaterialMigrationReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <table>
+                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Master Raw Material</td><td>{{ $rawMaterialMigrationReport['materials']['created'] }} baru, {{ $rawMaterialMigrationReport['materials']['updated'] }} diperbarui, {{ $rawMaterialMigrationReport['materials']['unchanged'] }} tidak berubah</td></tr>
+                                </tbody>
+                            </table>
+
+                            @if (! empty($rawMaterialMigrationReport['skipped_too_long']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($rawMaterialMigrationReport['skipped_too_long']) }} kode item &gt;60 karakter, di-generate ulang (cek manual disarankan):</p>
+                                    <p class="note">{{ implode(', ', array_slice($rawMaterialMigrationReport['skipped_too_long'], 0, 10)) }}{{ count($rawMaterialMigrationReport['skipped_too_long']) > 10 ? '…' : '' }}</p>
+                                </div>
+                            @endif
+
+                            @if (! empty($rawMaterialMigrationReport['errors']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($rawMaterialMigrationReport['errors']) }} baris gagal diproses:</p>
+                                    <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
+                                        @foreach ($rawMaterialMigrationReport['errors'] as $err)
+                                            <li>{{ $err }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                <div class="box" style="margin-top:16px">
+                    <h3>tm2old.mst_item (produk jadi) → prod_product</h3>
+                    <p class="note">Kriteria: <code>as_fgs=1</code>. Dimensi fisik &amp; customer/kategori SENGAJA tidak ikut dimigrasi (satuan sumber tidak jelas/tidak konsisten) — isi manual lewat ProDev saat produk dipakai.</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runProductMigration" wire:loading.attr="disabled"
+                            wire:confirm="Jalankan migrasi produk dari tm2old.mst_item sekarang?">
+                            <span wire:loading.remove wire:target="runProductMigration">▶ Jalankan Migrasi</span>
+                            <span wire:loading wire:target="runProductMigration">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($productMigrationReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <table>
+                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Master Product</td><td>{{ $productMigrationReport['products']['created'] }} baru, {{ $productMigrationReport['products']['updated'] }} diperbarui, {{ $productMigrationReport['products']['unchanged'] }} tidak berubah</td></tr>
+                                </tbody>
+                            </table>
+
+                            @if (! empty($productMigrationReport['errors']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($productMigrationReport['errors']) }} baris gagal diproses:</p>
+                                    <ul style="font-size:12px;color:var(--sp-danger);margin:4px 0 0;padding-left:18px">
+                                        @foreach ($productMigrationReport['errors'] as $err)
+                                            <li>{{ $err }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                <div class="box" style="margin-top:16px">
+                    <h3>tm2old.sdi_co(_detail) → co_order_legacy (arsip riwayat, BUKAN co_order)</h3>
+                    <p class="note">co_order mewajibkan lineage Quotation (1 CO = 1 Quotation) untuk alur baru — 20.669 CO lama tidak pernah punya itu. Diarsipkan ke tabel terpisah, read-only, khusus dashboard/laporan (mis. total belanja per customer). Idempoten: refresh penuh tiap dijalankan.</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runCoOrderMigration" wire:loading.attr="disabled"
+                            wire:confirm="Jalankan migrasi arsip Customer Order dari tm2old.sdi_co sekarang?">
+                            <span wire:loading.remove wire:target="runCoOrderMigration">▶ Jalankan Migrasi</span>
+                            <span wire:loading wire:target="runCoOrderMigration">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($coOrderMigrationReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <table>
+                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Header CO</td><td>{{ $coOrderMigrationReport['headers']['inserted'] }} baris</td></tr>
+                                    <tr><td>Baris item CO</td><td>{{ $coOrderMigrationReport['details']['inserted'] }} baris ({{ $coOrderMigrationReport['details']['no_product_match'] }} tanpa padanan Master Product, fallback ke kode lama)</td></tr>
+                                </tbody>
+                            </table>
+
+                            @if (! empty($coOrderMigrationReport['customer_unmatched']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($coOrderMigrationReport['customer_unmatched']) }} kode customer tidak ketemu padanan Master Customer:</p>
+                                    <p class="note">{{ implode(', ', array_slice(array_keys($coOrderMigrationReport['customer_unmatched']), 0, 15)) }}{{ count($coOrderMigrationReport['customer_unmatched']) > 15 ? '…' : '' }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                <div class="box" style="margin-top:16px">
+                    <h3>tm2old.pur_po(_v2)+pur_po_detail → po_order_legacy (arsip riwayat, BUKAN po_order)</h3>
+                    <p class="note">Header dari pur_po_v2 (pajak lebih lengkap), baris dari pur_po_detail (v1) — di-join by nomor PO. Diarsipkan ke tabel terpisah, read-only, khusus dashboard/laporan (mis. total AP per supplier). Idempoten: refresh penuh tiap dijalankan.</p>
+                    <div class="actions">
+                        <button type="button" class="btn btn-primary" wire:click="runPoOrderMigration" wire:loading.attr="disabled"
+                            wire:confirm="Jalankan migrasi arsip Purchase Order dari tm2old.pur_po sekarang?">
+                            <span wire:loading.remove wire:target="runPoOrderMigration">▶ Jalankan Migrasi</span>
+                            <span wire:loading wire:target="runPoOrderMigration">Memproses…</span>
+                        </button>
+                    </div>
+
+                    @if ($poOrderMigrationReport)
+                        <div style="margin-top:16px">
+                            <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                            <table>
+                                <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Header PO</td><td>{{ $poOrderMigrationReport['headers']['inserted'] }} baris</td></tr>
+                                    <tr><td>Baris item PO</td><td>{{ $poOrderMigrationReport['details']['inserted'] }} baris ({{ $poOrderMigrationReport['details']['no_material_match'] }} tanpa padanan Master Raw Material, fallback ke kode lama)</td></tr>
+                                </tbody>
+                            </table>
+
+                            @if (! empty($poOrderMigrationReport['supplier_unmatched']))
+                                <div style="margin-top:12px">
+                                    <p class="note" style="color:var(--sp-danger)">⚠ {{ count($poOrderMigrationReport['supplier_unmatched']) }} kode supplier tidak ketemu padanan Master Supplier:</p>
+                                    <p class="note">{{ implode(', ', array_slice(array_keys($poOrderMigrationReport['supplier_unmatched']), 0, 15)) }}{{ count($poOrderMigrationReport['supplier_unmatched']) > 15 ? '…' : '' }}</p>
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                @php
+                    $legacyArchiveBoxes = [
+                        ['title' => 'tm2old.pur_pr(_detail) → pr_requisition_legacy', 'action' => 'runPrMigration', 'report' => 'prMigrationReport', 'unmatchedKey' => null],
+                        ['title' => 'tm2old.pur_prcv(_detail) → po_receive_legacy', 'action' => 'runReceiveMigration', 'report' => 'receiveMigrationReport', 'unmatchedKey' => 'supplier_unmatched'],
+                        ['title' => 'tm2old.pur_ppym(_detail) → po_payment_legacy', 'action' => 'runPaymentMigration', 'report' => 'paymentMigrationReport', 'unmatchedKey' => 'supplier_unmatched'],
+                        ['title' => 'tm2old.sdi_dnote(_detail) → co_delivery_legacy (Surat Jalan)', 'action' => 'runDnoteMigration', 'report' => 'dnoteMigrationReport', 'unmatchedKey' => 'customer_unmatched'],
+                        ['title' => 'tm2old.sdi_cinv(_detail) → co_invoice_legacy (Customer Invoice, basis AR)', 'action' => 'runCinvMigration', 'report' => 'cinvMigrationReport', 'unmatchedKey' => 'customer_unmatched'],
+                    ];
+                @endphp
+
+                @php
+                    // Master pendukung: bentuk laporannya beda-beda (bukan header/detail
+                    // seperti arsip dokumen), jadi dirender generik key -> nilai.
+                    $legacySupportBoxes = [
+                        ['title' => 'tm2old.mst_uom(_conversion) → uom_unit / uom_conversion', 'note' => 'Master V2 yang sudah ada MENANG — legacy hanya menambal kode satuan yang belum ada.', 'action' => 'runUomMigration', 'report' => 'uomMigrationReport'],
+                        ['title' => 'tm2old.mst_* (lookup pendukung) → ref_legacy_lookup', 'note' => 'Semua lookup kecil digabung ke satu tabel (kolom lookup_group), bukan puluhan tabel kurus. Tabel >300 baris dilaporkan sebagai "perlu desain terpisah", tidak dijejalkan ke sini.', 'action' => 'runLookupMigration', 'report' => 'lookupMigrationReport'],
+                        ['title' => 'tm2old Master Card → prod_card_legacy dkk (rekayasa produk)', 'note' => 'Bahan, urutan proses + mesin, dan pisau per produk. Jembatan ke item lewat mst_product_mc.', 'action' => 'runMasterCardMigration', 'report' => 'masterCardMigrationReport'],
+                    ];
+                @endphp
+
+                @foreach ($legacySupportBoxes as $box)
+                    <div class="box" style="margin-top:16px">
+                        <h3>{{ $box['title'] }}</h3>
+                        <p class="note">{{ $box['note'] }}</p>
+                        <div class="actions">
+                            <button type="button" class="btn btn-primary" wire:click="{{ $box['action'] }}" wire:loading.attr="disabled"
+                                wire:confirm="Jalankan migrasi master pendukung ini sekarang?">
+                                <span wire:loading.remove wire:target="{{ $box['action'] }}">▶ Jalankan Migrasi</span>
+                                <span wire:loading wire:target="{{ $box['action'] }}">Memproses…</span>
+                            </button>
+                        </div>
+
+                        @if ($this->{$box['report']})
+                            <div style="margin-top:16px">
+                                <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                                <table>
+                                    <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                    <tbody>
+                                        @foreach ($this->{$box['report']} as $key => $value)
+                                            <tr>
+                                                <td>{{ $key }}</td>
+                                                <td>
+                                                    @if (is_array($value))
+                                                        @if (empty($value))
+                                                            —
+                                                        @elseif (array_is_list($value))
+                                                            {{ implode(', ', array_slice($value, 0, 20)) }}{{ count($value) > 20 ? '…' : '' }}
+                                                        @else
+                                                            @foreach ($value as $k => $v)
+                                                                {{ $k }}: {{ is_scalar($v) ? $v : json_encode($v) }}@if (! $loop->last), @endif
+                                                            @endforeach
+                                                        @endif
+                                                    @else
+                                                        {{ $value }}
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+
+                @foreach ($legacyArchiveBoxes as $box)
+                    <div class="box" style="margin-top:16px">
+                        <h3>{{ $box['title'] }}</h3>
+                        <p class="note">Arsip riwayat read-only utk dashboard/laporan, terpisah dari tabel transaksi hidup. Idempoten: refresh penuh tiap dijalankan.</p>
+                        <div class="actions">
+                            <button type="button" class="btn btn-primary" wire:click="{{ $box['action'] }}" wire:loading.attr="disabled"
+                                wire:confirm="Jalankan migrasi arsip ini sekarang?">
+                                <span wire:loading.remove wire:target="{{ $box['action'] }}">▶ Jalankan Migrasi</span>
+                                <span wire:loading wire:target="{{ $box['action'] }}">Memproses…</span>
+                            </button>
+                        </div>
+
+                        @if ($this->{$box['report']})
+                            @php $r = $this->{$box['report']}; @endphp
+                            <div style="margin-top:16px">
+                                <p class="note" style="color:var(--sp-ok)">✅ Migrasi selesai.</p>
+                                <table>
+                                    <thead><tr><th>Bagian</th><th>Hasil</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Header</td><td>{{ $r['headers']['inserted'] }} baris</td></tr>
+                                        <tr><td>Detail</td><td>{{ $r['details']['inserted'] }} baris</td></tr>
+                                    </tbody>
+                                </table>
+
+                                @if ($box['unmatchedKey'] && ! empty($r[$box['unmatchedKey']]))
+                                    <div style="margin-top:12px">
+                                        <p class="note" style="color:var(--sp-danger)">⚠ {{ count($r[$box['unmatchedKey']]) }} kode tidak ketemu padanan master:</p>
+                                        <p class="note">{{ implode(', ', array_slice(array_keys($r[$box['unmatchedKey']]), 0, 15)) }}{{ count($r[$box['unmatchedKey']]) > 15 ? '…' : '' }}</p>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
 
                 <div class="box" style="margin-top:16px">
                     <h3>tm2old.emp → emp_employee (+ org_department / org_position)</h3>
