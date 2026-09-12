@@ -273,5 +273,15 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/prodev/{part?}', 'pages::production.prodev')->name('production.prodev')->where('part', '[0-9]+');
             Route::livewire('/production/prodev/{part}/print', 'pages::production.prodev-print')->name('production.prodev.print')->where('part', '[0-9]+');
         });
+
+        // Laporan Manajemen -- lintas modul (penjualan + pembelian + master),
+        // jadi TIDAK digate 'module:SALES'/'module:PROC' seperti layar operasional.
+        // Pembatasan aksesnya lewat menu/izin tersendiri (MGMT).
+        Route::prefix('laporan')->group(function () {
+            Route::livewire('/eksekutif', 'pages::report.executive')->name('report.executive');
+            Route::livewire('/penjualan', 'pages::report.sales')->name('report.sales');
+            Route::livewire('/pembelian', 'pages::report.purchase')->name('report.purchase');
+            Route::livewire('/customer/{customer}', 'pages::report.customer')->name('report.customer')->where('customer', '[0-9]+');
+        });
     });
 });

@@ -6,3 +6,4 @@ import './spreadsheet-grid.js';
 import './row-multiselect.js';
 import './date-picker.js';
 import './component-library.js';
+import './charts.js';

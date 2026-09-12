@@ -81,6 +81,7 @@ class CustomerOrderMigrationService
                     'co_date' => $co->co_date,
                     'customer_id' => $customerId,
                     'customer_po_no' => $this->blank($co->po_no_customer),
+                    'sales_person' => $this->blank($co->sales_by),
                     'subtotal' => $co->subtotal,
                     'disc_amount' => $co->disc_amount,
                     'ppn_amount' => $co->ppn_amount,
