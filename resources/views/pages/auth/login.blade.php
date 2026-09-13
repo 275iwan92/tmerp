@@ -111,7 +111,18 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         Auth::login($user);
         request()->session()->regenerate();
 
-        return redirect()->intended(route('menu'));
+        // Landing setelah login mengikuti peran (keputusan user 2026-09-13):
+        // Direksi murni -> langsung Laporan Manajemen (tak ada pilihan lain,
+        // ditegakkan lagi di main-menu.blade.php::mount() kalau /menu diketik
+        // manual). Admin -> layar pilih dulu (Laporan Manajemen atau Menu
+        // Operasional). Selain itu -> menu operasional spt biasa.
+        $default = match (true) {
+            $user->isDireksiOnly() => route('report.executive'),
+            $user->isAdminWithChoice() => route('landing.choice'),
+            default => route('menu'),
+        };
+
+        return redirect()->intended($default);
     }
 };
 ?>

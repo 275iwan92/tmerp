@@ -58,6 +58,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
     public function mount(): void
     {
         $user = Auth::user();
+
+        // Direksi murni (bukan admin) tidak boleh menu operasional sama
+        // sekali (keputusan user 2026-09-13) -- dicek di mount(), bukan cuma
+        // disembunyikan di UI, supaya mengetik /menu langsung pun ditolak.
+        if ($user?->isDireksiOnly()) {
+            $this->redirect(route('report.executive'), navigate: false);
+
+            return;
+        }
+
         $this->profile_name = $user->name ?? '';
         $this->profile_email = $user->email ?? '';
         $this->profile_phone = $user->phone ?? '';
