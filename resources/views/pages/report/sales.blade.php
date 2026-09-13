@@ -120,26 +120,27 @@ new #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
     $rp = fn ($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
     $miliar = fn ($v) => 'Rp ' . number_format((float) $v / 1_000_000_000, 2, ',', '.') . ' M';
     $tabs = ['dokumen' => 'Daftar Dokumen', 'customer' => 'Peringkat Customer', 'sales' => 'Per Salesperson'];
+    $statusTone = fn ($s) => match ($s) { 'CONFIRMED', 'SHIPPED', 'PAID' => 'ok', 'CANCELLED' => 'danger', 'DRAFT' => 'info', default => 'warn' };
 @endphp
 
-<div class="p-4">
-    <div class="flex flex-wrap items-end gap-3 mb-3.5">
+<div class="p-4 sm:p-6" style="background:var(--content-bg)">
+    <div class="flex flex-wrap items-end gap-3 mb-4">
         <a href="{{ route('report.executive', ['th' => $year]) }}"
-           class="text-[12px] text-[#2563eb] hover:underline pb-1.5">
+           class="text-[12px] font-semibold hover:underline pb-1.5" style="color:var(--sh-accent)">
             <i class="fa-solid fa-arrow-left"></i> Dashboard
         </a>
 
         <div>
-            <label class="block text-[10.5px] font-bold uppercase opacity-60 mb-1">Tahun</label>
-            <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Tahun</label>
+            <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 @foreach ($this->years as $y)
                     <option value="{{ $y }}">{{ $y }}</option>
                 @endforeach
             </select>
         </div>
         <div>
-            <label class="block text-[10.5px] font-bold uppercase opacity-60 mb-1">Bulan</label>
-            <select wire:model.live="month" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Bulan</label>
+            <select wire:model.live="month" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 <option value="">Semua bulan</option>
                 @foreach ($months as $n => $nama)
                     <option value="{{ $n }}">{{ $nama }}</option>
@@ -147,112 +148,108 @@ new #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
             </select>
         </div>
         <div>
-            <label class="block text-[10.5px] font-bold uppercase opacity-60 mb-1">Dasar</label>
-            <select wire:model.live="basis" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Dasar</label>
+            <select wire:model.live="basis" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 <option value="order">PO Masuk (Customer Order)</option>
                 <option value="shipment">Shipment (Surat Jalan)</option>
             </select>
         </div>
         <div class="flex-1 min-w-[200px]">
-            <label class="block text-[10.5px] font-bold uppercase opacity-60 mb-1">Cari</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Cari</label>
             <input wire:model.live.debounce.400ms="search" type="text" placeholder="Nomor dokumen atau nama customer…"
-                   class="w-full border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+                   class="w-full border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
         </div>
     </div>
 
-    <x-grid.stat-row :count="2">
-        <x-grid.stat-box tone="total" label="Nilai Periode Terpilih"
+    <div class="[display:grid] grid-cols-2 gap-3.5 mb-4">
+        <x-report.kpi label="Nilai Periode Terpilih" icon="fa-solid fa-coins" tone="blue"
             :value="$miliar($this->periodTotal['value'])"
-            :subtitle="$basis === 'shipment' ? 'berdasarkan Surat Jalan' : 'berdasarkan Customer Order'" />
-        <x-grid.stat-box tone="active" label="Jumlah Dokumen"
+            :note="$basis === 'shipment' ? 'berdasarkan Surat Jalan' : 'berdasarkan Customer Order'" />
+        <x-report.kpi label="Jumlah Dokumen" icon="fa-solid fa-file-lines" tone="green"
             :value="number_format($this->periodTotal['docs'])"
-            :subtitle="$month ? $months[$month] . ' ' . $year : 'Sepanjang ' . $year" />
-    </x-grid.stat-row>
+            :note="$month ? $months[$month] . ' ' . $year : 'Sepanjang ' . $year" />
+    </div>
 
     {{-- Tab --}}
-    <div class="flex gap-1 mb-3 border-b">
+    <div class="flex gap-1 mb-3 border-b" style="border-color:var(--sh-border)">
         @foreach ($tabs as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')"
-                    class="px-3.5 py-2 text-[12px] font-semibold border-b-2 -mb-px
-                           {{ $tab === $key ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent opacity-60 hover:opacity-100' }}">
+                    class="px-3.5 py-2 text-[12px] font-semibold border-b-2 -mb-px"
+                    style="{{ $tab === $key ? 'border-color:var(--sh-accent);color:var(--sh-accent)' : 'border-color:transparent;color:var(--sh-muted)' }}">
                 {{ $label }}
             </button>
         @endforeach
     </div>
 
     @if ($tab === 'dokumen')
-        <div class="rounded-xl border bg-white shadow-sm overflow-hidden">
-            <table class="w-full text-[11.5px]">
-                <thead class="bg-black/[0.03]">
+        <div class="rounded-2xl border overflow-hidden" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <table class="w-full text-[12px]">
+                <thead style="background:var(--content-bg)">
                     <tr class="text-left">
-                        <th class="py-2 px-3">Nomor</th>
-                        <th class="py-2 px-3">Tanggal</th>
-                        <th class="py-2 px-3">Customer</th>
-                        <th class="py-2 px-3">Status</th>
-                        <th class="py-2 px-3 text-right">Nilai</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nomor</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Tanggal</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Customer</th>
+                        <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Status</th>
+                        <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
                         <th class="py-2 px-3"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($this->documents as $doc)
-                        <tr class="border-t border-black/5 hover:bg-black/[0.02]">
-                            <td class="py-1.5 px-3 font-medium">{{ $doc->doc_no }}</td>
-                            <td class="py-1.5 px-3">{{ $doc->doc_date }}</td>
-                            <td class="py-1.5 px-3">
+                        <tr class="border-t" style="border-color:var(--sh-border)">
+                            <td class="py-2 px-3 font-semibold" style="color:var(--sh-ink-strong)">{{ $doc->doc_no }}</td>
+                            <td class="py-2 px-3" style="color:var(--sh-ink)">{{ $doc->doc_date }}</td>
+                            <td class="py-2 px-3">
                                 @if ($doc->customer_id)
                                     <a href="{{ route('report.customer', ['customer' => $doc->customer_id, 'th' => $year]) }}"
-                                       class="text-[#2563eb] hover:underline">
+                                       class="hover:underline" style="color:var(--sh-accent)">
                                         {{ $this->customerNames[$doc->customer_id] ?? '(tidak dikenal)' }}
                                     </a>
                                 @else
-                                    <span class="opacity-50">—</span>
+                                    <span style="color:var(--sh-muted)">—</span>
                                 @endif
                             </td>
-                            <td class="py-1.5 px-3">
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-black/5">
-                                    {{ $doc->doc_status_normalized ?? '—' }}
-                                </span>
+                            <td class="py-2 px-3">
+                                <x-report.badge :tone="$statusTone($doc->doc_status_normalized ?? '')">{{ $doc->doc_status_normalized ?? '—' }}</x-report.badge>
                             </td>
-                            <td class="py-1.5 px-3 text-right tabular-nums">{{ $rp($doc->grand_total) }}</td>
-                            <td class="py-1.5 px-3 text-right">
+                            <td class="py-2 px-3 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($doc->grand_total) }}</td>
+                            <td class="py-2 px-3 text-right">
                                 @if ($doc->customer_id)
                                     <a href="{{ route('report.customer', ['customer' => $doc->customer_id, 'th' => $year]) }}"
-                                       class="text-[#2563eb] hover:underline">telusuri →</a>
+                                       class="hover:underline" style="color:var(--sh-accent)">telusuri →</a>
                                 @endif
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="py-8 text-center opacity-55">Tidak ada dokumen pada filter ini.</td></tr>
+                        <tr><td colspan="6" class="py-8 text-center" style="color:var(--sh-muted)">Tidak ada dokumen pada filter ini.</td></tr>
                     @endforelse
                 </tbody>
             </table>
-            <div class="p-3 border-t">{{ $this->documents->links() }}</div>
+            <div class="p-3 border-t" style="border-color:var(--sh-border)">{{ $this->documents->links() }}</div>
         </div>
 
     @elseif ($tab === 'customer')
-        <div class="rounded-xl border bg-white shadow-sm p-4">
-            <x-chart.apex type="bar" :height="520" :config="[
-                'series' => [['name' => 'Omset', 'data' => array_map(fn ($c) => round($c['value']), $this->customerRanking)]],
-                'xaxis' => ['categories' => array_map(fn ($c) => str($c['name'])->limit(28)->value(), $this->customerRanking)],
-                'plotOptions' => ['bar' => ['horizontal' => true, 'borderRadius' => 4, 'barHeight' => '70%']],
-                'legend' => ['show' => false],
-                'colors' => ['#2563eb'],
+        <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <x-report.svg-bars horizontal :labels="array_map(fn ($c) => $c['name'], $this->customerRanking)" :series="[
+                ['data' => array_map(fn ($c) => $c['value'], $this->customerRanking), 'color' => 'var(--sh-accent)'],
             ]" />
-            <table class="w-full text-[11.5px] mt-3">
-                <thead><tr class="text-left border-b">
-                    <th class="py-1.5 px-2">#</th><th class="py-1.5 px-2">Customer</th>
-                    <th class="py-1.5 px-2 text-right">Dokumen</th><th class="py-1.5 px-2 text-right">Nilai</th>
+            <table class="w-full text-[12px] mt-4">
+                <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
+                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">#</th>
+                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Customer</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Dokumen</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
                 </tr></thead>
                 <tbody>
                     @foreach ($this->customerRanking as $i => $c)
-                        <tr class="border-b border-black/5 hover:bg-black/[0.02]">
-                            <td class="py-1 px-2 opacity-50">{{ $i + 1 }}</td>
-                            <td class="py-1 px-2">
+                        <tr class="border-b" style="border-color:var(--sh-border)">
+                            <td class="py-1.5 px-2" style="color:var(--sh-muted)">{{ $i + 1 }}</td>
+                            <td class="py-1.5 px-2">
                                 <a href="{{ route('report.customer', ['customer' => $c['id'], 'th' => $year]) }}"
-                                   class="text-[#2563eb] hover:underline">{{ $c['name'] }}</a>
+                                   class="hover:underline font-medium" style="color:var(--sh-accent)">{{ $c['name'] }}</a>
                             </td>
-                            <td class="py-1 px-2 text-right tabular-nums">{{ number_format($c['docs']) }}</td>
-                            <td class="py-1 px-2 text-right tabular-nums">{{ $rp($c['value']) }}</td>
+                            <td class="py-1.5 px-2 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format($c['docs']) }}</td>
+                            <td class="py-1.5 px-2 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($c['value']) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -260,26 +257,24 @@ new #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
         </div>
 
     @else
-        <div class="rounded-xl border bg-white shadow-sm p-4">
-            <x-chart.apex type="bar" :height="360" :config="[
-                'series' => [['name' => 'Omset', 'data' => array_map(fn ($s) => round($s['value']), $this->salesRanking)]],
-                'xaxis' => ['categories' => array_map(fn ($s) => $s['name'], $this->salesRanking)],
-                'plotOptions' => ['bar' => ['horizontal' => true, 'borderRadius' => 4, 'barHeight' => '65%']],
-                'legend' => ['show' => false],
-                'colors' => ['#16a34a'],
+        <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <x-report.svg-bars horizontal :labels="array_map(fn ($s) => $s['name'], $this->salesRanking)" :series="[
+                ['data' => array_map(fn ($s) => $s['value'], $this->salesRanking), 'color' => 'var(--sh-ok)'],
             ]" />
-            <table class="w-full text-[11.5px] mt-3">
-                <thead><tr class="text-left border-b">
-                    <th class="py-1.5 px-2">Salesperson</th><th class="py-1.5 px-2 text-right">CO</th>
-                    <th class="py-1.5 px-2 text-right">Nilai</th><th class="py-1.5 px-2 text-right">Porsi</th>
+            <table class="w-full text-[12px] mt-4">
+                <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
+                    <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Salesperson</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">CO</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
+                    <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Porsi</th>
                 </tr></thead>
                 <tbody>
                     @foreach ($this->salesRanking as $s)
-                        <tr class="border-b border-black/5">
-                            <td class="py-1 px-2 font-medium">{{ $s['name'] }}</td>
-                            <td class="py-1 px-2 text-right tabular-nums">{{ number_format($s['docs']) }}</td>
-                            <td class="py-1 px-2 text-right tabular-nums">{{ $rp($s['value']) }}</td>
-                            <td class="py-1 px-2 text-right tabular-nums">{{ number_format($s['pct'], 2) }}%</td>
+                        <tr class="border-b" style="border-color:var(--sh-border)">
+                            <td class="py-1.5 px-2 font-medium" style="color:var(--sh-ink-strong)">{{ $s['name'] }}</td>
+                            <td class="py-1.5 px-2 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format($s['docs']) }}</td>
+                            <td class="py-1.5 px-2 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($s['value']) }}</td>
+                            <td class="py-1.5 px-2 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format($s['pct'], 2) }}%</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -140,20 +140,21 @@ new #[Title('Customer 360 — TELASIH MAKMUR ERP')] class extends Component
 @php
     $rp = fn ($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
     $miliar = fn ($v) => 'Rp ' . number_format((float) $v / 1_000_000_000, 2, ',', '.') . ' M';
+    $statusTone = fn ($s) => match ($s) { 'CONFIRMED' => 'ok', 'CANCELLED' => 'danger', default => 'info' };
 @endphp
 
-<div class="p-4">
-    <div class="flex flex-wrap items-center gap-3 mb-3.5">
-        <a href="{{ route('report.sales', ['th' => $year]) }}" class="text-[12px] text-[#2563eb] hover:underline">
+<div class="p-4 sm:p-6" style="background:var(--content-bg)">
+    <div class="flex flex-wrap items-center gap-3 mb-4">
+        <a href="{{ route('report.sales', ['th' => $year]) }}" class="text-[12px] font-semibold hover:underline" style="color:var(--sh-accent)">
             <i class="fa-solid fa-arrow-left"></i> Rincian Penjualan
         </a>
-        <h2 class="font-bold text-[15px]">{{ $this->profile->customer_name ?? 'Customer #' . $customer }}</h2>
+        <h2 class="font-bold text-[16px]" style="color:var(--sh-ink-strong)">{{ $this->profile->customer_name ?? 'Customer #' . $customer }}</h2>
         @if ($this->profile?->customer_code)
-            <span class="px-2 py-0.5 rounded bg-black/5 text-[11px] font-semibold">{{ $this->profile->customer_code }}</span>
+            <x-report.badge tone="info">{{ $this->profile->customer_code }}</x-report.badge>
         @endif
 
         <div class="ml-auto">
-            <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+            <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 <option value="">Semua tahun</option>
                 @foreach ($this->years as $y)
                     <option value="{{ $y }}">{{ $y }}</option>
@@ -162,49 +163,45 @@ new #[Title('Customer 360 — TELASIH MAKMUR ERP')] class extends Component
         </div>
     </div>
 
-    <x-grid.stat-row :count="4">
-        <x-grid.stat-box tone="total" label="Total Nilai Order"
-            :value="$miliar($this->lifetime['co_value'])"
-            :subtitle="number_format($this->lifetime['co_docs']) . ' customer order'" />
-        <x-grid.stat-box tone="active" label="Total Dikirim"
-            :value="$miliar($this->lifetime['sj_value'])"
-            :subtitle="number_format($this->lifetime['sj_docs']) . ' surat jalan'" />
-        <x-grid.stat-box tone="extra" label="Total Ditagih"
-            :value="$miliar($this->lifetime['inv_value'])"
-            :subtitle="number_format($this->lifetime['inv_docs']) . ' invoice'" />
-        <x-grid.stat-box tone="warn" label="Rentang Hubungan"
+    <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
+        <x-report.kpi label="Total Nilai Order" icon="fa-solid fa-file-invoice" tone="blue"
+            :value="$miliar($this->lifetime['co_value'])" :note="number_format($this->lifetime['co_docs']) . ' customer order'" />
+        <x-report.kpi label="Total Dikirim" icon="fa-solid fa-truck-fast" tone="green"
+            :value="$miliar($this->lifetime['sj_value'])" :note="number_format($this->lifetime['sj_docs']) . ' surat jalan'" />
+        <x-report.kpi label="Total Ditagih" icon="fa-solid fa-receipt" tone="violet"
+            :value="$miliar($this->lifetime['inv_value'])" :note="number_format($this->lifetime['inv_docs']) . ' invoice'" />
+        <x-report.kpi label="Rentang Hubungan" icon="fa-solid fa-calendar-days" tone="amber"
             :value="($this->lifetime['first_date'] ? substr($this->lifetime['first_date'], 0, 4) : '—') . ' – ' . ($this->lifetime['last_date'] ? substr($this->lifetime['last_date'], 0, 4) : '—')"
-            subtitle="order pertama sampai terakhir" />
-    </x-grid.stat-row>
+            note="order pertama sampai terakhir" />
+    </div>
 
-    <div class="[display:grid] grid-cols-1 lg:grid-cols-2 gap-3.5 mb-3.5">
-        <div class="rounded-xl border bg-white shadow-sm p-4">
-            <h3 class="font-bold text-[13px] mb-2">Tren Order Tahunan</h3>
-            <x-chart.apex type="bar" :height="250" :config="[
-                'series' => [['name' => 'Nilai Order', 'data' => array_map(fn ($t) => round($t['value']), $this->yearlyTrend)]],
-                'xaxis' => ['categories' => array_map(fn ($t) => (string) $t['year'], $this->yearlyTrend)],
-                'plotOptions' => ['bar' => ['borderRadius' => 5, 'columnWidth' => '55%']],
-                'legend' => ['show' => false],
+    <div class="[display:grid] grid-cols-1 lg:grid-cols-2 gap-3.5 mb-4">
+        <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Tren Order Tahunan</h3>
+            <x-report.svg-bars :height="220" :labels="array_map(fn ($t) => (string) $t['year'], $this->yearlyTrend)" :series="[
+                ['color' => 'var(--sh-accent)', 'data' => array_column($this->yearlyTrend, 'value')],
             ]" />
         </div>
 
-        <div class="rounded-xl border bg-white shadow-sm p-4">
-            <h3 class="font-bold text-[13px] mb-2">Produk Terbanyak Dipesan</h3>
-            <table class="w-full text-[11.5px]">
-                <thead><tr class="text-left border-b">
-                    <th class="py-1.5">Kode Item</th><th class="py-1.5 text-right">Baris</th>
-                    <th class="py-1.5 text-right">Qty</th><th class="py-1.5 text-right">Nilai</th>
+        <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Produk Terbanyak Dipesan</h3>
+            <table class="w-full text-[12px]">
+                <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
+                    <th class="py-1.5 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Kode Item</th>
+                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Baris</th>
+                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Qty</th>
+                    <th class="py-1.5 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
                 </tr></thead>
                 <tbody>
                     @forelse ($this->topProducts as $p)
-                        <tr class="border-b border-black/5">
-                            <td class="py-1 truncate max-w-[220px]">{{ $p->item }}</td>
-                            <td class="py-1 text-right tabular-nums">{{ number_format($p->line_count) }}</td>
-                            <td class="py-1 text-right tabular-nums">{{ number_format((float) $p->qty) }}</td>
-                            <td class="py-1 text-right tabular-nums">{{ $rp($p->v) }}</td>
+                        <tr class="border-b" style="border-color:var(--sh-border)">
+                            <td class="py-1.5 truncate max-w-[220px]" style="color:var(--sh-ink)">{{ $p->item }}</td>
+                            <td class="py-1.5 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format($p->line_count) }}</td>
+                            <td class="py-1.5 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format((float) $p->qty) }}</td>
+                            <td class="py-1.5 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($p->v) }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="4" class="py-6 text-center opacity-55">Belum ada data.</td></tr>
+                        <tr><td colspan="4" class="py-6 text-center" style="color:var(--sh-muted)">Belum ada data.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -212,45 +209,45 @@ new #[Title('Customer 360 — TELASIH MAKMUR ERP')] class extends Component
     </div>
 
     {{-- Daftar order + rantai dokumennya --}}
-    <div class="rounded-xl border bg-white shadow-sm overflow-hidden">
-        <div class="px-4 py-2.5 border-b bg-black/[0.02]">
-            <h3 class="font-bold text-[13px]">Riwayat Customer Order</h3>
-            <p class="text-[10.5px] opacity-60">Klik satu baris untuk melihat rantai dokumennya: order → surat jalan → invoice.</p>
+    <div class="rounded-2xl border overflow-hidden" style="background:var(--sh-surface);border-color:var(--sh-border)">
+        <div class="px-4 py-3 border-b" style="border-color:var(--sh-border);background:var(--content-bg)">
+            <h3 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Riwayat Customer Order</h3>
+            <p class="text-[11px] mt-0.5" style="color:var(--sh-muted)">Klik satu baris untuk melihat rantai dokumennya: order → surat jalan → invoice.</p>
         </div>
-        <table class="w-full text-[11.5px]">
-            <thead class="bg-black/[0.03]">
+        <table class="w-full text-[12px]">
+            <thead>
                 <tr class="text-left">
-                    <th class="py-2 px-3">No. CO</th>
-                    <th class="py-2 px-3">Tanggal</th>
-                    <th class="py-2 px-3">PO Customer</th>
-                    <th class="py-2 px-3">Sales</th>
-                    <th class="py-2 px-3">Status</th>
-                    <th class="py-2 px-3 text-right">Nilai</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">No. CO</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Tanggal</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">PO Customer</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Sales</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Status</th>
+                    <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($this->orders as $o)
                     <tr wire:click="toggleOrder({{ $o->id_co_legacy }})"
-                        class="border-t border-black/5 hover:bg-[#eaf2ff] cursor-pointer
-                               {{ $openOrder === $o->id_co_legacy ? 'bg-[#eaf2ff]' : '' }}">
-                        <td class="py-1.5 px-3 font-medium">{{ $o->legacy_co_no }}</td>
-                        <td class="py-1.5 px-3">{{ $o->co_date }}</td>
-                        <td class="py-1.5 px-3 opacity-70">{{ $o->customer_po_no ?: '—' }}</td>
-                        <td class="py-1.5 px-3 opacity-70">{{ $o->sales_person ?: '—' }}</td>
-                        <td class="py-1.5 px-3">
-                            <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-black/5">{{ $o->doc_status_normalized }}</span>
+                        class="border-t cursor-pointer"
+                        style="border-color:var(--sh-border);{{ $openOrder === $o->id_co_legacy ? 'background:color-mix(in srgb, var(--sh-accent) 8%, transparent)' : '' }}">
+                        <td class="py-2 px-3 font-semibold" style="color:var(--sh-ink-strong)">{{ $o->legacy_co_no }}</td>
+                        <td class="py-2 px-3" style="color:var(--sh-ink)">{{ $o->co_date }}</td>
+                        <td class="py-2 px-3" style="color:var(--sh-muted)">{{ $o->customer_po_no ?: '—' }}</td>
+                        <td class="py-2 px-3" style="color:var(--sh-muted)">{{ $o->sales_person ?: '—' }}</td>
+                        <td class="py-2 px-3">
+                            <x-report.badge :tone="$statusTone($o->doc_status_normalized)">{{ $o->doc_status_normalized }}</x-report.badge>
                         </td>
-                        <td class="py-1.5 px-3 text-right tabular-nums">{{ $rp($o->grand_total) }}</td>
+                        <td class="py-2 px-3 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">{{ $rp($o->grand_total) }}</td>
                     </tr>
 
                     @if ($openOrder === $o->id_co_legacy)
-                        <tr class="bg-[#f7faff]">
+                        <tr style="background:var(--content-bg)">
                             <td colspan="6" class="px-5 py-3">
                                 @forelse ($this->orderChain as $chain)
-                                    <div class="mb-3 pb-3 border-b border-black/5 last:border-0 last:mb-0 last:pb-0">
-                                        <div class="font-semibold text-[12px] mb-1.5">
+                                    <div class="mb-3 pb-3 border-b last:border-0 last:mb-0 last:pb-0" style="border-color:var(--sh-border)">
+                                        <div class="font-semibold text-[12.5px] mb-1.5" style="color:var(--sh-ink-strong)">
                                             {{ $chain['line']->legacy_item_code ?: '(tanpa kode item)' }}
-                                            <span class="font-normal opacity-60">
+                                            <span class="font-normal" style="color:var(--sh-muted)">
                                                 — qty {{ number_format((float) $chain['line']->qty) }} {{ $chain['line']->uom_code }},
                                                 {{ $rp($chain['line']->qty_unitprice) }}
                                             </span>
@@ -258,37 +255,37 @@ new #[Title('Customer 360 — TELASIH MAKMUR ERP')] class extends Component
 
                                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
-                                                <p class="text-[10.5px] font-bold uppercase opacity-55 mb-1">Surat Jalan</p>
+                                                <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Surat Jalan</p>
                                                 @forelse ($chain['deliveries'] as $d)
-                                                    <div class="flex justify-between text-[11px] py-0.5">
-                                                        <span>{{ $d->no_dok }} <span class="opacity-55">{{ $d->tgl }}</span></span>
+                                                    <div class="flex justify-between text-[11.5px] py-0.5" style="color:var(--sh-ink)">
+                                                        <span>{{ $d->no_dok }} <span style="color:var(--sh-muted)">{{ $d->tgl }}</span></span>
                                                         <span class="tabular-nums">{{ number_format((float) $d->qty) }}</span>
                                                     </div>
                                                 @empty
-                                                    <p class="text-[11px] opacity-50">Belum ada pengiriman.</p>
+                                                    <p class="text-[11.5px]" style="color:var(--sh-muted)">Belum ada pengiriman.</p>
                                                 @endforelse
                                             </div>
                                             <div>
-                                                <p class="text-[10.5px] font-bold uppercase opacity-55 mb-1">Invoice</p>
+                                                <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Invoice</p>
                                                 @forelse ($chain['invoices'] as $inv)
-                                                    <div class="flex justify-between text-[11px] py-0.5">
-                                                        <span>{{ $inv->no_dok }} <span class="opacity-55">{{ $inv->tgl }}</span></span>
+                                                    <div class="flex justify-between text-[11.5px] py-0.5" style="color:var(--sh-ink)">
+                                                        <span>{{ $inv->no_dok }} <span style="color:var(--sh-muted)">{{ $inv->tgl }}</span></span>
                                                         <span class="tabular-nums">{{ $rp($inv->nilai) }}</span>
                                                     </div>
                                                 @empty
-                                                    <p class="text-[11px] opacity-50">Belum ditagihkan.</p>
+                                                    <p class="text-[11.5px]" style="color:var(--sh-muted)">Belum ditagihkan.</p>
                                                 @endforelse
                                             </div>
                                         </div>
                                     </div>
                                 @empty
-                                    <p class="text-[11.5px] opacity-55 py-2">Order ini tidak punya baris item.</p>
+                                    <p class="text-[12px] py-2" style="color:var(--sh-muted)">Order ini tidak punya baris item.</p>
                                 @endforelse
                             </td>
                         </tr>
                     @endif
                 @empty
-                    <tr><td colspan="6" class="py-8 text-center opacity-55">Tidak ada order pada periode ini.</td></tr>
+                    <tr><td colspan="6" class="py-8 text-center" style="color:var(--sh-muted)">Tidak ada order pada periode ini.</td></tr>
                 @endforelse
             </tbody>
         </table>

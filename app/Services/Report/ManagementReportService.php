@@ -305,6 +305,106 @@ class ManagementReportService
         return DB::connection('tm2pur')->table('po_order_legacy')->max('po_date');
     }
 
+    /**
+     * Kepadatan rantai dokumen Purchasing -- angka NYATA hasil audit migrasi
+     * (bukan target/SLA operasional spt "on-time delivery" di mockup, karena
+     * data itu tidak ada di sumber). Dipakai panel "Kesehatan Data" supaya
+     * Direksi lihat seberapa bisa dipercaya rantai telusur PO->Terima->
+     * Invoice->Bayar, bukan cuma angka rupiah.
+     */
+    public function purchasingDataHealth(): array
+    {
+        $poMaterial = DB::connection('tm2pur')->selectOne(
+            'SELECT COUNT(*) n, SUM(material_id IS NOT NULL) f FROM po_order_legacy_detail'
+        );
+        $receivePo = DB::connection('tm2pur')->selectOne(
+            'SELECT COUNT(*) n, SUM(legacy_po_detail_id IS NOT NULL) f FROM po_receive_legacy_detail'
+        );
+        $invoicePo = DB::connection('tm2pur')->selectOne(
+            'SELECT COUNT(*) n, SUM(legacy_po_detail_id IS NOT NULL) f FROM po_invoice_legacy_detail'
+        );
+        $paymentInvoice = DB::connection('tm2pur')->selectOne(
+            "SELECT COUNT(*) n, SUM(pinv_legacy_id IS NOT NULL) f FROM po_payment_legacy_detail WHERE legacy_pinv_no IS NOT NULL"
+        );
+        $invoiceSupplier = DB::connection('tm2pur')->selectOne(
+            'SELECT COUNT(*) n, SUM(supplier_id IS NOT NULL) f FROM po_invoice_legacy'
+        );
+
+        $pct = fn ($r) => $r->n > 0 ? round((int) $r->f / (int) $r->n * 100, 1) : 0.0;
+
+        return [
+            ['label' => 'Baris PO teridentifikasi bahan bakunya', 'pct' => $pct($poMaterial)],
+            ['label' => 'Penerimaan barang tersambung ke PO', 'pct' => $pct($receivePo)],
+            ['label' => 'Invoice supplier tersambung ke PO', 'pct' => $pct($invoicePo)],
+            ['label' => 'Pembayaran tersambung ke invoice', 'pct' => $pct($paymentInvoice)],
+            ['label' => 'Invoice teridentifikasi suppliernya', 'pct' => $pct($invoiceSupplier)],
+        ];
+    }
+
+    /**
+     * "Management Attention" -- anomali NYATA hasil audit sepanjang migrasi
+     * (bukan contoh/dummy). Tiap item bisa ditelusuri balik ke angka yang
+     * sudah diverifikasi di sesi migrasi -- lihat
+     * memory project_tm2old_co_po_migration.md kalau perlu jejak lengkapnya.
+     */
+    public function managementAttention(): array
+    {
+        $attention = [];
+
+        $ap = $this->accountsPayable();
+        if ($ap['outstanding'] > 0) {
+            $attention[] = [
+                'tone' => 'warn',
+                'title' => 'Sisa utang usaha (AP)',
+                'text' => 'Rp ' . number_format($ap['outstanding'], 0, ',', '.')
+                    . ' dari total invoice supplier Rp ' . number_format($ap['invoice_value'], 0, ',', '.')
+                    . ' — dihitung invoice dikurangi realisasi pembayaran (kolom saldo di sumber tidak pernah diisi).',
+            ];
+        }
+
+        $unmappedInv = DB::connection('tm2pur')->selectOne(
+            'SELECT COUNT(*) n, SUM(supplier_id IS NULL) f FROM po_invoice_legacy'
+        );
+        if ((int) $unmappedInv->f > 0) {
+            $pct = round((int) $unmappedInv->f / (int) $unmappedInv->n * 100, 1);
+            $attention[] = [
+                'tone' => 'danger',
+                'title' => 'Invoice tanpa padanan supplier',
+                'text' => number_format((int) $unmappedInv->f) . ' dari ' . number_format((int) $unmappedInv->n)
+                    . " invoice ({$pct}%) — sistem lama menyimpan nama perusahaan di kolom kode (mis. MADJU/TANINDO/KEISHA), bukan kode resmi.",
+            ];
+        }
+
+        $overpaid = DB::connection('tm2pur')->select('
+            SELECT i.supplier_id, SUM(i.grand_total) tagih,
+                   COALESCE((SELECT SUM(d.paid_amount) FROM po_payment_legacy_detail d
+                             JOIN po_invoice_legacy i2 ON i2.id_pinv_legacy = d.pinv_legacy_id
+                             WHERE i2.supplier_id = i.supplier_id),0) bayar
+            FROM po_invoice_legacy i WHERE i.supplier_id IS NOT NULL
+            GROUP BY i.supplier_id HAVING bayar > tagih');
+        if (count($overpaid) > 0) {
+            $attention[] = [
+                'tone' => 'warn',
+                'title' => 'Supplier tercatat dibayar melebihi tagihan',
+                'text' => count($overpaid) . ' supplier — kemungkinan ada invoice yang tidak ikut terekam di sistem lama, bukan kesalahan hitung.',
+            ];
+        }
+
+        $unmatchedMaterial = DB::connection('tm2pur')->selectOne(
+            'SELECT COUNT(*) n, SUM(material_id IS NULL) f FROM po_order_legacy_detail'
+        );
+        if ((int) $unmatchedMaterial->f > 0) {
+            $pct = round((int) $unmatchedMaterial->f / (int) $unmatchedMaterial->n * 100, 1);
+            $attention[] = [
+                'tone' => 'info',
+                'title' => 'Baris PO tanpa padanan Master Raw Material',
+                'text' => number_format((int) $unmatchedMaterial->f) . " baris ({$pct}%) — item ada di sumber tapi belum terklasifikasi sbg bahan baku saat migrasi Master, perlu ditinjau manual.",
+            ];
+        }
+
+        return $attention;
+    }
+
     /** Tahun-tahun yang punya data, untuk isian dropdown periode. */
     public function availableYears(): array
     {

@@ -320,6 +320,14 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
     --side-head-bg: rgba(0, 0, 0, .18); --side-border: transparent;
     --content-bg: #eef1f6; --tabbar: #e6e8f2; --sh-border: #e3e7f0; --sh-surface: #ffffff;
     --sh-ink: #3a4568; --sh-ink-strong: #2f3a5e; --sh-muted: #9aa3bd; --sh-violet: #7a52d0; --sh-amber: #b6852a;
+    /* Semantik ok/danger/warn -- SEBELUMNYA tidak ada di scope .shell sama
+       sekali (cuma ada di .secpage lewat --sp-ok/--sp-danger). Laporan
+       Manajemen sempat memakai var(--sp-ok) di dalam .shell -- token itu
+       undefined di sini, browser diam-diam jatuh ke initial value, jadi
+       warna delta/badge kemungkinan tidak pernah tampil benar. Ditambah di
+       sini supaya jadi bagian resmi design token .shell, bukan tambalan
+       lokal per halaman. */
+    --sh-ok: #16a34a; --sh-danger: #dc2626; --sh-warn: #d97706;
     --side-w: 262px; --topbar-h: 56px; --tab-h: 44px;
     font-family: var(--brand-font, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
     @apply bg-[var(--content-bg)] text-[var(--sh-ink)] h-screen overflow-hidden flex;

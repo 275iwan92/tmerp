@@ -42,6 +42,12 @@
             --sh-ink: #c7cee8;
             --sh-ink-strong: #eef1ff;
             --sh-muted: #7680a6;
+            {{-- Semenanda ke --sh-ok/--danger/--warn light default (app.css) --
+                 dinaikkan sedikit terangnya di sini supaya tetap kontras di atas
+                 --content-bg gelap, sama pola dgn shade lain di blok ini. --}}
+            --sh-ok: #34d399;
+            --sh-danger: #f87171;
+            --sh-warn: #fbbf24;
         @else
             --side: #ffffff;
             --topbar: #ffffff;

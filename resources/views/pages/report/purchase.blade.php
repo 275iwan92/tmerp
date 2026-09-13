@@ -9,7 +9,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 // Rincian Pembelian -- sisi lawan dari Rincian Penjualan. Menampilkan rantai
-// PR -> PO -> Penerimaan -> Pembayaran, semuanya dari arsip hasil migrasi.
+// PR -> PO -> Penerimaan -> Invoice -> Pembayaran, semuanya dari arsip hasil migrasi.
 new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
@@ -58,7 +58,7 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function topSuppliers(): array
     {
-        return app(ManagementReportService::class)->topSuppliers($this->year, 20);
+        return app(ManagementReportService::class)->topSuppliers($this->year, 10);
     }
 
     #[Computed]
@@ -117,7 +117,7 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
 }; ?>
 
 @php
-    $months = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+    $months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
     $rp = fn ($v) => 'Rp ' . number_format((float) $v, 0, ',', '.');
     $miliar = fn ($v) => 'Rp ' . number_format((float) $v / 1_000_000_000, 2, ',', '.') . ' M';
     $tabs = [
@@ -127,100 +127,89 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
         'invoice' => 'Invoice Supplier',
         'payment' => 'Pembayaran',
     ];
+    $statusTone = fn ($s) => match ($s) { 'APPROVED', 'RECEIVED', 'PAID', 'INVOICED' => 'ok', 'CANCELLED' => 'danger', 'DRAFT' => 'info', default => 'warn' };
 @endphp
 
-<div class="p-4">
-    <div class="flex flex-wrap items-end gap-3 mb-3.5">
+<div class="p-4 sm:p-6" style="background:var(--content-bg)">
+    <div class="flex flex-wrap items-end gap-3 mb-4">
         <a href="{{ route('report.executive', ['th' => $year]) }}"
-           class="text-[12px] text-[#7c3aed] hover:underline pb-1.5">
+           class="text-[12px] font-semibold hover:underline pb-1.5" style="color:var(--sh-violet)">
             <i class="fa-solid fa-arrow-left"></i> Dashboard
         </a>
         <div>
-            <label class="block text-[10.5px] font-bold uppercase opacity-60 mb-1">Tahun</label>
-            <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Tahun</label>
+            <select wire:model.live="year" class="border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
                 @foreach ($this->years as $y)
                     <option value="{{ $y }}">{{ $y }}</option>
                 @endforeach
             </select>
         </div>
         <div class="flex-1 min-w-[200px]">
-            <label class="block text-[10.5px] font-bold uppercase opacity-60 mb-1">Cari nomor dokumen</label>
+            <label class="block text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--sh-muted)">Cari nomor dokumen</label>
             <input wire:model.live.debounce.400ms="search" type="text" placeholder="Ketik nomor dokumen…"
-                   class="w-full border rounded-lg px-2.5 py-1.5 text-[12.5px] bg-white">
+                   class="w-full border rounded-lg px-2.5 py-1.5 text-[12.5px]" style="background:var(--sh-surface);border-color:var(--sh-border);color:var(--sh-ink)">
         </div>
     </div>
 
-    <x-grid.stat-row :count="4">
-        <x-grid.stat-box tone="total" label="Nilai Purchase Order"
-            :value="$miliar($this->summary['po_value'])"
-            :subtitle="number_format($this->summary['po_docs']) . ' dokumen PO'" />
-        <x-grid.stat-box tone="warn" label="Permintaan Pembelian"
-            :value="number_format($this->summary['pr_docs'])" subtitle="dokumen PR" />
-        <x-grid.stat-box tone="active" label="Penerimaan Barang"
-            :value="number_format($this->summary['receive_docs'])" subtitle="dokumen penerimaan" />
-        <x-grid.stat-box tone="critical" label="Pembayaran ke Supplier"
-            :value="$miliar($this->summary['payment_value'])"
-            :subtitle="number_format($this->summary['payment_docs']) . ' voucher'" />
-    </x-grid.stat-row>
+    <div class="[display:grid] grid-cols-2 lg:grid-cols-4 gap-3.5 mb-4">
+        <x-report.kpi label="Nilai Purchase Order" icon="fa-solid fa-cart-shopping" tone="blue"
+            :value="$miliar($this->summary['po_value'])" :note="number_format($this->summary['po_docs']) . ' dokumen PO'" />
+        <x-report.kpi label="Permintaan Pembelian" icon="fa-solid fa-clipboard-list" tone="amber"
+            :value="number_format($this->summary['pr_docs'])" note="dokumen PR" />
+        <x-report.kpi label="Penerimaan Barang" icon="fa-solid fa-truck-ramp-box" tone="green"
+            :value="number_format($this->summary['receive_docs'])" note="dokumen penerimaan" />
+        <x-report.kpi label="Pembayaran ke Supplier" icon="fa-solid fa-money-bill-transfer" tone="violet"
+            :value="$miliar($this->summary['payment_value'])" :note="number_format($this->summary['payment_docs']) . ' voucher'" />
+    </div>
 
-    <div class="[display:grid] grid-cols-1 lg:grid-cols-2 gap-3.5 mb-3.5">
-        <div class="rounded-xl border bg-white shadow-sm p-4">
-            <h3 class="font-bold text-[13px] mb-2">Tren Pembelian Bulanan {{ $year }}</h3>
-            <x-chart.apex type="area" :height="260" :config="[
-                'series' => [['name' => 'Pembelian', 'data' => array_map(fn ($m) => round($m['value']), $this->monthly)]],
-                'xaxis' => ['categories' => $months],
-                'stroke' => ['curve' => 'smooth', 'width' => 3],
-                'fill' => ['type' => 'gradient', 'gradient' => ['opacityFrom' => 0.3, 'opacityTo' => 0.02]],
-                'legend' => ['show' => false],
-                'colors' => ['#7c3aed'],
+    <div class="[display:grid] grid-cols-1 lg:grid-cols-2 gap-3.5 mb-4">
+        <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Tren Pembelian Bulanan {{ $year }}</h3>
+            <x-report.svg-trend :height="240" :labels="$months" :series="[
+                ['label' => 'Pembelian', 'color' => 'var(--sh-violet)', 'data' => array_column($this->monthly, 'value'), 'area' => true],
             ]" />
         </div>
 
-        <div class="rounded-xl border bg-white shadow-sm p-4">
-            <h3 class="font-bold text-[13px] mb-2">Supplier Terbesar {{ $year }}</h3>
-            <x-chart.apex type="bar" :height="260" :config="[
-                'series' => [['name' => 'Nilai PO', 'data' => array_map(fn ($s) => round($s['value']), array_slice($this->topSuppliers, 0, 10))]],
-                'xaxis' => ['categories' => array_map(fn ($s) => str($s['name'])->limit(24)->value(), array_slice($this->topSuppliers, 0, 10))],
-                'plotOptions' => ['bar' => ['horizontal' => true, 'borderRadius' => 4, 'barHeight' => '65%']],
-                'legend' => ['show' => false],
-                'colors' => ['#7c3aed'],
+        <div class="rounded-2xl border p-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+            <h3 class="font-bold text-[14px] mb-3" style="color:var(--sh-ink-strong)">Supplier Terbesar {{ $year }}</h3>
+            <x-report.svg-bars horizontal :labels="array_map(fn ($s) => $s['name'], $this->topSuppliers)" :series="[
+                ['data' => array_map(fn ($s) => $s['value'], $this->topSuppliers), 'color' => 'var(--sh-violet)'],
             ]" />
         </div>
     </div>
 
     {{-- ============ Utang Usaha (AP) ============ --}}
-    <div class="rounded-xl border bg-white shadow-sm p-4 mb-3.5">
-        <div class="flex items-baseline justify-between mb-2">
-            <h3 class="font-bold text-[13px]">Utang Usaha (AP) — seluruh periode</h3>
-            <span class="text-[11px] opacity-60">dari invoice supplier dikurangi realisasi pembayaran</span>
+    <div class="rounded-2xl border p-4 mb-4" style="background:var(--sh-surface);border-color:var(--sh-border)">
+        <div class="flex items-baseline justify-between mb-3">
+            <h3 class="font-bold text-[14px]" style="color:var(--sh-ink-strong)">Utang Usaha (AP) — seluruh periode</h3>
+            <span class="text-[11px]" style="color:var(--sh-muted)">dari invoice supplier dikurangi realisasi pembayaran</span>
         </div>
 
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Invoice Supplier"
-                :value="$miliar($this->payable['invoice_value'])"
-                :subtitle="number_format($this->payable['invoice_docs']) . ' invoice'" />
-            <x-grid.stat-box tone="active" label="Sudah Dibayar"
-                :value="$miliar($this->payable['paid_value'])" subtitle="realisasi pembayaran tercatat" />
-            <x-grid.stat-box tone="critical" label="Sisa Utang"
-                :value="$miliar($this->payable['outstanding'])" subtitle="invoice dikurangi pembayaran" />
-        </x-grid.stat-row>
+        <div class="[display:grid] grid-cols-1 sm:grid-cols-3 gap-3.5 mb-4">
+            <x-report.kpi label="Total Invoice Supplier" icon="fa-solid fa-file-invoice-dollar" tone="blue"
+                :value="$miliar($this->payable['invoice_value'])" :note="number_format($this->payable['invoice_docs']) . ' invoice'" />
+            <x-report.kpi label="Sudah Dibayar" icon="fa-solid fa-circle-check" tone="green"
+                :value="$miliar($this->payable['paid_value'])" note="realisasi pembayaran tercatat" />
+            <x-report.kpi label="Sisa Utang" icon="fa-solid fa-triangle-exclamation" tone="danger"
+                :value="$miliar($this->payable['outstanding'])" note="invoice dikurangi pembayaran" />
+        </div>
 
-        <table class="w-full text-[11.5px]">
-            <thead><tr class="text-left border-b">
-                <th class="py-1.5 px-2">Supplier</th>
-                <th class="py-1.5 px-2 text-right">Invoice</th>
-                <th class="py-1.5 px-2 text-right">Ditagihkan</th>
-                <th class="py-1.5 px-2 text-right">Dibayar</th>
-                <th class="py-1.5 px-2 text-right">Sisa Utang</th>
+        <table class="w-full text-[12px]">
+            <thead><tr class="text-left border-b" style="border-color:var(--sh-border)">
+                <th class="py-1.5 px-2 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Supplier</th>
+                <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Invoice</th>
+                <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Ditagihkan</th>
+                <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Dibayar</th>
+                <th class="py-1.5 px-2 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Sisa Utang</th>
             </tr></thead>
             <tbody>
                 @foreach ($this->payableSuppliers as $s)
-                    <tr class="border-b border-black/5">
-                        <td class="py-1 px-2">{{ $s['name'] }}</td>
-                        <td class="py-1 px-2 text-right tabular-nums">{{ number_format($s['docs']) }}</td>
-                        <td class="py-1 px-2 text-right tabular-nums">{{ $rp($s['invoiced']) }}</td>
-                        <td class="py-1 px-2 text-right tabular-nums opacity-70">{{ $rp($s['paid']) }}</td>
-                        <td class="py-1 px-2 text-right tabular-nums font-semibold {{ $s['outstanding'] > 0 ? 'text-[#c0392b]' : '' }}">
+                    <tr class="border-b" style="border-color:var(--sh-border)">
+                        <td class="py-1.5 px-2" style="color:var(--sh-ink)">{{ $s['name'] }}</td>
+                        <td class="py-1.5 px-2 text-right tabular-nums" style="color:var(--sh-ink)">{{ number_format($s['docs']) }}</td>
+                        <td class="py-1.5 px-2 text-right tabular-nums" style="color:var(--sh-ink)">{{ $rp($s['invoiced']) }}</td>
+                        <td class="py-1.5 px-2 text-right tabular-nums" style="color:var(--sh-muted)">{{ $rp($s['paid']) }}</td>
+                        <td class="py-1.5 px-2 text-right tabular-nums font-semibold" style="color:{{ $s['outstanding'] > 0 ? 'var(--sh-danger)' : 'var(--sh-ink-strong)' }}">
                             {{ $rp($s['outstanding']) }}
                         </td>
                     </tr>
@@ -228,68 +217,64 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
             </tbody>
         </table>
 
-        <div class="text-[10.5px] opacity-70 mt-2 pt-2 border-t space-y-1">
+        <div class="mt-3 pt-3 border-t space-y-2" style="border-color:var(--sh-border)">
             @if ($this->unmappedInvoices > 0)
-                <p class="text-[#a3453f]">
+                <x-report.insight tone="danger">
                     <strong>{{ number_format($this->unmappedInvoices) }}</strong> invoice tidak dapat dikaitkan ke
                     supplier manapun (sistem lama menyimpan nama perusahaan di kolom kode, mis. MADJU/TANINDO/KEISHA),
                     sehingga tabel per-supplier di atas belum mencakup seluruh nilai.
-                </p>
+                </x-report.insight>
             @endif
-            <p>
+            <p class="text-[11px]" style="color:var(--sh-muted)">
                 Nilai sisa utang negatif berarti pembayaran tercatat melebihi tagihan — kemungkinan invoice-nya
-                tidak ikut terekam di sistem lama. Ditampilkan apa adanya, tidak dipaksa menjadi nol.
-            </p>
-            <p>
-                Padanan di sisi penjualan (piutang/AR) tidak dapat dihitung: tabel penerimaan pembayaran
-                customer di sistem lama (<code>sdi_cpym</code>) kosong sama sekali.
+                tidak ikut terekam di sistem lama. Ditampilkan apa adanya, tidak dipaksa menjadi nol. Padanan di sisi
+                penjualan (piutang/AR) tidak dapat dihitung: tabel penerimaan pembayaran customer di sistem lama
+                (<code>sdi_cpym</code>) kosong sama sekali.
             </p>
         </div>
     </div>
 
-    <div class="flex gap-1 mb-3 border-b">
+    <div class="flex gap-1 mb-3 border-b" style="border-color:var(--sh-border)">
         @foreach ($tabs as $key => $label)
             <button type="button" wire:click="$set('tab', '{{ $key }}')"
-                    class="px-3.5 py-2 text-[12px] font-semibold border-b-2 -mb-px
-                           {{ $tab === $key ? 'border-[#7c3aed] text-[#7c3aed]' : 'border-transparent opacity-60 hover:opacity-100' }}">
+                    class="px-3.5 py-2 text-[12px] font-semibold border-b-2 -mb-px"
+                    style="{{ $tab === $key ? 'border-color:var(--sh-violet);color:var(--sh-violet)' : 'border-color:transparent;color:var(--sh-muted)' }}">
                 {{ $label }}
             </button>
         @endforeach
     </div>
 
-    <div class="rounded-xl border bg-white shadow-sm overflow-hidden">
-        <table class="w-full text-[11.5px]">
-            <thead class="bg-black/[0.03]">
+    <div class="rounded-2xl border overflow-hidden" style="background:var(--sh-surface);border-color:var(--sh-border)">
+        <table class="w-full text-[12px]">
+            <thead style="background:var(--content-bg)">
                 <tr class="text-left">
-                    <th class="py-2 px-3">Nomor</th>
-                    <th class="py-2 px-3">Tanggal</th>
-                    <th class="py-2 px-3">Supplier</th>
-                    <th class="py-2 px-3">Status</th>
-                    <th class="py-2 px-3 text-right">Nilai</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nomor</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Tanggal</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Supplier</th>
+                    <th class="py-2 px-3 font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Status</th>
+                    <th class="py-2 px-3 text-right font-bold uppercase text-[10px]" style="color:var(--sh-muted)">Nilai</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($this->documents as $doc)
-                    <tr class="border-t border-black/5 hover:bg-black/[0.02]">
-                        <td class="py-1.5 px-3 font-medium">{{ $doc->doc_no }}</td>
-                        <td class="py-1.5 px-3">{{ $doc->doc_date }}</td>
-                        <td class="py-1.5 px-3">
+                    <tr class="border-t" style="border-color:var(--sh-border)">
+                        <td class="py-2 px-3 font-semibold" style="color:var(--sh-ink-strong)">{{ $doc->doc_no }}</td>
+                        <td class="py-2 px-3" style="color:var(--sh-ink)">{{ $doc->doc_date }}</td>
+                        <td class="py-2 px-3" style="color:var(--sh-ink)">
                             {{ isset($doc->supplier_id) ? ($this->supplierNames[$doc->supplier_id] ?? '(tidak dikenal)') : '—' }}
                         </td>
-                        <td class="py-1.5 px-3">
-                            <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-black/5">
-                                {{ $doc->doc_status_normalized ?? '—' }}
-                            </span>
+                        <td class="py-2 px-3">
+                            <x-report.badge :tone="$statusTone($doc->doc_status_normalized ?? '')">{{ $doc->doc_status_normalized ?? '—' }}</x-report.badge>
                         </td>
-                        <td class="py-1.5 px-3 text-right tabular-nums">
+                        <td class="py-2 px-3 text-right tabular-nums font-semibold" style="color:var(--sh-ink-strong)">
                             {{ $doc->doc_value !== null ? $rp($doc->doc_value) : '—' }}
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="py-8 text-center opacity-55">Tidak ada dokumen pada filter ini.</td></tr>
+                    <tr><td colspan="5" class="py-8 text-center" style="color:var(--sh-muted)">Tidak ada dokumen pada filter ini.</td></tr>
                 @endforelse
             </tbody>
         </table>
-        <div class="p-3 border-t">{{ $this->documents->links() }}</div>
+        <div class="p-3 border-t" style="border-color:var(--sh-border)">{{ $this->documents->links() }}</div>
     </div>
 </div>
