@@ -27,7 +27,12 @@ class ManagementReportShellTest extends TestCase
         Livewire::test('pages::report.costing')->assertOk();
     }
 
-    public function test_control_tower_pages_render_honest_coming_soon_state(): void
+    // Keputusan awal (jujur "belum tersedia" tanpa angka) DIBATALKAN user
+    // 2026-09-13: "KALAU TIDAK ADA TETAP DIBUAT DUMMY DATA NYA, DENGAN
+    // TULISAN INI DUMMY DATA" -- sekarang tampil dashboard KPI+grafik+tabel
+    // penuh gaya mockup dgn angka contoh dari mockup asli, ditandai jelas
+    // "DATA DUMMY" (bukan disamarkan sbg data produksi).
+    public function test_control_tower_pages_render_dummy_dashboard_clearly_labeled(): void
     {
         $direksi = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($direksi);
@@ -35,7 +40,8 @@ class ManagementReportShellTest extends TestCase
         foreach (['qms', 'cmms', 'ehs', 'assets'] as $slug) {
             Livewire::test('pages::report.coming-soon', ['slug' => $slug])
                 ->assertOk()
-                ->assertSee('belum tersedia');
+                ->assertSee('DATA DUMMY')
+                ->assertSee('DUMMY');
         }
     }
 

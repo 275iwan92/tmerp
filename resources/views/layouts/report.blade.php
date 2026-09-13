@@ -64,13 +64,24 @@
             .rs-ico{width:18px;text-align:center;font-size:14px}
             .rs-side-note{border-top:1px solid #ffffff18;margin:19px 5px;padding:15px 3px;color:#91a7c5;font-size:11px}
             .rs-avatar{display:inline-grid;place-items:center;background:#345484;width:27px;height:27px;border-radius:50%;color:#fff;font-size:10px;font-weight:800;margin-right:7px;vertical-align:middle}
-            .rs-exit{display:flex;align-items:center;gap:8px;color:#f0a0a5;text-decoration:none;font-weight:700;font-size:11.5px;padding:8px 10px;border-radius:8px;margin-top:6px}
-            .rs-exit:hover{background:#ffffff0b;color:#fff}
-            .rs-top{height:60px;background:#fff;border-bottom:1px solid #e3e9f2;display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:2}
-            .rs-crumb{color:#718096;font-size:12px}
+            .rs-top{height:60px;background:#fff;border-bottom:1px solid #e3e9f2;display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:4;gap:12px}
+            .rs-crumb{color:#718096;font-size:12px;white-space:nowrap}
             .rs-crumb b{color:#14213a}
-            @media(max-width:1100px){.rs-app{grid-template-columns:65px 1fr}.rs-aside{padding:18px 8px}.rs-brand span,.rs-navgroup,.rs-nav .rs-text,.rs-side-note,.rs-exit span{display:none}.rs-brand{padding:3px 7px 20px;justify-content:center}.rs-nav a{justify-content:center;padding:10px}.rs-exit{justify-content:center}}
-            @media(max-width:620px){.rs-app{display:block}.rs-aside{height:56px;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:5;padding:5px;overflow:hidden}.rs-brand,.rs-side-note{display:none}.rs-nav{display:flex;justify-content:space-around;overflow-x:auto}.rs-nav a{width:auto;margin:0;padding:10px}.rs-exit{display:none}.rs-top{padding:0 14px;height:56px}.rs-crumb{display:none}}
+            {{--
+                Switcher mode -- LAWAN dari sidebar app lama (main-menu.blade.php
+                topbar) yg juga dapat pill sejenis (lihat itemRoutes/@if MGMT di
+                sana), supaya berpindah Operasional<->Laporan simetris 1 klik
+                dari KEDUA sisi, bukan cuma satu arah.
+            --}}
+            .rs-switch{display:flex;background:#eef2f8;border-radius:10px;padding:3px;gap:2px;flex-shrink:1;min-width:0}
+            .rs-switch a{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:700;color:#5a6a86;text-decoration:none;white-space:nowrap}
+            .rs-switch a:hover{color:#14213a}
+            .rs-switch a.active{background:#fff;color:#2878f0;box-shadow:0 1px 3px #1c365b1f}
+            .rs-logout-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#fdeeee;color:#c8363d;flex-shrink:0}
+            .rs-logout-btn:hover{background:#fbdcdc}
+            .rs-topactions{display:flex;align-items:center;gap:10px;min-width:0}
+            @media(max-width:1100px){.rs-app{grid-template-columns:65px 1fr}.rs-aside{padding:18px 8px}.rs-brand span,.rs-navgroup,.rs-nav .rs-text,.rs-side-note{display:none}.rs-brand{padding:3px 7px 20px;justify-content:center}.rs-nav a{justify-content:center;padding:10px}}
+            @media(max-width:620px){.rs-app{display:block}.rs-aside{height:56px;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:5;padding:5px;overflow:hidden}.rs-brand,.rs-side-note{display:none}.rs-nav{display:flex;justify-content:space-around;overflow-x:auto}.rs-nav a{width:auto;margin:0;padding:10px}.rs-top{padding:0 10px;height:52px}.rs-crumb{display:none}.rs-switch a span{display:none}.rs-switch a{padding:8px 10px}}
         </style>
     </head>
     <body>
@@ -126,21 +137,31 @@
                 <div class="rs-side-note">
                     {{ \App\Support\Branding\Brand::name() }}<br>
                     <span class="rs-avatar">{{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}</span>{{ auth()->user()->name ?? '' }} · Direksi
-
-                    <a href="{{ route('menu') }}" class="rs-exit" style="color:#a8c3e8">
-                        <span class="rs-ico"><i class="fa-solid fa-arrow-left"></i></span>
-                        <span>Kembali ke Menu Utama</span>
-                    </a>
-                    <a href="{{ route('logout') }}" class="rs-exit">
-                        <span class="rs-ico"><i class="fa-solid fa-right-from-bracket"></i></span>
-                        <span>Keluar (Logout)</span>
-                    </a>
                 </div>
             </aside>
 
             <main>
+                {{--
+                    Switcher mode Operasional<->Laporan Manajemen (keputusan
+                    user 2026-09-13, "switch tidak efektif, jelek banget" --
+                    sebelumnya cuma link kecil "Kembali ke Menu Utama" di
+                    dasar sidebar, dan HILANG SAMA SEKALI di layar sempit
+                    (<620px, .rs-exit{display:none}) -- tidak ada jalan
+                    keluar sama sekali di mobile). Sekarang: segmented
+                    control jelas di topbar, SELALU tampil (topbar tidak
+                    ikut disembunyikan di breakpoint manapun), 1 klik.
+                --}}
                 <header class="rs-top">
                     <div class="rs-crumb">Laporan Manajemen &nbsp;/&nbsp; <b>{{ $__activeLabel }}</b></div>
+                    <div class="rs-topactions">
+                        <div class="rs-switch">
+                            <a href="{{ route('menu') }}"><i class="fa-solid fa-grip"></i><span>Operasional</span></a>
+                            <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>Laporan Manajemen</span></a>
+                        </div>
+                        <a href="{{ route('logout') }}" class="rs-logout-btn" title="Keluar (Logout)">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </a>
+                    </div>
                 </header>
 
                 {{ $slot }}
