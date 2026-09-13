@@ -111,10 +111,20 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         Auth::login($user);
         request()->session()->regenerate();
 
-        // Landing setelah login mengikuti peran: Direksi murni -> langsung
-        // Laporan Manajemen (tak ada pilihan lain, ditegakkan lagi di
-        // main-menu.blade.php::mount() kalau /menu diketik manual). Semua
-        // user lain (termasuk admin) -> menu operasional spt biasa.
+        // Landing setelah login berbasis LEVEL, bukan role/nama grup spesifik
+        // (instruksi eksplisit user 2026-09-13): "check level dulu, kalau
+        // Operational Manager keatas -> default Management Report, kalau
+        // kebawah -> Operational Menu". canAccessModule('MGMT') sudah
+        // menegakkan aturan yang SAMA PERSIS (can_access + mgmt_level >=
+        // min_mgmt_level, is_admin bypass -- lihat EnsureModuleAccess), jadi
+        // dipakai ulang di sini supaya "siapa default ke mana" tidak pernah
+        // menyimpang dari "siapa yang BENERAN boleh buka" (min_mgmt_level
+        // MGMT diturunkan ke 4/Manager Operasional di migration
+        // 2026_09_13_000011, sebelumnya 5/Direksi-only).
+        //
+        // Direksi murni tetap ditegakkan lagi di main-menu.blade.php::mount()
+        // (hard lock, tak ada menu operasional sama sekali) kalau /menu
+        // diketik manual -- match ini hanya soal landing DEFAULT.
         //
         // Sebelumnya admin dilempar ke layar pilihan dulu ("Mau buka yang
         // mana dulu?", route landing.choice) -- DIHAPUS (keluhan user
@@ -125,6 +135,7 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         // "mana dulu" di setiap login jadi friksi tanpa guna.
         $default = match (true) {
             $user->isDireksiOnly() => route('report.executive'),
+            $user->canAccessModule('MGMT') => route('report.executive'),
             default => route('menu'),
         };
 
