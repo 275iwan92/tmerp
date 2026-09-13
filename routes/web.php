@@ -212,6 +212,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         Route::middleware('module:HRM')->group(function () {
             Route::livewire('/hrm/position', 'pages::hrm.position')->name('hrm.position');
+            Route::livewire('/hrm/sop', 'pages::hrm.sop-documents')->name('hrm.sop-documents');
             Route::livewire('/hrm/org-chart', 'pages::hrm.org-chart')->name('hrm.org-chart');
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
@@ -276,8 +277,10 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
         // Laporan Manajemen -- lintas modul (penjualan + pembelian + master),
         // jadi TIDAK digate 'module:SALES'/'module:PROC' seperti layar operasional.
-        // Pembatasan aksesnya lewat menu/izin tersendiri (MGMT).
-        Route::prefix('laporan')->group(function () {
+        // Dibatasi lewat modul sendiri (MGMT, min_mgmt_level=5 -- Direksi only,
+        // lihat migration 2026_09_13_000009). Sebelum ini grup route TIDAK
+        // digate sama sekali -- siapa saja yang login bisa membuka /laporan/*.
+        Route::prefix('laporan')->middleware('module:MGMT')->group(function () {
             Route::livewire('/eksekutif', 'pages::report.executive')->name('report.executive');
             Route::livewire('/penjualan', 'pages::report.sales')->name('report.sales');
             Route::livewire('/pembelian', 'pages::report.purchase')->name('report.purchase');
