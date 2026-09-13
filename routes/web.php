@@ -92,7 +92,6 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
     Route::middleware('force.password')->group(function () {
         Route::livewire('/menu', 'pages::main-menu')->name('menu');
-        Route::livewire('/landing/pilih', 'pages::landing-choice')->name('landing.choice');
 
         Route::middleware('module:SALES')->group(function () {
             Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');

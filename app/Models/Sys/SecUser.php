@@ -117,23 +117,17 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         return (int) ($this->groups()->max('mgmt_level') ?? 0);
     }
 
-    // Menentukan pengalaman landing setelah login (keputusan user 2026-09-13):
-    // Direksi (bukan admin) -> langsung ke Laporan Manajemen, TANPA menu
-    // operasional sama sekali. is_admin (mis. johiwan) SENGAJA dikecualikan
-    // meski kebetulan anggota grup Direksi -- admin butuh akses operasional
-    // penuh utk kerja sehari-hari (dev/config), jadi dikasih pilihan
-    // (lihat isAdminWithChoice()), bukan dipaksa satu arah.
+    // Menentukan pengalaman landing setelah login: Direksi (bukan admin) ->
+    // langsung ke Laporan Manajemen, TANPA menu operasional sama sekali.
+    // is_admin (mis. johiwan) SENGAJA dikecualikan meski kebetulan anggota
+    // grup Direksi -- admin butuh akses operasional penuh utk kerja
+    // sehari-hari (dev/config), landing tetap ke Menu Operasional spt user
+    // biasa, pindah ke Laporan Manajemen lewat pill switcher di topbar
+    // (main-menu.blade.php) -- bukan lewat layar pilihan terpisah lagi
+    // (dihapus 2026-09-13, keluhan user "tidak perlu saya pertanyakan").
     public function isDireksiOnly(): bool
     {
         return ! $this->is_admin && $this->groups()->where('group_name', 'Direksi')->exists();
-    }
-
-    // Administrator (is_admin=1) melihat layar pilihan (Laporan Manajemen
-    // atau Menu Operasional) alih-alih otomatis diarahkan salah satu --
-    // beda dari Direksi murni yang tidak diberi pilihan sama sekali.
-    public function isAdminWithChoice(): bool
-    {
-        return (bool) $this->is_admin;
     }
 
     // Izin efektif per modul (union dari semua grup user — paling permisif menang).

@@ -111,14 +111,20 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         Auth::login($user);
         request()->session()->regenerate();
 
-        // Landing setelah login mengikuti peran (keputusan user 2026-09-13):
-        // Direksi murni -> langsung Laporan Manajemen (tak ada pilihan lain,
-        // ditegakkan lagi di main-menu.blade.php::mount() kalau /menu diketik
-        // manual). Admin -> layar pilih dulu (Laporan Manajemen atau Menu
-        // Operasional). Selain itu -> menu operasional spt biasa.
+        // Landing setelah login mengikuti peran: Direksi murni -> langsung
+        // Laporan Manajemen (tak ada pilihan lain, ditegakkan lagi di
+        // main-menu.blade.php::mount() kalau /menu diketik manual). Semua
+        // user lain (termasuk admin) -> menu operasional spt biasa.
+        //
+        // Sebelumnya admin dilempar ke layar pilihan dulu ("Mau buka yang
+        // mana dulu?", route landing.choice) -- DIHAPUS (keluhan user
+        // 2026-09-13: "jelek banget dan sangat tidak praktis, tidak perlu
+        // saya pertanyakan"). Sejak tombol "Laporan Manajemen" ditambahkan
+        // langsung di topbar Menu Operasional (main-menu.blade.php), pindah
+        // ke Laporan Manajemen sudah 1 klik kapan saja -- pertanyaan
+        // "mana dulu" di setiap login jadi friksi tanpa guna.
         $default = match (true) {
             $user->isDireksiOnly() => route('report.executive'),
-            $user->isAdminWithChoice() => route('landing.choice'),
             default => route('menu'),
         };
 

@@ -394,6 +394,24 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .mega-item:hover { @apply text-[var(--side-ink-strong)]; background: var(--side-hover-soft); }
 .shell .mega-item.active { @apply text-[var(--sh-accent)] border-b-[var(--sh-accent)]; background: rgba(47, 111, 237, .18); }
 .shell .tb-spacer { @apply flex-1; }
+/* Switcher Operasional<->Laporan Manajemen -- meniru persis .rs-switch di
+   layouts/report.blade.php (keluhan user 2026-09-13, "kenapa tidak pakai
+   seperti ini" sambil menunjuk screenshot switcher sisi Laporan). Beda dari
+   .rs-switch (fixed-light, di luar sistem tema): di sini pakai token
+   --side-x dan --sh-accent supaya tetap ikut 12 kombinasi tema (themestandard.md).
+   GOTCHA FATAL yg SEMPAT ada di komentar ini (root cause kekacauan build
+   sebelumnya, BUKAN soal Tailwind/nama class sama sekali): menulis
+   "--side-*<garis miring>--sh-accent" tanpa spasi berarti literal "*<garis
+   miring>" muncul di tengah teks -- itu MENUTUP komentar CSS ini lebih awal,
+   sisa kalimat jadi kode CSS rusak & merusak parsing rule sesudahnya
+   (persis pola gotcha "komentar Blade #}} salah ketik" tapi versi CSS
+   polos). Kontainer pill pakai style inline (lihat main-menu.blade.php),
+   BUKAN karena bug Tailwind seperti dugaan awal -- selalu tulis token CSS
+   custom-property dgn spasi/kata penghubung di komentar, JANGAN pernah taruh
+   asterisk lalu garis-miring berurutan tanpa spasi di dalam komentar CSS. */
+.shell .mm-switch a { display: flex; align-items: center; gap: 5px; padding: 6px 10px; border-radius: 7px; font-size: 11px; font-weight: 700; white-space: nowrap; text-decoration: none; color: var(--side-ink); }
+.shell .mm-switch a:hover { color: var(--side-ink-strong); }
+.shell .mm-switch a.active { color: var(--sh-accent); background: var(--side, #fff); box-shadow: 0 1px 3px rgba(28, 54, 91, .12); }
 .shell .avatar { @apply w-8 h-8 rounded-full bg-[#c3ccdf] flex items-center justify-center ml-1 cursor-pointer relative; }
 .shell .avatar svg { @apply w-5 h-5 fill-[#5a6488]; }
 .shell #topbar-restore { @apply hidden absolute top-1.5 right-3.5 z-[45]; }

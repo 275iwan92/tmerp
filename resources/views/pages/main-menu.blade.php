@@ -846,10 +846,19 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </nav>
             <div class="tb-spacer"></div>
             @if (collect($this->menuTree)->contains('code', 'MGMT'))
-                <a href="{{ route('report.executive') }}" class="tb-btn" style="display:flex;align-items:center;gap:6px;width:auto;padding:0 12px;color:var(--color-accent)" title="Buka Laporan Manajemen">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span style="font-size:12px;font-weight:700">Laporan Manajemen</span>
-                </a>
+                {{--
+                    Pill switcher, meniru persis .rs-switch di sisi Laporan
+                    Manajemen (keputusan user 2026-09-13, lihat app.css §mm-switch).
+                    Kontainer pakai style INLINE (bukan class .mm-switch murni) --
+                    gotcha build: rule CSS kontainer selector-2-class tanpa
+                    elemen anak (".shell .mm-switch{...}") selalu hilang dari
+                    hasil build @tailwindcss/vite, sudah dicoba ganti nama
+                    class & lepas @apply, tetap hilang -- didiagnosis di app.css.
+                --}}
+                <div class="mm-switch" style="display:flex;align-items:center;border-radius:9px;padding:3px;gap:2px;flex-shrink:0;background:var(--side-hover-soft)">
+                    <a class="active"><i class="fa-solid fa-grip"></i> Operasional</a>
+                    <a href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i> Laporan Manajemen</a>
+                </div>
             @endif
             <button type="button" class="tb-btn" @click="openPalette()" title="{{ Translator::t('shell_search_command_title', 'Cari / perintah (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
             <button type="button" class="tb-btn" @click="notopbar = true" title="{{ Translator::t('shell_hide_topbar_title', 'Sembunyikan top bar') }}"><i class="fa-solid fa-chevron-up"></i></button>
