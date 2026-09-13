@@ -29,6 +29,25 @@ document.addEventListener('alpine:init', () => {
             if (window.matchMedia('(max-width: 767px)').matches) {
                 this.nosidebar = true;
             }
+
+            // Auto-buka panel dropdown-user via ?open=xxx (instruksi user
+            // 2026-09-14: user-menu di Laporan Manajemen HARUS sama dgn di
+            // sini -- shell Laporan tidak punya modal/drawer/tab MDI sendiri,
+            // jadi item spt Chat/Notifikasi/Edit profil di sana mengarahkan
+            // ke /menu?open=<flag> dulu; begitu mendarat di sini, panel yg
+            // sesuai langsung terbuka -- bukan tombol mati. Nama flag boolean
+            // (profileOpen dkk) HARUS sinkron dgn app/Livewire/Shell/UserMenu.php
+            // & tabel sys_user_menu.action_target.
+            const openParam = new URLSearchParams(window.location.search).get('open');
+            if (openParam) {
+                const booleanFlags = ['profileOpen', 'passwordOpen', 'notifOpen', 'chatOpen', 'aiOpen', 'portalOpen'];
+                if (booleanFlags.includes(openParam)) {
+                    this.$nextTick(() => { this[openParam] = true; });
+                } else {
+                    this.$nextTick(() => this.openTab(openParam));
+                }
+                window.history.replaceState({}, '', window.location.pathname);
+            }
         },
 
         activeMod: 'HOME',

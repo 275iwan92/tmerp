@@ -77,12 +77,51 @@
             .rs-switch a{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:700;color:#5a6a86;text-decoration:none;white-space:nowrap}
             .rs-switch a:hover{color:#14213a}
             .rs-switch a.active{background:#fff;color:#2878f0;box-shadow:0 1px 3px #1c365b1f}
-            .rs-topavatar{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#345484;color:#fff;font-size:11px;font-weight:800;flex-shrink:0;border:0;cursor:pointer}
-            .rs-userpop{position:relative}
-            .rs-userpop-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:190px;background:#fff;border:1px solid #e3e9f2;border-radius:12px;box-shadow:0 12px 28px #1c365b26;padding:6px;z-index:10}
-            .rs-userpop-name{padding:8px 10px 6px;font-size:12px;font-weight:700;color:#14213a;border-bottom:1px solid #edf1f5;margin-bottom:4px}
-            .rs-userpop-menu a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:#c8363d;text-decoration:none}
-            .rs-userpop-menu a:hover{background:#fdeeee}
+            {{--
+                CSS di bawah ini mereplikasi PERSIS class .pop/.avatar-btn/
+                .avatar/.av-dot/.pop-menu/.um-*/tema-matrix milik komponen
+                app/Livewire/Shell/UserMenu.php (aslinya scoped ".shell" di
+                app.css) -- shell ini TIDAK punya class="shell" (sengaja
+                fixed-light, di luar sistem tema 12-kombinasi, lihat komentar
+                --sh-* di atas), jadi nilai warna literal mode-terang
+                disalin ke sini pakai token --sh-* yang SAMA persis dgn
+                app.css supaya dropdown tampil IDENTIK di kedua shell.
+            --}}
+            .pop{position:relative;display:flex;align-items:center}
+            .avatar-btn{display:flex;align-items:center;gap:7px;background:transparent;border:0;cursor:pointer;padding:6px;border-radius:8px;font-family:inherit}
+            .avatar-btn:hover{background:rgba(20,26,45,.06)}
+            .avatar{width:30px;height:30px;border-radius:50%;background:#c3ccdf;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+            .avatar svg{width:20px;height:20px;fill:#5a6488}
+            .av-dot{position:absolute;top:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#e5484d;border:2px solid #fff}
+            .av-dot.hide{display:none}
+            .pop-menu{display:none;position:absolute;right:0;top:46px;background:var(--sh-surface);color:var(--sh-ink);border-radius:12px;min-width:256px;overflow:hidden;z-index:70;box-shadow:0 16px 44px rgba(15,22,45,.24)}
+            .pop-menu.open{display:block}
+            .um-head{display:flex;align-items:center;gap:12px;padding:15px 16px;border-bottom:1px solid var(--sh-border)}
+            .um-av{width:44px;height:44px;border-radius:50%;background:#dce1ee;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+            .um-av svg{width:26px;height:26px;fill:#7b85a4}
+            .um-name{font-weight:700;color:var(--sh-ink-strong);font-size:14.5px}
+            .um-mail{font-size:12px;color:var(--sh-muted)}
+            .um-role{display:inline-block;margin-top:3px;font-size:10px;font-weight:700;color:var(--sh-accent);background:#e7effe;padding:2px 8px;border-radius:10px}
+            .um-list{padding:6px}
+            .um-item{display:flex;align-items:center;gap:11px;width:100%;background:transparent;border:0;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;font-size:13.5px;color:var(--sh-ink);text-decoration:none;font-family:inherit}
+            .um-item:hover{background:#f2f5fb}
+            .um-item i{width:18px;text-align:center;color:var(--sh-muted)}
+            .um-item.danger{color:#d0453f}
+            .um-item.danger:hover{background:#fdeceb}
+            .um-sep{height:1px;background:var(--sh-border);margin:6px 8px}
+            .um-cap{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--sh-muted);font-weight:700;padding:10px 12px 3px}
+            .um-count{margin-left:auto;background:#e5484d;color:#fff;font-size:10.5px;font-weight:700;border-radius:8px;min-width:18px;height:18px;padding:0 6px;display:flex;align-items:center;justify-content:center}
+            .um-flag{border:1px solid var(--sh-border);background:#fff;border-radius:7px;padding:2px 7px;font-size:14px;cursor:pointer}
+            .um-flag.active{border-color:var(--sh-accent);box-shadow:0 0 0 2px rgba(47,111,237,.15)}
+            .um-theme-grid{display:flex;flex-wrap:wrap;gap:8px;padding:4px 12px 10px}
+            .um-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;flex-shrink:0}
+            .um-swatch.active{border-color:var(--sh-ink-strong);box-shadow:0 0 0 2px var(--sh-surface)}
+            .um-theme-matrix{padding:4px 12px 6px}
+            .utm-hdr{display:grid;gap:6px;margin-bottom:4px;grid-template-columns:44px repeat(3,22px)}
+            .utm-hdr span{font-size:9px;font-weight:700;text-align:center;color:var(--sh-muted)}
+            .utm-row{display:grid;gap:6px;align-items:center;margin-bottom:6px;grid-template-columns:44px repeat(3,22px)}
+            .utm-lbl{font-size:10.5px;font-weight:600;color:var(--sh-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .utm-empty{width:22px;height:22px}
             .rs-topactions{display:flex;align-items:center;gap:10px;min-width:0}
             @media(max-width:1100px){.rs-app{grid-template-columns:65px 1fr}.rs-aside{padding:18px 8px}.rs-brand span,.rs-navgroup,.rs-nav .rs-text,.rs-side-note{display:none}.rs-brand{padding:3px 7px 20px;justify-content:center}.rs-nav a{justify-content:center;padding:10px}}
             @media(max-width:620px){.rs-app{display:block}.rs-aside{height:56px;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:5;padding:5px;overflow:hidden}.rs-brand,.rs-side-note{display:none}.rs-nav{display:flex;justify-content:space-around;overflow-x:auto}.rs-nav a{width:auto;margin:0;padding:10px}.rs-top{padding:0 10px;height:52px}.rs-crumb{display:none}.rs-switch a span{display:none}.rs-switch a{padding:8px 10px}}
@@ -163,24 +202,26 @@
                             <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>Laporan Manajemen</span></a>
                         </div>
                         {{--
-                            Icon user harus tetap ada (keluhan user 2026-09-14:
-                            "harusnya tetap ada icon user walaupun di management
-                            report"). Tombol Logout terpisah sempat dihapus,
-                            lalu user minta pola yang sama dgn Menu Operasional:
-                            "logout lewat user menu di bawah, sendiri ada
-                            submenu logout" -- jadi avatar ini SEKARANG dropdown
-                            (bukan lagi <span> statis), submenu-nya cuma
-                            Logout (shell ini tidak punya profil/setting spt
-                            main-menu, jadi tidak perlu item lain).
+                            Dropdown user HARUS sama dgn Menu Operasional
+                            (instruksi user 2026-09-14, "user menu di
+                            management report dan di operational menu harus
+                            sama" + screenshot dropdown lengkap "drop down
+                            ini ya harus muncul di management report") --
+                            pakai komponen reusable app/Livewire/Shell/UserMenu.php
+                            yg SAMA dgn main-menu.blade.php, bukan versi
+                            sederhana bikinan sendiri. :standalone="true"
+                            krn shell ini tidak punya modal/drawer/tab MDI
+                            sendiri (lihat komentar di komponennya) -- item
+                            spt Chat/Notifikasi/Edit profil dialihkan ke
+                            /menu?open=xxx dulu (app-shell.js::init() baca
+                            query itu & auto-buka panelnya).
+
+                            x-data lokal ddOpen/configOpen di sini
+                            (main-menu.blade.php dapat ini dari x-data root
+                            .shell yg sudah ada, shell ini tidak).
                         --}}
-                        <div class="rs-userpop" x-data="{ open: false }" @click.outside="open = false">
-                            <button type="button" class="rs-topavatar" @click="open = !open" title="{{ auth()->user()->name ?? '' }}">
-                                {{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}
-                            </button>
-                            <div class="rs-userpop-menu" x-show="open" x-cloak x-transition>
-                                <div class="rs-userpop-name">{{ auth()->user()->name ?? '' }}</div>
-                                <a href="{{ route('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)</a>
-                            </div>
+                        <div x-data="{ ddOpen: false, configOpen: false }" @click.outside="ddOpen = false">
+                            <livewire:shell.user-menu :standalone="true" />
                         </div>
                     </div>
                 </header>

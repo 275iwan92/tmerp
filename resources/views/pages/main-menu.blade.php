@@ -871,125 +871,19 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 quickToggleTheme/notopbar) TIDAK dihapus dari komponen --
                 cuma tombol pemicunya yang dilepas dari topbar.
             --}}
-            <div class="pop">
-                <button type="button" class="avatar-btn" @click.stop="ddOpen = !ddOpen" title="{{ Auth::user()->name }}">
-                    <span class="avatar">
-                        <svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg>
-                        <span class="av-dot" :class="{ hide: {{ $this->unreadChatCount + $this->unreadNotifCount }} === 0 }"></span>
-                    </span>
-                    <i class="fa-solid fa-chevron-down" style="font-size:10px;color:#9aa3c2"></i>
-                </button>
-                <div class="pop-menu" :class="{ open: ddOpen }" @click.stop>
-                    <div class="um-head">
-                        <span class="um-av"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
-                        <div>
-                            <div class="um-name">{{ Auth::user()->name ?: Translator::t('shell_user_fallback_name', 'Pengguna') }}</div>
-                            <div class="um-mail">{{ Auth::user()->email }}</div>
-                            <span class="um-role">{{ $this->roleLabel() }}</span>
-                        </div>
-                    </div>
-                    <div class="um-list">
-                        {{-- Item flat (Pesan & Info + Akun) data-driven dari sys_user_menu
-                        (App\Models\Sys\SysUserMenu, BACKLOG.md §10 "QUEUE item #9") -- label/
-                        icon/urutan/tampil-tidaknya bisa diubah lewat DB tanpa deploy. Widget
-                        Configuration (Theme/Bahasa/User Configuration) di bawah TETAP hardcode,
-                        terlalu bespoke utk baris generik. --}}
-                        @foreach ($this->userMenuItems as $section => $items)
-                            <div class="um-cap">{{ match ($section) { 'Pesan & Info' => Translator::t('shell_section_pesan_info', 'Pesan & info'), 'Akun' => Translator::t('shell_section_akun', 'Akun'), default => $section } }}</div>
-                            @foreach ($items as $item)
-                                @switch($item->code)
-                                    @case('UM_HELP')
-                                        {{-- Bespoke: target="_blank" + ctx dinamis dari tab aktif (2026-08-30). --}}
-                                        <button type="button" class="um-item" title="{{ Translator::t('shell_help_f1_hint', 'Jalan pintas: tekan F1 di mana saja') }}"
-                                            @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
-                                            <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
-                                        </button>
-                                        @break
-                                    @case('UM_MYSECURITY')
-                                        <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="{{ $item->icon }}"></i> {{ $item->label }}</a>
-                                        @break
-                                    @default
-                                        <button type="button" class="um-item"
-                                            @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">
-                                            <i class="{{ $item->icon }}"></i> {{ $item->label }}
-                                            @if ($item->badge_source === 'chat' && $this->unreadChatCount > 0)<span class="um-count">{{ $this->unreadChatCount }}</span>@endif
-                                            @if ($item->badge_source === 'notif' && $this->unreadNotifCount > 0)<span class="um-count">{{ $this->unreadNotifCount }}</span>@endif
-                                        </button>
-                                @endswitch
-                            @endforeach
-                            <div class="um-sep"></div>
-                        @endforeach
-                        {{-- Grup "Configuration" (instruksi user 2026-09-03, "agar menghemat menu") --
-                        gabungan Tema+Bahasa+Portal Karyawan+Aktivitas saya yang tadinya 4 item/blok
-                        terpisah (Tema-nya sendiri makan banyak ruang vertikal, matrix 4x3) jadi 1
-                        grup collapsible (default tertutup, klik utk buka) -- pola sama spt caption
-                        grup sidebar yang bisa diciutkan. NAMA "Configuration" sengaja dibebaskan
-                        dari menu sidebar kiri (yang lama dipindah jadi "Settings", lihat migration
-                        terkait) supaya tidak dobel nama di 2 tempat beda konteks. --}}
-                        <button type="button" class="um-item" @click.stop="configOpen = !configOpen">
-                            <i class="fa-solid fa-sliders"></i> {{ Translator::t('shell_section_configuration', 'Configuration') }}
-                            <i class="fa-solid fa-chevron-down" style="margin-left:auto;font-size:10px;transition:transform .15s" :style="configOpen ? 'transform:rotate(180deg)' : ''"></i>
-                        </button>
-                        <div x-show="configOpen" @click.stop>
-                            {{-- 2026-09-07: dulu 2 button hardcode di sini, sekarang
-                            data-driven dari sys_user_menu (section "Configuration") --
-                            lihat configMenuItems() & migration
-                            add_activity_and_portal_config_user_menu. --}}
-                            @foreach ($this->configMenuItems as $item)
-                                <button type="button" class="um-item" style="padding-left:28px"
-                                    @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">
-                                    <i class="{{ $item->icon }}"></i> {{ $item->label }}
-                                </button>
-                            @endforeach
-                            <div class="um-item" style="cursor:default;padding-left:28px"><i class="fa-solid fa-globe"></i> {{ Translator::t('shell_language', 'Bahasa') }}
-                                <span class="um-langs" style="margin-left:auto;display:flex;gap:6px">
-                                    @foreach ($this->availableLanguages as $lang)
-                                        <button type="button" class="um-flag {{ $lang['code'] === $this->currentLangCode() ? 'active' : '' }}"
-                                            title="{{ $lang['name'] }}"
-                                            @click.stop="$wire.setLang('{{ $lang['code'] }}').then(() => location.reload())">{{ $lang['flag'] ?? '🌐' }}</button>
-                                    @endforeach
-                                </span>
-                            </div>
-                            <div class="um-cap" style="padding-left:28px">{{ Translator::t('shell_theme', 'Tema') }}</div>
-                            <div class="um-theme-matrix" @click.stop>
-                                <div class="utm-hdr">
-                                    <span></span>
-                                    @foreach ($this->themeMatrix['hues'] as $h)<span>{{ $h }}</span>@endforeach
-                                </div>
-                                @foreach ($this->themeMatrix['matrix'] as $row)
-                                    <div class="utm-row">
-                                        <span class="utm-lbl">{{ $row['label'] }}</span>
-                                        @foreach ($row['cells'] as $cell)
-                                            @if ($cell)
-                                                <button type="button" class="um-swatch {{ $cell['code'] === $this->currentThemeCode() ? 'active' : '' }}"
-                                                    title="{{ $cell['name'] }}" style="background:{{ $cell['primary'] }}"
-                                                    @click="$wire.setTheme('{{ $cell['code'] }}').then(() => location.reload())"></button>
-                                            @else
-                                                <span class="utm-empty"></span>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                @endforeach
-                            </div>
-                            @if (! empty($this->themeMatrix['classic']))
-                                <div class="um-cap" style="padding-left:28px">{{ Translator::t('shell_classic', 'Klasik') }}</div>
-                                <div class="um-theme-grid" @click.stop>
-                                    @foreach ($this->themeMatrix['classic'] as $t)
-                                        <button type="button" class="um-swatch {{ $t['code'] === $this->currentThemeCode() ? 'active' : '' }}"
-                                            title="{{ $t['name'] }} ({{ $t['mode'] === 'dark' ? Translator::t('shell_theme_mode_dark', 'gelap') : Translator::t('shell_theme_mode_light', 'terang') }})"
-                                            style="background:{{ $t['primary'] }}"
-                                            @click="$wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
-                                            @if ($t['mode'] === 'dark')<i class="fa-solid fa-moon"></i>@endif
-                                        </button>
-                                    @endforeach
-                                </div>
-                            @endif
-                        </div>
-                        <div class="um-sep"></div>
-                        <button type="button" class="um-item danger" wire:click="logout"><i class="fa-solid fa-right-from-bracket"></i> {{ Translator::t('shell_logout', 'Keluar aplikasi') }}</button>
-                    </div>
-                </div>
-            </div>
+            {{--
+                Dropdown avatar diekstrak ke komponen reusable
+                app/Livewire/Shell/UserMenu.php (instruksi user 2026-09-14:
+                "user menu di management report dan di operational menu
+                harus sama") -- SATU implementasi dipakai di sini DAN di
+                layouts/report.blade.php, bukan 2 salinan yang bisa
+                menyimpang. Alpine ddOpen/configOpen/openTabs/activeTabCode/
+                openTab() yang dipakai di dalam komponen tetap datang dari
+                x-data root .shell ini (TIDAK diubah) -- Alpine scope
+                menembus batas komponen Livewire lewat DOM biasa, jadi
+                perilaku persis sama seperti sebelum diekstrak.
+            --}}
+            <livewire:shell.user-menu />
         </header>
         <div id="topbar-restore"><button type="button" @click="notopbar = false">▾ {{ Translator::t('shell_show_topbar', 'Tampilkan top bar') }}</button></div>
 
