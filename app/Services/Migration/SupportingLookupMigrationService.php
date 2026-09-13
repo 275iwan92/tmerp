@@ -52,10 +52,14 @@ class SupportingLookupMigrationService
 
         DB::connection('tm2mst')->table('ref_legacy_lookup')->delete();
 
+        // Selain mst_*, ikut disapu lookup bertuan modul lain yang bentuknya
+        // sama (kode + keterangan) -- mis. pur_doc_type. Ditemukan lewat audit
+        // tabel pur_*; tanpa ini lookup modul Purchasing ikut tertinggal.
         $tables = collect(DB::connection('tm2old')->select(
             "SELECT TABLE_NAME AS t FROM information_schema.tables
              WHERE table_schema='tm2old' AND table_type='BASE TABLE'
-               AND TABLE_NAME LIKE 'mst\\_%' ORDER BY TABLE_NAME"
+               AND (TABLE_NAME LIKE 'mst\\_%' OR TABLE_NAME IN ('pur_doc_type'))
+             ORDER BY TABLE_NAME"
         ))->map(fn ($r) => $r->t);
 
         $now = now();
@@ -84,14 +88,22 @@ class SupportingLookupMigrationService
                     continue;
                 }
 
-                $columns = collect(DB::connection('tm2old')->select("SHOW COLUMNS FROM `$table`"))
-                    ->map(fn ($c) => $c->Field)->values();
+                $columnInfo = collect(DB::connection('tm2old')->select("SHOW COLUMNS FROM `$table`"));
+                $columns = $columnInfo->map(fn ($c) => $c->Field)->values();
                 if ($columns->isEmpty()) {
                     continue;
                 }
 
-                $codeCol = $columns[0];
-                $descCol = $columns[1] ?? null;
+                // Kolom pertama biasanya kode alaminya, TAPI sebagian tabel
+                // memakai surrogate key auto-increment (mis. pur_doc_type.id).
+                // Memakai angka itu sbg `code` bikin lookup tak berguna ("1"
+                // alih-alih "PAPER"), jadi surrogate dilewati.
+                $first = $columnInfo->first();
+                $firstIsSurrogate = str_contains(mb_strtolower((string) $first->Extra), 'auto_increment')
+                    || mb_strtolower($first->Field) === 'id';
+
+                $codeCol = $firstIsSurrogate ? ($columns[1] ?? $columns[0]) : $columns[0];
+                $descCol = $columns[array_search($codeCol, $columns->all(), true) + 1] ?? null;
                 $seenCodes = [];
 
                 foreach (DB::connection('tm2old')->table($table)->get() as $row) {

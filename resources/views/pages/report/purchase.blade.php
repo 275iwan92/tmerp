@@ -61,12 +61,32 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
         return app(ManagementReportService::class)->topSuppliers($this->year, 20);
     }
 
+    #[Computed]
+    public function payable(): array
+    {
+        return app(ManagementReportService::class)->accountsPayable();
+    }
+
+    #[Computed]
+    public function payableSuppliers(): array
+    {
+        return app(ManagementReportService::class)->topPayableSuppliers(12);
+    }
+
+    /** Invoice yang supplier-nya tak terpetakan -- angka per-supplier jadi tak utuh. */
+    #[Computed]
+    public function unmappedInvoices(): int
+    {
+        return DB::connection('tm2pur')->table('po_invoice_legacy')->whereNull('supplier_id')->count();
+    }
+
     /** Konfigurasi per tab: tabel, kolom tanggal, kolom nomor, label. */
     private function tabSource(): array
     {
         return match ($this->tab) {
             'pr' => ['pr_requisition_legacy', 'pr_date', 'legacy_pr_no', false],
             'receive' => ['po_receive_legacy', 'prcv_date', 'legacy_prcv_no', false],
+            'invoice' => ['po_invoice_legacy', 'pinv_date', 'legacy_pinv_no', true],
             'payment' => ['po_payment_legacy', 'ppym_date', 'legacy_ppym_no', true],
             default => ['po_order_legacy', 'po_date', 'legacy_po_no', true],
         };
@@ -104,6 +124,7 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
         'pr' => 'Permintaan (PR)',
         'po' => 'Purchase Order',
         'receive' => 'Penerimaan Barang',
+        'invoice' => 'Invoice Supplier',
         'payment' => 'Pembayaran',
     ];
 @endphp
@@ -164,6 +185,65 @@ new #[Title('Rincian Pembelian — TELASIH MAKMUR ERP')] class extends Component
                 'legend' => ['show' => false],
                 'colors' => ['#7c3aed'],
             ]" />
+        </div>
+    </div>
+
+    {{-- ============ Utang Usaha (AP) ============ --}}
+    <div class="rounded-xl border bg-white shadow-sm p-4 mb-3.5">
+        <div class="flex items-baseline justify-between mb-2">
+            <h3 class="font-bold text-[13px]">Utang Usaha (AP) — seluruh periode</h3>
+            <span class="text-[11px] opacity-60">dari invoice supplier dikurangi realisasi pembayaran</span>
+        </div>
+
+        <x-grid.stat-row :count="3">
+            <x-grid.stat-box tone="total" label="Total Invoice Supplier"
+                :value="$miliar($this->payable['invoice_value'])"
+                :subtitle="number_format($this->payable['invoice_docs']) . ' invoice'" />
+            <x-grid.stat-box tone="active" label="Sudah Dibayar"
+                :value="$miliar($this->payable['paid_value'])" subtitle="realisasi pembayaran tercatat" />
+            <x-grid.stat-box tone="critical" label="Sisa Utang"
+                :value="$miliar($this->payable['outstanding'])" subtitle="invoice dikurangi pembayaran" />
+        </x-grid.stat-row>
+
+        <table class="w-full text-[11.5px]">
+            <thead><tr class="text-left border-b">
+                <th class="py-1.5 px-2">Supplier</th>
+                <th class="py-1.5 px-2 text-right">Invoice</th>
+                <th class="py-1.5 px-2 text-right">Ditagihkan</th>
+                <th class="py-1.5 px-2 text-right">Dibayar</th>
+                <th class="py-1.5 px-2 text-right">Sisa Utang</th>
+            </tr></thead>
+            <tbody>
+                @foreach ($this->payableSuppliers as $s)
+                    <tr class="border-b border-black/5">
+                        <td class="py-1 px-2">{{ $s['name'] }}</td>
+                        <td class="py-1 px-2 text-right tabular-nums">{{ number_format($s['docs']) }}</td>
+                        <td class="py-1 px-2 text-right tabular-nums">{{ $rp($s['invoiced']) }}</td>
+                        <td class="py-1 px-2 text-right tabular-nums opacity-70">{{ $rp($s['paid']) }}</td>
+                        <td class="py-1 px-2 text-right tabular-nums font-semibold {{ $s['outstanding'] > 0 ? 'text-[#c0392b]' : '' }}">
+                            {{ $rp($s['outstanding']) }}
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+
+        <div class="text-[10.5px] opacity-70 mt-2 pt-2 border-t space-y-1">
+            @if ($this->unmappedInvoices > 0)
+                <p class="text-[#a3453f]">
+                    <strong>{{ number_format($this->unmappedInvoices) }}</strong> invoice tidak dapat dikaitkan ke
+                    supplier manapun (sistem lama menyimpan nama perusahaan di kolom kode, mis. MADJU/TANINDO/KEISHA),
+                    sehingga tabel per-supplier di atas belum mencakup seluruh nilai.
+                </p>
+            @endif
+            <p>
+                Nilai sisa utang negatif berarti pembayaran tercatat melebihi tagihan — kemungkinan invoice-nya
+                tidak ikut terekam di sistem lama. Ditampilkan apa adanya, tidak dipaksa menjadi nol.
+            </p>
+            <p>
+                Padanan di sisi penjualan (piutang/AR) tidak dapat dihitung: tabel penerimaan pembayaran
+                customer di sistem lama (<code>sdi_cpym</code>) kosong sama sekali.
+            </p>
         </div>
     </div>
 

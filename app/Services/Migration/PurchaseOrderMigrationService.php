@@ -3,7 +3,6 @@
 namespace App\Services\Migration;
 
 use App\Models\Legacy\PurPo;
-use App\Models\Legacy\PurPoDetail;
 use App\Models\Legacy\PurPoV2;
 use App\Models\Master\MatRaw;
 use App\Models\Master\SupSupplier;
@@ -125,41 +124,64 @@ class PurchaseOrderMigrationService
 
         $poIdMap = DB::connection('tm2pur')->table('po_order_legacy')->pluck('id_po_legacy', 'legacy_po_no')->all();
 
-        $detailBuffer = [];
-        PurPoDetail::query()->orderBy('po_detail_id')->chunk(2000, function ($chunk) use (&$detailBuffer, $poIdMap, $materialMap, $now, &$report) {
-            foreach ($chunk as $d) {
-                $poNo = trim((string) $d->po_no);
-                $poLegacyId = $poIdMap[$poNo] ?? null;
-                if ($poLegacyId === null) {
-                    continue; // po_no di detail tidak ketemu headernya (PO cuma ada di v1, belum sempat "diupgrade" ke v2) -- dilewati.
-                }
-
-                $itemCode = trim((string) $d->item_code);
-                $materialId = $materialMap[$itemCode] ?? null;
-                if ($materialId === null) {
-                    $report['details']['no_material_match']++;
-                }
-
-                $detailBuffer[] = [
-                    'po_legacy_id' => $poLegacyId,
-                    'legacy_po_detail_id' => $this->nullableId($d->po_detail_id),
-                    'legacy_pr_detail_id' => $this->nullableId($d->pr_detail_id),
-                    'legacy_co_detail_id' => $this->nullableId($d->co_detail_id),
-                    'material_id' => $materialId,
-                    'legacy_item_code' => $itemCode !== '' ? $itemCode : null,
-                    'qty' => $d->qty,
-                    'uom_code' => $this->blank($d->uom_code),
-                    'unit_price' => $d->unit_price,
-                    'qty_unitprice' => $d->qty_unitprice,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+        // doc_id (PK numerik pur_po_v2) -> id arsip, lewat nomor dokumennya.
+        // Dipakai menggantikan pencocokan teks po_no pada baris:
+        // pur_po_detail_v2 menyambung ke header lewat doc_id 100% tepat,
+        // sedangkan join teks po_no terbukti menghasilkan 9 baris palsu.
+        $docIdToArchiveId = [];
+        foreach (PurPoV2::query()->select('doc_id', 'doc_no')->cursor() as $h) {
+            $poNo = trim((string) $h->doc_no);
+            if ($poNo !== '' && isset($poIdMap[$poNo])) {
+                $docIdToArchiveId[(int) $h->doc_id] = $poIdMap[$poNo];
             }
+        }
 
-            DB::connection('tm2pur')->table('po_order_legacy_detail')->insert($detailBuffer);
-            $report['details']['inserted'] += count($detailBuffer);
-            $detailBuffer = [];
-        });
+        $detailBuffer = [];
+        DB::connection('tm2old')->table('pur_po_detail_v2')->orderBy('doc_detail_id')
+            ->chunk(2000, function ($chunk) use (&$detailBuffer, $docIdToArchiveId, $materialMap, $now, &$report) {
+                foreach ($chunk as $d) {
+                    $poLegacyId = $docIdToArchiveId[(int) $d->doc_id] ?? null;
+                    if ($poLegacyId === null) {
+                        continue;
+                    }
+
+                    $itemCode = trim((string) $d->item_code);
+                    $materialId = $materialMap[$itemCode] ?? null;
+                    if ($materialId === null) {
+                        $report['details']['no_material_match']++;
+                    }
+
+                    $detailBuffer[] = [
+                        'po_legacy_id' => $poLegacyId,
+                        'legacy_po_detail_id' => $this->nullableId($d->doc_detail_id),
+                        // v2 menamai kunci PR-nya `pr_id` (bukan pr_detail_id),
+                        // tapi isinya menunjuk baris pur_pr_detail yang sama.
+                        'legacy_pr_detail_id' => $this->nullableId($d->pr_id),
+                        'legacy_co_detail_id' => $this->nullableId($d->co_detail_id),
+                        'material_id' => $materialId,
+                        'legacy_item_code' => $itemCode !== '' ? $itemCode : null,
+                        'item_description' => $this->blank($d->item_description),
+                        'qty' => $d->qty_purchase,
+                        'qty_request' => $d->qty_request,
+                        'uom_code' => $this->blank($d->uom_purchase),
+                        'uom_request' => $this->blank($d->uom_request),
+                        'unit_price' => $d->unit_price,
+                        'disc_percent' => $d->disc_percent,
+                        'disc_amount' => $d->disc_amount,
+                        'qty_unitprice' => $d->qty_unitprice,
+                        'department' => $this->blank($d->department),
+                        'machine_code' => $this->blank($d->machine_code),
+                        'required_date' => $d->required_date,
+                        'line_status' => $this->blank($d->stat_detail_status),
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                DB::connection('tm2pur')->table('po_order_legacy_detail')->insert($detailBuffer);
+                $report['details']['inserted'] += count($detailBuffer);
+                $detailBuffer = [];
+            });
 
         arsort($report['supplier_unmatched']);
 

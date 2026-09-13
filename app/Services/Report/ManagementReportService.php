@@ -220,6 +220,70 @@ class ManagementReportService
         ], $rows);
     }
 
+    /**
+     * Utang usaha (AP) -- satu-satunya saldo hutang/piutang yang benar-benar
+     * bisa dihitung dari data lama.
+     *
+     * Dihitung grand_total invoice DIKURANGI realisasi pembayaran, BUKAN dari
+     * pur_pinv.total_payment (kolom itu selalu 0 di sumber). Sambungan
+     * pembayaran->invoice terisi 100%, jadi angka ini bisa dipertanggungjawabkan.
+     *
+     * Pasangannya di sisi penjualan (AR) TIDAK tersedia: sdi_cpym dan
+     * sdi_cpym_detail dua-duanya kosong -- sistem lama tidak pernah mencatat
+     * penerimaan pembayaran customer.
+     */
+    public function accountsPayable(?int $year = null): array
+    {
+        $invoice = DB::connection('tm2pur')->table('po_invoice_legacy')
+            ->when($year, fn ($q) => $q->whereYear('pinv_date', $year))
+            ->selectRaw('COUNT(*) docs, COALESCE(SUM(grand_total),0) v')->first();
+
+        $paid = DB::connection('tm2pur')->table('po_payment_legacy_detail as d')
+            ->join('po_invoice_legacy as i', 'i.id_pinv_legacy', '=', 'd.pinv_legacy_id')
+            ->when($year, fn ($q) => $q->whereYear('i.pinv_date', $year))
+            ->selectRaw('COALESCE(SUM(d.paid_amount),0) v')->first();
+
+        $invoiceValue = (float) $invoice->v;
+        $paidValue = (float) $paid->v;
+
+        return [
+            'invoice_docs' => (int) $invoice->docs,
+            'invoice_value' => $invoiceValue,
+            'paid_value' => $paidValue,
+            'outstanding' => $invoiceValue - $paidValue,
+        ];
+    }
+
+    /** Sisa utang terbesar per supplier -- prioritas pembayaran. */
+    public function topPayableSuppliers(int $limit = 10): array
+    {
+        $rows = DB::connection('tm2pur')->select('
+            SELECT i.supplier_id,
+                   COUNT(DISTINCT i.id_pinv_legacy) docs,
+                   COALESCE(SUM(i.grand_total),0) invoiced,
+                   COALESCE((SELECT SUM(d.paid_amount) FROM po_payment_legacy_detail d
+                             JOIN po_invoice_legacy i2 ON i2.id_pinv_legacy = d.pinv_legacy_id
+                             WHERE i2.supplier_id = i.supplier_id),0) paid
+            FROM po_invoice_legacy i
+            WHERE i.supplier_id IS NOT NULL
+            GROUP BY i.supplier_id
+            ORDER BY invoiced DESC LIMIT ?', [$limit]);
+
+        $ids = array_filter(array_map(fn ($r) => $r->supplier_id, $rows));
+        $names = $ids
+            ? DB::connection('tm2mst')->table('sup_supplier')->whereIn('id_supplier', $ids)->pluck('supplier_name', 'id_supplier')->all()
+            : [];
+
+        return array_map(fn ($r) => [
+            'id' => (int) $r->supplier_id,
+            'name' => $names[$r->supplier_id] ?? '(tidak dikenal)',
+            'docs' => (int) $r->docs,
+            'invoiced' => (float) $r->invoiced,
+            'paid' => (float) $r->paid,
+            'outstanding' => (float) $r->invoiced - (float) $r->paid,
+        ], $rows);
+    }
+
     /** Nilai invoice terbit per tahun -- dasar AR (bukan saldo terutang). */
     public function invoiceSummary(int $year): array
     {
