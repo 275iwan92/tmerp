@@ -40,9 +40,15 @@ new #[Title('Struktur Organisasi — TELASIH MAKMUR ERP')] class extends Compone
     {
         $positions = OrgPosition::with(['department'])->where('activate', true)->orderBy('position_name')->get();
 
+        // Grup PENUH (bukan ->first()) -- satu jabatan bisa ditempati beberapa
+        // orang sekaligus (mis. mockup_org-chart menulis 1 kotak "Tia/Suro/
+        // Fardan" utk 1 posisi PPIC Planner). Ditemukan 2026-09-13 saat
+        // occupant simulasi dari screenshot struktur nyata diisi -- versi
+        // lama cuma menampilkan orang pertama, menyembunyikan sisanya.
         $occupants = EmpEmployee::whereIn('position_id', $positions->pluck('position_id'))
             ->where('activate', true)->where('work_status', 'WORKING')
-            ->get()->groupBy('position_id')->map(fn ($g) => $g->first());
+            ->orderBy('full_name')
+            ->get()->groupBy('position_id');
 
         $childrenByParent = [];
         foreach ($positions as $p) {
@@ -57,7 +63,7 @@ new #[Title('Struktur Organisasi — TELASIH MAKMUR ERP')] class extends Compone
 
             return collect($childrenByParent[$parentKey])->map(fn ($pos) => (object) [
                 'position' => $pos,
-                'occupant' => $occupants->get($pos->position_id),
+                'occupants' => $occupants->get($pos->position_id, collect()),
                 'children' => $build($pos->position_id, $depth + 1),
             ])->values();
         };
