@@ -2,6 +2,7 @@
 
 use App\Services\Report\ManagementReportService;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -12,7 +13,7 @@ use Livewire\Component;
 // "boleh bangun sendiri pakai SVG") -- BUKAN ApexCharts lagi: markup murni
 // hasil PHP jadi Livewire morph biasa cukup, tak perlu wire:ignore/wire:key
 // trik yang dulu dipakai utk menahan ApexCharts.
-new #[Title('Dashboard Eksekutif — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Dashboard Eksekutif — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;
@@ -156,14 +157,6 @@ new #[Title('Dashboard Eksekutif — TELASIH MAKMUR ERP')] class extends Compone
                 <input type="checkbox" wire:model.live="confirmedOnly" class="rounded">
                 CO terkonfirmasi saja
             </label>
-            <a href="{{ route('report.sales', ['th' => $year]) }}"
-               class="px-3 py-1.5 rounded-lg text-white text-[12px] font-semibold" style="background:var(--sh-accent)">
-                Rincian Penjualan →
-            </a>
-            <a href="{{ route('report.purchase', ['th' => $year]) }}"
-               class="px-3 py-1.5 rounded-lg text-white text-[12px] font-semibold" style="background:var(--sh-violet)">
-                Rincian Pembelian →
-            </a>
         </div>
     </div>
 

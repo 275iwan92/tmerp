@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -9,7 +10,7 @@ use Livewire\Component;
 // Customer 360 -- seluruh riwayat satu customer dalam satu layar, memanfaatkan
 // rantai dokumen level baris hasil migrasi (co_detail_id). Di sinilah nilai
 // migrasi terasa: 1 baris order bisa ditelusuri ke Surat Jalan & Invoice-nya.
-new #[Title('Customer 360 — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Customer 360 — TELASIH MAKMUR ERP')] class extends Component
 {
     public int $customer;
 

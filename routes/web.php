@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/menu');
@@ -73,6 +74,21 @@ Route::middleware(['auth', 'locale'])->group(function () {
     // Sama alasannya dgn password.change — halaman setup 4 pertanyaan keamanan
     // sendiri juga di luar force.password (redirect loop kalau ikut digate).
     Route::livewire('/security/setup', 'pages::auth.security-setup')->name('security.setup');
+
+    // Route logout GLOBAL, di luar shell lama -- sebelumnya logout HANYA
+    // method Livewire di dalam main-menu.blade.php (wire:click="logout"),
+    // jadi TIDAK bisa dipanggil dari halaman lain (mis. Laporan Manajemen).
+    // Ditemukan 2026-09-13 saat user tanya "gimana cara logout kalau report
+    // managemen begitu" -- layout laporan yang baru butuh link logout sendiri.
+    // Nama route 'logout' sebelumnya belum dipakai di level global (yang ada
+    // cuma 'careers.logout', beda namespace, portal kandidat eksternal).
+    Route::get('/logout', function () {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('login');
+    })->name('logout');
 
     Route::middleware('force.password')->group(function () {
         Route::livewire('/menu', 'pages::main-menu')->name('menu');
@@ -293,6 +309,16 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/produksi', 'pages::report.production')->name('report.production');
             Route::livewire('/sdm', 'pages::report.hr')->name('report.hr');
             Route::livewire('/gudang', 'pages::report.warehouse')->name('report.warehouse');
+            Route::livewire('/estimasi-costing', 'pages::report.costing')->name('report.costing');
+
+            // 4 menu di mockup (QMS/CMMS/EHS/Aset & Modal) TANPA modul sumber
+            // data nyata di ERP ini -- 1 komponen coming-soon.blade.php dipakai
+            // ulang, isi section/reason di-map dari {slug} URI (Route::livewire
+            // macro Livewire TIDAK mendukung passing data tambahan lewat array
+            // ke-3, jadi lewat parameter URI, bukan lewat closure param).
+            Route::livewire('/kontrol/{slug}', 'pages::report.coming-soon')
+                ->name('report.control-tower')
+                ->where('slug', 'qms|cmms|ehs|assets');
         });
     });
 });

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -9,7 +10,7 @@ use Livewire\Component;
 // Laporan Produksi & Manufaktur -- salah satu "macam laporan" tambahan
 // (keputusan user 2026-09-13, lihat catatan lengkap di report/accounting.blade.php).
 // Data nyata dari tm2prd (prd_wo/prd_wo_operation), TIDAK ada angka mockup.
-new #[Title('Laporan Produksi — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Laporan Produksi — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Url(as: 'th')]
     public int $year = 0;

@@ -1,0 +1,54 @@
+<?php
+
+namespace Tests\Feature\Report;
+
+use App\Models\Sys\SecUser;
+use Livewire\Livewire;
+use Tests\TestCase;
+
+// Verifikasi shell layout baru (layouts::report -- sidebar navy meniru
+// persis printflow_erp_complete_dashboard_mockup.html) tidak error render
+// utk 8 layar existing + costing baru + 4 coming-soon (keputusan user
+// 2026-09-13 "TIRU PERSIS mockup").
+class ManagementReportShellTest extends TestCase
+{
+    public function test_all_management_report_pages_render_with_new_sidebar_layout(): void
+    {
+        $direksi = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($direksi);
+
+        Livewire::test('pages::report.executive')->assertOk();
+        Livewire::test('pages::report.sales')->assertOk();
+        Livewire::test('pages::report.purchase')->assertOk();
+        Livewire::test('pages::report.accounting')->assertOk();
+        Livewire::test('pages::report.production')->assertOk();
+        Livewire::test('pages::report.hr')->assertOk();
+        Livewire::test('pages::report.warehouse')->assertOk();
+        Livewire::test('pages::report.costing')->assertOk();
+    }
+
+    public function test_control_tower_pages_render_honest_coming_soon_state(): void
+    {
+        $direksi = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($direksi);
+
+        foreach (['qms', 'cmms', 'ehs', 'assets'] as $slug) {
+            Livewire::test('pages::report.coming-soon', ['slug' => $slug])
+                ->assertOk()
+                ->assertSee('belum tersedia');
+        }
+    }
+
+    public function test_report_routes_are_reachable_via_http_with_logout_and_menu_links(): void
+    {
+        $direksi = SecUser::where('login', 'johiwan')->firstOrFail();
+        $this->actingAs($direksi);
+
+        $response = $this->get(route('report.executive'));
+
+        $response->assertOk();
+        $response->assertSee(route('logout'), false);
+        $response->assertSee(route('menu'), false);
+        $response->assertSee(route('report.control-tower', 'qms'), false);
+    }
+}

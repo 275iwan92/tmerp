@@ -6,6 +6,7 @@ use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -17,7 +18,7 @@ use Livewire\Component;
 // di kolom). Ini layar Direksi-only (module:MGMT), jadi menampilkan TOTAL
 // agregat gaji perusahaan konsisten dengan aturan "HR officer cuma tahu
 // total keseluruhan, Direksi boleh lihat" (project_payroll_foundation_built).
-new #[Title('Laporan SDM & Payroll — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKMUR ERP')] class extends Component
 {
     #[Computed]
     public function headcount(): array

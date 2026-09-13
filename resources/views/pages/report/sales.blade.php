@@ -3,6 +3,7 @@
 use App\Services\Report\ManagementReportService;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 // Rincian Penjualan -- lapis kedua setelah Dashboard Eksekutif. Dari sini
 // pembaca bisa turun sampai daftar dokumen (CO / Surat Jalan / Invoice) dan
 // menembus ke Customer 360.
-new #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
+new #[Layout('layouts::report')] #[Title('Rincian Penjualan — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithPagination;
 
