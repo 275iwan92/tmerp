@@ -286,6 +286,13 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/penjualan', 'pages::report.sales')->name('report.sales');
             Route::livewire('/pembelian', 'pages::report.purchase')->name('report.purchase');
             Route::livewire('/customer/{customer}', 'pages::report.customer')->name('report.customer')->where('customer', '[0-9]+');
+            // 4 "macam laporan" tambahan (keputusan user 2026-09-13, lihat
+            // migration 2026_09_13_000004_add_report_menu_items.php) -- semua
+            // data nyata, sama pola dgn 4 di atas.
+            Route::livewire('/akuntansi', 'pages::report.accounting')->name('report.accounting');
+            Route::livewire('/produksi', 'pages::report.production')->name('report.production');
+            Route::livewire('/sdm', 'pages::report.hr')->name('report.hr');
+            Route::livewire('/gudang', 'pages::report.warehouse')->name('report.warehouse');
         });
     });
 });

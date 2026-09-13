@@ -153,6 +153,19 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),
+            // Laporan Manajemen (grup MGMT) -- MGMT_EXEC/SALES/PURCHASE sudah
+            // ada di sys_app_menu sejak dibuat tapi TIDAK PERNAH dipetakan ke
+            // sini (bug nyata, ditemukan 2026-09-13 saat user komplain "tidak
+            // ada menu di panel kiri" -- menunya tampil tapi klik ke mana pun
+            // tidak jalan/placeholder kosong). MGMT_ACCOUNTING/PRODUCTION/HR/
+            // WAREHOUSE = 4 laporan baru (migration 2026_09_13_000004).
+            'MGMT_EXEC' => route('report.executive'),
+            'MGMT_SALES' => route('report.sales'),
+            'MGMT_PURCHASE' => route('report.purchase'),
+            'MGMT_ACCOUNTING' => route('report.accounting'),
+            'MGMT_PRODUCTION' => route('report.production'),
+            'MGMT_HR' => route('report.hr'),
+            'MGMT_WAREHOUSE' => route('report.warehouse'),
             // 2026-08-22: Laporan Inventory dipecah 3 menu per kelas stok
             // (RM/FG/SFG) -- 1 route param'd, 6 menu code beda category.
             'INV_RAW_RM' => route('inv.print.master-stock', ['category' => 'RM']),
