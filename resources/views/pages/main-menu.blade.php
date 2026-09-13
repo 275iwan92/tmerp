@@ -861,18 +861,16 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 </div>
             @endif
             {{--
-                Dirapikan (keluhan user 2026-09-14, screenshot topbar penuh
-                icon: "hilangkan icon icon ini, kecuali icon hide menu dan
-                icon user"): tombol Cari/Palette, Chat, Notifikasi, dan
-                Toggle Tema DIHAPUS dari topbar -- hanya "Sembunyikan top
-                bar" (ikon diganti lebih jelas, fa-angles-up) dan avatar
-                user yang tetap ada. Fitur di baliknya (openPalette/
-                chatOpen/notifOpen/quickToggleTheme) TIDAK dihapus dari
-                komponen -- cuma tombol pemicunya yang dilepas dari sini,
-                supaya perubahan gampang dibalik kalau diperlukan lagi.
+                Dirapikan (keluhan user 2026-09-14, dua putaran): pertama
+                tombol Cari/Palette, Chat, Notifikasi, Toggle Tema dihapus,
+                "Sembunyikan top bar" sempat dipertahankan (ikon diganti
+                fa-angles-up). Putaran kedua: "hilangkan icon hide menu di
+                menu operational" -- tombol itu DIHAPUS juga, topbar kanan
+                sekarang cuma switch MGMT (kalau ada aksesnya) + avatar
+                user. Fitur di baliknya (openPalette/chatOpen/notifOpen/
+                quickToggleTheme/notopbar) TIDAK dihapus dari komponen --
+                cuma tombol pemicunya yang dilepas dari topbar.
             --}}
-            <button type="button" class="tb-btn" @click="notopbar = true" title="{{ Translator::t('shell_hide_topbar_title', 'Sembunyikan top bar') }}"><i class="fa-solid fa-angles-up"></i></button>
-
             <div class="pop">
                 <button type="button" class="avatar-btn" @click.stop="ddOpen = !ddOpen" title="{{ Auth::user()->name }}">
                     <span class="avatar">

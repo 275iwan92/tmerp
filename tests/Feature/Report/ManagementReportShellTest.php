@@ -45,7 +45,11 @@ class ManagementReportShellTest extends TestCase
         }
     }
 
-    public function test_report_routes_are_reachable_via_http_with_logout_and_menu_links(): void
+    // Tombol Logout terpisah di shell ini DIHAPUS (keluhan user 2026-09-14:
+    // "hilangkan icon logout di management report") -- keluar tetap
+    // dijangkau lewat tab "Operasional" (route('menu')) lalu avatar
+    // dropdown di sana, jadi TIDAK di-assert lagi di sini.
+    public function test_report_routes_are_reachable_via_http_with_menu_link(): void
     {
         $direksi = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($direksi);
@@ -53,7 +57,6 @@ class ManagementReportShellTest extends TestCase
         $response = $this->get(route('report.executive'));
 
         $response->assertOk();
-        $response->assertSee(route('logout'), false);
         $response->assertSee(route('menu'), false);
         $response->assertSee(route('report.control-tower', 'qms'), false);
     }

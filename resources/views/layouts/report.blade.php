@@ -77,8 +77,7 @@
             .rs-switch a{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:700;color:#5a6a86;text-decoration:none;white-space:nowrap}
             .rs-switch a:hover{color:#14213a}
             .rs-switch a.active{background:#fff;color:#2878f0;box-shadow:0 1px 3px #1c365b1f}
-            .rs-logout-btn{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:#fdeeee;color:#c8363d;flex-shrink:0}
-            .rs-logout-btn:hover{background:#fbdcdc}
+            .rs-topavatar{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#345484;color:#fff;font-size:11px;font-weight:800;flex-shrink:0}
             .rs-topactions{display:flex;align-items:center;gap:10px;min-width:0}
             @media(max-width:1100px){.rs-app{grid-template-columns:65px 1fr}.rs-aside{padding:18px 8px}.rs-brand span,.rs-navgroup,.rs-nav .rs-text,.rs-side-note{display:none}.rs-brand{padding:3px 7px 20px;justify-content:center}.rs-nav a{justify-content:center;padding:10px}}
             @media(max-width:620px){.rs-app{display:block}.rs-aside{height:56px;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:5;padding:5px;overflow:hidden}.rs-brand,.rs-side-note{display:none}.rs-nav{display:flex;justify-content:space-around;overflow-x:auto}.rs-nav a{width:auto;margin:0;padding:10px}.rs-top{padding:0 10px;height:52px}.rs-crumb{display:none}.rs-switch a span{display:none}.rs-switch a{padding:8px 10px}}
@@ -158,9 +157,21 @@
                             <a href="{{ route('menu') }}"><i class="fa-solid fa-grip"></i><span>Operasional</span></a>
                             <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>Laporan Manajemen</span></a>
                         </div>
-                        <a href="{{ route('logout') }}" class="rs-logout-btn" title="Keluar (Logout)">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </a>
+                        {{--
+                            Icon user harus tetap ada di topbar ini juga (keluhan
+                            user 2026-09-14: "kenapa berubah hanya icon logout,
+                            harusnya tetap ada icon user walaupun di management
+                            report") -- avatar inisial nama, gaya sama dgn
+                            .rs-avatar di footer sidebar.
+
+                            Tombol Logout terpisah DIHAPUS (instruksi user
+                            2026-09-14 berikutnya: "hilangkan icon logout di
+                            management report") -- keluar tetap bisa lewat tab
+                            "Operasional" di switch atas, lalu avatar dropdown
+                            di Menu Operasional (sudah ada tombol Logout di
+                            sana), jadi tidak ada jalan buntu.
+                        --}}
+                        <span class="rs-topavatar" title="{{ auth()->user()->name ?? '' }}">{{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}</span>
                     </div>
                 </header>
 
