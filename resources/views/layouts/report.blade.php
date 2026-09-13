@@ -77,7 +77,12 @@
             .rs-switch a{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:8px;font-size:11.5px;font-weight:700;color:#5a6a86;text-decoration:none;white-space:nowrap}
             .rs-switch a:hover{color:#14213a}
             .rs-switch a.active{background:#fff;color:#2878f0;box-shadow:0 1px 3px #1c365b1f}
-            .rs-topavatar{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#345484;color:#fff;font-size:11px;font-weight:800;flex-shrink:0}
+            .rs-topavatar{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#345484;color:#fff;font-size:11px;font-weight:800;flex-shrink:0;border:0;cursor:pointer}
+            .rs-userpop{position:relative}
+            .rs-userpop-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:190px;background:#fff;border:1px solid #e3e9f2;border-radius:12px;box-shadow:0 12px 28px #1c365b26;padding:6px;z-index:10}
+            .rs-userpop-name{padding:8px 10px 6px;font-size:12px;font-weight:700;color:#14213a;border-bottom:1px solid #edf1f5;margin-bottom:4px}
+            .rs-userpop-menu a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;font-size:12.5px;font-weight:600;color:#c8363d;text-decoration:none}
+            .rs-userpop-menu a:hover{background:#fdeeee}
             .rs-topactions{display:flex;align-items:center;gap:10px;min-width:0}
             @media(max-width:1100px){.rs-app{grid-template-columns:65px 1fr}.rs-aside{padding:18px 8px}.rs-brand span,.rs-navgroup,.rs-nav .rs-text,.rs-side-note{display:none}.rs-brand{padding:3px 7px 20px;justify-content:center}.rs-nav a{justify-content:center;padding:10px}}
             @media(max-width:620px){.rs-app{display:block}.rs-aside{height:56px;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:5;padding:5px;overflow:hidden}.rs-brand,.rs-side-note{display:none}.rs-nav{display:flex;justify-content:space-around;overflow-x:auto}.rs-nav a{width:auto;margin:0;padding:10px}.rs-top{padding:0 10px;height:52px}.rs-crumb{display:none}.rs-switch a span{display:none}.rs-switch a{padding:8px 10px}}
@@ -158,20 +163,25 @@
                             <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>Laporan Manajemen</span></a>
                         </div>
                         {{--
-                            Icon user harus tetap ada di topbar ini juga (keluhan
-                            user 2026-09-14: "kenapa berubah hanya icon logout,
-                            harusnya tetap ada icon user walaupun di management
-                            report") -- avatar inisial nama, gaya sama dgn
-                            .rs-avatar di footer sidebar.
-
-                            Tombol Logout terpisah DIHAPUS (instruksi user
-                            2026-09-14 berikutnya: "hilangkan icon logout di
-                            management report") -- keluar tetap bisa lewat tab
-                            "Operasional" di switch atas, lalu avatar dropdown
-                            di Menu Operasional (sudah ada tombol Logout di
-                            sana), jadi tidak ada jalan buntu.
+                            Icon user harus tetap ada (keluhan user 2026-09-14:
+                            "harusnya tetap ada icon user walaupun di management
+                            report"). Tombol Logout terpisah sempat dihapus,
+                            lalu user minta pola yang sama dgn Menu Operasional:
+                            "logout lewat user menu di bawah, sendiri ada
+                            submenu logout" -- jadi avatar ini SEKARANG dropdown
+                            (bukan lagi <span> statis), submenu-nya cuma
+                            Logout (shell ini tidak punya profil/setting spt
+                            main-menu, jadi tidak perlu item lain).
                         --}}
-                        <span class="rs-topavatar" title="{{ auth()->user()->name ?? '' }}">{{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}</span>
+                        <div class="rs-userpop" x-data="{ open: false }" @click.outside="open = false">
+                            <button type="button" class="rs-topavatar" @click="open = !open" title="{{ auth()->user()->name ?? '' }}">
+                                {{ strtoupper(substr(auth()->user()->name ?? '?', 0, 2)) }}
+                            </button>
+                            <div class="rs-userpop-menu" x-show="open" x-cloak x-transition>
+                                <div class="rs-userpop-name">{{ auth()->user()->name ?? '' }}</div>
+                                <a href="{{ route('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Keluar (Logout)</a>
+                            </div>
+                        </div>
                     </div>
                 </header>
 
