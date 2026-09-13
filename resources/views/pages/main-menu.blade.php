@@ -860,29 +860,18 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                     <a href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i> Laporan Manajemen</a>
                 </div>
             @endif
-            <button type="button" class="tb-btn" @click="openPalette()" title="{{ Translator::t('shell_search_command_title', 'Cari / perintah (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <button type="button" class="tb-btn" @click="notopbar = true" title="{{ Translator::t('shell_hide_topbar_title', 'Sembunyikan top bar') }}"><i class="fa-solid fa-chevron-up"></i></button>
-
-            <button type="button" class="tb-btn hasbadge" @click="chatOpen = true" title="{{ Translator::t('shell_chat_title', 'Chat') }}">
-                <i class="fa-solid fa-comment-dots"></i>
-                @if ($this->unreadChatCount > 0)
-                    <span class="tbadge">{{ $this->unreadChatCount }}</span>
-                @endif
-            </button>
-            <button type="button" class="tb-btn hasbadge" @click="notifOpen = true" title="{{ Translator::t('shell_notif_title', 'Notifikasi') }}">
-                <i class="fa-solid fa-bell"></i>
-                @if ($this->unreadNotifCount > 0)
-                    <span class="tbadge">{{ $this->unreadNotifCount }}</span>
-                @endif
-            </button>
-
-            {{-- Toggle cepat terang/gelap -- instruksi user 2026-08-31 "ada di dekat
-            logo user". Ganti tema butuh reload penuh (theme-vars.blade.php dibaca
-            saat page load, di luar boundary re-render Livewire component ini). --}}
-            <button type="button" class="tb-btn" title="{{ $this->currentThemeMode() === 'dark' ? Translator::t('shell_theme_switch_light', 'Ganti ke tema terang') : Translator::t('shell_theme_switch_dark', 'Ganti ke tema gelap') }}"
-                @click="$wire.quickToggleTheme().then(() => location.reload())">
-                <i class="fa-solid {{ $this->currentThemeMode() === 'dark' ? 'fa-sun' : 'fa-moon' }}"></i>
-            </button>
+            {{--
+                Dirapikan (keluhan user 2026-09-14, screenshot topbar penuh
+                icon: "hilangkan icon icon ini, kecuali icon hide menu dan
+                icon user"): tombol Cari/Palette, Chat, Notifikasi, dan
+                Toggle Tema DIHAPUS dari topbar -- hanya "Sembunyikan top
+                bar" (ikon diganti lebih jelas, fa-angles-up) dan avatar
+                user yang tetap ada. Fitur di baliknya (openPalette/
+                chatOpen/notifOpen/quickToggleTheme) TIDAK dihapus dari
+                komponen -- cuma tombol pemicunya yang dilepas dari sini,
+                supaya perubahan gampang dibalik kalau diperlukan lagi.
+            --}}
+            <button type="button" class="tb-btn" @click="notopbar = true" title="{{ Translator::t('shell_hide_topbar_title', 'Sembunyikan top bar') }}"><i class="fa-solid fa-angles-up"></i></button>
 
             <div class="pop">
                 <button type="button" class="avatar-btn" @click.stop="ddOpen = !ddOpen" title="{{ Auth::user()->name }}">
