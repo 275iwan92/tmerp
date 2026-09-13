@@ -22,6 +22,35 @@
             polos milik mockup kalau tidak di-scope.
         --}}
         <style>
+            {{--
+                BUG 2026-09-13 (ditemukan user, "graphics jelek dan tidak
+                berwarna"): x-report.kpi/badge/insight/svg-* SEMUA baca
+                token --sh-*/--content-bg (lihat theme-vars.blade.php), tapi
+                token itu cuma didefinisikan di dalam selector ".shell" --
+                class yg dipasang di root main-menu.blade.php (shell app
+                lama, isi module dimuat lewat <iframe>). Halaman Laporan ini
+                route top-level TERSENDIRI (bukan di dalam iframe .shell),
+                jadi var(--sh-accent) dkk selalu UNDEFINED -> browser jatuh
+                ke initial/inherited (nyaris hitam-putih, ikon/grafik jadi
+                kosong warna). Ini bukan regresi baru, pola yg sama berlaku
+                sejak layar Laporan Manajemen pertama dibuat (layouts::app
+                default Livewire juga TIDAK punya class="shell" di <body>)
+                -- baru ketahuan sekarang krn sebelumnya cuma diverifikasi
+                lewat Livewire::test (lolos fungsional), tidak pernah dibuka
+                di browser sungguhan. FIX: definisikan token di sini secara
+                TETAP (palet identik dgn :root mockup aslinya) -- shell ini
+                memang bukan bagian sistem tema 12-kombinasi (themestandard.md,
+                itu scope-nya konten dalam iframe .shell), jadi warna tetap
+                terang selalu, sama seperti mockup sumbernya sendiri (tidak
+                ada toggle dark/light di mockup ini).
+            --}}
+            .rs-app{
+                --sh-accent:#2878f0; --sh-ok:#11a879; --sh-warn:#f09a22; --sh-amber:#f09a22;
+                --sh-violet:#8358e8; --sh-danger:#e64b52;
+                --sh-ink:#4a5578; --sh-ink-strong:#14213a; --sh-muted:#718096;
+                --sh-surface:#ffffff; --sh-surface-alt:#f4f7fb; --sh-border:#e3e9f2;
+                --content-bg:#f4f7fb;
+            }
             .rs-app{display:grid;grid-template-columns:260px 1fr;min-height:100vh;font:13px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f4f7fb;color:#14213a}
             .rs-app button{font:inherit;cursor:pointer}
             .rs-aside{background:linear-gradient(180deg,#101c35,#091225);height:100vh;position:sticky;top:0;overflow:auto;padding:20px 13px;color:#c3d0e3;z-index:3}
