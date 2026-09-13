@@ -190,6 +190,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'PROD_SHIFT_ROSTER' => route('hrm.shift-roster'),
             'HRM_ORG_STRUCTURE' => route('hrm.position'),
             'HRM_ORG_CHART' => route('hrm.org-chart'),
+            'HRM_SOP' => route('hrm.sop-documents'),
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'HRM_CORRECTION' => route('hrm.correction-requests'),

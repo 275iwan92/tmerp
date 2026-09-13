@@ -106,6 +106,19 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
     public $badge_photo = null;
 
+    // ---- modal: baca SOP (read-only) ----
+    public ?int $viewingSopId = null;
+
+    public function openSop(int $id): void
+    {
+        $this->viewingSopId = $id;
+    }
+
+    public function closeSop(): void
+    {
+        $this->viewingSopId = null;
+    }
+
     // ---- form: cuti/sakit/izin ----
     public string $leave_type = 'CUTI';
 
@@ -243,6 +256,27 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
         }
 
         return EmpEmployee::with(['position.department', 'company', 'families', 'documents', 'educations', 'bankAccounts'])->find($this->employeeId);
+    }
+
+    // Deskripsi Kerja & SOP -- read-only, diisi HR Officer di layar terpisah
+    // (hrm/position.blade.php field job_description, hrm/sop-documents.blade.php)
+    // (keputusan user 2026-09-13). Melekat ke POSISI, bukan per pegawai --
+    // semua pemegang posisi yang sama melihat teks yang sama.
+    #[Computed]
+    public function myJobDescription(): ?string
+    {
+        return $this->employee?->position?->job_description;
+    }
+
+    #[Computed]
+    public function mySopDocuments()
+    {
+        $departmentId = $this->employee?->position?->department_id;
+
+        return \App\Models\Master\SopDocument::where('activate', true)
+            ->where(fn ($q) => $q->whereNull('department_id')->when($departmentId, fn ($q2) => $q2->orWhere('department_id', $departmentId)))
+            ->orderBy('title')
+            ->get();
     }
 
     #[Computed]
@@ -866,7 +900,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- TABS --}}
             <div class="bg-white border border-[#e2e8f0] rounded-xl p-1.5 mb-4 flex gap-1 flex-wrap sticky top-[52px] z-30">
-                @foreach (['profil' => '👤 Data Saya', 'keluarga' => '👪 Keluarga & Status', 'dokumen' => '📄 Dokumen & Pendidikan', 'cuti' => '📅 Cuti/Sakit/Izin', 'izinkeluar' => '🚪 Izin Keluar', 'tukarshift' => '🔄 Tukar Shift', 'jadwal' => '🗓️ Jadwal Saya', 'badge' => '🪪 Kartu Pengenal', 'security' => '🔒 Security'] as $key => $label)
+                @foreach (['profil' => '👤 Data Saya', 'jobdesc' => '📋 Deskripsi Kerja', 'sop' => '📘 SOP', 'keluarga' => '👪 Keluarga & Status', 'dokumen' => '📄 Dokumen & Pendidikan', 'cuti' => '📅 Cuti/Sakit/Izin', 'izinkeluar' => '🚪 Izin Keluar', 'tukarshift' => '🔄 Tukar Shift', 'jadwal' => '🗓️ Jadwal Saya', 'badge' => '🪪 Kartu Pengenal', 'security' => '🔒 Security'] as $key => $label)
                     <button type="button" wire:click="$set('tab', '{{ $key }}')" class="px-3 py-2 text-xs font-medium rounded-md cursor-pointer {{ $tab === $key ? 'bg-[#0f172a] text-white font-semibold' : 'text-muted hover:bg-[#f8fafc]' }}">{{ $label }}</button>
                 @endforeach
             </div>
@@ -950,6 +984,84 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         <button type="button" wire:click="openResign" class="text-xs font-semibold bg-white border border-[#fca5a5] text-[#991b1b] px-3.5 py-2 rounded-md cursor-pointer">Ajukan Form Pengunduran Diri</button>
                     </div>
                 </div>
+            @endif
+
+            {{-- ===================== TAB: DESKRIPSI KERJA (read-only) =====================
+                 Melekat ke posisi ($emp->position->job_description), diisi HR Officer di
+                 layar Master Posisi -- keputusan user 2026-09-13. --}}
+            @if ($tab === 'jobdesc')
+                <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#f1f5f9]">
+                        <div class="text-sm font-bold text-[#0f172a]">Deskripsi Kerja</div>
+                        <div class="text-[11px] text-muted">{{ $emp?->position?->position_name ?? '—' }}</div>
+                    </div>
+                    @if ($this->myJobDescription)
+                        <div class="text-[13px] text-[#334] leading-relaxed whitespace-pre-line">{{ $this->myJobDescription }}</div>
+                    @else
+                        <div class="text-xs text-muted italic">Belum ada deskripsi kerja untuk posisi ini. Hubungi HR Officer bila diperlukan.</div>
+                    @endif
+                    <div class="text-[10.5px] text-muted mt-3 pt-2 border-t border-[#f1f5f9]">Hanya HR Officer yang dapat mengubah deskripsi ini — bersifat read-only di sini.</div>
+                </div>
+            @endif
+
+            {{-- ===================== TAB: SOP (read-only) =====================
+                 Dokumen SOP global + yang berlaku utk departemen pegawai ini
+                 (App\Models\Master\SopDocument), diisi HR Officer di hrm/sop-documents.
+                 Isi lengkap dibuka lewat modal, bukan langsung di daftar (bisa panjang). --}}
+            @if ($tab === 'sop')
+                <div class="bg-white border border-[#e2e8f0] rounded-xl p-4.5">
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-[#f1f5f9]">
+                        <div class="text-sm font-bold text-[#0f172a]">SOP Berlaku untuk Saya</div>
+                        <div class="text-[11px] text-muted">{{ $this->mySopDocuments->count() }} dokumen</div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        @forelse ($this->mySopDocuments as $doc)
+                            <button type="button" wire:click="openSop({{ $doc->sop_id }})"
+                                class="text-left flex items-center gap-3 px-3.5 py-2.5 rounded-lg border border-[#e2e8f0] hover:border-accent hover:bg-[#f8fafc] cursor-pointer">
+                                <span class="text-lg">📘</span>
+                                <span class="flex-1 min-w-0">
+                                    <span class="block text-[13px] font-semibold text-[#0f172a] truncate">{{ $doc->title }}</span>
+                                    <span class="block text-[11px] text-muted font-mono">{{ $doc->sop_code }} · Rev {{ $doc->revision }} · {{ $doc->department_id ? $doc->department?->department_name : 'Semua Departemen' }}</span>
+                                </span>
+                                <span class="text-xs text-accent font-semibold shrink-0">Baca →</span>
+                            </button>
+                        @empty
+                            <div class="text-xs text-muted italic">Belum ada dokumen SOP yang berlaku untuk departemen Anda.</div>
+                        @endforelse
+                    </div>
+                </div>
+
+                @if ($viewingSopId)
+                    @php $viewedSop = $this->mySopDocuments->firstWhere('sop_id', $viewingSopId); @endphp
+                    @if ($viewedSop)
+                        <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-[60] p-4" wire:click.self="closeSop">
+                            <div class="bg-white rounded-xl w-full max-w-[640px] max-h-[85vh] overflow-y-auto">
+                                <div class="flex items-center gap-2 justify-between bg-navy text-white px-4 py-3 rounded-t-xl sticky top-0">
+                                    <div class="text-sm font-bold">{{ $viewedSop->title }}</div>
+                                    <span class="text-[10.5px] font-mono opacity-75 shrink-0">{{ $viewedSop->sop_code }} · Rev {{ $viewedSop->revision }}</span>
+                                </div>
+                                <div class="p-5 flex flex-col gap-3">
+                                    @if ($viewedSop->effective_date)
+                                        <div class="text-[11px] text-muted">Berlaku sejak: <b class="text-[#233]">{{ $viewedSop->effective_date->format('d F Y') }}</b></div>
+                                    @endif
+                                    @if ($viewedSop->purpose)
+                                        <div>
+                                            <div class="text-xs font-bold text-navy uppercase tracking-wide mb-1">Tujuan</div>
+                                            <div class="text-[13px] text-[#334] leading-relaxed whitespace-pre-line">{{ $viewedSop->purpose }}</div>
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <div class="text-xs font-bold text-navy uppercase tracking-wide mb-1">Isi SOP</div>
+                                        <div class="text-[13px] text-[#334] leading-relaxed whitespace-pre-line">{{ $viewedSop->content ?: '—' }}</div>
+                                    </div>
+                                </div>
+                                <div class="px-4 py-3 border-t border-[#eef1f5] flex justify-end">
+                                    <button type="button" wire:click="closeSop" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
             @endif
 
             {{-- ===================== TAB: KELUARGA & STATUS ===================== --}}

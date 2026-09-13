@@ -36,6 +36,13 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
 
     public ?int $reports_to_position_id = null;
 
+    // Deskripsi Kerja -- input HANYA HR Officer (keputusan user 2026-09-13),
+    // tampil read-only di profil Self-Service tiap pegawai pemegang posisi
+    // ini. Field ini sengaja TIDAK dirender sama sekali di form kalau user
+    // yang buka bukan HR Officer/admin (bukan cuma disabled) -- 8 field lain
+    // di form ini tetap boleh diedit siapa pun yang bisa akses layar HRM.
+    public string $job_description = '';
+
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -88,7 +95,7 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
 
     public function openNew(): void
     {
-        $this->reset(['editingId', 'position_code', 'position_name', 'department_id', 'level_id', 'reports_to_position_id']);
+        $this->reset(['editingId', 'position_code', 'position_name', 'department_id', 'level_id', 'reports_to_position_id', 'job_description']);
         $this->showModal = true;
     }
 
@@ -101,6 +108,7 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
         $this->department_id = $p->department_id;
         $this->level_id = $p->level_id;
         $this->reports_to_position_id = $p->reports_to_position_id;
+        $this->job_description = (string) $p->job_description;
         $this->showModal = true;
     }
 
@@ -144,6 +152,15 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
             'reports_to_position_id' => $this->reports_to_position_id ?: null,
             'updated_by' => Auth::user()->login ?? 'system',
         ];
+
+        // Guard server-side (bukan cuma sembunyikan field-nya di Blade) --
+        // permintaan user: "Yang input adalah HR Officer" berlaku tegas,
+        // bukan cuma sopan-santun UI.
+        if (Auth::user()->isHrOfficer()) {
+            $payload['job_description'] = trim($this->job_description) ?: null;
+            $payload['job_description_updated_by'] = Auth::user()->login;
+            $payload['job_description_updated_at'] = now();
+        }
 
         if ($this->editingId) {
             OrgPosition::where('position_id', $this->editingId)->update($payload);
@@ -240,6 +257,11 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
                     <x-form.select wire:model="reports_to_position_id" :options="$this->reportsToOptions" placeholder="— tidak melapor ke siapa pun (puncak) —">
                         <x-slot:label>Melapor Ke</x-slot:label>
                     </x-form.select>
+
+                    @if (Auth::user()->isHrOfficer())
+                        <x-form.textarea label="Deskripsi Kerja (tampil read-only di profil pegawai)" wire:model="job_description" rows="5" autogrow
+                            hint="Berlaku untuk semua pegawai yang menjabat posisi ini." />
+                    @endif
                 </div>
                 <div class="flex justify-end gap-2 mt-4">
                     <button type="button" wire:click="$set('showModal', false)" class="border border-[#d7dbe2] text-xs font-bold px-4 py-2 rounded-md">Batal</button>

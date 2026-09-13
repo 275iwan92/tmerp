@@ -218,6 +218,14 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         return $this->hasGroup('QA');
     }
 
+    // Gate input Deskripsi Kerja (org_position.job_description) & SOP
+    // (sop_document) -- permintaan user 2026-09-13: "Yang input adalah HR
+    // Officer. Begitu pula dengan SOP." is_admin bypass total via hasGroup().
+    public function isHrOfficer(): bool
+    {
+        return $this->hasGroup('HR_OFFICER');
+    }
+
     // "Manager Produksi atau lebih tinggi" -- Tier1 §9.7 (Rule Library ACTIVATE).
     public function isProdManagerOrAbove(): bool
     {
