@@ -822,9 +822,22 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
         <header class="topbar">
             <button type="button" class="tb-btn" @click="nosidebar = !nosidebar" title="Sembunyikan sidebar">☰</button>
             <nav class="mega">
-                {{-- SETUP sengaja tidak muncul di topbar -- khusus admin, aksesnya
-                     lewat menu profil ("Pengaturan (Setup)" di dropdown avatar). --}}
-                <template x-for="m in menuTree.filter(x => x.code !== 'SETUP')" :key="m.id">
+                {{--
+                    SETUP sengaja tidak muncul di sini -- khusus admin, aksesnya
+                    lewat menu profil ("Pengaturan (Setup)" di dropdown avatar).
+
+                    MGMT (Laporan Manajemen) JUGA dikeluarkan dari daftar module
+                    biasa (keluhan user 2026-09-13, screenshot: "kebodohan kamu,
+                    buat Laporan Manajemen di Operational menu" -- MGMT bukan
+                    modul operasional yg diklik-lalu-expand-groups seperti
+                    Sales/Purchasing, itu APLIKASI TERPISAH dgn shell dashboard
+                    sendiri (layouts::report, dark sidebar). Menaruhnya sejajar
+                    modul lain di mega-nav lalu expand ke grup "Ringkasan" yg
+                    isinya cuma 1 item terasa aneh & duplikat. Diganti 1 tombol
+                    langsung di sebelah kanan (seperti tombol lain di topbar
+                    ini), tampil HANYA kalau user punya akses modul MGMT.
+                --}}
+                <template x-for="m in menuTree.filter(x => x.code !== 'SETUP' && x.code !== 'MGMT')" :key="m.id">
                     <button type="button" class="mega-item" :class="{ active: activeMod === m.code }" :title="(m.tooltip || m.label) + (m.statusLabel ? ' — '+m.statusLabel : '')" @click="selectModule(m.code)">
                         <span class="mi"><i :class="m.icon"></i></span> <span x-text="m.shortLabel || m.label"></span>
                         <span class="status-dot" :style="{ background: m.statusColor }"></span>
@@ -832,6 +845,12 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
                 </template>
             </nav>
             <div class="tb-spacer"></div>
+            @if (collect($this->menuTree)->contains('code', 'MGMT'))
+                <a href="{{ route('report.executive') }}" class="tb-btn" style="display:flex;align-items:center;gap:6px;width:auto;padding:0 12px;color:var(--color-accent)" title="Buka Laporan Manajemen">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span style="font-size:12px;font-weight:700">Laporan Manajemen</span>
+                </a>
+            @endif
             <button type="button" class="tb-btn" @click="openPalette()" title="{{ Translator::t('shell_search_command_title', 'Cari / perintah (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
             <button type="button" class="tb-btn" @click="notopbar = true" title="{{ Translator::t('shell_hide_topbar_title', 'Sembunyikan top bar') }}"><i class="fa-solid fa-chevron-up"></i></button>
 
