@@ -5,9 +5,11 @@ use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 // ProDev = "Imposition Plano Optimizer", port 1:1 dari
 // docs/mockups/mockup_prodev_imposition.html (instruksi user 2026-09-14:
@@ -29,11 +31,72 @@ use Livewire\Component;
 // akhir sesi/commit.
 new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 {
+    use WithFileUploads;
+
     public ?int $partId = null;
+
+    // Job yang sedang dibuka di canvas -- di-set dari JS tiap ganti job, supaya
+    // upload artwork tahu part mana yang dituju (sisanya layar ini client-side).
+    public ?int $activeJobPartId = null;
+
+    public $artworkUpload = null;
+
+    public string $artworkError = '';
 
     public function mount(?int $part = null): void
     {
         $this->partId = $part;
+        $this->activeJobPartId = $part;
+    }
+
+    public function artworkMaxMb(): float
+    {
+        return SysConstant::number('PRODEV_UPLOAD_MAX_MB', 25);
+    }
+
+    // Upload artwork dari ProDev ditulis ke iqp_part.artwork_path (keputusan
+    // user 2026-09-14) -- SAMA persis dengan jalur upload di Inquiry Product
+    // (disk 'public', folder inquiry/{id_part}/artwork), jadi satu file dipakai
+    // bersama kedua layar, bukan dua salinan terpisah.
+    public function updatedArtworkUpload(): void
+    {
+        $this->artworkError = '';
+
+        $iqpPart = $this->activeJobPartId
+            ? IqpPart::where('prod_part_id', $this->activeJobPartId)->first()
+            : null;
+
+        if (! $iqpPart) {
+            $this->artworkUpload = null;
+            $this->artworkError = 'Job ini tidak punya Inquiry Part (Mode #2 manual), artwork belum bisa disimpan.';
+
+            return;
+        }
+
+        $this->validate([
+            'artworkUpload' => 'image|mimes:jpg,jpeg,png|max:'.($this->artworkMaxMb() * 1024),
+        ], [], ['artworkUpload' => 'artwork']);
+
+        $old = $iqpPart->artwork_path;
+        $path = $this->artworkUpload->store("inquiry/{$iqpPart->id_part}/artwork", 'public');
+
+        if ($old && $old !== $path) {
+            Storage::disk('public')->delete($old);
+        }
+
+        $iqpPart->update([
+            'artwork_path' => $path,
+            'artwork_original_filename' => $this->artworkUpload->getClientOriginalName(),
+        ]);
+
+        $this->dispatch('prodev-artwork-updated',
+            partId: $this->activeJobPartId,
+            url: asset('storage/'.$path),
+            name: $this->artworkUpload->getClientOriginalName(),
+        );
+
+        $this->artworkUpload = null;
+        unset($this->jobs);
     }
 
     #[Computed]
@@ -174,6 +237,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 ],
                 'dieline' => ! empty($spec['elements']) ? $spec : null,
                 'dielineDims' => $spec['dims'] ?? (object) [],
+                'artworkUrl' => $src?->artwork_path ? asset('storage/'.$src->artwork_path) : null,
+                'artworkName' => $src?->artwork_original_filename,
+                'canUpload' => $src !== null,
             ];
         }
 
@@ -193,7 +259,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'material' => 'Art Carton 310 gsm + Gold Foil / UV', 'structure' => 'Tray Lid — 4 Corner Lock + Hang Tab',
                 'art' => 'AL SAMSI · EXCLUSIVE TOP (4-up mirror)', 'customer' => 'AL SAMSI — Sarung Tenun',
                 'design' => 'DS002047', 'reg' => 'IDM000807653', 'history' => [85, 71.5],
-                'dieline' => null, 'dielineDims' => (object) [],
+                'dieline' => null, 'dielineDims' => (object) [], 'artworkUrl' => null, 'artworkName' => null, 'canUpload' => false,
             ],
             [
                 'id' => 'demo-osima', 'kind' => 'demo', 'partId' => null, 'type' => 'osima',
@@ -202,7 +268,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'material' => 'Duplex 400 gsm / E-flute Laminated', 'structure' => '2-Piece Wrap (Panel A + B) + Hand Hole',
                 'art' => 'OSIMA MS PREMIUM · Japanese Technology', 'customer' => 'PT. SELATAN JADI JAYA',
                 'design' => 'DS003146', 'reg' => 'SNI · Rev.02 07/03/2026', 'history' => [101, 41],
-                'dieline' => null, 'dielineDims' => (object) [],
+                'dieline' => null, 'dielineDims' => (object) [], 'artworkUrl' => null, 'artworkName' => null, 'canUpload' => false,
             ],
             [
                 'id' => 'demo-alsamsi-sig', 'kind' => 'demo', 'partId' => null, 'type' => 'alsamsi_sig',
@@ -211,7 +277,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'material' => 'Ivory / Duplex 350 gsm + Gold Foil', 'structure' => 'Lock Bottom (Blank A + Blank B)',
                 'art' => 'AL SAMSI SIGNATURE · Premium Quality', 'customer' => 'AL SAMSI — Sarung Tenun',
                 'design' => 'TM 25-11.25', 'reg' => 'IDM000807653', 'history' => [80, 60],
-                'dieline' => null, 'dielineDims' => (object) [],
+                'dieline' => null, 'dielineDims' => (object) [], 'artworkUrl' => null, 'artworkName' => null, 'canUpload' => false,
             ],
         ];
     }
@@ -243,6 +309,20 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             initialJob: @json($this->initialJobIndex),
         };
     </script>
+
+    {{-- Input file NYATA dipegang Livewire, ditaruh DI LUAR wire:ignore supaya
+         morph-nya tetap jalan. Tombol "Upload artwork" di panel kiri cuma
+         memicu klik ke sini (label lintas-subtree lewat getElementById). --}}
+    <div class="io-uploader">
+        <input type="file" id="io-artFileReal" accept="image/jpeg,image/png" wire:model="artworkUpload">
+        <div class="io-toast" style="display:none" wire:loading wire:target="artworkUpload">⏳ Mengunggah artwork…</div>
+        @error('artworkUpload')
+            <div class="io-toast bad">⚠ {{ $message }}</div>
+        @enderror
+        @if ($artworkError)
+            <div class="io-toast bad">⚠ {{ $artworkError }}</div>
+        @endif
+    </div>
 
     <div wire:ignore class="io-app">
         @verbatim
@@ -326,9 +406,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-art.selected .io-artfill{stroke:var(--io-purple)!important;stroke-width:3.4}
         .io-art.selected{filter:drop-shadow(0 0 5px #a06cffcc)}
         .io-artfill{fill:#c7f1ff;fill-opacity:.92;stroke:#056c90;stroke-width:1.4}
-        .io-die{fill:none;stroke:#fc2458;stroke-width:1.3;stroke-dasharray:4 2}
-        .io-fold{fill:none;stroke:#27a560;stroke-width:1.1;stroke-dasharray:3 2}
-        .io-cutmark{stroke:#fc2458;stroke-width:1}
+        /* Garis dieline WAJIB jelas terbaca berapa pun ukuran object di canvas
+           (permintaan user 2026-09-14) -- karena itu strokenya ditebalkan dan
+           dikunci non-scaling supaya tidak ikut mengecil saat object diperkecil. */
+        .io-die{fill:none;stroke:#fc2458;stroke-width:1.9;stroke-dasharray:5 2.5}
+        .io-fold{fill:none;stroke:#27a560;stroke-width:1.5;stroke-dasharray:4 2.5}
+        .io-cutmark{stroke:#fc2458;stroke-width:1.4}
+        .io-die,.io-fold,.io-cutmark{vector-effect:non-scaling-stroke}
+        .io-uploader input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+        .io-toast{position:fixed;right:16px;bottom:16px;z-index:60;padding:10px 14px;border-radius:9px;
+            background:#123827;border:1px solid #28794f;color:#c3f8d9;font-size:12px;font-weight:700;box-shadow:0 8px 20px #0007}
+        .io-toast.bad{background:#461825;border-color:#a33d54;color:#ffd4dd}
         .io-lbl{font-size:8px;fill:#06445d;font-weight:800;pointer-events:none}
         .io-out .io-artfill{fill:#ffc8d2!important;stroke:#d31f49!important}
         .io-out .io-die,.io-out .io-cutmark{stroke:#b91135}
@@ -555,12 +643,29 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             const $ = x => document.getElementById('io-' + x);
             const p0 = products[DATA.initialJob] || products[0];
+            const m0 = machines[0];
+            // Canvas awal tidak boleh lahir dalam keadaan invalid: history job bisa
+            // lebih besar dari bed mesin aktif, jadi dipotong ke bed.
             const S = {
-                p: p0, m: machines[0], L: p0.history[0] || 85, W: p0.history[1] || 71.5, g: p0.gap || .3,
+                p: p0, m: m0,
+                L: Math.min(p0.history[0] || m0[1], m0[1]),
+                W: Math.min(p0.history[1] || m0[2], m0[2]),
+                g: p0.gap || .3,
                 zoom: 1, auto: true, manualUp: 6, objs: [], selected: null, pl: planos[0], drag: null,
                 conv: 'pcs', touched: false, sc0: 0, sx0: 0, sy0: 0,
             };
             const app = document.querySelector('.io-app');
+
+            // Jembatan ke komponen Livewire induk: layar ini client-side, tapi
+            // upload artwork tetap lewat Livewire (lihat updatedArtworkUpload()).
+            function wire() {
+                const root = document.querySelector('[wire\\:id]');
+                return root && window.Livewire ? window.Livewire.find(root.getAttribute('wire:id')) : null;
+            }
+            function syncActiveJob() {
+                const w = wire();
+                if (w) w.set('activeJobPartId', S.p.partId, false);
+            }
 
             function init() {
                 products.forEach((x, i) => $('product').add(new Option(x.name, i)));
@@ -570,7 +675,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('jobcount').textContent = products.length + ' JOB SIAP IMPOSISI';
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
                 bind();
+                artworkLabel();
+                syncActiveJob();
                 update(true);
+            }
+
+            function artworkLabel() {
+                $('artName').textContent = S.p.artworkName
+                    || (S.p.artworkUrl ? 'Artwork tersimpan di Inquiry Part' : (S.p.canUpload
+                        ? 'Belum ada artwork — klik Upload artwork'
+                        : 'Job Mode #2 / demo: tidak terhubung ke Inquiry Part'));
+                $('dieName').textContent = S.p.dieline
+                    ? 'Dieline dari spesifikasi Tipe Produk (dieline_spec)'
+                    : 'Tipe produk ini belum punya definisi dieline';
             }
 
             function bind() {
@@ -579,7 +696,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 });
                 $('product').onchange = e => {
                     S.p = products[e.target.value]; S.g = S.p.gap; $('gap').value = S.g;
-                    $('grain').value = S.p.grain; S.objs = []; suggest();
+                    $('grain').value = S.p.grain; S.objs = [];
+                    artworkLabel(); syncActiveJob(); suggest();
                 };
                 $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); };
                 $('autoUp').onchange = e => {
@@ -607,8 +725,26 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 app.querySelectorAll('[data-io-r]').forEach(b => b.onclick = () => transform('r', +b.dataset.ioR));
                 app.querySelectorAll('[data-io-f]').forEach(b => b.onclick = () => transform('f', b.dataset.ioF));
                 $('resetLayout').onclick = () => { S.objs = []; S.selected = null; update(true); };
-                $('artFile').onchange = e => { $('artName').textContent = (e.target.files[0] && e.target.files[0].name) || 'Artwork bawaan job aktif'; };
-                $('dieFile').onchange = e => { $('dieName').textContent = (e.target.files[0] && e.target.files[0].name) || 'Dieline struktural bawaan job aktif'; };
+                // Artwork: file input aslinya milik Livewire (di luar wire:ignore).
+                $('artFile').onclick = e => {
+                    e.preventDefault();
+                    if (!S.p.canUpload) {
+                        msg('Job ini tidak terhubung ke Inquiry Part (Mode #2 / demo) — artwork belum bisa disimpan.', 'bad');
+                        return;
+                    }
+                    document.getElementById('io-artFileReal').click();
+                };
+                window.addEventListener('prodev-artwork-updated', e => {
+                    const d = e.detail || {};
+                    const job = products.find(j => j.partId === d.partId);
+                    if (!job) return;
+                    job.artworkUrl = d.url; job.artworkName = d.name;
+                    if (S.p === job) { artworkLabel(); render(); }
+                });
+                $('dieFile').onchange = e => {
+                    // Dieline terpisah belum punya tempat simpan -- lihat catatan diskusi.
+                    $('dieName').textContent = (e.target.files[0] && e.target.files[0].name + ' (belum disimpan)') || 'Dieline struktural bawaan job aktif';
+                };
             }
 
             function setMode(mode) {
@@ -783,16 +919,22 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // Inquiry Product) -- bukan kotak polos, kecuali tipe produknya
             // memang belum punya elements DSL.
             function realShape(p, w, h) {
-                const base = '<rect class="io-artfill" width="' + w + '" height="' + h + '" rx="1"/>';
+                let out = '<rect class="io-artfill" width="' + w + '" height="' + h + '" rx="1"/>';
+                // Artwork asli (iqp_part.artwork_path) jadi permukaan cetak, garis
+                // dieline digambar DI ATASNYA supaya batas potong tetap terbaca.
+                if (p.artworkUrl) {
+                    out += '<image href="' + p.artworkUrl + '" x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="none"/>';
+                }
                 let inner = null;
                 if (p.dieline && window.TMDieline) {
                     try { inner = window.TMDieline.svg(p.dieline, p.dielineDims || {}); } catch (e) { inner = null; }
                 }
                 if (inner) {
-                    return base + inner.replace('width="100%" height="100%"',
-                        'x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="none"');
+                    return out + inner
+                        .replace('width="100%" height="100%"', 'x="0" y="0" width="' + w + '" height="' + h + '" preserveAspectRatio="none"')
+                        .replace(/stroke-width="1"/g, 'stroke-width="1.9" vector-effect="non-scaling-stroke"');
                 }
-                return base + '<rect class="io-die" x="' + (w * .012) + '" y="' + (h * .018) + '" width="' + (w * .976) + '" height="' + (h * .964) + '"/>' +
+                return out + '<rect class="io-die" x="' + (w * .012) + '" y="' + (h * .018) + '" width="' + (w * .976) + '" height="' + (h * .964) + '"/>' +
                     '<text class="io-lbl" x="' + (w * .5) + '" y="' + (h * .52) + '" text-anchor="middle">' + (p.design || '') + '</text>';
             }
 
@@ -809,8 +951,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         '<rect x="' + x1 + '" y="' + y1 + '" width="' + (w * .022) + '" height="' + (y2 - y1) + '" fill="#c89b40"/><rect x="' + (x2 - w * .022) + '" y="' + y1 + '" width="' + (w * .022) + '" height="' + (y2 - y1) + '" fill="#c89b40"/>' +
                         '<rect x="' + (w * .36) + '" y="' + (h * .45) + '" width="' + (w * .28) + '" height="' + (h * .1) + '" fill="#0b0910" stroke="#c89b40" stroke-width=".7"/>' +
                         '<text class="io-lbl" x="' + (w * .5) + '" y="' + (h * .515) + '" text-anchor="middle" fill="#eacf94">AL SAMSI</text>' +
+                        '<g fill="#0a0a12" stroke="#c89b40" stroke-width=".7">' +
+                        '<rect x="' + (w * .055) + '" y="' + (h * .415) + '" width="' + (f * .2) + '" height="' + (f * .2) + '" transform="rotate(45 ' + (w * .055 + f * .1) + ' ' + (h * .415 + f * .1) + ')"/>' +
+                        '<rect x="' + (w * .945 - f * .2) + '" y="' + (h * .415) + '" width="' + (f * .2) + '" height="' + (f * .2) + '" transform="rotate(45 ' + (w * .945 - f * .1) + ' ' + (h * .415 + f * .1) + ')"/></g>' +
+                        '<text class="io-lbl" x="' + (w * .055 + f * .1) + '" y="' + (h * .53) + '" text-anchor="middle" fill="#3fa9e8">ALSAMSI</text>' +
+                        '<text class="io-lbl" x="' + (w * .945 - f * .1) + '" y="' + (h * .53) + '" text-anchor="middle" fill="#3fa9e8">ALSAMSI</text>' +
                         '<text class="io-lbl" x="' + (w * .5) + '" y="' + (h * .13) + '" text-anchor="middle" fill="#6d5a2c">EXCLUSIVE · SARUNG TENUN</text>' +
+                        // Hang tab (struktur: Tray Lid + Hang Tab) -- lubang gantung ikut dipotong.
+                        '<circle class="io-die" cx="' + (w * .5) + '" cy="' + (h * .105) + '" r="' + (f * .045) + '"/>' +
                         '<path class="io-fold" d="M' + x1 + ' 0V' + h + 'M' + x2 + ' 0V' + h + 'M0 ' + y1 + 'H' + w + 'M0 ' + y2 + 'H' + w + '"/>' +
+                        // 4 corner lock: sudut tray dipotong diagonal, bukan lurus.
+                        '<path class="io-die" d="M' + x1 + ' ' + y1 + 'L0 ' + y1 + 'M' + x2 + ' ' + y1 + 'L' + w + ' ' + y1 + 'M' + x1 + ' ' + y2 + 'L0 ' + y2 + 'M' + x2 + ' ' + y2 + 'L' + w + ' ' + y2 + '"/>' +
                         '<path class="io-die" d="M' + n + ' ' + (h * .03) + 'H' + (w - n) + 'L' + (w * .97) + ' ' + n + 'V' + (h - n) + 'L' + (w - n) + ' ' + (h * .97) + 'H' + n + 'L' + (w * .03) + ' ' + (h - n) + 'V' + n + 'Z"/>' + cut;
                 }
 
@@ -823,23 +974,41 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         '<text class="io-lbl" x="' + (w * .05) + '" y="' + (fy * .55) + '" fill="#fff">OSIMA MS · PREMIUM</text>' +
                         '<path d="M0 ' + fy + 'H' + (w * .27) + 'L' + (w * .11) + ' ' + h + 'H0Z" fill="#1d2f56"/>' +
                         '<path d="M' + (w * .27) + ' ' + fy + 'H' + gx + 'V' + h + 'H' + (w * .11) + 'Z" fill="#dde3ea"/>' +
+                        '<rect x="' + (w * .40) + '" y="' + (h * .42) + '" width="' + (w * .11) + '" height="' + (h * .17) + '" rx="2" fill="#fff"/>' +
                         '<text x="' + (w * .22) + '" y="' + (h * .72) + '" style="font:800 ' + (f * .155) + 'px Inter,sans-serif;fill:#1d2f56">OSIMA</text>' +
                         '<text x="' + (w * .23) + '" y="' + (h * .83) + '" style="font:700 ' + (f * .08) + 'px Inter,sans-serif;fill:#1d2f56;letter-spacing:.08em">PREMIUM</text>' +
-                        '<path class="io-fold" d="M0 ' + fy + 'H' + w + 'M' + gx + ' 0V' + h + '"/>' +
+                        '<text x="' + (w * .22) + '" y="' + (h * .4) + '" style="font:800 ' + (f * .07) + 'px Inter,sans-serif;fill:#e2338c">MS</text>' +
+                        '<ellipse cx="' + (w * .67) + '" cy="' + (h * .88) + '" rx="' + (f * .06) + '" ry="' + (f * .04) + '" fill="#d8342b"/>' +
+                        '<text x="' + (w * .78) + '" y="' + (h * .62) + '" transform="rotate(-90 ' + (w * .78) + ' ' + (h * .62) + ')" style="font:700 ' + (f * .055) + 'px Inter,sans-serif;fill:#1d2f56">Japanese Technology</text>' +
+                        // Hand hole (struktur: 2-Piece Wrap + Hand Hole) -- lubang jinjing.
+                        '<rect class="io-die" x="' + (w * .44) + '" y="' + (h * .12) + '" width="' + (w * .12) + '" height="' + (h * .05) + '" rx="' + (h * .025) + '"/>' +
+                        '<path class="io-fold" d="M0 ' + fy + 'H' + w + 'M' + gx + ' 0V' + h + 'M' + (w * .27) + ' ' + fy + 'V' + h + '"/>' +
+                        // Glue flap panel B di sisi kanan (lebar gx..w) = area lem.
+                        '<path class="io-die" d="M' + gx + ' ' + (h * .018) + 'V' + (h * .982) + '"/>' +
                         '<rect class="io-die" x="' + (w * .012) + '" y="' + (h * .018) + '" width="' + (w * .976) + '" height="' + (h * .964) + '"/>' + cut;
                 }
 
                 const x1 = w * .16, x2 = w * .62, x3 = w * .82, y1 = h * .62;
                 return '<path class="io-artfill" d="M' + x1 + ' 0H' + w + 'V' + h + 'H' + x1 + 'L0 ' + (h * .78) + 'V' + (h * .22) + 'Z" style="fill:#efe7d2"/>' +
                     '<rect x="' + x1 + '" y="0" width="' + (x2 - x1) + '" height="' + y1 + '" fill="#f4eedd"/>' +
+                    '<path d="M' + x1 + ' ' + (h * .06) + 'q' + (w * .18) + ' ' + (h * .2) + ' ' + (w * .12) + ' ' + (h * .5) + 'h' + (w * .07) + 'q' + (w * .05) + '-' + (h * .34) + '-' + (w * .09) + '-' + (h * .5) + 'z" fill="#8b6535" opacity=".85"/>' +
                     '<rect x="' + (w * .3) + '" y="' + (h * .12) + '" width="' + (w * .2) + '" height="' + (h * .22) + '" fill="#c99a3d" stroke="#7d5c1c" stroke-width=".7"/>' +
                     '<text class="io-lbl" x="' + (w * .4) + '" y="' + (h * .24) + '" text-anchor="middle" fill="#2a1c05">AL SAMSI</text>' +
                     '<text class="io-lbl" x="' + (w * .4) + '" y="' + (h * .42) + '" text-anchor="middle" fill="#6b5522">Sarung Tenun · Signature</text>' +
+                    '<g fill="#fff" stroke="#6f6247" stroke-width=".6">' + [0, 1, 2, 3].map(i =>
+                        '<rect x="' + (x2 + (x3 - x2) * .3) + '" y="' + (h * (.07 + i * .13)) + '" width="' + ((x3 - x2) * .4) + '" height="' + (h * .09) + '" rx="2"/>').join('') + '</g>' +
                     '<rect x="' + x3 + '" y="0" width="' + (w - x3) + '" height="' + h + '" fill="#e6dcc2"/>' +
+                    '<g fill="#9a8348">' + [0, 1, 2, 3, 4, 5, 6, 7].map(i =>
+                        '<rect x="' + (x3 + (w - x3) * .2) + '" y="' + (h * (.04 + i * .12)) + '" width="' + ((w - x3) * .6) + '" height="' + (h * .02) + '"/>').join('') + '</g>' +
                     '<rect x="' + (w * .21) + '" y="' + (h * .7) + '" width="' + (w * .16) + '" height="' + (h * .22) + '" fill="none" stroke="#4a4130" stroke-width=".7"/>' +
+                    '<path d="M' + (w * .21) + ' ' + (h * .775) + 'h' + (w * .16) + 'M' + (w * .21) + ' ' + (h * .85) + 'h' + (w * .16) + '" stroke="#4a4130" stroke-width=".5"/>' +
                     '<text class="io-lbl" x="' + (w * .29) + '" y="' + (h * .752) + '" text-anchor="middle" fill="#3b3325">CODE / DESIGN</text>' +
                     '<text class="io-lbl" x="' + (w * .29) + '" y="' + (h * .827) + '" text-anchor="middle" fill="#3b3325">CONTENT: 10 PCS</text>' +
+                    '<rect x="' + (w * .45) + '" y="' + (h * .72) + '" width="' + (w * .13) + '" height="' + (h * .16) + '" fill="#c99a3d" stroke="#7d5c1c" stroke-width=".6"/>' +
+                    '<text class="io-lbl" x="' + (w * .515) + '" y="' + (h * .81) + '" text-anchor="middle" fill="#2a1c05">AL SAMSI</text>' +
                     '<path class="io-fold" d="M' + x1 + ' 0V' + h + 'M' + x2 + ' 0V' + h + 'M' + x3 + ' 0V' + h + 'M' + x1 + ' ' + y1 + 'H' + w + '"/>' +
+                    // Lock bottom: lidah pengunci dasar dipotong di bawah garis y1.
+                    '<path class="io-die" d="M' + x1 + ' ' + y1 + 'H' + w + 'M' + ((x1 + x2) / 2) + ' ' + y1 + 'V' + (h * .98) + 'M' + ((x2 + x3) / 2) + ' ' + y1 + 'V' + (h * .98) + '"/>' +
                     '<path class="io-die" d="M' + x1 + ' ' + (h * .02) + 'H' + (w * .985) + 'V' + (h * .98) + 'H' + x1 + 'L' + (w * .015) + ' ' + (h * .77) + 'V' + (h * .23) + 'Z"/>' + cut;
             }
 
