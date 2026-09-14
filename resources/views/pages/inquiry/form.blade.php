@@ -205,7 +205,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'costing' => ['label' => '3. Costing', 'url' => null, 'reason' => 'Part ini Mode #2 (manual) -- tidak ada Inquiry utk dihitung Costing-nya.'],
                 'mastercard' => [
                     'label' => 'Master Card',
-                    'url' => $this->fromPart ? route('production.prodev.print', ['part' => $this->fromPart]) : null,
+                    'url' => $this->fromPart ? route('production.old-prodev.print', ['part' => $this->fromPart]) : null,
                 ],
                 'analytics' => ['label' => 'Analytics', 'url' => null, 'reason' => 'Modul Analytics belum dibangun.'],
             ];
@@ -231,7 +231,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             ],
             'mastercard' => [
                 'label' => 'Master Card',
-                'url' => $prodPartId ? route('production.prodev.print', ['part' => $prodPartId]) : null,
+                'url' => $prodPartId ? route('production.old-prodev.print', ['part' => $prodPartId]) : null,
                 'reason' => 'Belum ada part yang dikirim ke ProDev.',
             ],
             'analytics' => [

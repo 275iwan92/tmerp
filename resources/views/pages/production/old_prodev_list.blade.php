@@ -24,7 +24,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
     public function open(int $id): void
     {
-        $this->redirect(route('production.prodev', ['part' => $id]));
+        $this->redirect(route('production.old-prodev', ['part' => $id]));
     }
 
     #[Computed]

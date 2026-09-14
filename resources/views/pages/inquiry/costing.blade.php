@@ -520,7 +520,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             ],
             'mastercard' => [
                 'label' => 'Master Card',
-                'url' => $prodPartId ? route('production.prodev.print', ['part' => $prodPartId]) : null,
+                'url' => $prodPartId ? route('production.old-prodev.print', ['part' => $prodPartId]) : null,
                 'reason' => 'Belum ada part yang dikirim ke ProDev.',
             ],
             'analytics' => [

@@ -286,9 +286,17 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
             Route::livewire('/production/master-crew', 'pages::production.master-crew')->name('production.master-crew');
-            Route::livewire('/production/prodev-list', 'pages::production.prodev-list')->name('production.prodev.list');
+            // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari
+            // docs/mockups/mockup_prodev_imposition.html. Ini yang dipasang di
+            // menu (SALES_IMPO). Layar ProDev LAMA (workbench 3-kolom +
+            // grid + Master Card print) diarsipkan jadi old_prodev* di bawah:
+            // route-nya SENGAJA dipertahankan supaya data/alur lama tidak
+            // putus (ProCost Mode #1 masih baca prod_layout_group yang cuma
+            // bisa dibuat di sana), tapi TIDAK muncul di menu mana pun.
             Route::livewire('/production/prodev/{part?}', 'pages::production.prodev')->name('production.prodev')->where('part', '[0-9]+');
-            Route::livewire('/production/prodev/{part}/print', 'pages::production.prodev-print')->name('production.prodev.print')->where('part', '[0-9]+');
+            Route::livewire('/production/old-prodev-list', 'pages::production.old_prodev_list')->name('production.old-prodev.list');
+            Route::livewire('/production/old-prodev/{part?}', 'pages::production.old_prodev')->name('production.old-prodev')->where('part', '[0-9]+');
+            Route::livewire('/production/old-prodev/{part}/print', 'pages::production.old_prodev_print')->name('production.old-prodev.print')->where('part', '[0-9]+');
         });
 
         // Laporan Manajemen -- lintas modul (penjualan + pembelian + master),

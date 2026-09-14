@@ -88,13 +88,15 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             // griduistandard.md (grid dulu, baru klik-2x buka detail/tools/
             // engine) -- user menegaskan ulang butuh GRID depan (ringkasan
             // pekerjaan + status confirm per part) sebelum masuk workbench,
-            // bukan langsung nyemplung form. Sekarang -> production.prodev.list
-            // (grid baru, prodev-list.blade.php), yang barisnya double-click ke
-            // production.prodev per-part. Layar lama (inquiry.imposition.list)
-            // TETAP ADA di repo, cuma tidak ditaut dari menu manapun. Product
-            // Costing tetap module:COSTING (Sisi A rahasia, CLAUDE.md §4), cuma
-            // label dipendekkan "Pro-Cost".
-            'SALES_IMPO' => route('production.prodev.list'),
+            // bukan langsung nyemplung form.
+            // 2026-09-14 (instruksi user): ProDev diganti total ke layar baru
+            // "Imposition Plano Optimizer" (port mockup_prodev_imposition.html)
+            // -- SATU layar kerja, tanpa grid depan, jadi menu nunjuk langsung
+            // ke production.prodev. Grid+workbench+Master Card LAMA diarsipkan
+            // ke production.old-prodev* (route masih hidup untuk data lama,
+            // tapi sengaja TIDAK ditaut dari menu mana pun). Product Costing
+            // tetap module:COSTING (Sisi A rahasia, CLAUDE.md §4).
+            'SALES_IMPO' => route('production.prodev'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
@@ -148,8 +150,11 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'MD_HOLIDAY' => route('master.holiday'),
             'PROD_MST_PROCESS' => route('production.master-process'),
             'PROD_MST_CREW' => route('production.master-crew'),
-            'PROD_CARD' => route('production.prodev.list'),
-            'PROD_LAYOUT' => route('production.prodev.list'),
+            // Dua item ini activate=0 di sys_app_menu (belum pernah tayang);
+            // dipetakan ke ProDev baru supaya tidak jadi link mati kalau nanti
+            // diaktifkan -- Master Card lama ada di production.old-prodev.print.
+            'PROD_CARD' => route('production.prodev'),
+            'PROD_LAYOUT' => route('production.prodev'),
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),

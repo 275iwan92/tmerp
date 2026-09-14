@@ -113,7 +113,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             ],
             'development' => [
                 'label' => '2. Development',
-                'url' => route('production.prodev', ['part' => $this->partId]),
+                'url' => route('production.old-prodev', ['part' => $this->partId]),
             ],
             'costing' => [
                 'label' => '3. Costing',
@@ -122,7 +122,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
             ],
             'mastercard' => [
                 'label' => 'Master Card',
-                'url' => route('production.prodev.print', ['part' => $this->partId]),
+                'url' => route('production.old-prodev.print', ['part' => $this->partId]),
             ],
             'analytics' => [
                 'label' => 'Analytics',
@@ -158,7 +158,7 @@ new #[Title('Master Card — TELASIH MAKMUR ERP')] class extends Component
 
 <div>
 <div class="print:hidden">
-    <x-prodev.wizard-bar current="mastercard" :steps="$this->wizardSteps" :back-url="route('production.prodev.list')" />
+    <x-prodev.wizard-bar current="mastercard" :steps="$this->wizardSteps" :back-url="route('production.old-prodev.list')" />
 </div>
 {{-- Permintaan user 2026-09-09: format A4 LANDSCAPE + hitam-putih/grayscale
 (BUKAN toggle opsional spt .bw Nota Inquiry -- ini format tetap utk Master
@@ -174,7 +174,7 @@ tetap A4 portrait utk semua dokumen Nota lain, TIDAK disentuh. --}}
     :theme="['ink' => '#000000', 'muted' => '#555555', 'line' => '#000000', 'line2' => '#999999', 'accent' => '#000000', 'accent-soft' => '#ffffff', 'warn' => '#000000', 'gold' => '#000000', 'danger' => '#000000']"
     info="{{ $this->part->displayMastercardCode() }}">
     <x-slot:toolbar>
-        <a href="{{ route('production.prodev', ['part' => $this->partId]) }}" class="sc">← {{ Translator::t('prod_mc_back_to_prodev', 'Kembali ke ProDev') }}</a>
+        <a href="{{ route('production.old-prodev', ['part' => $this->partId]) }}" class="sc">← {{ Translator::t('prod_mc_back_to_prodev', 'Kembali ke ProDev') }}</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
