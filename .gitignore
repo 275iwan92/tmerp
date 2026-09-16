@@ -31,3 +31,10 @@ Thumbs.db
 # runtime yang di-ignore.
 /firebase/*-debug.log
 /firebase/.firebase/
+
+# Arsip instalasi ScriptCase V1 (3 GB) -- sumber baca-saja untuk migrasi, bukan
+# kode yang dijalankan. Termasuk 898 gambar Master Card di _lib/file/img yang
+# ditarik ProductImageIngestService ke storage/app/public/product/card.
+# Folder ini TIDAK ikut repo: kalau ingest perlu dijalankan ulang di mesin lain,
+# salin foldernya manual dulu.
+/docs/legacy_scriptcase/
