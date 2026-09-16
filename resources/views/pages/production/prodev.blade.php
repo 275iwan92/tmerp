@@ -289,6 +289,32 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         ];
     }
 
+    // Mesin plong/ponds: canvas harus muat di MEJA PLONG juga, bukan cuma bed
+    // mesin cetak (instruksi user 2026-09-16). max_paper_size seluruh mesin
+    // Potong SAAT INI kosong dan tidak ada brand_model untuk disimpulkan, jadi
+    // L/W sengaja dibiarkan null -- batas yang tidak diketahui TIDAK dikarang,
+    // cukup diberitahukan supaya diisi di Master Mesin.
+    #[Computed]
+    public function dieCutters(): array
+    {
+        return ProdMachine::where('activate', true)
+            ->where('machine_type', 'Potong')
+            ->orderBy('machine_name')
+            ->get()
+            ->map(function ($m) {
+                $bed = $this->parseBed($m->max_paper_size);
+
+                return [
+                    'id' => $m->machine_id,
+                    'name' => $m->machine_name,
+                    'L' => $bed['L'],
+                    'W' => $bed['W'],
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
     // "102x72", "102 x 72 cm", "1020x720" (mm) -> cm
     private function parseBed(?string $raw): array
     {
@@ -456,8 +482,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         window.__PRODEV = {
             jobs: @json($this->jobs),
             machines: @json($this->machines),
+            dieCutters: @json($this->dieCutters),
             planos: @json($this->planos),
             initialJob: @json($this->initialJobIndex),
+            gripperMm: @json(SysConstant::number('PRODEV_GRIPPER_MM', 12.0)),
+            marginMm: @json(SysConstant::number('PRODEV_MARGIN_MM', 8.0)),
         };
     </script>
 
@@ -631,6 +660,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <label>Printing machine</label>
                         <select id="io-machine"></select>
                         <div id="io-machineInfo" class="io-notice info"></div>
+                        <label>Mesin plong / ponds</label>
+                        <select id="io-diecut"></select>
+                        <div id="io-diecutInfo" class="io-notice info"></div>
                     </div>
                     <div class="io-group">
                         <h2>1. Jumlah Up</h2>
@@ -805,6 +837,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // cuma bawa angka tampilan, id-nya hilang begitu sampai di client.
             const machines = DATA.machines.map(m => [m.name, m.L, m.W, m.est, m.id]);
             const planos = DATA.planos.map(p => [p.name, p.L, p.W, p.id]);
+            // L/W bisa null = ukuran meja plong belum diisi di Master Mesin.
+            const diecutters = (DATA.dieCutters || []).map(d => [d.name, d.L, d.W, d.id]);
+            const GRIPPER = (DATA.gripperMm || 0) / 10;   // cm
+            const MARGIN = (DATA.marginMm || 0) / 10;     // cm
             if (!products.length || !machines.length || !planos.length) {
                 document.getElementById('io-valid').textContent =
                     'Data master belum lengkap: butuh minimal 1 part berdimensi, 1 mesin cetak, dan 1 ukuran plano aktif.';
@@ -823,6 +859,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 g: p0.gap || .3,
                 zoom: 1, auto: true, manualUp: 6, objs: [], selected: null, pl: planos[0], drag: null,
                 conv: 'pcs', touched: false, sc0: 0, sx0: 0, sy0: 0,
+                d: diecutters[0] || null,
             };
             const app = document.querySelector('.io-app');
 
@@ -1227,12 +1264,36 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 } catch (e) { S.overlapPx = 0; }
             }
 
-            function plainLattice(M, r, Lmm, Wmm, gap, label) {
+            // Pitch tidak bergantung ukuran canvas -- cuma pada bentuk, geseran, gap,
+            // dan berapa tetangga yang ada. Disimpan supaya penyapuan ribuan
+            // kombinasi canvas x plano tidak menghitung ulang uji tabrakan yang sama.
+            let maskSeq = 0;
+            const pitchMemo = new Map();
+
+            function maskId(m) {
+                return m._id || (m._id = ++maskSeq);
+            }
+
+            function memoNeed(kind, A, B, off, pitch, span) {
+                const lim = Math.min(3, Math.max(1, span || 1));
+                const key = kind + '|' + maskId(A) + '|' + maskId(B) + '|' + off + '|' + pitch + '|' + lim;
+                if (pitchMemo.has(key)) return pitchMemo.get(key);
+                const val = kind === 'x' ? needDx(A, B, off, pitch, lim) : needDy(A, B, off, pitch, lim);
+                pitchMemo.set(key, val);
+                return val;
+            }
+
+            // collect=false -> hanya menghitung jumlah up (dipakai saat menyapu banyak
+            // kombinasi); penempatan sesungguhnya baru dibangun untuk pemenangnya.
+            function plainLattice(M, r, Lmm, Wmm, gap, label, collect) {
                 const out = [];
+                let n = 0;
                 for (let y = 0; y + M.h <= Wmm + .001; y += M.h + gap)
-                    for (let x = 0; x + M.w <= Lmm + .001; x += M.w + gap)
-                        out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r, m: M });
-                return { up: out.length, placements: out, label };
+                    for (let x = 0; x + M.w <= Lmm + .001; x += M.w + gap) {
+                        n++;
+                        if (collect !== false) out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r, m: M });
+                    }
+                return { up: n, placements: out, label };
             }
 
             // Posisi tiap baris/kolom ditentukan BERTAHAP terhadap tetangga yang
@@ -1241,12 +1302,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // tanpa syarat, padahal di canvas kecil baris ke-3 tidak pernah ada --
             // akibatnya susunan yang sebetulnya muat ikut tertolak (kasus nyata:
             // canvas 9,6 x 8,4 cm mentok 1 up padahal 2 up muat).
-            function rowAltLattice(M0, M1, r, Lmm, Wmm, gap, sx, label) {
+            function rowAltLattice(M0, M1, r, Lmm, Wmm, gap, sx, label, collect) {
                 const pitchX = Math.max(M0.w, M1.w) + gap;
                 const cols = Math.max(1, Math.floor((Lmm - Math.max(M0.w, M1.w)) / pitchX) + 1);
-                const dAlt = [needDy(M0, M1, sx, pitchX, cols) + gap, needDy(M1, M0, -sx, pitchX, cols) + gap];
-                const dSame = [needDy(M0, M0, 0, pitchX, cols) + gap, needDy(M1, M1, 0, pitchX, cols) + gap];
+                const dAlt = [memoNeed('y', M0, M1, sx, pitchX, cols) + gap, memoNeed('y', M1, M0, -sx, pitchX, cols) + gap];
+                const dSame = [memoNeed('y', M0, M0, 0, pitchX, cols) + gap, memoNeed('y', M1, M1, 0, pitchX, cols) + gap];
                 const out = [], ys = [];
+                let n = 0;
 
                 for (let k = 0; k < 400; k++) {
                     let y = 0;
@@ -1257,19 +1319,22 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const odd = k % 2, M = odd ? M1 : M0, off = odd ? Math.max(0, sx) : 0;
                     if (y + M.h > Wmm + .001) break;
                     ys.push(y);
-                    for (let x = off; x + M.w <= Lmm + .001; x += pitchX)
-                        out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
+                    for (let x = off; x + M.w <= Lmm + .001; x += pitchX) {
+                        n++;
+                        if (collect !== false) out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
+                    }
                 }
 
-                return { up: out.length, placements: out, label };
+                return { up: n, placements: out, label };
             }
 
-            function colAltLattice(M0, M1, r, Lmm, Wmm, gap, sy, label) {
+            function colAltLattice(M0, M1, r, Lmm, Wmm, gap, sy, label, collect) {
                 const pitchY = Math.max(M0.h, M1.h) + gap;
                 const rows = Math.max(1, Math.floor((Wmm - Math.max(M0.h, M1.h)) / pitchY) + 1);
-                const dAlt = [needDx(M0, M1, sy, pitchY, rows) + gap, needDx(M1, M0, -sy, pitchY, rows) + gap];
-                const dSame = [needDx(M0, M0, 0, pitchY, rows) + gap, needDx(M1, M1, 0, pitchY, rows) + gap];
+                const dAlt = [memoNeed('x', M0, M1, sy, pitchY, rows) + gap, memoNeed('x', M1, M0, -sy, pitchY, rows) + gap];
+                const dSame = [memoNeed('x', M0, M0, 0, pitchY, rows) + gap, memoNeed('x', M1, M1, 0, pitchY, rows) + gap];
                 const out = [], xs = [];
+                let n = 0;
 
                 for (let k = 0; k < 400; k++) {
                     let x = 0;
@@ -1280,11 +1345,173 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const odd = k % 2, M = odd ? M1 : M0, off = odd ? Math.max(0, sy) : 0;
                     if (x + M.w > Lmm + .001) break;
                     xs.push(x);
-                    for (let y = off; y + M.h <= Wmm + .001; y += pitchY)
-                        out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
+                    for (let y = off; y + M.h <= Wmm + .001; y += pitchY) {
+                        n++;
+                        if (collect !== false) out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
+                    }
                 }
 
-                return { up: out.length, placements: out, label };
+                return { up: n, placements: out, label };
+            }
+
+            // Daftar pola + geseran yang dijajal, dihitung sekali per bentuk blank.
+            function patternConfigs(base) {
+                const cfgs = [];
+
+                for (const b of [0, 90]) {
+                    const M0 = rotMask(base, b), M1 = rotMask(base, (b + 180) % 360);
+                    const tag = b ? ' · rotate 90°' : '';
+                    cfgs.push({ kind: 'plain', M0, M1, r: b, s: 0, label: 'Grid standar' + tag });
+
+                    const stepX = Math.max(1, Math.round(M0.w / 16)), stepY = Math.max(1, Math.round(M0.h / 16));
+                    for (let sx = 0; sx < M0.w; sx += stepX)
+                        cfgs.push({ kind: 'row', M0, M1, r: b, s: sx, label: 'Interlock antar-baris (180°)' + (sx ? ' geser ' + Math.round(sx / M0.w * 100) + '%' : '') + tag });
+                    for (let sy = 0; sy < M0.h; sy += stepY)
+                        cfgs.push({ kind: 'col', M0, M1, r: b, s: sy, label: 'Interlock antar-kolom (180°)' + (sy ? ' geser ' + Math.round(sy / M0.h * 100) + '%' : '') + tag });
+                }
+
+                return cfgs;
+            }
+
+            function buildLattice(cfg, Lmm, Wmm, gap, collect) {
+                if (cfg.kind === 'plain') return plainLattice(cfg.M0, cfg.r, Lmm, Wmm, gap, cfg.label, collect);
+                if (cfg.kind === 'row') return rowAltLattice(cfg.M0, cfg.M1, cfg.r, Lmm, Wmm, gap, cfg.s, cfg.label, collect);
+                return colAltLattice(cfg.M0, cfg.M1, cfg.r, Lmm, Wmm, gap, cfg.s, cfg.label, collect);
+            }
+
+            // Pola terbaik untuk SATU ukuran canvas. Saat menyapu (collect=false)
+            // tabrakan belum diuji demi kecepatan -- pemenangnya diuji belakangan.
+            function bestLattice(cfgs, Lmm, Wmm, gap, collect) {
+                let best = null, plainBest = 0, ditolak = 0;
+
+                for (const cfg of cfgs) {
+                    const c = buildLattice(cfg, Lmm, Wmm, gap, collect);
+                    if (!c.up) continue;
+                    if (collect !== false && collides(c.placements, Lmm, Wmm)) { ditolak++; continue; }
+                    if (cfg.kind === 'plain' && c.up > plainBest) plainBest = c.up;
+                    if (!best || c.up > best.up) best = c;
+                }
+
+                return best ? Object.assign(best, { plainBest, ditolak }) : null;
+            }
+
+            function applyPlacements(placements, label, offX, offY) {
+                if (!S.auto && S.manualUp < placements.length) placements = placements.slice(0, S.manualUp);
+
+                const dx = offX || 0, dy = offY || 0;
+                const sc = S.sc0, ow = S.p.l * sc, oh = S.p.w * sc;
+                S.objs = placements.map((p, i) => ({
+                    id: 'a' + i,
+                    x: S.sx0 + (p.x + dx + p.w / 2) / 10 * sc - ow / 2,
+                    y: S.sy0 + (p.y + dy + p.h / 2) / 10 * sc - oh / 2,
+                    w: ow, h: oh, r: p.r, fx: 1, fy: 1,
+                }));
+                S.selected = null;
+                S.touched = true;
+                S.autoNestInfo = label;
+                S.overlapPx = 0;   // sudah lolos verifikasi collides()
+                render(); calculator();
+            }
+
+            // Optimasi MENYELURUH: canvas & plano ikut dipilih engine (disetujui user
+            // 2026-09-16). Ukuran canvas dicoba dari pembagian plano jadi nc x nr
+            // bagian sama besar -- itu cara potong guillotine yang lazim dan tidak
+            // menyisakan trim. Yang diperbandingkan BUKAN up per canvas (itu memihak
+            // canvas besar) melainkan LUAS BAHAN PER PCS: plano besar otomatis
+            // menghasilkan lebih banyak pcs tapi juga memakan bahan lebih banyak.
+            // Sejalan dengan proxy biaya yang sudah dipakai engine lama
+            // (ImpositionEngine::bestSheet: luas_plano / up, karena mat_plano_size
+            // memang tidak menyimpan harga).
+            async function optimizeSheet() {
+                const btn = $('suggest'), label = btn.textContent;
+                btn.disabled = true; btn.textContent = 'Menghitung…';
+
+                try {
+                    const base = await maskFor(S.p);
+                    const cfgs = patternConfigs(base);
+                    const gap = Math.max(0, Math.round(S.g * 10));
+                    const [limL, limW] = bedLimits();
+                    const bedL = limL * 10, bedW = limW * 10;
+                    // Area yang benar-benar bisa dicetak = canvas dikurangi gripper
+                    // (1 sisi jepitan) dan margin keliling. Tanpa ini optimizer
+                    // sempat memilih canvas 54,5 x 6 cm -- strip setinggi 6 cm yang
+                    // mustahil dijalankan di mesin offset.
+                    const grip = Math.round(GRIPPER * 10), marg = Math.round(MARGIN * 10);
+                    const usable = (l, w) => [l - 2 * marg, w - grip - marg];
+                    const upCache = new Map();
+                    let best = null;
+
+                    for (let pi = 0; pi < planos.length; pi++) {
+                        const P = planos[pi];
+                        const area = P[1] * P[2];   // cm2
+
+                        for (const [pl, pw] of [[P[1] * 10, P[2] * 10], [P[2] * 10, P[1] * 10]]) {
+                            for (let nc = 1; nc <= 14; nc++) {
+                                const cl = Math.floor(pl / nc);
+                                if (cl > bedL || cl < 10) continue;
+
+                                for (let nr = 1; nr <= 14; nr++) {
+                                    const cw = Math.floor(pw / nr);
+                                    if (cw > bedW || cw < 10) continue;
+
+                                    const [ul, uw] = usable(cl, cw);
+                                    if (ul <= 0 || uw <= 0) continue;
+
+                                    // Banyak kombinasi (plano, nc, nr) menghasilkan ukuran
+                                    // canvas yang sama persis -- hasil nestingnya pun sama,
+                                    // jadi cukup dihitung sekali.
+                                    const key = ul + 'x' + uw;
+                                    let cand = upCache.get(key);
+                                    if (cand === undefined) {
+                                        cand = bestLattice(cfgs, ul, uw, gap, false);
+                                        upCache.set(key, cand);
+                                    }
+                                    if (!cand) continue;
+
+                                    const pcs = nc * nr * cand.up;
+                                    const perPc = area / pcs;   // cm2 bahan per pcs -- makin kecil makin hemat
+                                    if (!best || perPc < best.perPc - 1e-9) {
+                                        best = { perPc, pcs, up: cand.up, planoIndex: pi, L: cl / 10, W: cw / 10, nc, nr, label: cand.label };
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!best) { msg('Tidak ada kombinasi canvas/plano yang muat di mesin ini.', 'bad'); return; }
+
+                    const sebelum = hasilPerPlano();
+
+                    S.pl = planos[best.planoIndex];
+                    $('plano').value = String(best.planoIndex);
+                    S.L = +best.L.toFixed(1); S.W = +best.W.toFixed(1);
+                    $('sl').value = S.L; $('sw').value = S.W;
+                    S.objs = [];
+                    update(true);
+
+                    // Pemenang baru dibangun penempatannya + diuji tabrakan di sini,
+                    // lalu digeser masuk ke area cetak (gripper + margin).
+                    const [ul, uw] = usable(Math.round(S.L * 10), Math.round(S.W * 10));
+                    const win = bestLattice(cfgs, ul, uw, gap, true);
+                    if (win) applyPlacements(win.placements, win.label, marg, grip);
+
+                    const sesudah = hasilPerPlano();
+                    $('suggestNote').textContent = 'Canvas ' + S.L + ' × ' + S.W + ' cm (plano dibagi ' + best.nc + ' × ' + best.nr + ')'
+                        + ' · plano ' + S.pl[0] + ' · ' + (win ? win.up : best.up) + ' up/canvas.';
+                    msg('Optimasi bahan: ' + S.pl[0] + ', canvas ' + S.L + ' × ' + S.W + ' cm, ' + (win ? win.label : best.label)
+                        + ' → ' + sesudah + ' pcs/plano (' + best.perPc.toFixed(1) + ' cm² bahan per pcs)'
+                        + (sebelum && sesudah > sebelum ? ' · sebelumnya ' + sebelum + ' pcs/plano' : ''), 'ok');
+                } catch (e) {
+                    msg('Optimasi gagal: ' + (e && e.message ? e.message : e), 'bad');
+                } finally {
+                    btn.disabled = false; btn.textContent = label;
+                }
+            }
+
+            function hasilPerPlano() {
+                if (!ok()) return 0;
+                const c = cut(S.pl);
+                return c.n * (S.objs.length || selectedUp());
             }
 
             async function autoNest() {
@@ -1294,65 +1521,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 btn.disabled = true; btn.textContent = 'Menghitung…';
 
                 try {
-                    const job = S.p;
-                    const base = await maskFor(job);
+                    const base = await maskFor(S.p);
                     const gap = Math.max(0, Math.round(S.g * 10));
-                    const Lmm = Math.round(S.L * 10), Wmm = Math.round(S.W * 10);
-                    const cands = [];
+                    const best = bestLattice(patternConfigs(base), Math.round(S.L * 10), Math.round(S.W * 10), gap, true);
 
-                    for (const b of [0, 90]) {
-                        const M0 = rotMask(base, b), M1 = rotMask(base, (b + 180) % 360);
-                        const tag = b ? ' · rotate 90°' : '';
-                        cands.push(plainLattice(M0, b, Lmm, Wmm, gap, 'Grid standar' + tag));
+                    if (!best) { msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad'); return; }
 
-                        // Geseran disapu halus (~16 langkah), bukan cuma 0/25/50/75%:
-                        // posisi saling-kunci terbaik sering di offset yang tidak bulat,
-                        // dan uji tabrakan berbasis bit sudah cukup murah untuk itu.
-                        const stepX = Math.max(1, Math.round(M0.w / 16)), stepY = Math.max(1, Math.round(M0.h / 16));
+                    applyPlacements(best.placements, best.label);
 
-                        for (let sx = 0; sx < M0.w; sx += stepX) {
-                            const pct = sx ? ' geser ' + Math.round(sx / M0.w * 100) + '%' : '';
-                            cands.push(rowAltLattice(M0, M1, b, Lmm, Wmm, gap, sx, 'Interlock antar-baris (180°)' + pct + tag));
-                        }
-
-                        for (let sy = 0; sy < M0.h; sy += stepY) {
-                            const pct = sy ? ' geser ' + Math.round(sy / M0.h * 100) + '%' : '';
-                            cands.push(colAltLattice(M0, M1, b, Lmm, Wmm, gap, sy, 'Interlock antar-kolom (180°)' + pct + tag));
-                        }
-                    }
-
-                    // Semua kandidat dibuktikan dulu: yang objectnya masih saling
-                    // tembus dibuang, bukan sekadar diperingatkan.
-                    const valid = cands.filter(c => c.up > 0 && !collides(c.placements, Lmm, Wmm));
-                    const ditolak = cands.filter(c => c.up > 0).length - valid.length;
-
-                    const plainBest = Math.max(...valid.filter(c => c.label.startsWith('Grid standar')).map(c => c.up), 0);
-                    let best = null;
-                    for (const c of valid) if (!best || c.up > best.up) best = c;
-
-                    if (!best || !best.up) { msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad'); return; }
-
-                    let placements = best.placements;
-                    if (!S.auto && S.manualUp < placements.length) placements = placements.slice(0, S.manualUp);
-
-                    const sc = S.sc0, ow = job.l * sc, oh = job.w * sc;
-                    S.objs = placements.map((p, i) => ({
-                        id: 'a' + i,
-                        x: S.sx0 + (p.x + p.w / 2) / 10 * sc - ow / 2,
-                        y: S.sy0 + (p.y + p.h / 2) / 10 * sc - oh / 2,
-                        w: ow, h: oh, r: p.r, fx: 1, fy: 1,
-                    }));
-                    S.selected = null;
-                    S.touched = true;
-                    S.autoNestInfo = best.label;
-                    S.overlapPx = 0;   // sudah lolos verifikasi collides() di atas
-                    render(); calculator();
-
-                    const gain = plainBest ? Math.round((best.up - plainBest) / plainBest * 100) : 0;
+                    const gain = best.plainBest ? Math.round((best.up - best.plainBest) / best.plainBest * 100) : 0;
                     msg('Auto nesting: ' + best.label + ' → ' + best.up + ' up'
-                        + (gain > 0 ? ' (+' + gain + '% vs grid standar, ' + (best.up - plainBest) + ' up lebih banyak)'
+                        + (gain > 0 ? ' (+' + gain + '% vs grid standar, ' + (best.up - best.plainBest) + ' up lebih banyak)'
                             : ' (grid standar sudah paling padat untuk bentuk ini)')
-                        + (ditolak ? ' · ' + ditolak + ' pola ditolak krn masih bertabrakan' : '')
+                        + (best.ditolak ? ' · ' + best.ditolak + ' pola ditolak krn masih bertabrakan' : '')
                         + (base.shaped ? '' : ' · tipe ini belum punya dieline, dihitung sebagai kotak polos'), 'ok');
                 } catch (e) {
                     msg('Auto nesting gagal: ' + (e && e.message ? e.message : e), 'bad');
@@ -1364,6 +1545,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function init() {
                 products.forEach((x, i) => $('product').add(new Option(x.name, i)));
                 machines.forEach((x, i) => $('machine').add(new Option(x[0], i)));
+                diecutters.forEach((x, i) => $('diecut').add(new Option(x[0], i)));
                 planos.forEach((x, i) => $('plano').add(new Option(x[0], i)));
                 $('product').value = String(products.indexOf(S.p));
                 $('jobcount').textContent = products.length + ' JOB SIAP IMPOSISI';
@@ -1405,6 +1587,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     artworkLabel(); syncActiveJob(); suggest();
                 };
                 $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); };
+                $('diecut').onchange = e => { S.d = diecutters[e.target.value]; S.objs = []; suggest(); };
                 $('autoUp').onchange = e => {
                     S.auto = e.target.checked;
                     upModeUi();
@@ -1414,7 +1597,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     S.manualUp = Math.max(1, +e.target.value || 1);
                     if (!S.auto) { S.objs = []; update(true); }
                 };
-                $('suggest').onclick = suggest;
+                // Ditekan user = optimasi menyeluruh (canvas + plano + pola).
+                // Kalau susunan sudah diatur MANUAL (bukan hasil auto nesting),
+                // perilaku lama dipertahankan: canvas dipaskan ke susunan itu.
+                $('suggest').onclick = () => {
+                    if (S.touched && S.objs.length && !S.autoNestInfo) { fitToLayout(); return; }
+                    optimizeSheet();
+                };
                 $('plano').onchange = e => { S.pl = planos[e.target.value]; update(false); };
                 $('custom').onclick = () => {
                     const l = +$('cpl').value, w = +$('cpw').value;
@@ -1470,7 +1659,21 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('wrap').style.transform = 'scale(' + S.zoom + ')';
                 $('zoom').textContent = Math.round(S.zoom * 100) + '%';
             }
-            function ok() { return S.L > 0 && S.W > 0 && S.L <= S.m[1] && S.W <= S.m[2]; }
+            // Canvas wajib muat di MEJA MESIN CETAK **dan** MEJA MESIN PLONG
+            // (instruksi user 2026-09-16) -- lembar yang muat di press tapi tidak
+            // muat di plong tetap tidak bisa diproduksi. Meja plong yang belum
+            // diisi di Master Mesin tidak dikarang: batasnya sekadar tidak
+            // diberlakukan, dan panel infonya mengatakan itu terang-terangan.
+            function bedLimits() {
+                let L = S.m[1], W = S.m[2];
+                if (S.d && S.d[1] && S.d[2]) { L = Math.min(L, S.d[1]); W = Math.min(W, S.d[2]); }
+                return [L, W];
+            }
+
+            function ok() {
+                const [bl, bw] = bedLimits();
+                return S.L > 0 && S.W > 0 && S.L <= bl && S.W <= bw;
+            }
             function fit(L, W, a, b, g) {
                 const c = Math.floor((L + g) / (a + g)), r = Math.floor((W + g) / (b + g));
                 return { ups: c * r, c, r, rot: false };
@@ -1539,6 +1742,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 metrics();
                 $('machineInfo').innerHTML = '<b>' + S.m[0] + '</b><br>Maximum printable bed: <b>' + S.m[1] + ' × ' + S.m[2] + ' cm</b>'
                     + (S.m[3] ? '<br><span style="color:#ffd9a1">⚠ max_paper_size belum diisi di Master Mesin — angka di atas asumsi.</span>' : '');
+                $('diecutInfo').innerHTML = !S.d
+                    ? '<span style="color:#ffd9a1">⚠ Belum ada mesin plong aktif di Master Mesin.</span>'
+                    : '<b>' + S.d[0] + '</b><br>' + (S.d[1] && S.d[2]
+                        ? 'Maksimum meja plong: <b>' + S.d[1] + ' × ' + S.d[2] + ' cm</b>'
+                        : '<span style="color:#ffd9a1">⚠ Ukuran meja belum diisi di Master Mesin — batas plong belum bisa ditegakkan, canvas baru dibatasi bed mesin cetak saja.</span>');
                 if (reset) S.objs = [];
                 render();
                 calculator();
@@ -1563,12 +1771,14 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             function render() {
                 if (!ok()) {
+                    const [bl, bw] = bedLimits();
+                    const pembatas = (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2])) ? S.d[0] + ' (plong)' : S.m[0];
                     $('arts').innerHTML = ''; $('grainG').innerHTML = '';
                     $('sheetLabel').textContent = 'CANVAS ' + S.L + ' × ' + S.W + ' cm — DI LUAR BATAS MESIN';
-                    $('warning').innerHTML = '⚠ Canvas ' + S.L + ' × ' + S.W + ' cm melebihi bed ' + S.m[0] +
-                        '<br>Maksimum ' + S.m[1] + ' × ' + S.m[2] + ' cm — ' + S.objs.length + ' object disembunyikan';
+                    $('warning').innerHTML = '⚠ Canvas ' + S.L + ' × ' + S.W + ' cm melebihi meja ' + pembatas +
+                        '<br>Maksimum ' + bl + ' × ' + bw + ' cm — ' + S.objs.length + ' object disembunyikan';
                     $('warning').classList.add('show');
-                    msg('Invalid: canvas tidak boleh melebihi ' + S.m[1] + ' × ' + S.m[2] + ' cm pada ' + S.m[0] + '.', 'bad');
+                    msg('Invalid: canvas tidak boleh melebihi ' + bl + ' × ' + bw + ' cm (batas ' + pembatas + ').', 'bad');
                     $('status').textContent = 'Validation failed';
                     return;
                 }
