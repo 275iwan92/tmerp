@@ -87,6 +87,11 @@ class MasterCardMigrationService
                 'card_description' => $this->blank($c->mastercard_description),
                 'form_joint' => $this->blank($c->form_joint),
                 'type_joint' => $this->blank($c->type_joint),
+                // preview_print = gambar kartu yang benar-benar ada di arsip
+                // (435/435 ketemu di disk); design_print_filename cuma terisi 1
+                // baris & filenya tidak ada. Keduanya dibawa, yang dipakai
+                // ProductImageIngestService adalah preview_filename.
+                'preview_filename' => $this->blank($c->preview_print),
                 'design_filename' => $this->blank($c->design_print_filename),
                 'created_at' => $now,
                 'updated_at' => $now,

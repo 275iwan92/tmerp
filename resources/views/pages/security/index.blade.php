@@ -466,6 +466,20 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
         $this->masterCardMigrationReport = app(\App\Services\Migration\MasterCardMigrationService::class)->run(Auth::user()->login);
     }
 
+    public ?array $productImageReport = null;
+
+    public function runProductImageIngest(): void
+    {
+        $this->productImageReport = app(\App\Services\Migration\ProductImageIngestService::class)->run(Auth::user()->login);
+    }
+
+    public ?array $productEnrichmentReport = null;
+
+    public function runProductEnrichment(): void
+    {
+        $this->productEnrichmentReport = app(\App\Services\Migration\ProductEnrichmentService::class)->run(Auth::user()->login);
+    }
+
     public ?array $loginProvisionReport = null;
 
     public bool $loginProvisionRunning = false;
@@ -967,6 +981,8 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         ['title' => 'tm2old.mst_uom(_conversion) → uom_unit / uom_conversion', 'note' => 'Master V2 yang sudah ada MENANG — legacy hanya menambal kode satuan yang belum ada.', 'action' => 'runUomMigration', 'report' => 'uomMigrationReport'],
                         ['title' => 'tm2old.mst_* (lookup pendukung) → ref_legacy_lookup', 'note' => 'Semua lookup kecil digabung ke satu tabel (kolom lookup_group), bukan puluhan tabel kurus. Tabel >300 baris dilaporkan sebagai "perlu desain terpisah", tidak dijejalkan ke sini.', 'action' => 'runLookupMigration', 'report' => 'lookupMigrationReport'],
                         ['title' => 'tm2old Master Card → prod_card_legacy dkk (rekayasa produk)', 'note' => 'Bahan, urutan proses + mesin, dan pisau per produk. Jembatan ke item lewat mst_product_mc.', 'action' => 'runMasterCardMigration', 'report' => 'masterCardMigrationReport'],
+                        ['title' => 'Gambar Master Card → Master Produk (prod_product.image_path)', 'note' => 'Wajib jalan SESUDAH Master Card. 435 kartu punya nama file & semuanya ada di arsip ScriptCase; lewat jembatan mst_product_mc tembus ke 483 produk (389 file dipakai bersama). File disalin 1x per kartu + thumbnail 480px ke storage/app/public/product/card.', 'action' => 'runProductImageIngest', 'report' => 'productImageReport'],
+                        ['title' => 'Klasifikasi mst_item → customer_id / category_id / brand_name', 'note' => 'Melengkapi kolom yang dilewat ProductMigrationService. goods_belongto dicocokkan ke cust_customer.nickname (exact, nickname ganda dibuang), goods_purpose dipetakan ke kategori lewat kata kunci. Dimensi cm_* TETAP tidak diisi — satuan di sumber campur mm/cm tanpa penanda.', 'action' => 'runProductEnrichment', 'report' => 'productEnrichmentReport'],
                     ];
                 @endphp
 

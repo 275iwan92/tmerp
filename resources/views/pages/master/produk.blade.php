@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdCategory;
 use App\Models\Master\ProdProduct;
@@ -9,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 // Master Produk (menu MD_PROD). Grid+form standar header prod_product, paralel
 // ke Customer/Supplier/dst -- BUKAN layar "Master Card" (PROD_CARD, modul
@@ -20,7 +22,16 @@ use Livewire\Component;
 // itu posisi stok transaksional dari ledger Inventory, bukan master data).
 new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
+    use WithPagination;
+
     public string $search = '';
+
+    public ?int $filterCategory = null;
+
+    public bool $filterWithImage = false;
+
+    public bool $filterUnclassified = false;
 
     public string $panel = 'grid'; // grid | form
 
@@ -72,6 +83,20 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
     public bool $product_activate = true;
 
+    // Read-only di form: berasal dari Master Card legacy & klasifikasi mst_item,
+    // bukan diisi user. Ditampilkan supaya asal-usul datanya kelihatan.
+    public ?string $image_path = null;
+
+    public ?int $image_source_card_id = null;
+
+    public string $brand_name = '';
+
+    public string $old_item_code = '';
+
+    public string $old_goods_purpose = '';
+
+    // Dulu ->get() polos: 14.010 baris + eager load dikirim ke browser tiap
+    // render. Sekarang paginasi server-side (grid_performance, globalrules.yaml).
     #[Computed]
     public function products()
     {
@@ -79,9 +104,42 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             ->with(['category', 'customer'])
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('product_code', 'like', "%{$this->search}%")
-                ->orWhere('product_name', 'like', "%{$this->search}%")))
+                ->orWhere('product_name', 'like', "%{$this->search}%")
+                ->orWhere('old_item_code', 'like', "%{$this->search}%")
+                ->orWhere('brand_name', 'like', "%{$this->search}%")))
+            ->when($this->filterCategory, fn ($q) => $q->where('category_id', $this->filterCategory))
+            ->when($this->filterWithImage, fn ($q) => $q->whereNotNull('image_path'))
+            ->when($this->filterUnclassified, fn ($q) => $q->whereNull('category_id')->whereNull('customer_id'))
             ->orderBy('product_name')
-            ->get();
+            ->paginate($this->perPage);
+    }
+
+    // Pindah halaman tanpa reset = "tidak ada hasil" palsu saat filter dipersempit
+    // dari halaman 40.
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterCategory(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterWithImage(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedFilterUnclassified(): void
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->reset(['search', 'filterCategory', 'filterWithImage', 'filterUnclassified']);
+        $this->resetPage();
     }
 
     #[Computed]
@@ -153,6 +211,12 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         return ProdProduct::where('activate', false)->count();
     }
 
+    #[Computed]
+    public function statWithImage(): int
+    {
+        return ProdProduct::whereNotNull('image_path')->count();
+    }
+
     public function openModal(string $mode, ?int $id = null): void
     {
         $this->resetErrorBag();
@@ -183,12 +247,18 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             $this->product_is_confirmed = (bool) $p->stat_confirm;
             $this->product_activate = (bool) $p->activate;
             $this->lockedSpec = (bool) $p->stat_confirm;
+            $this->image_path = $p->image_path;
+            $this->image_source_card_id = $p->image_source_card_id;
+            $this->brand_name = (string) $p->brand_name;
+            $this->old_item_code = (string) $p->old_item_code;
+            $this->old_goods_purpose = (string) $p->old_goods_purpose;
         } else {
             $this->reset([
                 'product_code', 'product_name', 'category_id', 'customer_id', 'customer_label', 'custQuery',
                 'description', 'uom_stock', 'uom_sales', 'qty_limit_min', 'qty_limit_max',
                 'cm_length', 'cm_width', 'cm_height', 'min_stock', 'max_stock',
                 'default_selling_price', 'minimum_selling_price',
+                'image_path', 'image_source_card_id', 'brand_name', 'old_item_code', 'old_goods_purpose',
             ]);
             $this->conversion_to_stock = '1';
             $this->product_is_confirmed = false;
@@ -214,6 +284,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         $data = $this->validate([
             'product_code' => ['required', 'string', 'max:100', $unique],
             'product_name' => ['required', 'string', 'max:200'],
+            'brand_name' => ['nullable', 'string', 'max:50'],
             'category_id' => ['nullable', 'integer', 'exists:tm2mst.prod_category,id_category'],
             'customer_id' => ['nullable', 'integer', 'exists:tm2mst.cust_customer,id_customer'],
             'description' => ['nullable', 'string'],
@@ -236,6 +307,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         $payload = [
             'product_code' => trim($data['product_code']),
             'product_name' => $data['product_name'],
+            'brand_name' => $data['brand_name'] ?: null,
             'category_id' => $data['category_id'] ?: null,
             'customer_id' => $data['customer_id'] ?: null,
             'description' => $data['description'] ?: null,
@@ -263,7 +335,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             ProdProduct::create($payload);
         }
 
-        unset($this->products, $this->statTotal, $this->statActive, $this->statConfirmed, $this->statInactive);
+        unset($this->products, $this->statTotal, $this->statActive, $this->statConfirmed, $this->statInactive, $this->statWithImage);
         $this->panel = 'grid';
     }
 
@@ -274,7 +346,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
         $p->updated_by = Auth::user()->login;
         $p->save();
 
-        unset($this->products, $this->statTotal, $this->statActive, $this->statConfirmed, $this->statInactive);
+        unset($this->products, $this->statTotal, $this->statActive, $this->statConfirmed, $this->statInactive, $this->statWithImage);
     }
 
     // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
@@ -287,10 +359,11 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <x-grid.stat-row :count="4">
+        <x-grid.stat-row :count="5">
             <x-grid.stat-box tone="total" label="{{ Translator::t('mdata_prod_stat_total', 'Total Produk') }}" :value="$this->statTotal" />
             <x-grid.stat-box tone="active" label="{{ Translator::t('mdata_active', 'Aktif') }}" :value="$this->statActive" />
             <x-grid.stat-box tone="extra" label="{{ Translator::t('mdata_prod_stat_confirmed', 'Terkonfirmasi') }}" subtitle="{{ Translator::t('mdata_prod_stat_confirmed_subtitle', 'SPEC TERKUNCI') }}" :value="$this->statConfirmed" />
+            <x-grid.stat-box tone="extra" label="Bergambar" subtitle="DARI MASTER CARD" :value="$this->statWithImage" />
             <x-grid.stat-box tone="critical" label="{{ Translator::t('mdata_inactive', 'Nonaktif') }}" :value="$this->statInactive" />
         </x-grid.stat-row>
 
@@ -298,9 +371,24 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('mdata_prod_search_placeholder', 'Cari kode / nama produk…') }}"
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode / nama / kode lama / merek…"
                         class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
+                <select wire:model.live="filterCategory" class="shrink-0 px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-white">
+                    <option value="">Semua kategori</option>
+                    @foreach ($this->categoryOptions as $c)
+                        <option value="{{ $c->id_category }}">{{ $c->category_name }}</option>
+                    @endforeach
+                </select>
+                <label class="shrink-0 flex items-center gap-1.5 text-xs cursor-pointer" title="Hanya produk yang punya gambar Master Card">
+                    <input type="checkbox" wire:model.live="filterWithImage"> 🖼 Bergambar
+                </label>
+                <label class="shrink-0 flex items-center gap-1.5 text-xs cursor-pointer" title="Belum punya kategori maupun customer — antrean pembersihan data">
+                    <input type="checkbox" wire:model.live="filterUnclassified"> ⚠ Belum terklasifikasi
+                </label>
+                @if ($search !== '' || $filterCategory || $filterWithImage || $filterUnclassified)
+                    <button type="button" wire:click="clearFilters" class="shrink-0 px-2 py-1.5 rounded text-xs border border-[#d7dbe2] bg-white cursor-pointer">Reset</button>
+                @endif
                 <x-slot:newRecord>
                     <button type="button" wire:click="openModal('new')"
                         class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
@@ -314,7 +402,8 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('mdata_prod_col_product', 'Produk') }}</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('mdata_rm_col_category', 'Kategori') }}</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[170px]">Customer</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[130px]">{{ Translator::t('mdata_prod_col_dimension', 'Dimensi (cm)') }}</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Merek / Peruntukan</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('mdata_prod_col_dimension', 'Dimensi (cm)') }}</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">{{ Translator::t('proc_col_status', 'Status') }}</th>
                             <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('proc_col_action', 'Aksi') }}</th>
                         </tr>
@@ -322,9 +411,36 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->products as $p)
                             <tr wire:key="prod-{{ $p->id_product }}" wire:dblclick="openModal('edit', {{ $p->id_product }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
-                                <x-grid.identity-cell :id="$p->id_product" :name="$p->product_name ?: '—'" :code="$p->product_code" />
+                                {{-- Ikut pola foto Master Employee: thumbnail menggantikan avatar
+                                     inisial kalau produk punya gambar Master Card, klik = perbesar. --}}
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    <div class="flex items-center gap-2.5">
+                                        @if ($p->image_thumb_path)
+                                            <img src="{{ asset('storage/'.$p->image_thumb_path) }}" alt="{{ $p->product_name }}" loading="lazy"
+                                                @click.stop="$dispatch('show-product-image', { src: '{{ asset('storage/'.$p->image_path) }}', name: @js($p->product_name) })"
+                                                class="w-9 h-9 rounded-md object-cover shrink-0 border border-[#d9dfe8] cursor-zoom-in bg-white"
+                                                title="Klik untuk perbesar">
+                                        @else
+                                            <div class="w-9 h-9 rounded-md bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient((int) $p->id_product) }} text-white text-[11px] font-bold flex items-center justify-center shrink-0">{{ \App\Support\Grid\Avatar::initials($p->product_name ?: '?') }}</div>
+                                        @endif
+                                        <div class="min-w-0">
+                                            <div class="font-semibold text-[13px] truncate">{{ $p->product_name ?: '—' }}</div>
+                                            <div class="text-[11px] text-muted font-mono truncate">{{ $p->product_code }}</div>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->category->category_name ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $p->customer->customer_name ?? '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    @if ($p->brand_name || $p->old_goods_purpose)
+                                        <div class="truncate">{{ $p->brand_name ?: '—' }}</div>
+                                        @if ($p->old_goods_purpose)
+                                            <div class="text-[11px] text-muted truncate">{{ $p->old_goods_purpose }}</div>
+                                        @endif
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] font-mono">
                                     @if ($p->cm_length || $p->cm_width || $p->cm_height)
                                         {{ rtrim(rtrim(number_format($p->cm_length, 1), '0'), '.') }}×{{ rtrim(rtrim(number_format($p->cm_width, 1), '0'), '.') }}×{{ rtrim(rtrim(number_format($p->cm_height, 1), '0'), '.') }}
@@ -348,11 +464,27 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="{{ Translator::t('mdata_prod_empty', 'Tidak ada produk.') }}" />
+                            <x-grid.empty-row :colspan="7" message="{{ Translator::t('mdata_prod_empty', 'Tidak ada produk.') }}" />
                         @endforelse
                     </tbody>
                 </table>
             </x-grid.table-shell>
+
+            @include('components.grid.pagination-footer', ['paginator' => $this->products])
+        </div>
+
+        {{-- Lightbox gambar Master Card. wire:ignore supaya morph Livewire tidak
+             mereset state Alpine-nya saat grid re-render (ganti halaman/filter). --}}
+        <div wire:ignore x-data="{ open: false, src: '', name: '' }"
+             @show-product-image.window="src = $event.detail.src; name = $event.detail.name; open = true"
+             @keydown.escape.window="open = false">
+            <div x-show="open" x-cloak @click="open = false"
+                 class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-8 cursor-zoom-out">
+                <div class="max-w-[90vw] max-h-[90vh] flex flex-col gap-2" @click.stop>
+                    <img :src="src" :alt="name" class="max-w-full max-h-[80vh] object-contain bg-white rounded-md">
+                    <div class="text-white text-sm text-center" x-text="name"></div>
+                </div>
+            </div>
         </div>
         @endif
 
@@ -372,12 +504,45 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                     @endif
 
                     <div class="text-xs font-bold text-navy uppercase tracking-wide">Identitas</div>
-                    <div class="flex gap-2.5">
-                        <div class="flex-1">
-                            <x-form.input label="Kode Produk *" name="product_code" wire:model="product_code" placeholder="mis. FB-DUPLEX-001" :disabled="$lockedSpec" class="font-mono" />
+                    <div class="flex gap-4">
+                        {{-- Gambar tidak bisa diunggah dari sini: sumbernya Master Card
+                             legacy (1 kartu dipakai banyak produk), jadi menggantinya
+                             per-produk akan memutus jejak ke kartunya. --}}
+                        <div class="shrink-0 w-[150px] flex flex-col gap-1.5">
+                            <label class="text-xs font-semibold text-[#556]">Gambar Master Card</label>
+                            @if ($image_path)
+                                <a href="{{ asset('storage/'.$image_path) }}" target="_blank" rel="noopener" title="Buka ukuran penuh">
+                                    <img src="{{ asset('storage/'.$image_path) }}" alt="{{ $product_name }}"
+                                        class="w-[150px] h-[150px] object-contain rounded-md border border-[#d9dfe8] bg-white">
+                                </a>
+                                <div class="text-[10.5px] text-muted leading-snug">Master Card legacy #{{ $image_source_card_id }}</div>
+                            @else
+                                <div class="w-[150px] h-[150px] rounded-md border border-dashed border-[#d9dfe8] bg-[#fafbfc] flex items-center justify-center text-[11px] text-muted text-center px-2">Tidak ada gambar Master Card</div>
+                            @endif
                         </div>
-                        <div class="flex-[2]">
-                            <x-form.input label="Nama Produk *" name="product_name" wire:model="product_name" placeholder="mis. Folding Box Duplex Kosmetik" />
+
+                        <div class="flex-1 flex flex-col gap-3">
+                            <div class="flex gap-2.5">
+                                <div class="flex-1">
+                                    <x-form.input label="Kode Produk *" name="product_code" wire:model="product_code" placeholder="mis. FB-DUPLEX-001" :disabled="$lockedSpec" class="font-mono" />
+                                </div>
+                                <div class="flex-[2]">
+                                    <x-form.input label="Nama Produk *" name="product_name" wire:model="product_name" placeholder="mis. Folding Box Duplex Kosmetik" />
+                                </div>
+                            </div>
+                            <div class="flex gap-2.5">
+                                <div class="flex-1">
+                                    <x-form.input label="Merek" name="brand_name" wire:model="brand_name" placeholder="mis. KAYABA" />
+                                </div>
+                                <div class="flex-1 flex flex-col gap-1">
+                                    <label class="text-xs font-semibold text-[#556]">Kode Item Lama</label>
+                                    <div class="px-2.5 py-2 border border-[#e3e7ec] rounded-md text-[13px] bg-[#f7f9fc] font-mono text-muted truncate">{{ $old_item_code ?: '—' }}</div>
+                                </div>
+                                <div class="flex-1 flex flex-col gap-1">
+                                    <label class="text-xs font-semibold text-[#556]">Peruntukan (legacy)</label>
+                                    <div class="px-2.5 py-2 border border-[#e3e7ec] rounded-md text-[13px] bg-[#f7f9fc] text-muted truncate">{{ $old_goods_purpose ?: '—' }}</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="flex gap-2.5">
@@ -423,6 +588,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.input label="Konversi ke Stok" name="conversion_to_stock" wire:model="conversion_to_stock" placeholder="1" />
                         </div>
                     </div>
+                    <div class="text-[11px] text-muted -mt-1">Dimensi sengaja <b>tidak</b> diambil dari data lama: di <code>mst_item</code> hanya 10% baris terisi dan satuannya campur mm/cm tanpa penanda, jadi lebih aman diisi ulang saat produk dipakai.</div>
                     <div class="flex gap-2.5">
                         <div class="flex-1">
                             <x-form.input label="Panjang (cm)" name="cm_length" wire:model="cm_length" :disabled="$lockedSpec" placeholder="0" />

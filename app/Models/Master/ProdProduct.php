@@ -34,8 +34,14 @@ class ProdProduct extends Model
         'cur_stock',
         'default_selling_price',
         'minimum_selling_price',
+        'image_path',
+        'image_thumb_path',
+        'image_source_card_id',
         'old_item_code',
         'old_item_name',
+        'brand_name',
+        'old_goods_belongto',
+        'old_goods_purpose',
         'stat_confirm',
         'activate',
         'stock_asset_account_id',
@@ -50,6 +56,16 @@ class ProdProduct extends Model
         'stat_confirm' => 'boolean',
         'activate' => 'boolean',
     ];
+
+    // Gambar berasal dari Master Card legacy & dipakai bersama antar produk,
+    // jadi path-nya relatif ke disk 'public' -- bukan URL absolut (config app.url
+    // tidak sama dgn host Herd sebenarnya, lihat memory app_url_vs_actual_host).
+    public function imageUrl(bool $thumb = false): ?string
+    {
+        $path = $thumb ? ($this->image_thumb_path ?: $this->image_path) : $this->image_path;
+
+        return $path ? asset('storage/'.$path) : null;
+    }
 
     // Same-DB (tm2mst): FK fisik prod_product.customer_id -> cust_customer.id_customer.
     public function customer(): BelongsTo
