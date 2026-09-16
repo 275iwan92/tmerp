@@ -38,3 +38,8 @@ Thumbs.db
 # Folder ini TIDAK ikut repo: kalau ingest perlu dijalankan ulang di mesin lain,
 # salin foldernya manual dulu.
 /docs/legacy_scriptcase/
+
+# Dump penuh tm lama (2 GB) -- melewati batas 100 MB/file GitHub, jadi tidak
+# bisa di-push sama sekali. Dump per-database di docs/ddl/*.sql lain tetap
+# versioned (semuanya < 40 MB).
+/docs/ddl/tm_20260911.sql
