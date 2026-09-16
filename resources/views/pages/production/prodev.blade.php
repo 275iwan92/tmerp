@@ -311,6 +311,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     'W' => $bed['W'],
                 ];
             })
+            // Yang ukuran mejanya sudah diketahui ditaruh di depan supaya pilihan
+            // default benar-benar memberi batas, bukan mesin tanpa data. Tipe
+            // 'Potong' di master masih mencampur mesin pond dgn mesin potong
+            // kertas (POTONG BESAR/KECIL) -- keduanya tetap ditampilkan, tapi
+            // yang punya bed nyata didahulukan.
+            ->sortBy(fn ($d) => [$d['L'] === null ? 1 : 0, $d['name']])
             ->values()
             ->all();
     }
