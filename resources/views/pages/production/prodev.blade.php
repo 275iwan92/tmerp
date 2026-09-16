@@ -534,6 +534,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-toggle input:checked+.io-slider{background:#177351;border-color:#53d093}
         .io-toggle input:checked+.io-slider:before{transform:translateX(20px);background:#e8fff3}
         .io-manual-disabled{opacity:.45;pointer-events:none}
+        .io-auto-result{margin-top:9px;padding:9px 10px;background:#08222f;border:1px solid #2b6a86;border-radius:8px}
+        .io-auto-result span{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--io-muted)}
+        .io-auto-result b{font-size:22px;color:#9fe9ff;line-height:1.25}
         .io-canvas-card{padding:15px;display:flex;flex-direction:column;min-height:748px}
         .io-toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:11px;background:none;border:0;padding:0}
         .io-toolbar .io-btn{padding:7px 9px}
@@ -639,10 +642,20 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 </div>
                                 <label class="io-toggle"><input id="io-autoUp" type="checkbox" checked><span class="io-slider"></span></label>
                             </div>
-                            <div id="io-manualGroup" class="io-manual-disabled">
-                                <label>Manual up</label>
-                                <input id="io-manualUp" type="number" min="1" value="6">
-                                <p class="io-note">Nonaktifkan Auto Up untuk menentukan jumlah object.</p>
+                            <!-- Saat Auto Up, jumlah up itu HASIL perhitungan (canvas x
+                            bentuk blank x pola nesting), bukan angka yang diketik, jadi
+                            yang tampil angka hasilnya bukan kotak isian. Kotak isian baru
+                            muncul di mode Manual, saat up memang jadi TARGET officer.
+                            Catatan: blok ini ada di dalam @verbatim, jadi komentar Blade
+                            tidak diproses dan akan bocor jadi teks -- WAJIB komentar HTML. -->
+                            <div id="io-autoResult" class="io-auto-result">
+                                <span>Hasil optimasi</span><b id="io-autoResultValue">—</b>
+                                <div class="io-note" id="io-autoResultNote">Susunan dihitung dari ukuran canvas &amp; bentuk dieline.</div>
+                            </div>
+                            <div id="io-manualGroup" style="display:none">
+                                <label>Target up (manual)</label>
+                                <input id="io-manualUp" type="number" min="1">
+                                <p class="io-note">Canvas akan dicarikan ukuran terkecil yang memuat jumlah ini.</p>
                             </div>
                         </div>
                     </div>
@@ -1251,9 +1264,20 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('jobcount').textContent = products.length + ' JOB SIAP IMPOSISI';
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
                 bind();
+                upModeUi();
                 artworkLabel();
                 syncActiveJob();
                 update(true);
+            }
+
+            // Auto Up  -> tampilkan angka HASIL, sembunyikan kotak isian.
+            // Manual Up -> tampilkan kotak isian (up jadi target), sembunyikan hasil.
+            function upModeUi() {
+                $('autoResult').style.display = S.auto ? '' : 'none';
+                $('manualGroup').style.display = S.auto ? 'none' : '';
+                $('modeText').textContent = S.auto
+                    ? 'Aktif: pakai up maksimum yang muat di canvas'
+                    : 'Nonaktif: tentukan sendiri jumlah up yang dikejar';
             }
 
             function artworkLabel() {
@@ -1278,10 +1302,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); };
                 $('autoUp').onchange = e => {
                     S.auto = e.target.checked;
-                    $('manualGroup').classList.toggle('io-manual-disabled', S.auto);
-                    $('modeText').textContent = S.auto
-                        ? 'Aktif: gunakan up maksimum yang memungkinkan'
-                        : 'Nonaktif: masukkan jumlah up secara manual';
+                    upModeUi();
                     S.objs = []; suggest();
                 };
                 $('manualUp').oninput = e => {
@@ -1462,6 +1483,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('grainG').innerHTML = grain(x, y, w, h);
                 if (!S.objs.length) createObjects(x, y, sc);
                 arts(x, y, w, h);
+                if (S.auto && S.objs.length) {
+                    // Angka up = HASIL, jadi ditulis ke panel hasil. S.manualUp ikut
+                    // disamakan supaya begitu user pindah ke mode Manual, titik awalnya
+                    // angka nyata -- bukan angka bawaan mockup (dulu selalu 6).
+                    S.manualUp = S.objs.length;
+                    $('manualUp').value = S.objs.length;
+                    $('autoResultValue').textContent = S.objs.length + ' up';
+                    $('autoResultNote').textContent = S.autoNestInfo
+                        ? S.autoNestInfo
+                        : 'Grid otomatis dari ukuran canvas & bentuk blank. Tekan ✦ Auto Nesting untuk coba susunan interlock.';
+                }
                 msg('Valid canvas. Drag setiap object secara independen untuk manual nesting berdasarkan bentuk dieline.', 'ok');
                 $('status').textContent = S.p.category + ' · ' + S.objs.length + ' object(s) · ' +
                     (S.auto ? 'Auto Up' : 'Manual Up') + ' · ' + (S.selected ? 'selected: ' + S.selected.toUpperCase() : 'no selection');
