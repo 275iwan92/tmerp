@@ -329,7 +329,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📦 Customer Order — Entry</b>
         <span class="text-xs text-white/75">{{ $this->order->co_no }} · {{ $this->order->quotation->customer?->customer_name }}</span>
-        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full {{ $this->order->doc_status === 'CONFIRMED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $this->order->doc_status }}</span>
+        <x-form.badge :tone="$this->order->doc_status === 'CONFIRMED' ? 'success' : 'warn'">{{ $this->order->doc_status }}</x-form.badge>
 
         <div class="ml-auto flex items-center gap-4">
             <div class="text-right leading-tight">

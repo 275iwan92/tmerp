@@ -406,14 +406,12 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧾 {{ Translator::t('proc_pr_entry_title', 'Purchase Requisition Entry') }}</b>
         <span class="text-xs text-white/75">{{ $this->pr->doc_no ?: Translator::t('proc_entry_no_docno_yet', '(belum ada nomor - digenerate saat submit)') }}</span>
-        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full
-            {{ match ($this->pr->status) {
-                'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
-                'SUBMITTED' => 'bg-[#fff5e0] text-[#8a5a00]',
-                'APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
-                'REJECTED', 'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
-                default => 'bg-[#eef1f5] text-[#4b5568]',
-            } }}">{{ $this->pr->status }}</span>
+        <x-form.badge :tone="match ($this->pr->status) {
+                'SUBMITTED' => 'warn',
+                'APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED' => 'success',
+                'REJECTED', 'CANCELLED' => 'danger',
+                default => 'default',
+            }">{{ $this->pr->status }}</x-form.badge>
         @unless (in_array($this->pr->status, ['DRAFT', 'SUBMITTED'], true))
             <a href="{{ route('pur.pr.print', ['pr' => $this->prId]) }}" target="_blank"
                 class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ Translator::t('proc_pr_entry_btn_print', 'Cetak PR') }}</a>

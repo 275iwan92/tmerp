@@ -345,14 +345,12 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
         <b class="text-[15px]">↩ {{ Translator::t('proc_prt_entry_title', 'Purchase Return Entry') }}</b>
         <span class="text-xs text-white/75">{{ $this->prt->doc_no ?: Translator::t('proc_entry_no_docno_short', '(belum ada nomor)') }} · {{ $this->supplier?->supplier_name }}</span>
         <span class="text-[9px] font-bold px-2 py-0.5 rounded {{ $this->prt->i_source === 'QC_REJECT' ? 'bg-white/15' : 'bg-white/15' }}">{{ $this->prt->i_source === 'QC_REJECT' ? Translator::t('proc_prt_source_from_pv', 'DARI PV') : Translator::t('proc_prt_source_from_stock', 'DARI STOK') }}</span>
-        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full
-            {{ match ($this->prt->status) {
-                'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
-                'SUBMITTED' => 'bg-[#fff5e0] text-[#8a5a00]',
-                'CONFIRMED', 'COMPLETED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
-                'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
-                default => 'bg-[#eef1f5] text-[#4b5568]',
-            } }}">{{ $this->prt->status }}</span>
+        <x-form.badge :tone="match ($this->prt->status) {
+                'SUBMITTED' => 'warn',
+                'CONFIRMED', 'COMPLETED' => 'success',
+                'CANCELLED' => 'danger',
+                default => 'default',
+            }">{{ $this->prt->status }}</x-form.badge>
         <a href="{{ route('pur.prt.list') }}" title="{{ Translator::t('proc_prt_entry_back_title', 'Kembali ke Daftar Retur') }}"
             class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>

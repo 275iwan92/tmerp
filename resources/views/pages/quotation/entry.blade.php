@@ -177,7 +177,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📄 Quotation Entry</b>
         <span class="text-xs text-white/75">{{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }}</span>
-        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full {{ $this->quotation->doc_status === 'PUBLISHED' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $this->quotation->doc_status }}</span>
+        <x-form.badge :tone="$this->quotation->doc_status === 'PUBLISHED' ? 'success' : 'warn'">{{ $this->quotation->doc_status }}</x-form.badge>
         {{-- Cetak cuma boleh setelah diterbitkan (PUBLISHED) -- instruksi user
              2026-08-24, dikunci juga di sisi mount() quotation/print.blade.php. --}}
         @if ($this->quotation->doc_status === 'PUBLISHED')

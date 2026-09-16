@@ -296,13 +296,11 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📋 {{ Translator::t('proc_pq_entry_title', 'Purchase Quotation Entry') }}</b>
         <span class="text-xs text-white/75">{{ $this->pq->doc_no ?: Translator::t('proc_entry_no_docno_short', '(belum ada nomor)') }} · {{ $this->supplier?->supplier_name }}</span>
-        <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full
-            {{ match ($this->pq->status) {
-                'DRAFT' => 'bg-[#eef1f5] text-[#4b5568]',
-                'CONFIRMED' => 'bg-[#eaf7ee] text-[#1f8a4c]',
-                'CANCELLED' => 'bg-[#fbeaea] text-[#a3241f]',
-                default => 'bg-[#eef1f5] text-[#4b5568]',
-            } }}">{{ $this->pq->status }}</span>
+        <x-form.badge :tone="match ($this->pq->status) {
+                'CONFIRMED' => 'success',
+                'CANCELLED' => 'danger',
+                default => 'default',
+            }">{{ $this->pq->status }}</x-form.badge>
         @if ($this->pq->status === 'CONFIRMED')
             <a href="{{ route('pur.pq.print', ['pq' => $this->pqId]) }}" target="_blank"
                 class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨 {{ Translator::t('proc_pq_entry_btn_print', 'Cetak PQ') }}</a>

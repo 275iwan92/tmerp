@@ -24,7 +24,30 @@
 
 ---
 
-## RINGKASAN STATUS (update 2026-09-10 07:2x WIB, utk didiskusikan — pakai nomor R# saat bahas)
+## RINGKASAN STATUS (update 2026-09-16 08:0x WIB, utk didiskusikan — pakai nomor R# saat bahas)
+
+> **Cek otonom 2026-09-16 08:02 WIB (`tmerp-backlog-autowork-1700`, budget
+> ~1 jam — hari ini Rabu, bukan Selasa):** commit terakhir sebelum sesi ini
+> `1a47d2a` (2026-09-14 09:56 WIB, ~2 hari lalu) → AMAN, tidak ada sesi lain
+> yang kelihatan aktif. **Catatan**: working tree sudah ada perubahan
+> uncommitted dari sesi sebelumnya yang TIDAK disentuh sesi ini (bukan hasil
+> kerja sendiri, sesuai aturan) — `docs/ddl/tm2sys.sql` (+1842/-927 baris),
+> `resources/views/pages/production/prodev.blade.php` (153 baris), file
+> `mockup_shift_roster_v2.html` terhapus, plus beberapa file aneh di root
+> (`getColumnListing('iqp_costing'))`, `toArray())`) yang kelihatan sisa
+> command PowerShell heredoc yang gagal (`feedback_tinker_restore_assumed_state`-
+> style insiden) — **sesi berikutnya perlu cek/bersihkan ini**, bukan
+> dibiarkan menumpuk di `git status`.
+>
+> **R42. [BARU] `<x-form.badge>` rollout ke 6 layar entry TUNTAS** (§10,
+> item "Prioritaskan colokkan komponen ini dulu") — `pur/pr`, `pur/po`,
+> `pur/pq`, `pur/prt`, `co`, `quotation` `entry.blade.php` semua sudah
+> pakai `<x-form.badge :tone="...">` ganti span+match()/ternary manual.
+> Diverifikasi `Livewire::test()` 4/6 (PR/PO/CO/Quotation ada data live,
+> render OK, tone warna sesuai status) — `pq_quotation`/`prt_return`
+> kosong 0 baris jadi 2 sisanya cuma lolos `php -l` (bukan bug baru,
+> tabel memang belum ada transaksi). Tidak ada perubahan class Tailwind
+> baru → tidak perlu `npm run build`. Detail: §10.
 
 > **Cek otonom 21:49 WIB (`tmerp-backlog-autowork-1700`, budget 1 jam —
 > hari ini Kamis, bukan Selasa):** `git log` commit terakhir `e6fe078`
@@ -698,11 +721,18 @@ ke-close tanpa sadar". Diverifikasi: `php artisan route:list --path=admin`
     kemunculan tombol cetak beda (`@unless` vs `@if`), sebagian layar (CO,
     Quotation) tambah elemen ekstra kanan (ringkasan angka, tombol
     wire:click) di wrapper `ml-auto flex items-center gap-4` sendiri.
-  - **Komponen `<x-form.badge>` sudah dibuat (fase componentization
-    lama) TAPI 0 pemakaian di seluruh codebase** — persis dibuat untuk
-    kasus badge status di atas, menganggur begitu saja. Prioritaskan
-    "colokkan" komponen ini dulu ke 6 layar di atas sebelum bikin
-    komponen header baru dari nol.
+  - **[SELESAI 2026-09-16 pagi] Komponen `<x-form.badge>` sekarang
+    dipakai di 6/6 layar** (`pur/pr/entry.blade.php`, `pur/po/entry.blade.php`,
+    `pur/pq/entry.blade.php`, `pur/prt/entry.blade.php`, `co/entry.blade.php`,
+    `quotation/entry.blade.php`) — sebelumnya masing-masing menulis ulang
+    span+`match()`/ternary warna badge sendiri (menganggur sebelum ini).
+    Diverifikasi `Livewire::test()` 4/6 render OK (PR/PO/CO/Quotation, ada
+    data live); `pq_quotation`/`prt_return` kosong 0 baris (bukan bug
+    dari perubahan ini) jadi 2 sisanya cuma lolos `php -l` + kesamaan
+    pola persis dgn yang sudah terverifikasi — sesi berikutnya boleh
+    re-verify begitu ada transaksi PQ/PRT nyata. Header form entry
+    (ikon+judul+doc_no+tombol cetak+Back) masih BELUM diekstrak jadi
+    komponen — itu tugas berikutnya di item ini kalau mau dilanjutkan.
   - **Tombol Back — instruksi eksplisit user: standarkan juga** (bukan
     cuma didokumentasikan). Polanya sudah tertulis detail di
     `FORM_UI_STANDARD.md` §1 (pill navy `bg-[#43508a]` + lingkaran panah
