@@ -1055,48 +1055,56 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 return { w: rw, h: rh, data: out, shaped: m.shaped, mmPerPx: m.mmPerPx };
             }
 
-            // Profil tepi: baris/kolom terluar yang ada tintanya. Inilah yang
-            // bikin "dorong sampai mentok" jadi murah -- cukup bandingkan profil,
-            // tidak perlu adu piksel per posisi.
-            function edges(m) {
-                const top = new Int32Array(m.w).fill(2147483647), bottom = new Int32Array(m.w).fill(-2147483648);
-                const left = new Int32Array(m.h).fill(2147483647), right = new Int32Array(m.h).fill(-2147483648);
-                for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
-                    if (!m.data[y * m.w + x]) continue;
-                    if (y < top[x]) top[x] = y;
-                    if (y > bottom[x]) bottom[x] = y;
-                    if (x < left[y]) left[y] = x;
-                    if (x > right[y]) right[y] = x;
-                }
-                return { top, bottom, left, right };
+            // Tabrakan diuji EKSAK, bukan lewat profil tepi (leftmost/rightmost
+            // per baris). Profil hanya sah untuk bentuk cembung: pada blank
+            // BERGERIGI -- justru bentuk yang bisa saling mengunci -- profil
+            // membaca gigi terluar sebagai dinding penuh, sehingga menolak
+            // susunan yang sebenarnya muat. Terbukti pada contoh user: dua blank
+            // ini sesungguhnya bisa berjarak 8 mm (offset vertikal 30 mm), tapi
+            // versi profil menuntut 71 mm dan hasilnya cuma 1 up.
+            //
+            // Supaya tetap murah, tiap baris mask dikemas jadi bit (32 px per
+            // word), jadi satu uji tabrakan = beberapa operasi AND per baris.
+            function packMask(m) {
+                if (m._p) return m._p;
+                const words = (m.w + 31) >> 5;
+                const rows = new Uint32Array(m.h * words);
+                for (let y = 0; y < m.h; y++)
+                    for (let x = 0; x < m.w; x++)
+                        if (m.data[y * m.w + x]) rows[y * words + (x >> 5)] |= (1 << (x & 31));
+                return (m._p = { words, rows, w: m.w, h: m.h });
             }
 
-            // Jarak vertikal minimum supaya B (digeser sx) tidak menabrak A.
-            function minDy(A, B, sx) {
-                const a = A._e || (A._e = edges(A)), b = B._e || (B._e = edges(B));
-                let need = 1;
-                for (let x = 0; x < A.w; x++) {
-                    const bx = x - sx;
-                    if (bx < 0 || bx >= B.w) continue;
-                    if (a.bottom[x] < 0 || b.top[bx] > B.h) continue;
-                    const d = a.bottom[x] - b.top[bx] + 1;
-                    if (d > need) need = d;
-                }
-                return need;
-            }
+            // Apakah A bertabrakan dengan B yang digeser dx ke kanan & sy ke bawah.
+            function hits(A, B, dx, sy) {
+                const PA = packMask(A), PB = packMask(B);
+                const ws = PA.words, wShift = dx >> 5, bShift = dx & 31;
 
-            // Jarak horizontal minimum supaya B (digeser sy) tidak menabrak A.
-            function minDx(A, B, sy) {
-                const a = A._e || (A._e = edges(A)), b = B._e || (B._e = edges(B));
-                let need = 1;
-                for (let y = 0; y < A.h; y++) {
+                for (let y = 0; y < PA.h; y++) {
                     const by = y - sy;
-                    if (by < 0 || by >= B.h) continue;
-                    if (a.right[y] < 0 || b.left[by] > B.w) continue;
-                    const d = a.right[y] - b.left[by] + 1;
-                    if (d > need) need = d;
+                    if (by < 0 || by >= PB.h) continue;
+                    const aOff = y * ws, bOff = by * PB.words;
+                    for (let i = 0; i < ws; i++) {
+                        const j = i - wShift;
+                        let bw = 0;
+                        if (j >= 0 && j < PB.words) bw = PB.rows[bOff + j] << bShift;
+                        if (bShift && j - 1 >= 0 && j - 1 < PB.words) bw |= PB.rows[bOff + j - 1] >>> (32 - bShift);
+                        if (PA.rows[aOff + i] & bw) return true;
+                    }
                 }
-                return need;
+                return false;
+            }
+
+            // Jarak horizontal minimum supaya B (pada offset vertikal sy) bebas dari A.
+            function minDx(A, B, sy) {
+                for (let dx = 0; dx <= A.w; dx++) if (!hits(A, B, dx, sy)) return Math.max(1, dx);
+                return A.w;
+            }
+
+            // Jarak vertikal minimum supaya B (pada offset horizontal sx) bebas dari A.
+            function minDy(A, B, sx) {
+                for (let dy = 0; dy <= A.h; dy++) if (!hits(A, B, sx, dy)) return Math.max(1, dy);
+                return A.h;
             }
 
             // Pitch tidak boleh dihitung dari SATU pasangan saja: di dalam kisi,
@@ -1105,23 +1113,34 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // diperiksa, pasangan lain bisa saling tembus -- terbukti nyata saat
             // uji (27.662 piksel bertabrakan sebelum ini diperbaiki). Jadi ambil
             // jarak TERBESAR dari beberapa offset tetangga.
-            function needDy(A, B, sx, pitchX) {
+            // `span` = berapa object yang BENAR-BENAR ada sepanjang sumbu itu.
+            // Penting: kalau canvas cuma muat 1 object per baris/kolom, tetangga
+            // ke-2/ke-3 tidak pernah ada, jadi jaraknya tidak boleh ikut
+            // membatasi. Versi sebelumnya memaksa n = -2..2 tanpa syarat ->
+            // jarak jadi kebesaran dan susunan yang sebetulnya muat malah
+            // ditolak (kasus nyata: canvas 9,6 x 8,4 cm cuma dapat 1 up padahal
+            // 2 up muat -- ditemukan dari contoh susunan manual user).
+            function needDy(A, B, sx, pitchX, span) {
+                const lim = Math.min(2, Math.max(0, (span || 1) - 1));
                 let need = 1;
-                for (let n = -2; n <= 2; n++) need = Math.max(need, minDy(A, B, sx + n * pitchX));
+                for (let n = -lim; n <= lim; n++) need = Math.max(need, minDy(A, B, sx + n * pitchX));
                 return need;
             }
 
-            function needDx(A, B, sy, pitchY) {
+            function needDx(A, B, sy, pitchY, span) {
+                const lim = Math.min(2, Math.max(0, (span || 1) - 1));
                 let need = 1;
-                for (let n = -2; n <= 2; n++) need = Math.max(need, minDx(A, B, sy + n * pitchY));
+                for (let n = -lim; n <= lim; n++) need = Math.max(need, minDx(A, B, sy + n * pitchY));
                 return need;
             }
 
-            // Jaring pengaman terakhir: susunan yang tetap saling tembus DIBUANG,
-            // tidak pernah ditawarkan ke user. Lebih baik kehilangan kandidat
-            // daripada memberi angka up yang tidak bisa dicetak.
-            function collides(placements, Lmm, Wmm) {
+            // Hitung piksel garis potong yang saling tembus. earlyExit dipakai saat
+            // menyaring kandidat (cukup tahu ADA/TIDAK), tanpa earlyExit dipakai
+            // untuk memberi tahu user seberapa parah tabrakan susunan manualnya.
+            function overlapPixels(placements, Lmm, Wmm, earlyExit) {
                 const grid = new Uint8Array(Lmm * Wmm);
+                let n = 0;
+
                 for (const p of placements) {
                     const m = p.m;
                     for (let y = 0; y < m.h; y++) {
@@ -1132,12 +1151,80 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                             if (!m.data[row + x]) continue;
                             const gx = p.x + x;
                             if (gx < 0 || gx >= Lmm) continue;
-                            if (grid[grow + gx]) return true;
-                            grid[grow + gx] = 1;
+                            if (grid[grow + gx]) { if (earlyExit) return 1; n++; }
+                            else grid[grow + gx] = 1;
                         }
                     }
                 }
-                return false;
+                return n;
+            }
+
+            // Jaring pengaman: susunan yang masih saling tembus DIBUANG, tidak
+            // pernah ditawarkan ke user.
+            function collides(placements, Lmm, Wmm) {
+                return overlapPixels(placements, Lmm, Wmm, true) > 0;
+            }
+
+            function mirrorMask(m, fx, fy) {
+                if (fx > 0 && fy > 0) return m;
+                const out = new Uint8Array(m.w * m.h);
+                for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+                    if (!m.data[y * m.w + x]) continue;
+                    out[(fy < 0 ? m.h - 1 - y : y) * m.w + (fx < 0 ? m.w - 1 - x : x)] = 1;
+                }
+                return { w: m.w, h: m.h, data: out, shaped: m.shaped };
+            }
+
+            // Transform object di canvas: rotate(r) scale(fx fy) -- mirror berlaku
+            // di koordinat lokal object, jadi dicerminkan dulu baru diputar.
+            function variantFor(base, r, fx, fy) {
+                const key = r + '|' + fx + '|' + fy;
+                const cache = base._v || (base._v = {});
+                return cache[key] || (cache[key] = rotMask(mirrorMask(base, fx, fy), r));
+            }
+
+            // Susunan manual TIDAK divalidasi apa pun sebelumnya: user bisa saja
+            // menumpuk dua blank sampai garis potongnya saling makan, dan panel
+            // yield tetap menampilkan angka yang kelihatan bagus (utilisasi bisa
+            // >100% karena dihitung dari kotak pembatas, bukan bentuk asli). Di
+            // sinilah susunan manual ikut diperiksa dengan alat yang sama seperti
+            // auto nesting, supaya salah susun ketahuan langsung.
+            async function checkManualOverlap() {
+                if (!S.objs.length || !ok()) { S.overlapPx = 0; return; }
+
+                try {
+                    const base = await maskFor(S.p);
+                    const sc = S.sc0 || 1;
+                    const placements = [];
+
+                    for (const o of S.objs) {
+                        const r = ((Math.round(o.r) % 360) + 360) % 360;
+                        if (r % 90) return;  // sudut bebas (tak mungkin dari tombol) -- lewati
+                        const m = variantFor(base, r, o.fx, o.fy);
+                        placements.push({
+                            x: Math.round((o.x + o.w / 2 - S.sx0) / sc * 10 - m.w / 2),
+                            y: Math.round((o.y + o.h / 2 - S.sy0) / sc * 10 - m.h / 2),
+                            m,
+                        });
+                    }
+
+                    // Diperiksa pada kotak pembatas SELURUH object, bukan pada area
+                    // canvas: object yang melewati tepi canvas tetap saling menabrak,
+                    // dan kalau gridnya sebatas canvas, tabrakan di luar tepi ikut
+                    // terpotong dan lolos tanpa peringatan.
+                    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                    for (const p of placements) {
+                        minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+                        maxX = Math.max(maxX, p.x + p.m.w); maxY = Math.max(maxY, p.y + p.m.h);
+                    }
+
+                    const gw = maxX - minX, gh = maxY - minY;
+                    if (gw <= 0 || gh <= 0 || gw * gh > 25e6) { S.overlapPx = 0; return; }
+
+                    S.overlapPx = overlapPixels(
+                        placements.map(p => ({ x: p.x - minX, y: p.y - minY, m: p.m })), gw, gh, false);
+                    calculator();
+                } catch (e) { S.overlapPx = 0; }
             }
 
             function plainLattice(M, r, Lmm, Wmm, gap, label) {
@@ -1148,23 +1235,30 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 return { up: out.length, placements: out, label };
             }
 
+            // Posisi tiap baris/kolom ditentukan BERTAHAP terhadap tetangga yang
+            // benar-benar sudah ditempatkan (k-1 dan k-2), bukan lewat satu jarak
+            // seragam + koreksi. Sebelumnya koreksi "baris k vs k+2" ditambahkan
+            // tanpa syarat, padahal di canvas kecil baris ke-3 tidak pernah ada --
+            // akibatnya susunan yang sebetulnya muat ikut tertolak (kasus nyata:
+            // canvas 9,6 x 8,4 cm mentok 1 up padahal 2 up muat).
             function rowAltLattice(M0, M1, r, Lmm, Wmm, gap, sx, label) {
                 const pitchX = Math.max(M0.w, M1.w) + gap;
-                const d01 = needDy(M0, M1, sx, pitchX) + gap;
-                const d10 = needDy(M1, M0, -sx, pitchX) + gap;
-                // Baris k dan k+2 berorientasi sama -- jaraknya (d01+d10) juga
-                // harus cukup, kalau tidak keduanya bertabrakan.
-                const same = needDy(M0, M0, 0, pitchX) + gap;
-                const extra = Math.max(0, same - (d01 + d10));
-                const out = [];
-                let y = 0;
+                const cols = Math.max(1, Math.floor((Lmm - Math.max(M0.w, M1.w)) / pitchX) + 1);
+                const dAlt = [needDy(M0, M1, sx, pitchX, cols) + gap, needDy(M1, M0, -sx, pitchX, cols) + gap];
+                const dSame = [needDy(M0, M0, 0, pitchX, cols) + gap, needDy(M1, M1, 0, pitchX, cols) + gap];
+                const out = [], ys = [];
 
                 for (let k = 0; k < 400; k++) {
+                    let y = 0;
+                    if (k) {
+                        y = ys[k - 1] + dAlt[(k - 1) % 2];
+                        if (k >= 2) y = Math.max(y, ys[k - 2] + dSame[k % 2]);
+                    }
                     const odd = k % 2, M = odd ? M1 : M0, off = odd ? Math.max(0, sx) : 0;
                     if (y + M.h > Wmm + .001) break;
+                    ys.push(y);
                     for (let x = off; x + M.w <= Lmm + .001; x += pitchX)
                         out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
-                    y += (odd ? d10 : d01) + extra / 2;
                 }
 
                 return { up: out.length, placements: out, label };
@@ -1172,19 +1266,22 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             function colAltLattice(M0, M1, r, Lmm, Wmm, gap, sy, label) {
                 const pitchY = Math.max(M0.h, M1.h) + gap;
-                const d01 = needDx(M0, M1, sy, pitchY) + gap;
-                const d10 = needDx(M1, M0, -sy, pitchY) + gap;
-                const same = needDx(M0, M0, 0, pitchY) + gap;
-                const extra = Math.max(0, same - (d01 + d10));
-                const out = [];
-                let x = 0;
+                const rows = Math.max(1, Math.floor((Wmm - Math.max(M0.h, M1.h)) / pitchY) + 1);
+                const dAlt = [needDx(M0, M1, sy, pitchY, rows) + gap, needDx(M1, M0, -sy, pitchY, rows) + gap];
+                const dSame = [needDx(M0, M0, 0, pitchY, rows) + gap, needDx(M1, M1, 0, pitchY, rows) + gap];
+                const out = [], xs = [];
 
                 for (let k = 0; k < 400; k++) {
+                    let x = 0;
+                    if (k) {
+                        x = xs[k - 1] + dAlt[(k - 1) % 2];
+                        if (k >= 2) x = Math.max(x, xs[k - 2] + dSame[k % 2]);
+                    }
                     const odd = k % 2, M = odd ? M1 : M0, off = odd ? Math.max(0, sy) : 0;
                     if (x + M.w > Lmm + .001) break;
+                    xs.push(x);
                     for (let y = off; y + M.h <= Wmm + .001; y += pitchY)
                         out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
-                    x += (odd ? d10 : d01) + extra / 2;
                 }
 
                 return { up: out.length, placements: out, label };
@@ -1208,12 +1305,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         const tag = b ? ' · rotate 90°' : '';
                         cands.push(plainLattice(M0, b, Lmm, Wmm, gap, 'Grid standar' + tag));
 
-                        for (const f of [0, .25, .5, .75]) {
-                            const pct = f ? ' geser ' + Math.round(f * 100) + '%' : '';
-                            cands.push(rowAltLattice(M0, M1, b, Lmm, Wmm, gap, Math.round(M0.w * f),
-                                'Interlock antar-baris (180°)' + pct + tag));
-                            cands.push(colAltLattice(M0, M1, b, Lmm, Wmm, gap, Math.round(M0.h * f),
-                                'Interlock antar-kolom (180°)' + pct + tag));
+                        // Geseran disapu halus (~16 langkah), bukan cuma 0/25/50/75%:
+                        // posisi saling-kunci terbaik sering di offset yang tidak bulat,
+                        // dan uji tabrakan berbasis bit sudah cukup murah untuk itu.
+                        const stepX = Math.max(1, Math.round(M0.w / 16)), stepY = Math.max(1, Math.round(M0.h / 16));
+
+                        for (let sx = 0; sx < M0.w; sx += stepX) {
+                            const pct = sx ? ' geser ' + Math.round(sx / M0.w * 100) + '%' : '';
+                            cands.push(rowAltLattice(M0, M1, b, Lmm, Wmm, gap, sx, 'Interlock antar-baris (180°)' + pct + tag));
+                        }
+
+                        for (let sy = 0; sy < M0.h; sy += stepY) {
+                            const pct = sy ? ' geser ' + Math.round(sy / M0.h * 100) + '%' : '';
+                            cands.push(colAltLattice(M0, M1, b, Lmm, Wmm, gap, sy, 'Interlock antar-kolom (180°)' + pct + tag));
                         }
                     }
 
@@ -1241,6 +1345,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     S.selected = null;
                     S.touched = true;
                     S.autoNestInfo = best.label;
+                    S.overlapPx = 0;   // sudah lolos verifikasi collides() di atas
                     render(); calculator();
 
                     const gain = plainBest ? Math.round((best.up - plainBest) / plainBest * 100) : 0;
@@ -1514,6 +1619,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 // tidak berlaku, labelnya harus ikut hilang (jangan jadi klaim basi).
                 S.touched = false;
                 S.autoNestInfo = null;
+                S.overlapPx = 0;
                 const f = best();
                 let n = selectedUp(), i = 0;
                 if (n > f.ups) { msg('Selected ' + n + '-up exceeds physical maximum ' + f.ups + '-up on this canvas.', 'bad'); n = f.ups; }
@@ -1678,7 +1784,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 document.removeEventListener('pointermove', move);
                 document.removeEventListener('pointerup', end);
                 document.removeEventListener('pointercancel', end);
-                render(); calculator();
+                render(); calculator(); checkManualOverlap();
             }
             function transform(k, v) {
                 const o = S.objs.find(x => x.id === S.selected);
@@ -1687,7 +1793,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 else if (v === 'x') o.fx *= -1;
                 else o.fy *= -1;
                 S.touched = true;
-                render(); calculator();
+                render(); calculator(); checkManualOverlap();
             }
 
             function cut(pl) {
@@ -1714,10 +1820,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     bw = b.length ? ((Math.max(...b.map(v => v.y + v.h)) - Math.min(...b.map(v => v.y))) / sc).toFixed(1) : '—',
                     g = best();
 
-                $('impoMode').className = 'io-notice ' + (out ? 'bad' : S.touched ? 'ok' : 'info');
-                $('impoMode').innerHTML = S.touched
+                // Tabrakan garis potong lebih gawat daripada object keluar canvas:
+                // angka yield di panel ini TETAP kelihatan bagus (utilisasi malah
+                // bisa >100%, dihitung dari kotak pembatas bukan bentuk asli), jadi
+                // tanpa peringatan ini susunan yang tidak bisa dicetak terbaca
+                // seolah paling efisien.
+                const bentrok = S.overlapPx > 0;
+                $('impoMode').className = 'io-notice ' + (bentrok || out ? 'bad' : S.touched ? 'ok' : 'info');
+                $('impoMode').innerHTML = (S.touched
                     ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : 'CUSTOM IMPOSITION — nesting manual') + '</b><br>Susunan: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
-                    : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '') + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + '.';
+                    : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '') + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + '.')
+                    + (bentrok ? '<br><b>⚠ GARIS POTONG BERTABRAKAN</b> — ' + S.overlapPx + ' mm² blank saling makan, susunan ini tidak bisa dicetak. Angka yield di bawah ikut tidak sah.' : '');
 
                 $('impoDetail').innerHTML = '<table>' +
                     '<tr><td>Object di canvas</td><td>' + up + ' up</td></tr>' +
