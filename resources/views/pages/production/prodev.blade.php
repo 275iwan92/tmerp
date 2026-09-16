@@ -687,6 +687,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <button class="io-btn" data-io-f="x">↔ Mirror X</button>
                         <button class="io-btn" data-io-f="y">↕ Mirror Y</button>
                         <button class="io-btn warn" id="io-resetLayout">Reset layout</button>
+                        <button class="io-btn" id="io-autoNest">✦ Auto Nesting</button>
                         <button class="io-btn" id="io-save">💾 Simpan</button>
                         <button class="io-btn green" id="io-confirm">✓ Confirm → Pro-Cost</button>
                         <span class="io-status" id="io-status"></span>
@@ -898,6 +899,350 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
             }
 
+            // ===================== AUTO NESTING (interlock sadar-bentuk) =====================
+            // Cara kerja (opsi B yang dipilih user 2026-09-16): dieline ASLI
+            // (DSL dieline_spec, renderer TMDieline yang sama dgn canvas) di-
+            // rasterisasi jadi peta piksel 1 px = 1 mm, lalu dua salinan didorong
+            // saling mendekat sampai PERSIS bersentuhan -- meniru cara officer
+            // pre-press mendorong dua blank sampai mentok. Jarak mentok dihitung
+            // lewat profil tepi (skyline) per kolom/baris, jadi O(lebar) bukan
+            // O(luas): eksak untuk translasi, dan cukup cepat buat dipanggil
+            // berkali-kali saat menjajal banyak pola.
+            //
+            // Pola yang dijajal: grid biasa, selang-seling 180° antar BARIS, dan
+            // selang-seling 180° antar KOLOM (ini yang menghasilkan susunan
+            // berhadapan seperti contoh user), masing-masing dgn 4 nilai geseran
+            // samping + 2 orientasi dasar (0°/90°). Yang menang = up terbanyak.
+            //
+            // Hasilnya SARAN, bukan paksaan (pola "engine suggests, officer
+            // confirms") -- object tetap bisa digeser manual sesudahnya, dan
+            // rotasi tiap object ikut tersimpan lewat Save/Confirm.
+            const MASK_RES = 1;      // px per mm
+            const MASK_MAX = 700;    // batas sisi bitmap, jaga-jaga blank raksasa
+            const maskCache = new Map();
+
+            function rasterize(svg, w, h) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+                    img.onload = () => {
+                        const cv = document.createElement('canvas');
+                        cv.width = w; cv.height = h;
+                        const ctx = cv.getContext('2d', { willReadFrequently: true });
+                        ctx.drawImage(img, 0, 0, w, h);
+                        URL.revokeObjectURL(url);
+                        resolve(ctx.getImageData(0, 0, w, h));
+                    };
+                    img.onerror = e => { URL.revokeObjectURL(url); reject(e); };
+                    img.src = url;
+                });
+            }
+
+            function solidMask(w, h) {
+                return { w, h, data: new Uint8Array(w * h).fill(1), shaped: false };
+            }
+
+            // Garis dieline itu OUTLINE (stroke), bukan bidang terisi -- jadi
+            // badan blank dicari dgn flood-fill dari pinggir: apa pun yang TIDAK
+            // terjangkau dari luar = bagian dalam blank. Stroke ditebalkan dulu
+            // supaya celah kecil antar segmen DSL tidak bikin isian bocor keluar.
+            function maskFromPixels(px, w, h) {
+                const ink = new Uint8Array(w * h);
+                for (let i = 0; i < w * h; i++) ink[i] = px.data[i * 4 + 3] > 40 ? 1 : 0;
+
+                const ext = new Uint8Array(w * h);
+                const stack = [];
+                const push = (x, y) => {
+                    if (x < 0 || y < 0 || x >= w || y >= h) return;
+                    const i = y * w + x;
+                    if (ext[i] || ink[i]) return;
+                    ext[i] = 1; stack.push(i);
+                };
+                for (let x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+                for (let y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+                while (stack.length) {
+                    const i = stack.pop(), x = i % w, y = (i - x) / w;
+                    push(x + 1, y); push(x - 1, y); push(x, y + 1); push(x, y - 1);
+                }
+
+                const data = new Uint8Array(w * h);
+                let filled = 0;
+                for (let i = 0; i < w * h; i++) if (!ext[i]) { data[i] = 1; filled++; }
+
+                // Isian terlalu tipis = outline bocor (DSL tidak tertutup rapat).
+                // Jangan diam-diam pakai hasil salah -- jatuh balik ke kotak penuh.
+                if (filled / (w * h) < 0.15) return null;
+
+                return { w, h, data, shaped: true };
+            }
+
+            async function maskFor(job) {
+                if (maskCache.has(job.id)) return maskCache.get(job.id);
+
+                const scale = Math.min(1, MASK_MAX / Math.max(job.l * 10, job.w * 10));
+                const w = Math.max(8, Math.round(job.l * 10 * MASK_RES * scale));
+                const h = Math.max(8, Math.round(job.w * 10 * MASK_RES * scale));
+                let mask = null;
+
+                if (job.dieline && window.TMDieline) {
+                    try {
+                        // Elemen BLEED itu kotak penuh mengelilingi blank, BUKAN garis
+                        // potong -- kalau ikut dirender, flood-fill langsung menganggap
+                        // seluruh kotak sebagai badan dan bentuk aslinya hilang (jadi
+                        // tidak pernah ada peluang interlock). Siluet hanya ditentukan
+                        // garis CUT, jadi bleed dibuang dari salinan spec di sini.
+                        const spec = Object.assign({}, job.dieline, {
+                            elements: (job.dieline.elements || []).filter(e => e.t !== 'bleed' && e.k !== 'BLEED'),
+                        });
+                        let svg = window.TMDieline.svg(spec, job.dielineDims || {});
+
+                        if (svg) {
+                            // Buang margin bawaan viewBox TMDieline supaya bitmap 1:1
+                            // dengan badan blank.
+                            const vb = (svg.match(/viewBox="([^"]+)"/) || [])[1];
+                            let dslW = w;
+                            if (vb) {
+                                const v = vb.trim().split(/\s+/).map(Number);
+                                dslW = v[2] + 2 * v[0];
+                                svg = svg.replace(/viewBox="[^"]+"/, 'viewBox="0 0 ' + dslW + ' ' + (v[3] + 2 * v[1]) + '"');
+                            }
+                            // Stroke dinaikkan mengikuti rasio penyusutan: DSL sering
+                            // jauh lebih besar dari bitmap target, kalau stroke dibiarkan
+                            // tipis garisnya putus-putus saat diperkecil -> flood-fill
+                            // bocor keluar dan bentuknya batal terbaca.
+                            const sw = Math.max(2.5, 2.5 * (dslW / Math.max(1, w)));
+                            svg = svg
+                                .replace(/stroke-width="[\d.]+"/g, 'stroke-width="' + sw.toFixed(2) + '"')
+                                .replace(/width="100%" height="100%"/, 'width="' + w + '" height="' + h + '" preserveAspectRatio="none"');
+                            mask = maskFromPixels(await rasterize(svg, w, h), w, h);
+                        }
+                    } catch (e) { mask = null; }
+                }
+
+                if (!mask) mask = solidMask(w, h);
+                mask.mmPerPx = (job.l * 10) / mask.w;
+                maskCache.set(job.id, mask);
+
+                return mask;
+            }
+
+            function rotMask(m, deg) {
+                if (!deg) return m;
+                const w = m.w, h = m.h;
+                const rw = deg === 180 ? w : h, rh = deg === 180 ? h : w;
+                const out = new Uint8Array(rw * rh);
+                for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                    if (!m.data[y * w + x]) continue;
+                    let nx, ny;
+                    if (deg === 90) { nx = h - 1 - y; ny = x; }
+                    else if (deg === 180) { nx = w - 1 - x; ny = h - 1 - y; }
+                    else { nx = y; ny = w - 1 - x; }
+                    out[ny * rw + nx] = 1;
+                }
+                return { w: rw, h: rh, data: out, shaped: m.shaped, mmPerPx: m.mmPerPx };
+            }
+
+            // Profil tepi: baris/kolom terluar yang ada tintanya. Inilah yang
+            // bikin "dorong sampai mentok" jadi murah -- cukup bandingkan profil,
+            // tidak perlu adu piksel per posisi.
+            function edges(m) {
+                const top = new Int32Array(m.w).fill(2147483647), bottom = new Int32Array(m.w).fill(-2147483648);
+                const left = new Int32Array(m.h).fill(2147483647), right = new Int32Array(m.h).fill(-2147483648);
+                for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+                    if (!m.data[y * m.w + x]) continue;
+                    if (y < top[x]) top[x] = y;
+                    if (y > bottom[x]) bottom[x] = y;
+                    if (x < left[y]) left[y] = x;
+                    if (x > right[y]) right[y] = x;
+                }
+                return { top, bottom, left, right };
+            }
+
+            // Jarak vertikal minimum supaya B (digeser sx) tidak menabrak A.
+            function minDy(A, B, sx) {
+                const a = A._e || (A._e = edges(A)), b = B._e || (B._e = edges(B));
+                let need = 1;
+                for (let x = 0; x < A.w; x++) {
+                    const bx = x - sx;
+                    if (bx < 0 || bx >= B.w) continue;
+                    if (a.bottom[x] < 0 || b.top[bx] > B.h) continue;
+                    const d = a.bottom[x] - b.top[bx] + 1;
+                    if (d > need) need = d;
+                }
+                return need;
+            }
+
+            // Jarak horizontal minimum supaya B (digeser sy) tidak menabrak A.
+            function minDx(A, B, sy) {
+                const a = A._e || (A._e = edges(A)), b = B._e || (B._e = edges(B));
+                let need = 1;
+                for (let y = 0; y < A.h; y++) {
+                    const by = y - sy;
+                    if (by < 0 || by >= B.h) continue;
+                    if (a.right[y] < 0 || b.left[by] > B.w) continue;
+                    const d = a.right[y] - b.left[by] + 1;
+                    if (d > need) need = d;
+                }
+                return need;
+            }
+
+            // Pitch tidak boleh dihitung dari SATU pasangan saja: di dalam kisi,
+            // satu object juga bertetangga dgn object di atas/bawah kolom
+            // sebelahnya (offset sx ± n×pitch). Kalau cuma offset utama yang
+            // diperiksa, pasangan lain bisa saling tembus -- terbukti nyata saat
+            // uji (27.662 piksel bertabrakan sebelum ini diperbaiki). Jadi ambil
+            // jarak TERBESAR dari beberapa offset tetangga.
+            function needDy(A, B, sx, pitchX) {
+                let need = 1;
+                for (let n = -2; n <= 2; n++) need = Math.max(need, minDy(A, B, sx + n * pitchX));
+                return need;
+            }
+
+            function needDx(A, B, sy, pitchY) {
+                let need = 1;
+                for (let n = -2; n <= 2; n++) need = Math.max(need, minDx(A, B, sy + n * pitchY));
+                return need;
+            }
+
+            // Jaring pengaman terakhir: susunan yang tetap saling tembus DIBUANG,
+            // tidak pernah ditawarkan ke user. Lebih baik kehilangan kandidat
+            // daripada memberi angka up yang tidak bisa dicetak.
+            function collides(placements, Lmm, Wmm) {
+                const grid = new Uint8Array(Lmm * Wmm);
+                for (const p of placements) {
+                    const m = p.m;
+                    for (let y = 0; y < m.h; y++) {
+                        const gy = p.y + y;
+                        if (gy < 0 || gy >= Wmm) continue;
+                        const row = y * m.w, grow = gy * Lmm;
+                        for (let x = 0; x < m.w; x++) {
+                            if (!m.data[row + x]) continue;
+                            const gx = p.x + x;
+                            if (gx < 0 || gx >= Lmm) continue;
+                            if (grid[grow + gx]) return true;
+                            grid[grow + gx] = 1;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            function plainLattice(M, r, Lmm, Wmm, gap, label) {
+                const out = [];
+                for (let y = 0; y + M.h <= Wmm + .001; y += M.h + gap)
+                    for (let x = 0; x + M.w <= Lmm + .001; x += M.w + gap)
+                        out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r, m: M });
+                return { up: out.length, placements: out, label };
+            }
+
+            function rowAltLattice(M0, M1, r, Lmm, Wmm, gap, sx, label) {
+                const pitchX = Math.max(M0.w, M1.w) + gap;
+                const d01 = needDy(M0, M1, sx, pitchX) + gap;
+                const d10 = needDy(M1, M0, -sx, pitchX) + gap;
+                // Baris k dan k+2 berorientasi sama -- jaraknya (d01+d10) juga
+                // harus cukup, kalau tidak keduanya bertabrakan.
+                const same = needDy(M0, M0, 0, pitchX) + gap;
+                const extra = Math.max(0, same - (d01 + d10));
+                const out = [];
+                let y = 0;
+
+                for (let k = 0; k < 400; k++) {
+                    const odd = k % 2, M = odd ? M1 : M0, off = odd ? Math.max(0, sx) : 0;
+                    if (y + M.h > Wmm + .001) break;
+                    for (let x = off; x + M.w <= Lmm + .001; x += pitchX)
+                        out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
+                    y += (odd ? d10 : d01) + extra / 2;
+                }
+
+                return { up: out.length, placements: out, label };
+            }
+
+            function colAltLattice(M0, M1, r, Lmm, Wmm, gap, sy, label) {
+                const pitchY = Math.max(M0.h, M1.h) + gap;
+                const d01 = needDx(M0, M1, sy, pitchY) + gap;
+                const d10 = needDx(M1, M0, -sy, pitchY) + gap;
+                const same = needDx(M0, M0, 0, pitchY) + gap;
+                const extra = Math.max(0, same - (d01 + d10));
+                const out = [];
+                let x = 0;
+
+                for (let k = 0; k < 400; k++) {
+                    const odd = k % 2, M = odd ? M1 : M0, off = odd ? Math.max(0, sy) : 0;
+                    if (x + M.w > Lmm + .001) break;
+                    for (let y = off; y + M.h <= Wmm + .001; y += pitchY)
+                        out.push({ x: Math.round(x), y: Math.round(y), w: M.w, h: M.h, r: odd ? (r + 180) % 360 : r, m: M });
+                    x += (odd ? d10 : d01) + extra / 2;
+                }
+
+                return { up: out.length, placements: out, label };
+            }
+
+            async function autoNest() {
+                if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum auto nesting.', 'bad'); return; }
+
+                const btn = $('autoNest'), label = btn.textContent;
+                btn.disabled = true; btn.textContent = 'Menghitung…';
+
+                try {
+                    const job = S.p;
+                    const base = await maskFor(job);
+                    const gap = Math.max(0, Math.round(S.g * 10));
+                    const Lmm = Math.round(S.L * 10), Wmm = Math.round(S.W * 10);
+                    const cands = [];
+
+                    for (const b of [0, 90]) {
+                        const M0 = rotMask(base, b), M1 = rotMask(base, (b + 180) % 360);
+                        const tag = b ? ' · rotate 90°' : '';
+                        cands.push(plainLattice(M0, b, Lmm, Wmm, gap, 'Grid standar' + tag));
+
+                        for (const f of [0, .25, .5, .75]) {
+                            const pct = f ? ' geser ' + Math.round(f * 100) + '%' : '';
+                            cands.push(rowAltLattice(M0, M1, b, Lmm, Wmm, gap, Math.round(M0.w * f),
+                                'Interlock antar-baris (180°)' + pct + tag));
+                            cands.push(colAltLattice(M0, M1, b, Lmm, Wmm, gap, Math.round(M0.h * f),
+                                'Interlock antar-kolom (180°)' + pct + tag));
+                        }
+                    }
+
+                    // Semua kandidat dibuktikan dulu: yang objectnya masih saling
+                    // tembus dibuang, bukan sekadar diperingatkan.
+                    const valid = cands.filter(c => c.up > 0 && !collides(c.placements, Lmm, Wmm));
+                    const ditolak = cands.filter(c => c.up > 0).length - valid.length;
+
+                    const plainBest = Math.max(...valid.filter(c => c.label.startsWith('Grid standar')).map(c => c.up), 0);
+                    let best = null;
+                    for (const c of valid) if (!best || c.up > best.up) best = c;
+
+                    if (!best || !best.up) { msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad'); return; }
+
+                    let placements = best.placements;
+                    if (!S.auto && S.manualUp < placements.length) placements = placements.slice(0, S.manualUp);
+
+                    const sc = S.sc0, ow = job.l * sc, oh = job.w * sc;
+                    S.objs = placements.map((p, i) => ({
+                        id: 'a' + i,
+                        x: S.sx0 + (p.x + p.w / 2) / 10 * sc - ow / 2,
+                        y: S.sy0 + (p.y + p.h / 2) / 10 * sc - oh / 2,
+                        w: ow, h: oh, r: p.r, fx: 1, fy: 1,
+                    }));
+                    S.selected = null;
+                    S.touched = true;
+                    S.autoNestInfo = best.label;
+                    render(); calculator();
+
+                    const gain = plainBest ? Math.round((best.up - plainBest) / plainBest * 100) : 0;
+                    msg('Auto nesting: ' + best.label + ' → ' + best.up + ' up'
+                        + (gain > 0 ? ' (+' + gain + '% vs grid standar, ' + (best.up - plainBest) + ' up lebih banyak)'
+                            : ' (grid standar sudah paling padat untuk bentuk ini)')
+                        + (ditolak ? ' · ' + ditolak + ' pola ditolak krn masih bertabrakan' : '')
+                        + (base.shaped ? '' : ' · tipe ini belum punya dieline, dihitung sebagai kotak polos'), 'ok');
+                } catch (e) {
+                    msg('Auto nesting gagal: ' + (e && e.message ? e.message : e), 'bad');
+                } finally {
+                    btn.disabled = false; btn.textContent = label;
+                }
+            }
+
             function init() {
                 products.forEach((x, i) => $('product').add(new Option(x.name, i)));
                 machines.forEach((x, i) => $('machine').add(new Option(x[0], i)));
@@ -958,6 +1303,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('resetLayout').onclick = () => { S.objs = []; S.selected = null; update(true); };
                 $('save').onclick = () => persist(false);
                 $('confirm').onclick = () => persist(true);
+                $('autoNest').onclick = autoNest;
                 // Artwork: file input aslinya milik Livewire (di luar wire:ignore).
                 $('artFile').onclick = e => {
                     e.preventDefault();
@@ -1132,7 +1478,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             }
 
             function createObjects(x, y, sc) {
+                // Grid otomatis dibangun ulang = hasil auto nesting sebelumnya sudah
+                // tidak berlaku, labelnya harus ikut hilang (jangan jadi klaim basi).
                 S.touched = false;
+                S.autoNestInfo = null;
                 const f = best();
                 let n = selectedUp(), i = 0;
                 if (n > f.ups) { msg('Selected ' + n + '-up exceeds physical maximum ' + f.ups + '-up on this canvas.', 'bad'); n = f.ups; }
@@ -1335,7 +1684,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                 $('impoMode').className = 'io-notice ' + (out ? 'bad' : S.touched ? 'ok' : 'info');
                 $('impoMode').innerHTML = S.touched
-                    ? '<b>CUSTOM IMPOSITION — nesting manual</b><br>Susunan diatur user: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
+                    ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : 'CUSTOM IMPOSITION — nesting manual') + '</b><br>Susunan: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
                     : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '') + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + '.';
 
                 $('impoDetail').innerHTML = '<table>' +
