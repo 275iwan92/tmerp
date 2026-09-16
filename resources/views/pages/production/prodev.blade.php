@@ -1,10 +1,13 @@
 <?php
 
 use App\Models\Master\MatPlanoSize;
+use App\Models\Master\ProdLayoutGroup;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdPart;
+use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -26,9 +29,26 @@ use Livewire\WithFileUploads;
 //
 // Yang SUDAH disambung ke data nyata: daftar job (prod_part + asal Inquiry),
 // daftar mesin cetak (prod_machine), daftar plano (mat_plano_size), gap
-// default (sys_constant PRODEV_GAP_MM). Yang BELUM: penyimpanan hasil
-// nesting (prod_layout_group) -- masih jadi bahan diskusi, lihat catatan di
-// akhir sesi/commit.
+// default (sys_constant PRODEV_GAP_MM).
+//
+// PENYIMPANAN HASIL (2026-09-14, instruksi user -- "SETIAP LAYAR ADA SAVE
+// DAN CONFIRM, confirm PASTI ke Product Costing", simpan ke 2 ARAH):
+// tombol "Simpan Layout" (saveLayout(), draft) & "Confirm" (saveLayout()
+// dgn $confirm=true) menulis ke DUA tabel paralel yang SUDAH ADA sejak DDL
+// awal TIER_3A -- BUKAN skema baru:
+//   1) tm2mst.prod_layout_group (+pivot prod_layout_group_part) -- MASTER,
+//      reusable lintas Inquiry, dipakai APA ADANYA oleh ProCost Mode #1
+//      (inquiry/costing.blade.php::pickLayoutGroup(), baca status=CONFIRMED).
+//      Sama persis pola pickCandidate()/confirmLayout() di old_prodev.blade.php
+//      (workbench lama, diarsipkan) -- HANYA sumber datanya beda (nesting
+//      manual mockup ini, bukan ImpositionEngine::run()).
+//   2) tm2sdi.iqp_layout -- SNAPSHOT per Inquiry Part (prinsip snapshot
+//      CLAUDE.md §4), ditulis KALAU DAN HANYA KALAU job ini Mode #1 (ada
+//      iqp_part.prod_part_id yang balik ke part ini). Mode #2/demo cuma
+//      dapat baris (1), tidak ada (2) krn memang tidak ada Inquiry sumber.
+// Confirm men-set status=CONFIRMED di KEDUA tabel lalu (kalau ada Inquiry
+// asal) kirim url inquiry.costing ke JS -- itulah "confirm pasti ke Product
+// Costing" yg dimaksud, bukan cuma flag status tanpa arah.
 new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
@@ -97,6 +117,137 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
         $this->artworkUpload = null;
         unset($this->jobs);
+    }
+
+    // Simpan (draft, bisa dipanggil berkali-kali) / Confirm (final, dikunci +
+    // dikirim ke Product Costing) hasil nesting layar ini. $state datang dari
+    // JS (lihat gatherState() di script), dalam cm/persen apa adanya dari UI --
+    // konversi ke mm dilakukan di sini, bukan di client, supaya satuan yang
+    // tersimpan di DB konsisten dengan kolom lama (*_mm) tanpa tergantung JS.
+    public function saveLayout(array $state, bool $confirm = false): array
+    {
+        $part = ! empty($state['partId']) ? ProdPart::find($state['partId']) : null;
+
+        if (! $part) {
+            return ['ok' => false, 'message' => 'Job demo/tanpa Part nyata tidak bisa disimpan -- pilih job dari Master Part.'];
+        }
+
+        if (! $part->product_id) {
+            return ['ok' => false, 'message' => 'Part ini belum punya product_id (produk induk) -- lengkapi dulu di Master Produk sebelum simpan layout.'];
+        }
+
+        $upCount = (int) ($state['upCount'] ?? 0);
+
+        if ($upCount < 1) {
+            return ['ok' => false, 'message' => 'Belum ada object di canvas -- atur nesting dulu sebelum simpan.'];
+        }
+
+        $login = Auth::user()->login;
+        $plano = ! empty($state['planoId']) ? MatPlanoSize::find($state['planoId']) : null;
+        $canvasLMm = round((float) ($state['canvasL'] ?? 0) * 10, 2);
+        $canvasWMm = round((float) ($state['canvasW'] ?? 0) * 10, 2);
+        $efficiencyPct = round(max(0, min(100, (float) ($state['efficiencyPct'] ?? 0))), 2);
+
+        $layoutDetail = [
+            'source' => 'imposition_plano_optimizer',
+            'canvas_l_cm' => $state['canvasL'] ?? null,
+            'canvas_w_cm' => $state['canvasW'] ?? null,
+            'gap_cm' => $state['gapCm'] ?? null,
+            'machine' => $state['machine'] ?? null,
+            'objects' => $state['objects'] ?? [],
+        ];
+
+        // ===== ARAH 1: MASTER (tm2mst.prod_layout_group), reusable lintas Inquiry.
+        // Draft existing (punya part ini, BELUM CONFIRMED) ditimpa, bukan bikin baris
+        // baru terus-menerus -- CONFIRMED tidak pernah ditimpa (pola sama old_prodev).
+        $existing = $part->layoutGroups->sortByDesc('id_layout_group')->first();
+
+        $payload = [
+            'product_id' => $part->product_id,
+            'plano_size_id' => $plano?->id_plano_size,
+            'plano_w_mm' => $plano ? $plano->width_mm : $canvasLMm,
+            'plano_h_mm' => $plano ? $plano->height_mm : $canvasWMm,
+            'method' => $state['method'] ?? 'AUTO_GRID',
+            'up_count' => $upCount,
+            'efficiency_pct' => $efficiencyPct,
+            'waste_pct' => round(100 - $efficiencyPct, 2),
+            'layout_detail' => $layoutDetail,
+            'updated_by' => $login,
+        ];
+
+        if ($existing && $existing->status !== 'CONFIRMED') {
+            $existing->update($payload);
+            $group = $existing;
+            $group->parts()->sync([$part->id_part => ['qty_up_in_group' => $upCount]]);
+        } else {
+            $payload['created_by'] = $login;
+            $payload['status'] = 'DRAFT';
+            $group = ProdLayoutGroup::create($payload);
+            $group->parts()->attach($part->id_part, ['qty_up_in_group' => $upCount]);
+        }
+
+        if (! $group->mastercard_code) {
+            $group->update(['mastercard_code' => "MC-{$group->id_layout_group}"]);
+        }
+
+        // ===== ARAH 2: SNAPSHOT INQUIRY (tm2sdi.iqp_layout), HANYA kalau part ini
+        // Mode #1 (lahir dari/tertaut ke Inquiry) -- Mode #2/demo tidak py Inquiry
+        // sumber, jadi sengaja TIDAK menulis baris paksaan di sini.
+        $iqpPart = IqpPart::where('prod_part_id', $part->id_part)->first();
+        $costingUrl = null;
+
+        if ($iqpPart) {
+            // firstOrNew + exists (BUKAN updateOrCreate): created_by hanya boleh
+            // diisi saat baris benar-benar LAHIR, dan tidak boleh ikut ketimpa
+            // tiap kali disimpan ulang -- updateOrCreate tidak bisa membedakan
+            // keduanya (ketahuan saat uji: baris baru created_by-nya NULL).
+            $iqpLayout = IqpLayout::firstOrNew(['part_id' => $iqpPart->id_part]);
+
+            $iqpLayout->fill([
+                'flat_w_mm' => $iqpPart->flat_w ? round((float) $iqpPart->flat_w * 10, 2) : $canvasLMm,
+                'flat_h_mm' => $iqpPart->flat_h ? round((float) $iqpPart->flat_h * 10, 2) : $canvasWMm,
+                'gap_mm' => round((float) ($state['gapCm'] ?? 0) * 10, 2),
+                'plano_size_id' => $plano?->id_plano_size,
+                'plano_w_mm' => $payload['plano_w_mm'],
+                'plano_h_mm' => $payload['plano_h_mm'],
+                'gripper_mm' => SysConstant::number('PRODEV_GRIPPER_MM', 12.0),
+                'margin_mm' => SysConstant::number('PRODEV_MARGIN_MM', 8.0),
+                'method' => $payload['method'],
+                'up_count' => $upCount,
+                'efficiency_pct' => $efficiencyPct,
+                'waste_pct' => $payload['waste_pct'],
+                'layout_detail' => $layoutDetail,
+                'updated_by' => $login,
+            ]);
+
+            if (! $iqpLayout->exists) {
+                $iqpLayout->created_by = $login;
+            }
+
+            if ($confirm) {
+                $iqpLayout->stat_confirm = true;
+                $iqpLayout->confirmed_by = $login;
+                $iqpLayout->confirmed_at = now();
+            }
+
+            $iqpLayout->save();
+
+            $costingUrl = route('inquiry.costing', ['inquiry' => $iqpPart->inquiry_id]);
+        }
+
+        if ($confirm) {
+            $group->update(['status' => 'CONFIRMED', 'confirmed_by' => $login, 'confirmed_at' => now()]);
+        }
+
+        unset($this->jobs);
+
+        return [
+            'ok' => true,
+            'confirmed' => $confirm,
+            'hasInquiry' => $iqpPart !== null,
+            'costingUrl' => $costingUrl,
+            'mastercardCode' => $group->mastercard_code,
+        ];
     }
 
     #[Computed]
@@ -536,6 +687,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <button class="io-btn" data-io-f="x">↔ Mirror X</button>
                         <button class="io-btn" data-io-f="y">↕ Mirror Y</button>
                         <button class="io-btn warn" id="io-resetLayout">Reset layout</button>
+                        <button class="io-btn" id="io-save">💾 Simpan</button>
+                        <button class="io-btn green" id="io-confirm">✓ Confirm → Pro-Cost</button>
                         <span class="io-status" id="io-status"></span>
                     </div>
                     <div class="io-stage">
@@ -633,8 +786,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         (function () {
             const DATA = window.__PRODEV || { jobs: [], machines: [], planos: [], initialJob: 0 };
             const products = DATA.jobs;
-            const machines = DATA.machines.map(m => [m.name, m.L, m.W, m.est]);
-            const planos = DATA.planos.map(p => [p.name, p.L, p.W]);
+            // Index 4 (machine id) / index 3 (plano id) ditambahkan supaya saveLayout()
+            // bisa kirim plano_size_id yang benar ke server -- sebelumnya array ini
+            // cuma bawa angka tampilan, id-nya hilang begitu sampai di client.
+            const machines = DATA.machines.map(m => [m.name, m.L, m.W, m.est, m.id]);
+            const planos = DATA.planos.map(p => [p.name, p.L, p.W, p.id]);
             if (!products.length || !machines.length || !planos.length) {
                 document.getElementById('io-valid').textContent =
                     'Data master belum lengkap: butuh minimal 1 part berdimensi, 1 mesin cetak, dan 1 ukuran plano aktif.';
@@ -665,6 +821,81 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function syncActiveJob() {
                 const w = wire();
                 if (w) w.set('activeJobPartId', S.p.partId, false);
+            }
+
+            // Susunan object di canvas dipegang dalam satuan PIXEL SVG (skala
+            // S.sc0 + offset S.sx0/sy0 yang berubah tiap canvas di-resize) --
+            // dikembalikan ke CM relatif sudut canvas sebelum dikirim ke server,
+            // supaya isi layout_detail tetap bermakna walau nanti dibuka di
+            // zoom/ukuran layar berbeda.
+            function gatherState() {
+                const sc = S.sc0 || 1;
+                const cu = S.L * S.W ? (S.objs.length || selectedUp()) * S.p.l * S.p.w / (S.L * S.W) * 100 : 0;
+                const c = cut(S.pl);
+
+                return {
+                    partId: S.p.partId,
+                    canvasL: S.L,
+                    canvasW: S.W,
+                    gapCm: S.g,
+                    upCount: S.objs.length || selectedUp(),
+                    method: S.touched ? 'MANUAL_NESTING' : 'AUTO_GRID',
+                    planoId: S.pl[3] || null,
+                    // Efisiensi yang disimpan = pemakaian material MENYELURUH
+                    // (canvas utilization x plano yield), bukan cuma utilisasi
+                    // canvas -- ini angka yang dipakai Costing utk waste.
+                    efficiencyPct: +(cu * (c.util || 0)).toFixed(2),
+                    machine: { id: S.m[4] || null, name: S.m[0], bedL: S.m[1], bedW: S.m[2] },
+                    objects: S.objs.map(o => ({
+                        x: +((o.x - S.sx0) / sc).toFixed(2),
+                        y: +((o.y - S.sy0) / sc).toFixed(2),
+                        w: +(o.w / sc).toFixed(2),
+                        h: +(o.h / sc).toFixed(2),
+                        r: o.r, fx: o.fx, fy: o.fy,
+                    })),
+                };
+            }
+
+            async function persist(confirm) {
+                const w = wire();
+
+                if (!w) { msg('Komponen belum siap, coba lagi sebentar.', 'bad'); return; }
+                if (!S.p.partId) { msg('Job demo tidak bisa disimpan — pilih job nyata dari daftar Part.', 'bad'); return; }
+                if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum simpan.', 'bad'); return; }
+
+                const btn = confirm ? $('confirm') : $('save');
+                const label = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = confirm ? 'Menyimpan & confirm…' : 'Menyimpan…';
+
+                try {
+                    const res = await w.call('saveLayout', gatherState(), confirm);
+
+                    if (!res || !res.ok) {
+                        msg((res && res.message) || 'Gagal menyimpan layout.', 'bad');
+                        return;
+                    }
+
+                    if (!confirm) {
+                        msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ')'
+                            + (res.hasInquiry ? ' — master + snapshot Inquiry.' : ' — master saja, job ini tidak punya Inquiry asal.'), 'ok');
+                        return;
+                    }
+
+                    if (res.costingUrl) {
+                        msg('Layout CONFIRMED (' + res.mastercardCode + ') — membuka Product Costing…', 'ok');
+                        window.location.href = res.costingUrl;
+                        return;
+                    }
+
+                    msg('Layout CONFIRMED (' + res.mastercardCode + '). Job ini Mode #2 (tanpa Inquiry), '
+                        + 'jadi belum ada layar Product Costing yang bisa dituju.', 'ok');
+                } catch (e) {
+                    msg('Gagal menyimpan: ' + (e && e.message ? e.message : e), 'bad');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = label;
+                }
             }
 
             function init() {
@@ -725,6 +956,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 app.querySelectorAll('[data-io-r]').forEach(b => b.onclick = () => transform('r', +b.dataset.ioR));
                 app.querySelectorAll('[data-io-f]').forEach(b => b.onclick = () => transform('f', b.dataset.ioF));
                 $('resetLayout').onclick = () => { S.objs = []; S.selected = null; update(true); };
+                $('save').onclick = () => persist(false);
+                $('confirm').onclick = () => persist(true);
                 // Artwork: file input aslinya milik Livewire (di luar wire:ignore).
                 $('artFile').onclick = e => {
                     e.preventDefault();
