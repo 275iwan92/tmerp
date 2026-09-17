@@ -22,6 +22,9 @@ document.addEventListener('alpine:init', () => {
         nosidebar: false,
         notopbar: false,
 
+        // Nilai `mini` sebelum sebuah halaman iframe memintanya dikecilkan.
+        _miniRestore: null,
+
         // Default awal sidebar TERTUTUP di layar sempit (<768px, breakpoint sama
         // dgn @media di app.css) supaya topbar/avatar dropdown tidak kegencet saat
         // load pertama. Toggle ☰ ("nosidebar") tetap sama, ini cuma nilai awal.
@@ -29,6 +32,27 @@ document.addEventListener('alpine:init', () => {
             if (window.matchMedia('(max-width: 767px)').matches) {
                 this.nosidebar = true;
             }
+
+            // Halaman di dalam <iframe> boleh minta sidebar dikecilkan supaya
+            // layar kerjanya lega (pertama dipakai ProDev/Imposition, yang
+            // butuh area gambar selebar mungkin). Nilai sidebar SEBELUMNYA
+            // disimpan lalu dikembalikan begitu halaman itu ditinggalkan --
+            // jadi preferensi user tidak ikut hilang gara-gara membuka satu
+            // layar. Pesan dari origin lain diabaikan.
+            window.addEventListener('message', (e) => {
+                if (e.origin !== window.location.origin) return;
+                if (!e.data || e.data.tmerp !== 'sidebar') return;
+
+                if (e.data.mini) {
+                    if (this._miniRestore === null || this._miniRestore === undefined) {
+                        this._miniRestore = this.mini;
+                    }
+                    this.mini = true;
+                } else {
+                    this.mini = this._miniRestore ?? false;
+                    this._miniRestore = null;
+                }
+            });
 
             // Auto-buka panel dropdown-user via ?open=xxx (instruksi user
             // 2026-09-14: user-menu di Laporan Manajemen HARUS sama dgn di

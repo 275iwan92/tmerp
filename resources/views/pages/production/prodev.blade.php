@@ -8,6 +8,7 @@ use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -450,6 +451,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'artworkUrl' => $src?->artwork_path ? asset('storage/'.$src->artwork_path) : null,
                 'artworkName' => $src?->artwork_original_filename,
                 'canUpload' => $src !== null,
+                'bom' => $this->bomFor($p, $src),
+                'inks' => $this->inksFor($p, $src),
+                'bop' => $this->bopFor($p),
             ];
         }
 
@@ -457,6 +461,64 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         // di prod_part (lihat SAMPLE_ARTWORK di atas), jadi masuk lewat grid
         // seperti job lain dan bisa dipakai UAT beneran.
         return $jobs;
+    }
+
+    // Bill of Material: BOM BAKU (prod_part_material) didahulukan; kalau belum
+    // ada, tampilkan snapshot bahan dari Inquiry asal (iqp_part_material) --
+    // sumbernya disebut supaya jelas mana yang baku dan mana yang dari Inquiry.
+    private function bomFor(ProdPart $p, ?IqpPart $src): array
+    {
+        $rows = DB::connection('tm2mst')->table('prod_part_material as pm')
+            ->leftJoin('mat_raw as m', 'm.material_id', '=', 'pm.material_id')
+            ->where('pm.part_id', $p->id_part)
+            ->orderBy('pm.layer_seq')
+            ->get(['pm.layer_seq', 'm.material_name', 'pm.rawmat_type', 'pm.gram_weight', 'pm.size_p', 'pm.size_l', 'pm.is_primary']);
+
+        if ($rows->isNotEmpty()) {
+            return ['source' => 'master', 'rows' => $rows->map(fn ($r) => [
+                'seq' => $r->layer_seq, 'name' => $r->material_name ?: '—', 'type' => $r->rawmat_type,
+                'gsm' => $r->gram_weight, 'p' => $r->size_p, 'l' => $r->size_l, 'primary' => (bool) $r->is_primary,
+            ])->all()];
+        }
+
+        $inq = $src?->materials()->orderBy('layer_seq')->get() ?? collect();
+
+        return ['source' => $inq->isNotEmpty() ? 'inquiry' : null, 'rows' => $inq->map(fn ($r) => [
+            'seq' => $r->layer_seq, 'name' => $r->rawmat_name ?: '—', 'type' => null,
+            'gsm' => $r->gram_weight, 'p' => $r->size_p, 'l' => $r->size_l, 'primary' => (bool) $r->is_primary,
+        ])->values()->all()];
+    }
+
+    // Susunan tinta: prod_part_ink kalau terisi, selain itu notasi warna
+    // (cfg_color/cfg_ink) dari part atau Inquiry asalnya.
+    private function inksFor(ProdPart $p, ?IqpPart $src): array
+    {
+        $rows = DB::connection('tm2mst')->table('prod_part_ink')
+            ->where('part_id', $p->id_part)->orderBy('pass_seq')->orderBy('unit_no')
+            ->get(['pass_seq', 'pass_label', 'unit_no', 'ink_name', 'plate_ref']);
+
+        return [
+            'rows' => $rows->map(fn ($r) => (array) $r)->all(),
+            'color' => $p->cfg_color ?: $src?->cfg_color,
+            'ink' => $p->cfg_ink ?: $src?->cfg_ink,
+        ];
+    }
+
+    // Urutan proses yang SUDAH tersimpan di master part. Pembangkitan otomatis
+    // dari finishing Inquiry (engine) dibahas terpisah -- belum dibangun.
+    private function bopFor(ProdPart $p): array
+    {
+        return \App\Models\Master\ProdPartProcess::with(['process', 'machine'])
+            ->where('part_id', $p->id_part)
+            ->orderBy('step_seq')
+            ->get()
+            ->map(fn ($r) => [
+                'seq' => $r->step_seq,
+                'name' => $r->process?->process_name ?: ($r->process_name ?: '—'),
+                'machine' => $r->machine?->machine_name,
+                'note' => $r->note,
+            ])
+            ->all();
     }
 
     // Alasan jujur kalau part yang dipilih tidak bisa dikerjakan -- jangan diam
@@ -542,11 +604,49 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-app table{width:100%;border-collapse:collapse}
         .io-app th,.io-app td{border:0;padding:0;background:none;color:inherit;text-align:left;font-weight:inherit}
         .io-shell{max-width:1780px;margin:auto}
-        .io-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:17px}
-        .io-top h1{font-size:25px;margin:0;color:var(--io-text)}
+        /* Top bar dipadatkan -- ruang vertikal dipakai canvas, bukan judul. */
+        .io-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:11px}
+        .io-top h1{font-size:18px;margin:0;color:var(--io-text)}
         .io-sub{margin:4px 0 0;color:var(--io-muted);font-size:13px}
         .io-badge{padding:7px 11px;border:1px solid #2c6c92;background:#0b2b44;color:#91e8ff;border-radius:999px;font-weight:700;font-size:12px}
-        .io-layout{display:grid;grid-template-columns:345px minmax(560px,1fr) 340px;gap:16px}
+        /* Tata letak diubah 2026-09-17 (permintaan user): canvas dulu terjepit di
+           tengah antara dua panel, jadi sempit. Sekarang kedua panel naik ke BARIS
+           ATAS berdampingan, dan canvas turun ke bawah selebar penuh. Dipetakan
+           lewat grid-area supaya urutan markup tidak perlu diacak. */
+        .io-layout{display:block}
+
+        /* ===== Accordion horizontal (mockup draft user 2026-09-17) =====
+           Satu bagian terbuka memakai sisa lebar; bagian lain menyempit jadi strip
+           46px berjudul vertikal. Isi bagian yang terbuka mengalir KE BAWAH dalam
+           beberapa kolom -- sengaja TANPA batas tinggi: versi sebelumnya membatasi
+           tinggi panel sehingga CSS multi-kolom meluberkan isinya ke samping, dan
+           user tidak mau panel yang di-scroll ke samping. */
+        .io-acc{display:flex;gap:10px;align-items:stretch;margin-bottom:14px}
+        .io-sec{display:flex;min-width:0;background:#0d1b2df2;border:1px solid var(--io-line);
+            border-radius:14px;box-shadow:0 12px 28px #0005;overflow:hidden}
+        .io-sec.open{flex:1 1 auto;flex-direction:column}
+        .io-sec:not(.open){flex:0 0 46px}
+        .io-sec-head{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;
+            color:#c6eafb;font:700 13px/1.2 Inter,system-ui,Segoe UI,sans-serif;letter-spacing:.04em}
+        .io-sec.open .io-sec-head{padding:12px 16px;border-bottom:2px solid var(--io-cyan);background:#0b2236}
+        .io-sec:not(.open) .io-sec-head{width:46px;align-self:stretch;min-height:160px;justify-content:center;
+            writing-mode:vertical-rl;transform:rotate(180deg);background:#0a1a2b}
+        .io-sec:not(.open) .io-sec-head:hover{background:#12304a;color:#fff}
+        .io-sec-head:focus-visible{outline:2px solid var(--io-cyan);outline-offset:-2px}
+        .io-sec:not(.open) .io-sec-body{display:none}
+        .io-sec-body{padding:14px 16px;columns:250px;column-gap:18px}
+        .io-sec-body--single{columns:auto}
+        .io-sec-body > .io-group{break-inside:avoid;border-top:0;padding-top:0;margin:0 0 14px}
+        .io-sec-count{font-style:normal;font-size:10px;font-weight:800;padding:2px 6px;border-radius:9px;
+            background:#17415f;color:#c8efff}
+        .io-sec-count:empty{display:none}
+        .io-empty{color:var(--io-muted);font-size:12px;padding:14px;border:1px dashed #315570;border-radius:9px}
+        .io-src{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;padding:2px 7px;
+            border-radius:5px;background:#17415f;color:#c8efff;margin-bottom:8px}
+        .io-tbl{width:100%;border-collapse:collapse;font-size:12px}
+        .io-tbl th{text-align:left;color:var(--io-muted);font-size:10.5px;font-weight:700;padding:5px 8px;
+            border-bottom:1px solid #25445f;text-transform:uppercase;letter-spacing:.04em}
+        .io-tbl td{padding:6px 8px;border-bottom:1px solid #1d3a52;color:#d9f5ff}
         .io-panel,.io-canvas-card{background:#0d1b2df2;border:1px solid var(--io-line);border-radius:14px;box-shadow:0 12px 28px #0005}
         .io-panel{padding:16px}
         .io-panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:#c6eafb;margin:0 0 11px}
@@ -591,17 +691,25 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-auto-result{margin-top:9px;padding:9px 10px;background:#08222f;border:1px solid #2b6a86;border-radius:8px}
         .io-auto-result span{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--io-muted)}
         .io-auto-result b{font-size:22px;color:#9fe9ff;line-height:1.25}
-        .io-canvas-card{padding:15px;display:flex;flex-direction:column;min-height:748px}
+        /* Tinggi ikut tinggi layar: makin tinggi area gambar, makin besar artwork
+           ter-render (SVG-nya menskala mengikuti wadah), makin gampang di-drag. */
+        .io-canvas-card{padding:15px;display:flex;flex-direction:column;min-height:max(600px,84vh)}
         .io-toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:11px;background:none;border:0;padding:0}
         .io-toolbar .io-btn{padding:7px 9px}
         .io-status{margin-left:auto;color:var(--io-muted);font-size:12px}
         .io-pill{padding:3px 7px;border-radius:5px;background:#17415f;color:#c8efff;font-size:11px}
-        .io-stage{position:relative;flex:1;min-height:610px;overflow:hidden;border:1px solid #284860;border-radius:11px;background:#071522;
+        .io-stage{position:relative;flex:1;min-height:max(520px,72vh);overflow:hidden;border:1px solid #284860;border-radius:11px;background:#071522;
             background-image:linear-gradient(#102940 1px,transparent 1px),linear-gradient(90deg,#102940 1px,transparent 1px);background-size:20px 20px}
         .io-rulerx{position:absolute;z-index:3;left:0;right:0;top:0;height:25px;background:#0b2032;border-bottom:1px solid #31536d;padding:5px 8px;font-size:10px;color:#88a7bd}
         .io-rulery{position:absolute;z-index:3;top:25px;bottom:0;width:25px;background:#0b2032;border-right:1px solid #31536d}
         .io-viewport{position:absolute;left:25px;right:0;top:25px;bottom:0;overflow:auto}
-        .io-wrap{width:100%;height:100%;min-width:740px;min-height:575px;display:flex;align-items:center;justify-content:center;transform-origin:center}
+        /* SVG-nya bersistem koordinat tetap (viewBox 650x500) tapi UKURAN TAMPILnya
+           mengikuti wadah -- tanpa ini melebarkan area canvas cuma menambah ruang
+           kosong di kiri-kanan, gambarnya tetap sebesar itu-itu saja. Konversi
+           koordinat pointer sudah memperhitungkan skala (lihat point()), jadi drag
+           tetap akurat berapa pun ukuran tampilnya. */
+        .io-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform-origin:center}
+        .io-wrap svg{width:100%;height:100%;display:block}
         .io-sheetlabel{position:absolute;z-index:4;top:36px;left:38px;background:#0b2134de;padding:5px 8px;border-radius:6px;font-size:12px;font-weight:700}
         .io-warn{position:absolute;z-index:5;right:12px;top:36px;background:#591725e8;border:1px solid #dc4c69;color:#ffd7df;font-weight:700;padding:8px 10px;border-radius:7px;display:none}
         .io-warn.show{display:block}
@@ -656,10 +764,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-cut{height:150px;background:#07131f;border:1px solid #395a76;border-radius:8px;margin:9px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
         .io-instructions{font-size:12px;line-height:1.45;color:#c7e7f7;background:#102b41;border:1px solid #2d6689;border-radius:8px;padding:9px;margin-top:9px}
         .io-instructions b{color:#9eeaff}
-        @media(max-width:1250px){.io-layout{grid-template-columns:320px 1fr}.io-right{grid-column:1/-1}
-            .io-right>.io-panel{display:grid;grid-template-columns:1fr 1fr;gap:16px}.io-right .io-group{border:0;padding:0;margin:0}}
-        @media(max-width:800px){.io-app{padding:10px}.io-layout{display:block}.io-panel,.io-canvas-card{margin-bottom:12px}
-            .io-right>.io-panel{display:block}.io-right .io-group{border-top:1px solid var(--io-line);padding-top:13px;margin-top:13px}
+        /* Layar sempit: kedua panel ikut menumpuk, canvas tetap paling bawah &
+           selebar penuh. Urutannya dijaga lewat grid-template-areas, bukan
+           mengubah urutan markup. */
+        /* Layar sempit: accordion jadi vertikal (judul bagian yang tertutup
+           tampil mendatar), canvas tetap paling bawah. */
+        @media(max-width:900px){
+            .io-acc{flex-direction:column}
+            .io-sec:not(.open){flex:0 0 auto}
+            .io-sec:not(.open) .io-sec-head{width:auto;height:auto;min-height:0;padding:11px 14px;
+                writing-mode:horizontal-tb;transform:none}}
+        @media(max-width:800px){.io-app{padding:10px}
+            .io-sec-body{columns:1}
+            .io-canvas-card{min-height:70vh}
             .io-top{align-items:flex-start}.io-badge{display:none}}
         </style>
 
@@ -679,82 +796,158 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             <div class="io-layout">
-                <aside class="io-panel">
-                    <h2>Job Configuration</h2>
-                    <div class="io-group">
-                        <!-- Job sudah pasti sejak dipilih di grid (user 2026-09-16),
-                        jadi ini identitas, BUKAN dropdown. Dropdown-nya hanya muncul
-                        di mode ?demo=1 yang memang berisi banyak sampel. -->
-                        <label>Product inquiry / job</label>
-                        <div id="io-jobFixed" class="io-jobfix"></div>
-                        <select id="io-product" style="display:none"></select>
-                        <div id="io-metrics" class="io-metric-grid"></div>
-                        <div id="io-spec" class="io-spec"></div>
-                    </div>
-                    <div class="io-group">
-                        <label>Printing machine</label>
-                        <select id="io-machine"></select>
-                        <div id="io-machineInfo" class="io-notice info"></div>
-                        <label>Mesin plong / ponds</label>
-                        <select id="io-diecut"></select>
-                        <div id="io-diecutInfo" class="io-notice info"></div>
-                    </div>
-                    <div class="io-group">
-                        <h2>1. Jumlah Up</h2>
-                        <div class="io-auto-box">
-                            <div class="io-toggle-row">
-                                <div>
-                                    <b>Auto Up</b>
-                                    <div class="io-note" id="io-modeText">Aktif: gunakan up maksimum yang memungkinkan</div>
+                <!-- Accordion horizontal (permintaan user 2026-09-17, dari mockup
+                draft): SATU bagian terbuka lebar, sisanya menyempit jadi strip
+                judul vertikal. Hemat ruang tanpa panel yang meluber ke samping,
+                dan area gambar tetap di bawah selebar penuh. Semua id elemen
+                dipertahankan, jadi logika JS di bawah tidak berubah. -->
+                <div class="io-acc" id="io-acc">
+                    <section class="io-sec" data-sec="impo">
+                        <button type="button" class="io-sec-head"><span>Imposition &amp; Nesting</span></button>
+                        <div class="io-sec-body">
+                            <div class="io-group">
+                                <h2>Job</h2>
+                                <!-- Job sudah pasti sejak dipilih di grid (user 2026-09-16),
+                                jadi ini identitas, BUKAN dropdown. -->
+                                <div id="io-jobFixed" class="io-jobfix"></div>
+                                <select id="io-product" style="display:none"></select>
+                                <div id="io-metrics" class="io-metric-grid"></div>
+                            </div>
+                            <div class="io-group">
+                                <h2>1. Jumlah Up</h2>
+                                <div class="io-auto-box">
+                                    <div class="io-toggle-row">
+                                        <div>
+                                            <b>Auto Up</b>
+                                            <div class="io-note" id="io-modeText">Aktif: gunakan up maksimum yang memungkinkan</div>
+                                        </div>
+                                        <label class="io-toggle"><input id="io-autoUp" type="checkbox" checked><span class="io-slider"></span></label>
+                                    </div>
+                                    <!-- Saat Auto Up, jumlah up itu HASIL perhitungan, bukan angka
+                                    yang diketik. Kotak isian baru muncul di mode Manual.
+                                    Blok ini ada di dalam @verbatim: komentar Blade tidak diproses
+                                    dan akan bocor jadi teks -- WAJIB komentar HTML. -->
+                                    <div id="io-autoResult" class="io-auto-result">
+                                        <span>Hasil optimasi</span><b id="io-autoResultValue">—</b>
+                                        <div class="io-note" id="io-autoResultNote">Susunan dihitung dari ukuran canvas &amp; bentuk dieline.</div>
+                                    </div>
+                                    <div id="io-manualGroup" style="display:none">
+                                        <label>Target up (manual)</label>
+                                        <input id="io-manualUp" type="number" min="1">
+                                        <p class="io-note">Canvas akan dicarikan ukuran terkecil yang memuat jumlah ini.</p>
+                                    </div>
                                 </div>
-                                <label class="io-toggle"><input id="io-autoUp" type="checkbox" checked><span class="io-slider"></span></label>
+                                <h2 style="margin-top:14px">2. Gap</h2>
+                                <label>Jarak antar artwork / dieline (cm)</label>
+                                <input id="io-gap" type="number" min="0" step=".05" value=".3">
                             </div>
-                            <!-- Saat Auto Up, jumlah up itu HASIL perhitungan (canvas x
-                            bentuk blank x pola nesting), bukan angka yang diketik, jadi
-                            yang tampil angka hasilnya bukan kotak isian. Kotak isian baru
-                            muncul di mode Manual, saat up memang jadi TARGET officer.
-                            Catatan: blok ini ada di dalam @verbatim, jadi komentar Blade
-                            tidak diproses dan akan bocor jadi teks -- WAJIB komentar HTML. -->
-                            <div id="io-autoResult" class="io-auto-result">
-                                <span>Hasil optimasi</span><b id="io-autoResultValue">—</b>
-                                <div class="io-note" id="io-autoResultNote">Susunan dihitung dari ukuran canvas &amp; bentuk dieline.</div>
+                            <div class="io-group">
+                                <h2>3. Lembar Cetak / Canvas</h2>
+                                <div class="io-row">
+                                    <div><label>Length (cm)</label><input id="io-sl" type="number" min="1" step=".1"></div>
+                                    <div><label>Width (cm)</label><input id="io-sw" type="number" min="1" step=".1"></div>
+                                </div>
+                                <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px">✦ Suggest canvas size</button>
+                                <p id="io-suggestNote" class="io-note"></p>
+                                <label>Grain direction</label>
+                                <select id="io-grain">
+                                    <option value="L">Along dieline length</option>
+                                    <option value="W">Along dieline width</option>
+                                    <option value="none">No grain constraint</option>
+                                </select>
                             </div>
-                            <div id="io-manualGroup" style="display:none">
-                                <label>Target up (manual)</label>
-                                <input id="io-manualUp" type="number" min="1">
-                                <p class="io-note">Canvas akan dicarikan ukuran terkecil yang memuat jumlah ini.</p>
+                            <div class="io-group">
+                                <h2>Data Kalkulasi</h2>
+                                <div class="io-mini-grid" style="margin-top:0">
+                                    <div class="io-mini"><span>Canvas utilization</span><b id="io-yCanvas">—</b></div>
+                                    <div class="io-mini"><span>Canvas waste</span><b id="io-yCanvasW">—</b></div>
+                                    <div class="io-mini"><span>Plano sheet yield</span><b id="io-yPlano">—</b></div>
+                                    <div class="io-mini"><span>Overall efficiency</span><b id="io-yAll">—</b></div>
+                                </div>
+                                <div class="io-bar"><i id="io-barFill"></i><span id="io-barTxt"></span></div>
+                                <div id="io-impoDetail" class="io-spec"></div>
+                            </div>
+                            <div class="io-group">
+                                <h2>Spesifikasi &amp; Artwork</h2>
+                                <div id="io-spec" class="io-spec" style="margin-top:0"></div>
+                                <label>Artwork asset</label>
+                                <label class="io-upload">Upload artwork<input id="io-artFile" type="file" accept="image/*,.pdf,.ai,.svg"></label>
+                                <div id="io-artName" class="io-file">Artwork bawaan job aktif</div>
+                                <label>Separate dieline</label>
+                                <label class="io-upload">Upload dieline<input id="io-dieFile" type="file" accept="image/*,.pdf,.ai,.svg,.dxf"></label>
+                                <div id="io-dieName" class="io-file">Dieline struktural bawaan job aktif</div>
                             </div>
                         </div>
-                    </div>
-                    <div class="io-group">
-                        <h2>2. Gap</h2>
-                        <label>Jarak antar artwork / dieline (cm)</label>
-                        <input id="io-gap" type="number" min="0" step=".05" value=".3">
-                    </div>
-                    <div class="io-group">
-                        <h2>3. Lembar Cetak / Canvas</h2>
-                        <div class="io-row">
-                            <div><label>Length (cm)</label><input id="io-sl" type="number" min="1" step=".1"></div>
-                            <div><label>Width (cm)</label><input id="io-sw" type="number" min="1" step=".1"></div>
+                    </section>
+
+                    <section class="io-sec" data-sec="plano">
+                        <button type="button" class="io-sec-head"><span>Plano Configuration</span></button>
+                        <div class="io-sec-body">
+                            <div class="io-group">
+                                <h2>Mesin</h2>
+                                <label>Printing machine</label>
+                                <select id="io-machine"></select>
+                                <div id="io-machineInfo" class="io-notice info"></div>
+                                <label>Mesin plong / ponds</label>
+                                <select id="io-diecut"></select>
+                                <div id="io-diecutInfo" class="io-notice info"></div>
+                            </div>
+                            <div class="io-group">
+                                <h2>Plano Optimization</h2>
+                                <label>Market plano size</label>
+                                <select id="io-plano"></select>
+                                <div class="io-row">
+                                    <div><label>Custom L</label><input id="io-cpl" type="number" step=".1" placeholder="cm"></div>
+                                    <div><label>Custom W</label><input id="io-cpw" type="number" step=".1" placeholder="cm"></div>
+                                </div>
+                                <button id="io-custom" class="io-btn" style="width:100%;margin-top:8px">Use custom plano</button>
+                                <div id="io-planoNote" class="io-notice info"></div>
+                                <div id="io-cut" class="io-cut"></div>
+                            </div>
+                            <div class="io-group">
+                                <h2>Ranking Plano</h2>
+                                <div id="io-planoTable" class="io-spec" style="margin-top:0"></div>
+                            </div>
+                            <div class="io-group">
+                                <h2>PCS ↔ PLANO Calculator</h2>
+                                <div class="io-mode-switch">
+                                    <button id="io-pcsMode" class="active">PCS → PLANO</button>
+                                    <button id="io-planoMode">PLANO → PCS</button>
+                                </div>
+                                <div class="io-compact">
+                                    <b id="io-inputLabel">Qty order (pcs)</b>
+                                    <label for="io-converterInput" class="io-note" id="io-inputHint">Masukkan jumlah produk yang harus diproduksi</label>
+                                    <input id="io-converterInput" type="number" min="0" value="100">
+                                    <div class="io-result">
+                                        <div class="caption" id="io-resultCaption">Plano required</div>
+                                        <b id="io-resultValue">—</b> <small id="io-resultUnit">sheets</small>
+                                    </div>
+                                    <div class="io-mini-grid">
+                                        <div class="io-mini"><span>Active up</span><b id="io-mUp">—</b></div>
+                                        <div class="io-mini"><span>Yield / plano</span><b id="io-mYield">—</b></div>
+                                        <div class="io-mini"><span>Products / plano</span><b id="io-mPerPlano">—</b></div>
+                                        <div class="io-mini"><span>Waste / plano</span><b id="io-mWaste">—</b></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px">✦ Suggest canvas size</button>
-                        <p id="io-suggestNote" class="io-note"></p>
-                    </div>
-                    <div class="io-group">
-                        <label>Grain direction</label>
-                        <select id="io-grain">
-                            <option value="L">Along dieline length</option>
-                            <option value="W">Along dieline width</option>
-                            <option value="none">No grain constraint</option>
-                        </select>
-                        <label>Artwork asset</label>
-                        <label class="io-upload">Upload artwork<input id="io-artFile" type="file" accept="image/*,.pdf,.ai,.svg"></label>
-                        <div id="io-artName" class="io-file">Artwork bawaan job aktif</div>
-                        <label>Separate dieline</label>
-                        <label class="io-upload">Upload dieline<input id="io-dieFile" type="file" accept="image/*,.pdf,.ai,.svg,.dxf"></label>
-                        <div id="io-dieName" class="io-file">Dieline struktural bawaan job aktif</div>
-                    </div>
-                </aside>
+                    </section>
+
+                    <section class="io-sec" data-sec="bom">
+                        <button type="button" class="io-sec-head"><span>Bill of Material</span><em class="io-sec-count" id="io-cnt-bom"></em></button>
+                        <div class="io-sec-body io-sec-body--single"><div id="io-bom"></div></div>
+                    </section>
+
+                    <section class="io-sec" data-sec="ink">
+                        <button type="button" class="io-sec-head"><span>Ink Configuration</span><em class="io-sec-count" id="io-cnt-ink"></em></button>
+                        <div class="io-sec-body io-sec-body--single"><div id="io-ink"></div></div>
+                    </section>
+
+                    <section class="io-sec" data-sec="bop">
+                        <button type="button" class="io-sec-head"><span>Bill of Process</span><em class="io-sec-count" id="io-cnt-bop"></em></button>
+                        <div class="io-sec-body io-sec-body--single"><div id="io-bop"></div></div>
+                    </section>
+                </div>
 
                 <main class="io-canvas-card">
                     <div class="io-toolbar">
@@ -772,12 +965,16 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <button class="io-btn green" id="io-confirm">✓ Confirm → Pro-Cost</button>
                         <span class="io-status" id="io-status"></span>
                     </div>
+                    <!-- Status susunan + PERINGATAN (tabrakan garis potong, target up
+                    tidak muat) sengaja ditaruh di sini, bukan di dalam accordion:
+                    peringatan tidak boleh ikut tersembunyi saat bagiannya ditutup. -->
+                    <div id="io-impoMode" class="io-notice info" style="margin:0 0 9px"></div>
                     <div class="io-stage">
                         <div class="io-rulerx">CANVAS / PRINT SHEET RULER — cm</div>
                         <div class="io-rulery"></div>
                         <div id="io-sheetLabel" class="io-sheetlabel"></div>
                         <div id="io-warning" class="io-warn">⚠ Artwork melewati batas canvas / print sheet</div>
-                        <div class="io-viewport">
+                        <div class="io-viewport" id="io-viewport">
                             <div id="io-wrap" class="io-wrap">
                                 <svg id="io-svg" width="650" height="500" viewBox="0 0 650 500">
                                     <defs>
@@ -808,58 +1005,6 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div id="io-valid" class="io-notice info">Set a valid canvas size.</div>
                 </main>
-
-                <aside class="io-right">
-                    <div class="io-panel">
-                        <div class="io-group">
-                            <h2>PCS ↔ PLANO Calculator</h2>
-                            <div class="io-mode-switch">
-                                <button id="io-pcsMode" class="active">PCS → PLANO</button>
-                                <button id="io-planoMode">PLANO → PCS</button>
-                            </div>
-                            <div class="io-compact">
-                                <b id="io-inputLabel">Qty order (pcs)</b>
-                                <label for="io-converterInput" class="io-note" id="io-inputHint">Masukkan jumlah produk yang harus diproduksi</label>
-                                <input id="io-converterInput" type="number" min="0" value="100">
-                                <div class="io-result">
-                                    <div class="caption" id="io-resultCaption">Plano required</div>
-                                    <b id="io-resultValue">—</b> <small id="io-resultUnit">sheets</small>
-                                </div>
-                                <div class="io-mini-grid">
-                                    <div class="io-mini"><span>Active up</span><b id="io-mUp">—</b></div>
-                                    <div class="io-mini"><span>Yield / plano</span><b id="io-mYield">—</b></div>
-                                    <div class="io-mini"><span>Products / plano</span><b id="io-mPerPlano">—</b></div>
-                                    <div class="io-mini"><span>Waste / plano</span><b id="io-mWaste">—</b></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="io-group">
-                            <h2>Imposition &amp; Yield</h2>
-                            <div id="io-impoMode" class="io-notice info"></div>
-                            <div class="io-mini-grid">
-                                <div class="io-mini"><span>Canvas utilization</span><b id="io-yCanvas">—</b></div>
-                                <div class="io-mini"><span>Canvas waste</span><b id="io-yCanvasW">—</b></div>
-                                <div class="io-mini"><span>Plano sheet yield</span><b id="io-yPlano">—</b></div>
-                                <div class="io-mini"><span>Overall efficiency</span><b id="io-yAll">—</b></div>
-                            </div>
-                            <div class="io-bar"><i id="io-barFill"></i><span id="io-barTxt"></span></div>
-                            <div id="io-impoDetail" class="io-spec"></div>
-                        </div>
-                        <div class="io-group">
-                            <h2>Plano Optimization</h2>
-                            <label>Market plano size</label>
-                            <select id="io-plano"></select>
-                            <div class="io-row">
-                                <div><label>Custom L</label><input id="io-cpl" type="number" step=".1" placeholder="cm"></div>
-                                <div><label>Custom W</label><input id="io-cpw" type="number" step=".1" placeholder="cm"></div>
-                            </div>
-                            <button id="io-custom" class="io-btn" style="width:100%;margin-top:8px">Use custom plano</button>
-                            <div id="io-planoNote" class="io-notice info"></div>
-                            <div id="io-planoTable" class="io-spec"></div>
-                            <div id="io-cut" class="io-cut"></div>
-                        </div>
-                    </div>
-                </aside>
             </div>
         </div>
 
@@ -876,6 +1021,32 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             const diecutters = (DATA.dieCutters || []).map(d => [d.name, d.L, d.W, d.id]);
             const GRIPPER = (DATA.gripperMm || 0) / 10;   // cm
             const MARGIN = (DATA.marginMm || 0) / 10;     // cm
+
+            // Sistem koordinat gambar. Dulu dipatok 650x500: begitu area canvas
+            // dibuat selebar layar, gambarnya TIDAK ikut membesar -- rasionya
+            // terkunci, jadi yang bertambah cuma ruang kosong kiri-kanan. Sekarang
+            // lebar viewBox mengikuti bentuk wadahnya, sehingga artwork benar-benar
+            // memakai ruang yang ada (permintaan user: artwork besar & mudah di-drag).
+            // Tingginya tetap 500 supaya skala angka di seluruh kode tidak berubah.
+            const VB = { w: 650, h: 500 };
+            const PAD_X = 50, PAD_Y = 70;   // sisa ruang tepi di dalam viewBox
+
+            function usableVB() {
+                return [VB.w - PAD_X, VB.h - PAD_Y];
+            }
+
+            function fitViewBox() {
+                const box = $('viewport').getBoundingClientRect();
+                if (!box.width || !box.height) return false;
+
+                const lebarBaru = Math.round(Math.max(420, Math.min(2400, VB.h * box.width / box.height)));
+                if (lebarBaru === VB.w) return false;
+
+                VB.w = lebarBaru;
+                $('svg').setAttribute('viewBox', '0 0 ' + VB.w + ' ' + VB.h);
+
+                return true;
+            }
             if (!products.length || !machines.length || !planos.length) {
                 const box = document.getElementById('io-valid');
                 box.className = 'io-notice bad';
@@ -1564,7 +1735,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function autoNestSoon() {
                 clearTimeout(autoNestTimer);
                 autoNestTimer = setTimeout(() => {
-                    if (!S.touched && ok()) autoNest(true);
+                    if (!S.touched && ok()) autoNest(true).then(samakanTinggiAcc);
                 }, 120);
             }
 
@@ -1610,13 +1781,121 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').value = String(products.indexOf(S.p));
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
                 $('back').href = DATA.backUrl || '#';
+                askSidebarMini(true);
+                accInit();
+                fitViewBox();
                 jobIdentity();
+                renderSpecSections();
                 bind();
                 upModeUi();
                 artworkLabel();
                 syncActiveJob();
                 update(true);
+                samakanTinggiAcc();
                 autoNestSoon();
+            }
+
+            // Minta shell mengecilkan sidebar selama layar ini terbuka (permintaan
+            // user 2026-09-17) -- area gambar butuh lebar sebanyak mungkin. Nilai
+            // sidebar sebelumnya disimpan shell dan dikembalikan saat halaman ini
+            // ditinggalkan, jadi preferensi user tidak ikut hilang.
+            function askSidebarMini(mini) {
+                if (window.parent === window) return;   // dibuka langsung, bukan di shell
+                try { window.parent.postMessage({ tmerp: 'sidebar', mini: !!mini }, window.location.origin); } catch (e) { /* abaikan */ }
+            }
+
+            window.addEventListener('pagehide', () => askSidebarMini(false));
+
+            // Bentuk wadah berubah (sidebar mengecil, jendela di-resize) -> lebar
+            // viewBox ikut disesuaikan supaya gambar tetap memakai ruang yang ada.
+            let resizeTimer = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => { samakanTinggiAcc(); if (fitViewBox()) render(), calculator(); }, 150);
+            });
+
+            // Accordion: satu bagian terbuka. Bagian terakhir yang dibuka diingat per
+            // browser (bukan data bersama, jadi cukup localStorage).
+            function accInit() {
+                const secs = [...document.querySelectorAll('.io-sec')];
+                let awal = 'impo';
+                try { awal = localStorage.getItem('prodev.acc') || 'impo'; } catch (e) { /* abaikan */ }
+                if (!secs.some(s => s.dataset.sec === awal)) awal = 'impo';
+
+                const buka = key => {
+                    secs.forEach(s => {
+                        const on = s.dataset.sec === key;
+                        s.classList.toggle('open', on);
+                        s.querySelector('.io-sec-head').setAttribute('aria-expanded', on ? 'true' : 'false');
+                    });
+                    try { localStorage.setItem('prodev.acc', key); } catch (e) { /* abaikan */ }
+                    // Tinggi baris accordion bisa berubah -> area gambar ikut menyesuaikan.
+                    setTimeout(() => { if (fitViewBox()) { render(); calculator(); } }, 60);
+                };
+
+                secs.forEach(s => { s.querySelector('.io-sec-head').onclick = () => buka(s.dataset.sec); });
+                buka(awal);
+            }
+
+            // Tinggi accordion DIKUNCI = bagian tertinggi (user 2026-09-17: tidak
+            // mau naik-turun tiap ganti bagian). Tiap bagian dibuka sesaat HANYA
+            // untuk diukur -- semua sinkron sebelum browser menggambar, jadi tidak
+            // berkedip. Dilewati saat layar sempit (accordion tersusun ke bawah).
+            function samakanTinggiAcc() {
+                const acc = document.getElementById('io-acc');
+                const secs = [...acc.querySelectorAll('.io-sec')];
+                acc.style.minHeight = '';
+                if (window.matchMedia('(max-width: 900px)').matches) return;
+
+                const aktif = secs.find(s => s.classList.contains('open'));
+                let maks = 0;
+                secs.forEach(s => {
+                    secs.forEach(x => x.classList.toggle('open', x === s));
+                    maks = Math.max(maks, acc.offsetHeight);
+                });
+                secs.forEach(x => x.classList.toggle('open', x === aktif));
+                acc.style.minHeight = maks + 'px';
+            }
+
+            const fmtAngka = v => (v === null || v === undefined || v === '') ? '—'
+                : String(+parseFloat(v).toFixed(2));
+
+            // BOM / Ink / BOP ditampilkan BACA-SAJA dari data yang sudah ada.
+            // Pembangkitan otomatisnya (BOP dari finishing, ink dari warna artwork)
+            // masih dalam pembahasan -- belum dibangun.
+            function renderSpecSections() {
+                const p = S.p;
+
+                const bom = p.bom || { rows: [] };
+                $('cnt-bom').textContent = bom.rows.length || '';
+                $('bom').innerHTML = !bom.rows.length
+                    ? '<div class="io-empty">Belum ada Bill of Material untuk part ini — baik di master part maupun di Inquiry asalnya.</div>'
+                    : '<span class="io-src">' + (bom.source === 'master' ? 'BOM MASTER PART' : 'DARI INQUIRY PRODUCT') + '</span>'
+                      + '<table class="io-tbl"><tr><th>Layer</th><th>Bahan</th><th>Jenis</th><th>Gramatur</th><th>Ukuran (cm)</th><th></th></tr>'
+                      + bom.rows.map(r => '<tr><td>' + r.seq + '</td><td>' + r.name + '</td><td>' + (r.type || '—') + '</td><td>'
+                          + fmtAngka(r.gsm) + '</td><td>' + fmtAngka(r.p) + ' × ' + fmtAngka(r.l) + '</td><td>'
+                          + (r.primary ? '<span class="io-src" style="margin:0">UTAMA</span>' : '') + '</td></tr>').join('')
+                      + '</table>';
+
+                const ink = p.inks || { rows: [] };
+                $('cnt-ink').textContent = ink.rows.length || '';
+                $('ink').innerHTML = (ink.rows.length
+                    ? '<table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Plate</th></tr>'
+                      + ink.rows.map(r => '<tr><td>' + (r.pass_label || r.pass_seq) + '</td><td>' + r.unit_no + '</td><td>'
+                          + r.ink_name + '</td><td>' + (r.plate_ref || '—') + '</td></tr>').join('') + '</table>'
+                    : '<div class="io-empty">Belum ada susunan tinta per unit untuk part ini.</div>')
+                    + ((ink.color || ink.ink)
+                        ? '<div class="io-spec"><table><tr><td>Notasi warna</td><td>' + (ink.color || '—') + '</td></tr>'
+                          + '<tr><td>Tinta</td><td>' + (ink.ink || '—') + '</td></tr></table></div>'
+                        : '');
+
+                const bop = p.bop || [];
+                $('cnt-bop').textContent = bop.length || '';
+                $('bop').innerHTML = !bop.length
+                    ? '<div class="io-empty">Belum ada urutan proses untuk part ini.</div>'
+                    : '<table class="io-tbl"><tr><th>Urut</th><th>Proses</th><th>Mesin</th><th>Catatan</th></tr>'
+                      + bop.map(r => '<tr><td>' + r.seq + '</td><td>' + r.name + '</td><td>' + (r.machine || '—')
+                          + '</td><td>' + (r.note || '') + '</td></tr>').join('') + '</table>';
             }
 
             // Job dipilih di grid, jadi di sini cuma DITAMPILKAN. Dropdown hanya
@@ -1663,7 +1942,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').onchange = e => {
                     S.p = products[e.target.value]; S.g = S.p.gap; $('gap').value = S.g;
                     $('grain').value = S.p.grain; S.objs = [];
-                    jobIdentity(); artworkLabel(); syncActiveJob(); suggest(); autoNestSoon();
+                    jobIdentity(); renderSpecSections(); artworkLabel(); syncActiveJob(); suggest(); samakanTinggiAcc(); autoNestSoon();
                 };
                 $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
                 $('diecut').onchange = e => { S.d = diecutters[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
@@ -1784,7 +2063,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // Suggest saat susunan sudah disentuh user: canvas dihitung ulang dari
             // bounding box susunan + bleed (TIDAK me-reset nesting manual).
             function fitToLayout() {
-                const sc = Math.min(600 / S.L, 430 / S.W), sx = (650 - S.L * sc) / 2, sy = (500 - S.W * sc) / 2, m = S.p.bleed,
+                const [uw, uh] = usableVB();
+                const sc = Math.min(uw / S.L, uh / S.W), sx = (VB.w - S.L * sc) / 2, sy = (VB.h - S.W * sc) / 2, m = S.p.bleed,
                     b = S.objs.map(o => { const q = obox(o); return { x: (q.x - sx) / sc, y: (q.y - sy) / sc, X: (q.x + q.w - sx) / sc, Y: (q.y + q.h - sy) / sc }; }),
                     minx = Math.min(...b.map(v => v.x)), miny = Math.min(...b.map(v => v.y)),
                     maxx = Math.max(...b.map(v => v.X)), maxy = Math.max(...b.map(v => v.Y)),
@@ -1794,7 +2074,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     area = S.objs.length * S.p.l * S.p.w, use = (area / (L * W) * 100).toFixed(1);
 
                 S.L = L; S.W = W; $('sl').value = L; $('sw').value = W;
-                const n = Math.min(600 / L, 430 / W), nx = (650 - L * n) / 2, ny = (500 - W * n) / 2, k = n / sc;
+                const n = Math.min(uw / L, uh / W), nx = (VB.w - L * n) / 2, ny = (VB.h - W * n) / 2, k = n / sc;
                 cen.forEach(r => { r.o.w *= k; r.o.h *= k; r.o.x = nx + r.cx * n - r.o.w / 2; r.o.y = ny + r.cy * n - r.o.h / 2; });
                 S.sc0 = n; S.sx0 = nx; S.sy0 = ny;
                 $('suggestNote').textContent = (rl > L || rw > W)
@@ -1877,7 +2157,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     $('status').textContent = 'Validation failed';
                     return;
                 }
-                const sc = Math.min(600 / S.L, 430 / S.W), w = S.L * sc, h = S.W * sc, x = (650 - w) / 2, y = (500 - h) / 2;
+                const [uw, uh] = usableVB();
+                const sc = Math.min(uw / S.L, uh / S.W), w = S.L * sc, h = S.W * sc, x = (VB.w - w) / 2, y = (VB.h - h) / 2;
                 if (S.objs.length && S.sc0 && (S.sc0 !== sc || S.sx0 !== x || S.sy0 !== y)) {
                     const k = sc / S.sc0;
                     S.objs.forEach(o => {
@@ -2095,7 +2376,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             }
             function point(e) {
                 const r = $('svg').getBoundingClientRect();
-                return { x: (e.clientX - r.left) * 650 / r.width, y: (e.clientY - r.top) * 500 / r.height };
+                return { x: (e.clientX - r.left) * VB.w / r.width, y: (e.clientY - r.top) * VB.h / r.height };
             }
             function move(e) {
                 if (!S.drag) return;
@@ -2139,7 +2420,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('barFill').style.width = Math.max(0, Math.min(100, all)) + '%';
                 $('barTxt').textContent = 'Material terpakai ' + all.toFixed(1) + '% · terbuang ' + (100 - all).toFixed(1) + '%';
 
-                const sc = S.sc0 || Math.min(600 / S.L, 430 / S.W), sx = S.sx0, sy = S.sy0, sw = S.L * sc, sh = S.W * sc,
+                const sc = S.sc0 || Math.min(usableVB()[0] / S.L, usableVB()[1] / S.W), sx = S.sx0, sy = S.sy0, sw = S.L * sc, sh = S.W * sc,
                     b = S.objs.map(obox), rot = S.objs.filter(o => o.r % 360 !== 0).length,
                     mir = S.objs.filter(o => o.fx < 0 || o.fy < 0).length,
                     out = b.filter(v => v.x < sx - .6 || v.y < sy - .6 || v.x + v.w > sx + sw + .6 || v.y + v.h > sy + sh + .6).length,
