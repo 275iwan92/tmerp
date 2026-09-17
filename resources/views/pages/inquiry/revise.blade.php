@@ -2,6 +2,7 @@
 
 use App\Models\Master\MatRaw;
 use App\Models\Master\ProdType;
+use App\Models\Master\RefFinishingType;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sdi\IqpPartMaterial;
@@ -101,7 +102,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
     protected function fillPartsFrom(IqpInquiry $base): void
     {
-        $parts = $base->parts()->with(['materials.rawMaterial', 'processes'])->orderBy('part_seq')->get();
+        $parts = $base->parts()->with(['materials.rawMaterial', 'finishings'])->orderBy('part_seq')->get();
 
         $this->parts = $parts->map(fn (IqpPart $p) => [
             'id' => $p->id_part,
@@ -133,8 +134,9 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                 'is_primary' => (bool) $m->is_primary,
                 'query' => '',
             ])->values()->all(),
-            'processes' => $p->processes->map(fn ($pr) => [
-                'process_name' => $pr->process_name,
+            'finishings' => $p->finishings->map(fn ($f) => [
+                'finishing_type_id' => (string) $f->finishing_type_id,
+                'attribute' => $f->attribute ?? '',
             ])->values()->all(),
         ])->values()->all();
     }
@@ -371,7 +373,15 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         return ['code' => $code, 'distinct_colors' => $distinct, 'is_grayscale' => $isGrayscale];
     }
 
-    // ================= PROSES (scope PROCESS) =================
+    // ================= FINISHING (scope PROCESS) =================
+    // Yang direvisi adalah FINISHING (input); routing dihitung ulang engine
+    // BOP di ProDev dari finishing ini (BACKLOG §18).
+
+    #[Computed]
+    public function finishingTypeOptions()
+    {
+        return RefFinishingType::where('activate', true)->orderBy('finishing_name')->get();
+    }
 
     public function addProcessRow(int $partIndex): void
     {
@@ -379,17 +389,17 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
             return;
         }
 
-        $this->parts[$partIndex]['processes'][] = ['process_name' => ''];
+        $this->parts[$partIndex]['finishings'][] = ['finishing_type_id' => '', 'attribute' => ''];
     }
 
-    public function removeProcessRow(int $partIndex, int $procIndex): void
+    public function removeProcessRow(int $partIndex, int $rowIndex): void
     {
-        if ($this->readOnly || ! isset($this->parts[$partIndex]['processes'][$procIndex])) {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['finishings'][$rowIndex])) {
             return;
         }
 
-        unset($this->parts[$partIndex]['processes'][$procIndex]);
-        $this->parts[$partIndex]['processes'] = array_values($this->parts[$partIndex]['processes']);
+        unset($this->parts[$partIndex]['finishings'][$rowIndex]);
+        $this->parts[$partIndex]['finishings'] = array_values($this->parts[$partIndex]['finishings']);
     }
 
     // ================= SIMPAN =================
@@ -429,22 +439,20 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
         $part->materials()->whereNotIn('id_part_material', $keepIds)->delete();
     }
 
-    protected function persistPartProcesses(IqpPart $part, int $partIndex): void
+    protected function persistPartFinishings(IqpPart $part, int $partIndex): void
     {
-        // Tak ada id ter-track di array (routing branch/flow di luar scope layar ini,
-        // lihat IqpPartProcess) — replace-all per save, cukup utk catatan proses REVISE.
-        $part->processes()->delete();
+        $part->finishings()->delete();
+        $names = $this->finishingTypeOptions->pluck('finishing_name', 'id_finishing_type');
 
-        foreach ($this->parts[$partIndex]['processes'] as $seq => $row) {
-            if (trim($row['process_name'] ?? '') === '') {
-                continue;
-            }
-
-            $part->processes()->create([
-                'branch_code' => 'MAIN',
-                'step_seq' => $seq + 1,
-                'flow_type' => 'LINEAR',
-                'process_name' => $row['process_name'],
+        foreach (array_values(array_filter(
+            $this->parts[$partIndex]['finishings'] ?? [],
+            fn ($r) => ! empty($r['finishing_type_id']) && isset($names[$r['finishing_type_id']])
+        )) as $seq => $row) {
+            $part->finishings()->create([
+                'seq' => ($seq + 1) * 10,
+                'finishing_type_id' => (int) $row['finishing_type_id'],
+                'finishing_name' => $names[$row['finishing_type_id']],
+                'attribute' => trim($row['attribute'] ?? '') ?: null,
                 'created_by' => Auth::user()->login,
                 'updated_by' => Auth::user()->login,
             ]);
@@ -495,7 +503,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
             $this->persistPendingArtwork($part, $index);
             $this->persistPartMaterials($part, $index);
-            $this->persistPartProcesses($part, $index);
+            $this->persistPartFinishings($part, $index);
         }
 
         $this->inquiry->parts()->whereNotIn('id_part', $keepIds)->delete();
@@ -862,16 +870,22 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
 
         @if (in_array('PROCESS', $scope, true))
             <div class="eb">
-                <div class="t">⚙️ Proses — Urutan/Finishing</div>
+                <div class="t">⚙️ Finishing (routing dihitung ulang di ProDev)</div>
                 @foreach ($parts as $i => $part)
                     <div class="sec-title">{{ $part['part_name'] ?: 'Part '.($i + 1) }}</div>
-                    @foreach ($part['processes'] as $k => $proc)
-                        <div class="inkrow" style="grid-template-columns:1fr 30px" wire:key="rvproc-{{ $i }}-{{ $k }}">
-                            <input type="text" wire:model="parts.{{ $i }}.processes.{{ $k }}.process_name" placeholder="mis. Laminasi Doff" @if($readOnly) disabled @endif>
+                    @foreach ($part['finishings'] as $k => $fin)
+                        <div class="inkrow" style="grid-template-columns:1fr 1fr 30px" wire:key="rvfin-{{ $i }}-{{ $k }}">
+                            <select wire:model="parts.{{ $i }}.finishings.{{ $k }}.finishing_type_id" x-data x-effect="$el.value = @js((string) $fin['finishing_type_id'])" @if($readOnly) disabled @endif>
+                                <option value="">— pilih jenis finishing —</option>
+                                @foreach ($this->finishingTypeOptions as $ft)
+                                    <option value="{{ $ft->id_finishing_type }}">{{ $ft->finishing_name }}</option>
+                                @endforeach
+                            </select>
+                            <input type="text" maxlength="60" wire:model="parts.{{ $i }}.finishings.{{ $k }}.attribute" placeholder="atribut, mis. Gold Puyeh" @if($readOnly) disabled @endif>
                             <button type="button" class="btn d xs" wire:click="removeProcessRow({{ $i }}, {{ $k }})" @if($readOnly) disabled @endif>✕</button>
                         </div>
                     @endforeach
-                    <button type="button" class="addln" wire:click="addProcessRow({{ $i }})" @if($readOnly) disabled @endif>+ langkah proses</button>
+                    <button type="button" class="addln" wire:click="addProcessRow({{ $i }})" @if($readOnly) disabled @endif>+ finishing</button>
                 @endforeach
                 <div class="note b" style="margin-top:10px">Urutan/finishing berubah → waktu &amp; biaya proses berubah → costing ulang.</div>
             </div>

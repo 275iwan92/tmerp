@@ -138,6 +138,7 @@ class IqpInquiry extends Model
                 'part_name' => $part->part_name,
                 'part_type' => $part->part_type,
                 'qty_per_sku' => $part->qty_per_sku,
+                'pack_qty' => $part->pack_qty,
                 'cfg_color' => $part->cfg_color,
                 'cfg_ink' => $part->cfg_ink,
                 'dieline_spec' => $part->dieline_spec,
@@ -173,9 +174,30 @@ class IqpInquiry extends Model
                     'process_name' => $proc->process_name,
                     'machine_id' => $proc->machine_id,
                     'qty_factor' => $proc->qty_factor,
+                    'note' => $proc->note,
+                    'source' => $proc->source,
                     'created_by' => 'web',
                     'updated_by' => 'web',
                 ]);
+            }
+
+            foreach ($part->finishings as $fin) {
+                $newPart->finishings()->create([
+                    'seq' => $fin->seq,
+                    'finishing_type_id' => $fin->finishing_type_id,
+                    'finishing_name' => $fin->finishing_name,
+                    'attribute' => $fin->attribute,
+                    'notes' => $fin->notes,
+                    'created_by' => 'web',
+                    'updated_by' => 'web',
+                ]);
+            }
+
+            foreach ($part->inks as $ink) {
+                $newPart->inks()->create($ink->only([
+                    'pass_seq', 'pass_label', 'unit_no', 'ink_name',
+                    'coverage_pct', 'coverage_cm2', 'color_hex', 'source',
+                ]) + ['created_by' => 'web', 'updated_by' => 'web']);
             }
         }
     }

@@ -4,6 +4,7 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\MatRaw;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdPartAttachment;
+use App\Models\Master\ProdPartFinishing;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeSize;
@@ -12,8 +13,8 @@ use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpExternalCost;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpPart;
+use App\Models\Sdi\IqpPartFinishing;
 use App\Models\Sdi\IqpPartMaterial;
-use App\Models\Sdi\IqpPartProcess;
 use App\Models\Sdi\IqpTier;
 use App\Models\Sdi\IqpTooling;
 use App\Models\Sys\SysConstant;
@@ -317,6 +318,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'flow_type' => $p->flow_type,
                 'qty_factor' => $p->qty_factor,
             ])->values()->all(),
+            'finishings' => $part->finishings->map(fn ($f) => [
+                'name' => $f->finishing_name,
+                'attribute' => $f->attribute,
+            ])->values()->all(),
+            'pack_qty' => $part->pack_qty,
         ];
     }
 
@@ -348,6 +354,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'parts.materials' => fn ($q) => $q->orderBy('layer_seq'),
                 'parts.materials.rawMaterial',
                 'parts.processes' => fn ($q) => $q->orderBy('step_seq'),
+                'parts.finishings',
                 'toolings',
                 'externalCosts',
             ])->findOrFail($this->id);
@@ -439,6 +446,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'part_type' => $p->part_type ?? 'DC',
             'type_code' => $p->dieline_spec['type_code'] ?? '',
             'qty_per_sku' => $p->qty_per_sku !== null ? rtrim(rtrim((string) $p->qty_per_sku, '0'), '.') : '1',
+            'pack_qty' => $p->pack_qty ?? '',
             'dims' => $p->dieline_spec['dims'] ?? [],
             // Tidak ada kolom flat_manual di DDL (Tier 3A LOCKED) — heuristik: tipe tanpa
             // dieline_spec dianggap manual (sama seperti mockup memaksa manual saat !t.spec).
@@ -465,9 +473,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'query' => '',
                 'is_primary' => (bool) $m->is_primary,
             ])->values()->all(),
-            'processes' => $p->processes->map(fn (IqpPartProcess $pr) => [
-                'id' => $pr->id_part_process,
-                'process_name' => $pr->process_name,
+            'finishings' => $p->finishings->map(fn (IqpPartFinishing $fin) => [
+                'id' => $fin->id_part_finishing,
+                'finishing_type_id' => $fin->finishing_type_id,
+                'attribute' => $fin->attribute ?? '',
             ])->values()->all(),
         ])->values()->all();
 
@@ -897,6 +906,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'part_type' => 'DC',
             'type_code' => '',
             'qty_per_sku' => '1',
+            'pack_qty' => '',
             'dims' => [],
             'flat_manual' => false,
             'flat_w' => '',
@@ -911,7 +921,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'suggestions' => null,
             'part_role' => '',
             'materials' => [$this->blankMaterialRow(true)],
-            'processes' => [],
+            'finishings' => [],
         ];
 
         // Tipe Produk level Inquiry (2026-09-04) -- part baru ikut tipe yg
@@ -1333,16 +1343,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
     }
 
-    // ================= FINISHING TAMBAHAN per part (iqp_part_process, 2026-09-04) =================
+    // ================= FINISHING TAMBAHAN per part (iqp_part_finishing) =================
     // Master-detail: tiap part boleh punya berapa pun baris finishing (hot print,
     // UV spot, emboss, dst) -- permintaan user "master detail bisa ditambah apa
     // saja, buat dropdown nya". Dropdown sumber ref_finishing_type (tm2mst, master
-    // yg SAMA sudah dipakai ProDev utk ProdPartFinishing -- reuse, bukan bikin
-    // master baru). Disimpan ke iqp_part_process.process_name sbg snapshot teks
-    // (kolom ini memang didesain snapshot, bukan FK ketat) -- process_id TETAP
-    // kosong krn itu FK ke prod_process (proses produksi umum: CETAK/PLONG/dst,
-    // master BEDA dari ref_finishing_type/finishing dekoratif) -- jangan dipaksa
-    // jadi satu, salah semantik.
+    // yg SAMA dipakai ProDev). Sejak 2026-09-17 disimpan terstruktur (id +
+    // atribut, mis. warna foil) karena jadi input engine BOP/BOM -- dulu teks
+    // bebas di iqp_part_process.
 
     #[Computed]
     public function finishingTypeOptions()
@@ -1356,32 +1363,32 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             return;
         }
 
-        $this->parts[$partIndex]['processes'][] = ['id' => null, 'process_name' => ''];
+        $this->parts[$partIndex]['finishings'][] = ['id' => null, 'finishing_type_id' => '', 'attribute' => ''];
     }
 
-    public function removeFinishingRow(int $partIndex, int $procIndex): void
+    public function removeFinishingRow(int $partIndex, int $rowIndex): void
     {
-        if ($this->readOnly || ! isset($this->parts[$partIndex]['processes'][$procIndex])) {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['finishings'][$rowIndex])) {
             return;
         }
 
-        unset($this->parts[$partIndex]['processes'][$procIndex]);
-        $this->parts[$partIndex]['processes'] = array_values($this->parts[$partIndex]['processes']);
+        unset($this->parts[$partIndex]['finishings'][$rowIndex]);
+        $this->parts[$partIndex]['finishings'] = array_values($this->parts[$partIndex]['finishings']);
     }
 
-    public function applySuggestedFinishing(int $partIndex, string $processName): void
+    public function applySuggestedFinishing(int $partIndex, int $finishingTypeId): void
     {
         if ($this->readOnly || ! isset($this->parts[$partIndex])) {
             return;
         }
 
-        foreach ($this->parts[$partIndex]['processes'] as $row) {
-            if ($row['process_name'] === $processName) {
+        foreach ($this->parts[$partIndex]['finishings'] as $row) {
+            if ((int) $row['finishing_type_id'] === $finishingTypeId) {
                 return;
             }
         }
 
-        $this->parts[$partIndex]['processes'][] = ['id' => null, 'process_name' => $processName];
+        $this->parts[$partIndex]['finishings'][] = ['id' => null, 'finishing_type_id' => $finishingTypeId, 'attribute' => ''];
     }
 
     public function materialResults(int $partIndex, int $matIndex)
@@ -1809,12 +1816,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     protected function suggestFinishingFromHistory(string $typeCode): ?array
     {
-        $top = IqpPartProcess::query()
-            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_process.part_id')
+        $top = IqpPartFinishing::query()
+            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_finishing.part_id')
             ->where('iqp_part.dieline_spec->type_code', $typeCode)
-            ->whereNotNull('iqp_part_process.process_name')
-            ->selectRaw('iqp_part_process.process_name, count(*) as cnt')
-            ->groupBy('iqp_part_process.process_name')
+            ->selectRaw('iqp_part_finishing.finishing_type_id, iqp_part_finishing.finishing_name, count(*) as cnt')
+            ->groupBy('iqp_part_finishing.finishing_type_id', 'iqp_part_finishing.finishing_name')
             ->orderByDesc('cnt')
             ->first();
 
@@ -1822,13 +1828,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             return null;
         }
 
-        $total = IqpPartProcess::query()
-            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_process.part_id')
+        $total = IqpPartFinishing::query()
+            ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_finishing.part_id')
             ->where('iqp_part.dieline_spec->type_code', $typeCode)
             ->count();
 
         return [
-            'process_name' => $top->process_name,
+            'finishing_type_id' => (int) $top->finishing_type_id,
+            'process_name' => $top->finishing_name,
             'pct' => $total > 0 ? (int) round($top->cnt / $total * 100) : 0,
         ];
     }
@@ -2067,6 +2074,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'part_name' => $row['part_name'] !== '' ? $row['part_name'] : 'Part '.($index + 1),
                 'part_type' => $row['part_type'] ?: null,
                 'qty_per_sku' => $row['qty_per_sku'] !== '' ? $row['qty_per_sku'] : 1,
+                'pack_qty' => ($row['pack_qty'] ?? '') !== '' ? (int) $row['pack_qty'] : null,
                 'cfg_color' => $row['cfg_color'] !== '' ? $row['cfg_color'] : null,
                 'cfg_ink' => $row['cfg_ink'] !== '' ? $row['cfg_ink'] : null,
                 'dieline_spec' => $dielineSpec,
@@ -2089,29 +2097,29 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
             $this->persistPendingArtwork($part, $index);
             $this->persistPartMaterials($part, $index);
-            $this->persistPartProcesses($part, $index);
+            $this->persistPartFinishings($part, $index);
         }
 
         $this->inquiry->parts()->whereNotIn('id_part', $keepIds)->delete();
     }
 
-    // Baris finishing tambahan (2026-09-04) -- tak ada urutan/branch/flow ditrack
-    // di UI ini (itu domain ProDev routing), replace-all per save cukup utk
-    // catatan finishing di Inquiry, sama pola dgn revise.blade.php.
-    protected function persistPartProcesses(IqpPart $part, int $partIndex): void
+    // Finishing disimpan TERSTRUKTUR ke iqp_part_finishing (BACKLOG §18.2).
+    // iqp_part_process TIDAK disentuh lagi dari layar ini -- tabel itu milik
+    // hasil engine BOP (routing), yang dihitung dari finishing ini.
+    protected function persistPartFinishings(IqpPart $part, int $partIndex): void
     {
-        $part->processes()->delete();
+        $part->finishings()->delete();
+        $names = $this->finishingTypeOptions->pluck('finishing_name', 'id_finishing_type');
 
-        foreach ($this->parts[$partIndex]['processes'] as $seq => $row) {
-            if (trim($row['process_name'] ?? '') === '') {
-                continue;
-            }
-
-            $part->processes()->create([
-                'branch_code' => 'MAIN',
-                'step_seq' => $seq + 1,
-                'flow_type' => 'LINEAR',
-                'process_name' => $row['process_name'],
+        foreach (array_values(array_filter(
+            $this->parts[$partIndex]['finishings'] ?? [],
+            fn ($r) => ! empty($r['finishing_type_id']) && isset($names[$r['finishing_type_id']])
+        )) as $seq => $row) {
+            $part->finishings()->create([
+                'seq' => ($seq + 1) * 10,
+                'finishing_type_id' => (int) $row['finishing_type_id'],
+                'finishing_name' => $names[$row['finishing_type_id']],
+                'attribute' => trim($row['attribute'] ?? '') ?: null,
                 'created_by' => Auth::user()->login,
                 'updated_by' => Auth::user()->login,
             ]);
@@ -2336,6 +2344,27 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                 'updated_by' => Auth::user()->login,
             ]);
             $part->update(['prod_part_id' => $prodPart->id_part]);
+        }
+
+        // Spesifikasi yang jadi input engine BOP/BOM/Ink ikut ke master part
+        // setiap kali dikirim, supaya ProDev tidak bekerja dari data basi.
+        ProdPart::whereKey($part->prod_part_id)->update(array_filter([
+            'pack_qty' => $part->pack_qty,
+            'cfg_color' => $part->cfg_color,
+            'updated_by' => Auth::user()->login,
+        ], fn ($v) => $v !== null));
+
+        ProdPartFinishing::where('part_id', $part->prod_part_id)->delete();
+        foreach ($part->finishings as $fin) {
+            ProdPartFinishing::create([
+                'part_id' => $part->prod_part_id,
+                'seq' => $fin->seq,
+                'finishing_type_id' => $fin->finishing_type_id,
+                'attribute' => $fin->attribute,
+                'notes' => $fin->notes,
+                'created_by' => Auth::user()->login,
+                'updated_by' => Auth::user()->login,
+            ]);
         }
 
         // Artwork yg diupload di Inquiry ikut jadi Referensi ProDev otomatis --
@@ -2857,6 +2886,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     <label>Qty per Set</label>
                                     <input type="number" min="0" step="0.01" wire:model.blur="parts.{{ $i }}.qty_per_sku" @if($readOnly) disabled @endif>
                                 </div>
+                                <div class="f">
+                                    <label>Isi per Pack (pcs)</label>
+                                    <input type="number" min="1" step="1" wire:model.blur="parts.{{ $i }}.pack_qty" placeholder="mis. 400" @if($readOnly) disabled @endif>
+                                </div>
                                 <div class="f" x-data="{ zoom: false }">
                                     <label>Artwork / Desain</label>
                                     @php($artworkPreviewUrl = isset($artworkUploads[$i]) ? $artworkUploads[$i]->temporaryUrl() : ($part['artwork_path'] ? asset('storage/'.$part['artwork_path']) : null))
@@ -3075,7 +3108,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                         <div class="note y" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                                             <span>📋 Saran finishing dari histori: <b>{{ $sugFin['process_name'] }}</b> (dipakai {{ $sugFin['pct'] }}% Inquiry Tipe Produk ini sebelumnya).</span>
                                             @unless($readOnly)
-                                                <button type="button" class="btn g xs" wire:click="applySuggestedFinishing({{ $i }}, '{{ $sugFin['process_name'] }}')">Tambah ke Finishing</button>
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedFinishing({{ $i }}, {{ (int) $sugFin['finishing_type_id'] }})">Tambah ke Finishing</button>
                                             @endunless
                                         </div>
                                     @endif
@@ -3123,35 +3156,33 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                             <tr>
                                                 <th style="width:32px">#</th>
                                                 <th>Jenis Finishing</th>
+                                                <th>Atribut / Varian</th>
                                                 <th style="width:36px"></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse ($part['processes'] as $j => $proc)
-                                                <tr wire:key="fin-{{ $i }}-{{ $proc['id'] ?? 'new-'.$j }}">
+                                            @forelse ($part['finishings'] as $j => $fin)
+                                                <tr wire:key="fin-{{ $i }}-{{ $fin['id'] ?? 'new-'.$j }}">
                                                     <td>{{ $j + 1 }}</td>
                                                     <td>
-                                                        <select wire:model="parts.{{ $i }}.processes.{{ $j }}.process_name"
-                                                                x-data x-effect="$el.value = @js($proc['process_name'])" @if($readOnly) disabled @endif>
+                                                        <select wire:model="parts.{{ $i }}.finishings.{{ $j }}.finishing_type_id"
+                                                                x-data x-effect="$el.value = @js((string) $fin['finishing_type_id'])" @if($readOnly) disabled @endif>
                                                             <option value="">— pilih jenis finishing —</option>
-                                                            @php($knownNames = $this->finishingTypeOptions->pluck('finishing_name'))
-                                                            @if ($proc['process_name'] !== '' && ! $knownNames->contains($proc['process_name']))
-                                                                {{-- Nilai lama di luar daftar ref_finishing_type (mis. proses umum
-                                                                spt "Cetak"/"Plong" dari data lama) -- tetap ditampilkan apa adanya
-                                                                drpd diam-diam kosong & ke-drop pas simpan ulang. --}}
-                                                                <option value="{{ $proc['process_name'] }}">{{ $proc['process_name'] }} (data lama)</option>
-                                                            @endif
                                                             @foreach ($this->finishingTypeOptions as $ft)
-                                                                <option value="{{ $ft->finishing_name }}">{{ $ft->finishing_name }}</option>
+                                                                <option value="{{ $ft->id_finishing_type }}">{{ $ft->finishing_name }}</option>
                                                             @endforeach
                                                         </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" maxlength="60" wire:model.blur="parts.{{ $i }}.finishings.{{ $j }}.attribute"
+                                                               placeholder="mis. Gold Puyeh, area logo" @if($readOnly) disabled @endif>
                                                     </td>
                                                     <td>
                                                         <button type="button" class="btn d xs" wire:click="removeFinishingRow({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>✕</button>
                                                     </td>
                                                 </tr>
                                             @empty
-                                                <tr><td colspan="3" style="text-align:center;color:#8a94a6;font-size:11.5px">Belum ada finishing tambahan.</td></tr>
+                                                <tr><td colspan="4" style="text-align:center;color:#8a94a6;font-size:11.5px">Belum ada finishing tambahan.</td></tr>
                                             @endforelse
                                         </tbody>
                                     </table>

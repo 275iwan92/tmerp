@@ -17,6 +17,7 @@ class ProdPartFinishing extends Model
         'part_id',
         'seq',
         'finishing_type_id',
+        'attribute',
         'notes',
         'cost_estimate',
         'created_by',

@@ -23,6 +23,8 @@ class IqpPartProcess extends Model
         'process_name',
         'machine_id',
         'qty_factor',
+        'note',
+        'source',
         'created_by',
         'updated_by',
     ];

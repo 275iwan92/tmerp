@@ -31,6 +31,7 @@ class ProdPartProcess extends Model
         'layer_ref',
         'qty_factor',
         'note',
+        'source',
         'created_by',
         'updated_by',
     ];

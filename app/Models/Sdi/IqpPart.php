@@ -23,6 +23,7 @@ class IqpPart extends Model
         'part_name',
         'part_type',
         'qty_per_sku',
+        'pack_qty',
         'cfg_color',
         'cfg_ink',
         'dieline_spec',
@@ -31,12 +32,14 @@ class IqpPart extends Model
         'flat_area',
         'artwork_path',
         'artwork_original_filename',
+        'artwork_colors',
         'created_by',
         'updated_by',
     ];
 
     protected $casts = [
         'dieline_spec' => 'array',
+        'artwork_colors' => 'array',
         'qty_per_sku' => 'decimal:4',
         'flat_w' => 'decimal:4',
         'flat_h' => 'decimal:4',
@@ -56,6 +59,16 @@ class IqpPart extends Model
     public function processes(): HasMany
     {
         return $this->hasMany(IqpPartProcess::class, 'part_id', 'id_part');
+    }
+
+    public function finishings(): HasMany
+    {
+        return $this->hasMany(IqpPartFinishing::class, 'part_id', 'id_part')->orderBy('seq');
+    }
+
+    public function inks(): HasMany
+    {
+        return $this->hasMany(IqpPartInk::class, 'part_id', 'id_part')->orderBy('pass_seq')->orderBy('unit_no');
     }
 
     public function layout(): HasOne

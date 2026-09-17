@@ -26,12 +26,8 @@
       yang dibekukan di part ini.
     - Bahan Baku (iqp_part_material) -- data NYATA, terisi via UI di form
       input (search MatRaw -> pilih -> gramatur/ukuran ikut ter-snapshot).
-    - Proses/Finishing (iqp_part_process) -- tabelnya ADA di skema & DIPAKAI
-      (cloneStructureFrom() saat REVISE/REKALKULASI meng-clone dari inquiry
-      induk), TAPI form Inquiry Product (mode NEW) ini SENDIRI belum punya
-      UI utk mengisi baris proses/finishing -- jadi utk inquiry NEW kosong
-      itu BUKAN bug tampilan, itu gap nyata di form input (dicatat, bukan
-      diasumsikan/dikarang datanya). Ditampilkan apa adanya + pesan jujur.
+    - Finishing (iqp_part_finishing, diinput di form Inquiry) + Routing
+      (iqp_part_process, hasil engine BOP dari ProDev -- 2026-09-17).
 
     Props:
     - inquiry: ?IqpInquiry, null kalau job Mode #2 (manual, tidak ada Inquiry).
@@ -172,12 +168,22 @@
 
                     {{-- 5. Proses / Finishing --}}
                     <div class="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-md overflow-hidden">
-                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">5. Proses / Finishing (Routing)</h3>
+                        <h3 class="text-xs text-[var(--pd-ink-strong)] uppercase font-bold px-3.5 py-2 bg-[var(--pd-surface-alt)] border-b border-[var(--pd-border)]">5. Finishing &amp; Proses (Routing)</h3>
+                        <div class="px-3.5 py-2 text-[12px] border-b border-[var(--pd-border)]">
+                            <span class="text-muted">Finishing:</span>
+                            @forelse ($ps['finishings'] ?? [] as $f)
+                                <b class="text-[var(--pd-ink-strong)]">{{ $f['name'] }}{{ $f['attribute'] ? ' ('.$f['attribute'].')' : '' }}</b>@if (! $loop->last), @endif
+                            @empty
+                                <span class="text-muted">—</span>
+                            @endforelse
+                            @if (! empty($ps['pack_qty']))
+                                <span class="text-muted ml-3">Isi per pack:</span> <b>{{ $ps['pack_qty'] }} pcs</b>
+                            @endif
+                        </div>
                         @if (empty($ps['processes']))
                             <div class="p-3.5 text-[11.5px] text-muted leading-relaxed">
-                                Belum ada baris proses/finishing tersimpan. Form Inquiry Product (mode BARU) saat
-                                ini memang belum punya input untuk mengisi routing proses per part — tabel ini baru
-                                otomatis terisi (clone dari inquiry induk) saat dokumen berjenis REVISI/REKALKULASI.
+                                Routing belum dibuat. Routing (Bill of Process) dihasilkan engine di ProDev
+                                dari finishing di atas, lalu tersimpan juga ke Inquiry ini.
                             </div>
                         @else
                             <table class="w-full text-[12px]">

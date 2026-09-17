@@ -1440,6 +1440,38 @@ tertentu — cek dgn user kalau soal ini jadi relevan pas eksekusi.
 
 ---
 
+## 18. [PRIORITAS — SEGERA] RANTAI DATA INQUIRY → PRODEV → MASTER CARD (instruksi user 2026-09-17)
+
+> User: "Kekurangan di atas itu tulis di backlog dan HARUS segera dikerjakan
+> agar bisa menjadi rangkaian data ke ProDev." Acuan hasil = Master Card
+> ALSAMSI EXCLUSIVE TOP (DS003047): routing 8 langkah, Warna Pertama CS
+> (K-C-M-Y), 4 UP, bahan 84,5 x 72 LG, pisau 83,4 x 70,1.
+
+Keputusan user 2026-09-17 (jangan ditanya ulang):
+- Rancangan engine DISETUJUI, dengan syarat **tidak ada tabel dobel** —
+  optimasi jumlah tabel (pakai ulang `ref_finishing_type`, `prod_process`,
+  `prod_part_finishing`, `prod_part_ink` yang sudah ada).
+- Urutan finishing default Laminasi → UV Spot → Hot Print → Plong, tapi
+  **bisa diubah admin lewat setting**. Emboss TIDAK selalu bareng Plong —
+  harus fleksibel (aturan per finishing, bukan hardcode).
+- "CS" = warna proses full color (C, M, Y, K) — istilah umum cetak offset.
+- Sampel UAT AL SAMSI Top diselaraskan ke Master Card (pelanggan PAK MUKRI).
+- Flag data dummy/legacy: tujuannya **disembunyikan, bukan dihapus**; ada
+  fasilitas **reset dummy kembali seperti semula** (kalau terhapus/terubah
+  saat UAT); hide/show diatur **setting admin** dengan UI sendiri.
+
+| # | Gap | Status |
+|---|---|---|
+| 18.1 | Ukuran pisau + kode pisau ("…ISI n MATA") disimpan dari hasil ProDev | BELUM |
+| 18.2 | Finishing Inquiry terstruktur: pilih dari `ref_finishing_type` + atribut (warna foil "Gold Puyeh", doff/glossy) | BELUM |
+| 18.3 | Engine Ink: `cfg_color` + analisa warna artwork (% & cm² per tinta, warna dominan), unit K-C-M-Y | BELUM |
+| 18.4 | Engine BOP: routing standar offset + sisipan dari finishing (aturan diatur admin) | BELUM |
+| 18.5 | Engine BOM: bahan utama + bahan finishing (plastik laminasi lebar roll >= lebar lembar, foil) + tinta | BELUM |
+| 18.6 | Isi per pack (Pack Wrapping /400 pcs) diinput di Inquiry | BELUM |
+| 18.7 | Flag `data_origin` (LIVE/DUMMY/LEGACY) + setting admin hide/show + reset dummy | BELUM |
+
+---
+
 ## 17. KOP DOKUMEN PRINT — NAMA COMPANY HARUS IKUT ADA/TIDAKNYA PPN
 (instruksi user 2026-09-11, diperjelas 2026-09-11, **BELUM DIEKSEKUSI** —
 user eksplisit minta audit+catat dulu, perbaikan menyusul)
