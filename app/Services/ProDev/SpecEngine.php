@@ -33,19 +33,19 @@ class SpecEngine
      */
     public function generate(ProdPart $part, ?IqpPart $iqp, array $ctx): array
     {
-        $warnings = [];
+        $warnings = ['bop' => [], 'bom' => [], 'ink' => []];
         $finishings = $this->finishings($part, $iqp);
         $materials = $this->inputMaterials($part, $iqp);
         $sheetL = max((float) ($ctx['sheetL'] ?? 0), (float) ($ctx['sheetW'] ?? 0));
         $sheetW = min((float) ($ctx['sheetL'] ?? 0), (float) ($ctx['sheetW'] ?? 0));
         $packQty = $iqp?->pack_qty ?: $part->pack_qty;
 
-        $bom = $this->bom($materials, $finishings, $ctx, $sheetL, $sheetW, $warnings);
-        $bop = $this->bop($part, $finishings, $materials, $ctx, $sheetL, $sheetW, $packQty, $bom, $warnings);
-        $ink = $this->inks($part, $iqp, $ctx['artworkColors'] ?? null, (int) ($ctx['upCount'] ?? 0), $warnings);
+        $bom = $this->bom($materials, $finishings, $ctx, $sheetL, $sheetW, $warnings['bom']);
+        $bop = $this->bop($part, $finishings, $materials, $ctx, $sheetL, $sheetW, $packQty, $bom, $warnings['bop']);
+        $ink = $this->inks($part, $iqp, $ctx['artworkColors'] ?? null, (int) ($ctx['upCount'] ?? 0), $warnings['ink']);
 
         if (! $packQty) {
-            $warnings[] = 'Isi per pack belum diisi di Inquiry -- langkah Pack tanpa jumlah.';
+            $warnings['bop'][] = 'Isi per pack belum diisi di Inquiry -- langkah Pack tanpa jumlah.';
         }
 
         return [
@@ -59,7 +59,7 @@ class SpecEngine
             'bom' => $bom,
             'inks' => $ink['rows'],
             'colors' => $ink['colors'],
-            'warnings' => array_values(array_unique($warnings)),
+            'warnings' => array_map(fn ($w) => array_values(array_unique($w)), $warnings),
         ];
     }
 
@@ -90,6 +90,8 @@ class SpecEngine
 
     private function inputMaterials(ProdPart $part, ?IqpPart $iqp): Collection
     {
+        // Hanya bahan pilihan Sales (MANUAL); baris ENGINE adalah hasil engine
+        // sebelumnya dan tidak boleh ikut jadi input (bikin BOP berubah tiap save).
         if ($iqp) {
             return $iqp->materials()->orderByDesc('is_primary')->orderBy('layer_seq')->get()
                 ->map(fn ($m) => [

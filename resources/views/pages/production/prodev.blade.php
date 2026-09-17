@@ -7,8 +7,8 @@ use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
+use App\Services\ProDev\SpecEngine;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -169,6 +169,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $canvasWMm = round((float) ($state['canvasW'] ?? 0) * 10, 2);
         $efficiencyPct = round(max(0, min(100, (float) ($state['efficiencyPct'] ?? 0))), 2);
 
+        // Pisau = bentang seluruh susunan (bukan 1 blank). Nama mengikuti pola
+        // Master Card: "PISAU <PRODUK> ISI <n> MATA".
+        $knifeW = isset($state['knifeW']) ? round((float) $state['knifeW'], 2) : null;
+        $knifeH = isset($state['knifeH']) ? round((float) $state['knifeH'], 2) : null;
+        $knifeCode = mb_substr('PISAU '.mb_strtoupper($part->product?->product_name ?: $part->part_name)." ISI {$upCount} MATA", 0, 80);
+
         $layoutDetail = [
             'source' => 'imposition_plano_optimizer',
             'canvas_l_cm' => $state['canvasL'] ?? null,
@@ -190,6 +196,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             'plano_h_mm' => $plano ? $plano->height_mm : $canvasWMm,
             'method' => $state['method'] ?? 'AUTO_GRID',
             'up_count' => $upCount,
+            'knife_code' => $knifeCode,
+            'knife_w_cm' => $knifeW,
+            'knife_h_cm' => $knifeH,
             'efficiency_pct' => $efficiencyPct,
             'waste_pct' => round(100 - $efficiencyPct, 2),
             'layout_detail' => $layoutDetail,
@@ -235,6 +244,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'margin_mm' => SysConstant::number('PRODEV_MARGIN_MM', 8.0),
                 'method' => $payload['method'],
                 'up_count' => $upCount,
+                'knife_code' => $knifeCode,
+                'knife_w_cm' => $knifeW,
+                'knife_h_cm' => $knifeH,
                 'efficiency_pct' => $efficiencyPct,
                 'waste_pct' => $payload['waste_pct'],
                 'layout_detail' => $layoutDetail,
@@ -260,6 +272,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             $group->update(['status' => 'CONFIRMED', 'confirmed_by' => $login, 'confirmed_at' => now()]);
         }
 
+        // BOM / Ink / BOP hasil engine ikut tersimpan 2 arah pada Save yang sama.
+        $engine = app(SpecEngine::class);
+        $skipped = $engine->persist($part, $iqpPart,
+            $engine->generate($part, $iqpPart, $this->specContext($state['spec'] ?? [])), $login);
+
         unset($this->jobs);
 
         return [
@@ -268,6 +285,64 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             'hasInquiry' => $iqpPart !== null,
             'costingUrl' => $costingUrl,
             'mastercardCode' => $group->mastercard_code,
+            'knifeCode' => $knifeCode,
+            'specSkipped' => $skipped,
+        ];
+    }
+
+    // Pratinjau hasil engine untuk panel BOM / Ink / BOP -- tidak menulis apa pun.
+    public function generateSpec(int $partId, array $ctx): array
+    {
+        $part = $partId === $this->partId ? ProdPart::find($partId) : null;
+
+        if (! $part) {
+            return ['ok' => false];
+        }
+
+        $iqp = IqpPart::where('prod_part_id', $part->id_part)->first();
+
+        return ['ok' => true] + app(SpecEngine::class)->generate($part, $iqp, $this->specContext($ctx));
+    }
+
+    // Hasil analisa warna artwork (dihitung di browser dari gambar yang sama
+    // dengan canvas) disimpan di Inquiry Part, supaya tidak dihitung ulang dan
+    // bisa dipakai layar lain.
+    public function saveArtworkColors(int $partId, array $analysis): array
+    {
+        $pct = fn ($v) => round(max(0, min(100, (float) $v)), 2);
+
+        $clean = [
+            'source' => mb_substr((string) ($analysis['source'] ?? ''), 0, 255),
+            'analyzed_at' => now()->toDateTimeString(),
+            'channels' => collect(['C', 'M', 'Y', 'K'])->mapWithKeys(fn ($c) => [$c => $pct($analysis['channels'][$c] ?? 0)])->all(),
+            'colors' => collect($analysis['colors'] ?? [])->take(12)->map(fn ($c) => [
+                'name' => mb_substr((string) ($c['name'] ?? ''), 0, 30),
+                'hex' => preg_match('/^#[0-9a-f]{6}$/i', (string) ($c['hex'] ?? '')) ? strtolower($c['hex']) : null,
+                'pct' => $pct($c['pct'] ?? 0),
+            ])->values()->all(),
+        ];
+
+        if ($partId === $this->partId) {
+            IqpPart::where('prod_part_id', $partId)->update(['artwork_colors' => json_encode($clean)]);
+        }
+
+        return $clean;
+    }
+
+    private function specContext(array $ctx): array
+    {
+        $num = fn ($k) => isset($ctx[$k]) && is_numeric($ctx[$k]) ? (float) $ctx[$k] : null;
+
+        return [
+            'sheetL' => $num('sheetL'),
+            'sheetW' => $num('sheetW'),
+            'planoL' => $num('planoL'),
+            'planoW' => $num('planoW'),
+            'sheetsPerPlano' => (int) ($ctx['sheetsPerPlano'] ?? 1),
+            'printMachineId' => isset($ctx['printMachineId']) ? (int) $ctx['printMachineId'] : null,
+            'diecutMachineId' => isset($ctx['diecutMachineId']) ? (int) $ctx['diecutMachineId'] : null,
+            'upCount' => (int) ($ctx['upCount'] ?? 0),
+            'artworkColors' => is_array($ctx['artworkColors'] ?? null) ? $ctx['artworkColors'] : null,
         ];
     }
 
@@ -451,9 +526,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'artworkUrl' => $src?->artwork_path ? asset('storage/'.$src->artwork_path) : null,
                 'artworkName' => $src?->artwork_original_filename,
                 'canUpload' => $src !== null,
-                'bom' => $this->bomFor($p, $src),
-                'inks' => $this->inksFor($p, $src),
-                'bop' => $this->bopFor($p),
+                'artColors' => $src?->artwork_colors,
             ];
         }
 
@@ -461,64 +534,6 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         // di prod_part (lihat SAMPLE_ARTWORK di atas), jadi masuk lewat grid
         // seperti job lain dan bisa dipakai UAT beneran.
         return $jobs;
-    }
-
-    // Bill of Material: BOM BAKU (prod_part_material) didahulukan; kalau belum
-    // ada, tampilkan snapshot bahan dari Inquiry asal (iqp_part_material) --
-    // sumbernya disebut supaya jelas mana yang baku dan mana yang dari Inquiry.
-    private function bomFor(ProdPart $p, ?IqpPart $src): array
-    {
-        $rows = DB::connection('tm2mst')->table('prod_part_material as pm')
-            ->leftJoin('mat_raw as m', 'm.material_id', '=', 'pm.material_id')
-            ->where('pm.part_id', $p->id_part)
-            ->orderBy('pm.layer_seq')
-            ->get(['pm.layer_seq', 'm.material_name', 'pm.rawmat_type', 'pm.gram_weight', 'pm.size_p', 'pm.size_l', 'pm.is_primary']);
-
-        if ($rows->isNotEmpty()) {
-            return ['source' => 'master', 'rows' => $rows->map(fn ($r) => [
-                'seq' => $r->layer_seq, 'name' => $r->material_name ?: '—', 'type' => $r->rawmat_type,
-                'gsm' => $r->gram_weight, 'p' => $r->size_p, 'l' => $r->size_l, 'primary' => (bool) $r->is_primary,
-            ])->all()];
-        }
-
-        $inq = $src?->materials()->orderBy('layer_seq')->get() ?? collect();
-
-        return ['source' => $inq->isNotEmpty() ? 'inquiry' : null, 'rows' => $inq->map(fn ($r) => [
-            'seq' => $r->layer_seq, 'name' => $r->rawmat_name ?: '—', 'type' => null,
-            'gsm' => $r->gram_weight, 'p' => $r->size_p, 'l' => $r->size_l, 'primary' => (bool) $r->is_primary,
-        ])->values()->all()];
-    }
-
-    // Susunan tinta: prod_part_ink kalau terisi, selain itu notasi warna
-    // (cfg_color/cfg_ink) dari part atau Inquiry asalnya.
-    private function inksFor(ProdPart $p, ?IqpPart $src): array
-    {
-        $rows = DB::connection('tm2mst')->table('prod_part_ink')
-            ->where('part_id', $p->id_part)->orderBy('pass_seq')->orderBy('unit_no')
-            ->get(['pass_seq', 'pass_label', 'unit_no', 'ink_name', 'plate_ref']);
-
-        return [
-            'rows' => $rows->map(fn ($r) => (array) $r)->all(),
-            'color' => $p->cfg_color ?: $src?->cfg_color,
-            'ink' => $p->cfg_ink ?: $src?->cfg_ink,
-        ];
-    }
-
-    // Urutan proses yang SUDAH tersimpan di master part. Pembangkitan otomatis
-    // dari finishing Inquiry (engine) dibahas terpisah -- belum dibangun.
-    private function bopFor(ProdPart $p): array
-    {
-        return \App\Models\Master\ProdPartProcess::with(['process', 'machine'])
-            ->where('part_id', $p->id_part)
-            ->orderBy('step_seq')
-            ->get()
-            ->map(fn ($r) => [
-                'seq' => $r->step_seq,
-                'name' => $r->process?->process_name ?: ($r->process_name ?: '—'),
-                'machine' => $r->machine?->machine_name,
-                'note' => $r->note,
-            ])
-            ->all();
     }
 
     // Alasan jujur kalau part yang dipilih tidak bisa dikerjakan -- jangan diam
@@ -647,6 +662,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-tbl th{text-align:left;color:var(--io-muted);font-size:10.5px;font-weight:700;padding:5px 8px;
             border-bottom:1px solid #25445f;text-transform:uppercase;letter-spacing:.04em}
         .io-tbl td{padding:6px 8px;border-bottom:1px solid #1d3a52;color:#d9f5ff}
+        .io-inputs{font-size:12px;color:#c6eafb;margin:4px 0 10px;line-height:2}
+        .io-chip{display:inline-block;padding:1px 8px;border-radius:10px;background:#12304a;border:1px solid #2d5878;font-size:11px;line-height:1.7}
+        .io-sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid #ffffff40}
+        .io-warns{margin:10px 0 0;padding-left:18px;color:#ffd9a1;font-size:11.5px;line-height:1.6}
+        .io-subh{margin:12px 0 6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--io-muted);text-transform:uppercase}
+        .io-colors{display:flex;flex-wrap:wrap;gap:6px}
+        .io-colorchip{font-size:11.5px;color:#d9f5ff;padding:3px 9px;border-radius:8px;background:#0b2236;border:1px solid #1d3a52}
         .io-panel,.io-canvas-card{background:#0d1b2df2;border:1px solid var(--io-line);border-radius:14px;box-shadow:0 12px 28px #0005}
         .io-panel{padding:16px}
         .io-panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:#c6eafb;margin:0 0 11px}
@@ -1093,6 +1115,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 const sc = S.sc0 || 1;
                 const cu = S.L * S.W ? (S.objs.length || selectedUp()) * S.p.l * S.p.w / (S.L * S.W) * 100 : 0;
                 const c = cut(S.pl);
+                const b = S.objs.map(obox);
 
                 return {
                     partId: S.p.partId,
@@ -1107,6 +1130,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     // canvas -- ini angka yang dipakai Costing utk waste.
                     efficiencyPct: +(cu * (c.util || 0)).toFixed(2),
                     machine: { id: S.m[4] || null, name: S.m[0], bedL: S.m[1], bedW: S.m[2] },
+                    // Ukuran pisau = bentang seluruh susunan di canvas.
+                    knifeW: b.length ? +((Math.max(...b.map(v => v.x + v.w)) - Math.min(...b.map(v => v.x))) / sc).toFixed(2) : null,
+                    knifeH: b.length ? +((Math.max(...b.map(v => v.y + v.h)) - Math.min(...b.map(v => v.y))) / sc).toFixed(2) : null,
+                    spec: specCtx(),
                     objects: S.objs.map(o => ({
                         x: +((o.x - S.sx0) / sc).toFixed(2),
                         y: +((o.y - S.sy0) / sc).toFixed(2),
@@ -1138,8 +1165,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     }
 
                     if (!confirm) {
-                        msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ')'
-                            + (res.hasInquiry ? ' — master + snapshot Inquiry.' : ' — master saja, job ini tidak punya Inquiry asal.'), 'ok');
+                        msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ', ' + res.knifeCode + ')'
+                            + (res.hasInquiry ? ' — master + snapshot Inquiry, termasuk BOM/Ink/BOP.' : ' — master saja, job ini tidak punya Inquiry asal.')
+                            + (res.specSkipped && res.specSkipped.length ? ' Tidak ditimpa: ' + res.specSkipped.join('; ') + '.' : ''),
+                            res.specSkipped && res.specSkipped.length ? 'info' : 'ok');
                         return;
                     }
 
@@ -1793,6 +1822,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 update(true);
                 samakanTinggiAcc();
                 autoNestSoon();
+                analyzeArtwork();
             }
 
             // Minta shell mengecilkan sidebar selama layar ini terbuka (permintaan
@@ -1857,45 +1887,210 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 acc.style.minHeight = maks + 'px';
             }
 
+            // ===================== BOM / INK / BOP (engine, BACKLOG §18) =====================
+            // Ketiganya HASIL ENGINE (App\Services\ProDev\SpecEngine) dari input
+            // Inquiry + keputusan layout di layar ini. Dihitung ulang tiap kali
+            // lembar/plano/mesin/up berubah; tersimpan 2 arah saat Save/Confirm.
+            let specTimer = null, specKey = '', specSeq = 0;
+
+            function specCtx() {
+                const c = cut(S.pl);
+                return {
+                    sheetL: S.L, sheetW: S.W, planoL: S.pl[1], planoW: S.pl[2], sheetsPerPlano: c.n || 1,
+                    printMachineId: S.m[4] || null, diecutMachineId: S.d ? (S.d[3] || null) : null,
+                    upCount: S.objs.length || selectedUp(), artworkColors: S.p.artColors || null,
+                };
+            }
+
+            function specSoon() {
+                if (!S.p.partId) return;
+                const ctx = specCtx(), key = S.p.partId + '|' + JSON.stringify(ctx);
+                if (key === specKey) return;
+                clearTimeout(specTimer);
+                specTimer = setTimeout(() => refreshSpec(ctx, key), 450);
+            }
+
+            async function refreshSpec(ctx, key) {
+                const w = wire();
+                if (!w) return;
+                const my = ++specSeq, job = S.p;
+                try {
+                    const res = await w.call('generateSpec', job.partId, ctx);
+                    if (my !== specSeq || S.p !== job || !res || !res.ok) return;
+                    specKey = key;
+                    job.spec = res;
+                    renderSpecSections();
+                } catch (e) { /* tampilan terakhir dibiarkan */ }
+            }
+
+            // ---- Analisa warna artwork: gambar yang SAMA dengan canvas (file upload
+            // atau artwork vector sampel) dirasterisasi, lalu tiap piksel diurai ke
+            // C/M/Y/K (tutupan tinta) dan dikelompokkan per nama warna (luas warna).
+            // Persen dihitung terhadap SELURUH bidang blank, jadi server tinggal
+            // mengalikan dengan luas blank untuk dapat cm².
+            const ANALYSIS_PX = 360;
+
+            function artSource(p) {
+                if (p.artworkUrl) return 'file:' + p.artworkUrl;
+                if (p.type) return 'sample:' + p.type + ':' + p.l + 'x' + p.w;
+                return null;
+            }
+
+            function loadArtPixels(p) {
+                return new Promise((resolve, reject) => {
+                    const k = ANALYSIS_PX / Math.max(p.l, p.w);
+                    const W = Math.max(1, Math.round(p.l * k)), H = Math.max(1, Math.round(p.w * k));
+                    const img = new Image();
+                    let url = null;
+                    img.onload = () => {
+                        const cv = document.createElement('canvas');
+                        cv.width = W; cv.height = H;
+                        const cx = cv.getContext('2d', { willReadFrequently: true });
+                        cx.drawImage(img, 0, 0, W, H);
+                        if (url) URL.revokeObjectURL(url);
+                        try { resolve(cx.getImageData(0, 0, W, H)); } catch (e) { reject(e); }
+                    };
+                    img.onerror = () => { if (url) URL.revokeObjectURL(url); reject(new Error('artwork tidak bisa dibaca')); };
+                    if (p.artworkUrl) { img.src = p.artworkUrl; return; }
+                    // Garis potong/lipat bukan tinta -- disembunyikan saat dianalisa.
+                    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '">'
+                        + '<style>.io-die,.io-fold,.io-cutmark{display:none}.io-artfill{fill:#fff}'
+                        + '.io-lbl{font:700 ' + Math.max(6, W * .028).toFixed(1) + 'px Inter,Arial,sans-serif}</style>'
+                        + shape({ w: W, h: H }) + '</svg>';
+                    url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }));
+                    img.src = url;
+                });
+            }
+
+            function colorName(r, g, b) {
+                const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn;
+                const s = d === 0 ? 0 : d / (1 - Math.abs(2 * l - 1));
+                // Kroma (d), bukan saturasi HSL, untuk putih/abu: saturasi HSL
+                // membesar di warna sangat terang, jadi #fafbff terbaca "biru".
+                if (l > .86 && d < .12) return 'Putih';
+                if (l < .13) return 'Hitam';
+                if (d < .08 || s < .12) return 'Abu-abu';
+                let hue = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+                hue = (hue * 60 + 360) % 360;
+                if (hue >= 30 && hue < 55 && s < .8 && l < .62) return 'Emas';
+                if (hue < 15 || hue >= 345) return l < .3 ? 'Merah Tua' : 'Merah';
+                if (hue < 40) return l < .4 ? 'Coklat' : 'Oranye';
+                if (hue < 70) return 'Kuning';
+                if (hue < 165) return 'Hijau';
+                if (hue < 200) return 'Tosca';
+                if (hue < 255) return l < .3 ? 'Biru Tua' : 'Biru';
+                if (hue < 290) return 'Ungu';
+                return 'Pink';
+            }
+
+            function analyzePixels(img) {
+                const d = img.data, total = img.width * img.height, ch = { C: 0, M: 0, Y: 0, K: 0 }, groups = {};
+                for (let i = 0; i < d.length; i += 4) {
+                    const a = d[i + 3] / 255;
+                    if (a < .04) continue;
+                    // Semi-transparan ditimpa di atas kertas putih.
+                    const r = (d[i] * a + 255 * (1 - a)) / 255, g = (d[i + 1] * a + 255 * (1 - a)) / 255, b = (d[i + 2] * a + 255 * (1 - a)) / 255;
+                    const k = 1 - Math.max(r, g, b);
+                    if (k < 1) {
+                        ch.C += (1 - r - k) / (1 - k);
+                        ch.M += (1 - g - k) / (1 - k);
+                        ch.Y += (1 - b - k) / (1 - k);
+                    }
+                    ch.K += k;
+                    const n = colorName(r, g, b), grp = groups[n] || (groups[n] = { n: 0, r: 0, g: 0, b: 0 });
+                    grp.n++; grp.r += r; grp.g += g; grp.b += b;
+                }
+                const hx = v => Math.round(v * 255).toString(16).padStart(2, '0');
+                return {
+                    channels: Object.fromEntries(Object.entries(ch).map(([k, v]) => [k, +(v / total * 100).toFixed(2)])),
+                    colors: Object.entries(groups)
+                        .map(([name, g]) => ({ name, hex: '#' + hx(g.r / g.n) + hx(g.g / g.n) + hx(g.b / g.n), pct: +(g.n / total * 100).toFixed(2) }))
+                        .filter(c => c.pct >= .3)
+                        .sort((a, b) => b.pct - a.pct)
+                        .slice(0, 12),
+                };
+            }
+
+            async function analyzeArtwork(force) {
+                const p = S.p, src = artSource(p);
+                if (!src || !p.partId) { renderSpecSections(); return; }
+                if (!force && p.artColors && p.artColors.source === src) return;
+                p.artBusy = true;
+                renderSpecSections();
+                try {
+                    const res = analyzePixels(await loadArtPixels(p));
+                    res.source = src;
+                    const w = wire();
+                    p.artColors = w ? await w.call('saveArtworkColors', p.partId, res) : res;
+                    p.artError = null;
+                } catch (e) {
+                    p.artError = e && e.message ? e.message : String(e);
+                }
+                p.artBusy = false;
+                specKey = '';
+                specSoon();
+                renderSpecSections();
+            }
+
             const fmtAngka = v => (v === null || v === undefined || v === '') ? '—'
                 : String(+parseFloat(v).toFixed(2));
+            const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            const notes = list => list && list.length
+                ? '<ul class="io-warns">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '';
 
-            // BOM / Ink / BOP ditampilkan BACA-SAJA dari data yang sudah ada.
-            // Pembangkitan otomatisnya (BOP dari finishing, ink dari warna artwork)
-            // masih dalam pembahasan -- belum dibangun.
             function renderSpecSections() {
-                const p = S.p;
+                const p = S.p, sp = p.spec;
+                const tunggu = '<div class="io-empty">' + (p.partId ? 'Menghitung dari data Inquiry…' : 'Job demo — engine butuh part nyata.') + '</div>';
+                const src = '<span class="io-src">HASIL ENGINE · tersimpan ke master &amp; Inquiry saat Save</span>';
 
-                const bom = p.bom || { rows: [] };
-                $('cnt-bom').textContent = bom.rows.length || '';
-                $('bom').innerHTML = !bom.rows.length
-                    ? '<div class="io-empty">Belum ada Bill of Material untuk part ini — baik di master part maupun di Inquiry asalnya.</div>'
-                    : '<span class="io-src">' + (bom.source === 'master' ? 'BOM MASTER PART' : 'DARI INQUIRY PRODUCT') + '</span>'
-                      + '<table class="io-tbl"><tr><th>Layer</th><th>Bahan</th><th>Jenis</th><th>Gramatur</th><th>Ukuran (cm)</th><th></th></tr>'
-                      + bom.rows.map(r => '<tr><td>' + r.seq + '</td><td>' + r.name + '</td><td>' + (r.type || '—') + '</td><td>'
-                          + fmtAngka(r.gsm) + '</td><td>' + fmtAngka(r.p) + ' × ' + fmtAngka(r.l) + '</td><td>'
-                          + (r.primary ? '<span class="io-src" style="margin:0">UTAMA</span>' : '') + '</td></tr>').join('')
-                      + '</table>';
+                $('cnt-bop').textContent = sp ? sp.bop.length : '';
+                $('bop').innerHTML = !sp ? tunggu : src
+                    + '<div class="io-inputs"><b>Finishing dari Inquiry:</b> '
+                    + (sp.inputs.finishings.length ? sp.inputs.finishings.map(f => '<span class="io-chip">' + esc(f) + '</span>').join(' ') : '—')
+                    + ' <b style="margin-left:10px">Isi / pack:</b> ' + esc(sp.inputs.packQty || '—') + '</div>'
+                    + (sp.bop.length
+                        ? '<table class="io-tbl"><tr><th>#</th><th>Urutan Pekerjaan (Routing)</th><th>Mesin</th><th>Catatan</th></tr>'
+                          + sp.bop.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b></td><td>'
+                              + esc(r.machine || '—') + '</td><td>' + esc(r.note || '') + '</td></tr>').join('') + '</table>'
+                        : '<div class="io-empty">Tidak ada aturan proses yang berlaku.</div>')
+                    + notes(sp.warnings.bop);
 
-                const ink = p.inks || { rows: [] };
-                $('cnt-ink').textContent = ink.rows.length || '';
-                $('ink').innerHTML = (ink.rows.length
-                    ? '<table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Plate</th></tr>'
-                      + ink.rows.map(r => '<tr><td>' + (r.pass_label || r.pass_seq) + '</td><td>' + r.unit_no + '</td><td>'
-                          + r.ink_name + '</td><td>' + (r.plate_ref || '—') + '</td></tr>').join('') + '</table>'
-                    : '<div class="io-empty">Belum ada susunan tinta per unit untuk part ini.</div>')
-                    + ((ink.color || ink.ink)
-                        ? '<div class="io-spec"><table><tr><td>Notasi warna</td><td>' + (ink.color || '—') + '</td></tr>'
-                          + '<tr><td>Tinta</td><td>' + (ink.ink || '—') + '</td></tr></table></div>'
-                        : '');
+                $('cnt-bom').textContent = sp ? sp.bom.length : '';
+                $('bom').innerHTML = !sp ? tunggu : src
+                    + (sp.bom.length
+                        ? '<table class="io-tbl"><tr><th>Peran</th><th>Bahan</th><th>Gramatur</th><th>Ukuran (cm)</th><th>Qty / lembar cetak</th><th>Catatan</th></tr>'
+                          + sp.bom.map(r => '<tr><td>' + esc(r.role) + '</td><td><b>' + esc(r.name || '—') + '</b></td><td>' + fmtAngka(r.gsm) + '</td><td>'
+                              + (r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') : '—') + '</td><td>'
+                              + (r.qty_per_sheet !== null ? fmtAngka(r.qty_per_sheet) + ' ' + esc(r.uom || '') : '—') + '</td><td>'
+                              + esc(r.note || '') + '</td></tr>').join('') + '</table>'
+                        : '<div class="io-empty">Belum ada bahan.</div>')
+                    + notes(sp.warnings.bom);
 
-                const bop = p.bop || [];
-                $('cnt-bop').textContent = bop.length || '';
-                $('bop').innerHTML = !bop.length
-                    ? '<div class="io-empty">Belum ada urutan proses untuk part ini.</div>'
-                    : '<table class="io-tbl"><tr><th>Urut</th><th>Proses</th><th>Mesin</th><th>Catatan</th></tr>'
-                      + bop.map(r => '<tr><td>' + r.seq + '</td><td>' + r.name + '</td><td>' + (r.machine || '—')
-                          + '</td><td>' + (r.note || '') + '</td></tr>').join('') + '</table>';
+                const art = p.artBusy ? '<div class="io-empty">Menganalisa warna artwork…</div>'
+                    : p.artError ? '<div class="io-notice bad">Analisa artwork gagal: ' + esc(p.artError) + '</div>' : '';
+                $('cnt-ink').textContent = sp ? sp.inks.length : '';
+                $('ink').innerHTML = !sp ? tunggu + art : src
+                    + '<div class="io-inputs"><b>Notasi warna:</b> ' + esc(sp.inputs.color || '—')
+                    + (artSource(p) ? ' <button type="button" class="io-btn" id="io-reanalyze" style="margin-left:10px">↻ Analisa ulang artwork</button>' : '') + '</div>'
+                    + (sp.inks.length
+                        ? '<table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Tutupan</th><th>Luas / pcs</th><th>Luas / lembar</th></tr>'
+                          + sp.inks.map(r => '<tr><td>' + (r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
+                              + '<i class="io-sw" style="background:' + esc(r.color_hex || '#888') + '"></i><b>' + esc(r.ink_name) + '</b></td><td>'
+                              + (r.coverage_pct !== null ? fmtAngka(r.coverage_pct) + '%' : '—') + '</td><td>'
+                              + (r.coverage_cm2 !== null ? fmtAngka(r.coverage_cm2) + ' cm²' : '—') + '</td><td>'
+                              + (r.coverage_cm2_sheet !== null ? fmtAngka(r.coverage_cm2_sheet) + ' cm²' : '—') + '</td></tr>').join('') + '</table>'
+                        : '')
+                    + art
+                    + (sp.colors.length
+                        ? '<div class="io-subh">Warna di artwork (luas per pcs)</div><div class="io-colors">'
+                          + sp.colors.map(c => '<span class="io-colorchip"><i class="io-sw" style="background:' + esc(c.hex || '#888') + '"></i>'
+                              + esc(c.name) + ' <b>' + (c.cm2 !== null ? fmtAngka(c.cm2) + ' cm²' : fmtAngka(c.pct) + '%') + '</b></span>').join('') + '</div>'
+                        : '')
+                    + notes(sp.warnings.ink);
+
+                const re = document.getElementById('io-reanalyze');
+                if (re) re.onclick = () => analyzeArtwork(true);
+                samakanTinggiAcc();
             }
 
             // Job dipilih di grid, jadi di sini cuma DITAMPILKAN. Dropdown hanya
@@ -1992,8 +2187,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const d = e.detail || {};
                     const job = products.find(j => j.partId === d.partId);
                     if (!job) return;
-                    job.artworkUrl = d.url; job.artworkName = d.name;
-                    if (S.p === job) { artworkLabel(); render(); }
+                    job.artworkUrl = d.url; job.artworkName = d.name; job.artColors = null;
+                    if (S.p === job) { artworkLabel(); render(); analyzeArtwork(); }
                 });
                 $('dieFile').onchange = e => {
                     // Dieline terpisah belum punya tempat simpan -- lihat catatan diskusi.
@@ -2496,6 +2691,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
                 drawPlano(S.pl, c);
                 impo(c, up);
+                specSoon();
             }
 
             function drawPlano(p, c) {

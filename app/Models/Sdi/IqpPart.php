@@ -51,9 +51,17 @@ class IqpPart extends Model
         return $this->belongsTo(IqpInquiry::class, 'inquiry_id', 'id_inquiry');
     }
 
+    // Bahan yang DIPILIH Sales (input). Baris source=ENGINE (bahan finishing
+    // hasil engine BOM ProDev) sengaja tidak ikut, supaya tidak muncul/terhapus
+    // di form Inquiry -- pakai bomMaterials() untuk BOM lengkap.
     public function materials(): HasMany
     {
-        return $this->hasMany(IqpPartMaterial::class, 'part_id', 'id_part');
+        return $this->hasMany(IqpPartMaterial::class, 'part_id', 'id_part')->where('source', 'MANUAL');
+    }
+
+    public function bomMaterials(): HasMany
+    {
+        return $this->hasMany(IqpPartMaterial::class, 'part_id', 'id_part')->orderBy('layer_seq');
     }
 
     public function processes(): HasMany
