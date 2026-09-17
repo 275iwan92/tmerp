@@ -491,6 +491,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             dieCutters: @json($this->dieCutters),
             planos: @json($this->planos),
             initialJob: @json($this->initialJobIndex),
+            backUrl: @json(route('production.prodev.list')),
             gripperMm: @json(SysConstant::number('PRODEV_GRIPPER_MM', 12.0)),
             marginMm: @json(SysConstant::number('PRODEV_MARGIN_MM', 8.0)),
         };
@@ -650,7 +651,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     <h1>Imposition Plano Optimizer</h1>
                     <p class="io-sub">Pro-Dev — nesting manual &amp; optimasi plano per job cetak (artwork vector + garis dieline struktural)</p>
                 </div>
-                <div class="io-badge" id="io-jobcount">LIVE PACKAGING JOBS</div>
+                <div style="display:flex;gap:9px;align-items:center">
+                    <!-- Label "Back" dikunci berbahasa Inggris di kedua mode bahasa
+                    (FORM_UI_STANDARD.md §1). href diisi JS dari window.__PRODEV.backUrl
+                    karena blok ini ada di dalam @verbatim -- route() Blade tidak jalan. -->
+                    <a class="io-btn" id="io-back" href="#">← Back</a>
+                    <div class="io-badge" id="io-jobcount">LIVE PACKAGING JOBS</div>
+                </div>
             </div>
 
             <div class="io-layout">
@@ -1520,8 +1527,25 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 return c.n * (S.objs.length || selectedUp());
             }
 
-            async function autoNest() {
-                if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum auto nesting.', 'bad'); return; }
+            // Susunan rapat dijalankan OTOMATIS saat job/mesin dibuka, bukan cuma
+            // kalau tombolnya ditekan (koreksi user 2026-09-16: yang muncul pertama
+            // masih grid renggang 9 up, padahal engine sanggup lebih rapat). Grid
+            // polos tidak ada gunanya ditampilkan lebih dulu -- itu justru hasil
+            // terburuk. Tidak dijalankan kalau user sudah menyusun manual, supaya
+            // kerjaan tangannya tidak ditimpa diam-diam.
+            let autoNestTimer = null;
+            function autoNestSoon() {
+                clearTimeout(autoNestTimer);
+                autoNestTimer = setTimeout(() => {
+                    if (!S.touched && ok()) autoNest(true);
+                }, 120);
+            }
+
+            async function autoNest(silent) {
+                if (!ok()) {
+                    if (!silent) msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum auto nesting.', 'bad');
+                    return;
+                }
 
                 const btn = $('autoNest'), label = btn.textContent;
                 btn.disabled = true; btn.textContent = 'Menghitung…';
@@ -1531,7 +1555,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const gap = Math.max(0, Math.round(S.g * 10));
                     const best = bestLattice(patternConfigs(base), Math.round(S.L * 10), Math.round(S.W * 10), gap, true);
 
-                    if (!best) { msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad'); return; }
+                    if (!best) {
+                        if (!silent) msg('Auto nesting tidak menemukan susunan yang muat di canvas ini.', 'bad');
+                        return;
+                    }
 
                     applyPlacements(best.placements, best.label);
 
@@ -1542,7 +1569,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         + (best.ditolak ? ' · ' + best.ditolak + ' pola ditolak krn masih bertabrakan' : '')
                         + (base.shaped ? '' : ' · tipe ini belum punya dieline, dihitung sebagai kotak polos'), 'ok');
                 } catch (e) {
-                    msg('Auto nesting gagal: ' + (e && e.message ? e.message : e), 'bad');
+                    if (!silent) msg('Auto nesting gagal: ' + (e && e.message ? e.message : e), 'bad');
                 } finally {
                     btn.disabled = false; btn.textContent = label;
                 }
@@ -1556,11 +1583,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').value = String(products.indexOf(S.p));
                 $('jobcount').textContent = products.length + ' JOB SIAP IMPOSISI';
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
+                $('back').href = DATA.backUrl || '#';
                 bind();
                 upModeUi();
                 artworkLabel();
                 syncActiveJob();
                 update(true);
+                autoNestSoon();
             }
 
             // Auto Up  -> tampilkan angka HASIL, sembunyikan kotak isian.
@@ -1590,10 +1619,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').onchange = e => {
                     S.p = products[e.target.value]; S.g = S.p.gap; $('gap').value = S.g;
                     $('grain').value = S.p.grain; S.objs = [];
-                    artworkLabel(); syncActiveJob(); suggest();
+                    artworkLabel(); syncActiveJob(); suggest(); autoNestSoon();
                 };
-                $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); };
-                $('diecut').onchange = e => { S.d = diecutters[e.target.value]; S.objs = []; suggest(); };
+                $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
+                $('diecut').onchange = e => { S.d = diecutters[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
                 $('autoUp').onchange = e => {
                     S.auto = e.target.checked;
                     upModeUi();
@@ -1624,7 +1653,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('resetLayout').onclick = () => { S.objs = []; S.selected = null; update(true); };
                 $('save').onclick = () => persist(false);
                 $('confirm').onclick = () => persist(true);
-                $('autoNest').onclick = autoNest;
+                // Bukan `= autoNest` langsung: event klik akan terkirim sebagai
+                // argumen pertama (silent) dan pesan hasilnya ikut tertelan.
+                $('autoNest').onclick = () => autoNest(false);
                 // Artwork: file input aslinya milik Livewire (di luar wire:ignore).
                 $('artFile').onclick = e => {
                     e.preventDefault();

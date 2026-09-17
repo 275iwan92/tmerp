@@ -293,6 +293,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
             // route-nya SENGAJA dipertahankan supaya data/alur lama tidak
             // putus (ProCost Mode #1 masih baca prod_layout_group yang cuma
             // bisa dibuat di sana), tapi TIDAK muncul di menu mana pun.
+            // Grid depan dulu (griduistandard.md), klik 2x baru buka layar kerja.
+            Route::livewire('/production/prodev-list', 'pages::production.prodev-list')->name('production.prodev.list');
             Route::livewire('/production/prodev/{part?}', 'pages::production.prodev')->name('production.prodev')->where('part', '[0-9]+');
             Route::livewire('/production/old-prodev-list', 'pages::production.old_prodev_list')->name('production.old-prodev.list');
             Route::livewire('/production/old-prodev/{part?}', 'pages::production.old_prodev')->name('production.old-prodev')->where('part', '[0-9]+');

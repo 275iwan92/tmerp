@@ -96,7 +96,10 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             // ke production.old-prodev* (route masih hidup untuk data lama,
             // tapi sengaja TIDAK ditaut dari menu mana pun). Product Costing
             // tetap module:COSTING (Sisi A rahasia, CLAUDE.md §4).
-            'SALES_IMPO' => route('production.prodev'),
+            // 2026-09-16: balik ke GRID depan (production.prodev.list) -- sempat
+            // diarahkan langsung ke form 2026-09-14 dan user menegaskan grid
+            // tidak boleh hilang; dari grid klik 2x baru masuk layar kerja.
+            'SALES_IMPO' => route('production.prodev.list'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).
