@@ -54,12 +54,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
 
-    public ?int $partId = null;
+    // Sampel UAT (mastercard_code -> nama artwork vector di JS). Barisnya data
+    // NYATA di prod_part (migration 2026_09_17_000002) supaya muncul di grid,
+    // tapi gambarnya tetap artwork vector bawaan mockup karena strukturnya
+    // (Tray Lid / 2-Piece Wrap / Lock Bottom) belum ada di pustaka dieline DSL.
+    private const SAMPLE_ARTWORK = [
+        'UAT-ALSAMSI-TOP' => 'alsamsi_top',
+        'UAT-OSIMA' => 'osima',
+        'UAT-ALSAMSI-SIG' => 'alsamsi_sig',
+    ];
 
-    // Sampel bawaan mockup (AL SAMSI/OSIMA) tidak lagi ikut alur normal --
-    // cuma tampil kalau sengaja dibuka dengan ?demo=1.
-    #[Url]
-    public bool $demo = false;
+    public ?int $partId = null;
 
     // Job yang sedang dibuka di canvas -- di-set dari JS tiap ganti job, supaya
     // upload artwork tahu part mana yang dituju (sisanya layar ini client-side).
@@ -74,7 +79,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
     // dikerjakan -> dikembalikan ke grid, bukan menebak job pertama.
     public function mount(?int $part = null): void
     {
-        if (! $part && ! $this->demo) {
+        if (! $part) {
             $this->redirect(route('production.prodev.list'), navigate: false);
 
             return;
@@ -423,9 +428,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'bleed' => 0.3,
                 'gap' => $gap,
                 'grain' => 'L',
-                'material' => $p->product?->product_name ?: '—',
-                'structure' => $p->ecma_code ?: ($p->joint_type ?: '—'),
+                'material' => $p->finishing ?: ($p->product?->product_name ?: '—'),
+                'structure' => $p->joint_type ?: ($p->ecma_code ?: '—'),
                 'art' => $p->cfg_color ?: '—',
+                // Sampel UAT (AL SAMSI/OSIMA) punya artwork vector bawaan yang
+                // digambar di JS -- dikenali lewat kode Master Card-nya, supaya
+                // gambar aslinya tetap tampil dan bukan kotak polos.
+                'type' => self::SAMPLE_ARTWORK[$p->mastercard_code] ?? null,
                 'customer' => $src?->inquiry?->customer?->customer_name ?: 'Mode #2 — manual / standalone',
                 'design' => $p->displayMastercardCode(),
                 'reg' => $src?->inquiry?->inquiry_no ?: '—',
@@ -444,11 +453,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             ];
         }
 
-        // Job demo TIDAK lagi ikut di alur normal -- alur normal sekarang selalu
-        // 1 job yang dipilih dari grid. Sampelnya tidak dihapus (user 2026-09-14
-        // minta dipertahankan), cuma dipindah ke belakang tanda ?demo=1 supaya
-        // layar kerja tidak lagi menawarkan pilihan yang sudah diputuskan.
-        return $this->demo ? array_merge($jobs, $this->demoJobs()) : $jobs;
+        // Tidak ada lagi job demo hardcode: AL SAMSI & OSIMA sekarang baris nyata
+        // di prod_part (lihat SAMPLE_ARTWORK di atas), jadi masuk lewat grid
+        // seperti job lain dan bisa dipakai UAT beneran.
+        return $jobs;
     }
 
     // Alasan jujur kalau part yang dipilih tidak bisa dikerjakan -- jangan diam
@@ -469,42 +477,6 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         return 'Part "'.$part->part_name.'" belum punya dimensi dieline. '
             .'Isi salah satu dulu: die_w_cm/die_h_cm, printsize_p/printsize_l di Master Part, '
             .'atau flat_w/flat_h di Inquiry Part asalnya.';
-    }
-
-    // 3 job demo bawaan mockup -- artwork-nya digambar vector di JS (shape()),
-    // dipertahankan supaya layar ini tetap bisa didemokan & jadi pembanding
-    // visual walau data prod_part belum lengkap dielinenya.
-    private function demoJobs(): array
-    {
-        return [
-            [
-                'id' => 'demo-alsamsi-top', 'kind' => 'demo', 'partId' => null, 'type' => 'alsamsi_top',
-                'name' => '[DEMO] AL SAMSI Exclusive Top — Sarung Tenun', 'category' => 'Rigid Lid / Tray Lid',
-                'fl' => 26.5, 'fw' => 20, 'fh' => 5.5, 'l' => 42, 'w' => 35.5, 'bleed' => .3, 'gap' => .3, 'grain' => 'L',
-                'material' => 'Art Carton 310 gsm + Gold Foil / UV', 'structure' => 'Tray Lid — 4 Corner Lock + Hang Tab',
-                'art' => 'AL SAMSI · EXCLUSIVE TOP (4-up mirror)', 'customer' => 'AL SAMSI — Sarung Tenun',
-                'design' => 'DS002047', 'reg' => 'IDM000807653', 'history' => [85, 71.5],
-                'dieline' => null, 'dielineDims' => (object) [], 'artworkUrl' => null, 'artworkName' => null, 'canUpload' => false,
-            ],
-            [
-                'id' => 'demo-osima', 'kind' => 'demo', 'partId' => null, 'type' => 'osima',
-                'name' => '[DEMO] OSIMA MS N100 CV — Battery Carton', 'category' => 'Battery / Automotive Carton',
-                'fl' => 41.3, 'fw' => 18, 'fh' => 26, 'l' => 50, 'w' => 40.5, 'bleed' => .3, 'gap' => .4, 'grain' => 'L',
-                'material' => 'Duplex 400 gsm / E-flute Laminated', 'structure' => '2-Piece Wrap (Panel A + B) + Hand Hole',
-                'art' => 'OSIMA MS PREMIUM · Japanese Technology', 'customer' => 'PT. SELATAN JADI JAYA',
-                'design' => 'DS003146', 'reg' => 'SNI · Rev.02 07/03/2026', 'history' => [101, 41],
-                'dieline' => null, 'dielineDims' => (object) [], 'artworkUrl' => null, 'artworkName' => null, 'canUpload' => false,
-            ],
-            [
-                'id' => 'demo-alsamsi-sig', 'kind' => 'demo', 'partId' => null, 'type' => 'alsamsi_sig',
-                'name' => '[DEMO] AL SAMSI Signature — Lock Bottom 10 Pcs', 'category' => 'Folding Carton — Inner Box',
-                'fl' => 37.5, 'fw' => 19.7, 'fh' => 25.5, 'l' => 59.2, 'w' => 39.5, 'bleed' => .3, 'gap' => .4, 'grain' => 'W',
-                'material' => 'Ivory / Duplex 350 gsm + Gold Foil', 'structure' => 'Lock Bottom (Blank A + Blank B)',
-                'art' => 'AL SAMSI SIGNATURE · Premium Quality', 'customer' => 'AL SAMSI — Sarung Tenun',
-                'design' => 'TM 25-11.25', 'reg' => 'IDM000807653', 'history' => [80, 60],
-                'dieline' => null, 'dielineDims' => (object) [], 'artworkUrl' => null, 'artworkName' => null, 'canUpload' => false,
-            ],
-        ];
     }
 
     // Deep-link dari Inquiry ("Kirim ke ProDev") -> job part itu yang terpilih.
@@ -533,7 +505,6 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             dieCutters: @json($this->dieCutters),
             planos: @json($this->planos),
             initialJob: @json($this->initialJobIndex),
-            demo: @json($this->demo),
             jobIssue: @json($this->jobIssue),
             backUrl: @json(route('production.prodev.list')),
             gripperMm: @json(SysConstant::number('PRODEV_GRIPPER_MM', 12.0)),
@@ -1980,7 +1951,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function shape(o) {
                 const w = o.w, h = o.h, f = Math.min(w, h);
                 const cut = '<path class="io-cutmark" d="M-5 5H0M-5 ' + (h - 5) + 'H0M' + w + ' 5H' + (w + 5) + 'M' + w + ' ' + (h - 5) + 'H' + (w + 5) + '"/>';
-                if (S.p.kind === 'real') return realShape(S.p, w, h) + cut;
+                // Sampel UAT punya artwork vector bawaan (type terisi) -- itu yang
+                // dipakai, karena struktur Tray Lid/2-Piece Wrap/Lock Bottom belum
+                // ada di pustaka dieline DSL. Job lain pakai diecut asli dari DSL.
+                if (!S.p.type) return realShape(S.p, w, h) + cut;
 
                 if (S.p.type === 'alsamsi_top') {
                     const x1 = w * .185, x2 = w * .815, y1 = h * .22, y2 = h * .78, n = f * .11;
