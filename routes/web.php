@@ -285,6 +285,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/production/scrap-type', 'pages::production.scrap-type')->name('production.scrap-type');
             Route::livewire('/production/process-rate', 'pages::production.process-rate')->name('production.process-rate');
             Route::livewire('/production/master-process', 'pages::production.master-process')->name('production.master-process');
+            Route::livewire('/production/bop-rule', 'pages::production.bop-rule')->name('production.bop-rule');
             Route::livewire('/production/master-crew', 'pages::production.master-crew')->name('production.master-crew');
             // ProDev BARU (2026-09-14) -- Imposition Plano Optimizer, port dari
             // docs/mockups/mockup_prodev_imposition.html. Ini yang dipasang di

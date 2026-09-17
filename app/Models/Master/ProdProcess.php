@@ -15,6 +15,7 @@ class ProdProcess extends Model
     protected $fillable = [
         'process_name',
         'gantt_color',
+        'inhouse',
         'activate',
         'created_by',
         'updated_by',

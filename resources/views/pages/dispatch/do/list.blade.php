@@ -209,7 +209,8 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                                     <button type="button" wire:click.stop="toggleExpand({{ $d->id_delivery }})" title="{{ $isOpen ? 'Tutup preview baris' : 'Lihat baris' }}"
                                         class="inline-flex items-center justify-center w-6 h-6 rounded text-muted hover:bg-[#eef3fb] hover:text-accent cursor-pointer">{{ $isOpen ? '▾' : '▸' }}</button>
                                 </td>
-                                <x-grid.identity-cell :id="$d->id_delivery" :name="$d->customer_name ?? '—'" :code="$d->do_no ?: '(Draft)'" />
+                                <x-grid.identity-cell :id="$d->id_delivery" :name="$d->customer_name ?? '—'"
+                                    :code="($d->do_no ?: '(Draft)').(($d->do_type ?? 'CUSTOMER') === 'SUBCON' ? ' · SUBKON '.$d->subcon_process : '')" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ \Carbon\Carbon::parse($d->do_date)->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-center">{{ $d->line_count }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-center">

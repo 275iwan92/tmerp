@@ -27,6 +27,9 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
 
     public bool $process_activate = true;
 
+    // 0 = proses dikerjakan pihak ke-3 -> tombol Subkon di BOP ProDev.
+    public bool $inhouse = true;
+
     #[Computed]
     public function processes()
     {
@@ -47,10 +50,12 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
             $this->process_name = $p->process_name;
             $this->gantt_color = $p->gantt_color ?: '#2c3e69';
             $this->process_activate = (bool) $p->activate;
+            $this->inhouse = (bool) $p->inhouse;
         } else {
             $this->reset(['process_name']);
             $this->gantt_color = '#2c3e69';
             $this->process_activate = true;
+            $this->inhouse = true;
         }
 
         $this->panel = 'form';
@@ -72,12 +77,14 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
             'process_name' => ['required', 'string', 'max:200', $unique],
             'gantt_color' => ['nullable', 'string', 'max:10'],
             'process_activate' => ['boolean'],
+            'inhouse' => ['boolean'],
         ]);
 
         $payload = [
             'process_name' => $data['process_name'],
             'gantt_color' => $data['gantt_color'] ?: null,
             'activate' => $data['process_activate'],
+            'inhouse' => $data['inhouse'],
             'updated_by' => Auth::user()->login,
         ];
 
@@ -159,7 +166,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                     <tbody>
                         @forelse ($this->processes as $p)
                             <tr wire:key="process-{{ $p->id_process }}" wire:dblclick="openModal('edit', {{ $p->id_process }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
-                                <x-grid.identity-cell :id="$p->id_process" :name="$p->process_name" />
+                                <x-grid.identity-cell :id="$p->id_process" :name="$p->process_name" :code="$p->inhouse ? '' : 'SUBKON'" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     @if ($p->gantt_color)
                                         <span class="inline-flex items-center gap-1.5">
@@ -206,6 +213,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                         <div class="text-[11px] text-muted pb-2">Dipakai buat bedakan proses di MPS Gantt Chart.</div>
                     </div>
 
+                    <x-form.checkbox label="Dikerjakan sendiri (in-house) — kosongkan bila dikerjakan subkon" wire:model="inhouse" />
                     <x-form.checkbox label="Aktif" wire:model="process_activate" />
 
                     <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
