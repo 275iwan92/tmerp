@@ -3,6 +3,7 @@
 namespace App\Models\Sdi;
 
 use App\Models\Master\CustCustomer;
+use App\Models\Master\SupSupplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,8 +19,8 @@ class DoDelivery extends Model
     protected $primaryKey = 'id_delivery';
 
     protected $fillable = [
-        'do_no', 'do_date',
-        'customer_id', 'ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code',
+        'do_no', 'do_type', 'do_date',
+        'customer_id', 'supplier_id', 'pr_id', 'ref_part_id', 'subcon_process', 'ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code',
         'scheduled_ship_date', 'actual_ship_date',
         'status',
         'price_change_flag', 'price_change_approval_status',
@@ -43,5 +44,16 @@ class DoDelivery extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(CustCustomer::class, 'customer_id', 'id_customer');
+    }
+
+    // Tujuan surat jalan subkon (do_type SUBCON).
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(SupSupplier::class, 'supplier_id', 'id_supplier');
+    }
+
+    public function isSubcon(): bool
+    {
+        return $this->do_type === 'SUBCON';
     }
 }

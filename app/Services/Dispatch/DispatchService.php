@@ -213,6 +213,11 @@ class DispatchService
                     }
                 }
 
+                // Surat jalan subkon (do_type SUBCON) tidak berasal dari CO.
+                if (! $line->co_order_id) {
+                    continue;
+                }
+
                 $coStatus = DB::connection('tm2sdi')->table('co_order')->where('id_order', $line->co_order_id)->value('doc_status');
 
                 if ($coStatus !== 'CONFIRMED') {

@@ -7,6 +7,7 @@ use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
+use App\Services\ProDev\ProcurementBridge;
 use App\Services\ProDev\SpecEngine;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -272,10 +273,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             $group->update(['status' => 'CONFIRMED', 'confirmed_by' => $login, 'confirmed_at' => now()]);
         }
 
-        // BOM / Ink / BOP hasil engine ikut tersimpan 2 arah pada Save yang sama.
+        // BOM / Ink / BOP (hasil engine atau override officer) ikut tersimpan
+        // 2 arah pada Save yang sama.
         $engine = app(SpecEngine::class);
         $skipped = $engine->persist($part, $iqpPart,
-            $engine->generate($part, $iqpPart, $this->specContext($state['spec'] ?? [])), $login);
+            $engine->generate($part, $iqpPart, $this->specContext($state['spec'] ?? []), $this->specOverrides($state['specOverride'] ?? [])),
+            $login,
+            array_values(array_intersect((array) ($state['specReset'] ?? []), SpecEngine::SECTIONS)));
 
         unset($this->jobs);
 
@@ -290,8 +294,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         ];
     }
 
-    // Pratinjau hasil engine untuk panel BOM / Ink / BOP -- tidak menulis apa pun.
-    public function generateSpec(int $partId, array $ctx): array
+    // Pratinjau hasil engine (dan override officer yang sedang diedit) untuk
+    // panel BOM / Ink / BOP -- tidak menulis apa pun.
+    public function generateSpec(int $partId, array $ctx, array $overrides = []): array
     {
         $part = $partId === $this->partId ? ProdPart::find($partId) : null;
 
@@ -301,7 +306,90 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
         $iqp = IqpPart::where('prod_part_id', $part->id_part)->first();
 
-        return ['ok' => true] + app(SpecEngine::class)->generate($part, $iqp, $this->specContext($ctx));
+        return ['ok' => true] + app(SpecEngine::class)->generate($part, $iqp, $this->specContext($ctx), $this->specOverrides($overrides));
+    }
+
+    private function specOverrides(array $o): array
+    {
+        return collect(SpecEngine::SECTIONS)
+            ->filter(fn ($k) => isset($o[$k]) && is_array($o[$k]))
+            ->mapWithKeys(fn ($k) => [$k => array_values(array_slice($o[$k], 0, 60))])
+            ->all();
+    }
+
+    // Dropdown bahan BOM: cari di Master Bahan + stok tersedia gudang.
+    public function searchMaterials(string $q): array
+    {
+        $q = trim($q);
+
+        if (mb_strlen($q) < 2) {
+            return [];
+        }
+
+        $rows = \App\Models\Master\MatRaw::where('activate', 1)
+            ->where(fn ($w) => $w->where('material_name', 'like', "%{$q}%")->orWhere('material_code', 'like', "%{$q}%"))
+            ->orderBy('material_name')
+            ->limit(20)
+            ->get(['material_id', 'material_code', 'material_name', 'category1', 'gram_weight', 'uom_stock']);
+
+        $stock = app(SpecEngine::class)->stockFor($rows->pluck('material_id')->all());
+
+        return $rows->map(fn ($m) => [
+            'id' => $m->material_id,
+            'code' => $m->material_code,
+            'name' => $m->material_name,
+            'category' => $m->category1,
+            'gsm' => $m->gram_weight ?: null,
+            'uom' => $m->uom_stock,
+            'stock' => $stock[$m->material_id]['qty'] ?? 0,
+        ])->all();
+    }
+
+    public function createPurchase(int $partId, int $materialId, float $qty, ?string $uom = null): array
+    {
+        $part = $partId === $this->partId ? ProdPart::with('product')->find($partId) : null;
+
+        if (! $part) {
+            return ['ok' => false, 'message' => 'Part tidak dikenali.'];
+        }
+
+        return app(ProcurementBridge::class)->purchaseMaterial(
+            $part, IqpPart::with('inquiry')->where('prod_part_id', $partId)->first(), $materialId, $qty, Auth::user()->login,
+            $uom ? mb_substr(strtoupper(trim($uom)), 0, 10) : null);
+    }
+
+    public function subcontract(int $partId, array $step, int $supplierId, ?int $coItemId = null, ?string $needDate = null, ?float $estCost = null): array
+    {
+        $part = $partId === $this->partId ? ProdPart::with('product')->find($partId) : null;
+        $iqp = $part ? IqpPart::with('inquiry')->where('prod_part_id', $partId)->first() : null;
+
+        if (! $iqp) {
+            return ['ok' => false, 'message' => 'Subkon butuh Inquiry asal (job Mode #2 belum didukung).'];
+        }
+
+        $needDate = $needDate && preg_match('/^\d{4}-\d{2}-\d{2}$/', $needDate) ? $needDate : null;
+
+        return app(ProcurementBridge::class)->subcontract(
+            $part, $iqp, $step, $supplierId, $coItemId ?: null, $needDate, $estCost ?: null, Auth::user()->login);
+    }
+
+    #[Computed]
+    public function lookups(): array
+    {
+        $mst = \Illuminate\Support\Facades\DB::connection('tm2mst');
+
+        return [
+            'processes' => $mst->table('prod_process')->where('activate', 1)->orderBy('process_name')
+                ->get(['id_process as id', 'process_name as name', 'inhouse'])->all(),
+            'machines' => ProdMachine::where('activate', true)->orderBy('machine_name')
+                ->get(['machine_id as id', 'machine_name as name', 'machine_type as type'])->all(),
+            'subcons' => $mst->table('sup_supplier')->where('activate', 1)->where('is_subcon', 1)->orderBy('supplier_name')
+                ->get(['id_supplier as id', 'supplier_name as name'])->all(),
+            'uoms' => ['LBR', 'RIM', 'M', 'ROLL', 'KG', 'G', 'PCS', 'LTR'],
+            'roles' => ['KERTAS PLANO', 'SHEET', 'SF', 'SHEET / SF', 'TINTA', 'PLASTIK LAMINASI', 'LEM LAMINASI', 'LEM BOX',
+                'FOIL HOT PRINT', 'VARNISH UV', 'TALI PACK', 'PLASTIK PACK', 'BAHAN LAIN'],
+            'inks' => ['BLACK', 'CYAN', 'MAGENTA', 'YELLOW', 'PANTONE', 'SILVER', 'GOLD', 'WHITE', 'VARNISH'],
+        ];
     }
 
     // Hasil analisa warna artwork (dihitung di browser dari gambar yang sama
@@ -342,6 +430,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             'printMachineId' => isset($ctx['printMachineId']) ? (int) $ctx['printMachineId'] : null,
             'diecutMachineId' => isset($ctx['diecutMachineId']) ? (int) $ctx['diecutMachineId'] : null,
             'upCount' => (int) ($ctx['upCount'] ?? 0),
+            'orderQty' => max(0, (int) ($ctx['orderQty'] ?? 0)),
+            'planoName' => mb_substr((string) ($ctx['planoName'] ?? ''), 0, 60),
             'artworkColors' => is_array($ctx['artworkColors'] ?? null) ? $ctx['artworkColors'] : null,
         ];
     }
@@ -527,6 +617,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'artworkName' => $src?->artwork_original_filename,
                 'canUpload' => $src !== null,
                 'artColors' => $src?->artwork_colors,
+                'saved' => app(SpecEngine::class)->saved($p),
+                'orderQty' => app(SpecEngine::class)->tierQty($src),
+                'coOptions' => app(ProcurementBridge::class)->coOptions($src),
             ];
         }
 
@@ -584,6 +677,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             initialJob: @json($this->initialJobIndex),
             jobIssue: @json($this->jobIssue),
             backUrl: @json(route('production.prodev.list')),
+            lookups: @json($this->lookups),
             gripperMm: @json(SysConstant::number('PRODEV_GRIPPER_MM', 12.0)),
             marginMm: @json(SysConstant::number('PRODEV_MARGIN_MM', 8.0)),
         };
@@ -669,6 +763,43 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-subh{margin:12px 0 6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--io-muted);text-transform:uppercase}
         .io-colors{display:flex;flex-wrap:wrap;gap:6px}
         .io-colorchip{font-size:11.5px;color:#d9f5ff;padding:3px 9px;border-radius:8px;background:#0b2236;border:1px solid #1d3a52}
+        .io-sectools{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:6px}
+        .io-sectools .io-src{margin:0}
+        .io-src.warn{background:#3a2a0c;color:#ffd08a;border-color:#7a5a1c}
+        .io-note-s{font-size:10.5px;color:var(--io-muted)}
+        .io-grow{flex:1}
+        .io-mbtn{all:unset;box-sizing:border-box;cursor:pointer;font:700 11px/1 Inter,system-ui,sans-serif;color:#c6eafb;
+            padding:6px 10px;border-radius:7px;border:1px solid #2d5878;background:#0f2a40;white-space:nowrap}
+        .io-mbtn:hover{background:#15395a;color:#fff}
+        .io-mbtn.on{background:#0e6b8f;border-color:#35b5e0;color:#fff}
+        .io-mbtn.warn{border-color:#8a6420;color:#ffd08a;background:#2c2210}
+        .io-mbtn:disabled{opacity:.5;cursor:wait}
+        .io-ibtn{all:unset;cursor:pointer;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+            border-radius:5px;color:#9cc7de;font-size:10px}
+        .io-ibtn:hover{background:#15395a;color:#fff}
+        .io-ibtn.bad:hover{background:#5a1c1c;color:#ffb4b4}
+        .io-sub{font-size:10.5px;color:var(--io-muted);margin-top:2px;font-weight:400}
+        .io-tblwrap{overflow-x:auto}
+        .io-nowrap{white-space:nowrap}
+        .io-edit td{padding:4px 5px;vertical-align:top}
+        .io-edit input,.io-edit select{width:100%;min-width:60px;padding:5px 6px;font-size:11.5px;margin:0}
+        .io-edit input[type=color]{padding:1px;height:28px;min-width:40px}
+        .io-edit + .io-mbtn{margin-top:8px}
+        .io-rel{position:relative;min-width:220px}
+        .io-dd{position:absolute;left:5px;right:5px;top:100%;z-index:20;max-height:260px;overflow:auto;background:#081626;
+            border:1px solid #35b5e0;border-radius:8px;box-shadow:0 14px 30px #000a;padding:4px}
+        .io-dd button{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:6px 8px;border-radius:6px}
+        .io-dd button:hover{background:#12304a}
+        .io-dd b{display:block;font-size:11.5px;color:#e6f7ff}
+        .io-dd span{font-size:10.5px;color:var(--io-muted)}
+        .io-dialog{margin-top:10px;padding:12px;border:1px solid #7a5a1c;border-radius:10px;background:#1c160b;color:#f3e3c3;font-size:12px}
+        .io-row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:8px}
+        .io-row3 label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#e8d3a8;margin:0}
+        .io-stat{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:9px;white-space:nowrap}
+        .io-stat.ok{background:#12391f;color:#8ff0b0}
+        .io-stat.warn{background:#3d2c0c;color:#ffd08a}
+        .io-stat.bad{background:#401616;color:#ffb0b0}
+        .io-stat.mute{background:#1d2c3b;color:#a9bfd0}
         .io-panel,.io-canvas-card{background:#0d1b2df2;border:1px solid var(--io-line);border-radius:14px;box-shadow:0 12px 28px #0005}
         .io-panel{padding:16px}
         .io-panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:#c6eafb;margin:0 0 11px}
@@ -1134,6 +1265,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     knifeW: b.length ? +((Math.max(...b.map(v => v.x + v.w)) - Math.min(...b.map(v => v.x))) / sc).toFixed(2) : null,
                     knifeH: b.length ? +((Math.max(...b.map(v => v.y + v.h)) - Math.min(...b.map(v => v.y))) / sc).toFixed(2) : null,
                     spec: specCtx(),
+                    specOverride: overridesOf(S.p),
+                    specReset: S.p.reset || [],
                     objects: S.objs.map(o => ({
                         x: +((o.x - S.sx0) / sc).toFixed(2),
                         y: +((o.y - S.sy0) / sc).toFixed(2),
@@ -1163,6 +1296,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         msg((res && res.message) || 'Gagal menyimpan layout.', 'bad');
                         return;
                     }
+
+                    // Yang tersimpan sekarang jadi acuan: reset sudah dieksekusi,
+                    // override yang tersimpan berstatus OVERRIDE.
+                    S.p.reset = [];
+                    SECS.forEach(k => { if (S.p.edit && S.p.edit[k]) { S.p.editSrc[k] = 'OVERRIDE'; S.p.saved = S.p.saved || {}; S.p.saved[k] = { source: 'OVERRIDE', rows: S.p.edit[k] }; } });
+                    specKey = ''; specSoon();
 
                     if (!confirm) {
                         msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ', ' + res.knifeCode + ')'
@@ -1814,6 +1953,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 accInit();
                 fitViewBox();
                 jobIdentity();
+                if (S.p.orderQty > 0) $('converterInput').value = S.p.orderQty;
+                bindSpecEvents();
                 renderSpecSections();
                 bind();
                 upModeUi();
@@ -1889,33 +2030,57 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             // ===================== BOM / INK / BOP (engine, BACKLOG §18) =====================
             // Ketiganya HASIL ENGINE (App\Services\ProDev\SpecEngine) dari input
-            // Inquiry + keputusan layout di layar ini. Dihitung ulang tiap kali
-            // lembar/plano/mesin/up berubah; tersimpan 2 arah saat Save/Confirm.
+            // Inquiry + keputusan layout di layar ini, dihitung ulang tiap kali
+            // lembar/plano/mesin/up/qty berubah. Officer boleh meng-override tiap
+            // section (tombol Edit, pakai dropdown); override tersimpan 2 arah saat
+            // Save dan tidak ditimpa engine sampai dipilih "Kembali ke hasil engine".
+            const LK = DATA.lookups || { processes: [], machines: [], subcons: [], uoms: [], roles: [], inks: [] };
+            const SECS = ['bop', 'bom', 'inks'];
             let specTimer = null, specKey = '', specSeq = 0;
+
+            function specInit(p) {
+                if (p.edit) return;
+                p.edit = {}; p.editSrc = {}; p.editing = {}; p.reset = []; p.flash = {}; p.subconAt = null;
+                SECS.forEach(k => {
+                    const sv = p.saved && p.saved[k];
+                    p.edit[k] = sv ? sv.rows.map(r => ({ ...r })) : null;
+                    p.editSrc[k] = sv ? sv.source : null;
+                });
+            }
+
+            function overridesOf(p) {
+                const o = {};
+                SECS.forEach(k => { if (p.edit && p.edit[k]) o[k] = p.edit[k]; });
+                return o;
+            }
 
             function specCtx() {
                 const c = cut(S.pl);
                 return {
-                    sheetL: S.L, sheetW: S.W, planoL: S.pl[1], planoW: S.pl[2], sheetsPerPlano: c.n || 1,
+                    sheetL: S.L, sheetW: S.W, planoL: S.pl[1], planoW: S.pl[2], planoName: S.pl[0], sheetsPerPlano: c.n || 1,
                     printMachineId: S.m[4] || null, diecutMachineId: S.d ? (S.d[3] || null) : null,
-                    upCount: S.objs.length || selectedUp(), artworkColors: S.p.artColors || null,
+                    upCount: S.objs.length || selectedUp(),
+                    orderQty: S.conv === 'pcs' ? (+$('converterInput').value || 0) : (S.p.orderQty || 0),
+                    artworkColors: S.p.artColors || null,
                 };
             }
 
             function specSoon() {
                 if (!S.p.partId) return;
-                const ctx = specCtx(), key = S.p.partId + '|' + JSON.stringify(ctx);
+                specInit(S.p);
+                const ctx = specCtx(), ov = overridesOf(S.p);
+                const key = S.p.partId + '|' + JSON.stringify(ctx) + '|' + JSON.stringify(ov);
                 if (key === specKey) return;
                 clearTimeout(specTimer);
-                specTimer = setTimeout(() => refreshSpec(ctx, key), 450);
+                specTimer = setTimeout(() => refreshSpec(ctx, ov, key), 450);
             }
 
-            async function refreshSpec(ctx, key) {
+            async function refreshSpec(ctx, ov, key) {
                 const w = wire();
                 if (!w) return;
                 const my = ++specSeq, job = S.p;
                 try {
-                    const res = await w.call('generateSpec', job.partId, ctx);
+                    const res = await w.call('generateSpec', job.partId, ctx, ov);
                     if (my !== specSeq || S.p !== job || !res || !res.ok) return;
                     specKey = key;
                     job.spec = res;
@@ -2032,65 +2197,387 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 renderSpecSections();
             }
 
+            // ---- Tampilan & edit
             const fmtAngka = v => (v === null || v === undefined || v === '') ? '—'
-                : String(+parseFloat(v).toFixed(2));
+                : (+parseFloat(v).toFixed(4)).toLocaleString('id-ID', { maximumFractionDigits: 4 });
             const esc = v => String(v ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
             const notes = list => list && list.length
                 ? '<ul class="io-warns">' + list.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '';
+            const opts = (list, val, blank) => (blank !== undefined ? '<option value="">' + esc(blank) + '</option>' : '')
+                + list.map(o => '<option value="' + esc(o.id) + '"' + (String(o.id) === String(val ?? '') ? ' selected' : '') + '>' + esc(o.name) + '</option>').join('');
+            const optsTxt = (list, val) => {
+                const all = val && !list.includes(val) ? [val, ...list] : list;
+                return all.map(o => '<option' + (o === val ? ' selected' : '') + '>' + esc(o) + '</option>').join('');
+            };
+            const field = (sec, i, f, val, attrs) => ' data-sec="' + sec + '" data-i="' + i + '" data-f="' + f + '" ' + (attrs || '') + ' value="' + esc(val ?? '') + '"';
+            const STATUS_CLS = { 'CUKUP': 'ok', 'KURANG': 'warn', 'TIDAK ADA': 'bad', 'BELUM ADA ITEM': 'bad', 'CEK SATUAN': 'mute' };
 
-            function renderSpecSections() {
-                const p = S.p, sp = p.spec;
-                const tunggu = '<div class="io-empty">' + (p.partId ? 'Menghitung dari data Inquiry…' : 'Job demo — engine butuh part nyata.') + '</div>';
-                const src = '<span class="io-src">HASIL ENGINE · tersimpan ke master &amp; Inquiry saat Save</span>';
+            function rowsOf(p, k) {
+                const sp = p.spec;
+                if (!sp) return [];
+                // Override = salinan hasil engine + perubahan officer. Selama hitungan
+                // override belum kembali dari server, baris engine tetap ditampilkan.
+                return (p.edit[k] && sp.override[k]) || sp[k] || [];
+            }
 
-                $('cnt-bop').textContent = sp ? sp.bop.length : '';
-                $('bop').innerHTML = !sp ? tunggu : src
+            function tools(p, k) {
+                const src = p.edit[k]
+                    ? (p.editSrc[k] === 'MANUAL' && !p.edit[k].__touched ? '<span class="io-src warn">DATA MANUAL TERSIMPAN</span>' : '<span class="io-src warn">OVERRIDE OFFICER</span>')
+                    : '<span class="io-src">HASIL ENGINE</span>';
+                const fl = p.flash[k];
+                return '<div class="io-sectools">' + src
+                    + '<span class="io-note-s">tersimpan ke master &amp; Inquiry saat Save</span>'
+                    + '<span class="io-grow"></span>'
+                    + (p.edit[k] ? '<button type="button" class="io-mbtn" data-act="reset" data-sec="' + k + '">↺ Kembali ke hasil engine</button>' : '')
+                    + '<button type="button" class="io-mbtn ' + (p.editing[k] ? 'on' : '') + '" data-act="edit" data-sec="' + k + '">'
+                    + (p.editing[k] ? '✓ Selesai edit' : '✎ Edit') + '</button></div>'
+                    + (fl ? '<div class="io-notice ' + (fl.ok ? 'ok' : 'bad') + '">' + esc(fl.text)
+                        + (fl.url ? ' <a href="' + esc(fl.url) + '" target="_blank" rel="noopener">Buka dokumen ↗</a>' : '') + '</div>' : '');
+            }
+
+            function bopHtml(p, sp) {
+                const rows = rowsOf(p, 'bop'), ed = p.editing.bop, raw = p.edit.bop || [];
+                const qty = (r, v) => v === null || v === undefined ? '—' : fmtAngka(v) + ' ' + esc(r.uom || '');
+                let h = tools(p, 'bop')
                     + '<div class="io-inputs"><b>Finishing dari Inquiry:</b> '
                     + (sp.inputs.finishings.length ? sp.inputs.finishings.map(f => '<span class="io-chip">' + esc(f) + '</span>').join(' ') : '—')
-                    + ' <b style="margin-left:10px">Isi / pack:</b> ' + esc(sp.inputs.packQty || '—') + '</div>'
-                    + (sp.bop.length
-                        ? '<table class="io-tbl"><tr><th>#</th><th>Urutan Pekerjaan (Routing)</th><th>Mesin</th><th>Catatan</th></tr>'
-                          + sp.bop.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b></td><td>'
-                              + esc(r.machine || '—') + '</td><td>' + esc(r.note || '') + '</td></tr>').join('') + '</table>'
-                        : '<div class="io-empty">Tidak ada aturan proses yang berlaku.</div>')
-                    + notes(sp.warnings.bop);
+                    + ' <b style="margin-left:10px">Qty order:</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
+                    + ' <b style="margin-left:10px">Isi / pack:</b> ' + esc(sp.inputs.packQty || '—') + '</div>';
 
-                $('cnt-bom').textContent = sp ? sp.bom.length : '';
-                $('bom').innerHTML = !sp ? tunggu : src
-                    + (sp.bom.length
-                        ? '<table class="io-tbl"><tr><th>Peran</th><th>Bahan</th><th>Gramatur</th><th>Ukuran (cm)</th><th>Qty / lembar cetak</th><th>Catatan</th></tr>'
-                          + sp.bom.map(r => '<tr><td>' + esc(r.role) + '</td><td><b>' + esc(r.name || '—') + '</b></td><td>' + fmtAngka(r.gsm) + '</td><td>'
-                              + (r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') : '—') + '</td><td>'
-                              + (r.qty_per_sheet !== null ? fmtAngka(r.qty_per_sheet) + ' ' + esc(r.uom || '') : '—') + '</td><td>'
-                              + esc(r.note || '') + '</td></tr>').join('') + '</table>'
-                        : '<div class="io-empty">Belum ada bahan.</div>')
-                    + notes(sp.warnings.bom);
+                if (ed) {
+                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>#</th><th>Proses</th><th>Label di routing</th><th>Mesin</th>'
+                        + '<th>Target / jam</th><th>Waste %</th><th>Toleransi %</th><th>Subkon ke</th><th></th></tr>'
+                        + raw.map((r, i) => '<tr><td>' + (i + 1) + '</td>'
+                            + '<td><select' + field('bop', i, 'process_id', '') + '>' + opts(LK.processes, r.process_id, '— proses —') + '</select></td>'
+                            + '<td><input' + field('bop', i, 'label', r.label) + '></td>'
+                            + '<td><select' + field('bop', i, 'machine_id', '') + '>' + opts(LK.machines, r.machine_id, '— tanpa mesin —') + '</select></td>'
+                            + '<td><input type="number" min="0" step="1"' + field('bop', i, 'target_qty_per_hour', r.target_qty_per_hour) + '></td>'
+                            + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'waste_pct', r.waste_pct) + '></td>'
+                            + '<td><input type="number" min="0" max="100" step="0.1"' + field('bop', i, 'tolerance_pct', r.tolerance_pct) + '></td>'
+                            + '<td><select' + field('bop', i, 'subcon_supplier_id', '') + '>' + opts(LK.subcons, r.subcon_supplier_id, '— in-house —') + '</select></td>'
+                            + '<td class="io-nowrap"><button type="button" class="io-ibtn" data-act="up" data-sec="bop" data-i="' + i + '" title="Naik">▲</button>'
+                            + '<button type="button" class="io-ibtn" data-act="down" data-sec="bop" data-i="' + i + '" title="Turun">▼</button>'
+                            + '<button type="button" class="io-ibtn bad" data-act="del" data-sec="bop" data-i="' + i + '" title="Hapus">✕</button></td></tr>').join('')
+                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bop">＋ Tambah langkah</button>';
+                } else if (rows.length) {
+                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>#</th><th>Urutan Pekerjaan</th><th>Mesin</th><th>Target default</th>'
+                        + '<th>Qty masuk</th><th>Waste</th><th>Toleransi</th><th>Est. jam</th><th>Subkon</th></tr>'
+                        + rows.map((r, i) => '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.label) + '</b>'
+                            + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
+                            + '<td>' + esc(r.machine || '—') + '</td>'
+                            + '<td>' + (r.target_qty_per_hour ? fmtAngka(r.target_qty_per_hour) + ' ' + esc(r.uom || '') + '/jam'
+                                + '<div class="io-sub">' + esc(r.target_source || '') + '</div>' : '<span class="io-sub">belum ada</span>') + '</td>'
+                            + '<td>' + qty(r, r.qty_in) + '</td>'
+                            + '<td>' + fmtAngka(r.waste_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_waste) + '</div></td>'
+                            + '<td>' + fmtAngka(r.tolerance_pct ?? 0) + '%<div class="io-sub">' + qty(r, r.qty_tolerance) + '</div></td>'
+                            + '<td>' + (r.est_hours ?? '—') + '</td>'
+                            + '<td>' + ((!r.inhouse || r.subcon_supplier_id)
+                                ? (r.subcon_supplier ? '<div class="io-sub">' + esc(r.subcon_supplier) + '</div>' : '')
+                                  + (r.subcon_pr ? '<div class="io-sub">' + esc(r.subcon_pr) + '</div>' : '')
+                                  + (r.subcon_do ? '<div class="io-sub">' + esc(r.subcon_do) + '</div>' : '')
+                                  + '<button type="button" class="io-mbtn warn" data-act="subcon" data-i="' + i + '">⇄ Subkon</button>'
+                                : '<span class="io-sub">in-house</span>') + '</td></tr>').join('')
+                        + '</table></div>';
+                } else {
+                    h += '<div class="io-empty">Tidak ada langkah proses.</div>';
+                }
 
+                if (!ed && p.subconAt !== null && rows[p.subconAt]) h += subconDialog(p, rows[p.subconAt]);
+
+                return h + notes(sp.warnings.bop);
+            }
+
+            function subconDialog(p, r) {
+                const co = p.coOptions || [];
+                return '<div class="io-dialog"><b>Subkon: ' + esc(r.label) + '</b>'
+                    + '<div class="io-sub">Qty dikirim: ' + fmtAngka(r.qty_in) + ' ' + esc(r.uom || '') + ' · PR subkon dibuat DRAFT (lewat approval PR).</div>'
+                    + '<div class="io-row3">'
+                    + '<label>Supplier subkon<select id="io-sc-sup">' + opts(LK.subcons, r.subcon_supplier_id, '— pilih supplier —') + '</select></label>'
+                    + '<label>CO (wajib untuk surat jalan)<select id="io-sc-co">' + opts(co.map(c => ({ id: c.id, name: c.label })), '', co.length ? '— pilih CO —' : '— belum ada CO untuk Inquiry ini —') + '</select></label>'
+                    + '<label>Tanggal kirim<input type="date" id="io-sc-date"></label>'
+                    + '<label>Estimasi biaya (Rp)<input type="number" min="0" id="io-sc-cost"></label>'
+                    + '</div><div class="io-sub">Tanpa CO: PR subkon tetap dibuat, surat jalan menyusul setelah CO terbit (klik Subkon lagi).</div>'
+                    + '<div style="margin-top:8px"><button type="button" class="io-mbtn on" data-act="subcon-go">Proses Subkon</button> '
+                    + '<button type="button" class="io-mbtn" data-act="subcon-cancel">Batal</button></div></div>';
+            }
+
+            function bomHtml(p, sp) {
+                const rows = rowsOf(p, 'bom'), ed = p.editing.bom, raw = p.edit.bom || [];
+                let h = tools(p, 'bom')
+                    + '<div class="io-inputs"><b>Qty order:</b> ' + (sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—')
+                    + ' <b style="margin-left:10px">Lembar cetak dibutuhkan:</b> ' + (sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lembar (termasuk waste & toleransi BOP)' : '—') + '</div>';
+
+                if (ed) {
+                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Peran</th><th>Bahan</th><th>Gramatur</th><th>P (cm)</th><th>L (cm)</th>'
+                        + '<th>Qty / lembar</th><th>Satuan</th><th>Kebutuhan</th><th></th></tr>'
+                        + raw.map((r, i) => {
+                            const c = rows[i] || {};
+                            return '<tr><td><select' + field('bom', i, 'role', '') + '>' + optsTxt(LK.roles, r.role) + '</select></td>'
+                                + '<td class="io-rel"><input placeholder="ketik nama / kode bahan…"' + field('bom', i, 'search', r.name) + ' autocomplete="off">'
+                                + (p.dd && p.dd.i === i ? ddHtml(p.dd) : '') + '</td>'
+                                + '<td><input type="number" min="0"' + field('bom', i, 'gsm', r.gsm) + '></td>'
+                                + '<td><input type="number" min="0" step="0.1"' + field('bom', i, 'size_p', r.size_p) + '></td>'
+                                + '<td><input type="number" min="0" step="0.1"' + field('bom', i, 'size_l', r.size_l) + '></td>'
+                                + '<td><input type="number" min="0" step="any"' + field('bom', i, 'qty_per_sheet', r.qty_per_sheet) + '></td>'
+                                + '<td><select' + field('bom', i, 'uom', '') + '>' + optsTxt(LK.uoms, r.uom) + '</select></td>'
+                                + '<td>' + (c.qty_need !== undefined && c.qty_need !== null ? fmtAngka(c.qty_need) + ' ' + esc(c.uom || '') : '—') + '</td>'
+                                + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="bom" data-i="' + i + '" title="Hapus">✕</button></td></tr>';
+                        }).join('')
+                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="bom">＋ Tambah bahan</button>';
+                } else if (rows.length) {
+                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Peran</th><th>Bahan</th><th>Merek</th><th>Spesifikasi</th><th>Per lembar cetak</th>'
+                        + '<th>Qty kebutuhan</th><th>Stok tersedia (gudang)</th><th>Status</th><th></th></tr>'
+                        + rows.map((r, i) => {
+                            const spec = [r.gsm ? fmtAngka(r.gsm) + ' gsm' : '', r.size_p ? fmtAngka(r.size_p) + (r.size_l ? ' × ' + fmtAngka(r.size_l) : '') + ' cm' : ''].filter(Boolean).join(' · ');
+                            const need = r.qty_need !== null ? fmtAngka(r.qty_need) + ' ' + esc(r.basis === 'PLANO' ? 'lembar plano' : (r.uom || ''))
+                                + (r.qty_need_stock_uom !== null && r.stock_uom && r.stock_uom !== r.uom ? '<div class="io-sub">= ' + fmtAngka(r.qty_need_stock_uom) + ' ' + esc(r.stock_uom) + '</div>' : '')
+                                : '<span class="io-sub">' + (r.name === 'None' ? '—' : 'belum bisa dihitung') + '</span>';
+                            return '<tr><td>' + esc(r.role) + '</td><td><b>' + esc(r.name || '—') + '</b>'
+                                + (r.note ? '<div class="io-sub">' + esc(r.note) + '</div>' : '') + '</td>'
+                                + '<td>' + esc(r.brand || '—') + '</td>'
+                                + '<td>' + (spec || '—') + '</td>'
+                                + '<td>' + (r.qty_per_sheet !== null ? fmtAngka(r.qty_per_sheet) + ' ' + esc(r.uom || '') : '—') + '</td>'
+                                + '<td>' + need + '</td>'
+                                + '<td>' + (r.material_id ? fmtAngka(r.stock_available ?? 0) + ' ' + esc(r.stock_uom || '') : '—') + '</td>'
+                                + '<td>' + (r.stock_status ? '<span class="io-stat ' + (STATUS_CLS[r.stock_status] || 'mute') + '">' + esc(r.stock_status) + '</span>'
+                                    + (r.shortage ? '<div class="io-sub">kurang ' + fmtAngka(r.shortage) + ' ' + esc(r.stock_uom || '') + '</div>' : '') : '—') + '</td>'
+                                + '<td>' + (r.material_id && ['KURANG', 'TIDAK ADA'].includes(r.stock_status) && (r.shortage > 0 || r.qty_need > 0)
+                                    ? '<button type="button" class="io-mbtn warn" data-act="pr" data-i="' + i + '">＋ Buat PR</button>' : '') + '</td></tr>';
+                        }).join('')
+                        + '</table></div>';
+                } else {
+                    h += '<div class="io-empty">Belum ada bahan.</div>';
+                }
+
+                return h + notes(sp.warnings.bom);
+            }
+
+            function ddHtml(dd) {
+                if (dd.busy) return '<div class="io-dd"><div class="io-sub">Mencari…</div></div>';
+                if (!dd.items.length) return '<div class="io-dd"><div class="io-sub">Tidak ada bahan cocok.</div></div>';
+                return '<div class="io-dd">' + dd.items.map((m, k) => '<button type="button" data-act="pick-mat" data-k="' + k + '">'
+                    + '<b>' + esc(m.name) + '</b><span>' + esc(m.code) + ' · ' + esc(m.category || '') + ' · stok ' + fmtAngka(m.stock) + ' ' + esc(m.uom || '') + '</span></button>').join('') + '</div>';
+            }
+
+            function inkHtml(p, sp) {
+                const rows = rowsOf(p, 'inks'), ed = p.editing.inks, raw = p.edit.inks || [];
                 const art = p.artBusy ? '<div class="io-empty">Menganalisa warna artwork…</div>'
                     : p.artError ? '<div class="io-notice bad">Analisa artwork gagal: ' + esc(p.artError) + '</div>' : '';
-                $('cnt-ink').textContent = sp ? sp.inks.length : '';
-                $('ink').innerHTML = !sp ? tunggu + art : src
+                let h = tools(p, 'inks')
                     + '<div class="io-inputs"><b>Notasi warna:</b> ' + esc(sp.inputs.color || '—')
-                    + (artSource(p) ? ' <button type="button" class="io-btn" id="io-reanalyze" style="margin-left:10px">↻ Analisa ulang artwork</button>' : '') + '</div>'
-                    + (sp.inks.length
-                        ? '<table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Tutupan</th><th>Luas / pcs</th><th>Luas / lembar</th></tr>'
-                          + sp.inks.map(r => '<tr><td>' + (r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
-                              + '<i class="io-sw" style="background:' + esc(r.color_hex || '#888') + '"></i><b>' + esc(r.ink_name) + '</b></td><td>'
-                              + (r.coverage_pct !== null ? fmtAngka(r.coverage_pct) + '%' : '—') + '</td><td>'
-                              + (r.coverage_cm2 !== null ? fmtAngka(r.coverage_cm2) + ' cm²' : '—') + '</td><td>'
-                              + (r.coverage_cm2_sheet !== null ? fmtAngka(r.coverage_cm2_sheet) + ' cm²' : '—') + '</td></tr>').join('') + '</table>'
-                        : '')
-                    + art
+                    + (artSource(p) ? ' <button type="button" class="io-mbtn" data-act="reanalyze" style="margin-left:10px">↻ Analisa ulang artwork</button>' : '') + '</div>'
+                    + '<datalist id="io-inknames">' + LK.inks.map(n => '<option value="' + esc(n) + '">').join('') + '</datalist>';
+
+                if (ed) {
+                    const units = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ id: n, name: 'Unit ' + n }));
+                    h += '<div class="io-tblwrap"><table class="io-tbl io-edit"><tr><th>Pass</th><th>Jenis</th><th>Unit</th><th>Tinta</th><th>Warna</th><th>Tutupan %</th><th>Luas / pcs</th><th></th></tr>'
+                        + raw.map((r, i) => {
+                            const c = rows[i] || {};
+                            return '<tr><td><select' + field('inks', i, 'pass_seq', '') + '>' + opts([{ id: 1, name: 'Warna Pertama' }, { id: 2, name: 'Warna Kedua' }], r.pass_seq) + '</select></td>'
+                                + '<td><select' + field('inks', i, 'pass_label', '') + '>' + optsTxt(['CS', 'SPOT'], r.pass_label) + '</select></td>'
+                                + '<td><select' + field('inks', i, 'unit_no', '') + '>' + opts(units, r.unit_no) + '</select></td>'
+                                + '<td><input list="io-inknames"' + field('inks', i, 'ink_name', r.ink_name) + '></td>'
+                                + '<td><input type="color"' + field('inks', i, 'color_hex', r.color_hex || '#888888') + '></td>'
+                                + '<td><input type="number" min="0" max="100" step="0.1"' + field('inks', i, 'coverage_pct', r.coverage_pct) + '></td>'
+                                + '<td>' + (c.coverage_cm2 !== undefined && c.coverage_cm2 !== null ? fmtAngka(c.coverage_cm2) + ' cm²' : '—') + '</td>'
+                                + '<td><button type="button" class="io-ibtn bad" data-act="del" data-sec="inks" data-i="' + i + '" title="Hapus">✕</button></td></tr>';
+                        }).join('')
+                        + '</table></div><button type="button" class="io-mbtn" data-act="add" data-sec="inks">＋ Tambah tinta</button>';
+                } else if (rows.length) {
+                    h += '<div class="io-tblwrap"><table class="io-tbl"><tr><th>Pass</th><th>Unit</th><th>Tinta</th><th>Tutupan</th><th>Luas / pcs</th><th>Luas / lembar</th></tr>'
+                        + rows.map(r => '<tr><td>' + (+r.pass_seq === 1 ? 'Warna Pertama' : 'Warna Kedua') + ': ' + esc(r.pass_label) + '</td><td>Unit ' + r.unit_no + '</td><td>'
+                            + '<i class="io-sw" style="background:' + esc(r.color_hex || '#888') + '"></i><b>' + esc(r.ink_name) + '</b></td><td>'
+                            + (r.coverage_pct !== null ? fmtAngka(r.coverage_pct) + '%' : '—') + '</td><td>'
+                            + (r.coverage_cm2 !== null ? fmtAngka(r.coverage_cm2) + ' cm²' : '—') + '</td><td>'
+                            + (r.coverage_cm2_sheet !== null ? fmtAngka(r.coverage_cm2_sheet) + ' cm²' : '—') + '</td></tr>').join('') + '</table></div>';
+                }
+
+                return h + art
                     + (sp.colors.length
                         ? '<div class="io-subh">Warna di artwork (luas per pcs)</div><div class="io-colors">'
                           + sp.colors.map(c => '<span class="io-colorchip"><i class="io-sw" style="background:' + esc(c.hex || '#888') + '"></i>'
                               + esc(c.name) + ' <b>' + (c.cm2 !== null ? fmtAngka(c.cm2) + ' cm²' : fmtAngka(c.pct) + '%') + '</b></span>').join('') + '</div>'
                         : '')
                     + notes(sp.warnings.ink);
+            }
 
-                const re = document.getElementById('io-reanalyze');
-                if (re) re.onclick = () => analyzeArtwork(true);
+            function renderSpecSections() {
+                const p = S.p, sp = p.spec;
+                specInit(p);
+                const tunggu = '<div class="io-empty">' + (p.partId ? 'Menghitung dari data Inquiry…' : 'Job demo — engine butuh part nyata.') + '</div>';
+
+                // Pertahankan fokus kursor saat tabel edit digambar ulang.
+                const a = document.activeElement, keep = a && a.dataset && a.dataset.f
+                    ? { sec: a.dataset.sec, i: a.dataset.i, f: a.dataset.f, pos: a.selectionStart } : null;
+
+                $('cnt-bop').textContent = sp ? rowsOf(p, 'bop').length : '';
+                $('cnt-bom').textContent = sp ? rowsOf(p, 'bom').length : '';
+                $('cnt-ink').textContent = sp ? rowsOf(p, 'inks').length : '';
+                $('bop').innerHTML = sp ? bopHtml(p, sp) : tunggu;
+                $('bom').innerHTML = sp ? bomHtml(p, sp) : tunggu;
+                $('ink').innerHTML = sp ? inkHtml(p, sp) : tunggu;
+
+                if (keep) {
+                    const el = document.querySelector('#io-acc [data-sec="' + keep.sec + '"][data-i="' + keep.i + '"][data-f="' + keep.f + '"]');
+                    if (el) { el.focus(); try { if (keep.pos !== null && keep.pos !== undefined) el.setSelectionRange(keep.pos, keep.pos); } catch (e) { /* input number */ } }
+                }
                 samakanTinggiAcc();
+            }
+
+            const NUM_FIELDS = ['process_id', 'machine_id', 'target_qty_per_hour', 'waste_pct', 'tolerance_pct', 'subcon_supplier_id',
+                'gsm', 'size_p', 'size_l', 'qty_per_sheet', 'pass_seq', 'unit_no', 'coverage_pct'];
+
+            function blankRow(k, p) {
+                if (k === 'bop') return { process_id: null, label: 'Langkah baru', machine_id: null, target_qty_per_hour: null, waste_pct: 0, tolerance_pct: 0, subcon_supplier_id: null, note: null };
+                if (k === 'bom') return { role: 'BAHAN LAIN', material_id: null, name: 'BAHAN BARU', gsm: null, size_p: null, size_l: null, qty_per_sheet: null, uom: 'PCS', primary: false, note: null };
+                const used = (p.edit.inks || []).filter(r => +r.pass_seq === 1).map(r => +r.unit_no);
+                return { pass_seq: 1, pass_label: 'SPOT', unit_no: Math.min(8, (used.length ? Math.max(...used) : 0) + 1), ink_name: 'PANTONE', color_hex: null, coverage_pct: null };
+            }
+
+            // Salinan baris tampilan -> baris yang bisa diedit (hanya field input).
+            function toEditable(k, rows) {
+                const pick = {
+                    bop: ['process_id', 'label', 'machine_id', 'target_qty_per_hour', 'waste_pct', 'tolerance_pct', 'subcon_supplier_id', 'note'],
+                    bom: ['role', 'material_id', 'name', 'brand', 'gsm', 'size_p', 'size_l', 'qty_per_sheet', 'uom', 'basis', 'rate', 'primary', 'note'],
+                    inks: ['pass_seq', 'pass_label', 'unit_no', 'ink_name', 'color_hex', 'coverage_pct'],
+                }[k];
+                return rows.map(r => Object.fromEntries(pick.map(f => [f, r[f] ?? null])));
+            }
+
+            function touch(p, k) {
+                p.edit[k].__touched = true;
+                p.editSrc[k] = 'OVERRIDE';
+                specSoon();
+            }
+
+            let ddTimer = null;
+            function bindSpecEvents() {
+                const acc = document.getElementById('io-acc');
+
+                acc.addEventListener('click', async e => {
+                    const b = e.target.closest('[data-act]');
+                    if (!b) return;
+                    const p = S.p, k = b.dataset.sec, i = +b.dataset.i;
+                    specInit(p);
+
+                    switch (b.dataset.act) {
+                        case 'edit':
+                            if (!p.editing[k]) {
+                                if (!p.edit[k]) p.edit[k] = toEditable(k, rowsOf(p, k));
+                                p.editing[k] = true;
+                                specSoon();
+                            } else {
+                                p.editing[k] = false;
+                                // Tidak ada yang diubah -> tetap ikut engine, bukan override.
+                                if (!p.edit[k].__touched && !(p.saved && p.saved[k])) p.edit[k] = null;
+                                specSoon();
+                            }
+                            p.dd = null;
+                            break;
+                        case 'reset':
+                            p.edit[k] = null; p.editing[k] = false; p.editSrc[k] = null;
+                            if (p.saved && p.saved[k] && !p.reset.includes(k)) p.reset.push(k);
+                            p.flash[k] = { ok: true, text: 'Dikembalikan ke hasil engine — tersimpan saat Save.' };
+                            specSoon();
+                            break;
+                        case 'add':
+                            p.edit[k].push(blankRow(k, p)); touch(p, k);
+                            break;
+                        case 'del':
+                            p.edit[k].splice(i, 1); touch(p, k);
+                            break;
+                        case 'up':
+                        case 'down': {
+                            const j = b.dataset.act === 'up' ? i - 1 : i + 1, arr = p.edit[k];
+                            if (j < 0 || j >= arr.length) return;
+                            [arr[i], arr[j]] = [arr[j], arr[i]]; touch(p, k);
+                            break;
+                        }
+                        case 'pick-mat': {
+                            const m = p.dd && p.dd.items[+b.dataset.k], row = p.dd && p.edit.bom[p.dd.i];
+                            if (!m || !row) return;
+                            Object.assign(row, { material_id: m.id, name: m.name, gsm: m.gsm ?? row.gsm, uom: m.uom || row.uom });
+                            p.dd = null; touch(p, 'bom');
+                            break;
+                        }
+                        case 'reanalyze':
+                            analyzeArtwork(true);
+                            return;
+                        case 'pr': {
+                            const r = rowsOf(p, 'bom')[i], w = wire();
+                            if (!r || !w) return;
+                            b.disabled = true;
+                            // Satuan stok tak bisa dikonversi -> minta sebanyak kebutuhan, satuan kebutuhan.
+                            const byStock = r.shortage !== null && r.shortage > 0;
+                            const res = (await w.call('createPurchase', p.partId, r.material_id,
+                                byStock ? r.shortage : r.qty_need, byStock ? r.stock_uom : r.uom).catch(() => null))
+                                || { ok: false, message: 'Server tidak merespons, coba lagi.' };
+                            p.flash.bom = { ok: res.ok, text: res.message, url: res.url };
+                            break;
+                        }
+                        case 'subcon':
+                            p.subconAt = p.subconAt === i ? null : i;
+                            break;
+                        case 'subcon-cancel':
+                            p.subconAt = null;
+                            break;
+                        case 'subcon-go': {
+                            const r = rowsOf(p, 'bop')[p.subconAt], w = wire();
+                            const sup = +document.getElementById('io-sc-sup').value;
+                            if (!r || !w) return;
+                            if (!sup) { p.flash.bop = { ok: false, text: 'Pilih supplier subkon dulu.' }; break; }
+                            b.disabled = true;
+                            const res = await w.call('subcontract', p.partId,
+                                { process_id: r.process_id, label: r.label, qty_in: r.qty_in, uom: r.uom },
+                                sup, +document.getElementById('io-sc-co').value || null,
+                                document.getElementById('io-sc-date').value || null,
+                                +document.getElementById('io-sc-cost').value || null).catch(() => null)
+                                || { ok: false, message: 'Server tidak merespons, coba lagi.' };
+                            p.flash.bop = { ok: res.ok, text: res.message, url: res.prUrl };
+                            if (res.ok) { p.subconAt = null; specKey = ''; specSoon(); }
+                            break;
+                        }
+                        default:
+                            return;
+                    }
+                    renderSpecSections();
+                });
+
+                acc.addEventListener('change', e => {
+                    const el = e.target, f = el.dataset && el.dataset.f;
+                    if (!f) return;
+                    const p = S.p, k = el.dataset.sec, row = p.edit[k] && p.edit[k][+el.dataset.i];
+                    if (!row) return;
+                    const v = el.value;
+                    if (f === 'search') {
+                        // Nama diketik bebas (tidak dipilih dari daftar) = bahan di luar master.
+                        if (v.trim() !== (row.name || '')) { row.name = v.trim(); row.material_id = null; touch(p, k); }
+                        return;
+                    }
+                    row[f] = NUM_FIELDS.includes(f) ? (v === '' ? null : +v) : v;
+                    // Proses baru dipilih -> label ikut nama proses bila label masih bawaan.
+                    if (f === 'process_id' && (!row.label || row.label === 'Langkah baru')) {
+                        const pr = LK.processes.find(x => +x.id === +v);
+                        if (pr) row.label = pr.name;
+                    }
+                    touch(p, k);
+                });
+
+                acc.addEventListener('input', e => {
+                    const el = e.target;
+                    if (!el.dataset || el.dataset.f !== 'search') return;
+                    const p = S.p, i = +el.dataset.i, q = el.value.trim();
+                    clearTimeout(ddTimer);
+                    if (q.length < 2) { if (p.dd) { p.dd = null; renderSpecSections(); } return; }
+                    ddTimer = setTimeout(async () => {
+                        const w = wire();
+                        if (!w) return;
+                        p.dd = { i, busy: true, items: [] };
+                        renderSpecSections();
+                        const items = await w.call('searchMaterials', q);
+                        if (p.dd && p.dd.i === i) { p.dd = { i, busy: false, items: items || [] }; renderSpecSections(); }
+                    }, 300);
+                });
             }
 
             // Job dipilih di grid, jadi di sini cuma DITAMPILKAN. Dropdown hanya

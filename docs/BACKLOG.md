@@ -1469,6 +1469,26 @@ Keputusan user 2026-09-17 (jangan ditanya ulang):
 | 18.5 | Engine BOM: bahan utama + bahan finishing (plastik laminasi lebar roll >= lebar lembar, foil) + tinta | BELUM |
 | 18.6 | Isi per pack (Pack Wrapping /400 pcs) diinput di Inquiry | BELUM |
 | 18.7 | Flag `data_origin` (LIVE/DUMMY/LEGACY) + setting admin hide/show + reset dummy | BELUM |
+| 18.8 | BOP/BOM/Ink bisa di-edit (override) officer di ProDev dengan dropdown; tidak ditimpa engine | BELUM |
+| 18.9 | BOM: qty kebutuhan + stok tersedia gudang + tombol Buat PR per baris yang kurang; tinta & lem dgn estimasi pemakaian | BELUM |
+| 18.10 | BOP: mesin, target default, waste & toleransi (qty + %) per langkah | BELUM |
+| 18.11 | BOP: tombol Subkon per langkah yang tidak in-house -> PR subkon -> Surat Jalan subkon yang menunjuk CO (track costing) | BELUM |
+| 18.12 | BOM & BOP mengalir ke Work Order; officer PPIC yang memastikan final | BELUM (alur dicatat, lihat di bawah) |
+
+**Alur data & sistem (dikunci user 2026-09-17):**
+
+```
+Inquiry Product (finishing, bahan, warna, isi/pack, artwork, qty)
+   -> ProDev: engine BOP / BOM / Ink  (officer ProDev boleh override)
+        -> SAVE  : tulis 2 arah (prod_part_* master + iqp_part_* Inquiry)
+        -> CONFIRM: ke Product Costing
+   -> BOM kurang stok -> Purchase Requisition bahan (MRP)
+   -> BOP langkah non in-house -> PR subkon -> Surat Jalan subkon (wajib CO asal)
+   -> Customer PO -> CO -> Work Order: BOM & BOP jadi bahan & operasi WO
+        -> officer PPIC yang memastikan FINAL (bukan otomatis terkunci)
+```
+- Surat jalan subkon = surat jalan tetap yang terikat CO (customer PO -> CO);
+  CO wajib tertulis supaya biaya subkon terlacak ke costing order itu.
 
 ---
 
