@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -55,6 +56,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
     public ?int $partId = null;
 
+    // Sampel bawaan mockup (AL SAMSI/OSIMA) tidak lagi ikut alur normal --
+    // cuma tampil kalau sengaja dibuka dengan ?demo=1.
+    #[Url]
+    public bool $demo = false;
+
     // Job yang sedang dibuka di canvas -- di-set dari JS tiap ganti job, supaya
     // upload artwork tahu part mana yang dituju (sisanya layar ini client-side).
     public ?int $activeJobPartId = null;
@@ -63,8 +69,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
     public string $artworkError = '';
 
+    // Layar ini SELALU dibuka dari grid, jadi job-nya sudah pasti sejak awal
+    // (koreksi user 2026-09-16). Dibuka tanpa part = tidak ada yang bisa
+    // dikerjakan -> dikembalikan ke grid, bukan menebak job pertama.
     public function mount(?int $part = null): void
     {
+        if (! $part && ! $this->demo) {
+            $this->redirect(route('production.prodev.list'), navigate: false);
+
+            return;
+        }
+
         $this->partId = $part;
         $this->activeJobPartId = $part;
     }
@@ -355,16 +370,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             ->all();
     }
 
-    // Job = prod_part yang punya geometri dieline. Sumber geometri berlapis:
-    // die_w/h_cm (kolom teknis ProDev) -> printsize_p/l -> flat_w/h dari
-    // Inquiry. Part tanpa satupun dari itu dilewati (tidak bisa di-nesting).
+    // Job = HANYA part yang dipilih di grid. Dulu seluruh part dimuat supaya
+    // bisa dipilih ulang lewat dropdown di form -- itu mubazir (user 2026-09-16:
+    // "saat user pilih di grid... sudah pasti"), dan bikin layar kerja seolah
+    // masih menawarkan pilihan yang sebenarnya sudah diputuskan.
+    //
+    // Geometri dicari berlapis: die_w/h_cm (kolom teknis ProDev) -> printsize_p/l
+    // -> flat_w/h dari Inquiry. Kalau tidak satupun terisi, job TIDAK dikarang:
+    // dikembalikan kosong dan alasannya disampaikan lewat jobIssue().
     #[Computed]
     public function jobs(): array
     {
         $parts = ProdPart::with('product')
-            ->where('activate', true)
-            ->orderByDesc('id_part')
-            ->limit(150)
+            ->where('id_part', $this->partId)
             ->get();
 
         $origins = IqpPart::with('inquiry.customer')
@@ -426,7 +444,31 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             ];
         }
 
-        return array_merge($jobs, $this->demoJobs());
+        // Job demo TIDAK lagi ikut di alur normal -- alur normal sekarang selalu
+        // 1 job yang dipilih dari grid. Sampelnya tidak dihapus (user 2026-09-14
+        // minta dipertahankan), cuma dipindah ke belakang tanda ?demo=1 supaya
+        // layar kerja tidak lagi menawarkan pilihan yang sudah diputuskan.
+        return $this->demo ? array_merge($jobs, $this->demoJobs()) : $jobs;
+    }
+
+    // Alasan jujur kalau part yang dipilih tidak bisa dikerjakan -- jangan diam
+    // atau menampilkan job kosong tanpa keterangan.
+    #[Computed]
+    public function jobIssue(): ?string
+    {
+        if ($this->jobs !== []) {
+            return null;
+        }
+
+        $part = ProdPart::find($this->partId);
+
+        if (! $part) {
+            return 'Part tidak ditemukan (id '.$this->partId.').';
+        }
+
+        return 'Part "'.$part->part_name.'" belum punya dimensi dieline. '
+            .'Isi salah satu dulu: die_w_cm/die_h_cm, printsize_p/printsize_l di Master Part, '
+            .'atau flat_w/flat_h di Inquiry Part asalnya.';
     }
 
     // 3 job demo bawaan mockup -- artwork-nya digambar vector di JS (shape()),
@@ -491,6 +533,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             dieCutters: @json($this->dieCutters),
             planos: @json($this->planos),
             initialJob: @json($this->initialJobIndex),
+            demo: @json($this->demo),
+            jobIssue: @json($this->jobIssue),
             backUrl: @json(route('production.prodev.list')),
             gripperMm: @json(SysConstant::number('PRODEV_GRIPPER_MM', 12.0)),
             marginMm: @json(SysConstant::number('PRODEV_MARGIN_MM', 8.0)),
@@ -570,6 +614,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-toggle input:checked+.io-slider{background:#177351;border-color:#53d093}
         .io-toggle input:checked+.io-slider:before{transform:translateX(20px);background:#e8fff3}
         .io-manual-disabled{opacity:.45;pointer-events:none}
+        .io-jobfix{background:#081624;border:1px solid #375873;border-radius:8px;padding:9px 10px}
+        .io-jobfix b{display:block;font-size:13.5px;color:#d9f5ff;line-height:1.3}
+        .io-jobfix span{display:block;margin-top:3px;font-size:11px;color:var(--io-muted)}
         .io-auto-result{margin-top:9px;padding:9px 10px;background:#08222f;border:1px solid #2b6a86;border-radius:8px}
         .io-auto-result span{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--io-muted)}
         .io-auto-result b{font-size:22px;color:#9fe9ff;line-height:1.25}
@@ -664,8 +711,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 <aside class="io-panel">
                     <h2>Job Configuration</h2>
                     <div class="io-group">
+                        <!-- Job sudah pasti sejak dipilih di grid (user 2026-09-16),
+                        jadi ini identitas, BUKAN dropdown. Dropdown-nya hanya muncul
+                        di mode ?demo=1 yang memang berisi banyak sampel. -->
                         <label>Product inquiry / job</label>
-                        <select id="io-product"></select>
+                        <div id="io-jobFixed" class="io-jobfix"></div>
+                        <select id="io-product" style="display:none"></select>
                         <div id="io-metrics" class="io-metric-grid"></div>
                         <div id="io-spec" class="io-spec"></div>
                     </div>
@@ -855,8 +906,12 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             const GRIPPER = (DATA.gripperMm || 0) / 10;   // cm
             const MARGIN = (DATA.marginMm || 0) / 10;     // cm
             if (!products.length || !machines.length || !planos.length) {
-                document.getElementById('io-valid').textContent =
-                    'Data master belum lengkap: butuh minimal 1 part berdimensi, 1 mesin cetak, dan 1 ukuran plano aktif.';
+                const box = document.getElementById('io-valid');
+                box.className = 'io-notice bad';
+                // Alasan spesifik dari server (mis. part belum punya dimensi dieline)
+                // lebih berguna daripada pesan umum -- jangan biarkan layar diam.
+                box.textContent = DATA.jobIssue
+                    || 'Data master belum lengkap: butuh minimal 1 part berdimensi, 1 mesin cetak, dan 1 ukuran plano aktif.';
                 return;
             }
 
@@ -1581,15 +1636,32 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 diecutters.forEach((x, i) => $('diecut').add(new Option(x[0], i)));
                 planos.forEach((x, i) => $('plano').add(new Option(x[0], i)));
                 $('product').value = String(products.indexOf(S.p));
-                $('jobcount').textContent = products.length + ' JOB SIAP IMPOSISI';
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
                 $('back').href = DATA.backUrl || '#';
+                jobIdentity();
                 bind();
                 upModeUi();
                 artworkLabel();
                 syncActiveJob();
                 update(true);
                 autoNestSoon();
+            }
+
+            // Job dipilih di grid, jadi di sini cuma DITAMPILKAN. Dropdown hanya
+            // dipakai di mode ?demo=1 (banyak sampel), bukan di alur normal.
+            function jobIdentity() {
+                const banyak = products.length > 1;
+                $('jobFixed').style.display = banyak ? 'none' : '';
+                $('product').style.display = banyak ? '' : 'none';
+
+                if (!banyak) {
+                    $('jobFixed').innerHTML = '<b>' + S.p.name + '</b><span>'
+                        + S.p.design + (S.p.reg && S.p.reg !== '—' ? ' · ' + S.p.reg : '') + '</span>';
+                }
+
+                $('jobcount').textContent = banyak
+                    ? products.length + ' SAMPEL DEMO'
+                    : (S.p.design || 'JOB TERPILIH');
             }
 
             // Auto Up  -> tampilkan angka HASIL, sembunyikan kotak isian.
@@ -1619,7 +1691,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').onchange = e => {
                     S.p = products[e.target.value]; S.g = S.p.gap; $('gap').value = S.g;
                     $('grain').value = S.p.grain; S.objs = [];
-                    artworkLabel(); syncActiveJob(); suggest(); autoNestSoon();
+                    jobIdentity(); artworkLabel(); syncActiveJob(); suggest(); autoNestSoon();
                 };
                 $('machine').onchange = e => { S.m = machines[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
                 $('diecut').onchange = e => { S.d = diecutters[e.target.value]; S.objs = []; suggest(); autoNestSoon(); };
