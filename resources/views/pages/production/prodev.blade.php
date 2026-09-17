@@ -1435,6 +1435,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             }
 
             function applyPlacements(placements, label, offX, offY) {
+                noteShortfall(Math.min(placements.length, S.auto ? placements.length : S.manualUp));
                 if (!S.auto && S.manualUp < placements.length) placements = placements.slice(0, S.manualUp);
 
                 const dx = offX || 0, dy = offY || 0;
@@ -1754,6 +1755,15 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 const [bl, bw] = bedLimits();
                 return S.L > 0 && S.W > 0 && S.L <= bl && S.W <= bw;
             }
+
+            // Mesin mana yang sedang jadi pembatas -- supaya peringatannya menyebut
+            // nama mesinnya, bukan cuma angka.
+            function bedOwner() {
+                const [bl, bw] = bedLimits();
+                return (S.d && S.d[1] && S.d[2] && (bl < S.m[1] || bw < S.m[2]))
+                    ? S.d[0] + ' (plong)'
+                    : S.m[0];
+            }
             function fit(L, W, a, b, g) {
                 const c = Math.floor((L + g) / (a + g)), r = Math.floor((W + g) / (b + g));
                 return { ups: c * r, c, r, rot: false };
@@ -1795,9 +1805,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             function suggest() {
                 if (S.touched && S.objs.length) { fitToLayout(); return; }
-                const target = S.auto ? null : S.manualUp, p = S.p, m = S.m;
+                const target = S.auto ? null : S.manualUp, p = S.p;
+                // Batas pencarian = meja mesin cetak DAN meja plong, bukan bed
+                // mesin cetak saja -- canvas yang muat di press tapi tidak muat
+                // di plong tetap tidak bisa diproduksi.
+                const m = bedLimits();
                 let bestC = null;
-                for (let L = 25; L <= m[1]; L += .5) for (let W = 20; W <= m[2]; W += .5) {
+                for (let L = 25; L <= m[0]; L += .5) for (let W = 20; W <= m[1]; W += .5) {
                     const a = fit(L, W, p.l, p.w, S.g), b = fit(L, W, p.w, p.l, S.g), f = b.ups > a.ups ? b : a;
                     if (target ? f.ups >= target : f.ups > 0) {
                         const area = L * W, h = Math.abs(L - p.history[0]) + Math.abs(W - p.history[1]),
@@ -1807,7 +1821,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
                 if (!bestC) {
                     update(true);
-                    msg('Manual ' + target + '-up tidak muat pada batas mesin ' + m[1] + ' × ' + m[2] + ' cm.', 'bad');
+                    msg('Target ' + target + ' up tidak muat: butuh canvas melebihi meja ' + bedOwner()
+                        + ' (maks ' + m[0] + ' × ' + m[1] + ' cm).', 'bad');
                     return;
                 }
                 S.L = +bestC.L.toFixed(1); S.W = +bestC.W.toFixed(1);
@@ -1904,6 +1919,24 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                       '<text class="io-graintext" x="' + (x + 32) + '" y="' + (y + 30) + '">GRAIN · DIELINE WIDTH</text>';
             }
 
+            // Target up yang tidak tercapai HARUS diberitahukan (user 2026-09-17:
+            // "kalau dengan jumlah up ukurannya melebihi meja mesin, harus di
+            // warning"). Tanpa ini layar diam-diam memangkas jumlahnya dan angka
+            // yield di panel kanan terlihat wajar padahal bukan yang diminta.
+            // Canvas sudah dibatasi meja mesin cetak & meja plong (bedLimits),
+            // jadi "tidak muat di canvas" = tidak muat di mesin.
+            function noteShortfall(tercapai) {
+                if (S.auto || S.manualUp <= tercapai) { S.upShort = null; return; }
+
+                // Dibedakan: "canvas sekarang kekecilan" (masih bisa diperbesar)
+                // vs "memang tidak muat di mesin" (canvas terbesar yang diizinkan
+                // meja pun tidak cukup) -- dua hal itu butuh tindakan berbeda.
+                const [bl, bw] = bedLimits();
+                const a = fit(bl, bw, S.p.l, S.p.w, S.g), b = fit(bl, bw, S.p.w, S.p.l, S.g);
+
+                S.upShort = { target: S.manualUp, dapat: tercapai, maxMesin: Math.max(a.ups, b.ups) };
+            }
+
             function createObjects(x, y, sc) {
                 // Grid otomatis dibangun ulang = hasil auto nesting sebelumnya sudah
                 // tidak berlaku, labelnya harus ikut hilang (jangan jadi klaim basi).
@@ -1912,7 +1945,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 S.overlapPx = 0;
                 const f = best();
                 let n = selectedUp(), i = 0;
-                if (n > f.ups) { msg('Selected ' + n + '-up exceeds physical maximum ' + f.ups + '-up on this canvas.', 'bad'); n = f.ups; }
+                if (n > f.ups) { n = f.ups; }
+                noteShortfall(n);
                 for (let r = 0; r < f.r && i < n; r++) for (let c = 0; c < f.c && i < n; c++, i++) {
                     const ww = (f.rot ? S.p.w : S.p.l) * sc, hh = (f.rot ? S.p.l : S.p.w) * sc;
                     S.objs.push({
@@ -2119,11 +2153,21 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 // tanpa peringatan ini susunan yang tidak bisa dicetak terbaca
                 // seolah paling efisien.
                 const bentrok = S.overlapPx > 0;
-                $('impoMode').className = 'io-notice ' + (bentrok || out ? 'bad' : S.touched ? 'ok' : 'info');
+                const kurang = S.upShort;
+                $('impoMode').className = 'io-notice ' + (bentrok || out || kurang ? 'bad' : S.touched ? 'ok' : 'info');
                 $('impoMode').innerHTML = (S.touched
                     ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : 'CUSTOM IMPOSITION — nesting manual') + '</b><br>Susunan: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
                     : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '') + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + '.')
-                    + (bentrok ? '<br><b>⚠ GARIS POTONG BERTABRAKAN</b> — ' + S.overlapPx + ' mm² blank saling makan, susunan ini tidak bisa dicetak. Angka yield di bawah ikut tidak sah.' : '');
+                    + (bentrok ? '<br><b>⚠ GARIS POTONG BERTABRAKAN</b> — ' + S.overlapPx + ' mm² blank saling makan, susunan ini tidak bisa dicetak. Angka yield di bawah ikut tidak sah.' : '')
+                    + (kurang
+                        ? (kurang.target > kurang.maxMesin
+                            ? '<br><b>⚠ TARGET ' + kurang.target + ' UP TIDAK MUAT DI MESIN</b> — blank ' + S.p.l + ' × ' + S.p.w
+                              + ' cm sebanyak itu melebihi meja ' + bedOwner() + '. Canvas terbesar yang diizinkan ('
+                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm) hanya memuat ' + kurang.maxMesin + ' up.'
+                            : '<br><b>⚠ TARGET ' + kurang.target + ' UP BELUM MUAT DI CANVAS INI</b> — canvas ' + S.L + ' × ' + S.W
+                              + ' cm baru memuat ' + kurang.dapat + ' up. Perbesar canvas (meja ' + bedOwner() + ' masih mengizinkan sampai '
+                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm) atau tekan ✦ Suggest canvas size.')
+                        : '');
 
                 $('impoDetail').innerHTML = '<table>' +
                     '<tr><td>Object di canvas</td><td>' + up + ' up</td></tr>' +
