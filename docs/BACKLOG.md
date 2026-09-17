@@ -1462,18 +1462,18 @@ Keputusan user 2026-09-17 (jangan ditanya ulang):
 
 | # | Gap | Status |
 |---|---|---|
-| 18.1 | Ukuran pisau + kode pisau ("…ISI n MATA") disimpan dari hasil ProDev | BELUM |
-| 18.2 | Finishing Inquiry terstruktur: pilih dari `ref_finishing_type` + atribut (warna foil "Gold Puyeh", doff/glossy) | BELUM |
-| 18.3 | Engine Ink: `cfg_color` + analisa warna artwork (% & cm² per tinta, warna dominan), unit K-C-M-Y | BELUM |
-| 18.4 | Engine BOP: routing standar offset + sisipan dari finishing (aturan diatur admin) | BELUM |
-| 18.5 | Engine BOM: bahan utama + bahan finishing (plastik laminasi lebar roll >= lebar lembar, foil) + tinta | BELUM |
-| 18.6 | Isi per pack (Pack Wrapping /400 pcs) diinput di Inquiry | BELUM |
-| 18.7 | Flag `data_origin` (LIVE/DUMMY/LEGACY) + setting admin hide/show + reset dummy | BELUM |
-| 18.8 | BOP/BOM/Ink bisa di-edit (override) officer di ProDev dengan dropdown; tidak ditimpa engine | BELUM |
-| 18.9 | BOM: qty kebutuhan + stok tersedia gudang + tombol Buat PR per baris yang kurang; tinta & lem dgn estimasi pemakaian | BELUM |
-| 18.10 | BOP: mesin, target default, waste & toleransi (qty + %) per langkah | BELUM |
-| 18.11 | BOP: tombol Subkon per langkah yang tidak in-house -> PR subkon -> Surat Jalan subkon yang menunjuk CO (track costing) | BELUM |
-| 18.12 | BOM & BOP mengalir ke Work Order; officer PPIC yang memastikan final | BELUM (alur dicatat, lihat di bawah) |
+| 18.1 | Ukuran pisau + kode pisau ("…ISI n MATA") disimpan dari hasil ProDev | SELESAI 2026-09-17 (prod_layout_group/iqp_layout.knife_*) |
+| 18.2 | Finishing Inquiry terstruktur: pilih dari `ref_finishing_type` + atribut (warna foil "Gold Puyeh", doff/glossy) | SELESAI 2026-09-17 (iqp_part_finishing) |
+| 18.3 | Engine Ink: `cfg_color` + analisa warna artwork (% & cm² per tinta, warna dominan), unit K-C-M-Y | SELESAI 2026-09-17 (analisa di browser; file PDF/AI belum -- server tanpa Imagick/Ghostscript, perlu pdf.js) |
+| 18.4 | Engine BOP: routing standar offset + sisipan dari finishing (aturan diatur admin) | SELESAI 2026-09-17 (prod_bop_rule + layar BOP Rule Setting) |
+| 18.5 | Engine BOM: bahan utama + bahan finishing (plastik laminasi lebar roll >= lebar lembar, foil) + tinta | SELESAI 2026-09-17 |
+| 18.6 | Isi per pack (Pack Wrapping /400 pcs) diinput di Inquiry | SELESAI 2026-09-17 (iqp_part.pack_qty) |
+| 18.7 | Flag `data_origin` (LIVE/DUMMY/LEGACY) + setting admin hide/show + reset dummy | SELESAI 2026-09-17 (210 tabel; Settings > Dummy & Legacy Data; query DB::table/VIEW belum ikut tersaring) |
+| 18.8 | BOP/BOM/Ink bisa di-edit (override) officer di ProDev dengan dropdown; tidak ditimpa engine | SELESAI 2026-09-17 |
+| 18.9 | BOM: qty kebutuhan + stok tersedia gudang + tombol Buat PR per baris yang kurang; tinta & lem dgn estimasi pemakaian | SELESAI 2026-09-17 -- item kategori Others/Lamination belum punya akun COA sehingga PR-nya ditolak; takaran = estimasi awal |
+| 18.10 | BOP: mesin, target default, waste & toleransi (qty + %) per langkah | SELESAI 2026-09-17 (persen default = estimasi awal) |
+| 18.11 | BOP: tombol Subkon per langkah yang tidak in-house -> PR subkon -> Surat Jalan subkon yang menunjuk CO (track costing) | SELESAI 2026-09-17 (layar entry DO belum khusus SUBKON) |
+| 18.12 | BOM & BOP mengalir ke Work Order; officer PPIC yang memastikan final | BELUM -- alur dicatat di bawah; WoGenerationService belum membaca BOM/BOP baru |
 
 **Alur data & sistem (dikunci user 2026-09-17):**
 

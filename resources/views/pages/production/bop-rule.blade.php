@@ -391,7 +391,7 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
                         <x-form.select label="Finishing *" name="finishing_type_id" wire:model="finishing_type_id"
                             placeholder="— pilih finishing —" :options="$this->finishingOptions->all()" />
                     @else
-                        <x-form.select label="Kondisi" name="condition_code" wire:model="condition_code"
+                        <x-form.select :selected="$condition_code" :liveSync="true" label="Kondisi" name="condition_code" wire:model="condition_code"
                             placeholder="Selalu dipakai" :options="self::CONDITIONS" />
                     @endif
                     <x-form.select label="Khusus Tipe Part" name="part_type" wire:model="part_type"
@@ -401,7 +401,7 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
                     <x-form.input label="Urut *" name="step_seq" type="number" wire:model="step_seq" />
                     <x-form.select label="Proses (kosong = aturan bahan saja)" name="process_id" wire:model="process_id"
                         placeholder="— tanpa proses —" :options="$this->processOptions->all()" />
-                    <x-form.select label="Mesin Otomatis" name="machine_role" wire:model="machine_role"
+                    <x-form.select :selected="$machine_role" :liveSync="true" label="Mesin Otomatis" name="machine_role" wire:model="machine_role"
                         placeholder="Tanpa mesin" :options="self::ROLES" />
                 </div>
                 <x-form.input label="Label di Routing" name="step_label" wire:model="step_label"
@@ -416,12 +416,12 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <x-form.input label="Pola Bahan (mat_raw, pisahkan dgn |)" name="material_pattern" wire:model="material_pattern" placeholder="mis. PLASTIKLAMDOFF%" />
-                    <x-form.select label="Cara Pilih Bahan" name="material_rule" wire:model="material_rule"
+                    <x-form.select :selected="$material_rule" :liveSync="true" label="Cara Pilih Bahan" name="material_rule" wire:model="material_rule"
                         placeholder="Tidak ada bahan" :options="self::MATERIAL_RULES" />
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <x-form.input label="Nama Baris BOM" name="material_role" wire:model="material_role" placeholder="mis. LEM LAMINASI" />
-                    <x-form.select label="Dasar Pemakaian" name="usage_basis" wire:model="usage_basis"
+                    <x-form.select :selected="$usage_basis" :liveSync="true" label="Dasar Pemakaian" name="usage_basis" wire:model="usage_basis"
                         placeholder="Tidak dihitung" :options="self::USAGE" />
                     <x-form.input label="Takaran" name="usage_rate" type="number" step="any" wire:model="usage_rate" placeholder="sesuai dasar pemakaian" />
                 </div>

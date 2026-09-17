@@ -258,6 +258,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'SET_LANG' => route('setup.language'),
             'SET_LOCALIZATION' => route('setup.localization'),
             'SET_CONSTANTS' => route('setup.constants'),
+            'SET_DATA_ORIGIN' => route('setup.data-origin'),
             'SET_UILIB' => route('setup.component-library'),
             'SET_USER' => route('security.index', ['tab' => 'users']),
             'SET_GROUP' => route('security.index', ['tab' => 'groups']),

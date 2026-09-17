@@ -135,6 +135,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::livewire('/setup/language', 'pages::setup.language')->name('setup.language')->middleware('admin');
         Route::livewire('/setup/localization', 'pages::setup.localization')->name('setup.localization')->middleware('admin');
         Route::livewire('/setup/constants', 'pages::setup.constants')->name('setup.constants')->middleware('admin');
+        Route::livewire('/setup/data-origin', 'pages::setup.data-origin')->name('setup.data-origin')->middleware('admin');
         Route::livewire('/setup/component-library', 'pages::setup.component-library')->name('setup.component-library')->middleware('admin');
         Route::livewire('/setup/support-tickets', 'pages::setup.support-tickets')->name('setup.support-tickets')->middleware('admin');
 
