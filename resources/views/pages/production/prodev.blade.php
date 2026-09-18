@@ -1015,11 +1015,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
            berkolom-banyak seperti Dimensi P/L/T tidak membungkus. */
         .io-mc-tbl th{background:#f1f3f7;text-align:left;font-weight:700;white-space:nowrap;width:1%}
         .io-mc-tbl td.mono{font-family:"Courier New",monospace}
-        .io-mc-sub{margin-top:5px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+        .io-mc-sub{margin-top:5px;display:grid;grid-template-columns:0.82fr 1.18fr;gap:6px;align-items:start}
+        .io-mc-sub .io-mc-tbl td,.io-mc-sub .io-mc-tbl th{padding:1.5px 5px;font-size:9px}
         .io-mc-cap{border:1px solid #333;border-bottom:0;background:#f1f3f7;padding:2px 5px;font-weight:700;font-size:9.5px;text-align:center}
-        .io-mc-layout{border:1px solid #333;background:#0d1b2d;padding:4px}
-        .io-mc-layout .ttl{color:#cfe9f7;font:700 8.5px "Courier New",monospace;text-align:center;margin-bottom:2px}
-        .io-mc-layout svg{width:100%;height:auto;max-height:82mm;display:block;background:#0d1b2d}
+        /* Layout dicetak di atas PUTIH (hemat tinta, permintaan user 2026-09-18). */
+        .io-mc-layout{border:1px solid #333;background:#fff;padding:3px}
+        .io-mc-layout .ttl{color:#333;font:700 8.5px "Courier New",monospace;text-align:center;margin-bottom:2px}
+        .io-mc-layout svg{width:100%;height:auto;max-height:96mm;display:block;background:#fff}
         .io-mc-note{color:#c0392b;font-weight:700;font-size:9.5px;text-align:center;margin-top:3px}
         .io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:8.5px}
         .io-mc-extra table{width:100%;border-collapse:collapse}
@@ -1040,7 +1042,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             .io-mc-bar{display:none !important}
             .io-mc-scroll{overflow:visible;padding:0;display:block}
             .io-mc-sheet{width:285mm;height:198mm;box-shadow:none;overflow:hidden;page-break-inside:avoid;page-break-after:avoid}
-            .io-mc-layout{background:#0d1b2d !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+            .io-mc-layout{background:#fff !important}
             .io-mc-stamp span{color:#c0392b40;border-color:#c0392b40;-webkit-print-color-adjust:exact;print-color-adjust:exact}
         }
         </style>
@@ -2721,6 +2723,145 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // Selama layout belum di-Confirm, lembar ini dicap "NOT CONFIRMED".
             const GRAIN_LABEL = { L: 'LG', W: 'SG', none: '—' };
 
+            // Gambar layout untuk MASTER CARD: versi HEMAT TINTA (permintaan user
+            // 2026-09-18 -- "jangan ada block warna gelap di canvas"). Latar &
+            // permukaan artwork dibuat putih, blok gelap diturunkan jadi abu muda,
+            // garis potong/lipat tetap terbaca. Gambarnya diperbesar sebesar lembar
+            // cetak lalu diberi anak panah ukuran panjang & lebar (ukuran canvas
+            // tidak lagi ditulis sebagai judul).
+            const MC_LIGHT = '#f0f0f0';
+
+            function mcIsDark(color) {
+                if (!color) return false;
+                let r, g, b;
+                const hex = color.trim().replace(/^#/, '');
+                if (/^[0-9a-f]{6}$/i.test(hex)) {
+                    [r, g, b] = [0, 2, 4].map(i => parseInt(hex.substr(i, 2), 16));
+                } else if (/^[0-9a-f]{3}$/i.test(hex)) {
+                    [r, g, b] = [0, 1, 2].map(i => parseInt(hex[i] + hex[i], 16));
+                } else {
+                    const m = color.match(/rgba?\(([^)]+)\)/i);
+                    if (!m) return false;
+                    [r, g, b] = m[1].split(',').map(v => parseFloat(v));
+                }
+                return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.72;
+            }
+
+            function mcLighten(el) {
+                const tag = el.tagName.toLowerCase();
+
+                if (['svg', 'defs', 'marker', 'g', 'clippath', 'lineargradient', 'pattern', 'stop'].includes(tag)) {
+                    return;
+                }
+
+                const cs = getComputedStyle(el);
+                const fill = cs.fill;
+                const cls = el.getAttribute('class') || '';
+
+                if (tag === 'text' || cls.includes('io-lbl') || cls.includes('io-graintext')) {
+                    el.style.fill = '#333';
+                    return;
+                }
+                if (cls.includes('io-artfill')) {
+                    el.style.fill = '#fff';
+                    el.style.fillOpacity = '1';
+                    el.style.stroke = '#8a98a6';
+                    el.style.strokeWidth = '.8';
+                    return;
+                }
+                if (cls.includes('io-die') || cls.includes('io-fold') || cls.includes('io-cutmark')) {
+                    // Garis potong/lipat tetap terbaca, tapi TIDAK boleh punya isian
+                    // (path terbuka yang ter-fill hitam = blok tinta saat dicetak).
+                    el.style.fill = 'none';
+                    return;
+                }
+                if (tag === 'g' || tag === 'svg') {
+                    return;
+                }
+                // Garis (line/polyline) tidak punya bidang -> isian diabaikan.
+                if (['line', 'polyline'].includes(tag)) {
+                    el.style.fill = 'none';
+                } else if (fill && fill !== 'none' && mcIsDark(fill)) {
+                    el.style.fill = MC_LIGHT;
+                    if (cs.stroke === 'none') {
+                        el.style.stroke = '#b9c2cb';
+                        el.style.strokeWidth = '.6';
+                    }
+                }
+
+                if (cs.stroke !== 'none' && mcIsDark(cs.stroke)) {
+                    el.style.stroke = '#555';
+                }
+            }
+
+            // Ruang untuk anak panah + labelnya, dipakai bersama oleh viewBox &
+            // penggambaran panah supaya label tidak terpotong tepi gambar.
+            function mcBox(sheet) {
+                const x = +sheet.getAttribute('x'), y = +sheet.getAttribute('y');
+                const w = +sheet.getAttribute('width'), h = +sheet.getAttribute('height');
+                const off = Math.max(18, Math.min(w, h) * .06);
+                const fs = Math.max(11, w * .022);
+
+                return { x, y, w, h, off, fs, gap: off * .5, room: off + fs * 3.8 };
+            }
+
+            function mcArrows(sheet) {
+                const { x, y, w, h, off, fs } = mcBox(sheet);
+                const tick = off * .45;
+                const L = fmtAngka(S.L) + ' cm', W = fmtAngka(S.W) + ' cm';
+
+                return ''
+                    + '<defs><marker id="io-mcArw" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">'
+                    + '<path d="M0 0L7 3.5 0 7Z" fill="#333"/></marker></defs>'
+                    + '<g stroke="#333" stroke-width="1" fill="none">'
+                    // panah ukuran panjang (bawah)
+                    + '<path d="M' + x + ' ' + (y + h + off) + 'H' + (x + w) + '" marker-start="url(#io-mcArw)" marker-end="url(#io-mcArw)"/>'
+                    + '<path d="M' + x + ' ' + (y + h + off - tick) + 'v' + (tick * 2) + 'M' + (x + w) + ' ' + (y + h + off - tick) + 'v' + (tick * 2) + '"/>'
+                    // panah ukuran lebar (kanan)
+                    + '<path d="M' + (x + w + off) + ' ' + y + 'V' + (y + h) + '" marker-start="url(#io-mcArw)" marker-end="url(#io-mcArw)"/>'
+                    + '<path d="M' + (x + w + off - tick) + ' ' + y + 'h' + (tick * 2) + 'M' + (x + w + off - tick) + ' ' + (y + h) + 'h' + (tick * 2) + '"/>'
+                    + '</g>'
+                    + '<g fill="#111" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="' + fs + '">'
+                    + '<text x="' + (x + w / 2) + '" y="' + (y + h + off + fs * 1.5) + '" text-anchor="middle">' + L + '</text>'
+                    + '<text x="' + (x + w + off + fs * 1.4) + '" y="' + (y + h / 2) + '" text-anchor="middle" '
+                    + 'transform="rotate(90 ' + (x + w + off + fs * 1.4) + ' ' + (y + h / 2) + ')">' + W + '</text>'
+                    + '</g>';
+            }
+
+            function masterCardSvg() {
+                const src = $('svg');
+                if (!src) return '';
+
+                const clone = src.cloneNode(true);
+                clone.removeAttribute('width');
+                clone.removeAttribute('height');
+                clone.removeAttribute('id');
+                clone.style.background = '#fff';
+                clone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+
+                const sheet = clone.querySelector('#io-sheet');
+                if (sheet) {
+                    sheet.removeAttribute('class');
+                    sheet.setAttribute('fill', '#fff');
+                    sheet.setAttribute('stroke', '#333');
+                    sheet.setAttribute('stroke-width', '1.2');
+                    const safe = clone.querySelector('#io-safeRect');
+                    if (safe) {
+                        safe.setAttribute('stroke', '#c8ced6');
+                        safe.setAttribute('fill', 'none');
+                    }
+
+                    // Perbesar: bidang gambar = lembar cetak + ruang anak panah/label.
+                    const b = mcBox(sheet);
+                    clone.setAttribute('viewBox', (b.x - b.gap) + ' ' + (b.y - b.gap) + ' '
+                        + (b.w + b.gap + b.room) + ' ' + (b.h + b.gap + b.room));
+                    clone.insertAdjacentHTML('beforeend', mcArrows(sheet));
+                }
+
+                return clone.outerHTML;
+            }
+
+
             function knifeInfo() {
                 const st = gatherState();
                 const up = st.upCount || 0;
@@ -2744,7 +2885,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 const kertas = bom.find(r => r.basis === 'PLANO' && r.material_id) || bom[0] || {};
                 const pass1 = inks.filter(r => +r.pass_seq === 1);
                 const finishing = sp && sp.inputs.finishings.length ? sp.inputs.finishings.join(', ') : (p.finishingText || '—');
-                const svg = $('svg') ? $('svg').outerHTML : '';
+                const svg = masterCardSvg();
+                // Routing dicetak dalam 15 baris TETAP (permintaan user 2026-09-18):
+                // sisanya dibiarkan kosong supaya tata letaknya selalu sama.
+                const ROUTING_ROWS = 15;
                 const cetak = fmtAngka(S.L) + ' × ' + fmtAngka(S.W) + ' cm';
 
                 return ''
@@ -2787,17 +2931,20 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     + '</table></div><div>'
                     + '<div class="io-mc-cap">Urutan Pekerjaan (Routing)</div>'
                     + '<table class="io-mc-tbl">'
-                    + (bop.length
-                        ? bop.map((r, i) => '<tr><th style="width:26px;text-align:center">' + (i + 1) + '</th><td>' + esc(r.label)
-                            + (r.machine ? ' <span style="color:#555">· ' + esc(r.machine) + '</span>' : '')
-                            + (r.subcon_supplier ? ' <span style="color:#b45309">· subkon ' + esc(r.subcon_supplier) + '</span>' : '')
-                            + '</td></tr>').join('')
-                        : '<tr><td style="text-align:center;color:#777">Routing belum ada</td></tr>')
+                    + Array.from({ length: ROUTING_ROWS }, (_, i) => {
+                        const r = bop[i];
+                        return '<tr><th style="width:22px;text-align:center">' + (i + 1) + '</th><td>'
+                            + (r ? esc(r.label)
+                                + (r.machine ? ' <span style="color:#555">· ' + esc(r.machine) + '</span>' : '')
+                                + (r.subcon_supplier ? ' <span style="color:#b45309">· subkon ' + esc(r.subcon_supplier) + '</span>' : '')
+                              : '&nbsp;')
+                            + '</td></tr>';
+                    }).join('')
                     + '</table></div></div>'
                     + '</div>'
 
                     + '<div><div class="io-mc-layout">'
-                    + '<div class="ttl">LAYOUT LEMBAR CETAK (' + cetak.replace(' cm', '') + ' cm) — ' + k.up + ' UP</div>'
+                    + '<div class="ttl">LAYOUT LEMBAR CETAK — ' + k.up + ' UP</div>'
                     + svg + '</div>'
                     + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
                     + '<table class="io-mc-tbl" style="margin-top:5px">'
@@ -2833,6 +2980,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function openMasterCard() {
                 if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum cetak Master Card.', 'bad'); return; }
                 $('mcSheet').innerHTML = masterCardHtml();
+                // Blok gelap diturunkan SETELAH masuk DOM: warna yang diwarisi dari
+                // grup induk hanya terbaca lewat getComputedStyle.
+                $('mcSheet').querySelectorAll('.io-mc-layout svg *').forEach(mcLighten);
                 const st = $('mcState');
                 st.textContent = S.p.confirmed ? 'CONFIRMED' : 'BELUM CONFIRM';
                 st.className = 'io-mc-state' + (S.p.confirmed ? ' ok' : '');
