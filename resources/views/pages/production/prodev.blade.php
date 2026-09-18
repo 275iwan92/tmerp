@@ -1015,7 +1015,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
            berkolom-banyak seperti Dimensi P/L/T tidak membungkus. */
         .io-mc-tbl th{background:#f1f3f7;text-align:left;font-weight:700;white-space:nowrap;width:1%}
         .io-mc-tbl td.mono{font-family:"Courier New",monospace}
-        .io-mc-sub{margin-top:5px;display:grid;grid-template-columns:0.82fr 1.18fr;gap:6px;align-items:start}
+        .io-mc-sub{margin-top:5px;display:grid;grid-template-columns:1.2fr 0.8fr;gap:6px;align-items:start}
         .io-mc-sub .io-mc-tbl td,.io-mc-sub .io-mc-tbl th{padding:1.5px 5px;font-size:9px}
         .io-mc-cap{border:1px solid #333;border-bottom:0;background:#f1f3f7;padding:2px 5px;font-weight:700;font-size:9.5px;text-align:center}
         /* Layout dicetak di atas PUTIH (hemat tinta, permintaan user 2026-09-18). */
@@ -1023,10 +1023,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-mc-layout .ttl{color:#333;font:700 8.5px "Courier New",monospace;text-align:center;margin-bottom:2px}
         .io-mc-layout svg{width:100%;height:auto;max-height:96mm;display:block;background:#fff}
         .io-mc-note{color:#c0392b;font-weight:700;font-size:9.5px;text-align:center;margin-top:3px}
-        .io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:8.5px}
-        .io-mc-extra table{width:100%;border-collapse:collapse}
-        .io-mc-extra td{border:1px solid #444;padding:2px 5px}
-        .io-mc-extra td:first-child{background:#f6f7fa;width:46%}
+        .io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:start}
+        .io-mc-extra .io-mc-tbl th{width:42%}
         .io-mc-sign{margin-top:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;font-size:9px}
         .io-mc-sign .who{color:#666;margin-bottom:14px}
         .io-mc-sign .line{border-top:1px solid #111;padding-top:2px;font-weight:700}
@@ -2893,6 +2891,25 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 return '<tr><th>' + esc(label) + '</th><td' + (mono ? ' class="mono"' : '') + '>' + (value ?? '—') + '</td></tr>';
             }
 
+            // Routing di Master Card cukup "Proses - Mesin": label engine untuk
+            // cetak berbunyi "Cetak di mesin: X" padahal mesinnya juga tertulis
+            // terpisah -> dulu tampil dobel dan kolomnya harus lebar.
+            function mcStepName(r) {
+                const name = String(r.label || '').replace(/\s*(di mesin)?\s*:.*$/i, '').trim() || r.label || '';
+                return r.machine ? name + ' - ' + r.machine : name;
+            }
+
+            // Baris TINTA disebut warnanya (dari catatan engine "Unit n · CYAN"),
+            // kalau tidak semua baris tinta tampil sama.
+            function mcBomRow(r) {
+                let role = r.role || '';
+                if (role === 'TINTA') {
+                    const m = String(r.note || '').match(/Unit\s*\d+\s*·\s*([^·]+)/);
+                    role += ' ' + (m ? m[1].trim() : String(r.name || '').replace(/^.*\bINK\b\s*/i, '')).toUpperCase();
+                }
+                return mcRow(role.trim(), r.qty_need !== null && r.qty_need !== undefined ? fmtAngka(r.qty_need) + ' ' + esc(r.uom || '') : '—', true);
+            }
+
             function masterCardHtml() {
                 const p = S.p, sp = p.spec, k = knifeInfo();
                 const bom = sp ? (p.edit && p.edit.bom && sp.override.bom ? sp.override.bom : sp.bom) : [];
@@ -2944,14 +2961,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                             + '</td></tr>').join('')
                         : '<tr><td colspan="2" style="text-align:center;color:#777">Susunan tinta belum ada</td></tr>')
                     + '<tr><th>Isi / Lembar</th><td class="mono"><b>' + k.up + ' UP</b></td></tr>'
+                    + '</table>'
+                    // Mesin plong tidak diulang di sini -- sudah tertulis di Routing.
+                    + '<table class="io-mc-tbl" style="margin-top:5px">'
+                    + mcRow('Dieline / blank', fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · gap ' + fmtAngka(S.g) + ' cm', true)
+                    + mcRow('Plano', esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' lembar / plano', true)
+                    + mcRow('Efisiensi material', ($('yAll') ? $('yAll').textContent : '—'))
                     + '</table></div><div>'
                     + '<div class="io-mc-cap">Urutan Pekerjaan (Routing)</div>'
                     + '<table class="io-mc-tbl">'
                     + Array.from({ length: ROUTING_ROWS }, (_, i) => {
                         const r = bop[i];
                         return '<tr><th style="width:22px;text-align:center">' + (i + 1) + '</th><td>'
-                            + (r ? esc(r.label)
-                                + (r.machine ? ' <span style="color:#555">· ' + esc(r.machine) + '</span>' : '')
+                            + (r ? esc(mcStepName(r))
                                 + (r.subcon_supplier ? ' <span style="color:#b45309">· subkon ' + esc(r.subcon_supplier) + '</span>' : '')
                               : '&nbsp;')
                             + '</td></tr>';
@@ -2963,24 +2985,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     + '<div class="ttl">LAYOUT LEMBAR CETAK — ' + k.up + ' UP</div>'
                     + svg + '</div>'
                     + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
-                    + '<table class="io-mc-tbl" style="margin-top:5px">'
-                    + mcRow('Dieline / blank', fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · gap ' + fmtAngka(S.g) + ' cm', true)
-                    + mcRow('Plano', esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' lembar / plano', true)
-                    + mcRow('Mesin plong', esc(S.d ? S.d[0] : '—'))
-                    + mcRow('Efisiensi material', ($('yAll') ? $('yAll').textContent : '—'))
-                    + '</table></div></div>'
+                    + '</div></div>'
 
-                    + '<div class="io-mc-extra"><table>'
-                    + '<tr><td>Qty order</td><td class="mono">' + (sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—') + '</td></tr>'
-                    + '<tr><td>Lembar cetak</td><td class="mono">' + (sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lbr' : '—') + '</td></tr>'
-                    + '<tr><td>Isi / pack</td><td class="mono">' + (sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—') + '</td></tr>'
-                    + '<tr><td>No. Inquiry</td><td class="mono">' + esc(p.reg || '—') + '</td></tr>'
-                    + '</table><table>'
-                    + bom.slice(0, 6).map(r => '<tr><td>' + esc(r.role) + '</td><td class="mono">'
-                        + (r.qty_need !== null && r.qty_need !== undefined ? fmtAngka(r.qty_need) + ' ' + esc(r.uom || '') : '—') + '</td></tr>').join('')
-                    + '</table><table>'
-                    + bom.slice(6, 12).map(r => '<tr><td>' + esc(r.role) + '</td><td class="mono">'
-                        + (r.qty_need !== null && r.qty_need !== undefined ? fmtAngka(r.qty_need) + ' ' + esc(r.uom || '') : '—') + '</td></tr>').join('')
+                    + '<div class="io-mc-extra"><table class="io-mc-tbl">'
+                    + mcRow('Qty order', sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—', true)
+                    + mcRow('Lembar cetak', sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lbr' : '—', true)
+                    + mcRow('Isi / pack', sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—', true)
+                    + mcRow('No. Inquiry', esc(p.reg || '—'), true)
+                    + '</table><table class="io-mc-tbl">'
+                    + bom.slice(0, 6).map(mcBomRow).join('')
+                    + '</table><table class="io-mc-tbl">'
+                    + bom.slice(6, 12).map(mcBomRow).join('')
                     + '</table></div>'
 
                     + '<div class="io-mc-sign">'
