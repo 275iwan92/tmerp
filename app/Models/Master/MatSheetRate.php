@@ -16,6 +16,7 @@ class MatSheetRate extends Model
         'substance_name',
         'flute_type',
         'index_substance',
+        'mat_subtype',
         'activate',
         'created_by',
         'updated_by',

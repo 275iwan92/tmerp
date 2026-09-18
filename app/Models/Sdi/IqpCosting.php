@@ -28,6 +28,7 @@ class IqpCosting extends Model
         'inquiry_id',
         'mode',
         'customer_id',
+        'customer_name_draft',
         'product_name_draft',
         'reversed_at',
         'reversed_by',

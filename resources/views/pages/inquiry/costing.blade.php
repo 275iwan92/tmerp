@@ -395,7 +395,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function canSeeFormula(): bool
     {
-        return Auth::user()->login === 'johiwan';
+        return \App\Support\Costing\FormulaAccess::canSee(); // konstanta PROCOST_FORMULA_LOGINS
     }
 
     // Toggle Manual <-> Ambil Data per part (keputusan user: per-part, bukan

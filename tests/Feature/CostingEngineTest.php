@@ -80,7 +80,7 @@ class CostingEngineTest extends TestCase
             ->call('addCoating', $part->id_costing_part);
 
         $coating = $part->coatings()->firstOrFail();
-        $component->call('updateCoating', $coating->id_coating, 'coating_type', 'WB');
+        $component->call('updateCoating', $coating->id_coating, 'coating_type', 'Water Base');
 
         $tier = $costing->priceTiers()->firstOrFail();
         $component
@@ -95,25 +95,26 @@ class CostingEngineTest extends TestCase
         $tier->refresh();
         $costing->refresh();
 
-        // ── Verifikasi manual (formula §B.2/§B.3/§B.6/§0 SALES_TIER_COSTING.md) ──
-        $areaCm2 = 65 * 100;
-        $dcf = 1 + (5.3 / 100);
+        // ── Verifikasi manual, rumus legacy tmhpp (procost_formula_library.md §VII) ──
+        $areaCm2 = 65 * 100;            // luas PLANO -> hanya utk kertas
+        $areaCetak = $areaCm2 / 2;      // Ukuran Cetak kosong -> fallback plano/cut
+        $dcf = 1 + 5.3;                 // faktor DC legacy = 6,30
         $expectedPaperPc = ($areaCm2 / 8611) * 12500 * $dcf / 500 / 2 / 4;
         $this->assertEqualsWithDelta($expectedPaperPc, (float) $part->c_paper_cost_pc, 0.01);
 
-        $expectedCetakPc = 200000 / 2 / 4;
+        $expectedCetakPc = 200000 / 500 / 2 / 4;
         $expectedPlongPc = 5000 / 4;
         $expectedLemPc = 300;
         $this->assertEqualsWithDelta($expectedCetakPc, (float) $part->c_cetak_cost_pc, 0.01);
         $this->assertEqualsWithDelta($expectedPlongPc, (float) $part->c_plong_cost_pc, 0.01);
         $this->assertEqualsWithDelta($expectedLemPc, (float) $part->c_lem_cost_pc, 0.01);
 
-        $expectedCoatingPc = ($areaCm2 * 0.85) / 4;
+        $expectedCoatingPc = ($areaCetak * 0.035) / 4;
         $this->assertEqualsWithDelta($expectedCoatingPc, (float) $part->c_total_coating_pc, 0.01);
 
-        $expectedFilmOrder = (0.25 ** 2) * $areaCm2 * 55;
+        $expectedFilmOrder = (0.25 ** 2) * $areaCetak * 55;
         $expectedPlateOrder = 90000 * 4;
-        $expectedKnifeOrder = 0.5 * 150000;
+        $expectedKnifeOrder = 0.5 * 900000;
         $expectedToolingOrder = $expectedFilmOrder + $expectedPlateOrder + $expectedKnifeOrder;
         $this->assertEqualsWithDelta($expectedToolingOrder, (float) $part->c_tooling_cost_order, 0.01);
 
