@@ -40,8 +40,28 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     // (kalkulator standalone, langsung by costing_id tanpa inquiry). Template
     // bercabang total sesuai $this->costing->isIntegrated()/isInstant() --
     // lihat docs/inquiry_product_costing/procost_formula_library.md §I.
+    public string $backUrl = '';
+
+    // Back kembali ke layar asal (grid ProCost / Inquiry Hub / dst), bukan hardcode;
+    // ditangkap di mount karena request Livewire berikutnya merusak url()->previous().
+    private function resolveBackUrl(string $fallback): string
+    {
+        $prev = url()->previous();
+        $here = url()->current();
+
+        if ($prev === '' || $prev === $here || ! str_starts_with($prev, url('/'))) {
+            return $fallback;
+        }
+
+        return $prev;
+    }
+
     public function mount(?int $inquiry = null, ?int $costing = null): void
     {
+        $this->backUrl = $this->resolveBackUrl(route(
+            $costing !== null ? 'inquiry.costing.instant.list' : 'inquiry.costing.list'
+        ));
+
         if ($costing !== null) {
             $row = IqpCosting::where('mode', IqpCosting::MODE_INSTANT)->findOrFail($costing);
             $this->costingId = $row->id_costing;
@@ -694,7 +714,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         <button type="button" wire:click="addToQuotation" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">＋ Tambahkan ke Quotation</button>
         <a href="{{ route('inquiry.nota', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Nota</a>
         <a href="{{ route('inquiry.imposition', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Imposition</a>
-        <a href="{{ route('inquiry.hub') }}" title="Kembali ke Inquiry Hub"
+        <a href="{{ $backUrl }}" title="Kembali ke layar sebelumnya"
             class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
@@ -708,7 +728,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         <button type="button" wire:click="reverseToIntegrated"
             title="Bikin Inquiry Product + ProDev otomatis dari data di sini, lalu tautkan (mode dokumen ini berubah jadi Integrated)"
             class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">⇄ Reverse</button>
-        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="Kembali ke grid Instant"
+        <a href="{{ $backUrl }}" wire:navigate title="Kembali ke layar sebelumnya"
             class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
             <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
