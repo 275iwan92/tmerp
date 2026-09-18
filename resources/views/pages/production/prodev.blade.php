@@ -1924,6 +1924,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }));
                 S.selected = null;
                 S.touched = true;
+                S.manualEdit = false;
                 S.autoNestInfo = label;
                 S.overlapPx = 0;   // sudah lolos verifikasi collides()
                 // Mode Manual Up: kekurangan object dilengkapi SEBELUM digambar,
@@ -3062,8 +3063,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 // Ditekan user = optimasi menyeluruh (canvas + plano + pola).
                 // Kalau susunan sudah diatur MANUAL (bukan hasil auto nesting),
                 // perilaku lama dipertahankan: canvas dipaskan ke susunan itu.
+                // Susunan yang sudah ada (Manual Up, atau digeser/diputar officer)
+                // dipadatkan dan canvas dipaskan ke situ -- BUKAN dibuang lalu
+                // dioptimasi ulang dari nol (dulu kembali ke canvas 1 up).
                 $('suggest').onclick = () => {
-                    if (S.touched && S.objs.length && !S.autoNestInfo) { fitToLayout(); return; }
+                    if (S.objs.length && (!S.auto || S.manualEdit)) { compactFit(); return; }
                     optimizeSheet();
                 };
                 $('plano').onchange = e => { S.pl = planos[e.target.value]; update(false); };
@@ -3172,6 +3176,121 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 const a = o.r * Math.PI / 180, c = Math.abs(Math.cos(a)), s = Math.abs(Math.sin(a)),
                     W = o.w * c + o.h * s, H = o.w * s + o.h * c, cx = o.x + o.w / 2, cy = o.y + o.h / 2;
                 return { x: cx - W / 2, y: cy - H / 2, w: W, h: H };
+            }
+
+            // Mask diperlebar `g` px ke segala arah (lingkaran): dua object dianggap
+            // bertabrakan bila jaraknya < gap. Cukup piksel tepi yang dicap --
+            // piksel dalam sudah tertutup dengan sendirinya.
+            function dilateMask(m, g) {
+                if (g <= 0) return m;
+                const cache = m._dil || (m._dil = {});
+                if (cache[g]) return cache[g];
+
+                const W = m.w + 2 * g, H = m.h + 2 * g, out = new Uint8Array(W * H);
+                const disc = [];
+                for (let dy = -g; dy <= g; dy++) for (let dx = -g; dx <= g; dx++) if (dx * dx + dy * dy <= g * g) disc.push(dy * W + dx);
+                const on = (x, y) => x >= 0 && y >= 0 && x < m.w && y < m.h && m.data[y * m.w + x];
+
+                for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) {
+                    if (!m.data[y * m.w + x]) continue;
+                    const c = (y + g) * W + x + g;
+                    if (on(x - 1, y) && on(x + 1, y) && on(x, y - 1) && on(x, y + 1)) { out[c] = 1; continue; }
+                    for (const d of disc) out[c + d] = 1;
+                }
+
+                return (cache[g] = { w: W, h: H, data: out, shaped: m.shaped });
+            }
+
+            // Tombol Suggest pada susunan yang sudah ada (permintaan user
+            // 2026-09-18): object dirapatkan ke kiri & ke atas sampai jarak antar
+            // object = gap, lalu canvas = kotak pembatas + gap keliling. Uji
+            // jarak memakai bentuk dieline asli (mask), jadi blank yang saling
+            // mengunci tetap boleh masuk ke cekungan tetangganya.
+            async function compactFit() {
+                if (S.objs.some(o => (((Math.round(o.r) % 360) + 360) % 360) % 90)) { fitToLayout(); return; }
+
+                const base = await maskFor(S.p);
+                const f = base.mmPerPx || 1;                      // mm per piksel mask
+                const g = Math.max(0, Math.round(S.g * 10 / f));  // gap dalam piksel
+                const sc = S.sc0 || 1;
+
+                const it = S.objs.map(o => {
+                    const r = ((Math.round(o.r) % 360) + 360) % 360;
+                    const m = variantFor(base, r, o.fx, o.fy);
+                    return {
+                        o, m, d: dilateMask(m, g),
+                        x: Math.round((o.x + o.w / 2 - S.sx0) / sc * 10 / f - m.w / 2),
+                        y: Math.round((o.y + o.h / 2 - S.sy0) / sc * 10 / f - m.h / 2),
+                    };
+                });
+
+                // a (diperlebar gap) di (ax,ay) vs b (mask asli) di posisinya
+                const clash = (a, ax, ay, b) => {
+                    const x0 = ax - g, y0 = ay - g;
+                    if (b.x >= x0 + a.d.w || b.x + b.m.w <= x0 || b.y >= y0 + a.d.h || b.y + b.m.h <= y0) return false;
+                    const dx = b.x - x0, dy = b.y - y0;
+                    return dx >= 0 ? hits(a.d, b.m, dx, dy) : hits(b.m, a.d, -dx, -dy);
+                };
+                const free = (a, x, y) => it.every(b => b === a || !clash(a, x, y, b));
+
+                const norm = () => {
+                    const mx = Math.min(...it.map(a => a.x)), my = Math.min(...it.map(a => a.y));
+                    it.forEach(a => { a.x -= mx; a.y -= my; });
+                };
+
+                // 1) Yang terlalu rapat / bertumpuk didorong ke kanan sampai berjarak gap.
+                norm();
+                const placed = [];
+                for (const a of [...it].sort((p, q) => p.x - q.x || p.y - q.y)) {
+                    let guard = 0;
+                    while (placed.some(b => clash(a, a.x, a.y, b)) && guard++ < 5000) a.x++;
+                    placed.push(a);
+                }
+
+                // 2) Rapatkan ke kiri lalu ke atas, berulang sampai tidak ada yang bergeser.
+                const slide = (a, axis) => {
+                    let moved = false;
+                    for (const step of [8, 1]) {
+                        for (;;) {
+                            const nx = axis === 'x' ? a.x - step : a.x, ny = axis === 'y' ? a.y - step : a.y;
+                            if ((axis === 'x' ? nx : ny) < 0 || !free(a, nx, ny)) break;
+                            a.x = nx; a.y = ny; moved = true;
+                        }
+                    }
+                    return moved;
+                };
+                for (let pass = 0; pass < 8; pass++) {
+                    norm();
+                    let moved = false;
+                    for (const a of [...it].sort((p, q) => p.x - q.x)) moved = slide(a, 'x') || moved;
+                    for (const a of [...it].sort((p, q) => p.y - q.y)) moved = slide(a, 'y') || moved;
+                    if (!moved) break;
+                }
+                norm();
+
+                const spanX = Math.max(...it.map(a => a.x + a.m.w)) * f / 10;   // cm
+                const spanY = Math.max(...it.map(a => a.y + a.m.h)) * f / 10;
+                const ceil1 = v => Math.ceil(v * 10 - 1e-6) / 10;
+                const rl = ceil1(spanX + 2 * S.g), rw = ceil1(spanY + 2 * S.g);
+                const [bl, bw] = bedLimits();
+                const L = Math.min(rl, bl), W = Math.min(rw, bw);
+
+                S.L = L; S.W = W; $('sl').value = L; $('sw').value = W;
+                const [uw, uh] = usableVB();
+                const n = Math.min(uw / L, uh / W), nx = (VB.w - L * n) / 2, ny = (VB.h - W * n) / 2;
+                it.forEach(a => {
+                    a.o.w = S.p.l * n; a.o.h = S.p.w * n;
+                    a.o.x = nx + (S.g + (a.x + a.m.w / 2) * f / 10) * n - a.o.w / 2;
+                    a.o.y = ny + (S.g + (a.y + a.m.h / 2) * f / 10) * n - a.o.h / 2;
+                });
+                S.sc0 = n; S.sx0 = nx; S.sy0 = ny; S.touched = true;
+
+                const use = (S.objs.length * S.p.l * S.p.w / (L * W) * 100).toFixed(1);
+                $('suggestNote').textContent = (rl > L || rw > W)
+                    ? 'Susunan ' + S.objs.length + ' object butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + bl + ' × ' + bw + ' cm). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
+                    : 'Canvas dipaskan ke susunan: ' + S.objs.length + ' object dirapatkan, gap ' + S.g + ' cm antar-object & keliling = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%.';
+                update(false);
+                checkManualOverlap();
             }
 
             // Suggest saat susunan sudah disentuh user: canvas dihitung ulang dari
@@ -3336,6 +3455,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 // Grid otomatis dibangun ulang = hasil auto nesting sebelumnya sudah
                 // tidak berlaku, labelnya harus ikut hilang (jangan jadi klaim basi).
                 S.touched = false;
+                S.manualEdit = false;
                 S.autoNestInfo = null;
                 S.overlapPx = 0;
                 const f = best();
@@ -3533,7 +3653,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 e.preventDefault();
                 const o = S.objs.find(q => q.id === S.drag.id), p = point(e);
                 o.x = S.drag.ox + p.x - S.drag.sx; o.y = S.drag.oy + p.y - S.drag.sy;
-                S.touched = true;
+                S.touched = true; S.manualEdit = true;
                 render();
             }
             function end() {
@@ -3550,7 +3670,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 if (k === 'r') o.r = (o.r + v) % 360;
                 else if (v === 'x') o.fx *= -1;
                 else o.fy *= -1;
-                S.touched = true;
+                S.touched = true; S.manualEdit = true;
                 render(); calculator(); checkManualOverlap();
             }
 
