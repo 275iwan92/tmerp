@@ -7,6 +7,7 @@ use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
+use App\Services\ProDev\ArtworkAnalyzer;
 use App\Services\ProDev\ProcurementBridge;
 use App\Services\ProDev\SpecEngine;
 use Illuminate\Support\Facades\Auth;
@@ -115,15 +116,35 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
+        // PDF/AI/EPS ikut diterima sejak Imagick+Ghostscript dipasang
+        // (2026-09-18): file vektor dirasterisasi di server untuk pratinjau
+        // canvas dan analisa warna tinta.
         $this->validate([
-            'artworkUpload' => 'image|mimes:jpg,jpeg,png|max:'.($this->artworkMaxMb() * 1024),
+            'artworkUpload' => 'file|max:'.($this->artworkMaxMb() * 1024),
         ], [], ['artworkUpload' => 'artwork']);
+
+        $ext = strtolower($this->artworkUpload->getClientOriginalExtension());
+
+        if (! in_array($ext, ['jpg', 'jpeg', 'png', ...ArtworkAnalyzer::VECTOR], true)) {
+            $this->artworkUpload = null;
+            $this->artworkError = 'Format artwork yang didukung: JPG, PNG, PDF, AI, EPS.';
+
+            return;
+        }
+
+        if (in_array($ext, ArtworkAnalyzer::VECTOR, true) && ! ArtworkAnalyzer::available()) {
+            $this->artworkUpload = null;
+            $this->artworkError = 'File vektor butuh Imagick + Ghostscript di server -- belum aktif.';
+
+            return;
+        }
 
         $old = $iqpPart->artwork_path;
         $path = $this->artworkUpload->store("inquiry/{$iqpPart->id_part}/artwork", 'public');
 
         if ($old && $old !== $path) {
             Storage::disk('public')->delete($old);
+            Storage::disk('public')->delete($old.'.preview.png');
         }
 
         $iqpPart->update([
@@ -131,10 +152,21 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             'artwork_original_filename' => $this->artworkUpload->getClientOriginalName(),
         ]);
 
+        // Analisa warna + pratinjau langsung di server (tak perlu browser).
+        $analyzer = app(ArtworkAnalyzer::class);
+        $abs = Storage::disk('public')->path($path);
+        $previewAbs = in_array($ext, ArtworkAnalyzer::VECTOR, true) ? $abs.'.preview.png' : null;
+        $analysis = $analyzer->analyze($abs, $previewAbs);
+
+        if ($analysis) {
+            $iqpPart->update(['artwork_colors' => $analysis]);
+        }
+
         $this->dispatch('prodev-artwork-updated',
             partId: $this->activeJobPartId,
-            url: asset('storage/'.$path),
+            url: asset('storage/'.$path.($previewAbs && is_file($previewAbs) ? '.preview.png' : '')),
             name: $this->artworkUpload->getClientOriginalName(),
+            colors: $analysis,
         );
 
         $this->artworkUpload = null;
@@ -616,7 +648,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 ],
                 'dieline' => ! empty($spec['elements']) ? $spec : null,
                 'dielineDims' => $spec['dims'] ?? (object) [],
-                'artworkUrl' => $src?->artwork_path ? asset('storage/'.$src->artwork_path) : null,
+                'artworkUrl' => $src?->artwork_path ? asset('storage/'.$this->artworkDisplayPath($src->artwork_path)) : null,
                 'artworkName' => $src?->artwork_original_filename,
                 'canUpload' => $src !== null,
                 'artColors' => $src?->artwork_colors,
@@ -630,6 +662,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         // di prod_part (lihat SAMPLE_ARTWORK di atas), jadi masuk lewat grid
         // seperti job lain dan bisa dipakai UAT beneran.
         return $jobs;
+    }
+
+    // File vektor digambar dari pratinjau PNG-nya (canvas tidak bisa
+    // menggambar PDF/AI langsung).
+    private function artworkDisplayPath(string $path): string
+    {
+        return Storage::disk('public')->exists($path.'.preview.png') ? $path.'.preview.png' : $path;
     }
 
     // Alasan jujur kalau part yang dipilih tidak bisa dikerjakan -- jangan diam
@@ -690,7 +729,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
          morph-nya tetap jalan. Tombol "Upload artwork" di panel kiri cuma
          memicu klik ke sini (label lintas-subtree lewat getElementById). --}}
     <div class="io-uploader">
-        <input type="file" id="io-artFileReal" accept="image/jpeg,image/png" wire:model="artworkUpload">
+        <input type="file" id="io-artFileReal" accept="image/jpeg,image/png,application/pdf,.ai,.eps" wire:model="artworkUpload">
         <div class="io-toast" style="display:none" wire:loading wire:target="artworkUpload">⏳ Mengunggah artwork…</div>
         @error('artworkUpload')
             <div class="io-toast bad">⚠ {{ $message }}</div>
@@ -2182,7 +2221,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             async function analyzeArtwork(force) {
                 const p = S.p, src = artSource(p);
                 if (!src || !p.partId) { renderSpecSections(); return; }
-                if (!force && p.artColors && p.artColors.source === src) return;
+                if (!force && p.artColors && (p.artColors.source === src || String(p.artColors.source || '').startsWith('server:'))) return;
                 p.artBusy = true;
                 renderSpecSections();
                 try {
@@ -2677,8 +2716,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const d = e.detail || {};
                     const job = products.find(j => j.partId === d.partId);
                     if (!job) return;
-                    job.artworkUrl = d.url; job.artworkName = d.name; job.artColors = null;
-                    if (S.p === job) { artworkLabel(); render(); analyzeArtwork(); }
+                    job.artworkUrl = d.url; job.artworkName = d.name;
+                    // Server sudah menganalisa (termasuk PDF/AI) -> pakai hasilnya.
+                    job.artColors = d.colors || null;
+                    if (S.p === job) {
+                        artworkLabel(); render();
+                        if (job.artColors) { specKey = ''; specSoon(); renderSpecSections(); } else { analyzeArtwork(); }
+                    }
                 });
                 $('dieFile').onchange = e => {
                     // Dieline terpisah belum punya tempat simpan -- lihat catatan diskusi.
