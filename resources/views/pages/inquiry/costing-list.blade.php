@@ -123,6 +123,14 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari no. inkuiri / nama produk…"
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
                 </div>
+                <x-slot:tools>
+                    <div class="flex items-center gap-1 pr-2.5 mr-1 border-r border-[#e2e7ee] shrink-0">
+                        <a href="{{ route('inquiry.costing.list') }}" wire:navigate title="Costing yang terhubung ke Inquiry Product"
+                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-[#2c3e69] text-white">🔗 Integrated</a>
+                        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="Kalkulator HPP standalone, tanpa Inquiry"
+                            class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white border border-[#d7dbe2]">🧮 Instant</a>
+                    </div>
+                </x-slot:tools>
             </x-grid.toolbar>
 
             <x-grid.table-shell>

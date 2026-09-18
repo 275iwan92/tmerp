@@ -21,7 +21,7 @@ use Livewire\Component;
 
 new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 {
-    public int $inquiryId;
+    public ?int $inquiryId = null;
 
     public int $costingId;
 
@@ -35,8 +35,33 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     #[Url]
     public bool $view = false;
 
-    public function mount(int $inquiry): void
+    // 2 rute -> 1 komponen (keputusan user 2026-09-18): {inquiry} = mode
+    // INTEGRATED (perilaku lama, tak berubah), {costing} = mode INSTANT
+    // (kalkulator standalone, langsung by costing_id tanpa inquiry). Template
+    // bercabang total sesuai $this->costing->isIntegrated()/isInstant() --
+    // lihat docs/inquiry_product_costing/procost_formula_library.md §I.
+    public function mount(?int $inquiry = null, ?int $costing = null): void
     {
+        if ($costing !== null) {
+            $row = IqpCosting::where('mode', IqpCosting::MODE_INSTANT)->findOrFail($costing);
+            $this->costingId = $row->id_costing;
+            $this->inquiryId = null;
+
+            // Instant tak punya iqp_tier sumber -- kasih 1 tier default supaya
+            // Ladder Harga langsung ada baris utk diisi, bukan kosong melompong.
+            if ($row->priceTiers()->count() === 0) {
+                IqpCostingPriceTier::create([
+                    'costing_id' => $row->id_costing,
+                    'qty_pcs' => 1000,
+                    'is_primary' => true,
+                    'created_by' => Auth::user()->login,
+                    'updated_by' => Auth::user()->login,
+                ]);
+            }
+
+            return;
+        }
+
         $this->inquiryId = $inquiry;
 
         if ($this->view) {
@@ -176,7 +201,70 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function inquiryParts()
     {
+        if (! $this->inquiryId) {
+            return collect(); // mode INSTANT -- tidak ada inquiry sumber part
+        }
+
         return IqpPart::where('inquiry_id', $this->inquiryId)->orderBy('part_seq')->get();
+    }
+
+    // ============ MODE INSTANT (standalone, keputusan user 2026-09-18) ============
+    #[Computed]
+    public function customers()
+    {
+        return \App\Models\Master\CustCustomer::where('activate', true)->orderBy('customer_name')->limit(300)->get();
+    }
+
+    public function updateHeaderField(string $field, $value): void
+    {
+        if (! $this->costing->isInstant()) {
+            return; // header Integrated read-only, snapshot dari inquiry
+        }
+
+        $allowed = ['customer_id', 'product_name_draft', 'i_dim_panjang_mm', 'i_dim_lebar_mm', 'i_dim_tinggi_mm', 'ppn_mode', 'ppn_pct'];
+        if (! in_array($field, $allowed, true)) {
+            return;
+        }
+
+        IqpCosting::whereKey($this->costingId)->update([$field => $value === '' ? null : $value]);
+        unset($this->costing);
+    }
+
+    // Instant tak punya iqp_tier sumber -- tier qty diisi manual officer.
+    public function addTier(): void
+    {
+        if (! $this->costing->isInstant()) {
+            return;
+        }
+
+        IqpCostingPriceTier::create([
+            'costing_id' => $this->costingId,
+            'qty_pcs' => 1000,
+            'is_primary' => $this->costing->priceTiers()->count() === 0,
+            'created_by' => Auth::user()->login,
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        unset($this->costing);
+    }
+
+    public function removeTier(int $tierId): void
+    {
+        if (! $this->costing->isInstant()) {
+            return;
+        }
+
+        IqpCostingPriceTier::where('costing_id', $this->costingId)->whereKey($tierId)->delete();
+        unset($this->costing);
+    }
+
+    // STUB (2026-09-18): tombol Reverse butuh keputusan desain lebih lanjut
+    // (prod_part/prod_layout_group wajib py product_id NOT NULL -- Reverse juga
+    // harus bikin Master Product baru, lihat procost_formula_library.md §V &
+    // diskusi sesi ini) -- BELUM diimplementasikan, sengaja cuma flash pesan.
+    public function reverseToIntegrated(): void
+    {
+        session()->flash('error', 'Fitur Reverse belum aktif -- menunggu konfirmasi desain (Master Product auto-generate).');
     }
 
     // docs/inquiry_product_costing/productdevelopment_tier1.md §5.1 -- daftar
@@ -445,7 +533,14 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
     public function updateTier(int $tierId, string $field, $value): void
     {
-        if (! in_array($field, ['tolerance_pct', 'margin_pct', 'rounding_mode', 'rounding_step'], true)) {
+        $allowed = ['tolerance_pct', 'margin_pct', 'rounding_mode', 'rounding_step'];
+        // qty_pcs Integrated sumbernya iqp_tier (immutable di sini) -- Instant
+        // tak punya sumber itu, jadi qty boleh diedit langsung.
+        if ($field === 'qty_pcs' && $this->costing->isInstant()) {
+            $allowed[] = 'qty_pcs';
+        }
+
+        if (! in_array($field, $allowed, true)) {
             return;
         }
 
@@ -500,6 +595,10 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function wizardSteps(): array
     {
+        if (! $this->inquiryId) {
+            return []; // mode INSTANT -- tak ada rute Inquiry/ProDev utk dinavigasi
+        }
+
         $prodPartId = IqpPart::where('inquiry_id', $this->inquiryId)
             ->whereNotNull('prod_part_id')
             ->value('prod_part_id');
@@ -534,7 +633,9 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div>
-    <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" :back-url="route('inquiry.costing.list')" />
+    @if ($this->costing?->isIntegrated() ?? true)
+        <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" :back-url="route('inquiry.costing.list')" />
+    @endif
 
     @if ($view)
         {{-- ============ CROSS-NAV READ-ONLY (wizard-bar, user 2026-09-04) ============
@@ -586,6 +687,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             </div>
         </div>
     @else
+    @if ($this->costing->isIntegrated())
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">🧮 TELASIH MAKMUR — Costing (HPP)</b>
         <span class="text-xs text-white/75">{{ $this->costing->inquiry?->inquiry_no ?? '—' }} · {{ $this->costing->inquiry?->product_draft_name }}</span>
@@ -598,11 +700,48 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
         </a>
     </header>
+    @else
+    {{-- ============ HEADER MODE INSTANT (standalone, keputusan user 2026-09-18) ============ --}}
+    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
+        <b class="text-[15px]">🧮 Kalkulator HPP — Mode Instant</b>
+        <span class="text-xs text-white/75">{{ $this->costing->doc_no ?? 'Draft #'.$this->costingId }}</span>
+        <button type="button" wire:click="reverseToIntegrated"
+            title="Bikin Inquiry Product + ProDev otomatis dari data di sini, lalu tautkan (mode dokumen ini berubah jadi Integrated)"
+            class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">⇄ Reverse</button>
+        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate title="Kembali ke grid Instant"
+            class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
+            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
+        </a>
+    </header>
+    @endif
 
     <div class="max-w-[1180px] mx-auto my-5 px-4">
 
+        @if (session('error'))
+            <div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md mb-3">⚠ {{ session('error') }}</div>
+        @endif
+
         @if ($engineError)
             <div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md mb-3">⚠ {{ $engineError }}</div>
+        @endif
+
+        @if ($this->costing->isInstant())
+            {{-- ============ IDENTITAS MODE INSTANT (tak ada Inquiry sbg sumber) ============ --}}
+            <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid grid-cols-3 gap-3">
+                <x-form.select label="Customer" wire:change="updateHeaderField('customer_id', $event.target.value)" class="!py-1.5"
+                    :selected="$this->costing->customer_id" :options="$this->customers->pluck('customer_name', 'id_customer')->all()" />
+                <x-form.input label="Nama Produk (bebas)" value="{{ $this->costing->product_name_draft }}" placeholder="mis. Dus Sepatu Model X"
+                    wire:change="updateHeaderField('product_name_draft', $event.target.value)" class="!py-1.5" />
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] text-muted uppercase font-semibold">Dimensi Jadi P×L×T (mm)</label>
+                    <div class="flex gap-1">
+                        <x-form.input type="number" step="0.01" value="{{ $this->costing->i_dim_panjang_mm }}" wire:change="updateHeaderField('i_dim_panjang_mm', $event.target.value)" class="w-1/3 !py-1.5" />
+                        <x-form.input type="number" step="0.01" value="{{ $this->costing->i_dim_lebar_mm }}" wire:change="updateHeaderField('i_dim_lebar_mm', $event.target.value)" class="w-1/3 !py-1.5" />
+                        <x-form.input type="number" step="0.01" value="{{ $this->costing->i_dim_tinggi_mm }}" wire:change="updateHeaderField('i_dim_tinggi_mm', $event.target.value)" class="w-1/3 !py-1.5" />
+                    </div>
+                </div>
+            </div>
         @endif
 
         {{-- ============ HEADER ============ --}}
@@ -615,10 +754,12 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-[10.5px] text-muted uppercase font-semibold">Status</div>
                 <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#eaf7ee] text-[#1f8a4c]">{{ $this->costing->doc_status }}</span>
             </div>
+            @if ($this->costing->isIntegrated())
             <div>
                 <div class="text-[10.5px] text-muted uppercase font-semibold">Dimensi Jadi (mm)</div>
                 <div class="text-sm">{{ $this->costing->i_dim_panjang_mm }} × {{ $this->costing->i_dim_lebar_mm }} × {{ $this->costing->i_dim_tinggi_mm }}</div>
             </div>
+            @endif
             <div>
                 <div class="text-[10.5px] text-muted uppercase font-semibold">PPN</div>
                 <div class="text-sm">{{ $this->costing->ppn_mode }} ({{ $this->costing->ppn_pct }}%)</div>
@@ -659,12 +800,14 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                             class="!py-1.5 font-semibold" />
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#d8ecff] text-[#1560a8]">{{ $part->part_type_code }}</span>
 
-                        @unless (in_array($part->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true))
+                        {{-- Mode Instant selalu MANUAL (blm py ProDev sblm Reverse) -- toggle
+                        cuma relevan utk Integrated. --}}
+                        @if ($this->costing->isIntegrated() && ! in_array($part->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true))
                             <button type="button" wire:click="toggleDataSource({{ $part->id_costing_part }})"
                                 class="text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer {{ $part->data_source === 'PRODEV' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#f4f6fa] text-muted border border-[#d7dbe2]' }}">
                                 {{ $part->data_source === 'PRODEV' ? '🔗 Ambil Data (ProDev)' : '✎ Manual' }}
                             </button>
-                        @endunless
+                        @endif
 
                         <button type="button" wire:click="removePart({{ $part->id_costing_part }})" class="text-red-500 text-xs cursor-pointer px-2 ml-auto">✕ Hapus</button>
                     </div>
@@ -892,7 +1035,12 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ PRICE TIER PANEL ============ --}}
         <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-            <h3 class="text-xs text-navy uppercase font-bold px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">Ladder Harga per Tier</h3>
+            <div class="flex items-center justify-between px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
+                <h3 class="text-xs text-navy uppercase font-bold">Ladder Harga per Tier</h3>
+                @if ($this->costing->isInstant())
+                    <button type="button" wire:click="addTier" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Tambah Tier</button>
+                @endif
+            </div>
             <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
@@ -903,12 +1051,21 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                         <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">HPP/pc</th>
                         <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Harga Jual/pc (excl PPN)</th>
                         <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Incl PPN</th>
+                        @if ($this->costing->isInstant())
+                            <th class="w-8 border-b border-[#d7dbe2]"></th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($this->costing->priceTiers as $tier)
                         <tr wire:key="tier-{{ $tier->id_price_tier }}" class="{{ $tier->is_primary ? 'bg-[#eef5ff]' : '' }}">
-                            <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold">{{ number_format($tier->qty_pcs) }}{{ $tier->is_primary ? ' ★' : '' }}</td>
+                            <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold">
+                                @if ($this->costing->isInstant())
+                                    <x-form.input type="number" step="1" value="{{ $tier->qty_pcs }}" wire:change="updateTier({{ $tier->id_price_tier }}, 'qty_pcs', $event.target.value)" class="w-24 !py-1" />
+                                @else
+                                    {{ number_format($tier->qty_pcs) }}{{ $tier->is_primary ? ' ★' : '' }}
+                                @endif
+                            </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]"><x-form.input type="number" step="0.1" value="{{ $tier->tolerance_pct }}" wire:change="updateTier({{ $tier->id_price_tier }}, 'tolerance_pct', $event.target.value)" class="w-16 !py-1" /></td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]"><x-form.input type="number" step="0.1" value="{{ $tier->margin_pct }}" wire:change="updateTier({{ $tier->id_price_tier }}, 'margin_pct', $event.target.value)" class="w-16 !py-1" /></td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">
@@ -924,9 +1081,14 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                             </td>
                             <td class="px-3 py-2 border-b border-[#eef1f5] font-bold text-navy">{{ $tier->price_per_pcs !== null ? number_format($tier->price_per_pcs, 2) : '—' }}</td>
                             <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $tier->c_after_ppn_pc !== null ? number_format($tier->c_after_ppn_pc, 2) : '—' }}</td>
+                            @if ($this->costing->isInstant())
+                                <td class="px-2 py-2 border-b border-[#eef1f5] text-right">
+                                    <button type="button" wire:click="removeTier({{ $tier->id_price_tier }})" class="text-red-500 text-[11px] cursor-pointer">✕</button>
+                                </td>
+                            @endif
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center py-6 text-muted">Belum ada tier qty (dari Inquiry).</td></tr>
+                        <tr><td colspan="8" class="text-center py-6 text-muted">Belum ada tier qty.</td></tr>
                     @endforelse
                 </tbody>
             </table>
