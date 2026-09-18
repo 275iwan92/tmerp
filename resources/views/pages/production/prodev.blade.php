@@ -2113,6 +2113,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').value = String(products.indexOf(S.p));
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
                 $('back').href = DATA.backUrl || '#';
+                $('back').onclick = function (e) { if (window.navigation && navigation.canGoBack) { e.preventDefault(); history.back(); } };
                 askSidebarMini(true);
                 accInit();
                 fitViewBox();
