@@ -278,13 +278,21 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         unset($this->costing);
     }
 
-    // STUB (2026-09-18): tombol Reverse butuh keputusan desain lebih lanjut
-    // (prod_part/prod_layout_group wajib py product_id NOT NULL -- Reverse juga
-    // harus bikin Master Product baru, lihat procost_formula_library.md §V &
-    // diskusi sesi ini) -- BELUM diimplementasikan, sengaja cuma flash pesan.
+    // Reverse: INSTANT -> INTEGRATED, auto-generate Inquiry BARU + ProDev DRAFT
+    // + Master Product draft (App\Services\Costing\ReverseCostingService, lihat
+    // docblock-nya utk 3 keputusan user 2026-09-18 yang dipegang service ini).
     public function reverseToIntegrated(): void
     {
-        session()->flash('error', 'Fitur Reverse belum aktif -- menunggu konfirmasi desain (Master Product auto-generate).');
+        try {
+            $inquiry = (new \App\Services\Costing\ReverseCostingService)->reverse($this->costing, Auth::user()->login);
+        } catch (\Throwable $e) {
+            session()->flash('error', $e->getMessage());
+
+            return;
+        }
+
+        unset($this->costing);
+        $this->redirect(route('inquiry.costing', ['inquiry' => $inquiry->id_inquiry]));
     }
 
     // docs/inquiry_product_costing/productdevelopment_tier1.md §5.1 -- daftar

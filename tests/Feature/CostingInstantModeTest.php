@@ -104,10 +104,53 @@ class CostingInstantModeTest extends TestCase
         $form->call('removeTier', $tier2->id_price_tier);
         $this->assertSame(1, $costing->priceTiers()->count());
 
-        // 7) Reverse masih stub -- pastikan TIDAK melempar exception & mode tetap INSTANT.
+        // 7) Reverse -- auto-generate Inquiry BARU + Master Product draft + ProDev
+        // DRAFT, lalu flip costing ke INTEGRATED. Angka part TIDAK boleh berubah
+        // & data_source TETAP MANUAL (keputusan user 2026-09-18).
+        $partCostBefore = (string) $part->c_total_part_cost_pc;
+
         $form->call('reverseToIntegrated');
         $costing->refresh();
-        $this->assertSame(IqpCosting::MODE_INSTANT, $costing->mode);
+        $part->refresh();
+
+        $this->assertSame(IqpCosting::MODE_INTEGRATED, $costing->mode);
+        $this->assertNotNull($costing->inquiry_id);
+        $this->assertNotNull($costing->reversed_at);
+        $this->assertSame('johiwan', $costing->reversed_by);
+        $this->assertSame('MANUAL', $part->data_source);
+        $this->assertSame($partCostBefore, (string) $part->c_total_part_cost_pc);
+        $this->assertNotNull($part->part_id);
+        $this->assertNotNull($part->prod_layout_group_id);
+
+        $newInquiry = IqpInquiry::findOrFail($costing->inquiry_id);
+        $this->assertSame('NEW', $newInquiry->inquiry_type);
+        $this->assertSame('REVERSE', $newInquiry->source);
+
+        $newProdPart = \App\Models\Master\ProdPart::findOrFail($part->prodev_part_id);
+        $newLayoutGroup = \App\Models\Master\ProdLayoutGroup::findOrFail($part->prod_layout_group_id);
+        $newProduct = \App\Models\Master\ProdProduct::findOrFail($newProdPart->product_id);
+        $this->assertSame('DRAFT', $newLayoutGroup->status);
+        $this->assertSame('DRAFT', $newProduct->card_status);
+        $this->assertStringStartsWith('REV-', $newProduct->product_code);
+
+        // Reverse ke-2 (via layar yang sekarang INTEGRATED) harus ditolak -- tidak
+        // ada tombol Reverse lagi di UI, tapi guard method-nya sendiri harus tegas.
+        $rejectedSecondReverse = false;
+        try {
+            (new \App\Services\Costing\ReverseCostingService)->reverse($costing, 'johiwan');
+        } catch (\RuntimeException) {
+            $rejectedSecondReverse = true;
+        }
+        $this->assertTrue($rejectedSecondReverse, 'Reverse kedua kali (costing sudah INTEGRATED) harus ditolak');
+
+        // cleanup tambahan (di luar iqp_costing/part/tier yg sudah dihandle tearDown()).
+        DB::connection('tm2mst')->table('prod_layout_group_part')->where('id_layout_group', $newLayoutGroup->id_layout_group)->delete();
+        $newLayoutGroup->delete();
+        $newProdPart->delete();
+        $newProduct->delete();
+        DB::connection('tm2sdi')->table('iqp_tier')->where('inquiry_id', $newInquiry->id_inquiry)->delete();
+        DB::connection('tm2sdi')->table('iqp_part')->where('inquiry_id', $newInquiry->id_inquiry)->delete();
+        $newInquiry->delete();
     }
 
     // Regresi cepat: mode Integrated (route {inquiry}) di komponen yang sama
