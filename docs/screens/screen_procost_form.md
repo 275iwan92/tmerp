@@ -63,3 +63,4 @@ Ladder Harga per Tier (`iqp_costing_price_tier`, 1 baris per `iqp_tier`):
 ## Catatan
 - Gap dari komentar kode: Jenis Packing masih free-text (belum ada daftar baku dikonfirmasi user). Ongkos Kupas ditambahkan menyusul gap-analysis vs ScriptCase lama (QC+Packing dulu 1 kolom, sekarang dipisah).
 - ProCost belum konsumsi urutan proses ProDev untuk auto-hitung angka (tidak ada kolom rate Rupiah di `prod_process`/`prod_part_process`) — cuma dipakai validasi silang (warning), bukan sumber angka.
+- Pustaka rumus super-detail (semua konstanta/guard per part_type) + referensi visual 2 mode tampilan (Manual vs Integrasi, dari mockup) + hasil cross-check formula vs `CostingEngine.php`: `docs/inquiry_product_costing/procost_formula_library.md`. Termasuk gap DC+SHEET/DC+SF yang belum lengkap (proses & coating asli) — lihat §V.3-nya sebelum menyentuh `calculateDcSheetPart()`.
