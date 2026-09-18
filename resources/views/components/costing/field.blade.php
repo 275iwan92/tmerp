@@ -5,7 +5,7 @@
     Props: label, key, value, action (updatePart|updateHeader|updateTier),
     type (number|text|select|textarea), options [value => label], readonly, tone (null|sheet|lam|common).
 --}}
-@props(['label', 'key', 'value' => '', 'action' => 'updatePart', 'type' => 'number', 'options' => [], 'readonly' => false, 'tone' => null, 'step' => 'any'])
+@props(['label', 'key', 'value' => '', 'action' => 'updatePart', 'args' => [], 'type' => 'number', 'options' => [], 'readonly' => false, 'tone' => null, 'step' => 'any'])
 @php
     $toneCls = match ($tone) {
         'sheet' => 'bg-[#e9f9ef] text-[#15803d]',
@@ -14,7 +14,8 @@
         default => 'text-[#64748b]',
     };
     $inputCls = 'w-full text-xs px-2 py-1 border rounded-sm outline-none '.($readonly ? 'bg-[#f8fafc] border-[#e2e8f0] text-[#64748b] cursor-not-allowed' : 'bg-white border-[#cbd5e1] focus:border-[#3b82f6]');
-    $call = $action."('".$key."', \$event.target.value)";
+    // args = argumen depan opsional (mis. [$partId] -> updatePart(12, 'key', value)).
+    $call = $action.'('.($args ? implode(', ', array_map('intval', $args)).', ' : '')."'".$key."', \$event.target.value)";
 @endphp
 <div {{ $attributes->merge(['class' => 'flex flex-col min-w-0']) }}>
     <label class="text-[10px] font-semibold uppercase tracking-wide px-1 mb-0.5 truncate rounded-sm {{ $toneCls }}" title="{{ $label }}">{{ $label }}</label>

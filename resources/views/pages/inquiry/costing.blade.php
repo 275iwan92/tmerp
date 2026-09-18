@@ -1,10 +1,16 @@
 <?php
 
 use App\Models\Master\MatCoatingRate;
+use App\Models\Master\MatFilmRate;
 use App\Models\Master\MatGrammage;
+use App\Models\Master\MatJoinType;
+use App\Models\Master\MatPackingType;
 use App\Models\Master\MatSheetRate;
+use App\Models\Master\MatSheetSupplier;
 use App\Models\Master\ProdLayoutGroup;
+use App\Models\Master\ProdPart;
 use App\Models\Master\ProdPartProcess;
+use App\Models\Master\ProdPartType;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPartCoating;
@@ -13,526 +19,372 @@ use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\IqpLayout;
 use App\Models\Sdi\IqpPart;
 use App\Services\Costing\CostingEngine;
+use App\Services\Costing\ProCostContextService;
+use App\Support\Costing\FormulaAccess;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
+// ProCost MODE INTEGRASI (per Inquiry Product). Tata letak = mockup
+// docs/mockups/ERP_Product_Costing_Mockup.html + TAMBAHAN yang disetujui user
+// 2026-09-18 (docs/mockups/procost_integrasi_deviasi.jpg): SEMUA info InqProd &
+// ProDev tampil READ-ONLY (spec, artwork, ilustrasi imposition asli, print size,
+// pisau, BOM, BOP termasuk mesin/subkon, tinta, finishing) supaya officer tahu
+// BOM/BOP/layout saat menghitung; panel padat dibungkus accordion. Rumus:
+// App\Services\Costing\CostingEngine (sama dgn Mode Instant). Mode Instant ada di
+// pages::inquiry.costing-instant.
 new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
 {
     public ?int $inquiryId = null;
 
-    public int $costingId;
+    public int $costingId = 0;
 
     public string $engineError = '';
 
-    // Cross-nav read-only (wizard-bar, user 2026-09-04): "harus bisa klik
-    // Costing dari Inquiry/ProDev, lihat status/harga, TIDAK bisa mengubah;
-    // kalau belum diproses tulis 'belum diproses', kalau sudah confirm
-    // (published) baru kelihatan harganya." Beda dari entry primer via grid
-    // Costing (inquiry.costing.list) yang tetap full engine spt biasa.
+    // Cross-nav read-only (wizard-bar, user 2026-09-04): lihat status/harga saja,
+    // tidak bisa mengubah, harga kelihatan setelah PUBLISHED.
     #[Url]
     public bool $view = false;
 
-    // 2 rute -> 1 komponen (keputusan user 2026-09-18): {inquiry} = mode
-    // INTEGRATED (perilaku lama, tak berubah), {costing} = mode INSTANT
-    // (kalkulator standalone, langsung by costing_id tanpa inquiry). Template
-    // bercabang total sesuai $this->costing->isIntegrated()/isInstant() --
-    // lihat docs/inquiry_product_costing/procost_formula_library.md §I.
-    public string $backUrl = '';
+    #[Url(as: 'part')]
+    public int $partNo = 1;
 
-    // Back kembali ke layar asal (grid ProCost / Inquiry Hub / dst), bukan hardcode;
-    // ditangkap di mount karena request Livewire berikutnya merusak url()->previous().
-    private function resolveBackUrl(string $fallback): string
+    public ?int $tierId = null;
+
+    public function mount(int $inquiry): void
     {
-        $prev = url()->previous();
-        $here = url()->current();
-
-        if ($prev === '' || $prev === $here || ! str_starts_with($prev, url('/'))) {
-            return $fallback;
-        }
-
-        return $prev;
-    }
-
-    public function mount(?int $inquiry = null, ?int $costing = null): void
-    {
-        $this->backUrl = $this->resolveBackUrl(route(
-            $costing !== null ? 'inquiry.costing.instant.list' : 'inquiry.costing.list'
-        ));
-
-        if ($costing !== null) {
-            $row = IqpCosting::where('mode', IqpCosting::MODE_INSTANT)->findOrFail($costing);
-            $this->costingId = $row->id_costing;
-            $this->inquiryId = null;
-
-            // Instant tak punya iqp_tier sumber -- kasih 1 tier default supaya
-            // Ladder Harga langsung ada baris utk diisi, bukan kosong melompong.
-            if ($row->priceTiers()->count() === 0) {
-                IqpCostingPriceTier::create([
-                    'costing_id' => $row->id_costing,
-                    'qty_pcs' => 1000,
-                    'is_primary' => true,
-                    'created_by' => Auth::user()->login,
-                    'updated_by' => Auth::user()->login,
-                ]);
-            }
-
-            return;
-        }
-
         $this->inquiryId = $inquiry;
 
         if ($this->view) {
-            // JANGAN firstOrCreate -- cuma numpang lihat, tidak boleh bikin
-            // draft costing baru sbg side-effect dari navigasi pasif.
+            // JANGAN firstOrCreate -- navigasi pasif tidak boleh bikin draft.
             $this->costingId = (int) (IqpCosting::where('inquiry_id', $inquiry)->value('id_costing') ?? 0);
 
             return;
         }
 
-        $costing = IqpCosting::firstOrCreate(
-            ['inquiry_id' => $inquiry],
-            [
-                'calc_type' => 'NEW',
-                'doc_status' => 'DRAFT',
-                'created_by' => Auth::user()->login,
-                'updated_by' => Auth::user()->login,
-            ]
-        );
+        $inq = IqpInquiry::with(['parts', 'tiers'])->findOrFail($inquiry);
+        $costing = IqpCosting::firstOrCreate(['inquiry_id' => $inquiry], [
+            'mode' => IqpCosting::MODE_INTEGRATED,
+            'calc_type' => $inq->inquiry_type ?: 'NEW',
+            'doc_status' => 'DRAFT',
+            'customer_id' => $inq->customer_id,
+            'product_name_draft' => $inq->product_draft_name,
+            'created_by' => Auth::user()->login,
+            'updated_by' => Auth::user()->login,
+        ]);
 
-        // Auto-fill dimensi dari inquiry (sekali, saat header masih kosong).
-        if (! $costing->i_dim_panjang_mm) {
-            $firstPart = IqpInquiry::find($inquiry)?->parts()->orderBy('part_seq')->first();
-            if ($firstPart) {
-                $costing->fill([
-                    'i_dim_panjang_mm' => $firstPart->flat_w,
-                    'i_dim_lebar_mm' => $firstPart->flat_h,
-                ])->save();
+        if (! $costing->i_dim_panjang_mm && ($first = $inq->parts->sortBy('part_seq')->first())) {
+            $costing->fill(['i_dim_panjang_mm' => $first->flat_w, 'i_dim_lebar_mm' => $first->flat_h])->save();
+        }
+
+        if ($costing->priceTiers()->count() === 0) {
+            foreach ($inq->tiers as $tier) {
+                IqpCostingPriceTier::create([
+                    'costing_id' => $costing->id_costing, 'tier_id' => $tier->id_tier, 'qty_pcs' => $tier->qty,
+                    'is_primary' => $tier->is_primary, 'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login,
+                ]);
+            }
+            // Inquiry tanpa tier qty -> 1 tier default supaya hitungan tidak nol (ditandai di layar).
+            if ($inq->tiers->isEmpty()) {
+                IqpCostingPriceTier::create(['costing_id' => $costing->id_costing, 'qty_pcs' => 1000, 'is_primary' => true, 'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login]);
             }
         }
 
-        // Price tier auto-generate dari iqp_tier (1:1 per qty tier), kalau belum ada.
-        if ($costing->priceTiers()->count() === 0) {
-            foreach (IqpInquiry::find($inquiry)?->tiers ?? [] as $tier) {
-                IqpCostingPriceTier::create([
-                    'costing_id' => $costing->id_costing,
-                    'tier_id' => $tier->id_tier,
-                    'qty_pcs' => $tier->qty,
-                    'is_primary' => $tier->is_primary,
-                    'created_by' => Auth::user()->login,
-                    'updated_by' => Auth::user()->login,
-                ]);
+        // Mode #1 "Ambil Data": part Inquiry yang SUDAH punya layout ProDev langsung
+        // jadi baris costing dgn parameter layout terisi -- officer tinggal isi ongkos.
+        if ($costing->parts()->count() === 0) {
+            foreach ($inq->parts->sortBy('part_seq') as $ip) {
+                $group = $ip->prod_part_id ? ProdPart::find($ip->prod_part_id)?->layoutGroups()->orderByRaw("status = 'CONFIRMED' desc")->orderByDesc('id_layout_group')->first() : null;
+                if (! $group) {
+                    continue;
+                }
+                $cp = $this->createPartFromInquiryPart($costing, $ip);
+                $this->applyLayout($cp, $group, ProdPart::find($ip->prod_part_id));
             }
         }
 
         $this->costingId = $costing->id_costing;
     }
 
+    // ───────────── data ─────────────
     #[Computed]
     public function costing(): ?IqpCosting
     {
-        if (! $this->costingId) {
-            return null; // hanya kejadian di mode cross-nav read-only ($view=true) tanpa costing sama sekali
-        }
-
-        return IqpCosting::with(['parts.coatings', 'priceTiers', 'inquiry'])->findOrFail($this->costingId);
+        return $this->costingId ? IqpCosting::with(['parts.coatings', 'priceTiers', 'inquiry.customer'])->findOrFail($this->costingId) : null;
     }
 
     #[Computed]
-    public function grammages()
+    public function tier(): ?IqpCostingPriceTier
     {
-        return MatGrammage::where('activate', true)->orderBy('grammage_name')->get();
+        $tiers = $this->costing?->priceTiers ?? collect();
+
+        return $tiers->firstWhere('id_price_tier', $this->tierId) ?? $tiers->firstWhere('is_primary', true) ?? $tiers->first();
     }
 
     #[Computed]
-    public function coatingRates()
+    public function part(): ?IqpCostingPart
     {
-        return MatCoatingRate::where('activate', true)->orderBy('coating_type')->get();
+        $parts = $this->costing?->parts->values() ?? collect();
+
+        return $parts[max(0, min($this->partNo, $parts->count()) - 1)] ?? null;
     }
 
     #[Computed]
-    public function sheetRates()
+    public function context(): array
     {
-        return MatSheetRate::where('activate', true)->orderBy('substance_name')->orderBy('flute_type')->get();
+        return $this->part ? (new ProCostContextService)->forPart($this->part) : [];
     }
 
-    public function addPart(string $partType = 'DC'): void
+    #[Computed]
+    public function canSeeFormula(): bool
     {
-        $costing = $this->costing;
-
-        $data = [
-            'costing_id' => $costing->id_costing,
-            'no_urut' => $costing->parts()->count() + 1,
-            'part_name' => '',
-            'part_type_code' => in_array($partType, ['DC', 'SHEET_DIGITAL'], true) ? $partType : 'DC',
-            'qty_per_set' => 1,
-            'created_by' => Auth::user()->login,
-            'updated_by' => Auth::user()->login,
-        ];
-
-        if ($data['part_type_code'] === 'DC') {
-            $data['i_cut_per_plano'] = 1;
-            $data['i_isi_per_lb'] = 1;
-            $data['i_jumlah_warna'] = 4;
-        } else {
-            $data['i_isi_per_lb_kerja'] = 1;
-            $data['supplier_sheet_code'] = 'UJK';
-        }
-
-        IqpCostingPart::create($data);
-
-        unset($this->costing);
+        return FormulaAccess::canSee(); // konstanta PROCOST_FORMULA_LOGINS
     }
 
-    // Tambah part dari iqp_part (Inquiry) — auto-fill plano/cut dari Imposition
-    // yang sudah confirmed, kalau ada (lihat inquiry/imposition.blade.php confirm()).
-    public function addPartFromInquiry(int $inquiryPartId): void
+    #[Computed]
+    public function readOnly(): bool
     {
-        $costing = $this->costing;
-        $iqpPart = IqpPart::where('inquiry_id', $this->inquiryId)->findOrFail($inquiryPartId);
-        $layout = IqpLayout::where('part_id', $iqpPart->id_part)->where('stat_confirm', true)->first();
-
-        $data = [
-            'costing_id' => $costing->id_costing,
-            'part_id' => $iqpPart->id_part,
-            'no_urut' => $costing->parts()->count() + 1,
-            'part_name' => $iqpPart->part_name,
-            'part_type_code' => 'DC',
-            'qty_per_set' => $iqpPart->qty_per_sku ?: 1,
-            'i_cut_per_plano' => $layout->up_count ?? 1,
-            'i_isi_per_lb' => 1,
-            'i_jumlah_warna' => 4,
-            'created_by' => Auth::user()->login,
-            'updated_by' => Auth::user()->login,
-        ];
-
-        if ($layout) {
-            $data['i_panjang_plano_cm'] = round($layout->plano_w_mm / 10, 4);
-            $data['i_lebar_plano_cm'] = round($layout->plano_h_mm / 10, 4);
-        }
-
-        IqpCostingPart::create($data);
-
-        unset($this->costing);
+        return in_array($this->costing?->doc_status, ['PENDING_APPROVAL', 'PUBLISHED', 'CANCELLED'], true);
     }
 
     #[Computed]
     public function inquiryParts()
     {
-        if (! $this->inquiryId) {
-            return collect(); // mode INSTANT -- tidak ada inquiry sumber part
-        }
-
-        return IqpPart::where('inquiry_id', $this->inquiryId)->orderBy('part_seq')->get();
+        return $this->inquiryId ? IqpPart::where('inquiry_id', $this->inquiryId)->orderBy('part_seq')->get() : collect();
     }
 
-    // ============ MODE INSTANT (standalone, keputusan user 2026-09-18) ============
-    #[Computed]
-    public function customers()
-    {
-        return \App\Models\Master\CustCustomer::where('activate', true)->orderBy('customer_name')->limit(300)->get();
-    }
-
-    public function updateHeaderField(string $field, $value): void
-    {
-        if (! $this->costing->isInstant()) {
-            return; // header Integrated read-only, snapshot dari inquiry
-        }
-
-        $allowed = ['customer_id', 'product_name_draft', 'i_dim_panjang_mm', 'i_dim_lebar_mm', 'i_dim_tinggi_mm', 'ppn_mode', 'ppn_pct'];
-        if (! in_array($field, $allowed, true)) {
-            return;
-        }
-
-        IqpCosting::whereKey($this->costingId)->update([$field => $value === '' ? null : $value]);
-        unset($this->costing);
-    }
-
-    // Instant tak punya iqp_tier sumber -- tier qty diisi manual officer.
-    public function addTier(): void
-    {
-        if (! $this->costing->isInstant()) {
-            return;
-        }
-
-        IqpCostingPriceTier::create([
-            'costing_id' => $this->costingId,
-            'qty_pcs' => 1000,
-            'is_primary' => $this->costing->priceTiers()->count() === 0,
-            'created_by' => Auth::user()->login,
-            'updated_by' => Auth::user()->login,
-        ]);
-
-        unset($this->costing);
-    }
-
-    public function removeTier(int $tierId): void
-    {
-        if (! $this->costing->isInstant()) {
-            return;
-        }
-
-        IqpCostingPriceTier::where('costing_id', $this->costingId)->whereKey($tierId)->delete();
-        unset($this->costing);
-    }
-
-    // Reverse: INSTANT -> INTEGRATED, auto-generate Inquiry BARU + ProDev DRAFT
-    // + Master Product draft (App\Services\Costing\ReverseCostingService, lihat
-    // docblock-nya utk 3 keputusan user 2026-09-18 yang dipegang service ini).
-    public function reverseToIntegrated(): void
-    {
-        try {
-            $inquiry = (new \App\Services\Costing\ReverseCostingService)->reverse($this->costing, Auth::user()->login);
-        } catch (\Throwable $e) {
-            session()->flash('error', $e->getMessage());
-
-            return;
-        }
-
-        unset($this->costing);
-        $this->redirect(route('inquiry.costing', ['inquiry' => $inquiry->id_inquiry]));
-    }
-
-    // docs/inquiry_product_costing/productdevelopment_tier1.md §5.1 -- daftar
-    // Master Card/layout yang SUDAH dikonfirmasi ProDev, siap ditarik officer
-    // Costing (mode "Ambil Data"). Lintas-DB (tm2mst), query terpisah -- CLAUDE.md §2 pola 1.
     #[Computed]
     public function availableLayoutGroups()
     {
         return ProdLayoutGroup::with(['product', 'parts'])->where('status', 'CONFIRMED')->orderByDesc('id_layout_group')->limit(100)->get();
     }
 
-    // BACKLOG.md §3 "ProCost belum konsumsi urutan proses" -- urutan proses
-    // (prod_part_process, tm2mst, diisi officer ProDev lewat prodev.blade.php
-    // ::addProcess(), SUDAH hidup sejak 2026-09-02) kini jadi masukan parameter
-    // Costing, TAPI bukan auto-hitung angka: prod_process/prod_part_process
-    // TIDAK punya kolom rate Rupiah sama sekali (satu-satunya "rate" yg ada,
-    // process-rate.blade.php::target_qty_per_hour, itu KECEPATAN produksi utk
-    // WO Generation, besaran beda total, bukan biaya) -- menebak angka HPP dari
-    // situ salah & berbahaya (CLAUDE.md §4 "Costing rahasia"). Konsumsi yang
-    // jujur & aman: validasi silang 2 arah terhadap 3 field ongkos manual DC
-    // (cetak/plong/lem) -- "engine suggests (warning), officer confirms (isi)",
-    // pola yang sama dipakai di seluruh fitur baru sesi ini. Scope DC saja:
-    // proses SHEET_DIGITAL/KRAFT (diecut/slitter/slotter/join/partisi/layer/
-    // packing/kirim) TIDAK punya padanan nama di master prod_process saat ini
-    // (isinya migrasi offset lama: CETAK/PLONG/LEM MESIN/POTONG/UV/dst) --
-    // jangan dipaksa map, itu cuma tebakan.
-    protected const DC_PROCESS_FIELD_MAP = [
-        'CETAK' => ['field' => 'i_ongkos_cetak_rim', 'label' => 'Ongkos Cetak /rim'],
-        'PLONG' => ['field' => 'i_ongkos_plong_lb', 'label' => 'Ongkos Plong /lb'],
-        'LEM MESIN' => ['field' => 'i_ongkos_lem_pc', 'label' => 'Ongkos Lem /pc'],
-    ];
-
-    // Routing per prodev_part_id, di-load sekali per request (bukan per-part
-    // N+1) -- dikelompokkan supaya partRoutingLabel()/routingWarningsFor() di
-    // Blade tinggal ambil dari cache computed ini.
     #[Computed]
-    public function partRouting()
+    public function lookups(): array
     {
-        $prodevPartIds = $this->costing?->parts->pluck('prodev_part_id')->filter()->unique()->values() ?? collect();
+        $sheet = MatSheetRate::where('activate', true)->orderBy('flute_type')->orderBy('substance_name')->get();
 
-        if ($prodevPartIds->isEmpty()) {
-            return collect();
-        }
-
-        return ProdPartProcess::whereIn('part_id', $prodevPartIds)
-            ->with('process')
-            ->orderBy('step_seq')
-            ->get()
-            ->groupBy('part_id');
+        return [
+            'partTypes' => ProdPartType::where('activate', true)->orderBy('id_part_type')->pluck('part_type_label', 'part_type_code')->all(),
+            'grammages' => MatGrammage::where('activate', true)->orderBy('paper_kind')->orderBy('grammage_value')->get()
+                ->mapWithKeys(fn ($g) => [$g->id_grammage => $g->grammage_name.((float) $g->duplex_price_list > 0 ? ' — Rp '.number_format($g->duplex_price_list).'/rim' : ((float) $g->ivory_ap_price_per_kg > 0 ? ' — Rp '.number_format($g->ivory_ap_price_per_kg).'/kg' : ' — (no price)'))])->all(),
+            'sheetRates' => $sheet->filter(fn ($s) => in_array($s->mat_subtype, [null, 'SHEET'], true))->mapWithKeys(fn ($s) => [$s->id_sheet_rate => "{$s->flute_type} - {$s->substance_name} - Rp ".number_format($s->index_substance).'/m²'])->all(),
+            'sfSubst' => $sheet->whereIn('mat_subtype', ['SF', 'SINGLE FACE'])->mapWithKeys(fn ($s) => [$s->id_sheet_rate => "{$s->flute_type} - {$s->substance_name} - Rp ".number_format($s->index_substance)])->all(),
+            'sfEf' => $sheet->where('mat_subtype', 'SF')->mapWithKeys(fn ($s) => [$s->id_sheet_rate => "{$s->substance_name} — Rp ".number_format($s->index_substance)])->all(),
+            'suppliers' => MatSheetSupplier::where('activate', true)->orderBy('sort_order')->pluck('code', 'code')->all(),
+            'filmRates' => MatFilmRate::where('activate', true)->orderBy('sort_order')->get()->mapWithKeys(fn ($f) => [(string) (float) $f->rate_value => $f->label])->all(),
+            'joinTypes' => MatJoinType::where('activate', true)->orderBy('sort_order')->pluck('label', 'code')->all(),
+            'packingTypes' => MatPackingType::where('activate', true)->orderBy('sort_order')->pluck('label', 'code')->all(),
+            'coatings' => MatCoatingRate::where('activate', true)->pluck('coating_type', 'coating_type')->all(),
+        ];
     }
 
-    public function routingNamesFor(IqpCostingPart $part)
+    private function refreshData(): void
     {
-        if (! $part->prodev_part_id) {
-            return collect();
-        }
-
-        return ($this->partRouting[$part->prodev_part_id] ?? collect())
-            ->pluck('process.process_name')
-            ->filter()
-            ->map(fn ($name) => strtoupper(trim($name)))
-            ->unique()
-            ->values();
+        unset($this->costing, $this->tier, $this->part, $this->context, $this->partRouting);
     }
 
-    public function routingWarningsFor(IqpCostingPart $part): array
+    private function editable(): bool
     {
-        if ($part->part_type_code !== 'DC' || ! $part->prodev_part_id) {
-            return [];
-        }
-
-        $routingNames = $this->routingNamesFor($part);
-
-        if ($routingNames->isEmpty()) {
-            return [];
-        }
-
-        $warnings = [];
-
-        foreach (self::DC_PROCESS_FIELD_MAP as $processName => $meta) {
-            $inRouting = $routingNames->contains($processName);
-            $filled = (float) $part->{$meta['field']} > 0;
-
-            if ($inRouting && ! $filled) {
-                $warnings[] = "Proses {$processName} ada di routing ProDev tapi \"{$meta['label']}\" masih 0 — isi dulu.";
-            } elseif (! $inRouting && $filled) {
-                $warnings[] = "\"{$meta['label']}\" terisi tapi proses {$processName} tidak ada di routing ProDev — cek kembali, mungkin sisa data lama.";
-            }
-        }
-
-        return $warnings;
+        return ! $this->readOnly && $this->costingId > 0;
     }
 
-    // Instruksi user 2026-09-03: sembunyikan FORMULA/breakdown HPP (bukan field
-    // input, bukan harga jual final -- itu tetap kelihatan spy staf Costing tetap
-    // bisa kerja normal atur margin/toleransi) dari siapa pun KECUALI login
-    // literal 'johiwan'. LEBIH KETAT dari aturan lama CLAUDE.md §4 "Costing
-    // rahasia Sisi A" (grup Costing+Direksi umum) -- ini 1 login spesifik,
-    // sesuai instruksi user, JANGAN dilonggarkan sendiri ke is_admin/grup.
-    #[Computed]
-    public function canSeeFormula(): bool
+    // ───────────── part dari Inquiry / ProDev ─────────────
+    private function createPartFromInquiryPart(IqpCosting $costing, IqpPart $ip): IqpCostingPart
     {
-        return \App\Support\Costing\FormulaAccess::canSee(); // konstanta PROCOST_FORMULA_LOGINS
+        return IqpCostingPart::create([
+            'costing_id' => $costing->id_costing, 'part_id' => $ip->id_part, 'no_urut' => $costing->parts()->count() + 1,
+            'part_name' => $ip->part_name, 'part_type_code' => in_array($ip->part_type, array_keys($this->lookups['partTypes']), true) ? $ip->part_type : 'DC',
+            'data_source' => 'MANUAL', 'qty_per_set' => $ip->qty_per_sku ?: 1,
+            'i_dim_panjang_mm' => $costing->i_dim_panjang_mm, 'i_dim_lebar_mm' => $costing->i_dim_lebar_mm, 'i_dim_tinggi_mm' => $costing->i_dim_tinggi_mm,
+            'i_cut_per_plano' => 1, 'i_isi_per_lb' => 1, 'i_isi_per_lb_kerja' => 1, 'i_jumlah_warna' => 4, 'supplier_sheet_code' => 'UJK',
+            'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login,
+        ]);
     }
 
-    // Toggle Manual <-> Ambil Data per part (keputusan user: per-part, bukan
-    // per-costing -- tier1 §7 poin 4). Balik ke MANUAL cuma lepas link, TIDAK
-    // menghapus nilai i_panjang_plano_cm/dst yang sudah ke-auto-fill (officer
-    // tetap bisa lanjut edit manual dari titik itu).
-    public function toggleDataSource(int $partId): void
+    // Tarik plano/potong/isi/print size/pisau dari layout ProDev (Mode #1 "Ambil Data").
+    private function applyLayout(IqpCostingPart $part, ProdLayoutGroup $group, ?ProdPart $prodPart): void
     {
-        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
+        $geo = (new ProCostContextService)->layoutGeometry($group->loadMissing('parts'), $prodPart);
 
-        if ($part->data_source === 'PRODEV') {
-            $part->update(['data_source' => 'MANUAL', 'prod_layout_group_id' => null]);
-        } else {
-            $part->update(['data_source' => 'PRODEV']);
-        }
-
-        unset($this->costing);
-    }
-
-    // Tarik plano/UP dari prod_layout_group terpilih -> auto-fill + langsung
-    // hitung ulang HPP (tujuan eksplisit user: 1 officer, tanpa langkah "Hitung"
-    // terpisah lagi setelah pilih layout -- tier1 §5.1). $prodPartId WAJIB diisi
-    // kalau group menaungi >1 part (Tool #10, BACKLOG.md §0) -- dipakai
-    // ProdLayoutGroup::effectiveCutFor() utk alokasi biaya proporsional by luas
-    // (§4.2b), BUKAN qty_up_in_group mentah (itu akan melipatgandakan biaya
-    // kertas keliru kalau tiap part yg berbagi 1 plano dihitung seolah dpt
-    // plano sendiri-sendiri).
-    public function pickLayoutGroup(int $partId, int $groupId, ?int $prodPartId = null): void
-    {
-        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
-        $group = ProdLayoutGroup::with('parts')->find($groupId);
-
-        if (! $group) {
-            return;
-        }
-
-        $isMulti = $group->parts->count() > 1;
-        // Group SOLO: aman auto-pakai satu-satunya part (perilaku lama, tak ada
-        // ambiguitas). Group MULTI: JANGAN fallback ke first() -- kalau
-        // prodPartId tak diisi eksplisit, biarkan null supaya guard di bawah
-        // menolak (alokasi proporsional wajib tau part mana, tak boleh nebak).
-        $prodPart = $prodPartId
-            ? $group->parts->firstWhere('id_part', $prodPartId)
-            : ($isMulti ? null : $group->parts->first());
-
-        if ($isMulti && ! $prodPart) {
-            session()->flash('error', 'Layout ini menaungi lebih dari 1 part (Tool #10) -- pilih part yang direpresentasikan baris costing ini dulu.');
-
-            return;
-        }
-
-        $effectiveCut = $prodPart ? $group->effectiveCutFor($prodPart) : ($group->up_count ?: 1);
-
-        // Tool #4 (die_rule_meter) -- SOLO group: langsung dipakai penuh (cuma 1
-        // part pemilik plano). Group MULTI-part: dialokasi proporsional by
-        // share luas yang SAMA dgn effectiveCutFor() (null kalau belum pernah
-        // dihitung, mis. hasil Tool #10 COMBINED_SPLIT -- lihat catatan di
-        // prodev.blade.php::confirmCombine(), TIDAK ditebak/dipaksa ada).
-        $pisauFaktor = $part->i_pisau_faktor;
+        $pisauFaktor = (float) ($part->i_pisau_faktor ?? 0); // 0 = engine pakai KNIFE_FACTOR_DEFAULT
         if ($group->die_rule_meter !== null) {
-            $ownUpInGroup = $prodPart?->pivot->qty_up_in_group ?? $group->up_count;
-            $pisauFaktor = $isMulti && $effectiveCut > 0
-                ? round((float) $group->die_rule_meter * $ownUpInGroup / $effectiveCut, 4)
-                : (float) $group->die_rule_meter;
+            $isMulti = $group->parts->count() > 1;
+            $own = $prodPart ? ($group->parts->firstWhere('id_part', $prodPart->id_part)?->pivot->qty_up_in_group ?? $group->up_count) : $group->up_count;
+            $eff = $prodPart ? $group->effectiveCutFor($prodPart) : ($group->up_count ?: 1);
+            $pisauFaktor = $isMulti && $eff > 0 ? round((float) $group->die_rule_meter * $own / $eff, 4) : (float) $group->die_rule_meter;
         }
 
         $part->update([
             'data_source' => 'PRODEV',
             'prod_layout_group_id' => $group->id_layout_group,
             'prodev_part_id' => $prodPart?->id_part,
-            'i_panjang_plano_cm' => round($group->plano_w_mm / 10, 4),
-            'i_lebar_plano_cm' => round($group->plano_h_mm / 10, 4),
-            'i_cut_per_plano' => $effectiveCut ?: 1,
+            'i_panjang_plano_cm' => round($geo['plano_l'], 4),
+            'i_lebar_plano_cm' => round($geo['plano_w'], 4),
+            'i_cut_per_plano' => round($geo['cut'], 4),
+            'i_isi_per_lb' => $geo['isi'],
+            'i_uk_cetak_p_cm' => $geo['print_l'],
+            'i_uk_cetak_l_cm' => $geo['print_w'],
             'i_pisau_faktor' => $pisauFaktor,
         ]);
+    }
 
-        unset($this->costing);
+    public function addPart(string $partType = 'DC'): void
+    {
+        if (! $this->editable()) {
+            return;
+        }
+
+        $c = $this->costing;
+        IqpCostingPart::create([
+            'costing_id' => $c->id_costing, 'no_urut' => $c->parts->count() + 1, 'part_name' => '',
+            'part_type_code' => array_key_exists($partType, $this->lookups['partTypes']) ? $partType : 'DC',
+            'data_source' => 'MANUAL', 'qty_per_set' => 1, 'i_cut_per_plano' => 1, 'i_isi_per_lb' => 1, 'i_isi_per_lb_kerja' => 1,
+            'i_jumlah_warna' => 4, 'supplier_sheet_code' => 'UJK',
+            'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login,
+        ]);
+        $this->refreshData();
+        $this->partNo = $this->costing->parts->count();
+    }
+
+    public function addPartFromInquiry(int $inquiryPartId): void
+    {
+        if (! $this->editable()) {
+            return;
+        }
+
+        $ip = IqpPart::where('inquiry_id', $this->inquiryId)->findOrFail($inquiryPartId);
+        $cp = $this->createPartFromInquiryPart($this->costing, $ip);
+
+        $group = $ip->prod_part_id ? ProdPart::find($ip->prod_part_id)?->layoutGroups()->orderByRaw("status = 'CONFIRMED' desc")->orderByDesc('id_layout_group')->first() : null;
+        if ($group) {
+            $this->applyLayout($cp, $group, ProdPart::find($ip->prod_part_id));
+        } elseif ($layout = IqpLayout::where('part_id', $ip->id_part)->where('stat_confirm', true)->first()) {
+            $cp->update(['i_panjang_plano_cm' => round($layout->plano_w_mm / 10, 4), 'i_lebar_plano_cm' => round($layout->plano_h_mm / 10, 4), 'i_cut_per_plano' => $layout->up_count ?: 1]);
+        }
+
+        $this->refreshData();
+        $this->partNo = $this->costing->parts->count();
+        $this->hitung();
+    }
+
+    public function goPart(int $no): void
+    {
+        $this->partNo = max(1, min($no, $this->costing->parts->count()));
+        unset($this->part, $this->context);
+    }
+
+    public function selectTier($id): void
+    {
+        $this->tierId = $id ? (int) $id : null;
+        unset($this->tier);
+    }
+
+    // Toggle Manual <-> Ambil Data per part. Balik ke MANUAL cuma lepas link,
+    // nilai yang sudah terisi tetap (officer lanjut edit manual).
+    public function toggleDataSource(int $partId): void
+    {
+        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
+        $part->update($part->data_source === 'PRODEV' ? ['data_source' => 'MANUAL', 'prod_layout_group_id' => null] : ['data_source' => 'PRODEV']);
+        $this->refreshData();
+    }
+
+    // $prodPartId WAJIB kalau group menaungi >1 part (Tool #10) -- alokasi biaya
+    // proporsional by luas lewat effectiveCutFor(), tak boleh ditebak.
+    public function pickLayoutGroup(int $partId, int $groupId, ?int $prodPartId = null): void
+    {
+        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
+        $group = ProdLayoutGroup::with('parts')->find($groupId);
+        if (! $group) {
+            return;
+        }
+
+        $isMulti = $group->parts->count() > 1;
+        $prodPart = $prodPartId ? $group->parts->firstWhere('id_part', $prodPartId) : ($isMulti ? null : $group->parts->first());
+        if ($isMulti && ! $prodPart) {
+            session()->flash('error', 'Layout ini menaungi lebih dari 1 part (Tool #10) -- pilih part yang direpresentasikan baris costing ini dulu.');
+
+            return;
+        }
+
+        $this->applyLayout($part, $group, $prodPart);
+        $this->refreshData();
         $this->hitung();
     }
 
     public function removePart(int $partId): void
     {
+        if (! $this->editable()) {
+            return;
+        }
+
+        IqpCostingPartCoating::where('costing_part_id', $partId)->delete();
         IqpCostingPart::whereKey($partId)->where('costing_id', $this->costingId)->delete();
-        unset($this->costing);
-    }
-
-    public function addCoating(int $partId): void
-    {
-        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
-
-        IqpCostingPartCoating::create([
-            'costing_part_id' => $part->id_costing_part,
-            'seq' => $part->coatings()->count() + 1,
-            'coating_type' => 'WB',
-            'index_coating' => MatCoatingRate::where('coating_type', 'WB')->where('activate', true)->value('index_coating'),
-        ]);
-
-        unset($this->costing);
-    }
-
-    public function removeCoating(int $coatingId): void
-    {
-        IqpCostingPartCoating::whereKey($coatingId)
-            ->whereHas('costingPart', fn ($q) => $q->where('costing_id', $this->costingId))
-            ->delete();
-        unset($this->costing);
+        $this->partNo = max(1, $this->partNo - 1);
+        $this->refreshData();
     }
 
     public function updatePart(int $partId, string $field, $value): void
     {
-        $allowed = [
-            'part_name', 'grammage_id', 'i_dc_persen_override', 'i_panjang_plano_cm', 'i_lebar_plano_cm',
-            'i_cut_per_plano', 'i_isi_per_lb', 'i_jumlah_warna', 'i_ongkos_cetak_rim', 'i_ongkos_plong_lb',
-            'i_ongkos_lem_pc', 'i_film_faktor', 'i_film_rate', 'i_pisau_faktor', 'i_pisau_rate_rp', 'i_ongkos_plate_warna',
-            'i_dim_panjang_mm', 'i_dim_lebar_mm', 'i_dim_tinggi_mm', 'i_lidah_lem_mm', 'flute_type', 'sheet_rate_id',
-            'supplier_sheet_code', 'i_isi_per_lb_kerja', 'i_ongkos_print_pc', 'i_ongkos_diecut_pc', 'i_ongkos_slitter_pc',
-            'i_ongkos_slotter_pc', 'i_ongkos_join_pc', 'i_ongkos_partisi_pc', 'i_ongkos_layer_pc', 'i_ongkos_qc_pack_pc',
-            'i_ongkos_kupas_pc', 'i_ongkos_packing_pc', 'jenis_packing',
-            'i_ongkos_kirim_pc',
-        ];
+        if (! $this->editable()) {
+            return;
+        }
 
+        $allowed = [
+            'part_name', 'part_type_code', 'qty_per_set', 'i_jumlah_warna', 'i_dim_panjang_mm', 'i_dim_lebar_mm', 'i_dim_tinggi_mm', 'i_lidah_lem_mm',
+            'grammage_id', 'i_paper_price_override', 'i_dc_persen_override', 'i_panjang_plano_cm', 'i_lebar_plano_cm', 'i_cut_per_plano', 'i_isi_per_lb', 'i_isi_per_lb_kerja',
+            'i_uk_cetak_p_cm', 'i_uk_cetak_l_cm', 'sheet_rate_id', 'supplier_sheet_code', 'flute_type', 'i_sheet_panjang_cm', 'i_sheet_lebar_cm', 'i_lebar_trim_cm', 'i_isi_per_trim', 'i_discount_rm',
+            'i_ongkos_cetak_rim', 'i_ongkos_plong_lb', 'i_ongkos_lem_pc', 'i_ongkos_hotprint_pc', 'i_ongkos_kupas_pc', 'i_ongkos_qc_pack_pc', 'i_ongkos_kirim_pc', 'packing_type_code', 'i_ongkos_packing_pc', 'jenis_packing',
+            'pakai_laminasi', 'i_lam_sheet_flat_pc', 'sf_ef_rate_id', 'i_sf_ef_rate_override', 'i_lam_pakai_ukuran_sf', 'i_ongkos_lam_rp_cm2_sh', 'i_ongkos_lam_rp_cm2_sf', 'i_ongkos_laminasi_pc',
+            'i_film_rate', 'i_film_faktor', 'i_ongkos_plate_warna', 'i_pisau_faktor', 'i_pisau_rate_rp',
+            'i_ongkos_print_pc', 'i_ongkos_diecut_pc', 'i_ongkos_slitter_pc', 'i_ongkos_slotter_pc', 'join_type_code', 'i_ongkos_join_pc', 'i_ongkos_partisi_pc', 'i_ongkos_layer_pc', 'i_ongkos_pisau_pc', 'calc_notes',
+        ];
         if (! in_array($field, $allowed, true)) {
             return;
         }
 
-        // Mode Ambil Data (§5.1): plano/cut sumbernya prod_layout_group, bukan input
-        // manual -- toleransi guard di sini, UI sudah disable field-nya juga.
-        $lockedWhenProdev = ['i_panjang_plano_cm', 'i_lebar_plano_cm', 'i_cut_per_plano'];
-        if (in_array($field, $lockedWhenProdev, true)) {
-            $isProdev = IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->value('data_source') === 'PRODEV';
-            if ($isProdev) {
-                return;
-            }
+        // Mode Ambil Data: geometri sumbernya layout ProDev, bukan input manual.
+        $lockedWhenProdev = ['i_panjang_plano_cm', 'i_lebar_plano_cm', 'i_cut_per_plano', 'i_isi_per_lb', 'i_uk_cetak_p_cm', 'i_uk_cetak_l_cm'];
+        if (in_array($field, $lockedWhenProdev, true)
+            && IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->value('data_source') === 'PRODEV') {
+            return;
         }
 
-        IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->update([$field => $value === '' ? null : $value]);
-        unset($this->costing);
+        $value = $value === '' ? null : $value;
+        $data = [$field => $value, 'updated_by' => Auth::user()->login];
+        match ($field) {
+            'part_type_code' => $data['i_pisau_rate_rp'] = ProdPartType::where('part_type_code', $value)->value('pisau_rate_rp'),
+            'grammage_id' => ($dc = (float) MatGrammage::whereKey($value)->value('duplex_dc_pct')) > 0 ? $data['i_dc_persen_override'] = $dc : null,
+            'sf_ef_rate_id' => $data['i_sf_ef_rate_override'] = $value ? MatSheetRate::whereKey($value)->value('index_substance') : null,
+            'join_type_code' => $data['i_ongkos_join_pc'] = $value ? MatJoinType::where('code', $value)->value('default_rate') : 0,
+            'packing_type_code' => $data['i_ongkos_packing_pc'] = $value ? MatPackingType::where('code', $value)->value('default_rate') : 0,
+            default => null,
+        };
+
+        IqpCostingPart::where('costing_id', $this->costingId)->whereKey($partId)->update($data);
+        $this->refreshData();
+    }
+
+    public function addCoating(int $partId): void
+    {
+        if (! $this->editable()) {
+            return;
+        }
+
+        $part = IqpCostingPart::where('costing_id', $this->costingId)->findOrFail($partId);
+        IqpCostingPartCoating::create([
+            'costing_part_id' => $part->id_costing_part, 'seq' => $part->coatings()->count() + 1, 'coating_type' => 'UV',
+            'index_coating' => MatCoatingRate::where('coating_type', 'UV')->where('activate', true)->value('index_coating') ?? 0,
+        ]);
+        $this->refreshData();
+    }
+
+    public function removeCoating(int $coatingId): void
+    {
+        IqpCostingPartCoating::whereKey($coatingId)->whereHas('costingPart', fn ($q) => $q->where('costing_id', $this->costingId))->delete();
+        $this->refreshData();
     }
 
     public function updateCoating(int $coatingId, string $field, $value): void
@@ -541,44 +393,50 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
 
-        $coating = IqpCostingPartCoating::whereKey($coatingId)
-            ->whereHas('costingPart', fn ($q) => $q->where('costing_id', $this->costingId))
-            ->first();
-
+        $coating = IqpCostingPartCoating::whereKey($coatingId)->whereHas('costingPart', fn ($q) => $q->where('costing_id', $this->costingId))->first();
         if (! $coating) {
             return;
         }
 
-        if ($field === 'coating_type') {
-            $rate = MatCoatingRate::where('coating_type', $value)->where('activate', true)->value('index_coating');
-            $coating->update(['coating_type' => $value, 'index_coating' => $rate]);
-        } else {
-            $coating->update([$field => $value]);
-        }
-
-        unset($this->costing);
+        $coating->update($field === 'coating_type'
+            ? ['coating_type' => $value, 'index_coating' => MatCoatingRate::where('coating_type', $value)->where('activate', true)->value('index_coating')]
+            : [$field => $value === '' ? 0 : $value]);
+        $this->refreshData();
     }
 
     public function updateTier(int $tierId, string $field, $value): void
     {
-        $allowed = ['tolerance_pct', 'margin_pct', 'rounding_mode', 'rounding_step'];
-        // qty_pcs Integrated sumbernya iqp_tier (immutable di sini) -- Instant
-        // tak punya sumber itu, jadi qty boleh diedit langsung.
-        if ($field === 'qty_pcs' && $this->costing->isInstant()) {
-            $allowed[] = 'qty_pcs';
-        }
-
-        if (! in_array($field, $allowed, true)) {
+        if (! in_array($field, ['tolerance_pct', 'margin_pct', 'rounding_mode', 'rounding_step'], true)) {
             return;
         }
 
-        IqpCostingPriceTier::where('costing_id', $this->costingId)->whereKey($tierId)->update([$field => $value]);
-        unset($this->costing);
+        IqpCostingPriceTier::where('costing_id', $this->costingId)->whereKey($tierId)->update([$field => $value === '' ? 0 : $value]);
+        $this->refreshData();
+    }
+
+    public function updateHeader(string $field, $value): void
+    {
+        if (! $this->editable() || ! in_array($field, ['ppn_pct', 'ppn_mode', 'calc_notes'], true)) {
+            return;
+        }
+
+        IqpCosting::whereKey($this->costingId)->update([$field => $value === '' ? null : $value, 'updated_by' => Auth::user()->login]);
+        $this->refreshData();
+    }
+
+    // "Paper Index (Rp/Rim)" mockup = override harga kertas part aktif (snapshot).
+    public function setPaperIndex($value): void
+    {
+        if ($this->part) {
+            $this->updatePart($this->part->id_costing_part, 'i_paper_price_override', $value);
+            $this->hitung();
+        }
     }
 
     public function hitung(): void
     {
         $this->engineError = '';
+        $this->refreshData();
 
         try {
             (new CostingEngine)->run($this->costing);
@@ -586,30 +444,24 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             $this->engineError = $e->getMessage();
         }
 
-        unset($this->costing);
+        $this->refreshData();
     }
 
     public function submitToDireksi(): void
     {
-        $costing = $this->costing;
-
-        if ($costing->doc_status !== 'CALCULATED') {
+        if ($this->costing->doc_status !== 'CALCULATED') {
             return;
         }
 
-        $costing->update(['doc_status' => 'PENDING_APPROVAL']);
-        unset($this->costing);
+        $this->costing->update(['doc_status' => 'PENDING_APPROVAL']);
+        $this->refreshData();
     }
 
-    // "+ Tambahkan ke Quotation" -- tempel inquiry ini (kalau sudah published) ke
-    // draft Quotation customer yang sedang berjalan (bikin baru kalau belum ada),
-    // lalu pindah ke Quotation Entry. Lihat App\Services\Sales\QuotationBuilder.
     public function addToQuotation()
     {
         $inquiry = $this->costing->inquiry;
-
         if (! $inquiry || ! $inquiry->customer_id) {
-            return;
+            return null;
         }
 
         $quotation = \App\Services\Sales\QuotationBuilder::findOrCreateDraft($inquiry->customer_id);
@@ -618,96 +470,187 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('quotation.entry', ['quotation' => $quotation->id_quotation]));
     }
 
-    // Wizard step-bar lintas modul, pola sama dgn inquiry/form.blade.php &
-    // production/prodev.blade.php::wizardSteps() (user 2026-09-03).
+    // ───────────── routing ProDev vs ongkos manual (warning, bukan blokir) ─────────────
+    protected const DC_PROCESS_FIELD_MAP = [
+        'CETAK' => ['field' => 'i_ongkos_cetak_rim', 'label' => 'Ongkos Cetak /rim'],
+        'PLONG' => ['field' => 'i_ongkos_plong_lb', 'label' => 'Ongkos Plong /lb'],
+        'LEM MESIN' => ['field' => 'i_ongkos_lem_pc', 'label' => 'Ongkos Lem /pc'],
+    ];
+
     #[Computed]
-    public function wizardSteps(): array
+    public function partRouting()
     {
-        if (! $this->inquiryId) {
-            return []; // mode INSTANT -- tak ada rute Inquiry/ProDev utk dinavigasi
+        $ids = $this->costing?->parts->pluck('prodev_part_id')->filter()->unique()->values() ?? collect();
+
+        return $ids->isEmpty() ? collect() : ProdPartProcess::whereIn('part_id', $ids)->with('process')->orderBy('step_seq')->get()->groupBy('part_id');
+    }
+
+    public function routingNamesFor(IqpCostingPart $part)
+    {
+        if (! $part->prodev_part_id) {
+            return collect();
         }
 
-        $prodPartId = IqpPart::where('inquiry_id', $this->inquiryId)
-            ->whereNotNull('prod_part_id')
-            ->value('prod_part_id');
+        return ($this->partRouting[$part->prodev_part_id] ?? collect())->pluck('process.process_name')->filter()
+            ->map(fn ($n) => strtoupper(trim($n)))->unique()->values();
+    }
+
+    public function routingWarningsFor(IqpCostingPart $part): array
+    {
+        if ($part->part_type_code !== 'DC' || ! $part->prodev_part_id) {
+            return [];
+        }
+
+        $names = $this->routingNamesFor($part);
+        if ($names->isEmpty()) {
+            return [];
+        }
+
+        $warnings = [];
+        foreach (self::DC_PROCESS_FIELD_MAP as $proc => $meta) {
+            $in = $names->contains($proc);
+            $filled = (float) $part->{$meta['field']} > 0;
+            if ($in && ! $filled) {
+                $warnings[] = "Proses {$proc} ada di routing ProDev tapi \"{$meta['label']}\" masih 0 — isi dulu.";
+            } elseif (! $in && $filled) {
+                $warnings[] = "\"{$meta['label']}\" terisi tapi proses {$proc} tidak ada di routing ProDev — cek kembali, mungkin sisa data lama.";
+            }
+        }
+
+        return $warnings;
+    }
+
+    // ───────────── angka tampilan ─────────────
+    public function qty(): float
+    {
+        return (float) ($this->tier?->qty_pcs ?? 0);
+    }
+
+    // Baris "Process & Finishing" mockup: [proses, rate, basis, subtotal/order].
+    public function processRows(): array
+    {
+        $p = $this->part;
+        if (! $p) {
+            return [];
+        }
+
+        $q = $this->qty() * max(1, (float) $p->qty_per_set);
+        $cut = max(0.0001, (float) $p->i_cut_per_plano);
+        $isi = max(1, (float) $p->i_isi_per_lb);
+        $rows = [];
+        $add = function (string $name, string $rate, string $basis, float $perPc) use (&$rows, $q) {
+            if ($perPc != 0.0) {
+                $rows[] = [$name, $rate, $basis, $perPc * $q];
+            }
+        };
+
+        if (in_array($p->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true)) {
+            foreach (['Print (×2)' => (float) $p->c_print_cost_pc, 'Die Cut' => (float) $p->i_ongkos_diecut_pc, 'Slitter' => (float) $p->i_ongkos_slitter_pc, 'Slotter' => (float) $p->i_ongkos_slotter_pc, 'Join' => (float) $p->i_ongkos_join_pc, 'Partisi' => (float) $p->i_ongkos_partisi_pc, 'Layer' => (float) $p->i_ongkos_layer_pc, 'Pisau Diecut' => (float) $p->i_ongkos_pisau_pc] as $n => $v) {
+                $add($n, 'Rp '.number_format($v, 2).'/Pc', number_format($q).' Pcs', $v);
+            }
+        } else {
+            $add('Offset Printing', 'Rp '.number_format((float) $p->i_ongkos_cetak_rim, 2).'/Rim', number_format($q / (500 * $cut * $isi), 2).' Rim', (float) $p->c_cetak_cost_pc);
+            $add('Plong (Die Cut)', 'Rp '.number_format((float) $p->i_ongkos_plong_lb, 2).'/Lb', number_format($q / $isi).' Lb', (float) $p->c_plong_cost_pc);
+            $add('Lem (Gluing)', 'Rp '.number_format((float) $p->i_ongkos_lem_pc, 2).'/Pc', number_format($q).' Pcs', (float) $p->c_lem_cost_pc);
+            $add('Hot Print', 'Rp '.number_format((float) $p->i_ongkos_hotprint_pc, 2).'/Pc', number_format($q).' Pcs', (float) $p->i_ongkos_hotprint_pc);
+            $add('Laminasi Sheet (flat)', 'Rp '.number_format((float) $p->c_lam_flat_cost_pc, 2).'/Pc', number_format($q).' Pcs', (float) $p->c_lam_flat_cost_pc);
+            $add('SF EF', 'Luas × Rate SF', number_format($q).' Pcs', (float) $p->c_sf_ef_cost_pc);
+            $add('Ongkos Laminasi', 'Luas × Rp/cm²', number_format($q).' Pcs', (float) $p->c_ongkos_lam_pc);
+        }
+        foreach (['Kupas' => (float) $p->i_ongkos_kupas_pc, 'QC' => (float) $p->i_ongkos_qc_pack_pc, 'Kirim' => (float) $p->i_ongkos_kirim_pc, 'Packing' => (float) $p->i_ongkos_packing_pc] as $n => $v) {
+            $add($n, 'Rp '.number_format($v, 2).'/Pc', number_format($q).' Pcs', $v);
+        }
+
+        return $rows;
+    }
+
+    // Nilai efektif tooling yang dipakai engine (default konstanta kalau input kosong).
+    public function toolingInfo(): array
+    {
+        $p = $this->part;
 
         return [
-            'inquiry' => [
-                'label' => '1. Inquiry',
-                'url' => route('inquiry.form', ['id' => $this->inquiryId, 'view' => 1]),
-            ],
-            'development' => [
-                'label' => '2. Development',
-                'url' => $prodPartId ? route('production.prodev', ['part' => $prodPartId]) : null,
-                'reason' => 'Belum ada part yang dikirim ke ProDev.',
-            ],
-            'costing' => [
-                'label' => '3. Costing',
-                'url' => route('inquiry.costing', ['inquiry' => $this->inquiryId]),
-            ],
-            'mastercard' => [
-                'label' => 'Master Card',
-                'url' => $prodPartId ? route('production.old-prodev.print', ['part' => $prodPartId]) : null,
-                'reason' => 'Belum ada part yang dikirim ke ProDev.',
-            ],
-            'analytics' => [
-                'label' => 'Analytics',
-                'url' => null,
-                'reason' => 'Modul Analytics belum dibangun.',
-            ],
+            'film_ff' => $p->i_film_faktor !== null ? (float) $p->i_film_faktor : \App\Models\Sys\SysConstant::number('FILM_FACTOR_DEFAULT', 0.25),
+            'film_rate' => $p->i_film_rate !== null ? (float) $p->i_film_rate : \App\Models\Sys\SysConstant::number('FILM_RATE_DEFAULT', 55),
+            'plate' => (float) $p->i_ongkos_plate_warna > 0 ? (float) $p->i_ongkos_plate_warna : \App\Models\Sys\SysConstant::number('PLATE_PER_COLOR', 90000),
+            'knife_ff' => (float) $p->i_pisau_faktor > 0 ? (float) $p->i_pisau_faktor : \App\Models\Sys\SysConstant::number('KNIFE_FACTOR_DEFAULT', 0.25),
+            'knife_rate' => $p->i_pisau_rate_rp !== null ? (float) $p->i_pisau_rate_rp : (float) (ProdPartType::where('part_type_code', $p->part_type_code)->value('pisau_rate_rp') ?? 0),
+        ];
+    }
+
+    public function materialLabel(): string
+    {
+        $p = $this->part;
+        $bom = collect($this->context['bom'] ?? []);
+
+        return MatGrammage::whereKey($p?->grammage_id)->value('grammage_name')
+            ?? ($bom->firstWhere('primary', true)['material'] ?? ($bom->first()['material'] ?? '—'));
+    }
+
+    public function wizardSteps(): array
+    {
+        $prodPartId = IqpPart::where('inquiry_id', $this->inquiryId)->whereNotNull('prod_part_id')->value('prod_part_id');
+
+        return [
+            'inquiry' => ['label' => '1. Inquiry', 'url' => route('inquiry.form', ['id' => $this->inquiryId, 'view' => 1])],
+            'development' => ['label' => '2. Development', 'url' => $prodPartId ? route('production.prodev', ['part' => $prodPartId]) : null, 'reason' => 'Belum ada part yang dikirim ke ProDev.'],
+            'costing' => ['label' => '3. Costing', 'url' => route('inquiry.costing', ['inquiry' => $this->inquiryId])],
+            'mastercard' => ['label' => 'Master Card', 'url' => $prodPartId ? route('production.old-prodev.print', ['part' => $prodPartId]) : null, 'reason' => 'Belum ada part yang dikirim ke ProDev.'],
+            'analytics' => ['label' => 'Analytics', 'url' => null, 'reason' => 'Modul Analytics belum dibangun.'],
         ];
     }
 };
 ?>
 
+@php
+    $c = $this->costing;
+    $lock = ! $this->canSeeFormula;
+    $n2 = fn ($v) => $v === null ? '—' : number_format((float) $v, 2, ',', '.');
+    $rp = fn ($v) => $v === null ? '—' : 'Rp '.number_format((float) $v, 2, ',', '.');
+    // Semua variabel dihitung di sini (bukan di awal blok @else) -- hindari bug compiler
+    // Livewire v4 utk @php sbg baris pertama dalam @if/@else (memory wirekey_inline_php).
+    $inq = $c?->inquiry;
+    $t = $this->tier;
+    $p = $this->part;
+    $ctx = $this->context;
+    $geo = $ctx['geometry'] ?? null;
+    $ro = $this->readOnly;
+    $lk = $this->lookups;
+    $qty = $this->qty();
+    $typeLabel = ['NEW' => 'Produk Baru', 'RECALC' => 'Hitung Ulang', 'REVISE' => 'Revisi'][$c?->calc_type] ?? $c?->calc_type;
+    $statusCls = match ($c?->doc_status) { 'CALCULATED' => 'bg-[#eaf2ff] text-[#1d4ed8] border-[#bfdbfe]', 'PENDING_APPROVAL' => 'bg-[#fef9c3] text-[#854d0e] border-[#fde68a]', 'PUBLISHED' => 'bg-[#dcfce7] text-[#166534] border-[#bbf7d0]', default => 'bg-[#fef9c3] text-[#854d0e] border-[#fde68a]' };
+    $card = 'bg-white rounded-xl shadow-sm border border-[#e2e8f0] p-4';
+    $h2 = 'text-[12px] font-bold text-[#0f172a] uppercase tracking-wider mb-3 pb-2 border-b border-[#e2e8f0] flex items-center gap-2';
+    $partCount = $c?->parts->count() ?? 0;
+    $toolOrder = (float) ($p?->c_tooling_cost_order ?? 0);
+    $hppOrder = (float) ($t?->c_hpp_pc ?? 0) * $qty;
+    $isDcFam = in_array($p?->part_type_code, ['DC', 'DC+SF', 'DC+SHEET', 'KRAFT'], true);
+    $isSheet = in_array($p?->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true);
+    $isLam = in_array($p?->part_type_code, ['DC+SF', 'DC+SHEET'], true);
+    $geoLock = $ro || $p?->data_source === 'PRODEV';
+    $pid = $p?->id_costing_part ?? 0;
+@endphp
+
 <div>
-    @if ($this->costing?->isIntegrated() ?? true)
-        <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps" :back-url="route('inquiry.costing.list')" />
-    @endif
+    <x-prodev.wizard-bar current="costing" :steps="$this->wizardSteps()" :back-url="route('inquiry.costing.list')" />
 
     @if ($view)
-        {{-- ============ CROSS-NAV READ-ONLY (wizard-bar, user 2026-09-04) ============
-        Bukan entry primer (grid Costing) -- cuma numpang lihat status/harga dari
-        Inquiry/ProDev, TIDAK BISA mengubah apa pun, tidak ada tombol edit sama
-        sekali. Sisi A rahasia (CLAUDE.md §4) tetap dijaga: HPP/breakdown TIDAK
-        ditampilkan di sini (beda dari $this->canSeeFormula di mode edit yg cuma
-        gate utk johiwan) -- yg boleh kelihatan di ringkasan ini cuma status +
-        harga jual final per tier (price_per_pcs), SETELAH published. --}}
+        {{-- ═════ CROSS-NAV READ-ONLY: status + harga final saja (Sisi A rahasia) ═════ --}}
         <div class="max-w-[720px] mx-auto my-10 px-4">
             <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
                 <h3 class="text-xs text-navy uppercase font-bold px-3.5 py-2 bg-[#f4f6fa] border-b border-[#d7dbe2]">🧮 Product Costing (lihat saja)</h3>
                 <div class="p-4">
-                    @if (! $this->costing)
-                        <div class="text-[12.5px] px-3 py-3 rounded-md leading-relaxed bg-[#eef0f3] text-[#5a6272]">
-                            ⏳ <b>Belum Diproses</b> — Costing utk Inquiry ini belum pernah dibuka/dihitung Tim Costing.
-                        </div>
-                    @elseif (! $this->costing->published_flag)
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#fff3d6] text-[#8a5a00]">{{ $this->costing->doc_status }}</span>
-                        </div>
-                        <div class="text-[12.5px] px-3 py-3 rounded-md leading-relaxed bg-[#eef0f3] text-[#5a6272]">
-                            ⏳ <b>Belum Diproses</b> — Costing masih dikerjakan Tim Costing, belum di-publish Direksi. Harga baru kelihatan di sini setelah publish.
-                        </div>
+                    @if (! $c)
+                        <div class="text-[12.5px] px-3 py-3 rounded-md bg-[#eef0f3] text-[#5a6272]">⏳ <b>Belum Diproses</b> — Costing utk Inquiry ini belum pernah dibuka/dihitung Tim Costing.</div>
+                    @elseif (! $c->published_flag)
+                        <div class="text-[12.5px] px-3 py-3 rounded-md bg-[#eef0f3] text-[#5a6272]">⏳ <b>Belum Diproses</b> ({{ $c->doc_status }}) — harga baru kelihatan setelah publish Direksi.</div>
                     @else
-                        <div class="flex items-center gap-2 mb-3">
-                            <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-[#eaf7ee] text-[#1f8a4c]">{{ $this->costing->doc_status }} · PUBLISHED</span>
-                        </div>
                         <table class="w-full text-[12.5px]">
-                            <thead>
-                                <tr>
-                                    <th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#eef1f5]">Qty</th>
-                                    <th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase font-bold border-b border-[#eef1f5]">Harga / pcs</th>
-                                </tr>
-                            </thead>
+                            <thead><tr><th class="text-left px-2 py-1.5 text-[9.5px] text-muted uppercase border-b">Qty</th><th class="text-right px-2 py-1.5 text-[9.5px] text-muted uppercase border-b">Harga / pcs</th></tr></thead>
                             <tbody>
-                                @forelse ($this->costing->priceTiers as $tier)
-                                    <tr class="{{ $tier->is_primary ? 'bg-[#eef5ff]' : '' }}">
-                                        <td class="px-2 py-1.5 border-b border-[#eef1f5] font-semibold">{{ number_format($tier->qty_pcs) }}{{ $tier->is_primary ? ' ★' : '' }}</td>
-                                        <td class="px-2 py-1.5 border-b border-[#eef1f5] text-right font-bold text-navy">{{ $tier->price_per_pcs !== null ? 'Rp '.number_format($tier->price_per_pcs, 2) : '—' }}</td>
-                                    </tr>
-                                @empty
-                                    <tr><td colspan="2" class="text-center py-4 text-muted">Belum ada tier qty.</td></tr>
-                                @endforelse
+                                @foreach ($c->priceTiers as $t)
+                                    <tr><td class="px-2 py-1.5 border-b font-semibold">{{ number_format($t->qty_pcs) }}{{ $t->is_primary ? ' ★' : '' }}</td><td class="px-2 py-1.5 border-b text-right font-bold text-navy">{{ $rp($t->price_per_pcs) }}</td></tr>
+                                @endforeach
                             </tbody>
                         </table>
                     @endif
@@ -715,405 +658,412 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             </div>
         </div>
     @else
-    @if ($this->costing->isIntegrated())
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🧮 TELASIH MAKMUR — Costing (HPP)</b>
-        <span class="text-xs text-white/75">{{ $this->costing->inquiry?->inquiry_no ?? '—' }} · {{ $this->costing->inquiry?->product_draft_name }}</span>
-        <button type="button" wire:click="addToQuotation" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">＋ Tambahkan ke Quotation</button>
-        <a href="{{ route('inquiry.nota', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Nota</a>
-        <a href="{{ route('inquiry.imposition', ['inquiry' => $this->inquiryId]) }}" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Imposition</a>
-        <x-back-button :fallback="$backUrl" title="Kembali ke layar sebelumnya" />
-    </header>
-    @else
-    {{-- ============ HEADER MODE INSTANT (standalone, keputusan user 2026-09-18) ============ --}}
-    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
-        <b class="text-[15px]">🧮 Kalkulator HPP — Mode Instant</b>
-        <span class="text-xs text-white/75">{{ $this->costing->doc_no ?? 'Draft #'.$this->costingId }}</span>
-        <button type="button" wire:click="reverseToIntegrated"
-            title="Bikin Inquiry Product + ProDev otomatis dari data di sini, lalu tautkan (mode dokumen ini berubah jadi Integrated)"
-            class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">⇄ Reverse</button>
-        <x-back-button :fallback="$backUrl" title="Kembali ke layar sebelumnya" />
-    </header>
-    @endif
+    <div class="max-w-[1320px] mx-auto my-4 px-4 space-y-4 text-[13px]">
 
-    <div class="max-w-[1180px] mx-auto my-5 px-4">
-
-        @if (session('error'))
-            <div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md mb-3">⚠ {{ session('error') }}</div>
-        @endif
-
-        @if ($engineError)
-            <div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md mb-3">⚠ {{ $engineError }}</div>
-        @endif
-
-        @if ($this->costing->isInstant())
-            {{-- ============ IDENTITAS MODE INSTANT (tak ada Inquiry sbg sumber) ============ --}}
-            <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 grid grid-cols-3 gap-3">
-                <x-form.select label="Customer" wire:change="updateHeaderField('customer_id', $event.target.value)" class="!py-1.5"
-                    :selected="$this->costing->customer_id" :options="$this->customers->pluck('customer_name', 'id_customer')->all()" />
-                <x-form.input label="Nama Produk (bebas)" value="{{ $this->costing->product_name_draft }}" placeholder="mis. Dus Sepatu Model X"
-                    wire:change="updateHeaderField('product_name_draft', $event.target.value)" class="!py-1.5" />
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] text-muted uppercase font-semibold">Dimensi Jadi P×L×T (mm)</label>
-                    <div class="flex gap-1">
-                        <x-form.input type="number" step="0.01" value="{{ $this->costing->i_dim_panjang_mm }}" wire:change="updateHeaderField('i_dim_panjang_mm', $event.target.value)" class="w-1/3 !py-1.5" />
-                        <x-form.input type="number" step="0.01" value="{{ $this->costing->i_dim_lebar_mm }}" wire:change="updateHeaderField('i_dim_lebar_mm', $event.target.value)" class="w-1/3 !py-1.5" />
-                        <x-form.input type="number" step="0.01" value="{{ $this->costing->i_dim_tinggi_mm }}" wire:change="updateHeaderField('i_dim_tinggi_mm', $event.target.value)" class="w-1/3 !py-1.5" />
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- ============ HEADER ============ --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4 flex items-center gap-4 flex-wrap">
+        {{-- ═════ Header (mockup: breadcrumb + judul + badge) + tombol alur (deviasi #1) ═════ --}}
+        <div class="{{ $card }} !py-3 flex flex-wrap items-center gap-3">
             <div>
-                <div class="text-[10.5px] text-muted uppercase font-semibold">Tipe</div>
-                <div class="text-sm font-bold text-navy">{{ $this->costing->calc_type }}</div>
+                <div class="text-[12px] text-[#64748b] mb-0.5">ERP System / Product Costing / <b class="text-[#334155]">{{ $c->doc_no ?? $inq?->inquiry_no }}</b></div>
+                <h1 class="text-[20px] font-bold text-[#0f172a] flex items-center gap-2">🧮 Kalkulasi HPP (Costing)
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border {{ $statusCls }}">{{ $c->doc_status }}</span>
+                    @if ($c->reversed_at)<span class="px-2 py-0.5 rounded-full text-[10px] bg-[#f1f5f9] text-[#475569]">dari Instant (Reverse)</span>@endif
+                </h1>
             </div>
-            <div>
-                <div class="text-[10.5px] text-muted uppercase font-semibold">Status</div>
-                <span class="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full inline-block bg-[#eaf7ee] text-[#1f8a4c]">{{ $this->costing->doc_status }}</span>
-            </div>
-            @if ($this->costing->isIntegrated())
-            <div>
-                <div class="text-[10.5px] text-muted uppercase font-semibold">Dimensi Jadi (mm)</div>
-                <div class="text-sm">{{ $this->costing->i_dim_panjang_mm }} × {{ $this->costing->i_dim_lebar_mm }} × {{ $this->costing->i_dim_tinggi_mm }}</div>
-            </div>
-            @endif
-            <div>
-                <div class="text-[10.5px] text-muted uppercase font-semibold">PPN</div>
-                <div class="text-sm">{{ $this->costing->ppn_mode }} ({{ $this->costing->ppn_pct }}%)</div>
-            </div>
-            <div class="ml-auto flex gap-2">
-                <button type="button" wire:click="hitung" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">⚙ Hitung</button>
-                <button type="button" wire:click="submitToDireksi" @disabled($this->costing->doc_status !== 'CALCULATED')
-                    class="px-4 py-2 rounded text-xs font-semibold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">Submit ke Direksi</button>
+            <div class="ml-auto flex items-center gap-2">
+                <button type="button" wire:click="hitung" data-dirty-save @disabled($ro) class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#2563eb] text-white cursor-pointer disabled:opacity-40">⚙ Hitung</button>
+                <button type="button" wire:click="submitToDireksi" @disabled($c->doc_status !== 'CALCULATED') class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#16a34a] text-white cursor-pointer disabled:opacity-40">Submit ke Direksi</button>
+                <button type="button" wire:click="addToQuotation" class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#f1f5f9] border border-[#cbd5e1] cursor-pointer">＋ Quotation</button>
             </div>
         </div>
 
-        {{-- ============ PART REPEATER (DC only) ============ --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <h3 class="text-xs text-navy uppercase font-bold">Part</h3>
-                <div class="flex gap-1.5 items-center">
-                    <button type="button" wire:click="addPart('DC')" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Part DC</button>
-                    <button type="button" wire:click="addPart('SHEET_DIGITAL')" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Part Sheet</button>
-                    @if ($this->inquiryParts->isNotEmpty())
-                        <select id="add-from-part-{{ $this->costingId }}" class="text-[11px] px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-navy">
-                            <option value="">— dari part inquiry —</option>
-                            @foreach ($this->inquiryParts as $ip)
-                                <option value="{{ $ip->id_part }}">{{ $ip->part_name ?: 'Part #'.$ip->part_seq }}{{ $ip->layout?->stat_confirm ? ' ✓' : '' }}</option>
+        @if ($engineError)<div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md">⚠ {{ $engineError }}</div>@endif
+        @if (session('error'))<div class="bg-red-50 border border-red-300 text-red-700 text-xs px-3.5 py-2.5 rounded-md">⚠ {{ session('error') }}</div>@endif
+
+        {{-- ═════ Baris 1: Doc & Customer | Product Specification (+InqProd) | Dynamic Parameters ═════ --}}
+        <div class="[display:grid] grid-cols-3 gap-4">
+            <div class="{{ $card }}">
+                <h2 class="{{ $h2 }}">📄 Doc &amp; Customer Info</h2>
+                <div class="space-y-2 text-[13px]">
+                    @foreach (['Doc No:' => $c->doc_no ?? '—', 'Doc Date:' => $c->doc_date?->format('d/m/Y') ?? '—', 'Inquiry:' => $inq?->inquiry_no, 'Customer:' => $inq?->customer?->customer_name ?? $inq?->prospect_name, 'Type:' => $typeLabel.' (Rev '.($inq?->revision_no ?? 0).')', 'PIC Sales:' => $inq?->pic_sales ?: '—'] as $k => $v)
+                        <div class="[display:grid] grid-cols-2 gap-2"><span class="text-[#64748b]">{{ $k }}</span><span class="font-semibold {{ $k === 'Customer:' ? 'text-[#1d4ed8]' : '' }}">{{ $v ?: '—' }}</span></div>
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="{{ $card }}">
+                <h2 class="{{ $h2 }}">📦 Product Specification
+                    @if ($partCount > 1)
+                        <span class="ml-auto flex gap-1 normal-case">
+                            @for ($i = 1; $i <= $partCount; $i++)
+                                <button type="button" wire:click="goPart({{ $i }})" class="px-1.5 rounded text-[11px] cursor-pointer {{ $i === min($partNo, $partCount) ? 'bg-[#2c3e69] text-white' : 'bg-[#f1f5f9]' }}">{{ $i }}</button>
+                            @endfor
+                            <span class="text-[10px] text-[#64748b] self-center">of {{ $partCount }}</span>
+                        </span>
+                    @endif
+                </h2>
+                <div class="space-y-2">
+                    <div class="[display:grid] grid-cols-[90px_1fr] gap-2"><span class="text-[#64748b]">Product:</span><span class="font-semibold leading-tight">{{ $inq?->product_draft_name }}</span></div>
+                    <div class="[display:grid] grid-cols-[90px_1fr] gap-2"><span class="text-[#64748b]">Part Name:</span><span class="font-medium">{{ $p?->part_name ?: '—' }} <span class="text-[10px] px-1.5 rounded bg-[#dbeafe] text-[#1d4ed8]">{{ $p?->part_type_code }}</span></span></div>
+                    <div class="pt-2 border-t border-[#e2e8f0]">
+                        <div class="flex justify-between text-[11px] text-[#64748b]"><span>Panjang (mm)</span><span>Lebar (mm)</span><span>Tinggi (mm)</span></div>
+                        <div class="flex justify-between font-mono">{{-- dimensi part, fallback header --}}
+                            <span>{{ $n2($p?->i_dim_panjang_mm ?: $c->i_dim_panjang_mm) }}</span><span>{{ $n2($p?->i_dim_lebar_mm ?: $c->i_dim_lebar_mm) }}</span><span>{{ $n2($p?->i_dim_tinggi_mm ?: $c->i_dim_tinggi_mm) }}</span>
+                        </div>
+                    </div>
+                    @if ($ctx)
+                        <div class="pt-2 border-t border-[#e2e8f0] [display:grid] grid-cols-[1fr_64px] gap-2 text-[12px]">
+                            <div class="[display:grid] grid-cols-[80px_1fr] gap-x-2 gap-y-0.5">
+                                <span class="text-[#64748b]">Warna:</span><b>{{ $ctx['iqpPart']?->cfg_color ?: ($ctx['prodPart']?->cfg_color ?: '—') }}</b>
+                                <span class="text-[#64748b]">Tinta:</span><b>{{ $ctx['iqpPart']?->cfg_ink ?: count($ctx['inks']).' pass' }}</b>
+                                <span class="text-[#64748b]">Finishing:</span><b>{{ collect($ctx['finishings'])->pluck('name')->unique()->implode(', ') ?: '—' }}</b>
+                                <span class="text-[#64748b]">Material:</span><b>{{ $this->materialLabel() }}</b>
+                                <span class="text-[#64748b]">Qty/Set:</span><b>{{ (float) $p->qty_per_set }} pcs</b>
+                                <span class="text-[#64748b]">Sumber:</span><b>{{ $inq?->inquiry_no }}{{ $geo ? ' · ProDev '.$geo['mc'].' ('.$geo['status'].')' : ' · belum ada layout ProDev' }}</b>
+                            </div>
+                            @if ($ctx['artworkUrl'])
+                                <a href="{{ $ctx['artworkUrl'] }}" target="_blank"><img src="{{ $ctx['artworkUrl'] }}" alt="artwork" class="w-16 h-20 object-cover rounded border border-[#cbd5e1]"></a>
+                            @else
+                                <div class="w-16 h-20 rounded border border-dashed border-[#cbd5e1] flex items-center justify-center text-[9px] text-[#94a3b8] text-center">tanpa artwork</div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="bg-[#eff6ff] rounded-xl shadow-sm border border-[#dbeafe] p-4">
+                <h2 class="text-[12px] font-bold text-[#1e3a8a] uppercase tracking-wider mb-3 pb-2 border-b border-[#bfdbfe]">⚙ Dynamic Parameters</h2>
+                <div class="[display:grid] grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Qty Order (Pcs)</label>
+                        <select wire:change="selectTier($event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
+                            @foreach ($c->priceTiers as $pt)
+                                <option value="{{ $pt->id_price_tier }}" @selected($t?->id_price_tier === $pt->id_price_tier)>{{ number_format($pt->qty_pcs) }}{{ $pt->is_primary ? ' ★' : '' }}</option>
                             @endforeach
                         </select>
-                        <button type="button"
-                            @click="const s=document.getElementById('add-from-part-{{ $this->costingId }}'); if(s.value){ $wire.addPartFromInquiry(parseInt(s.value)); s.value=''; }"
-                            class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋</button>
-                    @endif
+                        @if ($t && ! $t->tier_id)
+                            <div class="text-[10px] text-[#b45309] mt-0.5">⚠ Inquiry belum punya tier qty — default 1.000</div>
+                        @endif
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Margin (%)</label>
+                        <input type="number" step="any" value="{{ (float) $t?->margin_pct }}" @readonly($ro) wire:change="updateTier({{ $t?->id_price_tier ?? 0 }}, 'margin_pct', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Paper Index (Rp/Rim)</label>
+                        <input type="number" step="any" value="{{ $p?->i_paper_price_override !== null ? (float) $p->i_paper_price_override : '' }}" placeholder="master" @readonly($ro || ! $p) wire:change="setPaperIndex($event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">PPN (%)</label>
+                        <input type="number" step="any" value="{{ (float) $c->ppn_pct }}" @readonly($ro) wire:change="updateHeader('ppn_pct', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Toleransi (%)</label>
+                        <input type="number" step="any" value="{{ (float) $t?->tolerance_pct }}" @readonly($ro) wire:change="updateTier({{ $t?->id_price_tier ?? 0 }}, 'tolerance_pct', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-medium text-[#475569] mb-1">Rounding</label>
+                        <select @disabled($ro) wire:change="updateTier({{ $t?->id_price_tier ?? 0 }}, 'rounding_mode', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
+                            @foreach (['NEAREST' => 'NEAREST', 'UP' => 'CEILING', 'DOWN' => 'FLOOR'] as $rv => $rl)
+                                <option value="{{ $rv }}" @selected($t?->rounding_mode === $rv)>{{ $rl }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
-
-            @forelse ($this->costing->parts as $part)
-                <div class="border-b border-[#d7dbe2] last:border-b-0 p-4" wire:key="part-{{ $part->id_costing_part }}" x-data="{ zoomArtwork: false }">
-                    <div class="flex items-center gap-2 mb-3">
-                        <x-form.input value="{{ $part->part_name }}" placeholder="Nama part (mis. Bag Atas)"
-                            wire:change="updatePart({{ $part->id_costing_part }}, 'part_name', $event.target.value)"
-                            class="!py-1.5 font-semibold" />
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#d8ecff] text-[#1560a8]">{{ $part->part_type_code }}</span>
-
-                        {{-- Mode Instant selalu MANUAL (blm py ProDev sblm Reverse) -- toggle
-                        cuma relevan utk Integrated. --}}
-                        @if ($this->costing->isIntegrated() && ! in_array($part->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true))
-                            <button type="button" wire:click="toggleDataSource({{ $part->id_costing_part }})"
-                                class="text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer {{ $part->data_source === 'PRODEV' ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#f4f6fa] text-muted border border-[#d7dbe2]' }}">
-                                {{ $part->data_source === 'PRODEV' ? '🔗 Ambil Data (ProDev)' : '✎ Manual' }}
-                            </button>
-                        @endif
-
-                        <button type="button" wire:click="removePart({{ $part->id_costing_part }})" class="text-red-500 text-xs cursor-pointer px-2 ml-auto">✕ Hapus</button>
-                    </div>
-
-                    {{-- Artwork/desain dari Inquiry (permintaan user 2026-09-04: "info
-                    artwork harus mengalir ke ProDev dan ProCost") -- baca langsung dari
-                    iqp_part.artwork_path via relasi inquiryPart(), sama file yg diupload
-                    sales di Inquiry, tidak disalin ulang. Null kalau part costing ini
-                    dibuat manual (bukan dari addPartFromInquiry()) atau inquiry-nya
-                    memang belum ada artwork. --}}
-                    @php($artworkUrl = $part->inquiryPart?->artwork_path ? asset('storage/'.$part->inquiryPart->artwork_path) : null)
-                    @if ($artworkUrl)
-                        <div class="flex items-center gap-2.5 bg-[#f4f6fa] border border-[#d7dbe2] rounded-md p-2 mb-3">
-                            <img src="{{ $artworkUrl }}" @click="zoomArtwork = true"
-                                class="w-12 h-12 object-cover rounded border border-[#d7dbe2] cursor-zoom-in flex-shrink-0" alt="artwork">
-                            <div class="min-w-0">
-                                <div class="text-[10px] font-bold text-navy uppercase tracking-wide">📎 Artwork dari Inquiry</div>
-                                <div class="text-[11px] text-muted truncate" title="{{ $part->inquiryPart->artwork_original_filename }}">{{ $part->inquiryPart->artwork_original_filename }}</div>
-                            </div>
-                        </div>
-                        <div x-show="zoomArtwork" x-cloak @click.self="zoomArtwork = false" @keydown.escape.window="zoomArtwork = false"
-                             class="fixed inset-0 z-[250] bg-black/70 flex items-center justify-center p-6">
-                            <img src="{{ $artworkUrl }}" class="max-w-[90vw] max-h-[88vh] rounded-lg shadow-2xl" alt="artwork ukuran penuh">
-                        </div>
-                    @endif
-
-                    @if ($part->data_source === 'PRODEV')
-                        <div class="bg-[#f0f7f4] border border-[#c6e5d5] rounded-md p-2.5 mb-3 flex items-center gap-2">
-                            <span class="text-[11px] text-[#177a4b] font-semibold">Sumber Layout:</span>
-                            <select onchange="if(this.value) $wire.pickLayoutGroup({{ $part->id_costing_part }}, parseInt(this.value))"
-                                class="text-[11px] px-2 py-1 border border-[#c3d8f5] rounded flex-1 max-w-[360px]">
-                                <option value="">— pilih Master Card/Layout terkonfirmasi —</option>
-                                @foreach ($this->availableLayoutGroups as $g)
-                                    <option value="{{ $g->id_layout_group }}" @selected($part->prod_layout_group_id === $g->id_layout_group)>
-                                        {{ $g->mastercard_code }} · {{ $g->product?->product_name }} · {{ $g->up_count }} UP
-                                    </option>
-                                @endforeach
-                            </select>
-                            @if (! $part->prod_layout_group_id)
-                                <span class="text-[10.5px] text-[#8a5a00]">Pilih layout dulu, plano/cut &amp; HPP terisi otomatis.</span>
-                            @endif
-                        </div>
-
-                        @php($selectedGroup = $part->prod_layout_group_id ? $this->availableLayoutGroups->firstWhere('id_layout_group', $part->prod_layout_group_id) : null)
-                        @if ($selectedGroup && $selectedGroup->parts->count() > 1)
-                            {{-- Layout Tool #10 (COMBINED_SPLIT) menaungi >1 part -- officer WAJIB
-                            pilih part mana yg direpresentasikan baris costing ini, supaya biaya
-                            kertas/plate teralokasi proporsional by luas (§4.2b), bukan dobel-hitung. --}}
-                            <div class="bg-[#fff8ec] border border-[#f0dcae] rounded-md p-2.5 mb-3 flex items-center gap-2">
-                                <span class="text-[11px] text-[#8a5a00] font-semibold">Part dalam Layout Gabungan:</span>
-                                <select onchange="if(this.value) $wire.pickLayoutGroup({{ $part->id_costing_part }}, {{ $selectedGroup->id_layout_group }}, parseInt(this.value))"
-                                    class="text-[11px] px-2 py-1 border border-[#e6cd8f] rounded flex-1 max-w-[320px]">
-                                    <option value="">— pilih part —</option>
-                                    @foreach ($selectedGroup->parts as $gp)
-                                        <option value="{{ $gp->id_part }}" @selected($part->prodev_part_id === $gp->id_part)>
-                                            {{ $gp->part_name }} ({{ $gp->pivot->qty_up_in_group }} up)
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @if (! $part->prodev_part_id)
-                                    <span class="text-[10.5px] text-[#9a3324]">Belum dipilih — biaya BELUM teralokasi proporsional.</span>
-                                @endif
-                            </div>
-                        @endif
-                    @endif
-
-                    @if ($part->part_type_code === 'DC')
-                    <div class="grid grid-cols-4 gap-2.5 mb-3">
-                        <x-form.select label="Gramatur" wire:change="updatePart({{ $part->id_costing_part }}, 'grammage_id', $event.target.value)" class="!py-1.5"
-                            :selected="$part->grammage_id" :options="$this->grammages->pluck('grammage_name', 'id_grammage')->all()" />
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold">Plano P×L (cm)</label>
-                            <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_panjang_plano_cm }}" @disabled($part->data_source === 'PRODEV') wire:change="updatePart({{ $part->id_costing_part }}, 'i_panjang_plano_cm', $event.target.value)" class="w-1/2 !py-1.5 disabled:bg-[#eef0f3]" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_lebar_plano_cm }}" @disabled($part->data_source === 'PRODEV') wire:change="updatePart({{ $part->id_costing_part }}, 'i_lebar_plano_cm', $event.target.value)" class="w-1/2 !py-1.5 disabled:bg-[#eef0f3]" />
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold">Cut / Isi</label>
-                            <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_cut_per_plano }}" @disabled($part->data_source === 'PRODEV') wire:change="updatePart({{ $part->id_costing_part }}, 'i_cut_per_plano', $event.target.value)" class="w-1/2 !py-1.5 disabled:bg-[#eef0f3]" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_isi_per_lb }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_isi_per_lb', $event.target.value)" class="w-1/2 !py-1.5" />
-                            </div>
-                        </div>
-                        <x-form.input label="Jumlah Warna" type="number" value="{{ $part->i_jumlah_warna }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_jumlah_warna', $event.target.value)" class="!py-1.5" />
-                    </div>
-
-                    @if ($part->prodev_part_id)
-                        @php($routingNames = $this->routingNamesFor($part))
-                        @php($routingWarnings = $this->routingWarningsFor($part))
-                        <div class="flex items-center gap-1.5 flex-wrap text-[10.5px] mb-1.5">
-                            <span class="font-bold text-muted uppercase">Urutan Proses (ProDev):</span>
-                            @forelse ($routingNames as $name)
-                                <span class="px-1.5 py-0.5 rounded bg-[#eef3fb] text-[#2c3e69] font-semibold">{{ $name }}</span>
-                            @empty
-                                <span class="text-[#8a5a00]">belum ada routing tercatat di ProDev untuk part ini</span>
-                            @endforelse
-                        </div>
-                        @if ($routingWarnings)
-                            <div class="bg-[#fff8ec] border border-[#f0dcae] rounded-md p-2 mb-1.5 space-y-0.5">
-                                @foreach ($routingWarnings as $w)
-                                    <div class="text-[10.5px] text-[#8a5a00]">⚠ {{ $w }}</div>
-                                @endforeach
-                            </div>
-                        @endif
-                    @endif
-                    <div class="grid grid-cols-3 gap-2.5 mb-3">
-                        <x-form.input label="Ongkos Cetak /rim" type="number" step="0.01" value="{{ $part->i_ongkos_cetak_rim }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_cetak_rim', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Ongkos Plong /lb" type="number" step="0.01" value="{{ $part->i_ongkos_plong_lb }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_plong_lb', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Ongkos Lem /pc" type="number" step="0.01" value="{{ $part->i_ongkos_lem_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_lem_pc', $event.target.value)" class="!py-1.5" />
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-2.5 mb-3">
-                        <x-form.input label="Film Faktor" type="number" step="0.01" value="{{ $part->i_film_faktor }}" placeholder="0.25" wire:change="updatePart({{ $part->id_costing_part }}, 'i_film_faktor', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Pisau Faktor" type="number" step="0.01" value="{{ $part->i_pisau_faktor }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_pisau_faktor', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Pisau Rate (Rp)" type="number" step="0.01" value="{{ $part->i_pisau_rate_rp }}" placeholder="default part type" wire:change="updatePart({{ $part->id_costing_part }}, 'i_pisau_rate_rp', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Plate/warna (Rp)" type="number" step="0.01" value="{{ $part->i_ongkos_plate_warna }}" placeholder="default 90.000" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_plate_warna', $event.target.value)" class="!py-1.5" />
-                    </div>
-
-                    {{-- COATING GRID (nested) — hidden utk SHEET_DIGITAL (TOOL_SKIP, §B.1) --}}
-                    <div class="border border-dashed border-[#cfd7e3] rounded-md p-2.5">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-[10.5px] font-bold text-navy uppercase">Coating (berurutan)</span>
-                            <button type="button" wire:click="addCoating({{ $part->id_costing_part }})" class="text-[10.5px] font-bold text-accent cursor-pointer">＋ Layer</button>
-                        </div>
-                        @forelse ($part->coatings as $coating)
-                            <div class="flex items-center gap-2 mb-1.5" wire:key="coating-{{ $coating->id_coating }}">
-                                <span class="text-[10px] text-muted w-4">{{ $coating->seq }}.</span>
-                                <x-form.select wire:change="updateCoating({{ $coating->id_coating }}, 'coating_type', $event.target.value)" class="!py-1 text-[11px]" :placeholder="false"
-                                    :selected="$coating->coating_type" :options="$this->coatingRates->pluck('coating_type', 'coating_type')->all()" />
-                                <span class="text-[11px] text-muted">index: {{ $coating->index_coating }}</span>
-                                <span class="text-[11px] ml-auto">{{ $coating->c_cost_per_pc !== null ? number_format($coating->c_cost_per_pc, 2) : '—' }}/pc</span>
-                                <button type="button" wire:click="removeCoating({{ $coating->id_coating }})" class="text-red-500 text-[11px] cursor-pointer">✕</button>
-                            </div>
-                        @empty
-                            <div class="text-[10.5px] text-muted">Tidak ada coating.</div>
-                        @endforelse
-                    </div>
-
-                    @elseif ($part->part_type_code === 'SHEET_DIGITAL')
-                    <div class="grid grid-cols-4 gap-2.5 mb-3">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold">Panjang×Lebar×Tinggi (mm)</label>
-                            <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_dim_panjang_mm }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_dim_panjang_mm', $event.target.value)" class="w-1/3 !py-1.5" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_dim_lebar_mm }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_dim_lebar_mm', $event.target.value)" class="w-1/3 !py-1.5" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_dim_tinggi_mm }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_dim_tinggi_mm', $event.target.value)" class="w-1/3 !py-1.5" />
-                            </div>
-                        </div>
-                        <x-form.input label="Lidah Lem (mm)" type="number" step="0.01" value="{{ $part->i_lidah_lem_mm }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_lidah_lem_mm', $event.target.value)" class="!py-1.5" />
-                        <x-form.select label="Jenis Flute" wire:change="updatePart({{ $part->id_costing_part }}, 'flute_type', $event.target.value)" class="!py-1.5"
-                            :selected="$part->flute_type" :options="['B/F' => 'B/F', 'C/F' => 'C/F', 'BC/F' => 'BC/F']" />
-                        <x-form.select label="Substance" wire:change="updatePart({{ $part->id_costing_part }}, 'sheet_rate_id', $event.target.value)" class="!py-1.5"
-                            :selected="$part->sheet_rate_id" :options="$this->sheetRates->mapWithKeys(fn ($sr) => [$sr->id_sheet_rate => $sr->substance_name.' ('.$sr->flute_type.')'])->all()" />
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-2.5 mb-3">
-                        <x-form.input label="Supplier" value="{{ $part->supplier_sheet_code }}" wire:change="updatePart({{ $part->id_costing_part }}, 'supplier_sheet_code', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Isi/Lb Kerja" type="number" step="0.01" value="{{ $part->i_isi_per_lb_kerja }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_isi_per_lb_kerja', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Ongkos Print /pc" type="number" step="0.01" value="{{ $part->i_ongkos_print_pc }}" placeholder="dikali 2 di engine" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_print_pc', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Ongkos Diecut /pc" type="number" step="0.01" value="{{ $part->i_ongkos_diecut_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_diecut_pc', $event.target.value)" class="!py-1.5" />
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-2.5 mb-3">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold">Slitter/Slotter /pc</label>
-                            <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_ongkos_slitter_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_slitter_pc', $event.target.value)" class="w-1/2 !py-1.5" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_ongkos_slotter_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_slotter_pc', $event.target.value)" class="w-1/2 !py-1.5" />
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-muted uppercase font-semibold">Join/Partisi/Layer /pc</label>
-                            <div class="flex gap-1">
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_ongkos_join_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_join_pc', $event.target.value)" class="w-1/3 !py-1.5" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_ongkos_partisi_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_partisi_pc', $event.target.value)" class="w-1/3 !py-1.5" />
-                                <x-form.input type="number" step="0.01" value="{{ $part->i_ongkos_layer_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_layer_pc', $event.target.value)" class="w-1/3 !py-1.5" />
-                            </div>
-                        </div>
-                        <x-form.input label="QC /pc" type="number" step="0.01" value="{{ $part->i_ongkos_qc_pack_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_qc_pack_pc', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Kirim /pc" type="number" step="0.01" value="{{ $part->i_ongkos_kirim_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_kirim_pc', $event.target.value)" class="!py-1.5" />
-                    </div>
-
-                    {{-- Gap analysis 2026-09-03 (perbandingan vs legacy ScriptCase "Kalkulasih HPP"):
-                    Ongkos Kupas belum ada sama sekali, QC+Packing tadinya 1 kolom (di atas, sekarang
-                    QC saja). Jenis Packing free-text (bukan dropdown) -- belum ada daftar baku jenis
-                    packing yang dikonfirmasi user, jangan menebak opsinya. --}}
-                    <div class="grid grid-cols-3 gap-2.5 mb-3">
-                        <x-form.input label="Kupas /pc" type="number" step="0.01" value="{{ $part->i_ongkos_kupas_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_kupas_pc', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Packing /pc" type="number" step="0.01" value="{{ $part->i_ongkos_packing_pc }}" wire:change="updatePart({{ $part->id_costing_part }}, 'i_ongkos_packing_pc', $event.target.value)" class="!py-1.5" />
-                        <x-form.input label="Jenis Packing" value="{{ $part->jenis_packing }}" placeholder="mis. Karton/Plastik" wire:change="updatePart({{ $part->id_costing_part }}, 'jenis_packing', $event.target.value)" class="!py-1.5" />
-                    </div>
-                    @endif
-
-                    @if ($part->c_total_part_cost_pc !== null)
-                        @if ($this->canSeeFormula)
-                            @if ($part->part_type_code === 'SHEET_DIGITAL')
-                                <div class="bg-[#eef3fb] border border-[#c3d8f5] rounded-md px-3 py-2 text-[11.5px] text-[#1560a8] flex gap-4 flex-wrap mb-2">
-                                    <span>Sheet {{ $part->c_panjang_sheet_cm }}×{{ $part->c_lebar_sheet_cm }}cm</span>
-                                    <span>Isi trim: <b>{{ $part->c_isi_trim }}</b></span>
-                                    <span>Lebar trim: <b>{{ $part->c_lebar_trim_cm }}cm</b></span>
-                                    <span>Running meter: <b>{{ number_format($part->c_running_meter, 2) }}</b></span>
-                                    <span>Diskon/surcharge: <b>{{ $part->c_discount_rm }}</b></span>
-                                </div>
-                            @endif
-                            <div class="mt-1 bg-[#f0f7f4] border border-[#c6e5d5] rounded-md px-3 py-2 text-[11.5px] text-[#177a4b] flex gap-4 flex-wrap">
-                                <span>Bahan: <b>{{ number_format($part->c_paper_cost_pc, 2) }}</b></span>
-                                <span>Proses: <b>{{ number_format($part->c_cetak_cost_pc + $part->c_plong_cost_pc + $part->c_lem_cost_pc, 2) }}</b></span>
-                                <span>Coating: <b>{{ number_format($part->c_total_coating_pc, 2) }}</b></span>
-                                <span>Tooling (order): <b>{{ number_format($part->c_tooling_cost_order, 0) }}</b></span>
-                                <span>Total/pc (tanpa tooling): <b>{{ number_format($part->c_total_part_cost_pc, 2) }}</b></span>
-                            </div>
-                        @else
-                            {{-- Instruksi user 2026-09-03: breakdown formula HPP cuma login johiwan --}}
-                            <div class="mt-1 bg-[#f4f6fa] border border-[#d7dbe2] rounded-md px-3 py-2 text-[11.5px] text-muted flex items-center gap-1.5">
-                                🔒 Detail perhitungan disembunyikan — sudah dihitung, hasil akhir ada di Ladder Harga di bawah.
-                            </div>
-                        @endif
-                    @endif
-                </div>
-            @empty
-                <div class="text-center py-8 text-muted text-sm">Belum ada part. Klik "Tambah Part" untuk mulai.</div>
-            @endforelse
         </div>
 
-        {{-- ============ PRICE TIER PANEL ============ --}}
-        <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
-                <h3 class="text-xs text-navy uppercase font-bold">Ladder Harga per Tier</h3>
-                @if ($this->costing->isInstant())
-                    <button type="button" wire:click="addTier" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Tambah Tier</button>
+        {{-- ═════ Tambah part (dari part Inquiry / manual) ═════ --}}
+        @if (! $ro)
+            <div class="flex items-center gap-2 text-[12px]">
+                @if ($this->inquiryParts->isNotEmpty())
+                    <select id="add-from-part" class="px-2 py-1 border border-dashed border-[#9cc0f0] rounded text-navy">
+                        <option value="">— tambah part dari Inquiry —</option>
+                        @foreach ($this->inquiryParts as $ip)
+                            <option value="{{ $ip->id_part }}">{{ $ip->part_name ?: 'Part #'.$ip->part_seq }}{{ $ip->prod_part_id ? ' · ProDev' : '' }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button" @click="const s=document.getElementById('add-from-part'); if(s.value){ $wire.addPartFromInquiry(parseInt(s.value)); s.value=''; }" class="font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Part</button>
+                @endif
+                <button type="button" wire:click="addPart('DC')" class="font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Part Manual</button>
+                @if ($p)
+                    <button type="button" wire:click="removePart({{ $p->id_costing_part }})" wire:confirm="Hapus part ini dari costing?" class="ml-auto text-red-500 cursor-pointer">✕ Hapus part ini</button>
                 @endif
             </div>
-            <table class="w-full border-collapse text-xs">
-                <thead>
-                    <tr>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Qty</th>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Toleransi %</th>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Margin %</th>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Rounding</th>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">HPP/pc</th>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Harga Jual/pc (excl PPN)</th>
-                        <th class="text-left px-3 py-2 bg-[#f4f5f8] text-muted text-[10.5px] uppercase border-b border-[#d7dbe2]">Incl PPN</th>
-                        @if ($this->costing->isInstant())
-                            <th class="w-8 border-b border-[#d7dbe2]"></th>
+        @endif
+
+        @if (! $p)
+            <div class="{{ $card }} text-center text-[#64748b] py-10">Belum ada part costing. Part Inquiry yang sudah punya layout ProDev otomatis muncul di sini; selain itu tambah lewat "＋ Part".</div>
+        @else
+        {{-- ═════ Baris 2: Visual Imposition (ProDev asli) | Granular Cost Breakdown ═════ --}}
+        <div class="[display:grid] grid-cols-2 gap-4" wire:key="part-{{ $p->id_costing_part }}">
+            <div class="{{ $card }} flex flex-col">
+                <h2 class="{{ $h2 }}">🗂 Visual Imposition Layout (ProDev)
+                    <button type="button" wire:click="toggleDataSource({{ $p->id_costing_part }})" @disabled($ro) class="ml-auto normal-case text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer {{ $p->data_source === 'PRODEV' ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#f1f5f9] text-[#64748b] border border-[#cbd5e1]' }}">{{ $p->data_source === 'PRODEV' ? '🔗 Ambil Data (ProDev)' : '✎ Manual' }}</button>
+                </h2>
+                @if ($p->data_source === 'PRODEV' && ! $ro)
+                    <select onchange="if(this.value) $wire.pickLayoutGroup({{ $p->id_costing_part }}, parseInt(this.value))" class="text-[11px] px-2 py-1 border border-[#c3d8f5] rounded mb-2">
+                        <option value="">— ganti layout ProDev (CONFIRMED) —</option>
+                        @foreach ($this->availableLayoutGroups as $g)
+                            <option value="{{ $g->id_layout_group }}" @selected($p->prod_layout_group_id === $g->id_layout_group)>{{ $g->mastercard_code }} · {{ $g->product?->product_name }} · {{ $g->up_count }} UP</option>
+                        @endforeach
+                    </select>
+                @endif
+                @if ($geo)
+                    <div class="text-[12px] text-[#64748b] [display:grid] grid-cols-2 gap-x-4 gap-y-1 mb-2">
+                        <div><b class="text-[#334155]">Plano Size:</b> {{ (float) $geo['plano_l'] }} × {{ (float) $geo['plano_w'] }} cm {{ $geo['plano_name'] ? '('.$geo['plano_name'].')' : '' }}</div>
+                        <div><b class="text-[#334155]">Material:</b> {{ $this->materialLabel() }}</div>
+                        <div><b class="text-[#334155]">Print Area:</b> {{ (float) $geo['print_l'] }} × {{ (float) $geo['print_w'] }} cm</div>
+                        <div><b class="text-[#334155]">Imposition:</b> {{ rtrim(rtrim(number_format($geo['cut'], 2), '0'), '.') }} Sheet / Plano ({{ $geo['isi'] }} Up / Sheet)</div>
+                    </div>
+                    <div class="[display:grid] grid-cols-4 gap-2 bg-[#eff6ff] border border-[#bfdbfe] rounded-lg p-2 text-[12px] mb-2">
+                        <div><div class="text-[#64748b] text-[11px]">Print Size</div><b>{{ (float) $geo['print_l'] }} × {{ (float) $geo['print_w'] }} cm</b></div>
+                        <div><div class="text-[#64748b] text-[11px]">Metode</div><b>{{ $geo['method'] ?? '—' }}</b></div>
+                        <div><div class="text-[#64748b] text-[11px]">UP</div><b>{{ $geo['up'] }}</b></div>
+                        <div><div class="text-[#64748b] text-[11px]">Efisiensi / Waste</div><b>{{ $n2($geo['efficiency']) }}% / {{ $n2($geo['waste']) }}%</b></div>
+                        <div class="col-span-2"><div class="text-[#64748b] text-[11px]">Pisau</div><b>{{ $geo['knife'] ?: '—' }}</b> {{ $geo['knife_size'] ? '('.$geo['knife_size'].' cm)' : '' }}</div>
+                        <div><div class="text-[#64748b] text-[11px]">Meter Lari Pisau</div><b>{{ $geo['die_meter'] !== null ? $n2($geo['die_meter']).' m' : '—' }}</b></div>
+                        <div><div class="text-[#64748b] text-[11px]">Status Layout</div><b class="{{ $geo['status'] === 'CONFIRMED' ? 'text-[#16a34a]' : 'text-[#b45309]' }}">{{ $geo['status'] }}</b></div>
+                    </div>
+                    <div class="flex-1 bg-[#f1f5f9] rounded-lg border border-[#cbd5e1] p-3 flex items-center justify-center">
+                        <x-costing.imposition-svg :group="$ctx['group']" :geo="$geo" />
+                    </div>
+                @else
+                    <div class="flex-1 bg-[#f8fafc] rounded-lg border border-dashed border-[#cbd5e1] p-6 text-center text-[#64748b]">Part ini belum punya layout ProDev — ilustrasi & print size muncul setelah layout dibuat di ProDev. Sementara isi geometri di "Parameter Ongkos" di bawah.</div>
+                @endif
+            </div>
+
+            <div class="{{ $card }} flex flex-col">
+                <h2 class="{{ $h2 }}">🧾 Granular Cost Breakdown <span class="ml-auto normal-case text-[11px] text-[#64748b]">Qty {{ number_format($qty * max(1, (float) $p->qty_per_set)) }}</span></h2>
+                @if ($lock)
+                    <div class="bg-[#f4f6fa] border border-[#d7dbe2] rounded p-4 text-[#64748b]">🔒 Breakdown biaya hanya untuk login yang ditunjuk (konstanta PROCOST_FORMULA_LOGINS). Harga jual akhir tetap tampil di bawah.</div>
+                @else
+                    <div class="space-y-3">
+                        <div class="border border-[#f1f5f9] rounded-lg overflow-hidden">
+                            <div class="bg-[#f8fafc] px-4 py-2 font-semibold text-[#334155] border-b border-[#f1f5f9]">🖨 Materials</div>
+                            <div class="p-3 [display:grid] grid-cols-2 gap-y-1.5">
+                                @if (in_array($p->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true))
+                                    <div class="text-[#64748b]">Sheet (trim × panjang):</div><div class="text-right">{{ $n2($p->c_lebar_trim_cm) }} × {{ $n2($p->c_panjang_sheet_cm) }} cm</div>
+                                    <div class="text-[#64748b]">Running Meter / Disc:</div><div class="text-right">{{ $n2($p->c_running_meter) }} m / {{ $n2((float) $p->c_discount_rm * 100) }}%</div>
+                                    <div class="text-[#64748b]">Harga Sheet /pc:</div><div class="text-right">{{ $rp($p->c_sheet_cost_pc) }}</div>
+                                @else
+                                    <div class="text-[#64748b]">Plano Sheets Needed:</div><div class="text-right font-medium">{{ number_format($qty * max(1, (float) $p->qty_per_set) / max(0.0001, (float) $p->i_cut_per_plano * max(1, (float) $p->i_isi_per_lb)), 0) }} Sheets</div>
+                                    <div class="text-[#64748b]">Cost per Plano:</div><div class="text-right font-medium">{{ $rp((float) $p->c_paper_cost_pc * (float) $p->i_cut_per_plano * max(1, (float) $p->i_isi_per_lb)) }}</div>
+                                @endif
+                                <div class="font-bold mt-1 pt-1 border-t border-[#f1f5f9]">Total Material Cost:</div>
+                                <div class="text-right font-bold text-[#1d4ed8] mt-1 pt-1 border-t border-[#f1f5f9]">{{ $rp(((float) $p->c_paper_cost_pc + (float) $p->c_sheet_cost_pc) * $qty * max(1, (float) $p->qty_per_set)) }}</div>
+                            </div>
+                        </div>
+
+                        <div class="border border-[#f1f5f9] rounded-lg overflow-hidden">
+                            <div class="bg-[#f8fafc] px-4 py-2 font-semibold text-[#334155] border-b border-[#f1f5f9]">🎨 Process &amp; Finishing</div>
+                            <table class="w-full text-[12px]">
+                                <thead class="text-[11px] text-[#64748b] border-b border-[#f1f5f9]"><tr><th class="px-3 py-1.5 text-left font-medium">Process</th><th class="px-3 py-1.5 text-right font-medium">Rate</th><th class="px-3 py-1.5 text-right font-medium">Basis</th><th class="px-3 py-1.5 text-right font-medium">Subtotal</th></tr></thead>
+                                <tbody>
+                                    @foreach ($this->processRows() as [$name, $rate, $basis, $sub])
+                                        <tr class="border-b border-[#f8fafc]"><td class="px-3 py-1.5 font-medium">{{ $name }}</td><td class="px-3 py-1.5 text-right">{{ $rate }}</td><td class="px-3 py-1.5 text-right">{{ $basis }}</td><td class="px-3 py-1.5 text-right font-medium">{{ $rp($sub) }}</td></tr>
+                                    @endforeach
+                                    @foreach ($p->coatings as $co)
+                                        <tr wire:key="coat-{{ $co->id_coating }}" class="border-b border-[#f8fafc]">
+                                            <td class="px-3 py-1.5 font-medium">{{ $co->coating_type }}
+                                                <input type="number" step="any" value="{{ (float) $co->index_coating }}" @readonly($ro) wire:change="updateCoating({{ $co->id_coating }}, 'index_coating', $event.target.value)" title="Index coating (Rp/cm²)" class="ml-1 w-16 text-[11px] bg-[#f1f5f9] border border-[#e2e8f0] rounded px-1 text-right">
+                                            </td>
+                                            <td class="px-3 py-1.5 text-right">Index × Area</td>
+                                            <td class="px-3 py-1.5 text-right">{{ number_format($qty * max(1, (float) $p->qty_per_set) / max(1, (float) $p->i_isi_per_lb)) }} Sht</td>
+                                            <td class="px-3 py-1.5 text-right font-medium">{{ $rp((float) $co->c_cost_per_pc * $qty * max(1, (float) $p->qty_per_set)) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot class="bg-[#f8fafc]"><tr><td colspan="3" class="px-3 py-2 text-right font-bold">Total Process:</td><td class="px-3 py-2 text-right font-bold text-[#1d4ed8]">{{ $rp(((float) $p->c_process_cost_pc + (float) $p->c_total_coating_pc) * $qty * max(1, (float) $p->qty_per_set)) }}</td></tr></tfoot>
+                            </table>
+                        </div>
+
+                        @if ($toolOrder > 0)
+                            <div class="border border-[#f1f5f9] rounded-lg overflow-hidden">
+                                <div class="bg-[#f8fafc] px-4 py-2 font-semibold text-[#334155] border-b border-[#f1f5f9]">🔧 Tooling (Film · Plate · Pisau)</div>
+                                <table class="w-full text-[12px]">
+                                    <tbody>
+                                        <tr class="border-b border-[#f8fafc]"><td class="px-3 py-1.5">Film</td><td class="px-3 py-1.5 text-right text-[#64748b]">{{ $this->toolingInfo()['film_ff'] }}² × {{ $n2($p->c_area_cetak_cm2) }} cm² × {{ $this->toolingInfo()['film_rate'] }}</td><td class="px-3 py-1.5 text-right">{{ $rp($p->c_film_cost_order) }}</td></tr>
+                                        <tr class="border-b border-[#f8fafc]"><td class="px-3 py-1.5">Plate</td><td class="px-3 py-1.5 text-right text-[#64748b]">{{ $n2($this->toolingInfo()['plate']) }} × {{ $p->i_jumlah_warna }} warna</td><td class="px-3 py-1.5 text-right">{{ $rp($p->c_plate_cost_order) }}</td></tr>
+                                        <tr class="border-b border-[#f8fafc]"><td class="px-3 py-1.5">Pisau</td><td class="px-3 py-1.5 text-right text-[#64748b]">{{ $this->toolingInfo()['knife_ff'] }} × {{ $n2($this->toolingInfo()['knife_rate']) }}</td><td class="px-3 py-1.5 text-right">{{ $rp($p->c_knife_cost_order) }}</td></tr>
+                                    </tbody>
+                                    <tfoot class="bg-[#f8fafc]"><tr><td colspan="2" class="px-3 py-2 text-right font-bold">Total Tooling:</td><td class="px-3 py-2 text-right font-bold text-[#1d4ed8]">{{ $rp($toolOrder) }}</td></tr></tfoot>
+                                </table>
+                            </div>
                         @endif
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($this->costing->priceTiers as $tier)
-                        <tr wire:key="tier-{{ $tier->id_price_tier }}" class="{{ $tier->is_primary ? 'bg-[#eef5ff]' : '' }}">
-                            <td class="px-3 py-2 border-b border-[#eef1f5] font-semibold">
-                                @if ($this->costing->isInstant())
-                                    <x-form.input type="number" step="1" value="{{ $tier->qty_pcs }}" wire:change="updateTier({{ $tier->id_price_tier }}, 'qty_pcs', $event.target.value)" class="w-24 !py-1" />
-                                @else
-                                    {{ number_format($tier->qty_pcs) }}{{ $tier->is_primary ? ' ★' : '' }}
-                                @endif
-                            </td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5]"><x-form.input type="number" step="0.1" value="{{ $tier->tolerance_pct }}" wire:change="updateTier({{ $tier->id_price_tier }}, 'tolerance_pct', $event.target.value)" class="w-16 !py-1" /></td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5]"><x-form.input type="number" step="0.1" value="{{ $tier->margin_pct }}" wire:change="updateTier({{ $tier->id_price_tier }}, 'margin_pct', $event.target.value)" class="w-16 !py-1" /></td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                <x-form.select wire:change="updateTier({{ $tier->id_price_tier }}, 'rounding_mode', $event.target.value)" class="!py-1" :placeholder="false"
-                                    :selected="$tier->rounding_mode" :options="['NEAREST' => 'NEAREST', 'UP' => 'UP', 'DOWN' => 'DOWN']" />
-                            </td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                @if ($this->canSeeFormula)
-                                    {{ $tier->c_hpp_pc !== null ? number_format($tier->c_hpp_pc, 2) : '—' }}
-                                @else
-                                    🔒
-                                @endif
-                            </td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5] font-bold text-navy">{{ $tier->price_per_pcs !== null ? number_format($tier->price_per_pcs, 2) : '—' }}</td>
-                            <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $tier->c_after_ppn_pc !== null ? number_format($tier->c_after_ppn_pc, 2) : '—' }}</td>
-                            @if ($this->costing->isInstant())
-                                <td class="px-2 py-2 border-b border-[#eef1f5] text-right">
-                                    <button type="button" wire:click="removeTier({{ $tier->id_price_tier }})" class="text-red-500 text-[11px] cursor-pointer">✕</button>
-                                </td>
-                            @endif
-                        </tr>
-                    @empty
-                        <tr><td colspan="8" class="text-center py-6 text-muted">Belum ada tier qty.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
+
+                        <div class="text-[10px] font-mono whitespace-pre-line text-[#64748b] bg-[#f8fafc] border border-[#e2e8f0] rounded p-2">{{ $p->description_calc }}</div>
+                    </div>
+                @endif
+            </div>
         </div>
 
+        {{-- ═════ Info InqProd & ProDev (READ-ONLY, accordion supaya compact) ═════ --}}
+        <div class="[display:grid] grid-cols-2 gap-4">
+            <x-ui.accordion title="BOM — Bill of Material (InqProd)" :count="count($ctx['bom'])" :open="true" tone="blue">
+                <table class="w-full text-[12px]">
+                    <thead class="text-[10px] uppercase text-[#64748b] bg-[#f8fafc]"><tr><th class="p-1.5 text-left">Layer</th><th class="p-1.5 text-left">Material</th><th class="p-1.5 text-left">Merk</th><th class="p-1.5 text-left">Gramatur/Flute</th><th class="p-1.5 text-left">Ukuran (cm)</th><th class="p-1.5 text-left">Qty/Sheet</th><th class="p-1.5 text-left">Sumber</th></tr></thead>
+                    <tbody>
+                        @forelse ($ctx['bom'] as $b)
+                            <tr class="border-t border-[#f1f5f9]"><td class="p-1.5">{{ $b['layer'] }}{{ $b['primary'] ? ' ★' : '' }}</td><td class="p-1.5 font-medium">{{ $b['material'] }}</td><td class="p-1.5">{{ $b['brand'] ?: '—' }}</td><td class="p-1.5">{{ $b['spec'] ?: '—' }}</td><td class="p-1.5">{{ $b['size'] ?: '—' }}</td><td class="p-1.5">{{ $b['qty'] ?: '—' }}</td><td class="p-1.5">{{ $b['source'] }}{{ $b['owner'] === 'CUSTOMER' ? ' · bahan customer' : '' }}</td></tr>
+                        @empty
+                            <tr><td colspan="7" class="p-2 text-[#64748b]">Belum ada BOM di Inquiry untuk part ini.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-ui.accordion>
+
+            <x-ui.accordion title="BOP — Routing Proses ({{ $ctx['bop'][0]['origin'] ?? 'ProDev' }})" :count="count($ctx['bop'])" :open="true" tone="green">
+                <table class="w-full text-[12px]">
+                    <thead class="text-[10px] uppercase text-[#64748b] bg-[#f8fafc]"><tr><th class="p-1.5 text-left">#</th><th class="p-1.5 text-left">Proses</th><th class="p-1.5 text-left">Mesin</th><th class="p-1.5 text-left">In-house / Subkon</th><th class="p-1.5 text-right">Target/jam</th><th class="p-1.5 text-right">Faktor</th><th class="p-1.5 text-right">Waste</th></tr></thead>
+                    <tbody>
+                        @forelse ($ctx['bop'] as $r)
+                            <tr class="border-t border-[#f1f5f9]" title="{{ $r['note'] }}"><td class="p-1.5">{{ $r['branch'] ? $r['branch'].'-' : '' }}{{ $r['step'] }}</td><td class="p-1.5 font-medium">{{ $r['process'] }}</td><td class="p-1.5">{{ $r['machine'] ?: '—' }}</td>
+                                <td class="p-1.5">@if ($r['subcon'])<span class="px-1.5 rounded bg-[#fef3c7] text-[#92400e] font-semibold">Subkon: {{ $r['subcon'] }}</span>@else<span class="text-[#16a34a]">In-house</span>@endif</td>
+                                <td class="p-1.5 text-right">{{ $r['target'] ? number_format($r['target']) : '—' }}</td><td class="p-1.5 text-right">{{ $r['factor'] !== null ? (float) $r['factor'] : '—' }}</td><td class="p-1.5 text-right">{{ $r['waste'] !== null ? (float) $r['waste'].'%' : '—' }}</td></tr>
+                        @empty
+                            <tr><td colspan="7" class="p-2 text-[#64748b]">Belum ada routing di ProDev/Inquiry untuk part ini.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                @foreach ($this->routingWarningsFor($p) as $w)
+                    <div class="mt-1 text-[11px] text-[#8a5a00] bg-[#fff8ec] border border-[#f0dcae] rounded px-2 py-1">⚠ {{ $w }}</div>
+                @endforeach
+            </x-ui.accordion>
+
+            <x-ui.accordion title="Tinta (Ink)" :count="count($ctx['inks'])" tone="slate">
+                <table class="w-full text-[12px]">
+                    <thead class="text-[10px] uppercase text-[#64748b] bg-[#f8fafc]"><tr><th class="p-1.5 text-left">Pass</th><th class="p-1.5 text-left">Unit</th><th class="p-1.5 text-left">Tinta</th><th class="p-1.5 text-right">Coverage</th></tr></thead>
+                    <tbody>
+                        @forelse ($ctx['inks'] as $ink)
+                            <tr class="border-t border-[#f1f5f9]"><td class="p-1.5">{{ $ink->pass_label ?: $ink->pass_seq }}</td><td class="p-1.5">{{ $ink->unit_no }}</td><td class="p-1.5"><span class="inline-block w-3 h-3 rounded-sm align-middle border border-[#cbd5e1]" style="background: {{ $ink->color_hex ?: '#fff' }}"></span> {{ $ink->ink_name }}</td><td class="p-1.5 text-right">{{ $ink->coverage_pct !== null ? (float) $ink->coverage_pct.'%' : '—' }}</td></tr>
+                        @empty
+                            <tr><td colspan="4" class="p-2 text-[#64748b]">Belum ada data tinta.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-ui.accordion>
+
+            <x-ui.accordion title="Finishing & Detail Part ProDev" :count="count($ctx['finishings'])" tone="amber">
+                <table class="w-full text-[12px] mb-2">
+                    <tbody>
+                        @forelse ($ctx['finishings'] as $f)
+                            <tr class="border-t border-[#f1f5f9]"><td class="p-1.5 font-medium">{{ $f['name'] }}</td><td class="p-1.5">{{ $f['attr'] ?: '—' }}</td><td class="p-1.5 text-[#64748b]">{{ $f['notes'] }}</td><td class="p-1.5 text-right">{{ $f['cost'] !== null ? $rp($f['cost']) : '' }}</td><td class="p-1.5 text-[10px] text-[#64748b]">{{ $f['origin'] }}</td></tr>
+                        @empty
+                            <tr><td class="p-2 text-[#64748b]">Belum ada finishing.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+                @if ($pp = $ctx['prodPart'])
+                    <div class="[display:grid] grid-cols-3 gap-x-3 gap-y-1 text-[12px] border-t border-[#e2e8f0] pt-2">
+                        <div><span class="text-[#64748b]">Kode Pisau:</span> <b>{{ $pp->die_code ?: '—' }}</b></div>
+                        <div><span class="text-[#64748b]">Ukuran Pisau:</span> <b>{{ $pp->die_w_cm ? (float) $pp->die_w_cm.' × '.(float) $pp->die_h_cm.' cm' : '—' }}</b></div>
+                        <div><span class="text-[#64748b]">Bahan Mentah:</span> <b>{{ $pp->sheet_raw_w_cm ? (float) $pp->sheet_raw_w_cm.' × '.(float) $pp->sheet_raw_h_cm.' cm' : '—' }}</b></div>
+                        <div><span class="text-[#64748b]">Sambungan:</span> <b>{{ $pp->joint_type ?: '—' }}</b></div>
+                        <div><span class="text-[#64748b]">ECMA:</span> <b>{{ $pp->ecma_code ?: '—' }}</b></div>
+                        <div><span class="text-[#64748b]">Lidah:</span> <b>{{ $pp->flap_side ? $pp->flap_side.' '.(float) $pp->flap_length_mm.' mm' : '—' }}</b></div>
+                        <div class="col-span-3"><span class="text-[#64748b]">Warna Unit:</span> <b>{{ implode(', ', array_filter($pp->color_set_1 ?? [])) ?: '—' }}{{ ! empty($pp->color_set_2) ? ' / '.implode(', ', array_filter($pp->color_set_2)) : '' }}</b></div>
+                    </div>
+                @endif
+            </x-ui.accordion>
+        </div>
+
+        {{-- ═════ Parameter ongkos (input officer; geometri ProDev terkunci) ═════ --}}
+        <x-ui.accordion title="✎ Parameter Ongkos & Bahan (input officer)" :open="true" tone="blue">
+            <div class="[display:grid] grid-cols-6 gap-x-2 gap-y-1.5 text-xs">
+                <x-costing.field label="Nama Part" key="part_name" :value="$p->part_name" type="text" :args="[$pid]" :readonly="$ro" />
+                <x-costing.field label="Tipe Part" key="part_type_code" :value="$p->part_type_code" type="select" :options="$lk['partTypes']" :args="[$pid]" :readonly="$ro" />
+                <x-costing.field label="Qty per Set" key="qty_per_set" :value="$p->qty_per_set" :args="[$pid]" :readonly="$ro" />
+                @if ($isDcFam)
+                    <x-costing.field label="Gramatur / Bahan" key="grammage_id" :value="$p->grammage_id" type="select" :options="$lk['grammages']" :args="[$pid]" :readonly="$ro" class="col-span-2" />
+                    <x-costing.field label="% DC (override)" key="i_dc_persen_override" :value="$p->i_dc_persen_override" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Panjang Plano (cm)" key="i_panjang_plano_cm" :value="$p->i_panjang_plano_cm" tone="common" :args="[$pid]" :readonly="$geoLock" />
+                    <x-costing.field label="Lebar Plano (cm)" key="i_lebar_plano_cm" :value="$p->i_lebar_plano_cm" tone="common" :args="[$pid]" :readonly="$geoLock" />
+                    <x-costing.field label="1 Plano dipotong jadi" key="i_cut_per_plano" :value="$p->i_cut_per_plano" tone="common" :args="[$pid]" :readonly="$geoLock" />
+                    <x-costing.field label="Isi dalam 1 LB" key="i_isi_per_lb" :value="$p->i_isi_per_lb" tone="common" :args="[$pid]" :readonly="$geoLock" />
+                    <x-costing.field label="Ukuran Cetak P (cm)" key="i_uk_cetak_p_cm" :value="$p->i_uk_cetak_p_cm" tone="common" :args="[$pid]" :readonly="$geoLock" />
+                    <x-costing.field label="Ukuran Cetak L (cm)" key="i_uk_cetak_l_cm" :value="$p->i_uk_cetak_l_cm" tone="common" :args="[$pid]" :readonly="$geoLock" />
+                    <x-costing.field label="Jumlah Warna" key="i_jumlah_warna" :value="$p->i_jumlah_warna" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Cetak/RIM" key="i_ongkos_cetak_rim" :value="$p->i_ongkos_cetak_rim" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Plong/LB" key="i_ongkos_plong_lb" :value="$p->i_ongkos_plong_lb" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos LEM/PC" key="i_ongkos_lem_pc" :value="$p->i_ongkos_lem_pc" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Hot Print/PC" key="i_ongkos_hotprint_pc" :value="$p->i_ongkos_hotprint_pc" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Film Rate" key="i_film_rate" :value="$p->i_film_rate !== null ? (string) (float) $p->i_film_rate : ''" type="select" :options="$lk['filmRates']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Film Faktor" key="i_film_faktor" :value="$p->i_film_faktor" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Plate (Rp/warna)" key="i_ongkos_plate_warna" :value="$p->i_ongkos_plate_warna" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Pisau Faktor" key="i_pisau_faktor" :value="$p->i_pisau_faktor" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Pisau Rate (Rp/order)" key="i_pisau_rate_rp" :value="$p->i_pisau_rate_rp" :args="[$pid]" :readonly="$ro" />
+                @endif
+                @if ($isLam || $isSheet)
+                    <x-costing.field label="Substansi / Tipe SF" key="sheet_rate_id" :value="$p->sheet_rate_id" type="select" tone="sheet" :options="$p->part_type_code === 'DC+SF' ? $lk['sfSubst'] : $lk['sheetRates']" :args="[$pid]" :readonly="$ro" class="col-span-2" />
+                    <x-costing.field label="Supplier Sheet" key="supplier_sheet_code" :value="$p->supplier_sheet_code" type="select" tone="sheet" :options="$lk['suppliers']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Panjang Piece SF/SH (cm)" key="i_sheet_panjang_cm" :value="$p->i_sheet_panjang_cm" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Lebar Piece SF (cm)" key="i_sheet_lebar_cm" :value="$p->i_sheet_lebar_cm" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                @endif
+                @if ($isSheet || $p->part_type_code === 'DC+SHEET')
+                    <x-costing.field label="Lebar Trim (cm)" key="i_lebar_trim_cm" :value="$p->i_lebar_trim_cm" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Isi / Trim" key="i_isi_per_trim" :value="$p->i_isi_per_trim" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Discount / Surcharge" key="i_discount_rm" :value="$p->i_discount_rm" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                @endif
+                @if ($isSheet)
+                    <x-costing.field label="Jenis Flute" key="flute_type" :value="$p->flute_type" type="select" tone="sheet" :options="['B/F' => 'B/F', 'C/F' => 'C/F', 'BC/F' => 'BC/F']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Isi/LB Kerja" key="i_isi_per_lb_kerja" :value="$p->i_isi_per_lb_kerja" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Print/PC" key="i_ongkos_print_pc" :value="$p->i_ongkos_print_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Die Cut/PC" key="i_ongkos_diecut_pc" :value="$p->i_ongkos_diecut_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Slitter/PC" key="i_ongkos_slitter_pc" :value="$p->i_ongkos_slitter_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Slotter/PC" key="i_ongkos_slotter_pc" :value="$p->i_ongkos_slotter_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Jenis Join" key="join_type_code" :value="$p->join_type_code" type="select" tone="sheet" :options="$lk['joinTypes']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Join/PC" key="i_ongkos_join_pc" :value="$p->i_ongkos_join_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Partisi/PC" key="i_ongkos_partisi_pc" :value="$p->i_ongkos_partisi_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Layer/PC" key="i_ongkos_layer_pc" :value="$p->i_ongkos_layer_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Pisau Diecut/PC" key="i_ongkos_pisau_pc" :value="$p->i_ongkos_pisau_pc" tone="sheet" :args="[$pid]" :readonly="$ro" />
+                @endif
+                @if ($isLam)
+                    <x-costing.field label="Pakai Laminasi" key="pakai_laminasi" :value="$p->pakai_laminasi ? '1' : '0'" type="select" tone="lam" :options="['1' => 'Ya', '0' => 'Tidak']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Lam Sheet Flat (Rp/PC)" key="i_lam_sheet_flat_pc" :value="$p->i_lam_sheet_flat_pc" tone="lam" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Rate SF EF (E/F)" key="sf_ef_rate_id" :value="$p->sf_ef_rate_id" type="select" tone="lam" :options="$lk['sfEf']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Harga SF EF (override)" key="i_sf_ef_rate_override" :value="$p->i_sf_ef_rate_override" tone="lam" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Pakai Ukuran SF?" key="i_lam_pakai_ukuran_sf" :value="$p->i_lam_pakai_ukuran_sf ? '1' : '0'" type="select" tone="lam" :options="['1' => '1', '0' => '0']" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Lam SH (Rp/cm2)" key="i_ongkos_lam_rp_cm2_sh" :value="$p->i_ongkos_lam_rp_cm2_sh" tone="lam" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Lam SF (Rp/cm2)" key="i_ongkos_lam_rp_cm2_sf" :value="$p->i_ongkos_lam_rp_cm2_sf" tone="lam" :args="[$pid]" :readonly="$ro" />
+                    <x-costing.field label="Ongkos Laminasi Manual" key="i_ongkos_laminasi_pc" :value="$p->i_ongkos_laminasi_pc" tone="lam" :args="[$pid]" :readonly="$ro" />
+                @endif
+                <x-costing.field label="Ongkos Kupas/PC" key="i_ongkos_kupas_pc" :value="$p->i_ongkos_kupas_pc" tone="common" :args="[$pid]" :readonly="$ro" />
+                <x-costing.field label="Ongkos QC/PC" key="i_ongkos_qc_pack_pc" :value="$p->i_ongkos_qc_pack_pc" tone="common" :args="[$pid]" :readonly="$ro" />
+                <x-costing.field label="Ongkos Kirim/PC" key="i_ongkos_kirim_pc" :value="$p->i_ongkos_kirim_pc" tone="common" :args="[$pid]" :readonly="$ro" />
+                <x-costing.field label="Jenis Packing" key="packing_type_code" :value="$p->packing_type_code" type="select" tone="common" :options="$lk['packingTypes']" :args="[$pid]" :readonly="$ro" />
+                <x-costing.field label="Ongkos Packing/PC" key="i_ongkos_packing_pc" :value="$p->i_ongkos_packing_pc" tone="common" :args="[$pid]" :readonly="$ro" />
+            </div>
+            @if (! $isSheet && $p->part_type_code !== 'KRAFT')
+                <div class="mt-2 flex items-center gap-2">
+                    <span class="text-[11px] font-bold text-[#1d4ed8]">Coating:</span>
+                    @foreach ($p->coatings as $co)
+                        <span wire:key="chip-{{ $co->id_coating }}" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#eff6ff] border border-[#bfdbfe] text-[11px]">
+                            <select @disabled($ro) wire:change="updateCoating({{ $co->id_coating }}, 'coating_type', $event.target.value)" class="bg-transparent text-[11px]">
+                                @foreach ($lk['coatings'] as $ct)<option value="{{ $ct }}" @selected($ct === $co->coating_type)>{{ $ct }}</option>@endforeach
+                            </select>
+                            <button type="button" wire:click="removeCoating({{ $co->id_coating }})" @disabled($ro) class="text-[#ef4444] cursor-pointer">✕</button>
+                        </span>
+                    @endforeach
+                    <button type="button" wire:click="addCoating({{ $pid }})" @disabled($ro) class="text-[11px] font-bold text-accent cursor-pointer">＋ Layer</button>
+                </div>
+            @endif
+        </x-ui.accordion>
+        @endif
+
+        {{-- ═════ Banner hasil (mockup) ═════ --}}
+        <div class="bg-[#0f172a] text-white rounded-xl shadow-lg p-5 [display:grid] grid-cols-5 gap-5">
+            <div><div class="text-[#94a3b8] text-[11px] font-medium uppercase tracking-wider">Total COGS (HPP)</div>
+                <div class="text-[18px] font-bold">{{ $lock ? '🔒' : $rp($hppOrder) }}</div><div class="text-[12px] text-[#cbd5e1]">{{ $lock ? '' : $rp($t?->c_hpp_pc).' / pcs' }}</div></div>
+            <div><div class="text-[#94a3b8] text-[11px] font-medium uppercase tracking-wider">Margin (+{{ (float) $t?->margin_pct }}%) · Tol {{ (float) $t?->tolerance_pct }}%</div>
+                <div class="text-[18px] font-bold">{{ $lock ? '🔒' : $rp(((float) $t?->c_after_margin_pc - (float) $t?->c_hpp_pc) * $qty) }}</div><div class="text-[12px] text-[#cbd5e1]">Profit contribution</div></div>
+            <div><div class="text-[#94a3b8] text-[11px] font-medium uppercase tracking-wider">PPN (+{{ $c->ppn_mode === 'NON_PPN' ? 0 : (float) $c->ppn_pct }}%)</div>
+                <div class="text-[18px] font-bold">{{ $rp(((float) $t?->c_after_ppn_pc - (float) $t?->c_after_margin_pc) * $qty) }}</div><div class="text-[12px] text-[#cbd5e1]">Tax</div></div>
+            <div class="col-span-2 bg-[#2563eb]/30 border border-[#3b82f6]/50 rounded-lg p-4">
+                <div class="text-[#bfdbfe] text-[11px] font-semibold uppercase tracking-wider mb-1">✔ Final Selling Price</div>
+                <div class="text-[26px] font-extrabold tracking-tight">{{ $rp($t?->c_after_ppn_pc) }} <span class="text-[15px] font-medium text-[#bfdbfe]">/ pcs</span></div>
+                <div class="text-[12px] font-medium text-[#93c5fd]">Excl PPN {{ $rp($t?->price_per_pcs) }} · Grand Total: {{ $rp((float) $t?->c_after_ppn_pc * $qty) }}</div>
+            </div>
+        </div>
     </div>
     @endif
 </div>

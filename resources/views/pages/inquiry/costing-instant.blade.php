@@ -457,7 +457,7 @@ new #[Title('Kalkulasi HPP (Instant) — TELASIH MAKMUR ERP')] class extends Com
         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $statusCls }}">{{ $c->doc_status }}</span>
         <span class="ml-auto"></span>
         <button type="button" wire:click="newDoc" class="px-3 py-1.5 rounded bg-[#10b981] text-white font-semibold cursor-pointer">＋ New</button>
-        <button type="button" wire:click="saveDoc" @disabled($ro) class="px-3 py-1.5 rounded bg-[#f1f5f9] border border-[#cbd5e1] font-semibold cursor-pointer disabled:opacity-40">💾 {{ $this->btn('Save', 'Simpan') }}</button>
+        <button type="button" wire:click="saveDoc" data-dirty-save @disabled($ro) class="px-3 py-1.5 rounded bg-[#f1f5f9] border border-[#cbd5e1] font-semibold cursor-pointer disabled:opacity-40">💾 {{ $this->btn('Save', 'Simpan') }}</button>
         <button type="button" wire:click="deleteDoc" wire:confirm="Hapus dokumen HPP ini beserta semua part-nya?" @disabled($ro) class="px-3 py-1.5 rounded bg-[#ef4444] text-white font-semibold cursor-pointer disabled:opacity-40">🗑 Delete</button>
         <span class="w-px h-6 bg-[#e2e8f0] mx-1"></span>
         <button type="button" wire:click="recalc" @disabled($ro) class="px-3 py-1.5 rounded bg-[#f59e0b] text-white font-semibold cursor-pointer disabled:opacity-40">🧮 Hitung HPP</button>
@@ -466,7 +466,7 @@ new #[Title('Kalkulasi HPP (Instant) — TELASIH MAKMUR ERP')] class extends Com
         <span class="w-px h-6 bg-[#e2e8f0] mx-1"></span>
         <button type="button" wire:click="reverse" wire:confirm="Reverse: bikin Inquiry Product BARU + ProDev DRAFT + Master Product draft dari data ini, lalu dokumen ini jadi mode Integrated. Lanjut?" @disabled($ro) title="Ubah jadi Integrated (Inquiry + ProDev dibuat otomatis)" class="px-3 py-1.5 rounded bg-[#2c3e69] text-white font-semibold cursor-pointer disabled:opacity-40">⇄ Reverse</button>
         <button type="button" wire:click="recalc" title="Refresh" class="px-2 py-1.5 rounded bg-[#f1f5f9] border border-[#cbd5e1] cursor-pointer">⟳</button>
-        <a href="{{ route('inquiry.costing.instant.list') }}" wire:navigate class="px-3 py-1.5 rounded bg-[#f1f5f9] border border-[#cbd5e1] font-semibold no-underline text-[#0f172a]"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <x-back-button :fallback="route('inquiry.costing.instant.list')" />
     </div>
 
     @if ($engineError)
