@@ -113,7 +113,8 @@ class DataOriginService
                     continue;
                 }
 
-                $q = DB::connection($t['db'])->table($t['table'])->where('data_origin', 'LIVE')->whereRaw($where[0], $where[1]);
+                $q = DB::connection($t['db'])->table($t['table'])
+                    ->where('data_origin', 'LIVE')->where('data_origin_manual', 0)->whereRaw($where[0], $where[1]);
                 $n = $dryRun ? $q->count() : $q->update(['data_origin' => $rule->origin]);
 
                 if ($n > 0 && $rule->origin !== 'LIVE') {
@@ -161,13 +162,12 @@ class DataOriginService
                     continue;
                 }
 
-                $sql = "FROM `$cdb`.`$child` c JOIN `$pdb`.`$parent` p ON p.`$pcol` = c.`$col`
-                        WHERE c.data_origin = 'LIVE' AND p.data_origin = 'DUMMY'";
+                $cond = "c.data_origin = 'LIVE' AND c.data_origin_manual = 0 AND p.data_origin = 'DUMMY'";
+                $join = "`$cdb`.`$child` c JOIN `$pdb`.`$parent` p ON p.`$pcol` = c.`$col`";
 
                 $n = $dryRun
-                    ? (int) DB::connection('tm2sys')->selectOne("SELECT COUNT(*) n $sql")->n
-                    : DB::connection('tm2sys')->update("UPDATE `$cdb`.`$child` c JOIN `$pdb`.`$parent` p ON p.`$pcol` = c.`$col`
-                        SET c.data_origin = 'DUMMY' WHERE c.data_origin = 'LIVE' AND p.data_origin = 'DUMMY'");
+                    ? (int) DB::connection('tm2sys')->selectOne("SELECT COUNT(*) n FROM $join WHERE $cond")->n
+                    : DB::connection('tm2sys')->update("UPDATE $join SET c.data_origin = 'DUMMY' WHERE $cond");
 
                 if ($n) {
                     $out["$cdb.$child"] = ($out["$cdb.$child"] ?? 0) + $n;
@@ -243,6 +243,119 @@ class DataOriginService
         }
 
         return $out;
+    }
+
+    // ===================== KELENGKAPAN DATA (SYARAT WAJIB) =====================
+    // Keputusan user 2026-09-18: data LEGACY yang sudah memenuhi syarat data
+    // saat ini SAH dipakai sebagai data real; yang belum (mis. master produk
+    // tanpa kepemilikan customer) tetap ditandai belum lengkap dan tidak boleh
+    // jadi acuan. data_ready = 1 berarti semua syarat wajib tabel itu terisi.
+
+    public function requirements(): array
+    {
+        return DB::connection('tm2sys')->table('sys_data_requirement')
+            ->where('activate', 1)->orderBy('db_name')->orderBy('table_name')->get()->all();
+    }
+
+    /** Hitung ulang data_ready. @return array<string, array{ready: int, incomplete: int}> */
+    public function computeReady(bool $dryRun = true): array
+    {
+        $byTable = collect($this->requirements())->groupBy(fn ($r) => $r->db_name.'.'.$r->table_name);
+        $flagged = $this->flaggedTables();
+        $out = [];
+
+        foreach ($byTable as $key => $reqs) {
+            if (! isset($flagged[$key])) {
+                continue;
+            }
+
+            [$db, $table] = explode('.', $key);
+            $conn = DB::connection($db);
+            $missing = [];
+
+            foreach ($reqs as $r) {
+                if (! preg_match('/^\w+$/', (string) $r->column_name) || ! $this->hasColumn($db, $table, $r->column_name)) {
+                    continue;
+                }
+                $missing[] = "(`{$r->column_name}` IS NULL OR `{$r->column_name}` = '')";
+            }
+
+            if (! $missing) {
+                continue;
+            }
+
+            $sql = implode(' OR ', $missing);
+            $incomplete = (clone $conn->table($table))->whereRaw($sql)->count();
+            $ready = (clone $conn->table($table))->whereRaw("NOT ($sql)")->count();
+
+            if (! $dryRun) {
+                $conn->table($table)->whereRaw($sql)->update(['data_ready' => 0]);
+                $conn->table($table)->whereRaw("NOT ($sql)")->update(['data_ready' => 1]);
+            }
+
+            $out[$key] = ['ready' => $ready, 'incomplete' => $incomplete];
+        }
+
+        return $out;
+    }
+
+    /**
+     * LEGACY yang sudah lengkap dinaikkan jadi LIVE (data real).
+     *
+     * @return array<string, int> jumlah baris per "db.table"
+     */
+    public function promoteReadyLegacy(bool $dryRun = true, ?string $only = null): array
+    {
+        $out = [];
+
+        foreach ($this->tables() as $t) {
+            $key = $t['db'].'.'.$t['table'];
+
+            if (! $t['has_flag'] || ($only && $only !== $key)) {
+                continue;
+            }
+
+            $q = DB::connection($t['db'])->table($t['table'])->where('data_origin', 'LEGACY')->where('data_ready', 1);
+            // data_origin_manual: keputusan admin, tidak boleh ditarik balik aturan.
+            $n = $dryRun ? $q->count() : $q->update(['data_origin' => 'LIVE', 'data_origin_manual' => 1]);
+
+            if ($n > 0) {
+                $out[$key] = $n;
+            }
+        }
+
+        return $out;
+    }
+
+    /** @return array<string, array{LEGACY_READY: int, LEGACY_INCOMPLETE: int, LIVE_INCOMPLETE: int}> */
+    public function readiness(): array
+    {
+        $byTable = collect($this->requirements())->groupBy(fn ($r) => $r->db_name.'.'.$r->table_name);
+        $flagged = $this->flaggedTables();
+        $out = [];
+
+        foreach ($byTable->keys() as $key) {
+            if (! isset($flagged[$key])) {
+                continue;
+            }
+
+            [$db, $table] = explode('.', $key);
+            $rows = DB::connection($db)->table($table)
+                ->selectRaw('data_origin, data_ready, COUNT(*) n')->groupBy('data_origin', 'data_ready')->get();
+
+            $out[$key] = [
+                'LEGACY_READY' => (int) $rows->firstWhere(fn ($r) => $r->data_origin === 'LEGACY' && $r->data_ready)?->n,
+                'LEGACY_INCOMPLETE' => (int) $rows->firstWhere(fn ($r) => $r->data_origin === 'LEGACY' && ! $r->data_ready)?->n,
+                'LIVE_INCOMPLETE' => (int) $rows->firstWhere(fn ($r) => $r->data_origin === 'LIVE' && ! $r->data_ready)?->n,
+            ];
+        }
+
+        return $out;
+    }
+
+    public function hideLegacyIncomplete(): bool
+    {
+        return (bool) SysConstant::number('DATA_HIDE_LEGACY_INCOMPLETE', 0);
     }
 
     // ===================== SNAPSHOT & RESET DUMMY =====================

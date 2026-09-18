@@ -20,6 +20,20 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
 
     public bool $newAsDummy = false;
 
+    public bool $hideIncomplete = false;
+
+    public ?array $promotePreview = null;
+
+    public bool $reqForm = false;
+
+    public string $req_db = 'tm2mst';
+
+    public string $req_table = '';
+
+    public string $req_column = '';
+
+    public string $req_label = '';
+
     public string $flash = '';
 
     public string $dbFilter = '';
@@ -64,6 +78,7 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
         $this->showDummy = ! in_array('DUMMY', $hidden, true);
         $this->showLegacy = ! in_array('LEGACY', $hidden, true);
         $this->newAsDummy = $svc->newRowsAsDummy();
+        $this->hideIncomplete = $svc->hideLegacyIncomplete();
     }
 
     private function svc(): DataOriginService
@@ -113,7 +128,8 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
 
     public function saveSettings(): void
     {
-        foreach (['DATA_SHOW_DUMMY' => $this->showDummy, 'DATA_SHOW_LEGACY' => $this->showLegacy, 'DATA_NEW_AS_DUMMY' => $this->newAsDummy] as $key => $val) {
+        foreach (['DATA_SHOW_DUMMY' => $this->showDummy, 'DATA_SHOW_LEGACY' => $this->showLegacy,
+            'DATA_NEW_AS_DUMMY' => $this->newAsDummy, 'DATA_HIDE_LEGACY_INCOMPLETE' => $this->hideIncomplete] as $key => $val) {
             DB::connection('tm2sys')->table('sys_constant')->where('constant_key', $key)->update([
                 'constant_number' => $val ? 1 : 0, 'updated_by' => Auth::user()->login, 'updated_at' => now(),
             ]);
@@ -200,6 +216,73 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
         unset($this->counts, $this->totals, $this->marked);
     }
 
+    // ---------- kelengkapan data legacy ----------
+
+    #[Computed]
+    public function requirements()
+    {
+        return DB::connection('tm2sys')->table('sys_data_requirement')->orderBy('db_name')->orderBy('table_name')->get();
+    }
+
+    #[Computed]
+    public function readiness(): array
+    {
+        return $this->svc()->readiness();
+    }
+
+    public function saveRequirement(): void
+    {
+        $data = $this->validate([
+            'req_db' => ['required', 'in:'.implode(',', DataOriginService::DATABASES)],
+            'req_table' => ['required', 'regex:/^\w+$/', 'max:64'],
+            'req_column' => ['required', 'regex:/^\w+$/', 'max:64'],
+            'req_label' => ['required', 'string', 'max:100'],
+        ]);
+
+        DB::connection('tm2sys')->table('sys_data_requirement')->updateOrInsert(
+            ['db_name' => $data['req_db'], 'table_name' => $data['req_table'], 'column_name' => $data['req_column']],
+            ['label' => $data['req_label'], 'activate' => 1, 'created_at' => now(), 'updated_at' => now(),
+                'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login],
+        );
+
+        $this->reqForm = false;
+        $this->req_table = $this->req_column = $this->req_label = '';
+        $this->svc()->computeReady(false);
+        unset($this->requirements, $this->readiness);
+        $this->flash = 'Syarat tersimpan dan kelengkapan data dihitung ulang.';
+    }
+
+    public function toggleRequirement(int $id): void
+    {
+        DB::connection('tm2sys')->table('sys_data_requirement')->where('id_requirement', $id)->update([
+            'activate' => DB::raw('1 - activate'), 'updated_at' => now(), 'updated_by' => Auth::user()->login,
+        ]);
+        $this->svc()->computeReady(false);
+        unset($this->requirements, $this->readiness);
+    }
+
+    public function recomputeReady(): void
+    {
+        $r = $this->svc()->computeReady(false);
+        $n = array_sum(array_column($r, 'incomplete'));
+        unset($this->readiness);
+        $this->flash = "Kelengkapan dihitung ulang: {$n} baris belum memenuhi syarat.";
+    }
+
+    public function previewPromote(): void
+    {
+        $this->promotePreview = $this->svc()->promoteReadyLegacy(true);
+    }
+
+    public function applyPromote(?string $only = null): void
+    {
+        $done = $this->svc()->promoteReadyLegacy(false, $only);
+        $n = array_sum($done);
+        $this->promotePreview = null;
+        $this->flash = "{$n} baris LEGACY yang sudah lengkap dijadikan data real (LIVE).";
+        unset($this->counts, $this->totals, $this->marked, $this->readiness);
+    }
+
     // ---------- snapshot & reset ----------
 
     public function takeSnapshot(): void
@@ -253,6 +336,7 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
                         Master Bahan, Pelanggan, Supplier, Produk, dan karyawan hasil impor. Pastikan data kerja sudah tidak bergantung pada data itu.
                     </div>
                 @endunless
+                <x-form.checkbox label="Sembunyikan data LEGACY yang belum memenuhi syarat wajib" wire:model="hideIncomplete" />
                 <x-form.checkbox label="Mode UAT: data baru otomatis ditandai DUMMY (ikut di-reset)" wire:model="newAsDummy" />
             </div>
             <div class="mt-3">
@@ -260,7 +344,86 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
             </div>
         </div>
 
-        {{-- 2. Snapshot & reset --}}
+        {{-- 2. Kelengkapan data legacy --}}
+        <div class="bg-white border border-[#d9dfe8] rounded-[10px] p-4">
+            <div class="text-sm font-bold text-navy mb-1">Kelengkapan Data Legacy</div>
+            <div class="text-[12px] text-muted mb-3">
+                Data LEGACY yang sudah memenuhi syarat wajib boleh dijadikan data real (LIVE). Yang belum tetap LEGACY
+                supaya kelihatan masih perlu dilengkapi. Tabel tanpa syarat wajib dianggap sudah memenuhi.
+            </div>
+
+            <table class="w-full border-collapse text-[12px] mb-3">
+                <tr class="text-left text-[11px] text-muted uppercase"><th class="py-1">Tabel</th><th>Syarat wajib</th><th class="text-right">Legacy lengkap</th><th class="text-right">Legacy belum lengkap</th><th class="text-right">LIVE belum lengkap</th></tr>
+                @forelse ($this->readiness as $tbl => $r)
+                    <tr class="border-t border-[#eef1f5]">
+                        <td class="py-1 font-mono text-[11.5px]">{{ $tbl }}</td>
+                        <td class="text-[11.5px]">{{ $this->requirements->filter(fn ($q) => $q->db_name.'.'.$q->table_name === $tbl && $q->activate)->pluck('label')->implode(', ') }}</td>
+                        <td class="text-right font-bold text-[#1f8a4c]">{{ number_format($r['LEGACY_READY'], 0, ',', '.') }}</td>
+                        <td class="text-right font-bold text-[#b45309]">{{ number_format($r['LEGACY_INCOMPLETE'], 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($r['LIVE_INCOMPLETE'], 0, ',', '.') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="py-2 text-muted text-center">Belum ada syarat wajib yang didaftarkan.</td></tr>
+                @endforelse
+            </table>
+
+            <div class="flex flex-wrap gap-2 items-center">
+                <button type="button" wire:click="recomputeReady" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">↻ Hitung Ulang Kelengkapan</button>
+                <button type="button" wire:click="previewPromote" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">🔍 Pratinjau Jadikan Real</button>
+                <button type="button" wire:click="$set('reqForm', true)" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">+ Syarat Wajib</button>
+            </div>
+
+            @if ($reqForm)
+                <form wire:submit="saveRequirement" class="mt-3 p-3 bg-[#fafbfd] border border-[#eef1f5] rounded grid grid-cols-1 md:grid-cols-5 gap-3">
+                    <x-form.select label="Database *" name="req_db" wire:model="req_db" :selected="$req_db" :liveSync="true"
+                        :options="array_combine(DataOriginService::DATABASES, DataOriginService::DATABASES)" />
+                    <x-form.input label="Tabel *" name="req_table" wire:model="req_table" placeholder="mis. prod_product" />
+                    <x-form.input label="Kolom wajib *" name="req_column" wire:model="req_column" placeholder="mis. customer_id" />
+                    <x-form.input label="Nama syarat *" name="req_label" wire:model="req_label" placeholder="mis. Kepemilikan customer" />
+                    <div class="flex items-end gap-2">
+                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
+                        <button type="button" wire:click="$set('reqForm', false)" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    </div>
+                </form>
+            @endif
+
+            @if ($this->requirements->isNotEmpty())
+                <div class="mt-3 flex flex-wrap gap-1.5">
+                    @foreach ($this->requirements as $q)
+                        <button type="button" wire:click="toggleRequirement({{ $q->id_requirement }})"
+                            class="px-2.5 py-1 rounded-full text-[11px] border cursor-pointer {{ $q->activate ? 'bg-[#eaf7ee] border-[#bfe6cc] text-[#1f6b3c]' : 'bg-[#eef0f3] border-[#dfe3e8] text-[#8a8f98] line-through' }}"
+                            title="Klik untuk aktif/nonaktif">{{ $q->table_name }}.{{ $q->column_name }} — {{ $q->label }}</button>
+                    @endforeach
+                </div>
+            @endif
+
+            @if ($promotePreview !== null)
+                <div class="mt-3 text-[12px]">
+                    @if ($promotePreview)
+                        Akan dijadikan LIVE (legacy yang sudah lengkap):
+                        <table class="w-full mt-2 border-collapse">
+                            <tr class="text-left text-[11px] text-muted uppercase"><th class="py-1">Tabel</th><th class="text-right">Baris</th><th></th></tr>
+                            @foreach ($promotePreview as $tbl => $n)
+                                <tr class="border-t border-[#eef1f5]">
+                                    <td class="py-1 font-mono text-[11.5px]">{{ $tbl }}</td>
+                                    <td class="text-right">{{ number_format($n, 0, ',', '.') }}</td>
+                                    <td class="text-right">
+                                        <button type="button" wire:click="applyPromote('{{ $tbl }}')" wire:confirm="Jadikan {{ $n }} baris {{ $tbl }} sebagai data real (LIVE)?"
+                                            class="px-2 py-1 rounded text-[11px] font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Jadikan Real</button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </table>
+                        <button type="button" wire:click="applyPromote" wire:confirm="Jadikan SEMUA legacy yang sudah lengkap sebagai data real (LIVE)?"
+                            class="mt-3 px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Jadikan Real (semua tabel)</button>
+                    @else
+                        <span class="text-[#1f6b3c]">Tidak ada baris LEGACY lengkap yang perlu dinaikkan.</span>
+                    @endif
+                </div>
+            @endif
+        </div>
+
+        {{-- 3. Snapshot & reset --}}
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] p-4">
             <div class="text-sm font-bold text-navy mb-1">Reset Data Dummy</div>
             <div class="text-[12px] text-muted mb-3">
@@ -297,7 +460,7 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
             @endif
         </div>
 
-        {{-- 3. Aturan klasifikasi --}}
+        {{-- 4. Aturan klasifikasi --}}
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="text-sm font-bold text-navy">Aturan Klasifikasi</div>
@@ -379,7 +542,7 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
             </x-grid.table-shell>
         </div>
 
-        {{-- 4. Ringkasan per tabel --}}
+        {{-- 5. Ringkasan per tabel --}}
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="text-sm font-bold text-navy">Tabel yang Memuat Data DUMMY / LEGACY</div>

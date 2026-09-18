@@ -22,12 +22,24 @@ class DataOriginScope implements Scope
 
     private static ?bool $newAsDummy = null;
 
+    private static ?bool $hideIncomplete = null;
+
     public function apply(Builder $builder, Model $model): void
     {
         $hidden = self::$hidden ??= app(DataOriginService::class)->hiddenOrigins();
 
         if ($hidden) {
             $builder->whereNotIn($model->qualifyColumn('data_origin'), $hidden);
+        }
+
+        // Legacy yang belum memenuhi syarat wajib tidak boleh jadi acuan
+        // (keputusan user 2026-09-18) -- disembunyikan bila setting menyala.
+        self::$hideIncomplete ??= app(DataOriginService::class)->hideLegacyIncomplete();
+
+        if (self::$hideIncomplete) {
+            $builder->where(fn ($q) => $q
+                ->where($model->qualifyColumn('data_origin'), '<>', 'LEGACY')
+                ->orWhere($model->qualifyColumn('data_ready'), 1));
         }
     }
 
