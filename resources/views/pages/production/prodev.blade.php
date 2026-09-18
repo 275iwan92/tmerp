@@ -1120,7 +1120,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                     <div><label>Length (cm)</label><input id="io-sl" type="number" min="1" step=".1"></div>
                                     <div><label>Width (cm)</label><input id="io-sw" type="number" min="1" step=".1"></div>
                                 </div>
-                                <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px">✦ Suggest canvas size</button>
+                                <button id="io-suggest" class="io-btn green" style="width:100%;margin-top:9px" title="Mengubah ukuran canvas DAN plano">✦ Suggestion</button>
                                 <p id="io-suggestNote" class="io-note"></p>
                                 <label>Grain direction</label>
                                 <select id="io-grain">
@@ -1270,8 +1270,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     <div class="io-instructions">
                         <b>Manual nesting:</b> pilih lalu drag artwork/dieline satu per satu. Gunakan Rotate dan Mirror untuk
                         mensimulasikan susunan berlawanan serta mengisi ruang kosong sesuai bentuk dieline. Setelah susunan
-                        diatur, tombol <b>✦ Suggest canvas size</b> tidak me-reset layout — ia menghitung ulang canvas dari
-                        bounding box susunan Anda + bleed. Tekan <b>Reset layout</b> bila ingin kembali ke grid otomatis.
+                        diatur, tombol <b>✦ Suggestion</b> tidak me-reset layout — susunan dirapatkan sesuai gap (antar-object
+                        &amp; keliling), lalu ukuran canvas dan plano dipilih ulang. Tekan <b>Reset layout</b> bila ingin kembali ke grid otomatis.
                     </div>
                     <div id="io-valid" class="io-notice info">Set a valid canvas size.</div>
                 </main>
@@ -3737,7 +3737,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                             : '<br><b>⚠ TARGET ' + kurang.target + ' UP BELUM MUAT DI CANVAS INI</b> — canvas ' + S.L + ' × ' + S.W
                               + ' cm baru memuat ' + kurang.dapat + ' up, sisanya ditempatkan DI LUAR canvas (tandai merah) untuk digeser manual. '
                               + 'Bisa juga diputar/di-mirror, perbesar canvas (meja ' + bedOwner() + ' masih mengizinkan sampai '
-                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm), atau tekan ✦ Suggest canvas size.')
+                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm), atau tekan ✦ Suggestion.')
                         : '');
 
                 $('impoDetail').innerHTML = '<table>' +
