@@ -3383,15 +3383,23 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                 // Plano Configuration ikut canvas baru. Plano custom (diketik
                 // officer sendiri) tidak ditimpa.
+                const planoLama = S.pl[0];
                 const pi = planos.includes(S.pl) ? bestPlanoIndex() : -1;
                 if (pi >= 0) { S.pl = planos[pi]; $('plano').value = String(pi); }
+                // Selalu dilaporkan: plano DIGANTI atau TETAP -- kalau plano lama
+                // sudah yang paling hemat, dropdown memang tidak berubah dan
+                // officer mengira Suggestion tidak bekerja.
+                const planoInfo = pi < 0 ? 'plano custom ' + S.pl[0] + ' tidak diubah'
+                    : planoLama === S.pl[0] ? 'plano tetap ' + S.pl[0] + ' (sudah paling hemat)'
+                    : 'plano diganti ' + planoLama + ' → ' + S.pl[0];
 
                 const use = (S.objs.length * S.p.l * S.p.w / (L * W) * 100).toFixed(1);
                 $('suggestNote').textContent = (rl > L || rw > W)
                     ? 'Susunan ' + S.objs.length + ' object butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + bl + ' × ' + bw + ' cm). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
                     : 'Canvas dipaskan ke susunan: ' + S.objs.length + ' object dirapatkan, gap ' + S.g + ' cm antar-object & keliling = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%'
-                      + (pi >= 0 ? ' · plano ' + S.pl[0] + ' (' + cut(S.pl).n + ' canvas/plano).' : '.');
+                      + ' · ' + planoInfo + ' (' + cut(S.pl).n + ' canvas/plano).';
                 update(false);
+                msg('Suggestion: canvas ' + L + ' × ' + W + ' cm · ' + planoInfo + '.', 'ok');
                 checkManualOverlap();
             }
 
