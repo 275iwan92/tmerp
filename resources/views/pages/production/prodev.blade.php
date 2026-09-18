@@ -1168,6 +1168,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                 <h2>Plano Optimization</h2>
                                 <label>Market plano size</label>
                                 <select id="io-plano"></select>
+                                <button id="io-calcPlano" class="io-btn green" style="width:100%;margin-top:8px" title="Pilih plano paling hemat untuk ukuran canvas sekarang">⟳ Calculate Plano</button>
                                 <div class="io-row">
                                     <div><label>Custom L</label><input id="io-cpl" type="number" step=".1" placeholder="cm"></div>
                                     <div><label>Custom W</label><input id="io-cpw" type="number" step=".1" placeholder="cm"></div>
@@ -2038,6 +2039,16 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     if (c.n && (!bc || c.util > bc.util + 1e-9 || (Math.abs(c.util - bc.util) <= 1e-9 && c.n > bc.n))) { bi = i; bc = c; }
                 });
                 return bi;
+            }
+
+            // Pilih plano paling hemat untuk canvas sekarang. Hasilnya selalu
+            // dilaporkan DIGANTI atau TETAP -- kalau plano lama sudah yang paling
+            // hemat, dropdown memang tidak berubah dan officer mengira tidak jalan.
+            function pickBestPlano() {
+                const lama = S.pl[0], i = bestPlanoIndex();
+                if (i < 0) return 'tidak ada plano standar yang muat canvas ' + S.L + ' × ' + S.W + ' cm';
+                S.pl = planos[i]; $('plano').value = String(i);
+                return lama === S.pl[0] ? 'plano tetap ' + S.pl[0] + ' (sudah paling hemat)' : 'plano diganti ' + lama + ' → ' + S.pl[0];
             }
 
             function hasilPerPlano() {
@@ -3105,6 +3116,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     optimizeSheet();
                 };
                 $('plano').onchange = e => { S.pl = planos[e.target.value]; update(false); };
+                // Hitung ulang plano secara eksplisit (permintaan user 2026-09-18),
+                // tidak bergantung pada tombol Suggestion.
+                $('calcPlano').onclick = () => {
+                    const info = pickBestPlano();
+                    update(false);
+                    $('planoNote').innerHTML += '<br><b>Calculate Plano: ' + esc(info) + '.</b>';
+                };
                 $('custom').onclick = () => {
                     const l = +$('cpl').value, w = +$('cpw').value;
                     if (l && w) { S.pl = ['Custom ' + l + ' × ' + w + ' cm', l, w]; $('plano').value = ''; update(false); }
@@ -3383,15 +3401,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                 // Plano Configuration ikut canvas baru. Plano custom (diketik
                 // officer sendiri) tidak ditimpa.
-                const planoLama = S.pl[0];
-                const pi = planos.includes(S.pl) ? bestPlanoIndex() : -1;
-                if (pi >= 0) { S.pl = planos[pi]; $('plano').value = String(pi); }
-                // Selalu dilaporkan: plano DIGANTI atau TETAP -- kalau plano lama
-                // sudah yang paling hemat, dropdown memang tidak berubah dan
-                // officer mengira Suggestion tidak bekerja.
-                const planoInfo = pi < 0 ? 'plano custom ' + S.pl[0] + ' tidak diubah'
-                    : planoLama === S.pl[0] ? 'plano tetap ' + S.pl[0] + ' (sudah paling hemat)'
-                    : 'plano diganti ' + planoLama + ' → ' + S.pl[0];
+                const planoInfo = planos.includes(S.pl) ? pickBestPlano() : 'plano custom ' + S.pl[0] + ' tidak diubah';
 
                 const use = (S.objs.length * S.p.l * S.p.w / (L * W) * 100).toFixed(1);
                 $('suggestNote').textContent = (rl > L || rw > W)
