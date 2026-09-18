@@ -128,14 +128,12 @@ Route::middleware(['auth', 'locale'])->group(function () {
         Route::middleware('module:COSTING')->group(function () {
             Route::livewire('/inquiry/costing', 'pages::inquiry.costing-list')->name('inquiry.costing.list');
             Route::livewire('/inquiry/{inquiry}/costing', 'pages::inquiry.costing')->name('inquiry.costing');
-            // Mode Instant (standalone, keputusan user 2026-09-18): grid terpisah,
-            // tapi FORM tetap 1 komponen (pages::inquiry.costing) yang sama dgn
-            // Integrated -- mount() terima {costing} langsung (bukan {inquiry}),
-            // dan template bercabang total sesuai $costing->mode (griduistandard.md
-            // "1 sumber kebenaran" utk logic engine/part-repeater, tampilan beda).
-            // iqp_costing.mode=INSTANT, inquiry_id NULL. Lihat procost_formula_library.md.
+            // Mode Instant (standalone, keputusan user 2026-09-18): grid & form
+            // sendiri. Form meniru program HPP lama + mockup Kalkulasi_HPP_UAT.html
+            // (tata letak beda total dari Integrated). Rumus tetap 1 sumber:
+            // App\Services\Costing\CostingEngine. iqp_costing.mode=INSTANT.
             Route::livewire('/costing/instant', 'pages::inquiry.costing-instant-list')->name('inquiry.costing.instant.list');
-            Route::livewire('/costing/instant/{costing}', 'pages::inquiry.costing')->name('inquiry.costing.instant');
+            Route::livewire('/costing/instant/{costing}', 'pages::inquiry.costing-instant')->name('inquiry.costing.instant');
         });
 
         Route::livewire('/security', 'pages::security.index')->name('security.index')->middleware('admin');

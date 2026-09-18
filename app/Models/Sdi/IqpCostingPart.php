@@ -109,6 +109,7 @@ class IqpCostingPart extends Model
         'i_ongkos_pisau_pc',
         'c_ongkos_lam_pc',
         'c_sheet_compare_info',
+        'calc_notes',
     ];
 
     protected $casts = [
