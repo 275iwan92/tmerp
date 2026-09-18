@@ -638,6 +638,14 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 'type' => self::SAMPLE_ARTWORK[$p->mastercard_code] ?? null,
                 'customer' => $src?->inquiry?->customer?->customer_name ?: 'Mode #2 — manual / standalone',
                 'design' => $p->displayMastercardCode(),
+                // Isian Master Card (cetak A4 landscape, permintaan user 2026-09-18).
+                'designNo' => $src?->inquiry?->design_number ?: ($p->product?->design_no ?: '—'),
+                'productName' => $p->product?->product_name ?: $p->part_name,
+                'itemCode' => $p->mastercard_code ?: $p->part_code,
+                'partName' => $p->part_name,
+                'finishingText' => $p->finishing,
+                'confirmed' => $this->layoutConfirmed($p),
+                'today' => now()->translatedFormat('d M Y'),
                 'reg' => $src?->inquiry?->inquiry_no ?: '—',
                 // Canvas awal (juga jadi bias scoring di suggest()): pakai ukuran
                 // lembar cetak yang sudah pernah dipakai part ini kalau ada.
@@ -662,6 +670,13 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         // di prod_part (lihat SAMPLE_ARTWORK di atas), jadi masuk lewat grid
         // seperti job lain dan bisa dipakai UAT beneran.
         return $jobs;
+    }
+
+    // Layout part ini sudah di-CONFIRM? Master Card yang belum confirm dicap
+    // "NOT CONFIRMED" (permintaan user 2026-09-18).
+    private function layoutConfirmed(ProdPart $p): bool
+    {
+        return $p->layoutGroups()->where('status', 'CONFIRMED')->exists();
     }
 
     // File vektor digambar dari pratinjau PNG-nya (canvas tidak bisa
@@ -973,6 +988,61 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             .io-sec-body{columns:1}
             .io-canvas-card{min-height:70vh}
             .io-top{align-items:flex-start}.io-badge{display:none}}
+
+        /* ===== MASTER CARD: pratinjau pop-up + cetak A4 landscape 1 halaman ===== */
+        .io-mc-modal{display:none;position:fixed;inset:0;z-index:9000;background:#040d18ee;backdrop-filter:blur(2px)}
+        .io-mc-modal.open{display:flex;flex-direction:column}
+        .io-mc-bar{display:flex;align-items:center;gap:9px;padding:10px 14px;background:#0b1f31;border-bottom:1px solid var(--io-line);
+            color:#d9f5ff;font:700 13px Inter,system-ui,sans-serif}
+        .io-mc-state{font-size:11px;font-weight:800;padding:2px 8px;border-radius:9px;background:#3d2c0c;color:#ffd08a}
+        .io-mc-state.ok{background:#12391f;color:#8ff0b0}
+        .io-mc-scroll{flex:1;overflow:auto;padding:18px;display:flex;justify-content:center;align-items:flex-start}
+        /* Lembar 1 halaman A4 landscape: 297 x 210 mm dikurangi margin cetak. */
+        /* Kotak cetak A4 landscape dikurangi margin 6mm: 285 x 198 mm. */
+        .io-mc-sheet{position:relative;width:285mm;height:198mm;overflow:hidden;background:#fff;color:#111;
+            box-shadow:0 20px 60px #0009;font:10px/1.25 Arial,Helvetica,sans-serif}
+        .io-mc-sheet *{box-sizing:border-box}
+        .io-mc-pad{padding:5mm 6mm;height:100%;position:relative}
+        .io-mc-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:3px;margin-bottom:5px}
+        .io-mc-head h2{margin:0;font-size:14px;letter-spacing:.02em}
+        .io-mc-head .brand{font-size:14px;font-weight:700}
+        .io-mc-head .brand i{font-weight:400;font-style:italic}
+        .io-mc-head .item{font:700 11px "Courier New",monospace;text-align:right}
+        .io-mc-body{display:grid;grid-template-columns:1fr 0.92fr;gap:7px;align-items:start}
+        .io-mc-tbl{width:100%;border-collapse:collapse}
+        .io-mc-tbl th,.io-mc-tbl td{border:1px solid #333;padding:2px 5px;vertical-align:middle;font-size:9.5px}
+        /* Kolom label menyesuaikan isinya (bukan 30% paksa) supaya baris
+           berkolom-banyak seperti Dimensi P/L/T tidak membungkus. */
+        .io-mc-tbl th{background:#f1f3f7;text-align:left;font-weight:700;white-space:nowrap;width:1%}
+        .io-mc-tbl td.mono{font-family:"Courier New",monospace}
+        .io-mc-sub{margin-top:5px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+        .io-mc-cap{border:1px solid #333;border-bottom:0;background:#f1f3f7;padding:2px 5px;font-weight:700;font-size:9.5px;text-align:center}
+        .io-mc-layout{border:1px solid #333;background:#0d1b2d;padding:4px}
+        .io-mc-layout .ttl{color:#cfe9f7;font:700 8.5px "Courier New",monospace;text-align:center;margin-bottom:2px}
+        .io-mc-layout svg{width:100%;height:auto;max-height:82mm;display:block;background:#0d1b2d}
+        .io-mc-note{color:#c0392b;font-weight:700;font-size:9.5px;text-align:center;margin-top:3px}
+        .io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;font-size:8.5px}
+        .io-mc-extra table{width:100%;border-collapse:collapse}
+        .io-mc-extra td{border:1px solid #444;padding:2px 5px}
+        .io-mc-extra td:first-child{background:#f6f7fa;width:46%}
+        .io-mc-sign{margin-top:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;font-size:9px}
+        .io-mc-sign .who{color:#666;margin-bottom:14px}
+        .io-mc-sign .line{border-top:1px solid #111;padding-top:2px;font-weight:700}
+        .io-mc-stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+        .io-mc-stamp span{font:900 72px/1 Arial,Helvetica,sans-serif;color:#c0392b26;border:6px solid #c0392b26;
+            padding:10px 26px;transform:rotate(-18deg);letter-spacing:.06em;white-space:nowrap}
+
+        @media print{
+            @page{size:A4 landscape;margin:6mm}
+            html,body{background:#fff !important}
+            .io-shell{display:none !important}
+            .io-mc-modal{display:block !important;position:static !important;inset:auto;background:#fff;backdrop-filter:none}
+            .io-mc-bar{display:none !important}
+            .io-mc-scroll{overflow:visible;padding:0;display:block}
+            .io-mc-sheet{width:285mm;height:198mm;box-shadow:none;overflow:hidden;page-break-inside:avoid;page-break-after:avoid}
+            .io-mc-layout{background:#0d1b2d !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+            .io-mc-stamp span{color:#c0392b40;border-color:#c0392b40;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+        }
         </style>
 
         <div class="io-shell">
@@ -981,11 +1051,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     <h1>Imposition Plano Optimizer</h1>
                     <p class="io-sub">Pro-Dev — nesting manual &amp; optimasi plano per job cetak (artwork vector + garis dieline struktural)</p>
                 </div>
-                <div style="display:flex;gap:9px;align-items:center">
+                <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
                     <!-- Label "Back" dikunci berbahasa Inggris di kedua mode bahasa
                     (FORM_UI_STANDARD.md §1). href diisi JS dari window.__PRODEV.backUrl
                     karena blok ini ada di dalam @verbatim -- route() Blade tidak jalan. -->
                     <a class="io-btn" id="io-back" href="#">← Back</a>
+                    <!-- 3 tombol aksi di top bar (permintaan user 2026-09-18):
+                    Save All, Confirm, dan pratinjau/cetak Master Card. -->
+                    <button class="io-btn" id="io-save">💾 Save All</button>
+                    <button class="io-btn green" id="io-confirm">✓ Confirm</button>
+                    <button class="io-btn" id="io-printMc">🖨 Preview &amp; Print Master Card</button>
+                    <span class="io-status" id="io-status"></span>
                     <div class="io-badge" id="io-jobcount">LIVE PACKAGING JOBS</div>
                 </div>
             </div>
@@ -1156,9 +1232,6 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         <button class="io-btn" data-io-f="y">↕ Mirror Y</button>
                         <button class="io-btn warn" id="io-resetLayout">Reset layout</button>
                         <button class="io-btn" id="io-autoNest">✦ Auto Nesting</button>
-                        <button class="io-btn" id="io-save">💾 Simpan</button>
-                        <button class="io-btn green" id="io-confirm">✓ Confirm → Pro-Cost</button>
-                        <span class="io-status" id="io-status"></span>
                     </div>
                     <!-- Status susunan + PERINGATAN (tabrakan garis potong, target up
                     tidak muat) sengaja ditaruh di sini, bukan di dalam accordion:
@@ -1200,6 +1273,24 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     </div>
                     <div id="io-valid" class="io-notice info">Set a valid canvas size.</div>
                 </main>
+            </div>
+        </div>
+
+        <!-- Pratinjau & cetak MASTER CARD (permintaan user 2026-09-18): pop-up
+        besar, isinya seluruh informasi ProDev, dicetak A4 LANDSCAPE 1 halaman.
+        Ditaruh DI LUAR .io-shell supaya saat mencetak cukup sembunyikan shell-nya
+        (lihat @media print di style atas). Cap "NOT CONFIRMED" muncul selama
+        layout belum di-Confirm. -->
+        <div class="io-mc-modal" id="io-mcModal" role="dialog" aria-modal="true" aria-label="Master Card">
+            <div class="io-mc-bar">
+                <b>Preview Master Card</b>
+                <span id="io-mcState" class="io-mc-state"></span>
+                <span style="flex:1"></span>
+                <button class="io-btn" id="io-mcPrint">🖨 Print (A4 landscape)</button>
+                <button class="io-btn warn" id="io-mcClose">✕ Tutup</button>
+            </div>
+            <div class="io-mc-scroll">
+                <div class="io-mc-sheet"><div class="io-mc-pad" id="io-mcSheet"></div></div>
             </div>
         </div>
 
@@ -1341,6 +1432,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
                     // Yang tersimpan sekarang jadi acuan: reset sudah dieksekusi,
                     // override yang tersimpan berstatus OVERRIDE.
+                    if (res.confirmed) S.p.confirmed = true;
+                    if ($('mcModal').classList.contains('open')) openMasterCard();
                     S.p.reset = [];
                     SECS.forEach(k => { if (S.p.edit && S.p.edit[k]) { S.p.editSrc[k] = 'OVERRIDE'; S.p.saved = S.p.saved || {}; S.p.saved[k] = { source: 'OVERRIDE', rows: S.p.edit[k] }; } });
                     specKey = ''; specSoon();
@@ -2622,6 +2715,134 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 });
             }
 
+            // ===================== MASTER CARD (pratinjau & cetak) =====================
+            // Semua informasi ProDev yang sedang tampil dirangkum jadi 1 lembar
+            // A4 landscape mengikuti bentuk Master Card / Kartu Induk pabrik.
+            // Selama layout belum di-Confirm, lembar ini dicap "NOT CONFIRMED".
+            const GRAIN_LABEL = { L: 'LG', W: 'SG', none: '—' };
+
+            function knifeInfo() {
+                const st = gatherState();
+                const up = st.upCount || 0;
+                const nama = (S.p.productName || S.p.name || '').toUpperCase();
+                return {
+                    code: nama ? 'PISAU ' + nama + ' ISI ' + up + ' MATA' : '—',
+                    size: st.knifeW && st.knifeH ? fmtAngka(st.knifeW) + ' × ' + fmtAngka(st.knifeH) + ' cm' : '—',
+                    up: up,
+                };
+            }
+
+            function mcRow(label, value, mono) {
+                return '<tr><th>' + esc(label) + '</th><td' + (mono ? ' class="mono"' : '') + '>' + (value ?? '—') + '</td></tr>';
+            }
+
+            function masterCardHtml() {
+                const p = S.p, sp = p.spec, k = knifeInfo();
+                const bom = sp ? (p.edit && p.edit.bom && sp.override.bom ? sp.override.bom : sp.bom) : [];
+                const bop = sp ? (p.edit && p.edit.bop && sp.override.bop ? sp.override.bop : sp.bop) : [];
+                const inks = sp ? (p.edit && p.edit.inks && sp.override.inks ? sp.override.inks : sp.inks) : [];
+                const kertas = bom.find(r => r.basis === 'PLANO' && r.material_id) || bom[0] || {};
+                const pass1 = inks.filter(r => +r.pass_seq === 1);
+                const finishing = sp && sp.inputs.finishings.length ? sp.inputs.finishings.join(', ') : (p.finishingText || '—');
+                const svg = $('svg') ? $('svg').outerHTML : '';
+                const cetak = fmtAngka(S.L) + ' × ' + fmtAngka(S.W) + ' cm';
+
+                return ''
+                    + '<div class="io-mc-head">'
+                    + '<div><div class="brand">Telasih Makmur <i>offset printing &amp; packaging</i></div>'
+                    + '<h2>MASTER CARD / KARTU INDUK</h2></div>'
+                    + '<div class="item">Kode Item: ' + esc(p.itemCode || p.design || '—') + '</div></div>'
+
+                    + '<div class="io-mc-body"><div>'
+                    + '<table class="io-mc-tbl">'
+                    + '<tr><th>No. Desain</th><td class="mono">' + esc(p.designNo || '—') + '</td>'
+                    + '<th style="width:18%">Nama Barang</th><td><b>' + esc(p.productName || p.name) + '</b></td>'
+                    + '<th style="width:12%">Tanggal</th><td class="mono">' + esc(p.today || '') + '</td></tr>'
+                    + '</table>'
+                    + '<table class="io-mc-tbl">'
+                    + mcRow('Nama Pelanggan', '<b>' + esc(p.customer) + '</b>')
+                    + '<tr><th>Dimensi P</th><td class="mono">' + fmtAngka(p.fl) + ' cm</td>'
+                    + '<th>Dimensi L</th><td class="mono">' + fmtAngka(p.fw) + ' cm</td>'
+                    + '<th>Dimensi T</th><td class="mono">' + fmtAngka(p.fh) + ' cm</td></tr>'
+                    + '<tr><th>Kode Pisau</th><td colspan="3"><b>' + esc(k.code) + '</b></td>'
+                    + '<th>Ukuran Pisau</th><td class="mono">' + k.size + '</td></tr>'
+                    + '<tr><th>Material</th><td colspan="3"><b>' + esc(kertas.name || '—') + '</b>'
+                    + (kertas.brand ? ' <span style="color:#555">(' + esc(kertas.brand) + ')</span>' : '') + '</td>'
+                    + '<th>Kualitas</th><td class="mono">' + (kertas.gsm ? fmtAngka(kertas.gsm) + ' gsm' : '—') + '</td></tr>'
+                    + '<tr><th>Ukuran Bahan</th><td colspan="3" class="mono">' + cetak + ' (' + (GRAIN_LABEL[p.grain] || '—') + ')</td>'
+                    + '<th>Ukuran Cetak</th><td class="mono">' + cetak + '</td></tr>'
+                    + mcRow('Jenis Finishing', esc(finishing))
+                    + mcRow('Struktur / Joint', esc(p.structure || '—'))
+                    + '</table>'
+
+                    + '<div class="io-mc-sub"><div>'
+                    + '<div class="io-mc-cap">Warna Pertama: CS' + (S.m ? ' (' + esc(S.m[0]) + ')' : '') + '</div>'
+                    + '<table class="io-mc-tbl">'
+                    + (pass1.length
+                        ? pass1.map(r => '<tr><th style="width:34%">Unit ' + r.unit_no + '</th><td><b>' + esc(r.ink_name) + '</b>'
+                            + (r.coverage_pct !== null && r.coverage_pct !== undefined ? ' <span style="color:#555">' + fmtAngka(r.coverage_pct) + '% · ' + fmtAngka(r.coverage_cm2) + ' cm²</span>' : '')
+                            + '</td></tr>').join('')
+                        : '<tr><td colspan="2" style="text-align:center;color:#777">Susunan tinta belum ada</td></tr>')
+                    + '<tr><th>Isi / Lembar</th><td class="mono"><b>' + k.up + ' UP</b></td></tr>'
+                    + '</table></div><div>'
+                    + '<div class="io-mc-cap">Urutan Pekerjaan (Routing)</div>'
+                    + '<table class="io-mc-tbl">'
+                    + (bop.length
+                        ? bop.map((r, i) => '<tr><th style="width:26px;text-align:center">' + (i + 1) + '</th><td>' + esc(r.label)
+                            + (r.machine ? ' <span style="color:#555">· ' + esc(r.machine) + '</span>' : '')
+                            + (r.subcon_supplier ? ' <span style="color:#b45309">· subkon ' + esc(r.subcon_supplier) + '</span>' : '')
+                            + '</td></tr>').join('')
+                        : '<tr><td style="text-align:center;color:#777">Routing belum ada</td></tr>')
+                    + '</table></div></div>'
+                    + '</div>'
+
+                    + '<div><div class="io-mc-layout">'
+                    + '<div class="ttl">LAYOUT LEMBAR CETAK (' + cetak.replace(' cm', '') + ' cm) — ' + k.up + ' UP</div>'
+                    + svg + '</div>'
+                    + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
+                    + '<table class="io-mc-tbl" style="margin-top:5px">'
+                    + mcRow('Dieline / blank', fmtAngka(p.l) + ' × ' + fmtAngka(p.w) + ' cm · gap ' + fmtAngka(S.g) + ' cm', true)
+                    + mcRow('Plano', esc(S.pl[0]) + ' · ' + cut(S.pl).n + ' lembar / plano', true)
+                    + mcRow('Mesin plong', esc(S.d ? S.d[0] : '—'))
+                    + mcRow('Efisiensi material', ($('yAll') ? $('yAll').textContent : '—'))
+                    + '</table></div></div>'
+
+                    + '<div class="io-mc-extra"><table>'
+                    + '<tr><td>Qty order</td><td class="mono">' + (sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—') + '</td></tr>'
+                    + '<tr><td>Lembar cetak</td><td class="mono">' + (sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lbr' : '—') + '</td></tr>'
+                    + '<tr><td>Isi / pack</td><td class="mono">' + (sp && sp.inputs.packQty ? sp.inputs.packQty + ' pcs' : '—') + '</td></tr>'
+                    + '<tr><td>No. Inquiry</td><td class="mono">' + esc(p.reg || '—') + '</td></tr>'
+                    + '</table><table>'
+                    + bom.slice(0, 6).map(r => '<tr><td>' + esc(r.role) + '</td><td class="mono">'
+                        + (r.qty_need !== null && r.qty_need !== undefined ? fmtAngka(r.qty_need) + ' ' + esc(r.uom || '') : '—') + '</td></tr>').join('')
+                    + '</table><table>'
+                    + bom.slice(6, 12).map(r => '<tr><td>' + esc(r.role) + '</td><td class="mono">'
+                        + (r.qty_need !== null && r.qty_need !== undefined ? fmtAngka(r.qty_need) + ' ' + esc(r.uom || '') : '—') + '</td></tr>').join('')
+                    + '</table></div>'
+
+                    + '<div class="io-mc-sign">'
+                    + ['Mengetahui (Desainer)|Product Development', 'Marketing / Sales|Sales Officer',
+                       'PPIC / QA|Quality Control', 'Plant Manager|Kepala Pabrik']
+                        .map(x => { const [who, role] = x.split('|');
+                            return '<div><div class="who">' + who + '</div><div class="line">' + role + '</div></div>'; }).join('')
+                    + '</div>'
+
+                    + (p.confirmed ? '' : '<div class="io-mc-stamp"><span>NOT CONFIRMED</span></div>');
+            }
+
+            function openMasterCard() {
+                if (!ok()) { msg('Canvas masih di luar batas mesin — perbaiki dulu sebelum cetak Master Card.', 'bad'); return; }
+                $('mcSheet').innerHTML = masterCardHtml();
+                const st = $('mcState');
+                st.textContent = S.p.confirmed ? 'CONFIRMED' : 'BELUM CONFIRM';
+                st.className = 'io-mc-state' + (S.p.confirmed ? ' ok' : '');
+                $('mcModal').classList.add('open');
+            }
+
+            function closeMasterCard() {
+                $('mcModal').classList.remove('open');
+            }
+
             // Job dipilih di grid, jadi di sini cuma DITAMPILKAN. Dropdown hanya
             // dipakai di mode ?demo=1 (banyak sampel), bukan di alur normal.
             function jobIdentity() {
@@ -2700,6 +2921,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('resetLayout').onclick = () => { S.objs = []; S.selected = null; update(true); };
                 $('save').onclick = () => persist(false);
                 $('confirm').onclick = () => persist(true);
+                $('printMc').onclick = openMasterCard;
+                $('mcPrint').onclick = () => window.print();
+                $('mcClose').onclick = closeMasterCard;
+                $('mcModal').onclick = e => { if (e.target === $('mcModal')) closeMasterCard(); };
+                document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMasterCard(); });
                 // Bukan `= autoNest` langsung: event klik akan terkirim sebagai
                 // argumen pertama (silent) dan pesan hasilnya ikut tertelan.
                 $('autoNest').onclick = () => autoNest(false);
