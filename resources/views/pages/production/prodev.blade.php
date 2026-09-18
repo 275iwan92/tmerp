@@ -971,7 +971,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-spec table.rank tr.best td{color:#bdf5d6;font-weight:800}
         .io-spec table.rank th{font-size:10px;color:var(--io-muted);text-align:right;font-weight:700;padding-bottom:4px;border-bottom:1px solid #25445f}
         .io-spec table.rank th:first-child{text-align:left}
-        .io-cut{height:150px;background:#07131f;border:1px solid #395a76;border-radius:8px;margin:9px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .io-cut{min-height:150px;padding:6px;background:#07131f;border:1px solid #395a76;border-radius:8px;margin:9px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
         .io-instructions{font-size:12px;line-height:1.45;color:#c7e7f7;background:#102b41;border:1px solid #2d6689;border-radius:8px;padding:9px;margin-top:9px}
         .io-instructions b{color:#9eeaff}
         /* Layar sempit: kedua panel ikut menumpuk, canvas tetap paling bawah &
@@ -2026,6 +2026,18 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 } finally {
                     btn.disabled = false; btn.textContent = label;
                 }
+            }
+
+            // Plano terbaik untuk canvas SAAT INI. Ukuran canvas sudah tetap, jadi
+            // "bahan per pcs paling kecil" (aturan optimizeSheet, disetujui user
+            // 2026-09-16) sama dengan sheet yield tertinggi; seri -> canvas lebih banyak.
+            function bestPlanoIndex() {
+                let bi = -1, bc = null;
+                planos.forEach((q, i) => {
+                    const c = cut(q);
+                    if (c.n && (!bc || c.util > bc.util + 1e-9 || (Math.abs(c.util - bc.util) <= 1e-9 && c.n > bc.n))) { bi = i; bc = c; }
+                });
+                return bi;
             }
 
             function hasilPerPlano() {
@@ -3285,10 +3297,16 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 });
                 S.sc0 = n; S.sx0 = nx; S.sy0 = ny; S.touched = true;
 
+                // Plano Configuration ikut canvas baru. Plano custom (diketik
+                // officer sendiri) tidak ditimpa.
+                const pi = planos.includes(S.pl) ? bestPlanoIndex() : -1;
+                if (pi >= 0) { S.pl = planos[pi]; $('plano').value = String(pi); }
+
                 const use = (S.objs.length * S.p.l * S.p.w / (L * W) * 100).toFixed(1);
                 $('suggestNote').textContent = (rl > L || rw > W)
                     ? 'Susunan ' + S.objs.length + ' object butuh ' + rl + ' × ' + rw + ' cm — melebihi meja ' + bedOwner() + ' (' + bl + ' × ' + bw + ' cm). Canvas dipotong ke ' + L + ' × ' + W + ' cm, object di luar batas ditandai merah.'
-                    : 'Canvas dipaskan ke susunan: ' + S.objs.length + ' object dirapatkan, gap ' + S.g + ' cm antar-object & keliling = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%.';
+                    : 'Canvas dipaskan ke susunan: ' + S.objs.length + ' object dirapatkan, gap ' + S.g + ' cm antar-object & keliling = ' + L + ' × ' + W + ' cm · pemakaian area ' + use + '%'
+                      + (pi >= 0 ? ' · plano ' + S.pl[0] + ' (' + cut(S.pl).n + ' canvas/plano).' : '.');
                 update(false);
                 checkManualOverlap();
             }
@@ -3732,7 +3750,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     '<tr><td>Trim plano terbuang</td><td>' + (ap - c.n * ac).toFixed(0) + ' cm²</td></tr>' +
                     '<tr><td>Hasil / plano</td><td>' + (c.n * up) + ' pcs</td></tr></table>';
 
-                const rows = planos.map(q => ({ q, c: cut(q) })).filter(x => x.c.n).sort((a, b2) => b2.c.n * up - a.c.n * up || b2.c.util - a.c.util);
+                const rows = planos.map(q => ({ q, c: cut(q) })).filter(x => x.c.n).sort((a, b2) => b2.c.util - a.c.util || b2.c.n - a.c.n);
                 $('planoTable').innerHTML = rows.length
                     ? '<table class="rank"><tr><th>Plano</th><th>Cvs</th><th>Yield</th><th>Overall</th><th>Pcs</th></tr>' +
                       rows.map(r => '<tr class="' + (r.q[0] === S.pl[0] ? 'best' : '') + '"><td>' + r.q[0].replace(' cm', '') + '</td><td>' + r.c.n + '</td><td>' + (r.c.util * 100).toFixed(1) + '%</td><td>' + (cu * r.c.util).toFixed(1) + '%</td><td>' + (r.c.n * up) + '</td></tr>').join('') +
@@ -3749,10 +3767,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     impo(c, up);
                     return;
                 }
-                const bp = planos.map(p => ({ p, c: cut(p) })).filter(x => x.c.n).sort((a, b) => b.c.n - a.c.n || b.c.util - a.c.util)[0];
+                const bi = bestPlanoIndex(), bp = { p: planos[bi], c: cut(planos[bi]) };
                 $('planoNote').className = 'io-notice ok';
                 $('planoNote').innerHTML = 'Recommended: <b>' + bp.p[0] + '</b> gives ' + bp.c.n + ' canvas(es) / plano (' +
-                    (bp.c.util * 100).toFixed(1) + '% sheet yield). ' + (S.pl[0] === bp.p[0] ? 'Selected.' : 'Manual plano selection active.');
+                    (bp.c.util * 100).toFixed(1) + '% sheet yield, bahan per pcs paling hemat). ' + (S.pl[0] === bp.p[0] ? 'Selected.' : 'Manual plano selection active.');
                 const perPlano = c.n * up, waste = (100 - c.util * 100).toFixed(1) + '%';
                 $('mUp').textContent = up; $('mYield').textContent = c.n;
                 $('mPerPlano').textContent = perPlano; $('mWaste').textContent = waste;
@@ -3771,19 +3789,35 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 specSoon();
             }
 
+            // Pembagian 1 plano: tiap canvas bernomor + ukurannya, sisa trim
+            // diarsir, ukuran plano di tepi. Label ditaruh DI LUAR kotak plano
+            // (dulu tertimpa kotaknya sehingga tidak terbaca).
             function drawPlano(p, c) {
-                const sc = Math.min(250 / p[1], 130 / p[2]), W = p[1] * sc, H = p[2] * sc,
-                    x = (280 - W) / 2, y = (150 - H) / 2,
+                const VW = 280, VH = 190, top = 14, left = 16, areaW = VW - left - 8, areaH = 140;
+                const sc = Math.min(areaW / p[1], areaH / p[2]), W = p[1] * sc, H = p[2] * sc,
+                    x = left + (areaW - W) / 2, y = top + (areaH - H) / 2,
                     cols = c.rot ? Math.floor(p[1] / S.W) : Math.floor(p[1] / S.L),
                     rows = c.rot ? Math.floor(p[2] / S.L) : Math.floor(p[2] / S.W),
-                    cw = (c.rot ? S.W : S.L) * sc, ch = (c.rot ? S.L : S.W) * sc;
+                    cl = c.rot ? S.W : S.L, cwid = c.rot ? S.L : S.W,
+                    cw = cl * sc, ch = cwid * sc;
+                const t = (tx, ty, str, extra) => '<text x="' + tx + '" y="' + ty + '" text-anchor="middle" ' + (extra || '') + '>' + str + '</text>';
                 let s = '';
                 for (let r = 0; r < rows; r++) for (let col = 0; col < cols; col++) {
-                    s += '<rect x="' + (x + col * cw) + '" y="' + (y + r * ch) + '" width="' + cw + '" height="' + ch + '" fill="#73ddff" fill-opacity=".75" stroke="#0e5776"/>' +
-                        '<text x="' + (x + col * cw + cw / 2) + '" y="' + (y + r * ch + ch / 2) + '" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#063049">CANVAS</text>';
+                    const cx = x + col * cw, cy = y + r * ch;
+                    s += '<rect x="' + cx + '" y="' + cy + '" width="' + cw + '" height="' + ch + '" fill="#73ddff" fill-opacity=".8" stroke="#0e5776"/>'
+                        + t(cx + cw / 2, cy + ch / 2 - 4, 'CANVAS ' + (r * cols + col + 1), 'font-size="9" font-weight="700" fill="#063049"')
+                        + t(cx + cw / 2, cy + ch / 2 + 8, fmtAngka(cl) + ' × ' + fmtAngka(cwid), 'font-size="8" fill="#063049"');
                 }
-                $('cut').innerHTML = '<svg width="280" height="150"><rect x="' + x + '" y="' + y + '" width="' + W + '" height="' + H + '" fill="#dfe9ee" stroke="#8fa8b6"/>' + s +
-                    '<text x="140" y="143" text-anchor="middle" fill="#abc6d5" font-size="10">' + p[0] + ' · ' + c.n + ' canvas yield</text></svg>';
+                const trim = p[1] * p[2] - c.n * S.L * S.W;
+                $('cut').innerHTML = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" width="100%" style="max-width:' + VW + 'px">'
+                    + '<defs><pattern id="io-trimHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+                    + '<rect width="6" height="6" fill="#dfe9ee"/><line x1="0" y1="0" x2="0" y2="6" stroke="#b7c7d1" stroke-width="2"/></pattern></defs>'
+                    + '<rect x="' + x + '" y="' + y + '" width="' + W + '" height="' + H + '" fill="url(#io-trimHatch)" stroke="#8fa8b6"/>' + s
+                    + t(x + W / 2, y - 4, fmtAngka(p[1]) + ' cm', 'font-size="9" fill="#abc6d5"')
+                    + '<text x="' + (x - 4) + '" y="' + (y + H / 2) + '" text-anchor="middle" font-size="9" fill="#abc6d5" transform="rotate(-90 ' + (x - 4) + ' ' + (y + H / 2) + ')">' + fmtAngka(p[2]) + ' cm</text>'
+                    + t(VW / 2, VH - 22, p[0] + ' → ' + c.n + ' canvas (' + cols + ' × ' + rows + (c.rot ? ', canvas diputar' : '') + ')', 'font-size="10" font-weight="700" fill="#dbeaf3"')
+                    + t(VW / 2, VH - 8, 'Sheet yield ' + (c.util * 100).toFixed(1) + '% · trim terbuang ' + Math.max(0, trim).toFixed(0) + ' cm² (arsir)', 'font-size="9" fill="#abc6d5"')
+                    + '</svg>';
             }
 
             init();
