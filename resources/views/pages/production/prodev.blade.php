@@ -1926,6 +1926,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 S.touched = true;
                 S.autoNestInfo = label;
                 S.overlapPx = 0;   // sudah lolos verifikasi collides()
+                // Mode Manual Up: kekurangan object dilengkapi SEBELUM digambar,
+                // kalau sesudah render object tambahannya tidak ikut tampil.
+                ensureManualCount();
                 render(); calculator();
             }
 
@@ -3044,11 +3047,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('autoUp').onchange = e => {
                     S.auto = e.target.checked;
                     upModeUi();
-                    S.objs = []; suggest();
+                    S.objs = [];
+                    // Pindah ke Manual Up: canvas yang sudah diketik officer
+                    // dipertahankan (suggest() akan mengecilkannya ke ukuran minimum
+                    // target). Ukuran otomatis tetap lewat tombol ✦ Suggest.
+                    if (S.auto) { suggest(); } else { S.touched = false; update(true); autoNestSoon(); }
                 };
                 $('manualUp').oninput = e => {
                     S.manualUp = Math.max(1, +e.target.value || 1);
-                    if (!S.auto) { S.objs = []; update(true); }
+                    // Target berubah -> susunan dibangun ulang lalu jumlah object
+                    // dicocokkan ke target (termasuk yang harus di luar canvas).
+                    if (!S.auto) { S.objs = []; S.touched = false; update(true); autoNestSoon(); }
                 };
                 // Ditekan user = optimasi menyeluruh (canvas + plano + pola).
                 // Kalau susunan sudah diatur MANUAL (bukan hasil auto nesting),
@@ -3330,10 +3339,16 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 S.autoNestInfo = null;
                 S.overlapPx = 0;
                 const f = best();
-                let n = selectedUp(), i = 0;
-                if (n > f.ups) { n = f.ups; }
-                noteShortfall(n);
-                for (let r = 0; r < f.r && i < n; r++) for (let c = 0; c < f.c && i < n; c++, i++) {
+                // Manual Up: SEMUA object yang diminta officer ditempatkan, walau
+                // sebagian keluar canvas -- canvas ini memang dipakai untuk
+                // menggeser object sendiri (instruksi user 2026-09-18). Auto Up
+                // tetap memakai jumlah yang benar-benar muat.
+                const n = S.auto ? Math.min(selectedUp(), f.ups) : Math.max(1, Math.round(S.manualUp) || 1);
+                const cols = Math.max(1, f.c);
+                noteShortfall(Math.min(n, f.ups));
+
+                for (let i = 0; i < n; i++) {
+                    const r = Math.floor(i / cols), c = i % cols;
                     const ww = (f.rot ? S.p.w : S.p.l) * sc, hh = (f.rot ? S.p.l : S.p.w) * sc;
                     S.objs.push({
                         id: 'a' + i,
@@ -3341,6 +3356,36 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         y: y + r * ((f.rot ? S.p.l : S.p.w) + S.g) * sc,
                         w: ww, h: hh, r: 0, fx: 1, fy: 1,
                     });
+                }
+            }
+
+            // Mode Manual Up: jumlah object di canvas HARUS sama dengan target
+            // officer. Hasil auto nesting yang cuma memuat sebagian tetap dipakai,
+            // sisanya ditaruh berderet persis di bawah canvas (tampak di luar,
+            // ditandai merah) supaya tinggal digeser ke tempat yang benar.
+            function ensureManualCount() {
+                if (S.auto || !S.sc0) return;
+
+                const target = Math.max(1, Math.round(S.manualUp) || 1);
+
+                if (S.objs.length > target) {
+                    S.objs = S.objs.slice(0, target);
+                    if (S.selected && !S.objs.some(o => o.id === S.selected)) S.selected = null;
+                    return;
+                }
+
+                const sc = S.sc0, w = S.p.l * sc, h = S.p.w * sc, gap = Math.max(4, S.g * sc);
+                const perRow = Math.max(1, Math.floor((S.L * sc) / (w + gap)));
+                let k = 0, seq = S.objs.length;
+
+                while (S.objs.length < target) {
+                    S.objs.push({
+                        id: 'a' + (seq++),
+                        x: S.sx0 + (k % perRow) * (w + gap),
+                        y: S.sy0 + S.W * sc + gap + Math.floor(k / perRow) * (h + gap),
+                        w, h, r: 0, fx: 1, fy: 1,
+                    });
+                    k++;
                 }
             }
 
@@ -3543,7 +3588,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('impoMode').className = 'io-notice ' + (bentrok || out || kurang ? 'bad' : S.touched ? 'ok' : 'info');
                 $('impoMode').innerHTML = (S.touched
                     ? '<b>' + (S.autoNestInfo ? 'AUTO NESTING — ' + S.autoNestInfo : 'CUSTOM IMPOSITION — nesting manual') + '</b><br>Susunan: ' + rot + ' object rotate, ' + mir + ' mirror' + (out ? ' · <b>' + out + ' di luar canvas (tidak terhitung sah)</b>' : '') + '.'
-                    : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '') + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + '.')
+                    : '<b>AUTO GRID IMPOSITION</b><br>Susunan otomatis ' + g.c + ' kolom × ' + g.r + ' baris' + (g.rot ? ' (blank dirotate 90°)' : '')
+                      + ' · mode ' + (S.auto ? 'Auto Up' : 'Manual Up') + (out ? ' · <b>' + out + ' object di luar canvas — geser manual</b>' : '') + '.')
                     + (bentrok ? '<br><b>⚠ GARIS POTONG BERTABRAKAN</b> — ' + S.overlapPx + ' mm² blank saling makan, susunan ini tidak bisa dicetak. Angka yield di bawah ikut tidak sah.' : '')
                     + (kurang
                         ? (kurang.target > kurang.maxMesin
@@ -3551,8 +3597,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                               + ' cm sebanyak itu melebihi meja ' + bedOwner() + '. Canvas terbesar yang diizinkan ('
                               + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm) hanya memuat ' + kurang.maxMesin + ' up.'
                             : '<br><b>⚠ TARGET ' + kurang.target + ' UP BELUM MUAT DI CANVAS INI</b> — canvas ' + S.L + ' × ' + S.W
-                              + ' cm baru memuat ' + kurang.dapat + ' up. Perbesar canvas (meja ' + bedOwner() + ' masih mengizinkan sampai '
-                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm) atau tekan ✦ Suggest canvas size.')
+                              + ' cm baru memuat ' + kurang.dapat + ' up, sisanya ditempatkan DI LUAR canvas (tandai merah) untuk digeser manual. '
+                              + 'Bisa juga diputar/di-mirror, perbesar canvas (meja ' + bedOwner() + ' masih mengizinkan sampai '
+                              + bedLimits()[0] + ' × ' + bedLimits()[1] + ' cm), atau tekan ✦ Suggest canvas size.')
                         : '');
 
                 $('impoDetail').innerHTML = '<table>' +
