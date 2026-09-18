@@ -3263,7 +3263,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     const r = ((Math.round(o.r) % 360) + 360) % 360;
                     const m = variantFor(base, r, o.fx, o.fy);
                     return {
-                        o, m, d: dilateMask(m, g),
+                        o, m, d: dilateMask(m, g), r, r0: r,
                         x: Math.round((o.x + o.w / 2 - S.sx0) / sc * 10 / f - m.w / 2),
                         y: Math.round((o.y + o.h / 2 - S.sy0) / sc * 10 / f - m.h / 2),
                     };
@@ -3283,16 +3283,6 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     it.forEach(a => { a.x -= mx; a.y -= my; });
                 };
 
-                // 1) Yang terlalu rapat / bertumpuk didorong ke kanan sampai berjarak gap.
-                norm();
-                const placed = [];
-                for (const a of [...it].sort((p, q) => p.x - q.x || p.y - q.y)) {
-                    let guard = 0;
-                    while (placed.some(b => clash(a, a.x, a.y, b)) && guard++ < 5000) a.x++;
-                    placed.push(a);
-                }
-
-                // 2) Rapatkan ke kiri lalu ke atas, berulang sampai tidak ada yang bergeser.
                 const slide = (a, axis) => {
                     let moved = false;
                     for (const step of [8, 1]) {
@@ -3304,14 +3294,71 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     }
                     return moved;
                 };
-                for (let pass = 0; pass < 8; pass++) {
+
+                const compact = () => {
+                    // 1) Yang terlalu rapat / bertumpuk didorong ke kanan sampai berjarak gap.
                     norm();
-                    let moved = false;
-                    for (const a of [...it].sort((p, q) => p.x - q.x)) moved = slide(a, 'x') || moved;
-                    for (const a of [...it].sort((p, q) => p.y - q.y)) moved = slide(a, 'y') || moved;
-                    if (!moved) break;
+                    const placed = [];
+                    for (const a of [...it].sort((p, q) => p.x - q.x || p.y - q.y)) {
+                        let guard = 0;
+                        while (placed.some(b => clash(a, a.x, a.y, b)) && guard++ < 5000) a.x++;
+                        placed.push(a);
+                    }
+                    // 2) Rapatkan ke kiri lalu ke atas, berulang sampai tidak ada yang bergeser.
+                    for (let pass = 0; pass < 8; pass++) {
+                        norm();
+                        let moved = false;
+                        for (const a of [...it].sort((p, q) => p.x - q.x)) moved = slide(a, 'x') || moved;
+                        for (const a of [...it].sort((p, q) => p.y - q.y)) moved = slide(a, 'y') || moved;
+                        if (!moved) break;
+                    }
+                    norm();
+                };
+
+                // Susunan awal bisa saja bertumpuk ke bawah (mis. sisa object yang
+                // tadinya di luar canvas) sehingga hasil rapatnya melebihi meja
+                // mesin, padahal disusun menyamping muat. Bila begitu, object
+                // disusun ulang per baris / per kolom dalam batas meja -- juga
+                // dicoba dengan semua object diputar 90° -- lalu dirapatkan lagi;
+                // dipilih yang muat dengan luas terkecil.
+                const [bedL, bedW] = bedLimits();
+                const lim = [(bedL - 2 * S.g) * 10 / f, (bedW - 2 * S.g) * 10 / f];
+                const span = () => [Math.max(...it.map(a => a.x + a.m.w)), Math.max(...it.map(a => a.y + a.m.h))];
+                const over = sp => Math.max(0, sp[0] - lim[0]) + Math.max(0, sp[1] - lim[1]);
+                const snap = () => it.map(a => [a.x, a.y, a.r]);
+                const turn = add => it.forEach(a => {
+                    a.r = (a.r0 + add) % 360;
+                    a.m = variantFor(base, a.r, a.o.fx, a.o.fy);
+                    a.d = dilateMask(a.m, g);
+                });
+                const reflow = byRow => {
+                    const ax = byRow ? 0 : 1, len = a => byRow ? a.m.w : a.m.h, thick = a => byRow ? a.m.h : a.m.w;
+                    let pos = 0, line = 0, lineT = 0;
+                    for (const a of [...it].sort((p, q) => byRow ? p.y - q.y || p.x - q.x : p.x - q.x || p.y - q.y)) {
+                        if (pos > 0 && pos + len(a) > lim[ax]) { pos = 0; line += lineT + g; lineT = 0; }
+                        if (byRow) { a.x = pos; a.y = line; } else { a.x = line; a.y = pos; }
+                        pos += len(a) + g; lineT = Math.max(lineT, thick(a));
+                    }
+                };
+
+                compact();
+                let best = { pos: snap(), sp: span() };
+                if (over(best.sp) > 0) {
+                    for (const add of [0, 90]) {
+                        turn(add);
+                        for (const byRow of [true, false]) {
+                            reflow(byRow);
+                            compact();
+                            const sp = span(), o = over(sp);
+                            if (o < over(best.sp) || (o === 0 && sp[0] * sp[1] < best.sp[0] * best.sp[1])) best = { pos: snap(), sp };
+                        }
+                    }
+                    it.forEach((a, i) => {
+                        [a.x, a.y, a.r] = best.pos[i];
+                        a.m = variantFor(base, a.r, a.o.fx, a.o.fy);
+                        a.o.r = a.r;
+                    });
                 }
-                norm();
 
                 const spanX = Math.max(...it.map(a => a.x + a.m.w)) * f / 10;   // cm
                 const spanY = Math.max(...it.map(a => a.y + a.m.h)) * f / 10;
@@ -3329,6 +3376,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     a.o.y = ny + (S.g + (a.y + a.m.h / 2) * f / 10) * n - a.o.h / 2;
                 });
                 S.sc0 = n; S.sx0 = nx; S.sy0 = ny; S.touched = true;
+                // Susunan sudah bukan hasil auto nesting lagi; peringatan target up
+                // dihitung ulang dari object yang kini benar-benar di dalam canvas.
+                S.autoNestInfo = null;
+                noteShortfall(S.objs.filter(inCanvas).length);
 
                 // Plano Configuration ikut canvas baru. Plano custom (diketik
                 // officer sendiri) tidak ditimpa.
@@ -3731,6 +3782,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 document.removeEventListener('pointermove', move);
                 document.removeEventListener('pointerup', end);
                 document.removeEventListener('pointercancel', end);
+                if (S.objs.length) noteShortfall(S.objs.filter(inCanvas).length);
                 render(); calculator(); checkManualOverlap();
             }
             function transform(k, v) {
