@@ -86,6 +86,7 @@ class CostingEngineTest extends TestCase
         $component
             ->call('updateTier', $tier->id_price_tier, 'tolerance_pct', 5)
             ->call('updateTier', $tier->id_price_tier, 'margin_pct', 20)
+            ->call('updateTier', $tier->id_price_tier, 'rounding_mode', 'NEAREST')
             ->call('updateTier', $tier->id_price_tier, 'rounding_step', 100);
 
         // 4) Hitung.
@@ -128,18 +129,20 @@ class CostingEngineTest extends TestCase
         $this->assertEqualsWithDelta($expectedToolingOrder, (float) $costing->c_tooling_cost_order, 0.01);
 
         // Ladder tier (qty=1000, tolerance=5%, margin=20%, round NEAREST step=100).
+        // DC = toleransi aditif; INCLUDE PPN = kertas ÷1,1 (Excel HPP, §VIII).
         $expectedTotalHppPc = $expectedTotalPartCostPc;
         $expectedToolingPc = $expectedToolingOrder / 1000;
         $expectedHppPc = $expectedTotalHppPc + $expectedToolingPc;
-        $expectedAfterTolerance = $expectedHppPc / (1 - 0.05); // mark-up on price, bukan ×(1+t)
-        $expectedAfterRound = round($expectedAfterTolerance / 100) * 100;
+        $expectedAfterRound = round($expectedHppPc * 1.05 / 100) * 100;
         $expectedAfterMargin = $expectedAfterRound / (1 - 0.20);
-        $expectedAfterPpn = $expectedAfterMargin * 1.11;
+        $net = $expectedHppPc - $expectedPaperPc * (1 - 1 / 1.1);
+        $expectedDpp = round(($net + $expectedHppPc * 0.05) / 100) * 100 / (1 - 0.20);
 
         $this->assertEqualsWithDelta($expectedHppPc, (float) $tier->c_hpp_pc, 0.01);
         $this->assertEqualsWithDelta($expectedAfterRound, (float) $tier->c_after_round_pc, 0.01);
-        $this->assertEqualsWithDelta($expectedAfterMargin, (float) $tier->price_per_pcs, 0.01);
-        $this->assertEqualsWithDelta($expectedAfterPpn, (float) $tier->c_after_ppn_pc, 0.01);
+        $this->assertEqualsWithDelta($expectedAfterMargin, (float) $tier->c_after_margin_pc, 0.01);
+        $this->assertEqualsWithDelta($expectedDpp, (float) $tier->price_per_pcs, 0.01);
+        $this->assertEqualsWithDelta($expectedDpp * 1.11, (float) $tier->c_after_ppn_pc, 0.01);
 
         $this->assertSame('CALCULATED', $costing->doc_status);
     }

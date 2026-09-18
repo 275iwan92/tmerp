@@ -289,7 +289,9 @@ class CostingEngine
      */
     protected function computeSheetGeometry(IqpCostingPart $part, float $qty, ?string $supplier = null): array
     {
-        $machineWidth = SysConstant::number('SHEET_MACHINE_WIDTH_CM', 180);
+        $supplier ??= $part->supplier_sheet_code ?: 'UJK';
+        $default = SysConstant::number('SHEET_MACHINE_WIDTH_CM', 180);
+        $machineWidth = SysConstant::number('SHEET_MACHINE_WIDTH_CM_'.$supplier, $default);
         $gap = SysConstant::number('SHEET_TRIM_GAP_CM', 2);
 
         $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('activate', true)->first() : null;
@@ -309,7 +311,6 @@ class CostingEngine
         $trim = ceil(($lebar * $isiTrim + $gap) / 5) * 5;
 
         $rm = ($qty / $this->positive($part->i_isi_per_lb_kerja, 0.0001)) / $isiTrim * ($panjang / 100);
-        $supplier ??= $part->supplier_sheet_code ?: 'UJK';
 
         if ($part->i_discount_rm !== null && $supplier === ($part->supplier_sheet_code ?: 'UJK')) {
             $disc = (float) $part->i_discount_rm;
@@ -392,43 +393,65 @@ class CostingEngine
         ])->save();
     }
 
+    /**
+     * Ladder harga = Excel HPP asli (procost_formula_library.md §VIII), dihitung
+     * per part krn aturan toleransinya beda per tipe:
+     *  - DC/DC+SF/DC+SHEET/KRAFT: toleransi ADITIF ×(1+t) (J44=J43×B44, = legacy hpp #5/#6/#8).
+     *  - SHEET/SHEET_DIGITAL: toleransi ÷(1−t) (OB COCO C31/D31, = legacy hpp #9).
+     * Jalur INCLUDE PPN (kolom K/D Excel): bahan beli ber-PPN (kertas, sheet,
+     * laminasi sheet, SF EF) ÷ PPN_INPUT_MATERIAL_DIVISOR -> DPP; toleransi DC tetap
+     * dari HPP kotor (K44=J44, quirk Excel yg juga dipakai legacy). Harga akhir =
+     * DPP ÷(1−m) ×(1+PPN). Jalur EXCLUDE (NON_PPN, kolom J/C) = HPP kotor ÷(1−m).
+     */
     protected function calculateTier(IqpCosting $costing, \App\Models\Sdi\IqpCostingPriceTier $tier): void
     {
         $qty = max((float) $tier->qty_pcs, 0.0001);
+        $t = min((float) $tier->tolerance_pct, 99.9999) / 100;
+        $withPpn = $costing->ppn_mode !== 'NON_PPN';
+        $credit = 1 - 1 / $this->positive(SysConstant::number('PPN_INPUT_MATERIAL_DIVISOR', 1.1));
 
-        $totalHppPc = (float) $costing->total_material_cost_pc + (float) $costing->total_process_cost_pc + (float) $costing->total_finishing_cost_pc;
-        $toolingPc = (float) $costing->c_tooling_cost_order / $qty;
-        $hppPc = $totalHppPc + $toolingPc;
+        $hppPc = $toolingPc = $creditPc = $afterTolGross = $afterTolNet = 0.0;
+        foreach ($costing->parts()->get() as $part) {
+            $perSet = $this->positive($part->qty_per_set);
+            $toolPc = (float) $part->c_tooling_cost_order / $qty;
+            $gross = (float) $part->c_total_part_cost_pc * $perSet + $toolPc;
+            $inputMat = ((float) $part->c_paper_cost_pc + (float) $part->c_sheet_cost_pc
+                + (float) $part->c_lam_flat_cost_pc + (float) $part->c_sf_ef_cost_pc) * $perSet;
+            $net = $withPpn ? $gross - $inputMat * $credit : $gross;
 
-        // Toleransi & margin = mark-up on price ÷(1−x) -- cocok data legacy hpp #9
-        // (28.201,78 & 33.178,56) & Excel "OB COCO TOKYO" C31=C30/(1-B31).
-        $tolerancePct = min((float) $tier->tolerance_pct, 99.9999);
-        $afterTolerancePc = $hppPc / (1 - ($tolerancePct / 100));
+            if (in_array($part->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true)) {
+                $afterTolGross += $gross / (1 - $t);
+                $afterTolNet += $net / (1 - $t);
+            } else {
+                $afterTolGross += $gross * (1 + $t);
+                $afterTolNet += $net + $gross * $t;
+            }
+            $hppPc += $gross;
+            $toolingPc += $toolPc;
+            $creditPc += $gross - $net;
+        }
 
-        $step = max((float) $tier->rounding_step, 0.0001);
-        $afterRoundPc = match ($tier->rounding_mode) {
-            'UP', 'CEILING' => ceil($afterTolerancePc / $step) * $step,
-            'DOWN', 'FLOOR' => floor($afterTolerancePc / $step) * $step,
-            default => round($afterTolerancePc / $step) * $step,
+        $step = (float) $tier->rounding_step;
+        $round = fn (float $v) => $step <= 0 ? $v : match ($tier->rounding_mode) {
+            'UP', 'CEILING' => ceil($v / $step) * $step,
+            'DOWN', 'FLOOR' => floor($v / $step) * $step,
+            'NEAREST' => round($v / $step) * $step,
+            default => $v, // NONE -- Excel & legacy tidak membulatkan
         };
 
-        $marginPct = min((float) $tier->margin_pct, 99.9999);
-        $afterMarginPc = $afterRoundPc / (1 - ($marginPct / 100));
-
-        // INCLUDE PPN = ×(1+PPN%), EXCLUDE (NON_PPN) = tanpa PPN (keputusan user
-        // 2026-09-18, sementara sampai Excel HPP pembanding diberikan).
-        $afterPpnPc = $costing->ppn_mode === 'NON_PPN'
-            ? $afterMarginPc
-            : $afterMarginPc * (1 + ((float) $costing->ppn_pct / 100));
+        $m = min((float) $tier->margin_pct, 99.9999) / 100;
+        $afterMarginGross = $round($afterTolGross) / (1 - $m);
+        $dpp = $withPpn ? $round($afterTolNet) / (1 - $m) : $afterMarginGross;
 
         $tier->fill([
             'c_tooling_pc' => $toolingPc,
             'c_hpp_pc' => $hppPc,
-            'c_after_tolerance_pc' => $afterTolerancePc,
-            'c_after_round_pc' => $afterRoundPc,
-            'c_after_margin_pc' => $afterMarginPc,
-            'c_after_ppn_pc' => $afterPpnPc,
-            'price_per_pcs' => $afterMarginPc,
+            'c_ppn_input_credit_pc' => $creditPc,
+            'c_after_tolerance_pc' => $afterTolGross,
+            'c_after_round_pc' => $round($afterTolGross),
+            'c_after_margin_pc' => $afterMarginGross,
+            'c_after_ppn_pc' => $withPpn ? $dpp * (1 + (float) $costing->ppn_pct / 100) : $dpp,
+            'price_per_pcs' => $dpp,
         ])->save();
     }
 }

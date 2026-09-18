@@ -523,7 +523,7 @@ new #[Title('Kalkulasi HPP (Instant) — TELASIH MAKMUR ERP')] class extends Com
                 <x-costing.field label="Ppn Percent" key="ppn_pct" :value="$c->ppn_pct" action="updateHeader" :readonly="$ro" />
                 <x-costing.field label="Margin Percent *" key="margin_pct" :value="$t->margin_pct" action="updateTier" :readonly="$ro" />
                 <x-costing.field label="Tolerance Percent *" key="tolerance_pct" :value="$t->tolerance_pct" action="updateTier" :readonly="$ro" />
-                <x-costing.field label="Rounding Mode" key="rounding_mode" :value="$t->rounding_mode" type="select" action="updateTier" :readonly="$ro" :options="['NEAREST' => 'NEAREST', 'UP' => 'CEILING', 'DOWN' => 'FLOOR']" />
+                <x-costing.field label="Rounding Mode" key="rounding_mode" :value="$t->rounding_mode" type="select" action="updateTier" :readonly="$ro" :options="['NONE' => 'TANPA', 'NEAREST' => 'NEAREST', 'UP' => 'CEILING', 'DOWN' => 'FLOOR']" />
             </div>
         </div>
         <div class="{{ $panel }} col-span-3">

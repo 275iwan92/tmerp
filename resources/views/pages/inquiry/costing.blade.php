@@ -763,7 +763,7 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
                     <div>
                         <label class="block text-[11px] font-medium text-[#475569] mb-1">Rounding</label>
                         <select @disabled($ro) wire:change="updateTier({{ $t?->id_price_tier ?? 0 }}, 'rounding_mode', $event.target.value)" class="w-full bg-white border border-[#bfdbfe] rounded-md px-2 py-1.5 font-medium">
-                            @foreach (['NEAREST' => 'NEAREST', 'UP' => 'CEILING', 'DOWN' => 'FLOOR'] as $rv => $rl)
+                            @foreach (['NONE' => 'TANPA', 'NEAREST' => 'NEAREST', 'UP' => 'CEILING', 'DOWN' => 'FLOOR'] as $rv => $rl)
                                 <option value="{{ $rv }}" @selected($t?->rounding_mode === $rv)>{{ $rl }}</option>
                             @endforeach
                         </select>
@@ -1055,9 +1055,9 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             <div><div class="text-[#94a3b8] text-[11px] font-medium uppercase tracking-wider">Total COGS (HPP)</div>
                 <div class="text-[18px] font-bold">{{ $lock ? '🔒' : $rp($hppOrder) }}</div><div class="text-[12px] text-[#cbd5e1]">{{ $lock ? '' : $rp($t?->c_hpp_pc).' / pcs' }}</div></div>
             <div><div class="text-[#94a3b8] text-[11px] font-medium uppercase tracking-wider">Margin (+{{ (float) $t?->margin_pct }}%) · Tol {{ (float) $t?->tolerance_pct }}%</div>
-                <div class="text-[18px] font-bold">{{ $lock ? '🔒' : $rp(((float) $t?->c_after_margin_pc - (float) $t?->c_hpp_pc) * $qty) }}</div><div class="text-[12px] text-[#cbd5e1]">Profit contribution</div></div>
+                <div class="text-[18px] font-bold">{{ $lock ? '🔒' : $rp(((float) $t?->price_per_pcs - (float) $t?->c_hpp_pc) * $qty) }}</div><div class="text-[12px] text-[#cbd5e1]">Profit contribution</div></div>
             <div><div class="text-[#94a3b8] text-[11px] font-medium uppercase tracking-wider">PPN (+{{ $c->ppn_mode === 'NON_PPN' ? 0 : (float) $c->ppn_pct }}%)</div>
-                <div class="text-[18px] font-bold">{{ $rp(((float) $t?->c_after_ppn_pc - (float) $t?->c_after_margin_pc) * $qty) }}</div><div class="text-[12px] text-[#cbd5e1]">Tax</div></div>
+                <div class="text-[18px] font-bold">{{ $rp(((float) $t?->c_after_ppn_pc - (float) $t?->price_per_pcs) * $qty) }}</div><div class="text-[12px] text-[#cbd5e1]">Tax</div></div>
             <div class="col-span-2 bg-[#2563eb]/30 border border-[#3b82f6]/50 rounded-lg p-4">
                 <div class="text-[#bfdbfe] text-[11px] font-semibold uppercase tracking-wider mb-1">✔ Final Selling Price</div>
                 <div class="text-[26px] font-extrabold tracking-tight">{{ $rp($t?->c_after_ppn_pc) }} <span class="text-[15px] font-medium text-[#bfdbfe]">/ pcs</span></div>

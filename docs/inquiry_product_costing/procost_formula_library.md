@@ -286,14 +286,9 @@ order-level, diamortisasi di `costing_price_tier`) — lihat `productcosting_tie
 
 ### II.10 Ladder Harga Jual (header/tier, sudah live di `calculateTier()`)
 ```
-HPP/pc  = Σ(material+proses+finishing per part) + (Tooling_order / Qty_tier)
-÷ (1 − Toleransi%/100)  → after_tolerance      (mark-up ON PRICE, bukan additive!)
-round(mode, step)       → after_round
-÷ (1 − Margin%/100)     → after_margin = price_per_pcs (acuan quotation, excl PPN)
-× (1 + PPN%/100)        → after_ppn (incl, kalau ppn_mode ≠ NON_PPN)
-```
-Verifikasi byte-presisi ke Excel asli "OB COCO TOKYO..." (`C31=C30/(1-B31)`) —
-Toleransi DAN Margin sama-sama mark-up-on-price, **bukan** `×(1+x)`.
+> **DIGANTI 2026-09-18 — lihat §VIII** (hasil cocok 5 Excel HPP asli). Ringkas:
+> toleransi DC-family = ADITIF ×(1+t), SHEET = ÷(1−t); jalur INCLUDE PPN
+> mengeluarkan PPN masukan bahan (÷1,1) sebelum margin; pembulatan default NONE.
 
 ---
 
@@ -495,7 +490,7 @@ bertentangan (§II diturunkan dari ringkasan Gemini, §VII dari data asli).
 - **J38** = flag_sheet × uk × faktor_sh / isi + flag_sf × uk × faktor_sf / isi; `uk` = ukuran SF/SH bila "Pakai Ukuran SF?"=1, selain itu ukuran cetak.
 - **Coating/PC** = uk_cetak × index / isi (TIDAK dibagi cut).
 - **LC = LB = qty ÷ (cut × isi)** (data: 3000/(2×1)=1500, 10000/(1×3)=3333).
-- **Ladder** (hpp #9 COCO TOKYO, cocok ke screenshot): Price Per Pcs = HPP ÷ (1−toleransi) → 28.201,78; Total After Margin = ÷ (1−margin) → 33.178,56. (Hati-hati: `map_hpp` menulis ×(1+x) dan hpp #1 memakai ×(1+tol) — versi lama; ikuti versi terbaru.)
+- **Ladder** — dikoreksi di §VIII: toleransi tergantung tipe part (hpp #9 COCO SHEET = ÷(1−t); hpp #5/#6/#8 DC = ×(1+t), sesuai `map_hpp`). Keduanya benar, bukan "versi lama vs baru".
 - **Header "Total …" di layar = nilai per PC**, bukan × qty.
 
 ### VII.4 Kasus uji legacy (acuan regresi `CostingEngineTest`)
@@ -516,3 +511,58 @@ Kasus #1/#51/#52 dikunci di `tests/Feature/CostingLegacyParityTest.php` (lulus p
 5. DC+SF/DC+SHEET: J36 = input Rp/PC, J37 SF EF, J38 faktor Rp/cm² (+ pakai ukuran SF), hotprint/kupas/qc/kirim/packing, coating asli diloop.
 6. `KNIFE_FACTOR_DEFAULT` 0,25 jadi default bila faktor pisau 0.
 Master tm2mst diganti data legacy (migration `2026_09_18_000009`): 28 gramatur, coating index, 107 sheet rate (+`mat_subtype`), `mat_film_rate`, `mat_join_type`, `mat_packing_type`, `mat_sheet_supplier`, tier RCA, pisau 900rb/1,5jt. Lebar mesin sheet tetap konstanta `SHEET_MACHINE_WIDTH_CM` = 180 (keputusan user, bisa diubah).
+
+---
+
+## VIII. Paritas ke 5 Excel HPP asli (2026-09-18) — ladder harga FINAL
+
+Sumber: `OneDrive/Documents/KalkuHPP/excel/` (diberikan user utk mencocokkan rumus
+"Total After Ppn"). Dikunci di `tests/Feature/CostingExcelParityTest.php` (delta 0,0005).
+
+### VIII.1 Ladder (`CostingEngine::calculateTier`, dihitung per part lalu dijumlah)
+```
+gross_part = total_part_cost_pc × qty_per_set + tooling_order/qty          (J43 / C30)
+bahan_ppn  = (kertas + sheet + laminasi sheet J36 + SF EF J37) × qty_per_set
+net_part   = gross − bahan_ppn × (1 − 1/PPN_INPUT_MATERIAL_DIVISOR)       (kolom K/D: K10=J3/1,1, K36, K37, D19=C19/1,1)
+            (NON_PPN: net = gross)
+
+DC, DC+SF, DC+SHEET, KRAFT (toleransi ADITIF, J44=J43×B44):
+  tol_gross = gross × (1+t)            tol_net = net + gross×t   (K44=J44 — dari HPP kotor)
+SHEET, SHEET_DIGITAL (toleransi ÷, C31/D31):
+  tol_gross = gross ÷ (1−t)            tol_net = net ÷ (1−t)
+
+c_hpp_pc              = Σ gross
+c_ppn_input_credit_pc = Σ (gross − net)
+c_after_tolerance_pc  = Σ tol_gross                          (legacy "Price Per Pcs")
+c_after_round_pc      = round(Σ tol_gross)  -- mode NONE (default baru) = tanpa pembulatan
+c_after_margin_pc     = round(Σ tol_gross) ÷ (1−m)            (G46 / C32 = harga NON PPN)
+price_per_pcs (DPP)   = PPN ? round(Σ tol_net) ÷ (1−m) : c_after_margin_pc   (K48 / D32)
+c_after_ppn_pc        = PPN ? DPP × (1+ppn_pct) : DPP                          (K50 / D34)
+```
+Konstanta baru: `PPN_INPUT_MATERIAL_DIVISOR` = 1,1 (Excel hardcode `/1.1`, tidak ikut ppn_pct).
+Legacy `hpp` #5/#6 (FS GTZ) & #8 (DUS WARUNG) & #9 (COCO) semuanya cocok ke ladder ini.
+
+### VIII.2 Hasil pencocokan per file
+| File / sheet | Tipe | Input kunci | Excel | Engine |
+|---|---|---|---|---|
+| FS GTZ 2026-04-01_202607-3 · Bag atas (= legacy #5/#6) | DC+SF | duplex 250 @253.000 DC 5,3 · plano 89×125 cut 3 isi 4 · uk 89×42 · SF EF 2.600 · lam 0,075/0,065 · Lam Biasa 0,125 · qty 3.000 · tol 6 · margin 15 · PPN 10% | J43 1.331,4034 · J45 1.411,2876 · G46 1.660,3384 · K48 1.597,6456 · **K50 1.757,4102** | sama persis |
+| FS GTZ 2026-04-01 · Bag atas | DC+SHEET | idem, laminasi sheet 1.852/isi = 463/pc, ongkos lam 0,095/0,085, LC 667 (qty 2.668) | J43 1.596,2888 · K48 1.904,4407 · **K50 2.094,8848** | sama persis |
+| R3 KRAFT POLOS 2025-08-23 · Bag atas | KRAFT | kraft 250 gsm @6.700/kg · plano 77×101 cut 2 isi 4 · uk 38,5×101 · plong 60 · kupas 8 · film ff 0,1 · pisau 0,1×1,5jt · LC 25.000 (qty 100.000) · tol 2 | J43 187,3523 · K50 (margin 15, PPN 11%) **230,2226** · G46 (margin 12, NON PPN) **217,1584** | sama persis |
+| IC CHINA 2026-04-18 · badan | DC | duplex 400 @350.000 **DC 3,9** · plano 89×120 cut 3 isi 2 · uk 93×40 · Lam Biasa 0,16 ×2 sisi · pisau 0,15×1jt · LC 10.000 · tol 4 | J43 1.556,9535 · K48 1.829,1470 · **K50 2.030,3532** | sama persis |
+| IC CHINA · tutup | DC | idem, 2 warna, cetak 350.000/rim, film rate 30, pisau 900rb, tol 3 | J39 1.184,1656 · J41 1.219,6905 | sama persis |
+| OB COCO TOKYO 2026-07-13 · blok UJK | SHEET_DIGITAL | K200/M125/K200 @6.088 · 427×220×172 lidah 35 · qty 1.800 · tol 1 · margin 15 | C32 5.093,3285 (NON PPN) · D32 4.711,3228 · **D34 5.229,5683** (PPN 11%) | sama persis |
+
+### VIII.3 Perbedaan yang SENGAJA tidak ditiru / perlu keputusan
+1. **Toleransi beda per part** (IC CHINA: badan 4%, tutup 3%; harga set G46 3.339,9085).
+   Engine = 1 toleransi per tier utk semua part → HPP set cocok (2.741,1191), harga set
+   beda tipis kalau toleransi part berbeda. Legacy `hpp.tolerance_percent` juga 1 per dokumen.
+2. **Margin beda per jalur** (KRAFT: 12% NON PPN, 15% PPN dalam 1 sheet). Engine 1 margin.
+3. **Index coating & ongkos laminasi berubah antar-file** (Lam Biasa 0,125 / 0,16 vs master
+   0,165; ongkos lam 0,075/0,065 · 0,095/0,085 · 0,07/0,06; film 30/55; pisau 900rb/1jt/1,5jt;
+   DC 3,9 vs 5,3). Semua sudah bisa di-override per dokumen — master cuma nilai awal.
+4. **Info Harga Supplier RCA**: lebar mesin 220 kini konstanta `SHEET_MACHINE_WIDTH_CM_RCA`
+   (pola `SHEET_MACHINE_WIDTH_CM_<kode>`, fallback 180). Diskon RCA di Excel **flat 22,5%**
+   & harga ÷1,11, sedangkan tier legacy `mat_sheet_discount_tier` 20/20/25/26% — belum
+   diubah, tunggu konfirmasi mana yang berlaku.
+5. Baris Excel "Mika film & lain-lain" tidak punya field khusus — pakai `i_ongkos_packing_pc`.
+6. Kolom L/M Excel ("Kurang bayar PPN", ×10%) = info pajak, tidak dipakai harga.
