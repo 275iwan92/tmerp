@@ -4,6 +4,7 @@ use App\Models\Master\EmpEmployee;
 use App\Models\Master\EmpLeaveRequest;
 use App\Models\Pyr\PyrPayrollRun;
 use App\Models\Pyr\PyrPayslip;
+use App\Support\DataOrigin\Visible;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -34,8 +35,8 @@ new #[Layout('layouts::report')] #[Title('Laporan SDM & Payroll — TELASIH MAKM
     #[Computed]
     public function byDepartment(): array
     {
-        return DB::connection('tm2mst')->table('emp_employee as e')
-            ->join('org_position as p', 'p.position_id', '=', 'e.position_id')
+        return Visible::apply(DB::connection('tm2mst')->table('emp_employee as e')
+            ->join('org_position as p', 'p.position_id', '=', 'e.position_id'), 'tm2mst', 'emp_employee', 'e')
             ->join('org_department as d', 'd.department_id', '=', 'p.department_id')
             ->where('e.activate', true)
             ->selectRaw('d.department_name, COUNT(*) as n')

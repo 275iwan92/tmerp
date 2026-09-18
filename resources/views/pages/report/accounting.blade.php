@@ -1,6 +1,7 @@
 <?php
 
 use App\Services\Report\ManagementReportService;
+use App\Support\DataOrigin\Visible;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -42,7 +43,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
     #[Computed]
     public function voucherStats(): array
     {
-        $rows = DB::connection('tm2acc')->table('fin_voucher')
+        $rows = Visible::apply(DB::connection('tm2acc')->table('fin_voucher'), 'tm2acc', 'fin_voucher')
             ->whereYear('posting_date', $this->year)
             ->selectRaw("status, COUNT(*) as n")
             ->groupBy('status')
@@ -58,8 +59,8 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
     #[Computed]
     public function postedValue(): float
     {
-        return (float) DB::connection('tm2acc')->table('fin_voucher_line as l')
-            ->join('fin_voucher as v', 'v.voucher_id', '=', 'l.voucher_id')
+        return (float) Visible::apply(DB::connection('tm2acc')->table('fin_voucher_line as l')
+            ->join('fin_voucher as v', 'v.voucher_id', '=', 'l.voucher_id'), 'tm2acc', 'fin_voucher', 'v')
             ->where('v.status', 'POSTED')
             ->whereYear('v.posting_date', $this->year)
             ->sum('l.debit');
@@ -80,8 +81,8 @@ new #[Layout('layouts::report')] #[Title('Laporan Akuntansi — TELASIH MAKMUR E
     #[Computed]
     public function monthlyPostedValue(): array
     {
-        $rows = DB::connection('tm2acc')->table('fin_voucher_line as l')
-            ->join('fin_voucher as v', 'v.voucher_id', '=', 'l.voucher_id')
+        $rows = Visible::apply(DB::connection('tm2acc')->table('fin_voucher_line as l')
+            ->join('fin_voucher as v', 'v.voucher_id', '=', 'l.voucher_id'), 'tm2acc', 'fin_voucher', 'v')
             ->where('v.status', 'POSTED')
             ->whereYear('v.posting_date', $this->year)
             ->selectRaw('MONTH(v.posting_date) as m, SUM(l.debit) as total')

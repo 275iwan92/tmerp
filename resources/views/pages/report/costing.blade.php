@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\DataOrigin\Visible;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -29,7 +30,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Estimating & Costing — TELAS
     #[Computed]
     public function costingVolume(): array
     {
-        $rows = DB::connection('tm2sdi')->table('iqp_costing')
+        $rows = Visible::apply(DB::connection('tm2sdi')->table('iqp_costing'), 'tm2sdi', 'iqp_costing')
             ->whereYear('created_at', $this->year)
             ->selectRaw('COUNT(*) as total, SUM(published_flag) as published, SUM(is_approved) as approved')
             ->first();
@@ -44,7 +45,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Estimating & Costing — TELAS
     #[Computed]
     public function avgHppPc(): float
     {
-        return (float) DB::connection('tm2sdi')->table('iqp_costing')
+        return (float) Visible::apply(DB::connection('tm2sdi')->table('iqp_costing'), 'tm2sdi', 'iqp_costing')
             ->whereYear('created_at', $this->year)
             ->selectRaw('AVG(total_material_cost_pc + total_process_cost_pc + total_finishing_cost_pc) as avg_hpp')
             ->value('avg_hpp') ?: 0;
@@ -53,9 +54,10 @@ new #[Layout('layouts::report')] #[Title('Laporan Estimating & Costing — TELAS
     #[Computed]
     public function quotationConversion(): array
     {
-        $issued = DB::connection('tm2sdi')->table('quo_quotation')->whereYear('issued_date', $this->year)->count();
-        $won = DB::connection('tm2sdi')->table('co_order')
-            ->join('quo_quotation as q', 'q.id_quotation', '=', 'co_order.quotation_id')
+        $issued = Visible::apply(DB::connection('tm2sdi')->table('quo_quotation'), 'tm2sdi', 'quo_quotation')
+            ->whereYear('issued_date', $this->year)->count();
+        $won = Visible::apply(DB::connection('tm2sdi')->table('co_order')
+            ->join('quo_quotation as q', 'q.id_quotation', '=', 'co_order.quotation_id'), 'tm2sdi', 'co_order')
             ->whereYear('q.issued_date', $this->year)
             ->distinct('co_order.quotation_id')
             ->count('co_order.quotation_id');
@@ -70,7 +72,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Estimating & Costing — TELAS
     #[Computed]
     public function costTrend(): array
     {
-        $rows = DB::connection('tm2sdi')->table('iqp_costing')
+        $rows = Visible::apply(DB::connection('tm2sdi')->table('iqp_costing'), 'tm2sdi', 'iqp_costing')
             ->whereYear('created_at', $this->year)
             ->selectRaw('MONTH(created_at) as m, COUNT(*) as n')
             ->groupBy('m')
@@ -82,7 +84,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Estimating & Costing — TELAS
     #[Computed]
     public function recentCosting(): array
     {
-        return DB::connection('tm2sdi')->table('iqp_costing')
+        return Visible::apply(DB::connection('tm2sdi')->table('iqp_costing'), 'tm2sdi', 'iqp_costing')
             ->orderByDesc('created_at')
             ->limit(8)
             ->get(['doc_no', 'doc_date', 'doc_status', 'published_flag', 'total_material_cost_pc', 'total_process_cost_pc', 'total_finishing_cost_pc'])

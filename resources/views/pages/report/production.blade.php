@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\DataOrigin\Visible;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -25,7 +26,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Produksi — TELASIH MAKMUR ER
     #[Computed]
     public function woByStatus(): array
     {
-        $rows = DB::connection('tm2prd')->table('prd_wo')
+        $rows = Visible::apply(DB::connection('tm2prd')->table('prd_wo'), 'tm2prd', 'prd_wo')
             ->whereYear('created_at', $this->year)
             ->selectRaw('wo_status, COUNT(*) as n')
             ->groupBy('wo_status')
@@ -50,7 +51,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Produksi — TELASIH MAKMUR ER
     #[Computed]
     public function overdueOpen(): int
     {
-        return DB::connection('tm2prd')->table('prd_wo')
+        return Visible::apply(DB::connection('tm2prd')->table('prd_wo'), 'tm2prd', 'prd_wo')
             ->whereIn('wo_status', ['SCHEDULED', 'IN_PROGRESS', 'ON_HOLD'])
             ->where('due_date', '<', now())
             ->count();
@@ -59,12 +60,12 @@ new #[Layout('layouts::report')] #[Title('Laporan Produksi — TELASIH MAKMUR ER
     #[Computed]
     public function outputDefectRate(): ?float
     {
-        $good = (float) DB::connection('tm2prd')->table('prd_wo_operation_output')
+        $good = (float) Visible::apply(DB::connection('tm2prd')->table('prd_wo_operation_output'), 'tm2prd', 'prd_wo_operation_output')
             ->whereYear('created_at', $this->year)
             ->sum('qty_good');
 
-        $reject = (float) DB::connection('tm2prd')->table('prd_wo_operation_output_defect as d')
-            ->join('prd_wo_operation_output as o', 'o.output_id', '=', 'd.output_id')
+        $reject = (float) Visible::apply(DB::connection('tm2prd')->table('prd_wo_operation_output_defect as d')
+            ->join('prd_wo_operation_output as o', 'o.output_id', '=', 'd.output_id'), 'tm2prd', 'prd_wo_operation_output', 'o')
             ->whereYear('o.created_at', $this->year)
             ->sum('d.qty');
 
@@ -78,7 +79,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Produksi — TELASIH MAKMUR ER
     #[Computed]
     public function monthlyCompleted(): array
     {
-        $rows = DB::connection('tm2prd')->table('prd_wo')
+        $rows = Visible::apply(DB::connection('tm2prd')->table('prd_wo'), 'tm2prd', 'prd_wo')
             ->where('wo_status', 'COMPLETED')
             ->whereYear('due_date', $this->year)
             ->selectRaw('MONTH(due_date) as m, COUNT(*) as n')
@@ -91,7 +92,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Produksi — TELASIH MAKMUR ER
     #[Computed]
     public function longestOpenWo(): array
     {
-        return DB::connection('tm2prd')->table('prd_wo')
+        return Visible::apply(DB::connection('tm2prd')->table('prd_wo'), 'tm2prd', 'prd_wo')
             ->whereIn('wo_status', ['SCHEDULED', 'IN_PROGRESS', 'ON_HOLD'])
             ->orderBy('due_date')
             ->limit(6)
