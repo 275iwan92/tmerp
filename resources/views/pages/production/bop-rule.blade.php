@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Master\ProdProcess;
+use App\Services\ProDev\UsageRateEngine;
 use App\Models\Master\RefFinishingType;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,8 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
     public $tolerance_pct = '';
 
     public string $note = '';
+
+    public string $flash = '';
 
     public bool $rule_activate = true;
 
@@ -228,6 +231,51 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
         unset($this->rules);
     }
 
+    // Usulan takaran/waste dari data produksi nyata (BACKLOG §19.2).
+    public function refreshSuggestions(): void
+    {
+        if (! $this->canEdit()) {
+            return;
+        }
+
+        $r = app(UsageRateEngine::class)->refresh(now()->subMonths(3), true);
+        $this->flash = $r['note'] ?: "Usulan disegarkan dari {$r['sample_total']} WO selesai; {$r['applied']} aturan ber-auto diterapkan.";
+        unset($this->rules);
+    }
+
+    public function applySuggestion(int $id): void
+    {
+        if (! $this->canEdit()) {
+            return;
+        }
+
+        $r = DB::connection('tm2mst')->table(self::TABLE)->where('id_bop_rule', $id)->first();
+
+        if (! $r || ($r->rate_suggested === null && $r->waste_suggested === null)) {
+            return;
+        }
+
+        DB::connection('tm2mst')->table(self::TABLE)->where('id_bop_rule', $id)->update(array_filter([
+            'usage_rate' => $r->rate_suggested,
+            'waste_pct' => $r->waste_suggested,
+        ], fn ($v) => $v !== null) + ['rate_source' => 'AUTO', 'updated_at' => now(), 'updated_by' => Auth::user()->login]);
+
+        $this->flash = 'Usulan diterapkan ke aturan tersebut.';
+        unset($this->rules);
+    }
+
+    public function toggleAuto(int $id): void
+    {
+        if (! $this->canEdit()) {
+            return;
+        }
+
+        DB::connection('tm2mst')->table(self::TABLE)->where('id_bop_rule', $id)->update([
+            'auto_apply' => DB::raw('1 - auto_apply'), 'updated_at' => now(), 'updated_by' => Auth::user()->login,
+        ]);
+        unset($this->rules);
+    }
+
     // Geser urutan satu langkah dengan menukar step_seq dengan tetangganya.
     public function move(int $id, int $dir): void
     {
@@ -262,6 +310,10 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
 <div>
     <div class="max-w-[1200px] mx-auto my-5 px-4">
 
+        @if ($flash)
+            <div class="px-4 py-2.5 mb-3 rounded-md bg-[#eaf7ee] border border-[#bfe6cc] text-[#1f6b3c] text-[12.5px]">{{ $flash }}</div>
+        @endif
+
         @if ($panel === 'grid')
         <x-grid.stat-row :count="3">
             <x-grid.stat-box tone="total" label="Total Aturan" :value="$this->rules->count()" />
@@ -285,6 +337,8 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
                 <div class="text-[12px] text-muted">Urutan berlaku untuk semua job baru; routing yang sudah disimpan MANUAL tidak ikut berubah.</div>
                 <x-slot:newRecord>
                     @if ($this->canEdit())
+                        <button type="button" wire:click="refreshSuggestions" title="Hitung usulan takaran & waste dari WO selesai 3 bulan terakhir"
+                            class="shrink-0 px-3 py-1.5 mr-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">📈 Usulan dari Data Nyata</button>
                         <button type="button" wire:click="openForm"
                             class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
                     @endif
@@ -346,6 +400,23 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
                                     @if ($r->machine_role)<div class="text-muted">{{ self::ROLES[$r->machine_role] ?? $r->machine_role }}</div>@endif
                                 </td>
                                 <td class="text-[11px]">
+                                    @if ($r->rate_suggested !== null || $r->waste_suggested !== null)
+                                        <div class="mb-1 px-1.5 py-1 rounded bg-[#f4f8ff] border border-[#cfdcf2]">
+                                            <b>Usulan data nyata:</b>
+                                            @if ($r->rate_suggested !== null) takaran {{ (float) $r->rate_suggested }} @endif
+                                            @if ($r->waste_suggested !== null) waste {{ (float) $r->waste_suggested }}% @endif
+                                            <span class="text-muted">({{ $r->suggest_sample }} WO)</span>
+                                            @if ($this->canEdit())
+                                                <button type="button" wire:click="applySuggestion({{ $r->id_bop_rule }})"
+                                                    class="ml-1 px-1.5 py-0.5 rounded bg-white border border-[#d7dbe2] cursor-pointer">Terapkan</button>
+                                            @endif
+                                        </div>
+                                    @endif
+                                    @if ($this->canEdit())
+                                        <button type="button" wire:click="toggleAuto({{ $r->id_bop_rule }})" title="Usulan diterapkan otomatis tiap awal bulan"
+                                            class="mb-1 px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer {{ $r->auto_apply ? 'bg-[#eaf7ee] text-[#1f6b3c] border border-[#bfe6cc]' : 'bg-[#eef0f3] text-[#8a8f98] border border-[#dfe3e8]' }}">
+                                            AUTO {{ $r->auto_apply ? 'AKTIF' : 'MATI' }}</button>
+                                    @endif
                                     @if ($r->material_pattern)
                                         <span class="font-mono">{{ $r->material_pattern }}</span>
                                         <div class="text-muted">{{ $r->material_role }} · {{ self::MATERIAL_RULES[$r->material_rule] ?? '' }}</div>
