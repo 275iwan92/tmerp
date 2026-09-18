@@ -169,11 +169,16 @@ is_sheet = 1 jika part_type ∈ {SHEET, SHEET_DIGITAL}, else 0
 
 **A. Duplex** (`duplex_price_list > 0`):
 ```
-F_dc = 1 + override        , jika override > 0
-     = 1 + (%dc / 100)     , selainnya       (DC% tersimpan ×100 di DB, 530 → 5.30%)
+F_dc = 1 + override            , jika override > 0      (override 5.30 → F_dc = 6.30)
+     = 1 + (dc_x100 / 100)     , selainnya              (DB legacy simpan 530 → 5.30 → F_dc = 6.30)
 
 Cost_paper/pc = (Panjang_plano × Lebar_plano / 8611) × Harga_duplex × F_dc / 500 / C_plano / I_lb
 ```
+⚠ **KOREKSI 2026-09-18 (diverifikasi ke dump `docs/ddl/tmhpp.sql`)**: "5,30" BUKAN persen —
+F_dc = **6,30**, bukan 1,053. Bukti: komentar kolom legacy `hpp_parts.i_dc_persen_override`
+("5.30 → dc_factor = 1+5.30 = 6.30"), NS40 duplex 350 (314.000/rim, plano 70×100, cut 2) =
+**1.608,11** hanya cocok dgn 6,30; RAJA BAKERY (255.000, 120×104, cut 4, isi 2) = **582,08**;
+DUS (314.000, override 5,60 → 6,60, isi 3) = **1.123,12**. Lihat §VII.
 `8611` = `PLANO_REF_AREA` (luas plano acuan 79×109cm), `500` = `RIM_SHEETS`.
 
 **B. Ivory/AP** (per Kg):
@@ -440,3 +445,69 @@ tidak salah kira sebagai aturan yang masih perlu diikuti.
 Item 1 adalah yang paling penting (menyangkut akurasi harga produksi
 DC+SHEET/DC+SF yang sudah ditandai "BELUM DIVERIFIKASI" sejak awal) — item 2-5
 murni polish, prioritas rendah.
+
+---
+
+## VII. Verifikasi ke Dump Legacy `docs/ddl/tmhpp.sql` (2026-09-18) — SUMBER KEBENARAN
+
+Dump database program lama (Navicat, server TM 176, schema `tmhpp`, 03/09/2026) +
+screenshot layar "UPDATE HPP V3.027" dari user. Bagian ini **mengalahkan** §II bila
+bertentangan (§II diturunkan dari ringkasan Gemini, §VII dari data asli).
+
+### VII.1 Konstanta (`m_hpp_constants`) — nilai asli
+| Key | Nilai | Keterangan | Ada di `tm2sys.sys_constant`? |
+|---|---:|---|---|
+| PLANO_REF_AREA | 8611 cm² | plano acuan 79×109 | ✓ |
+| RIM_SHEETS | 500 | lembar/rim | ✓ |
+| FILM_RATE_DEFAULT | 55 | film normal | ✓ |
+| FILM_RATE_FULLPRINT | 60 | full cetak + WB lam | ✗ (lewat master film rate) |
+| FILM_FACTOR_DEFAULT | 0,25 | | ✓ |
+| KNIFE_RATE_DC | 900.000 Rp/order | DC, DC+SF, DC+SHEET | ✗ (ada di `prod_part_type.pisau_rate_rp`) |
+| KNIFE_RATE_KRAFT | 1.500.000 | | ✗ (idem) |
+| KNIFE_RATE_OB | 0 | SHEET | ✗ (idem) |
+| KNIFE_FACTOR_DEFAULT | 0,25 | | ✗ **belum ada** |
+| PLATE_PER_COLOR | 90.000 Rp/warna | | ✓ |
+| PCS_PER_LB_DEFAULT / CUT_PER_PLANO_DEFAULT | 1 | guard | (guard di kode) |
+| OB_DISCOUNT_RM_MIN / MAX | −0,99 / 0,99 | batas diskon/surcharge | ✗ **belum ada** |
+| KALENDER_ONLY, KLEP_DEFAULT_MIKA_PC 170, KLEP_DEFAULT_ONGKOS_PC 100 | | blok KLEP kalender | ✗ **belum ada** |
+
+### VII.2 Master legacy vs tm2mst sekarang
+| Legacy | Isi penting | Status di V2 |
+|---|---|---|
+| `m_paper_grammage` (28 baris) | DUPLEX 250–500 gsm @ 253.000–439.000/rim, DC 530; IVORY 120 @ 15.500/kg; KRAFT 250 @ 6.700→8.350/kg (versi `effective_date`) | `mat_grammage` baru **3 baris dummy** (duplex 12.500/14.200, DC 5,3) — harga BUKAN legacy, perlu impor |
+| `m_coating_rate` | Varnish/WB 0,035 · UV 0,020 · UV-Spot 0,025 · Lam Biasa/Glossy 0,165 · Lam Doff/3D 0,210 · Other/No Coating 0 | cek `mat_coating_rate` |
+| `m_film_rate` | 55 Normal · 60 Full Cetak+WB · 45 Ivory · 30 Bag Bawah (PK = nilai rate) | belum ada master (kolom `i_film_rate` bebas) |
+| `m_join_type` | STITCHING_SINGLE 375 · STITCHING_DOUBLE 750 · GLUE_SINGLE 250 · GLUE_DOUBLE 500 | belum ada |
+| `m_packing_type` | NONE / WRAP / SHRINK / WRAP_SHRINK (rate 0, isi per order) | belum ada (`jenis_packing` free-text) |
+| `m_sheet_supplier` | **UJK mesin 170 cm gap 2** · RCA 215 cm gap 5 | V2 hardcode `SHEET_MACHINE_WIDTH_CM=180` (dari Excel COCO TOKYO) — **beda dgn master supplier**, perlu keputusan |
+| `m_sheet_discount_tier` | UJK: K125 −5% (Apr-26), WK150 −6,5%, default −10%; RCA tier RM 20/20/25/26%, WK150 22,5% | cek `mat_sheet_discount_tier` |
+| `m_sheet_rate` (107) | B/F, C/F, BC/F sheet; SINGLE FACE B/F; SF E/F (M125/M125 2.500, M125/K125 2.600) | cek `mat_sheet_rate` |
+| `m_part_type` | DC+SF=`DC + Single Face`, DC+SHEET=`DC + Laminasi Sheet`, DC, KRAFT, SHEET=`Outer Box/OB`, SHEET_DIGITAL | `prod_part_type` |
+| `m_part_template` | NS40, NKC135-BADAN/-TUTUP, OB_A1, KALENDER, FS GTZ-5S — auto-fill 40 field saat Nama Part diketik | belum ada |
+
+### VII.3 Rumus yang dikoreksi / dipastikan (dari kolom komentar + data)
+- **Luas cetak** = `Ukuran Cetak P × L` (INPUT dari Master Card, Excel B22/C22) — **bukan** luas plano. Dipakai coating, film, SF EF, laminasi J38. Plano hanya utk kertas.
+- **Kertas duplex**: F_dc = 1 + 5,30 = 6,30 (lihat §II.2).
+- **Kertas KRAFT/ivory**: `harga_kg × (gsm/1000) × (plano_cm²/10000) / (cut × isi)` (map_hpp_parts #62) — perhatikan **gsm/1000**, bukan gsm/2 seperti ringkasan Gemini. ⚠ perlu dicek ulang ke data KALENDER (Ivory 120, `PAPER_AP_OK`, 1.209,00).
+- **Tooling/PC** = Film + Plate + Pisau dibagi **qty saja** (data RAJA BAKERY: 468/5000, 360.000/5000, 30.000/5000) — komentar "/isi" di kolom tidak dipakai data.
+- **Film** = faktor² × luas_cetak × film_rate.
+- **Proses DC-family/KRAFT** = cetak + plong + lem + hotprint + kupas + qc + kirim + packing + J36 (lam sheet flat, INPUT Rp/PC final, mis. NS40 1.360) + J37 SF EF + J38 ongkos laminasi.
+- **J38** = flag_sheet × uk × faktor_sh / isi + flag_sf × uk × faktor_sf / isi; `uk` = ukuran SF/SH bila "Pakai Ukuran SF?"=1, selain itu ukuran cetak.
+- **Coating/PC** = uk_cetak × index / isi (TIDAK dibagi cut).
+- **LC = LB = qty ÷ (cut × isi)** (data: 3000/(2×1)=1500, 10000/(1×3)=3333).
+- **Ladder** (hpp #9 COCO TOKYO, cocok ke screenshot): Price Per Pcs = HPP ÷ (1−toleransi) → 28.201,78; Total After Margin = ÷ (1−margin) → 33.178,56. (Hati-hati: `map_hpp` menulis ×(1+x) dan hpp #1 memakai ×(1+tol) — versi lama; ikuti versi terbaru.)
+- **Header "Total …" di layar = nilai per PC**, bukan × qty.
+
+### VII.4 Kasus uji legacy (acuan regresi `CostingEngineTest`)
+| hpp_parts | Tipe | Input kunci | Hasil legacy /PC |
+|---|---|---|---|
+| #1/#3 NS40 | DC+SHEET | duplex 350 (314.000), DC 5,30, plano 70×100, cut 2, isi 1, uk cetak 70×41, cetak 900.000/rim, plong 250, lem 375, kupas 30, qc 100, kirim 200, J36 1.360, faktor_sh 0,15, lam biasa 0,165, film 60 ff 0,25, plate 4 warna, pisau 0,25×900.000, qty 1.000 | kertas 1.608,11 · proses 3.645,50 · coating 473,55 · tooling 595,76 · **TOTAL 6.322,92** |
+| #51 RAJA BAKERY (= mockup #1) | DC+SF | duplex 250 (255.000), DC 5,30, plano 120×104, cut 4, isi 2, uk cetak 60×52, SF E/F 2.600, faktor_sf 0,065, pakai uk SF 59×51, UV 0,065, film 60 ff 0,05, pisau 0,05×600.000, qty 5.000 | kertas 582,08 · proses 827,29 · coat 101,40 · SF EF 405,60 · lam 97,79 · tooling 78,09 · **TOTAL 1.487,46** |
+| #52 DUS | DC | duplex 350, override 5,60, plano 70×100, cut 1, isi 3, uk cetak 62×100, film 45 ff 0,5, pisau 0,25×1.000.000, qty 10.000 | kertas 1.123,12 · proses 145 · tooling 67,98 · **TOTAL 1.336,10** |
+| #53 COCO TOKYO | SHEET | 427×220×172 lidah 35, K200/M125/K200 B/F, UJK, trim 155, isi/trim 3, surcharge −5, print 300, diecut 350, qc 100, kirim 100, qty 1.800.000 | sheet 23.949,58 · proses 1.150 · **TOTAL 25.099,58** |
+
+### VII.5 Bug engine V2 (`CostingEngine.php`) yang terungkap — BELUM diperbaiki
+1. `F_dc = 1 + dcPct/100` → harus `1 + dcPct` → **kertas duplex 6× terlalu murah** di semua costing V2.
+2. Luas cetak = luas plano (belum ada kolom Ukuran Cetak P/L) → coating & film **×cut terlalu mahal**.
+3. DC+SF/DC+SHEET: J36 dihitung dari geometri sheet (legacy = input Rp/PC), proses tidak lengkap, coating asli tidak diloop (§V.3).
+4. Tooling dibagi qty tier ✓ (sesuai), tapi KNIFE_FACTOR_DEFAULT 0,25 belum jadi default.
