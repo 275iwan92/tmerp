@@ -6,11 +6,10 @@
     dan layouts/report.blade.php (Laporan Manajemen, $standalone=true,
     dibungkus x-data lokal sendiri di sana krn tidak ada tab MDI/panel).
 
-    $standalone mengubah action item modal/drawer/menu (Edit profil, Ubah
-    password, Chat, Notifikasi, Asisten AI, User Configuration, Aktivitas
-    saya) jadi link ke route('menu', ['open' => target]) -- shell Laporan
-    tidak punya modal/drawer/tab itu sendiri, main-menu.blade.php baca
-    query 'open' & auto-buka panel yg sesuai begitu mendarat.
+    Panel drawer/modal di KEDUA shell dirender App\Livewire\Shell\UserPanels.
+    $standalone (Laporan) hanya beda utk item yg di Operasional membuka tab/
+    halaman penuh (Aktivitas saya, Pengaturan, My Security): dibuka di modal
+    halaman (pageUrl), user tetap di mode Laporan.
 --}}
 <div class="pop">
     <button type="button" class="avatar-btn" @click.stop="ddOpen = !ddOpen" title="{{ auth()->user()->name }}">
@@ -47,15 +46,19 @@
                             @endif
                             @break
                         @case('UM_MYSECURITY')
-                            <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="{{ $item->icon }}"></i> {{ $item->label }}</a>
+                            @if ($standalone)
+                                <button type="button" class="um-item" @click="ddOpen = false; pageTitle = @js($item->label); pageUrl = @js($this->standalonePageUrl($item))"><i class="{{ $item->icon }}"></i> {{ $item->label }}</button>
+                            @else
+                                <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="{{ $item->icon }}"></i> {{ $item->label }}</a>
+                            @endif
                             @break
                         @default
-                            @if ($standalone)
-                                <a href="{{ route('menu', ['open' => $item->action_target]) }}" class="um-item">
-                                    <i class="{{ $item->icon }}"></i> {{ $item->label }}
-                                    @if ($item->badge_source === 'chat' && $this->unreadChatCount > 0)<span class="um-count">{{ $this->unreadChatCount }}</span>@endif
-                                    @if ($item->badge_source === 'notif' && $this->unreadNotifCount > 0)<span class="um-count">{{ $this->unreadNotifCount }}</span>@endif
-                                </a>
+                            @if ($standalone && $item->action_type === 'menu')
+                                @if ($this->standalonePageUrl($item))
+                                    <button type="button" class="um-item" @click="ddOpen = false; pageTitle = @js($item->label); pageUrl = @js($this->standalonePageUrl($item))">
+                                        <i class="{{ $item->icon }}"></i> {{ $item->label }}
+                                    </button>
+                                @endif
                             @else
                                 <button type="button" class="um-item"
                                     @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">
@@ -75,10 +78,12 @@
             </button>
             <div x-show="configOpen" @click.stop>
                 @foreach ($this->configMenuItems as $item)
-                    @if ($standalone)
-                        <a href="{{ route('menu', ['open' => $item->action_target]) }}" class="um-item" style="padding-left:28px">
-                            <i class="{{ $item->icon }}"></i> {{ $item->label }}
-                        </a>
+                    @if ($standalone && $item->action_type === 'menu')
+                        @if ($this->standalonePageUrl($item))
+                            <button type="button" class="um-item" style="padding-left:28px" @click="ddOpen = false; pageTitle = @js($item->label); pageUrl = @js($this->standalonePageUrl($item))">
+                                <i class="{{ $item->icon }}"></i> {{ $item->label }}
+                            </button>
+                        @endif
                     @else
                         <button type="button" class="um-item" style="padding-left:28px"
                             @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">

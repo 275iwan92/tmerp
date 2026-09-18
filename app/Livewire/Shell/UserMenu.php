@@ -23,15 +23,28 @@ use Livewire\Component;
 // layouts/report.blade.php via <livewire:shell.user-menu :standalone="true" />)
 // supaya benar-benar SATU implementasi, bukan 2 salinan yang bisa menyimpang.
 //
-// $standalone=true (dipakai di layouts::report, TIDAK punya modal/drawer/
-// tab MDI seperti main-menu) -- item Chat/Notifikasi/Asisten AI/Edit
-// profil/Ubah password/User Configuration/Aktivitas saya dialihkan jadi
-// link ke route('menu', ['open' => target]); main-menu.blade.php baca
-// query 'open' itu (x-init di root shell) utk auto-buka panel yg sesuai
-// begitu mendarat -- supaya tetap FUNGSIONAL, bukan tombol mati.
+// $standalone=true (layouts::report): panel drawer/modal dibuka DI TEMPAT
+// lewat App\Livewire\Shell\UserPanels (sama dgn main-menu); item yg di
+// Operasional membuka tab MDI/halaman penuh dibuka di modal halaman --
+// user TIDAK dilempar ke Menu Operasional (keluhan user 2026-09-18).
 class UserMenu extends Component
 {
     public bool $standalone = false;
+
+    public function standalonePageUrl(object $item): ?string
+    {
+        if ($item->code === 'UM_MYSECURITY') {
+            return route('self-service.index', ['tab' => 'security']);
+        }
+
+        return $item->action_type === 'menu'
+            ? match ($item->action_target) {
+                'SET_USER' => route('security.index', ['tab' => 'users']),
+                'SET_GROUP' => route('security.index', ['tab' => 'groups']),
+                default => null,
+            }
+            : null;
+    }
 
     #[Computed]
     public function unreadChatCount(): int

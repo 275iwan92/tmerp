@@ -866,7 +866,7 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
 <div class="min-h-screen bg-[#f8fafc]">
     <div class="bg-[#0f172a] text-white px-6 py-3 flex items-center justify-between sticky top-0 z-40">
         <div class="text-sm font-bold flex items-center gap-2">TMERP <span class="bg-white/15 px-2 py-0.5 rounded text-[11px] font-medium">Self-Service Karyawan</span></div>
-        <a href="{{ route('menu') }}" class="text-xs text-white/80 hover:text-white">← Kembali ke Menu Utama</a>
+        <a href="{{ route('menu') }}" x-data x-show="window.self === window.top" data-back class="text-xs text-white/80 hover:text-white">← Kembali ke Menu Utama</a>
     </div>
 
     @if (! $this->employee)

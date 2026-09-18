@@ -44,23 +44,24 @@ class UserMenuParityTest extends TestCase
         $response->assertSee('Keluar aplikasi');
     }
 
-    public function test_standalone_mode_redirects_drawer_items_via_menu_open_param(): void
+    public function test_standalone_mode_opens_panels_in_place_without_leaving_report_shell(): void
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();
         $this->actingAs($admin);
 
-        // Di shell Laporan (standalone), item Chat/Notifikasi/dst tidak
-        // punya panelnya sendiri -- harus jadi link ke /menu?open=<flag>,
-        // BUKAN tombol Alpine mati.
+        // Keluhan user 2026-09-18: di mode Laporan, klik item profil TIDAK
+        // boleh melempar ke Menu Operasional -- panel dibuka di tempat.
         $standalone = Livewire::test('shell.user-menu', ['standalone' => true]);
         $standalone->assertOk();
-        $standalone->assertSee(route('menu', ['open' => 'chatOpen']), false);
-        $standalone->assertSee(route('menu', ['open' => 'notifOpen']), false);
+        $standalone->assertDontSee(route('menu', ['open' => 'chatOpen']), false);
+        $standalone->assertDontSee(route('menu', ['open' => 'notifOpen']), false);
+        $standalone->assertSee('chatOpen = true', false);
+        $standalone->assertSee('profileOpen = true', false);
 
-        // Di main-menu (non-standalone), item yg sama tetap tombol
-        // wire/Alpine (bukan navigasi) -- perilaku asli sebelum diekstrak.
-        $inline = Livewire::test('shell.user-menu', ['standalone' => false]);
-        $inline->assertOk();
-        $inline->assertDontSee(route('menu', ['open' => 'chatOpen']), false);
+        $response = $this->get(route('report.executive'));
+        $response->assertOk();
+        $response->assertSee('class="upanels"', false);
+        $response->assertSee('saveProfile', false);
+        $response->assertDontSee(route('menu', ['open' => 'profileOpen']), false);
     }
 }

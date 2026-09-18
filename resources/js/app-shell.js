@@ -95,9 +95,6 @@ document.addEventListener('alpine:init', () => {
         paletteQuery: '',
         paletteSel: 0,
 
-        aiMessages: [],
-        aiInput: '',
-
         toastMsg: '',
         toastShow: false,
         toast(msg) {
@@ -258,13 +255,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ===== AI preview (keyword match ke registry menu, bukan LLM sungguhan) =====
-        addAi(role, text) {
-            this.aiMessages.push({ role, text });
-            this.$nextTick(() => {
-                const el = this.$refs.aiBody;
-                if (el) el.scrollTop = el.scrollHeight;
-            });
-        },
+        ...aiPreview(),
         askAi(q) {
             q = (q || '').trim();
             if (! q) return;
@@ -282,4 +273,48 @@ document.addEventListener('alpine:init', () => {
             }
         },
     }));
+
+    // State shell Laporan Manajemen (layouts/report.blade.php): flag panel
+    // dropdown user (App\Livewire\Shell\UserPanels) + modal halaman. Asisten
+    // AI di sini mencari dashboard laporan, tidak membuka Menu Operasional.
+    Alpine.data('reportShell', (navItems) => ({
+        ddOpen: false,
+        configOpen: false,
+        notifOpen: false,
+        chatOpen: false,
+        aiOpen: false,
+        profileOpen: false,
+        passwordOpen: false,
+        portalOpen: false,
+        pageUrl: '',
+        pageTitle: '',
+        ...aiPreview(),
+        askAi(q) {
+            q = (q || '').trim();
+            if (! q) return;
+            this.addAi('me', q);
+            const toks = q.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+            const hit = (navItems || []).find((o) => toks.some((t) => o.label.toLowerCase().includes(t) || (o.keywords || '').includes(t)));
+            if (hit) {
+                this.addAi('bot', 'Baik, saya buka “' + hit.label + '”.');
+                setTimeout(() => { window.location.href = hit.href; }, 500);
+            } else {
+                this.addAi('bot', 'Belum ada dashboard yang cocok. Coba sebut mis. “sales”, “purchasing”, “gudang”.');
+            }
+        },
+    }));
+
+    function aiPreview() {
+        return {
+            aiMessages: [],
+            aiInput: '',
+            addAi(role, text) {
+                this.aiMessages.push({ role, text });
+                this.$nextTick(() => {
+                    const el = this.$refs.aiBody;
+                    if (el) el.scrollTop = el.scrollHeight;
+                });
+            },
+        };
+    }
 });

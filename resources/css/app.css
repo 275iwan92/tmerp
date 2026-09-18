@@ -381,7 +381,7 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
    dari sys_app_menu_color via SysAppMenu::menuTree() -- abu=belum dibangun,
    kuning=siap di-QC, hijau=terkunci user. Beda dgn sys_theme (tema warna app). */
 .shell .status-dot { @apply w-[7px] h-[7px] rounded-full flex-shrink-0; }
-.shell .side-hint { @apply text-[var(--side-muted)] text-[13px] leading-[1.55] px-4 py-3.5; }
+:is(.shell, .upanels) .side-hint { @apply text-[var(--side-muted)] text-[13px] leading-[1.55] px-4 py-3.5; }
 .shell.mini .side-hint { @apply hidden; }
 
 .shell .main { @apply flex-1 flex flex-col min-w-0 relative; }
@@ -504,65 +504,65 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .shell .utm-lbl { @apply text-[10.5px] font-semibold text-[var(--sh-ink)] truncate; }
 .shell .utm-empty { @apply w-[22px] h-[22px]; }
 .shell .um-count { @apply ml-auto bg-[#e5484d] text-white text-[10.5px] font-bold rounded-lg min-w-[18px] h-[18px] px-1.5 flex items-center justify-center; }
-.shell .nz { @apply flex gap-[11px] px-3 py-2.5 rounded-lg cursor-pointer; }
-.shell .nz:hover { @apply bg-[#f2f5fb]; }
-.shell .nz.unread { @apply bg-[#f6f9ff]; }
-.shell .nz .dotc { @apply w-[9px] h-[9px] rounded-full flex-shrink-0 mt-1; }
-.shell .nz .nt { @apply text-sm text-[var(--sh-ink-strong)]; } .shell .nz .ns { @apply text-[11.5px] text-[var(--sh-muted)] mt-0.5; }
+:is(.shell, .upanels) .nz { @apply flex gap-[11px] px-3 py-2.5 rounded-lg cursor-pointer; }
+:is(.shell, .upanels) .nz:hover { @apply bg-[#f2f5fb]; }
+:is(.shell, .upanels) .nz.unread { @apply bg-[#f6f9ff]; }
+:is(.shell, .upanels) .nz .dotc { @apply w-[9px] h-[9px] rounded-full flex-shrink-0 mt-1; }
+:is(.shell, .upanels) .nz .nt { @apply text-sm text-[var(--sh-ink-strong)]; } :is(.shell, .upanels) .nz .ns { @apply text-[11.5px] text-[var(--sh-muted)] mt-0.5; }
 .shell .pm-head { @apply px-4 py-[13px] border-b border-[var(--sh-border)] font-bold text-[var(--sh-ink-strong)] text-sm flex justify-between items-center; }
 .shell .pm-head a { @apply text-xs text-[var(--sh-accent)] no-underline font-semibold cursor-pointer; }
 
-.shell .backdrop { @apply fixed inset-0 opacity-0 pointer-events-none z-[110]; background: rgba(20, 27, 48, .4); transition: opacity .2s; }
-.shell .backdrop.on { @apply opacity-100 pointer-events-auto; }
-.shell .drawer { @apply fixed top-0 right-0 h-screen w-[390px] max-w-[92vw] bg-[var(--sh-surface)] z-[115] flex flex-col; box-shadow: -12px 0 40px rgba(15, 22, 45, .2); transform: translateX(100%); transition: transform .22s; }
-.shell .drawer.on { transform: none; }
-.shell .dr-head { @apply h-14 flex items-center gap-2.5 px-4 border-b border-[var(--sh-border)] flex-shrink-0; }
-.shell .dr-head .ico { @apply text-[var(--sh-accent)]; } .shell .dr-title { @apply font-bold text-[var(--sh-ink-strong)]; }
-.shell .dr-head .x { @apply ml-auto bg-transparent border-none text-[var(--sh-muted)] cursor-pointer text-lg; }
-.shell .chat-body { @apply flex-1 flex min-h-0; }
-.shell .chat-list { @apply w-[132px] border-r border-[var(--sh-border)] overflow-y-auto flex-shrink-0; }
-.shell .cl-item { @apply px-2.5 py-2.5 cursor-pointer border-b border-[#f1f3f9] text-[12.5px]; }
-.shell .cl-item:hover { @apply bg-[#f7f9fc]; } .shell .cl-item.active { @apply bg-[#eef4ff]; }
-.shell .cl-item b { @apply text-[var(--sh-ink-strong)] block; } .shell .cl-item span { @apply text-[var(--sh-muted)] text-[11px]; }
-.shell .chat-main { @apply flex-1 flex flex-col min-w-0; }
-.shell .msgs { @apply flex-1 overflow-y-auto p-3.5 flex flex-col gap-2; }
-.shell .msg { @apply max-w-[82%] px-3 py-2.5 rounded-xl text-[13px] leading-snug; }
-.shell .msg.them { @apply bg-[#f0f2f7] text-[var(--sh-ink-strong)] self-start rounded-bl-[4px]; }
-.shell .msg.me { @apply bg-[var(--sh-accent)] text-white self-end rounded-br-[4px]; }
-.shell .chat-in { @apply flex gap-2 p-3 border-t border-[var(--sh-border)]; }
-.shell .chat-in input { @apply flex-1 min-w-0 border-[1.5px] border-[var(--sh-border)] rounded-[20px] px-3.5 py-2.5 text-[13.5px] outline-none; font-family: inherit; }
-.shell .chat-in button { @apply bg-[var(--sh-accent)] text-white border-none rounded-full w-[38px] h-[38px] cursor-pointer flex-shrink-0; }
-.shell .ai-body { @apply flex-1 overflow-y-auto p-4 flex flex-col gap-[11px]; }
-.shell .ai-intro { @apply bg-[#faf7ff] border border-dashed border-[#d7c3ff] rounded-xl p-3.5 text-[13px] text-[#6b4bb0] leading-relaxed; }
-.shell .ai-chip { @apply inline-block bg-[#eef4ff] text-[var(--sh-accent)] border-none rounded-2xl px-3 py-1.5 text-[12.5px] cursor-pointer mt-1 mr-1; font-family: inherit; }
-.shell .ai-chip:hover { @apply bg-[#e0eaff]; }
-.shell .ai-msg { @apply max-w-[88%] px-3.5 py-2.5 rounded-xl text-[13.5px] leading-[1.45]; }
-.shell .ai-msg.me { @apply bg-[var(--sh-accent)] text-white self-end rounded-br-[4px]; }
-.shell .ai-msg.bot { @apply bg-[#f4f1fb] text-[var(--sh-ink-strong)] self-start rounded-bl-[4px]; }
-.shell .ai-in { @apply flex gap-2 p-3 border-t border-[var(--sh-border)]; }
-.shell .ai-in input { @apply flex-1 min-w-0 border-[1.5px] border-[var(--sh-border)] rounded-[20px] px-3.5 py-2.5 text-[13.5px] outline-none; font-family: inherit; }
-.shell .ai-in button { @apply bg-[#7a52d0] text-white border-none rounded-full w-[38px] h-[38px] cursor-pointer; }
+:is(.shell, .upanels) .backdrop { @apply fixed inset-0 opacity-0 pointer-events-none z-[110]; background: rgba(20, 27, 48, .4); transition: opacity .2s; }
+:is(.shell, .upanels) .backdrop.on { @apply opacity-100 pointer-events-auto; }
+:is(.shell, .upanels) .drawer { @apply fixed top-0 right-0 h-screen w-[390px] max-w-[92vw] bg-[var(--sh-surface)] z-[115] flex flex-col; box-shadow: -12px 0 40px rgba(15, 22, 45, .2); transform: translateX(100%); transition: transform .22s; }
+:is(.shell, .upanels) .drawer.on { transform: none; }
+:is(.shell, .upanels) .dr-head { @apply h-14 flex items-center gap-2.5 px-4 border-b border-[var(--sh-border)] flex-shrink-0; }
+:is(.shell, .upanels) .dr-head .ico { @apply text-[var(--sh-accent)]; } :is(.shell, .upanels) .dr-title { @apply font-bold text-[var(--sh-ink-strong)]; }
+:is(.shell, .upanels) .dr-head .x { @apply ml-auto bg-transparent border-none text-[var(--sh-muted)] cursor-pointer text-lg; }
+:is(.shell, .upanels) .chat-body { @apply flex-1 flex min-h-0; }
+:is(.shell, .upanels) .chat-list { @apply w-[132px] border-r border-[var(--sh-border)] overflow-y-auto flex-shrink-0; }
+:is(.shell, .upanels) .cl-item { @apply px-2.5 py-2.5 cursor-pointer border-b border-[#f1f3f9] text-[12.5px]; }
+:is(.shell, .upanels) .cl-item:hover { @apply bg-[#f7f9fc]; } :is(.shell, .upanels) .cl-item.active { @apply bg-[#eef4ff]; }
+:is(.shell, .upanels) .cl-item b { @apply text-[var(--sh-ink-strong)] block; } :is(.shell, .upanels) .cl-item span { @apply text-[var(--sh-muted)] text-[11px]; }
+:is(.shell, .upanels) .chat-main { @apply flex-1 flex flex-col min-w-0; }
+:is(.shell, .upanels) .msgs { @apply flex-1 overflow-y-auto p-3.5 flex flex-col gap-2; }
+:is(.shell, .upanels) .msg { @apply max-w-[82%] px-3 py-2.5 rounded-xl text-[13px] leading-snug; }
+:is(.shell, .upanels) .msg.them { @apply bg-[#f0f2f7] text-[var(--sh-ink-strong)] self-start rounded-bl-[4px]; }
+:is(.shell, .upanels) .msg.me { @apply bg-[var(--sh-accent)] text-white self-end rounded-br-[4px]; }
+:is(.shell, .upanels) .chat-in { @apply flex gap-2 p-3 border-t border-[var(--sh-border)]; }
+:is(.shell, .upanels) .chat-in input { @apply flex-1 min-w-0 border-[1.5px] border-[var(--sh-border)] rounded-[20px] px-3.5 py-2.5 text-[13.5px] outline-none; font-family: inherit; }
+:is(.shell, .upanels) .chat-in button { @apply bg-[var(--sh-accent)] text-white border-none rounded-full w-[38px] h-[38px] cursor-pointer flex-shrink-0; }
+:is(.shell, .upanels) .ai-body { @apply flex-1 overflow-y-auto p-4 flex flex-col gap-[11px]; }
+:is(.shell, .upanels) .ai-intro { @apply bg-[#faf7ff] border border-dashed border-[#d7c3ff] rounded-xl p-3.5 text-[13px] text-[#6b4bb0] leading-relaxed; }
+:is(.shell, .upanels) .ai-chip { @apply inline-block bg-[#eef4ff] text-[var(--sh-accent)] border-none rounded-2xl px-3 py-1.5 text-[12.5px] cursor-pointer mt-1 mr-1; font-family: inherit; }
+:is(.shell, .upanels) .ai-chip:hover { @apply bg-[#e0eaff]; }
+:is(.shell, .upanels) .ai-msg { @apply max-w-[88%] px-3.5 py-2.5 rounded-xl text-[13.5px] leading-[1.45]; }
+:is(.shell, .upanels) .ai-msg.me { @apply bg-[var(--sh-accent)] text-white self-end rounded-br-[4px]; }
+:is(.shell, .upanels) .ai-msg.bot { @apply bg-[#f4f1fb] text-[var(--sh-ink-strong)] self-start rounded-bl-[4px]; }
+:is(.shell, .upanels) .ai-in { @apply flex gap-2 p-3 border-t border-[var(--sh-border)]; }
+:is(.shell, .upanels) .ai-in input { @apply flex-1 min-w-0 border-[1.5px] border-[var(--sh-border)] rounded-[20px] px-3.5 py-2.5 text-[13.5px] outline-none; font-family: inherit; }
+:is(.shell, .upanels) .ai-in button { @apply bg-[#7a52d0] text-white border-none rounded-full w-[38px] h-[38px] cursor-pointer; }
 
-.shell .mov { @apply hidden fixed inset-0 items-center justify-center z-[120] p-5; background: rgba(20, 27, 48, .45); }
-.shell .mov.on { @apply flex; }
-.shell .modal { @apply bg-white w-full max-w-[430px] rounded-2xl overflow-hidden; box-shadow: 0 20px 60px rgba(15, 22, 45, .3); }
-.shell .modal.wide { @apply max-w-[1100px]; }
-.shell .modal.wide .mb { @apply p-0; }
-.shell .modal.wide iframe { @apply block w-full border-0; height: 82vh; }
-.shell .mh { @apply flex items-center justify-between px-5 py-4 border-b border-[var(--sh-border)]; }
-.shell .mh h3 { @apply text-base text-[var(--sh-ink-strong)]; } .shell .mh .x { @apply bg-transparent border-none text-xl text-[var(--sh-muted)] cursor-pointer; }
-.shell .mb { @apply p-5; }
-.shell .mf { @apply flex justify-end gap-2.5 px-5 py-3.5 border-t border-[var(--sh-border)] bg-[#fafbfd]; }
-.shell .mfield { @apply mb-3.5; } .shell .mfield label { @apply block text-[12.5px] font-semibold text-[var(--sh-ink)] mb-1.5; }
-.shell .mfield input { @apply w-full border-[1.5px] border-[var(--sh-border)] rounded-lg px-3 py-2.5 text-sm outline-none text-[var(--sh-ink-strong)]; font-family: inherit; }
-.shell .mfield input[readonly] { @apply bg-[#f2f4f8] text-[var(--sh-muted)]; }
-.shell .mfield .hint { @apply text-[11.5px] text-[var(--sh-muted)] mt-[5px]; } .shell .mfield .hint.bad { @apply text-[#d0453f]; } .shell .mfield .hint.ok { @apply text-[#2e9e5b]; }
-.shell .mbtn { @apply border-none rounded-lg px-4.5 py-2.5 text-sm font-semibold cursor-pointer; font-family: inherit; }
-.shell .mbtn.p { @apply bg-[var(--sh-accent)] text-white; } .shell .mbtn.c { @apply bg-[#eef1f6] text-[var(--sh-ink)]; }
-.shell .photo-row { @apply flex items-center gap-3.5 mb-4.5; }
-.shell .photo-big { @apply w-[60px] h-[60px] rounded-full bg-[#dce1ee] flex items-center justify-center; }
-.shell .photo-big svg { @apply w-[34px] h-[34px] fill-[#7b85a4]; }
-.shell .ghost { @apply bg-[#eef2fb] text-[var(--sh-accent)] border-none rounded-lg px-3.5 py-2 text-[12.5px] font-semibold cursor-pointer; font-family: inherit; }
+:is(.shell, .upanels) .mov { @apply hidden fixed inset-0 items-center justify-center z-[120] p-5; background: rgba(20, 27, 48, .45); }
+:is(.shell, .upanels) .mov.on { @apply flex; }
+:is(.shell, .upanels) .modal { @apply bg-white w-full max-w-[430px] rounded-2xl overflow-hidden; box-shadow: 0 20px 60px rgba(15, 22, 45, .3); }
+:is(.shell, .upanels) .modal.wide { @apply max-w-[1100px]; }
+:is(.shell, .upanels) .modal.wide .mb { @apply p-0; }
+:is(.shell, .upanels) .modal.wide iframe { @apply block w-full border-0; height: 82vh; }
+:is(.shell, .upanels) .mh { @apply flex items-center justify-between px-5 py-4 border-b border-[var(--sh-border)]; }
+:is(.shell, .upanels) .mh h3 { @apply text-base text-[var(--sh-ink-strong)]; } :is(.shell, .upanels) .mh .x { @apply bg-transparent border-none text-xl text-[var(--sh-muted)] cursor-pointer; }
+:is(.shell, .upanels) .mb { @apply p-5; }
+:is(.shell, .upanels) .mf { @apply flex justify-end gap-2.5 px-5 py-3.5 border-t border-[var(--sh-border)] bg-[#fafbfd]; }
+:is(.shell, .upanels) .mfield { @apply mb-3.5; } :is(.shell, .upanels) .mfield label { @apply block text-[12.5px] font-semibold text-[var(--sh-ink)] mb-1.5; }
+:is(.shell, .upanels) .mfield input { @apply w-full border-[1.5px] border-[var(--sh-border)] rounded-lg px-3 py-2.5 text-sm outline-none text-[var(--sh-ink-strong)]; font-family: inherit; }
+:is(.shell, .upanels) .mfield input[readonly] { @apply bg-[#f2f4f8] text-[var(--sh-muted)]; }
+:is(.shell, .upanels) .mfield .hint { @apply text-[11.5px] text-[var(--sh-muted)] mt-[5px]; } :is(.shell, .upanels) .mfield .hint.bad { @apply text-[#d0453f]; } :is(.shell, .upanels) .mfield .hint.ok { @apply text-[#2e9e5b]; }
+:is(.shell, .upanels) .mbtn { @apply border-none rounded-lg px-4.5 py-2.5 text-sm font-semibold cursor-pointer; font-family: inherit; }
+:is(.shell, .upanels) .mbtn.p { @apply bg-[var(--sh-accent)] text-white; } :is(.shell, .upanels) .mbtn.c { @apply bg-[#eef1f6] text-[var(--sh-ink)]; }
+:is(.shell, .upanels) .photo-row { @apply flex items-center gap-3.5 mb-4.5; }
+:is(.shell, .upanels) .photo-big { @apply w-[60px] h-[60px] rounded-full bg-[#dce1ee] flex items-center justify-center; }
+:is(.shell, .upanels) .photo-big svg { @apply w-[34px] h-[34px] fill-[#7b85a4]; }
+:is(.shell, .upanels) .ghost { @apply bg-[#eef2fb] text-[var(--sh-accent)] border-none rounded-lg px-3.5 py-2 text-[12.5px] font-semibold cursor-pointer; font-family: inherit; }
 .shell .av-dot { @apply absolute -top-px -right-px w-2.5 h-2.5 rounded-full bg-[#e5484d] border-2 border-[var(--topbar)]; }
 .shell .av-dot.hide { @apply hidden; }
 

@@ -44,7 +44,7 @@
                 terang selalu, sama seperti mockup sumbernya sendiri (tidak
                 ada toggle dark/light di mockup ini).
             --}}
-            .rs-app{
+            .rs-app, .upanels{
                 --sh-accent:#2878f0; --sh-ok:#11a879; --sh-warn:#f09a22; --sh-amber:#f09a22;
                 --sh-violet:#8358e8; --sh-danger:#e64b52;
                 --sh-ink:#4a5578; --sh-ink-strong:#14213a; --sh-muted:#718096;
@@ -156,8 +156,20 @@
                 ? request()->route()?->getName() === 'report.control-tower' && request()->route('slug') === $i['slug']
                 : request()->route()?->getName() === $i['route'];
             $__activeLabel = collect($__navGroups)->flatten(1)->first($__isActive)['label'] ?? ($title ?? 'Laporan');
+            $__aiKeywords = [
+                'report.executive' => 'ringkasan eksekutif overview', 'report.purchase' => 'pembelian purchase',
+                'report.sales' => 'penjualan customer crm', 'report.accounting' => 'akuntansi keuangan finance',
+                'report.production' => 'produksi manufacturing', 'report.hr' => 'karyawan gaji payroll sdm',
+                'report.warehouse' => 'gudang stok inventory', 'report.costing' => 'biaya hpp costing estimasi',
+            ];
+            $__aiNav = collect($__navGroups)->flatten(1)->map(fn ($i) => [
+                'label' => $i['label'],
+                'href' => $__href($i),
+                'keywords' => $__aiKeywords[$i['route'] ?? ''] ?? ($i['slug'] ?? ''),
+            ])->values();
         @endphp
 
+        <div x-data="reportShell(@js($__aiNav))">
         <div class="rs-app">
             <aside class="rs-aside">
                 <a href="{{ route('report.executive') }}" class="rs-brand">
@@ -202,25 +214,15 @@
                             <a class="active" href="{{ route('report.executive') }}"><i class="fa-solid fa-chart-line"></i><span>Laporan Manajemen</span></a>
                         </div>
                         {{--
-                            Dropdown user HARUS sama dgn Menu Operasional
-                            (instruksi user 2026-09-14, "user menu di
-                            management report dan di operational menu harus
-                            sama" + screenshot dropdown lengkap "drop down
-                            ini ya harus muncul di management report") --
-                            pakai komponen reusable app/Livewire/Shell/UserMenu.php
-                            yg SAMA dgn main-menu.blade.php, bukan versi
-                            sederhana bikinan sendiri. :standalone="true"
-                            krn shell ini tidak punya modal/drawer/tab MDI
-                            sendiri (lihat komentar di komponennya) -- item
-                            spt Chat/Notifikasi/Edit profil dialihkan ke
-                            /menu?open=xxx dulu (app-shell.js::init() baca
-                            query itu & auto-buka panelnya).
-
-                            x-data lokal ddOpen/configOpen di sini
-                            (main-menu.blade.php dapat ini dari x-data root
-                            .shell yg sudah ada, shell ini tidak).
+                            Dropdown user = komponen yg SAMA dgn Menu
+                            Operasional (instruksi user 2026-09-14). Panelnya
+                            (Notifikasi/Chat/AI/Edit profil/Ubah password/User
+                            Configuration) dibuka DI SINI lewat
+                            App\Livewire\Shell\UserPanels di bawah -- TIDAK lagi
+                            melempar user ke Menu Operasional (keluhan user
+                            2026-09-18). Flag-nya dari x-data reportShell.
                         --}}
-                        <div x-data="{ ddOpen: false, configOpen: false }" @click.outside="ddOpen = false">
+                        <div @click.outside="ddOpen = false">
                             <livewire:shell.user-menu :standalone="true" />
                         </div>
                     </div>
@@ -228,6 +230,8 @@
 
                 {{ $slot }}
             </main>
+        </div>
+        <livewire:shell.user-panels :standalone="true" />
         </div>
 
         @livewireScripts
