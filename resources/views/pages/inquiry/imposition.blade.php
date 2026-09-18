@@ -253,11 +253,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
         <b class="text-[15px]">📐 TELASIH MAKMUR — Imposition Engine</b>
         <span class="text-xs text-white/75">{{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->product_draft_name }}</span>
         <a href="{{ route('inquiry.costing', ['inquiry' => $this->inquiryId]) }}" class="ml-auto bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">→ Costing</a>
-        <a href="{{ route('inquiry.hub') }}" title="Kembali ke Inquiry Hub"
-            class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
-            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
-        </a>
+        <x-back-button :fallback="route('inquiry.hub')" title="Kembali ke Inquiry Hub" />
     </header>
 
     <div class="max-w-[1180px] mx-auto my-5 px-4">

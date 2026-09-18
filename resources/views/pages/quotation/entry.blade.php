@@ -183,11 +183,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         @if ($this->quotation->doc_status === 'PUBLISHED')
             <a href="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" target="_blank" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Preview Cetak</a>
         @endif
-        <a href="{{ route('quotation.list') }}" title="Kembali ke Daftar Quotation"
-            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
-            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
-        </a>
+        <x-back-button :fallback="route('quotation.list')" title="Kembali ke Daftar Quotation" class="ml-auto" />
     </header>
 
     <div class="max-w-[1280px] mx-auto my-5 px-4">

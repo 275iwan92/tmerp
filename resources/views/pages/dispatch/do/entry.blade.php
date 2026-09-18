@@ -235,11 +235,7 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                 <a href="{{ route('dispatch.do.print-surat-jalan', ['doId' => $this->doId]) }}" class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#43508a] text-white no-underline cursor-pointer">🖨️ Surat Jalan</a>
             @endif
 
-            <a href="{{ route('dispatch.do.index') }}" title="Kembali ke Daftar Delivery Order"
-                class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
-                <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
-            </a>
+            <x-back-button :fallback="route('dispatch.do.index')" title="Kembali ke Daftar Delivery Order" />
         </div>
     </header>
 

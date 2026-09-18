@@ -217,11 +217,7 @@ new #[Title('Laporan Slow Moving Item — TELASIH MAKMUR ERP')] class extends Co
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50 no-print">
         <b class="text-[15px]">🐢 Laporan Slow Moving Item</b>
         <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-white/15">{{ self::CATEGORY_LABELS[$category] }}</span>
-        <a href="{{ route('menu') }}" title="Kembali ke Menu Utama"
-            class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full no-underline hover:brightness-110">
-            <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
-            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
-        </a>
+        <x-back-button :fallback="route('menu')" title="Kembali ke Menu Utama" class="ml-auto" />
     </header>
 
     {{-- ============ FILTER (tidak ikut cetak) ============ --}}
