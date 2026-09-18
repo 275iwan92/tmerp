@@ -16,7 +16,7 @@ class PrdWoMaterial extends Model
     const UPDATED_AT = 'updated_at';
 
     protected $fillable = [
-        'wo_id', 'seq_no', 'material_id', 'qty_required', 'qty_standar',
+        'wo_id', 'seq_no', 'material_id', 'material_role', 'material_name', 'uom', 'qty_required', 'qty_standar',
         'is_substituted', 'substitute_material_id', 'substitute_reason',
         'substitute_approved_by', 'substitute_approved_at', 'cutting_yield_waste_qty',
         'material_needed_by', 'created_by', 'updated_by',

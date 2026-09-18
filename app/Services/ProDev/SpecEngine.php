@@ -971,6 +971,58 @@ class SpecEngine
         ];
     }
 
+    // ===================== UNTUK WORK ORDER =====================
+
+    /**
+     * BOP & BOM siap pakai untuk Work Order dengan qty order WO itu (BACKLOG
+     * §19.3). Konteks layout diambil dari layout yang SUDAH disimpan ProDev
+     * (iqp_layout, atau prod_layout_group untuk job tanpa Inquiry) -- jadi WO
+     * memakai keputusan officer, bukan menghitung ulang canvas sendiri.
+     * Override officer diutamakan atas hasil engine.
+     *
+     * @return array{bop: array, bom: array, warnings: array, layout: ?array}
+     */
+    public function forWorkOrder(ProdPart $part, ?IqpPart $iqp, float $orderQty): array
+    {
+        $layout = $iqp
+            ? DB::connection('tm2sdi')->table('iqp_layout')->where('part_id', $iqp->id_part)->first()
+            : null;
+        $group = DB::connection('tm2mst')->table('prod_layout_group as g')
+            ->join('prod_layout_group_part as p', 'p.id_layout_group', '=', 'g.id_layout_group')
+            ->where('p.part_id', $part->id_part)
+            ->orderByDesc('g.id_layout_group')
+            ->first(['g.plano_w_mm', 'g.plano_h_mm', 'g.up_count', 'g.layout_detail']);
+
+        $detail = $group && $group->layout_detail ? json_decode($group->layout_detail, true) : [];
+        $ctx = [
+            'sheetL' => $detail['canvas_l_cm'] ?? (($layout->flat_w_mm ?? 0) / 10),
+            'sheetW' => $detail['canvas_w_cm'] ?? (($layout->flat_h_mm ?? 0) / 10),
+            'planoL' => ($layout->plano_w_mm ?? $group->plano_w_mm ?? 0) / 10,
+            'planoW' => ($layout->plano_h_mm ?? $group->plano_h_mm ?? 0) / 10,
+            'sheetsPerPlano' => 1,
+            'printMachineId' => $detail['machine']['id'] ?? null,
+            'diecutMachineId' => $detail['diecut_machine_id'] ?? null,
+            'planoName' => $detail['plano_name'] ?? '',
+            'upCount' => (int) ($layout->up_count ?? $group->up_count ?? 0),
+            'orderQty' => (int) ceil($orderQty),
+        ];
+
+        $saved = $this->saved($part);
+        $overrides = collect(self::SECTIONS)
+            ->filter(fn ($k) => $saved[$k] !== null)
+            ->mapWithKeys(fn ($k) => [$k => $saved[$k]['rows']])
+            ->all();
+
+        $r = $this->generate($part, $iqp, $ctx, $overrides);
+
+        return [
+            'bop' => $r['override']['bop'] ?? $r['bop'],
+            'bom' => $r['override']['bom'] ?? $r['bom'],
+            'warnings' => array_merge(...array_values($r['warnings'])),
+            'layout' => $ctx['upCount'] ? $ctx : null,
+        ];
+    }
+
     // ===================== SIMPAN 2 ARAH =====================
 
     /**

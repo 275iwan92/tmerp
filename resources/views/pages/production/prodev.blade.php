@@ -181,7 +181,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             'canvas_l_cm' => $state['canvasL'] ?? null,
             'canvas_w_cm' => $state['canvasW'] ?? null,
             'gap_cm' => $state['gapCm'] ?? null,
+            'plano_name' => $state['spec']['planoName'] ?? null,
             'machine' => $state['machine'] ?? null,
+            // Mesin pond ikut disimpan: dipakai Work Order saat menurunkan BOP.
+            'diecut_machine_id' => $state['spec']['diecutMachineId'] ?? null,
             'objects' => $state['objects'] ?? [],
         ];
 

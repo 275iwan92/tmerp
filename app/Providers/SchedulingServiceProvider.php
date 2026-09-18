@@ -59,7 +59,7 @@ class SchedulingServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(WoGenerationService::class, function ($app) {
-            return new WoGenerationService($app->make(BackwardSchedulingService::class));
+            return new WoGenerationService($app->make(BackwardSchedulingService::class), $app->make(\App\Services\ProDev\SpecEngine::class));
         });
     }
 }

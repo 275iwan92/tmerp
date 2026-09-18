@@ -1492,6 +1492,17 @@ Inquiry Product (finishing, bahan, warna, isi/pack, artwork, qty)
 
 ---
 
+## 19. [MALAM] LANJUTAN ENGINE PRODEV & SUBKON (instruksi user 2026-09-18)
+
+| # | Pekerjaan | Status |
+|---|---|---|
+| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. **User minta dikerjakan malam** (pengingat dipasang 2026-09-18 20:00) | BELUM |
+| 19.2 | Engine takaran pemakaian bahan otomatis dari data pemakaian nyata 1 periode (bulan), officer tetap bisa override manual | BELUM |
+| 19.3 | Jalur BOM & BOP -> Work Order setelah Inquiry berharga -> CO CONFIRMED & APPROVED; officer PPIC memastikan final | BELUM |
+| 19.4 | Imagick + Ghostscript supaya artwork PDF/AI bisa dianalisa di server | BELUM |
+
+---
+
 ## 17. KOP DOKUMEN PRINT — NAMA COMPANY HARUS IKUT ADA/TIDAKNYA PPN
 (instruksi user 2026-09-11, diperjelas 2026-09-11, **BELUM DIEKSEKUSI** —
 user eksplisit minta audit+catat dulu, perbaikan menyusul)

@@ -23,6 +23,8 @@ class PrdWoOperation extends Model
     protected $fillable = [
         'wo_id', 'seq_no', 'process_name', 'resource_type', 'machine_id', 'qty',
         'spoilage_qty', 'spoilage_uom', 'waste_qty', 'waste_uom',
+        'tolerance_qty',
+        'tolerance_uom',
         'target_start', 'target_finish', 'actual_start', 'actual_finish',
         'task_status', 'qc_gate_required', 'rejection_reason', 'is_hot_job',
         'batched_with_operation_id', 'rate_band_value', 'critical_ratio',
