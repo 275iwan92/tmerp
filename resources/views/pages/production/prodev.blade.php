@@ -1378,16 +1378,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             // zoom/ukuran layar berbeda.
             function gatherState() {
                 const sc = S.sc0 || 1;
-                const cu = S.L * S.W ? (S.objs.length || selectedUp()) * S.p.l * S.p.w / (S.L * S.W) * 100 : 0;
+                const cu = S.L * S.W ? upValid() * S.p.l * S.p.w / (S.L * S.W) * 100 : 0;
                 const c = cut(S.pl);
-                const b = S.objs.map(obox);
+                const sah = S.objs.filter(inCanvas);
+                const b = (sah.length ? sah : S.objs).map(obox);
 
                 return {
                     partId: S.p.partId,
                     canvasL: S.L,
                     canvasW: S.W,
                     gapCm: S.g,
-                    upCount: S.objs.length || selectedUp(),
+                    upCount: upValid(),
                     method: S.touched ? 'MANUAL_NESTING' : 'AUTO_GRID',
                     planoId: S.pl[3] || null,
                     // Efisiensi yang disimpan = pemakaian material MENYELURUH
@@ -2042,7 +2043,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             function hasilPerPlano() {
                 if (!ok()) return 0;
                 const c = cut(S.pl);
-                return c.n * (S.objs.length || selectedUp());
+                return c.n * upValid();
             }
 
             // Susunan rapat dijalankan OTOMATIS saat job/mesin dibuka, bukan cuma
@@ -2211,7 +2212,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 return {
                     sheetL: S.L, sheetW: S.W, planoL: S.pl[1], planoW: S.pl[2], planoName: S.pl[0], sheetsPerPlano: c.n || 1,
                     printMachineId: S.m[4] || null, diecutMachineId: S.d ? (S.d[3] || null) : null,
-                    upCount: S.objs.length || selectedUp(),
+                    upCount: upValid(),
                     orderQty: S.conv === 'pcs' ? (+$('converterInput').value || 0) : (S.p.orderQty || 0),
                     artworkColors: S.p.artColors || null,
                 };
@@ -2853,6 +2854,10 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 clone.removeAttribute('id');
                 clone.style.background = '#fff';
                 clone.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+                S.objs.filter(o => !inCanvas(o)).forEach(o => {
+                    const el = clone.querySelector('[data-id="' + o.id + '"]');
+                    if (el) el.remove();
+                });
 
                 const sheet = clone.querySelector('#io-sheet');
                 if (sheet) {
@@ -3201,6 +3206,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
             }
             function selectedUp() { return S.auto ? best().ups : S.manualUp; }
 
+            // Object yang keluar canvas TIDAK sah (tidak bisa dicetak) -- tidak
+            // boleh ikut dihitung sebagai up, disimpan, atau dicetak di Master Card.
+            function inCanvas(o) {
+                const v = obox(o), sc = S.sc0 || 1, sw = S.L * sc, sh = S.W * sc;
+                return !(v.x < S.sx0 - .6 || v.y < S.sy0 - .6 || v.x + v.w > S.sx0 + sw + .6 || v.y + v.h > S.sy0 + sh + .6);
+            }
+
+            function upValid() {
+                return S.objs.length ? S.objs.filter(inCanvas).length : selectedUp();
+            }
+
             function obox(o) {
                 const a = o.r * Math.PI / 180, c = Math.abs(Math.cos(a)), s = Math.abs(Math.sin(a)),
                     W = o.w * c + o.h * s, H = o.w * s + o.h * c, cx = o.x + o.w / 2, cy = o.y + o.h / 2;
@@ -3516,8 +3532,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             // Mode Manual Up: jumlah object di canvas HARUS sama dengan target
             // officer. Hasil auto nesting yang cuma memuat sebagian tetap dipakai,
-            // sisanya ditaruh berderet persis di bawah canvas (tampak di luar,
-            // ditandai merah) supaya tinggal digeser ke tempat yang benar.
+            // sisanya ditaruh di ruang kosong SAMPING canvas yang terlihat di layar
+            // (dulu di bawah canvas -> jatuh di luar bidang gambar, tak terlihat),
+            // supaya tinggal digeser ke tempat yang benar.
             function ensureManualCount() {
                 if (S.auto || !S.sc0) return;
 
@@ -3530,17 +3547,34 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 }
 
                 const sc = S.sc0, w = S.p.l * sc, h = S.p.w * sc, gap = Math.max(4, S.g * sc);
-                const perRow = Math.max(1, Math.floor((S.L * sc) / (w + gap)));
-                let k = 0, seq = S.objs.length;
+                const right = S.sx0 + S.L * sc + gap;
+                // Kolom samping yang terlihat: [kiri kolom, lebar tersedia]
+                const cols = [[right, VB.w - right - 4], [4, S.sx0 - gap - 4]].filter(c => c[1] >= Math.min(w, h));
+                let seq = S.objs.length, ci = 0, cy = Math.max(4, S.sy0), colX = cols.length ? cols[0][0] : 0, k = 0;
 
                 while (S.objs.length < target) {
-                    S.objs.push({
-                        id: 'a' + (seq++),
-                        x: S.sx0 + (k % perRow) * (w + gap),
-                        y: S.sy0 + S.W * sc + gap + Math.floor(k / perRow) * (h + gap),
-                        w, h, r: 0, fx: 1, fy: 1,
-                    });
-                    k++;
+                    let o;
+                    if (ci < cols.length) {
+                        const [cx0, room] = cols[ci];
+                        const rot = w > room;                        // tidak muat melintang -> putar 90°
+                        const bw = rot ? h : w, bh = rot ? w : h;
+                        if (cy + bh > VB.h - 4 && cy > Math.max(4, S.sy0)) {
+                            // kolom penuh -> kolom berikutnya
+                            colX += bw + gap;
+                            if (colX + bw > cx0 + room) { ci++; colX = ci < cols.length ? cols[ci][0] : 0; }
+                            cy = Math.max(4, S.sy0);
+                            continue;
+                        }
+                        // kolom kiri diisi dari tepi canvas ke arah luar
+                        const left = ci === 1 ? cx0 + room - bw - (colX - cx0) : colX;
+                        o = { x: left + bw / 2 - w / 2, y: cy + bh / 2 - h / 2, r: rot ? 90 : 0 };
+                        cy += bh + gap;
+                    } else {
+                        o = { x: S.sx0 + (k % Math.max(1, Math.floor(S.L * sc / (w + gap)))) * (w + gap),
+                              y: S.sy0 + S.W * sc + gap + Math.floor(k / Math.max(1, Math.floor(S.L * sc / (w + gap)))) * (h + gap), r: 0 };
+                        k++;
+                    }
+                    S.objs.push({ id: 'a' + (seq++), x: o.x, y: o.y, w, h, r: o.r, fx: 1, fy: 1 });
                 }
             }
 
@@ -3777,10 +3811,17 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
             function calculator() {
                 if (!ok()) return;
-                const c = cut(S.pl), up = S.objs.length || selectedUp(), val = +$('converterInput').value || 0;
+                const c = cut(S.pl), up = upValid(), val = +$('converterInput').value || 0;
                 if (!c.n) {
+                    // Angka & gambar lama jangan dibiarkan tampil -- dulu preview
+                    // masih menunjukkan pembagian canvas SEBELUMNYA.
+                    const bi = bestPlanoIndex();
                     $('planoNote').className = 'io-notice bad';
-                    $('planoNote').textContent = 'Selected plano cannot yield this canvas size.';
+                    $('planoNote').innerHTML = 'Plano ' + esc(S.pl[0]) + ' tidak muat canvas ' + S.L + ' × ' + S.W + ' cm.'
+                        + (bi >= 0 ? ' Pilih <b>' + planos[bi][0] + '</b> (' + (cut(planos[bi]).util * 100).toFixed(1) + '% sheet yield) atau tekan ✦ Suggestion.' : '');
+                    $('mUp').textContent = up; $('mYield').textContent = 0; $('mPerPlano').textContent = 0; $('mWaste').textContent = '—';
+                    $('resultValue').textContent = '—';
+                    drawPlano(S.pl, c);
                     impo(c, up);
                     return;
                 }
@@ -3825,6 +3866,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         + t(cx + cw / 2, cy + ch / 2 - 4, 'CANVAS ' + (r * cols + col + 1), 'font-size="9" font-weight="700" fill="#063049"')
                         + t(cx + cw / 2, cy + ch / 2 + 8, fmtAngka(cl) + ' × ' + fmtAngka(cwid), 'font-size="8" fill="#063049"');
                 }
+                if (!c.n) s = t(x + W / 2, y + H / 2, 'Canvas ' + fmtAngka(S.L) + ' × ' + fmtAngka(S.W) + ' cm tidak muat', 'font-size="10" font-weight="700" fill="#c0392b"');
                 const trim = p[1] * p[2] - c.n * S.L * S.W;
                 $('cut').innerHTML = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" width="100%" style="max-width:' + VW + 'px">'
                     + '<defs><pattern id="io-trimHatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
