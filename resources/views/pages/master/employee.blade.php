@@ -862,7 +862,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         @php $emp = $this->currentEmployee; @endphp
         <div class="w-full px-5 py-4.5">
             <div class="flex items-center gap-2 flex-wrap bg-[#f8fafc] border border-[#e2e7ee] rounded-lg px-3.5 py-2.5 mb-3.5">
-                <button type="button" wire:click="showDirectory" class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white border border-[#c7cfda]">← Kembali</button>
+                <button type="button" wire:click="showDirectory" data-dirty-guard class="px-3 py-1.5 rounded-md text-xs font-semibold cursor-pointer bg-white border border-[#c7cfda]">← Kembali</button>
                 <span class="text-sm font-bold text-navy ml-1">{{ $editingId ? 'Edit Employee · '.$employee_code : 'Tambah Employee Baru' }}</span>
                 <span class="flex-1"></span>
                 @if ($emp)
@@ -1156,7 +1156,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 <div class="flex gap-2 justify-end mt-3.5">
-                    <button type="button" wire:click="showDirectory" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
+                    <button type="button" wire:click="showDirectory" data-dirty-guard class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                     <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Simpan Overview &amp; Job Alignment</button>
                 </div>
             </form>

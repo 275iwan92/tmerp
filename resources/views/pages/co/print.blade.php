@@ -51,7 +51,7 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
 
 <x-print.document :theme="['accent' => '#1f6f4a', 'accent-soft' => '#e9f6ef']" info="{{ $this->order->co_no }} · {{ $this->order->doc_status }}">
     <x-slot:toolbar>
-        <a href="{{ route('co.entry', ['order' => $this->orderId]) }}" class="sc">← Kembali ke CO</a>
+        <a href="{{ route('co.entry', ['order' => $this->orderId]) }}" class="sc" data-back>← Kembali ke CO</a>
     </x-slot:toolbar>
 
     <x-print.sheet>

@@ -61,7 +61,7 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
 
 <x-print.document :theme="['accent' => '#1f6f4a', 'accent-soft' => '#e9f6ef']" info="{{ $this->po->doc_no }} · {{ $this->po->status }}">
     <x-slot:toolbar>
-        <a href="{{ route('pur.po.entry', ['po' => $this->poId]) }}" class="sc">← Kembali ke PO</a>
+        <a href="{{ route('pur.po.entry', ['po' => $this->poId]) }}" class="sc" data-back>← Kembali ke PO</a>
     </x-slot:toolbar>
 
     <x-print.sheet>

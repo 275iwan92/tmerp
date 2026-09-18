@@ -43,7 +43,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->pr->doc_no }} · {{ $this->pr->status }}">
     <x-slot:toolbar>
-        <a href="{{ route('pur.pr.entry', ['pr' => $this->prId]) }}" class="sc">← Kembali ke PR</a>
+        <a href="{{ route('pur.pr.entry', ['pr' => $this->prId]) }}" class="sc" data-back>← Kembali ke PR</a>
     </x-slot:toolbar>
 
     <x-print.sheet>

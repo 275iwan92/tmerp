@@ -32,7 +32,7 @@ new #[Title('Label Rak — TELASIH MAKMUR ERP')] class extends Component
 
 <div class="label-page">
     <div class="no-print toolbar">
-        <a href="{{ route('master.warehouse.edit', ['warehouse' => $this->warehouseId]) }}" class="back">← Kembali ke Gudang</a>
+        <a href="{{ route('master.warehouse.edit', ['warehouse' => $this->warehouseId]) }}" class="back" data-back>← Kembali ke Gudang</a>
         <button type="button" onclick="window.print()" class="print-btn">🖨 Cetak</button>
     </div>
 

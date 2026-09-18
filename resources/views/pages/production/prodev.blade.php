@@ -1413,6 +1413,24 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 };
             }
 
+            // Kanvas & spec bukan field form biasa -> dirty-guard pakai adaptor:
+            // baseline per job diambil tepat sebelum interaksi user pertama
+            // (hasil auto-engine saat load tidak dihitung perubahan).
+            const savedState = {};
+            let persistOk = false;
+            const stateKey = () => JSON.stringify(gatherState());
+
+            function registerDirtyGuard() {
+                if (!window.tmerpDirty) return;
+                ['pointerdown', 'keydown'].forEach(t => document.addEventListener(t, (e) => {
+                    if (e.isTrusted && S.p.partId && savedState[S.p.partId] === undefined) savedState[S.p.partId] = stateKey();
+                }, true));
+                window.tmerpDirty.register({
+                    isDirty: () => !!S.p.partId && savedState[S.p.partId] !== undefined && savedState[S.p.partId] !== stateKey(),
+                    save: async () => { persistOk = false; await persist(false); return persistOk; },
+                });
+            }
+
             async function persist(confirm) {
                 const w = wire();
 
@@ -1440,6 +1458,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     S.p.reset = [];
                     SECS.forEach(k => { if (S.p.edit && S.p.edit[k]) { S.p.editSrc[k] = 'OVERRIDE'; S.p.saved = S.p.saved || {}; S.p.saved[k] = { source: 'OVERRIDE', rows: S.p.edit[k] }; } });
                     specKey = ''; specSoon();
+                    persistOk = true;
+                    savedState[S.p.partId] = stateKey();
 
                     if (!confirm) {
                         msg('Layout tersimpan sebagai DRAFT (' + res.mastercardCode + ', ' + res.knifeCode + ')'
@@ -2113,7 +2133,8 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                 $('product').value = String(products.indexOf(S.p));
                 $('sl').value = S.L; $('sw').value = S.W; $('gap').value = S.g; $('grain').value = S.p.grain;
                 $('back').href = DATA.backUrl || '#';
-                $('back').onclick = function (e) { if (window.navigation && navigation.canGoBack) { e.preventDefault(); history.back(); } };
+                $('back').setAttribute('data-back', '');
+                registerDirtyGuard();
                 askSidebarMini(true);
                 accInit();
                 fitViewBox();

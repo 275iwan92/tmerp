@@ -41,6 +41,11 @@ document.addEventListener('alpine:init', () => {
             // layar. Pesan dari origin lain diabaikan.
             window.addEventListener('message', (e) => {
                 if (e.origin !== window.location.origin) return;
+                if (e.data && e.data.tmerp === 'closeTab') {
+                    const frame = [...document.querySelectorAll('iframe[data-tab-code]')].find((f) => f.contentWindow === e.source);
+                    if (frame) this.closeTab(frame.dataset.tabCode);
+                    return;
+                }
                 if (!e.data || e.data.tmerp !== 'sidebar') return;
 
                 if (e.data.mini) {
@@ -140,15 +145,57 @@ document.addEventListener('alpine:init', () => {
             }
             if (! this.openTabs.some((t) => t.code === code)) {
                 this.openTabs.push(it);
+                this.activate(code);
+                return;
             }
             this.activate(code);
+            this.resetTabToMenu(it);
+        },
+
+        // Klik menu yang tab-nya sudah terbuka = kembali ke layar awal menu itu
+        // (mis. grid ProDev), tapi form yang belum disimpan ditanya dulu
+        // (dialog Yes/No/Cancel dari resources/js/dirty-guard.js di dalam iframe).
+        // Grid+form satu URL (Stock In, Cash Bank, dst) dikenali dari tombol Save
+        // yang sedang tampil -> tetap di-reload supaya kembali ke grid.
+        async resetTabToMenu(it) {
+            const frame = this.tabFrame(it.code);
+            const win = frame?.contentWindow;
+            if (! it.url || ! win) return;
+            let here;
+            try { here = win.location.pathname + win.location.search; } catch { return; }
+            const target = new URL(it.url, window.location.origin);
+            const home = frame.dataset.home || (target.pathname + target.search);
+            const onForm = !! win.tmerpDirty?.onForm();
+            if (here === home && ! onForm) return;
+            if (! (await this.confirmTabLeave(it.code))) return;
+            win.location.assign(target.href);
+        },
+
+        tabFrame(code) {
+            return [...document.querySelectorAll('iframe[data-tab-code]')].find((f) => f.dataset.tabCode === code) || null;
+        },
+
+        tabWindow(code) {
+            return this.tabFrame(code)?.contentWindow || null;
+        },
+
+        async confirmTabLeave(code) {
+            try {
+                const guard = this.tabWindow(code)?.tmerpDirty;
+                if (! guard || ! guard.isActive()) return true;
+                this.activate(code);
+                return await guard.confirmLeave();
+            } catch {
+                return true;
+            }
         },
 
         activate(code) {
             this.activeTabCode = code;
         },
 
-        closeTab(code) {
+        async closeTab(code) {
+            if (! (await this.confirmTabLeave(code))) return;
             const idx = this.openTabs.findIndex((t) => t.code === code);
             if (idx === -1) return;
             const wasActive = this.activeTabCode === code;

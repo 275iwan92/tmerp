@@ -83,8 +83,7 @@
         class="text-[10.5px] font-semibold text-white/35 bg-white/5 px-2.5 py-1.5 rounded-md cursor-not-allowed shrink-0">⬇ Export Paths</button>
 
     @if ($backUrl)
-        <a href="{{ $backUrl }}" title="{{ $backLabel }}"
-            onclick="if (window.navigation && navigation.canGoBack) { event.preventDefault(); history.back(); }"
+        <a href="{{ $backUrl }}" title="{{ $backLabel }}" data-back
             class="flex items-center gap-1.5 text-[10.5px] font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-md no-underline shrink-0">
             ← {{ $backLabel }}
         </a>

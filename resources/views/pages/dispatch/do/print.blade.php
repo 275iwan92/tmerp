@@ -59,7 +59,7 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->do->do_no }} · {{ $this->do->status }}">
     <x-slot:toolbar>
-        <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc">← Kembali ke DO</a>
+        <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc" data-back>← Kembali ke DO</a>
     </x-slot:toolbar>
 
     <x-print.sheet>

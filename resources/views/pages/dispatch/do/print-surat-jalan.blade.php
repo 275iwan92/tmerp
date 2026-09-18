@@ -64,7 +64,7 @@ new #[Title('Surat Jalan — TELASIH MAKMUR ERP')] class extends Component
 
 <x-print.document :theme="['accent' => '#0d5c46', 'accent-soft' => '#eaf3f0']" info="{{ $this->do->do_no }} · Surat Jalan">
     <x-slot:toolbar>
-        <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc">← Kembali ke DO</a>
+        <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc" data-back>← Kembali ke DO</a>
     </x-slot:toolbar>
 
     <x-print.sheet>

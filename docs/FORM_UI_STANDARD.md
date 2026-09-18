@@ -15,6 +15,29 @@ di atas.
 
 ## 1. Tombol Back — pill navy + lingkaran panah putih
 
+> **UPDATE 2026-09-18 (instruksi user, LOCKED): Back = kembali ke layar
+> SEBELUMNYA, bukan route hardcode.** Pakai komponen
+> `resources/views/components/back-button.blade.php`:
+> `x-back-button :fallback="route('grid.modul')"` (+ `title`/`class` opsional).
+> Klik ditangani `resources/js/dirty-guard.js` via atribut `data-back`: tanya
+> simpan kalau form berubah → kembali ke entri riwayat sebelumnya di tab itu
+> (lewati URL sama & entri `/new|/create`) → `fallback` hanya bila tak ada
+> riwayat (fallback `/menu` di tab shell = tutup tab). Link teks "← Kembali ke …"
+> di halaman cetak cukup tambah atribut `data-back`. Tombol Back yang
+> `wire:click` toggle grid/form di halaman yang sama (`backToGrid`, `showGrid`)
+> tetap boleh, WAJIB tambah atribut `data-dirty-guard`.
+>
+> **Dirty-form guard (2026-09-18):** meninggalkan form yang berubah (klik menu
+> shell, tutup tab ×, Back, link lain) → dialog "Simpan perubahan?"
+> **Yes / No / Cancel**. Yes = klik tombol Save layar itu (dikenali dari
+> `wire:click="save|saveDraft|saveAll|simpan"` atau teks "Save/Simpan"; tandai
+> manual dengan `data-dirty-save` kalau beda), gagal validasi → tetap di form.
+> Field pencarian/filter tidak dihitung (atau tandai `data-dirty-ignore`).
+> Layar kanvas/JS murni daftar adaptor: `window.tmerpDirty.register({ isDirty, save })`
+> (contoh: `production/prodev.blade.php`). Klik menu yang tab-nya sudah terbuka
+> = tab kembali ke layar awal menu itu (grid), setelah lewat guard ini.
+> Markup HTML di bawah = isi komponen tsb (acuan visual), jangan disalin manual lagi.
+
 > **UPDATE 2026-09-09 (instruksi user, lihat memory `project_back_button_icon_upgrade`):**
 > ikon panah di lingkaran putih diganti dari karakter Unicode polos `←` ke
 > ikon Font Awesome `fa-solid fa-arrow-left` — user menilai karakter `←`

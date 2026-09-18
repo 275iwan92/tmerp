@@ -918,7 +918,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             </div>
             <template x-for="t in openTabs" :key="'pane-'+t.code">
                 <div class="pane" :class="{ active: activeTabCode === t.code, framed: !!t.url }">
-                    <template x-if="t.url"><iframe :src="t.url" :title="t.label"></iframe></template>
+                    <template x-if="t.url"><iframe :src="t.url" :title="t.label" :data-tab-code="t.code" x-on:load="try { $el.dataset.home ??= $el.contentWindow.location.pathname + $el.contentWindow.location.search } catch (e) {}"></iframe></template>
                     <template x-if="!t.url"><div x-html="placeholderHtml(t)"></div></template>
                 </div>
             </template>

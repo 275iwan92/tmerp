@@ -451,7 +451,7 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                     @if ($editingId)
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($status) }}">{{ $status }}</span>
                     @endif
-                    <button type="button" wire:click="backToGrid" title="{{ Translator::t('inv_back_to_list_title', 'Kembali ke Daftar') }}"
+                    <button type="button" wire:click="backToGrid" data-dirty-guard title="{{ Translator::t('inv_back_to_list_title', 'Kembali ke Daftar') }}"
                         class="ml-auto inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full cursor-pointer hover:brightness-110">
                         <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
                         <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>

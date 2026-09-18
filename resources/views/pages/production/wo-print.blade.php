@@ -75,7 +75,7 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->wo->wo_no }} · {{ $this->wo->wo_status }}">
     <x-slot:toolbar>
-        <a href="{{ route('production.wo.entry', ['wo' => $this->woId]) }}" class="sc">← Kembali ke WO Detail</a>
+        <a href="{{ route('production.wo.entry', ['wo' => $this->woId]) }}" class="sc" data-back>← Kembali ke WO Detail</a>
     </x-slot:toolbar>
 
     <x-print.sheet>

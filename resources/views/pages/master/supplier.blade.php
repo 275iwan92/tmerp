@@ -777,7 +777,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
                     <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Simpan</button>
-                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
                 </div>
             </form>
         @endif
@@ -867,7 +867,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </div>
             <div class="flex gap-2 mt-3">
-                <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Kembali ke Daftar</button>
+                <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Kembali ke Daftar</button>
                 <button type="button" wire:click="editSupplier" class="px-4 py-2 rounded text-xs font-semibold bg-[#2f6fed] text-white border border-[#2f6fed] cursor-pointer">Edit Supplier Ini</button>
                 <button type="button" wire:click="toggleBlacklist" wire:confirm="Ubah status blokir supplier ini?" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">{{ $d->is_blacklisted ? '✅ Buka Blokir' : '🚫 Blokir' }}</button>
                 <button type="button" wire:click="deleteSupplier" wire:confirm="Hapus supplier ini? Kalau masih dipakai transaksi, akan dinonaktifkan saja." class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#f0c4c4] text-[#c0392b] cursor-pointer">🗑 Hapus</button>

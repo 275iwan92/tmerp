@@ -269,7 +269,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
 
                 <div class="flex gap-2 pt-3.5 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
                     <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
                 </div>
             </form>
         @endif
@@ -298,7 +298,7 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
                     <div class="text-[13px] text-[#334] leading-relaxed whitespace-pre-line">{{ $content ?: '—' }}</div>
                 </div>
                 <div class="pt-2 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2] rounded-b-md">
-                    <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Kembali</button>
+                    <button type="button" wire:click="showGrid" data-dirty-guard class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">← Kembali</button>
                 </div>
             </div>
         @endif

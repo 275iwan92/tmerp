@@ -62,7 +62,7 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
 
 <x-print.document :theme="['accent' => '#7c5cd6', 'accent-soft' => '#f1ecfc']" info="{{ $this->pq->doc_no }} · {{ $this->pq->status }}">
     <x-slot:toolbar>
-        <a href="{{ route('pur.pq.entry', ['pq' => $this->pqId]) }}" class="sc">← Kembali ke PQ</a>
+        <a href="{{ route('pur.pq.entry', ['pq' => $this->pqId]) }}" class="sc" data-back>← Kembali ke PQ</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
