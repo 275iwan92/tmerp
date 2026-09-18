@@ -504,10 +504,15 @@ bertentangan (§II diturunkan dari ringkasan Gemini, §VII dari data asli).
 | #1/#3 NS40 | DC+SHEET | duplex 350 (314.000), DC 5,30, plano 70×100, cut 2, isi 1, uk cetak 70×41, cetak 900.000/rim, plong 250, lem 375, kupas 30, qc 100, kirim 200, J36 1.360, faktor_sh 0,15, lam biasa 0,165, film 60 ff 0,25, plate 4 warna, pisau 0,25×900.000, qty 1.000 | kertas 1.608,11 · proses 3.645,50 · coating 473,55 · tooling 595,76 · **TOTAL 6.322,92** |
 | #51 RAJA BAKERY (= mockup #1) | DC+SF | duplex 250 (255.000), DC 5,30, plano 120×104, cut 4, isi 2, uk cetak 60×52, SF E/F 2.600, faktor_sf 0,065, pakai uk SF 59×51, UV 0,065, film 60 ff 0,05, pisau 0,05×600.000, qty 5.000 | kertas 582,08 · proses 827,29 · coat 101,40 · SF EF 405,60 · lam 97,79 · tooling 78,09 · **TOTAL 1.487,46** |
 | #52 DUS | DC | duplex 350, override 5,60, plano 70×100, cut 1, isi 3, uk cetak 62×100, film 45 ff 0,5, pisau 0,25×1.000.000, qty 10.000 | kertas 1.123,12 · proses 145 · tooling 67,98 · **TOTAL 1.336,10** |
-| #53 COCO TOKYO | SHEET | 427×220×172 lidah 35, K200/M125/K200 B/F, UJK, trim 155, isi/trim 3, surcharge −5, print 300, diecut 350, qc 100, kirim 100, qty 1.800.000 | sheet 23.949,58 · proses 1.150 · **TOTAL 25.099,58** |
+| ~~#53 COCO TOKYO~~ | SHEET | **TIDAK dipakai sbg acuan**: surcharge diisi −5 (seharusnya −0,05) → faktor (1−(−5)) = 6 → HPP 25.099,58 salah input. Guard `OB_DISCOUNT_RM_MIN/MAX` (±0,99) kini menolak input spt ini. | — |
 
-### VII.5 Bug engine V2 (`CostingEngine.php`) yang terungkap — BELUM diperbaiki
-1. `F_dc = 1 + dcPct/100` → harus `1 + dcPct` → **kertas duplex 6× terlalu murah** di semua costing V2.
-2. Luas cetak = luas plano (belum ada kolom Ukuran Cetak P/L) → coating & film **×cut terlalu mahal**.
-3. DC+SF/DC+SHEET: J36 dihitung dari geometri sheet (legacy = input Rp/PC), proses tidak lengkap, coating asli tidak diloop (§V.3).
-4. Tooling dibagi qty tier ✓ (sesuai), tapi KNIFE_FACTOR_DEFAULT 0,25 belum jadi default.
+Kasus #1/#51/#52 dikunci di `tests/Feature/CostingLegacyParityTest.php` (lulus persis, delta 0,0005).
+
+### VII.5 Bug engine V2 — **SUDAH DIPERBAIKI 2026-09-18** (commit `9293699`)
+1. `F_dc = 1 + dcPct/100` → `1 + dcPct` (kertas duplex dulu 6× terlalu murah).
+2. Luas cetak = luas plano → kolom baru `i_uk_cetak_p_cm/l_cm` (fallback plano ÷ potong, flag `UK_FALLBACK`).
+3. Ongkos cetak/rim dulu tidak dibagi 500 (500× terlalu mahal).
+4. KRAFT/ivory per-kg: `harga_kg × gsm/1000 × luas_plano/10000 ÷ (potong×isi)` (KRAFT dulu 500× terlalu mahal & tanpa tooling).
+5. DC+SF/DC+SHEET: J36 = input Rp/PC, J37 SF EF, J38 faktor Rp/cm² (+ pakai ukuran SF), hotprint/kupas/qc/kirim/packing, coating asli diloop.
+6. `KNIFE_FACTOR_DEFAULT` 0,25 jadi default bila faktor pisau 0.
+Master tm2mst diganti data legacy (migration `2026_09_18_000009`): 28 gramatur, coating index, 107 sheet rate (+`mat_subtype`), `mat_film_rate`, `mat_join_type`, `mat_packing_type`, `mat_sheet_supplier`, tier RCA, pisau 900rb/1,5jt. Lebar mesin sheet tetap konstanta `SHEET_MACHINE_WIDTH_CM` = 180 (keputusan user, bisa diubah).

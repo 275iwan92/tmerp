@@ -64,5 +64,5 @@ Grid **berdiri sendiri** (bukan turunan/filter dari Grid Integrated) untuk dokum
 - `docStatusBadgeClass()`, `#[Computed] rows()`, `statTotal/statDraft/statCalculated/statReversed()`.
 
 ### Catatan
-- `reversed_at`/`reversed_by` (kolom baru `iqp_costing`) baru terisi kalau tombol Reverse di form sudah benar-benar jalan — **saat ini masih stub** (`reverseToIntegrated()` cuma flash pesan, lihat `screen_procost_form.md` & `procost_formula_library.md` §V-VI), jadi kolom "Reverse?" akan selalu `—` sampai fitur itu diselesaikan.
+- Klik 2x buka form Instant `pages::inquiry.costing-instant` (lihat `screen_procost_instant_form.md`). Kolom "Reverse?" terisi setelah tombol Reverse dijalankan (dokumen lalu pindah ke mode Integrated & grid Integrated).
 - Tidak ada physical FK `customer_id` (lintas-DB ke `mst.cust_customer`) — pola logical FK yang sama dipakai di seluruh proyek (CLAUDE.md §2).
