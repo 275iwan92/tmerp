@@ -104,7 +104,7 @@ class CostingExcelParityTest extends TestCase
         $this->assertEqualsWithDelta(2094.8848, (float) $tier->c_after_ppn_pc, 0.0005);        // K50
     }
 
-    /** "R3 KRAFT POLOS 140X100X70MM 2025-08-23 PPN" Bag atas. Excel pakai margin 12% (NON PPN) & 15% (PPN). */
+    /** "R3 KRAFT POLOS 140X100X70MM 2025-08-23 PPN" Bag atas: margin NON PPN 12% (G45) & PPN 15% (J47) dlm 1 dokumen. */
     public function test_kraft_per_kg_both_paths(): void
     {
         $kraft = [['KRAFT', [
@@ -115,11 +115,12 @@ class CostingExcelParityTest extends TestCase
             'i_film_rate' => 55, 'i_film_faktor' => 0.1, 'i_pisau_faktor' => 0.1, 'i_pisau_rate_rp' => 1500000,
         ]]];
 
-        [, $ppn, [$p]] = $this->calc(100000, ['tolerance_pct' => 2, 'margin_pct' => 15], 'PPN', 11, $kraft);
+        [, $ppn, [$p]] = $this->calc(100000, ['tolerance_pct' => 2, 'margin_pct' => 12, 'margin_ppn_pct' => 15], 'PPN', 11, $kraft);
         $this->assertEqualsWithDelta(162.8309375, (float) $p->c_paper_cost_pc, 0.0005);  // J3
         $this->assertEqualsWithDelta(187.3523, (float) $ppn->c_hpp_pc, 0.0005);           // J43
         $this->assertEqualsWithDelta(191.0994, (float) $ppn->c_after_tolerance_pc, 0.0005); // J45
-        $this->assertEqualsWithDelta(207.4077, (float) $ppn->price_per_pcs, 0.0005);       // K48
+        $this->assertEqualsWithDelta(217.1584, (float) $ppn->c_after_margin_pc, 0.0005);   // G46 (NON PPN, margin 12)
+        $this->assertEqualsWithDelta(207.4077, (float) $ppn->price_per_pcs, 0.0005);       // K48 (margin PPN 15)
         $this->assertEqualsWithDelta(230.2226, (float) $ppn->c_after_ppn_pc, 0.0005);      // K50
 
         [, $non] = $this->calc(100000, ['tolerance_pct' => 2, 'margin_pct' => 12], 'NON_PPN', 11, $kraft);
@@ -155,10 +156,13 @@ class CostingExcelParityTest extends TestCase
         $this->assertEqualsWithDelta(1184.1656, (float) $tier->c_hpp_pc, 0.0005);           // tutup J39
         $this->assertEqualsWithDelta(1219.6905, (float) $tier->c_after_tolerance_pc, 0.0005); // tutup J41
 
-        // Set badan+tutup: HPP = J43 badan + J39 tutup. Harga set Excel (G46 = 3339,9085) memakai
-        // toleransi beda per sheet (4% & 3%) -- engine 1 toleransi per tier, jadi hanya HPP yg dicek.
-        [, $tier] = $this->calc(20000, ['tolerance_pct' => 4, 'margin_pct' => 15], 'NON_PPN', 11, [$badan, $tutup]);
+        // Set badan+tutup dgn toleransi per part (badan 4%, tutup 3%): badan J46 = J45 + tutup!J41, G46 = ÷(1−15%).
+        $badan[1]['tolerance_pct'] = 4;
+        $tutup[1]['tolerance_pct'] = 3;
+        [, $tier] = $this->calc(20000, ['tolerance_pct' => 0, 'margin_pct' => 15], 'NON_PPN', 11, [$badan, $tutup]);
         $this->assertEqualsWithDelta(1556.9535 + 1184.1656, (float) $tier->c_hpp_pc, 0.001);
+        $this->assertEqualsWithDelta(2838.9222, (float) $tier->c_after_tolerance_pc, 0.0005); // badan J46
+        $this->assertEqualsWithDelta(3339.9085, (float) $tier->c_after_margin_pc, 0.0005);    // badan G46
     }
 
     /** "OB COCO TOKYO ... 2026-07-13": kolom D (EXCL PPN) -- sheet ÷1,1, toleransi ÷(1−t) atas DPP. */
@@ -169,6 +173,7 @@ class CostingExcelParityTest extends TestCase
         [, $tier, [$p]] = $this->calc(1800, ['tolerance_pct' => 1, 'margin_pct' => 15], 'PPN', 11, [['SHEET_DIGITAL', [
             'i_dim_panjang_mm' => 427, 'i_dim_lebar_mm' => 220, 'i_dim_tinggi_mm' => 172, 'i_lidah_lem_mm' => 35,
             'flute_type' => 'B/F', 'sheet_rate_id' => $rate->id_sheet_rate, 'supplier_sheet_code' => 'UJK', 'i_isi_per_lb_kerja' => 1,
+            'i_discount_rm' => -0.05, // Excel B17; tier legacy UJK utk K200/M125/K200 = default -10%
             'i_ongkos_print_pc' => 100, 'i_ongkos_diecut_pc' => 350, 'i_ongkos_qc_pack_pc' => 100, 'i_ongkos_kirim_pc' => 100,
         ]]]);
 
@@ -177,7 +182,36 @@ class CostingExcelParityTest extends TestCase
         $this->assertEqualsWithDelta(5093.3285, (float) $tier->c_after_margin_pc, 0.0005);    // C32 (NON PPN)
         $this->assertEqualsWithDelta(4711.3228, (float) $tier->price_per_pcs, 0.0005);        // D32
         $this->assertEqualsWithDelta(5229.5683, (float) $tier->c_after_ppn_pc, 0.0005);       // D34
-        // Info supplier RCA pakai lebar mesin 220 (Excel K13 isi/trim = 5, K14 lebar trim = 205).
-        $this->assertStringContainsString('RCA', (string) $p->c_sheet_compare_info);
+        // Info supplier RCA: lebar mesin 215 & gap 5 (legacy m_sheet_supplier) -> isi/trim 5, trim 210,
+        // RM 482,76 -> tier RCA default 300-499 = 20%: 210×134,1/10000×6088/5×0,8.
+        $this->assertStringContainsString('RCA: Rp '.number_format(210 * 134.1 / 10000 * 6088 / 5 * 0.8, 2).' (disc 20.0%', (string) $p->c_sheet_compare_info);
+    }
+
+    public function test_legacy_sheet_discount_tier_precedence(): void
+    {
+        $id = fn (string $name) => (int) MatSheetRate::where('substance_name', $name)->where('flute_type', 'B/F')->value('id_sheet_rate');
+        $lookup = \App\Models\Master\MatSheetDiscountTier::class;
+
+        $this->assertEqualsWithDelta(-0.05, $lookup::lookup('UJK', 100, $id('K125/M125/M125'), 'SHEET'), 1e-9);   // K125 aktif Apr2026
+        $this->assertEqualsWithDelta(-0.10, $lookup::lookup('UJK', 100, $id('K200/M125/K200'), 'SHEET'), 1e-9);   // UJK default
+        $this->assertEqualsWithDelta(0.225, $lookup::lookup('RCA', 5000, $id('WK150/M125/M125'), 'SHEET'), 1e-9);  // WK150 flat
+        $this->assertEqualsWithDelta(0.25, $lookup::lookup('RCA', 600, $id('K200/M125/K200'), 'SHEET'), 1e-9);     // RCA default 500-999
+        $this->assertEqualsWithDelta(0.20, $lookup::lookup('RCA', 299.995, null, 'SHEET'), 1e-9);                  // rm_to 299.99 inklusif
+    }
+
+    public function test_rca_manual_discount_must_be_between_20_and_26_percent(): void
+    {
+        $rate = MatSheetRate::where('substance_name', '200 KL / 125 / 200 KL')->where('flute_type', 'B/F')->firstOrFail();
+        $part = fn (float $disc) => [['SHEET_DIGITAL', [
+            'i_dim_panjang_mm' => 427, 'i_dim_lebar_mm' => 220, 'i_dim_tinggi_mm' => 172, 'i_lidah_lem_mm' => 35,
+            'flute_type' => 'B/F', 'sheet_rate_id' => $rate->id_sheet_rate, 'supplier_sheet_code' => 'RCA', 'i_isi_per_lb_kerja' => 1,
+            'i_discount_rm' => $disc,
+        ]]];
+
+        [, , [$p]] = $this->calc(1800, ['tolerance_pct' => 1, 'margin_pct' => 15], 'NON_PPN', 11, $part(0.225));
+        $this->assertEqualsWithDelta(0.225, (float) $p->c_discount_rm, 1e-9);
+
+        $this->expectExceptionMessage('di luar batas (0.2 s/d 0.26)');
+        $this->calc(1800, ['tolerance_pct' => 1, 'margin_pct' => 15], 'NON_PPN', 11, $part(0.30));
     }
 }

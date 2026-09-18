@@ -24,6 +24,7 @@ class IqpCostingPart extends Model
         'part_name',
         'part_type_code',
         'qty_per_set',
+        'tolerance_pct',
         'i_dim_panjang_mm',
         'i_dim_lebar_mm',
         'i_dim_tinggi_mm',
@@ -114,6 +115,7 @@ class IqpCostingPart extends Model
 
     protected $casts = [
         'qty_per_set' => 'decimal:2',
+        'tolerance_pct' => 'decimal:2',
         'i_dim_panjang_mm' => 'decimal:2',
         'i_dim_lebar_mm' => 'decimal:2',
         'i_dim_tinggi_mm' => 'decimal:2',

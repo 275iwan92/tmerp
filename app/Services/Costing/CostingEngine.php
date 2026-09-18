@@ -76,8 +76,8 @@ class CostingEngine
         $rim = SysConstant::number('RIM_SHEETS', 500);
         $planoRef = SysConstant::number('PLANO_REF_AREA', 8611);
 
-        $cut = $this->positive($part->i_cut_per_plano);
-        $isi = $this->positive($part->i_isi_per_lb);
+        $cut = $this->positive($part->i_cut_per_plano, SysConstant::number('CUT_PER_PLANO_DEFAULT', 1));
+        $isi = $this->positive($part->i_isi_per_lb, SysConstant::number('PCS_PER_LB_DEFAULT', 1));
         $flags = [];
 
         $areaPlano = (float) $part->i_panjang_plano_cm * (float) $part->i_lebar_plano_cm;
@@ -163,7 +163,8 @@ class CostingEngine
         $plate = $plateRate * (int) $part->i_jumlah_warna;
         $pisauRate = $part->i_pisau_rate_rp !== null
             ? (float) $part->i_pisau_rate_rp
-            : (float) (ProdPartType::where('part_type_code', $type)->value('pisau_rate_rp') ?? 0);
+            : (float) (ProdPartType::where('part_type_code', $type)->value('pisau_rate_rp')
+                ?? SysConstant::number($type === 'KRAFT' ? 'KNIFE_RATE_KRAFT' : 'KNIFE_RATE_DC', 0));
         $pisauFaktor = (float) $part->i_pisau_faktor > 0 ? (float) $part->i_pisau_faktor : SysConstant::number('KNIFE_FACTOR_DEFAULT', 0.25);
         $knife = $pisauFaktor * $pisauRate;
         $toolingOrder = $film + $plate + $knife;
@@ -243,12 +244,13 @@ class CostingEngine
         $part->save();
     }
 
-    private function guardDiscount(float $disc): float
+    // Batas per supplier SHEET_DISCOUNT_MIN/MAX_<kode> (RCA 0,20-0,26 keputusan user), fallback OB_DISCOUNT_RM_MIN/MAX legacy.
+    private function guardDiscount(float $disc, string $supplier): float
     {
-        $min = SysConstant::number('OB_DISCOUNT_RM_MIN', -0.99);
-        $max = SysConstant::number('OB_DISCOUNT_RM_MAX', 0.99);
-        if ($disc < $min || $disc > $max) {
-            throw new \RuntimeException("Discount/Surcharge {$disc} di luar batas ({$min} s/d {$max}). Isi pecahan, mis. -0.05 = surcharge 5%.");
+        $min = SysConstant::number('SHEET_DISCOUNT_MIN_'.$supplier, SysConstant::number('OB_DISCOUNT_RM_MIN', -0.99));
+        $max = SysConstant::number('SHEET_DISCOUNT_MAX_'.$supplier, SysConstant::number('OB_DISCOUNT_RM_MAX', 0.99));
+        if ($disc < $min - 1e-9 || $disc > $max + 1e-9) {
+            throw new \RuntimeException("Discount/Surcharge {$supplier} {$disc} di luar batas ({$min} s/d {$max}). Isi pecahan, mis. -0.05 = surcharge 5%, 0.225 = diskon 22,5%.");
         }
 
         return $disc;
@@ -266,8 +268,8 @@ class CostingEngine
 
         $disc = ($part->i_discount_rm !== null && $supplier === ($part->supplier_sheet_code ?: 'UJK'))
             ? (float) $part->i_discount_rm
-            : (MatSheetDiscountTier::lookup($supplier, $rm) ?? 0.0);
-        $disc = $this->guardDiscount($disc);
+            : (MatSheetDiscountTier::lookup($supplier, $rm, $part->sheet_rate_id, $part->part_type_code) ?? 0.0);
+        $disc = $this->guardDiscount($disc, $supplier);
 
         $index = (float) (MatSheetRate::whereKey($part->sheet_rate_id)->value('index_substance') ?? 0);
 
@@ -292,7 +294,7 @@ class CostingEngine
         $supplier ??= $part->supplier_sheet_code ?: 'UJK';
         $default = SysConstant::number('SHEET_MACHINE_WIDTH_CM', 180);
         $machineWidth = SysConstant::number('SHEET_MACHINE_WIDTH_CM_'.$supplier, $default);
-        $gap = SysConstant::number('SHEET_TRIM_GAP_CM', 2);
+        $gap = SysConstant::number('SHEET_TRIM_GAP_CM_'.$supplier, SysConstant::number('SHEET_TRIM_GAP_CM', 2));
 
         $allowance = $part->flute_type ? MatFluteAllowance::where('flute_type', $part->flute_type)->where('activate', true)->first() : null;
         if (! $allowance) {
@@ -315,12 +317,12 @@ class CostingEngine
         if ($part->i_discount_rm !== null && $supplier === ($part->supplier_sheet_code ?: 'UJK')) {
             $disc = (float) $part->i_discount_rm;
         } else {
-            $disc = MatSheetDiscountTier::lookup($supplier, $rm);
+            $disc = MatSheetDiscountTier::lookup($supplier, $rm, $part->sheet_rate_id, $part->part_type_code);
             if ($disc === null) {
-                throw new \RuntimeException("Running meter {$rm} di bawah tier diskon minimum (KURANG) untuk supplier '{$supplier}' — volume order belum cukup, pertimbangkan part_type lain.");
+                throw new \RuntimeException("Tidak ada tier diskon sheet '{$supplier}' utk running meter {$rm} — isi Discount/Surcharge manual.");
             }
         }
-        $disc = $this->guardDiscount((float) $disc);
+        $disc = $this->guardDiscount((float) $disc, $supplier);
 
         $sheetRate = $part->sheet_rate_id ? MatSheetRate::find($part->sheet_rate_id) : null;
         if (! $sheetRate) {
@@ -394,19 +396,21 @@ class CostingEngine
     }
 
     /**
-     * Ladder harga = Excel HPP asli (procost_formula_library.md §VIII), dihitung
-     * per part krn aturan toleransinya beda per tipe:
+     * Ladder harga = Excel HPP asli (procost_formula_library.md §VIII/§IX), dihitung
+     * per part: toleransi boleh beda per part (iqp_costing_part.tolerance_pct, NULL =
+     * toleransi tier) & aturannya beda per tipe:
      *  - DC/DC+SF/DC+SHEET/KRAFT: toleransi ADITIF ×(1+t) (J44=J43×B44, = legacy hpp #5/#6/#8).
      *  - SHEET/SHEET_DIGITAL: toleransi ÷(1−t) (OB COCO C31/D31, = legacy hpp #9).
      * Jalur INCLUDE PPN (kolom K/D Excel): bahan beli ber-PPN (kertas, sheet,
      * laminasi sheet, SF EF) ÷ PPN_INPUT_MATERIAL_DIVISOR -> DPP; toleransi DC tetap
      * dari HPP kotor (K44=J44, quirk Excel yg juga dipakai legacy). Harga akhir =
-     * DPP ÷(1−m) ×(1+PPN). Jalur EXCLUDE (NON_PPN, kolom J/C) = HPP kotor ÷(1−m).
+     * DPP ÷(1−m_ppn) ×(1+PPN). Jalur NON PPN (kolom J/C) = HPP kotor ÷(1−m).
+     * Margin NON PPN (margin_pct, Excel G45) & PPN (margin_ppn_pct, J47) terpisah.
      */
     protected function calculateTier(IqpCosting $costing, \App\Models\Sdi\IqpCostingPriceTier $tier): void
     {
         $qty = max((float) $tier->qty_pcs, 0.0001);
-        $t = min((float) $tier->tolerance_pct, 99.9999) / 100;
+        $tierTol = (float) $tier->tolerance_pct;
         $withPpn = $costing->ppn_mode !== 'NON_PPN';
         $credit = 1 - 1 / $this->positive(SysConstant::number('PPN_INPUT_MATERIAL_DIVISOR', 1.1));
 
@@ -418,6 +422,7 @@ class CostingEngine
             $inputMat = ((float) $part->c_paper_cost_pc + (float) $part->c_sheet_cost_pc
                 + (float) $part->c_lam_flat_cost_pc + (float) $part->c_sf_ef_cost_pc) * $perSet;
             $net = $withPpn ? $gross - $inputMat * $credit : $gross;
+            $t = min($part->tolerance_pct !== null ? (float) $part->tolerance_pct : $tierTol, 99.9999) / 100;
 
             if (in_array($part->part_type_code, ['SHEET', 'SHEET_DIGITAL'], true)) {
                 $afterTolGross += $gross / (1 - $t);
@@ -440,8 +445,9 @@ class CostingEngine
         };
 
         $m = min((float) $tier->margin_pct, 99.9999) / 100;
+        $mPpn = min($tier->margin_ppn_pct !== null ? (float) $tier->margin_ppn_pct : (float) $tier->margin_pct, 99.9999) / 100;
         $afterMarginGross = $round($afterTolGross) / (1 - $m);
-        $dpp = $withPpn ? $round($afterTolNet) / (1 - $m) : $afterMarginGross;
+        $dpp = $withPpn ? $round($afterTolNet) / (1 - $mPpn) : $afterMarginGross;
 
         $tier->fill([
             'c_tooling_pc' => $toolingPc,

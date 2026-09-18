@@ -552,17 +552,57 @@ Legacy `hpp` #5/#6 (FS GTZ) & #8 (DUS WARUNG) & #9 (COCO) semuanya cocok ke ladd
 | IC CHINA · tutup | DC | idem, 2 warna, cetak 350.000/rim, film rate 30, pisau 900rb, tol 3 | J39 1.184,1656 · J41 1.219,6905 | sama persis |
 | OB COCO TOKYO 2026-07-13 · blok UJK | SHEET_DIGITAL | K200/M125/K200 @6.088 · 427×220×172 lidah 35 · qty 1.800 · tol 1 · margin 15 | C32 5.093,3285 (NON PPN) · D32 4.711,3228 · **D34 5.229,5683** (PPN 11%) | sama persis |
 
-### VIII.3 Perbedaan yang SENGAJA tidak ditiru / perlu keputusan
-1. **Toleransi beda per part** (IC CHINA: badan 4%, tutup 3%; harga set G46 3.339,9085).
-   Engine = 1 toleransi per tier utk semua part → HPP set cocok (2.741,1191), harga set
-   beda tipis kalau toleransi part berbeda. Legacy `hpp.tolerance_percent` juga 1 per dokumen.
-2. **Margin beda per jalur** (KRAFT: 12% NON PPN, 15% PPN dalam 1 sheet). Engine 1 margin.
-3. **Index coating & ongkos laminasi berubah antar-file** (Lam Biasa 0,125 / 0,16 vs master
-   0,165; ongkos lam 0,075/0,065 · 0,095/0,085 · 0,07/0,06; film 30/55; pisau 900rb/1jt/1,5jt;
-   DC 3,9 vs 5,3). Semua sudah bisa di-override per dokumen — master cuma nilai awal.
-4. **Info Harga Supplier RCA**: lebar mesin 220 kini konstanta `SHEET_MACHINE_WIDTH_CM_RCA`
-   (pola `SHEET_MACHINE_WIDTH_CM_<kode>`, fallback 180). Diskon RCA di Excel **flat 22,5%**
-   & harga ÷1,11, sedangkan tier legacy `mat_sheet_discount_tier` 20/20/25/26% — belum
-   diubah, tunggu konfirmasi mana yang berlaku.
-5. Baris Excel "Mika film & lain-lain" tidak punya field khusus — pakai `i_ongkos_packing_pc`.
-6. Kolom L/M Excel ("Kurang bayar PPN", ×10%) = info pajak, tidak dipakai harga.
+### VIII.3 Perbedaan antar-file (sudah ditangani di §IX)
+1. Toleransi beda per part (IC CHINA badan 4%, tutup 3%) → toleransi per part (§IX.1).
+2. Margin beda per jalur (KRAFT 12% NON PPN / 15% PPN) → 2 kolom margin (§IX.2).
+3. Index coating/ongkos lam/film/pisau/DC% beda antar-file → semua override per dokumen; master = nilai awal.
+4. Baris "Mika film & lain-lain" → pakai `i_ongkos_packing_pc`. Kolom L/M "Kurang bayar PPN" = info pajak saja.
+
+---
+
+## IX. Keputusan user 2026-09-18 + penyelarasan ke dump `tmhpp.sql`
+
+### IX.1 Toleransi per part
+`iqp_costing_part.tolerance_pct` (NULL = `iqp_costing_price_tier.tolerance_pct` = "Toleransi
+Default"). Alasan user: toleransi tergantung produk & tingkat kesulitan. Aturan per tipe tetap
+(DC-family aditif, SHEET ÷). Cek: IC CHINA badan 4% + tutup 3% → J46 2.838,9222, G46 **3.339,9085** — sama persis.
+
+### IX.2 Margin NON PPN & margin PPN terpisah
+`margin_pct` = margin jalur NON PPN (Excel G45) → `c_after_margin_pc`.
+`margin_ppn_pct` = margin jalur INCLUDE PPN (Excel J47) → `price_per_pcs` (DPP) & `c_after_ppn_pc`.
+NULL = sama dgn `margin_pct` (semua tier lama di-set NULL → perilaku tidak berubah). Cek: KRAFT 1 dokumen,
+margin 12/15 → 217,1584 & 230,2226.
+
+### IX.3 Diskon sheet
+- Tier = port persis `m_sheet_discount_tier` legacy (kolom baru `part_type_code`, `sheet_rate_id`,
+  `effective_date`, `notes`; `rm_to` INKLUSIF 299,99). Presedensi: tier khusus substansi → khusus tipe part
+  → default; `effective_date` terbaru yg sudah berlaku.
+  UJK: K125 −5% (Apr 2026), WK150 −6,5% (berlaku 1 Nov 2026; sebelum itu jatuh ke default), default **−10%**.
+  RCA: 20/20/25/26% per RM, WK150 flat 22,5%. Tier V2 lama (UJK −5% + batas "KURANG" <300RM) dinonaktifkan.
+- Diskon manual: batas per supplier `SHEET_DISCOUNT_MIN/MAX_<kode>`; **RCA 0,20–0,26** (keputusan user),
+  supplier lain ±0,99 (`OB_DISCOUNT_RM_MIN/MAX` legacy).
+- ⚠ Excel OB COCO memakai UJK −5% utk K200/M125/K200, sedangkan tier legacy utk substansi itu = default −10%
+  → officer isi Discount/Surcharge −0,05 bila memang −5%.
+
+### IX.4 Konstanta & supplier (dump `m_hpp_constants`, `m_sheet_supplier`)
+| Kunci | Nilai | Sumber |
+|---|---|---|
+| PLANO_REF_AREA / RIM_SHEETS / FILM_RATE_DEFAULT / FILM_RATE_FULLPRINT / FILM_FACTOR_DEFAULT / KNIFE_FACTOR_DEFAULT / PLATE_PER_COLOR / OB_DISCOUNT_RM_MIN/MAX | 8611 / 500 / 55 / 60 / 0,25 / 0,25 / 90.000 / ±0,99 | legacy, sudah sama |
+| KNIFE_RATE_DC / KRAFT / OB | 900.000 / 1.500.000 / 0 | legacy (baru; fallback bila `prod_part_type.pisau_rate_rp` kosong) |
+| PCS_PER_LB_DEFAULT / CUT_PER_PLANO_DEFAULT | 1 / 1 | legacy (baru; fallback isi/potong kosong) |
+| SHEET_MACHINE_WIDTH_CM (UJK & default) | **180** | keputusan user (legacy UJK = 170) |
+| SHEET_MACHINE_WIDTH_CM_RCA / SHEET_TRIM_GAP_CM_RCA | **215 / 5** | legacy `m_sheet_supplier` (Excel COCO pakai 220/2) |
+| SHEET_TRIM_GAP_CM | 2 | legacy UJK |
+| PPN_INPUT_MATERIAL_DIVISOR | 1,1 | Excel HPP (§VIII) |
+| SHEET_DISCOUNT_MIN/MAX_RCA | 0,20 / 0,26 | keputusan user |
+
+Tidak diimpor: `KALENDER_ONLY`, `KLEP_DEFAULT_MIKA_PC` (170), `KLEP_DEFAULT_ONGKOS_PC` (100) — `hpp_parts` legacy
+sendiri tidak punya kolom KLEP & tipe KALENDER tidak ada di `m_part_type`. `m_part_template` (6 template
+auto-fill "Cfg Parts") & `m_routing_template` belum dipindah — fitur form, bukan konstanta.
+
+### IX.5 Layar
+Usulan posisi field baru (menunggu persetujuan): `docs/mockups/procost_instant_deviasi_v2.jpg`,
+`docs/mockups/procost_integrasi_deviasi_v2.jpg`. Sampai disetujui, layar memakai fallback (Toleransi Default &
+Margin tunggal) sehingga hasil sama dgn sebelumnya.
+
+Tes: `tests/Feature/CostingExcelParityTest.php` (7 test) + Legacy/Engine/Instant/Routing = 16 lulus.

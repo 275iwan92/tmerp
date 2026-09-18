@@ -222,6 +222,7 @@ class CostingEngineTest extends TestCase
             'sheet_rate_id' => $sheetRate->id_sheet_rate,
             'supplier_sheet_code' => 'UJK',
             'i_isi_per_lb_kerja' => 1,
+            'i_discount_rm' => -0.05,     // Excel B17 (tier legacy UJK utk substansi ini = default -10%)
             'i_ongkos_print_pc' => 100,   // C20 = 2*B20 = 200 (engine yg kali 2)
             'i_ongkos_diecut_pc' => 350,
             'i_ongkos_qc_pack_pc' => 100,
