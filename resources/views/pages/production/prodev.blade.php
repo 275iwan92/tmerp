@@ -1023,10 +1023,11 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         .io-mc-layout .ttl{color:#333;font:700 8.5px "Courier New",monospace;text-align:center;margin-bottom:2px}
         .io-mc-layout svg{width:100%;height:auto;max-height:96mm;display:block;background:#fff}
         .io-mc-note{color:#c0392b;font-weight:700;font-size:9.5px;text-align:center;margin-top:3px}
-        .io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;align-items:start}
-        .io-mc-extra .io-mc-tbl th{width:42%}
-        .io-mc-sign{margin-top:6px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:center;font-size:9px}
-        .io-mc-sign .who{color:#666;margin-bottom:14px}
+        .io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;align-items:start}
+        .io-mc-extra .io-mc-tbl th,.io-mc-extra .io-mc-tbl td{font-size:8.5px;padding:1.5px 4px}
+        .io-mc-extra .io-mc-tbl td{white-space:nowrap}
+        .io-mc-sign{margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 26px;text-align:center;font-size:9px;padding:0 10px}
+        .io-mc-sign .who{color:#666;margin-bottom:30px}
         .io-mc-sign .line{border-top:1px solid #111;padding-top:2px;font-weight:700}
         .io-mc-stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
         .io-mc-stamp span{font:900 72px/1 Arial,Helvetica,sans-serif;color:#c0392b26;border:6px solid #c0392b26;
@@ -2979,14 +2980,9 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                             + '</td></tr>';
                     }).join('')
                     + '</table></div></div>'
-                    + '</div>'
-
-                    + '<div><div class="io-mc-layout">'
-                    + '<div class="ttl">LAYOUT LEMBAR CETAK — ' + k.up + ' UP</div>'
-                    + svg + '</div>'
-                    + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
-                    + '</div></div>'
-
+                    // Ringkasan order & BOM di kolom kiri, tanda tangan di kolom kanan
+                    // bawah layout -- tidak ada lagi baris selebar halaman yang
+                    // menyisakan ruang kosong di tengah (permintaan user 2026-09-18).
                     + '<div class="io-mc-extra"><table class="io-mc-tbl">'
                     + mcRow('Qty order', sp && sp.inputs.orderQty ? fmtAngka(sp.inputs.orderQty) + ' pcs' : '—', true)
                     + mcRow('Lembar cetak', sp && sp.inputs.printSheets ? fmtAngka(sp.inputs.printSheets) + ' lbr' : '—', true)
@@ -2997,13 +2993,19 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                     + '</table><table class="io-mc-tbl">'
                     + bom.slice(6, 12).map(mcBomRow).join('')
                     + '</table></div>'
+                    + '</div>'
 
+                    + '<div><div class="io-mc-layout">'
+                    + '<div class="ttl">LAYOUT LEMBAR CETAK — ' + k.up + ' UP</div>'
+                    + svg + '</div>'
+                    + '<div class="io-mc-note">* ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD</div>'
                     + '<div class="io-mc-sign">'
                     + ['Mengetahui (Desainer)|Product Development', 'Marketing / Sales|Sales Officer',
                        'PPIC / QA|Quality Control', 'Plant Manager|Kepala Pabrik']
                         .map(x => { const [who, role] = x.split('|');
                             return '<div><div class="who">' + who + '</div><div class="line">' + role + '</div></div>'; }).join('')
                     + '</div>'
+                    + '</div></div>'
 
                     + (p.confirmed ? '' : '<div class="io-mc-stamp"><span>NOT CONFIRMED</span></div>');
             }
