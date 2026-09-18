@@ -739,7 +739,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <thead><tr><th>Modul</th><th style="width:90px">Akses</th><th style="width:90px">Input</th><th style="width:90px">Approve</th><th style="width:90px">Export</th></tr></thead>
                         <tbody>
                             @foreach ($this->modulesTree as $m)
-                                @php($p = $this->currentPermissions->get($m->id_module))
+                                @php $p = $this->currentPermissions->get($m->id_module); @endphp
                                 <tr wire:key="perm-mod-{{ $m->id_module }}">
                                     <td>{{ $m->icon }} {{ $m->module_name }}</td>
                                     @foreach (['can_access', 'can_input', 'can_approve', 'can_export'] as $field)
@@ -752,7 +752,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                     @endforeach
                                 </tr>
                                 @foreach ($m->children as $sub)
-                                    @php($sp = $this->currentPermissions->get($sub->id_module))
+                                    @php $sp = $this->currentPermissions->get($sub->id_module); @endphp
                                     <tr wire:key="perm-mod-{{ $sub->id_module }}">
                                         <td class="sub-indent">↳ {{ $sub->icon }} {{ $sub->module_name }} <span class="pill sub">min lvl {{ $sub->min_mgmt_level }}</span></td>
                                         @foreach (['can_access', 'can_input', 'can_approve', 'can_export'] as $field)
