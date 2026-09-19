@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulasi HPP - Standalone UAT</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-200 p-2 md:p-4 text-slate-900 font-sans">
+    
+    <!-- Top App Bar -->
+    <div class="max-w-[1600px] mx-auto bg-slate-800 text-white rounded-t-lg px-4 py-2 flex items-center justify-between shadow-md">
+        <div class="flex items-center gap-2">
+            <i data-lucide="calculator" class="w-4 h-4 text-blue-400"></i>
+            <span class="font-bold text-sm tracking-wide">KALKULASI HPP - COSTING MODULE (UAT OFFLINE)</span>
+        </div>
+        <div class="flex items-center gap-3 text-xs font-medium">
+            <span class="bg-emerald-600 px-2 py-1 rounded text-white shadow-sm font-bold">Standalone Mode Active</span>
+        </div>
+    </div>
+
+    <div class="max-w-[1600px] mx-auto bg-slate-100 border-x border-b border-slate-300 rounded-b-lg shadow-xl pb-8">
+        
+        <!-- SECTION 1: GLOBAL INFO & PARAMETERS -->
+        <div class="p-3 grid grid-cols-1 lg:grid-cols-12 gap-3">
+            
+            <div class="bg-white border border-slate-200 rounded-md shadow-sm lg:col-span-5">
+                <div class="px-3 py-2 border-b border-slate-100 bg-slate-50 font-semibold text-xs text-slate-700 uppercase tracking-wider">1. Inquiry & Product Info (Read-Only)</div>
+                <div class="p-3">
+                    <div class="grid grid-cols-3 gap-2 mb-2">
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Doc No">Doc No</label>
+      <input type="text" id="docNo" value="26HPP0000007" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Doc Date">Doc Date</label>
+      <input type="text" id="docDate" value="07/07/2026" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        <div class="grid grid-cols-2 gap-2">
+                            
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Status">Status</label>
+      <input type="text" id="status" value="DRAFT" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                            
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="No Rev.">No Rev.</label>
+      <input type="text" id="noRev" value="0" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Customer">Customer</label>
+      <input type="text" id="cust" value="RAJA BAKERY" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Contact / Lead">Contact / Lead</label>
+      <input type="text" id="lead" value="RAJA BAKERY" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Product Ref">Product Ref</label>
+      <input type="text" id="pref" value="202407080002" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Product Name">Product Name</label>
+      <input type="text" id="pname" value="SJJ IB GOLD STAR GM5Z-3B CV" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                    </div>
+                    <div class="grid grid-cols-4 gap-2 border-t border-slate-100 pt-2 mt-2">
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Dim P (mm)">Dim P (mm)</label>
+      <input type="text" id="dimp" value="135.00" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Dim L (mm)">Dim L (mm)</label>
+      <input type="text" id="diml" value="108.00" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Dim T (mm)">Dim T (mm)</label>
+      <input type="text" id="dimt" value="140.00" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                        
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Lidah Lem">Lidah Lem</label>
+      <input type="text" id="llem" value="0.00" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-md shadow-sm lg:col-span-4">
+                <div class="px-3 py-2 border-b border-slate-100 bg-slate-50 font-semibold text-xs text-slate-700 uppercase tracking-wider">2. Global Parameters</div>
+                <div class="p-3 grid grid-cols-2 gap-3">
+                    
+    <div class="flex flex-col col-span-2">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Qty Order Pcs">Qty Order Pcs</label>
+      <input type="text" id="inp_qty" value="5000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Pilih PPn">Pilih PPn</label>
+      <select id="inp_ppn_type"  class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger appearance-none">
+        <option value="INCLUDE PPN">INCLUDE PPN</option>
+        <option value="EXCLUDE PPN">EXCLUDE PPN</option>
+      </select>
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ppn Percent (%)">Ppn Percent (%)</label>
+      <input type="text" id="inp_ppn" value="11.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Margin Percent (%)">Margin Percent (%)</label>
+      <input type="text" id="inp_margin" value="15.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Tolerance Percent (%)">Tolerance Percent (%)</label>
+      <input type="text" id="inp_tol" value="5.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col col-span-2">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Rounding Mode">Rounding Mode</label>
+      <select id="inp_round"  class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger appearance-none">
+        <option value="NEAREST">NEAREST</option>
+        <option value="CEILING">CEILING</option><option value="FLOOR">FLOOR</option>
+      </select>
+    </div>
+  
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-md shadow-sm lg:col-span-3">
+                <div class="px-3 py-2 border-b border-slate-100 bg-slate-50 font-semibold text-xs text-slate-700 uppercase tracking-wider">3. Notes & Config</div>
+                <div class="p-3">
+                    
+    <div class="flex flex-col mb-2">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Currency">Currency</label>
+      <select id="inp_curr"  class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger appearance-none">
+        <option value="IDR">IDR</option>
+        <option value="USD">USD</option><option value="EUR">EUR</option>
+      </select>
+    </div>
+  
+                    <div class="flex flex-col h-[90px]">
+                        <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Notes</label>
+                        <textarea class="w-full flex-1 text-xs p-2 border border-slate-300 rounded-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"></textarea>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 2: RESULTS SUMMARY -->
+        <div class="px-3 pb-3">
+            <div class="bg-emerald-50/80 border border-emerald-200 rounded-md p-3 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+                <div class="flex gap-6">
+                    <div>
+                        <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">Price Per Pcs</span>
+                        <span class="font-mono font-semibold text-slate-800 text-sm" id="sum_price">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">Total HPP</span>
+                        <span class="font-mono font-semibold text-slate-800 text-sm" id="sum_hpp">0.00</span>
+                    </div>
+                    <div class="w-px h-8 bg-emerald-200 mx-2"></div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">Total Material</span>
+                        <span class="font-mono font-semibold text-slate-800 text-sm" id="sum_material">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">Total Process</span>
+                        <span class="font-mono font-semibold text-slate-800 text-sm" id="sum_process">0.00</span>
+                    </div>
+                    <div>
+                        <span class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-0.5">Total Tooling</span>
+                        <span class="font-mono font-semibold text-slate-800 text-sm" id="sum_tooling">0.00</span>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-center">
+                    <div class="bg-yellow-200/50 px-3 py-1.5 rounded border border-yellow-300">
+                        <span class="block text-[10px] font-bold text-yellow-800 uppercase tracking-wider mb-0.5">Total After Margin</span>
+                        <span class="font-mono font-bold text-slate-900 text-base" id="sum_margin">0.00</span>
+                    </div>
+                    <div class="bg-yellow-200/50 px-3 py-1.5 rounded border border-yellow-300">
+                        <span class="block text-[10px] font-bold text-yellow-800 uppercase tracking-wider mb-0.5">Total After PPn</span>
+                        <span class="font-mono font-bold text-slate-900 text-base" id="sum_ppn">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: PARTS DETAILS -->
+        <div class="px-3">
+            <div class="flex border-b border-slate-300 mb-3">
+                <button class="px-4 py-2 bg-white border-t border-l border-r border-slate-300 rounded-t-md text-xs font-bold text-blue-700 -mb-px">Parts Details</button>
+                <button class="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-700">Info</button>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-md shadow-sm">
+                
+                <!-- Toolbar -->
+                <div class="flex items-center justify-between p-2 bg-slate-50 border-b border-slate-200">
+                    <div class="flex gap-2">
+                        <button class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors shadow-sm"><i data-lucide="plus" class="w-3.5 h-3.5"></i> New</button>
+                        <button class="flex items-center gap-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-1.5 rounded text-xs font-medium transition-colors"><i data-lucide="save" class="w-3.5 h-3.5"></i> Save</button>
+                        <button class="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-xs font-medium transition-colors shadow-sm"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete</button>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors shadow-sm" onclick="calculate()"><i data-lucide="calculator" class="w-3.5 h-3.5"></i> Hitung HPP Detail</button>
+                        <button class="flex items-center justify-center bg-slate-100 hover:bg-slate-200 border border-slate-300 w-8 h-8 rounded text-slate-600 transition-colors" onclick="calculate()"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+
+                <!-- Part Input Header -->
+                <div class="p-3 grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-3 border-b border-slate-200">
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="No Urut Part">No Urut Part</label>
+      <input type="text" id="h_no" value="1"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col lg:col-span-2">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Nama Part">Nama Part</label>
+      <input type="text" id="h_nama" value="GM5Z-3B CV"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Qty Part">Qty Part</label>
+      <input type="text" id="h_qty" value="5,000.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                    
+    <div class="flex flex-col lg:col-span-2">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Tipe Part">Tipe Part</label>
+      <select id="h_tipe" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value="DC + Single Face">DC + Single Face</option>
+        
+      </select>
+    </div>
+  
+                    
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Jumlah Warna">Jumlah Warna</label>
+      <input type="text" id="h_warna" value="4" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Panjang Plano (cm)">Panjang Plano (cm)</label>
+      <input type="text" id="h_plano_p" value="120" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                    
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Lebar Plano (cm)">Lebar Plano (cm)</label>
+      <input type="text" id="h_plano_l" value="104" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                    
+    <div class="flex flex-col lg:col-span-3">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Gramatur / Bahan">Gramatur / Bahan</label>
+      <select id="h_bahan" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value="DUPLEX 250 gsm — Rp 255,000/rim">DUPLEX 250 gsm — Rp 255,000/rim</option>
+        
+      </select>
+    </div>
+  
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-12">
+                    <!-- Massive Parameter Grid -->
+                    <div class="xl:col-span-8 p-3 bg-slate-50 border-r border-slate-200">
+                        <h4 class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><i data-lucide="settings" class="w-4 h-4"></i> Parameter Kalkulasi</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-4">
+                            <!-- Col 1 -->
+                            <div class="space-y-2">
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Dim Panjang (mm)">Dim Panjang (mm)</label>
+      <input type="text" id="p_dimp" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="% DC (override)">% DC (override)</label>
+      <input type="text" id="p_dc" value="5.30"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ukuran Cetak L (cm)">Ukuran Cetak L (cm)</label>
+      <input type="text" id="p_ukcl" value="52"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Lebar Piece SF (cm)">Lebar Piece SF (cm)</label>
+      <input type="text" id="p_lpsf" value="51.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Cetak/RIM">Ongkos Cetak/RIM</label>
+      <input type="text" id="p_ocetakrim" value="500,000.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Kupas/PC">Ongkos Kupas/PC</label>
+      <input type="text" id="p_okupas" value="10.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Packing/PC">Ongkos Packing/PC</label>
+      <input type="text" id="p_opack" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Lam SF (Rp/cm2)">Ongkos Lam SF (Rp/cm2)</label>
+      <input type="text" id="p_olamsf" value="0.0650"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Pakai Ukuran SF?">Pakai Ukuran SF?</label>
+      <select id="p_pakaisf"  class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger appearance-none">
+        <option value="1">1</option>
+        <option value="0">0</option>
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Pisau Faktor">Pisau Faktor</label>
+      <input type="text" id="p_pfaktor" value="0.0500"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                            </div>
+                            <!-- Col 2 -->
+                            <div class="space-y-2">
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Dimensi Lebar (mm)">Dimensi Lebar (mm)</label>
+      <input type="text" id="p_diml" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="1 Plano dipotong jadi">1 Plano dipotong jadi</label>
+      <input type="text" id="p_1plano" value="4" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Substansi / Tipe SF">Substansi / Tipe SF</label>
+      <select id="p_subsf" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value="E/F - SF M 125 / K 125">E/F - SF M 125 / K 125</option>
+        
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Lebar Trim (cm)">Lebar Trim (cm)</label>
+      <input type="text" id="p_ltrim" value="0.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Plong/LB">Ongkos Plong/LB</label>
+      <input type="text" id="p_oplong" value="75.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos QC/PC">Ongkos QC/PC</label>
+      <input type="text" id="p_oqc" value="10.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Pakai Laminasi">Pakai Laminasi</label>
+      <select id="p_pakailam"  class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger appearance-none">
+        <option value="Ya">Ya</option>
+        <option value="Tidak">Tidak</option>
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Lam Sheet Flat (Rp/PC)">Lam Sheet Flat (Rp/PC)</label>
+      <input type="text" id="p_lamsheetf" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Film Rate">Film Rate</label>
+      <select id="p_filmrate" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value="60 — Full Cetak + WB Lam">60 — Full Cetak + WB Lam</option>
+        
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Pisau Rate (Rp/order)">Pisau Rate (Rp/order)</label>
+      <input type="text" id="p_pisaurate" value="600,000.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                            </div>
+                            <!-- Col 3 -->
+                            <div class="space-y-2">
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Dim Tinggi (mm)">Dim Tinggi (mm)</label>
+      <input type="text" id="p_dimt" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Isi dalam 1 LB Cetak">Isi dalam 1 LB Cetak</label>
+      <input type="text" id="p_isi1lb" value="2" readonly 
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Supplier Sheet">Supplier Sheet</label>
+      <select id="p_suppsheet" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value="UJK — UJK">UJK — UJK</option>
+        
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Isi / Trim">Isi / Trim</label>
+      <input type="text" id="p_isitrim" value="0"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos LEM/PC">Ongkos LEM/PC</label>
+      <input type="text" id="p_olem" value="30.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Kirim/PC">Ongkos Kirim/PC</label>
+      <input type="text" id="p_okirim" value="10.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Laminasi Manual">Ongkos Laminasi Manual</label>
+      <input type="text" id="p_olamman" value="0.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Rate SF EF (E/F)">Rate SF EF (E/F)</label>
+      <select id="p_ratesfef" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value="SF M 125 / K 125 — Rp 2,600">SF M 125 / K 125 — Rp 2,600</option>
+        
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Film Faktor">Film Faktor</label>
+      <input type="text" id="p_filmfaktor" value="0.0500"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                            </div>
+                            <!-- Col 4 -->
+                            <div class="space-y-2">
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Lidah Lem (mm)">Lidah Lem (mm)</label>
+      <input type="text" id="p_lidahlem" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ukuran Cetak P (cm)">Ukuran Cetak P (cm)</label>
+      <input type="text" id="p_ukcp" value="59.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Panjang Piece SF/SH (cm)">Panjang Piece SF/SH (cm)</label>
+      <input type="text" id="p_ppsfsh" value="59.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Discount / Surcharge">Discount / Surcharge</label>
+      <input type="text" id="p_disc" value="0.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Hot Print/PC">Ongkos Hot Print/PC</label>
+      <input type="text" id="p_ohotprint" value="0.00"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Jenis Packing">Jenis Packing</label>
+      <select id="p_jpack" disabled class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-slate-50 border-slate-200 text-slate-600 cursor-not-allowed appearance-none">
+        <option value=""></option>
+        
+      </select>
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Ongkos Lam SH (Rp/cm2)">Ongkos Lam SH (Rp/cm2)</label>
+      <input type="text" id="p_olamsh" value="0.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Harga SF EF (override)">Harga SF EF (override)</label>
+      <input type="text" id="p_hsfef" value="2,600.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                                
+    <div class="flex flex-col ">
+      <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Plate (Rp/warna)">Plate (Rp/warna)</label>
+      <input type="text" id="p_plate" value="90,000.0000"  
+        class="w-full text-xs px-2 py-1.5 border rounded-sm outline-none transition-colors bg-white border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-slate-900 uat-trigger" />
+    </div>
+  
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Output Section -->
+                    <div class="xl:col-span-4 p-3 bg-white">
+                        <h4 class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><i data-lucide="box" class="w-4 h-4"></i> Output HPP</h4>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="bg-emerald-600 text-white rounded p-2 shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold uppercase tracking-wider opacity-90">Harga Pokok (HPP)/PC</span>
+                                <span class="text-lg font-mono font-bold mt-1" id="out_hpp_pc_main">1,487.4648</span>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-100 rounded p-2 flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-blue-800 uppercase tracking-wider opacity-90">Jumlah Cetak (LC)</span>
+                                <span class="text-sm font-mono font-bold text-blue-900 mt-1">0.0000</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-2">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Description Calc</label>
+                                <textarea readonly class="w-full text-[10px] font-mono p-1.5 border border-slate-200 bg-slate-50 text-slate-600 rounded-sm resize-none h-20">v14 07/07/2026 08:15:19
+DC+SF paper=582.08
+proc=827.29 coat=101.4
+lam=97.79 sfef=405.6
+tool=78.09 sheet=0
+TOTAL=1487.46
+flag=PAPER_OK COAT_OK SFEF_OVR LAM_OK TOOL_OK</textarea>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Catatan Kalkulasi</label>
+                                <textarea class="w-full text-[10px] p-1.5 border border-slate-300 rounded-sm resize-none h-12"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Breakdown -->
+                <div class="border-t border-slate-200 bg-slate-50 p-3 overflow-x-auto">
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Detailed Breakdown</h4>
+                    
+                    <!-- Per PC -->
+                    <div class="grid grid-cols-5 md:grid-cols-8 gap-px bg-slate-200 border border-slate-200 mb-4 rounded overflow-hidden shadow-sm">
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-blue-50/50">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Luas Cetak (cm2)</span>
+      <span class="text-xs font-mono font-semibold text-blue-700" id="out_luascetak">3,120.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-blue-50/50">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Jumlah Bahan (LB)</span>
+      <span class="text-xs font-mono font-semibold text-blue-700" id="out_jmlbahan">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Harga Kertas/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_kertas_pc">582.0787</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Cetak/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_cetak_pc">125.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Plong/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_plong_pc">37.5000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Lem/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_lem_pc">30.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Coating/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_coat_pc">101.4000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">SF EF/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_sfef_pc">405.6000</span>
+    </div>
+  
+                        
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Ongkos Laminasi/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_olam_pc">97.7925</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Harga Sheet/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_sheet_pc">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Film/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_film_pc">0.0936</span>
+    </div>
+  
+                        <div class="col-span-2 row-span-2 p-2 bg-slate-100 border border-slate-200 flex flex-col">
+                            <span class="text-[10px] text-slate-500 font-medium mb-1">Info Harga Supplier</span>
+                            <span class="text-[9px] text-slate-600 font-mono leading-tight">UJK: Rp 1,075.72 (surcharge 10.0%)<br/>RM=1,880.6<br/>RCA: Rp 723.66 (disc 26.0%)<br/>RM=1,880.6</span>
+                        </div>
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-blue-50/50">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Ongkos Proses/PC</span>
+      <span class="text-xs font-mono font-semibold text-blue-700" id="out_oproses_pc">827.2925</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Plate/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_plate_pc">72.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Pisau/PC</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_pisau_pc">6.0000</span>
+    </div>
+  
+                        
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-blue-50/50">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Tooling/PC</span>
+      <span class="text-xs font-mono font-semibold text-blue-700" id="out_tooling_pc">78.0936</span>
+    </div>
+  
+                    </div>
+
+                    <!-- Per Order -->
+                    <div class="grid grid-cols-5 md:grid-cols-7 gap-px bg-emerald-200/50 border border-emerald-200 rounded overflow-hidden shadow-sm">
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Film/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_film_ord">468.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Plate/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_plate_ord">360,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Pisau/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_pisau_ord">30,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Harga Kertas/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_kertas_ord">2,910,393.6800</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Cetak/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_cetak_ord">625,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Plong/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_plong_ord">187,500.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">LEM/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_lem_ord">150,000.0000</span>
+    </div>
+  
+                        
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Hot Print/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_hot_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Kupas/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_kupas_ord">50,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">QC/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_qc_ord">50,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Kirim/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_kirim_ord">50,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Packing/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_pack_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Coating/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_coat_ord">507,000.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">SF EF/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_sfef_ord">2,028,000.0000</span>
+    </div>
+  
+                        
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Ongkos Laminasi/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_olam_ord">488,962.5000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">C I Lam Sheet Flat</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_clam_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Harga Sheet/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_sheet_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Die Cut/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_diecut_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Slitter/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_slitter_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Slotter/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_slotter_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Join/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_join_ord">0.0000</span>
+    </div>
+  
+                        
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Partisi/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_partisi_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Layer/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_layer_ord">0.0000</span>
+    </div>
+  
+                        
+    <div class="p-2 border border-slate-100 flex flex-col justify-between bg-white">
+      <span class="text-[10px] text-slate-500 font-medium leading-tight mb-1">Pisau Diecut/Order</span>
+      <span class="text-xs font-mono font-semibold text-slate-800" id="out_pdie_ord">0.0000</span>
+    </div>
+  
+                    </div>
+                </div>
+
+                <!-- Coating Table -->
+                <div class="border-t border-slate-200">
+                    <div class="flex border-b border-slate-200 px-3 pt-3 bg-slate-50">
+                        <button class="px-3 py-1.5 bg-white border-t border-l border-r border-slate-200 rounded-t text-xs font-bold text-slate-700 -mb-px shadow-sm">Coating</button>
+                        <button class="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700">Just Info</button>
+                    </div>
+                    <div class="p-3">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="relative">
+                                <i data-lucide="search" class="absolute left-2 top-1.5 text-slate-400 w-3.5 h-3.5"></i>
+                                <input type="text" placeholder="Quick search..." class="text-xs pl-7 pr-2 py-1.5 border border-slate-300 rounded outline-none focus:border-blue-500 w-48" />
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded text-xs font-medium shadow-sm"><i data-lucide="plus" class="w-3.5 h-3.5"></i> New</button>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded overflow-hidden">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-slate-100 border-b border-slate-200 text-slate-600 font-semibold uppercase tracking-wider text-[10px]">
+                                    <tr>
+                                        <th class="p-2 w-12">Act</th>
+                                        <th class="p-2">Coating Type</th>
+                                        <th class="p-2">Index Coating</th>
+                                        <th class="p-2 text-right">Cost Per LembarCetak</th>
+                                        <th class="p-2 text-right">Cost Per Pcs</th>
+                                        <th class="p-2">Notes Coating</th>
+                                        <th class="p-2 text-center">Isi per Lembar</th>
+                                        <th class="p-2 text-right">Area Cetak</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 bg-white">
+                                    <tr class="hover:bg-slate-50 transition-colors">
+                                        <td class="p-2 flex gap-1.5 text-slate-400">
+                                            <i data-lucide="trash-2" class="w-3.5 h-3.5 hover:text-red-500 cursor-pointer"></i>
+                                            <i data-lucide="edit" class="w-3.5 h-3.5 hover:text-blue-500 cursor-pointer"></i>
+                                        </td>
+                                        <td class="p-2 font-medium">UV</td>
+                                        <td class="p-2">0.0650</td>
+                                        <td class="p-2 text-right font-mono">202.800000</td>
+                                        <td class="p-2 text-right font-mono">101.4000</td>
+                                        <td class="p-2 text-[10px] text-slate-500 truncate max-w-[150px]">Auto-insert default DC+SF/DC+SHEET</td>
+                                        <td class="p-2 text-center">2</td>
+                                        <td class="p-2 text-right font-mono">3,120.000000</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function calculate() {
+            const getVal = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return 0;
+                // Parse float after removing commas
+                return parseFloat(el.value.replace(/,/g, '')) || 0;
+            };
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if(el) el.innerText = new Intl.NumberFormat('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 }).format(val);
+            };
+
+            const qty = getVal('inp_qty') || 1;
+            const margin = getVal('inp_margin');
+            const ppn = getVal('inp_ppn');
+
+            // Hardcoded simulation for the mockup logic to match legacy values
+            // These would normally be derived from the complex parameters above.
+            const kertas_ord = 2910393.68;
+            const sfef_ord = 2028000.00;
+            
+            const cetak_ord = 625000.00;
+            const plong_ord = 187500.00;
+            const lem_ord = 150000.00;
+            const coat_ord = 507000.00;
+            const olam_ord = 488962.50;
+            const kupas_ord = 50000.00;
+            const qc_ord = 50000.00;
+            const kirim_ord = 50000.00;
+            
+            const plate_ord = 360000.00;
+            const pisau_ord = 30000.00;
+            const film_ord = 468.00;
+
+            const totalMaterial = kertas_ord + sfef_ord;
+            const totalProcess = cetak_ord + plong_ord + lem_ord + coat_ord + olam_ord + kupas_ord + qc_ord + kirim_ord;
+            const totalTooling = plate_ord + pisau_ord + film_ord;
+
+            const totalOrder = totalMaterial + totalProcess + totalTooling;
+            const hppPc = totalOrder / qty;
+
+            setVal('out_hpp_pc', hppPc);
+            setVal('out_hpp_pc_main', hppPc);
+
+            setVal('sum_hpp', totalOrder);
+            setVal('sum_material', totalMaterial);
+            setVal('sum_process', totalProcess);
+            setVal('sum_tooling', totalTooling);
+
+            const totalAfterMargin = totalOrder * (1 + (margin/100));
+            setVal('sum_margin', totalAfterMargin);
+
+            const totalAfterPpn = totalAfterMargin * (1 + (ppn/100));
+            setVal('sum_ppn', totalAfterPpn);
+
+            const pricePerPcs = totalAfterMargin / qty;
+            setVal('sum_price', pricePerPcs);
+        }
+
+        // Add event listeners
+        document.querySelectorAll('.uat-trigger').forEach(inp => {
+            inp.addEventListener('input', calculate);
+        });
+
+        // Initialize calculations
+        calculate();
+    </script>
+</body>
+</html>

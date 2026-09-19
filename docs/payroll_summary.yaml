@@ -1,0 +1,169 @@
+# Ringkasan Modul Payroll & Attendance (tm2pyr + tabel att_*/pyr_* di tm2mst)
+# Disusun dari histori kerja 2026-09-03 s/d 2026-09-07. Ini snapshot per
+# tanggal update di bawah -- verifikasi ke kode/DB sebelum dipakai sebagai
+# acuan mutlak kalau sudah lama.
+last_updated: "2026-09-07"
+
+overview:
+  status: "Engine + sebagian besar UI sudah dibangun; PPh21/BPJS wired opsional per-employee; GPS clock-in real"
+  database: "tm2pyr (Payroll) + tabel att_*/emp_* pendukung tetap di tm2mst (bukan tm2hrm, yang kosong tak dipakai)"
+  dokumen_acuan_asli: "docs/attendancepayroll_tier1..4.md (v1.0, berbasis SOP company asli) -- BUKAN docs/payroll_timeattendance/ (v4.0 dari paket referensi eksternal)"
+
+sumber_referensi_eksternal:
+  folder: "docs/payroll_timeattendance/"
+  status: "REFERENSI FORMULA SAJA, bukan kode yang di-deploy"
+  alasan:
+    - "Skema pakai is_active/employee_id-as-PK, melanggar konvensi project (activate/id_<entity>)"
+    - "Targetnya tm2hrm yang kosong (0 tabel) -- data employee/shift/leave/bank asli ada di tm2mst"
+    - "docs/BACKLOG.md §12.5 sudah lebih dulu catat GPS/ESS approval sbg scope creep, tidak diminta (SEBELUM user minta ulang GPS 2x -- lihat gps_clockin di bawah, jadi status ini SUDAH DIBANGUN, catatan lama basi)"
+  yang_diambil:
+    - "Pph21TerService (bracket TER PPh21 PP 58/2023 & PMK 168/2023) -- diadopsi jadi App\\Services\\Payroll\\Pph21TerService"
+    - "BpjsCalculatorService (JHT/JP/JKK/JKM/Kesehatan) -- diadopsi jadi App\\Services\\Payroll\\BpjsCalculatorService"
+    - "GpsHaversineService (matematika jarak) -- diadopsi jadi App\\Services\\Hrm\\GpsHaversineService, titik koordinat dipindah ke tabel bukan konstanta"
+    - "Field/kolom/badge Filament EmployeeResource/AttendanceDailyResource dipakai sbg REFERENSI TAMPILAN saja ('ambil interface nya saja') -- backend/model TIDAK dipakai"
+  yang_sengaja_tidak_diadopsi:
+    - "group_emp_id semicolon-joined-ID-list (anti-pattern relasional)"
+    - "Model disciplinary_points kumulatif (project pakai model diskrit SP1/SP2/SP3 sesuai Tier2 §6)"
+    - "Sub-tipe IJIN per waktu (Awal/Tengah/Akhir Shift) -- granularitas ekstra yang tak diminta"
+
+enkripsi:
+  keputusan: "2026-09-03, diimplementasikan 2026-09-05"
+  scope: "HANYA basic_salary_monthly (pyr_employee_salary) + total_pokok/total_gaji_bersih (pyr_payslip) -- bukan seluruh payslip (instruksi user 'saja dulu')"
+  mekanisme: "App\\Casts\\PayrollEncrypted -- AES-256-GCM via openssl_encrypt/openssl_decrypt, BUKAN Laravel Crypt/encrypted cast bawaan (itu pakai APP_KEY, sumber key salah)"
+  key_storage:
+    lokasi: "tm2sys.sys_constant"
+    constant_key: "VERBA_SANCTA"
+    category_code: "PAYROLL"
+    catatan: "Key hidup di DB yang sama dgn data terenkripsi -- trade-off sengaja: kemudahan recovery diprioritaskan di atas keamanan maksimal"
+  caveat_terdokumentasi: "gross_salary & komponen potongan tetap plaintext, jadi net_salary bisa direkonstruksi ulang -- enkripsi ini melindungi dari baca-cepat/parsial, bukan dari aktor dgn akses baca penuh"
+  belum_dikerjakan: "Key rotation, enkripsi history-log -- sengaja ditunda (lihat docs/payroll_encryption_decision.md §5)"
+  verifikasi: "Round-trip Eloquent kembalikan float asli, kolom DB mentah cuma ciphertext -- dicek via tinker"
+
+skema_database:
+  tm2pyr:
+    - "pyr_employee_salary -- rate komponen bulanan per-karyawan (basic_salary_monthly terenkripsi), + ptkp_status/bpjs_active/pph21_active (boolean, default false, opt-in)"
+    - "pyr_status_rule / pyr_denda_rule -- seed dari Tier2 §4.1-4.3"
+    - "pyr_overtime_rate -- multiplier per overtime_type (1.5x/2.0x, [DELTA-CONFIRM] belum dikonfirmasi bisnis)"
+    - "pyr_pph21_ter_bracket -- bracket TER PPh21, data-driven (bukan hardcode)"
+    - "pyr_bpjs_rate -- rate BPJS JHT/JP/JKK/JKM/Kesehatan, data-driven"
+    - "pyr_payroll_run -- header 1 periode (period_type WEEKLY/MONTHLY, period_start/period_end)"
+    - "pyr_payslip -- 1 baris per karyawan per run (total_pokok/total_gaji_bersih terenkripsi, total_overtime_pay, total_bpjs_employee, total_pph21, has_anomaly/anomaly_note)"
+    - "pyr_payslip_detail -- rincian komponen per payslip"
+  tm2mst_pendukung:
+    - "att_finger_import / att_finger_raw -- data mentah mesin absen (id_import nullable, dipakai juga oleh sumber GPS)"
+    - "att_daily_status -- status harian terhitung (H/T-5/T+5/T+15/PA/PAT-5/PAT+5/KJK/A/F/FF/I/IS/S/C/CL), + overtime_type, + source (termasuk MANUAL_OVERRIDE)"
+    - "emp_overtime_request -- pengajuan lembur (belum ada UI submit/approve, cuma bisa via seed manual status=APPROVED)"
+    - "emp_disciplinary -- diperluas: effective_end/working_days_target/working_days_counted (counter SP1/SP2 persist lintas periode)"
+    - "emp_bank_account -- sumber tunggal penentu metode gaji (Bank vs Cash), BUKAN kolom payment_method (tidak ada)"
+    - "emp_employee.device_pin -- kolom baru, penghubung ke mesin fingerprint"
+    - "emp_employee.payment_frequency -- WEEKLY/MONTHLY, default MONTHLY, menentukan run mana yg berlaku"
+    - "sys_geofence_location -- titik+radius kantor utk GPS clock-in, data-driven (bukan konstanta PHP)"
+    - "att_mobile_gps_log -- log tiap tap clock-in/out mobile, + hr_approval_status (AUTO_APPROVED/PENDING/APPROVED/REJECTED)"
+  catatan_arsitektur:
+    - "att_*/pyr_* pakai unsignedBigInteger employee_id polos (tanpa FK fisik lintas-DB), divalidasi di layer Laravel -- bukan VIEW cross-DB (payroll run bukan hot path)"
+    - "doctrine/dbal TIDAK terinstall -- perubahan kolom (mis. nullable) pakai raw SQL ALTER, bukan Schema::table()->change()"
+
+engine_dan_service:
+  AttendanceCalculationService:
+    method_utama: "calculateForDate() -- turunkan status harian dari att_finger_raw + emp_shift_roster/emp_shift_detail + emp_leave_request"
+    aturan_penting:
+      - "SAKIT tanpa attachment_surat_dokter -> direklasifikasi jadi Alpha (sudah ada di Tier2 §4.1 tapi baru diimplementasi 2026-09-07)"
+      - "T+5 (>3x) dan F/FF (maks 2x) pakai counter ter-scope periode"
+      - "overtime_type (WORKDAY/HOLIDAY/SUNDAY/EARLY) diklasifikasi via Carbon::dayOfWeek()/SysHoliday::isHoliday()"
+  PayrollEngineService:
+    lifecycle: "DRAFT -> CALCULATED (repeatable) -> VERIFIED (FULL/RANDOM_SAMPLE) -> CONFIRMED -> PAID -> CLOSED (auto-buat DRAFT periode berikutnya)"
+    catatan: "Tiap transisi guard-checked (RuntimeException kalau lompat tahap). Method lama run()/markReviewed()/finalize() SUDAH TIDAK ADA, diganti lifecycle di atas."
+    performa: "pyr_status_rule/pyr_denda_rule/pyr_overtime_rate di-preload sekali per calculate() (dulu N+1 query per hari per komponen)"
+    anomaly_gate: "Karyawan tanpa pyr_employee_salary aktif -> payslip tetap dibuat dgn has_anomaly=true; confirm() menolak run kalau masih ada anomali (dulu silent-skip, sekarang tidak)"
+    bpjs_pph21_base:
+      bpjs: "POKOK + TJ_KEAHLIAN + TJ_LOYALITAS + TJ_PRESTASI, hanya dihitung kalau bpjs_active=true"
+      pph21: "base BPJS + bonus + lembur, hanya dihitung kalau pph21_active=true DAN ptkp_status terisi"
+  Pph21TerService:
+    status: "wired opsional per-employee (opt-in, bukan default aktif)"
+    keputusan_final: "PPh21 TETAP MONTHLY-ONLY SELAMANYA by design (2026-09-07) -- karyawan WEEKLY hampir semua di bawah UMR (bracket 0%) & kemungkinan tanpa NPWP. Konversi monthly-equivalent utk WEEKLY TIDAK PERLU dibangun kecuali ada kasus nyata."
+  BpjsCalculatorService:
+    status: "wired opsional per-employee (opt-in)"
+  GpsHaversineService:
+    status: "real, baca titik/radius dari sys_geofence_location (bukan hardcode)"
+    koordinat_kantor: "Jl. Raden Panji Suroso, Malang (-7.94220500, 112.65106000), radius 50m"
+
+visibilitas_data_gaji:
+  aturan: "HR Officer TIDAK boleh lihat nominal gaji individu (kecuali posisi Satpam/Security) -- hanya jalankan proses & lihat total agregat"
+  implementasi: "SecUser::canViewPayrollAmounts() (is_admin/DIREKSI/MGR_ACC) + pengecualian per-posisi di layar Master Gaji"
+  catatan: "Belum ada sec_group 'Payroll Officer' khusus -- kemungkinan penyempurnaan masa depan"
+
+layar_ui_dibangun:
+  - kode: "Modul 01"
+    file: "hrm/attendance-upload.blade.php"
+    menu: "HRM_ATTENDANCE_UPLOAD"
+    fungsi: "Upload absen csv/txt/xlsx (device_pin,tanggal,jam_masuk,jam_keluar), langsung panggil calculateForDate()"
+  - kode: "hrm.attendance-daily"
+    file: "hrm/attendance-daily.blade.php"
+    menu: "HRM_ATTENDANCE (id 973, sebelumnya NOT_BUILT sejak 2026-08-24)"
+    fungsi: "Grid att_daily_status + stat box + tombol Hitung Ulang Presensi + modal manual override (wajib alasan >=10 karakter)"
+  - kode: "Master Gaji"
+    file: "hrm/payroll-employee-salary.blade.php"
+    menu: "HRM_PAYROLL_SALARY"
+    fungsi: "Grid karyawan aktif + status gaji, form set komponen gaji + PTKP + toggle BPJS/PPh21 (versioning: nonaktifkan baris lama via effective_to, bukan overwrite)"
+  - kode: "Modul 03"
+    file: "hrm/payroll-batch-run.blade.php"
+    menu: "HRM_PAYROLL_CALC"
+    fungsi: "Pilih periode WEEKLY/MONTHLY, tombol Jalankan Kalkulasi, ringkasan Bank-vs-Cash, tombol lifecycle penuh"
+  - kode: "Modul 04"
+    file: "hrm/payroll-payslip-print.blade.php"
+    fungsi: "Cetak slip gaji per id_payslip, pakai components/print/* kit standar"
+  - kode: "Modul 05"
+    file: "hrm/payroll-bank-transfer.blade.php"
+    menu: "HRM_PAYROLL_BANKXFER"
+    fungsi: "Daftar karyawan berekening aktif utk run CONFIRMED+, export CSV generik (BUKAN format kliring bank asli BCA/Mandiri -- item terbuka)"
+  - kode: "Modul 06"
+    file: "hrm/payroll-cash-roster.blade.php"
+    menu: "HRM_PAYROLL_CASHROSTER"
+    fungsi: "Komplemen tanpa rekening bank + breakdown pecahan uang (100k-1k) + kotak total lembar"
+  - kode: "Modul 07"
+    file: "hrm/payroll-employee-bank.blade.php"
+    fungsi: "Grid emp_bank_account, hapus nama bank = nonaktifkan baris lama (jadi status Cash), bukan delete"
+  - kode: "Modul 08"
+    file: "hrm/discipline-report.blade.php"
+    menu: "HRM_DISCIPLINE_REPORT"
+    fungsi: "4 stat widget + tabel karyawan terlambat + tabel karyawan absen per tanggal, baca att_daily_status"
+  - kode: "Modul 09"
+    file: "self-service/clock-in.blade.php + hrm/gps-approval.blade.php"
+    menu: "HRM_GPS_APPROVAL"
+    fungsi: "Clock-in mobile GPS real (navigator.geolocation), dalam radius = langsung tercatat & terhitung; luar radius = PENDING sampai HR approve"
+
+keputusan_bisnis_terkonfirmasi:
+  - "PPh21 monthly-only permanen (lihat engine_dan_service.Pph21TerService)"
+  - "GPS clock-in DIBANGUN (2026-09-07) -- membatalkan catatan lama BACKLOG §12.5 'tidak diminta, tidak dibangun' krn user minta 2x"
+  - "Menu sidebar 'Time Attendance' harus tampil SEBELUM 'Payroll' (absen dulu baru payroll bisa jalan) -- sort_order ditukar"
+  - "Salary encryption sudah live sejak fondasi awal, tidak perlu dikerjakan ulang"
+
+item_terbuka_belum_selesai:
+  - "PPh21/BPJS: base perhitungan sesuai Tier2, tapi rate/bracket masih [DELTA-CONFIRM] utk sebagian nilai (mis. multiplier lembur 1.5x/2.0x belum dikonfirmasi bisnis)"
+  - "Uang Roti eligibility MISMATCH dgn data nyata: rule saat ini cuma cocokkan posisi mengandung 'STAFF'/'SPV' (Tier2 §4.4 literal), tapi Excel asli tetap membayar staf level Operator (mis. 'Senior Heidelberg Operator'). BELUM DIPERBAIKI -- pertanyaan terbuka ke user, jangan diperlebar sendiri tanpa konfirmasi."
+  - "TJ_KEAHLIAN saat ini free-form per-karyawan (pyr_employee_salary.tj_keahlian_monthly), padahal data nyata pakai lookup berbasis posisi (sheet REFF_KEAHLIAN) -- belum diadopsi"
+  - "LEMBUR /JAM: ada rate lembur per-jam nyata di data Excel, belum di-wire ke engine (masih pakai pyr_overtime_rate generik)"
+  - "Journal posting hook saat run CLOSE -- belum dibangun"
+  - "Generate file transfer bank/pencairan cash fisik -- PAID saat ini cuma status flag, belum ada file output nyata per bank"
+  - "Tracking channel pengiriman slip gaji per-karyawan -- belum ada"
+  - "emp_overtime_request belum ada UI submit/approval -- hanya bisa lewat seed manual"
+  - "Format export CSV bank transfer masih generik, bukan format kliring bank asli (BCA/Mandiri, dst)"
+  - "ElectronicSignatureService (tanda tangan elektronik slip gaji) dari paket referensi -- belum mulai dikerjakan"
+
+validasi_data_nyata:
+  sumber: "docs/attachments/8. GAJI KARYAWAN PERIODE 22-28 AGUSTUS 2026 WEEKLY 1657.xlsb (dibuka via Python pyxlsb, PhpSpreadsheet tak bisa baca .xlsb)"
+  data_dummy_permanen: "2 karyawan VAL-001/VAL-002 (nama asli, device_pin 354/421, shift 07:30-15:30, gaji ESTIMASI Rp3.2jt bukan rate rahasia asli) -- migrasi permanen, SENGAJA TIDAK DIHAPUS (lihat feedback_keep_dummy_data), tetap bisa diinspeksi lewat UI Presensi Harian & Payroll Batch Run"
+  hasil_cocok: "Status absen, deteksi hari lembur (4 hari, menit persis 60/180/180/60), dan nol-denda -- semua cocok persis dgn sheet REKAP ABSEN asli"
+  hasil_tidak_cocok: "Uang Roti (lihat item_terbuka_belum_selesai) -- engine hitung Rp0, Excel asli bayar Rp10.000 (2 hari kualifikasi)"
+  tidak_tervalidasi: "Nominal Gaji Pokok/TJ Keahlian tidak bisa dicocokkan 1:1 -- spreadsheet asli pakai formula factor x rate-per-komponen-per-karyawan yang rate/formulanya tidak terlihat di file export"
+
+testing:
+  metode: "Livewire::test() + tinker (Browser pane tidak bisa akses domain custom tmerp.test di beberapa sesi)"
+  hasil_terakhir_tercatat: "100 passed / 9 skipped / 0 failed (setelah wiring BPJS/PPh21)"
+  aturan_uji_penting: "Isolasi test payroll run pakai payment_frequency=WEEKLY (bukan MONTHLY) supaya tidak menyapu ~137 karyawan aktif nyata yang defaultnya MONTHLY"
+
+referensi_dokumen:
+  - "docs/attendancepayroll_tier1.md .. tier4.md -- dokumen kanonik (v1.0, dari SOP company asli)"
+  - "docs/payroll_encryption_decision.md -- keputusan lengkap desain enkripsi"
+  - "docs/BACKLOG.md §12.5 -- catatan GPS clock-in (kini BASI, sudah dibangun)"
+  - "docs/payroll_timeattendance/*.html -- mockup tampilan (referensi visual utk Modul 03/04/05/06/08)"

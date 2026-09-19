@@ -1,0 +1,1209 @@
+<title>Roster Shift Mingguan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --navy:#2c3e69; --navy-2:#22304f; --accent:#2f6fed; --accent-soft:#e7efff;
+  --ground:#f4f6fa; --surface:#ffffff; --surface-2:#fafbfd; --sunken:#eef1f7;
+  --line:#dfe4ee; --line-strong:#c6cede;
+  --ink:#151b28; --ink-2:#48546b; --ink-3:#7b869c;
+  --ok:#1f8a5f; --ok-bg:#e6f5ee; --warn:#b5730b; --warn-bg:#fdf3e0; --bad:#c0392b; --bad-bg:#fbeceb;
+  --shadow:0 1px 2px rgba(21,27,40,.06),0 4px 14px rgba(21,27,40,.05);
+  --radius:8px;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  --cond:"Barlow Condensed","IBM Plex Sans",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --navy:#1b2540; --navy-2:#151d33; --accent:#6f9aff; --accent-soft:#1d2942;
+    --ground:#0e1320; --surface:#161d2d; --surface-2:#1a2233; --sunken:#111828;
+    --line:#28324a; --line-strong:#3a4663;
+    --ink:#e7ecf6; --ink-2:#a4b0c7; --ink-3:#77839c;
+    --ok:#4cc38a; --ok-bg:#122a21; --warn:#e0a338; --warn-bg:#2b2113; --bad:#f07167; --bad-bg:#2e1717;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --navy:#1b2540; --navy-2:#151d33; --accent:#6f9aff; --accent-soft:#1d2942;
+  --ground:#0e1320; --surface:#161d2d; --surface-2:#1a2233; --sunken:#111828;
+  --line:#28324a; --line-strong:#3a4663;
+  --ink:#e7ecf6; --ink-2:#a4b0c7; --ink-3:#77839c;
+  --ok:#4cc38a; --ok-bg:#122a21; --warn:#e0a338; --warn-bg:#2b2113; --bad:#f07167; --bad-bg:#2e1717;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 18px rgba(0,0,0,.28);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:13.5px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,select,input{font:inherit;color:inherit}
+.wrap{width:100%;padding:0 16px 28px}
+[hidden]{display:none!important}
+
+/* ---------- top bar ---------- */
+.topbar{background:var(--navy);color:#fff;padding:11px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.brand{display:flex;flex-direction:column;gap:1px}
+.brand b{font-family:var(--cond);font-size:21px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.brand span{font-size:11px;color:#b9c4de;letter-spacing:.4px}
+.nav{display:flex;gap:2px;background:rgba(255,255,255,.08);border-radius:var(--radius);padding:3px;margin-right:auto}
+.nav button{background:none;border:0;color:#b9c4de;padding:6px 14px;border-radius:5px;cursor:pointer;font-family:var(--cond);font-size:14.5px;font-weight:600;letter-spacing:.7px;text-transform:uppercase}
+.nav button:hover{color:#fff}
+.nav button[aria-current="page"]{background:#fff;color:var(--navy)}
+.weeknav{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.1);border-radius:var(--radius);padding:3px}
+.weeknav button{background:none;border:0;color:#fff;padding:4px 9px;border-radius:5px;cursor:pointer;font-size:15px;line-height:1}
+.weeknav button:hover{background:rgba(255,255,255,.16)}
+.weeknav .lbl{font-family:var(--cond);font-size:15px;font-weight:600;letter-spacing:.3px;padding:0 8px;white-space:nowrap}
+.weeknav .lbl small{display:block;font-family:var(--sans);font-size:10px;font-weight:400;color:#b9c4de;letter-spacing:.3px}
+.tbtn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff;padding:6px 12px;border-radius:var(--radius);cursor:pointer;font-size:12.5px;font-weight:500}
+.tbtn:hover{background:rgba(255,255,255,.2)}
+.tbtn.primary{background:var(--accent);border-color:transparent}
+.tbtn.primary:hover{filter:brightness(1.08)}
+
+/* ---------- jadwal bar ---------- */
+.jbar{background:var(--navy-2);color:#fff;padding:9px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;border-top:1px solid rgba(255,255,255,.08)}
+.jbar .jlbl{font-family:var(--cond);font-size:11.5px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:#9fb0d4}
+.jbar select{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:var(--radius);padding:6px 30px 6px 11px;min-width:250px;max-width:100%;cursor:pointer;font-weight:600;
+  appearance:none;background-image:linear-gradient(45deg,transparent 50%,#fff 50%),linear-gradient(135deg,#fff 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.jbar select option{color:#151b28;background:#fff}
+.jbar .meta{font-size:11.5px;color:#9fb0d4;display:flex;gap:12px;flex-wrap:wrap}
+.jbar .meta b{color:#dbe4f7;font-weight:600}
+.jbar .right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- filter strip ---------- */
+.filters{background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px;display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f label{font-family:var(--cond);font-size:11.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink-3)}
+.f select{background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--radius);padding:6px 30px 6px 10px;min-width:210px;max-width:100%;cursor:pointer;
+  appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.stats{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.stat{background:var(--sunken);border:1px solid var(--line);border-radius:var(--radius);padding:5px 11px;min-width:76px}
+.stat b{display:block;font-family:var(--cond);font-size:20px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:10.5px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-3);font-weight:500}
+.stat.ok b{color:var(--ok)} .stat.warn b{color:var(--warn)}
+
+/* ---------- layout ---------- */
+.work{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;padding-top:16px;align-items:start}
+@media (max-width:1080px){.work{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.panel-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.panel-hd h2{margin:0;font-family:var(--cond);font-size:16px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.panel-hd .note{font-size:11.5px;color:var(--ink-3)}
+.hint{margin-left:auto;font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px}
+.kbd{font-family:var(--mono);font-size:10.5px;background:var(--sunken);border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:4px;padding:1px 5px}
+
+/* ---------- board ---------- */
+.board-scroll{overflow-x:auto}
+.board{min-width:980px}
+.grid-row{display:grid;grid-template-columns:238px minmax(0,1fr)}
+.dayhead{background:var(--surface-2);border-bottom:1px solid var(--line-strong)}
+.dayhead .c{padding:7px 12px;font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3)}
+.days{display:grid;grid-template-columns:repeat(7,1fr)}
+.days .d{padding:7px 6px;text-align:center;border-left:1px solid var(--line)}
+.days .d b{display:block;font-family:var(--cond);font-size:13.5px;font-weight:600;letter-spacing:.6px;color:var(--ink-2)}
+.days .d span{font-size:10.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.days .d.sun b{color:var(--bad)}
+
+.srow{border-bottom:1px solid var(--line)}
+.srow:last-child{border-bottom:0}
+.shiftcell{padding:11px 12px;border-right:1px solid var(--line);background:var(--surface-2);display:flex;flex-direction:column;gap:5px;cursor:pointer;position:relative}
+.shiftcell:hover{background:var(--accent-soft)}
+.shiftcell .edithint{position:absolute;top:8px;right:10px;font-size:11px;color:var(--ink-3);opacity:0;transition:opacity .15s}
+.shiftcell:hover .edithint{opacity:1}
+.shiftcell .nm{font-family:var(--cond);font-size:16px;font-weight:600;letter-spacing:.4px;display:flex;align-items:center;gap:7px}
+.dot{width:9px;height:9px;border-radius:2px;flex:none}
+.shiftcell .sum{font-family:var(--mono);font-size:10px;color:var(--ink-2);line-height:1.5}
+.shiftcell .sum em{font-style:normal;color:var(--ink-3)}
+.cap{display:flex;align-items:center;gap:7px;margin-top:2px}
+.bar{flex:1;height:5px;border-radius:3px;background:var(--sunken);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .18s ease}
+.capnum{font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+.capnum.under{color:var(--warn)} .capnum.full{color:var(--ok)} .capnum.over{color:var(--bad)}
+
+.zone{position:relative;min-height:112px;display:flex;flex-direction:column}
+.zone.over{background:var(--accent-soft);outline:2px dashed var(--accent);outline-offset:-3px}
+.zone.blocked{background:var(--bad-bg);outline:2px dashed var(--bad);outline-offset:-3px}
+.daystrip{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px dashed var(--line);flex:none}
+.daystrip div{border-left:1px solid var(--line);padding:4px 3px;text-align:center;font-family:var(--mono);font-size:9.5px;line-height:1.35;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.daystrip div.off{background:repeating-linear-gradient(135deg,var(--sunken) 0 5px,transparent 5px 10px);color:var(--ink-3);font-family:var(--cond);font-size:10.5px;letter-spacing:.8px}
+.daystrip div i{display:block;font-style:normal;color:var(--ink-3);font-size:9px}
+.chipwrap{position:relative;flex:1;padding:8px}
+.chipwrap::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(to right,transparent 0 calc(100%/7 - 1px),var(--line) calc(100%/7 - 1px) calc(100%/7))}
+.chips{position:relative;display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start}
+.empty{position:relative;display:flex;align-items:center;justify-content:center;min-height:64px;color:var(--ink-3);font-size:12px;text-align:center;padding:0 10px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line-strong);border-left-width:3px;border-radius:6px;padding:4px 6px 4px 7px;cursor:grab;max-width:190px}
+.chip:active{cursor:grabbing}
+.chip .av{width:20px;height:20px;border-radius:4px;display:grid;place-items:center;font-family:var(--cond);font-size:11px;font-weight:700;color:#fff;flex:none}
+.chip .t{min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.chip .t b{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip .t span{font-family:var(--mono);font-size:9.5px;color:var(--ink-3)}
+.chip .x{border:0;background:none;color:var(--ink-3);cursor:pointer;font-size:14px;line-height:1;padding:0 1px;border-radius:3px}
+.chip .x:hover{color:var(--bad);background:var(--bad-bg)}
+.days6{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);border:1px solid var(--line);border-radius:3px;padding:0 3px;flex:none}
+.chip.noskill{border-color:var(--warn);background:var(--warn-bg)}
+
+/* ---------- pool ---------- */
+.pool{position:sticky;top:16px}
+.poolbody{max-height:calc(100vh - 280px);overflow-y:auto}
+@media (max-width:1080px){.pool{position:static}.poolbody{max-height:520px}}
+.poolctl{padding:10px 12px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.scope{font-size:11.5px;color:var(--ink-2);background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:5px 8px;line-height:1.35}
+.search{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);padding:6px 9px}
+.search input{border:0;background:none;width:100%;outline:none}
+.search span{color:var(--ink-3);font-size:13px}
+.groupby{display:flex;align-items:center;gap:6px}
+.groupby label{font-family:var(--cond);font-size:11.5px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.groupby select{flex:1;background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--radius);padding:5px 8px;cursor:pointer}
+.chk{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);cursor:pointer}
+.chk input{accent-color:var(--accent);cursor:pointer}
+.selbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--accent-soft);border-bottom:1px solid var(--line);cursor:grab}
+.selbar b{font-family:var(--cond);font-size:15px;letter-spacing:.4px}
+.selbar .gr{margin-left:auto;display:flex;gap:6px}
+.mini{background:var(--surface);border:1px solid var(--line-strong);border-radius:5px;padding:3px 8px;font-size:11.5px;cursor:pointer}
+.mini:hover{border-color:var(--accent);color:var(--accent)}
+.grip{font-size:14px;color:var(--accent);letter-spacing:-2px}
+.ghead{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--sunken);border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:1}
+.ghead .gn{font-family:var(--cond);font-size:13px;font-weight:600;letter-spacing:.7px;text-transform:uppercase}
+.ghead .gc{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-left:auto}
+.ghead input{accent-color:var(--accent);cursor:pointer}
+.ghead .caret{color:var(--ink-3);font-size:10px;cursor:pointer;width:12px}
+.pitem{display:flex;align-items:center;gap:9px;padding:6px 12px;border-bottom:1px solid var(--line);cursor:grab;user-select:none}
+.pitem:hover{background:var(--surface-2)}
+.pitem.sel{background:var(--accent-soft)}
+.pitem input{accent-color:var(--accent);pointer-events:none;flex:none}
+.pitem .av{width:26px;height:26px;border-radius:5px;display:grid;place-items:center;font-family:var(--cond);font-size:12px;font-weight:700;color:#fff;flex:none}
+.pitem .t{min-width:0;flex:1}
+.pitem .t b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pitem .t span{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.tag{font-family:var(--cond);font-size:10.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;padding:1px 6px;border-radius:3px;flex:none}
+.poolempty{padding:26px 16px;text-align:center;color:var(--ink-3);font-size:12.5px;line-height:1.6}
+
+/* ---------- master shift ---------- */
+.mwrap{padding-top:16px;display:flex;flex-direction:column;gap:14px;max-width:1180px}
+.mhead{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.mhead h1{margin:0;font-family:var(--cond);font-size:26px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.mhead p{margin:0;font-size:12.5px;color:var(--ink-3);max-width:62ch}
+.mhead .r{margin-left:auto;display:flex;gap:8px}
+.abtn{background:var(--accent);color:#fff;border:0;border-radius:var(--radius);padding:8px 15px;cursor:pointer;font-weight:600;font-size:13px}
+.abtn:hover{filter:brightness(1.08)}
+.abtn.ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);font-weight:500}
+
+.sdef{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.sdef.inactive{opacity:.62}
+.sdef-hd{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap;border-left:5px solid}
+.sdef-hd .code{font-family:var(--mono);font-size:11.5px;background:var(--sunken);border:1px solid var(--line-strong);border-radius:4px;padding:3px 7px;width:86px;text-align:center}
+.sdef-hd .nmin{font-family:var(--cond);font-size:19px;font-weight:600;letter-spacing:.4px;background:none;border:0;border-bottom:1px dashed var(--line-strong);padding:2px 2px;min-width:190px;flex:1}
+.sdef-hd .nmin:focus{outline:none;border-bottom-color:var(--accent)}
+.sdef-hd .fx{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-3)}
+.sdef-hd .fx input[type=number]{width:58px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:5px;padding:4px 6px;font-family:var(--mono);text-align:center}
+.sdef-hd select.col{background:var(--surface-2);border:1px solid var(--line-strong);border-radius:5px;padding:4px 6px;cursor:pointer}
+.sdef-hd .tot{font-family:var(--cond);font-size:15px;font-weight:600;background:var(--ok-bg);color:var(--ok);border-radius:5px;padding:3px 9px;white-space:nowrap}
+.sdef-hd .acts{display:flex;gap:6px;margin-left:auto}
+.iconbtn{background:var(--surface);border:1px solid var(--line-strong);border-radius:5px;padding:4px 9px;cursor:pointer;font-size:12px}
+.iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+.iconbtn.danger:hover{border-color:var(--bad);color:var(--bad)}
+
+.dgrid{display:grid;grid-template-columns:repeat(7,1fr)}
+@media (max-width:900px){.dgrid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:560px){.dgrid{grid-template-columns:repeat(2,1fr)}}
+.dcell{border-left:1px solid var(--line);padding:9px 9px 11px;display:flex;flex-direction:column;gap:6px}
+.dcell:first-child{border-left:0}
+.dcell.isoff{background:var(--sunken)}
+.dcell .dh{display:flex;align-items:center;gap:6px}
+.dcell .dh b{font-family:var(--cond);font-size:14px;font-weight:600;letter-spacing:.7px;text-transform:uppercase}
+.dcell .dh input{accent-color:var(--accent);cursor:pointer;margin-left:auto}
+.dcell .dh b.sun{color:var(--bad)}
+.dcell input[type=time]{width:100%;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:5px;padding:4px 5px;font-family:var(--mono);font-size:11.5px}
+.dcell .brk{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--ink-3)}
+.dcell .brk input{width:52px;background:var(--surface-2);border:1px solid var(--line-strong);border-radius:5px;padding:3px 5px;font-family:var(--mono);font-size:11px;text-align:center}
+.dcell .hrs{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--ok);text-align:right}
+.dcell .hrs.night{color:#8b5cf6}
+.dcell .libur{display:grid;place-items:center;min-height:78px;font-family:var(--cond);font-size:13px;letter-spacing:1px;color:var(--ink-3)}
+.msgbar{background:var(--warn-bg);border:1px solid var(--warn);color:var(--warn);border-radius:var(--radius);padding:9px 13px;font-size:12.5px}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,16px);background:var(--navy-2);color:#fff;padding:9px 16px;border-radius:var(--radius);box-shadow:var(--shadow);font-size:12.5px;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;z-index:90;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.bad{background:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;padding:9px 16px;font-size:11.5px;color:var(--ink-3);align-items:center}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* ---------- modal ---------- */
+.ov{position:fixed;inset:0;background:rgba(12,17,28,.55);display:none;z-index:80;padding:22px 16px;overflow:auto}
+.ov.on{display:block}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.3);max-width:520px;margin:0 auto}
+.card.wide{max-width:1020px}
+.card-hd{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line)}
+.card-hd h3{margin:0;font-family:var(--cond);font-size:18px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.card-hd .close{margin-left:auto;background:none;border:0;font-size:20px;line-height:1;color:var(--ink-3);cursor:pointer;padding:0 4px}
+.card-bd{padding:16px}
+.card-ft{display:flex;gap:8px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line);background:var(--surface-2);border-radius:0 0 10px 10px;flex-wrap:wrap}
+.btn{border:1px solid var(--line-strong);background:var(--surface);border-radius:var(--radius);padding:7px 14px;cursor:pointer;font-size:13px;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:transparent;color:#fff}
+.fld{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fld label{font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink-3)}
+.fld input[type=text],.fld select{background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--radius);padding:8px 10px;width:100%}
+.deptpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px}
+.deptpick label{display:flex;align-items:center;gap:7px;font-size:12.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;text-transform:none;letter-spacing:0;font-family:var(--sans);font-weight:400;color:var(--ink)}
+.deptpick input{accent-color:var(--accent)}
+
+/* ---------- print sheet ---------- */
+.sheet{background:#fff;color:#111;padding:22px 26px;font-size:11.5px}
+.sheet .sh-hd{display:flex;align-items:flex-start;gap:16px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:14px}
+.sheet .sh-hd .co{font-family:var(--cond);font-size:19px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.sheet .sh-hd .co small{display:block;font-family:var(--sans);font-size:10px;font-weight:400;letter-spacing:.3px;color:#555;text-transform:none}
+.sheet .sh-hd .ttl{margin-left:auto;text-align:right}
+.sheet .sh-hd .ttl b{font-family:var(--cond);font-size:20px;letter-spacing:.5px;display:block}
+.sheet .sh-hd .ttl span{font-size:10.5px;color:#444}
+.sheet .sh-meta{display:flex;flex-wrap:wrap;gap:18px;font-size:10.5px;color:#333;margin-bottom:14px}
+.sheet h4{font-family:var(--cond);font-size:14px;letter-spacing:.8px;text-transform:uppercase;margin:16px 0 6px;padding-bottom:3px;border-bottom:1px solid #999}
+.sheet table{width:100%;border-collapse:collapse;margin-bottom:6px}
+.sheet th,.sheet td{border:1px solid #999;padding:4px 6px;vertical-align:top;text-align:left}
+.sheet th{background:#eceff5;font-family:var(--cond);font-size:11px;letter-spacing:.7px;text-transform:uppercase;font-weight:600}
+.sheet td.sh{width:150px;font-weight:600}
+.sheet td.sh small{display:block;font-weight:400;font-family:var(--mono);font-size:9px;color:#555;line-height:1.45}
+.sheet td.ct{width:40px;text-align:center;font-family:var(--mono)}
+.sheet td.tm{font-family:var(--mono);font-size:9.5px;text-align:center;white-space:nowrap}
+.sheet .names{display:flex;flex-wrap:wrap;gap:3px 10px}
+.sheet .names span{white-space:nowrap}
+.sheet .names i{font-family:var(--mono);font-size:9.5px;color:#666;font-style:normal}
+.sheet .sign{display:flex;gap:40px;margin-top:24px;font-size:10.5px}
+.sheet .sign div{flex:1;text-align:center}
+.sheet .sign u{display:block;margin-top:44px;border-top:1px solid #333;padding-top:3px;text-decoration:none}
+.sheet .foot{margin-top:14px;font-size:9.5px;color:#666;border-top:1px solid #ccc;padding-top:6px}
+
+@media print{
+  body>*{display:none!important}
+  .ov.on{display:block!important;position:static;background:#fff;padding:0;overflow:visible}
+  .ov.on .card{max-width:none;border:0;box-shadow:none;margin:0}
+  .card-hd,.card-ft{display:none!important}
+  .card-bd{padding:0}
+  .sheet{padding:0}
+  @page{size:A4 landscape;margin:12mm}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="brand">
+    <b>TMERP · HR</b>
+    <span>PT. TELASIH MAKMUR · Offset Printing &amp; Paper Packaging</span>
+  </div>
+  <!-- @TMERP-TODO @ANCHOR-ESS-NAV — tambah menu ke-3 di sini:
+       <button type="button" data-view="swap">Pengajuan Tukar Shift <span class="badge-count">3</span></button>
+       Isinya inbox approval (lihat blok HR-ESS-SHIFT-SWAP di <script>).
+       Tampil hanya untuk role Leader/Kepala Bagian; pegawai biasa masuk lewat
+       menu Self Service terpisah, bukan dari layar PPIC ini. -->
+  <nav class="nav">
+    <button type="button" data-view="roster" aria-current="page">Roster Mingguan</button>
+    <button type="button" data-view="shift">Master Shift</button>
+  </nav>
+  <div class="weeknav" id="wnavBox">
+    <button type="button" id="wprev" aria-label="Minggu sebelumnya">&lsaquo;</button>
+    <div class="lbl" id="wlbl">MINGGU 37<small>07 – 13 Sep 2026</small></div>
+    <button type="button" id="wnext" aria-label="Minggu berikutnya">&rsaquo;</button>
+  </div>
+  <button type="button" class="tbtn" id="btnSwap">⇄ Tukar shift</button>
+  <button type="button" class="tbtn primary" id="btnSave">Simpan</button>
+</header>
+
+<div class="jbar" id="jbar">
+  <span class="jlbl">Jadwal</span>
+  <select id="selSched" aria-label="Pilih jadwal"></select>
+  <div class="meta" id="schedMeta"></div>
+  <div class="right">
+    <button type="button" class="tbtn" id="btnNewSched">＋ Jadwal baru</button>
+    <button type="button" class="tbtn" id="btnRename">✎ Edit jadwal</button>
+    <button type="button" class="tbtn" id="btnDelSched">🗑 Hapus jadwal</button>
+    <button type="button" class="tbtn" id="btnPrint">🖨 Cetak jadwal ini</button>
+  </div>
+</div>
+
+<div class="filters" id="filters">
+  <div class="f"><label for="selDept">Departemen</label><select id="selDept"></select></div>
+  <div class="f"><label for="selWc">Mesin / Work Center</label><select id="selWc"></select></div>
+  <div class="stats">
+    <div class="stat"><b id="stPool">0</b><span>Pool tampil</span></div>
+    <div class="stat ok"><b id="stAssigned">0</b><span>Terjadwal</span></div>
+    <div class="stat warn"><b id="stFree">0</b><span>Belum</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- ============ VIEW: ROSTER ============ -->
+  <div class="work" id="viewRoster">
+    <section class="panel">
+      <div class="panel-hd">
+        <h2 id="boardTitle">Roster</h2>
+        <span class="note">1 penempatan = 1 minggu penuh, jam mengikuti definisi shift</span>
+        <span class="hint">Dobel-klik kolom shift = ubah jam · <span class="kbd">Shift</span>+klik = blok pegawai</span>
+      </div>
+      <div class="board-scroll">
+        <div class="board">
+          <div class="grid-row dayhead">
+            <div class="c">Shift / Pola Jam</div>
+            <div class="days" id="dayHead"></div>
+          </div>
+          <div id="rows"></div>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <aside class="panel pool">
+      <div class="panel-hd"><h2>Pool Pegawai</h2><span class="note" id="poolCount">0 tersedia</span></div>
+      <div class="poolctl">
+        <div class="scope" id="poolScope"></div>
+        <div class="search"><span>&#9906;</span><input id="q" type="search" placeholder="Cari nama atau NIK…" autocomplete="off"></div>
+        <div class="groupby"><label for="selGroup">Kelompok</label>
+          <select id="selGroup"><option value="jabatan">Jabatan</option><option value="skill">Skill Mesin</option><option value="gol">Golongan</option></select></div>
+        <label class="chk"><input type="checkbox" id="skillOnly" checked> Hanya yang punya skill mesin ini</label>
+      </div>
+      <div id="selbar"></div>
+      <div class="poolbody" id="poolBody"></div>
+    </aside>
+  </div>
+
+  <!-- ============ VIEW: MASTER SHIFT ============ -->
+  <div class="mwrap" id="viewShift" hidden>
+    <div class="mhead">
+      <div>
+        <h1>Master Shift</h1>
+        <p>Definisi pola kerja. Jam bisa berbeda tiap hari — mis. Reguler Senin–Jumat 07:30–16:30 tapi Sabtu 07:30–15:30. Perubahan di sini langsung dipakai seluruh jadwal roster.</p>
+      </div>
+      <div class="r">
+        <button type="button" class="abtn ghost" id="btnShiftPrint">🖨 Cetak definisi</button>
+        <button type="button" class="abtn" id="btnAddShift">＋ Tambah shift</button>
+      </div>
+    </div>
+    <div id="shiftList"></div>
+  </div>
+</div>
+
+<div class="ov" id="ov"><div class="card" id="ovCard"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================================
+ * @TMERP-TODO  FEATURE: HR-ESS-SHIFT-SWAP
+ * @STATUS      NOT-IMPLEMENTED — mockup ini baru mencakup penjadwalan oleh PPIC/HR.
+ * @MODULE      HR → Employee Self Service (ESS) + Approval
+ * @OWNER       Jo (Iwan P.)
+ * @GREP        cari "TMERP-TODO" untuk semua titik yang terkait fitur ini.
+ * ----------------------------------------------------------------------------
+ * RINGKASAN
+ * Pegawai yang berhalangan pada minggu berjalan mengajukan TUKAR SHIFT dengan
+ * rekan kerja lewat menu Self Service. Pengajuan tidak langsung mengubah roster —
+ * harus di-approve atasan dulu. Setelah approved, roster minggu tsb di-update.
+ *
+ * BEDAKAN DARI YANG SUDAH ADA:
+ *   - rotateForm()  = rotasi MASSAL antar-minggu oleh PPIC (bulk, tanpa approval).
+ *   - fitur ini     = tukar INDIVIDU dalam minggu yang sama, butuh approval.
+ *   Keduanya menulis ke tabel roster yang sama tapi lewat jalur berbeda.
+ *
+ * AKTOR & ALUR
+ *   1. REQUESTER  (pegawai A) pilih minggu + tanggal/shift miliknya, pilih rekan
+ *                 penukar (pegawai B), isi alasan, submit.
+ *   2. COUNTERPART(pegawai B) menyetujui/menolak — tukar tidak sah tanpa
+ *                 persetujuan pihak yang ditukar. (Opsional: bisa di-skip bila
+ *                 kebijakan mengizinkan atasan menunjuk langsung.)
+ *   3. APPROVER   (Leader / Kepala Bagian) approve atau reject dengan catatan.
+ *   4. SISTEM     menulis perubahan roster + audit trail, notifikasi ke 3 pihak.
+ *
+ * STATE MACHINE
+ *   DRAFT → SUBMITTED → WAITING_COUNTERPART → WAITING_APPROVAL
+ *         → APPROVED | REJECTED | CANCELLED | EXPIRED
+ *   EXPIRED otomatis bila tanggal shift sudah lewat sebelum di-approve.
+ *
+ * ATURAN VALIDASI (WAJIB dicek server-side, bukan hanya di UI)
+ *   R1. A dan B harus berada di minggu (week_no) yang sama.
+ *   R2. Setelah tukar, A dan B tetap masing-masing hanya punya SATU shift
+ *       di minggu itu — invarian yang sama dengan drag & drop di mockup ini.
+ *   R3. B harus punya skill/sertifikasi untuk work center milik A dan sebaliknya
+ *       (lihat EMP.skills di mockup). Bila tidak, tolak atau minta override
+ *       atasan dengan alasan tertulis.
+ *   R4. Kuota per shift (SHIFTDEF.cap) tidak boleh terlampaui setelah tukar.
+ *       Karena ini SWAP 1:1, kuota otomatis aman — kecuali bila nanti diizinkan
+ *       tukar silang antar work center dengan kuota berbeda.
+ *   R5. Cek jam istirahat antar shift: A tidak boleh dapat Shift 3 (21:15–05:00)
+ *       lalu Shift 1 (05:00) keesokan harinya. Minimal rest period (mis. 8 jam)
+ *       diambil dari Master Shift (dayMin/isNight sudah menghitung lintas hari).
+ *   R6. Tolak bila roster minggu tsb sudah berstatus PUBLISHED & LOCKED untuk
+ *       payroll (lihat catatan SNAPSHOT di bawah).
+ *   R7. Batasi jumlah pengajuan per pegawai per bulan (parameter kebijakan HR).
+ *
+ * USULAN SKEMA (tm2hrm)
+ *   hr_shift_swap_request
+ *     id, request_no, week_no, year
+ *     requester_emp_id, requester_roster_member_id
+ *     counterpart_emp_id, counterpart_roster_member_id
+ *     reason, attachment_path (surat dokter dll — opsional)
+ *     status ENUM(...state machine di atas...)
+ *     counterpart_response, counterpart_at
+ *     approver_emp_id, approved_at, approver_note
+ *     applied_at, applied_by            -- kapan roster benar-benar berubah
+ *     created_at, created_by
+ *   hr_shift_swap_log  (audit: setiap transisi status, siapa, dari→ke, IP)
+ *
+ * DAMPAK KE ROSTER
+ *   Saat APPROVED, JANGAN hapus-buat baris baru. Tukar nilai shift_code (dan
+ *   work_center bila lintas mesin) pada kedua hr_roster_member, lalu simpan
+ *   swap_request_id di kedua baris supaya asal-usul perubahan bisa ditelusuri.
+ *   Roster hasil tukar harus tetap bisa dibedakan dari roster asli saat dicetak.
+ *
+ * INTEGRASI
+ *   - ATTENDANCE : jam kerja yang dipakai mesin absensi harus ikut berubah.
+ *   - PAYROLL    : tunjangan shift (shift allowance) ikut pindah ke orang baru.
+ *                  Ini alasan utama kenapa perubahan harus ber-audit trail.
+ *   - NOTIFIKASI : in-app + WhatsApp/email ke requester, counterpart, approver.
+ *
+ * CATATAN SNAPSHOT (sudah jadi keputusan arsitektur TMERP)
+ *   Master Shift bersifat mutable. Saat roster di-publish, jam shift HARUS
+ *   di-snapshot ke hr_roster_member (bukan hanya menyimpan shift_code), supaya
+ *   perubahan Master Shift di kemudian hari tidak mengubah histori payroll.
+ *   Swap yang disetujui berarti menukar snapshot tersebut, bukan kode saja.
+ *
+ * HOOK DI UI MOCKUP INI (bila nanti diimplementasikan di Livewire)
+ *   - Nav utama: tambah menu "Pengajuan Tukar Shift" (inbox approver) —
+ *     lihat @ANCHOR-ESS-NAV.
+ *   - Chip pegawai di board: beri badge ⇄ bila ada request PENDING pada orang
+ *     tsb, dan badge ✓⇄ bila baris itu hasil swap yang sudah approved —
+ *     lihat @ANCHOR-ESS-CHIP.
+ *   - Drag & drop oleh PPIC tetap jalur langsung tanpa approval; pastikan
+ *     tidak menimpa baris yang sedang PENDING — lihat @ANCHOR-ESS-DROP.
+ *   - Cetak roster: tampilkan keterangan swap yang sudah approved di footer —
+ *     lihat @ANCHOR-ESS-PRINT.
+ * ==========================================================================*/
+
+/* ============ pegawai (dummy, 91 orang) ============ */
+const FIRST=["Agus","Budi","Slamet","Hendra","Rizky","Dwi","Bagus","Fandik","Yanto","Dimas","Maulana","Arif","Joko","Tri","Eko","Supri","Wahyu","Feri","Andik","Gunawan","Imam","Kurnia","Lukman","Nanang","Prasetyo","Rahmat","Sugeng","Teguh","Ulum","Vino","Yusuf","Zainal","Bayu","Candra","Dedi","Erwin","Galih","Hartono","Iwan","Jefri","Krisna","Luthfi","Mukti","Novan","Oki","Pandu","Qomar","Ridho","Satrio","Taufik"];
+const LAST=["Santoso","Wibowo","Prasetya","Hidayat","Maulana","Saputra","Firmansyah","Nugroho","Setiawan","Kurniawan","Ramadhan","Susanto","Purnomo","Hermawan","Aditya","Syahputra","Wijaya","Anggara","Pratama","Mahendra","Sulistyo","Handoko","Permana","Raharjo","Winata"];
+const DEPTS=[
+ {code:"CETAK",name:"Produksi – Cetak Offset",n:24,wc:[["KOMORI_GL440","KOMORI GL-440 (5 warna)"],["KOMORI_L40","KOMORI L-40 (4 warna)"],["SAKURA","SAKURA 2 warna"],["FUJI","FUJI mini offset"]]},
+ {code:"FINISH",name:"Produksi – Finishing",n:28,wc:[["FOLDER_GLUER","FOLDER GLUER 1"],["FOLDER_GLUER_2","FOLDER GLUER 2"],["LAMINASI","LAMINASI / YOUBOND"],["UV","UV VARNISH"],["PLONG","PLONG 1–5"],["POTONG_BESAR","POTONG BESAR"]]},
+ {code:"PREPRESS",name:"Pre-Press",n:8,wc:[["CTP","CTP / Plate Making"],["DESIGN","Desain & Imposisi"]]},
+ {code:"PPIC",name:"PPIC",n:6,wc:[["PPIC_OFFICE","PPIC Control Room"]]},
+ {code:"GUDANG",name:"Gudang",n:10,wc:[["GD_BB","Gudang Bahan Baku"],["GD_FG","Gudang Finished Goods"]]},
+ {code:"QC",name:"Quality Control",n:7,wc:[["QC_INLINE","QC Inline & Outgoing"]]},
+ {code:"MTC",name:"Maintenance",n:8,wc:[["MTC_WS","Workshop Maintenance"]]}
+];
+const JAB={CETAK:["Leader","Operator","Operator","Helper","Helper"],FINISH:["Leader","Operator","Helper","Helper","Helper"],PREPRESS:["Leader","Operator","Operator","Designer","Designer"],PPIC:["Leader","Planner","Planner","Admin","Admin"],GUDANG:["Leader","Checker","Helper","Helper","Forklift"],QC:["Leader","Inspector","Inspector","Inspector","Inspector"],MTC:["Leader","Teknisi","Teknisi","Teknisi","Helper"]};
+const GOL=["I-A","I-B","II-A","II-B","III-A"];
+let seed=20260907;const rnd=()=>(seed=(seed*1103515245+12345)&0x7fffffff)/0x7fffffff;
+const EMP=[];let nik=1001;
+DEPTS.forEach(d=>{for(let i=0;i<d.n;i++){
+  const jab=i===0?"Leader":JAB[d.code][1+Math.floor(rnd()*4)];
+  const skills=d.wc.filter(()=>rnd()<.55).map(w=>w[0]);
+  if(!skills.length)skills.push(d.wc[Math.floor(rnd()*d.wc.length)][0]);
+  EMP.push({id:"TM"+(nik++),name:FIRST[Math.floor(rnd()*FIRST.length)]+" "+LAST[Math.floor(rnd()*LAST.length)],dept:d.code,jab:jab,gol:jab==="Leader"?"III-A":GOL[Math.floor(rnd()*4)],skills:skills});
+}});
+const byId=Object.fromEntries(EMP.map(e=>[e.id,e]));
+
+/* ============ MASTER SHIFT ============ */
+const DAY=["Sen","Sel","Rab","Kam","Jum","Sab","Min"];
+const DAYFULL=["Senin","Selasa","Rabu","Kamis","Jumat","Sabtu","Minggu"];
+const COLORS=[["#2f6fed","Biru"],["#d08700","Kuning"],["#8b5cf6","Ungu"],["#16a34a","Hijau"],["#0891b2","Toska"],["#db2777","Magenta"],["#64748b","Abu"]];
+const D=(on,i,o,b)=>({on,in:i,out:o,brk:b});
+const pat=(i,o,b,sat)=>[D(1,i,o,b),D(1,i,o,b),D(1,i,o,b),D(1,i,o,b),D(1,i,o,b),sat?D(1,sat[0],sat[1],sat[2]):D(0,i,o,b),D(0,i,o,b)];
+
+let SHIFTDEF=[
+ {code:"REG", name:"Reguler",  color:"#16a34a", cap:4, active:1, days:pat("07:30","16:30",60,["07:30","15:30",60])},
+ {code:"SH1", name:"Shift 1",  color:"#2f6fed", cap:6, active:1, days:pat("05:00","13:15",45,["05:00","13:15",45])},
+ {code:"SH2", name:"Shift 2",  color:"#d08700", cap:6, active:1, days:pat("13:15","21:15",45,["13:15","21:15",45])},
+ {code:"SH3", name:"Shift 3",  color:"#8b5cf6", cap:4, active:1, days:pat("21:15","05:00",45,["21:15","05:00",45])},
+ {code:"VAL", name:"Shift Validasi", color:"#0891b2", cap:3, active:1, days:pat("07:30","15:30",60,["07:30","15:30",60])}
+];
+const mins=t=>{const[a,b]=t.split(":").map(Number);return a*60+b};
+function dayMin(d){if(!d.on)return 0;let x=mins(d.out)-mins(d.in);if(x<=0)x+=1440;return Math.max(0,x-(+d.brk||0))}
+const isNight=d=>d.on&&mins(d.out)<=mins(d.in);
+const hm=m=>m?Math.floor(m/60)+"j"+(m%60?" "+String(m%60)+"m":""):"–";
+const weekMin=s=>s.days.reduce((a,d)=>a+dayMin(d),0);
+const activeDays=s=>s.days.filter(d=>d.on).length;
+function shiftSummary(s){
+  const out=[];let i=0;
+  while(i<7){
+    if(!s.days[i].on){i++;continue}
+    const k=d=>d.on?d.in+"|"+d.out:"x";let j=i;
+    while(j+1<7&&k(s.days[j+1])===k(s.days[i]))j++;
+    out.push((i===j?DAY[i]:DAY[i]+"–"+DAY[j])+" "+s.days[i].in+"–"+s.days[i].out);
+    i=j+1;
+  }
+  return out.length?out:["Belum ada hari aktif"];
+}
+const SD=c=>SHIFTDEF.find(s=>s.code===c);
+const liveShifts=()=>SHIFTDEF.filter(s=>s.active);
+
+/* ============ jadwal ============ */
+let sid=1;
+const SCHED=[
+ {id:"J"+(sid++),name:"Jadwal Cetak Offset",depts:["CETAK"],by:"Iwan P.",at:"05 Sep 2026"},
+ {id:"J"+(sid++),name:"Jadwal Finishing",depts:["FINISH"],by:"Iwan P.",at:"05 Sep 2026"},
+ {id:"J"+(sid++),name:"Jadwal Support (QC · PPIC · MTC)",depts:["QC","PPIC","MTC"],by:"Ratna S.",at:"06 Sep 2026"}
+];
+
+/* ============ state ============ */
+let view="roster", weekOffset=0, curSched=SCHED[0].id;
+let dept="CETAK", wc="KOMORI_GL440";
+let groupBy="jabatan", query="", skillOnly=true;
+const assign={};   // "minggu|jadwal|wc|shift" -> [empId]
+const PLACE={};    // minggu -> { empId: {sched,wc,shift} }
+let selection=new Set(), lastClicked=null, collapsed=new Set();
+
+const WK=()=>37+weekOffset;
+const PL=w=>PLACE[w]||(PLACE[w]={});
+const S=()=>SCHED.find(s=>s.id===curSched);
+const keyOf=(wk,j,w,s)=>wk+"|"+j+"|"+w+"|"+s;
+const listOf=(wk,j,w,s)=>assign[keyOf(wk,j,w,s)]||(assign[keyOf(wk,j,w,s)]=[]);
+function place(wk,id,j,w,s){const p=PL(wk);if(p[id])return false;listOf(wk,j,w,s).push(id);p[id]={sched:j,wc:w,shift:s};return true}
+function unplace(wk,id){const p=PL(wk),x=p[id];if(!x)return;const l=listOf(wk,x.sched,x.wc,x.shift);l.splice(l.indexOf(id),1);delete p[id]}
+function weekHas(wk,jid){return Object.keys(assign).some(k=>{const a=k.split("|");return a[0]==wk&&a[1]===jid&&assign[k].length})}
+const deptOf=c=>DEPTS.find(d=>d.code===c);
+const schedDepts=()=>DEPTS.filter(d=>S().depts.includes(d.code));
+const schedWcs=()=>schedDepts().flatMap(d=>d.wc);
+const wcName=c=>{for(const d of DEPTS){const f=d.wc.find(x=>x[0]===c);if(f)return f[1]}return c};
+const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
+const hue=id=>["#2c3e69","#2f6fed","#1f8a5f","#b5730b","#6b46c1","#0e7490","#be185d"][(id.charCodeAt(2)+id.charCodeAt(5))%7];
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+
+(function seed0(){
+  [["J1","KOMORI_GL440","SH1",5],["J1","KOMORI_GL440","SH2",4],["J1","KOMORI_L40","SH1",4],["J1","SAKURA","REG",3],
+   ["J2","FOLDER_GLUER","SH1",5],["J2","FOLDER_GLUER","SH2",3],["J2","LAMINASI","SH1",3],["J2","PLONG","REG",4],
+   ["J3","QC_INLINE","REG",3],["J3","PPIC_OFFICE","REG",2],["J3","MTC_WS","REG",3],["J3","MTC_WS","SH3",2]].forEach(([j,w,s,n])=>{
+    const d=DEPTS.find(d=>d.wc.some(x=>x[0]===w)).code;
+    EMP.filter(e=>e.dept===d&&!PL(37)[e.id]&&e.skills.includes(w)).slice(0,n).forEach(e=>place(37,e.id,j,w,s));
+  });
+})();
+
+function weekLabel(){const base=new Date(2026,8,7);base.setDate(base.getDate()+weekOffset*7);
+  const end=new Date(base);end.setDate(end.getDate()+6);
+  const M=["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  const f=d=>String(d.getDate()).padStart(2,"0")+" "+M[d.getMonth()];
+  return{wk:37+weekOffset,range:f(base)+" – "+f(end)+" "+end.getFullYear(),start:base}}
+function toast(m,bad){const t=document.getElementById("toast");t.textContent=m;t.className="toast show"+(bad?" bad":"");clearTimeout(t._t);t._t=setTimeout(()=>t.className="toast",2800)}
+
+/* ============ render roster ============ */
+function renderSchedBar(){
+  document.getElementById("selSched").innerHTML=SCHED.map(s=>`<option value="${s.id}"${s.id===curSched?" selected":""}>${esc(s.name)}</option>`).join("");
+  const s=S(),w=weekLabel();let n=0;
+  schedWcs().forEach(x=>liveShifts().forEach(sh=>n+=listOf(w.wk,s.id,x[0],sh.code).length));
+  document.getElementById("schedMeta").innerHTML=
+    `<span>Cakupan <b>${s.depts.map(c=>deptOf(c).name.replace(/^.*– /,"")).join(", ")}</b></span>
+     <span>Minggu <b>${w.wk}</b> · ${w.range}</span>
+     <span>Terisi <b>${n} pegawai</b>${n?"":" — minggu ini masih kosong"}</span>
+     <span>Dibuat <b>${esc(s.by)}</b> · ${s.at}</span>`;
+}
+function renderFilters(){
+  const ds=schedDepts();
+  if(!ds.some(d=>d.code===dept)){dept=ds[0].code;wc=ds[0].wc[0][0]}
+  document.getElementById("selDept").innerHTML=ds.map(d=>`<option value="${d.code}"${d.code===dept?" selected":""}>${d.name} · ${d.n} org</option>`).join("");
+  if(!deptOf(dept).wc.some(w=>w[0]===wc))wc=deptOf(dept).wc[0][0];
+  document.getElementById("selWc").innerHTML=deptOf(dept).wc.map(w=>`<option value="${w[0]}"${w[0]===wc?" selected":""}>${w[1]}</option>`).join("");
+  document.getElementById("boardTitle").textContent=wcName(wc);
+}
+function renderHead(){
+  const w=weekLabel();
+  document.getElementById("wlbl").innerHTML=`MINGGU ${w.wk}<small>${w.range}</small>`;
+  document.getElementById("dayHead").innerHTML=DAY.map((n,i)=>{
+    const d=new Date(w.start);d.setDate(d.getDate()+i);
+    return `<div class="d${i===6?" sun":""}"><b>${n}</b><span>${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}</span></div>`}).join("");
+}
+function renderBoard(){
+  const shifts=liveShifts();
+  document.getElementById("rows").innerHTML=shifts.map(s=>{
+    const list=listOf(WK(),curSched,wc,s.code), n=list.length, cap=s.cap;
+    const pct=Math.min(100,Math.round(n/cap*100));
+    const cls=n>cap?"over":n===cap?"full":n===0?"":"under";
+    const barc=n>cap?"var(--bad)":n>=cap?"var(--ok)":s.color;
+    const strip=s.days.map((d,i)=>d.on
+      ? `<div>${d.in}<i>${d.out}${isNight(d)?" +1":""}</i></div>`
+      : `<div class="off">LIBUR</div>`).join("");
+    /* @TMERP-TODO @ANCHOR-ESS-CHIP
+       Chip pegawai di bawah ini perlu dua state tambahan saat fitur swap aktif:
+         - PENDING  : ada hr_shift_swap_request berstatus WAITING_* untuk emp ini
+                      pada minggu WK() → badge "⇄" kuning, chip tidak boleh di-drag
+                      (kunci sampai request selesai) agar roster tidak berubah
+                      di belakang approver.
+         - SWAPPED  : baris ini hasil swap APPROVED → badge "✓⇄" + tooltip berisi
+                      nama pegawai asal, nomor request, dan tanggal approve.
+       Sumber data: eager-load swapStatusOf(empId, week) ke dalam map sebelum render. */
+    const chips=n?`<div class="chips">${list.map(id=>{const e=byId[id];const ns=!e.skills.includes(wc);return `
+      <div class="chip${ns?" noskill":""}" draggable="true" data-id="${id}" style="border-left-color:${s.color}" title="${esc(e.name)} · ${e.jab}${ns?" · belum bersertifikat "+wcName(wc):""}">
+        <span class="av" style="background:${hue(id)}">${initials(e.name)}</span>
+        <span class="t"><b>${esc(e.name)}</b><span>${e.id} · ${e.jab}</span></span>
+        <span class="days6">${ns?"⚠":""}${activeDays(s)}h</span>
+        <button class="x" type="button" data-rm="${id}" aria-label="Hapus ${esc(e.name)}">×</button>
+      </div>`}).join("")}</div>`
+      :`<div class="empty">Tarik pegawai ke sini — otomatis mengikuti pola jam shift ini</div>`;
+    return `<div class="grid-row srow">
+      <div class="shiftcell" data-edit="${s.code}" title="Dobel-klik untuk ubah nama & jam shift ini">
+        <span class="edithint">✎ dobel-klik</span>
+        <span class="nm"><i class="dot" style="background:${s.color}"></i>${esc(s.name)}</span>
+        <span class="sum">${shiftSummary(s).map(x=>esc(x)).join("<br>")}<br><em>${activeDays(s)} hari · ${hm(weekMin(s))}/minggu</em></span>
+        <span class="cap"><span class="bar"><i style="width:${pct}%;background:${barc}"></i></span>
+        <span class="capnum ${cls}">${n}/${cap}</span></span>
+      </div>
+      <div class="zone" data-shift="${s.code}">
+        <div class="daystrip">${strip}</div>
+        <div class="chipwrap">${chips}</div>
+      </div>
+    </div>`}).join("")||`<div style="padding:30px;text-align:center;color:var(--ink-3)">Belum ada shift aktif. Buka menu <b>Master Shift</b> untuk mendefinisikan.</div>`;
+  document.getElementById("legend").innerHTML=
+    shifts.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join("")+
+    `<span><i style="background:var(--warn)"></i>Tanpa skill mesin ini</span>
+     <span style="margin-left:auto">Jam kerja diambil dari <b>Master Shift</b> · 1 pegawai = 1 shift per minggu, lintas jadwal.</span>`;
+}
+function poolList(){
+  const q=query.trim().toLowerCase();
+  return EMP.filter(e=>e.dept===dept&&!PL(WK())[e.id]&&(!skillOnly||e.skills.includes(wc))
+    &&(!q||e.name.toLowerCase().includes(q)||e.id.toLowerCase().includes(q)));
+}
+function groupsOf(list){
+  const g={};
+  list.forEach(e=>{
+    let keys=groupBy==="jabatan"?[e.jab]:groupBy==="gol"?["Golongan "+e.gol]:e.skills.map(s=>wcName(s));
+    keys.forEach(k=>(g[k]=g[k]||[]).push(e));
+  });
+  return Object.keys(g).sort().map(k=>[k,g[k]]);
+}
+function renderPool(){
+  const list=poolList(), groups=groupsOf(list);
+  const totalDept=EMP.filter(e=>e.dept===dept).length;
+  const freeDept=EMP.filter(e=>e.dept===dept&&!PL(WK())[e.id]).length;
+  document.getElementById("poolCount").textContent=list.length+" dari "+EMP.length+" pegawai";
+  document.getElementById("poolScope").innerHTML=
+    `Filter aktif: <b>${deptOf(dept).name.replace(/^.*– /,"")}</b> (${totalDept} org) → <b>${wcName(wc)}</b>${skillOnly?" · skill cocok":" · semua skill"}<br>Belum terjadwal di <b>minggu ${WK()}</b>: <b>${freeDept}</b> dari departemen ini`;
+  const body=document.getElementById("poolBody");
+  if(!list.length){
+    body.innerHTML=`<div class="poolempty">Tidak ada pegawai yang cocok.<br>${skillOnly?"Lepas centang <b>“Hanya yang punya skill mesin ini”</b> untuk melihat pegawai lain di departemen ini.":"Semua pegawai departemen ini sudah terjadwal minggu ini."}</div>`;
+  } else body.innerHTML=groups.map(([name,items])=>{
+    const all=items.every(e=>selection.has(e.id));
+    const open=!collapsed.has(name);
+    return `<div class="grp">
+      <div class="ghead"><input type="checkbox" ${all?"checked":""} data-group="${esc(name)}" aria-label="Pilih grup ${esc(name)}">
+        <span class="caret" data-collapse="${esc(name)}">${open?"▼":"▶"}</span>
+        <span class="gn">${esc(name)}</span><span class="gc">${items.length} org</span></div>
+      ${open?items.map(e=>`
+        <div class="pitem${selection.has(e.id)?" sel":""}" draggable="true" data-id="${e.id}">
+          <input type="checkbox" ${selection.has(e.id)?"checked":""} tabindex="-1" aria-hidden="true">
+          <span class="av" style="background:${hue(e.id)}">${initials(e.name)}</span>
+          <span class="t"><b>${esc(e.name)}</b><span>${e.id} · ${e.skills.length} skill</span></span>
+          <span class="tag" style="background:var(--sunken);color:var(--ink-2)">${e.jab}</span>
+        </div>`).join(""):""}</div>`}).join("");
+  document.getElementById("selbar").innerHTML=selection.size?`<div class="selbar" draggable="true" id="selDrag" title="Tarik blok ini ke baris shift">
+      <span class="grip">⣿</span><b>${selection.size} pegawai dipilih</b>
+      <span class="gr"><button class="mini" type="button" id="selAllVis">Pilih semua tampil</button>
+      <button class="mini" type="button" id="selClear">Batal</button></span></div>`:"";
+  const a=Object.keys(PL(WK())).length;
+  document.getElementById("stPool").textContent=list.length;
+  document.getElementById("stAssigned").textContent=a;
+  document.getElementById("stFree").textContent=EMP.length-a;
+}
+function render(){if(view!=="roster")return renderShiftPage();renderSchedBar();renderFilters();renderHead();renderBoard();renderPool()}
+
+/* ============ render master shift ============ */
+function usageOf(code){let n=0;Object.keys(assign).forEach(k=>{if(k.endsWith("|"+code))n+=assign[k].length});return n}
+function renderShiftPage(){
+  document.getElementById("shiftList").innerHTML=SHIFTDEF.map((s,si)=>{
+    const used=usageOf(s.code);
+    return `<div class="sdef${s.active?"":" inactive"}" data-si="${si}" style="margin-bottom:14px">
+      <div class="sdef-hd" style="border-left-color:${s.color}">
+        <input class="code" data-k="code" value="${esc(s.code)}" maxlength="6" aria-label="Kode shift">
+        <input class="nmin" data-k="name" value="${esc(s.name)}" aria-label="Nama shift">
+        <span class="fx"><label for="col-${si}">Warna</label>
+          <select class="col" id="col-${si}" data-k="color">${COLORS.map(c=>`<option value="${c[0]}"${c[0]===s.color?" selected":""}>${c[1]}</option>`).join("")}</select></span>
+        <span class="fx"><label for="cap-${si}">Kuota/WC</label><input type="number" id="cap-${si}" data-k="cap" min="1" max="30" value="${s.cap}"></span>
+        <span class="fx"><label class="chk"><input type="checkbox" data-k="active" ${s.active?"checked":""}> Aktif</label></span>
+        <span class="tot">${activeDays(s)} hari · ${hm(weekMin(s))}</span>
+        <span class="acts">
+          <button class="iconbtn" type="button" data-act="dup">Duplikat</button>
+          <button class="iconbtn" type="button" data-act="weekday">Samakan Sen–Jum</button>
+          <button class="iconbtn danger" type="button" data-act="del">Hapus</button>
+        </span>
+      </div>
+      ${used&&!s.active?`<div class="msgbar" style="margin:10px 12px 0">Shift non-aktif tapi masih dipakai ${used} penempatan — baris ini disembunyikan dari roster.</div>`:""}
+      <div class="dgrid">${s.days.map((d,di)=>`
+        <div class="dcell${d.on?"":" isoff"}" data-di="${di}">
+          <div class="dh"><b class="${di===6?"sun":""}">${DAYFULL[di]}</b>
+            <input type="checkbox" data-d="on" ${d.on?"checked":""} aria-label="${DAYFULL[di]} aktif"></div>
+          ${d.on?`
+            <input type="time" data-d="in" value="${d.in}" aria-label="Jam masuk ${DAYFULL[di]}">
+            <input type="time" data-d="out" value="${d.out}" aria-label="Jam pulang ${DAYFULL[di]}">
+            <div class="brk">Istirahat <input type="number" data-d="brk" min="0" max="180" step="5" value="${d.brk}"> mnt</div>
+            <div class="hrs${isNight(d)?" night":""}">${hm(dayMin(d))}${isNight(d)?" · lintas hari":""}</div>`
+          :`<div class="libur">LIBUR</div>`}
+        </div>`).join("")}</div>
+    </div>`}).join("")+
+    `<p style="font-size:12px;color:var(--ink-3);margin:0">Total ${SHIFTDEF.length} shift · ${liveShifts().length} aktif. Kode shift dipakai sebagai kunci di tabel roster — ubah kode hanya sebelum jadwal dipublikasikan.</p>`;
+}
+document.getElementById("shiftList").addEventListener("input",e=>{
+  const card=e.target.closest(".sdef");if(!card)return;
+  const s=SHIFTDEF[+card.dataset.si], k=e.target.dataset.k;
+  if(k==="name"||k==="code"){s[k]=e.target.value;return}
+});
+document.getElementById("shiftList").addEventListener("change",e=>{
+  const card=e.target.closest(".sdef");if(!card)return;
+  const s=SHIFTDEF[+card.dataset.si], k=e.target.dataset.k, dk=e.target.dataset.d;
+  if(k==="color")s.color=e.target.value;
+  else if(k==="cap")s.cap=Math.max(1,+e.target.value||1);
+  else if(k==="active"){
+    const used=usageOf(s.code);
+    if(!e.target.checked&&used){toast(`“${s.name}” masih dipakai ${used} penempatan. Kosongkan dulu sebelum dinonaktifkan.`,true);e.target.checked=true;return}
+    s.active=e.target.checked?1:0;
+  }
+  else if(dk){
+    const d=s.days[+e.target.closest(".dcell").dataset.di];
+    if(dk==="on")d.on=e.target.checked?1:0;
+    else if(dk==="brk")d.brk=Math.max(0,+e.target.value||0);
+    else d[dk]=e.target.value;
+  }
+  renderShiftPage();
+});
+document.getElementById("shiftList").addEventListener("click",e=>{
+  const b=e.target.closest("[data-act]");if(!b)return;
+  const card=b.closest(".sdef"), si=+card.dataset.si, s=SHIFTDEF[si];
+  if(b.dataset.act==="del"){
+    const used=usageOf(s.code);
+    if(used)return toast(`Tidak bisa dihapus — “${s.name}” dipakai ${used} penempatan di roster.`,true);
+    if(SHIFTDEF.length<2)return toast("Minimal satu shift harus ada.",true);
+    SHIFTDEF.splice(si,1);toast("Shift dihapus.");
+  } else if(b.dataset.act==="dup"){
+    let c=s.code+"_C",i=2;while(SD(c)){c=s.code+"_C"+i++}
+    SHIFTDEF.splice(si+1,0,JSON.parse(JSON.stringify({...s,code:c,name:s.name+" (salinan)"})));
+    toast("Shift diduplikat — sesuaikan kode & jamnya.");
+  } else if(b.dataset.act==="weekday"){
+    const src=s.days.find(d=>d.on);if(!src)return toast("Tidak ada hari aktif untuk disalin.",true);
+    for(let i=0;i<5;i++)s.days[i]={on:1,in:src.in,out:src.out,brk:src.brk};
+    toast("Senin–Jumat disamakan dengan "+src.in+"–"+src.out+".");
+  }
+  renderShiftPage();
+});
+document.getElementById("btnAddShift").onclick=()=>{
+  let c="SH"+(SHIFTDEF.length+1),i=SHIFTDEF.length+1;while(SD(c)){c="SH"+(++i)}
+  SHIFTDEF.push({code:c,name:"Shift Baru",color:COLORS[SHIFTDEF.length%COLORS.length][0],cap:4,active:1,days:pat("08:00","16:00",60,["08:00","13:00",30])});
+  renderShiftPage();toast("Shift baru ditambahkan — ubah nama dan jam per harinya.");
+  document.querySelector(".sdef:last-of-type .nmin")?.focus();
+};
+
+/* ============ seleksi pool ============ */
+const visibleIds=()=>[...document.querySelectorAll("#poolBody .pitem")].map(el=>el.dataset.id);
+document.getElementById("poolBody").addEventListener("click",e=>{
+  const car=e.target.closest("[data-collapse]");
+  if(car){const n=car.dataset.collapse;collapsed.has(n)?collapsed.delete(n):collapsed.add(n);renderPool();return}
+  const gh=e.target.closest("[data-group]");
+  if(gh){const g=groupsOf(poolList()).find(x=>x[0]===gh.dataset.group);
+    if(g){const all=g[1].every(x=>selection.has(x.id));g[1].forEach(x=>all?selection.delete(x.id):selection.add(x.id))}
+    renderPool();return}
+  const it=e.target.closest(".pitem");if(!it)return;
+  const id=it.dataset.id, vis=visibleIds();
+  if(e.shiftKey&&lastClicked&&vis.includes(lastClicked)){
+    const a=vis.indexOf(lastClicked), b=vis.indexOf(id);
+    vis.slice(Math.min(a,b),Math.max(a,b)+1).forEach(x=>selection.add(x));
+  }else{selection.has(id)?selection.delete(id):selection.add(id);lastClicked=id}
+  renderPool();
+});
+document.addEventListener("click",e=>{
+  if(e.target.id==="selClear"){selection.clear();renderPool()}
+  if(e.target.id==="selAllVis"){visibleIds().forEach(x=>selection.add(x));renderPool()}
+});
+
+/* ============ drag & drop ============ */
+let dragIds=[],dragFrom=null;
+function startDrag(ev,ids,from){
+  dragIds=ids;dragFrom=from||null;
+  ev.dataTransfer.effectAllowed="move";
+  ev.dataTransfer.setData("text/plain",ids.join(","));
+  const g=document.createElement("div");
+  g.textContent=ids.length===1?byId[ids[0]].name:ids.length+" pegawai";
+  g.style.cssText="position:absolute;top:-999px;left:-999px;background:#2c3e69;color:#fff;padding:6px 12px;border-radius:8px;font:600 13px 'IBM Plex Sans',sans-serif";
+  document.body.appendChild(g);ev.dataTransfer.setDragImage(g,10,10);setTimeout(()=>g.remove(),0);
+}
+document.addEventListener("dragstart",ev=>{
+  if(ev.target.closest("#selDrag")){startDrag(ev,[...selection]);return}
+  const it=ev.target.closest("#poolBody .pitem");
+  if(it){const id=it.dataset.id;const ids=selection.has(id)?[...selection]:[id];
+    if(!selection.has(id)){selection.clear();selection.add(id);renderPool()}
+    startDrag(ev,ids);return}
+  const chip=ev.target.closest(".chip");
+  if(chip)startDrag(ev,[chip.dataset.id],"board");
+});
+document.addEventListener("dragover",ev=>{
+  const z=ev.target.closest(".zone");if(!z)return;
+  ev.preventDefault();
+  const s=SD(z.dataset.shift), p=PL(WK());
+  const add=dragIds.filter(i=>!p[i]||dragFrom==="board").length;
+  z.className="zone "+(listOf(WK(),curSched,wc,z.dataset.shift).length+add>s.cap?"blocked":"over");
+});
+document.addEventListener("dragleave",ev=>{const z=ev.target.closest(".zone");if(z)z.className="zone"});
+document.addEventListener("drop",ev=>{
+  const z=ev.target.closest(".zone");if(!z)return;
+  ev.preventDefault();z.className="zone";
+  /* @TMERP-TODO @ANCHOR-ESS-DROP
+     Jalur PPIC/HR: perubahan langsung, TANPA approval — ini memang disengaja.
+     Yang perlu ditambah saat fitur swap aktif:
+       1. Tolak drop bila pegawai punya swap request PENDING di minggu ini
+          (pesan: "Sedang ada pengajuan tukar shift menunggu persetujuan").
+       2. Tolak seluruh perubahan bila roster minggu ini sudah PUBLISHED & LOCKED
+          untuk payroll — PPIC harus buka lock/revisi resmi dulu.
+       3. Catat setiap perubahan manual ke hr_roster_log (siapa, kapan, dari→ke)
+          supaya bisa dibedakan dari perubahan hasil swap yang di-approve. */
+  const code=z.dataset.shift, s=SD(code), wk=WK();let ok=0,dup=0,ns=0;
+  dragIds.forEach(id=>{
+    if(dragFrom==="board")unplace(wk,id);
+    if(PL(wk)[id]){dup++;return}
+    if(!byId[id].skills.includes(wc))ns++;
+    place(wk,id,curSched,wc,code);ok++;
+  });
+  selection.clear();dragIds=[];dragFrom=null;render();
+  const n=listOf(wk,curSched,wc,code).length;
+  if(dup)toast(dup+" pegawai dilewati — sudah punya shift di minggu "+wk+".",true);
+  else if(n>s.cap)toast(`${ok} pegawai masuk ${s.name} · kuota terlampaui (${n}/${s.cap}).`,true);
+  else if(ns)toast(`${ok} pegawai → ${s.name}, ${ns} belum bersertifikat ${wcName(wc)}.`,true);
+  else toast(`${ok} pegawai → ${s.name} · ${shiftSummary(s).join(", ")} (${hm(weekMin(s))}/minggu).`);
+});
+document.getElementById("rows").addEventListener("click",ev=>{
+  const b=ev.target.closest("[data-rm]");if(!b)return;
+  unplace(WK(),b.dataset.rm);render();
+});
+document.getElementById("rows").addEventListener("dblclick",ev=>{
+  const c=ev.target.closest("[data-edit]");if(c)shiftModal(c.dataset.edit);
+});
+
+/* ============ modal ============ */
+const ov=document.getElementById("ov"),ovCard=document.getElementById("ovCard");
+function closeOv(){ov.className="ov";ovCard.innerHTML=""}
+ov.addEventListener("click",e=>{if(e.target===ov||e.target.closest("[data-close]"))closeOv()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeOv()});
+
+function schedForm(edit){
+  const s=edit?S():{name:"",depts:[],by:"Iwan P."};
+  ovCard.className="card";
+  ovCard.innerHTML=`
+    <div class="card-hd"><h3>${edit?"Ubah Jadwal":"Jadwal Baru"}</h3><button class="close" type="button" data-close>×</button></div>
+    <div class="card-bd">
+      <div class="fld"><label for="jn">Nama jadwal</label>
+        <input type="text" id="jn" value="${esc(s.name)}" placeholder="mis. Jadwal Cetak Offset – Shift Malam" autocomplete="off"></div>
+      <div class="fld"><label>Cakupan departemen</label>
+        <div class="deptpick">${DEPTS.map(d=>`<label><input type="checkbox" value="${d.code}" ${s.depts.includes(d.code)?"checked":""}> ${d.name.replace(/^.*– /,"")} <span style="color:var(--ink-3);font-size:11px">(${d.n})</span></label>`).join("")}</div></div>
+      <div class="fld" style="margin-bottom:0"><label for="jby">Dibuat oleh</label><input type="text" id="jby" value="${esc(s.by)}" autocomplete="off"></div>
+    </div>
+    <div class="card-ft"><button class="btn" type="button" data-close>Batal</button>
+      <button class="btn primary" type="button" id="jsave">${edit?"Simpan perubahan":"Buat jadwal"}</button></div>`;
+  ov.className="ov on";document.getElementById("jn").focus();
+  document.getElementById("jsave").onclick=()=>{
+    const nm=document.getElementById("jn").value.trim();
+    const ds=[...ovCard.querySelectorAll(".deptpick input:checked")].map(i=>i.value);
+    const by=document.getElementById("jby").value.trim()||"—";
+    if(!nm)return toast("Nama jadwal wajib diisi.",true);
+    if(!ds.length)return toast("Pilih minimal satu departemen.",true);
+    if(edit){const x=S();x.name=nm;x.depts=ds;x.by=by;toast("Jadwal diperbarui.")}
+    else{const id="J"+(sid++);SCHED.push({id,name:nm,depts:ds,by,at:"12 Sep 2026"});curSched=id;
+      dept=ds[0];wc=deptOf(dept).wc[0][0];selection.clear();toast(`Jadwal “${nm}” dibuat — silakan isi roster-nya.`)}
+    closeOv();render();
+  };
+}
+function shiftModal(code){
+  const orig=SD(code);if(!orig)return;
+  const draft=JSON.parse(JSON.stringify(orig));
+  ovCard.className="card wide";
+  ovCard.innerHTML=`
+    <div class="card-hd"><h3>Ubah Shift — ${esc(orig.name)}</h3><button class="close" type="button" data-close>×</button></div>
+    <div class="card-bd" id="shBody"></div>
+    <div class="card-ft">
+      <span style="margin-right:auto;font-size:11.5px;color:var(--ink-3)">Perubahan berlaku untuk semua jadwal yang memakai shift ini.</span>
+      <button class="btn" type="button" data-close>Batal</button>
+      <button class="btn primary" type="button" id="shSave">Simpan</button></div>`;
+  const body=ovCard.querySelector("#shBody");
+  function draw(){
+    body.innerHTML=`
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px">
+        <div class="fld" style="margin:0;flex:1;min-width:200px"><label for="shN">Nama shift</label>
+          <input type="text" id="shN" value="${esc(draft.name)}" autocomplete="off"></div>
+        <div class="fld" style="margin:0;width:110px"><label for="shC">Kode</label>
+          <input type="text" id="shC" value="${esc(draft.code)}" maxlength="6" autocomplete="off"></div>
+        <div class="fld" style="margin:0;width:130px"><label for="shCol">Warna</label>
+          <select id="shCol">${COLORS.map(c=>`<option value="${c[0]}"${c[0]===draft.color?" selected":""}>${c[1]}</option>`).join("")}</select></div>
+        <div class="fld" style="margin:0;width:110px"><label for="shCap">Kuota/WC</label>
+          <input type="text" inputmode="numeric" id="shCap" value="${draft.cap}"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+        <span style="font-family:var(--cond);font-size:12px;font-weight:600;letter-spacing:.9px;text-transform:uppercase;color:var(--ink-3)">Jam per hari</span>
+        <button class="mini" type="button" data-fill="wd">Samakan Sen–Jum</button>
+        <button class="mini" type="button" data-fill="all">Samakan Sen–Sab</button>
+        <span style="margin-left:auto;font-family:var(--cond);font-size:15px;font-weight:600;background:var(--ok-bg);color:var(--ok);border-radius:5px;padding:3px 10px">${activeDays(draft)} hari · ${hm(weekMin(draft))}/minggu</span>
+      </div>
+      <div class="dgrid" style="border:1px solid var(--line);border-radius:var(--radius);overflow:hidden">
+        ${draft.days.map((d,di)=>`
+        <div class="dcell${d.on?"":" isoff"}" data-di="${di}">
+          <div class="dh"><b class="${di===6?"sun":""}">${DAY[di]}</b>
+            <input type="checkbox" data-d="on" ${d.on?"checked":""} aria-label="${DAYFULL[di]} aktif"></div>
+          ${d.on?`
+            <input type="time" data-d="in" value="${d.in}" aria-label="Jam masuk ${DAYFULL[di]}">
+            <input type="time" data-d="out" value="${d.out}" aria-label="Jam pulang ${DAYFULL[di]}">
+            <div class="brk">Ist. <input type="text" inputmode="numeric" data-d="brk" value="${d.brk}"> mnt</div>
+            <div class="hrs${isNight(d)?" night":""}">${hm(dayMin(d))}${isNight(d)?" +1":""}</div>`
+          :`<div class="libur">LIBUR</div>`}
+        </div>`).join("")}
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-3);margin:10px 0 0">Contoh: Reguler dibuat Sen–Jum 07:30–16:30 lalu Sabtu diubah jadi 07:30–15:30. Shift yang jamnya sama setiap hari cukup pakai <b>Samakan Sen–Sab</b>.</p>`;
+  }
+  draw();
+  body.addEventListener("input",e=>{
+    const k=e.target.id;
+    if(k==="shN")draft.name=e.target.value;
+    else if(k==="shC")draft.code=e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g,"");
+    else if(k==="shCap")draft.cap=Math.max(1,parseInt(e.target.value,10)||1);
+    else if(e.target.dataset.d==="brk")draft.days[+e.target.closest(".dcell").dataset.di].brk=Math.max(0,parseInt(e.target.value,10)||0);
+  });
+  body.addEventListener("change",e=>{
+    if(e.target.id==="shCol"){draft.color=e.target.value;return draw()}
+    const dk=e.target.dataset.d;if(!dk)return;
+    const d=draft.days[+e.target.closest(".dcell").dataset.di];
+    if(dk==="on")d.on=e.target.checked?1:0;
+    else if(dk!=="brk")d[dk]=e.target.value;
+    draw();
+  });
+  body.addEventListener("click",e=>{
+    const b=e.target.closest("[data-fill]");if(!b)return;
+    const src=draft.days.find(d=>d.on);
+    if(!src)return toast("Aktifkan minimal satu hari dulu.",true);
+    const upto=b.dataset.fill==="wd"?5:6;
+    for(let i=0;i<upto;i++)draft.days[i]={on:1,in:src.in,out:src.out,brk:src.brk};
+    draw();toast(`Sen–${DAY[upto-1]} disamakan ${src.in}–${src.out}.`);
+  });
+  ovCard.querySelector("#shSave").onclick=()=>{
+    if(!draft.name.trim())return toast("Nama shift wajib diisi.",true);
+    if(!draft.code)return toast("Kode shift wajib diisi.",true);
+    if(draft.code!==orig.code){
+      if(SD(draft.code))return toast(`Kode “${draft.code}” sudah dipakai shift lain.`,true);
+      const used=usageOf(orig.code);
+      if(used)return toast(`Kode tidak bisa diubah — shift ini dipakai ${used} penempatan.`,true);
+    }
+    if(!activeDays(draft))return toast("Minimal satu hari harus aktif.",true);
+    Object.assign(orig,draft);
+    closeOv();render();
+    toast(`“${orig.name}” disimpan · ${shiftSummary(orig).join(", ")} · ${hm(weekMin(orig))}/minggu.`);
+  };
+  ov.className="ov on";
+  body.querySelector("#shN").focus();
+}
+/* @TMERP-TODO — rotateForm() adalah jalur BULK milik PPIC (tanpa approval).
+   Jangan dipakai ulang untuk HR-ESS-SHIFT-SWAP: swap individu punya state machine,
+   persetujuan counterpart, dan audit trail sendiri. Yang boleh di-reuse hanya
+   helper-nya: listOf(), place(), unplace(), dan cek kuota SD(code).cap. */
+function rotateForm(){
+  const ls=liveShifts();
+  if(ls.length<2)return toast("Butuh minimal dua shift aktif.",true);
+  const src=WK(), dst=src+1, jid=curSched;
+  const opts=sel=>ls.map(s=>`<option value="${s.code}"${s.code===sel?" selected":""}>${esc(s.name)} · ${shiftSummary(s)[0]}</option>`).join("");
+  ovCard.className="card";
+  ovCard.innerHTML=`
+    <div class="card-hd"><h3>Tukar Shift ke Minggu Berikutnya</h3><button class="close" type="button" data-close>×</button></div>
+    <div class="card-bd">
+      <p style="margin:0 0 14px;font-size:12.5px;color:var(--ink-3)">Menyalin roster <b>“${esc(S().name)}”</b> dari minggu sumber ke minggu tujuan sambil menukar shift-nya — supaya tidak perlu input ulang tiap minggu.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="fld" style="flex:1;min-width:130px"><label for="rwS">Minggu sumber</label>
+          <input type="text" id="rwS" value="${src}" inputmode="numeric"></div>
+        <div class="fld" style="flex:1;min-width:130px"><label for="rwD">Minggu tujuan</label>
+          <input type="text" id="rwD" value="${dst}" inputmode="numeric"></div>
+      </div>
+      <div class="fld"><label for="rMode">Pola</label>
+        <select id="rMode">
+          <option value="swap">Tukar 2 shift (A ⇄ B)</option>
+          <option value="cycle">Rotasi berputar (semua shift maju satu)</option>
+          <option value="copy">Salin sama persis (tanpa rotasi)</option>
+        </select></div>
+      <div id="rPair">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="fld" style="flex:1;min-width:180px;margin-bottom:0"><label for="rA">Shift A</label><select id="rA">${opts(ls[0].code)}</select></div>
+          <span style="font-size:20px;color:var(--accent);padding-bottom:8px">⇄</span>
+          <div class="fld" style="flex:1;min-width:180px;margin-bottom:0"><label for="rB">Shift B</label><select id="rB">${opts(ls[1].code)}</select></div>
+        </div>
+      </div>
+      <div class="fld" style="margin-top:14px"><label for="rScope">Cakupan</label>
+        <select id="rScope">
+          <option value="all">Seluruh work center di jadwal ini</option>
+          <option value="wc">Hanya ${esc(wcName(wc))}</option>
+        </select></div>
+      <label class="chk" style="margin-bottom:10px"><input type="checkbox" id="rOver"> Timpa data yang sudah ada di minggu tujuan</label>
+      <div id="rPrev" class="scope" style="background:var(--sunken)"></div>
+    </div>
+    <div class="card-ft"><button class="btn" type="button" data-close>Batal</button>
+      <button class="btn primary" type="button" id="rGo">Jalankan</button></div>`;
+  ov.className="ov on";
+
+  const $=id=>document.getElementById(id);
+  function plan(){
+    const s=parseInt($("rwS").value,10), d=parseInt($("rwD").value,10);
+    const mode=$("rMode").value, over=$("rOver").checked;
+    const wcs=$("rScope").value==="wc"?[wc]:schedWcs().map(x=>x[0]);
+    let map;
+    if(mode==="copy")map=c=>c;
+    else if(mode==="swap"){const a=$("rA").value,b=$("rB").value;map=c=>c===a?b:c===b?a:c}
+    else{const cs=ls.map(x=>x.code);map=c=>{const i=cs.indexOf(c);return i<0?c:cs[(i+1)%cs.length]}}
+    const moves=[];
+    wcs.forEach(w=>ls.forEach(sh=>listOf(s,jid,w,sh.code).forEach(id=>moves.push({id,w,to:map(sh.code)}))));
+    return{s,d,mode,over,wcs,moves,valid:!isNaN(s)&&!isNaN(d)&&s!==d};
+  }
+  function preview(){
+    $("rPair").hidden=$("rMode").value!=="swap";
+    const p=plan();
+    if(!p.valid)return $("rPrev").innerHTML=`<b style="color:var(--bad)">Minggu sumber dan tujuan harus berbeda.</b>`;
+    const occupied=weekHas(p.d,jid);
+    const busy=p.moves.filter(m=>PL(p.d)[m.id]&&!(p.over&&PL(p.d)[m.id].sched===jid)).length;
+    $("rPrev").innerHTML=
+      `<b>${p.moves.length}</b> penempatan akan dipindah dari minggu <b>${p.s}</b> ke minggu <b>${p.d}</b> di ${p.wcs.length} work center.`+
+      (p.mode==="swap"?`<br>${esc(SD($("rA").value).name)} ⇄ ${esc(SD($("rB").value).name)}, shift lain tetap.`:
+       p.mode==="cycle"?`<br>Urutan rotasi: ${ls.map(x=>esc(x.name)).join(" → ")} → ${esc(ls[0].name)}`:`<br>Semua shift tetap di posisi yang sama.`)+
+      (occupied?`<br><b style="color:var(--warn)">Minggu ${p.d} sudah berisi data jadwal ini.</b> ${p.over?"Akan ditimpa.":"Centang “Timpa” atau data lama dipertahankan."}`:"")+
+      (busy?`<br><b style="color:var(--warn)">${busy} pegawai</b> sudah punya shift lain di minggu ${p.d} — akan dilewati.`:"");
+  }
+  ovCard.querySelector(".card-bd").addEventListener("input",preview);
+  ovCard.querySelector(".card-bd").addEventListener("change",preview);
+  preview();
+
+  $("rGo").onclick=()=>{
+    const p=plan();
+    if(!p.valid)return toast("Minggu sumber dan tujuan harus berbeda.",true);
+    if(!p.moves.length)return toast(`Minggu ${p.s} belum punya penempatan untuk jadwal ini.`,true);
+    if(p.over)p.wcs.forEach(w=>ls.forEach(sh=>{
+      [...listOf(p.d,jid,w,sh.code)].forEach(id=>unplace(p.d,id));
+    }));
+    let ok=0,skip=0,over=new Set();
+    p.moves.forEach(m=>{
+      if(PL(p.d)[m.id]){skip++;return}
+      place(p.d,m.id,jid,m.w,m.to);ok++;
+      if(listOf(p.d,jid,m.w,m.to).length>SD(m.to).cap)over.add(wcName(m.w)+" "+SD(m.to).name);
+    });
+    weekOffset=p.d-37;closeOv();render();
+    toast(`Minggu ${p.d} terisi ${ok} penempatan dari minggu ${p.s}.`+
+      (skip?` ${skip} dilewati (bentrok).`:"")+(over.size?` Kuota lewat di ${over.size} shift.`:""),!!(skip||over.size));
+  };
+}
+function delSchedForm(){
+  if(SCHED.length<2)return toast("Minimal satu jadwal harus ada.",true);
+  const s=S();
+  const n=Object.keys(assign).reduce((a,k)=>a+(k.split("|")[1]===s.id?assign[k].length:0),0);
+  ovCard.className="card";
+  ovCard.innerHTML=`
+    <div class="card-hd"><h3>Hapus Jadwal</h3><button class="close" type="button" data-close>×</button></div>
+    <div class="card-bd">
+      <p style="margin:0 0 12px">Hapus jadwal <b>“${esc(s.name)}”</b>?</p>
+      ${n?`<div class="msgbar">Jadwal ini berisi <b>${n} penempatan</b> di seluruh minggu. Semua pegawai tersebut akan dilepas dan kembali ke pool.</div>`
+         :`<p style="font-size:12.5px;color:var(--ink-3);margin:0">Jadwal ini masih kosong.</p>`}
+      <p style="font-size:12px;color:var(--ink-3);margin:12px 0 0">Tindakan ini tidak bisa dibatalkan.</p>
+    </div>
+    <div class="card-ft"><button class="btn" type="button" data-close>Batal</button>
+      <button class="btn primary" type="button" id="delGo" style="background:var(--bad)">Hapus jadwal</button></div>`;
+  ov.className="ov on";
+  document.getElementById("delGo").onclick=()=>{
+    Object.keys(assign).forEach(k=>{const a=k.split("|");
+      if(a[1]===s.id){assign[k].forEach(id=>delete PL(a[0])[id]);delete assign[k]}});
+    SCHED.splice(SCHED.indexOf(s),1);
+    curSched=SCHED[0].id;dept=SCHED[0].depts[0];wc=deptOf(dept).wc[0][0];selection.clear();
+    closeOv();render();toast(`Jadwal “${s.name}” dihapus${n?` · ${n} pegawai dikembalikan ke pool`:""}.`);
+  };
+}
+const shiftTable=()=>`<table><thead><tr><th style="width:150px">Shift</th>${DAY.map((d,i)=>`<th style="text-align:center">${d}</th>`).join("")}<th style="width:74px;text-align:center">Jam/mg</th></tr></thead><tbody>
+  ${liveShifts().map(s=>`<tr><td class="sh">${esc(s.name)}<small>${esc(s.code)}</small></td>
+    ${s.days.map(d=>`<td class="tm">${d.on?d.in+"<br>"+d.out+(isNight(d)?" +1":""):"—"}</td>`).join("")}
+    <td class="tm">${hm(weekMin(s))}</td></tr>`).join("")}</tbody></table>`;
+
+function printSheet(){
+  const s=S(),w=weekLabel();
+  const blocks=schedDepts().map(d=>d.wc.map(([code,nm])=>{
+      const cells=liveShifts().map(sh=>{
+        const l=listOf(w.wk,s.id,code,sh.code);
+        return l.length?`<tr><td class="sh">${esc(sh.name)}<small>${shiftSummary(sh).join("<br>")}</small></td>
+          <td class="ct">${l.length}</td>
+          <td><div class="names">${l.map(id=>`<span>${esc(byId[id].name)} <i>(${id} · ${byId[id].jab})</i></span>`).join("")}</div></td></tr>`:"";
+      }).join("");
+      return cells?`<h4>${nm}</h4><table><thead><tr><th style="width:150px">Shift &amp; pola jam</th><th style="width:40px">Jml</th><th>Nama pegawai</th></tr></thead><tbody>${cells}</tbody></table>`:"";
+    }).join("")).join("");
+  let total=0;schedWcs().forEach(x=>liveShifts().forEach(sh=>total+=listOf(w.wk,s.id,x[0],sh.code).length));
+  ovCard.className="card wide";
+  ovCard.innerHTML=`
+    <div class="card-hd"><h3>Pratinjau Cetak — A4 Landscape</h3><button class="close" type="button" data-close>×</button></div>
+    <div class="card-bd"><div class="sheet">
+      <div class="sh-hd">
+        <div class="co">PT. Telasih Makmur<small>Offset Printing &amp; Paper Packaging · Malang</small></div>
+        <div class="ttl"><b>${esc(s.name)}</b><span>Roster Shift Mingguan · Minggu ${w.wk} / ${w.range}</span></div>
+      </div>
+      <div class="sh-meta">
+        <span>Cakupan: <b>${s.depts.map(c=>deptOf(c).name.replace(/^.*– /,"")).join(", ")}</b></span>
+        <span>Total terjadwal: <b>${total} orang</b></span>
+        <span>Dibuat oleh: <b>${esc(s.by)}</b></span>
+        <span>Dokumen: <b>FRM-HR-ROS-01 Rev.0</b></span>
+      </div>
+      <h4>Definisi jam shift yang berlaku</h4>${shiftTable()}
+      ${blocks||'<p style="color:#777">Jadwal ini belum memiliki penempatan.</p>'}
+      <div class="sign">
+        <div>Dibuat oleh,<u>${esc(s.by)}<br><span style="color:#666">PPIC / HR</span></u></div>
+        <div>Diperiksa oleh,<u>Kepala Produksi</u></div>
+        <div>Disetujui oleh,<u>General Manager</u></div>
+      </div>
+      <!-- @TMERP-TODO @ANCHOR-ESS-PRINT
+           Tambahkan section "Perubahan setelah publikasi" sebelum blok tanda tangan:
+           tabel daftar swap APPROVED pada minggu ini — no. request, tanggal approve,
+           nama asal → nama pengganti, shift, dan approver. Dokumen cetak harus
+           mencerminkan kondisi terakhir, bukan hanya rencana awal, karena lembar
+           inilah yang dipakai mandor di lantai produksi dan jadi lampiran payroll. -->
+      <div class="foot">Dicetak dari TMERP · Modul HR – Roster Shift · 12 Sep 2026. Jam kerja mengikuti Master Shift versi berlaku; perubahan di luar jadwal ini harus melalui revisi tertulis.</div>
+    </div></div>
+    <div class="card-ft"><button class="btn" type="button" data-close>Tutup</button>
+      <button class="btn primary" type="button" id="doPrint">Cetak / Simpan PDF</button></div>`;
+  ov.className="ov on";
+  document.getElementById("doPrint").onclick=()=>{try{window.print()}catch(e){toast("Gunakan Ctrl+P pada jendela ini untuk mencetak.",true)}};
+}
+function printShiftDefs(){
+  ovCard.className="card wide";
+  ovCard.innerHTML=`<div class="card-hd"><h3>Pratinjau Cetak — Master Shift</h3><button class="close" type="button" data-close>×</button></div>
+    <div class="card-bd"><div class="sheet">
+      <div class="sh-hd"><div class="co">PT. Telasih Makmur<small>Offset Printing &amp; Paper Packaging · Malang</small></div>
+        <div class="ttl"><b>Master Definisi Shift</b><span>Berlaku mulai 12 Sep 2026</span></div></div>
+      <div class="sh-meta"><span>Jumlah shift aktif: <b>${liveShifts().length}</b></span><span>Dokumen: <b>FRM-HR-SHF-01 Rev.0</b></span></div>
+      ${shiftTable()}
+      <p style="font-size:10px;color:#555">Angka pada kolom hari = jam masuk (atas) dan jam pulang (bawah). Tanda "+1" berarti jam pulang jatuh di hari berikutnya. Jam/minggu sudah dikurangi waktu istirahat.</p>
+      <div class="sign"><div>Dibuat oleh,<u>HR / PPIC</u></div><div>Diperiksa oleh,<u>Kepala Produksi</u></div><div>Disetujui oleh,<u>General Manager</u></div></div>
+    </div></div>
+    <div class="card-ft"><button class="btn" type="button" data-close>Tutup</button><button class="btn primary" type="button" id="doPrint">Cetak / Simpan PDF</button></div>`;
+  ov.className="ov on";
+  document.getElementById("doPrint").onclick=()=>{try{window.print()}catch(e){toast("Gunakan Ctrl+P pada jendela ini untuk mencetak.",true)}};
+}
+
+/* ============ kontrol ============ */
+function setView(v){
+  view=v;
+  document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.view===v?"page":"false"));
+  const roster=v==="roster";
+  document.getElementById("viewRoster").hidden=!roster;
+  document.getElementById("viewShift").hidden=roster;
+  ["jbar","filters","wnavBox","btnSwap","btnSave"].forEach(id=>document.getElementById(id).hidden=!roster);
+  render();
+}
+document.querySelector(".nav").addEventListener("click",e=>{const b=e.target.closest("[data-view]");if(b)setView(b.dataset.view)});
+document.getElementById("btnShiftPrint").onclick=printShiftDefs;
+document.getElementById("selSched").onchange=e=>{curSched=e.target.value;selection.clear();render()};
+document.getElementById("selDept").onchange=e=>{dept=e.target.value;wc=deptOf(dept).wc[0][0];selection.clear();render()};
+document.getElementById("selWc").onchange=e=>{wc=e.target.value;selection.clear();render()};
+document.getElementById("selGroup").onchange=e=>{groupBy=e.target.value;collapsed.clear();renderPool()};
+document.getElementById("skillOnly").onchange=e=>{skillOnly=e.target.checked;selection.clear();renderPool()};
+document.getElementById("q").oninput=e=>{query=e.target.value;renderPool()};
+document.getElementById("btnNewSched").onclick=()=>schedForm(false);
+document.getElementById("btnRename").onclick=()=>schedForm(true);
+document.getElementById("btnPrint").onclick=printSheet;
+function goWeek(d){weekOffset+=d;selection.clear();render();
+  const w=WK();toast(`Minggu ${w} · ${weekHas(w,curSched)?"roster sudah terisi":"belum ada roster — pakai Tukar shift untuk menyalin dari minggu sebelumnya"}.`,!weekHas(w,curSched))}
+document.getElementById("wprev").onclick=()=>goWeek(-1);
+document.getElementById("wnext").onclick=()=>goWeek(1);
+document.getElementById("btnSwap").onclick=rotateForm;
+document.getElementById("btnDelSched").onclick=delSchedForm;
+document.getElementById("btnSave").onclick=()=>{
+  const s=S();let total=0,kurang=[];
+  schedWcs().forEach(([code,nm])=>liveShifts().forEach(sh=>{const n=listOf(WK(),s.id,code,sh.code).length;total+=n;if(n>0&&n<sh.cap)kurang.push(nm+" "+sh.name)}));
+  toast(`“${s.name}” minggu ${WK()} tersimpan · ${total} penempatan. `+(kurang.length?kurang.length+" shift masih di bawah kuota.":"Semua shift terisi penuh."),!!kurang.length)};
+
+render();
+</script>
