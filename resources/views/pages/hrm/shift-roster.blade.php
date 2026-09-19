@@ -283,6 +283,9 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             $this->statAssigned,
             $this->statFree,
             $this->formasi,
+            $this->formasiStats,
+            $this->formasiRows,
+            $this->formasiUnscheduled,
         );
     }
 
@@ -344,6 +347,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     {
         $this->weekOffset += $delta;
         $this->selection = [];
+        $this->editOpen = false;
         $this->forgetWeekData();
 
         $filled = collect($this->weekPlacements)->isNotEmpty();
@@ -1176,128 +1180,261 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     }
 
     // ================= FORMASI HARIAN =================
-    // Bentuk sheet formasi HR (Posisi x Jam Kerja x Tanggal) -- permintaan user
-    // 2026-09-19 supaya jadwal manual HR bisa dilihat & diinput persis seperti
-    // biasanya. Detail di App\Services\Hrm\RosterFormationService.
+    // Bentuk sheet formasi HR (Posisi x Jam Kerja x Tanggal) -- desain disetujui
+    // user 2026-09-19 (docs/mockups/mockup_roster_formasi_harian.jpg): kotak
+    // monitoring = filter, Ringkas seminggu / Per hari, editor baris centang
+    // orang x hari. Logika di App\Services\Hrm\RosterFormationService.
     public bool $formasiAllUnits = false;
 
-    public bool $showCellModal = false;
+    public string $formasiMode = 'ringkas'; // ringkas | harian
 
-    public ?int $cell_wc = null;
+    public string $formasiDay = '';
 
-    public ?int $cell_shift = null;
+    public string $formasiFilter = ''; // '' | shift:<id> | borongan | kosong | belum
 
-    public string $cell_date = '';
+    public string $formasiSearch = '';
 
-    public array $cell_ids = [];
+    // ---- editor baris ----
+    public bool $editOpen = false;
 
-    public string $cell_scope = 'day'; // day | rest | week
+    public ?int $edit_wc = null;
 
-    public string $cell_search = '';
+    public ?int $edit_shift = null;
+
+    public bool $edit_new = false;
+
+    public ?int $edit_orig_shift = null;
+
+    public array $edit_grid = []; // employee_id => [Y-m-d => bool]
+
+    public string $edit_search = '';
+
+    private function formasiService(): \App\Services\Hrm\RosterFormationService
+    {
+        return app(\App\Services\Hrm\RosterFormationService::class);
+    }
 
     #[Computed]
     public function formasi(): array
     {
-        return $this->scheduleId
-            ? app(\App\Services\Hrm\RosterFormationService::class)->matrix($this->scheduleId, $this->weekStart, $this->formasiAllUnits)
-            : [];
+        return $this->scheduleId ? $this->formasiService()->matrix($this->scheduleId, $this->weekStart, $this->formasiAllUnits) : [];
+    }
+
+    // Hari fokus monitoring: hari ini kalau masih di minggu yang dibuka, selain itu Senin.
+    public function focusDate(): string
+    {
+        $today = now()->toDateString();
+        $in = fn ($d) => $d >= $this->weekStart->toDateString() && $d <= $this->weekEnd->toDateString();
+
+        return $in($this->formasiDay) ? $this->formasiDay : ($in($today) ? $today : $this->weekStart->toDateString());
+    }
+
+    #[Computed]
+    public function formasiUnscheduled()
+    {
+        return $this->scheduleId ? $this->formasiService()->unscheduled($this->scheduleId, $this->weekStart) : collect();
+    }
+
+    #[Computed]
+    public function formasiStats(): array
+    {
+        return $this->formasiService()->stats($this->formasi, $this->focusDate(), $this->formasiUnscheduled->count());
+    }
+
+    #[Computed]
+    public function formasiRows(): array
+    {
+        $term = mb_strtoupper(trim($this->formasiSearch));
+        $shiftFilter = str_starts_with($this->formasiFilter, 'shift:') ? (int) substr($this->formasiFilter, 6) : null;
+        $day = $this->focusDate();
+
+        $rows = array_filter($this->formasi, function ($row) use ($term, $shiftFilter, $day) {
+            if ($this->formasiFilter === 'kosong') {
+                return $row['empty'];
+            }
+            if ($shiftFilter) {
+                return $row['shift']?->shift_id === $shiftFilter && ! empty($row['cells'][$day]);
+            }
+            if ($this->formasiFilter === 'borongan') {
+                return collect($row['people'])->contains(fn ($p) => $p['borongan'] && ! empty($p['days'][$day]));
+            }
+            if ($term !== '') {
+                return collect($row['people'])->contains(fn ($p) => str_contains(mb_strtoupper($p['label'].' '.$p['name']), $term));
+            }
+
+            return true;
+        });
+
+        // rowspan dihitung ulang setelah difilter.
+        $rows = array_values($rows);
+        foreach ($rows as $i => $row) {
+            $rows[$i]['first'] = $i === 0 || $rows[$i - 1]['wc']->work_center_id !== $row['wc']->work_center_id;
+        }
+        foreach ($rows as $i => $row) {
+            if ($row['first']) {
+                $span = 1;
+                while (isset($rows[$i + $span]) && ! $rows[$i + $span]['first']) {
+                    $span++;
+                }
+                $rows[$i]['span'] = $span;
+            }
+        }
+
+        return $rows;
+    }
+
+    public function setFormasiFilter(string $filter): void
+    {
+        $this->formasiFilter = $this->formasiFilter === $filter ? '' : $filter;
+        unset($this->formasiRows);
+    }
+
+    public function setFormasiDay(string $date): void
+    {
+        $this->formasiDay = $date;
+        unset($this->formasiStats, $this->formasiRows);
     }
 
     public function updatedFormasiAllUnits(): void
     {
-        unset($this->formasi);
+        $this->forgetFormasi();
     }
 
-    public function openCell(int $workCenterId, ?int $shiftId, string $date): void
+    public function updatedFormasiSearch(): void
     {
-        $this->cell_wc = $workCenterId;
-        $this->cell_shift = $shiftId;
-        $this->cell_date = $date;
-        $this->cell_scope = 'day';
-        $this->cell_search = '';
-        $this->cell_ids = $shiftId
-            ? EmpShiftRoster::where('schedule_id', $this->scheduleId)->where('work_center_id', $workCenterId)
-                ->where('shift_id', $shiftId)->whereDate('roster_date', $date)->pluck('employee_id')->map(fn ($v) => (int) $v)->all()
-            : [];
-        $this->showCellModal = true;
+        unset($this->formasiRows);
+    }
+
+    private function forgetFormasi(): void
+    {
+        unset($this->formasi, $this->formasiStats, $this->formasiRows, $this->formasiUnscheduled, $this->editCandidates, $this->editPeople);
+    }
+
+    // ---------- editor baris ----------
+    public function openRow(int $workCenterId, ?int $shiftId): void
+    {
+        $this->edit_wc = $workCenterId;
+        $this->edit_shift = $shiftId;
+        $this->edit_new = $shiftId === null;
+        $this->edit_orig_shift = $shiftId;
+        $this->edit_search = '';
+        $this->edit_grid = [];
+
+        if ($shiftId) {
+            $row = collect($this->formasi)->first(fn ($r) => $r['wc']->work_center_id === $workCenterId && $r['shift']?->shift_id === $shiftId);
+            foreach ($row['people'] ?? [] as $id => $p) {
+                $this->edit_grid[$id] = array_map(fn () => true, $p['days']);
+            }
+        }
+        $this->editOpen = true;
+        unset($this->editPeople, $this->editCandidates);
+    }
+
+    public function closeRow(): void
+    {
+        $this->editOpen = false;
+    }
+
+    // Hari yang boleh dicentang = hari kerja shift terpilih (libur shift = kolom mati).
+    public function editDays(): array
+    {
+        $shift = $this->edit_shift ? $this->shifts->firstWhere('shift_id', $this->edit_shift) : null;
+        $pattern = $shift?->dayPattern();
+
+        return collect($this->weekDates)->map(fn ($d, $i) => [
+            'date' => $d->toDateString(),
+            'label' => \App\Models\Master\EmpShift::DAY_LABELS[$d->format('l')],
+            'on' => $pattern ? $pattern[$i]['on'] : $i < 6,
+        ])->all();
     }
 
     #[Computed]
-    public function cellPeople()
+    public function editPeople()
     {
-        return EmpEmployee::whereIn('employee_id', $this->cell_ids ?: [0])->orderBy('full_name')->get();
+        return EmpEmployee::whereIn('employee_id', array_keys($this->edit_grid) ?: [0])->orderBy('full_name')->get()->keyBy('employee_id');
     }
 
+    // Saran: yang belum terjadwal minggu ini di departemen unit ini, lalu hasil pencarian.
     #[Computed]
-    public function cellCandidates()
+    public function editCandidates()
     {
-        $term = trim($this->cell_search);
+        $term = trim($this->edit_search);
+        if ($term === '') {
+            $dept = $this->edit_wc ? EmpWorkCenter::find($this->edit_wc)?->department_id : null;
+
+            return $dept
+                ? $this->formasiService()->unscheduled($this->scheduleId, $this->weekStart, $dept)->whereNotIn('employee_id', array_keys($this->edit_grid))->take(12)
+                : collect();
+        }
 
         return EmpEmployee::with('position')->where('activate', true)
-            ->whereNotIn('employee_id', $this->cell_ids ?: [0])
-            ->when($term !== '', fn ($q) => $q->where(fn ($w) => $w->where('full_name', 'like', "%{$term}%")
-                ->orWhere('nickname', 'like', "%{$term}%")->orWhere('employee_code', 'like', "%{$term}%")))
-            ->orderBy('full_name')->limit(25)->get();
+            ->whereNotIn('employee_id', array_keys($this->edit_grid) ?: [0])
+            ->where(fn ($w) => $w->where('full_name', 'like', "%{$term}%")
+                ->orWhere('nickname', 'like', "%{$term}%")->orWhere('employee_code', 'like', "%{$term}%"))
+            ->orderBy('full_name')->limit(12)->get();
     }
 
-    public function addToCell(int $employeeId): void
+    public function updatedEditSearch(): void
     {
-        $this->cell_ids = array_values(array_unique([...$this->cell_ids, $employeeId]));
-        $this->cell_search = '';
-        unset($this->cellPeople, $this->cellCandidates);
+        unset($this->editCandidates);
     }
 
-    public function removeFromCell(int $employeeId): void
+    public function updatedEditShift(): void
     {
-        $this->cell_ids = array_values(array_diff($this->cell_ids, [$employeeId]));
-        unset($this->cellPeople, $this->cellCandidates);
+        unset($this->editCandidates);
     }
 
-    public function saveCell(): void
+    public function addToRow(int $employeeId): void
+    {
+        // Orang baru langsung dicentang di semua hari kerja shift (paling umum: seminggu penuh).
+        $this->edit_grid[$employeeId] = collect($this->editDays())->where('on', true)->mapWithKeys(fn ($d) => [$d['date'] => true])->all();
+        $this->edit_search = '';
+        unset($this->editPeople, $this->editCandidates);
+    }
+
+    public function removeFromRow(int $employeeId): void
+    {
+        unset($this->edit_grid[$employeeId]);
+        unset($this->editPeople, $this->editCandidates);
+    }
+
+    public function toggleDay(int $employeeId, string $date): void
+    {
+        $this->edit_grid[$employeeId][$date] = empty($this->edit_grid[$employeeId][$date]);
+    }
+
+    public function saveRow(): void
     {
         if ($this->isLocked()) {
             $this->flash('Minggu ini sudah CONFIRMED & terkunci — buka kunci dulu untuk mengubah formasi.', true);
 
             return;
         }
-        $shift = $this->cell_shift ? $this->shifts->firstWhere('shift_id', $this->cell_shift) : null;
-        if (! $shift || ! $this->cell_wc) {
+        $shift = $this->edit_shift ? $this->shifts->firstWhere('shift_id', $this->edit_shift) : null;
+        if (! $shift || ! $this->edit_wc) {
             $this->flash('Pilih jam kerja (shift) dulu.', true);
 
             return;
         }
 
-        $date = Carbon::parse($this->cell_date);
-        $from = $this->cell_scope === 'week' ? $this->weekStart->copy() : $date;
-        $to = $this->cell_scope === 'day' ? $date : $this->weekEnd->copy();
-        $pattern = collect($shift->dayPattern())->keyBy('day');
-        $dates = [];
-        for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
-            if ($d->isSameDay($date) || ($pattern[$d->format('l')]['on'] ?? false)) {
-                $dates[] = $d->toDateString();
-            }
+        $service = $this->formasiService();
+        // Jam kerja baris diganti -> kosongkan baris lama di shift sebelumnya (pindah, bukan duplikat).
+        if ($this->edit_orig_shift && $this->edit_orig_shift !== $shift->shift_id) {
+            $service->saveRow($this->scheduleId, $this->edit_wc, $this->edit_orig_shift, $this->weekStart, [], Auth::user()->login);
         }
+        $service->saveRow($this->scheduleId, $this->edit_wc, $shift->shift_id, $this->weekStart, $this->edit_grid, Auth::user()->login);
 
-        app(\App\Services\Hrm\RosterFormationService::class)
-            ->assign($this->scheduleId, $this->cell_wc, $shift->shift_id, $dates, $this->cell_ids, Auth::user()->login);
-
-        $this->showCellModal = false;
-        unset($this->formasi);
+        $this->editOpen = false;
+        $this->forgetFormasi();
         $this->forgetWeekData();
-        $this->flash(count($this->cell_ids).' orang → '.($this->currentCellCenter()?->work_center_name ?? '').' · '.$shift->shift_name.' · '.count($dates).' hari.');
-    }
-
-    public function currentCellCenter(): ?EmpWorkCenter
-    {
-        return $this->cell_wc ? EmpWorkCenter::find($this->cell_wc) : null;
+        $this->flash((EmpWorkCenter::find($this->edit_wc)?->work_center_name ?? '').' · '.$shift->shift_name.' disimpan ('.count(array_filter($this->edit_grid, 'array_filter')).' orang).');
     }
 
     public function copyPrevWeek(): void
     {
         try {
-            $n = app(\App\Services\Hrm\RosterFormationService::class)
-                ->copyWeek($this->scheduleId, $this->weekStart->copy()->subWeek(), $this->weekStart, Auth::user()->login);
-            unset($this->formasi);
+            $n = $this->formasiService()->copyWeek($this->scheduleId, $this->weekStart->copy()->subWeek(), $this->weekStart, Auth::user()->login);
+            $this->forgetFormasi();
             $this->forgetWeekData();
             $this->flash($n ? "Formasi minggu lalu disalin ({$n} baris) — tinggal ubah yang berbeda." : 'Minggu lalu kosong, tidak ada yang disalin.', ! $n);
         } catch (\RuntimeException $e) {

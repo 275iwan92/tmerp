@@ -319,7 +319,15 @@ class ImportHrSample extends Command
             }
         });
 
-        $this->info(count($rows).' baris roster ('.count($taken).' karyawan) untuk 7-12 & 14-19 Sep 2026.');
+        // Penugasan di formasi HR = bukti nyata orang itu bisa di unit tsb -> sertifikat
+        // unit (seed lama dibuat saat semua karyawan masih "Belum Dipetakan", jadi basi).
+        $skills = collect($rows)->map(fn ($r) => ['employee_id' => $r['employee_id'], 'work_center_id' => $r['work_center_id']])
+            ->unique(fn ($r) => $r['employee_id'].'|'.$r['work_center_id'])
+            ->map(fn ($r) => $r + ['activate' => 1, 'data_origin' => 'LIVE', 'created_at' => now(), 'created_by' => self::ROSTER_ACTOR, 'updated_at' => now(), 'updated_by' => self::ROSTER_ACTOR])
+            ->values()->all();
+        $newSkills = $db->table('emp_employee_work_center_skill')->insertOrIgnore($skills);
+
+        $this->info(count($rows).' baris roster ('.count($taken).' karyawan) untuk 7-12 & 14-19 Sep 2026; sertifikat unit baru: '.$newSkills.'.');
         $this->section('Dilewati', array_map(fn ($k, $v) => "{$k}: {$v}", array_keys($skipped), $skipped));
     }
 

@@ -182,7 +182,7 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
                                 @endif
                                 <td class="border border-[#999] px-1 py-0.5 uppercase">{{ $row['shift']?->shift_name ?? '—' }}</td>
                                 @foreach ($this->weekStart->copy()->daysUntil($this->weekEnd->copy()->subDay()) as $d)
-                                    <td class="border border-[#999] px-1 py-0.5 text-center uppercase">{{ collect($row['cells'][$d->toDateString()] ?? [])->pluck('label')->implode(', ') ?: '' }}</td>
+                                    <td class="border border-[#999] px-1 py-0.5 text-center uppercase">{{ collect($row['cells'][$d->toDateString()] ?? [])->map(fn ($id) => $row['people'][$id]['label'])->implode(', ') }}</td>
                                 @endforeach
                             </tr>
                         @endforeach
