@@ -22,7 +22,10 @@ Sumber: `docs/HR/daftar karyawan - database.xlsx` (138 orang), 2 file gaji mingg
 - `--step=roster`: 567 baris `emp_shift_roster` 7-12 & 14-19 Sep (shift SH1/SH2/REG
   baru, WC baru DIECUT/FG 3/FG 4/BLANKING). Revisi user hari yang sama: formasi = data
   REAL (LIVE), semua jadwal dummy/uji lama dihapus (tabel kini hanya 2 formasi ini).
-  8 nama panggilan tak terpetakan dilewati.
+  Nama yang belum ada (ARIF x2, MUCHLAS, RENDA, ERNA, MUJI, DEA, SITI, TYAS) = karyawan
+  BORONGAN produksi TM yang dipanggil saat kerja berlebih (jabatan BORONGAN, kontrak
+  BORONGAN/PER_UNIT, skill Manual/FG 3/FG 4) -> kini 622 baris, 57 orang; >1 titik sehari sah.
+  Layar Shift Roster kini membuka unit kerja yang sudah berisi jadwal (bukan selalu Cetak 1).
 - `--step=payroll`: sample lama (VAL-001/002, shift VAL, run 22-28 Agu) dihapus; 95 rate
   gaji + presensi TA 2 minggu + 2 payroll run WEEKLY (DUMMY). Pokok+tunjangan+bonus engine
   = Excel utk 84/92 & 78/90 orang, uang roti sama persis; lembur engine ~52% Excel (BACKLOG §20).

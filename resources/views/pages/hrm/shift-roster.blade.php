@@ -250,8 +250,17 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $centers = $this->workCenters;
 
         if (! $centers->firstWhere('work_center_id', $this->workCenterId)) {
-            $this->workCenterId = $centers->first()?->work_center_id;
+            $this->workCenterId = $this->firstFilledCenter($centers) ?? $centers->first()?->work_center_id;
         }
+    }
+
+    // Unit kerja awal = yang sudah ada roster minggu ini, supaya layar tidak
+    // terbuka di unit kosong (mis. Cetak 1) padahal jadwalnya ada di unit lain.
+    private function firstFilledCenter($centers): ?int
+    {
+        $filled = collect($this->weekPlacements)->pluck('work_center_id')->unique();
+
+        return $centers->first(fn ($c) => $filled->contains((int) $c->work_center_id))?->work_center_id;
     }
 
     private function refreshScope(): void
@@ -290,8 +299,8 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
     public function updatedDepartmentId(): void
     {
         unset($this->workCenters);
-        $this->workCenterId = $this->workCenters->first()?->work_center_id;
         $this->forgetWeekData();
+        $this->workCenterId = $this->firstFilledCenter($this->workCenters) ?? $this->workCenters->first()?->work_center_id;
         $this->selection = [];
     }
 

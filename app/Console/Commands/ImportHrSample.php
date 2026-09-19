@@ -281,12 +281,12 @@ class ImportHrSample extends Command
                     }
                     foreach ($dates as $d) {
                         $empId = $idByCode[$code];
-                        if (isset($taken[$empId][$d])) {
-                            $skipped["{$nick} {$d} {$post}"] = "sudah di {$taken[$empId][$d]} hari itu";
-
+                        // >1 titik sehari itu sah (borongan dipanggil saat kerja berlebih,
+                        // pindah titik sesuai beban) -- yang dilewati hanya baris kembar persis.
+                        if (isset($taken[$empId]["{$d}|{$post}|{$shiftCode}"])) {
                             continue;
                         }
-                        $taken[$empId][$d] = $post;
+                        $taken[$empId]["{$d}|{$post}|{$shiftCode}"] = true;
                         $rows[] = [
                             'employee_id' => $empId, 'division_id' => $center->division_id, 'machine_id' => $center->machine_id,
                             'work_center_id' => $center->work_center_id, 'schedule_id' => $scheduleByDept[$center->department_id] ?? null,
