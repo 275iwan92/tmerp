@@ -19,8 +19,10 @@ Sumber: `docs/HR/daftar karyawan - database.xlsx` (138 orang), 2 file gaji mingg
   -> `emp_bpjs_ketenagakerjaan.enrollment_status/registration_batch/bpjs_category/enrollment_note`;
   tanggal & gender dari Excel (tgl lahir mustahil dikosongkan); mingguan = ada di file gaji (93/44).
   9 staf jabatannya belum bisa dipastikan (tetap "Belum Dipetakan").
-- `--step=roster`: 567 baris `emp_shift_roster` DUMMY 7-12 & 14-19 Sep (shift SH1/SH2/REG
-  baru, WC baru DIECUT/FG 3/FG 4/BLANKING). 8 nama panggilan tak terpetakan dilewati.
+- `--step=roster`: 567 baris `emp_shift_roster` 7-12 & 14-19 Sep (shift SH1/SH2/REG
+  baru, WC baru DIECUT/FG 3/FG 4/BLANKING). Revisi user hari yang sama: formasi = data
+  REAL (LIVE), semua jadwal dummy/uji lama dihapus (tabel kini hanya 2 formasi ini).
+  8 nama panggilan tak terpetakan dilewati.
 - `--step=payroll`: sample lama (VAL-001/002, shift VAL, run 22-28 Agu) dihapus; 95 rate
   gaji + presensi TA 2 minggu + 2 payroll run WEEKLY (DUMMY). Pokok+tunjangan+bonus engine
   = Excel utk 84/92 & 78/90 orang, uang roti sama persis; lembur engine ~52% Excel (BACKLOG §20).

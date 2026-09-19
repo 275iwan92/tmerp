@@ -16,7 +16,8 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 //   attributes -- adopsi kolom Excel HR yang belum terpetakan (jabatan, berkas,
 //                 deposit, BPJS+KET, validasi tanggal) + frekuensi gaji dari file gaji;
 //   roster     -- formasi shift minggu ke-2 & ke-3 September (gambar WhatsApp HR,
-//                 ditranskrip ke database/data/hr/formasi_shift_2026_09.json) sbg DUMMY;
+//                 ditranskrip ke database/data/hr/formasi_shift_2026_09.json) sbg data
+//                 REAL (LIVE); semua jadwal dummy/uji lama dihapus (permintaan user 2026-09-19);
 //   payroll    -- sample payroll dari 2 file gaji mingguan (1659, 1660) menggantikan
 //                 sample VAL-001/002 lama, lalu engine dijalankan & dibandingkan dgn Excel.
 // Input file gaji = JSON hasil scripts/hr/extract_payroll_xlsb.py (xlsb tak terbaca PHP).
@@ -30,7 +31,9 @@ class ImportHrSample extends Command
 
     private const ACTOR = 'hr-excel-2026-09-19';
 
-    private const ROSTER_ACTOR = 'hr-formasi-sample';
+    private const ROSTER_ACTOR = 'hr-formasi-2026-09';
+
+    private const OLD_ROSTER_ACTORS = ['hr-formasi-sample'];
 
     private const PAYROLL_ACTOR = 'hr-payroll-sample';
 
@@ -248,7 +251,7 @@ class ImportHrSample extends Command
 
     private function importRoster(): void
     {
-        $this->line("\n<comment>== Formasi shift (DUMMY) ==</comment>");
+        $this->line("\n<comment>== Formasi shift (data real) ==</comment>");
         $db = DB::connection('tm2mst');
         $data = $this->json('formasi_shift_2026_09.json');
         $idByCode = $db->table('emp_employee')->pluck('employee_id', 'employee_code')->all();
@@ -288,7 +291,7 @@ class ImportHrSample extends Command
                             'employee_id' => $empId, 'division_id' => $center->division_id, 'machine_id' => $center->machine_id,
                             'work_center_id' => $center->work_center_id, 'schedule_id' => $scheduleByDept[$center->department_id] ?? null,
                             'shift_id' => $shiftIds[$shiftCode], 'roster_date' => $d, 'assigned_by_role' => 'PPIC', 'is_overtime' => 0,
-                            'data_origin' => 'DUMMY', 'created_at' => now(), 'created_by' => self::ROSTER_ACTOR,
+                            'data_origin' => 'LIVE', 'created_at' => now(), 'created_by' => self::ROSTER_ACTOR,
                             'updated_at' => now(), 'updated_by' => self::ROSTER_ACTOR,
                         ];
                     }
@@ -297,7 +300,12 @@ class ImportHrSample extends Command
         }
 
         $db->transaction(function () use ($db, $rows) {
-            $db->table('emp_shift_roster')->where('created_by', self::ROSTER_ACTOR)->delete();
+            // Jadwal dummy/uji: baris DUMMY, formasi versi sample, 5 baris uji 28 Agu (created_by=system).
+            $db->table('emp_shift_roster')
+                ->where(fn ($q) => $q->where('data_origin', 'DUMMY')
+                    ->orWhereIn('created_by', [self::ROSTER_ACTOR, ...self::OLD_ROSTER_ACTORS])
+                    ->orWhere(fn ($q2) => $q2->where('created_by', 'system')->where('roster_date', '2026-08-28')))
+                ->delete();
             foreach (array_chunk($rows, 200) as $chunk) {
                 $db->table('emp_shift_roster')->insert($chunk);
             }
