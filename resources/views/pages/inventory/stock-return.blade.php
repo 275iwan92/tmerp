@@ -498,7 +498,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                             @if (! $readOnly && ! $editingId)
                                 <button type="button" wire:click="openPicker" class="px-2.5 py-2 border border-dashed border-accent rounded-md text-[13px] text-accent font-semibold text-left">{{ $sourceDocNo ?: '🔍 Pilih dokumen Stock Out…' }}</button>
                             @else
-                                <input type="text" value="{{ $sourceDocNo }}" disabled class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px] font-mono bg-[#f4f6fa] text-muted">
+                                <x-form.input value="{{ $sourceDocNo }}" disabled class="font-mono" />
                             @endif
                             @error('sourceDocId') <span class="text-[10.5px] text-red-600">{{ $message }}</span> @enderror
                         </div>

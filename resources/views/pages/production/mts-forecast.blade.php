@@ -215,7 +215,7 @@ new #[Title('Forecast MTS — TELASIH MAKMUR ERP')] class extends Component
                         <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Produk</label>
                         @if ($productId)
                             <div class="flex items-center gap-1.5">
-                                <input type="text" value="{{ $productName }}" readonly class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-[#f7f7f5]">
+                                <div class="flex-1"><x-form.input value="{{ $productName }}" readonly /></div>
                                 <button type="button" wire:click="clearProduct" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
                             </div>
                         @else

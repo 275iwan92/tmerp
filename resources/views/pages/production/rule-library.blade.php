@@ -222,11 +222,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                             <option value="SEQUENCING">Sequencing</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Nama Rule</label>
-                        <input type="text" wire:model="rule_name" placeholder="mis. Gabung dieline sama" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        @error('rule_name') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.input label="Nama Rule" name="rule_name" wire:model="rule_name" placeholder="mis. Gabung dieline sama" />
                     <div class="grid two gap-3">
                         <div>
                             <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Mesin (opsional)</label>
@@ -237,17 +233,10 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                                 @endforeach
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Proses (opsional)</label>
-                            <input type="text" wire:model="applies_to_process" placeholder="mis. Cetak" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        </div>
+                        <x-form.input label="Proses (opsional)" name="applies_to_process" wire:model="applies_to_process" placeholder="mis. Cetak" />
                     </div>
                     <div class="grid two gap-3">
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Field Kondisi</label>
-                            <input type="text" wire:model="condition_field" placeholder="mis. dieline_ref" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                            @error('condition_field') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
-                        </div>
+                        <x-form.input label="Field Kondisi" name="condition_field" wire:model="condition_field" placeholder="mis. dieline_ref" />
                         <div>
                             <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Operator</label>
                             <select wire:model="condition_operator" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">

@@ -247,11 +247,7 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                         </select>
                         @error('product_id') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Part Code</label>
-                        <input type="text" wire:model="part_code" placeholder="mis. BODY" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs font-mono">
-                        @error('part_code') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.input label="Part Code" name="part_code" wire:model="part_code" placeholder="mis. BODY" class="font-mono" />
                     <div>
                         <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Proses</label>
                         <select wire:model="process_id" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">

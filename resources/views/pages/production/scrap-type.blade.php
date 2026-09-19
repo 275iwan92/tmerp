@@ -167,16 +167,8 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
                             <option value="WASTE">Waste (bahan/proses terbuang)</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Kode</label>
-                        <input type="text" wire:model="type_code" placeholder="mis. COLOR_OFF" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs font-mono">
-                        @error('type_code') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Nama Tipe</label>
-                        <input type="text" wire:model="type_name" placeholder="mis. Warna Tidak Sesuai" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        @error('type_name') <span class="text-[10px] text-[#a3241f]">{{ $message }}</span> @enderror
-                    </div>
+                    <x-form.input label="Kode" name="type_code" wire:model="type_code" placeholder="mis. COLOR_OFF" class="font-mono" />
+                    <x-form.input label="Nama Tipe" name="type_name" wire:model="type_name" placeholder="mis. Warna Tidak Sesuai" />
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
                         <button type="button" wire:click="closeModal" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
                         <button type="button" wire:click="save" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#2c3e69] text-white cursor-pointer">Simpan</button>

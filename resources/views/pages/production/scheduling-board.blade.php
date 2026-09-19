@@ -1010,11 +1010,11 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                 @if ($hotSource === 'CUSTOMER')
                                     @if ($hotCustomerId)
                                         <div class="flex items-center gap-1.5">
-                                            <input type="text" value="{{ $hotCustomerName }}" readonly class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-[#f7f7f5]">
+                                            <div class="flex-1"><x-form.input value="{{ $hotCustomerName }}" readonly /></div>
                                             <button type="button" wire:click="clearHotCustomer" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
                                         </div>
                                     @else
-                                        <input type="text" wire:model.live.debounce.400ms="hotCustQuery" autocomplete="off" placeholder="Ketik nama/kode customer…" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
+                                        <x-form.input wire:model.live.debounce.400ms="hotCustQuery" autocomplete="off" placeholder="Ketik nama/kode customer…" />
                                         @if ($hotCustQuery && mb_strlen($hotCustQuery) >= 2)
                                             <div class="absolute left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                                                 @forelse ($this->hotCustomerResults as $c)
@@ -1029,7 +1029,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                         @endif
                                     @endif
                                 @else
-                                    <input type="text" disabled placeholder="— tidak relevan —" class="w-full px-2.5 py-1.5 border border-[#e5e7eb] rounded-md text-xs bg-[#f7f7f5] text-muted">
+                                    <x-form.input disabled placeholder="— tidak relevan —" />
                                 @endif
                             </div>
                         </div>

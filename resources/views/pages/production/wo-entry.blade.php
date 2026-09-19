@@ -1718,7 +1718,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                         <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Bahan Pengganti</label>
                         @if ($substituteRawmatId)
                             <div class="flex items-center gap-1.5">
-                                <input type="text" value="{{ $substituteRawmatName }}" readonly class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-[#f7f7f5]">
+                                <div class="flex-1"><x-form.input value="{{ $substituteRawmatName }}" readonly /></div>
                                 <button type="button" wire:click="clearSubstituteMaterial" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
                             </div>
                         @else
@@ -1853,7 +1853,7 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                                 <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Vendor Subkontrak</label>
                                 @if ($subVendorId)
                                     <div class="flex items-center gap-1.5">
-                                        <input type="text" value="{{ $subVendorName }}" readonly class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs bg-[#f7f7f5]">
+                                        <div class="flex-1"><x-form.input value="{{ $subVendorName }}" readonly /></div>
                                         <button type="button" wire:click="clearVendor" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
                                     </div>
                                 @else
@@ -1966,14 +1966,8 @@ new #[Title('WO Detail — TELASIH MAKMUR ERP')] class extends Component
                     </div>
 
                     <div class="[display:grid] grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Shift (opsional)</label>
-                            <input type="text" wire:model="outputShiftNote" placeholder="mis. Shift 1" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-muted uppercase mb-1.5">Catatan (opsional)</label>
-                            <input type="text" wire:model="outputNotes" class="w-full px-2.5 py-1.5 border border-[#c7cfda] rounded-md text-xs">
-                        </div>
+                        <x-form.input label="Shift (opsional)" name="outputShiftNote" wire:model="outputShiftNote" placeholder="mis. Shift 1" />
+                        <x-form.input label="Catatan (opsional)" name="outputNotes" wire:model="outputNotes" />
                     </div>
 
                     <div class="flex justify-end gap-2 pt-3 mt-2 border-t border-[#eef1f5]">
