@@ -1,4 +1,47 @@
-# CLAUDE.md — Konteks Proyek ERP CV. Telasih Makmur (Versi 2)
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+# Konteks Proyek ERP CV. Telasih Makmur (Versi 2)
+
+## 0. PERINTAH UMUM
+
+Stack: PHP ^8.3, Laravel 13, Livewire 4 (SFC), Filament 5, PowerGrid, Tailwind 4 + Vite 8. Served by Laravel Herd di `http://tmerp.test`.
+
+```bash
+composer setup                      # install + .env + key + migrate + npm build
+composer dev                        # serve + queue + pail + vite (jarang perlu; Herd sudah serve)
+npm run build                       # WAJIB setelah ubah class Tailwind (lihat §7.10)
+php artisan test                    # semua test
+php artisan test --filter=CostingEngineTest                        # 1 class
+php artisan test tests/Feature/CostingEngineTest.php --filter=nama_method
+vendor/bin/pint --dirty             # format PHP yang berubah
+php artisan recruitment:sync-portal # tarik data portal kandidat (dijadwalkan tiap 2 mnt)
+php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  # kerangka layar standar
+```
+
+- **Layar/komponen baru**: pakai skill `tmerp-screen` (generator `make:tm-screen` + `resources/views/components/_manifest.yaml` sebagai katalog props — jangan buka file komponen satu per satu). Mockup JPEG: skill `tmerp-ui-mockup`. Komponen baru wajib ditambahkan ke `_manifest.yaml`.
+
+- **Nama koneksi Laravel = nama database**: `tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`, `tm2pyr`, `tm2sys`, `tm2old`, `tm2crp` (`config/database.php`). Tabel §2 menulis `mst`/`sdi` sebagai singkatan; di kode (`$connection`, `DB::connection(...)`) pakai nama `tm2*`. Default connection = `tm2sys`.
+- **Test memakai MySQL lokal sungguhan**, bukan SQLite in-memory walau `phpunit.xml` menyebut sqlite: test menulis ke database `tm2*` dan **membersihkan sendiri** di `tearDown()` (hapus manual per tabel, lihat `tests/Feature/CostingEngineTest.php`). Tidak ada `RefreshDatabase`. Test baru yang menyisipkan data wajib cleanup sendiri, lalu verifikasi ke DB (jangan percaya skripnya saja).
+- `CareersPortalTest` di-skip (bukan gagal) bila Firebase Emulator tidak menyala — itu baseline normal.
+- Skema aktual = dump `docs/tm2*.sql`; migration `database/migrations` mencerminkannya.
+
+### Peta kode (perlu baca banyak file untuk paham)
+- **Halaman = Livewire v4 single-file component** di `resources/views/pages/<modul>/*.blade.php` (class anonim `new #[Title(..)] class extends Component` + Blade di 1 file). Route lewat macro `Route::livewire('/uri', 'pages::modul.nama')` di `routes/web.php` (bukan controller). Nama file ASCII, tanpa emoji.
+- **Gerbang akses** (`bootstrap/app.php` alias): `auth` → `locale` → `force.password` → `module:<KODE>` (SALES, COSTING, MDATA, FINACC, PROC, INV, HRM, PROD, MGMT; cek `SecUser::canAccessModule()` = `sec_module.min_mgmt_level`, admin bypass) / `admin`. Portal kandidat publik (`careers.*`, guard `portal.candidate`) SENGAJA di luar `auth`.
+- **Dua shell UI berdampingan**: shell lama `/menu` (`layouts::shell`, menu dari `tm2sys.sys_app_menu`, tab MDI, halaman transaksi via iframe) dan panel Filament `/admin` (migrasi bertahap, baru cluster HRM). Status kesiapan menu (`NOT_BUILT`/`READY_FOR_QC`/`LOCKED`) di `sys_app_menu.status_code`; **jangan set `LOCKED` sendiri** — hanya user (`docs/globalrules.yaml → module_status_system`).
+- **Logika bisnis di `app/Services/*`** (bukan di komponen): `Costing/CostingEngine`, `Imposition/ImpositionEngine`, `Sales/{QuotationBuilder,CoOrderBuilder}`, `Scheduling/*`, `Payroll/*`, `Recruitment/*`, `Migration/*` (ETL `tm*`→`tm2*`), dst. Rumus = sumber kebenaran di kode + test regresi (bukan dokumen).
+- **Grid**: trait `app/Livewire/Concerns/HasCustomizableGrid` (kontrak `gridKey/gridColumnDefs/gridDefaultColumns/gridBaseQuery/columnValue`); komponen reusable di `resources/views/components/{grid,form,print,gantt,kanban,...}`. Teks UI lewat `App\Support\Localization\Translator::t(key, fallback)`.
+- Scheduler (`routes/console.php`): `recruitment:sync-portal` tiap 2 menit, `prodev:usage-rates` bulanan.
+- `DataOriginScope` (web-only) menyembunyikan data DUMMY/LEGACY sesuai setting admin; console/tinker/test melihat semua.
+
+### Dokumen yang sering basi / jangan dipercaya mentah
+- `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang**. Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/uistandardindex.md`.
+- `docs/BACKLOG.md` = item terbuka (verifikasi ke kode dulu); selesai → hapus di sana, catat di `docs/LOG_JOB_DONE.md`. QC user → `docs/qc_feedback.md`.
+- Root repo berisi file sampah salah-ketik (`getColumnListing('iqp_costing'))`, `toArray())`, `v`) — jangan di-commit.
+
+---
 
 > File ini dibaca Claude Code tiap sesi. Ini "memori" & aturan proyek.
 > Sumber kebenaran: dokumen Tier di `/docs`. Bila ragu, baca Tier, jangan menebak.

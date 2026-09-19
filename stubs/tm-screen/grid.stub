@@ -1,0 +1,142 @@
+<?php
+
+use App\Livewire\Concerns\HasCustomizableGrid;
+use {{MODEL_FQN}};
+use App\Support\Localization\Translator;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+new #[Title('{{TITLE}} — TELASIH MAKMUR ERP')] class extends Component
+{
+    use HasCustomizableGrid;
+    use WithPagination;
+
+    protected function gridKey(): string
+    {
+        return '{{GRID_KEY}}';
+    }
+
+    protected function gridColumnDefs(): array
+    {
+        return [
+            // 'kolom' => ['label' => Translator::t('{{T_PREFIX}}_col_kolom', 'Label')],
+            'created_by' => ['label' => Translator::t('shared_col_created_by', 'Dibuat Oleh')],
+        ];
+    }
+
+    protected function gridDefaultColumns(): array
+    {
+        return ['created_by'];
+    }
+
+    protected function gridBaseQuery()
+    {
+        return {{MODEL}}::query();
+    }
+
+    protected function gridIdentitySearchColumns(): array
+    {
+        return ['{{CODE_COL}}' => Translator::t('shared_col_code', 'Kode'), '{{NAME_COL}}' => Translator::t('shared_col_name', 'Nama')];
+    }
+
+    #[Computed]
+    public function items()
+    {
+        return $this->gridSortedQuery()
+            ->when(! $this->gridSortColumn, fn ($q) => $q->orderBy('{{NAME_COL}}'))
+            ->paginate($this->perPage);
+    }
+
+    #[Computed]
+    public function stats(): array
+    {
+        return [
+            'total' => {{MODEL}}::count(),
+            '{{STAT_KEY}}' => {{MODEL}}::where('{{STAT_COL}}', {{STAT_VAL}})->count(),
+        ];
+    }
+
+    public function columnValue($row, string $key): string
+    {
+        return match ($key) {
+            default => (string) (data_get($row, $key) ?? '—'),
+        };
+    }
+
+    public function openItem(int $id)
+    {
+        return $this->redirect(route('{{OPEN_ROUTE}}', ['{{ROUTE_PARAM}}' => $id]));
+    }
+{{EXTRA_METHODS}}
+};
+?>
+
+<div>
+    <div class="max-w-[1500px] mx-auto my-5 px-4">
+
+        <x-grid.stat-row :count="2">
+            <x-grid.stat-box tone="total" label="{{ Translator::t('{{T_PREFIX}}_stat_total', 'Total') }}" :value="number_format($this->stats['total'])" />
+            <x-grid.stat-box tone="{{STAT_TONE}}" label="{{ Translator::t('{{T_PREFIX}}_stat_{{STAT_KEY}}', '{{STAT_LABEL}}') }}" :value="number_format($this->stats['{{STAT_KEY}}'])" />
+        </x-grid.stat-row>
+
+        <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
+            <x-grid.toolbar>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <span class="text-sm">🔍</span>
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('shared_search_placeholder', 'Cari kode, nama…') }}"
+                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                </div>
+                <x-slot:tools>
+                    @include('components.grid.filters-panel')
+                    @include('components.grid.toolbar-buttons')
+                </x-slot:tools>
+{{NEW_RECORD}}
+            </x-grid.toolbar>
+            @include('components.grid.filters-row', ['columnDefs' => $this->gridSearchColumnDefs()])
+
+            <x-grid.table-shell>
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="px-3 py-2 bg-[#fafbfd] border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]"></th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('shared_col_name', 'Nama') }}</th>
+                            @foreach ($gridVisibleColumns as $key)
+                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] whitespace-nowrap">
+                                    <button type="button" wire:click="toggleGridSort('{{ $key }}')" class="inline-flex items-center gap-1 cursor-pointer hover:text-navy {{ $gridSortColumn === $key ? 'text-accent' : '' }}">
+                                        {{ $this->gridColumnDefs()[$key]['label'] }}
+                                        <span class="text-[9px] {{ $gridSortColumn === $key ? 'text-accent' : 'opacity-40' }}">{{ $gridSortColumn === $key && $gridSortDirection === 'desc' ? '▼' : '▲' }}</span>
+                                    </button>
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($this->items as $row)
+                            <tr class="border-b border-[#eef1f5] hover:bg-[#fbfcfe] cursor-pointer" wire:key="row-{{ $row->{{PK}} }}" wire:dblclick="openItem({{ $row->{{PK}} }})" title="{{ Translator::t('hrm_emp_dblclick_detail_hint', 'Klik 2x untuk buka detail') }}">
+                                <td class="px-3 py-2 whitespace-nowrap">
+                                    <div class="flex items-center gap-1.5">
+{{ACTION_CELL}}
+                                    </div>
+                                </td>
+                                <x-grid.identity-cell :id="$row->{{PK}}" :name="$row->{{NAME_COL}}" :code="$row->{{CODE_COL}}" />
+                                @foreach ($gridVisibleColumns as $key)
+                                    <td class="px-3 py-2">{{ $this->columnValue($row, $key) }}</td>
+                                @endforeach
+                            </tr>
+                        @empty
+                            <x-grid.empty-row :colspan="count($gridVisibleColumns) + 2" />
+                        @endforelse
+                    </tbody>
+                </table>
+            </x-grid.table-shell>
+
+            @include('components.grid.pagination-footer', ['paginator' => $this->items])
+        </div>
+    </div>
+
+    @include('components.grid.column-modal', ['columnDefs' => $this->gridColumnDefs()])
+    @include('components.grid.sort-modal', ['columnDefs' => $this->gridColumnDefs()])
+</div>

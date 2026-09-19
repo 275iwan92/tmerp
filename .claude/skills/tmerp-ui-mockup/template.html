@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>NAMA LAYAR — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; }
+  .inp { width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #fff; }
+  .inp[readonly] { background: #f8fafc; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<!-- Header form standar (FORM_UI_STANDARD.md §1): navy sticky + tombol Back pill -->
+<header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
+  <div>
+    <div class="text-sm font-bold">NAMA LAYAR</div>
+    <div class="text-[10px] opacity-70">Modul · deskripsi singkat</div>
+  </div>
+  <div class="ml-auto flex items-center gap-3">
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">● DRAFT</span>
+    <button class="px-3 py-1 rounded border border-white/40 font-medium">Batal</button>
+    <button class="px-3 py-1 rounded bg-accent text-white font-semibold">Simpan</button>
+    <a title="Kembali ke Daftar" class="inline-flex items-center gap-2 pl-3.5 pr-1 py-1 bg-[#43508a] rounded-full">
+      <span class="text-[11px] font-bold uppercase tracking-wide text-white">Back</span>
+      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-[#43508a] text-[13px]"><i class="fa-solid fa-arrow-left"></i></span>
+    </a>
+  </div>
+</header>
+
+<main class="p-4 max-w-7xl mx-auto space-y-3">
+  <section class="card p-3">
+    <h2 class="font-semibold text-slate-700 mb-2">Header Dokumen</h2>
+    <div class="grid grid-cols-4 gap-3">
+      <div><div class="lbl">No. Dokumen</div><input class="inp" readonly value="XX2600001"></div>
+      <div><div class="lbl">Tanggal</div><input class="inp" value="19 Sep 2026"></div>
+      <div><div class="lbl">Customer</div><input class="inp" value="PT Contoh"></div>
+      <div><div class="lbl">Catatan</div><input class="inp"></div>
+    </div>
+  </section>
+</main>
+</body>
+</html>

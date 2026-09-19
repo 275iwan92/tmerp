@@ -1,0 +1,108 @@
+# Manifest komponen Blade TMERP — BACA INI, bukan file komponennya satu per satu.
+# Format: tag -> props (default), slot, catatan. Semua komponen = anonymous Blade
+# (resources/views/components/**). $attributes (wire:model, wire:change, class,
+# disabled, dll) diteruskan ke elemen input asli kecuali disebut lain.
+# Wajib diperbarui saat menambah/mengubah props komponen.
+
+gotchas:
+  - "Prop null dibuang diam-diam oleh @props -> pakai false/'' (mis. :placeholder=\"false\")."
+  - "Jangan tulis tag komponen berkurung sudut di komentar Blade apa pun (ikut terkompilasi)."
+  - "Jangan @php inline di dalam @if/@foreach; @php(...) inline wajib ada penutup."
+  - "<select> + wire:model rawan bug morph Livewire v4 -> x-form.select liveSync / toggle-group / searchable-select."
+  - "Class .grid global (app.css) memaksa 4 kolom -> pakai 'grid two'/'grid three' atau flex, bukan grid-cols-N."
+  - "Komponen berbasis Alpine (date-picker, searchable-select, multi-select, dll) bind lewat input hidden; nilai tanggal selalu ISO."
+  - "Teks UI lewat App\\Support\\Localization\\Translator::t('key', 'Fallback ID')."
+  - "Tombol baku: Simpan/Batal/Tutup (ID), Back selalu Inggris. Grid: '+ New Record'."
+
+tones: # palet bersama, jangan bikin warna baru
+  form.badge: [default, active|success, warn, danger, info]
+  grid.stat-box: [total, active, extra, critical, warn]
+  report.kpi: [blue, green, amber, violet, danger]
+
+form: # dialek default Tailwind; legacy=true|'namaClass' untuk CSS lama (.f/.fld)
+  x-form.input: {props: {label: null, name: null, type: text, hint: null, error: "null (fallback \$errors->first(name))", legacy: false, col2: false, col3: false, col4: false}}
+  x-form.textarea: {props: {label: null, name: null, hint: null, error: null, legacy: false, col2/col3/col4: false, autogrow: false}, slot: "label (named, opsional)"}
+  x-form.select: {props: {label: null, name: null, options: "[value=>label]", selected: null, placeholder: "null=default '— pilih —', false=tanpa", error: null, legacy: false, col2: false, liveSync: false}}
+  x-form.searchable-select: {props: {label: null, name: null, options: "[string]", placeholder: null, value: ''}}
+  x-form.multi-select: {props: {label: null, name: null, options: [], selected: [], placeholder: null, value: ''}}
+  x-form.date-picker: {props: {label: null, name: null, mode: "date|datetime", hint: null, error: null, legacy: false, col2: false, min: "Y-m-d", max: "Y-m-d"}, note: "pengganti wajib input type=date"}
+  x-form.date-range: {props: {label: null, startName: null, endName: null, startLabel: Mulai, endLabel: Selesai}}
+  x-form.checkbox: {props: {label: null, labelClass: text-muted}, slot: "default (label kaya, opsional)"}
+  x-form.switch: {props: {label: null, onLabel: Aktif, offLabel: Nonaktif, checked: false}}
+  x-form.radio-group: {props: {label: null, name: null, options: "[value=>label]", selected: null}}
+  x-form.toggle-group: {props: {label: null, hint: null, legacy: false, col2: false}, slot: "x-form.toggle-option"}
+  x-form.toggle-option: {props: {active: false, legacy: false}, slot: label, example: "wire:click=\"setX('A')\""}
+  x-form.number-stepper: {props: {label: null, name: null, min: null, max: null, value: 0}}
+  x-form.decimal-input: {props: {label: null, name: null, unit: null, decimals: 2, value: '', hint: null}}
+  x-form.currency-input: {props: {label: null, name: null, currencies: [], value: '', hint: null}}
+  x-form.masked-input: {props: {label: null, name: null, segments: "[6,6,4]", separator: '.', hint: null, error: null, value: ''}, note: "mis. NIK"}
+  x-form.phone-input: {props: {label: null, name: null, countries: [], value: '', hint: null, error: null}}
+  x-form.password-input: {props: {label: null, name: null, hint: null, error: null}}
+  x-form.case-toggle-input: {props: {label: null, name: null, placeholder: null, hint: null, error: null, value: ''}}
+  x-form.otp-input: {props: {label: null, name: null, length: 6}}
+  x-form.range-slider: {props: {label: null, min: 0, max: 100, step: 1, value: 0, format: null, unit: ''}}
+  x-form.star-rating: {props: {label: null, name: null, max: 5, value: 0}}
+  x-form.color-picker: {props: {label: null, value: '#2563eb'}}
+  x-form.file-dropzone: {props: {label: null, name: null, hint: null, accept: null, currentName: null}}
+  x-form.display: {props: {label: required}, slot: "nilai read-only"}
+  x-form.badge: {props: {tone: default}, slot: teks status}
+  x-form.split-button: {props: {label: Simpan, icon: '💾', actions: []}}
+  x-form.mini-calendar: {props: {events: []}}
+
+layout:
+  x-back-button: {props: {fallback: "route grid (wajib)"}, attrs: "title, class", note: "Back = layar sebelumnya via dirty-guard.js"}
+  x-alert.banner: {props: {type: "info|success|danger|warn", message: "null = tidak tampil"}}
+  x-alert.toast: {}
+  x-ui.accordion: {props: {title: required, count: null, open: false, tone: slate}}
+
+grid: # pasangkan dengan trait App\Livewire\Concerns\HasCustomizableGrid
+  x-grid.stat-row: {props: {count: required}, slot: "x-grid.stat-box"}
+  x-grid.stat-box: {props: {tone: total, label: required, value: required, subtitle: null}}
+  x-grid.toolbar: {slot: "default = input search; named: tools, newRecord"}
+  x-grid.table-shell: {slot: "<table>"}
+  x-grid.identity-cell: {props: {id: required, name: required, code: null}, note: "avatar+nama+kode"}
+  x-grid.action-dropdown: {props: {actions: "[[icon,label,action,tooltip]]"}}
+  x-grid.action-icon: {props: {icon: req, title: req, action: req, variant: default, confirm: null, bordered: false}}
+  x-grid.toggle-switch: {props: {on: req, action: req, confirm: null, title: null}, note: "HANYA grid Master"}
+  x-grid.group-header-row: {props: {label: req, value: req, colspan: req}}
+  x-grid.empty-row: {props: {colspan: req, message: 'Belum ada data.'}}
+  x-grid.spreadsheet-table: {props: {gridKey: req, columns: req, rows: req, newRowDefaults: req, errors: [], version: 0}, note: "spreadsheetgridstandard.md"}
+  includes: # dipanggil @include, bukan tag
+    - "@include('components.grid.filters-panel') + @include('components.grid.toolbar-buttons') di slot tools"
+    - "@include('components.grid.filters-row', ['columnDefs' => \$this->gridSearchColumnDefs()])"
+    - "@include('components.grid.pagination-footer', ['paginator' => \$this->items])"
+    - "@include('components.grid.column-modal'|'components.grid.sort-modal', ['columnDefs' => \$this->gridColumnDefs()])"
+
+print: # printnotastandard.md
+  x-print.document: {props: {theme: [], printLabel: '🖶 Cetak / Simpan PDF'}}
+  x-print.sheet: {}
+  x-print.header: {props: {company: null, docTitle: req, docNo: req}}
+  x-print.parties: {props: {columns: null}, slot: x-print.party}
+  x-print.party: {props: {label: req}}
+  x-print.section: {props: {number: req, title: req, hint: null}}
+  x-print.signatures: {props: {title: 'PENGESAHAN & PERSETUJUAN', columns: null}, slot: x-print.signature}
+  x-print.signature: {props: {role: req, company: null, name: null, sub: null}}
+  x-print.footer: {props: {page: null}}
+
+report:
+  x-report.kpi: {props: {label: req, value: req, icon: 'fa-solid fa-chart-simple', tone: blue, delta: null, trend: "up|down|null", note: null}}
+  x-report.badge: {props: {tone: info}}
+  x-report.insight: {props: {tone: warn}}
+  x-report.progress-row: {props: {label: req, value: req, pct: req, color: 'var(--sh-accent)', note: null}}
+  x-report.svg-bars: {props: {series: "[[label,color,data]]", labels: [], height: 220, horizontal: false}}
+  x-report.svg-donut: {props: {segments: [], centerValue: '', centerLabel: ''}}
+  x-report.svg-trend: {props: {series: [], labels: [], height: 240}}
+
+board: # baca ganttboardstandard.md / kanbanboardstandard.md sebelum pakai
+  x-gantt.board: {props: "rows, secondaryRows, resourceHeaderLabel, timelineStart=8, timelineEnd=20, pxPerHour=70, moveMethod/resizeMethod/reassignMethod, resourceOptions, labelOptions"}
+  x-kanban.board: {props: "columns (req), activeCardId, *Method (nama method Livewire)"}
+  x-calendar.board: {props: "view, currentDate, ... + *Method"}
+
+domain: # khusus modul, jangan dipakai lintas modul tanpa alasan
+  - x-costing.field
+  - x-costing.imposition-svg
+  - x-inquiry.readonly-summary
+  - x-prodev.wizard-bar
+  - x-org-chart.node
+  - x-auth.hero-brand
+  - x-auth.top-brand
