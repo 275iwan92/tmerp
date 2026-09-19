@@ -14,6 +14,8 @@ use Tests\TestCase;
 // Guard ditemukan user 2026-09-03: unlockLayout() sebelumnya tanpa syarat --
 // kalau layout SUDAH ditarik Costing (Ambil Data), unlock+ubah bikin HPP yang
 // sudah dihitung diam-diam basi tanpa peringatan siapa pun.
+// Unlock hanya ada di workbench lama (old_prodev); ProDev baru tidak punya unlock --
+// CONFIRMED tak pernah ditimpa, Simpan berikutnya bikin layout DRAFT baru.
 class ProdevUnlockLayoutGuardTest extends TestCase
 {
     protected ?int $partId = null;
@@ -67,7 +69,7 @@ class ProdevUnlockLayoutGuardTest extends TestCase
         $this->groupId = $group->id_layout_group;
 
         // BELUM ditarik Costing -- unlock harus BOLEH.
-        $test = Livewire::test('pages::production.prodev', ['part' => $part->id_part]);
+        $test = Livewire::test('pages::production.old_prodev', ['part' => $part->id_part]);
         $test->call('unlockLayout');
         $group->refresh();
         $this->assertSame('DRAFT', $group->status, 'Unlock harus jalan kalau belum ditarik Costing');
@@ -83,7 +85,7 @@ class ProdevUnlockLayoutGuardTest extends TestCase
         ]);
         $this->costingPartId = $costingPart->id_costing_part;
 
-        $test2 = Livewire::test('pages::production.prodev', ['part' => $part->id_part]);
+        $test2 = Livewire::test('pages::production.old_prodev', ['part' => $part->id_part]);
         $test2->call('unlockLayout');
         $group->refresh();
         $this->assertSame('CONFIRMED', $group->status, 'Unlock HARUS DITOLAK kalau layout sudah ditarik Costing');
