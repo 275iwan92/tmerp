@@ -259,7 +259,15 @@ class ImportHrSample extends Command
         $centers = $db->table('emp_work_center as w')->leftJoin('org_department as d', 'd.department_id', '=', 'w.department_id')
             ->select('w.work_center_id', 'w.work_center_code', 'w.machine_id', 'w.department_id', 'd.division_id')
             ->get()->keyBy('work_center_code');
-        $scheduleByDept = $db->table('emp_roster_schedule_department')->pluck('schedule_id', 'department_id')->all();
+        // Sheet formasi HR = 1 jadwal utuh (termasuk HITUNG/QC Pack), bukan dipecah per departemen.
+        $scheduleId = $db->table('emp_roster_schedule')->where('schedule_name', $data['schedule'])->value('schedule_id')
+            ?? throw new \RuntimeException("Jadwal {$data['schedule']} tidak ada.");
+
+        // Nama panggilan di sheet HR dipakai tampilan Formasi Harian (hanya isi yang masih kosong).
+        foreach ($data['nicknames'] as $nick => $code) {
+            $db->table('emp_employee')->where('employee_code', $code)->whereNull('nickname')
+                ->update(['nickname' => preg_replace('/ (FG ?\d|KUPAS)$/', '', $nick)]);
+        }
 
         $rows = [];
         $taken = [];
@@ -289,7 +297,7 @@ class ImportHrSample extends Command
                         $taken[$empId]["{$d}|{$post}|{$shiftCode}"] = true;
                         $rows[] = [
                             'employee_id' => $empId, 'division_id' => $center->division_id, 'machine_id' => $center->machine_id,
-                            'work_center_id' => $center->work_center_id, 'schedule_id' => $scheduleByDept[$center->department_id] ?? null,
+                            'work_center_id' => $center->work_center_id, 'schedule_id' => $scheduleId,
                             'shift_id' => $shiftIds[$shiftCode], 'roster_date' => $d, 'assigned_by_role' => 'PPIC', 'is_overtime' => 0,
                             'data_origin' => 'LIVE', 'created_at' => now(), 'created_by' => self::ROSTER_ACTOR,
                             'updated_at' => now(), 'updated_by' => self::ROSTER_ACTOR,

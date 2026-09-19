@@ -282,6 +282,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
             $this->batch,
             $this->statAssigned,
             $this->statFree,
+            $this->formasi,
         );
     }
 
@@ -1174,6 +1175,136 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         $this->flash('Minggu '.$this->rot_to.' terisi '.$ok.' penempatan dari minggu '.$this->rot_from.'.'.($skipped ? ' '.$skipped.' dilewati (sudah punya shift).' : ''), (bool) $skipped);
     }
 
+    // ================= FORMASI HARIAN =================
+    // Bentuk sheet formasi HR (Posisi x Jam Kerja x Tanggal) -- permintaan user
+    // 2026-09-19 supaya jadwal manual HR bisa dilihat & diinput persis seperti
+    // biasanya. Detail di App\Services\Hrm\RosterFormationService.
+    public bool $formasiAllUnits = false;
+
+    public bool $showCellModal = false;
+
+    public ?int $cell_wc = null;
+
+    public ?int $cell_shift = null;
+
+    public string $cell_date = '';
+
+    public array $cell_ids = [];
+
+    public string $cell_scope = 'day'; // day | rest | week
+
+    public string $cell_search = '';
+
+    #[Computed]
+    public function formasi(): array
+    {
+        return $this->scheduleId
+            ? app(\App\Services\Hrm\RosterFormationService::class)->matrix($this->scheduleId, $this->weekStart, $this->formasiAllUnits)
+            : [];
+    }
+
+    public function updatedFormasiAllUnits(): void
+    {
+        unset($this->formasi);
+    }
+
+    public function openCell(int $workCenterId, ?int $shiftId, string $date): void
+    {
+        $this->cell_wc = $workCenterId;
+        $this->cell_shift = $shiftId;
+        $this->cell_date = $date;
+        $this->cell_scope = 'day';
+        $this->cell_search = '';
+        $this->cell_ids = $shiftId
+            ? EmpShiftRoster::where('schedule_id', $this->scheduleId)->where('work_center_id', $workCenterId)
+                ->where('shift_id', $shiftId)->whereDate('roster_date', $date)->pluck('employee_id')->map(fn ($v) => (int) $v)->all()
+            : [];
+        $this->showCellModal = true;
+    }
+
+    #[Computed]
+    public function cellPeople()
+    {
+        return EmpEmployee::whereIn('employee_id', $this->cell_ids ?: [0])->orderBy('full_name')->get();
+    }
+
+    #[Computed]
+    public function cellCandidates()
+    {
+        $term = trim($this->cell_search);
+
+        return EmpEmployee::with('position')->where('activate', true)
+            ->whereNotIn('employee_id', $this->cell_ids ?: [0])
+            ->when($term !== '', fn ($q) => $q->where(fn ($w) => $w->where('full_name', 'like', "%{$term}%")
+                ->orWhere('nickname', 'like', "%{$term}%")->orWhere('employee_code', 'like', "%{$term}%")))
+            ->orderBy('full_name')->limit(25)->get();
+    }
+
+    public function addToCell(int $employeeId): void
+    {
+        $this->cell_ids = array_values(array_unique([...$this->cell_ids, $employeeId]));
+        $this->cell_search = '';
+        unset($this->cellPeople, $this->cellCandidates);
+    }
+
+    public function removeFromCell(int $employeeId): void
+    {
+        $this->cell_ids = array_values(array_diff($this->cell_ids, [$employeeId]));
+        unset($this->cellPeople, $this->cellCandidates);
+    }
+
+    public function saveCell(): void
+    {
+        if ($this->isLocked()) {
+            $this->flash('Minggu ini sudah CONFIRMED & terkunci — buka kunci dulu untuk mengubah formasi.', true);
+
+            return;
+        }
+        $shift = $this->cell_shift ? $this->shifts->firstWhere('shift_id', $this->cell_shift) : null;
+        if (! $shift || ! $this->cell_wc) {
+            $this->flash('Pilih jam kerja (shift) dulu.', true);
+
+            return;
+        }
+
+        $date = Carbon::parse($this->cell_date);
+        $from = $this->cell_scope === 'week' ? $this->weekStart->copy() : $date;
+        $to = $this->cell_scope === 'day' ? $date : $this->weekEnd->copy();
+        $pattern = collect($shift->dayPattern())->keyBy('day');
+        $dates = [];
+        for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
+            if ($d->isSameDay($date) || ($pattern[$d->format('l')]['on'] ?? false)) {
+                $dates[] = $d->toDateString();
+            }
+        }
+
+        app(\App\Services\Hrm\RosterFormationService::class)
+            ->assign($this->scheduleId, $this->cell_wc, $shift->shift_id, $dates, $this->cell_ids, Auth::user()->login);
+
+        $this->showCellModal = false;
+        unset($this->formasi);
+        $this->forgetWeekData();
+        $this->flash(count($this->cell_ids).' orang → '.($this->currentCellCenter()?->work_center_name ?? '').' · '.$shift->shift_name.' · '.count($dates).' hari.');
+    }
+
+    public function currentCellCenter(): ?EmpWorkCenter
+    {
+        return $this->cell_wc ? EmpWorkCenter::find($this->cell_wc) : null;
+    }
+
+    public function copyPrevWeek(): void
+    {
+        try {
+            $n = app(\App\Services\Hrm\RosterFormationService::class)
+                ->copyWeek($this->scheduleId, $this->weekStart->copy()->subWeek(), $this->weekStart, Auth::user()->login);
+            unset($this->formasi);
+            $this->forgetWeekData();
+            $this->flash($n ? "Formasi minggu lalu disalin ({$n} baris) — tinggal ubah yang berbeda." : 'Minggu lalu kosong, tidak ada yang disalin.', ! $n);
+        } catch (\RuntimeException $e) {
+            $this->flash($e->getMessage(), true);
+        }
+    }
+
     // ================= UTIL =================
     private function flash(string $message, bool $bad = false): void
     {
@@ -1228,11 +1359,13 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         <div class="flex gap-0.5 bg-white/10 rounded-md p-0.5">
             <button type="button" wire:click="$set('view', 'roster')"
                 class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'roster' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">Roster Mingguan</button>
+            <button type="button" wire:click="$set('view', 'formasi')"
+                class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'formasi' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">Formasi Harian</button>
             <button type="button" wire:click="$set('view', 'shift')"
                 class="px-3.5 py-1.5 rounded text-xs font-bold uppercase tracking-wide cursor-pointer {{ $view === 'shift' ? 'bg-white text-navy' : 'text-white/70 hover:text-white' }}">Master Shift</button>
         </div>
 
-        @if ($view === 'roster')
+        @if ($view !== 'shift')
             <div class="flex items-center gap-0.5 bg-white/10 rounded-md p-0.5 ml-auto">
                 <button type="button" wire:click="goWeek(-1)" title="Minggu sebelumnya" class="px-2.5 py-1 rounded text-sm cursor-pointer hover:bg-white/15">&lsaquo;</button>
                 <div class="px-2 text-center leading-tight">
@@ -1262,7 +1395,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
         @endif
     </div>
 
-    @if ($view === 'roster')
+    @if ($view !== 'shift')
         {{-- ===================== BAR JADWAL ===================== --}}
         <div class="bg-[var(--rs-surface-alt)] border-b border-[var(--rs-border)] px-4 py-2.5 flex items-center gap-2.5 flex-wrap">
             <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--rs-muted)]">Jadwal</span>
@@ -1279,11 +1412,14 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 <button type="button" wire:click="openScheduleModal(false)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">＋ Jadwal Baru</button>
                 <button type="button" wire:click="openScheduleModal(true)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">✎ Edit Jadwal</button>
                 <button type="button" wire:click="$set('showDeleteSchedule', true)" class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold cursor-pointer bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-bad)]">🗑 Hapus</button>
-                <a href="{{ route('hrm.shift-roster.print', ['mode' => 'roster', 'schedule' => $scheduleId, 'week' => $weekOffset]) }}" target="_blank"
+                <a href="{{ route('hrm.shift-roster.print', ['mode' => $view === 'formasi' ? 'formasi' : 'roster', 'schedule' => $scheduleId, 'week' => $weekOffset]) }}" target="_blank"
                     class="px-2.5 py-1.5 rounded-md text-[11px] font-semibold no-underline bg-[var(--rs-surface)] border border-[var(--rs-border-strong)] text-[var(--rs-ink)]">🖨 Cetak Jadwal Ini</a>
             </div>
         </div>
 
+        @if ($view === 'formasi')
+            @include('pages.hrm._roster-formasi')
+        @else
         {{-- ===================== PAPAN + POOL =====================
              Kotak statistik dihapus (2026-09-12). Pool sengaja HANYA punya 2
              filter (2026-09-13): Departemen (termasuk opsi "Semua Departemen")
@@ -1518,6 +1654,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                 </div>
             </aside>
         </div>
+        @endif
     @else
         {{-- ===================== VIEW: MASTER SHIFT ===================== --}}
         <div class="px-4 py-4 flex flex-col gap-3.5 max-w-[1180px]">

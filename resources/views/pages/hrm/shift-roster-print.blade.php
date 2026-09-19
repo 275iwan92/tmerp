@@ -20,7 +20,7 @@ use Livewire\Component;
 // components/print/* sesuai docs/printnotastandard.md, bukan <style> sendiri.
 new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Component
 {
-    public string $mode = 'roster'; // roster | shift
+    public string $mode = 'roster'; // roster | shift | formasi
 
     public ?int $scheduleId = null;
 
@@ -28,7 +28,7 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
 
     public function mount(): void
     {
-        $this->mode = in_array(request('mode'), ['roster', 'shift'], true) ? request('mode') : 'roster';
+        $this->mode = in_array(request('mode'), ['roster', 'shift', 'formasi'], true) ? request('mode') : 'roster';
         $this->weekOffset = (int) request('week', 0);
         $this->scheduleId = request('schedule')
             ? (int) request('schedule')
@@ -125,6 +125,15 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
             ->get();
     }
 
+    // Bentuk sheet formasi HR (lihat RosterFormationService) -- 1 baris per unit+shift.
+    #[Computed]
+    public function formasi(): array
+    {
+        return $this->scheduleId
+            ? app(\App\Services\Hrm\RosterFormationService::class)->matrix($this->scheduleId, $this->weekStart, false)
+            : [];
+    }
+
     public function totalAssigned(): int
     {
         return collect($this->placements)->flatten(1)->flatten()->filter()->unique('employee_id')->count();
@@ -137,19 +146,50 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
 @endphp
 
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eaf0ff']"
-    info="{{ $mode === 'shift' ? 'Master Definisi Shift' : 'Roster Minggu '.$this->weekStart->isoWeek() }}">
+    info="{{ $mode === 'shift' ? 'Master Definisi Shift' : ($mode === 'formasi' ? 'Formasi Minggu ' : 'Roster Minggu ').$this->weekStart->isoWeek() }}">
 
     <x-print.sheet>
         <x-print.header :company="$this->company"
-            doc-title="{{ $mode === 'shift' ? 'MASTER DEFINISI SHIFT' : 'ROSTER SHIFT MINGGUAN' }}"
-            doc-no="{{ $mode === 'shift' ? 'FRM-HR-SHF-01 Rev.0' : 'FRM-HR-ROS-01 Rev.0' }}">
-            @if ($mode === 'roster')
+            doc-title="{{ match ($mode) { 'shift' => 'MASTER DEFINISI SHIFT', 'formasi' => 'FORMASI MINGGU KE-'.$this->weekStart->isoWeek(), default => 'ROSTER SHIFT MINGGUAN' } }}"
+            doc-no="{{ match ($mode) { 'shift' => 'FRM-HR-SHF-01 Rev.0', 'formasi' => 'FRM-HR-FRM-01 Rev.0', default => 'FRM-HR-ROS-01 Rev.0' } }}">
+            @if ($mode !== 'shift')
                 <div>{{ $this->schedule?->schedule_name }}</div>
                 <div>Minggu {{ $this->weekStart->isoWeek() }} · {{ $this->weekStart->translatedFormat('d M Y') }} – {{ $this->weekEnd->translatedFormat('d M Y') }}</div>
             @else
                 <div>Berlaku mulai {{ now()->translatedFormat('d F Y') }}</div>
             @endif
         </x-print.header>
+
+        @if ($mode === 'formasi')
+            <x-print.section number="1" title="Formasi per Posisi, Jam Kerja &amp; Tanggal">
+                <table class="w-full border-collapse text-[9.5px]">
+                    <thead>
+                        <tr>
+                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[24px]">NO</th>
+                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[90px] text-left">POSISI</th>
+                            <th class="border border-[#999] px-1 py-1 bg-[#eceff5] w-[90px] text-left">JAM KERJA</th>
+                            @foreach ($this->weekStart->copy()->daysUntil($this->weekEnd->copy()->subDay()) as $d)
+                                <th class="border border-[#999] px-1 py-1 bg-[#eceff5]">{{ $d->format('d/m/Y') }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($this->formasi as $i => $row)
+                            <tr>
+                                @if ($row['first'])
+                                    <td rowspan="{{ $row['span'] }}" class="border border-[#999] px-1 py-0.5 text-center">{{ collect($this->formasi)->take($i + 1)->where('first', true)->count() }}</td>
+                                    <td rowspan="{{ $row['span'] }}" class="border border-[#999] px-1 py-0.5 font-bold uppercase">{{ $row['wc']->work_center_name }}</td>
+                                @endif
+                                <td class="border border-[#999] px-1 py-0.5 uppercase">{{ $row['shift']?->shift_name ?? '—' }}</td>
+                                @foreach ($this->weekStart->copy()->daysUntil($this->weekEnd->copy()->subDay()) as $d)
+                                    <td class="border border-[#999] px-1 py-0.5 text-center uppercase">{{ collect($row['cells'][$d->toDateString()] ?? [])->pluck('label')->implode(', ') ?: '' }}</td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </x-print.section>
+        @endif
 
         @if ($mode === 'roster')
             <x-print.parties columns="1fr 1fr">
@@ -165,6 +205,7 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
             </x-print.parties>
         @endif
 
+        @if ($mode !== 'formasi')
         <x-print.section number="1" title="Definisi Jam Shift yang Berlaku">
             <table class="w-full border-collapse text-[10.5px]">
                 <thead>
@@ -205,6 +246,7 @@ new #[Title('Cetak Roster Shift — TELASIH MAKMUR ERP')] class extends Componen
                 @endif
             </p>
         </x-print.section>
+        @endif
 
         @if ($mode === 'roster')
             <x-print.section number="2" title="Penempatan Pegawai per Unit Kerja">

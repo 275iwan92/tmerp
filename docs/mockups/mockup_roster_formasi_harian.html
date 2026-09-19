@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Formasi Harian — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .chip { display:inline-flex; align-items:center; gap:3px; padding:2px 7px; border-radius:999px; font-size:11px; font-weight:600; border:1px solid #cbd5e1; background:#fff; margin:1px 2px; white-space:nowrap }
+  .chip.bor { background:#f3e8ff; border-color:#c4b5fd; color:#6d28d9 }
+  .chip.multi { background:#fff7ed; border-color:#fdba74; color:#b45309 }
+  .chip.warn { background:#fef2f2; border-color:#fca5a5; color:#b91c1c }
+  .sh1 { border-left:4px solid #2563eb } .sh2 { border-left:4px solid #f59e0b } .reg { border-left:4px solid #64748b }
+  table.fm td, table.fm th { border:1px solid #e2e8f0; }
+  .num { position:absolute; width:22px; height:22px; border-radius:999px; background:#dc2626; color:#fff; font-weight:800; font-size:12px; display:grid; place-items:center; box-shadow:0 0 0 3px #fecaca }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<!-- Bar atas layar Shift Roster (tetap) -->
+<div class="bg-navy text-white px-4 py-2.5 flex items-center gap-3 relative">
+  <div class="flex gap-0.5 bg-white/10 rounded-md p-0.5">
+    <span class="px-3.5 py-1.5 rounded text-xs font-bold uppercase text-white/70">Roster Mingguan</span>
+    <span class="px-3.5 py-1.5 rounded text-xs font-bold uppercase bg-white text-navy">Formasi Harian</span>
+    <span class="px-3.5 py-1.5 rounded text-xs font-bold uppercase text-white/70">Master Shift</span>
+  </div>
+  <div class="ml-auto flex items-center gap-0.5 bg-white/10 rounded-md p-0.5">
+    <span class="px-2.5">‹</span>
+    <div class="px-2 text-center leading-tight"><div class="text-[13px] font-bold">MINGGU 38</div><div class="text-[10px] text-white/70">14 Sep – 20 Sep 2026</div></div>
+    <span class="px-2.5">›</span>
+  </div>
+  <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-[#fff8e7] text-[#b45309]">DRAFT</span>
+  <button class="px-3 py-1.5 rounded-md text-xs font-semibold bg-white/10 border border-white/20">Simpan</button>
+  <button class="px-3 py-1.5 rounded-md text-xs font-semibold bg-accent">✓ Publish</button>
+</div>
+
+<main class="p-4 space-y-3">
+
+  <!-- (1) Kotak monitoring: bisa diklik = filter -->
+  <div class="relative">
+    <span class="num -left-2 -top-2">1</span>
+    <div class="grid grid-cols-7 gap-2.5">
+      <div class="rounded-lg p-3 border bg-[#eaf2ff] border-[#c8ddfb] ring-2 ring-[#1d4ed8]"><p class="text-[10px] font-bold uppercase text-[#3b5b99]">Terjadwal hari ini</p><p class="text-xl font-extrabold text-[#1d4ed8]">55</p><p class="text-[10px] text-[#3b5b99]">Jum, 18 Sep</p></div>
+      <div class="rounded-lg p-3 border bg-[#eaf2ff] border-[#c8ddfb]"><p class="text-[10px] font-bold uppercase text-[#3b5b99]">Shift 1 · 05:00</p><p class="text-xl font-extrabold text-[#1d4ed8]">24</p></div>
+      <div class="rounded-lg p-3 border bg-[#fef6e7] border-[#f5e0b3]"><p class="text-[10px] font-bold uppercase text-[#8a6d00]">Shift 2 · 13:15</p><p class="text-xl font-extrabold text-[#b45309]">25</p></div>
+      <div class="rounded-lg p-3 border bg-[#f1f5f9] border-[#e2e8f0]"><p class="text-[10px] font-bold uppercase text-slate-500">Reguler · 07:30</p><p class="text-xl font-extrabold text-slate-700">6</p></div>
+      <div class="rounded-lg p-3 border bg-[#f1ecfc] border-[#ddd0f7]"><p class="text-[10px] font-bold uppercase text-[#6b4fa0]">Borongan dipanggil</p><p class="text-xl font-extrabold text-[#6d28d9]">4</p></div>
+      <div class="rounded-lg p-3 border bg-[#fdecec] border-[#f5c6c6]"><p class="text-[10px] font-bold uppercase text-[#a3453f]">Unit kosong</p><p class="text-xl font-extrabold text-[#c0392b]">2</p><p class="text-[10px] text-[#a3453f]">Lilin, Stitching</p></div>
+      <div class="rounded-lg p-3 border bg-[#e9f9ef] border-[#c8ecd6]"><p class="text-[10px] font-bold uppercase text-[#2f7a52]">Mingguan belum terjadwal</p><p class="text-xl font-extrabold text-[#16a34a]">38</p></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-[minmax(0,1fr)_300px] gap-3 items-start">
+    <section class="card overflow-hidden relative">
+      <span class="num left-2 top-2">2</span>
+      <!-- (2) toolbar: Ringkas / per hari, fokus hari, cari -->
+      <div class="flex items-center gap-2 px-3 py-2.5 border-b border-slate-200 pl-9">
+        <div class="flex bg-slate-100 rounded-md p-0.5">
+          <span class="px-3 py-1 rounded bg-white shadow text-[11px] font-bold">Ringkas seminggu</span>
+          <span class="px-3 py-1 rounded text-[11px] font-semibold text-slate-500">Per hari</span>
+        </div>
+        <div class="flex gap-1 ml-2">
+          <span class="px-2 py-1 rounded border text-[11px]">Sen 14</span><span class="px-2 py-1 rounded border text-[11px]">Sel 15</span><span class="px-2 py-1 rounded border text-[11px]">Rab 16</span><span class="px-2 py-1 rounded border text-[11px]">Kam 17</span><span class="px-2 py-1 rounded border text-[11px] bg-navy text-white border-navy">Jum 18 · hari ini</span><span class="px-2 py-1 rounded border text-[11px]">Sab 19</span>
+        </div>
+        <div class="ml-auto relative"><i class="fa-solid fa-magnifying-glass absolute left-2 top-1.5 text-slate-400"></i><input class="border rounded-md pl-7 pr-2 py-1 w-48" placeholder="Cari nama di formasi…"></div>
+        <button class="px-2.5 py-1 rounded-md border font-semibold">⧉ Salin minggu lalu</button>
+        <button class="px-2.5 py-1 rounded-md border font-semibold">🖨 Cetak</button>
+      </div>
+
+      <!-- (3) tabel terang ala kertas, 1 kolom "Sen–Sab" + pengecualian -->
+      <div class="relative">
+        <span class="num left-2 top-2">3</span>
+        <table class="fm w-full border-collapse text-[11.5px]">
+          <thead class="bg-slate-50 text-slate-500 uppercase text-[10px]">
+            <tr><th class="px-2 py-2 w-8">No</th><th class="px-2 py-2 w-36 text-left">Posisi</th><th class="px-2 py-2 w-40 text-left">Jam kerja</th><th class="px-2 py-2 text-left">Yang bertugas (Sen–Sab, 14–19 Sep)</th><th class="px-2 py-2 w-10"></th></tr>
+          </thead>
+          <tbody>
+            <tr><td rowspan="2" class="text-center text-slate-400">1</td><td rowspan="2" class="px-2 font-bold">UV</td><td class="px-2 py-1.5 sh1"><b>Shift 1</b> <span class="text-slate-400 font-mono text-[10px]">05:00–13:15</span></td><td class="px-2"><span class="chip">REGI</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td class="px-2 py-1.5 sh2"><b>Shift 2</b> <span class="text-slate-400 font-mono text-[10px]">13:15–21:15</span></td><td class="px-2"><span class="chip">ADE</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr class="bg-red-50/60"><td class="text-center text-slate-400">2</td><td class="px-2 font-bold">LILIN</td><td class="px-2 py-1.5 reg text-slate-400">—</td><td class="px-2 text-[#c0392b] font-semibold">Kosong minggu ini <span class="text-slate-400 font-normal">· klik ✎ untuk isi</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td rowspan="2" class="text-center text-slate-400">3</td><td rowspan="2" class="px-2 font-bold">LAMINATING OTOMATIS</td><td class="px-2 py-1.5 sh1"><b>Shift 1</b> <span class="text-slate-400 font-mono text-[10px]">05:00–13:15</span></td><td class="px-2"><span class="chip">MUNIR</span><span class="chip">AZKA</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td class="px-2 py-1.5 sh2"><b>Shift 2</b> <span class="text-slate-400 font-mono text-[10px]">13:15–21:15</span></td><td class="px-2"><span class="chip">HENDRI</span><span class="chip">DWI</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td rowspan="2" class="text-center text-slate-400">4</td><td rowspan="2" class="px-2 font-bold">PLONG 2</td><td class="px-2 py-1.5 sh1"><b>Shift 1</b> <span class="text-slate-400 font-mono text-[10px]">05:00–13:15</span></td><td class="px-2"><span class="chip">ALDI</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr class="bg-amber-50/70"><td class="px-2 py-1.5 sh2"><b>Shift 2</b> <span class="text-slate-400 font-mono text-[10px]">13:15–21:15</span></td>
+              <td class="px-2 pl-6 relative"><span class="num left-0 top-1">4</span>
+                <span class="text-[10px] font-bold text-slate-500">Sen–Rab</span> <span class="chip">ROBBY</span>
+                <span class="mx-1.5 text-amber-600"><i class="fa-solid fa-arrow-right"></i></span>
+                <span class="text-[10px] font-bold text-slate-500">Kam–Sab</span> <span class="chip">IMAM RUDI</span>
+                <span class="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold">BERGANTI</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td rowspan="2" class="text-center text-slate-400">5</td><td rowspan="2" class="px-2 font-bold">FG 3</td><td class="px-2 py-1.5 sh1"><b>Shift 1</b> <span class="text-slate-400 font-mono text-[10px]">05:00–13:15</span></td><td class="px-2"><span class="chip">IQBAL</span><span class="chip">NOVA</span><span class="chip">MURNI</span><span class="chip">SUYATI</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td class="px-2 py-1.5 sh2"><b>Shift 2</b> <span class="text-slate-400 font-mono text-[10px]">13:15–21:15</span></td><td class="px-2"><span class="chip bor">ARIF · borongan</span><span class="chip">TUTI</span><span class="chip">SULIS</span><span class="chip">IIS</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td rowspan="2" class="text-center text-slate-400">6</td><td rowspan="2" class="px-2 font-bold">SHRINK</td><td class="px-2 py-1.5 sh1"><b>Shift 1</b> <span class="text-slate-400 font-mono text-[10px]">05:00–13:15</span></td><td class="px-2"><span class="chip">FARID</span><span class="chip bor">MUCHLAS · borongan</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td class="px-2 py-1.5 sh2"><b>Shift 2</b> <span class="text-slate-400 font-mono text-[10px]">13:15–21:15</span></td><td class="px-2"><span class="chip">SYARIF</span><span class="chip bor">RENDA · borongan</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td class="text-center text-slate-400">7</td><td class="px-2 font-bold">MANUAL</td><td class="px-2 py-1.5 reg"><b>Reguler</b> <span class="text-slate-400 font-mono text-[10px]">07:30–16:30</span></td>
+              <td class="px-2 pl-6 relative"><span class="num left-0 top-1">5</span><span class="chip">SUKARTI</span><span class="chip">SRI</span>
+                <span class="text-[10px] font-bold text-slate-500 ml-2">+ Sen saja:</span> <span class="chip bor">ERNA</span><span class="chip bor">MUJI</span><span class="chip multi">NOVA ⇄ FG 3</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+            <tr><td class="text-center text-slate-400">8</td><td class="px-2 font-bold">HITUNG</td><td class="px-2 py-1.5 reg"><b>Reguler</b> <span class="text-slate-400 font-mono text-[10px]">07:30–16:30</span></td><td class="px-2"><span class="chip">RISMA</span></td><td class="text-center text-slate-400"><i class="fa-solid fa-pen"></i></td></tr>
+          </tbody>
+        </table>
+        <div class="px-3 py-2 text-[10.5px] text-slate-500 flex gap-4 border-t">
+          <span><span class="inline-block w-3 h-3 align-middle border-l-4 border-blue-600"></span> Shift 1</span>
+          <span><span class="inline-block w-3 h-3 align-middle border-l-4 border-amber-500"></span> Shift 2</span>
+          <span><span class="inline-block w-3 h-3 align-middle border-l-4 border-slate-500"></span> Reguler</span>
+          <span><span class="chip bor">borongan</span> dipanggil saat kerja berlebih</span>
+          <span><span class="chip multi">⇄</span> di 2 titik hari itu</span>
+          <span><span class="chip warn">⚠</span> belum bersertifikat unit ini</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- (6) editor baris: centang orang x hari -->
+    <aside class="card relative">
+      <span class="num -left-2 -top-2">6</span>
+      <div class="px-3 py-2.5 border-b"><div class="font-bold text-[13px]">PLONG 2 · Shift 2</div><div class="text-[10.5px] text-slate-500">Centang hari masuknya tiap orang</div></div>
+      <table class="w-full text-[11px]">
+        <thead class="text-slate-500 text-[10px]"><tr><th class="text-left px-3 py-1.5">Nama</th><th>Sn</th><th>Sl</th><th>Rb</th><th>Km</th><th>Jm</th><th>Sb</th><th></th></tr></thead>
+        <tbody class="text-center">
+          <tr class="border-t"><td class="text-left px-3 py-1.5 font-semibold">ROBBY</td><td>☑</td><td>☑</td><td>☑</td><td>☐</td><td>☐</td><td>☐</td><td class="text-red-500">✕</td></tr>
+          <tr class="border-t"><td class="text-left px-3 py-1.5 font-semibold">IMAM RUDI</td><td>☐</td><td>☐</td><td>☐</td><td>☑</td><td>☑</td><td>☑</td><td class="text-red-500">✕</td></tr>
+        </tbody>
+      </table>
+      <div class="p-3 border-t space-y-2">
+        <input class="w-full border rounded-md px-2 py-1" placeholder="+ Tambah orang (cari nama / panggilan)…">
+        <div class="text-[10px] font-bold uppercase text-slate-500">Belum terjadwal · Plong</div>
+        <div><span class="chip">MUCHAMAD ZAENURI</span><span class="chip">TRI DWI ASMA DENI</span><span class="chip warn">⚠ ADE</span></div>
+        <div class="flex justify-end gap-2 pt-1"><button class="px-3 py-1.5 rounded-md border font-semibold">Batal</button><button class="px-3 py-1.5 rounded-md bg-accent text-white font-semibold">Simpan</button></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Legenda perubahan -->
+  <section class="card p-3 text-[11.5px] leading-relaxed">
+    <b class="text-[12px]">Usulan perbaikan (dibanding versi sekarang):</b>
+    <ol class="list-decimal ml-5 mt-1 space-y-0.5">
+      <li><b>Kotak monitoring</b> di atas (bisa diklik = filter): jumlah terjadwal hari ini, per shift, borongan dipanggil, unit kosong, karyawan mingguan yang belum terjadwal.</li>
+      <li><b>Ringkas seminggu / Per hari</b> + tombol fokus hari (hari ini ditandai). Default ringkas, jadi 7 kolom yang isinya sama tidak diulang-ulang.</li>
+      <li><b>Tema terang ala kertas formasi</b> (kontras tinggi, tidak ikut mode gelap), nama sebagai chip, garis warna per shift.</li>
+      <li><b>Pergantian tengah minggu</b> tampil jelas: "Sen–Rab ROBBY → Kam–Sab IMAM RUDI" + label BERGANTI.</li>
+      <li><b>Tambahan per hari</b> (borongan dipanggil) tampil sebagai "+ Sen saja", beda warna.</li>
+      <li><b>Editor per baris</b>: klik ✎ → centang orang × hari (bukan isi sel satu-satu), plus daftar orang yang belum terjadwal di bagian itu.</li>
+    </ol>
+  </section>
+</main>
+</body>
+</html>
