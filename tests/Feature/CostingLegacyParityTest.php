@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Master\MatGrammage;
+use App\Models\Master\MatSheetRate;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
 use App\Models\Sdi\IqpCostingPartCoating;
@@ -74,6 +75,23 @@ class CostingLegacyParityTest extends TestCase
         $this->assertEqualsWithDelta(3120.0, (float) $p->c_area_cetak_cm2, 0.0001);
         $this->assertEqualsWithDelta(625.0, (float) $p->c_jumlah_bahan_lb, 0.0001);
         $this->assertEqualsWithDelta(1487.4648, (float) $tier->c_hpp_pc, 0.0005);
+    }
+
+    // Info supplier DC+SF: harga per lembar SF = index x P x L piece x (1-disc); RM meter lari
+    // 5000/2 x 0,59 = 1.475 -> tier sama dgn legacy (UJK surcharge 10%, RCA disc 26%).
+    public function test_dc_sf_supplier_compare_info_per_sf_piece(): void
+    {
+        $sf = MatSheetRate::where('substance_name', 'SF M 125 / K 125')->where('flute_type', 'E/F')->firstOrFail();
+
+        [, $p] = $this->run1('DC+SF', 5000, [
+            'i_panjang_plano_cm' => 120, 'i_lebar_plano_cm' => 104, 'i_cut_per_plano' => 4, 'i_isi_per_lb' => 2,
+            'sheet_rate_id' => $sf->id_sheet_rate, 'i_sheet_panjang_cm' => 59, 'i_sheet_lebar_cm' => 51,
+        ]);
+
+        $area = 59 * 51 / 10000 * (float) $sf->index_substance;
+        $info = (string) $p->c_sheet_compare_info;
+        $this->assertStringContainsString('UJK: Rp '.number_format($area * 1.1, 2).'/lembar SF (surcharge 10.0%, RM=1,475.0)', $info);
+        $this->assertStringContainsString('RCA: Rp '.number_format($area * 0.74, 2).'/lembar SF (disc 26.0%, RM=1,475.0)', $info);
     }
 
     public function test_ns40_dc_sheet_matches_legacy_row_1(): void

@@ -10,6 +10,7 @@ use App\Models\Master\MatSheetSupplier;
 use App\Models\Master\ProdPartType;
 use App\Models\Sdi\IqpCosting;
 use App\Models\Sdi\IqpCostingPart;
+use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sys\SysConstant;
 use Illuminate\Support\Facades\DB;
 
@@ -193,7 +194,7 @@ class CostingEngine
             'c_tooling_cost_order' => $toolingOrder,
             'c_process_cost_pc' => $processPc,
             'c_total_part_cost_pc' => $totalPc,
-            'c_sheet_compare_info' => $type === 'DC+SHEET' ? $this->compareSuppliers($part, $qty) : null,
+            'c_sheet_compare_info' => in_array($type, ['DC+SF', 'DC+SHEET'], true) ? $this->compareSuppliers($part, $qty) : null,
         ]);
         $part->description_calc = $this->describe($type, $paper, $processPc + $coatingPc, $coatingPc, $j36 + $j38, $j37, $qty > 0 ? $toolingOrder / $qty : 0, 0, $totalPc + ($qty > 0 ? $toolingOrder / $qty : 0), $flags);
         $part->save();
@@ -347,12 +348,15 @@ class CostingEngine
             return null;
         }
 
+        $isSf = $part->part_type_code === 'DC+SF';
         $lines = [];
         foreach (MatSheetSupplier::where('activate', true)->orderBy('sort_order')->pluck('code') as $code) {
             try {
-                $g = ((float) $part->i_lebar_trim_cm > 0 && (int) $part->i_isi_per_trim > 0 && (float) $part->i_sheet_panjang_cm > 0)
-                    ? $this->manualSheetGeometry($part, $qty, $code)
-                    : $this->computeSheetGeometry($part, $qty, $code);
+                $g = match (true) {
+                    $isSf => $this->sfPieceGeometry($part, $qty, $code),
+                    (float) $part->i_lebar_trim_cm > 0 && (int) $part->i_isi_per_trim > 0 && (float) $part->i_sheet_panjang_cm > 0 => $this->manualSheetGeometry($part, $qty, $code),
+                    default => $this->computeSheetGeometry($part, $qty, $code),
+                };
             } catch (\Throwable) {
                 $lines[] = "{$code}: tier tidak tersedia";
 
@@ -360,10 +364,39 @@ class CostingEngine
             }
             $d = $g['discount_rm'];
             $label = $d < 0 ? 'surcharge '.number_format(abs($d) * 100, 1).'%' : 'disc '.number_format($d * 100, 1).'%';
-            $lines[] = "{$code}: Rp ".number_format($g['sheet_cost_pc'], 2)." ({$label}, RM=".number_format($g['running_meter'], 1).')';
+            $lines[] = "{$code}: Rp ".number_format($g['sheet_cost_pc'], 2).($isSf ? '/lembar SF' : '')." ({$label}, RM=".number_format($g['running_meter'], 1).')';
         }
 
         return $lines ? implode("\n", $lines) : null;
+    }
+
+    /**
+     * DC+SF: 1 lembar SF (panjang x lebar piece) per lembar cetak -> harga per lembar SF, belum
+     * dibagi isi/LB (officer membagi sendiri saat isi J36, konvensi legacy FS_GTZ = 1852/isi).
+     * RM legacy compare_sheet_suppliers() sebenarnya luas m2 (inkonsisten, gemini_spark §V);
+     * di sini meter lari: jumlah lembar SF x panjang.
+     */
+    protected function sfPieceGeometry(IqpCostingPart $part, float $qty, string $supplier): array
+    {
+        $panjang = (float) $part->i_sheet_panjang_cm;
+        $lebar = (float) $part->i_sheet_lebar_cm;
+        if ($panjang <= 0 || $lebar <= 0) {
+            throw new \RuntimeException('Panjang/Lebar Piece SF belum diisi.');
+        }
+
+        $rm = ($qty / $this->positive($part->i_isi_per_lb)) * ($panjang / 100);
+        $disc = MatSheetDiscountTier::lookup($supplier, $rm, $part->sheet_rate_id, $part->part_type_code);
+        if ($disc === null) {
+            throw new \RuntimeException("Tidak ada tier diskon sheet '{$supplier}' utk running meter {$rm}.");
+        }
+        $disc = $this->guardDiscount((float) $disc, $supplier);
+        $index = (float) (MatSheetRate::whereKey($part->sheet_rate_id)->value('index_substance') ?? 0);
+
+        return [
+            'running_meter' => $rm,
+            'discount_rm' => $disc,
+            'sheet_cost_pc' => ($panjang * $lebar / 10000) * $index * (1 - $disc),
+        ];
     }
 
     private function describe(string $type, float $paper, float $proc, float $coat, float $lam, float $sfef, float $toolPc, float $sheet, float $total, array $flags): string
@@ -407,7 +440,7 @@ class CostingEngine
      * DPP ÷(1−m_ppn) ×(1+PPN). Jalur NON PPN (kolom J/C) = HPP kotor ÷(1−m).
      * Margin NON PPN (margin_pct, Excel G45) & PPN (margin_ppn_pct, J47) terpisah.
      */
-    protected function calculateTier(IqpCosting $costing, \App\Models\Sdi\IqpCostingPriceTier $tier): void
+    protected function calculateTier(IqpCosting $costing, IqpCostingPriceTier $tier): void
     {
         $qty = max((float) $tier->qty_pcs, 0.0001);
         $tierTol = (float) $tier->tolerance_pct;
