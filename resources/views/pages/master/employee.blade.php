@@ -201,41 +201,50 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public string $dis_reason = '';
 
-    #[Computed]
-    public function employees()
+    // Kotak statistik = filter (klik lagi = lepas, permintaan user 2026-09-19).
+    public string $statFilter = '';
+
+    private const STAT_FILTERS = ['active', 'inactive', 'weekly', 'monthly'];
+
+    public function toggleStatFilter(string $filter): void
+    {
+        $this->statFilter = in_array($filter, self::STAT_FILTERS, true) && $this->statFilter !== $filter ? $filter : '';
+        unset($this->employees);
+    }
+
+    private function searchQuery()
     {
         return EmpEmployee::query()
-            ->with(['position.department', 'disciplinaries'])
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('full_name', 'like', "%{$this->search}%")
                 ->orWhere('employee_code', 'like', "%{$this->search}%")
-                ->orWhere('nik_ktp', 'like', "%{$this->search}%")))
+                ->orWhere('nik_ktp', 'like', "%{$this->search}%")));
+    }
+
+    #[Computed]
+    public function employees()
+    {
+        return $this->searchQuery()
+            ->with(['position.department', 'disciplinaries'])
+            ->when($this->statFilter === 'active', fn ($q) => $q->where('activate', true))
+            ->when($this->statFilter === 'inactive', fn ($q) => $q->where('activate', false))
+            // Mingguan/bulanan = frekuensi gaji karyawan AKTIF (yang non aktif tak ikut payroll).
+            ->when($this->statFilter === 'weekly', fn ($q) => $q->where('activate', true)->where('payment_frequency', 'WEEKLY'))
+            ->when($this->statFilter === 'monthly', fn ($q) => $q->where('activate', true)->where('payment_frequency', 'MONTHLY'))
             ->orderBy('full_name')
             ->get();
     }
 
     #[Computed]
-    public function metricTotal(): int
+    public function metrics(): array
     {
-        return $this->employees->count();
-    }
+        $r = $this->searchQuery()->toBase()->selectRaw(
+            "SUM(activate = 1) active, SUM(activate = 0) inactive,
+             SUM(activate = 1 AND payment_frequency = 'WEEKLY') weekly,
+             SUM(activate = 1 AND payment_frequency = 'MONTHLY') monthly"
+        )->first();
 
-    #[Computed]
-    public function metricClean(): int
-    {
-        return $this->employees->filter(fn ($e) => $e->verbalWarningCount() === 0 && ! $e->activeSpType())->count();
-    }
-
-    #[Computed]
-    public function metricVerbal(): int
-    {
-        return $this->employees->filter(fn ($e) => $e->verbalWarningCount() > 0 && ! $e->activeSpType())->count();
-    }
-
-    #[Computed]
-    public function metricSp(): int
-    {
-        return $this->employees->filter(fn ($e) => (bool) $e->activeSpType())->count();
+        return array_map('intval', (array) $r);
     }
 
     #[Computed]
@@ -324,7 +333,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->justRegistered = false;
         $this->newLoginCredentials = null;
         $this->panel = 'grid';
-        unset($this->employees, $this->metricTotal, $this->metricClean, $this->metricVerbal, $this->metricSp);
+        unset($this->employees, $this->metrics);
     }
 
     public function closeCredentialModal(): void
@@ -745,10 +754,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     @if ($panel === 'grid')
         <div class="max-w-[1400px] mx-auto my-5 px-4">
             <x-grid.stat-row :count="4">
-                <x-grid.stat-box tone="total" label="{{ Translator::t('hrm_emp_stat_total', 'Total Headcount') }}" :value="$this->metricTotal" />
-                <x-grid.stat-box tone="active" label="{{ Translator::t('hrm_emp_clean_no_sp', 'Clean / No SP') }}" :value="$this->metricClean" />
-                <x-grid.stat-box tone="warn" label="{{ Translator::t('hrm_emp_stat_verbal', 'Verbal Warning') }}" :value="$this->metricVerbal" />
-                <x-grid.stat-box tone="critical" label="{{ Translator::t('hrm_emp_stat_sp', 'SP Aktif') }}" :value="$this->metricSp" />
+                <x-grid.stat-box tone="active" label="{{ Translator::t('hrm_emp_stat_active', 'Employee Aktif') }}" :value="$this->metrics['active']"
+                    action="toggleStatFilter('active')" :selected="$statFilter === 'active'" />
+                <x-grid.stat-box tone="critical" label="{{ Translator::t('hrm_emp_stat_inactive', 'Employee Non Aktif') }}" :value="$this->metrics['inactive']"
+                    action="toggleStatFilter('inactive')" :selected="$statFilter === 'inactive'" />
+                <x-grid.stat-box tone="warn" label="{{ Translator::t('hrm_emp_stat_weekly', 'Employee Mingguan') }}" :value="$this->metrics['weekly']"
+                    action="toggleStatFilter('weekly')" :selected="$statFilter === 'weekly'" />
+                <x-grid.stat-box tone="total" label="{{ Translator::t('hrm_emp_stat_monthly', 'Employee Bulanan') }}" :value="$this->metrics['monthly']"
+                    action="toggleStatFilter('monthly')" :selected="$statFilter === 'monthly'" />
             </x-grid.stat-row>
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">

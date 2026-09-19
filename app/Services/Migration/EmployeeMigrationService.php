@@ -13,6 +13,7 @@ use App\Models\Master\OrgCompany;
 use App\Models\Master\OrgDepartment;
 use App\Models\Master\OrgLevel;
 use App\Models\Master\OrgPosition;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 // Engine migrasi tm2old.emp* -> tm2mst (emp_employee + org_department/org_position
@@ -243,6 +244,11 @@ class EmployeeMigrationService
 
                     $ktp = $ktpByEmployee->get($e->employee_id);
 
+                    // Sudah di-merge ke karyawan lain (emp_employee_merge) -- jangan dihidupkan lagi.
+                    if (DB::connection('tm2mst')->table('emp_employee_merge')->where('merged_legacy_employee_id', $e->employee_id)->exists()) {
+                        continue;
+                    }
+
                     $existing = EmpEmployee::where('legacy_employee_id', $e->employee_id)->first();
 
                     $data = [
@@ -260,6 +266,7 @@ class EmployeeMigrationService
                         'join_date' => $e->hire_date ?: null,
                         'resign_date' => $e->resign_date ?: null,
                         'activate' => ((int) $e->is_active) === 1,
+                        'payment_frequency' => in_array($e->payroll_cycle, ['WEEKLY', 'MONTHLY'], true) ? $e->payroll_cycle : 'MONTHLY',
                         'updated_by' => $actor,
                     ];
 

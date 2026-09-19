@@ -57,7 +57,7 @@ layout:
 
 grid: # pasangkan dengan trait App\Livewire\Concerns\HasCustomizableGrid
   x-grid.stat-row: {props: {count: required}, slot: "x-grid.stat-box"}
-  x-grid.stat-box: {props: {tone: total, label: required, value: required, subtitle: null}}
+  x-grid.stat-box: {props: {tone: total, label: required, value: required, subtitle: null, action: "null (method Livewire -> kotak jadi tombol filter)", selected: false}}
   x-grid.toolbar: {slot: "default = input search; named: tools, newRecord"}
   x-grid.table-shell: {slot: "<table>"}
   x-grid.identity-cell: {props: {id: required, name: required, code: null}, note: "avatar+nama+kode"}
