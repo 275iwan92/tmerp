@@ -21,6 +21,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 ```
 
 - **Layar/komponen baru**: pakai skill `tmerp-screen` (generator `make:tm-screen` + `resources/views/components/_manifest.yaml` sebagai katalog props — jangan buka file komponen satu per satu). Mockup JPEG: skill `tmerp-ui-mockup`. Komponen baru wajib ditambahkan ke `_manifest.yaml`.
+- **Skill**: Laravel Boost (`livewire-development`, `tailwindcss-development`, `laravel-best-practices`, `testing-best-practices`) generik & ditimpa tiap install; skill proyek bersumber di `.ai/skills/` (edit di sana, lalu `php artisan boost:install --skills --mcp -n` — JANGAN tambah `--guidelines`, itu menimpa file ini). Bila bertentangan, `tmerp-stack-rules` menang (mis. file Livewire TANPA prefix `⚡`).
 
 - **Nama koneksi Laravel = nama database**: `tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`, `tm2pyr`, `tm2sys`, `tm2old`, `tm2crp` (`config/database.php`). Tabel §2 menulis `mst`/`sdi` sebagai singkatan; di kode (`$connection`, `DB::connection(...)`) pakai nama `tm2*`. Default connection = `tm2sys`.
 - **Test memakai MySQL lokal sungguhan**, bukan SQLite in-memory walau `phpunit.xml` menyebut sqlite: test menulis ke database `tm2*` dan **membersihkan sendiri** di `tearDown()` (hapus manual per tabel, lihat `tests/Feature/CostingEngineTest.php`). Tidak ada `RefreshDatabase`. Test baru yang menyisipkan data wajib cleanup sendiri, lalu verifikasi ke DB (jangan percaya skripnya saja).

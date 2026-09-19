@@ -8,12 +8,14 @@ description: Bangun layar Livewire TMERP baru (grid master, grid worklist, form 
 Prinsip: jangan tulis ulang pola yang sudah baku. Kerangka (trait grid, toolbar, stat box, header navy, Simpan/Back) diambil dari generator; komponen diambil dari library `<x-*>`. Yang ditulis manual hanya kolom, field, query, dan aturan bisnis layar itu.
 
 ## Baca HANYA ini
+
 1. `resources/views/components/_manifest.yaml` — semua tag, props, tone, gotcha. **Jangan buka file komponen satu per satu** kecuali manifest kurang jelas.
 2. Model Eloquent terkait (`$connection`, `$table`, `$primaryKey`, `$fillable`).
 3. Mockup/acuan layar bila ada (`docs/mockups/`, skill `tmerp-ui-mockup` untuk JPEG yang sudah disetujui).
 Jangan baca `docs/BACKLOG.md`, `docs/LOG_JOB_DONE.md`, atau standar UI lengkap kecuali ada hal yang tidak tercakup manifest.
 
 ## Langkah
+
 1. Generate kerangka:
    ```bash
    php artisan make:tm-screen master master.gudang --model="Master\WhWarehouse" --title="Master Gudang" --route=master.gudang.edit --param=warehouse
@@ -27,4 +29,5 @@ Jangan baca `docs/BACKLOG.md`, `docs/LOG_JOB_DONE.md`, atau standar UI lengkap k
 5. Verifikasi: `php -l`, lalu `Livewire::test('pages::modul.nama')` via tinker; `npm run build` bila ada class Tailwind baru.
 
 ## Komponen baru
+
 Buat komponen baru HANYA bila pola dipakai ≥2 layar dan tidak ada di manifest. Setelah dibuat: tambahkan barisnya ke `_manifest.yaml` dan tampilkan di layar DevLib (`setup/component-library.blade.php`). Pola bersama (label/hint/error, tone warna) diikuti, bukan disalin dengan variasi baru.

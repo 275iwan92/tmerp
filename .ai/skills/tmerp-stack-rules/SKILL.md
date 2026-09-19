@@ -1,0 +1,33 @@
+---
+name: tmerp-stack-rules
+description: Aturan proyek TMERP yang MENGALAHKAN saran generik skill Boost (livewire-development, tailwindcss-development, laravel-best-practices, testing-best-practices). Pakai bersamaan setiap kali menulis/mengubah kode Laravel 13, Livewire 4, Tailwind 4, Blade, model, migration, atau test di repo ini.
+---
+
+# TMERP — override untuk skill Boost
+
+Versi terpasang: Laravel 13.29, Livewire 4.4, Tailwind CSS 4.3 (Vite), Filament 5, PHPUnit 12. Skill Boost benar untuk API versinya; bila bertentangan dengan daftar di bawah, **daftar ini yang dipakai** (sumber: CLAUDE.md).
+
+## Livewire 4
+- Nama file komponen **ASCII saja, TANPA prefix `⚡`** (Boost/`make:livewire` default memakai `⚡` — rename atau buat manual). Halaman = SFC di `resources/views/pages/<modul>/<nama>.blade.php`, route `Route::livewire('/uri', 'pages::modul.nama')` di grup `module:<KODE>`.
+- Layar baru: `php artisan make:tm-screen master|grid|form ...` (skill `tmerp-screen`), bukan `make:livewire` kosong.
+- Jangan `<select wire:model>` polos (bug morph) → `x-form.select liveSync`, `x-form.toggle-group`, atau `x-form.searchable-select`.
+- Jangan `@php` inline di dalam `@if/@foreach`; `@php(...)` inline wajib penutup. Jangan tulis tag komponen berkurung sudut di komentar.
+- Jangan gate konten yang diubah Livewire dengan `x-if`/`x-show` state lokal Alpine (stale content).
+- Pakai komponen `<x-*>` dari `resources/views/components/_manifest.yaml`, bukan markup input mentah.
+
+## Tailwind 4
+- **Wajib `npm run build`** setelah menambah class baru (bukan `npm run dev`).
+- `app.css` punya `.grid {grid-cols-4}` unlayered → `grid two`/`grid three`/flex, jangan `grid grid-cols-N`.
+- Token: `navy #2c3e69`, `accent #2c7be5`, `muted #8a94a6` (`@theme` di app.css). Tema/dark mode dikelola data `tm2sys.sys_theme` (themestandard.md) — jangan menambah varian `dark:` sendiri.
+- Jangan pakai class `container`.
+
+## Laravel 13 / database
+- Multi-DB: model wajib `$connection` (`tm2mst`, `tm2sdi`, ... bukan `mst`), `$table`, `$primaryKey` (`id_<entitas>`).
+- **Dilarang** FK lintas-DB, `->join()`/`whereHas()` lintas koneksi. Pakai relasi Eloquent terpisah / `whereIn`; validasi `exists:tm2xxx.tabel,kolom`.
+- Kolom: `activate` (bukan `is_active`), `stat_confirm/stat_cancel/stat_close`, `created_by/updated_by` berisi `login` (cek per tabel: sebagian legacy `update_by`).
+- Logika bisnis di `app/Services/*`; migration mencerminkan dump `docs/tm2*.sql`.
+- Label tombol: Simpan/Batal/Tutup, Back selalu Inggris; teks UI via `Translator::t(key, fallback)`.
+
+## Test
+- PHPUnit (bukan Pest). Test berjalan ke MySQL `tm2*` sungguhan, **tanpa `RefreshDatabase`** — bersihkan data sendiri di `tearDown()` dan cek ulang di DB. Jangan pernah pakai `employee_id=1` / `sec_user id=1` sebagai data uji yang diubah.
+- Verifikasi UI tanpa login browser: `Livewire::test('pages::modul.nama')` via tinker.
