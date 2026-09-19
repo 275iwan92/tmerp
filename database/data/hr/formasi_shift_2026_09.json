@@ -1,0 +1,69 @@
+{
+  "_source": "docs/HR/WhatsApp Image 2026-09-19 at 14.56.28.jpeg (Minggu ke-2, 7-12 Sep) + 14.55.06.jpeg (Minggu ke-3, 14-19 Sep), ditranskrip 2026-09-19",
+  "_note": "Nama panggilan -> employee_code. null = tidak ada karyawan aktif yang bisa dipastikan (dilewati & dilaporkan).",
+  "nicknames": {
+    "REGI": "TM-00079", "ADE": "TM-00104", "MUNIR": "TM-00024", "AZKA": "TM-00025", "HENDRI": "TM-00023",
+    "DWI": "TM-00108", "HABIB": "TM-00029", "DEVI": "TM-00056", "VICKY": "TM-00107", "TEGUH": "TM-00026",
+    "ANDI": "TM-00030", "DICKY": "TM-00105", "WAHYU WIDODO": "TM-00032", "TISAH AKBAR": "TM-00036",
+    "BISMA": "TM-00033", "DENI": "TM-00034", "NURI": "TM-00039", "AJI": "TM-00038", "ALDI": "TM-00041",
+    "ROBBY": "TM-00040", "IMAM RUDI": "TM-00037", "AGI": "TM-00043", "AKBAR": "TM-00063",
+    "SULIS FG4": "TM-00046", "SULIS FG3": "TM-00050", "FIA": "TM-00047", "FIR": "TM-00042",
+    "REYHAN": "TM-00045", "DINA": "TM-00049", "EVI": "TM-00070", "IKA": "TM-00048", "IQBAL": "TM-00044",
+    "NOVA": "TM-00532", "MURNI": "TM-00054", "SUYATI": "TM-00069", "TUTI": "TM-00051", "IIS": "TM-00065",
+    "FARID": "TM-00060", "SYARIF": "TM-00064", "JHOHAN": "TM-00062", "JOHAN": "TM-00061",
+    "UKKASYAH": "TM-00106", "ANDIK": "TM-00059", "ROHMAT": "TM-00077", "PANCA": "TM-00078",
+    "SUKARTI": "TM-00058", "SRI": "TM-00055", "RISMA": "TM-00066",
+    "ARIF": null, "MUCHLAS": null, "RENDA": null, "ERNA": null, "MUJI": null, "DEA": null, "SITI": null, "TYAS": null
+  },
+  "work_centers": {
+    "UV": "WC-UV", "LAMINATING OTOMATIS": "WC-LAMINATING", "LAMINASI": "WC-LAM-01", "DIECUT": "WC-DIECUT",
+    "PLONG 1": "WC-PLONG-01", "PLONG 2": "WC-PLONG_2", "PLONG 3": "WC-PLONG_3", "FG 4": "WC-FG4", "FG 3": "WC-FG3",
+    "SHRINK": "WC-SHRINK", "BLANKING": "WC-BLANKING", "KUPAS": "WC-KUPAS", "DELIVERYMAN": "WC-DELIVERY",
+    "MANUAL": "WC-MANUAL", "HITUNG": "WC-QC-2"
+  },
+  "weeks": [
+    {
+      "dates": ["2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-12"],
+      "rows": [
+        ["UV", "SH1", ["ADE"]], ["UV", "SH2", ["REGI"]],
+        ["LAMINATING OTOMATIS", "SH1", ["HENDRI", "DWI"]], ["LAMINATING OTOMATIS", "SH2", ["MUNIR", "AZKA"]],
+        ["LAMINASI", "SH1", ["TEGUH", "ANDI", "DICKY"]], ["LAMINASI", "SH2", ["HABIB", "DEVI", "VICKY"]],
+        ["DIECUT", "SH1", ["BISMA", "DENI"]], ["DIECUT", "SH2", ["WAHYU WIDODO", "TISAH AKBAR"]],
+        ["PLONG 1", "SH1", ["AJI"]], ["PLONG 1", "SH2", ["NURI"]],
+        ["PLONG 2", "SH1", ["ROBBY"]], ["PLONG 2", "SH2", ["ALDI"]],
+        ["PLONG 3", "REG", ["IMAM RUDI"]],
+        ["FG 4", "SH1", ["FIR", "REYHAN", "DINA", "IKA"]], ["FG 4", "SH2", ["AGI", "AKBAR", "SULIS FG4", "FIA"]],
+        ["FG 3", "SH1", ["ARIF", "TUTI", "SULIS FG3", "EVI"]], ["FG 3", "SH2", ["IQBAL", "NOVA", "MURNI", "SUYATI"]],
+        ["SHRINK", "SH1", ["SYARIF", "RENDA"]], ["SHRINK", "SH2", ["FARID", "MUCHLAS"]],
+        ["BLANKING", "REG", ["JHOHAN"]],
+        ["KUPAS", "SH1", ["ANDIK", "ARIF"]], ["KUPAS", "SH2", ["JOHAN", "UKKASYAH"]],
+        ["DELIVERYMAN", "SH1", ["PANCA"]], ["DELIVERYMAN", "SH2", ["ROHMAT"]],
+        ["MANUAL", "REG", ["SUKARTI", "SRI"]],
+        ["MANUAL", "REG", ["NOVA", "ERNA", "MUJI", "DEA", "SITI", "TYAS", "DWI"], ["2026-09-07"]],
+        ["HITUNG", "REG", ["RISMA", "IIS"]]
+      ]
+    },
+    {
+      "dates": ["2026-09-14", "2026-09-15", "2026-09-16", "2026-09-17", "2026-09-18", "2026-09-19"],
+      "rows": [
+        ["UV", "SH1", ["REGI"]], ["UV", "SH2", ["ADE"]],
+        ["LAMINATING OTOMATIS", "SH1", ["MUNIR", "AZKA"]], ["LAMINATING OTOMATIS", "SH2", ["HENDRI", "DWI"]],
+        ["LAMINASI", "SH1", ["HABIB", "DEVI", "VICKY"]], ["LAMINASI", "SH2", ["TEGUH", "ANDI", "DICKY"]],
+        ["DIECUT", "SH1", ["WAHYU WIDODO", "TISAH AKBAR"]], ["DIECUT", "SH2", ["BISMA", "DENI"]],
+        ["PLONG 1", "SH1", ["NURI"]], ["PLONG 1", "SH2", ["AJI"]],
+        ["PLONG 2", "SH1", ["ALDI"]],
+        ["PLONG 2", "SH2", ["ROBBY"], ["2026-09-14", "2026-09-15", "2026-09-16"]],
+        ["PLONG 2", "SH2", ["IMAM RUDI"], ["2026-09-17", "2026-09-18", "2026-09-19"]],
+        ["PLONG 3", "REG", ["IMAM RUDI"], ["2026-09-14", "2026-09-15", "2026-09-16"]],
+        ["FG 4", "SH1", ["AGI", "AKBAR", "SULIS FG4", "FIA"]], ["FG 4", "SH2", ["FIR", "REYHAN", "DINA", "EVI"]],
+        ["FG 3", "SH1", ["IQBAL", "NOVA", "MURNI", "SUYATI"]], ["FG 3", "SH2", ["ARIF", "TUTI", "SULIS FG3", "IIS"]],
+        ["SHRINK", "SH1", ["FARID", "MUCHLAS"]], ["SHRINK", "SH2", ["SYARIF", "RENDA"]],
+        ["BLANKING", "REG", ["JHOHAN"]],
+        ["KUPAS", "SH1", ["JOHAN", "UKKASYAH"]], ["KUPAS", "SH2", ["ANDIK", "ARIF"]],
+        ["DELIVERYMAN", "SH1", ["ROHMAT"]], ["DELIVERYMAN", "SH2", ["PANCA"]],
+        ["MANUAL", "REG", ["SUKARTI", "SRI"]],
+        ["HITUNG", "REG", ["RISMA"]]
+      ]
+    }
+  ]
+}

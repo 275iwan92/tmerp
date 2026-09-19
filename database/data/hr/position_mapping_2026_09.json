@@ -1,0 +1,62 @@
+{
+  "_note": "Pemetaan DIVISI+POSISI Excel HR (2026-09-19). Prioritas: (1) 'org_chart' = kotak Struktur Organisasi hasil screenshot org chart user 2026-09-13 + posisi Excel yang jelas; (2) karyawan mingguan = KEAHLIAN/TITLE di sheet PROPOSAL file gaji (= org_position 10-58 + UMUM); (3) sisanya tetap 'Belum Dipetakan' & dilaporkan.",
+  "org_chart": {
+    "TM-00010": [103, "GANI - Potong SPV (org chart 'Gani')"],
+    "TM-00006": [97, "MAHMUD - Warehouse Staff (org chart 'Mahmud/Heru')"],
+    "TM-00007": [97, "HERU - Warehouse Staff"],
+    "TM-00521": [96, "TRIYONO - Forklift Ops. (org chart 'Triono', Excel OP FORKLIFT)"],
+    "TM-00081": [101, "TRIO - Fleet Staff (org chart 'Trio/Agung/Dwi/Puji')"],
+    "TM-00084": [101, "AGUNG DWI JAYANA - Fleet Staff"],
+    "TM-00083": [101, "AHMAD DWI MAULANA - Fleet Staff ('Dwi', divisi EKSPEDISI)"],
+    "TM-00525": [101, "PUJIANTO - Fleet Staff ('Puji', Excel DRIVER)"],
+    "TM-00080": [100, "SUBANDI - Logistic Staff (occupant lama)"],
+    "TM-00118": [99, "WINDAYANTI - Logistic Admin (occupant lama)"],
+    "TM-00135": [95, "ARINDA - Warehouse Admin (occupant lama)"],
+    "TM-00113": [66, "DINUL - Technical Support & Maintenance"],
+    "TM-00116": [72, "WIWIK - Product Costing"],
+    "TM-00112": [67, "ADI PRATOMO - General Affair Dept. (occupant lama)"],
+    "TM-00114": [107, "MAULANA MALIK - Joining SPV (Excel SPV FINISHING)"],
+    "TM-00115": [104, "AGUS MUJIONO - Offset SPV (org chart 'Agus', payroll lama CETAK SPV)"],
+    "TM-00140": [105, "NUR DIANA - Coating & Laminasi SPV (org chart 'Diyana', Excel SPV FINISHING)"],
+    "TM-00542": [106, "SUFYAN ANAS - Plong & Kupas SPV (Excel SPV FINISHING)"],
+    "TM-00139": [63, "MIA - F&A SPV (org chart 'Mia Friani')"],
+    "TM-00121": [80, "YUNA - B2B Sales"],
+    "TM-00132": [79, "ENI - B2B Sales Admin"],
+    "TM-00142": [93, "SURO - PPIC Planner"],
+    "TM-00535": [93, "FARDAN - PPIC Planner (Excel PPIC)"],
+    "TM-00523": [93, "LAILATUL AZMI DWI SEPTIA - PPIC Planner ('Tia', Excel PPIC)"],
+    "TM-00146": [102, "RINGGA - Pre Press SPV (org chart juga menulis Ringga di kotak NPD)"],
+    "TM-00528": [77, "ALIF SYAM RAMADHAN - NPD (Excel NPD)"],
+    "TM-00143": [64, "ANNISA KUSUMANINGTYAS - Operational Manager (occupant lama)"],
+    "TM-00150": [68, "SANIA MAURA - Human Capital Dept. (Excel HRD)"],
+    "TM-00520": [76, "MEIDINI - Advertiser ('Dini', Excel DIGITAL MARKETING)"],
+    "TM-00522": [78, "FAUZIAH - Content Creator ('Zizi', Excel DIGITAL MARKETING)"],
+    "TM-00122": [78, "DEDI SUKMA - Content Creator (Excel KREATIF)"],
+    "TM-00541": [65, "AHMAD SYARIF FIRMANSYAH - Sales & Marketing Manager ('Firman', Excel SALES MANAGER)"],
+    "TM-00117": [86, "TRI YUDHA - Security (SATPAM)"],
+    "TM-00119": [86, "TRI SASONGKO - Security (SATPAM)"],
+    "TM-00123": [86, "SUHENDRIK - Security (SATPAM)"],
+    "TM-00133": [86, "ARIF AGUS - Security (SATPAM)"],
+    "TM-00524": [86, "AGUNG HADI SUTRISNO - Security (SATPAM)"],
+    "TM-00527": [81, "ERIKA - Deskprint"],
+    "TM-00529": [81, "HENI - Deskprint"],
+    "TM-00539": [81, "AGATA - Deskprint"],
+    "TM-00531": [2, "ARGO - Prepress Planning Specialist (Excel PRE PRESS)"],
+    "TM-00534": [2, "CATUR - Prepress Planning Specialist (Excel PRE PRESS)"],
+    "TM-00533": [75, "AL QURIAWATI - Digital Div. (Excel SPV DIGITAL)"],
+    "TM-00530": [98, "EKA WIJAYA - Purchasing Staff (Excel PURCHASING)"]
+  },
+  "title_alias": {
+    "SPV": null,
+    "OPERATOR FORKLIFT": "OP FORKLIFT",
+    "HELPER LAMINATING": "HELPER LAMINASI"
+  },
+  "title_fallback": {
+    "TM-00532": ["HELPER FG LV 1", "NOVA - title kosong di PROPOSAL; formasi FG 3 + tj.keahlian 10.000"],
+    "TM-00526": ["QC / PACK LV 2", "SRI ISLAMI - title kosong; divisi QC + tj.keahlian 15.000"],
+    "TM-00537": ["UMUM", "ARGA - title kosong; Excel POSISI UMUM"]
+  },
+  "reset_to_unmapped": {
+    "FIRMAN (legacy, nonaktif)": 354
+  }
+}

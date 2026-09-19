@@ -3,6 +3,28 @@
 
 ---
 
+## 2026-09-19 — Data karyawan dari Excel HR: merge, status aktif, pemetaan kolom, formasi shift, sample payroll
+
+Sumber: `docs/HR/daftar karyawan - database.xlsx` (138 orang), 2 file gaji mingguan
+`docs/HR/9. GAJI KARYAWAN ... WEEKLY 1659/1660.xlsb` (TIDAK di-commit, berisi gaji),
+2 gambar formasi shift minggu ke-2 & ke-3 September.
+
+- `hrm:sync-employees-excel`: merge 68 baris dobel (nama sama + nama pendek ke nama
+  lengkap, contoh user ALDI/ADAM/ALIF; jejak di `tm2mst.emp_employee_merge`), Excel =
+  aktif (137 termasuk id=1), sisanya nonaktif. PIN Excel = `device_pin` mesin finger.
+- `hrm:import-hr-sample --step=attributes`: jabatan dari KEAHLIAN/TITLE file gaji +
+  kotak org chart (`database/data/hr/position_mapping_2026_09.json`); jabatan keahlian
+  (org_position 10-58) dipasang ke departemen & SPV-nya + jabatan baru UMUM; kolom baru
+  `emp_employee.personal_file_complete`/`deposit_status`, BPJS TK 2P/3P/BATCH/NO + KET
+  -> `emp_bpjs_ketenagakerjaan.enrollment_status/registration_batch/bpjs_category/enrollment_note`;
+  tanggal & gender dari Excel (tgl lahir mustahil dikosongkan); mingguan = ada di file gaji (93/44).
+  9 staf jabatannya belum bisa dipastikan (tetap "Belum Dipetakan").
+- `--step=roster`: 567 baris `emp_shift_roster` DUMMY 7-12 & 14-19 Sep (shift SH1/SH2/REG
+  baru, WC baru DIECUT/FG 3/FG 4/BLANKING). 8 nama panggilan tak terpetakan dilewati.
+- `--step=payroll`: sample lama (VAL-001/002, shift VAL, run 22-28 Agu) dihapus; 95 rate
+  gaji + presensi TA 2 minggu + 2 payroll run WEEKLY (DUMMY). Pokok+tunjangan+bonus engine
+  = Excel utk 84/92 & 78/90 orang, uang roti sama persis; lembur engine ~52% Excel (BACKLOG §20).
+
 ## 2026-09-12 — Roster Shift Mingguan versi mockup (ganti total papan lama) + componentization HRM
 
 Instruksi user berturut-turut: "mockup untuk jadwal roster HARUS BISA",

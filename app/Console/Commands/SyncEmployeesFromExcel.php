@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Hrm\EmployeeMergeService;
+use App\Support\Hrm\PersonName;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -164,45 +165,12 @@ class SyncEmployeesFromExcel extends Command
 
     private function norm(?string $s): string
     {
-        $s = strtoupper(str_replace('.', ' ', (string) $s));
-
-        return trim(preg_replace('/\s+/', ' ', preg_replace('/[^A-Z ]/', '', $s)));
+        return PersonName::norm($s);
     }
 
-    /** Nama sama, atau beda tulisan tapi jelas 1 orang (inisial, penggalan, typo 1-2 huruf). */
     private function compatible(string $a, string $b): bool
     {
-        [$a, $b] = [$this->norm($a), $this->norm($b)];
-        if ($a === $b || str_contains(" $b ", " $a ") || str_contains(" $a ", " $b ")) {
-            return true;
-        }
-        $ta = explode(' ', $a);
-        $tb = explode(' ', $b);
-        if (count($ta) === count($tb)) {
-            $ok = true;
-            foreach ($ta as $k => $t) {
-                $u = $tb[$k];
-                $ok = $ok && ($t === $u || (strlen($t) === 1 && str_starts_with($u, $t)) || (strlen($u) === 1 && str_starts_with($t, $u)));
-            }
-            if ($ok) {
-                return true;
-            }
-        }
-        // Kata-kata nama pendek muncul berurutan di nama panjang (boleh penggalan
-        // awal kata): ENI HANINGTYAS ~ ENI KURNIATI HANINGTYAS, APRIL ~ APRILIANTI ...
-        [$short, $long] = count($ta) <= count($tb) ? [$ta, $tb] : [$tb, $ta];
-        $j = 0;
-        foreach ($long as $t) {
-            if ($j < count($short) && str_starts_with($t, $short[$j])) {
-                $j++;
-            }
-        }
-        if ($j === count($short)) {
-            return true;
-        }
-        similar_text($a, $b, $pct);
-
-        return $pct >= 80;
+        return PersonName::compatible($a, $b);
     }
 
     /** @return array<int, int> index baris Excel => employee_id */

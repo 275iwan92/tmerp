@@ -1602,6 +1602,22 @@ jadi salah/usang begitu perbaikan ini jalan).
 
 ---
 
+## 20. PAYROLL — TARIF LEMBUR ENGINE ≠ FILE GAJI HR (temuan 2026-09-19)
+
+Sample payroll dari file gaji mingguan (`hrm:import-hr-sample --step=payroll`) menunjukkan
+lembur engine cuma ~52% dari Excel HR. HR memakai tarif **"LEMBUR PER JAM" per karyawan**
+(sheet PROPOSAL, mis. Rp19.000/jam), sedangkan `PayrollEngineService::overtimePay()`
+menurunkannya dari gaji pokok harian ÷ durasi shift × multiplier. Belum ada kolom tarif
+lembur per karyawan di `pyr_employee_salary`. Selisih kecil lain: prorata telat
+(≤ Rp2.350/minggu) dan 3 kasus izin/alpha (±Rp35-50 rb). Perbandingan per orang:
+`storage/app/private/hr/payroll_compare_*.csv`. Perlu keputusan user sebelum mengubah engine.
+
+Juga menunggu HR: jabatan 9 staf (RONY, DENI IRA, APRILIANTI, M. RAFLY, WIDITA, INDIRA,
+DIDIN, SHOFIA, TEGAR), tgl lahir SHOFIA AZKIA (Excel 2026-04-10), 8 nama panggilan formasi
+(ARIF x2, MUCHLAS, RENDA, ERNA, MUJI, DEA, SITI, TYAS).
+
+---
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
