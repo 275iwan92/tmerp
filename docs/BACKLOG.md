@@ -1618,6 +1618,46 @@ DIDIN, SHOFIA, TEGAR), tgl lahir SHOFIA AZKIA (Excel 2026-04-10), 8 nama panggil
 
 ---
 
+## 21. INPUT TEKS BELUM SERAGAM `x-form.input` (audit + instruksi user 2026-09-21)
+
+**Keputusan user 2026-09-21 (opsi 1 dari 2 yang ditawarkan):** standar input
+teks = **`x-form.input`**, BUKAN `x-form.case-toggle-input` (auto-height +
+tombol aa/Aa/AA) yang dipajang di Component Library sbg contoh "Input Teks".
+Komponen case-toggle itu **sengaja tidak di-rollout**: tombol ganti huruf
+berbahaya utk field kode/email/No.HP/NIK/no. dokumen (huruf bisa berubah tanpa
+sengaja). Kalau nanti dipakai, **hanya** utk field nama/deskripsi.
+
+Audit 2026-09-21: 157 `<input>` teks mentah di 89 file vs 475 yang sudah pakai
+komponen. **33 sudah dikonversi** (lihat `LOG_JOB_DONE.md` 2026-09-21). Sisanya:
+
+- **Inquiry Form / Revise / Hub — dialek CSS lama `.f`, `.srch`, `.filters`**
+  (~14 input). Tampilan SUDAH sama dgn `x-form.input` mode `:legacy` karena
+  didandani CSS `app.css` yang sama, jadi ini kerapian tag, bukan cacat visual.
+  Hati-hati: `x-form.input :legacy` mengeluarkan wrapper `<div class="f">`
+  sendiri — kalau input aslinya sudah berada DI DALAM `<div class="f ac-wrap">`
+  (mis. autocomplete Customer di `inquiry/form.blade.php`) akan jadi `.f` bersarang
+  dan merusak selector CSS. Perlu dikerjakan manual per field, bukan skrip massal.
+- **Input di dalam sel tabel** (~25, mis. `mps-spreadsheet`, grid editable) —
+  komponen berlabel tidak cocok utk sel. Kalau mau seragam, butuh komponen
+  BARU khusus sel (`x-form.cell-input`?), bukan dipaksa pakai `x-form.input`.
+  Belum diputuskan, jangan bangun tanpa persetujuan.
+- **Kotak cari toolbar grid** (~55 layar, class `w-64 shrink-0 ...`) — SENGAJA
+  dibiarkan mentah, punya standar sendiri (`griduistandard.md` §6). Satu yang
+  sempat ikut terkonversi di Master Produk sudah dikembalikan. **Kalau nanti
+  mau diseragamkan, harus sekaligus 55 layar + update `griduistandard.md`**,
+  jangan setengah-setengah.
+- **Sengaja beda / tidak aktif (BUKAN item terbuka, dicatat spy tidak disangka
+  lupa)**: Login & Register (`auth/*`), Portal Karier (`careers/*`), kotak chat
+  & AI di `livewire/shell/user-panels.blade.php`, field COA kuning "MENYUSUL"
+  di Master Customer, serta layar legacy `production/old_prodev*` dan
+  `inquiry/imposition*`.
+- **Efek samping yg perlu dilihat saat QC**: Master Produk & Stock Return
+  dulu memakai teks 13px, sekarang ikut ukuran standar 12px (`text-xs`).
+  Kalau user merasa kekecilan, keputusannya bukan balikkan 1 layar — tapi
+  ubah ukuran di komponen supaya semua layar ikut.
+
+---
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,

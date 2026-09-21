@@ -3,6 +3,34 @@
 
 ---
 
+## 2026-09-21 — UI: input teks mentah -> komponen standar `x-form.input` (33 titik)
+
+Pemicu: user cek sendiri, "ga semua mengikuti component UI UX standard".
+Audit: 157 `<input>` teks mentah di 89 file vs 475 yang sudah pakai komponen.
+Keputusan user (opsi 1 dari 2): standar = `x-form.input`, BUKAN
+`x-form.case-toggle-input` yang dipajang di Component Library. Sisa yang belum
+dikerjakan + alasannya: `BACKLOG.md` §21.
+
+- **15 field form berlabel** (label+input+@error manual -> komponen):
+  `production/{rule-library,scrap-type,process-rate,wo-entry,mts-forecast,scheduling-board}`,
+  `inventory/stock-return`. Termasuk pola read-only "nilai terpilih + tombol Ganti"
+  (dibungkus `<div class="flex-1">` supaya tetap melebar di dalam flex).
+  Commit `8baa872`.
+- **18 kotak cari di popup/pemilih** (bukan toolbar grid): `dispatch/do/list`,
+  `inventory/print/{master-stock,slow-moving,stock-card}`,
+  `inventory/{stock-in,stock-out,stock-adjustment}`, `master/produk`,
+  `pur/{po,pq,prt}/index`, `pur/{pq,pr,prt}/entry`, `quotation/{entry,list}`,
+  `security/index`. **Tercommit ikut `bc6100c`** (sesi paralel `git add` menyeluruh
+  saat file sedang antre commit — isinya utuh & ter-push, cuma pesan commit-nya
+  tidak menggambarkan isi; lihat memory `project_multisession_collision_20260831`).
+- Efek samping disengaja: Master Produk & Stock Return dulu 13px -> sekarang
+  ukuran standar `text-xs`.
+- Verifikasi: 20 layar dirender via `Livewire::test` tanpa error; PQ Entry &
+  PRT Entry tabelnya kosong -> dicek lewat `Blade::compileString` + `php -l`
+  (lolos). `npm run build` dijalankan. Tampilan browser belum dicek user.
+
+---
+
 ## 2026-09-21 — Accounting Process Engine (Finance & Accounting): 16 layar dari mockup blueprint + dummy data
 
 Sumber: `docs/mockups/MODULE_accounting-process-engine-blueprint.html` +
