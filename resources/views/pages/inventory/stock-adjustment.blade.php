@@ -646,7 +646,7 @@ new #[Title('Stock Adjustment & Opname — TELASIH MAKMUR ERP')] class extends C
                     @if (! $readOnly)
                         <div class="flex items-center gap-2 flex-wrap">
                             <div class="relative flex-1" style="max-width:380px">
-                                <input type="text" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('inv_item_search_placeholder', 'Cari kode / nama item utk ditambah…') }}" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                                <x-form.input wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('inv_item_search_placeholder', 'Cari kode / nama item utk ditambah…') }}" />
                                 @if ($this->itemResults->isNotEmpty())
                                     <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                         @foreach ($this->itemResults as $it)

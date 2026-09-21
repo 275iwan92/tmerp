@@ -206,7 +206,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                     <h3 class="text-sm font-bold text-navy">{{ Translator::t('sales_quo_picker_title', 'Pilih Customer') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <input type="text" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="{{ Translator::t('sales_quo_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode customer...') }}" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs mb-2">
+                <x-form.input wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="{{ Translator::t('sales_quo_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode customer...') }}" class="mb-2" />
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->customerResults as $c)
                         <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">

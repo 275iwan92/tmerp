@@ -465,7 +465,7 @@ new #[Title('Purchase Requisition Entry — TELASIH MAKMUR ERP')] class extends 
                 <div x-show="tab === 'master'">
                     <div class="relative mb-3" style="max-width:420px">
                         <label class="text-[10px] text-muted uppercase font-semibold block mb-1">{{ Translator::t('proc_entry_quick_search', 'Cari Cepat') }} <span class="text-muted normal-case font-normal">({{ Translator::t('proc_entry_quick_search_hint', 'sudah hafal kode/nama?') }})</span></label>
-                        <input type="text" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_entry_item_search_placeholder', 'Ketik kode atau nama item…') }}" class="w-full px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        <x-form.input wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_entry_item_search_placeholder', 'Ketik kode atau nama item…') }}" />
                         @if ($this->itemSearchResults->isNotEmpty())
                             <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                 @foreach ($this->itemSearchResults as $m)

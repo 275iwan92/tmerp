@@ -225,7 +225,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                                 <div class="relative">
                                     <button type="button" @click="open = !open" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Tarik Inquiry Lain</button>
                                     <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 top-full mt-1 w-80 bg-white border border-[#d7dbe2] rounded-md shadow-lg z-20 p-2">
-                                        <input type="text" placeholder="Cari no. inquiry / nama produk..." wire:model.live.debounce.300ms="addInquirySearch" class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs mb-1.5">
+                                        <x-form.input placeholder="Cari no. inquiry / nama produk..." wire:model.live.debounce.300ms="addInquirySearch" class="mb-1.5" />
                                         <div class="max-h-64 overflow-y-auto">
                                             @forelse ($this->availableInquiries as $inq)
                                                 <button type="button" wire:click="addInquiry({{ $inq->id_inquiry }})" @click="open = false"

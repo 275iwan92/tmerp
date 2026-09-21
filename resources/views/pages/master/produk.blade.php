@@ -558,7 +558,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                                     <button type="button" wire:click="clearCustomer" class="text-muted hover:text-red-600 cursor-pointer" title="Hapus">✕</button>
                                 </div>
                             @else
-                                <input type="text" wire:model.live.debounce.300ms="custQuery" placeholder="Cari nama / kode customer…" class="px-2.5 py-2 border border-[#c7cfda] rounded-md text-[13px]">
+                                <x-form.input wire:model.live.debounce.300ms="custQuery" placeholder="Cari nama / kode customer…" />
                                 @if ($custQuery && mb_strlen($custQuery) >= 2)
                                     <div class="absolute top-full left-0 right-0 z-10 bg-white border border-[#c7cfda] rounded-md shadow-lg mt-1 max-h-[180px] overflow-auto">
                                         @forelse ($this->customerResults as $c)
