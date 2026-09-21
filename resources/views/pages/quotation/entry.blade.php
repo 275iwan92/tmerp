@@ -196,40 +196,40 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             {{-- KIRI --}}
             <div class="lg:flex-1 min-w-0">
                 {{-- HEADER --}}
-                <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
+                <div class="bg-white border border-field-border rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Quotation</h3>
                     <div class="grid">
-                        <x-form.input label="No. Quotation" readonly value="{{ $this->quotation->quotation_no }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="No. Quotation" readonly value="{{ $this->quotation->quotation_no }}" class="bg-field-soft" />
                         <x-form.date-picker label="Tanggal" value="{{ $this->quotation->issued_date?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
-                            wire:change="updateHeader('issued_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
+                            wire:change="updateHeader('issued_date', $event.target.value)" class="disabled:bg-field-soft" />
                         <x-form.date-picker label="Berlaku s/d" value="{{ $this->quotation->valid_until?->format('Y-m-d') }}" :disabled="$this->quotation->doc_status !== 'DRAFT'"
-                            wire:change="updateHeader('valid_until', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                        <x-form.select label="Termin Pembayaran" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                            wire:change="updateHeader('valid_until', $event.target.value)" class="disabled:bg-field-soft" />
+                        <x-form.select label="Termin Pembayaran" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-field-soft"
                             :selected="$this->quotation->payment_term" :options="$this->paymentTerms->pluck('term_label', 'payment_term_code')->all()" />
                         <div class="col-span-2">
-                            <x-form.input label="Customer" readonly value="{{ $this->quotation->customer?->customer_name }} ({{ $this->quotation->customer?->customer_code }})" class="bg-[#f8fafc]" />
+                            <x-form.input label="Customer" readonly value="{{ $this->quotation->customer?->customer_name }} ({{ $this->quotation->customer?->customer_code }})" class="bg-field-soft" />
                         </div>
-                        <x-form.select label="Skema Pajak" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('tax_scheme', $event.target.value)" class="disabled:bg-[#f8fafc]"
+                        <x-form.select label="Skema Pajak" :disabled="$this->quotation->doc_status !== 'DRAFT'" wire:change="updateHeader('tax_scheme', $event.target.value)" class="disabled:bg-field-soft"
                             :placeholder="false" :selected="$this->quotation->tax_scheme" :options="['EXCL' => 'Exclusive PPN 11%', 'INCL' => 'Inclusive PPN 11%']" />
-                        <x-form.input label="Mata Uang" readonly value="{{ $this->quotation->currency_code }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="Mata Uang" readonly value="{{ $this->quotation->currency_code }}" class="bg-field-soft" />
                     </div>
                 </div>
 
                 {{-- ITEM LIST --}}
-                <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-2.5 bg-[#f4f6fa] border-b border-[#d7dbe2]">
+                <div class="bg-white border border-field-border rounded-md mb-4 overflow-hidden">
+                    <div class="flex items-center justify-between px-4 py-2.5 bg-field-soft border-b border-field-border">
                         <h3 class="text-xs text-navy uppercase font-bold">Daftar Inquiry Terkonsolidasi</h3>
                         @if ($this->quotation->doc_status === 'DRAFT')
                             <div class="flex items-center gap-1.5" x-data="{ open: false }">
-                                <button type="button" wire:click="addFreeform" class="text-[11px] font-bold text-navy bg-[#eef1f5] border border-dashed border-[#c7cfda] rounded px-2.5 py-1 cursor-pointer">＋ Baris Bebas</button>
+                                <button type="button" wire:click="addFreeform" class="text-[11px] font-bold text-navy bg-field-badge border border-dashed border-field-border rounded px-2.5 py-1 cursor-pointer">＋ Baris Bebas</button>
                                 <div class="relative">
-                                    <button type="button" @click="open = !open" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Tarik Inquiry Lain</button>
-                                    <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 top-full mt-1 w-80 bg-white border border-[#d7dbe2] rounded-md shadow-lg z-20 p-2">
+                                    <button type="button" @click="open = !open" class="text-[11px] font-bold text-accent bg-accent-soft border border-dashed border-accent rounded px-2.5 py-1 cursor-pointer">＋ Tarik Inquiry Lain</button>
+                                    <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 top-full mt-1 w-80 bg-white border border-field-border rounded-md shadow-lg z-20 p-2">
                                         <x-form.input :case-toggle="false" placeholder="Cari no. inquiry / nama produk..." wire:model.live.debounce.300ms="addInquirySearch" class="mb-1.5" />
                                         <div class="max-h-64 overflow-y-auto">
                                             @forelse ($this->availableInquiries as $inq)
                                                 <button type="button" wire:click="addInquiry({{ $inq->id_inquiry }})" @click="open = false"
-                                                    class="w-full text-left px-2 py-1.5 rounded hover:bg-[#eef3fb] cursor-pointer">
+                                                    class="w-full text-left px-2 py-1.5 rounded hover:bg-accent-soft cursor-pointer">
                                                     <div class="text-[11px] font-bold text-accent">{{ $inq->inquiry_no }}</div>
                                                     <div class="text-[11px] text-navy">{{ $inq->product_draft_name }}</div>
                                                 </button>
@@ -251,21 +251,21 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
                     <table class="w-full text-xs border-collapse">
                         <thead>
-                            <tr class="bg-[#f4f5f8]">
-                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Ref. Inquiry</th>
-                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Deskripsi & Spesifikasi</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Qty</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Harga Satuan</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Disc %</th>
-                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-[#d7dbe2]">Subtotal</th>
+                            <tr class="bg-field-soft">
+                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Ref. Inquiry</th>
+                                <th class="text-left px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Deskripsi & Spesifikasi</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Qty</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Harga Satuan</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Disc %</th>
+                                <th class="text-right px-2.5 py-2 text-[10px] text-muted uppercase font-bold border-b border-field-border">Subtotal</th>
                                 @if ($this->quotation->doc_status === 'DRAFT')
-                                    <th class="px-2.5 py-2 border-b border-[#d7dbe2]"></th>
+                                    <th class="px-2.5 py-2 border-b border-field-border"></th>
                                 @endif
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($this->quotation->items as $item)
-                                <tr class="border-b border-[#eef1f5]" wire:key="item-{{ $item->id_item }}">
+                                <tr class="border-b border-field-badge" wire:key="item-{{ $item->id_item }}">
                                     <td class="px-2.5 py-2 font-mono font-bold text-accent">{{ $item->inquiry?->inquiry_no ?? '—' }}</td>
                                     <td class="px-2.5 py-2">
                                         @if ($item->source_type === 'FREEFORM' && $this->quotation->doc_status === 'DRAFT')
@@ -321,22 +321,22 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
             {{-- KANAN --}}
             <div class="lg:w-[320px] lg:shrink-0">
-                <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
+                <div class="bg-white border border-field-border rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-2.5">Summary &amp; Pajak</h3>
                     <div class="space-y-1 text-xs">
                         <div class="flex justify-between"><span class="text-muted">Subtotal Produk &amp; Layanan</span><span>{{ number_format($this->totals['subtotal'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-semibold border-t border-[#eef1f5] pt-1"><span>Dasar Pengenaan Pajak (DPP)</span><span>{{ number_format($this->totals['dpp'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-semibold border-t border-field-badge pt-1"><span>Dasar Pengenaan Pajak (DPP)</span><span>{{ number_format($this->totals['dpp'], 0, ',', '.') }}</span></div>
                         <div class="flex justify-between"><span class="text-muted">PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</span><span>{{ number_format($this->totals['ppn'], 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-bold text-accent border-t border-[#eef1f5] pt-1 text-[13px]"><span>Grand Total</span><span>{{ number_format($this->totals['grand'], 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-bold text-accent border-t border-field-badge pt-1 text-[13px]"><span>Grand Total</span><span>{{ number_format($this->totals['grand'], 0, ',', '.') }}</span></div>
                     </div>
                 </div>
 
-                <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
+                <div class="bg-white border border-field-border rounded-md p-4 mb-4">
                     <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Syarat &amp; Ketentuan / Catatan</label>
                     <textarea rows="4" @disabled($this->quotation->doc_status !== 'DRAFT')
                         wire:change="updateHeader('notes', $event.target.value)"
                         placeholder="Tuliskan syarat khusus yang tercetak di dokumen..."
-                        class="w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f8fafc]">{{ $this->quotation->notes }}</textarea>
+                        class="w-full px-2 py-1.5 border border-field-border rounded text-xs disabled:bg-field-soft">{{ $this->quotation->notes }}</textarea>
                 </div>
 
                 @if ($this->quotation->doc_status === 'DRAFT')

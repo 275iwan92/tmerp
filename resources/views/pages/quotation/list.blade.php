@@ -147,12 +147,12 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
             <x-grid.stat-box tone="active" label="{{ Translator::t('sales_quo_stat_published', 'Published') }}" :value="$this->statPublished" />
         </x-grid.stat-row>
 
-        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+        <div class="bg-white border border-field-border rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
                     <input type="text" wire:model.live.debounce.300ms="search" placeholder="{{ Translator::t('sales_quo_search_placeholder', 'Cari no. quotation / customer…') }}"
-                        class="w-64 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                        class="w-64 shrink-0 px-2.5 py-1.5 border border-field-border rounded text-xs">
                 </div>
                 <x-slot:newRecord>
                     <button type="button" wire:click="openPicker"
@@ -164,23 +164,23 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                 <table class="w-full border-collapse text-[12.5px]">
                     <thead>
                         <tr>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">{{ Translator::t('sales_quo_col_quotation', 'Quotation') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_quo_col_date', 'Tanggal') }}</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">{{ Translator::t('sales_quo_col_status', 'Status') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">{{ Translator::t('sales_quo_col_value', 'Nilai (excl PPN)') }}</th>
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">{{ Translator::t('sales_quo_col_action', 'Aksi') }}</th>
+                            <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1]">{{ Translator::t('sales_quo_col_quotation', 'Quotation') }}</th>
+                            <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_quo_col_date', 'Tanggal') }}</th>
+                            <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[100px]">{{ Translator::t('sales_quo_col_status', 'Status') }}</th>
+                            <th class="text-right px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[140px]">{{ Translator::t('sales_quo_col_value', 'Nilai (excl PPN)') }}</th>
+                            <th class="text-right px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[80px]">{{ Translator::t('sales_quo_col_action', 'Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->quotations as $q)
-                            <tr wire:key="quo-{{ $q->id_quotation }}" wire:dblclick="openQuotation({{ $q->id_quotation }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
+                            <tr wire:key="quo-{{ $q->id_quotation }}" wire:dblclick="openQuotation({{ $q->id_quotation }})" class="hover:bg-accent-soft cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
                                 <x-grid.identity-cell :id="$q->id_quotation" :name="$q->customer?->customer_name ?? '—'" :code="$q->quotation_no" />
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $q->issued_date?->translatedFormat('d M Y') }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td class="px-3 py-2 border-b border-field-badge">{{ $q->issued_date?->translatedFormat('d M Y') }}</td>
+                                <td class="px-3 py-2 border-b border-field-badge">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $q->doc_status === 'PUBLISHED' ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $q->doc_status }}</span>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                <td class="px-3 py-2 border-b border-field-badge text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
+                                <td class="px-3 py-2 border-b border-field-badge text-right whitespace-nowrap">
                                     <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openQuotation({{ $q->id_quotation }})" />
                                     @if ($q->doc_status === 'DRAFT')
                                         <x-grid.action-icon icon="✓" title="{{ Translator::t('sales_quo_action_confirm_publish', 'Confirm / Publish') }}" action="confirmQuotation({{ $q->id_quotation }})"
@@ -209,7 +209,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                 <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="{{ Translator::t('sales_quo_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode customer...') }}" class="mb-2" />
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->customerResults as $c)
-                        <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">
+                        <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-accent-soft cursor-pointer border-b border-field-badge last:border-b-0">
                             <div class="text-xs font-semibold text-navy">{{ $c->customer_name }}</div>
                             <div class="text-[10.5px] text-muted">{{ $c->customer_code }}</div>
                         </button>
