@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Pilihan Ikon Kolom Aksi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+  .rowline { display: grid; grid-template-columns: 210px 120px 96px 1fr; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid #eef1f5; font-size: 12px; }
+  .avatar { width: 30px; height: 30px; border-radius: 6px; color: #fff; font-size: 10.5px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; }
+  .btn-b { width: 32px; height: 32px; border: 1px solid #d7dbe2; background: #fff; border-radius: 7px; }
+  .opt-head { display: flex; align-items: baseline; gap: 8px; padding: 10px 12px 8px; }
+  .tag { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: #2c3e69; color: #fff; }
+  .note { font-size: 10.5px; color: #64748b; padding: 0 12px 10px; line-height: 1.5; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<header class="bg-navy text-white px-5 py-3">
+  <div class="text-sm font-bold">Pilihan Ikon Kolom AKSI — Grid Master</div>
+  <div class="text-[10px] opacity-70">Master Employee dipakai sebagai contoh &middot; aksi Master = Edit + Aktif/Nonaktif (griduistandard.md §5)</div>
+</header>
+
+<main class="p-4 max-w-[1240px] mx-auto space-y-3">
+
+  <!-- SEKARANG -->
+  <section class="card border-2 border-slate-300">
+    <div class="opt-head">
+      <span class="tag" style="background:#64748b">SEKARANG</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Karakter Unicode <span class="font-mono font-normal">&#9998;</span> dan <span class="font-mono font-normal">&#9211;</span></span>
+    </div>
+    <div class="note">Bukan ikon sungguhan, melainkan huruf khusus — tebalnya ikut font, bentuknya beda-beda antar Windows/HP, dan tidak sebaris dengan ikon Font Awesome yang sudah dipakai tombol Back.</div>
+    <div class="rowline">
+      <div class="flex items-center gap-2"><span class="avatar" style="background:#e0812c">AS</span><div><div class="font-semibold">ACHMAD SYARIF</div><div class="text-[10px] text-muted">TM-00027</div></div></div>
+      <span class="text-[10.5px] font-semibold text-[#16a34a]">Clean / No SP</span>
+      <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#e4f8ec] text-[#16733f] text-center">Bekerja</span>
+      <div class="flex items-center gap-1.5">
+        <span class="btn text-accent">&#9998;</span>
+        <span class="btn text-[#c0392b]">&#9211;</span>
+        <span class="text-[10.5px] text-muted ml-2">&larr; tipis, tidak seimbang</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid grid-cols-2 gap-3">
+
+    <!-- A -->
+    <section class="card border-2 border-emerald-400">
+      <div class="opt-head">
+        <span class="tag bg-emerald-600" style="background:#059669">PILIHAN A</span>
+        <span class="font-bold text-[12.5px] text-slate-700">Font Awesome polos (saran saya)</span>
+      </div>
+      <div class="note"><b>fa-pen-to-square</b> + <b>fa-power-off</b>. Bentuk sama persis dengan sekarang, cuma jadi ikon sungguhan: tebal seragam, sama di semua perangkat, sebaris dengan tombol Back. Perubahan paling kecil, tidak perlu melatih ulang pengguna.</div>
+      <div class="rowline" style="grid-template-columns: 1fr 96px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#e0812c">AS</span><div><div class="font-semibold">ACHMAD SYARIF</div><div class="text-[10px] text-muted">Aktif</div></div></div>
+        <div class="flex items-center gap-1.5">
+          <span class="btn text-accent" style="background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span>
+          <span class="btn text-[#c0392b]" style="background:#fdeceb"><i class="fa-solid fa-power-off"></i></span>
+        </div>
+      </div>
+      <div class="rowline" style="grid-template-columns: 1fr 96px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#8a94a6">AB</span><div><div class="font-semibold">ABI</div><div class="text-[10px] text-muted">Non-aktif</div></div></div>
+        <div class="flex items-center gap-1.5">
+          <span class="btn text-accent" style="background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span>
+          <span class="btn text-muted" style="background:#f1f3f7"><i class="fa-solid fa-power-off"></i></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="card border-2 border-slate-200">
+      <div class="opt-head">
+        <span class="tag">PILIHAN B</span>
+        <span class="font-bold text-[12.5px] text-slate-700">Pensil + sakelar geser</span>
+      </div>
+      <div class="note"><b>fa-pen-to-square</b> + komponen sakelar yang sudah ada (<span class="font-mono">x-grid.toggle-switch</span>). Status aktif langsung terbaca dari posisi sakelar tanpa melihat kolom lain. Kelemahannya: pengguna cenderung mengira sakelar berubah seketika, padahal tetap minta konfirmasi dulu.</div>
+      <div class="rowline" style="grid-template-columns: 1fr 96px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#e0812c">AS</span><div><div class="font-semibold">ACHMAD SYARIF</div><div class="text-[10px] text-muted">Aktif</div></div></div>
+        <div class="flex items-center gap-2">
+          <span class="btn text-accent" style="background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span>
+          <span style="position:relative;display:inline-flex;align-items:center;width:36px;height:20px;border-radius:999px;background:#16a34a"><span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:999px;transform:translateX(18px)"></span></span>
+        </div>
+      </div>
+      <div class="rowline" style="grid-template-columns: 1fr 96px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#8a94a6">AB</span><div><div class="font-semibold">ABI</div><div class="text-[10px] text-muted">Non-aktif</div></div></div>
+        <div class="flex items-center gap-2">
+          <span class="btn text-accent" style="background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span>
+          <span style="position:relative;display:inline-flex;align-items:center;width:36px;height:20px;border-radius:999px;background:#d1d5db"><span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:999px;transform:translateX(4px)"></span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="card border-2 border-slate-200">
+      <div class="opt-head">
+        <span class="tag">PILIHAN C</span>
+        <span class="font-bold text-[12.5px] text-slate-700">Berbingkai kotak</span>
+      </div>
+      <div class="note"><b>fa-pen</b> + <b>fa-ban</b> / <b>fa-circle-check</b> dalam kotak bergaris. Lebih jelas terlihat sebagai tombol yang bisa diklik, dan ikon larangan lebih tegas maknanya daripada tombol daya. Memakan lebar sedikit lebih banyak; saat ini bingkai hanya dipakai 2 layar percontohan.</div>
+      <div class="rowline" style="grid-template-columns: 1fr 110px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#e0812c">AS</span><div><div class="font-semibold">ACHMAD SYARIF</div><div class="text-[10px] text-muted">Aktif</div></div></div>
+        <div class="flex items-center gap-1.5">
+          <span class="btn btn-b text-accent"><i class="fa-solid fa-pen"></i></span>
+          <span class="btn btn-b text-[#c0392b]" style="border-color:#f5c6c6"><i class="fa-solid fa-ban"></i></span>
+        </div>
+      </div>
+      <div class="rowline" style="grid-template-columns: 1fr 110px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#8a94a6">AB</span><div><div class="font-semibold">ABI</div><div class="text-[10px] text-muted">Non-aktif</div></div></div>
+        <div class="flex items-center gap-1.5">
+          <span class="btn btn-b text-accent"><i class="fa-solid fa-pen"></i></span>
+          <span class="btn btn-b text-[#16a34a]" style="border-color:#c8ecd6"><i class="fa-solid fa-circle-check"></i></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- D -->
+    <section class="card border-2 border-slate-200">
+      <div class="opt-head">
+        <span class="tag">PILIHAN D</span>
+        <span class="font-bold text-[12.5px] text-slate-700">Khusus data karyawan</span>
+      </div>
+      <div class="note"><b>fa-user-pen</b> + <b>fa-user-slash</b> / <b>fa-user-check</b>. Maknanya paling tepat: yang dinonaktifkan itu orangnya, bukan mesin. Kelemahannya, ikon ini hanya cocok untuk grid karyawan — grid lain tetap butuh ikon sendiri, jadi keseragaman antar-grid berkurang.</div>
+      <div class="rowline" style="grid-template-columns: 1fr 96px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#e0812c">AS</span><div><div class="font-semibold">ACHMAD SYARIF</div><div class="text-[10px] text-muted">Aktif</div></div></div>
+        <div class="flex items-center gap-1.5">
+          <span class="btn text-accent" style="background:#eef3fb"><i class="fa-solid fa-user-pen"></i></span>
+          <span class="btn text-[#c0392b]" style="background:#fdeceb"><i class="fa-solid fa-user-slash"></i></span>
+        </div>
+      </div>
+      <div class="rowline" style="grid-template-columns: 1fr 96px">
+        <div class="flex items-center gap-2"><span class="avatar" style="background:#8a94a6">AB</span><div><div class="font-semibold">ABI</div><div class="text-[10px] text-muted">Non-aktif</div></div></div>
+        <div class="flex items-center gap-1.5">
+          <span class="btn text-accent" style="background:#eef3fb"><i class="fa-solid fa-user-pen"></i></span>
+          <span class="btn text-[#16a34a]" style="background:#e9f9ef"><i class="fa-solid fa-user-check"></i></span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- E -->
+  <section class="card border-2 border-slate-200">
+    <div class="opt-head">
+      <span class="tag">PILIHAN E</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Satu tombol titik tiga (menu)</span>
+    </div>
+    <div class="note"><b>fa-ellipsis-vertical</b> membuka menu berisi semua aksi. Kolom Aksi jadi sempit dan tidak perlu diubah lagi kalau nanti aksinya bertambah (mis. Lihat Riwayat, Cetak Kartu). Kelemahannya butuh dua kali klik untuk aksi yang paling sering dipakai, dan komponennya sudah ada (<span class="font-mono">x-grid.action-dropdown</span>) tapi baru dipakai sebagian kecil layar.</div>
+    <div class="rowline" style="grid-template-columns: 210px 1fr 60px">
+      <div class="flex items-center gap-2"><span class="avatar" style="background:#e0812c">AS</span><div><div class="font-semibold">ACHMAD SYARIF</div><div class="text-[10px] text-muted">TM-00027</div></div></div>
+      <div class="flex items-center gap-2">
+        <div style="width:150px;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 16px rgba(20,26,45,.10);background:#fff;overflow:hidden">
+          <div style="padding:6px 10px;font-size:11px" class="text-slate-700"><i class="fa-solid fa-pen-to-square text-accent" style="width:16px"></i> Edit</div>
+          <div style="padding:6px 10px;font-size:11px;border-top:1px solid #f1f5f9" class="text-slate-700"><i class="fa-solid fa-power-off text-[#c0392b]" style="width:16px"></i> Nonaktifkan</div>
+        </div>
+        <span class="text-[10.5px] text-muted">&larr; isi menu setelah diklik</span>
+      </div>
+      <span class="btn text-slate-500" style="background:#f1f3f7"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+    </div>
+  </section>
+
+  <section class="card px-4 py-3 flex items-start gap-3">
+    <div class="shrink-0 w-9 h-9 rounded-full bg-navy text-white flex items-center justify-center"><i class="fa-solid fa-lightbulb"></i></div>
+    <div class="text-[11.5px] leading-relaxed text-slate-700">
+      <b class="text-navy">Saran saya: A.</b> Bentuknya tidak berubah dari yang pengguna sudah kenal, tapi ikonnya jadi sungguhan dan seragam dengan tombol Back yang sudah pakai Font Awesome. <b>B</b> layak dipilih kalau Bapak ingin status aktif langsung terbaca di kolom Aksi. <b>E</b> disiapkan untuk nanti, kalau aksi per baris bertambah banyak. Warna ikon tetap mengikuti tema seperti field input.
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
