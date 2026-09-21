@@ -1727,7 +1727,7 @@ new #[Title('Roster Shift Mingguan — TELASIH MAKMUR ERP')] class extends Compo
                             :options="$this->scheduleDepartments->pluck('department_name', 'department_id')" />
                     </div>
 
-                    <x-form.input type="search" wire:model.live.debounce.300ms="poolSearch"
+                    <x-form.input :case-toggle="false" type="search" wire:model.live.debounce.300ms="poolSearch"
                         placeholder="Cari nama atau kode pegawai…" />
 
                     <div class="text-[11px] leading-snug rounded-md px-2 py-1.5 bg-[var(--rs-accent-soft)] border border-[var(--rs-border)] text-[var(--rs-ink-2)]">

@@ -30,4 +30,5 @@ Jangan baca `docs/BACKLOG.md`, `docs/LOG_JOB_DONE.md`, atau standar UI lengkap k
 
 ## Komponen baru
 
+**Input teks string — LOCKED (user 2026-09-21, jangan tunggu diperintah ulang):** field teks pakai `x-form.input` (type=text) / `x-form.textarea` yang sudah membawa badge huruf `aa`→`Aa`→`AA` otomatis (bantu pengetikan lewat HP/tablet). `:case-toggle="false"` hanya utk kotak CARI. Nilai yang sudah ada di master WAJIB lookup (`x-form.searchable-select`/`select`/picker), bukan teks bebas. Warna field lewat token `--color-field-*`/`bg-accent-soft`, bukan hex literal, supaya ikut corak `sys_theme`. Detail: `docs/FORM_UI_STANDARD.md` §1b.
 Buat komponen baru HANYA bila pola dipakai ≥2 layar dan tidak ada di manifest. Setelah dibuat: tambahkan barisnya ke `_manifest.yaml` dan tampilkan di layar DevLib (`setup/component-library.blade.php`). Pola bersama (label/hint/error, tone warna) diikuti, bukan disalin dengan variasi baru.

@@ -128,7 +128,7 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-3 flex flex-wrap gap-3 items-end">
             <div class="max-w-[280px] flex-1">
-                <x-form.input label="Cari NIK / Nama" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
+                <x-form.input :case-toggle="false" label="Cari NIK / Nama" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
             </div>
             <x-form.select label="Metode Gaji" wire:model.live="filterMethod" name="filterMethod"
                 :options="['BANK' => 'Bank Transfer', 'CASH' => 'Cash (Tunai)']" placeholder="Semua Metode" />

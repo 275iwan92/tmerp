@@ -1618,46 +1618,65 @@ DIDIN, SHOFIA, TEGAR), tgl lahir SHOFIA AZKIA (Excel 2026-04-10), 8 nama panggil
 
 ---
 
-## 21. INPUT TEKS BELUM SERAGAM `x-form.input` (audit + instruksi user 2026-09-21)
+## 21. INPUT TEKS & KOMPONEN FORM — SISA ROLLOUT (instruksi user 2026-09-21)
 
-**Keputusan user 2026-09-21 (opsi 1 dari 2 yang ditawarkan):** standar input
-teks = **`x-form.input`**, BUKAN `x-form.case-toggle-input` (auto-height +
-tombol aa/Aa/AA) yang dipajang di Component Library sbg contoh "Input Teks".
-Komponen case-toggle itu **sengaja tidak di-rollout**: tombol ganti huruf
-berbahaya utk field kode/email/No.HP/NIK/no. dokumen (huruf bisa berubah tanpa
-sengaja). Kalau nanti dipakai, **hanya** utk field nama/deskripsi.
+**Aturan tetapnya sudah dikunci** di `CLAUDE.md` §3 + `FORM_UI_STANDARD.md` §1b
+(+ skill `tmerp-screen` & `tmerp-ui-mockup`): input teks string = `x-form.input`/
+`x-form.textarea` dgn badge huruf aa/Aa/AA, lookup dulu kalau nilainya ada di
+master, warna lewat token tema. **KOREKSI:** catatan di section ini sebelumnya
+(pagi 2026-09-21) menulis case-toggle "sengaja tidak di-rollout" — itu keputusan
+sementara yang DIBALIK user di hari yang sama: alasannya user banyak input lewat
+HP/tablet, menekan Shift tiap kata merepotkan. Yang berlaku = versi ini.
 
-Audit 2026-09-21: 157 `<input>` teks mentah di 89 file vs 475 yang sudah pakai
-komponen. **33 sudah dikonversi** (lihat `LOG_JOB_DONE.md` 2026-09-21). Sisanya:
+### 21.1 Lookup — field teks bebas yang nilainya sudah ada di master
+Audit 2026-09-21 atas seluruh `x-form.input`: mayoritas field ber-nama-master
+ternyata SAH teks bebas (itu nama/kode master yang sedang dibuat di layar itu).
+Yang benar-benar perlu diubah jadi lookup tinggal sedikit:
+- `production/rule-library` → `applies_to_process` (teks bebas, harusnya pilih
+  dari master proses `prod_process`; sebelahnya `applies_to_machine_id` sudah
+  dropdown, jadi tinggal samakan polanya).
+- `production/process-rate` → `part_code` (teks bebas "mis. BODY"; kandidat
+  sumber: `part_code` yang sudah dipakai `prod_*`/`iqp_part` — perlu dicek
+  dulu masternya yang mana, JANGAN asumsi).
+- `production/bop-rule` → `material_pattern` + `material_role` (teks bebas
+  + di-`strtoupper` manual saat simpan; kandidat: master material/role).
+- `hrm/payroll-employee-bank` → `bankName` (teks bebas; belum ada master bank
+  di tm2mst — butuh keputusan: bikin master bank kecil atau `ref_` lookup).
+- Sisanya (`customer_name`, `product_code`, `uom_name`, dst) **BUKAN** item
+  terbuka: itu form master-nya sendiri.
 
-- **Inquiry Form / Revise / Hub — dialek CSS lama `.f`, `.srch`, `.filters`**
-  (~14 input). Tampilan SUDAH sama dgn `x-form.input` mode `:legacy` karena
-  didandani CSS `app.css` yang sama, jadi ini kerapian tag, bukan cacat visual.
-  Hati-hati: `x-form.input :legacy` mengeluarkan wrapper `<div class="f">`
-  sendiri — kalau input aslinya sudah berada DI DALAM `<div class="f ac-wrap">`
-  (mis. autocomplete Customer di `inquiry/form.blade.php`) akan jadi `.f` bersarang
-  dan merusak selector CSS. Perlu dikerjakan manual per field, bukan skrip massal.
+### 21.2 Layar yang inputnya masih HTML mentah (belum lewat komponen)
+- **Inquiry Form / Revise / Hub** — dialek CSS lama `.f`/`.srch`/`.filters`,
+  ~14 input. Tampilan sudah sama (CSS global yang mendandani) TAPI tidak
+  mendapat badge huruf, jadi sekarang jadi item nyata, bukan sekadar kerapian.
+  Hati-hati: `x-form.input :legacy` mengeluarkan wrapper `.f` sendiri — kalau
+  input aslinya sudah di dalam `<div class="f ac-wrap">` (autocomplete
+  Customer) akan jadi `.f` bersarang. Manual per field, bukan skrip massal.
 - **Input di dalam sel tabel** (~25, mis. `mps-spreadsheet`, grid editable) —
-  komponen berlabel tidak cocok utk sel. Kalau mau seragam, butuh komponen
-  BARU khusus sel (`x-form.cell-input`?), bukan dipaksa pakai `x-form.input`.
-  Belum diputuskan, jangan bangun tanpa persetujuan.
-- **Kotak cari toolbar grid** (~55 layar, class `w-64 shrink-0 ...`) — SENGAJA
-  dibiarkan mentah, punya standar sendiri (`griduistandard.md` §6). Satu yang
-  sempat ikut terkonversi di Master Produk sudah dikembalikan. **Kalau nanti
-  mau diseragamkan, harus sekaligus 55 layar + update `griduistandard.md`**,
-  jangan setengah-setengah.
-- **Sengaja beda / tidak aktif (BUKAN item terbuka, dicatat spy tidak disangka
-  lupa)**: Login & Register (`auth/*`), Portal Karier (`careers/*`), kotak chat
-  & AI di `livewire/shell/user-panels.blade.php`, field COA kuning "MENYUSUL"
-  di Master Customer, serta layar legacy `production/old_prodev*` dan
-  `inquiry/imposition*`.
-- **Efek samping yg perlu dilihat saat QC**: Master Produk & Stock Return
-  dulu memakai teks 13px, sekarang ikut ukuran standar 12px (`text-xs`).
-  Kalau user merasa kekecilan, keputusannya bukan balikkan 1 layar — tapi
-  ubah ukuran di komponen supaya semua layar ikut.
+  komponen berlabel tidak cocok. Perlu komponen sel tersendiri
+  (`x-form.cell-input`) yang membawa badge huruf versi ringkas. Belum
+  diputuskan bentuknya — jangan bangun tanpa persetujuan.
+- **Kotak cari toolbar grid** (~55 layar) — sengaja tetap mentah (standar grid
+  sendiri, `griduistandard.md` §6) dan memang TIDAK perlu badge huruf.
+- **Sengaja beda / tidak aktif**: Login & Register, Portal Karier, kotak chat
+  & AI (`shell/user-panels`), field COA "MENYUSUL" di Master Customer, layar
+  legacy `production/old_prodev*` dan `inquiry/imposition*`.
 
----
+### 21.3 Warna: sisa hex literal di luar komponen form
+Token `--color-field-*` + `--color-accent-soft` sudah dipakai SEMUA komponen
+`resources/views/components/form/*`. Yang belum: **hex literal di file layar**
+(ratusan titik, mis. `border-[#c7cfda]` di modal/kartu/tabel per layar) dan
+komponen non-form (`grid/`, `print/`, `report/`). Efeknya: corak tema baru
+kelihatan di field, belum di seluruh kerangka layar. Ini lanjutan langsung dari
+`themestandard.md` §6 ("halaman iframe belum ikut sistem tema") — kerjakan
+per-modul, bukan sekali sapu, dan verifikasi tiap layar setelahnya.
 
+### 21.4 Mode gelap untuk layar transaksi
+Token field saat ini dihitung untuk latar TERANG (dicampur ke abu-abu terang).
+Di tema Dark/Hitam, sidebar & shell ikut gelap tapi isi layar transaksi masih
+putih — field akan tetap terbaca, tapi belum benar-benar "dark mode". Ini
+scope terpisah yang sudah lama tercatat (`themestandard.md` §6), jangan
+dianggap regresi dari pekerjaan 2026-09-21.
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,

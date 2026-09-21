@@ -21,19 +21,19 @@
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <div class="flex relative">
         <button type="button" @click="countryOpen = !countryOpen"
-            class="flex items-center gap-1 px-2 border border-[#c7cfda] border-r-0 rounded-l bg-[#f4f6fa] text-xs font-semibold text-[#374151] cursor-pointer whitespace-nowrap">
+            class="flex items-center gap-1 px-2 border border-field-border border-r-0 rounded-l bg-field-soft text-xs font-semibold text-[#374151] cursor-pointer whitespace-nowrap">
             <span x-text="country.flag"></span><span x-text="country.dial"></span>
         </button>
         <input type="text" inputmode="numeric" x-bind:value="display" @input="onInput($event)" placeholder="812-3456-7890"
-            class="w-full px-2 py-1.5 border border-[#c7cfda] rounded-r text-xs focus:border-accent">
+            class="w-full px-2 py-1.5 border border-field-border rounded-r text-xs focus:border-field-focus">
         <div x-show="countryOpen" x-cloak x-transition.origin.top
-            class="absolute z-30 top-full left-0 mt-1 w-56 bg-white border border-[#d7dbe2] rounded-lg shadow-lg overflow-hidden text-xs">
-            <div class="p-1.5 bg-[#f4f6fa] border-b border-[#e5e7eb]">
-                <input type="text" x-model="countryQuery" placeholder="Cari negara..." class="w-full px-2 py-1 border border-[#c7cfda] rounded text-[11px]">
+            class="absolute z-30 top-full left-0 mt-1 w-56 bg-white border border-field-border rounded-lg shadow-lg overflow-hidden text-xs">
+            <div class="p-1.5 bg-field-soft border-b border-field-border">
+                <input type="text" x-model="countryQuery" placeholder="Cari negara..." class="w-full px-2 py-1 border border-field-border rounded text-[11px]">
             </div>
             <div class="max-h-[140px] overflow-y-auto">
                 <template x-for="c in filteredCountries" :key="c.dial + c.name">
-                    <div @click="pickCountry(c)" class="flex items-center justify-between px-2.5 py-1.5 hover:bg-[#f4f6fa] cursor-pointer text-[#374151]">
+                    <div @click="pickCountry(c)" class="flex items-center justify-between px-2.5 py-1.5 hover:bg-field-soft cursor-pointer text-[#374151]">
                         <span x-text="c.flag + ' ' + c.name"></span><strong x-text="c.dial"></strong>
                     </div>
                 </template>

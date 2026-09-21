@@ -1014,7 +1014,7 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
                                             <button type="button" wire:click="clearHotCustomer" class="text-[11px] text-muted underline cursor-pointer shrink-0">Ganti</button>
                                         </div>
                                     @else
-                                        <x-form.input wire:model.live.debounce.400ms="hotCustQuery" autocomplete="off" placeholder="Ketik nama/kode customer…" />
+                                        <x-form.input :case-toggle="false" wire:model.live.debounce.400ms="hotCustQuery" autocomplete="off" placeholder="Ketik nama/kode customer…" />
                                         @if ($hotCustQuery && mb_strlen($hotCustQuery) >= 2)
                                             <div class="absolute left-0 right-0 mt-1 bg-white border border-[#e5e7eb] rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
                                                 @forelse ($this->hotCustomerResults as $c)

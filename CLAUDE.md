@@ -200,6 +200,20 @@ transaksi = `iqp_costing`, ikut inquiry).
   (kolom legacy terpisah, isinya selalu sama dgn is_active lama) **tidak**
   ikut berubah. Riwayat & catatan per-fase: `docs/fieldrename_state.yaml`.
 
+### Input teks & komponen form — LOCKED (keputusan user 2026-09-21)
+**Berlaku terus-menerus, termasuk saat mockup berubah — jangan menunggu
+diperintah ulang.** Detail + alasan: `docs/FORM_UI_STANDARD.md` §1b.
+- Setiap input teks string pakai `x-form.input` (type=text) / `x-form.textarea`
+  yang SUDAH membawa badge huruf **aa → Aa → AA** (bantu user yang mengetik di
+  HP/tablet). Badge mati sendiri utk readonly/disabled/type non-teks.
+  `:case-toggle="false"` hanya utk kotak CARI atau alasan khusus yang ditulis.
+- **Lookup dulu**: nilai yang sudah ada di master WAJIB dipilih lewat
+  `x-form.searchable-select`/`select`/picker, bukan diketik bebas.
+- Warna field lewat token `--color-field-*`/`bg-accent-soft` (app.css `@theme`,
+  dicampur dari `--color-accent`), JANGAN hex literal — supaya semua field ikut
+  corak tema `sys_theme` yang dipilih user.
+- Sama berlakunya utk SEMUA komponen `x-form.*` lain di `_manifest.yaml`: ada
+  komponennya = pakai komponennya, HTML mentah dianggap pelanggaran.
 ### Tombol aksi (UI) — LOCKED (keputusan user 2026-09-10)
 Label tombol aksi umum (Back/Save/Cancel/Close, dst) **WAJIB satu kata yang
 sama persis di semua layar** — standardisasi memudahkan pengguna, jangan bikin

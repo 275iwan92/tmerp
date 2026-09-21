@@ -15,7 +15,7 @@
     <div class="relative flex items-center">
         <input type="text" inputmode="decimal" value="{{ $value }}" placeholder="0.{{ str_repeat('0', (int) $decimals) }}"
             @blur="$event.target.value = $event.target.value.trim() === '' ? '' : parseFloat($event.target.value.replace(',', '.') || 0).toFixed({{ (int) $decimals }})"
-            {{ $attributes->merge(['class' => 'w-full px-2 py-1.5 border border-[#c7cfda] rounded text-xs focus:border-accent'.($unit ? ' pr-8' : '')]) }}>
+            {{ $attributes->merge(['class' => 'w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus'.($unit ? ' pr-8' : '')]) }}>
         @if ($unit)<span class="absolute right-2.5 text-[11px] font-semibold text-muted pointer-events-none">{{ $unit }}</span>@endif
     </div>
     @if ($hint)<div class="text-[10.5px] text-muted">{{ $hint }}</div>@endif

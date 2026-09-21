@@ -412,7 +412,7 @@ new #[Title('Purchase Return Entry — TELASIH MAKMUR ERP')] class extends Compo
                 <div class="bg-white border border-[#d7dbe2] rounded-md p-4 mb-4">
                     <h3 class="text-xs text-navy uppercase font-bold mb-3">{{ Translator::t('proc_prt_entry_add_from_stock', 'Tambah Item dari Stok') }}</h3>
                     <div class="relative" style="max-width:380px">
-                        <x-form.input wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_prt_entry_item_search_placeholder', 'Cari kode / nama item…') }}" />
+                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_prt_entry_item_search_placeholder', 'Cari kode / nama item…') }}" />
                         @if ($this->itemResults->isNotEmpty())
                             <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                 @foreach ($this->itemResults as $m)

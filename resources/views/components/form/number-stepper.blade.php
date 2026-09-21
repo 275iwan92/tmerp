@@ -12,12 +12,12 @@
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <div class="relative flex items-center">
         <input type="text" inputmode="numeric" x-bind:value="value" @input="onType($event.target.value)"
-            class="w-full px-2 py-1.5 pr-6 border border-[#c7cfda] rounded text-xs focus:border-accent">
+            class="w-full px-2 py-1.5 pr-6 border border-field-border rounded text-xs focus:border-field-focus">
         <div class="absolute right-1 flex flex-col h-[calc(100%-6px)] w-4">
             <button type="button" @click="step(1)" tabindex="-1"
-                class="flex-1 bg-[#f4f6fa] border border-[#c7cfda] text-[8px] text-[#374151] cursor-pointer leading-none">▲</button>
+                class="flex-1 bg-field-soft border border-field-border text-[8px] text-[#374151] cursor-pointer leading-none">▲</button>
             <button type="button" @click="step(-1)" tabindex="-1"
-                class="flex-1 bg-[#f4f6fa] border border-[#c7cfda] border-t-0 text-[8px] text-[#374151] cursor-pointer leading-none">▼</button>
+                class="flex-1 bg-field-soft border border-field-border border-t-0 text-[8px] text-[#374151] cursor-pointer leading-none">▼</button>
         </div>
     </div>
 </div>

@@ -44,7 +44,7 @@
     $errorMsg = $error ?? ($name ? $errors->first($name) : null);
     $wrapperClass = $isLegacy ? trim($legacyClass.' '.($col2 ? 'col2' : '')) : 'flex flex-col gap-1';
     $labelClass = $isLegacy ? '' : 'text-[10px] text-muted uppercase font-semibold block mb-1';
-    $selectClass = $isLegacy ? '' : 'w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f4f6fa] disabled:text-muted disabled:cursor-not-allowed';
+    $selectClass = $isLegacy ? '' : 'w-full px-2 py-1.5 border border-field-border rounded text-xs disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed';
 @endphp
 <div class="{{ $wrapperClass }}">
     @if ($label)

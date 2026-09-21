@@ -412,7 +412,7 @@ new #[Title('Stock In — TELASIH MAKMUR ERP')] class extends Component
                     <div class="text-xs font-bold text-navy uppercase tracking-wide mt-1">{{ Translator::t('inv_section_lines', 'Baris Item') }}</div>
                     @if (! $readOnly)
                         <div class="relative" style="max-width:380px">
-                            <x-form.input wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('inv_item_search_placeholder', 'Cari kode / nama item utk ditambah…') }}" />
+                            <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('inv_item_search_placeholder', 'Cari kode / nama item utk ditambah…') }}" />
                             @if ($this->itemResults->isNotEmpty())
                                 <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                     @foreach ($this->itemResults as $it)

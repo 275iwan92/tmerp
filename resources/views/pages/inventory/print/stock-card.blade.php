@@ -185,7 +185,7 @@ new #[Title('Kartu Stok — TELASIH MAKMUR ERP')] class extends Component
             <div class="flex flex-wrap items-end gap-3">
                 <div class="flex flex-col gap-1 relative" style="min-width:260px">
                     <label class="text-[10px] text-muted uppercase font-semibold">Item (wajib)</label>
-                    <x-form.input wire:model.live.debounce.300ms="materialSearch" placeholder="🔍 Cari kode / nama item..." />
+                    <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="materialSearch" placeholder="🔍 Cari kode / nama item..." />
                     @if ($this->materialResults->isNotEmpty())
                         <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                             @foreach ($this->materialResults as $m)

@@ -344,7 +344,7 @@ new #[Title('Purchase Quotation Entry — TELASIH MAKMUR ERP')] class extends Co
                 <h3 class="text-xs text-navy uppercase font-bold">{{ Translator::t('proc_pq_entry_offer_detail', 'Rincian Penawaran') }}</h3>
                 @if (! $readOnly)
                     <div class="relative ml-2" style="max-width:320px">
-                        <x-form.input wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_pq_entry_item_search_placeholder', 'Cari item…') }}" />
+                        <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="itemSearch" placeholder="🔍 {{ Translator::t('proc_pq_entry_item_search_placeholder', 'Cari item…') }}" />
                         @if ($this->itemResults->isNotEmpty())
                             <div class="absolute top-full left-0 right-0 mt-1 bg-white border border-[#d7dbe2] rounded shadow-lg z-10 max-h-56 overflow-y-auto">
                                 @foreach ($this->itemResults as $m)

@@ -14,19 +14,19 @@
     @endif
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <button type="button" @click="toggle()"
-        class="w-full px-2 py-1.5 border border-[#c7cfda] rounded text-xs bg-white flex items-center justify-between cursor-pointer text-left">
+        class="w-full px-2 py-1.5 border border-field-border rounded text-xs bg-white flex items-center justify-between cursor-pointer text-left">
         <span x-text="selectedLabel || @js($placeholder)" :class="selectedLabel ? 'text-[#374151]' : 'text-muted'"></span>
         <span class="text-muted">▼</span>
     </button>
     <div x-show="open" x-cloak x-transition.origin.top
-        class="absolute z-30 top-full left-0 mt-1 w-full bg-white border border-[#d7dbe2] rounded-lg shadow-lg overflow-hidden text-xs">
-        <div class="p-1.5 bg-[#f4f6fa] border-b border-[#e5e7eb]">
+        class="absolute z-30 top-full left-0 mt-1 w-full bg-white border border-field-border rounded-lg shadow-lg overflow-hidden text-xs">
+        <div class="p-1.5 bg-field-soft border-b border-field-border">
             <input type="text" x-ref="search" x-model="query" placeholder="{{ \App\Support\Localization\Translator::t('shared_searchable_select_search_placeholder', 'Ketik utk cari...') }}"
-                class="w-full px-2 py-1 border border-[#c7cfda] rounded text-[11px]">
+                class="w-full px-2 py-1 border border-field-border rounded text-[11px]">
         </div>
         <div class="max-h-[160px] overflow-y-auto">
             <template x-for="opt in filtered" :key="opt">
-                <div @click="pick(opt)" x-text="opt" class="px-2.5 py-1.5 hover:bg-[#f4f6fa] cursor-pointer text-[#374151]"></div>
+                <div @click="pick(opt)" x-text="opt" class="px-2.5 py-1.5 hover:bg-field-soft cursor-pointer text-[#374151]"></div>
             </template>
             <div x-show="filtered.length === 0" class="px-2.5 py-3 text-center text-muted">{{ \App\Support\Localization\Translator::t('shared_searchable_select_no_results', 'Tidak ada hasil.') }}</div>
         </div>

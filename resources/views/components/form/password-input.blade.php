@@ -13,7 +13,7 @@
     @endif
     <div class="relative flex items-center">
         <input :type="show ? 'text' : 'password'"
-            {{ $attributes->merge(['class' => 'w-full px-2 py-1.5 pr-8 border border-[#c7cfda] rounded text-xs focus:border-accent']) }}>
+            {{ $attributes->merge(['class' => 'w-full px-2 py-1.5 pr-8 border border-field-border rounded text-xs focus:border-field-focus']) }}>
         <button type="button" @click="show = !show" tabindex="-1"
             class="absolute right-2 text-xs text-muted cursor-pointer select-none" x-text="show ? '🙈' : '👁️'"></button>
     </div>

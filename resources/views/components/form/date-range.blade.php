@@ -15,5 +15,5 @@
         <x-form.date-picker :name="$startName" mode="date" :label="$startLabel" />
         <x-form.date-picker :name="$endName" mode="date" :label="$endLabel" />
     </div>
-    <span class="text-[10.5px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] rounded px-1.5 py-0.5 w-fit" x-text="durationLabel"></span>
+    <span class="text-[10.5px] font-semibold text-accent bg-accent-soft border border-field-border rounded px-1.5 py-0.5 w-fit" x-text="durationLabel"></span>
 </div>

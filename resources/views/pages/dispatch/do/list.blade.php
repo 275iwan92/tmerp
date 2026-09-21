@@ -285,7 +285,7 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                     <h3 class="text-sm font-bold text-navy">Pilih Customer</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <x-form.input wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="Ketik min. 2 huruf nama/kode customer..." class="mb-2" />
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="Ketik min. 2 huruf nama/kode customer..." class="mb-2" />
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->customerResults as $c)
                         <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">

@@ -14,7 +14,7 @@
         <template x-for="(box, i) in boxes" :key="i">
             <input type="text" inputmode="numeric" maxlength="1" x-bind:value="box"
                 @input="onInput(i, $event)" @keydown="onKeydown(i, $event)"
-                class="w-7 h-7 text-center text-sm font-bold border border-[#c7cfda] rounded focus:border-accent">
+                class="w-7 h-7 text-center text-sm font-bold border border-field-border rounded focus:border-field-focus">
         </template>
     </div>
 </div>

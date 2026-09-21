@@ -12,7 +12,7 @@
     @endif
     <div @dragover.prevent="dragOver = true" @dragleave.prevent="dragOver = false" @drop.prevent="onDrop($event)"
         @click="$refs.input.click()"
-        :class="dragOver ? 'border-accent bg-[#eff6ff]' : 'border-[#c7cfda] bg-[#fafafa]'"
+        :class="dragOver ? 'border-accent bg-accent-soft' : 'border-field-border bg-[#fafafa]'"
         class="border-2 border-dashed rounded-md px-3 py-2.5 text-center cursor-pointer transition-colors">
         <input type="file" x-ref="input" @change="onPicked($event)" @if ($accept) accept="{{ $accept }}" @endif
             {{ $attributes->merge(['class' => 'hidden']) }}>

@@ -247,7 +247,7 @@ new #[Title('Laporan Master Stok — TELASIH MAKMUR ERP')] class extends Compone
                     <label class="text-[10px] text-muted uppercase font-semibold">Cari Item</label>
                     <div class="flex items-center gap-1.5">
                         <span class="text-sm">🔍</span>
-                        <div class="flex-1"><x-form.input wire:model.live.debounce.300ms="quickSearch" placeholder="Kode / nama item..." /></div>
+                        <div class="flex-1"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="quickSearch" placeholder="Kode / nama item..." /></div>
                     </div>
                 </div>
                 <span class="flex-1"></span>

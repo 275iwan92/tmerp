@@ -12,7 +12,7 @@
     @endif
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <input type="text" inputmode="numeric" x-bind:value="display" @input="onInput($event)"
-        class="w-full px-2 py-1.5 border border-[#c7cfda] rounded text-xs focus:border-accent">
+        class="w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus">
     @if ($hint)<div class="text-[10.5px] text-muted">{{ $hint }}</div>@endif
     @if ($errorMsg)<span class="text-[10.5px] text-red-600">{{ $errorMsg }}</span>@endif
 </div>

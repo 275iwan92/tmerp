@@ -20,20 +20,20 @@
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <div class="flex relative">
         <button type="button" @click="currencyOpen = !currencyOpen"
-            class="flex items-center gap-1 px-2 border border-[#c7cfda] border-r-0 rounded-l bg-[#f4f6fa] text-xs font-semibold text-[#374151] cursor-pointer whitespace-nowrap">
+            class="flex items-center gap-1 px-2 border border-field-border border-r-0 rounded-l bg-field-soft text-xs font-semibold text-[#374151] cursor-pointer whitespace-nowrap">
             <span x-text="currency.symbol"></span><span x-text="currency.code"></span>
         </button>
         <input type="text" inputmode="numeric" x-bind:value="display" @input="onInput($event)"
-            class="w-full px-2 py-1.5 border border-[#c7cfda] rounded-r text-xs focus:border-accent">
+            class="w-full px-2 py-1.5 border border-field-border rounded-r text-xs focus:border-field-focus">
         <div x-show="currencyOpen" x-cloak x-transition.origin.top
-            class="absolute z-30 top-full left-0 mt-1 w-40 bg-white border border-[#d7dbe2] rounded-lg shadow-lg overflow-hidden text-xs">
+            class="absolute z-30 top-full left-0 mt-1 w-40 bg-white border border-field-border rounded-lg shadow-lg overflow-hidden text-xs">
             <template x-for="c in currencies" :key="c.code">
-                <div @click="pickCurrency(c)" class="flex items-center justify-between px-2.5 py-1.5 hover:bg-[#f4f6fa] cursor-pointer text-[#374151]">
+                <div @click="pickCurrency(c)" class="flex items-center justify-between px-2.5 py-1.5 hover:bg-field-soft cursor-pointer text-[#374151]">
                     <span x-text="c.code"></span><strong x-text="c.symbol"></strong>
                 </div>
             </template>
         </div>
     </div>
-    <div class="text-[10.5px] font-semibold text-accent bg-[#eff6ff] border border-[#bfdbfe] rounded px-1.5 py-0.5" x-text="'Terbaca: ' + readableValue"></div>
+    <div class="text-[10.5px] font-semibold text-accent bg-accent-soft border border-field-border rounded px-1.5 py-0.5" x-text="'Terbaca: ' + readableValue"></div>
     @if ($hint)<div class="text-[10.5px] text-muted">{{ $hint }}</div>@endif
 </div>

@@ -173,7 +173,7 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
             <x-form.date-picker label="{{ Translator::t('hrm_att_field_date_from', 'Dari Tanggal') }}" wire:model.live="dateFrom" name="dateFrom" />
             <x-form.date-picker label="{{ Translator::t('hrm_att_field_date_to', 'Sampai Tanggal') }}" wire:model.live="dateTo" name="dateTo" />
             <div class="flex-1 min-w-[180px]">
-                <x-form.input label="{{ Translator::t('hrm_att_field_search', 'Cari Nama/Kode Pegawai') }}" wire:model.live.debounce.400ms="search" name="search" placeholder="{{ Translator::t('hrm_att_search_placeholder', 'Ketik nama atau kode...') }}" />
+                <x-form.input :case-toggle="false" label="{{ Translator::t('hrm_att_field_search', 'Cari Nama/Kode Pegawai') }}" wire:model.live.debounce.400ms="search" name="search" placeholder="{{ Translator::t('hrm_att_search_placeholder', 'Ketik nama atau kode...') }}" />
             </div>
             <button type="button" wire:click="recalculate" wire:loading.attr="disabled"
                 class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer disabled:opacity-50">

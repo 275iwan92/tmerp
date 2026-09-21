@@ -549,7 +549,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <x-grid.toolbar>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <span class="text-sm">🔍</span>
-                                <div class="w-56 shrink-0"><x-form.input wire:model.live.debounce.300ms="userSearch" placeholder="Cari username / nama / email…" /></div>
+                                <div class="w-56 shrink-0"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="userSearch" placeholder="Cari username / nama / email…" /></div>
                             </div>
                             <x-slot:newRecord>
                                 <button type="button" wire:click="openUserForm('new')"
@@ -655,7 +655,7 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                         <x-grid.toolbar>
                             <div class="flex items-center gap-1.5 shrink-0">
                                 <span class="text-sm">🔍</span>
-                                <div class="w-56 shrink-0"><x-form.input wire:model.live.debounce.300ms="groupSearch" placeholder="Cari kode / nama grup…" /></div>
+                                <div class="w-56 shrink-0"><x-form.input :case-toggle="false" wire:model.live.debounce.300ms="groupSearch" placeholder="Cari kode / nama grup…" /></div>
                             </div>
                             <x-slot:newRecord>
                                 <button type="button" wire:click="openGroupForm('new')"

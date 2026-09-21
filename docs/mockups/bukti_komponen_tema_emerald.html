@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+<link rel="stylesheet" href="file:///C:/Users/iwanp/Herd/tmerp/public/build/assets/app-C7vGD_Ln.css">
+<style>:root { --color-accent: #16a34a; } body { background:#fff; margin:0; padding:12px 14px; font-family:'Instrument Sans','Segoe UI',system-ui,sans-serif; }</style>
+<script>// Case toggle (aa -> Aa -> AA) untuk SEMUA input teks string standar
+// (x-form.input type=text, x-form.textarea). Keputusan user 2026-09-21:
+// pola Component Library item #1 dijadikan acuan wajib, alasannya user sering
+// input lewat HP/tablet di mana menekan Shift tiap kata itu merepotkan.
+//
+// Beda dari tmCaseToggleInput (component-library.js): di sana nilai dibawa
+// hidden input krn elemen tampilannya textarea pengganti; DI SINI elemen asli
+// yang dipegang komponen (input/textarea ber-wire:model, ber-Alpine handler,
+// dst) TETAP jadi satu-satunya elemen -- transform dilakukan di tempat lalu
+// event 'input' dibiarkan lanjut menggelembung. Wajib begitu: kalau nilai
+// dipindah ke hidden input, semua wire:model.live/@focus/@click.outside yang
+// sudah menempel di ratusan pemanggil akan menempel ke elemen yang salah.
+document.addEventListener('alpine:init', () => {
+    Alpine.data('tmCaseInput', (opts = {}) => ({
+        modes: ['none', 'capitalize', 'uppercase'],
+        labels: { none: 'aa', capitalize: 'Aa', uppercase: 'AA' },
+        idx: Math.max(0, ['none', 'capitalize', 'uppercase'].indexOf(opts.mode ?? 'none')),
+
+        transform(text, mode) {
+            if (mode === 'uppercase') return text.toUpperCase();
+            if (mode === 'capitalize') return text.replace(/\b\p{L}/gu, (c) => c.toUpperCase());
+            return text;
+        },
+
+        // Handler ini jalan SEBELUM listener Livewire (Alpine bind langsung ke
+        // elemen, Livewire mendelegasikan dari root) -- jadi yang dibaca
+        // wire:model sudah nilai hasil transform, bukan ketikan mentah.
+        onInput(e) {
+            const mode = this.modes[this.idx];
+            if (mode === 'none') return;
+            const el = e.target;
+            const next = this.transform(el.value, mode);
+            if (next === el.value) return;
+            const pos = el.selectionStart;
+            el.value = next;
+            // Panjang string tidak berubah oleh transform apa pun di atas,
+            // jadi kursor bisa dikembalikan apa adanya.
+            try { el.setSelectionRange(pos, pos); } catch { /* input type tertentu tak punya selection */ }
+        },
+
+        cycle() {
+            this.idx = (this.idx + 1) % this.modes.length;
+            const el = this.$refs.el;
+            if (!el) return;
+            const next = this.transform(el.value, this.modes[this.idx]);
+            if (next !== el.value) {
+                el.value = next;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            el.focus();
+        },
+    }));
+});
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+</head><body>
+  <div class="flex items-center gap-2 mb-2.5">
+    <span class="w-3.5 h-3.5 rounded-full" style="background:#16a34a"></span>
+    <span class="text-[12px] font-bold text-navy">Cerah Hijau (Emerald)</span>
+    <span class="text-[10.5px] text-muted">&mdash; garis tepi, badge huruf, dan latar read-only ikut corak tema ini otomatis</span>
+  </div>
+  <div class="grid grid-cols-4 gap-3">
+  <div class="flex flex-col gap-1">
+            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Nama Customer</label>
+                <div class="relative flex items-center" x-data="tmCaseInput({ mode: 'none' })">
+            <input type="text" x-ref="el" x-on:input="onInput($event)" class="w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed read-only:bg-field-soft read-only:text-muted pr-8" value="pt sinar jaya abadi">
+            <button type="button" x-on:click="cycle()" tabindex="-1" title="Ganti mode huruf (kecil / Kapital Tiap Kata / BESAR)"
+                class="absolute right-1.5 text-[10px] font-bold bg-field-badge border border-field-border rounded px-1.5 py-0.5 cursor-pointer text-navy leading-none"
+                x-text="labels[modes[idx]]"></button>
+        </div>
+            </div>
+  <div class="flex flex-col gap-1">
+            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Kode Produk</label>
+                <div class="relative flex items-center" x-data="tmCaseInput({ mode: 'none' })">
+            <input type="text" x-ref="el" x-on:input="onInput($event)" class="w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed read-only:bg-field-soft read-only:text-muted pr-8" value="BOX-A4-250">
+            <button type="button" x-on:click="cycle()" tabindex="-1" title="Ganti mode huruf (kecil / Kapital Tiap Kata / BESAR)"
+                class="absolute right-1.5 text-[10px] font-bold bg-field-badge border border-field-border rounded px-1.5 py-0.5 cursor-pointer text-navy leading-none"
+                x-text="labels[modes[idx]]"></button>
+        </div>
+            </div>
+  <div class="flex flex-col gap-1">
+            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Satuan</label>
+        <select
+                class="w-full px-2 py-1.5 border border-field-border rounded text-xs disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed">
+                    <option value="">— pilih —</option>
+                            <option value="PCS" selected>PCS</option>
+                    <option value="RIM" >RIM</option>
+            </select>
+    </div>
+  <div class="flex flex-col gap-1">
+            <label class="text-[10px] text-muted uppercase font-semibold block mb-1">No. Dokumen (read-only)</label>
+                <input type="text" class="w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed read-only:bg-field-soft read-only:text-muted" value="SO-2026-0912" readonly="readonly">
+            </div>
+</div>
+</body></html>

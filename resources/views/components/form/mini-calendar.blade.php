@@ -9,10 +9,10 @@
 --}}
 @props(['events' => []])
 <div class="border border-[#e2e8f0] rounded-xl overflow-hidden" x-data="tmMiniCalendar({ events: @js($events) })">
-    <div class="flex items-center justify-between px-3 py-2 bg-[#f4f6fa] border-b border-[#e5e7eb]">
-        <button type="button" @click="prevMonth()" class="w-6 h-6 rounded border border-[#d7dbe2] hover:bg-white cursor-pointer text-xs">&lt;</button>
+    <div class="flex items-center justify-between px-3 py-2 bg-field-soft border-b border-field-border">
+        <button type="button" @click="prevMonth()" class="w-6 h-6 rounded border border-field-border hover:bg-white cursor-pointer text-xs">&lt;</button>
         <span class="text-xs font-bold text-navy" x-text="monthLabel"></span>
-        <button type="button" @click="nextMonth()" class="w-6 h-6 rounded border border-[#d7dbe2] hover:bg-white cursor-pointer text-xs">&gt;</button>
+        <button type="button" @click="nextMonth()" class="w-6 h-6 rounded border border-field-border hover:bg-white cursor-pointer text-xs">&gt;</button>
     </div>
     <div class="grid grid-cols-7 text-center text-[10px] font-bold text-muted uppercase border-b border-[#eef1f5]">
         <div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_sun', 'Min') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_mon', 'Sen') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_tue', 'Sel') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_wed', 'Rab') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_thu', 'Kam') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_fri', 'Jum') }}</div><div class="py-1">{{ \App\Support\Localization\Translator::t('shared_calendar_day_sat', 'Sab') }}</div>
@@ -20,7 +20,7 @@
     <div class="grid grid-cols-7">
         <template x-for="(cell, idx) in days" :key="idx">
             <button type="button" @click="cell && selectDay(cell.dateStr)" :disabled="!cell"
-                :class="!cell ? 'invisible' : (cell.dateStr === selDateStr ? 'bg-[#eaf2ff] ring-1 ring-inset ring-accent' : 'hover:bg-[#f9fafb]')"
+                :class="!cell ? 'invisible' : (cell.dateStr === selDateStr ? 'bg-accent-soft ring-1 ring-inset ring-accent' : 'hover:bg-[#f9fafb]')"
                 class="h-14 border-b border-r border-[#f1f5f9] flex flex-col items-center py-1 cursor-pointer">
                 <span x-text="cell?.day" :class="cell && isToday(cell.dateStr) ? 'bg-accent text-white rounded-full w-5 h-5 flex items-center justify-center' : 'text-[#374151]'" class="text-[11px] font-semibold"></span>
                 <span class="flex gap-0.5 mt-1">

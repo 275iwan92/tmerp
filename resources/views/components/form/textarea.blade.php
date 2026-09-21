@@ -13,7 +13,7 @@
     kotak maka box inputan akan melebar kebawah"). resize:none + overflow:hidden
     supaya tidak ada scrollbar/drag-handle yang bentrok sama auto-resize.
 --}}
-@props(['label' => null, 'name' => null, 'hint' => null, 'error' => null, 'legacy' => false, 'col2' => false, 'col3' => false, 'col4' => false, 'autogrow' => false])
+@props(['label' => null, 'name' => null, 'hint' => null, 'error' => null, 'legacy' => false, 'col2' => false, 'col3' => false, 'col4' => false, 'autogrow' => false, 'caseToggle' => true, 'caseMode' => 'none'])
 @php
     $isLegacy = (bool) $legacy;
     $legacyClass = is_string($legacy) ? $legacy : 'f';
@@ -21,20 +21,38 @@
     $colClass = $col4 ? 'col4' : ($col3 ? 'col3' : ($col2 ? 'col2' : ''));
     $wrapperClass = $isLegacy ? trim($legacyClass.' '.$colClass) : 'flex flex-col gap-1';
     $labelClass = $isLegacy ? '' : 'text-[10px] text-muted uppercase font-semibold block mb-1';
-    $textareaClass = $isLegacy ? '' : 'w-full px-2 py-1.5 border border-[#d7dbe2] rounded text-xs disabled:bg-[#f4f6fa] disabled:text-muted disabled:cursor-not-allowed';
+    // Case toggle & token warna: alasan lengkap di input.blade.php (keputusan
+    // user 2026-09-21). Di textarea badge ditaruh di pojok kanan ATAS, bukan
+    // tengah, supaya tidak menutupi teks saat kotaknya memanjang.
+    $locked = $attributes->has('readonly') || $attributes->has('disabled');
+    $withCase = $caseToggle && ! $locked;
+    $textareaClass = ($isLegacy ? '' : 'w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed').($withCase ? ' pr-8' : '');
 @endphp
 <div class="{{ $wrapperClass }}">
     @if ($label)
         <label class="{{ $labelClass }}">{{ $label }}</label>
     @endif
+    {{-- 1 x-on:input saja: transform huruf + auto-height digabung dalam satu
+         handler (dua attribute x-on:input di elemen yang sama, yang kedua
+         diabaikan browser). --}}
+    @php
+        $grow = "\$el.style.height = 'auto'; \$el.style.height = \$el.scrollHeight + 'px'";
+        $onInput = trim(($withCase ? 'onInput($event); ' : '').($autogrow ? $grow : ''));
+    @endphp
+    <div @class(['relative' => $withCase]) x-data="{{ $withCase ? 'tmCaseInput({ mode: '.\Illuminate\Support\Js::from($caseMode).' })' : '' }}">
     @if ($autogrow)
         <textarea rows="1" style="resize:none;overflow:hidden;min-height:34px"
-            x-data x-init="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
-            x-on:input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+            @if ($withCase) x-ref="el" @endif x-init="{{ $grow }}" x-on:input="{{ $onInput }}"
             {{ $attributes->merge(['class' => $textareaClass]) }}></textarea>
     @else
-        <textarea {{ $attributes->merge(['class' => $textareaClass]) }}></textarea>
+        <textarea @if ($withCase) x-ref="el" x-on:input="{{ $onInput }}" @endif {{ $attributes->merge(['class' => $textareaClass]) }}></textarea>
     @endif
+    @if ($withCase)
+        <button type="button" x-on:click="cycle()" tabindex="-1" title="Ganti mode huruf (kecil / Kapital Tiap Kata / BESAR)"
+            class="absolute right-1.5 top-1.5 text-[10px] font-bold bg-field-badge border border-field-border rounded px-1.5 py-0.5 cursor-pointer text-navy leading-none"
+            x-text="labels[modes[idx]]"></button>
+    @endif
+    </div>
     @if ($hint)
         <div class="{{ $isLegacy ? 'hint' : 'text-[10.5px] text-muted' }}">{{ $hint }}</div>
     @endif

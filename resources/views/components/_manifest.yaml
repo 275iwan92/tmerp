@@ -12,6 +12,8 @@ gotchas:
   - "Class .grid global (app.css) memaksa 4 kolom -> pakai 'grid two'/'grid three' atau flex, bukan grid-cols-N."
   - "Komponen berbasis Alpine (date-picker, searchable-select, multi-select, dll) bind lewat input hidden; nilai tanggal selalu ISO."
   - "Teks UI lewat App\\Support\\Localization\\Translator::t('key', 'Fallback ID')."
+  - "Input teks string WAJIB x-form.input/textarea (badge huruf aa/Aa/AA ikut otomatis) + lookup kalau nilainya sudah ada di master -- FORM_UI_STANDARD 1b."
+  - "Warna field: border-field-border/bg-field-soft/bg-field-badge/bg-accent-soft (token @theme app.css), JANGAN hex abu-abu literal -- supaya ikut corak sys_theme."
   - "Tombol baku: Simpan/Batal/Tutup (ID), Back selalu Inggris. Grid: '+ New Record'."
 
 tones: # palet bersama, jangan bikin warna baru
@@ -20,8 +22,8 @@ tones: # palet bersama, jangan bikin warna baru
   report.kpi: [blue, green, amber, violet, danger]
 
 form: # dialek default Tailwind; legacy=true|'namaClass' untuk CSS lama (.f/.fld)
-  x-form.input: {props: {label: null, name: null, type: text, hint: null, error: "null (fallback \$errors->first(name))", legacy: false, col2: false, col3: false, col4: false}}
-  x-form.textarea: {props: {label: null, name: null, hint: null, error: null, legacy: false, col2/col3/col4: false, autogrow: false}, slot: "label (named, opsional)"}
+  x-form.input: {props: {label: null, name: null, type: text, hint: null, error: 'null (fallback $errors->first(name))', legacy: false, col2: false, col3: false, col4: false, caseToggle: true, caseMode: none}, note: "type=text OTOMATIS dapat badge huruf aa/Aa/AA (WAJIB, FORM_UI_STANDARD 1b); mati sendiri utk readonly/disabled/type lain; :case-toggle=false hanya utk kotak cari"}
+  x-form.textarea: {props: {label: null, name: null, hint: null, error: null, legacy: false, col2/col3/col4: false, autogrow: false, caseToggle: true, caseMode: none}, slot: "label (named, opsional)", note: "badge huruf sama dgn x-form.input"}
   x-form.select: {props: {label: null, name: null, options: "[value=>label]", selected: null, placeholder: "null=default '— pilih —', false=tanpa", error: null, legacy: false, col2: false, liveSync: false}}
   x-form.searchable-select: {props: {label: null, name: null, options: "[string]", placeholder: null, value: ''}}
   x-form.multi-select: {props: {label: null, name: null, options: [], selected: [], placeholder: null, value: ''}}
@@ -70,9 +72,9 @@ grid: # pasangkan dengan trait App\Livewire\Concerns\HasCustomizableGrid
   x-grid.spreadsheet-table: {props: {gridKey: req, columns: req, rows: req, newRowDefaults: req, errors: [], version: 0}, note: "spreadsheetgridstandard.md"}
   includes: # dipanggil @include, bukan tag
     - "@include('components.grid.filters-panel') + @include('components.grid.toolbar-buttons') di slot tools"
-    - "@include('components.grid.filters-row', ['columnDefs' => \$this->gridSearchColumnDefs()])"
-    - "@include('components.grid.pagination-footer', ['paginator' => \$this->items])"
-    - "@include('components.grid.column-modal'|'components.grid.sort-modal', ['columnDefs' => \$this->gridColumnDefs()])"
+    - '@include("components.grid.filters-row", ["columnDefs" => $this->gridSearchColumnDefs()])'
+    - '@include("components.grid.pagination-footer", ["paginator" => $this->items])'
+    - '@include("components.grid.column-modal"|"components.grid.sort-modal", ["columnDefs" => $this->gridColumnDefs()])'
 
 print: # printnotastandard.md
   x-print.document: {props: {theme: [], printLabel: '🖶 Cetak / Simpan PDF'}}

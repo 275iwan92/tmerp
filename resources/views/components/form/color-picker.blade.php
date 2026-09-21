@@ -10,7 +10,7 @@
     @endif
     <div class="flex items-center gap-2 h-7">
         <input type="color" value="{{ $value }}" @input="hex = $event.target.value.toUpperCase()"
-            {{ $attributes->merge(['class' => 'w-8 h-[26px] border border-[#c7cfda] rounded cursor-pointer p-0 bg-transparent']) }}>
+            {{ $attributes->merge(['class' => 'w-8 h-[26px] border border-field-border rounded cursor-pointer p-0 bg-transparent']) }}>
         <span class="text-xs font-semibold font-mono text-[#374151]" x-text="hex"></span>
     </div>
 </div>

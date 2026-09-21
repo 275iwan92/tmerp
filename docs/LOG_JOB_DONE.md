@@ -3,6 +3,43 @@
 
 ---
 
+## 2026-09-21 (sore) — Standar input teks: badge huruf aa/Aa/AA + warna field ikut tema
+
+Instruksi user: pola "Input Teks" Component Library dijadikan ACUAN WAJIB utk semua
+text input string (alasan: user sering input lewat HP/tablet, menekan Shift tiap kata
+merepotkan), semua input sebisa mungkin lookup, dan semua warna ikut corak `sys_theme`.
+**Membalik keputusan pagi harinya** yang sempat memutuskan case-toggle tidak di-rollout.
+Tujuan eksplisit user: "mencegah kedepan jika terjadi perubahan mockup tetap semua text
+input string mempergunakan component tersebut tanpa harus saya perintah lagi."
+
+- `resources/js/case-input.js` (baru, Alpine `tmCaseInput`) — transform huruf di ELEMEN
+  ASLI lalu membiarkan event `input` menggelembung, jadi `wire:model.live`, `@focus`,
+  `@click.outside` milik pemanggil tetap menempel di elemen yang benar (beda dari
+  `tmCaseToggleInput` lama yang memindah nilai ke hidden input).
+- `x-form.input` (type=text) & `x-form.textarea` — badge `aa`→`Aa`→`AA` OTOMATIS, mati
+  sendiri utk readonly/disabled/type non-teks; `:case-toggle=false` dipasang di 23 kotak
+  CARI (nilainya tidak disimpan, badge cuma bikin ramai).
+- Token warna baru di `app.css` `@theme`: `--color-field-border/-focus/-soft/-badge` +
+  `--color-accent-soft`, semuanya `color-mix` dari `--color-accent`. Karena
+  `theme-vars.blade.php` menimpa `--color-accent` di `:root`, 12 kombinasi `sys_theme`
+  otomatis memberi corak sama ke semua field tanpa sebaris pun warna per-tema.
+  80 hex abu-abu/biru literal di `components/form/*` (17 file) + dialek global `.f`
+  di app.css diganti token. Gotcha yang mahal: nilai `color-mix` pada custom property
+  disubstitusi di tempat DIDEKLARASIKAN (`:root`), bukan di tempat dipakai — override
+  `--color-accent` di elemen biasa tidak berefek, sempat bikin uji pertama salah baca.
+- **Aturan dikunci supaya tidak perlu diperintah ulang**: `CLAUDE.md` §3 (blok baru),
+  `FORM_UI_STANDARD.md` §1b + koreksi baris tabel #4, `_manifest.yaml` (props + 2 gotcha,
+  sekalian memperbaiki escape `\$` yang bikin file itu tak bisa diparse YAML),
+  skill `tmerp-screen` & `tmerp-ui-mockup` (mockup wajib menggambar badge huruf & lookup).
+- Verifikasi: 11 layar dirender via `Livewire::test` tanpa error; 6 varian komponen
+  (text/readonly/email/legacy/opt-out/textarea) dicek markup-nya; bukti visual 3 corak
+  tema dirender dari komponen sungguhan → `docs/mockups/bukti_komponen_input_tema.jpg`.
+  `npm run build` dijalankan. Tampilan di browser belum dicek user.
+- Sisa rollout (Inquiry legacy, sel tabel, hex literal per layar, lookup 5 field,
+  dark mode layar transaksi): `BACKLOG.md` §21.
+
+---
+
 ## 2026-09-21 — UI: input teks mentah -> komponen standar `x-form.input` (33 titik)
 
 Pemicu: user cek sendiri, "ga semua mengikuti component UI UX standard".

@@ -184,7 +184,7 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 p-3">
             <div class="max-w-[320px]">
-                <x-form.input label="Cari Nama/Kode Pegawai" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
+                <x-form.input :case-toggle="false" label="Cari Nama/Kode Pegawai" wire:model.live.debounce.400ms="search" name="search" placeholder="Ketik nama atau kode..." />
             </div>
         </div>
 

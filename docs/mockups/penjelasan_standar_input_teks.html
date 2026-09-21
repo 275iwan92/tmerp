@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Penjelasan Standar Input Teks</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px; }
+  .inp { width: 100%; border: 1px solid #c7cfda; border-radius: 4px; padding: 6px 8px; font-size: 12px; background: #fff; }
+  .doccell { font-size: 11px; padding: 7px 9px; border: 1px solid #e2e8f0; vertical-align: top; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5">
+  <div>
+    <div class="text-sm font-bold">Standar Input Teks — Penjelasan "Pola Acuan Tanpa Keputusan"</div>
+    <div class="text-[10px] opacity-70">Dokumen: docs/FORM_UI_STANDARD.md baris 4 &middot; Keputusan user 2026-09-21</div>
+  </div>
+</header>
+
+<main class="p-4 max-w-[1380px] mx-auto space-y-3">
+
+  <!-- BAGIAN 1: 2 komponen -->
+  <section class="card p-3.5">
+    <h2 class="font-bold text-navy text-[13px] mb-0.5">1. Dua komponen input teks yang ada di repo</h2>
+    <p class="text-[11px] text-slate-600 mb-3">Keduanya sudah jadi dan bisa dipakai. Pertanyaannya: yang mana standarnya?</p>
+
+    <div class="flex gap-3.5">
+      <!-- kiri -->
+      <div class="flex-1 border-2 border-emerald-400 rounded-lg p-3 bg-emerald-50/40">
+        <div class="flex items-center gap-2 mb-2.5">
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white">DIPAKAI &mdash; 508 titik</span>
+          <span class="font-bold text-[12px] text-slate-700">&lt;x-form.input&gt;</span>
+        </div>
+        <div class="bg-white rounded p-3 border border-emerald-200 space-y-2.5">
+          <div>
+            <label class="lbl">Nama Tipe</label>
+            <input class="inp" value="Warna Tidak Sesuai">
+          </div>
+          <div>
+            <label class="lbl">Kode</label>
+            <input class="inp font-mono" value="COLOR_OFF">
+          </div>
+        </div>
+        <ul class="mt-2.5 text-[11px] text-slate-700 space-y-1">
+          <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i>Kotak tetap 1 baris, tinggi semua field sama rata</li>
+          <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i>Tidak ada tombol tambahan &mdash; huruf tidak bisa berubah sendiri</li>
+          <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i>Aman untuk kode, email, No. HP, NIK, no. dokumen</li>
+        </ul>
+      </div>
+
+      <!-- kanan -->
+      <div class="flex-1 border-2 border-amber-400 rounded-lg p-3 bg-amber-50/40">
+        <div class="flex items-center gap-2 mb-2.5">
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">HANYA DI COMPONENT LIBRARY &mdash; 1 titik</span>
+          <span class="font-bold text-[12px] text-slate-700">&lt;x-form.case-toggle-input&gt;</span>
+        </div>
+        <div class="bg-white rounded p-3 border border-amber-200 space-y-2.5">
+          <div>
+            <label class="lbl">Nama Lengkap</label>
+            <div class="relative">
+              <textarea class="inp pr-9" rows="2" style="resize:none">Andi Pratama Wijaya, alamat Jl. Merdeka No. 45 Surabaya</textarea>
+              <span class="absolute right-1.5 top-1.5 text-[10px] font-bold bg-[#f3f4f6] border border-[#d1d5db] rounded px-1.5 py-0.5 text-[#4b5568]">Aa</span>
+            </div>
+            <div class="text-[10px] text-muted mt-1">Kotak memanjang ke bawah kalau teks panjang</div>
+          </div>
+          <div>
+            <label class="lbl">Kode <span class="text-red-600 normal-case font-normal">&larr; di sini jadi masalah</span></label>
+            <div class="relative">
+              <textarea class="inp pr-9 font-mono" rows="1" style="resize:none">Color_Off</textarea>
+              <span class="absolute right-1.5 top-1.5 text-[10px] font-bold bg-red-100 border border-red-300 rounded px-1.5 py-0.5 text-red-700">Aa</span>
+            </div>
+            <div class="text-[10px] text-red-600 mt-1">Tombol tertekan &rarr; "COLOR_OFF" berubah jadi "Color_Off", data jadi salah</div>
+          </div>
+        </div>
+        <ul class="mt-2.5 text-[11px] text-slate-700 space-y-1">
+          <li><i class="fa-solid fa-check text-emerald-600 mr-1.5"></i>Bagus untuk nama &amp; deskripsi panjang</li>
+          <li><i class="fa-solid fa-xmark text-red-600 mr-1.5"></i>Tombol aa/Aa/AA mengubah huruf yang sudah diketik</li>
+          <li><i class="fa-solid fa-xmark text-red-600 mr-1.5"></i>Tinggi kotak berubah-ubah, baris form jadi tidak rata</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- BAGIAN 2: arti pola acuan tanpa keputusan -->
+  <section class="card p-3.5">
+    <h2 class="font-bold text-navy text-[13px] mb-0.5">2. Arti "pola acuan tanpa keputusan" di dokumen standar</h2>
+    <p class="text-[11px] text-slate-600 mb-3">Isi baris ke-4 tabel komponen di <span class="font-mono text-[10.5px]">docs/FORM_UI_STANDARD.md</span>. Kiri = sebelum saya perbaiki, kanan = sesudah.</p>
+
+    <div class="flex gap-3.5 items-stretch">
+      <!-- sebelum -->
+      <div class="flex-1">
+        <div class="text-[11px] font-bold text-slate-500 uppercase mb-1.5">Sebelum &mdash; membingungkan</div>
+        <table class="w-full border-collapse bg-white">
+          <tr class="bg-slate-100">
+            <td class="doccell font-bold w-8">#</td>
+            <td class="doccell font-bold">Komponen</td>
+            <td class="doccell font-bold w-24">Status</td>
+            <td class="doccell font-bold">Implementasi / pola acuan</td>
+          </tr>
+          <tr>
+            <td class="doccell">4</td>
+            <td class="doccell">Textarea auto-height + case toggle (aa/Aa/AA)</td>
+            <td class="doccell"><span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-semibold">&#128203; Pola acuan</span></td>
+            <td class="doccell text-slate-600">"<span class="italic">x-form.textarea yang ada sekarang <b>belum</b> auto-height/case-toggle. Kalau dibutuhkan: x-data lokal dgn tombol badge&hellip;</span>"</td>
+          </tr>
+        </table>
+        <div class="mt-2 border border-red-300 bg-red-50 rounded p-2.5 text-[11px] text-red-800 space-y-1.5">
+          <div class="font-bold"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Tiga hal yang tidak terjawab:</div>
+          <div>1. Tulisannya "belum ada", padahal komponennya <b>sudah dibuat</b> &mdash; dokumen sudah basi.</div>
+          <div>2. "Kalau dibutuhkan" &mdash; <b>tidak ada yang pernah memutuskan</b> dibutuhkan atau tidak.</div>
+          <div>3. Sesi berikutnya bisa menyangka ini <b>pekerjaan yang terlupa</b>, lalu memasangnya ke semua field &mdash; termasuk field Kode di atas.</div>
+        </div>
+      </div>
+
+      <!-- sesudah -->
+      <div class="flex-1">
+        <div class="text-[11px] font-bold text-emerald-700 uppercase mb-1.5">Sesudah &mdash; keputusannya tertulis</div>
+        <table class="w-full border-collapse bg-white">
+          <tr class="bg-slate-100">
+            <td class="doccell font-bold w-8">#</td>
+            <td class="doccell font-bold">Komponen</td>
+            <td class="doccell font-bold w-24">Status</td>
+            <td class="doccell font-bold">Implementasi / pola acuan</td>
+          </tr>
+          <tr>
+            <td class="doccell">4</td>
+            <td class="doccell">Textarea auto-height + case toggle (aa/Aa/AA)</td>
+            <td class="doccell"><span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-semibold">&#9888; Ada, sengaja TIDAK di-rollout</span></td>
+            <td class="doccell text-slate-600">"<span class="italic">Komponennya <b>sudah dibuat</b> tapi HANYA dipakai di Component Library. <b>Keputusan user 2026-09-21:</b> standar input teks tetap x-form.input &mdash; tombol ganti huruf berbahaya utk field kode/email/No.HP/NIK. Kalau nanti dipakai, <b>hanya</b> utk field nama/deskripsi. Lihat BACKLOG &sect;21.</span>"</td>
+          </tr>
+        </table>
+        <div class="mt-2 border border-emerald-300 bg-emerald-50 rounded p-2.5 text-[11px] text-emerald-900 space-y-1.5">
+          <div class="font-bold"><i class="fa-solid fa-circle-check mr-1.5"></i>Sekarang jelas:</div>
+          <div>1. Status sesuai kenyataan &mdash; komponennya ada, bukan "belum".</div>
+          <div>2. Keputusan Bapak tercatat beserta <b>alasannya</b>, bukan cuma hasilnya.</div>
+          <div>3. Sesi berikutnya tahu ini <b>bukan pekerjaan tertinggal</b> &mdash; tidak akan dipasang diam-diam.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BAGIAN 3: kesimpulan -->
+  <section class="card p-3.5 flex items-center gap-4">
+    <div class="shrink-0 w-11 h-11 rounded-full bg-navy text-white flex items-center justify-center text-lg"><i class="fa-solid fa-lightbulb"></i></div>
+    <div class="text-[12px] leading-relaxed text-slate-700">
+      <b class="text-navy">Ringkasnya:</b> "pola acuan" di dokumen itu artinya <i>"ide yang dicatat"</i>, bukan <i>"aturan yang berlaku"</i>. Baris itu tidak pernah menyebut komponennya dipakai atau tidak &mdash; itulah yang saya maksud <b>tanpa keputusan</b>.
+      Setelah Bapak pilih opsi 1, baris itu saya ubah supaya menyimpan keputusan beserta alasannya, jadi tidak ada yang salah tafsir di kemudian hari.
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

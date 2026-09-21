@@ -220,7 +220,7 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                     <h3 class="text-sm font-bold text-navy">{{ Translator::t('proc_pq_picker_title', 'PQ Baru — Pilih Supplier') }}</h3>
                     <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
                 </div>
-                <x-form.input wire:model.live.debounce.300ms="supplierSearch" autofocus placeholder="{{ Translator::t('proc_supplier_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode supplier...') }}" class="mb-2" />
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="supplierSearch" autofocus placeholder="{{ Translator::t('proc_supplier_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode supplier...') }}" class="mb-2" />
                 <div class="max-h-72 overflow-y-auto">
                     @forelse ($this->supplierResults as $s)
                         <button type="button" wire:click="startForSupplier({{ $s->id_supplier }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">

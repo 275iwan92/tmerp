@@ -15,9 +15,9 @@
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <div class="relative flex items-start">
         <textarea x-ref="ta" rows="1" @input="onInput($event)" placeholder="{{ $placeholder }}"
-            class="w-full px-2 py-1.5 pr-9 border border-[#c7cfda] rounded text-xs focus:border-accent resize-none overflow-hidden">{{ $value }}</textarea>
+            class="w-full px-2 py-1.5 pr-9 border border-field-border rounded text-xs focus:border-field-focus resize-none overflow-hidden">{{ $value }}</textarea>
         <button type="button" @click="cycle()" tabindex="-1" title="Ganti mode huruf (kecil/Kapital/BESAR)"
-            class="absolute right-1.5 top-1.5 text-[10px] font-bold bg-[#f3f4f6] border border-[#d1d5db] rounded px-1.5 py-0.5 cursor-pointer text-[#4b5568]"
+            class="absolute right-1.5 top-1.5 text-[10px] font-bold bg-field-badge border border-field-border rounded px-1.5 py-0.5 cursor-pointer text-[#4b5568]"
             x-text="labels[modes[idx]]"></button>
     </div>
     @if ($hint)<div class="text-[10.5px] text-muted">{{ $hint }}</div>@endif

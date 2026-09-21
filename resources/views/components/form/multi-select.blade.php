@@ -14,14 +14,14 @@
     @endif
     <input type="hidden" x-ref="model" {{ $attributes }}>
     <button type="button" @click="open = !open"
-        class="w-full px-2 py-1.5 border border-[#c7cfda] rounded text-xs bg-white flex items-center justify-between cursor-pointer text-left gap-2">
+        class="w-full px-2 py-1.5 border border-field-border rounded text-xs bg-white flex items-center justify-between cursor-pointer text-left gap-2">
         <span x-text="summary" class="truncate text-[#374151]"></span>
         <span class="text-muted shrink-0">▼</span>
     </button>
     <div x-show="open" x-cloak x-transition.origin.top
-        class="absolute z-30 top-full left-0 mt-1 w-full bg-white border border-[#d7dbe2] rounded-lg shadow-lg overflow-hidden text-xs max-h-[180px] overflow-y-auto">
+        class="absolute z-30 top-full left-0 mt-1 w-full bg-white border border-field-border rounded-lg shadow-lg overflow-hidden text-xs max-h-[180px] overflow-y-auto">
         <template x-for="opt in options" :key="opt.value">
-            <label class="flex items-center justify-between px-2.5 py-1.5 hover:bg-[#f4f6fa] cursor-pointer text-[#374151]">
+            <label class="flex items-center justify-between px-2.5 py-1.5 hover:bg-field-soft cursor-pointer text-[#374151]">
                 <span x-text="opt.label"></span>
                 <input type="checkbox" class="accent-accent cursor-pointer" :checked="isChecked(opt.value)" @change="toggleOption(opt.value)">
             </label>

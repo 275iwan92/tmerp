@@ -13,6 +13,18 @@
     --color-navy: #2c3e69;
     --color-accent: #2c7be5;
     --color-muted: #8a94a6;
+
+    /* Token FIELD (input/select/textarea) -- dicampur dari --color-accent
+     * lewat color-mix, jadi tiap tema sys_theme (12 kombinasi) otomatis
+     * memberi corak yang sama ke SEMUA field tanpa hardcode hex per tema:
+     * theme-vars.blade.php cuma menimpa --color-accent, sisanya ikut sendiri.
+     * Pakai token ini, JANGAN tulis hex abu-abu literal lagi di komponen form
+     * (aturan user 2026-09-21, lihat FORM_UI_STANDARD.md §1b). */
+    --color-field-border: color-mix(in srgb, var(--color-accent) 20%, #c2cad6);
+    --color-field-focus: var(--color-accent);
+    --color-field-soft: color-mix(in srgb, var(--color-accent) 7%, #f4f6fa);
+    --color-field-badge: color-mix(in srgb, var(--color-accent) 12%, #eef1f6);
+    --color-accent-soft: color-mix(in srgb, var(--color-accent) 12%, #ffffff);
 }
 
 html, body { @apply h-full m-0; }
@@ -68,9 +80,9 @@ header.app-header .back { @apply ml-auto bg-[#43508a] text-[#cfd6ef] border-none
 .f.col3 { @apply col-span-3; }
 .f.col4 { @apply col-span-4; }
 label { @apply text-[11px] text-[#667] font-semibold; }
-input:not([type="checkbox"]):not([type="radio"]), select, textarea { @apply px-2 py-1.5 border border-[#c7cfda] rounded text-[13px] bg-white w-full; font-family: inherit; }
+input:not([type="checkbox"]):not([type="radio"]), select, textarea { @apply px-2 py-1.5 border border-field-border rounded text-[13px] bg-white w-full; font-family: inherit; }
 input[type="checkbox"], input[type="radio"] { @apply w-auto cursor-pointer; }
-input:read-only, select:disabled, input:disabled, textarea:read-only { @apply bg-[#eef0f3] text-[#667] cursor-not-allowed; }
+input:read-only, select:disabled, input:disabled, textarea:read-only { @apply bg-field-soft text-[#667] cursor-not-allowed; }
 .sec-title { @apply text-[11px] font-bold text-[#556] uppercase tracking-[.4px] mt-3.5 mb-1.5 pb-1 border-b border-[#e8ecf2]; }
 .sec-title:first-child { @apply mt-0; }
 .pill { @apply text-[11px] px-2 py-0.5 rounded-[10px] font-semibold inline-block; }

@@ -177,6 +177,52 @@ diperbaiki — dicatat sbg item kerja di `docs/BACKLOG.md` §10):**
 
 ---
 
+## 1b. Input teks string — LOCKED (keputusan user 2026-09-21)
+
+> **Tujuan aturan ini (kalimat user): "mencegah kedepan jika terjadi perubahan
+> mockup tetap semua text input string mempergunakan component tersebut tanpa
+> harus saya perintah lagi."** Jadi ini BUKAN checklist sekali jalan — berlaku
+> untuk setiap layar baru, setiap revisi mockup, dan setiap sesi berikutnya.
+> Sama berlakunya untuk SELURUH komponen di §3: kalau sudah ada `x-form.*`
+> untuk suatu jenis input, memakai HTML mentah = pelanggaran, bukan pilihan.
+
+**Tiga aturan yang mengikat:**
+
+1. **Case toggle wajib.** Setiap input teks string memakai `x-form.input`
+   (type=text) atau `x-form.textarea`, yang sudah membawa badge **aa → Aa →
+   AA** di pojok kanan field. Alasannya operasional, bukan kosmetik: user
+   banyak mengisi lewat **HP/tablet**, dan menekan Shift tiap kata itu
+   merepotkan + gampang tidak konsisten. Badge mati sendiri untuk `readonly`,
+   `disabled`, dan type non-teks (email/number/password/date/dst).
+   - Opt-out `:case-toggle="false"` **hanya** untuk kotak CARI (nilainya tidak
+     disimpan ke mana pun) atau kasus khusus yang alasannya ditulis di tempat
+     pemanggilan. Bukan untuk "biar cepat".
+   - Implementasi: `resources/js/case-input.js` (Alpine `tmCaseInput`), sengaja
+     mentransform nilai **di elemen aslinya** supaya `wire:model` dan handler
+     Alpine milik pemanggil tetap menempel di elemen yang benar.
+2. **Lookup dulu, ketik belakangan.** Kalau nilainya SUDAH ADA di master,
+   field-nya WAJIB lookup (`x-form.searchable-select`, `x-form.select`, atau
+   picker modal), bukan teks bebas — tujuannya menekan salah ketik. Teks bebas
+   hanya sah untuk: nama/kode master yang sedang DIBUAT di layar itu sendiri,
+   catatan/keterangan, dan nilai yang memang belum punya master. Daftar field
+   yang masih melanggar: `BACKLOG.md` §21.
+3. **Warna lewat token, bukan hex.** Field memakai `border-field-border`,
+   `bg-field-soft`, `bg-field-badge`, `focus:border-field-focus`,
+   `bg-accent-soft` (didefinisikan di `resources/css/app.css` `@theme`,
+   dicampur dari `--color-accent` via `color-mix`). Karena
+   `theme-vars.blade.php` menimpa `--color-accent` di `:root`, **12 kombinasi
+   tema `sys_theme` otomatis memberi corak yang sama ke semua field tanpa
+   satu baris pun warna per-tema**. JANGAN tulis hex abu-abu/biru literal lagi
+   di komponen form atau layar form.
+   - Catatan teknis (jangan terjebak saat menguji): nilai `color-mix` pada
+     custom property disubstitusi di tempat property itu **dideklarasikan**
+     (`:root`), bukan di tempat dipakai — override `--color-accent` di elemen
+     biasa TIDAK akan mengubah token turunan. Uji dengan override di `:root`.
+
+**Bukti render 3 corak:** `docs/mockups/bukti_komponen_input_tema.jpg`
+(+ `.html` per tema, dibangkitkan dari komponen sungguhan, bukan gambar tiruan).
+
+---
 ## 2. CSS terkait — WASPADAI `.grid { grid-cols-4 }` unlayered di app.css
 
 Kalau bikin/ubah grid di dalam layar form (mis. Header Dokumen multi-kolom),
@@ -235,7 +281,7 @@ di elemen custom (hindari gotcha "Livewire `<select>` morph bug", lihat memory).
 | 1 | **Date picker** (kalender popover) | ✅ **Implemented** | `<x-form.date-picker mode="date">` — `resources/views/components/form/date-picker.blade.php` + `resources/js/date-picker.js` (`Alpine.data('tmDatePicker')`). Dipakai di semua field tanggal (rollout 2026-09-02, ~84 titik lintas modul). |
 | 2 | **Datetime picker** (kalender + jam:menit) | ✅ **Implemented** | Komponen sama, `mode="datetime"` — tambah 2 `<select>` Jam/Menit (kelipatan 5 menit) di bawah kalender. Dipakai di `inventory/stock-adjustment.blade.php` (opn_start/opn_stop). |
 | 3 | Range date picker (dari–sampai + hint durasi) | 📋 Pola acuan | Belum ada komponen gabungan; saat ini 2× `<x-form.date-picker>` berdampingan (`co/delivery-plan.blade.php`, filter laporan). Kalau nanti butuh hint durasi otomatis (spt "Durasi: 6 Tahun 7 Bulan" di mockup), tambahkan sebagai prop `:hint-duration` di `date-picker.blade.php`, jangan bikin komponen baru terpisah. |
-| 4 | Textarea auto-height + case toggle (aa/Aa/AA) | ⚠️ **Ada, sengaja TIDAK di-rollout** | Komponennya sudah dibuat (`x-form.case-toggle-input`) tapi HANYA dipakai di Component Library sbg contoh. **Keputusan user 2026-09-21:** standar input teks tetap `x-form.input` — tombol ganti huruf berbahaya utk field kode/email/No.HP/NIK/no. dokumen (huruf bisa berubah tanpa sengaja). Kalau nanti dipakai, **hanya** utk field nama/deskripsi, jangan global. `x-form.textarea :autogrow` sudah menyediakan auto-height tanpa tombol case. Lihat `BACKLOG.md` §21. |
+| 4 | Textarea auto-height + case toggle (aa/Aa/AA) | ✅ **Implemented & WAJIB** | Case toggle sudah masuk ke `x-form.input` (type=text) & `x-form.textarea` sendiri — otomatis nyala, bukan opt-in. Lihat §1b di bawah. `x-form.case-toggle-input` (versi lama berbasis hidden input) tetap ada utk Component Library, TAPI layar baru pakai `x-form.input`/`x-form.textarea` biasa. |
 | 5 | Searchable location/entity dropdown (ketik utk filter) | 📋 Pola acuan | Pola: `<button>` trigger + panel absolute berisi `<input>` search + list hasil filter live (Alpine `x-model` + computed filter, atau fetch server via Livewire kalau datanya besar). Mirip `custom-dropdown-btn`/`custom-dropdown-panel` di mockup. |
 | 6 | Password + eye toggle | 📋 Pola acuan | Toggle `type="password"`↔`type="text"` + ganti ikon 👁️/🙈 via Alpine `x-data="{ show: false }"`, `:type="show ? 'text' : 'password'"`. Sederhana, prioritas rendah (browser native sudah punya reveal di sebagian OS). |
 | 7 | Color picker + hex code display | 📋 Pola acuan | `<input type="color">` native + `<span>` display hex uppercase via Alpine `x-model.fill`. Belum ada use-case di aplikasi ini (tak ada field warna). |

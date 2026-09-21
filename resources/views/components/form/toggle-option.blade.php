@@ -9,6 +9,6 @@
         ? 'btn xs '.($active ? 'p' : 'g')
         : ($active
             ? 'flex-1 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer bg-[#2c3e69] text-white border border-[#2c3e69]'
-            : 'flex-1 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer bg-white text-[#556] border border-[#d7dbe2]');
+            : 'flex-1 px-3 py-1.5 rounded text-xs font-semibold cursor-pointer bg-white text-[#556] border border-field-border');
 @endphp
 <button type="button" {{ $attributes->merge(['class' => $class]) }}>{{ $slot }}</button>

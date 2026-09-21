@@ -36,6 +36,8 @@ Bila perlu menyimpang dari acuan: render JPEG versi usulan, beri **lingkaran mer
 - Tombol aksi satu kata baku: **Simpan / Batal / Tutup** (UI berbahasa Indonesia). Hindari "Kembali ke Grid", "Submit", dsb. Pengecualian: "+ Tambah [objek]" untuk baris di dalam form.
 - Status pakai badge (tone: success/warn/danger/info/abu); Confirm/Cancel/Close mengikuti `stat_confirm`/`stat_cancel`/`stat_close`.
 - Grid: tanpa header halaman, tombol "+ New Record" di toolbar, kolom Aksi: Master = Edit + toggle aktif; non-Master = Buka + Confirm kondisional (tidak ada toggle aktif).
+- **Input teks string** (LOCKED, user 2026-09-21): gambarkan field teks dengan **badge huruf `aa`/`Aa`/`AA`** di pojok kanan dalam kotak — itu bawaan `x-form.input`/`x-form.textarea`, bukan hiasan opsional. Mockup TIDAK boleh menggambar input teks polos tanpa badge, kecuali field itu read-only/disabled, kotak CARI, atau bukan tipe teks. Bila field nilainya sudah ada di master, gambarkan sebagai **lookup** (dropdown/picker), bukan ketik bebas.
+- **Warna field ikut tema**: pakai token `border-field-border`/`bg-field-soft`/`bg-field-badge`/`bg-accent-soft`, jangan hex abu-abu/biru literal — mockup yang datang dari AI lain sering membawa warna sendiri, samakan dulu ke token ini sebelum dirender. Detail: `docs/FORM_UI_STANDARD.md` §1b.
 - Data dummy realistis (nama customer, No. dokumen berformat nyata), bukan "Lorem ipsum".
 - Teks dan prosa UI bahasa Indonesia; nama field/kolom di DB Inggris snake_case bila ditampilkan.
 - Semua komponen input sesuai katalog `<x-form.*>` (date-picker kalender, bukan `<input type=date>` polos).
