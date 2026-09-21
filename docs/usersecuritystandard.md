@@ -82,10 +82,27 @@ Implikasi yang harus diingat saat merancang fitur baru:
   seed, atau UI.** Nilai itu tidak ada.
 - Admin membaca password default user lewat **layar aplikasi** (auto-decrypt
   via accessor), bukan lewat SQL langsung.
-- `default_password` adalah **kredensial login**, bukan kunci dokumen. Kalau
-  nanti slip gaji dikirim sebagai PDF berpassword, kuncinya **harus data
-  lain** (mis. tanggal lahir atau NIK) — memakai `default_password` sebagai
-  password PDF berarti menyebarkan kredensial login lewat WhatsApp.
+- `default_password` adalah **kredensial login**, bukan kunci dokumen.
+  Memakainya sebagai password PDF berarti menyebarkan kredensial login lewat
+  WhatsApp — dilarang. Kunci dokumen diatur terpisah di §3a.
+
+### 3a. Password dokumen pribadi = tanggal lahir (LOCKED, keputusan user 2026-09-21)
+
+Dokumen pribadi yang dikirim ke user di luar aplikasi (mulai dari slip gaji
+PDF via WhatsApp) dikunci dengan **tanggal lahir yang bersangkutan**, format
+**`ddmmyyyy`** 8 digit tanpa pemisah — `emp_employee.birth_date`, sumber yang
+sama dengan pertanyaan pemulihan #1 di §2.
+
+- Dipilih karena user selalu hafal tanpa perlu disimpan/dikirim ulang, dan
+  bukan rahasia yang kalau bocor memberi akses ke apa pun selain dokumen itu
+  sendiri (beda dari NIK yang dipakai berbagai layanan lain).
+- **`birth_date` kosong = dokumen TIDAK boleh dikirim ke luar aplikasi.**
+  Jangan pernah memakai password cadangan/generik untuk menutupi data kosong
+  — pegawai itu tetap di kanal cetak sampai tanggal lahirnya terisi. Aturan
+  ini sejalur dengan §4 poin 2 (nomor kosong mematikan kanal, tidak dilewati).
+- Password PDF **tidak pernah ikut di badan pesan WA yang sama**. Pesan boleh
+  menyebut *cara* membukanya ("gunakan tanggal lahir Anda ddmmyyyy"), bukan
+  nilainya.
 
 ---
 
@@ -110,14 +127,21 @@ Berlaku untuk slip gaji via WA, dan untuk fitur sejenis ke depan.
 
 ## 5. Status data lapangan per 2026-09-21 (BUKAN aturan — kondisi nyata)
 
-`SELECT COUNT(*) FROM tm2mst.emp_employee WHERE activate=1` → **146 karyawan
-aktif, 144 di antaranya `phone` KOSONG** (hanya 2 terisi).
+Dari **146 karyawan aktif**:
+
+| Data | Terisi | Kosong |
+|---|---|---|
+| `phone` (= no WA, §2a) | 2 | **144** |
+| `birth_date` (= password PDF, §3a) | 135 | 11 |
+| Keduanya lengkap (siap kanal WA) | **2** | 144 |
 
 Artinya, per hari ini:
 
 - 144 karyawan **tidak bisa** memulihkan akun sendiri lewat 4 pertanyaan
   (pertanyaan #3 tak mungkin dijawab benar).
 - Kanal WhatsApp slip gaji **tidak bisa dinyalakan** untuk mereka.
+- 11 karyawan tanpa `birth_date` tetap terkunci di kanal cetak walaupun
+  nomor WA-nya nanti terisi (§3a).
 
 Ini **blocker data, bukan blocker kode** — pengisian nomor WA massal lewat HR
 harus jalan lebih dulu sebelum kanal WA slip gaji berguna. Lihat juga
