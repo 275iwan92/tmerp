@@ -144,7 +144,7 @@ new #[Title('Imposition Engine — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->isImpositionDone($row) ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#eaf2ff] text-[#1d4ed8]' }}">{{ $this->impositionProgress($row) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka Imposition" action="open({{ $row->id_inquiry }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Imposition" action="open({{ $row->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty

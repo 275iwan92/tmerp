@@ -586,14 +586,14 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                                <x-grid.action-icon icon="✎" title="Edit" action="openUserForm('edit', {{ $u->id_user }})" />
-                                                <x-grid.action-icon icon="🔑" title="Reset Password" action="resetPassword({{ $u->id_user }})"
+                                                <x-grid.action-icon icon="fa-pen" title="Edit" action="openUserForm('edit', {{ $u->id_user }})" />
+                                                <x-grid.action-icon icon="fa-key" title="Reset Password" action="resetPassword({{ $u->id_user }})"
                                                     confirm="Reset password {{ $u->login }} ke password baru?" />
                                                 @if ($u->default_password)
-                                                    <x-grid.action-icon icon="👁" title="Lihat Password" action="revealPassword({{ $u->id_user }})" />
+                                                    <x-grid.action-icon icon="fa-eye" title="Lihat Password" action="revealPassword({{ $u->id_user }})" />
                                                 @endif
                                                 @if ($u->id_user !== Auth::id())
-                                                    <x-grid.action-icon icon="⏻" :title="$u->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleUserActive({{ $u->id_user }})"
+                                                    <x-grid.action-icon :active="$u->activate" :title="$u->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleUserActive({{ $u->id_user }})"
                                                         :confirm="($u->activate ? 'Nonaktifkan' : 'Aktifkan').' pengguna '.$u->login.'?'"
                                                         :variant="$u->activate ? 'danger' : 'default'" />
                                                 @endif
@@ -684,8 +684,8 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
                                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $g->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $g->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                             </td>
                                             <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                                <x-grid.action-icon icon="✎" title="Edit" action="openGroupForm('edit', {{ $g->id_group }})" />
-                                                <x-grid.action-icon icon="⏻" :title="$g->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleGroupActive({{ $g->id_group }})"
+                                                <x-grid.action-icon icon="fa-pen" title="Edit" action="openGroupForm('edit', {{ $g->id_group }})" />
+                                                <x-grid.action-icon :active="$g->activate" :title="$g->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleGroupActive({{ $g->id_group }})"
                                                     :confirm="($g->activate ? 'Nonaktifkan' : 'Aktifkan').' grup '.$g->group_name.'?'"
                                                     :variant="$g->activate ? 'danger' : 'default'" />
                                             </td>

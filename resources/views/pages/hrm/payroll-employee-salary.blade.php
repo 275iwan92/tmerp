@@ -224,7 +224,7 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
                                     <td class="px-3 py-2 text-muted" colspan="4">Belum diatur</td>
                                 @endif
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✏️" title="Atur Gaji & Pajak" action="openForm({{ $row['employee']->employee_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="Atur Gaji & Pajak" action="openForm({{ $row['employee']->employee_id }})" />
                                 </td>
                             </tr>
                         @empty

@@ -229,8 +229,8 @@ new #[Title('SOP — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                                 @if ($this->isHrOfficer())
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="✎" title="Edit" action="open({{ $doc->sop_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$doc->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $doc->sop_id }})"
+                                        <x-grid.action-icon icon="fa-pen" title="Edit" action="open({{ $doc->sop_id }})" />
+                                        <x-grid.action-icon :active="$doc->activate" :title="$doc->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $doc->sop_id }})"
                                             :confirm="($doc->activate ? 'Nonaktifkan' : 'Aktifkan').' SOP '.$doc->title.'?'"
                                             :variant="$doc->activate ? 'danger' : 'default'" />
                                     </td>

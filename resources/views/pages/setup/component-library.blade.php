@@ -1087,8 +1087,8 @@ new #[Title('DevLib UI UX')] class extends Component
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <div class="flex items-center justify-center gap-1">
-                                        <x-grid.action-icon icon="✏️" title="Edit" action="demoSave('Grid Edit')" />
-                                        <x-grid.action-icon icon="🔁" title="Toggle Aktif" action="demoSave('Grid Toggle Aktif')" />
+                                        <x-grid.action-icon icon="fa-pen" title="Edit" action="demoSave('Grid Edit')" />
+                                        <x-grid.action-icon icon="fa-rotate" title="Toggle Aktif" action="demoSave('Grid Toggle Aktif')" />
                                     </div>
                                 </td>
                             </tr>

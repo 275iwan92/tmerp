@@ -203,9 +203,9 @@ new #[Title('Approval Cuti/Sakit/Izin — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
                                     @if ($r->status === 'PENDING')
-                                        <x-grid.action-icon icon="✓" title="Setujui" action="approve({{ $r->request_id }})"
+                                        <x-grid.action-icon icon="fa-check" title="Setujui" action="approve({{ $r->request_id }})"
                                             confirm="Setujui pengajuan {{ $r->leave_type }} ini?" variant="success" />
-                                        <x-grid.action-icon icon="✗" title="Tolak" action="openReject({{ $r->request_id }})" variant="danger" />
+                                        <x-grid.action-icon icon="fa-xmark" title="Tolak" action="openReject({{ $r->request_id }})" variant="danger" />
                                     @endif
                                 </td>
                             </tr>

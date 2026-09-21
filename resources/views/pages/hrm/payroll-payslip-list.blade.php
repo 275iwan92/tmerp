@@ -286,7 +286,7 @@ new #[Title('Cetak & Kirim Slip Gaji — TELASIH MAKMUR ERP')] class extends Com
                                         <span title="Tidak bisa dicetak — perbaiki dulu di Master Gaji & Pajak Pegawai"
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-300 cursor-not-allowed">↗</span>
                                     @else
-                                        <x-grid.action-icon icon="↗" title="Buka / Cetak" action="openPayslip({{ $slip->id_payslip }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="Buka / Cetak" action="openPayslip({{ $slip->id_payslip }})" />
                                     @endif
                                 </td>
                             </tr>

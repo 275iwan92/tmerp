@@ -169,7 +169,7 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✏️" title="Edit Rekening" action="openForm({{ $row['employee']->employee_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="Edit Rekening" action="openForm({{ $row['employee']->employee_id }})" />
                                 </td>
                             </tr>
                         @empty

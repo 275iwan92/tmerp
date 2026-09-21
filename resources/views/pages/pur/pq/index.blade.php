@@ -195,9 +195,9 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($pq) }}">{{ $this->statusLabel($pq) }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPq({{ $pq->pq_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPq({{ $pq->pq_id }})" />
                                     @if ($pq->status === 'DRAFT')
-                                        <x-grid.action-icon icon="✓" title="{{ Translator::t('sales_form_btn_confirm', 'Confirm') }}" action="confirmPq({{ $pq->pq_id }})"
+                                        <x-grid.action-icon icon="fa-check" title="{{ Translator::t('sales_form_btn_confirm', 'Confirm') }}" action="confirmPq({{ $pq->pq_id }})"
                                             confirm="{{ Translator::t('proc_pq_confirm_prefix', 'Konfirmasi PQ') }} {{ $pq->doc_no }}? {{ Translator::t('sales_quo_confirm_publish_suffix', 'Harga akan terkunci.') }}" variant="success" />
                                     @endif
                                 </td>

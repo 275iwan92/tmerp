@@ -216,7 +216,7 @@ new #[Title('Target Rate Proses × Mesin/Pegawai — TELASIH MAKMUR ERP')] class
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->activate ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->activate ? 'Aktif' : 'Nonaktif' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $r->rate_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openEdit({{ $r->rate_id }})" />
                                     <button type="button" wire:click="toggleActive({{ $r->rate_id }})" class="w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer" title="{{ $r->activate ? 'Nonaktifkan' : 'Aktifkan' }}">⏻</button>
                                 </td>
                             </tr>

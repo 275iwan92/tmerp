@@ -531,8 +531,8 @@ new #[Title('Dummy & Legacy Data — TELASIH MAKMUR ERP')] class extends Compone
                                 <td class="text-[11.5px] text-muted">{{ $r->note }}</td>
                                 <td><span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $r->activate ? 'AKTIF' : 'NONAKTIF' }}</span></td>
                                 <td class="text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openRule({{ $r->id_rule }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$r->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleRule({{ $r->id_rule }})"
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openRule({{ $r->id_rule }})" />
+                                    <x-grid.action-icon :active="$r->activate" :title="$r->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleRule({{ $r->id_rule }})"
                                         :variant="$r->activate ? 'danger' : 'default'" />
                                 </td>
                             </tr>

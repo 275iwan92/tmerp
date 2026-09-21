@@ -432,10 +432,10 @@ new #[Title('Aturan Bill of Process — TELASIH MAKMUR ERP')] class extends Comp
                                 </td>
                                 <td class="text-right whitespace-nowrap">
                                     @if ($this->canEdit())
-                                        <x-grid.action-icon icon="▲" title="Naikkan urutan" action="move({{ $r->id_bop_rule }}, -1)" />
-                                        <x-grid.action-icon icon="▼" title="Turunkan urutan" action="move({{ $r->id_bop_rule }}, 1)" />
-                                        <x-grid.action-icon icon="✎" title="Edit" action="openForm({{ $r->id_bop_rule }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$r->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $r->id_bop_rule }})"
+                                        <x-grid.action-icon icon="fa-chevron-up" title="Naikkan urutan" action="move({{ $r->id_bop_rule }}, -1)" />
+                                        <x-grid.action-icon icon="fa-chevron-down" title="Turunkan urutan" action="move({{ $r->id_bop_rule }}, 1)" />
+                                        <x-grid.action-icon icon="fa-pen" title="Edit" action="openForm({{ $r->id_bop_rule }})" />
+                                        <x-grid.action-icon :active="$r->activate" :title="$r->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $r->id_bop_rule }})"
                                             :confirm="($r->activate ? 'Nonaktifkan' : 'Aktifkan').' aturan '.($r->step_label ?: $r->material_role).'?'"
                                             :variant="$r->activate ? 'danger' : 'default'" />
                                     @endif

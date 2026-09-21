@@ -429,9 +429,9 @@ new #[Title('Jurnal Kas & Bank — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($v->status) }}">{{ $v->status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $v->voucher_id }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $v->voucher_id }})" />
                                         @if ($v->status === 'DRAFT')
-                                            <x-grid.action-icon icon="✓" title="{{ Translator::t('fin_cb_action_post', 'Post Jurnal') }}" action="postDoc({{ $v->voucher_id }})"
+                                            <x-grid.action-icon icon="fa-check" title="{{ Translator::t('fin_cb_action_post', 'Post Jurnal') }}" action="postDoc({{ $v->voucher_id }})"
                                                 confirm="{{ Translator::t('inv_confirm_posting_prefix', 'Posting') }} {{ $v->voucher_number }}? {{ Translator::t('fin_cb_confirm_posting_suffix', 'Setelah posting tidak bisa diedit lagi.') }}" variant="success" />
                                         @endif
                                     </td>

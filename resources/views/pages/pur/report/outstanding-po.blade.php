@@ -159,7 +159,7 @@ new #[Title('Outstanding PO — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->po->status === 'PARTIALLY_RECEIVED' ? 'bg-[#fff5e0] text-[#8a5a00]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->po->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="openPo({{ $r->po->po_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openPo({{ $r->po->po_id }})" />
                                 </td>
                             </tr>
                         @empty

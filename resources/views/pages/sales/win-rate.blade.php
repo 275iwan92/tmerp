@@ -163,7 +163,7 @@ new #[Title('Win-Rate Sales — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $inq->pic_sales ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-muted">{{ $inq->cancel_reason ?? '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="openInquiry({{ $inq->id_inquiry }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openInquiry({{ $inq->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty

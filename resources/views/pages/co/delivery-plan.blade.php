@@ -300,7 +300,7 @@ new #[Title('Customer Plan Delivery — TELASIH MAKMUR ERP')] class extends Comp
                                 @if (! $mergeMode)
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                         @if ($d->status === 'PLANNED')
-                                            <x-grid.action-icon icon="✂" title="Split / Pindah Tanggal" action="openSplitModal({{ $d->id_delivery }})" />
+                                            <x-grid.action-icon icon="fa-scissors" title="Split / Pindah Tanggal" action="openSplitModal({{ $d->id_delivery }})" />
                                         @endif
                                     </td>
                                 @endif

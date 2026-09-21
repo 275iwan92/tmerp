@@ -319,8 +319,8 @@ new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends 
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $c->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $c->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $c->id_category }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$c->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $c->id_category }})"
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $c->id_category }})" />
+                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $c->id_category }})"
                                         :confirm="($c->activate ? 'Nonaktifkan' : 'Aktifkan').' kategori '.$c->category_name.'?'"
                                         :variant="$c->activate ? 'danger' : 'default'" />
                                 </td>

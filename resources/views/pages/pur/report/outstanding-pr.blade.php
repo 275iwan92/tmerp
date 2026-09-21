@@ -140,7 +140,7 @@ new #[Title('Outstanding PR — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->pr->status === 'PARTIALLY_ORDERED' ? 'bg-[#fff5e0] text-[#8a5a00]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $r->pr->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="openPr({{ $r->pr->pr_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openPr({{ $r->pr->pr_id }})" />
                                 </td>
                             </tr>
                         @empty

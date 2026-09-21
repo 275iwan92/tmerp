@@ -146,7 +146,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->layoutStatusBadgeClass($status) }}">{{ $status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka Pro-Dev" action="open({{ $p->id_part }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Pro-Dev" action="open({{ $p->id_part }})" />
                                 </td>
                             </tr>
                         @empty

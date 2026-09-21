@@ -225,7 +225,7 @@ new #[Title('Presensi Harian — TELASIH MAKMUR ERP')] class extends Component
                                     {{ $r->source === 'MANUAL_OVERRIDE' ? Translator::t('hrm_att_source_manual', 'Manual') : Translator::t('hrm_att_source_auto', 'Otomatis') }}
                                 </td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✏️" title="{{ Translator::t('hrm_att_action_override', 'Override Status') }}" action="openOverride({{ $r->id_daily }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('hrm_att_action_override', 'Override Status') }}" action="openOverride({{ $r->id_daily }})" />
                                 </td>
                             </tr>
                         @empty

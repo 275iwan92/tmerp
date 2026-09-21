@@ -222,7 +222,7 @@ new #[Title('Purchase Return — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($r->status) }}">{{ $r->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openReturn({{ $r->prt_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openReturn({{ $r->prt_id }})" />
                                 </td>
                             </tr>
                         @empty

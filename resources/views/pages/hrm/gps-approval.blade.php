@@ -126,8 +126,8 @@ new #[Title('Approval Lokasi GPS — TELASIH MAKMUR ERP')] class extends Compone
                                 <td class="px-3 py-2"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->statusBadgeClass($log->hr_approval_status) }}">{{ $log->hr_approval_status }}</span></td>
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
                                     @if ($log->hr_approval_status === 'PENDING')
-                                        <x-grid.action-icon icon="✓" title="Setujui" action="approve({{ $log->id_gps_log }})" confirm="Setujui presensi ini meski di luar radius?" variant="success" />
-                                        <x-grid.action-icon icon="✗" title="Tolak" action="openReject({{ $log->id_gps_log }})" variant="danger" />
+                                        <x-grid.action-icon icon="fa-check" title="Setujui" action="approve({{ $log->id_gps_log }})" confirm="Setujui presensi ini meski di luar radius?" variant="success" />
+                                        <x-grid.action-icon icon="fa-xmark" title="Tolak" action="openReject({{ $log->id_gps_log }})" variant="danger" />
                                     @endif
                                 </td>
                             </tr>

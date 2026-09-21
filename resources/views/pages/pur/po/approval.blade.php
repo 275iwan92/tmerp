@@ -127,7 +127,7 @@ new #[Title('PO Approval Center — TELASIH MAKMUR ERP')] class extends Componen
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $r->pending->action === 'HOLD' ? 'bg-[#f1ecfc] text-[#6d28d9]' : 'bg-[#fff5e0] text-[#8a5a00]' }}">{{ $r->pending->action === 'HOLD' ? 'DITAHAN' : 'MENUNGGU' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="openPo({{ $r->po->po_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openPo({{ $r->po->po_id }})" />
                                 </td>
                             </tr>
                         @empty

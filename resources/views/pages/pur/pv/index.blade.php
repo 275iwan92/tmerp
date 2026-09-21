@@ -205,7 +205,7 @@ new #[Title('Penerimaan Barang (SPB) — TELASIH MAKMUR ERP')] class extends Com
                                         } }}">{{ $pv->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openReceipt({{ $pv->pv_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openReceipt({{ $pv->pv_id }})" />
                                 </td>
                             </tr>
                         @empty
