@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Pilihan Ikon Aksi dalam Konteks Grid</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .wrap { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 11px; font-weight: 600; color: #4a5568; text-align: left; background: #f7f9fc; padding: 8px 12px; border-bottom: 1px solid #e6eaf0; text-transform: none; }
+  td { padding: 8px 12px; border-bottom: 1px solid #f1f4f8; font-size: 12px; color: #1f2937; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .avatar { width: 32px; height: 32px; border-radius: 7px; color: #fff; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .empname { font-size: 12.5px; font-weight: 600; color: #1f2937; letter-spacing: .1px; }
+  .empcode { font-size: 10.5px; color: #8a94a6; }
+  .clean { font-size: 11.5px; font-weight: 600; color: #16a34a; }
+  .badge-on { font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #e4f8ec; color: #16733f; }
+  .badge-off { font-size: 10.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #eef0f3; color: #8a94a6; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .btn-b { width: 30px; height: 30px; border: 1px solid #d7dbe2; background: #fff; border-radius: 7px; font-size: 12.5px; }
+  .opthead { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: #fbfcfe; border-bottom: 1px solid #e6eaf0; }
+  .tag { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: #2c3e69; color: #fff; letter-spacing: .3px; }
+  .desc { font-size: 10.5px; color: #64748b; }
+</style>
+</head>
+<body class="text-xs">
+
+<header class="bg-navy text-white px-5 py-3">
+  <div class="text-sm font-bold">Pilihan Ikon Kolom AKSI — dilihat di dalam grid, berdampingan dengan kolom teks</div>
+  <div class="text-[10px] opacity-70">Replika grid Master Employee &middot; ukuran huruf, tinggi baris, dan warna sama dengan layar aslinya &middot; nama & departemen = data nyata dari tangkapan layar user</div>
+</header>
+
+<main class="p-4 max-w-[1340px] mx-auto space-y-3">
+
+  <!-- ====== SEKARANG ====== -->
+  <div class="wrap">
+    <div class="opthead">
+      <span class="tag" style="background:#64748b">SEKARANG</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Karakter Unicode</span>
+      <span class="desc">Tinggi ikon tidak sebanding dengan nama karyawan di kirinya &mdash; garisnya lebih tipis daripada teks "Clean / No SP", jadi kolom Aksi terlihat pudar.</span>
+    </div>
+    <table>
+      <tr><th style="width:290px">EMPLOYEE</th><th style="width:250px">DEPARTEMEN</th><th style="width:150px">KEDISIPLINAN</th><th style="width:130px">STATUS KERJA</th><th>AKSI</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027 &middot; OP UV / LAMINATING (TR)</div></div></div></td>
+        <td>Laminating</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5">&#9998;</span><span class="btn" style="color:#c0392b">&#9211;</span></div></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#3b82f6">AB</span><div><div class="empname">ABI</div><div class="empcode">TM-00454 &middot; Karyawan Legacy</div></div></div></td>
+        <td>Migrasi Legacy &mdash; Belum Dipetakan</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-off">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5">&#9998;</span><span class="btn" style="color:#8a94a6">&#9211;</span></div></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== A ====== -->
+  <div class="wrap" style="border:2px solid #059669">
+    <div class="opthead" style="background:#ecfdf5;border-bottom-color:#a7f3d0">
+      <span class="tag" style="background:#059669">PILIHAN A</span>
+      <span class="font-bold text-[12.5px] text-slate-700">fa-pen-to-square + fa-power-off</span>
+      <span class="desc">Tebal ikon setara dengan tebal nama karyawan (600) &mdash; kolom Aksi berdiri sejajar dengan kolom teks, tidak lebih menonjol dan tidak tenggelam.</span>
+    </div>
+    <table>
+      <tr><th style="width:290px">EMPLOYEE</th><th style="width:250px">DEPARTEMEN</th><th style="width:150px">KEDISIPLINAN</th><th style="width:130px">STATUS KERJA</th><th>AKSI</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027 &middot; OP UV / LAMINATING (TR)</div></div></div></td>
+        <td>Laminating</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span class="btn" style="color:#c0392b;background:#fdeceb"><i class="fa-solid fa-power-off"></i></span></div></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#3b82f6">AB</span><div><div class="empname">ABI</div><div class="empcode">TM-00454 &middot; Karyawan Legacy</div></div></div></td>
+        <td>Migrasi Legacy &mdash; Belum Dipetakan</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-off">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span class="btn" style="color:#8a94a6;background:#f1f3f7"><i class="fa-solid fa-power-off"></i></span></div></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#7c3aed">AM</span><div><div class="empname">ADE MAHENDRA</div><div class="empcode">TM-00104 &middot; HARIAN LEPAS</div></div></div></td>
+        <td>Harian Lepas</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span class="btn" style="color:#c0392b;background:#fdeceb"><i class="fa-solid fa-power-off"></i></span></div></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== B ====== -->
+  <div class="wrap">
+    <div class="opthead">
+      <span class="tag">PILIHAN B</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Pensil + sakelar geser</span>
+      <span class="desc">Sakelar hijau/abu menarik perhatian lebih kuat daripada kolom STATUS KERJA di sebelahnya &mdash; dua penanda status bersebelahan, berpotensi rancu.</span>
+    </div>
+    <table>
+      <tr><th style="width:290px">EMPLOYEE</th><th style="width:250px">DEPARTEMEN</th><th style="width:150px">KEDISIPLINAN</th><th style="width:130px">STATUS KERJA</th><th>AKSI</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027 &middot; OP UV / LAMINATING (TR)</div></div></div></td>
+        <td>Laminating</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><div class="flex items-center gap-2"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span style="position:relative;display:inline-flex;align-items:center;width:36px;height:20px;border-radius:999px;background:#16a34a"><span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:999px;transform:translateX(18px)"></span></span></div></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#3b82f6">AB</span><div><div class="empname">ABI</div><div class="empcode">TM-00454 &middot; Karyawan Legacy</div></div></div></td>
+        <td>Migrasi Legacy &mdash; Belum Dipetakan</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-off">Bekerja</span></td>
+        <td><div class="flex items-center gap-2"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span style="position:relative;display:inline-flex;align-items:center;width:36px;height:20px;border-radius:999px;background:#d1d5db"><span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:999px;transform:translateX(4px)"></span></span></div></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== C ====== -->
+  <div class="wrap">
+    <div class="opthead">
+      <span class="tag">PILIHAN C</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Berbingkai kotak (fa-pen + fa-ban / fa-circle-check)</span>
+      <span class="desc">Bingkai membuat kolom Aksi jadi unsur paling berat di baris &mdash; mata tertarik ke kanan lebih dulu sebelum membaca nama karyawan. Lebar kolom juga bertambah.</span>
+    </div>
+    <table>
+      <tr><th style="width:290px">EMPLOYEE</th><th style="width:250px">DEPARTEMEN</th><th style="width:150px">KEDISIPLINAN</th><th style="width:130px">STATUS KERJA</th><th>AKSI</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027 &middot; OP UV / LAMINATING (TR)</div></div></div></td>
+        <td>Laminating</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn btn-b" style="color:#2c7be5"><i class="fa-solid fa-pen"></i></span><span class="btn btn-b" style="color:#c0392b;border-color:#f5c6c6"><i class="fa-solid fa-ban"></i></span></div></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#3b82f6">AB</span><div><div class="empname">ABI</div><div class="empcode">TM-00454 &middot; Karyawan Legacy</div></div></div></td>
+        <td>Migrasi Legacy &mdash; Belum Dipetakan</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-off">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn btn-b" style="color:#2c7be5"><i class="fa-solid fa-pen"></i></span><span class="btn btn-b" style="color:#16a34a;border-color:#c8ecd6"><i class="fa-solid fa-circle-check"></i></span></div></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== D ====== -->
+  <div class="wrap">
+    <div class="opthead">
+      <span class="tag">PILIHAN D</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Khusus karyawan (fa-user-pen + fa-user-slash / fa-user-check)</span>
+      <span class="desc">Ikon berisi sosok orang &mdash; bentuknya lebih padat sehingga terlihat lebih gelap daripada teks di kirinya, dan hanya masuk akal di grid karyawan.</span>
+    </div>
+    <table>
+      <tr><th style="width:290px">EMPLOYEE</th><th style="width:250px">DEPARTEMEN</th><th style="width:150px">KEDISIPLINAN</th><th style="width:130px">STATUS KERJA</th><th>AKSI</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027 &middot; OP UV / LAMINATING (TR)</div></div></div></td>
+        <td>Laminating</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-user-pen"></i></span><span class="btn" style="color:#c0392b;background:#fdeceb"><i class="fa-solid fa-user-slash"></i></span></div></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#3b82f6">AB</span><div><div class="empname">ABI</div><div class="empcode">TM-00454 &middot; Karyawan Legacy</div></div></div></td>
+        <td>Migrasi Legacy &mdash; Belum Dipetakan</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-off">Bekerja</span></td>
+        <td><div class="flex items-center gap-1.5"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-user-pen"></i></span><span class="btn" style="color:#16a34a;background:#e9f9ef"><i class="fa-solid fa-user-check"></i></span></div></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- ====== E ====== -->
+  <div class="wrap">
+    <div class="opthead">
+      <span class="tag">PILIHAN E</span>
+      <span class="font-bold text-[12.5px] text-slate-700">Satu tombol titik tiga</span>
+      <span class="desc">Kolom Aksi jadi paling ringan &mdash; mata tidak terganggu saat menyusuri kolom teks. Konsekuensinya aksi yang sering dipakai butuh dua kali klik.</span>
+    </div>
+    <table>
+      <tr><th style="width:290px">EMPLOYEE</th><th style="width:250px">DEPARTEMEN</th><th style="width:150px">KEDISIPLINAN</th><th style="width:130px">STATUS KERJA</th><th>AKSI</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027 &middot; OP UV / LAMINATING (TR)</div></div></div></td>
+        <td>Laminating</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-on">Bekerja</span></td>
+        <td><span class="btn" style="color:#64748b;background:#f1f3f7"><i class="fa-solid fa-ellipsis-vertical"></i></span></td>
+      </tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#3b82f6">AB</span><div><div class="empname">ABI</div><div class="empcode">TM-00454 &middot; Karyawan Legacy</div></div></div></td>
+        <td>Migrasi Legacy &mdash; Belum Dipetakan</td><td><span class="clean">Clean / No SP</span></td><td><span class="badge-off">Bekerja</span></td>
+        <td><span class="btn" style="color:#64748b;background:#f1f3f7"><i class="fa-solid fa-ellipsis-vertical"></i></span></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- perbandingan berdampingan -->
+  <div class="wrap">
+    <div class="opthead"><span class="tag" style="background:#b45309">BERDAMPINGAN</span><span class="font-bold text-[12.5px] text-slate-700">Kelima pilihan pada baris yang sama persis</span><span class="desc">Untuk menilai bobot ikon terhadap teks "ACHMAD SYARIF" dan "Clean / No SP" tanpa berpindah pandangan.</span></div>
+    <table>
+      <tr><th style="width:260px">EMPLOYEE</th><th style="width:150px">KEDISIPLINAN</th><th style="width:70px">SEKARANG</th><th style="width:78px">A</th><th style="width:84px">B</th><th style="width:84px">C</th><th style="width:78px">D</th><th>E</th></tr>
+      <tr>
+        <td><div class="flex items-center gap-2.5"><span class="avatar" style="background:#e0812c">AS</span><div><div class="empname">ACHMAD SYARIF</div><div class="empcode">TM-00027</div></div></div></td>
+        <td><span class="clean">Clean / No SP</span></td>
+        <td><div class="flex gap-1"><span class="btn" style="color:#2c7be5">&#9998;</span><span class="btn" style="color:#c0392b">&#9211;</span></div></td>
+        <td><div class="flex gap-1"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span class="btn" style="color:#c0392b;background:#fdeceb"><i class="fa-solid fa-power-off"></i></span></div></td>
+        <td><div class="flex gap-1.5 items-center"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-pen-to-square"></i></span><span style="position:relative;display:inline-flex;align-items:center;width:36px;height:20px;border-radius:999px;background:#16a34a"><span style="display:inline-block;width:14px;height:14px;background:#fff;border-radius:999px;transform:translateX(18px)"></span></span></div></td>
+        <td><div class="flex gap-1"><span class="btn btn-b" style="color:#2c7be5"><i class="fa-solid fa-pen"></i></span><span class="btn btn-b" style="color:#c0392b;border-color:#f5c6c6"><i class="fa-solid fa-ban"></i></span></div></td>
+        <td><div class="flex gap-1"><span class="btn" style="color:#2c7be5;background:#eef3fb"><i class="fa-solid fa-user-pen"></i></span><span class="btn" style="color:#c0392b;background:#fdeceb"><i class="fa-solid fa-user-slash"></i></span></div></td>
+        <td><span class="btn" style="color:#64748b;background:#f1f3f7"><i class="fa-solid fa-ellipsis-vertical"></i></span></td>
+      </tr>
+    </table>
+  </div>
+
+</main>
+</body>
+</html>
