@@ -289,12 +289,14 @@ dikerjakan sesi ini — `master/raw-material/index.blade.php` dan
 `co/list.blade.php`. **Jangan roll out ke grid lain tanpa ditanya dulu.**
 
 - **Kolom Aksi pindah dari `<td>` terakhir (kanan) ke `<td>` pertama
-  (kiri, sebelum kolom identitas)**, lebar tetap `w-[110px]`. Ikon
-  diperbesar dari `w-7 h-7` (§5) jadi **`w-8 h-8` + `border` (selalu
-  terlihat, bukan cuma saat hover)** supaya lebih jelas ("icon edit yang
-  cukup jelas" — permintaan user eksplisit), `title` tooltip tetap wajib.
-  Raw Material: ✎ Edit + ⏻ Toggle-aktif (border warna ikut state, sama pola
-  §5). CO: ↗ Buka + ✓ Confirm kondisional (`wire:confirm`, border hijau).
+  (kiri, sebelum kolom identitas)**, lebar tetap `w-[110px]`. **Catatan
+  2026-09-21/22:** bagian "ikon `w-8 h-8` + border" SUDAH BUKAN pengecualian
+  pilot lagi — user memilih "Pilihan C" dan bingkai itu jadi default semua
+  grid (§5). Yang masih pengecualian pilot 2 layar ini tinggal **posisi
+  kolom Aksi di KIRI** + checkbox multi-select. Ikonnya sekarang Font
+  Awesome: Raw Material `fa-pen` Edit + toggle-aktif (`:active=`), CO
+  `fa-up-right-from-square` Buka + `fa-check` Confirm kondisional
+  (`wire:confirm`).
 - **Checkbox multi-select — HANYA utk baris yang BELUM confirm/masih
   draft** (`@if (! $m->stat_confirm)` di Raw Material,
   `@if ($o->doc_status === 'DRAFT')` di CO) — baris yang sudah
@@ -486,6 +488,61 @@ Kalau butuh subtitle kecil di bawah angka (mis. "MATERIAL", "RM"), pakai
 
 ---
 
+## 2b. Kotak statistik ADALAH filter data (LOCKED — ketentuan user 2026-09-21)
+
+**Berlaku untuk SELURUH grid, terus-menerus** — layar baru & revisi mockup ikut
+aturan ini tanpa perlu diperintah lagi (pola penulisan sama dgn
+`FORM_UI_STANDARD.md` §1b).
+
+Kotak statistik bukan sekadar penunjuk angka: **diklik = grid tersaring,
+diklik lagi = filter lepas**.
+
+**Mekanismenya satu untuk semua grid** (jangan disalin per layar):
+- Trait `App\Livewire\Concerns\HasGridStatFilter` — properti `$statFilter`,
+  `toggleStatFilter()`, `clearStatFilter()`, `applyStatFilter($query)`,
+  `statBoxes()`.
+- Komponen `<x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />`
+  (menggantikan penulisan `x-grid.stat-row` + `x-grid.stat-box` satu per satu).
+- Layar cukup mendeklarasikan `statFilterDefs()`:
+
+```php
+protected function statFilterDefs(): array
+{
+    return [
+        'total'  => ['label' => 'Total Mesin', 'value' => $this->statTotal, 'tone' => 'total'],
+        'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                     'filter' => fn ($q) => $q->where('activate', true)],
+    ];
+}
+```
+
+Aturan yang mengikat:
+1. **Angka di kotak tetap menghitung KESELURUHAN** (query dasar + search), bukan
+   hasil saringan yang sedang aktif — kalau tidak, angkanya berubah sendiri
+   begitu diklik dan membingungkan. Kalau angka kotak dihitung dari koleksi
+   baris yang sama, pisahkan baris tampil ke computed sendiri
+   (`visibleDocuments()`/`visibleParts()` — pola yang sudah dipakai di Stock
+   In/Out/Return, ProDev List, Costing List).
+2. **Kotak yang bukan kategori baris JANGAN dipaksa bisa diklik**: kotak
+   "Total" (sama saja dengan tanpa filter), jumlah rupiah, rata-rata, dan
+   angka yang menghitung TABEL LAIN (mis. "Total Lokasi/Bin" di Master Gudang
+   menghitung `wh_loc`, bukan baris gudang). Cukup hilangkan kunci `'filter'`
+   — kotaknya tetap tampil, tidak bisa ditekan. Jangan mengarang kategori.
+3. **Klausa filter WAJIB sama persis dengan klausa yang menghitung angkanya** —
+   kalau angka "Disetujui / Diproses" memakai `whereIn(status, [...])`,
+   filternya memakai daftar status yang sama.
+4. Kotak aktif ditandai **ring tebal + centang** di pojok kanan atas, plus chip
+   "Filter aktif: <label>" + tombol **Lepas filter** di bawah baris kotak
+   (dirender otomatis oleh `x-grid.stat-filter-row`).
+5. Filter kotak **berdampingan** dengan search, filter kolom, sort, dan
+   paginasi — bukan menggantikannya. Saat kotak diklik, paginasi kembali ke
+   halaman 1 (`resetPage()` sudah dipanggil trait).
+6. Grid berbasis Collection (bukan query builder): closure `'filter'`-nya
+   **mengembalikan** hasil `->filter(...)` (Collection immutable). Grid
+   berbasis query builder cukup memanggil `->where(...)`, tak perlu return.
+
+---
+
 ## 3. Kolom identitas — avatar + Nama (tebal) + Kode (subtitle abu)
 
 **Jangan lagi bikin kolom "Kode" dan "Nama X" terpisah.** Gabung jadi satu kolom
@@ -570,28 +627,45 @@ yang digabung HANYA identitas nama+kode.
 
 ## 5. Kolom Aksi — selalu tepat 2 ikon: Edit + Toggle-aktif
 
-**Posisi default: kanan (`<td>` terakhir).** Pengecualian pilot 2 layar
-(Aksi di kiri, ikon `w-8 h-8` + border) didokumentasikan di §10 — jangan
-generalisasi tanpa ditanya user dulu.
+**Posisi default: kanan (`<td>` terakhir).** Pengecualian pilot 2 layar (Aksi di
+kiri) didokumentasikan di §10.
+
+**Ikon = Font Awesome BERBINGKAI — "Pilihan C", keputusan user 2026-09-21
+(LOCKED).** Karakter Unicode (`✎`, `⏻`) TIDAK dipakai lagi: tipis, bentuknya
+beda-beda antar perangkat, dan tidak sebaris dgn ikon Font Awesome tombol Back.
+Bingkai kotak (`w-8 h-8` + border) yang dulu cuma dipakai 2 layar pilot sekarang
+jadi **default di semua grid**. Mockup pembanding yang disetujui:
+`docs/mockups/pilihan_ikon_aksi_grid_konteks.jpg`.
+
+Selalu lewat komponen, jangan tulis `<button>` sendiri:
 
 ```html
-<td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-    <button type="button" wire:click.stop="edit({{ $row->id }})" title="Edit"
-        class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer">✎</button>
-    <button type="button" wire:click.stop="toggleActive({{ $row->id }})"
-        wire:confirm="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }} {{ $entityLabel }} {{ $row->name }}?"
-        title="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }}"
-        class="inline-flex items-center justify-center w-7 h-7 rounded-md cursor-pointer {{ $row->activate ? 'text-[#c0392b] hover:bg-[#fdeceb]' : 'text-accent hover:bg-[#eef3fb]' }}">⏻</button>
+<td class="px-3 py-2 border-b border-field-badge text-right whitespace-nowrap">
+    <x-grid.action-icon icon="fa-pen" title="Edit" action="edit({{ $row->id }})" />
+    <x-grid.action-icon :active="$row->activate"
+        :title="$row->activate ? 'Nonaktifkan' : 'Aktifkan'"
+        action="toggleActive({{ $row->id }})"
+        confirm="{{ $row->activate ? 'Nonaktifkan' : 'Aktifkan' }} {{ $entityLabel }} {{ $row->name }}?" />
 </td>
 ```
 
-- Urutan tetap: Edit (✎) dulu, baru toggle (⏻) — jangan dibalik, jangan diselingi
+- `:active="$row->activate"` = tombol toggle: **ikon & warnanya ditentukan
+  komponen** (aktif → `fa-ban` merah "Nonaktifkan", nonaktif → `fa-circle-check`
+  hijau "Aktifkan"), jadi tidak ada layar yang bisa menyimpang. Jangan lagi
+  menulis `icon=` + `:variant=` sendiri untuk aksi ini.
+- Ikon baku aksi lain (sapu bersih 2026-09-22, 90 titik di 55 file):
+  Edit `fa-pen` · Buka dokumen `fa-up-right-from-square` · Confirm/Post
+  `fa-check` · Batal/Tolak `fa-xmark` · Lihat `fa-eye` · Reset password
+  `fa-key` · Konversi/ulang `fa-rotate` · Split `fa-scissors` · Naik/turun
+  `fa-chevron-up`/`fa-chevron-down`.
+- Urutan tetap: Edit dulu, baru toggle — jangan dibalik, jangan diselingi
   tombol lain.
 - Ikon TEKS (`Edit`, `Nonaktifkan`) **dilarang** di kolom Aksi grid — selalu ikon
   polos + `title` tooltip.
-- Warna toggle berubah sesuai state saat ini (merah = klik untuk nonaktifkan,
-  accent/biru = klik untuk aktifkan) — bukan glyph yang berganti (⛔↔✓), cukup
-  `⏻` konsisten, warna+tooltip yang bicara.
+- Warna DAN ikon toggle berubah sesuai state saat ini (merah `fa-ban` = klik
+  untuk nonaktifkan, hijau `fa-circle-check` = klik untuk aktifkan). Ini
+  MENGGANTI aturan lama "glyph tetap `⏻`, cuma warna yang bicara" (dicabut user
+  2026-09-21 bersama Pilihan C).
 - **Setiap grid Master wajib punya `toggleActive()` (atau
   `toggleXxxActive()` kalau ada beberapa entitas dalam satu file, mis. UoM punya
   `toggleUnitActive()` + `toggleConversionActive()`)** — kalau modelnya belum
@@ -605,7 +679,8 @@ generalisasi tanpa ditanya user dulu.
   global) — mis. UoM punya ikon 🔁 "Konversi" di kolom Aksi
   (`wire:click.stop="openConversionPanel('{{ $u->uom_code }}')"`) karena
   tombol itu dulu di toolbar butuh "baris terpilih" dulu, sekarang toolbar
-  tidak boleh punya tombol begitu (§6) — jadi dipindah ke baris itu sendiri.
+  tidak boleh punya tombol begitu (§6) — jadi dipindah ke baris itu sendiri
+  (sekarang ikonnya `fa-rotate`).
   Taruh di kiri Edit/Toggle atau sesuai urutan kepentingan, tetap ikon polos +
   `title` tooltip, tidak ada teks.
 

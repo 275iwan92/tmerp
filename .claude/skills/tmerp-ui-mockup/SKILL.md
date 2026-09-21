@@ -13,7 +13,7 @@ Tujuan: user melihat gambar (JPEG) SEBELUM layar dibangun di Livewire. Mockup ad
 
 1. **Tentukan jenis layar, baca standarnya** (jangan baca semua, lihat `docs/uistandardindex.md`):
    - Form/entry → `docs/FORM_UI_STANDARD.md` + `docs/uistandard/uistandard_component_form.md`
-   - Grid/worklist/master → `docs/griduistandard.md` (tanpa header halaman, stat box pastel, kolom identitas avatar+nama+kode, aksi Buka/Edit)
+   - Grid/worklist/master → `docs/griduistandard.md` (tanpa header halaman, stat box pastel, kolom identitas avatar+nama+kode, aksi Buka/Edit). **Wajib digambar sejak mockup (LOCKED user 2026-09-21):** kotak statistik sebagai FILTER yang bisa diklik (kotak terpilih = ring tebal + centang + chip "Lepas filter"; kotak agregat/rupiah digambar tidak bisa diklik) dan ikon kolom Aksi Font Awesome BERBINGKAI (`fa-pen` Edit, `fa-ban`/`fa-circle-check` toggle, `fa-up-right-from-square` Buka, `fa-check` Confirm) — bukan `✎`/`⏻`.
    - Cetak/nota → `docs/printnotastandard.md`; Gantt → `ganttboardstandard.md`; Kanban → `kanbanboardstandard.md`
 2. **Cek sumber acuan lebih dulu**: `docs/mockups/*.html`, `docs/attachments_index.md` (form kertas/Excel nyata), `docs/screens/screen_*.md`, dan layar Livewire yang sudah ada. Daftar SEMUA field/blok acuan; bangun persis seperti itu. Jangan mengarang field atau memakai ulang layar lama "karena lebih cepat".
 3. **Salin `template.html`** (folder skill ini) ke `docs/mockups/<nama_layar>.html`, isi konten. Nama file ASCII, tanpa emoji/spasi.

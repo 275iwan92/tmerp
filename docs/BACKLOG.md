@@ -1726,13 +1726,56 @@ dianggap regresi dari pekerjaan 2026-09-21.
 Semua berlaku untuk SELURUH grid (pola sama), bukan per layar. Referensi visual
 dari user: aplikasi grid pihak ketiga (tangkapan layar di sesi 2026-09-21).
 
-### 22.1 Kotak statistik jadi FILTER DATA — [TERJADWAL 22:30, 2026-09-21]
-4 kotak di atas grid (mis. EMPLOYEE AKTIF / NON AKTIF / MINGGUAN / BULANAN)
-harus bisa diklik untuk menyaring isi grid; klik lagi = lepas. Angka di kotak
-tetap menghitung keseluruhan, bukan hasil saringan. Detail lengkap ada di
-prompt tugas terjadwal `grid-statbox-jadi-filter`.
+### 22.1 Kotak statistik jadi FILTER DATA — MEKANISME SELESAI 2026-09-22
+Aturan tetapnya sudah dikunci di `griduistandard.md` §2b (+ skill
+`tmerp-screen`/`tmerp-ui-mockup`), mekanismenya dibangun di PUSAT:
+trait `App\Livewire\Concerns\HasGridStatFilter` (`statFilterDefs()`,
+`toggleStatFilter()`, `clearStatFilter()`, `applyStatFilter()`, `statBoxes()`)
++ komponen `x-grid.stat-filter-row`. Layar cukup mendeklarasikan definisinya.
 
-### 22.2 Ikon kolom Aksi — PILIHAN C (diputuskan user 2026-09-21)
+**Sudah dipasang & diuji (26 grid)**: Master Employee (pilot, 146/341/102/44
+cocok dgn angka kotak), Machine, Shift, Customer, Supplier, Produk, UOM,
+Currency, Gudang · Quotation List, CO List, Delivery Order List · COA ·
+HRM Position · ProDev List, WO List, Master Proses, Scrap Type, Rule Library ·
+PR Index, PO Index · Stock In/Out/Return · Costing List, Costing Instant List.
+
+**Belum dipasang (± 42 grid)** — mekanismenya sudah ada, sisanya tinggal
+mendeklarasikan `statFilterDefs()` per layar (± 15 baris + 1 baris markup):
+`co/delivery-plan`, `finance/cash-bank`, `finance/dp-invoice`,
+`hrm/attendance-daily`, `hrm/correction-requests`, `hrm/discipline-report`,
+`hrm/employee-contact-gap`, `hrm/gps-approval`, `hrm/leave-requests`,
+`hrm/payroll-batch-run`, `hrm/payroll-employee-bank`,
+`hrm/payroll-employee-salary`, `hrm/payroll-payslip-list`,
+`hrm/sop-documents`, `inquiry/hub`, `inquiry/imposition-list` (LEGACY),
+`inventory/stock-adjustment(-approval)`, `master/exchange-rate`,
+`master/holiday`, `master/mat-category`, `master/raw-material/index`,
+`production/bop-rule`, `production/master-crew`, `production/mts-forecast`,
+`production/old_prodev_list` (LEGACY), `production/process-rate`,
+`production/scheduling-board`, `pur/po/approval`, `pur/pq/index`,
+`pur/pr/approval`, `pur/prt/approval`, `pur/prt/index`, `pur/pv/index`,
+`pur/report/outstanding-{po,pr,pv}`, `recruitment/sync-log`,
+`sales/win-rate`, `security/index`, `setup/component-library`,
+`setup/data-origin`.
+- Catatan `master/mat-category`: grid hirarki (pohon 5 level) — filternya perlu
+  keputusan dulu (menyaring simpul = memutus pohon), jangan disamakan begitu
+  saja dgn grid datar.
+- Catatan grid laporan (`pur/report/*`, `sales/win-rate`,
+  `finance/cash-*`): sebagian kotaknya angka RUPIAH/rata-rata → sesuai §2b
+  dibiarkan tidak bisa diklik, bukan dipaksa jadi kategori.
+
+### 22.2 Ikon kolom Aksi — PILIHAN C — SELESAI 2026-09-22
+Sapu bersih 90 titik pemanggilan `x-grid.action-icon` di 55 file: karakter
+Unicode diganti Font Awesome, bingkai kotak jadi DEFAULT komponen
+(`bordered=true`), dan tombol aktif/nonaktif jadi `:active="$row->activate"`
+(ikon+warna ditentukan komponen: `fa-ban` merah / `fa-circle-check` hijau)
+sehingga tidak ada layar yang bisa menyimpang. Ikon non-Master yang dipilih:
+Buka `fa-up-right-from-square`, Confirm/Post `fa-check`, Batal/Tolak
+`fa-xmark`, Lihat `fa-eye`, Reset password `fa-key`, Konversi `fa-rotate`,
+Split `fa-scissors`, Naik/Turun `fa-chevron-up`/`fa-chevron-down`.
+`griduistandard.md` §5 & §10 sudah diperbarui (§5 tidak lagi menyatakan
+default tanpa border; §10 tinggal menyisakan "Aksi di KIRI" sbg pilot).
+
+Rincian keputusan aslinya:
 Ganti karakter Unicode `✎`/`⏻` (tipis, beda-beda antar perangkat, tidak sebaris
 dgn Font Awesome tombol Back) menjadi **ikon berbingkai kotak**:
 - Edit = `fa-pen` dalam kotak bergaris.

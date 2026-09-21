@@ -3,6 +3,35 @@
 
 ---
 
+## 2026-09-22 — Grid: kotak statistik jadi filter + ikon Aksi Font Awesome (BACKLOG §22.1, §22.2)
+
+Lanjutan tugas terjadwal `grid-statbox-jadi-filter` (jadwal 22:30 2026-09-21, tidak
+pernah jalan karena aplikasi tertutup — dijalankan ulang 2026-09-22).
+
+- **§22.1 — mekanisme di pusat**: trait `App\Livewire\Concerns\HasGridStatFilter`
+  + komponen `x-grid.stat-filter-row`. Layar cukup menulis `statFilterDefs()`
+  (label/value/tone/subtitle + klausa `filter`). Klik kotak = grid tersaring,
+  klik lagi = lepas, kotak aktif ber-ring + centang, ada chip "Lepas filter",
+  paginasi balik ke halaman 1, dan **angka kotak tetap menghitung keseluruhan**
+  (grid berbasis Collection dipisah ke computed `visibleXxx()` supaya angkanya
+  tidak ikut menyusut).
+- **26 grid** sudah dipasang & diuji lewat `Livewire::test(...)->call('toggleStatFilter', ...)`
+  dengan memeriksa jumlah baris benar-benar berubah (pilot Master Employee:
+  487 → 146/341/102/44, persis angka kotaknya). Sisa ±42 grid didaftar di
+  BACKLOG §22.1 — mekanismenya sudah ada, tinggal deklarasi per layar.
+- Kotak yang SENGAJA tidak bisa diklik: kotak "Total" (sama dgn tanpa filter),
+  "Divisi Terpakai"/"Departemen Terpakai" (hitung distinct, bukan kategori
+  baris), dan "Total Lokasi / Bin" di Master Gudang (menghitung tabel `wh_loc`,
+  bukan baris gudang).
+- **§22.2 — ikon Aksi Pilihan C**: 90 pemanggilan di 55 file disapu ke Font
+  Awesome berbingkai; `bordered` jadi default komponen; tombol aktif/nonaktif
+  memakai `:active=` (ikon & warna ditentukan komponen).
+- Aturan tetap ditulis: `griduistandard.md` §2b baru + §5/§10 diperbarui,
+  `_manifest.yaml`, skill `tmerp-screen` & `tmerp-ui-mockup`.
+- Verifikasi: 51 layar dirender lewat `Livewire::test` (0 gagal) + `npm run build`.
+
+---
+
 ## 2026-09-22 — Rollout standar input teks (BACKLOG §21.1–§21.3)
 
 Lanjutan tugas terjadwal `rollout-input-teks-malam` (jadwal 21:00 2026-09-21, sesi
