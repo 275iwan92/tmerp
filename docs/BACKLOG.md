@@ -1677,6 +1677,55 @@ Di tema Dark/Hitam, sidebar & shell ikut gelap tapi isi layar transaksi masih
 putih — field akan tetap terbaca, tapi belum benar-benar "dark mode". Ini
 scope terpisah yang sudah lama tercatat (`themestandard.md` §6), jangan
 dianggap regresi dari pekerjaan 2026-09-21.
+## 22. AGENDA GRID — 4 KETENTUAN BARU (instruksi user 2026-09-21 malam)
+
+Semua berlaku untuk SELURUH grid (pola sama), bukan per layar. Referensi visual
+dari user: aplikasi grid pihak ketiga (tangkapan layar di sesi 2026-09-21).
+
+### 22.1 Kotak statistik jadi FILTER DATA — [TERJADWAL 22:30, 2026-09-21]
+4 kotak di atas grid (mis. EMPLOYEE AKTIF / NON AKTIF / MINGGUAN / BULANAN)
+harus bisa diklik untuk menyaring isi grid; klik lagi = lepas. Angka di kotak
+tetap menghitung keseluruhan, bukan hasil saringan. Detail lengkap ada di
+prompt tugas terjadwal `grid-statbox-jadi-filter`.
+
+### 22.2 Ikon kolom Aksi — PILIHAN C (diputuskan user 2026-09-21)
+Ganti karakter Unicode `✎`/`⏻` (tipis, beda-beda antar perangkat, tidak sebaris
+dgn Font Awesome tombol Back) menjadi **ikon berbingkai kotak**:
+- Edit = `fa-pen` dalam kotak bergaris.
+- Nonaktifkan = `fa-ban` (merah) · Aktifkan = `fa-circle-check` (hijau).
+- Bingkai = varian `bordered` yang SUDAH ada di `x-grid.action-icon` tapi selama
+  ini cuma dipakai 2 layar pilot (`co/list`, `raw-material/index`) — sekarang
+  jadi standar, jadi `griduistandard.md` §5 & §10 WAJIB diperbarui (§5 masih
+  menyatakan default tanpa border).
+- Mockup pembanding: `docs/mockups/pilihan_ikon_aksi_grid_konteks.jpg`.
+
+### 22.3 Kerapatan baris + Baris per sel (mockup disetujui konsepnya)
+Panel dari toolbar grid, **dua setelan yang berdiri sendiri**:
+- **Kerapatan**: Rapat / Normal / Longgar → mengubah padding sel saja.
+- **Baris per sel**: Otomatis (teks membungkus penuh, tinggi baris ikut isi) atau
+  Tetap N (dipotong `line-clamp` + titik tiga, semua baris sama tinggi). Saat
+  Otomatis, kotak angka N dikelabukan.
+- Plus tautan "Kembalikan ke bawaan".
+- Mockup: `docs/mockups/grid_kerapatan_baris.jpg` (6 kombinasi).
+- **Gotcha implementasi**: `-webkit-line-clamp` TIDAK bisa dipasang langsung di
+  `<td>` (merusak layout sel) — bungkus isi sel dalam `<div>`.
+- **2 keputusan user yang belum dijawab** (kalau tak dijawab, pakai saran ini):
+  (a) satu setelan berlaku semua grid, boleh ditimpa per grid; (b) disimpan di
+  PERANGKAT (browser), bukan ikut user seperti `sys_grid_preference` — karena
+  kerapatan bergantung layar yang sedang dipakai, bukan siapa yang memakai.
+
+### 22.4 Navigasi keyboard di grid (instruksi user 2026-09-21)
+Sel grid bisa difokus & dijelajahi dengan keyboard, plus panel bantuan pintasan
+(ikon keyboard di toolbar). Daftar dari contoh user:
+`↑`/`↓`/`←`/`→` pindah 1 sel · `Home`/`End` sel pertama/terakhir baris ·
+`Ctrl+Home`/`Ctrl+End` sel pertama/terakhir halaman · `PageUp` baris terakhir
+halaman sebelumnya · `PageDown` baris pertama halaman berikutnya ·
+`Enter` buka detail/aksi sel · `Esc` tutup · `Ctrl+C` salin nilai sel terfokus.
+- Perlu diputuskan: apakah `Enter` membuka baris (pola `dblclick` yang sudah ada
+  di `griduistandard.md`) atau membuka menu aksi sel seperti contoh.
+- Catatan: ini yang paling besar dari empat item — sentuh semua grid, perlu
+  fokus DOM + status sel aktif, dan harus tidak bentrok dgn pintasan F1 (Help)
+  serta hotkey shell yang sudah ada.
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
