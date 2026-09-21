@@ -3,6 +3,32 @@
 
 ---
 
+## 2026-09-22 — Rollout standar input teks (BACKLOG §21.1–§21.3)
+
+Lanjutan tugas terjadwal `rollout-input-teks-malam` (jadwal 21:00 2026-09-21, sesi
+terjadwalnya berhenti sebelum sempat commit — dijalankan ulang 2026-09-22).
+
+- **Inquiry Form/Revise** (§21.2): `cancel_reason` & `lost_reason` → `x-form.textarea`,
+  `part_name` & `cfg_ink` → `x-form.input`, 3 field readonly header Revise →
+  `x-form.input :legacy`. Semua sekarang membawa badge huruf aa/Aa/AA. Autocomplete
+  (Customer/Sales/Bahan) & input di dalam `<td>` SENGAJA tetap mentah — alasan di
+  BACKLOG §21.2. Inquiry Hub tidak berubah (isinya kotak cari).
+- **BUG komponen (temuan sampingan, dampaknya paling besar)**: `x-form.input` &
+  `x-form.textarea` memakai `$attributes->has('disabled')` untuk mematikan badge —
+  padahal `:disabled="$expr"` selalu mengirim key-nya walau `false`. Akibatnya badge
+  huruf MATI diam-diam di **97 titik pemanggilan / 23 file**. Diganti `->get()`.
+  Pola bug yang sama pernah kena `date-picker` (2026-09-05).
+- **Lookup (§21.1)**: `production/rule-library → applies_to_process` jadi
+  `x-form.select` dari master `prod_process`. 3 field lain (`part_code`,
+  `material_pattern`, `material_role`) DILEWATI dengan temuan tertulis — sumbernya
+  ambigu/bukan kandidat lookup, butuh keputusan user (detail di BACKLOG §21.1).
+- **Warna token (§21.3)**: modul **Quotation** dibereskan (56 hex netral → token
+  `--color-field-*`/`bg-accent-soft`), warna semantik & nota cetak tidak diubah.
+- Verifikasi: 6 layar dirender lewat `Livewire::test` (inquiry.form/hub/revise,
+  production.rule-library, quotation.list/entry) + `npm run build`.
+
+---
+
 ## 2026-09-21 (malam) — Master Mesin: daftar aset nyata + kode mesin English
 
 User menyerahkan daftar 46 mesin nyata (jenis, merk/tipe, tanggal datang) dan minta

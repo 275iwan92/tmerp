@@ -1631,27 +1631,56 @@ HP/tablet, menekan Shift tiap kata merepotkan. Yang berlaku = versi ini.
 ### 21.1 Lookup — field teks bebas yang nilainya sudah ada di master
 Audit 2026-09-21 atas seluruh `x-form.input`: mayoritas field ber-nama-master
 ternyata SAH teks bebas (itu nama/kode master yang sedang dibuat di layar itu).
-Yang benar-benar perlu diubah jadi lookup tinggal sedikit:
-- `production/rule-library` → `applies_to_process` (teks bebas, harusnya pilih
-  dari master proses `prod_process`; sebelahnya `applies_to_machine_id` sudah
-  dropdown, jadi tinggal samakan polanya).
-- `production/process-rate` → `part_code` (teks bebas "mis. BODY"; kandidat
-  sumber: `part_code` yang sudah dipakai `prod_*`/`iqp_part` — perlu dicek
-  dulu masternya yang mana, JANGAN asumsi).
-- `production/bop-rule` → `material_pattern` + `material_role` (teks bebas
-  + di-`strtoupper` manual saat simpan; kandidat: master material/role).
+Sisa yang benar-benar perlu diubah jadi lookup:
+- ~~`production/rule-library` → `applies_to_process`~~ **SELESAI 2026-09-22** —
+  sekarang `x-form.select` dari master `prod_process` (24 proses aktif, simpan
+  NAMA proses karena kolomnya varchar & lintas-DB tm2prd→tm2mst, tanpa FK).
+  Tidak ada data lama yang perlu dipetakan (kolomnya masih kosong semua).
+- `production/process-rate` → `part_code` — **DILEWATI 2026-09-22, butuh
+  keputusan user.** Sumbernya AMBIGU, dua kandidat yang artinya bertabrakan:
+  (a) `tm2mst.prod_part.part_code` isinya kode hasil generate (`PDDUM1-1`,
+  `FB-DUPLEX-001-BODY`), bukan peran part; (b) yang dimaksud layar ini
+  ("mis. BODY", dan 1 baris data nyata di `prod_part_process_machine_rate`
+  memang `BODY`) = **Peran Part**, yang saat ini cuma array PHP hardcode di
+  `inquiry/form.blade.php::partRoleOptions()` (body/lid/base/sleeve/tray/
+  insert/divider/left/right/monoform), BUKAN tabel master. Keputusan yang
+  dibutuhkan: naikkan daftar peran part jadi master (`ref_part_role` di
+  tm2mst) lalu pakai di kedua layar, atau biarkan teks bebas.
+- `production/bop-rule` → `material_pattern` — **DILEWATI, bukan kandidat
+  lookup.** Isinya sengaja POLA `LIKE` multi-nilai (`%LEM LAMINASI%|%LEM
+  LAMINATING%`, `TINTA SW 490 N PR. {ink}%`), bukan 1 nilai master; dijadikan
+  dropdown justru merusak fungsinya. Kalau mau dibantu, bentuknya picker yang
+  MENYISIPKAN nama bahan ke dalam pola — desain tersendiri, bukan lookup.
+- `production/bop-rule` → `material_role` — **DILEWATI, butuh keputusan user.**
+  Tidak ada masternya di tm2mst (`ref_*` yang ada cuma finishing_type,
+  legacy_lookup, param_option); nilai yang dipakai sekarang 11 label yang
+  hidup di tabel itu sendiri (TINTA, FOIL, LEM BOX, VARNISH UV, dst).
+  Pilihan: (a) bikin master kecil (`ref_bom_row`), (b) dropdown dari nilai
+  distinct tabel itu sendiri + boleh ketik baru, (c) biarkan teks bebas.
 - `hrm/payroll-employee-bank` → `bankName` (teks bebas; belum ada master bank
   di tm2mst — butuh keputusan: bikin master bank kecil atau `ref_` lookup).
 - Sisanya (`customer_name`, `product_code`, `uom_name`, dst) **BUKAN** item
   terbuka: itu form master-nya sendiri.
 
 ### 21.2 Layar yang inputnya masih HTML mentah (belum lewat komponen)
-- **Inquiry Form / Revise / Hub** — dialek CSS lama `.f`/`.srch`/`.filters`,
-  ~14 input. Tampilan sudah sama (CSS global yang mendandani) TAPI tidak
-  mendapat badge huruf, jadi sekarang jadi item nyata, bukan sekadar kerapian.
-  Hati-hati: `x-form.input :legacy` mengeluarkan wrapper `.f` sendiri — kalau
-  input aslinya sudah di dalam `<div class="f ac-wrap">` (autocomplete
-  Customer) akan jadi `.f` bersarang. Manual per field, bukan skrip massal.
+- ~~**Inquiry Form / Revise / Hub**~~ — **SELESAI 2026-09-22** untuk semua
+  field yang memang berlaku: `cancel_reason` + `lost_reason` (textarea),
+  `part_name`, `cfg_ink` (Catatan Warna) di Form, dan 3 field readonly header
+  di Revise. Hub **tidak ada yang diubah**: 2 input-nya kotak CARI (standar
+  grid sendiri, tanpa badge). Yang SENGAJA dibiarkan mentah + alasannya:
+  autocomplete Customer/Sales/Bahan (kotak cari di dalam `<div class="f
+  ac-wrap">` — `x-form.input :legacy` akan bikin `.f` bersarang dan CSS-nya
+  rusak), serta input di dalam `<td>` (finishing attribute, tooling remark,
+  external cost description) yang masuk item "input di dalam sel tabel" di
+  bawah. `part_name` memakai `:legacy="'flex-1 min-w-0'"` (wrapper netral,
+  bukan `.f`) karena pemanggilnya sudah punya `.f` sendiri.
+- **BUG KOMPONEN yang ikut ketahuan & sudah diperbaiki 2026-09-22**:
+  `x-form.input`/`x-form.textarea` menentukan readonly/disabled pakai
+  `$attributes->has()` — padahal pemanggil yang menulis `:disabled="$expr"`
+  SELALU mengirim key `disabled` walau isinya `false`, jadi badge huruf mati
+  diam-diam di **97 titik pemanggilan lintas 23 file** (co/entry, hrm, dst).
+  Sekarang pakai `->get()` (nilai). Pola bug yang sama pernah kena di
+  `date-picker` (memory `feedback_datepicker_disabled_attribute_bug`).
 - **Input di dalam sel tabel** (~25, mis. `mps-spreadsheet`, grid editable) —
   komponen berlabel tidak cocok. Perlu komponen sel tersendiri
   (`x-form.cell-input`) yang membawa badge huruf versi ringkas. Belum
@@ -1670,6 +1699,21 @@ komponen non-form (`grid/`, `print/`, `report/`). Efeknya: corak tema baru
 kelihatan di field, belum di seluruh kerangka layar. Ini lanjutan langsung dari
 `themestandard.md` §6 ("halaman iframe belum ikut sistem tema") — kerjakan
 per-modul, bukan sekali sapu, dan verifikasi tiap layar setelahnya.
+
+**Progres per modul:**
+- ✅ **Quotation** (2026-09-22) — `quotation/entry.blade.php` + `list.blade.php`,
+  56 hex netral → token (`border-field-border`, `border-field-badge`,
+  `bg-field-soft`, `bg-field-badge`, `bg-accent-soft`, `text-muted`).
+  Pemetaan yang dipakai: border abu (#d7dbe2/#d9dfe8/#c7cfda) →
+  `border-field-border`; garis pemisah tipis (#eef1f5) → `border-field-badge`
+  (nilainya setara); latar abu muda (#f8fafc/#fafbfd/#f4f6fa/#f4f5f8) →
+  `bg-field-soft`; latar kebiruan (#eef3fb/#f7faff) → `bg-accent-soft`.
+  Warna semantik (hijau terbit, amber tooling, ungu baris bebas) + navy brand
+  tombol SENGAJA tidak diubah. `quotation/print.blade.php` juga tidak diubah:
+  nota cetak punya tema sendiri (kertas), lihat `printnotastandard.md`.
+- ⏳ Sisanya belum: production (1213 hex), master (781), inquiry (638),
+  pur (676), hrm (632), recruitment (488), inventory (455), self-service (276),
+  setup (222), co (203), finance (180), careers (126), dispatch (104).
 
 ### 21.4 Mode gelap untuk layar transaksi
 Token field saat ini dihitung untuk latar TERANG (dicampur ke abu-abu terang).
