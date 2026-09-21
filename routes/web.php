@@ -188,6 +188,24 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/finance/coa', 'pages::finance.coa')->name('finance.coa');
             Route::livewire('/finance/dp-invoice', 'pages::finance.dp-invoice')->name('finance.dp-invoice');
             Route::livewire('/finance/cash-bank', 'pages::finance.cash-bank')->name('finance.cash-bank');
+
+            // Accounting Process Engine (mockup MODULE_accounting-*-blueprint.html, 2026-09-19)
+            Route::livewire('/finance/engine', 'pages::finance.engine')->name('finance.engine');
+            Route::livewire('/finance/dashboard', 'pages::finance.dashboard')->name('finance.dashboard');
+            Route::livewire('/finance/receivables', 'pages::finance.receivables')->name('finance.receivables');
+            Route::livewire('/finance/payables', 'pages::finance.payables')->name('finance.payables');
+            Route::livewire('/finance/bank', 'pages::finance.bank')->name('finance.bank');
+            Route::livewire('/finance/journals', 'pages::finance.journals')->name('finance.journals');
+            Route::livewire('/finance/ledger', 'pages::finance.ledger')->name('finance.ledger');
+            Route::livewire('/finance/assets', 'pages::finance.assets')->name('finance.assets');
+            Route::livewire('/finance/amortization', 'pages::finance.amortization')->name('finance.amortization');
+            Route::livewire('/finance/closing', 'pages::finance.closing')->name('finance.closing');
+            Route::livewire('/finance/tax', 'pages::finance.tax')->name('finance.tax');
+            Route::livewire('/finance/statements', 'pages::finance.statements')->name('finance.statements');
+            Route::livewire('/finance/trial-balance', 'pages::finance.trial-balance')->name('finance.trial-balance');
+            Route::livewire('/finance/balance-sheet', 'pages::finance.balance-sheet')->name('finance.balance-sheet');
+            Route::livewire('/finance/income-statement', 'pages::finance.income-statement')->name('finance.income-statement');
+            Route::livewire('/finance/cash-flow', 'pages::finance.cash-flow')->name('finance.cash-flow');
         });
 
         Route::middleware('module:PROC')->group(function () {
@@ -242,6 +260,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/employee', 'pages::master.employee')->name('hrm.employee');
             Route::livewire('/hrm/shift-roster', 'pages::hrm.shift-roster')->name('hrm.shift-roster');
             Route::livewire('/hrm/shift-roster/print', 'pages::hrm.shift-roster-print')->name('hrm.shift-roster.print');
+            Route::livewire('/hrm/employee-contact-gap', 'pages::hrm.employee-contact-gap')->name('hrm.employee-contact-gap');
             Route::livewire('/hrm/correction-requests', 'pages::hrm.correction-requests')->name('hrm.correction-requests');
             Route::livewire('/hrm/leave-requests', 'pages::hrm.leave-requests')->name('hrm.leave-requests');
             Route::livewire('/hrm/attendance-upload', 'pages::hrm.attendance-upload')->name('hrm.attendance-upload');

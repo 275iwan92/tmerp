@@ -133,6 +133,23 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'ACC_COA' => route('finance.coa'),
             'FIN_DP' => route('finance.dp-invoice'),
             'FIN_CASH' => route('finance.cash-bank'),
+            // Accounting Process Engine (mockup blueprint, 2026-09-19)
+            'FIN_ENGINE' => route('finance.engine'),
+            'FIN_DASH' => route('finance.dashboard'),
+            'FIN_AR' => route('finance.receivables'),
+            'FIN_AP' => route('finance.payables'),
+            'FIN_BANK' => route('finance.bank'),
+            'ACC_JRN' => route('finance.journals'),
+            'ACC_GL' => route('finance.ledger'),
+            'ACC_FIXEDASSET' => route('finance.assets'),
+            'ACC_AMORT' => route('finance.amortization'),
+            'ACC_CLOSE' => route('finance.closing'),
+            'ACC_TAX' => route('finance.tax'),
+            'ACC_FS' => route('finance.statements'),
+            'ACC_TB' => route('finance.trial-balance'),
+            'ACC_BS' => route('finance.balance-sheet'),
+            'ACC_PL' => route('finance.income-statement'),
+            'ACC_CF' => route('finance.cash-flow'),
             // Laporan Manajemen (grup MGMT) -- MGMT_EXEC/SALES/PURCHASE sudah
             // ada di sys_app_menu sejak dibuat tapi TIDAK PERNAH dipetakan ke
             // sini (bug nyata, ditemukan 2026-09-13 saat user komplain "tidak
@@ -197,6 +214,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_EMPLOYEE' => route('hrm.employee'),
             'HRM_ROSTER' => route('hrm.shift-roster'),
             'HRM_CORRECTION' => route('hrm.correction-requests'),
+            'HRM_CONTACT_GAP' => route('hrm.employee-contact-gap'),
             'HRM_SELFSERVICE' => route('self-service.index'),
             'HRM_LEAVE_APPROVAL' => route('hrm.leave-requests'),
             'HRM_CLOCKIN' => route('self-service.clock-in'),
