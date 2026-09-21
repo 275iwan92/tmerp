@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\DoDelivery;
@@ -27,6 +28,8 @@ use Livewire\WithPagination;
 // customer). Konsisten dgn constraint DB, bukan improvisasi bebas.
 new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -49,6 +52,7 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                         ->orWhere('customer_name', 'like', "%{$term}%");
                 });
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderByDesc('id_delivery')
             ->paginate($this->perPage);
     }
@@ -162,17 +166,26 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
     {
         return DoDelivery::where('status', 'SHIPPED')->count();
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total DO', 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('status', 'DRAFT')],
+            'confirmed' => ['label' => 'Confirmed', 'value' => $this->statConfirmed, 'tone' => 'extra',
+                'filter' => fn ($q) => $q->where('status', 'CONFIRMED')],
+            'shipped' => ['label' => 'Shipped', 'value' => $this->statShipped, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('status', 'SHIPPED')],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total DO" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-            <x-grid.stat-box tone="extra" label="Confirmed" :value="$this->statConfirmed" />
-            <x-grid.stat-box tone="active" label="Shipped" :value="$this->statShipped" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -230,9 +243,9 @@ new #[Title('Daftar Delivery Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($d->total_value, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka Delivery Order ini" action="openDelivery({{ $d->id_delivery }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Delivery Order ini" action="openDelivery({{ $d->id_delivery }})" />
                                     @if ($d->status === 'DRAFT' && $d->line_count >= 1)
-                                        <x-grid.action-icon icon="✓" title="Confirm DO ini" action="confirmDelivery({{ $d->id_delivery }})"
+                                        <x-grid.action-icon icon="fa-check" title="Confirm DO ini" action="confirmDelivery({{ $d->id_delivery }})"
                                             confirm="Confirm Delivery Order utk {{ $d->customer_name }}? Nomor DO akan diterbitkan &amp; baris terkunci." variant="success" />
                                     @endif
                                 </td>

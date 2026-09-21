@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\EmpShift;
 use App\Models\Master\EmpShiftDetail;
 use App\Models\Master\OrgDepartment;
@@ -15,6 +16,8 @@ use Livewire\Component;
 // teks bebas. Hari dengan start_time/end_time kosong = "tidak beroperasi".
 new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     public array $dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
     public array $dayLabels = ['Monday' => 'Senin', 'Tuesday' => 'Selasa', 'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu', 'Sunday' => 'Minggu'];
@@ -39,11 +42,11 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function shifts()
     {
-        return EmpShift::query()
+        return $this->applyStatFilter(EmpShift::query()
             ->with(['details', 'department'])
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('shift_name', 'like', "%{$this->search}%")
-                ->orWhereHas('department', fn ($dq) => $dq->where('department_name', 'like', "%{$this->search}%"))))
+                ->orWhereHas('department', fn ($dq) => $dq->where('department_name', 'like', "%{$this->search}%")))))
             ->orderBy('shift_name')
             ->get();
     }
@@ -202,6 +205,20 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
         return EmpShift::where('activate', true)->distinct('department_id')->count('department_id');
     }
 
+    // Kotak statistik = filter data (griduistandard.md §2b). "Total" sama
+    // dengan tanpa filter, "Departemen Terpakai" angka agregat -> tak diklik.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Shift', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'departments' => ['label' => 'Departemen Terpakai', 'value' => $this->statDepartments, 'tone' => 'extra'],
+            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+        ];
+    }
+
     // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 };
@@ -212,12 +229,7 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Shift" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="Departemen Terpakai" :value="$this->statDepartments" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
             Direplikasi dari struktur legacy (<code>m_shifts</code> + <code>m_shifts_details</code>): 1 shift = 1 header + jam kerja per hari (Senin–Minggu bisa beda), lengkap jam istirahat. Klik <b>✎</b> untuk buka detail jamnya.
@@ -257,8 +269,8 @@ new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $s->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $s->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $s->shift_id }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$s->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $s->shift_id }})"
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $s->shift_id }})" />
+                                    <x-grid.action-icon :active="$s->activate" :title="$s->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $s->shift_id }})"
                                         :confirm="($s->activate ? 'Nonaktifkan' : 'Aktifkan').' shift '.$s->shift_name.'?'"
                                         :variant="$s->activate ? 'danger' : 'default'" />
                                 </td>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Sdi\IqpCosting;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -16,6 +17,8 @@ use Livewire\Component;
 // ada). griduistandard.md diikuti sama seperti costing-list.blade.php.
 new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     #[Url]
     public string $search = '';
 
@@ -88,6 +91,26 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
     {
         return $this->rows->whereNotNull('reversed_at')->count();
     }
+
+    // Baris grid SETELAH filter kotak statistik (griduistandard.md §2b).
+    #[Computed]
+    public function visibleRows()
+    {
+        return $this->applyStatFilter($this->rows);
+    }
+
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Instant', 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($c) => $c->where('doc_status', 'DRAFT')],
+            'calculated' => ['label' => 'Sudah Dihitung', 'value' => $this->statCalculated, 'tone' => 'extra',
+                'filter' => fn ($c) => $c->where('doc_status', 'CALCULATED')],
+            'reversed' => ['label' => 'Sudah Direverse', 'value' => $this->statReversed, 'tone' => 'active', 'subtitle' => 'JADI MODE INTEGRATED',
+                'filter' => fn ($c) => $c->whereNotNull('reversed_at')],
+        ];
+    }
 };
 ?>
 
@@ -97,12 +120,7 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
             🧮 Mode Instant — kalkulator HPP standalone, tanpa Inquiry Product. Sudah pasti angkanya cocok? Pakai <b>Reverse</b> di dalam layar untuk bikin Inquiry+ProDev otomatis dan pindah ke mode Integrated.
         </div>
 
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Instant" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-            <x-grid.stat-box tone="extra" label="Sudah Dihitung" :value="$this->statCalculated" />
-            <x-grid.stat-box tone="active" label="Sudah Direverse" :value="$this->statReversed" subtitle="JADI MODE INTEGRATED" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -137,7 +155,7 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($this->rows as $row)
+                        @forelse ($this->visibleRows as $row)
                             <tr wire:key="cost-instant-{{ $row->id_costing }}" wire:dblclick="open({{ $row->id_costing }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                 <x-grid.identity-cell :id="$row->id_costing" :name="$row->customer?->customer_name ?? '—'" :code="$row->doc_no ?: 'Draft #'.$row->id_costing" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $row->product_name_draft ?: '—' }}</td>
@@ -152,7 +170,7 @@ new #[Title('Product Costing (Instant) — TELASIH MAKMUR ERP')] class extends C
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka" action="open({{ $row->id_costing }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="open({{ $row->id_costing }})" />
                                 </td>
                             </tr>
                         @empty

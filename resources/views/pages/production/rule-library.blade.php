@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
 use App\Models\Master\ProdProcess;
@@ -16,6 +17,8 @@ use Livewire\Component;
 // yang can_input PROD boleh bikin DRAFT (Tier2 §9 matrix: PPIC = R/bisa draft).
 new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     public bool $showModal = false;
 
     public ?int $editingId = null;
@@ -35,7 +38,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function rules()
     {
-        return PrdSchedulingRule::with('machine')->orderByDesc('rule_id')->get();
+        return $this->applyStatFilter(PrdSchedulingRule::with('machine'))->orderByDesc('rule_id')->get();
     }
 
     #[Computed]
@@ -150,17 +153,25 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
         PrdSchedulingRule::whereKey($id)->update(['rule_status' => 'INACTIVE', 'updated_by' => Auth::user()->login]);
         $this->dispatch('rule-toast', message: 'Rule dinonaktifkan.');
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Rule', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('rule_status', 'ACTIVE')],
+            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('rule_status', 'DRAFT')],
+        ];
+    }
 };
 ?>
 
 <div x-data="{ toastMsg: '', toastShow: false, toastTimer: null }"
     x-on:rule-toast.window="toastMsg = $event.detail.message; toastShow = true; clearTimeout(toastTimer); toastTimer = setTimeout(() => toastShow = false, 2500)">
     <div class="max-w-[1200px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Rule" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -201,7 +212,7 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                                         } }}">{{ $rule->rule_status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $rule->rule_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openEdit({{ $rule->rule_id }})" />
                                     @if ($rule->rule_status === 'ACTIVE')
                                         <button type="button" wire:click="deactivate({{ $rule->rule_id }})" class="text-[11px] font-semibold text-[#a3241f] hover:underline cursor-pointer ml-1">Nonaktifkan</button>
                                     @else

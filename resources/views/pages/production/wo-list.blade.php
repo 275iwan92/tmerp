@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Prd\PrdWo;
 use App\Support\Localization\Translator;
@@ -21,6 +22,8 @@ use Livewire\WithPagination;
 // Lihat docs/production_scheduling_wo_generation_delta.md.
 new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -35,6 +38,7 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                 $term = $this->search;
                 $q->where('wo_no', 'like', "%{$term}%");
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderByDesc('wo_id')
             ->paginate($this->perPage);
     }
@@ -67,17 +71,27 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
     {
         return $this->redirect(route('production.wo.entry', ['wo' => $id]));
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). "Total WO" sama
+    // dengan tanpa filter -> tak diklik.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('prod_wo_stat_total', 'Total WO'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'in_progress' => ['label' => Translator::t('prod_wo_stat_in_progress', 'Sedang Berjalan'), 'value' => $this->statInProgress, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('wo_status', 'IN_PROGRESS')],
+            'at_risk' => ['label' => Translator::t('prod_wo_stat_at_risk', 'Berisiko Telat'), 'value' => $this->statAtRisk, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->whereHas('operations', fn ($op) => $op->where('critical_ratio', '<', 1))],
+            'awaiting_sim' => ['label' => Translator::t('prod_wo_stat_awaiting_sim', 'Menunggu Simulasi'), 'value' => $this->statAwaitingSimulation, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('wo_status', 'DRAFT')],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('prod_wo_stat_total', 'Total WO') }}" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="{{ Translator::t('prod_wo_stat_in_progress', 'Sedang Berjalan') }}" :value="$this->statInProgress" />
-            <x-grid.stat-box tone="critical" label="{{ Translator::t('prod_wo_stat_at_risk', 'Berisiko Telat') }}" :value="$this->statAtRisk" />
-            <x-grid.stat-box tone="warn" label="{{ Translator::t('prod_wo_stat_awaiting_sim', 'Menunggu Simulasi') }}" :value="$this->statAwaitingSimulation" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -132,7 +146,7 @@ new #[Title('Worklist Work Order — TELASIH MAKMUR ERP')] class extends Compone
                                     </div>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openWo({{ $wo->wo_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openWo({{ $wo->wo_id }})" />
                                 </td>
                             </tr>
                         @empty

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Prd\PrdScrapType;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -13,6 +14,8 @@ use Livewire\Component;
 // daftar riil PT Telasih Makmur. Pola grid sama Rule Library.
 new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     public bool $showModal = false;
 
     public ?int $editingId = null;
@@ -26,7 +29,7 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function types()
     {
-        return PrdScrapType::orderBy('category')->orderBy('sort_order')->get();
+        return $this->applyStatFilter(PrdScrapType::query())->orderBy('category')->orderBy('sort_order')->get();
     }
 
     #[Computed]
@@ -97,16 +100,25 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
         $type = PrdScrapType::findOrFail($id);
         $type->update(['activate' => ! $type->activate, 'updated_by' => Auth::user()->login]);
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). Reject/Waste =
+    // scope model yang sama dgn yang menghitung angkanya.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Tipe', 'value' => $this->statTotal, 'tone' => 'total'],
+            'reject' => ['label' => 'Tipe Reject', 'value' => $this->statReject, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->reject()],
+            'waste' => ['label' => 'Tipe Waste', 'value' => $this->statWaste, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->waste()],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1000px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Tipe" :value="$this->statTotal" />
-            <x-grid.stat-box tone="critical" label="Tipe Reject" :value="$this->statReject" />
-            <x-grid.stat-box tone="warn" label="Tipe Waste" :value="$this->statWaste" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -139,7 +151,7 @@ new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $t->activate ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $t->activate ? 'Aktif' : 'Nonaktif' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openEdit({{ $t->type_id }})" />
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openEdit({{ $t->type_id }})" />
                                     <button type="button" wire:click="toggleActive({{ $t->type_id }})" class="w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb] cursor-pointer" title="{{ $t->activate ? 'Nonaktifkan' : 'Aktifkan' }}">⏻</button>
                                 </td>
                             </tr>

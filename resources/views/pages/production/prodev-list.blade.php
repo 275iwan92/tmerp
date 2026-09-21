@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\ProdPart;
 use App\Models\Sdi\IqpPart;
 use Livewire\Attributes\Computed;
@@ -25,6 +26,8 @@ use Livewire\Component;
 // dari grid ini.
 new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     #[Url]
     public string $search = '';
 
@@ -104,16 +107,32 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
     {
         return $this->statTotal - $this->statConfirmed;
     }
+
+    // Baris grid SETELAH filter kotak statistik. Sengaja computed terpisah dari
+    // parts(): statTotal/statConfirmed tetap menghitung SELURUH part, bukan
+    // hasil saringan (griduistandard.md §2b).
+    #[Computed]
+    public function visibleParts()
+    {
+        return $this->applyStatFilter($this->parts);
+    }
+
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Part', 'value' => $this->statTotal, 'tone' => 'total'],
+            'confirmed' => ['label' => 'Sudah Confirm', 'value' => $this->statConfirmed, 'tone' => 'active', 'subtitle' => 'LAYOUT TERKONFIRMASI',
+                'filter' => fn ($c) => $c->filter(fn ($p) => $this->layoutStatus($p) === 'CONFIRMED')],
+            'pending' => ['label' => 'Belum Confirm', 'value' => $this->statPending, 'tone' => 'warn',
+                'filter' => fn ($c) => $c->filter(fn ($p) => $this->layoutStatus($p) !== 'CONFIRMED')],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Part" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Sudah Confirm" :value="$this->statConfirmed" subtitle="LAYOUT TERKONFIRMASI" />
-            <x-grid.stat-box tone="warn" label="Belum Confirm" :value="$this->statPending" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -136,7 +155,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($this->parts as $p)
+                        @forelse ($this->visibleParts as $p)
                             @php($status = $this->layoutStatus($p))
                             <tr wire:key="pdp-{{ $p->id_part }}" wire:dblclick="open({{ $p->id_part }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Pro-Dev">
                                 <x-grid.identity-cell :id="$p->id_part" :name="$p->part_name" :code="$p->displayMastercardCode()" />
@@ -152,7 +171,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->layoutStatusBadgeClass($status) }}">{{ $status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka Pro-Dev" action="open({{ $p->id_part }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Pro-Dev" action="open({{ $p->id_part }})" />
                                 </td>
                             </tr>
                         @empty

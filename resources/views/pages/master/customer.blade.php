@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\CustCategory;
 use App\Models\Master\CustCustomer;
 use App\Models\Master\CustCustomerBranch;
@@ -29,6 +30,8 @@ use Livewire\Component;
 // percetakan" — satu-satunya bagian dokumen lama itu yang masih dipakai).
 new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     #[Url]
     public string $q = '';
 
@@ -193,6 +196,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                 ->where('customer_name', 'like', "%{$this->q}%")
                 ->orWhere('customer_code', 'like', "%{$this->q}%")
                 ->orWhere('contact_name', 'like', "%{$this->q}%")))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('customer_name')
             ->limit(200)
             ->get();
@@ -793,6 +797,21 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
         unset($this->customers, $this->selectedCustomer);
         $this->showUnblockModal = false;
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). "Total Customer"
+    // sengaja tanpa 'filter' -- sama saja dengan tanpa filter.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('mdata_cust_stat_total', 'Total Customer'), 'value' => $this->metricTotal, 'tone' => 'total'],
+            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->metricActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('approval_status', 'APPROVED')->where('activate', true)],
+            'blocked' => ['label' => Translator::t('mdata_sup_stat_blocked', 'Terblokir'), 'value' => $this->metricBlocked, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where(fn ($qq) => $qq->where('is_blacklisted', true)->orWhere('approval_status', 'BLOCKED'))],
+            'draft' => ['label' => Translator::t('mdata_cust_stat_draft', 'Draft / Onboarding'), 'value' => $this->metricDraft, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('approval_status', 'DRAFT')],
+        ];
+    }
 };
 ?>
 
@@ -802,12 +821,7 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-            <x-grid.stat-row :count="4">
-                <x-grid.stat-box tone="total" label="{{ Translator::t('mdata_cust_stat_total', 'Total Customer') }}" :value="$this->metricTotal" />
-                <x-grid.stat-box tone="active" label="{{ Translator::t('mdata_active', 'Aktif') }}" :value="$this->metricActive" />
-                <x-grid.stat-box tone="critical" label="{{ Translator::t('mdata_sup_stat_blocked', 'Terblokir') }}" :value="$this->metricBlocked" />
-                <x-grid.stat-box tone="warn" label="{{ Translator::t('mdata_cust_stat_draft', 'Draft / Onboarding') }}" :value="$this->metricDraft" />
-            </x-grid.stat-row>
+            <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
@@ -869,8 +883,8 @@ new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $c->id_customer }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $c->id_customer }})" :variant="$c->activate ? 'danger' : 'default'" confirm="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} customer {{ $c->customer_name }}?" />
+                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $c->id_customer }})" />
+                                    <x-grid.action-icon :active="$c->activate" :title="$c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $c->id_customer }})" confirm="{{ $c->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} customer {{ $c->customer_name }}?" />
                                 </td>
                             </tr>
                         @empty

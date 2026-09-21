@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\SupCategory;
 use App\Models\Master\SupSupplier;
@@ -19,6 +20,8 @@ use Livewire\Component;
 // migration 2026_08_18_000005_create_sup_supplier_table.php.
 new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     #[Url]
     public string $q = '';
 
@@ -135,6 +138,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                         ->orWhere('contact_name', 'like', "%{$this->q}%");
                 });
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('supplier_name')
             ->limit(200)
             ->get();
@@ -610,6 +614,20 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
         $this->actionMessage = $supplier->is_blacklisted ? 'Supplier diblokir.' : 'Blokir supplier dibuka.';
         unset($this->suppliers);
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('mdata_sup_stat_total', 'Total Supplier'), 'value' => $this->metricTotal, 'tone' => 'total'],
+            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->metricActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'subcon' => ['label' => Translator::t('mdata_sup_stat_subcon', 'Subkontraktor'), 'value' => $this->metricSubcon, 'tone' => 'extra',
+                'filter' => fn ($q) => $q->where('is_subcon', true)],
+            'blocked' => ['label' => Translator::t('mdata_sup_stat_blocked', 'Terblokir'), 'value' => $this->metricBlocked, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('is_blacklisted', true)],
+        ];
+    }
 };
 ?>
 
@@ -619,12 +637,7 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-            <x-grid.stat-row :count="4">
-                <x-grid.stat-box tone="total" label="{{ Translator::t('mdata_sup_stat_total', 'Total Supplier') }}" :value="$this->metricTotal" />
-                <x-grid.stat-box tone="active" label="{{ Translator::t('mdata_active', 'Aktif') }}" :value="$this->metricActive" />
-                <x-grid.stat-box tone="extra" label="{{ Translator::t('mdata_sup_stat_subcon', 'Subkontraktor') }}" :value="$this->metricSubcon" />
-                <x-grid.stat-box tone="critical" label="{{ Translator::t('mdata_sup_stat_blocked', 'Terblokir') }}" :value="$this->metricBlocked" />
-            </x-grid.stat-row>
+            <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
             <x-grid.toolbar class="!border !border-[#d7dbe2] !border-b-0 rounded-t-md">
                 <div class="flex items-center gap-1.5 shrink-0">
@@ -673,8 +686,8 @@ new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
                                     @endif
                                 </td>
                                 <td class="text-right px-1 py-2 border-b border-[#d7dbe2] whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $s->id_supplier }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $s->id_supplier }})"
+                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="editRow({{ $s->id_supplier }})" />
+                                    <x-grid.action-icon :active="$s->activate" :title="$s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $s->id_supplier }})"
                                         :confirm="($s->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' supplier '.$s->supplier_name.'?'"
                                         :variant="$s->activate ? 'danger' : 'default'" />
                                 </td>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\OrgDepartment;
 use App\Models\Pur\PrRequisition;
@@ -16,6 +17,8 @@ use Livewire\WithPagination;
 // karena PR memang dibuat dari grid ini sendiri (picker departemen).
 new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -42,6 +45,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                         ->orWhereHas('department', fn ($d) => $d->where('department_name', 'like', "%{$term}%"));
                 });
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderByDesc('pr_id')
             ->paginate($this->perPage);
     }
@@ -104,17 +108,27 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
 
     // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
+
+    // Kotak statistik = filter data (griduistandard.md §2b). Klausa filternya
+    // PERSIS sama dgn yang dipakai menghitung angkanya.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('proc_pr_stat_total', 'Total PR'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'submitted' => ['label' => Translator::t('proc_pr_stat_submitted', 'Menunggu Approval'), 'value' => $this->statSubmitted, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('status', 'SUBMITTED')],
+            'progress' => ['label' => Translator::t('proc_pr_stat_progress', 'Disetujui / Diproses'), 'value' => $this->statProgress, 'tone' => 'active',
+                'filter' => fn ($q) => $q->whereIn('status', ['APPROVED', 'PARTIALLY_ORDERED', 'FULLY_ORDERED', 'CLOSED'])],
+            'rejected' => ['label' => Translator::t('proc_pr_stat_rejected', 'Ditolak / Revisi'), 'value' => $this->statRejected, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->whereIn('status', ['REJECTED', 'REVISION_NEEDED'])],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('proc_pr_stat_total', 'Total PR') }}" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="{{ Translator::t('proc_pr_stat_submitted', 'Menunggu Approval') }}" :value="$this->statSubmitted" />
-            <x-grid.stat-box tone="active" label="{{ Translator::t('proc_pr_stat_progress', 'Disetujui / Diproses') }}" :value="$this->statProgress" />
-            <x-grid.stat-box tone="critical" label="{{ Translator::t('proc_pr_stat_rejected', 'Ditolak / Revisi') }}" :value="$this->statRejected" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -163,7 +177,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                                         } }}">{{ $pr->status }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPr({{ $pr->pr_id }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openPr({{ $pr->pr_id }})" />
                                 </td>
                             </tr>
                         @empty

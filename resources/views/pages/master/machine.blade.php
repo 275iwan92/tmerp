@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,8 @@ use Livewire\Component;
 // FK logis prod_part_process.machine_id, jangan sampai orphan.
 new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     // Jenis mesin = prefix kode mesin (lihat migration update_prod_machine_asset_list,
     // 2026-09-21). Paper Cutting (guillotine) sengaja DIPISAH dari Die Cutting
     // (plong) -- sebelumnya keduanya bertipe 'Potong' sehingga picker mesin plong
@@ -70,11 +73,11 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function machines()
     {
-        return ProdMachine::query()
+        return $this->applyStatFilter(ProdMachine::query()
             ->with('division')
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('machine_code', 'like', "%{$this->search}%")
-                ->orWhere('machine_name', 'like', "%{$this->search}%")))
+                ->orWhere('machine_name', 'like', "%{$this->search}%"))))
             ->orderBy('division_id')->orderBy('machine_code')
             ->get();
     }
@@ -224,6 +227,21 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     {
         return ProdMachine::where('activate', true)->distinct('division_id')->count('division_id');
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). "Total" & "Divisi
+    // Terpakai" sengaja TANPA 'filter': yang pertama sama dengan tanpa filter,
+    // yang kedua angka agregat (jumlah divisi), bukan kategori baris mesin.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Mesin', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'divisions' => ['label' => 'Divisi Terpakai', 'value' => $this->statDivisions, 'tone' => 'extra'],
+            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+        ];
+    }
 };
 ?>
 
@@ -232,12 +250,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Mesin" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="Divisi Terpakai" :value="$this->statDivisions" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
             Hanya <b>Offset Printing</b> yang menggunakan assignment mesin presisi (banyak lini). Digital Printing &amp; Indostry tidak butuh entri di sini — pakai grid shift sederhana tanpa mesin.
@@ -281,8 +294,8 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $m->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $m->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $m->machine_id }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$m->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $m->machine_id }})"
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $m->machine_id }})" />
+                                    <x-grid.action-icon :active="$m->activate" :title="$m->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $m->machine_id }})"
                                         :confirm="($m->activate ? 'Nonaktifkan' : 'Aktifkan').' mesin '.$m->machine_name.'?'"
                                         :variant="$m->activate ? 'danger' : 'default'" />
                                 </td>

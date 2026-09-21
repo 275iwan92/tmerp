@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Acc\FinAccount;
 use App\Models\Acc\FinAccountTree;
 use App\Models\Acc\FinCostCenter;
@@ -15,6 +16,8 @@ use Livewire\Component;
 // di nextAccountId() saat tambah baru, user hanya isi account_code (kode GL).
 new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     public array $accountTypes = ['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'COGS', 'EXPENSE', 'OTHER_INCOME', 'OTHER_EXPENSE'];
 
     public string $search = '';
@@ -54,6 +57,7 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('account_code', 'like', "%{$this->search}%")
                 ->orWhere('account_name', 'like', "%{$this->search}%")))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('account_code')
             ->get();
     }
@@ -243,18 +247,36 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
         unset($this->accounts, $this->parentOptions, $this->metricTotalActive, $this->metricTotalRecon, $this->metricTotalCogs, $this->metricTotalPersediaan);
         $this->showModal = false;
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). Semua kotak di
+    // layar ini kategori baris akun, jadi keempatnya bisa diklik. Filter
+    // "Persediaan & Tooling" memakai pola kode akun yang sama dgn angkanya.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'active' => ['label' => Translator::t('fin_coa_stat_active', 'Total Akun Aktif'), 'value' => $this->metricTotalActive, 'tone' => 'total',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'recon' => ['label' => Translator::t('fin_coa_stat_recon', 'Akun Rekonsiliasi (AR/AP)'), 'value' => $this->metricTotalRecon, 'tone' => 'extra',
+                'subtitle' => Translator::t('fin_coa_stat_recon_subtitle', 'TERKUNCI'),
+                'filter' => fn ($q) => $q->where('is_recon', true)],
+            'cogs' => ['label' => Translator::t('fin_coa_stat_cogs', 'Akun HPP Produksi (COGS)'), 'value' => $this->metricTotalCogs, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('account_type', 'COGS')->where('is_postable', true)],
+            'inventory' => ['label' => Translator::t('fin_coa_stat_inventory', 'Persediaan & Tooling'), 'value' => $this->metricTotalPersediaan, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where(fn ($qq) => $qq
+                    ->where('account_code', 'like', '1131%')
+                    ->orWhere('account_code', 'like', '1132%')
+                    ->orWhere('account_code', 'like', '1133%')
+                    ->orWhere('account_code', 'like', '1134%')
+                    ->orWhere('account_code', 'like', '1135%'))],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="w-full px-5 py-4.5">
 
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('fin_coa_stat_active', 'Total Akun Aktif') }}" :value="$this->metricTotalActive" />
-            <x-grid.stat-box tone="extra" label="{{ Translator::t('fin_coa_stat_recon', 'Akun Rekonsiliasi (AR/AP)') }}" :value="$this->metricTotalRecon" subtitle="{{ Translator::t('fin_coa_stat_recon_subtitle', 'TERKUNCI') }}" />
-            <x-grid.stat-box tone="warn" label="{{ Translator::t('fin_coa_stat_cogs', 'Akun HPP Produksi (COGS)') }}" :value="$this->metricTotalCogs" />
-            <x-grid.stat-box tone="active" label="{{ Translator::t('fin_coa_stat_inventory', 'Persediaan & Tooling') }}" :value="$this->metricTotalPersediaan" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -324,8 +346,8 @@ new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Co
                                 </td>
                                 <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
                                     @if ($a->is_postable)
-                                        <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openModal('edit', {{ $a->account_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$a->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $a->account_id }})" :variant="$a->activate ? 'danger' : 'default'" confirm="{{ $a->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} {{ Translator::t('fin_coa_account_word', 'akun') }} {{ $a->account_code }}?" />
+                                        <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openModal('edit', {{ $a->account_id }})" />
+                                        <x-grid.action-icon :active="$a->activate" :title="$a->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $a->account_id }})" confirm="{{ $a->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan') }} {{ Translator::t('fin_coa_account_word', 'akun') }} {{ $a->account_code }}?" />
                                     @else
                                         —
                                     @endif

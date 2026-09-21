@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\WhWarehouse;
 use Illuminate\Support\Facades\Auth;
@@ -10,6 +11,8 @@ use Livewire\WithPagination;
 
 new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -27,6 +30,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                         ->orWhere('warehouse_name', 'like', "%{$term}%");
                 });
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('warehouse_code')
             ->paginate($this->perPage);
     }
@@ -62,6 +66,23 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
     {
         return $this->redirect(route('master.warehouse.edit', ['warehouse' => $id]));
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). "Total Gudang"
+    // sama dengan tanpa filter; "Total Lokasi / Bin" menghitung tabel LAIN
+    // (wh_loc), bukan kategori baris gudang -- keduanya sengaja tak diklik.
+    protected function statFilterDefs(): array
+    {
+        $s = $this->stats;
+
+        return [
+            'total' => ['label' => 'Total Gudang', 'value' => number_format($s['total']), 'tone' => 'total'],
+            'raw' => ['label' => 'Gudang Bahan Baku', 'value' => number_format($s['raw']), 'tone' => 'active', 'subtitle' => 'RM',
+                'filter' => fn ($q) => $q->where('warehouse_type', 'RM')],
+            'fg' => ['label' => 'Gudang Barang Jadi', 'value' => number_format($s['fg']), 'tone' => 'extra', 'subtitle' => 'FG',
+                'filter' => fn ($q) => $q->where('warehouse_type', 'FG')],
+            'locations' => ['label' => 'Total Lokasi / Bin', 'value' => number_format($s['locations']), 'tone' => 'warn'],
+        ];
+    }
 };
 ?>
 <div>
@@ -71,12 +92,7 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
             ⓘ Stok on-hand tidak ditampilkan di sini — itu posisi transaksional dari modul Inventory, bukan master data. Layar ini murni struktur gudang & lokasi/bin.
         </div>
 
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Gudang" :value="number_format($this->stats['total'])" />
-            <x-grid.stat-box tone="active" label="Gudang Bahan Baku" :value="number_format($this->stats['raw'])" subtitle="RM" />
-            <x-grid.stat-box tone="extra" label="Gudang Barang Jadi" :value="number_format($this->stats['fg'])" subtitle="FG" />
-            <x-grid.stat-box tone="warn" label="Total Lokasi / Bin" :value="number_format($this->stats['locations'])" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d7dbe2] rounded-md mb-4 overflow-hidden">
             <x-grid.toolbar>
@@ -123,8 +139,8 @@ new #[Title('Master Gudang — TELASIH MAKMUR ERP')] class extends Component
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $wh->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#fbeaea] text-[#a3241f]' }}">{{ $wh->activate ? 'Aktif' : 'Nonaktif' }}</span>
                             </td>
                             <td class="px-3 py-2 text-right whitespace-nowrap">
-                                <x-grid.action-icon icon="✎" title="Edit" action="openWarehouse({{ $wh->id_warehouse }})" />
-                                <x-grid.action-icon icon="⏻" :title="$wh->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $wh->id_warehouse }})"
+                                <x-grid.action-icon icon="fa-pen" title="Edit" action="openWarehouse({{ $wh->id_warehouse }})" />
+                                <x-grid.action-icon :active="$wh->activate" :title="$wh->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $wh->id_warehouse }})"
                                     :confirm="($wh->activate ? 'Nonaktifkan' : 'Aktifkan').' gudang '.$wh->warehouse_name.'?'"
                                     :variant="$wh->activate ? 'danger' : 'default'" />
                             </td>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Sdi\IqpInquiry;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -15,6 +16,8 @@ use Livewire\Component;
 // identitas avatar+nama+kode, toolbar cuma search, ikon Aksi.
 new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     #[Url]
     public string $search = '';
 
@@ -100,6 +103,26 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
 
     // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
+
+    // Baris grid SETELAH filter kotak statistik (griduistandard.md §2b).
+    #[Computed]
+    public function visibleInquiries()
+    {
+        return $this->applyStatFilter($this->inquiries);
+    }
+
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Perlu Costing', 'value' => $this->statTotal, 'tone' => 'total'],
+            'not_started' => ['label' => 'Belum Dimulai', 'value' => $this->statNotStarted, 'tone' => 'warn',
+                'filter' => fn ($c) => $c->whereNull('costing')],
+            'pending_approval' => ['label' => 'Menunggu Approval Direksi', 'value' => $this->statPendingApproval, 'tone' => 'extra',
+                'filter' => fn ($c) => $c->filter(fn ($i) => $i->costing?->doc_status === 'PENDING_APPROVAL')],
+            'published' => ['label' => 'Published', 'value' => $this->statPublished, 'tone' => 'active', 'subtitle' => 'DEKLASIFIKASI KE SALES',
+                'filter' => fn ($c) => $c->filter(fn ($i) => $i->costing?->doc_status === 'PUBLISHED')],
+        ];
+    }
 };
 ?>
 
@@ -109,12 +132,7 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
             🔒 Layar ini khusus role Costing/Direksi — angka HPP &amp; margin tidak boleh bocor ke Sisi B (Sales) sebelum <b>doc_status = PUBLISHED</b> (approve Direksi).
         </div>
 
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Perlu Costing" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="Belum Dimulai" :value="$this->statNotStarted" />
-            <x-grid.stat-box tone="extra" label="Menunggu Approval Direksi" :value="$this->statPendingApproval" />
-            <x-grid.stat-box tone="active" label="Published" :value="$this->statPublished" subtitle="DEKLASIFIKASI KE SALES" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -146,7 +164,7 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($this->inquiries as $row)
+                        @forelse ($this->visibleInquiries as $row)
                             <tr wire:key="cost-{{ $row->id_inquiry }}" wire:dblclick="open({{ $row->id_inquiry }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka Costing">
                                 @php($custName = $row->is_prospect ? $row->prospect_name : ($row->customer?->customer_name ?? '—'))
                                 <x-grid.identity-cell :id="$row->id_inquiry" :name="$custName" :code="$row->inquiry_no ?: '—'" />
@@ -161,7 +179,7 @@ new #[Title('Product Costing — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->docStatusBadgeClass($row->costing?->doc_status) }}">{{ $row->costing?->doc_status ?? 'Belum dimulai' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="Buka Costing" action="open({{ $row->id_inquiry }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="Buka Costing" action="open({{ $row->id_inquiry }})" />
                                 </td>
                             </tr>
                         @empty

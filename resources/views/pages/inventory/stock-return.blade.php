@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\RmStockcard;
 use App\Models\Inventory\RmStockD;
@@ -31,6 +32,8 @@ use Livewire\Component;
 // Stock Out -- sudah tervalidasi POSTED, menahan retur cuma menahan lantai produksi).
 new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     private const DOC_PREFIX = 'RTN';
 
     public const CATEGORY_LABELS = ['RM' => 'Bahan Baku', 'SFG' => 'Barang Setengah Jadi'];
@@ -328,7 +331,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         ], $lines, Auth::user()->login);
 
         $this->doc_no = $docNo;
-        unset($this->documents, $this->statTotal, $this->statDraft, $this->statPosted);
+        unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
         session()->flash('flash', "Draft {$docNo} tersimpan.");
         $this->panel = 'grid';
     }
@@ -343,7 +346,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         $doc = $this->headerModel()::with('lines')->findOrFail($id);
         $result = $svc->postDocument($this->category, $id, Auth::user()->login);
 
-        unset($this->documents, $this->statTotal, $this->statDraft, $this->statPosted);
+        unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
 
         if (! $result['posted']) {
             session()->flash('error', $result['error']);
@@ -376,7 +379,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
             return;
         }
         $svc->cancel($this->category, $this->editingId, Auth::user()->login);
-        unset($this->documents, $this->statTotal, $this->statDraft, $this->statPosted);
+        unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
         session()->flash('flash', 'Dokumen dibatalkan.');
         $this->panel = 'grid';
     }
@@ -393,6 +396,24 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
 
     // Avatar helper dipindah ke App\Support\Grid\Avatar (static, dipakai
     // langsung di markup) -- lihat catatan sama di stock-in/stock-out.
+
+    // Baris grid SETELAH filter kotak statistik (griduistandard.md §2b).
+    #[Computed]
+    public function visibleDocuments()
+    {
+        return $this->applyStatFilter($this->documents);
+    }
+
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Dokumen', 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => 'Draft', 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($c) => $c->where('flow_status', 'DRAFT')],
+            'posted' => ['label' => 'Sudah Diterima', 'value' => $this->statPosted, 'tone' => 'active',
+                'filter' => fn ($c) => $c->where('flow_status', 'POSTED')],
+        ];
+    }
 };
 ?>
 
@@ -403,11 +424,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
         <x-alert.banner type="danger" :message="session('error')" />
 
         @if ($panel === 'grid')
-            <x-grid.stat-row :count="3">
-                <x-grid.stat-box tone="total" label="Total Dokumen" :value="$this->statTotal" />
-                <x-grid.stat-box tone="warn" label="Draft" :value="$this->statDraft" />
-                <x-grid.stat-box tone="active" label="Sudah Diterima" :value="$this->statPosted" />
-            </x-grid.stat-row>
+            <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
@@ -434,7 +451,7 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($this->documents as $d)
+                            @forelse ($this->visibleDocuments as $d)
                                 <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
@@ -451,9 +468,9 @@ new #[Title('Return from Production — TELASIH MAKMUR ERP')] class extends Comp
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="↗" title="Buka" action="openEdit({{ $d->doc_id }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="Buka" action="openEdit({{ $d->doc_id }})" />
                                         @if ($d->flow_status === 'DRAFT')
-                                            <x-grid.action-icon icon="✓" title="Konfirmasi & Posting" action="postNow(null, {{ $d->doc_id }})" variant="success" confirm="Konfirmasi &amp; Posting {{ $d->doc_no }}? Barang akan masuk Kartu Stok." />
+                                            <x-grid.action-icon icon="fa-check" title="Konfirmasi & Posting" action="postNow(null, {{ $d->doc_id }})" variant="success" confirm="Konfirmasi &amp; Posting {{ $d->doc_no }}? Barang akan masuk Kartu Stok." />
                                         @endif
                                     </td>
                                 </tr>

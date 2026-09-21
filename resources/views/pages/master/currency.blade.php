@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasSpreadsheetGrid;
 use App\Models\Master\FinCurrency;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,8 @@ use Livewire\Component;
 // scalar murni, cocok utk edit ala spreadsheet drpd form modal terpisah.
 new #[Title('Master Currency — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasSpreadsheetGrid;
 
     protected function spreadsheetKey(): string
@@ -35,7 +38,7 @@ new #[Title('Master Currency — TELASIH MAKMUR ERP')] class extends Component
 
     protected function spreadsheetQuery()
     {
-        return FinCurrency::query()->orderBy('currency_code');
+        return $this->applyStatFilter(FinCurrency::query())->orderBy('currency_code');
     }
 
     protected function spreadsheetRowId($row): int|string
@@ -102,16 +105,26 @@ new #[Title('Master Currency — TELASIH MAKMUR ERP')] class extends Component
     {
         return FinCurrency::where('activate', false)->count();
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b). Grid ini bergaya
+    // spreadsheet (spreadsheetgridstandard.md) -- filternya nempel di query
+    // dasar yang sama, jadi perilakunya seragam dgn grid biasa.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Mata Uang', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1100px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Mata Uang" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <x-grid.spreadsheet-table
             grid-key="{{ $this->spreadsheetKey() }}"

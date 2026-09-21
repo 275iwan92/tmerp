@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\ProdProcess;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -13,6 +14,8 @@ use Livewire\Component;
 // Pola grid+form sama persis master/machine.blade.php (griduistandard.md).
 new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     public string $search = '';
 
     public string $panel = 'grid'; // grid | form
@@ -35,6 +38,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
     {
         return ProdProcess::query()
             ->when($this->search !== '', fn ($q) => $q->where('process_name', 'like', "%{$this->search}%"))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('process_name')
             ->get();
     }
@@ -126,6 +130,18 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
     {
         return ProdProcess::where('activate', false)->count();
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Proses', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+        ];
+    }
 };
 ?>
 
@@ -134,11 +150,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="Total Proses" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -181,8 +193,8 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $p->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $p->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="Edit" action="openModal('edit', {{ $p->id_process }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->id_process }})"
+                                    <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $p->id_process }})" />
+                                    <x-grid.action-icon :active="$p->activate" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->id_process }})"
                                         :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' proses '.$p->process_name.'?'"
                                         :variant="$p->activate ? 'danger' : 'default'" />
                                 </td>

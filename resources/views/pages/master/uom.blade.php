@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasSpreadsheetGrid;
 use App\Models\Master\UomConversion;
 use App\Models\Master\UomUnit;
@@ -12,6 +13,8 @@ use Livewire\Component;
 
 new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     // Pilot #2 docs/spreadsheetgridstandard.md (2026-08-30) -- list Satuan
     // (kolom kiri) jadi spreadsheet-editable, panel Konversi (kolom kanan)
     // TETAP tidak berubah (relasional, bukan kandidat spreadsheet-edit).
@@ -72,6 +75,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('uom_code', 'like', "%{$this->search}%")
                 ->orWhere('uom_name', 'like', "%{$this->search}%")))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('dimension')->orderBy('uom_code')
             ->get();
     }
@@ -100,6 +104,7 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
             ->when($this->search !== '', fn ($q) => $q->where(fn ($qq) => $qq
                 ->where('uom_code', 'like', "%{$this->search}%")
                 ->orWhere('uom_name', 'like', "%{$this->search}%")))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('dimension')->orderBy('uom_code');
     }
 
@@ -513,17 +518,28 @@ new #[Title('Master Satuan (UoM) — TELASIH MAKMUR ERP')] class extends Compone
 
     // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
+
+    // Kotak statistik = filter data (griduistandard.md §2b). Dipasang di KEDUA
+    // jalur query layar ini (daftar satuan kiri + grid spreadsheet) supaya
+    // keduanya menunjukkan himpunan yang sama.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => 'Total Satuan', 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'base' => ['label' => 'Satuan Dasar', 'value' => $this->statBase, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('is_base', true)],
+            'inactive' => ['label' => 'Nonaktif', 'value' => $this->statInactive, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="4">
-            <x-grid.stat-box tone="total" label="Total Satuan" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="Aktif" :value="$this->statActive" />
-            <x-grid.stat-box tone="warn" label="Satuan Dasar" :value="$this->statBase" />
-            <x-grid.stat-box tone="critical" label="Nonaktif" :value="$this->statInactive" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="text-xs px-3 py-2.5 rounded-md mb-3.5 leading-relaxed bg-[#fff4e5] border border-[#ffd9a0] text-[#8a4b00]">
             🔒 Konversi hanya sah <b>dalam satu dimensi</b>. Satuan <b>SPEC</b> (GSM, WARNA, dsb.) tak dikonversi.

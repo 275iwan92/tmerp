@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdCategory;
@@ -22,6 +23,8 @@ use Livewire\WithPagination;
 // itu posisi stok transaksional dari ledger Inventory, bukan master data).
 new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -110,6 +113,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
             ->when($this->filterCategory, fn ($q) => $q->where('category_id', $this->filterCategory))
             ->when($this->filterWithImage, fn ($q) => $q->whereNotNull('image_path'))
             ->when($this->filterUnclassified, fn ($q) => $q->whereNull('category_id')->whereNull('customer_id'))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('product_name')
             ->paginate($this->perPage);
     }
@@ -351,6 +355,23 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
     // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('mdata_prod_stat_total', 'Total Produk'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'active' => ['label' => Translator::t('mdata_active', 'Aktif'), 'value' => $this->statActive, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'confirmed' => ['label' => Translator::t('mdata_prod_stat_confirmed', 'Terkonfirmasi'), 'value' => $this->statConfirmed, 'tone' => 'extra',
+                'subtitle' => Translator::t('mdata_prod_stat_confirmed_subtitle', 'SPEC TERKUNCI'),
+                'filter' => fn ($q) => $q->where('stat_confirm', true)],
+            'with_image' => ['label' => 'Bergambar', 'value' => $this->statWithImage, 'tone' => 'extra', 'subtitle' => 'DARI MASTER CARD',
+                'filter' => fn ($q) => $q->whereNotNull('image_path')],
+            'inactive' => ['label' => Translator::t('mdata_inactive', 'Nonaktif'), 'value' => $this->statInactive, 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+        ];
+    }
 };
 ?>
 
@@ -359,13 +380,7 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
 
         {{-- ============ GRID (LIST) ============ --}}
         @if ($panel === 'grid')
-        <x-grid.stat-row :count="5">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('mdata_prod_stat_total', 'Total Produk') }}" :value="$this->statTotal" />
-            <x-grid.stat-box tone="active" label="{{ Translator::t('mdata_active', 'Aktif') }}" :value="$this->statActive" />
-            <x-grid.stat-box tone="extra" label="{{ Translator::t('mdata_prod_stat_confirmed', 'Terkonfirmasi') }}" subtitle="{{ Translator::t('mdata_prod_stat_confirmed_subtitle', 'SPEC TERKUNCI') }}" :value="$this->statConfirmed" />
-            <x-grid.stat-box tone="extra" label="Bergambar" subtitle="DARI MASTER CARD" :value="$this->statWithImage" />
-            <x-grid.stat-box tone="critical" label="{{ Translator::t('mdata_inactive', 'Nonaktif') }}" :value="$this->statInactive" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -457,8 +472,8 @@ new #[Title('Master Produk — TELASIH MAKMUR ERP')] class extends Component
                                     </div>
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openModal('edit', {{ $p->id_product }})" />
-                                    <x-grid.action-icon icon="⏻" :title="$p->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $p->id_product }})"
+                                    <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openModal('edit', {{ $p->id_product }})" />
+                                    <x-grid.action-icon :active="$p->activate" :title="$p->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $p->id_product }})"
                                         :confirm="($p->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' produk '.$p->product_name.'?'"
                                         :variant="$p->activate ? 'danger' : 'default'" />
                                 </td>

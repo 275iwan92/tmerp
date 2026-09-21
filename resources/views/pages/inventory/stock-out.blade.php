@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Inventory\RmStock;
 use App\Models\Inventory\SfgStock;
 use App\Models\Master\MatRaw;
@@ -32,6 +33,8 @@ use Livewire\Component;
 // Alur "DRAFT -> POSTED" TANPA approval (inventory_rules.yaml alasan_out_rtp_tanpa_approval).
 new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     private const DOC_PREFIX = 'OUT';
 
     public const CATEGORY_LABELS = ['RM' => 'Bahan Baku', 'SFG' => 'Barang Setengah Jadi'];
@@ -252,7 +255,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
         ], $lines, Auth::user()->login);
 
         $this->doc_no = $docNo;
-        unset($this->documents, $this->statTotal, $this->statDraft, $this->statPosted);
+        unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
         session()->flash('flash', "Draft {$docNo} tersimpan.");
         $this->panel = 'grid';
     }
@@ -266,7 +269,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 
         $result = $svc->postDocument($this->category, $id, Auth::user()->login);
 
-        unset($this->documents, $this->statTotal, $this->statDraft, $this->statPosted);
+        unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
 
         if (! $result['posted']) {
             session()->flash('error', $result['error']);
@@ -289,7 +292,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
             return;
         }
         $svc->cancel($this->category, $this->editingId, Auth::user()->login);
-        unset($this->documents, $this->statTotal, $this->statDraft, $this->statPosted);
+        unset($this->documents, $this->visibleDocuments, $this->statTotal, $this->statDraft, $this->statPosted);
         session()->flash('flash', 'Dokumen dibatalkan.');
         $this->panel = 'grid';
     }
@@ -306,6 +309,25 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
 
     // Componentization grid+form (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai langsung sbg static call).
+
+    // Baris grid SETELAH filter kotak statistik -- terpisah supaya angka kotak
+    // tetap menghitung seluruh dokumen (griduistandard.md §2b).
+    #[Computed]
+    public function visibleDocuments()
+    {
+        return $this->applyStatFilter($this->documents);
+    }
+
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('inv_stat_total_doc', 'Total Dokumen'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => Translator::t('sales_quo_stat_draft', 'Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($c) => $c->where('flow_status', 'DRAFT')],
+            'posted' => ['label' => Translator::t('inv_stockout_stat_issued', 'Sudah Diserahkan'), 'value' => $this->statPosted, 'tone' => 'active',
+                'filter' => fn ($c) => $c->where('flow_status', 'POSTED')],
+        ];
+    }
 };
 ?>
 
@@ -319,11 +341,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
         @endif
 
         @if ($panel === 'grid')
-            <x-grid.stat-row :count="3">
-                <x-grid.stat-box tone="total" label="{{ Translator::t('inv_stat_total_doc', 'Total Dokumen') }}" :value="$this->statTotal" />
-                <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_quo_stat_draft', 'Draft') }}" :value="$this->statDraft" />
-                <x-grid.stat-box tone="active" label="{{ Translator::t('inv_stockout_stat_issued', 'Sudah Diserahkan') }}" :value="$this->statPosted" />
-            </x-grid.stat-row>
+            <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
@@ -350,7 +368,7 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($this->documents as $d)
+                            @forelse ($this->visibleDocuments as $d)
                                 <tr wire:key="doc-{{ $d->doc_id }}" wire:dblclick="openEdit({{ $d->doc_id }})" class="hover:bg-[#f7faff] cursor-pointer" title="{{ Translator::t('shared_grid_dblclick_hint', 'Klik 2x untuk buka') }}">
                                     <td class="px-3 py-2 border-b border-[#eef1f5]">
                                         <div class="flex items-center gap-2.5">
@@ -367,9 +385,9 @@ new #[Title('Stock Out — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $this->subStateBadgeClass($d->flow_status) }}">{{ $d->flow_status }}</span>
                                     </td>
                                     <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $d->doc_id }})" />
+                                        <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openEdit({{ $d->doc_id }})" />
                                         @if ($d->flow_status === 'DRAFT')
-                                            <x-grid.action-icon icon="✓" title="{{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }}" action="postNow(null, {{ $d->doc_id }})"
+                                            <x-grid.action-icon icon="fa-check" title="{{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }}" action="postNow(null, {{ $d->doc_id }})"
                                                 confirm="{{ Translator::t('inv_btn_confirm_posting', 'Konfirmasi & Posting') }} {{ $d->doc_no }}? {{ Translator::t('inv_stockout_confirm_posting_suffix', 'Barang akan keluar dari Kartu Stok.') }}" variant="success" />
                                         @endif
                                     </td>

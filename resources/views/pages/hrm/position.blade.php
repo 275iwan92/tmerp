@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\OrgDepartment;
 use App\Models\Master\OrgLevel;
@@ -17,6 +18,8 @@ use Livewire\WithPagination;
 // murni tampilan read-only dari data ini.
 new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use WithPagination;
     use HasGridPagination;
 
@@ -89,6 +92,7 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
             ->when($this->search, fn ($q) => $q->where(function ($q2) {
                 $q2->where('position_name', 'like', "%{$this->search}%")->orWhere('position_code', 'like', "%{$this->search}%");
             }))
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderBy('position_name')
             ->paginate($this->perPage);
     }
@@ -178,15 +182,25 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
         $p->update(['activate' => ! $p->activate]);
         unset($this->rows, $this->stats);
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        $s = $this->stats;
+
+        return [
+            'total' => ['label' => 'Total Posisi', 'value' => $s['total'], 'tone' => 'total'],
+            'active' => ['label' => 'Aktif', 'value' => $s['active'], 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'unassigned' => ['label' => 'Belum Ada Atasan', 'value' => $s['unassigned'], 'tone' => 'warn',
+                'filter' => fn ($q) => $q->whereNull('reports_to_position_id')->where('activate', true)],
+        ];
+    }
 };
 ?>
 
 <div class="max-w-[1400px] mx-auto my-5 px-4">
-    <x-grid.stat-row :count="3">
-        <x-grid.stat-box tone="total" label="Total Posisi" :value="$this->stats['total']" />
-        <x-grid.stat-box tone="active" label="Aktif" :value="$this->stats['active']" />
-        <x-grid.stat-box tone="warn" label="Belum Ada Atasan" :value="$this->stats['unassigned']" />
-    </x-grid.stat-row>
+    <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
     <div class="bg-white border border-[#d7dbe2] rounded-md overflow-hidden">
         <x-grid.toolbar>
@@ -226,8 +240,8 @@ new #[Title('Master Posisi — TELASIH MAKMUR ERP')] class extends Component
                         <td class="px-3 py-2">{{ $p->level->level_name ?? '—' }}</td>
                         <td class="px-3 py-2">{{ $p->reportsTo->position_name ?? '—' }}</td>
                         <td class="px-3 py-2 text-right whitespace-nowrap">
-                            <x-grid.action-icon icon="✎" title="Edit" action="edit({{ $p->position_id }})" />
-                            <x-grid.action-icon icon="⏻" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->position_id }})"
+                            <x-grid.action-icon icon="fa-pen" title="Edit" action="edit({{ $p->position_id }})" />
+                            <x-grid.action-icon :active="$p->activate" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->position_id }})"
                                 :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' posisi '.$p->position_name.'?'"
                                 :variant="$p->activate ? 'danger' : 'default'" />
                         </td>

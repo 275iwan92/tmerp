@@ -11,6 +11,7 @@ use App\Models\Master\OrgPosition;
 use App\Models\Master\ProdMachine;
 use App\Models\Sys\SecUser;
 use App\Services\Hrm\FamilyEmploymentCrossCheckService;
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Services\Migration\EmployeeLoginProvisionService;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
@@ -29,6 +30,7 @@ use Livewire\WithFileUploads;
 // tab Kedisiplinan.
 new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
     use WithFileUploads;
 
     public string $panel = 'grid'; // grid | form
@@ -201,15 +203,23 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 
     public string $dis_reason = '';
 
-    // Kotak statistik = filter (klik lagi = lepas, permintaan user 2026-09-19).
-    public string $statFilter = '';
-
-    private const STAT_FILTERS = ['active', 'inactive', 'weekly', 'monthly'];
-
-    public function toggleStatFilter(string $filter): void
+    // Kotak statistik = filter data -- mekanismenya di trait HasGridStatFilter
+    // (griduistandard.md §2b), layar cuma mendeklarasikan definisinya.
+    protected function statFilterDefs(): array
     {
-        $this->statFilter = in_array($filter, self::STAT_FILTERS, true) && $this->statFilter !== $filter ? $filter : '';
-        unset($this->employees);
+        $m = $this->metrics;
+
+        return [
+            'active' => ['label' => Translator::t('hrm_emp_stat_active', 'Employee Aktif'), 'value' => $m['active'], 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('activate', true)],
+            'inactive' => ['label' => Translator::t('hrm_emp_stat_inactive', 'Employee Non Aktif'), 'value' => $m['inactive'], 'tone' => 'critical',
+                'filter' => fn ($q) => $q->where('activate', false)],
+            // Mingguan/bulanan = frekuensi gaji karyawan AKTIF (yang non aktif tak ikut payroll).
+            'weekly' => ['label' => Translator::t('hrm_emp_stat_weekly', 'Employee Mingguan'), 'value' => $m['weekly'], 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('activate', true)->where('payment_frequency', 'WEEKLY')],
+            'monthly' => ['label' => Translator::t('hrm_emp_stat_monthly', 'Employee Bulanan'), 'value' => $m['monthly'], 'tone' => 'total',
+                'filter' => fn ($q) => $q->where('activate', true)->where('payment_frequency', 'MONTHLY')],
+        ];
     }
 
     private function searchQuery()
@@ -224,13 +234,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function employees()
     {
-        return $this->searchQuery()
-            ->with(['position.department', 'disciplinaries'])
-            ->when($this->statFilter === 'active', fn ($q) => $q->where('activate', true))
-            ->when($this->statFilter === 'inactive', fn ($q) => $q->where('activate', false))
-            // Mingguan/bulanan = frekuensi gaji karyawan AKTIF (yang non aktif tak ikut payroll).
-            ->when($this->statFilter === 'weekly', fn ($q) => $q->where('activate', true)->where('payment_frequency', 'WEEKLY'))
-            ->when($this->statFilter === 'monthly', fn ($q) => $q->where('activate', true)->where('payment_frequency', 'MONTHLY'))
+        return $this->applyStatFilter($this->searchQuery()->with(['position.department', 'disciplinaries']))
             ->orderBy('full_name')
             ->get();
     }
@@ -753,16 +757,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
 <div>
     @if ($panel === 'grid')
         <div class="max-w-[1400px] mx-auto my-5 px-4">
-            <x-grid.stat-row :count="4">
-                <x-grid.stat-box tone="active" label="{{ Translator::t('hrm_emp_stat_active', 'Employee Aktif') }}" :value="$this->metrics['active']"
-                    action="toggleStatFilter('active')" :selected="$statFilter === 'active'" />
-                <x-grid.stat-box tone="critical" label="{{ Translator::t('hrm_emp_stat_inactive', 'Employee Non Aktif') }}" :value="$this->metrics['inactive']"
-                    action="toggleStatFilter('inactive')" :selected="$statFilter === 'inactive'" />
-                <x-grid.stat-box tone="warn" label="{{ Translator::t('hrm_emp_stat_weekly', 'Employee Mingguan') }}" :value="$this->metrics['weekly']"
-                    action="toggleStatFilter('weekly')" :selected="$statFilter === 'weekly'" />
-                <x-grid.stat-box tone="total" label="{{ Translator::t('hrm_emp_stat_monthly', 'Employee Bulanan') }}" :value="$this->metrics['monthly']"
-                    action="toggleStatFilter('monthly')" :selected="$statFilter === 'monthly'" />
-            </x-grid.stat-row>
+            <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
             <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
                 <x-grid.toolbar>
@@ -808,8 +803,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ Translator::t('hrm_emp_workstatus_'.strtolower($e->work_status), $this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
                                     </div>
                                     <div class="flex justify-end gap-0.5 mt-2 pt-2 border-t border-[#eef1f5]">
-                                        <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
+                                        <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon :active="$e->activate" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
                                             :confirm="($e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' employee '.$e->full_name.'?'"
                                             :variant="$e->activate ? 'danger' : 'default'" />
                                     </div>
@@ -856,8 +851,8 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $e->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ Translator::t('hrm_emp_workstatus_'.strtolower($e->work_status), $this->workStatuses[$e->work_status] ?? $e->work_status) }}</span>
                                     </td>
                                     <td class="px-3.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                        <x-grid.action-icon icon="✎" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
-                                        <x-grid.action-icon icon="⏻" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
+                                        <x-grid.action-icon icon="fa-pen" title="{{ Translator::t('fin_coa_action_edit', 'Edit') }}" action="openEdit({{ $e->employee_id }})" />
+                                        <x-grid.action-icon :active="$e->activate" :title="$e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')" action="toggleActive({{ $e->employee_id }})"
                                             :confirm="($e->activate ? Translator::t('fin_coa_deactivate', 'Nonaktifkan') : Translator::t('fin_coa_activate', 'Aktifkan')).' employee '.$e->full_name.'?'"
                                             :variant="$e->activate ? 'danger' : 'default'" />
                                     </td>

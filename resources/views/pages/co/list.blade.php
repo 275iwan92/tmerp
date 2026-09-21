@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\CoOrder;
@@ -23,6 +24,8 @@ use Livewire\WithPagination;
 // minimal) atau INSTANT (pilih Customer, input manual + Master Product).
 new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -52,6 +55,7 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                     ->orWhere('customer_po_no', 'like', "%{$term}%")
                     ->orWhereIn('customer_id', $customerIds));
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderByDesc('id_order')
             ->paginate($this->perPage);
     }
@@ -177,16 +181,24 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
 
         unset($this->orders);
     }
+
+    // Kotak statistik = filter data (griduistandard.md §2b).
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('sales_co_stat_total', 'Total Customer Order'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => Translator::t('sales_co_stat_draft', 'Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('doc_status', 'DRAFT')],
+            'confirmed' => ['label' => Translator::t('sales_co_stat_confirmed', 'Confirmed'), 'value' => $this->statConfirmed, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('doc_status', 'CONFIRMED')],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('sales_co_stat_total', 'Total Customer Order') }}" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_co_stat_draft', 'Draft') }}" :value="$this->statDraft" />
-            <x-grid.stat-box tone="active" label="{{ Translator::t('sales_co_stat_confirmed', 'Confirmed') }}" :value="$this->statConfirmed" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -236,9 +248,9 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold">{{ number_format($this->grandTotals[$o->id_order] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openOrder({{ $o->id_order }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openOrder({{ $o->id_order }})" />
                                     @if ($o->doc_status === 'DRAFT' && $o->isConfirmable())
-                                        <x-grid.action-icon icon="✓" title="{{ Translator::t('sales_form_btn_confirm', 'Confirm') }}" action="confirmOrder({{ $o->id_order }})"
+                                        <x-grid.action-icon icon="fa-check" title="{{ Translator::t('sales_form_btn_confirm', 'Confirm') }}" action="confirmOrder({{ $o->id_order }})"
                                             confirm="{{ Translator::t('sales_co_action_confirm_confirm', 'Confirm CO') }} {{ $o->co_no }}?" variant="success" />
                                     @endif
                                 </td>

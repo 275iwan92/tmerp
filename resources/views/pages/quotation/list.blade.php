@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\QuoQuotation;
@@ -19,6 +20,8 @@ use Livewire\WithPagination;
 // (DRAFT->PUBLISHED langsung dari grid, sesuai instruksi user 2026-08-22).
 new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridStatFilter;
+
     use HasGridPagination;
     use WithPagination;
 
@@ -40,6 +43,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                         ->orWhereHas('customer', fn ($c) => $c->where('customer_name', 'like', "%{$term}%"));
                 });
             })
+            ->tap(fn ($q) => $this->applyStatFilter($q))
             ->orderByDesc('id_quotation')
             ->paginate($this->perPage);
     }
@@ -136,16 +140,25 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
 
     // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
+
+    // Kotak statistik = filter data (griduistandard.md §2b). "Total Quotation"
+    // sama dengan tanpa filter -> sengaja tidak bisa diklik.
+    protected function statFilterDefs(): array
+    {
+        return [
+            'total' => ['label' => Translator::t('sales_quo_stat_total', 'Total Quotation'), 'value' => $this->statTotal, 'tone' => 'total'],
+            'draft' => ['label' => Translator::t('sales_quo_stat_draft', 'Draft'), 'value' => $this->statDraft, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('doc_status', 'DRAFT')],
+            'published' => ['label' => Translator::t('sales_quo_stat_published', 'Published'), 'value' => $this->statPublished, 'tone' => 'active',
+                'filter' => fn ($q) => $q->where('doc_status', 'PUBLISHED')],
+        ];
+    }
 };
 ?>
 
 <div>
     <div class="max-w-[1400px] mx-auto my-5 px-4">
-        <x-grid.stat-row :count="3">
-            <x-grid.stat-box tone="total" label="{{ Translator::t('sales_quo_stat_total', 'Total Quotation') }}" :value="$this->statTotal" />
-            <x-grid.stat-box tone="warn" label="{{ Translator::t('sales_quo_stat_draft', 'Draft') }}" :value="$this->statDraft" />
-            <x-grid.stat-box tone="active" label="{{ Translator::t('sales_quo_stat_published', 'Published') }}" :value="$this->statPublished" />
-        </x-grid.stat-row>
+        <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
         <div class="bg-white border border-field-border rounded-[10px] overflow-hidden">
             <x-grid.toolbar>
@@ -181,9 +194,9 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                                 <td class="px-3 py-2 border-b border-field-badge text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-field-badge text-right whitespace-nowrap">
-                                    <x-grid.action-icon icon="↗" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openQuotation({{ $q->id_quotation }})" />
+                                    <x-grid.action-icon icon="fa-up-right-from-square" title="{{ Translator::t('shared_grid_action_open', 'Buka') }}" action="openQuotation({{ $q->id_quotation }})" />
                                     @if ($q->doc_status === 'DRAFT')
-                                        <x-grid.action-icon icon="✓" title="{{ Translator::t('sales_quo_action_confirm_publish', 'Confirm / Publish') }}" action="confirmQuotation({{ $q->id_quotation }})"
+                                        <x-grid.action-icon icon="fa-check" title="{{ Translator::t('sales_quo_action_confirm_publish', 'Confirm / Publish') }}" action="confirmQuotation({{ $q->id_quotation }})"
                                             confirm="{{ Translator::t('sales_quo_confirm_publish_prefix', 'Publish quotation') }} {{ $q->quotation_no }}? {{ Translator::t('sales_quo_confirm_publish_suffix', 'Harga akan terkunci.') }}" variant="success" />
                                     @endif
                                 </td>

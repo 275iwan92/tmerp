@@ -6,7 +6,9 @@
     griduistandard.md §6 soal reset <input>.
 
     action (opsional) = method Livewire -> kotak jadi tombol filter (klik =
-    wire:click), selected = sedang dipakai sbg filter (ring tebal).
+    wire:click), selected = sedang dipakai sbg filter (ring tebal + centang).
+    Biasanya TIDAK dipanggil langsung: pakai x-grid.stat-filter-row + trait
+    HasGridStatFilter supaya semua grid seragam (griduistandard.md §2b).
 --}}
 @props(['tone' => 'total', 'label', 'value', 'subtitle' => null, 'action' => null, 'selected' => false])
 @php
@@ -20,7 +22,11 @@
 @endphp
 @if ($action)
 <button type="button" wire:click="{{ $action }}" aria-pressed="{{ $selected ? 'true' : 'false' }}"
-    class="text-left w-full rounded-lg p-3.5 shadow-sm border cursor-pointer transition hover:brightness-[0.97] {{ $c['box'] }} {{ $selected ? 'ring-2 ring-[#1d4ed8] ring-offset-1' : '' }}">
+    title="{{ $selected ? 'Klik lagi untuk melepas filter' : 'Klik untuk menyaring data' }}"
+    class="relative text-left w-full rounded-lg p-3.5 shadow-sm border cursor-pointer transition hover:brightness-[0.97] {{ $c['box'] }} {{ $selected ? 'ring-2 ring-[#1d4ed8] ring-offset-1' : '' }}">
+    @if ($selected)
+        <span class="absolute top-2 right-2 inline-flex items-center justify-center w-4 h-4 rounded-full bg-[#1d4ed8] text-white text-[9px]"><i class="fa-solid fa-check"></i></span>
+    @endif
 @else
 <div class="rounded-lg p-3.5 shadow-sm border {{ $c['box'] }}">
 @endif
