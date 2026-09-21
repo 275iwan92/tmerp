@@ -15,9 +15,11 @@ class FinVoucher extends Model
     protected $primaryKey = 'voucher_id';
 
     protected $fillable = [
+        'data_origin',
         'voucher_number',
         'journal_id',
         'voucher_type',
+        'journal_kind',
         'main_account_id',
         'entry_date',
         'posting_date',
@@ -33,6 +35,13 @@ class FinVoucher extends Model
         'bupot_no',
         'description',
         'status',
+        'submitted_by',
+        'submitted_at',
+        'approved_by',
+        'approved_at',
+        'reversal_of_id',
+        'reversed_by_id',
+        'auto_reverse_date',
         'stat_cancel',
         'cancel_reason',
         'posted_by',
@@ -45,6 +54,9 @@ class FinVoucher extends Model
         'entry_date' => 'date',
         'posting_date' => 'date',
         'posted_at' => 'datetime',
+        'submitted_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'auto_reverse_date' => 'date',
         'revision_no' => 'integer',
         'stat_cancel' => 'boolean',
     ];
@@ -62,5 +74,15 @@ class FinVoucher extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(FinVoucherLine::class, 'voucher_id', 'voucher_id');
+    }
+
+    public function reversalOf(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'reversal_of_id', 'voucher_id');
+    }
+
+    public function totalAmount(): float
+    {
+        return round((float) $this->lines->sum('debit'), 2);
     }
 }

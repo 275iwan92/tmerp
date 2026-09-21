@@ -15,6 +15,7 @@ class FinInvoice extends Model
     protected $primaryKey = 'invoice_id';
 
     protected $fillable = [
+        'data_origin',
         'invoice_number',
         'invoice_type',
         'partner_type',
@@ -22,6 +23,14 @@ class FinInvoice extends Model
         'source_type',
         'source_id',
         'co_id',
+        'description',
+        'partner_ref',
+        'tax_invoice_no',
+        'tax_validated',
+        'pph_amount',
+        'pph_code',
+        'revenue_account_id',
+        'doc_status',
         'invoice_date',
         'due_date',
         'subtotal',
@@ -41,6 +50,8 @@ class FinInvoice extends Model
         'tax_amount' => 'decimal:4',
         'total_amount' => 'decimal:4',
         'paid_amount' => 'decimal:4',
+        'pph_amount' => 'decimal:4',
+        'tax_validated' => 'boolean',
     ];
 
     public function voucher(): BelongsTo
@@ -58,5 +69,16 @@ class FinInvoice extends Model
     public function appliedDpAllocations(): HasMany
     {
         return $this->hasMany(FinDpAllocation::class, 'final_invoice_id', 'invoice_id');
+    }
+
+    public function allocations(): HasMany
+    {
+        return $this->hasMany(FinPaymentAlloc::class, 'invoice_id', 'invoice_id');
+    }
+
+    // Sisa tagihan = total - PPh dipotong - yang sudah dibayar/dialokasikan.
+    public function outstanding(): float
+    {
+        return round((float) $this->total_amount - (float) $this->pph_amount - (float) $this->paid_amount, 2);
     }
 }

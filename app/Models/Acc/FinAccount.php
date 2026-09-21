@@ -30,6 +30,8 @@ class FinAccount extends Model
         'is_postable',
         'default_cc_id',
         'tax_scheme_code',
+        'fs_line',
+        'cf_line',
         'activate',
         'created_by',
         'updated_by',

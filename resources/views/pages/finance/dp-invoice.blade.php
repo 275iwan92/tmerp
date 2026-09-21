@@ -199,6 +199,15 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
         $dpAccount = $this->accountId('213200');
         $ppnAccount = $this->accountId('212100');
 
+        // Period guard (financeaccounting_delta_period_close.md §1.6).
+        try {
+            app(\App\Services\Acc\FinPeriodGuard::class)->assertOpen($data['entry_date']);
+        } catch (\DomainException $e) {
+            $this->addError('entry_date', $e->getMessage());
+
+            return;
+        }
+
         DB::connection('tm2acc')->transaction(function () use ($data, $calc, $customer, $arAccount, $dpAccount, $ppnAccount) {
             $invoiceNumber = $this->nextInvoiceNumber();
 
@@ -282,6 +291,15 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
         $customer = CustCustomer::findOrFail($invoice->partner_id);
         $bankAccount = $this->accountId('111200');
         $arAccount = $this->accountId($customer->customer_type === 'import' ? '112200' : '112100');
+
+        // Period guard (financeaccounting_delta_period_close.md §1.6).
+        try {
+            app(\App\Services\Acc\FinPeriodGuard::class)->assertOpen(now());
+        } catch (\DomainException $e) {
+            $this->addError('entry_date', $e->getMessage());
+
+            return;
+        }
 
         DB::connection('tm2acc')->transaction(function () use ($invoice, $customer, $bankAccount, $arAccount) {
             $voucher = FinVoucher::create([
@@ -400,6 +418,15 @@ new #[Title('Tagihan Uang Muka (DP) — TELASIH MAKMUR ERP')] class extends Comp
         $dpAccount = $this->accountId('213200');
         $ppnAccount = $this->accountId('212100');
         $arAccount = $this->accountId($customer->customer_type === 'import' ? '112200' : '112100');
+
+        // Period guard (financeaccounting_delta_period_close.md §1.6).
+        try {
+            app(\App\Services\Acc\FinPeriodGuard::class)->assertOpen(now());
+        } catch (\DomainException $e) {
+            $this->addError('entry_date', $e->getMessage());
+
+            return;
+        }
 
         DB::connection('tm2acc')->transaction(function () use ($data, $dp, $final, $customer, $dpAccount, $ppnAccount, $arAccount, $requested) {
             FinDpAllocation::create([

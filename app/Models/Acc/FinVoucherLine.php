@@ -16,6 +16,7 @@ class FinVoucherLine extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'data_origin',
         'voucher_id',
         'account_id',
         'partner_type',
