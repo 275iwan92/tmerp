@@ -391,33 +391,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
     // (co/delivery-plan.blade.php).
     public function confirmCo(): void
     {
-        if ($this->order->doc_status !== 'DRAFT' || ! $this->order->isConfirmable()) {
-            return;
-        }
-
-        $login = Auth::user()->login;
-
-        DB::connection('tm2sdi')->transaction(function () use ($login) {
-            $this->order->update(['doc_status' => 'CONFIRMED', 'updated_by' => $login]);
-
-            $itemsNeedingSchedule = $this->order->items
-                ->where('line_kind', 'PRODUCT')
-                ->filter(fn ($item) => $item->deliveries->isEmpty());
-
-            foreach ($itemsNeedingSchedule as $item) {
-                CoOrderDelivery::create([
-                    'order_id' => $this->orderId,
-                    'item_id' => $item->id_item,
-                    'shipment_type' => 'FULL',
-                    'ship_date' => $item->due_date,
-                    'ship_qty' => $item->qty,
-                    'status' => 'PLANNED',
-                    'created_by' => $login,
-                    'updated_by' => $login,
-                ]);
-            }
-        });
-
+        CoOrderBuilder::confirm($this->order);
         unset($this->order);
     }
 };

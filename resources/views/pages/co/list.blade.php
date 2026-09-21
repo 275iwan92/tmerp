@@ -6,7 +6,6 @@ use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Sales\CoOrderBuilder;
 use App\Support\Localization\Translator;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -170,15 +169,11 @@ new #[Title('Daftar Customer Order — TELASIH MAKMUR ERP')] class extends Compo
     // Master Product di tiap baris PRODUCT, semua baris PRODUCT wajib due_date.
     public function confirmOrder(int $id): void
     {
-        $o = CoOrder::with('items')->findOrFail($id);
-
-        if ($o->doc_status !== 'DRAFT' || ! $o->isConfirmable()) {
-            return;
-        }
-
-        $o->doc_status = 'CONFIRMED';
-        $o->updated_by = Auth::user()->login;
-        $o->save();
+        // Lewat service, BUKAN flip status langsung -- sebelum 2026-09-21 grid ini
+        // cuma mengubah doc_status sehingga ENGINE CPDEL dilewati diam-diam dan
+        // CO yang di-confirm dari grid tidak pernah muncul di Customer Plan
+        // Delivery.
+        CoOrderBuilder::confirm(CoOrder::with('items.deliveries')->findOrFail($id));
 
         unset($this->orders);
     }

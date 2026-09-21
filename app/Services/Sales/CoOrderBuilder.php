@@ -6,7 +6,9 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\SalesPerson;
 use App\Models\Sdi\CoOrder;
+use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CoOrderItem;
+use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use Illuminate\Support\Facades\Auth;
@@ -55,6 +57,13 @@ class CoOrderBuilder
             $seq = 1;
 
             foreach ($quotation->items as $qi) {
+                // Toleransi qty cetak ikut dibekukan dari tier ProCost yang
+                // dipakai baris ini (iqp_costing_price_tier.tolerance_pct) --
+                // dicetak di Nota CO sebagai batas kirim yang sah.
+                $tolPct = $qi->tier_id
+                    ? (float) IqpCostingPriceTier::where('tier_id', $qi->tier_id)->value('tolerance_pct')
+                    : 0.0;
+
                 $item = CoOrderItem::create([
                     'order_id' => $order->id_order,
                     'line_seq' => $seq++,
@@ -66,6 +75,8 @@ class CoOrderBuilder
                     'spec_note' => $qi->spec_note,
                     'qty' => $qi->qty,
                     'qty_unit' => $qi->qty_unit,
+                    'qty_min' => $tolPct > 0 ? round((float) $qi->qty * (1 - $tolPct / 100), 2) : null,
+                    'qty_max' => $tolPct > 0 ? round((float) $qi->qty * (1 + $tolPct / 100), 2) : null,
                     'unit_price' => $qi->unit_price,
                     'discount_pct' => $qi->discount_pct,
                     'created_by' => $login,
@@ -143,6 +154,45 @@ class CoOrderBuilder
         $item->save();
 
         return $item;
+    }
+
+    // ENGINE Customer Plan Delivery (CPDEL, keputusan user 2026-09-03): begitu CO
+    // Confirm, tiap item PRODUCT yang belum punya jadwal manual di-auto-isi 1
+    // baris qty penuh @ due_date. Dipindah dari co/entry.blade.php ke sini
+    // 2026-09-21 supaya jalur Confirm dari grid, dari layar entry, dan dari
+    // seeder memakai logika yang SAMA (dulu cuma hidup di dalam komponen).
+    public static function confirm(CoOrder $order): bool
+    {
+        $order->loadMissing(['items.deliveries']);
+
+        if ($order->doc_status !== 'DRAFT' || ! $order->isConfirmable()) {
+            return false;
+        }
+
+        $login = Auth::user()->login;
+
+        DB::connection('tm2sdi')->transaction(function () use ($order, $login) {
+            $order->update(['doc_status' => 'CONFIRMED', 'updated_by' => $login]);
+
+            $needSchedule = $order->items
+                ->where('line_kind', 'PRODUCT')
+                ->filter(fn ($item) => $item->deliveries->isEmpty());
+
+            foreach ($needSchedule as $item) {
+                CoOrderDelivery::create([
+                    'order_id' => $order->id_order,
+                    'item_id' => $item->id_item,
+                    'shipment_type' => 'FULL',
+                    'ship_date' => $item->due_date,
+                    'ship_qty' => $item->qty,
+                    'status' => 'PLANNED',
+                    'created_by' => $login,
+                    'updated_by' => $login,
+                ]);
+            }
+        });
+
+        return true;
     }
 
     private static function resolveSalesPerson(?string $picSalesName): ?int

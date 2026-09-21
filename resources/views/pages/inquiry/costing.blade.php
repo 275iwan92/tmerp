@@ -457,6 +457,38 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
         $this->refreshData();
     }
 
+    // PUBLISH DIREKSI = deklasifikasi harga dari Sisi A (rahasia) ke Sisi B
+    // (Sales) -- CLAUDE.md §4. Sebelum 2026-09-21 TIDAK ADA satu pun jalur kode
+    // yang menyetel published_flag, jadi rantai Costing -> Quotation -> CO
+    // mustahil diselesaikan dari UI (QuotationBuilder::addInquiry mensyaratkan
+    // published_flag=1). Gate: admin atau anggota grup Direksi.
+    #[Computed]
+    public function canPublish(): bool
+    {
+        $u = Auth::user();
+
+        return $u && ((bool) $u->is_admin || $u->hasGroup('DIREKSI'));
+    }
+
+    public function publishCosting(): void
+    {
+        if (! $this->canPublish || $this->costing->doc_status !== 'PENDING_APPROVAL') {
+            return;
+        }
+
+        $this->costing->update([
+            'doc_status' => 'PUBLISHED',
+            'published_flag' => true,
+            'is_approved' => true,
+            'approved_by' => Auth::user()->login,
+            'approved_at' => now(),
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->costing->inquiry?->update(['sub_state' => 'PRICE_CALCULATED']);
+        $this->refreshData();
+    }
+
     public function addToQuotation()
     {
         $inquiry = $this->costing->inquiry;
@@ -672,6 +704,11 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
             <div class="ml-auto flex items-center gap-2">
                 <button type="button" wire:click="hitung" data-dirty-save @disabled($ro) class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#2563eb] text-white cursor-pointer disabled:opacity-40">⚙ Hitung</button>
                 <button type="button" wire:click="submitToDireksi" @disabled($c->doc_status !== 'CALCULATED') class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#16a34a] text-white cursor-pointer disabled:opacity-40">Submit ke Direksi</button>
+                @if ($this->canPublish)
+                    <button type="button" wire:click="publishCosting" wire:confirm="Publish harga ini ke Sales? Setelah publish, harga jual terbuka untuk Quotation."
+                        @disabled($c->doc_status !== 'PENDING_APPROVAL')
+                        class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#1d4ed8] text-white cursor-pointer disabled:opacity-40">Publish (Direksi)</button>
+                @endif
                 <button type="button" wire:click="addToQuotation" class="px-4 py-2 rounded-lg text-[12px] font-semibold bg-[#f1f5f9] border border-[#cbd5e1] cursor-pointer">＋ Quotation</button>
             </div>
         </div>
