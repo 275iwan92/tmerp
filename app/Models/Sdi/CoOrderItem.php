@@ -2,6 +2,7 @@
 
 namespace App\Models\Sdi;
 
+use App\Models\Master\ProdProduct;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,10 +21,13 @@ class CoOrderItem extends Model
         'quotation_item_id',
         'line_kind',
         'inquiry_id',
+        'product_id',
         'description',
         'spec_note',
         'qty',
         'qty_unit',
+        'qty_min',
+        'qty_max',
         'unit_price',
         'discount_pct',
         'subtotal',
@@ -34,6 +38,8 @@ class CoOrderItem extends Model
 
     protected $casts = [
         'qty' => 'decimal:2',
+        'qty_min' => 'decimal:2',
+        'qty_max' => 'decimal:2',
         'unit_price' => 'decimal:4',
         'discount_pct' => 'decimal:2',
         'subtotal' => 'decimal:2',
@@ -48,6 +54,13 @@ class CoOrderItem extends Model
     public function inquiry(): BelongsTo
     {
         return $this->belongsTo(IqpInquiry::class, 'inquiry_id', 'id_inquiry');
+    }
+
+    // FK logis lintas-DB ke tm2mst.prod_product -- wajib terisi utk baris
+    // PRODUCT di CO mode INSTANT.
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(ProdProduct::class, 'product_id', 'id_product');
     }
 
     // quotation_item_id -> quo_quotation_item: logis (snapshot), bukan FK fisik.

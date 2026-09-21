@@ -11,6 +11,7 @@
         'warn' => 'bg-[#fef6e7] text-[#b45309]',
         'danger' => 'bg-[#fdecec] text-[#c0392b]',
         'info' => 'bg-accent-soft text-accent',
+        'extra' => 'bg-[#f1ecfc] text-[#6d28d9]',
         default => 'bg-[#eef1f5] text-[#4b5568]',
     };
 @endphp

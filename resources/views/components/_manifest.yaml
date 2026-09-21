@@ -17,7 +17,7 @@ gotchas:
   - "Tombol baku: Simpan/Batal/Tutup (ID), Back selalu Inggris. Grid: '+ New Record'."
 
 tones: # palet bersama, jangan bikin warna baru
-  form.badge: [default, active|success, warn, danger, info]
+  form.badge: [default, active|success, warn, danger, info, extra]
   grid.stat-box: [total, active, extra, critical, warn]
   report.kpi: [blue, green, amber, violet, danger]
 

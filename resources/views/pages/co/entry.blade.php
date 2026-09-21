@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\Master\ProdProduct;
+use App\Models\Master\SalesPerson;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CoOrderExternalCost;
 use App\Models\Sdi\CoOrderItem;
 use Illuminate\Support\Facades\Auth;
+use App\Services\Sales\CoOrderBuilder;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -15,6 +18,13 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
 {
     public int $orderId;
 
+    public bool $productPickerOpen = false;
+
+    // null = tambah baris baru; terisi = ganti Master Product baris itu.
+    public ?int $productPickerItemId = null;
+
+    public string $productSearch = '';
+
     public function mount(int $order): void
     {
         $this->orderId = $order;
@@ -24,7 +34,9 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
     public function order(): CoOrder
     {
         return CoOrder::with([
-            'quotation.customer',
+            'customer',
+            'salesPerson',
+            'quotation',
             'items' => fn ($q) => $q->orderBy('line_seq'),
             'items.inquiry',
             'items.deliveries',
@@ -72,8 +84,9 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             $rows[] = ['type' => 'Inquiry', 'label' => $inq->inquiry_no.' — '.($inq->product_draft_name ?? '—'), 'date' => $inq->inquiry_date];
         }
 
-        $q = $this->order->quotation;
-        $rows[] = ['type' => 'Quotation', 'label' => $q->quotation_no.' ('.$q->doc_status.')', 'date' => $q->issued_date];
+        if ($q = $this->order->quotation) {
+            $rows[] = ['type' => 'Quotation', 'label' => $q->quotation_no.' ('.$q->doc_status.')', 'date' => $q->issued_date];
+        }
         $rows[] = ['type' => 'Customer Order', 'label' => $this->order->co_no.' ('.$this->order->doc_status.')', 'date' => $this->order->co_date, 'current' => true];
 
         return $rows;
@@ -103,7 +116,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             return;
         }
 
-        $allowed = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes'];
+        $allowed = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term'];
 
         if (! in_array($field, $allowed, true)) {
             return;
@@ -113,6 +126,9 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
         unset($this->order);
     }
 
+    // Baris PRODUK selalu lewat picker Master Product (openProductPicker) --
+    // CLAUDE.md §3 "Lookup dulu". addItem() tinggal melayani baris JASA yang
+    // memang tidak punya master.
     public function addItem(string $kind): void
     {
         if ($this->order->doc_status !== 'DRAFT') {
@@ -136,6 +152,90 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             'updated_by' => Auth::user()->login,
         ]);
 
+        unset($this->order);
+    }
+
+    public function openProductPicker(?int $itemId = null): void
+    {
+        if ($this->order->doc_status !== 'DRAFT') {
+            return;
+        }
+
+        $this->productPickerItemId = $itemId;
+        $this->productSearch = '';
+        $this->productPickerOpen = true;
+    }
+
+    public function closeProductPicker(): void
+    {
+        $this->productPickerOpen = false;
+        $this->productPickerItemId = null;
+    }
+
+    // prod_product 14k+ baris -- wajib ada kata kunci, dan produk milik customer
+    // CO ini didahulukan (prod_product.customer_id) karena di bisnis ini produk
+    // memang dirancang per-customer.
+    #[Computed]
+    public function productResults()
+    {
+        if (mb_strlen(trim($this->productSearch)) < 2) {
+            return collect();
+        }
+
+        $cid = $this->order->customer_id;
+
+        return ProdProduct::where('activate', true)
+            ->where(fn ($q) => $q->where('product_name', 'like', "%{$this->productSearch}%")
+                ->orWhere('product_code', 'like', "%{$this->productSearch}%")
+                ->orWhere('design_no', 'like', "%{$this->productSearch}%"))
+            ->orderByRaw('CASE WHEN customer_id = ? THEN 0 ELSE 1 END', [$cid])
+            ->orderBy('product_name')
+            ->limit(20)
+            ->get();
+    }
+
+    #[Computed]
+    public function salesPeople()
+    {
+        return SalesPerson::where('activate', true)->orderBy('sales_name')->get();
+    }
+
+    #[Computed]
+    public function paymentTerms()
+    {
+        return \App\Models\Master\FinPaymentTerm::where('activate', true)->orderBy('sort_order')->get();
+    }
+
+    public function pickProduct(int $productId): void
+    {
+        if ($this->order->doc_status !== 'DRAFT') {
+            return;
+        }
+
+        $product = ProdProduct::findOrFail($productId);
+
+        if ($this->productPickerItemId === null) {
+            CoOrderBuilder::addProductLine($this->order, $product);
+        } else {
+            $item = CoOrderItem::where('order_id', $this->orderId)->findOrFail($this->productPickerItemId);
+            $item->product_id = $product->id_product;
+            $item->qty_min = $product->qty_limit_min;
+            $item->qty_max = $product->qty_limit_max;
+
+            // Baris snapshot Quotation: cuma ditautkan ke master, deskripsi/harga
+            // hasil negosiasi TIDAK ditimpa (prinsip snapshot §4).
+            if ($item->quotation_item_id === null) {
+                $item->description = trim($product->product_name.' ('.$product->product_code.')');
+                $item->qty_unit = $product->uom_sales ?: $item->qty_unit;
+                $item->unit_price = $product->default_selling_price ?? $item->unit_price;
+                $item->recalcSubtotal();
+            }
+
+            $item->updated_by = Auth::user()->login;
+            $item->save();
+        }
+
+        $this->closeProductPicker();
         unset($this->order);
     }
 
@@ -291,9 +391,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
     // (co/delivery-plan.blade.php).
     public function confirmCo(): void
     {
-        if ($this->order->doc_status !== 'DRAFT'
-            || $this->order->items->isEmpty()
-            || $this->itemsMissingDueDate->isNotEmpty()) {
+        if ($this->order->doc_status !== 'DRAFT' || ! $this->order->isConfirmable()) {
             return;
         }
 
@@ -328,7 +426,8 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
 <div x-data="{ tab: 'product' }">
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📦 Customer Order — Entry</b>
-        <span class="text-xs text-white/75">{{ $this->order->co_no }} · {{ $this->order->quotation->customer?->customer_name }}</span>
+        <span class="text-xs text-white/75">{{ $this->order->co_no }} · {{ $this->order->customer?->customer_name ?? '—' }}</span>
+        <x-form.badge :tone="$this->order->isInstant() ? 'extra' : 'info'">{{ $this->order->entry_mode }}</x-form.badge>
         <x-form.badge :tone="$this->order->doc_status === 'CONFIRMED' ? 'success' : 'warn'">{{ $this->order->doc_status }}</x-form.badge>
 
         <div class="ml-auto flex items-center gap-4">
@@ -342,8 +441,13 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                         ⚠ {{ $this->itemsMissingDueDate->count() }} item belum ada Due Date
                     </span>
                 @endif
+                @if ($this->order->itemsMissingProduct()->isNotEmpty())
+                    <span class="text-[10.5px] font-semibold text-[#ffd7a8]" title="{{ $this->order->itemsMissingProduct()->pluck('description')->implode(', ') }}">
+                        &#9888; {{ $this->order->itemsMissingProduct()->count() }} item belum terkait Master Product
+                    </span>
+                @endif
                 <button type="button" wire:click="confirmCo" wire:confirm="Confirm CO ini? Setelah confirm, isi tidak bisa diedit lagi."
-                    @disabled($this->order->items->isEmpty() || $this->itemsMissingDueDate->isNotEmpty())
+                    @disabled(! $this->order->isConfirmable())
                     class="px-3.5 py-1.5 rounded-md text-xs font-bold bg-[#22a06b] text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                     ✓ Confirm CO
                 </button>
@@ -377,16 +481,32 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                         <x-form.input label="No. CO" readonly value="{{ $this->order->co_no }}" class="bg-[#f8fafc]" />
                         <x-form.date-picker label="CO Date" value="{{ $this->order->co_date?->format('Y-m-d') }}" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('co_date', $event.target.value)" class="disabled:bg-[#f8fafc]" />
-                        <x-form.input label="Ref. Quotation" readonly value="{{ $this->order->quotation->quotation_no }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="Ref. Quotation" readonly value="{{ $this->order->quotation?->quotation_no ?? '&#8212; (Instant, tanpa Quotation)' }}" class="bg-[#f8fafc]" />
 
                         <x-form.input label="Cust. PO No." value="{{ $this->order->customer_po_no }}" :disabled="$this->order->doc_status !== 'DRAFT'"
                             wire:change="updateHeader('customer_po_no', $event.target.value)" placeholder="PO/customer/..." class="disabled:bg-[#f8fafc]" />
                         <x-form.input label="Order Type" readonly value="{{ $this->orderType }}" class="bg-[#f8fafc]" />
-                        <x-form.input label="Mata Uang" readonly value="{{ $this->order->quotation->currency_code }}" class="bg-[#f8fafc]" />
+                        <x-form.input label="Mata Uang" readonly value="{{ $this->order->currency_code ?? 'IDR' }}" class="bg-[#f8fafc]" />
 
                         <div class="col-span-3">
-                            <x-form.input label="Customer" readonly value="{{ $this->order->quotation->customer?->customer_name }} ({{ $this->order->quotation->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
+                            <x-form.input label="Customer" readonly value="{{ $this->order->customer?->customer_name }} ({{ $this->order->customer?->customer_code }})" class="bg-[#f8fafc] font-semibold" />
                         </div>
+
+                        <x-form.select label="PIC Sales" :disabled="$this->order->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('sales_person_id', $event.target.value)" class="disabled:bg-[#f8fafc]">
+                            <option value="">&#8212; pilih &#8212;</option>
+                            @foreach ($this->salesPeople as $sp)
+                                <option value="{{ $sp->id_sales_person }}" @selected((int) $this->order->sales_person_id === (int) $sp->id_sales_person)>{{ $sp->sales_name }}</option>
+                            @endforeach
+                        </x-form.select>
+                        <x-form.select label="Termin Bayar" :disabled="$this->order->doc_status !== 'DRAFT'"
+                            wire:change="updateHeader('payment_term', $event.target.value)" class="disabled:bg-[#f8fafc]">
+                            <option value="">&#8212; pilih &#8212;</option>
+                            @foreach ($this->paymentTerms as $pt)
+                                <option value="{{ $pt->payment_term_code }}" @selected($this->order->payment_term === $pt->payment_term_code)>{{ $pt->term_label }}</option>
+                            @endforeach
+                        </x-form.select>
+                        <div></div>
 
                         <div class="col-span-3">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Shipment Location</label>
@@ -420,7 +540,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                     <div x-show="tab === 'product'" class="p-3">
                         @if ($this->order->doc_status === 'DRAFT')
                             <div class="flex justify-end gap-1.5 mb-2">
-                                <button type="button" wire:click="addItem('PRODUCT')" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Produk</button>
+                                <button type="button" wire:click="openProductPicker" title="Pilih dari Master Product" class="text-[11px] font-bold text-accent bg-[#eef3fb] border border-dashed border-[#9cc0f0] rounded px-2.5 py-1 cursor-pointer">＋ Produk</button>
                                 <button type="button" wire:click="addItem('SERVICE')" class="text-[11px] font-bold text-navy bg-[#eef1f5] border border-dashed border-[#c7cfda] rounded px-2.5 py-1 cursor-pointer">＋ Jasa</button>
                             </div>
                         @endif
@@ -447,7 +567,19 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                                 <div class="font-medium text-navy">{{ $item->description }}</div>
                                             @endif
                                             @if ($item->spec_note)<div class="text-[10px] text-muted mt-0.5">{{ $item->spec_note }}</div>@endif
-                                            @if ($item->inquiry) <span class="text-[9.5px] font-mono font-bold text-accent">{{ $item->inquiry->inquiry_no }}</span> @endif
+                                            <div class="flex items-center gap-1.5 mt-0.5">
+                                                @if ($item->inquiry) <span class="text-[9.5px] font-mono font-bold text-accent">{{ $item->inquiry->inquiry_no }}</span> @endif
+                                                @if ($item->line_kind === 'PRODUCT')
+                                                    @if ($item->product_id)
+                                                        <span class="text-[9.5px] font-mono text-[#16a34a]" title="Master Product terkait">{{ $item->product?->product_code ?? $item->product_id }}</span>
+                                                    @else
+                                                        <span class="text-[9.5px] font-mono text-[#b45309]" title="Belum terkait Master Product">belum terkait master</span>
+                                                    @endif
+                                                    @if ($this->order->doc_status === 'DRAFT')
+                                                        <button type="button" wire:click="openProductPicker({{ $item->id_item }})" class="text-[9.5px] text-accent underline cursor-pointer">pilih</button>
+                                                    @endif
+                                                @endif
+                                            </div>
                                         </td>
                                         <td class="px-2 py-2 text-center">
                                             <span class="text-[9.5px] font-bold px-1.5 py-0.5 rounded {{ $item->line_kind === 'PRODUCT' ? 'bg-[#dbeafe] text-[#1e40af]' : 'bg-[#ede9fe] text-[#5b21b6]' }}">{{ $item->line_kind === 'PRODUCT' ? 'P' : 'S' }}</span>
@@ -641,4 +773,47 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
 
         </div>
     </div>
+
+    @if ($productPickerOpen)
+        <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closeProductPicker">
+            <div class="bg-white rounded-lg p-4 w-[620px] shadow-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-navy">
+                        {{ $productPickerItemId ? 'Ganti Master Product baris ini' : 'Tambah Baris dari Master Product' }}
+                    </h3>
+                    <button type="button" wire:click="closeProductPicker" class="text-muted hover:text-navy cursor-pointer">&#10005;</button>
+                </div>
+
+                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="productSearch" autofocus
+                    placeholder="Ketik min. 2 huruf nama / kode produk / design no..." class="mb-2" />
+
+                <div class="max-h-80 overflow-y-auto tm-scroll">
+                    @forelse ($this->productResults as $p)
+                        <button type="button" wire:click="pickProduct({{ $p->id_product }})" wire:key="pp-{{ $p->id_product }}"
+                            class="w-full text-left px-2.5 py-2 rounded hover:bg-[#eef3fb] cursor-pointer border-b border-[#eef1f5] last:border-b-0">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="min-w-0">
+                                    <div class="text-xs font-semibold text-navy truncate">{{ $p->product_name }}</div>
+                                    <div class="text-[10.5px] text-muted font-mono">
+                                        {{ $p->product_code }}@if ($p->design_no) &middot; design {{ $p->design_no }} @endif
+                                        @if ((int) $p->customer_id === (int) $this->order->customer_id)
+                                            <span class="text-[#16a34a] font-bold">&middot; produk customer ini</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="text-[11px] font-bold text-navy">{{ number_format((float) $p->default_selling_price, 0, ',', '.') }}</div>
+                                    <div class="text-[9.5px] text-muted">{{ $p->uom_sales ?: 'Pcs' }}</div>
+                                </div>
+                            </div>
+                        </button>
+                    @empty
+                        <div class="text-[11px] text-muted text-center py-4">
+                            {{ mb_strlen(trim($productSearch)) < 2 ? 'Ketik min. 2 huruf untuk cari.' : 'Tidak ada produk cocok — buat dulu di Master Product.' }}
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
