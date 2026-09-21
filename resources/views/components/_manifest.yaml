@@ -64,6 +64,7 @@ grid: # pasangkan dengan trait App\Livewire\Concerns\HasCustomizableGrid
   x-grid.action-dropdown: {props: {actions: "[[icon,label,action,tooltip]]"}}
   x-grid.action-icon: {props: {icon: req, title: req, action: req, variant: default, confirm: null, bordered: false}}
   x-grid.toggle-switch: {props: {on: req, action: req, confirm: null, title: null}, note: "HANYA grid Master"}
+  x-grid.tickmark: {props: {on: false, action: req, title: null, disabled: false}, note: "flag biner per baris (bukan aktif/nonaktif Master)"}
   x-grid.group-header-row: {props: {label: req, value: req, colspan: req}}
   x-grid.empty-row: {props: {colspan: req, message: 'Belum ada data.'}}
   x-grid.spreadsheet-table: {props: {gridKey: req, columns: req, rows: req, newRowDefaults: req, errors: [], version: 0}, note: "spreadsheetgridstandard.md"}
@@ -106,3 +107,15 @@ domain: # khusus modul, jangan dipakai lintas modul tanpa alasan
   - x-org-chart.node
   - x-auth.hero-brand
   - x-auth.top-brand
+
+ledger: # modul Finance & Accounting (blueprint LedgerOne, css resources/css/ledger.css, kelas lg-*)
+  x-ledger.page: {props: {title: req, subtitle: null}, slots: "actions (named), default"}
+  x-ledger.metric: {props: {label: req, icon: '▤', value: req, pill: null, tone: "good|warn|bad|info|purple|mute", sub: null}}
+  x-ledger.panel: {props: {title: req, subtitle: null}, slots: "action (named), default"}
+  x-ledger.flow: {props: {nodes: "[[judul, keterangan, hitungan?]]"}}
+  x-ledger.row: {props: {icon: '•', tone: "bl|or|re|pu|gr", title: req, text: null}, slot: "kolom kanan"}
+  x-ledger.tag: {props: {tone: mute}}
+  x-ledger.srow: {props: {kind: "group|indent|total|net", label: req, value: ''}}
+  x-ledger.step: {props: {num: req, done: false, title: req, text: null}, slot: aksi}
+  x-ledger.modal: {props: {title: req, close: closeModal, size: "''|xl"}, slots: "default (isi lg-mb), footer (named)"}
+  x-ledger.field: {props: {label: req, name: null, full: false, hint: null}, slot: "input/select mentah ber-kelas bawaan .lg-field"}

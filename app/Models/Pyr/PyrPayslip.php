@@ -34,6 +34,10 @@ class PyrPayslip extends Model
         'total_gaji_bersih',
         'has_anomaly',
         'anomaly_note',
+        'print_flag',
+        'printed_at',
+        'wa_flag',
+        'wa_sent_at',
     ];
 
     protected $casts = [
@@ -50,6 +54,10 @@ class PyrPayslip extends Model
         'total_pph21' => 'decimal:2',
         'total_gaji_bersih' => PayrollEncrypted::class,
         'has_anomaly' => 'boolean',
+        'print_flag' => 'boolean',
+        'printed_at' => 'datetime',
+        'wa_flag' => 'boolean',
+        'wa_sent_at' => 'datetime',
     ];
 
     public function run(): BelongsTo

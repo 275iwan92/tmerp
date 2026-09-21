@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Cetak &amp; Kirim Slip Gaji — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .mark { display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:9999px;
+          background:#dc2626; color:#fff; font-size:10px; font-weight:800; vertical-align:middle; }
+  /* tickmark: kotak centang yang diklik officer */
+  .tick { width:18px; height:18px; border-radius:4px; border:1.5px solid #cbd5e1; background:#fff;
+          display:inline-flex; align-items:center; justify-content:center; font-size:11px; color:transparent; }
+  .tick.on { background:#16a34a; border-color:#16a34a; color:#fff; }
+  .tick.off { background:#fff; }
+  .tick.dead { background:#f1f5f9; border-color:#e2e8f0; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<main class="max-w-[1480px] mx-auto my-5 px-4">
+
+  <!-- griduistandard.md: TANPA header halaman, langsung kotak statistik pastel -->
+  <div class="grid grid-cols-5 gap-3 mb-3">
+    <div class="rounded-lg p-3.5 shadow-sm border bg-[#eaf2ff] border-[#c8ddfb]">
+      <p class="text-[10.5px] font-bold uppercase text-[#3b5b99]">Total Slip Periode Ini</p>
+      <p class="text-xl font-extrabold text-[#1d4ed8] mt-0.5">52 Slip</p>
+    </div>
+    <div class="rounded-lg p-3.5 shadow-sm border bg-[#fef6e7] border-[#f5e0b3]">
+      <p class="text-[10.5px] font-bold uppercase text-[#8a6d00]">Belum Dicetak</p>
+      <p class="text-xl font-extrabold text-[#b45309] mt-0.5">34 Slip</p>
+    </div>
+    <div class="rounded-lg p-3.5 shadow-sm border bg-[#f1ecfc] border-[#ddd0f7]">
+      <p class="text-[10.5px] font-bold uppercase text-[#6b4fa0]">Belum Dikirim WA <span class="mark">2</span></p>
+      <p class="text-xl font-extrabold text-[#6d28d9] mt-0.5">52 Slip</p>
+    </div>
+    <div class="rounded-lg p-3.5 shadow-sm border bg-[#fdecec] border-[#f5c6c6]">
+      <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">No. WA Kosong <span class="mark">1</span></p>
+      <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">7 Pegawai</p>
+    </div>
+    <div class="rounded-lg p-3.5 shadow-sm border bg-[#fdecec] border-[#f5c6c6]">
+      <p class="text-[10.5px] font-bold uppercase text-[#a3453f]">Anomali (Tak Bisa Cetak)</p>
+      <p class="text-xl font-extrabold text-[#c0392b] mt-0.5">1 Slip</p>
+    </div>
+  </div>
+
+  <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+
+    <!-- Toolbar -->
+    <div class="flex items-center gap-2 bg-white border-b border-[#e2e7ee] px-2.5 py-2">
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-sm">🔍</span>
+        <input type="text" placeholder="Cari nama / kode pegawai…" class="w-56 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+      </div>
+      <span class="flex-1"></span>
+
+      <!-- (4) selector periode -->
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="mark">4</span>
+        <span class="text-[10px] font-bold uppercase text-muted">Periode</span>
+        <div class="relative">
+          <select class="appearance-none pl-2.5 pr-7 py-1.5 border border-[#d7dbe2] rounded text-xs bg-white font-semibold text-navy">
+            <option>22 Agu 2026 — 28 Agu 2026 (PAID)</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] text-muted"></i>
+        </div>
+      </div>
+
+      <!-- (5) aksi massal -->
+      <span class="mark">5</span>
+      <button class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69]">
+        <i class="fa-solid fa-print"></i> Cetak Semua (51)
+      </button>
+      <button class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-white text-[#94a3b8] border border-[#d7dbe2] cursor-not-allowed">
+        <i class="fa-brands fa-whatsapp"></i> Kirim WA Semua
+        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#8a94a6]">NANTI</span>
+      </button>
+    </div>
+
+    <!-- Catatan asal record (griduistandard.md: grid worklist tanpa "+ New Record") -->
+    <div class="bg-[#fafbfd] border-b border-[#eef1f5] px-3 py-1.5 text-[11px] text-muted">
+      Slip gaji lahir otomatis dari <span class="font-semibold text-navy">Perhitungan Gaji</span> saat periode dikalkulasi — tidak dibuat manual dari layar ini.
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-[12.5px]">
+        <thead>
+          <tr>
+            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5]">Pegawai</th>
+            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[150px]">Divisi / Posisi</th>
+            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[150px]">No. WhatsApp <span class="mark">1</span></th>
+            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[95px]">Metode Bayar</th>
+            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[115px]">Gaji Bersih</th>
+            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[105px]">Printout <span class="mark">3</span></th>
+            <th class="text-center px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[105px]">Kirim WA <span class="mark">2</span></th>
+            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] w-[70px]">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr class="hover:bg-[#f7faff]" title="Klik 2x untuk buka">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-sky-500 to-indigo-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">GC</div>
+                <div><div class="font-semibold text-[13px]">Gani Cahyono</div><div class="text-[11px] text-muted font-mono">TM-00012</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Finance / Staff</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0812-3344-5566</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dbeafe] text-[#1e40af]">BANK</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">1.565.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center">
+              <span class="tick on"><i class="fa-solid fa-check"></i></span>
+              <div class="text-[10px] text-muted mt-0.5">29 Agu 09:12</div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[#f7faff]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">MK</div>
+                <div><div class="font-semibold text-[13px]">M Khoirul Aminudin</div><div class="text-[11px] text-muted font-mono">TM-00018</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Cetak / Operator</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0857-8899-1020</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dbeafe] text-[#1e40af]">BANK</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">1.820.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[#f7faff]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-amber-500 to-orange-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">TW</div>
+                <div><div class="font-semibold text-[13px]">Toni Wandoyo</div><div class="text-[11px] text-muted font-mono">TM-00023</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Cetak / Operator</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0813-2211-7788</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef6e7] text-[#b45309]">CASH</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">1.150.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[#f7faff]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-rose-500 to-pink-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">AB</div>
+                <div><div class="font-semibold text-[13px]">Agus Budi Susanto</div><div class="text-[11px] text-muted font-mono">TM-00027</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Pra Cetak / Operator</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0895-6070-8090</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef6e7] text-[#b45309]">CASH</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">1.220.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center">
+              <span class="tick on"><i class="fa-solid fa-check"></i></span>
+              <div class="text-[10px] text-muted mt-0.5">29 Agu 09:12</div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[#f7faff]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-violet-500 to-purple-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">AK</div>
+                <div><div class="font-semibold text-[13px]">Annisa Kusuma</div><div class="text-[11px] text-muted font-mono">TM-00034</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Produksi / Admin</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0877-1234-9911</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dbeafe] text-[#1e40af]">BANK</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">1.430.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <!-- (1) contoh pegawai TANPA nomor WA -->
+          <tr class="hover:bg-[#f7faff]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-cyan-500 to-blue-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">LF</div>
+                <div><div class="font-semibold text-[13px]">Lukman Firmansyah</div><div class="text-[11px] text-muted font-mono">TM-00041</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Digital / Operator</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <span class="text-[10.5px] text-[#c0392b] font-semibold">— belum diisi —</span>
+              <div class="text-[10px] text-accent underline">Lengkapi di Master Employee</div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dbeafe] text-[#1e40af]">BANK</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">1.180.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick dead" title="Tidak ada nomor WA"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <tr class="hover:bg-[#f7faff]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-lime-500 to-green-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">BS</div>
+                <div><div class="font-semibold text-[13px]">Budi Santoso</div><div class="text-[11px] text-muted font-mono">TM-00052</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Cetak / Operator</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0822-4455-6677</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]"><span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fef6e7] text-[#b45309]">CASH</span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono">985.000</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center"><span class="tick off"></span></td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Buka / Cetak" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-accent hover:bg-[#eef3fb]">↗</button>
+            </td>
+          </tr>
+
+          <!-- (6) baris anomali -->
+          <tr class="bg-[#fdecec]">
+            <td class="px-3 py-2 border-b border-[#eef1f5]">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-md bg-gradient-to-br from-slate-400 to-slate-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">DK</div>
+                <div><div class="font-semibold text-[13px]">Dedi Kurniawan</div><div class="text-[11px] text-muted font-mono">TM-00061</div></div>
+              </div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5]">Finishing / Operator</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">0856-7788-3344</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-muted italic text-[11px]">—</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right font-semibold font-mono text-[#c0392b]">0</td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-center" colspan="2">
+              <span class="mark">6</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#fdecec] text-[#c0392b]">ANOMALI</span>
+              <div class="text-[10px] text-[#a3453f] mt-0.5">Rate gaji tidak aktif — slip belum sah</div>
+            </td>
+            <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+              <button title="Tidak bisa dicetak — perbaiki di Master Gaji" class="inline-flex items-center justify-center w-7 h-7 rounded-md text-slate-300 cursor-not-allowed">↗</button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination footer standar -->
+    <div class="flex items-center justify-between px-3 py-2 bg-[#fafbfd] border-t border-[#eef1f5] text-[11px] text-muted">
+      <div>Menampilkan 1–8 dari 52 slip</div>
+      <div class="flex items-center gap-1">
+        <button class="px-2 py-1 rounded border border-[#d7dbe2] bg-white">‹</button>
+        <button class="px-2.5 py-1 rounded bg-navy text-white font-semibold">1</button>
+        <button class="px-2.5 py-1 rounded border border-[#d7dbe2] bg-white">2</button>
+        <button class="px-2.5 py-1 rounded border border-[#d7dbe2] bg-white">3</button>
+        <button class="px-2 py-1 rounded border border-[#d7dbe2] bg-white">›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legenda keputusan -->
+  <div class="mt-4 bg-white border border-[#d9dfe8] rounded-[10px] p-4">
+    <div class="text-[11px] font-bold uppercase text-navy mb-2.5">Yang perlu kamu putuskan</div>
+    <div class="space-y-2 text-[11.5px] leading-relaxed">
+      <div class="flex gap-2.5">
+        <span class="mark shrink-0 mt-0.5">1</span>
+        <div><b>No. WhatsApp — dari kolom mana?</b> <span class="text-muted"><code class="font-mono">emp_employee</code> saat ini cuma punya <code class="font-mono">phone</code> (1 nomor, tanpa keterangan itu WA atau bukan). Usul saya: tambah kolom <code class="font-mono">whatsapp_no</code> terpisah, karena nomor WA sering beda dari nomor telepon rumah/darurat, dan salah kirim slip gaji ke nomor keliru itu kebocoran data. Kalau menurutmu selalu sama, saya pakai <code class="font-mono">phone</code> saja tanpa kolom baru. <b>Nomor WA diisi di Master Employee, bukan di layar ini</b> (layar ini cuma menampilkan + kasih link kalau kosong).</span></div>
+      </div>
+      <div class="flex gap-2.5">
+        <span class="mark shrink-0 mt-0.5">2</span>
+        <div><b>Tickmark "Kirim WA" — dicentang manual atau otomatis?</b> <span class="text-muted">Untuk sekarang saya buat <u>manual</u>: officer klik centang setelah mengirim sendiri lewat HP/WA Web, tersimpan sebagai <code class="font-mono">wa_sent_at</code> + <code class="font-mono">wa_sent_by</code>. Nanti waktu kirim WA sudah otomatis, kolom yang sama tinggal dicentang oleh sistem — tidak perlu ganti struktur. Tombol "Kirim WA Semua" saya tampilkan mati/abu dulu.</span></div>
+      </div>
+      <div class="flex gap-2.5">
+        <span class="mark shrink-0 mt-0.5">3</span>
+        <div><b>Tickmark "Printout" — otomatis saat dicetak.</b> <span class="text-muted">Tercentang sendiri begitu slip dibuka/dicetak (<code class="font-mono">printed_at</code> + <code class="font-mono">printed_by</code>), tapi tetap bisa diklik manual kalau officer mencetak ulang atau mau mengoreksi. Bilang kalau kamu mau ini 100% manual saja.</span></div>
+      </div>
+      <div class="flex gap-2.5">
+        <span class="mark shrink-0 mt-0.5">4</span>
+        <div><b>Selector periode di toolbar.</b> <span class="text-muted">Menyimpang dari <code class="font-mono">griduistandard.md</code> yang melarang dropdown di toolbar grid. Saya tetap pasang karena periode itu konteks wajib (slip selalu milik 1 periode), dan layar Transfer Bank &amp; Roster Cash sudah pakai pola sama.</span></div>
+      </div>
+      <div class="flex gap-2.5">
+        <span class="mark shrink-0 mt-0.5">5</span>
+        <div><b>Cetak massal 1 file.</b> <span class="text-muted">52 slip digabung jadi satu dokumen siap cetak, 2 slip per halaman A4. Bilang kalau kamu mau 1 slip = 1 halaman.</span></div>
+      </div>
+      <div class="flex gap-2.5">
+        <span class="mark shrink-0 mt-0.5">6</span>
+        <div><b>Baris anomali tetap tampil tapi tombolnya mati.</b> <span class="text-muted">Pegawai tanpa rate gaji aktif sengaja tetap kelihatan supaya ketahuan dan bisa diperbaiki, bukan hilang diam-diam dari daftar.</span></div>
+      </div>
+    </div>
+    <div class="mt-3 pt-2.5 border-t border-[#eef1f5] text-[11px] text-muted">
+      <b class="text-[#c0392b]">Masih ditunggu:</b> format pesan WhatsApp untuk slip gaji — tidak ada di <code class="font-mono">docs/attachments/</code> maupun di mana pun dalam repo, jadi bagian isi pesannya belum bisa saya rancang.
+    </div>
+  </div>
+
+</main>
+</body>
+</html>

@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\Portal\CandidateAuthService;
+use App\Support\Branding\Brand;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -13,7 +15,7 @@ Route::redirect('/', '/menu');
 // itu butuh resize/crop terpisah, dicatat sbg simplifikasi.
 Route::get('/manifest.json', function () {
     return response()->json([
-        'name' => \App\Support\Branding\Brand::name(),
+        'name' => Brand::name(),
         'short_name' => 'ERP TM',
         'start_url' => '/menu',
         'display' => 'standalone',
@@ -49,7 +51,7 @@ Route::prefix('hrm/recruitment/portal')->name('careers.')->group(function () {
             abort(403, 'Tautan verifikasi tidak valid atau sudah kedaluwarsa.');
         }
 
-        app(\App\Services\Portal\CandidateAuthService::class)->markEmailVerified($uid);
+        app(CandidateAuthService::class)->markEmailVerified($uid);
 
         return redirect()->route('careers.login')->with('verified', true);
     })->name('verify-email')->middleware('signed');
@@ -248,6 +250,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/hrm/payroll/employee-bank', 'pages::hrm.payroll-employee-bank')->name('hrm.payroll.employee-bank');
             Route::livewire('/hrm/gps-approval', 'pages::hrm.gps-approval')->name('hrm.gps-approval');
             Route::livewire('/hrm/payroll/batch-run', 'pages::hrm.payroll-batch-run')->name('hrm.payroll.batch-run');
+            Route::livewire('/hrm/payroll/payslip', 'pages::hrm.payroll-payslip-list')->name('hrm.payroll.payslip-list');
+            Route::livewire('/hrm/payroll/payslip/print-all/{run}', 'pages::hrm.payroll-payslip-print-all')->name('hrm.payroll.payslip-print-all')->where('run', '[0-9]+');
             Route::livewire('/hrm/payroll/payslip/{payslip}/print', 'pages::hrm.payroll-payslip-print')->name('hrm.payroll.payslip-print')->where('payslip', '[0-9]+');
             Route::livewire('/hrm/payroll/bank-transfer', 'pages::hrm.payroll-bank-transfer')->name('hrm.payroll.bank-transfer');
             Route::livewire('/hrm/payroll/cash-roster', 'pages::hrm.payroll-cash-roster')->name('hrm.payroll.cash-roster');

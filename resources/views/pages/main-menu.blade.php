@@ -206,6 +206,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'HRM_PAYROLL_SALARY' => route('hrm.payroll.employee-salary'),
             'HRM_PAYROLL_BANK' => route('hrm.payroll.employee-bank'),
             'HRM_PAYROLL_CALC' => route('hrm.payroll.batch-run'),
+            'HRM_PAYROLL_PAYSLIP' => route('hrm.payroll.payslip-list'),
             'HRM_PAYROLL_BANKXFER' => route('hrm.payroll.bank-transfer'),
             'HRM_PAYROLL_CASHROSTER' => route('hrm.payroll.cash-roster'),
             'HRM_DISCIPLINE_REPORT' => route('hrm.discipline-report'),
