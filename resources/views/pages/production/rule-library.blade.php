@@ -2,6 +2,7 @@
 
 use App\Models\Master\OrgDivision;
 use App\Models\Master\ProdMachine;
+use App\Models\Master\ProdProcess;
 use App\Models\Prd\PrdSchedulingRule;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -43,6 +44,16 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
         $offsetDivisionId = OrgDivision::where('division_code', 'OFFSET')->value('division_id');
 
         return ProdMachine::where('division_id', $offsetDivisionId)->where('activate', true)->orderBy('machine_name')->get();
+    }
+
+    // Proses = lookup ke master prod_process (FORM_UI_STANDARD §1b aturan 2:
+    // nilai yang sudah ada di master tidak boleh diketik bebas). Kolomnya tetap
+    // menyimpan NAMA proses (varchar) -- lintas-DB ke tm2mst, jadi tidak ada FK.
+    #[Computed]
+    public function processOptions(): array
+    {
+        return ProdProcess::where('activate', true)->orderBy('process_name')
+            ->pluck('process_name', 'process_name')->all();
     }
 
     #[Computed]
@@ -233,7 +244,9 @@ new #[Title('Rule Library — TELASIH MAKMUR ERP')] class extends Component
                                 @endforeach
                             </select>
                         </div>
-                        <x-form.input label="Proses (opsional)" name="applies_to_process" wire:model="applies_to_process" placeholder="mis. Cetak" />
+                        <x-form.select label="Proses (opsional)" name="applies_to_process" wire:model="applies_to_process"
+                            :options="$this->processOptions" :selected="$applies_to_process" :live-sync="true"
+                            placeholder="-- semua proses --" />
                     </div>
                     <div class="grid two gap-3">
                         <x-form.input label="Field Kondisi" name="condition_field" wire:model="condition_field" placeholder="mis. dieline_ref" />
