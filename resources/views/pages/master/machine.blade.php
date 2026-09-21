@@ -15,7 +15,17 @@ use Livewire\Component;
 // FK logis prod_part_process.machine_id, jangan sampai orphan.
 new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 {
-    public array $machineTypes = ['Cetak', 'Coating', 'Laminasi', 'Potong', 'Subkontraktor', 'Lainnya'];
+    // Jenis mesin = prefix kode mesin (lihat migration update_prod_machine_asset_list,
+    // 2026-09-21). Paper Cutting (guillotine) sengaja DIPISAH dari Die Cutting
+    // (plong) -- sebelumnya keduanya bertipe 'Potong' sehingga picker mesin plong
+    // di ProDev ikut menarik mesin potong kertas.
+    public array $machineTypes = [
+        'Offset Printing', 'Digital Printing', 'CTP Plate Setter',
+        'Paper Cutting', 'Die Cutting', 'Cutting Plotter',
+        'Folder Gluer', 'Laminating', 'UV Coating', 'Water-Based Coating',
+        'Waxing', 'Gluing', 'Pressing', 'Shrink Wrapping',
+        'Stripping', 'Stitching', 'Seaming', 'Support Equipment',
+    ];
 
     public string $search = '';
 
@@ -36,6 +46,8 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
     public string $brand_model = '';
 
     public string $year_acquired = '';
+
+    public string $acquired_date = '';
 
     public string $serial_no = '';
 
@@ -87,6 +99,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             $this->division_id = $m->division_id;
             $this->brand_model = (string) $m->brand_model;
             $this->year_acquired = (string) ($m->year_acquired ?? '');
+            $this->acquired_date = $m->acquired_date?->format('Y-m-d') ?? '';
             $this->serial_no = (string) $m->serial_no;
             $this->max_paper_size = (string) $m->max_paper_size;
             $this->color_count = (string) ($m->color_count ?? '');
@@ -99,7 +112,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
         } else {
             $this->reset([
                 'machine_code', 'machine_name', 'machine_type', 'division_id',
-                'brand_model', 'year_acquired', 'serial_no', 'max_paper_size',
+                'brand_model', 'year_acquired', 'acquired_date', 'serial_no', 'max_paper_size',
                 'color_count', 'max_speed_per_hour', 'capacity_per_shift',
                 'gsm_min', 'gsm_max', 'notes',
             ]);
@@ -128,6 +141,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             'division_id' => ['required', 'integer', 'exists:tm2mst.org_division,division_id'],
             'brand_model' => ['nullable', 'string', 'max:150'],
             'year_acquired' => ['nullable', 'integer', 'digits:4'],
+            'acquired_date' => ['nullable', 'date'],
             'serial_no' => ['nullable', 'string', 'max:100'],
             'max_paper_size' => ['nullable', 'string', 'max:50'],
             'color_count' => ['nullable', 'integer', 'min:0', 'max:255'],
@@ -145,7 +159,12 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
             'machine_type' => $data['machine_type'] ?: null,
             'division_id' => $data['division_id'],
             'brand_model' => $data['brand_model'] ?: null,
-            'year_acquired' => $data['year_acquired'] !== null && $data['year_acquired'] !== '' ? $data['year_acquired'] : null,
+            'acquired_date' => $data['acquired_date'] ?: null,
+            // Tanggal datang lengkap tidak selalu diketahui, tapi tahun selalu ada:
+            // kalau tanggal diisi, tahunnya diturunkan dari situ agar tidak bentrok.
+            'year_acquired' => $data['acquired_date']
+                ? (int) substr($data['acquired_date'], 0, 4)
+                : ($data['year_acquired'] !== null && $data['year_acquired'] !== '' ? $data['year_acquired'] : null),
             'serial_no' => $data['serial_no'] ?: null,
             'max_paper_size' => $data['max_paper_size'] ?: null,
             'color_count' => $data['color_count'] !== null && $data['color_count'] !== '' ? $data['color_count'] : null,
@@ -244,6 +263,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Mesin</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Jenis</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Merk/Model</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Tgl. Datang</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
                             <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Aksi</th>
                         </tr>
@@ -254,6 +274,9 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                 <x-grid.identity-cell :id="$m->machine_id" :name="$m->machine_name" :code="$m->machine_code" />
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->machine_type ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->brand_model ?: '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5] whitespace-nowrap">
+                                    {{ $m->acquired_date?->format('d/m/Y') ?: ($m->year_acquired ?: '—') }}
+                                </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $m->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $m->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
                                 </td>
@@ -265,7 +288,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="5" message="Tidak ada." />
+                            <x-grid.empty-row :colspan="6" message="Tidak ada." />
                         @endforelse
                     </tbody>
                 </table>
@@ -307,7 +330,11 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.input label="Merk / Model" wire:model="brand_model" placeholder="mis. Heidelberg SM 74" />
                         </div>
                         <div class="flex-1">
-                            <x-form.input label="Tahun" name="year_acquired" wire:model="year_acquired" placeholder="2015" />
+                            <x-form.date-picker label="Tanggal Datang" name="acquired_date" wire:model="acquired_date" />
+                        </div>
+                        <div class="flex-1">
+                            <x-form.input label="Tahun" name="year_acquired" wire:model="year_acquired" placeholder="2015"
+                                hint="Isi manual hanya bila tanggal lengkap tidak diketahui" />
                         </div>
                     </div>
                     <x-form.input label="Nomor Seri Aset" wire:model="serial_no" placeholder="mis. SM74-2015-0231" />

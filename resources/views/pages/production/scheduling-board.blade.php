@@ -121,12 +121,24 @@ new #[Title('Scheduling Board — TELASIH MAKMUR ERP')] class extends Component
         return OrgDivision::where('division_code', 'OFFSET')->value('division_id');
     }
 
+    // Baris board = mesin aktif divisi OFFSET, DITAMBAH mesin nonaktif yang masih
+    // punya operasi terjadwal. Tanpa tambahan itu, menonaktifkan mesin di Master
+    // (mis. saat daftar aset dirapikan 2026-09-21) membuat WO yang sudah
+    // dijadwalkan di mesin tsb hilang dari papan tanpa jejak -- pekerjaannya
+    // tetap ada, cuma tak terlihat. Lebih baik barisnya tetap muncul supaya
+    // PPIC sadar dan memindahkannya.
     #[Computed]
     public function machines()
     {
+        $scheduledIds = PrdWoOperation::query()
+            ->where('resource_type', 'MACHINE')
+            ->whereNotNull('machine_id')
+            ->distinct()
+            ->pluck('machine_id');
+
         return ProdMachine::query()
             ->where('division_id', $this->offsetDivisionId())
-            ->where('activate', true)
+            ->where(fn ($q) => $q->where('activate', true)->orWhereIn('machine_id', $scheduledIds))
             ->orderBy('machine_code')
             ->get();
     }

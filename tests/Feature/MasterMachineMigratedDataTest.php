@@ -7,9 +7,11 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 // Master Mesin (master.machine) sudah live sebelumnya -- test ini cuma
-// verifikasi layar existing tetap render normal setelah migration
-// 2026_08_28_000030 menambah 37 mesin riil dari tm2old.mst_machine + tipe
-// baru "Subkontraktor" ditambahkan ke enum machineTypes.
+// verifikasi layar existing tetap render normal setelah isinya diganti daftar
+// aset mesin nyata (migration 2026_09_21_000007): 46 mesin aktif berkode
+// prefix jenis (OFF/DIG/DIE/...) + 29 baris lama dinonaktifkan, dan enum
+// machineTypes pindah ke 18 jenis bahasa Inggris (tipe lama "Subkontraktor"
+// dicabut -- subkontraktor dipegang sup_supplier.is_subcon, bukan mesin).
 class MasterMachineMigratedDataTest extends TestCase
 {
     private function admin(): SecUser
@@ -17,21 +19,28 @@ class MasterMachineMigratedDataTest extends TestCase
         return SecUser::where('login', 'johiwan')->firstOrFail();
     }
 
-    public function test_grid_renders_migrated_machines_and_subkontraktor_type(): void
+    public function test_grid_renders_asset_machines_with_new_codes(): void
     {
         $this->actingAs($this->admin());
 
         Livewire::test('pages::master.machine')
-            ->assertSee('FUJI')
+            ->assertSee('OFF-02')
+            ->assertSee('Komori GL440')
+            ->assertSee('27/09/2015')   // acquired_date, bukan cuma tahun
+            ->assertSee('FUJI')         // baris lama nonaktif tetap tampil di grid
             ->assertSee('Total Mesin');
     }
 
-    public function test_new_form_offers_subkontraktor_machine_type(): void
+    public function test_new_form_offers_english_machine_types(): void
     {
         $this->actingAs($this->admin());
 
         Livewire::test('pages::master.machine')
             ->call('openModal', 'new')
-            ->assertSee('Subkontraktor');
+            ->assertSee('Offset Printing')
+            ->assertSee('Die Cutting')      // dipisah dari Paper Cutting
+            ->assertSee('Paper Cutting')
+            ->assertSee('Support Equipment')
+            ->assertDontSee('Subkontraktor');
     }
 }

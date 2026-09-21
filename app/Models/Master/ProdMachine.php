@@ -20,6 +20,7 @@ class ProdMachine extends Model
         'machine_type',
         'brand_model',
         'year_acquired',
+        'acquired_date',
         'serial_no',
         'max_paper_size',
         'color_count',
@@ -36,6 +37,7 @@ class ProdMachine extends Model
     protected $casts = [
         'activate' => 'boolean',
         'year_acquired' => 'integer',
+        'acquired_date' => 'date',
         'color_count' => 'integer',
         'max_speed_per_hour' => 'integer',
         'gsm_min' => 'integer',

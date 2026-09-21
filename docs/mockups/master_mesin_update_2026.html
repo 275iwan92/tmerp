@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Master Mesin - Usulan Update Data 2026</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; }
+  th { background: #f8fafc; color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: .03em;
+       font-weight: 700; text-align: left; padding: 6px 8px; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 4px 8px; border-bottom: 1px solid #eef1f5; font-size: 11px; vertical-align: middle; }
+  .code { font-family: 'Consolas', monospace; font-weight: 700; color: #2c3e69; }
+  .grp td { background: #eef2f9; font-weight: 700; color: #2c3e69; font-size: 10px;
+            text-transform: uppercase; letter-spacing: .04em; padding: 4px 8px; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 9999px; font-size: 9px; font-weight: 700; }
+  .b-new { background: #dcfce7; color: #15803d; }
+  .b-reuse { background: #dbeafe; color: #1d4ed8; }
+  .b-off { background: #ede9fe; color: #6d28d9; }
+  .b-dig { background: #ffedd5; color: #c2410c; }
+  .stat { border-radius: 8px; padding: 10px 12px; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+
+<header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5">
+  <div>
+    <div class="text-sm font-bold">Master Mesin &mdash; Usulan Update Data (Verifikasi Sebelum Eksekusi)</div>
+    <div class="text-[10px] opacity-70">Master Data &middot; tm2mst.prod_machine &middot; 46 mesin aset nyata + kode mesin baru (English)</div>
+  </div>
+  <div class="ml-auto flex items-center gap-3">
+    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">&#9679; BELUM DIEKSEKUSI</span>
+  </div>
+</header>
+
+<main class="p-4 space-y-3">
+
+  <!-- Statistik pastel (griduistandard.md) -->
+  <div class="grid grid-cols-5 gap-3">
+    <div class="stat bg-[#eef2ff]"><div class="text-[10px] text-muted font-semibold uppercase">Total Mesin (Baru)</div><div class="text-xl font-bold text-navy">46</div></div>
+    <div class="stat bg-[#ecfdf5]"><div class="text-[10px] text-muted font-semibold uppercase">Baris Baru Dibuat</div><div class="text-xl font-bold text-emerald-700">33</div></div>
+    <div class="stat bg-[#eff6ff]"><div class="text-[10px] text-muted font-semibold uppercase">Baris Lama Dipakai Ulang</div><div class="text-xl font-bold text-blue-700">13</div></div>
+    <div class="stat bg-[#fef2f2]"><div class="text-[10px] text-muted font-semibold uppercase">Baris Lama Dinonaktifkan</div><div class="text-xl font-bold text-rose-700">29</div></div>
+    <div class="stat bg-[#fffbeb]"><div class="text-[10px] text-muted font-semibold uppercase">Jenis Mesin (English)</div><div class="text-xl font-bold text-amber-700">18</div></div>
+  </div>
+
+  <!-- Kamus kode -->
+  <section class="card p-3">
+    <h2 class="font-bold text-navy text-[12px] mb-2">Kamus Kode Mesin &mdash; prefix = jenis mesin (bahasa Inggris), nomor urut = urutan tanggal datang</h2>
+    <div class="grid grid-cols-5 gap-x-4 gap-y-1 text-[11px]">
+      <div><span class="code">OFF</span> &middot; Offset Printing</div>
+      <div><span class="code">DIG</span> &middot; Digital Printing</div>
+      <div><span class="code">CTP</span> &middot; CTP Plate Setter</div>
+      <div><span class="code">CUT</span> &middot; Paper Cutting</div>
+      <div><span class="code">DIE</span> &middot; Die Cutting (Plong)</div>
+      <div><span class="code">PLT</span> &middot; Cutting Plotter</div>
+      <div><span class="code">FGL</span> &middot; Folder Gluer</div>
+      <div><span class="code">LAM</span> &middot; Laminating</div>
+      <div><span class="code">UVC</span> &middot; UV Coating</div>
+      <div><span class="code">WBC</span> &middot; Water-Based Coating</div>
+      <div><span class="code">WAX</span> &middot; Waxing (Lilin)</div>
+      <div><span class="code">AGL</span> &middot; Gluing (Animal Glue)</div>
+      <div><span class="code">PRS</span> &middot; Pressing</div>
+      <div><span class="code">SHR</span> &middot; Shrink Wrapping</div>
+      <div><span class="code">STR</span> &middot; Stripping</div>
+      <div><span class="code">STI</span> &middot; Stitching</div>
+      <div><span class="code">SEA</span> &middot; Seaming</div>
+      <div><span class="code">CMP</span> &middot; Support Equipment</div>
+      <div><span class="code">FKL</span> &middot; Support Equipment</div>
+    </div>
+  </section>
+
+  <!-- Tabel utama -->
+  <section class="card overflow-hidden">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:76px">Kode</th>
+          <th style="width:230px">Nama Mesin (machine_name)</th>
+          <th style="width:150px">Jenis (machine_type)</th>
+          <th style="width:200px">Brand / Tipe (brand_model)</th>
+          <th style="width:95px">Tgl. Datang</th>
+          <th style="width:55px">Tahun</th>
+          <th style="width:90px">Divisi</th>
+          <th style="width:190px">Aksi di DB</th>
+          <th>Asal Data (baris user)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="grp"><td colspan="9">Cetak Offset</td></tr>
+        <tr><td class="code">OFF-01</td><td>Sakurai Oliver 58</td><td>Offset Printing</td><td>Sakurai Oliver 58</td><td class="text-muted">&mdash;</td><td>2000</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 35</span> <span class="text-muted">(SAKURA)</span></td><td class="text-muted">Cetak / Sakurai / Oliver 58 / 2000</td></tr>
+        <tr><td class="code">OFF-02</td><td>Komori GL440</td><td>Offset Printing</td><td>Komori GL440</td><td>27/09/2015</td><td>2015</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 1</span> <span class="text-muted">(KOMORI-GL440)</span></td><td class="text-muted">Cetak / Komori / GL440</td></tr>
+
+        <tr class="grp"><td colspan="9">Cetak Digital</td></tr>
+        <tr><td class="code">DIG-01</td><td>Hanway 2500B</td><td>Digital Printing</td><td>Hanway 2500B</td><td>07/04/2020</td><td>2020</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-reuse">PAKAI ULANG id 13</span> <span class="text-muted">(HANWAY)</span></td><td class="text-muted">cetak digital / HANWAY / 2500B</td></tr>
+        <tr><td class="code">DIG-02</td><td>Heidelberg Versafire</td><td>Digital Printing</td><td>Heidelberg Versafire</td><td>11/02/2022</td><td>2022</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-reuse">PAKAI ULANG id 42</span> <span class="text-muted">(VERSAFIRE)</span></td><td class="text-muted">cetak digital / HEIDELBERG / VERSAFIRE</td></tr>
+        <tr><td class="code">DIG-03</td><td>Sunthink SC645</td><td>Digital Printing</td><td>Sunthink SC645</td><td>26/07/2022</td><td>2022</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-reuse">PAKAI ULANG id 8</span> <span class="text-muted">(DIGITAL_SUNTHINKS)</span></td><td class="text-muted">cetak digital / SUNTHINK / SC645</td></tr>
+        <tr><td class="code">DIG-04</td><td>Taimes T5S-512i-8H</td><td>Digital Printing</td><td>Taimes T5S-512I-8H</td><td>18/09/2023</td><td>2023</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cetak digital / TAIMES / T5S-512I-8H</td></tr>
+        <tr><td class="code">DIG-05</td><td>Taimes Heater</td><td>Digital Printing</td><td>Taimes Heater</td><td>18/09/2023</td><td>2023</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cetak digital / TAIMES / HEATER</td></tr>
+        <tr><td class="code">DIG-06</td><td>Xenons</td><td>Digital Printing</td><td>Xenons</td><td>31/01/2026</td><td>2026</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cetak digital / XENONS</td></tr>
+
+        <tr class="grp"><td colspan="9">Prepress</td></tr>
+        <tr><td class="code">CTP-01</td><td>AGFA Avalon C</td><td>CTP Plate Setter</td><td>AGFA Avalon C</td><td>09/07/2016</td><td>2016</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Ctp plate setter / AGFA / avalon c</td></tr>
+
+        <tr class="grp"><td colspan="9">Potong Kertas (Guillotine)</td></tr>
+        <tr><td class="code">CUT-01</td><td>Robdcut ERC-115</td><td>Paper Cutting</td><td>Robdcut ERC-115</td><td class="text-muted">&mdash;</td><td>2008</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Potong / ROBDCUT / ERC-115 / 2008</td></tr>
+        <tr><td class="code">CUT-02</td><td>Echo Guillotine</td><td>Paper Cutting</td><td>Echo</td><td>12/12/2016</td><td>2016</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Potong / Echo Guillotine</td></tr>
+        <tr><td class="code">CUT-03</td><td>Guoxin Guillotine</td><td>Paper Cutting</td><td>Guoxin</td><td>07/12/2023</td><td>2023</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 12</span> <span class="text-muted">(GUOXIN)</span></td><td class="text-muted">potong / Guoxin</td></tr>
+
+        <tr class="grp"><td colspan="9">Plong (Die Cutting)</td></tr>
+        <tr><td class="code">DIE-01</td><td>Ruian Die Cutter</td><td>Die Cutting</td><td>Ruian</td><td class="text-muted">&mdash;</td><td>2015</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Plong / Ruian / 2015</td></tr>
+        <tr><td class="code">DIE-02</td><td>Shanghai Die Cutter</td><td>Die Cutting</td><td>Shanghai</td><td class="text-muted">&mdash;</td><td>2020</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Plong / Shanghai / 2020</td></tr>
+        <tr><td class="code">DIE-03</td><td>Daxiang Die Cutter</td><td>Die Cutting</td><td>Daxiang</td><td>13/10/2021</td><td>2021</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Plong / Daxiang</td></tr>
+        <tr><td class="code">DIE-04</td><td>Daxiang Auto Die Cutter</td><td>Die Cutting</td><td>Daxiang (otomatis)</td><td>11/08/2023</td><td>2023</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Plong otomatis / Daxiang</td></tr>
+
+        <tr class="grp"><td colspan="9">Cutting Plotter (Digital Finishing)</td></tr>
+        <tr><td class="code">PLT-01</td><td>Summa D60R #1</td><td>Cutting Plotter</td><td>Summa D60R</td><td>19/08/2020</td><td>2020</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-reuse">PAKAI ULANG id 7</span> <span class="text-muted">(CUTTING_SUMMA)</span></td><td class="text-muted">cutting / SUMMA / D60R</td></tr>
+        <tr><td class="code">PLT-02</td><td>Summa D60R #2</td><td>Cutting Plotter</td><td>Summa D60R</td><td>21/09/2020</td><td>2020</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SUMMA / D60R</td></tr>
+        <tr><td class="code">PLT-03</td><td>IECHO BK4</td><td>Cutting Plotter</td><td>IECHO BK4</td><td>05/03/2021</td><td>2021</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-reuse">PAKAI ULANG id 6</span> <span class="text-muted">(CUTTING_BK4)</span></td><td class="text-muted">cutting / IECHO / BK4</td></tr>
+        <tr><td class="code">PLT-04</td><td>SAGA SG-SC A3+ II Pro #1</td><td>Cutting Plotter</td><td>SAGA SG-SC A3+ II PRO</td><td>23/10/2024</td><td>2024</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SAGA</td></tr>
+        <tr><td class="code">PLT-05</td><td>SAGA SG-SC A3+ II Pro #2</td><td>Cutting Plotter</td><td>SAGA SG-SC A3+ II PRO</td><td>24/06/2025</td><td>2025</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SAGA</td></tr>
+        <tr><td class="code">PLT-06</td><td>Summa S1 D60</td><td>Cutting Plotter</td><td>Summa S1 D60</td><td>20/12/2025</td><td>2025</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SUMMA / S1 D60</td></tr>
+        <tr><td class="code">PLT-07</td><td>SAGA SG-SC A3+ II Pro #3</td><td>Cutting Plotter</td><td>SAGA SG-SC A3+ II PRO</td><td>23/07/2026</td><td>2026</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SAGA</td></tr>
+        <tr><td class="code">PLT-08</td><td>SAGA SG-SC A3+ II Pro #4</td><td>Cutting Plotter</td><td>SAGA SG-SC A3+ II PRO</td><td>23/07/2026</td><td>2026</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SAGA</td></tr>
+        <tr><td class="code">PLT-09</td><td>SAGA Back Creasing</td><td>Cutting Plotter</td><td>SAGA Back Creasing</td><td>23/07/2026</td><td>2026</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">cutting / SAGA / BACK CREASING</td></tr>
+
+        <tr class="grp"><td colspan="9">Folder Gluer</td></tr>
+        <tr><td class="code">FGL-01</td><td>Daxiang Folder Gluer</td><td>Folder Gluer</td><td>Daxiang</td><td>04/11/2020</td><td>2020</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 9</span> <span class="text-muted">(FOLDER_GLUER)</span></td><td class="text-muted">Folder Gluer / Daxiang</td></tr>
+        <tr><td class="code">FGL-02</td><td>YDM Folder Gluer</td><td>Folder Gluer</td><td>YDM</td><td>13/08/2023</td><td>2023</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 10</span> <span class="text-muted">(FOLDER_GLUER_2)</span></td><td class="text-muted">Folder Gluer / YDM</td></tr>
+
+        <tr class="grp"><td colspan="9">Laminating &amp; Coating</td></tr>
+        <tr><td class="code">LAM-01</td><td>Small Laminator</td><td>Laminating</td><td class="text-muted">(brand belum diisi)</td><td class="text-muted">&mdash;</td><td>2009</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Laminating kecil / 2009</td></tr>
+        <tr><td class="code">LAM-02</td><td>Huawei Laminator</td><td>Laminating</td><td>Huawei</td><td class="text-muted">&mdash;</td><td>2019</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 22</span> <span class="text-muted">(LAMINATING)</span></td><td class="text-muted">Laminating / Huawei / 2019</td></tr>
+        <tr><td class="code">LAM-03</td><td>Daxiang Laminator</td><td>Laminating</td><td>Daxiang</td><td>11/11/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Laminasi2 / DAXIANG</td></tr>
+        <tr><td class="code">LAM-04</td><td>Daxiang Auto Laminator</td><td>Laminating</td><td>Daxiang (otomatis)</td><td>04/12/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">laminating otomatis / Daxiang</td></tr>
+        <tr><td class="code">UVC-01</td><td>UV Coating</td><td>UV Coating</td><td class="text-muted">(brand belum diisi)</td><td class="text-muted">&mdash;</td><td>2019</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 41</span> <span class="text-muted">(UV)</span></td><td class="text-muted">UV / 2019</td></tr>
+        <tr><td class="code">WBC-01</td><td>Daxiang Water-Based Coater</td><td>Water-Based Coating</td><td>Daxiang</td><td>04/09/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Water base / Daxiang</td></tr>
+        <tr><td class="code">WAX-01</td><td>Waxing Machine (DIY)</td><td>Waxing</td><td>DIY</td><td>15/04/2019</td><td>2019</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-reuse">PAKAI ULANG id 23</span> <span class="text-muted">(LILIN)</span></td><td class="text-muted">Lilin / DIY</td></tr>
+        <tr><td class="code">AGL-01</td><td>Daxiang Animal Glue Applicator</td><td>Gluing</td><td>Daxiang</td><td>20/12/2023</td><td>2023</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Animal glue / Daxiang</td></tr>
+
+        <tr class="grp"><td colspan="9">Finishing Lain</td></tr>
+        <tr><td class="code">PRS-01</td><td>Daxiang Press</td><td>Pressing</td><td>Daxiang</td><td>10/11/2021</td><td>2021</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">press / Daxiang</td></tr>
+        <tr><td class="code">SHR-01</td><td>Daxiang Shrink Wrapper</td><td>Shrink Wrapping</td><td>Daxiang</td><td>08/03/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">shrink / Daxiang</td></tr>
+        <tr><td class="code">STR-01</td><td>Daxiang Stripper</td><td>Stripping</td><td>Daxiang</td><td>08/03/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Stripping / Daxiang</td></tr>
+        <tr><td class="code">STR-02</td><td>Daxiang Blanking Stripper</td><td>Stripping</td><td>Daxiang</td><td>11/10/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">blangking stripping / Daxiang</td></tr>
+        <tr><td class="code">STI-01</td><td>Daxiang Stitcher #1</td><td>Stitching</td><td>Daxiang</td><td>25/11/2020</td><td>2020</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">STITCHING / Daxiang</td></tr>
+        <tr><td class="code">STI-02</td><td>Daxiang Book Stitcher</td><td>Stitching</td><td>Daxiang</td><td>24/07/2024</td><td>2024</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Stiching buku / Daxiang</td></tr>
+        <tr><td class="code">STI-03</td><td>Daxiang Stitcher #2</td><td>Stitching</td><td>Daxiang</td><td>27/10/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">STITCHING / Daxiang</td></tr>
+        <tr><td class="code">SEA-01</td><td>Innovatec FR-900 #1</td><td>Seaming</td><td>Innovatec FR-900</td><td>01/10/2023</td><td>2023</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">seaming / INNOVATEC / FR-900</td></tr>
+        <tr><td class="code">SEA-02</td><td>Innovatec FR-900 #2</td><td>Seaming</td><td>Innovatec FR-900</td><td>09/10/2024</td><td>2024</td><td><span class="badge b-dig">DIGITAL</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">seaming / INNOVATEC / FR-900</td></tr>
+
+        <tr class="grp"><td colspan="9">Peralatan Pendukung (Non-Produksi)</td></tr>
+        <tr><td class="code">CMP-01</td><td>Daxiang Screw Compressor</td><td>Support Equipment</td><td>Daxiang (screw)</td><td>31/05/2025</td><td>2025</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">kompressor screw / daxiang</td></tr>
+        <tr><td class="code">FKL-01</td><td>Doosan Forklift 3 Ton</td><td>Support Equipment</td><td>Doosan 3 ton</td><td>16/12/2021</td><td>2021</td><td><span class="badge b-off">OFFSET</span></td><td><span class="badge b-new">BARIS BARU</span></td><td class="text-muted">Forclift 3 ton / Doosan</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="grid grid-cols-2 gap-3">
+    <!-- Dinonaktifkan -->
+    <section class="card p-3">
+      <h2 class="font-bold text-navy text-[12px] mb-1">29 Baris Lama Dinonaktifkan (activate = 0, TIDAK dihapus)</h2>
+      <p class="text-[10px] text-muted mb-2">Semua 42 baris lama masih dipakai <span class="code">emp_work_center</span>, sebagian juga oleh <span class="code">prod_part_process</span> &amp; <span class="code">prd_wo_operation</span>. Menghapusnya memutus histori routing/WO, jadi hanya dimatikan supaya tidak muncul lagi di picker.</p>
+      <div class="text-[10px] leading-5 text-slate-600">
+        id 2 KOMORI-L40 &middot; id 3 COAT-01 &middot; id 4 LAM-01 (GMP Saturn) &middot; id 5 PLONG-01 &middot; id 11 FUJI &middot;
+        id 14&ndash;18 KOMORI_GL440_FANDIK/AGUS/DIMAS/YANTO + KOMORI_GL440 &middot; id 19 KOMORI_L40 &middot;
+        id 20 LAM_YOUBOND &middot; id 21 LAMINASI_MANUAL &middot; id 24 LIPAT &middot; id 25&ndash;29 PLONG&hellip;PLONG_5 &middot;
+        id 30&ndash;34 POTONG_BESAR/2/ITOH/KECIL/KYODO &middot; id 36 SUBCON_PLONG &middot; id 37 SUBKON_HOTPRINT &middot;
+        id 38 SUBKON_LAMINATING &middot; id 39 SUBKON_LAMINATING_GLOSSY &middot; id 40 SUBKON_UV
+      </div>
+    </section>
+
+    <!-- Perubahan skema & dampak -->
+    <section class="card p-3">
+      <h2 class="font-bold text-navy text-[12px] mb-1">Perubahan Skema &amp; Dampak Kode (perlu persetujuan)</h2>
+      <ol class="text-[10px] leading-5 text-slate-700 list-decimal ml-4 space-y-1">
+        <li><b>Kolom baru <span class="code">acquired_date</span> (DATE, nullable)</b> &mdash; tanggal datang lengkap. Kolom lama <span class="code">year_acquired</span> tetap ada dan selalu diisi (untuk 6 mesin yang hanya punya tahun, <span class="code">acquired_date</span> = NULL).</li>
+        <li><b><span class="code">machine_type</span> jadi 18 nilai bahasa Inggris</b> (dari 6 nilai Indonesia: Cetak/Coating/Laminasi/Potong/Subkontraktor/Lainnya), lebar kolom dinaikkan 20 &rarr; 30 karakter.</li>
+        <li><b>Plong dipisah dari Potong.</b> Selama ini keduanya bertipe <span class="code">Potong</span>. Sekarang: guillotine = <span class="code">Paper Cutting</span>, plong = <span class="code">Die Cutting</span>.</li>
+        <li><b>Layar ProDev ikut diubah</b> (<span class="code">prodev.blade.php</span>): filter mesin cetak <span class="code">'Cetak'</span> &rarr; <span class="code">'Offset Printing'</span>, filter mesin plong <span class="code">'Potong'</span> &rarr; <span class="code">'Die Cutting'</span> (sebelumnya ikut menarik mesin potong kertas &mdash; bug lama).</li>
+        <li><b>Layar Master Mesin</b> menampilkan dropdown 18 jenis baru + field Tanggal Datang.</li>
+      </ol>
+    </section>
+  </div>
+
+  <!-- Asumsi -->
+  <section class="card p-3 border-l-4 border-amber-400">
+    <h2 class="font-bold text-amber-700 text-[12px] mb-1"><i class="fa-solid fa-triangle-exclamation"></i> Asumsi yang perlu Anda koreksi bila salah</h2>
+    <ol class="text-[10px] leading-5 text-slate-700 list-decimal ml-4">
+      <li><b>Nomor urut kode = urutan tanggal datang</b> (yang paling lama dapat nomor 01). Bila Anda ingin urut sesuai nomor aset/posisi di lantai produksi, sebut saja.</li>
+      <li><b>Divisi</b>: cetak digital + semua cutting plotter + seaming &rarr; DIGITAL; sisanya &rarr; OFFSET. Kompresor &amp; forklift dipakai seluruh pabrik, sementara ditaruh di OFFSET.</li>
+      <li><b>id 35 &ldquo;SAKURA&rdquo;</b> diasumsikan mesin Sakurai yang sama (bukan mesin lain), jadi dipakai ulang untuk OFF-01.</li>
+      <li><b>id 22 &ldquo;LAMINATING&rdquo;</b> diasumsikan = Huawei 2019 (LAM-02).</li>
+      <li><b>6 baris PLONG lama (id 5, 25&ndash;29) TIDAK dipetakan</b> ke DIE-01&hellip;04 karena tidak ada petunjuk brand mana yang mana &mdash; dibuat baris baru supaya tidak salah kait. Bila Anda tahu pemetaannya, beri tahu dan saya pakai ulang id-nya.</li>
+      <li><b>Kolom yang belum diisi</b>: <span class="code">max_paper_size</span>, <span class="code">color_count</span>, <span class="code">max_speed_per_hour</span>, <span class="code">gsm_min/max</span>, <span class="code">serial_no</span>. Data ini belum Anda berikan &mdash; dibiarkan NULL, tidak dikarang.</li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>

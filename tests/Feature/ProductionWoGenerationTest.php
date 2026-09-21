@@ -115,7 +115,10 @@ class ProductionWoGenerationTest extends TestCase
         $newOp->refresh();
         $this->assertSame('Cetak', $newOp->process_name);
 
-        $machineId = ProdMachine::where('machine_code', 'CETAK-01')->value('machine_id');
+        // CETAK-01 sudah tidak ada: kode mesin dibakukan (KOMORI-GL440 sejak
+        // 2026-09-17, lalu OFF-02 sejak daftar aset 2026-09-21). Mesin yang
+        // punya baris prod_part_process_machine_rate = machine_id 1 yang sama.
+        $machineId = ProdMachine::where('machine_code', 'OFF-02')->value('machine_id');
         $test->call('updateOperationField', $newOp->operation_id, 'machine_id', $machineId)
             ->call('refillTargetDefault', $newOp->operation_id);
         $newOp->refresh();

@@ -1726,6 +1726,35 @@ halaman sebelumnya · `PageDown` baris pertama halaman berikutnya ·
 - Catatan: ini yang paling besar dari empat item — sentuh semua grid, perlu
   fokus DOM + status sel aktif, dan harus tidak bentrok dgn pintasan F1 (Help)
   serta hotkey shell yang sudah ada.
+## 23. MASTER MESIN — REFERENSI KE MESIN YANG DINONAKTIFKAN (temuan 2026-09-21)
+
+Setelah `prod_machine` diganti daftar aset nyata (46 mesin aktif, 29 baris lama
+`activate=0`, migration `2026_09_21_000007_update_prod_machine_asset_list`), masih
+ada data yang menunjuk mesin yang sudah tidak dipakai. **Tidak dipetakan otomatis
+— butuh keputusan user mesin pengganti tiap baris, jangan ditebak:**
+
+- `tm2mst.emp_shift_roster` — **129 baris** roster menunjuk mesin nonaktif.
+- `tm2mst.prod_part_process` — 12 baris routing: machine_id 2 (KOMORI L 40, 2 baris),
+  4 (Laminasi/GMP Saturn, 4), 5 (Plong 1, 5), 28 (PLONG 4, 1).
+- `tm2prd.prd_wo_operation` — 11 operasi di 5 WO (WO2600228, WO2600230, WO2600261,
+  WO2600262, WO2600263).
+
+Sementara ini Scheduling Board sudah diamankan: barisnya tetap memunculkan mesin
+nonaktif yang masih punya operasi terjadwal (`scheduling-board.blade.php::machines()`),
+supaya WO-nya tidak hilang diam-diam dari papan. Layar lain belum dicek satu-satu.
+
+Sisa pekerjaan terkait Master Mesin yang datanya belum ada dari user:
+`max_paper_size`, `color_count`, `max_speed_per_hour`, `gsm_min/max`, `serial_no`
+masih NULL di 46 mesin baru — ProDev/ProCost masih pakai asumsi bed plano.
+
+## 24. TEST YANG MENINGGALKAN SAMPAH DATA (temuan 2026-09-21)
+
+`ProductionWoGenerationTest::test_generate_creates_wo_with_operations_and_correct_qty`
+menyisipkan 1 baris `tm2sdi.co_order_delivery` (`created_by='test'`, ship_qty 200)
+tiap kali dijalankan dan TIDAK menghapusnya (tidak ada `tearDown`). Melanggar aturan
+CLAUDE.md "test yang menyisipkan data wajib cleanup sendiri". Baris id 134 adalah
+sisa lama yang belum dihapus.
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,

@@ -487,7 +487,7 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
         $fallbackW = 72.0;
 
         $out = ProdMachine::where('activate', true)
-            ->where('machine_type', 'Cetak')
+            ->where('machine_type', 'Offset Printing')
             ->orderBy('machine_name')
             ->get()
             ->map(function ($m) use ($fallbackL, $fallbackW) {
@@ -512,14 +512,15 @@ new #[Title('Pro-Dev — TELASIH MAKMUR ERP')] class extends Component
 
     // Mesin plong/ponds: canvas harus muat di MEJA PLONG juga, bukan cuma bed
     // mesin cetak (instruksi user 2026-09-16). max_paper_size seluruh mesin
-    // Potong SAAT INI kosong dan tidak ada brand_model untuk disimpulkan, jadi
-    // L/W sengaja dibiarkan null -- batas yang tidak diketahui TIDAK dikarang,
-    // cukup diberitahukan supaya diisi di Master Mesin.
+    // Die Cutting SAAT INI kosong, jadi L/W sengaja dibiarkan null -- batas yang
+    // tidak diketahui TIDAK dikarang, cukup diberitahukan supaya diisi di Master
+    // Mesin. Filter dulu 'Potong' (ikut menarik guillotine), sejak daftar aset
+    // 2026-09-21 jenisnya dipisah jadi 'Die Cutting' vs 'Paper Cutting'.
     #[Computed]
     public function dieCutters(): array
     {
         return ProdMachine::where('activate', true)
-            ->where('machine_type', 'Potong')
+            ->where('machine_type', 'Die Cutting')
             ->orderBy('machine_name')
             ->get()
             ->map(function ($m) {

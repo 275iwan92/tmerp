@@ -14,7 +14,6 @@ use App\Models\Master\OrgDepartment;
 use App\Models\Master\OrgDivision;
 use App\Models\Master\OrgLevel;
 use App\Models\Master\OrgPosition;
-use App\Models\Master\ProdMachine;
 use App\Models\Sys\SecUser;
 use Illuminate\Database\Seeder;
 
@@ -30,7 +29,6 @@ class HrmMasterSeeder extends Seeder
         $departments = $this->seedDepartments($company, $divisions);
         $levels = $this->seedLevels();
         $positions = $this->seedPositions($departments, $levels);
-        $this->seedMachines($divisions);
         $this->seedShifts($departments);
         $this->seedEmployees($company, $positions);
         $this->linkAdminToEmployee();
@@ -155,31 +153,11 @@ class HrmMasterSeeder extends Seeder
         return $positions;
     }
 
-    private function seedMachines(array $divisions): void
-    {
-        $offset = $divisions['OFFSET']->division_id;
-
-        $rows = [
-            ['code' => 'CETAK-01', 'name' => 'Cetak 1', 'type' => 'Cetak', 'brand' => 'Heidelberg SM 74', 'year' => 2015, 'serial' => 'SM74-2015-0231'],
-            ['code' => 'CETAK-02', 'name' => 'Cetak 2', 'type' => 'Cetak', 'brand' => 'Komori L528', 'year' => 2018, 'serial' => null],
-            ['code' => 'COAT-01', 'name' => 'Coating', 'type' => 'Coating', 'brand' => 'Tec Lighter TL-104', 'year' => null, 'serial' => null],
-            ['code' => 'LAM-01', 'name' => 'Laminasi', 'type' => 'Laminasi', 'brand' => 'GMP Saturn 540', 'year' => null, 'serial' => null],
-        ];
-
-        foreach ($rows as $r) {
-            ProdMachine::query()->updateOrCreate(
-                ['division_id' => $offset, 'machine_code' => $r['code']],
-                [
-                    'machine_name' => $r['name'],
-                    'machine_type' => $r['type'],
-                    'brand_model' => $r['brand'],
-                    'year_acquired' => $r['year'],
-                    'serial_no' => $r['serial'],
-                    'activate' => true,
-                ]
-            );
-        }
-    }
+    // seedMachines() DIHAPUS 2026-09-21: tm2mst.prod_machine sekarang berisi
+    // daftar aset mesin nyata (migration update_prod_machine_asset_list) dan
+    // dirawat lewat layar Master Mesin. Seeder ini dulu menulis 4 mesin dummy
+    // (CETAK-01/CETAK-02/COAT-01/LAM-01) -- kode LAM-01 kini milik mesin nyata,
+    // jadi updateOrCreate-nya akan menimpa data asli.
 
     private function seedShifts(array $departments): void
     {

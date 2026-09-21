@@ -3,6 +3,50 @@
 
 ---
 
+## 2026-09-21 (malam) — Master Mesin: daftar aset nyata + kode mesin English
+
+User menyerahkan daftar 46 mesin nyata (jenis, merk/tipe, tanggal datang) dan minta
+kode mesin yang jelas berdasarkan JENIS mesin dalam bahasa Inggris. Diverifikasi dulu
+lewat JPEG (`docs/mockups/master_mesin_update_2026.jpg`) sebelum ditulis ke DB.
+
+- **Kode mesin** = prefix jenis (English) + nomor urut TANGGAL DATANG (tertua = 01):
+  `OFF` Offset Printing, `DIG` Digital Printing, `CTP` CTP Plate Setter, `CUT` Paper
+  Cutting, `DIE` Die Cutting, `PLT` Cutting Plotter, `FGL` Folder Gluer, `LAM`
+  Laminating, `UVC` UV Coating, `WBC` Water-Based Coating, `WAX` Waxing, `AGL` Gluing,
+  `PRS` Pressing, `SHR` Shrink Wrapping, `STR` Stripping, `STI` Stitching, `SEA`
+  Seaming, `CMP`/`FKL` Support Equipment.
+- **Migration `2026_09_21_000007_update_prod_machine_asset_list`**: kolom baru
+  `acquired_date` (DATE, nullable — 6 mesin cuma diketahui tahunnya), `machine_type`
+  dilebarkan 20→30 dan isinya jadi 18 jenis English (dari 6 jenis Indonesia).
+  46 mesin: 33 baris baru + **13 baris lama dipakai ulang id-nya** (brand cocok:
+  Komori, Sakurai, Guoxin, Hanway, Sunthink, Versafire, Summa, IECHO BK4, 2 Folder
+  Gluer, Laminating, UV, Lilin) supaya kaitan `prod_part_process`/`emp_work_center`
+  lama tidak putus. 29 baris lama **dinonaktifkan, BUKAN dihapus** (semuanya dirujuk
+  `emp_work_center`); kode lamanya dicatat di `notes`, kodenya diparkir ke `ZZOLD-<id>`
+  karena beberapa kode baru (mis. `LAM-01`) masih dipegang baris lama yang bukan
+  mesinnya.
+- **Plong dipisah dari Potong** — dulu keduanya bertipe `Potong`, jadi picker mesin
+  plong di ProDev ikut menarik mesin potong kertas (bug lama). Sekarang guillotine =
+  `Paper Cutting`, plong = `Die Cutting`; `prodev.blade.php` filternya ikut diperbaiki
+  (`'Cetak'`→`'Offset Printing'`, `'Potong'`→`'Die Cutting'`).
+- **`master/machine.blade.php`**: dropdown 18 jenis, `x-form.date-picker` Tanggal
+  Datang + kolom grid-nya; `year_acquired` diturunkan otomatis dari tanggal bila diisi.
+- **`HrmMasterSeeder::seedMachines()` DIHAPUS** — dulu menulis 4 mesin dummy
+  (CETAK-01/CETAK-02/COAT-01/LAM-01); kode `LAM-01` sekarang milik mesin nyata,
+  `updateOrCreate`-nya akan menimpa data asli tiap `db:seed`.
+- **Scheduling Board diamankan**: `machines()` kini memunculkan mesin nonaktif yang
+  masih punya operasi terjadwal, supaya menonaktifkan mesin di Master tidak membuat
+  WO terjadwal hilang diam-diam dari papan.
+- Test: `MasterMachineMigratedDataTest` disesuaikan ke enum/kode baru,
+  `ProductionWoGenerationTest` lookup `CETAK-01`→`OFF-02` (CETAK-01 sudah di-rename
+  migration 2026-09-17, test-nya ketinggalan). Suite: 138 lulus / 5 gagal, kelimanya
+  diverifikasi PRE-EXISTING & tidak terkait mesin (lihat catatan di bawah).
+- Sisa yang sengaja TIDAK dikerjakan → `BACKLOG.md` §23 (129 roster + 12 routing + 11
+  operasi WO masih menunjuk mesin nonaktif; pemetaan penggantinya butuh keputusan user,
+  jangan ditebak) dan §24 (test yang meninggalkan sampah data).
+
+---
+
 ## 2026-09-21 (sore) — Standar input teks: badge huruf aa/Aa/AA + warna field ikut tema
 
 Instruksi user: pola "Input Teks" Component Library dijadikan ACUAN WAJIB utk semua
