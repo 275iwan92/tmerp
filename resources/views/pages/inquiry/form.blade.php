@@ -2527,10 +2527,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
             @if ($showCancelForm)
                 <div class="body" style="background:#fff4e5;border-bottom:1px solid #ffd9a0">
-                    <div class="f" style="margin-bottom:8px">
-                        <label>{{ Translator::t('sales_form_cancel_reason_label', 'Alasan Pembatalan *') }}</label>
-                        <textarea wire:model="cancel_reason" rows="2" placeholder="{{ Translator::t('sales_form_cancel_reason_placeholder', 'Wajib diisi — tercatat di riwayat') }}"></textarea>
-                        @error('cancel_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    <div style="margin-bottom:8px">
+                        <x-form.textarea :legacy="true" name="cancel_reason"
+                            :label="Translator::t('sales_form_cancel_reason_label', 'Alasan Pembatalan *')"
+                            wire:model="cancel_reason" rows="2"
+                            :placeholder="Translator::t('sales_form_cancel_reason_placeholder', 'Wajib diisi — tercatat di riwayat')" />
                     </div>
                     <div style="display:flex;gap:8px">
                         <button type="button" class="btn d xs" wire:click="cancel">{{ Translator::t('sales_form_confirm_cancel_doc', 'Ya, batalkan inkuiri') }}</button>
@@ -2541,10 +2542,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
             @if ($showLostForm)
                 <div class="body" style="background:#fff4e5;border-bottom:1px solid #ffd9a0">
-                    <div class="f" style="margin-bottom:8px">
-                        <label>{{ Translator::t('sales_form_lost_reason_label', 'Alasan Kalah *') }}</label>
-                        <textarea wire:model="lost_reason" rows="2" placeholder="{{ Translator::t('sales_form_lost_reason_placeholder', 'mis. Harga kompetitor lebih rendah, customer batal order — wajib diisi, tercatat di riwayat & laporan win-rate') }}"></textarea>
-                        @error('lost_reason') <span class="hint" style="color:#e55353">{{ $message }}</span> @enderror
+                    <div style="margin-bottom:8px">
+                        <x-form.textarea :legacy="true" name="lost_reason"
+                            :label="Translator::t('sales_form_lost_reason_label', 'Alasan Kalah *')"
+                            wire:model="lost_reason" rows="2"
+                            :placeholder="Translator::t('sales_form_lost_reason_placeholder', 'mis. Harga kompetitor lebih rendah, customer batal order — wajib diisi, tercatat di riwayat & laporan win-rate')" />
                     </div>
                     <div style="display:flex;gap:8px">
                         <button type="button" class="btn d xs" wire:click="markLost">{{ Translator::t('sales_form_confirm_mark_lost', 'Ya, tandai kalah') }}</button>
@@ -2573,7 +2575,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                     <div class="f">
                         <label>PIC Sales</label>
                         <div style="display:flex;gap:6px;align-items:center">
-                            <input type="text" value="{{ $pic_sales }}" readonly style="flex:1;background:#f7f8fa">
+                            <input type="text" value="{{ $pic_sales }}" readonly style="flex:1">
                             @unless($readOnly)
                                 <button type="button" class="btn g xs" wire:click="openSalesPicker" title="Ubah PIC Sales">✎</button>
                             @endunless
@@ -2867,7 +2869,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                 <div class="f">
                                     <label>Nama Part</label>
                                     <div style="display:flex;gap:6px;align-items:center">
-                                        <input type="text" wire:model.blur="parts.{{ $i }}.part_name" placeholder="mis. Body" style="flex:1" @if($readOnly) disabled @endif>
+                                        <x-form.input :legacy="'flex-1 min-w-0'" wire:model.blur="parts.{{ $i }}.part_name" placeholder="mis. Body" :disabled="$readOnly" />
                                         @unless($readOnly)
                                             <button type="button" wire:click="openRolePicker({{ $i }})" title="Pilih peran part (nama terisi otomatis)"
                                                 style="flex-shrink:0;width:34px;height:34px;border:1px solid #c7cfda;border-radius:6px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px">🏷️</button>
@@ -3073,8 +3075,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                             </div>
                                                         @endif
                                                     </td>
-                                                    <td><input type="text" value="{{ $mat['brand'] }}" readonly placeholder="—" style="background:#f7f8fa" title="Brand dari master bahan"></td>
-                                                    <td><input type="text" value="{{ $mat['category'] }}" readonly placeholder="—" style="background:#f7f8fa" title="Jenis bahan dari master"></td>
+                                                    <td><input type="text" value="{{ $mat['brand'] }}" readonly placeholder="—" title="Brand dari master bahan"></td>
+                                                    <td><input type="text" value="{{ $mat['category'] }}" readonly placeholder="—" title="Jenis bahan dari master"></td>
                                                     <td style="text-align:center">
                                                         <button type="button" class="btn xs {{ $mat['is_primary'] ? 'p' : 'g' }}"
                                                                 wire:click="setMaterialPrimary({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>
@@ -3136,11 +3138,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                                 @endif
                                             </div>
                                         </div>
-                                        <div class="f col2">
-                                            <label>Catatan Warna (Pantone)</label>
-                                            <input type="text" wire:model.blur="parts.{{ $i }}.cfg_ink"
-                                                   placeholder="mis. Pantone 485 C" @if($readOnly) disabled @endif>
-                                        </div>
+                                        <x-form.input :legacy="true" :col2="true" label="Catatan Warna (Pantone)"
+                                            wire:model.blur="parts.{{ $i }}.cfg_ink"
+                                            placeholder="mis. Pantone 485 C" :disabled="$readOnly" />
                                     </div>
 
                                     {{-- Finishing Tambahan (permintaan user 2026-09-04: "master detail bisa

@@ -24,7 +24,8 @@
     // Case toggle & token warna: alasan lengkap di input.blade.php (keputusan
     // user 2026-09-21). Di textarea badge ditaruh di pojok kanan ATAS, bukan
     // tengah, supaya tidak menutupi teks saat kotaknya memanjang.
-    $locked = $attributes->has('readonly') || $attributes->has('disabled');
+    // ->get() bukan ->has(), alasan lengkap di input.blade.php.
+    $locked = (bool) $attributes->get('readonly', false) || (bool) $attributes->get('disabled', false);
     $withCase = $caseToggle && ! $locked;
     $textareaClass = ($isLegacy ? '' : 'w-full px-2 py-1.5 border border-field-border rounded text-xs focus:border-field-focus disabled:bg-field-soft disabled:text-muted disabled:cursor-not-allowed').($withCase ? ' pr-8' : '');
 @endphp

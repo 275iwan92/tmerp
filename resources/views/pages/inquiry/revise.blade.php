@@ -688,18 +688,10 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                 </div>
                 <div class="note b">🔗 REVISE membuat <b>versi baru</b>. Dokumen hilir (quotation/CO) yang sudah pakai versi lama tetap memakai snapshotnya — tak terpengaruh. Versi lama akan ditandai <b>CANCELLED · SUPERSEDED</b> begitu versi baru ini disimpan.</div>
                 <div class="grid three">
-                    <div class="f">
-                        <label>Customer</label>
-                        <input type="text" value="{{ $source->is_prospect ? $source->prospect_name : ($source->customer?->customer_name ?? '—') }}" readonly>
-                    </div>
-                    <div class="f">
-                        <label>Produk</label>
-                        <input type="text" value="{{ $source->product_draft_name }}" readonly>
-                    </div>
-                    <div class="f">
-                        <label>Versi baru</label>
-                        <input type="text" value="v{{ $source->revision_no + 1 }}" readonly>
-                    </div>
+                    <x-form.input :legacy="true" label="Customer" readonly
+                        :value="$source->is_prospect ? $source->prospect_name : ($source->customer?->customer_name ?? '—')" />
+                    <x-form.input :legacy="true" label="Produk" readonly :value="$source->product_draft_name" />
+                    <x-form.input :legacy="true" label="Versi baru" readonly :value="'v'.($source->revision_no + 1)" />
                 </div>
             </div>
         </div>

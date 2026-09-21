@@ -40,8 +40,12 @@
     $wrapperClass = $isLegacy ? trim($legacyClass.' '.$colClass) : 'flex flex-col gap-1';
     $labelClass = $isLegacy ? '' : 'text-[10px] text-muted uppercase font-semibold block mb-1';
     // Nilai yang tidak bisa diketik user tidak perlu (dan tidak boleh) punya
-    // tombol ganti huruf -- readonly/disabled dicek dari attribute mentah.
-    $locked = $attributes->has('readonly') || $attributes->has('disabled');
+    // tombol ganti huruf. WAJIB ->get() (nilai), BUKAN ->has() (keberadaan
+    // key): pemanggil yang menulis :disabled="$readOnly" selalu mengirim key
+    // "disabled" walau isinya false, jadi ->has() bikin badge mati di SEMUA
+    // field yang pakai pola itu (bug sama spt [[feedback_datepicker_disabled_attribute_bug]],
+    // ditemukan lagi 2026-09-22 saat rollout Inquiry).
+    $locked = (bool) $attributes->get('readonly', false) || (bool) $attributes->get('disabled', false);
     $withCase = $caseToggle && $type === 'text' && ! $locked;
     $inputClass = $isLegacy
         ? ($withCase ? 'pr-8' : '')
