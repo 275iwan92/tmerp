@@ -46,6 +46,7 @@ yang mana, supaya sesi baru tidak perlu menebak dari nama file saja.
 | [`spreadsheetgridstandard.md`](spreadsheetgridstandard.md) | Grid spreadsheet-editable (klik sel edit, drag-fill AutoFill, "+ Baris") — HANYA master kecil/scalar (Currency, UOM) | Bikin/ubah grid spreadsheet-editable apa pun |
 | [`themestandard.md`](themestandard.md) | Tema aplikasi — matrix 4 mode (Pastel/Cerah/Dark/Hitam) x 3 corak (Biru/Hijau/Merah), data di `tm2sys.sys_theme` | Menambah/mengubah pilihan tema, atau token warna baru yang harus ikut ganti per mode |
 | [`configurationstandard.md`](configurationstandard.md) | Layar Configuration (shell lama, di atas grup Security) — konstanta sistem per kategori, identitas aplikasi (nama/logo/font), bahasa & terjemahan | Menambah konstanta/kategori/bahasa baru, atau mengubah identitas aplikasi |
+| [`financeaccounting_delta_process_engine.md`](financeaccounting_delta_process_engine.md) §1 | Dialek UI khusus modul Finance & Accounting ("LedgerOne": `resources/css/ledger.css` kelas `lg-*` + komponen `x-ledger.*`) — kartu metrik, panel alur proses, baris laporan, modal | Bikin/ubah layar di modul FINACC (jangan campur dialek `lg-*` ke modul lain tanpa keputusan baru) |
 | [`reportstandard.md`](reportstandard.md) | **Kerangka saja, belum diimplementasi** — konsep report 4 level (Data Entry/Supervisor/Manager/Top Management) + graphics report | Sebelum mulai scoping/bikin layar report apa pun |
 
 ---

@@ -15,6 +15,21 @@ status_umum: "COA + DOWN PAYMENT JALAN (2026-08-19) — 7 tabel + 4 view tm2acc 
   Finance & HR — bukan lagi ditunda. Sesi berikutnya sebaiknya menulis ulang status_umum ini
   dari nol berdasarkan kondisi kode aktual, bukan menyambung paragraf lama."
 
+status_2026_09_21: >
+  ACCOUNTING PROCESS ENGINE DIBANGUN (16 layar, menunggu QC user) --
+  realisasi mockup MODULE_accounting-process-engine-blueprint.html +
+  MODULE_accounting-mockup-blueprint.html. Delta period-close (G) yang
+  tadinya masih spec SUDAH dieksekusi (fin_period/fin_period_log/
+  FinPeriodGuard disambung ke semua titik tulis voucher). Baru: AR/AP
+  subledger + alokasi pembayaran, aset tetap & amortisasi (1 engine),
+  rekonsiliasi bank (import CSV + auto-match), register pajak (PPN/PPh
+  21/23/Badan dari GL & payroll), tutup buku berchecklist, laporan
+  keuangan penuh (TB/Neraca/L-R/Arus Kas) dari fin_account.fs_line/cf_line,
+  approval jurnal (fin_approval_rule + pemisahan tugas), koreksi = jurnal
+  pembalik (REVISE copy-record TIDAK dibangun, meng-override tier2 §B5).
+  Dummy data 1 tahun: `php artisan fin:dummy` (--purge utk hapus).
+  Detail + daftar yang sengaja belum dikerjakan: financeaccounting_delta_process_engine.md.
+
 keputusan_terkunci:
   A: "GL terintegrasi BERTAHAP via polymorphic source_type/source_id (fase-1 manual)"
   B: "COGS PERPETUAL — jurnal HPP saat KIRIM dari snapshot Costing V2"
@@ -39,6 +54,7 @@ keputusan_terkunci:
     financeaccounting_delta_partner_category_coa_v2.md §2.
 
 artefak_selesai:
+  - financeaccounting_delta_process_engine.md   # BARU 2026-09-21 -- realisasi mockup blueprint
   - TIER_3A_FINANCE.sql   # DDL + VIEW v1_ + seed (journal, cost_center, COA 50+ akun)
   - master_coa_mockup.html
   - financeaccounting_tier1.md

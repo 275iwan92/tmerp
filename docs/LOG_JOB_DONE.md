@@ -3,6 +3,40 @@
 
 ---
 
+## 2026-09-21 — Accounting Process Engine (Finance & Accounting): 16 layar dari mockup blueprint + dummy data
+
+Sumber: `docs/mockups/MODULE_accounting-process-engine-blueprint.html` +
+`MODULE_accounting-mockup-blueprint.html` (user 2026-09-19). Detail lengkap:
+`docs/financeaccounting_delta_process_engine.md`.
+
+- Skema tm2acc (migration `2026_09_19_000001`): `fin_period`/`fin_period_log`/`fin_close_task`
+  (mengeksekusi `financeaccounting_delta_period_close.md` yang tadinya masih spec),
+  lifecycle voucher DRAFT->SUBMITTED->APPROVED->POSTED + jurnal pembalik, `fs_line`/`cf_line`
+  di COA (laporan dari pemetaan, bukan hardcode), `fin_payment_alloc`, `fin_approval_rule`,
+  `fin_bank_statement`/`fin_bank_recon`, `fin_asset*` (aset+amortisasi 1 engine),
+  `fin_tax_register`, `tm2mst.fin_tax_scheme` (PPN 12% x DPP 11/12, jatuh tempo PMK 81/2024),
+  19 akun COA baru (prabayar, kendaraan/peralatan/bangunan + akumulasi, aset tak berwujud,
+  PPh 21/Badan, hutang bank, beban penyusutan/amortisasi/pajak).
+- 9 service baru/diperluas di `app/Services/Acc`: FinPeriodGuard (dipanggil di SEMUA titik
+  tulis voucher, CLOSED ireversibel, gate ke `tm2inv.inv_period`), JournalPostingService
+  (approval + pemisahan tugas + auto-reversal), ArApService, AssetService (garis lurus &
+  saldo menurun), BankReconService (import CSV + auto-match), TaxEngine, CloseService,
+  LedgerService (TB/Neraca/Laba Rugi/Arus Kas tidak langsung), FinanceMetrics.
+- 16 layar Livewire `pages::finance.*` + CSS `resources/css/ledger.css` & komponen
+  `components/ledger/*` (port gaya mockup; sidebar/topbar mockup TIDAK ditiru, tetap shell
+  `sys_app_menu`). Menu FINACC ditata jadi 5 grup berbahasa Inggris sesuai mockup.
+- `php artisan fin:dummy` (+`--purge`): setahun pembukuan dummy lewat service asli —
+  saldo awal, 36 faktur + penerimaan, 27 tagihan + pembayaran, HPP/payroll/overhead/angsuran,
+  capex, run penyusutan & amortisasi, rekening koran 25 mutasi (22 auto-match), pajak
+  Jan-Sep, periode Jan-Jul CLOSED. Verifikasi: TB nol selisih, Aset = Kewajiban+Ekuitas,
+  arus kas menjelaskan seluruh perubahan kas, GP 35,8%, laba bersih Rp 1,03 M.
+- `tests/Feature/AccountingEngineTest.php` 13 test / 47 assertion PASS.
+- **Temuan audit sambil jalan**: 84 voucher jurnal PUR di GL menunjuk PV yang sudah
+  dihapus (residu `PvStockIntegrationTest`, Rp 840 rb) -> ditandai `data_origin=DUMMY`
+  + `data_origin_manual=1` (bukan dihapus); perbaikan cleanup test-nya di-antre terpisah.
+
+---
+
 ## 2026-09-19 — Data karyawan dari Excel HR: merge, status aktif, pemetaan kolom, formasi shift, sample payroll
 
 Sumber: `docs/HR/daftar karyawan - database.xlsx` (138 orang), 2 file gaji mingguan
