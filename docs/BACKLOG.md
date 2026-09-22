@@ -1860,6 +1860,107 @@ tiap kali dijalankan dan TIDAK menghapusnya (tidak ada `tearDown`). Melanggar at
 CLAUDE.md "test yang menyisipkan data wajib cleanup sendiri". Baris id 134 adalah
 sisa lama yang belum dihapus.
 
+| # | Pekerjaan | Status |
+|---|---|---|
+| 24.1 | `ProductionWoDetailRebuildTest::test_plan_delivery_modal_generates_wo_and_redirects` — berhenti menumpang `co_order#2`/`iqp_inquiry#5`, semai fixture sendiri (inquiry + part + costing PUBLISHED + CO CONFIRMED + item + Plan Delivery), cleanup manual per tabel di `tearDown` tanpa `RefreshDatabase` | SELESAI 2026-09-22 |
+| 24.2 | Sapu bersih residu lama: 11 baris `co_order_delivery` `created_by='test'` + 6 WO turunan (WO2600263-268) + 18 operasi | SELESAI 2026-09-22 (diverifikasi ulang ke DB: sisa 0, WO yatim 0) |
+| 24.3 | `php artisan test` (84 test 1 proses) kehabisan memori 256M di tengah jalan — akumulasi Blade/Livewire, BUKAN bocor di satu test. `php artisan test` tidak meneruskan `-d memory_limit` ke proses anak phpunit, jadi disetel lewat `<ini>` di `phpunit.xml` (512M; suite tuntas mulai 384M) | SELESAI 2026-09-22 |
+| 24.4 | **`ProductionWoGenerationTest` masih bocor** — pola rusak yang sama (hardcode `order_id=2`/`inquiry_id=5` di baris 38-41, cleanup baris 69-71 hanya jalan di happy path). Kedua test-nya sekarang gagal di assertion angka (`6000.0` vs `6400`, `0.0` vs `6000`), jadi tiap `php artisan test` meninggalkan 5 delivery + 5 WO + 20 operasi. Terapkan pola fixture 24.1. Kegagalan angkanya dipisah — itu soal perilaku engine, bukan fixture | **BELUM** |
+
+
+## 25. [PLAN — MUST BE CONTINUE] RANTAI DUMMY UAT TERINTEGRASI (rencana Iwan 2026-09-22, dilanjutkan Jo)
+
+> **Instruksi user 2026-09-22:** *"rantai baru dari nol boleh, kalau bisa
+> menyangkut semua yang ada master card nya, seperti Alsamsi dll"* +
+> *"data dummy yang bagus yang terintegrasi dengan gambar mockup yang bisa
+> di jadikan acuan"*.
+> Ini pembayaran utang `docs/queue.md` item 5 yang sejak awal belum tercentang:
+> *"Always create dummy data that is relationally linked across modules ...
+> so cross-module flows (Inquiry -> Imposition -> Costing -> Master Card -> CO)
+> can be tested end-to-end with connected data"*.
+
+### 25.1 Keadaan sekarang (hasil audit DB 2026-09-22 — jangan diaudit ulang)
+
+Tidak ada satu pun rantai dummy yang utuh. Yang ada dua, dan keduanya putus
+dari arah yang berlawanan:
+
+| Rantai | Lengkap sampai | Putus di |
+|---|---|---|
+| IQ2600001 -> CO2600001 (dummy lama, `data_origin='LIVE'`, migration `2026_08_28_000018_seed_wo_generation_dummy_chain`) | Plan Delivery + WO | **hulunya**: Quotation tidak pernah ada, costing masih DRAFT, inquiry masih SUBMITTED padahal CO sudah CONFIRMED (mustahil secara bisnis) |
+| IQ99DUM005 -> CO2600002 (dummy baru, `data_origin='DUMMY'`, migration `2026_09_21_000007_seed_inquiry_to_co_win_chain`) | Inquiry -> Costing PUBLISHED -> Quotation -> CO -> Plan Delivery #706 | **hilirnya**: belum ada WO; part-nya kosong (`proses=0`, `material=0`, `prod_part_id=NULL`, `parent_product_id=NULL`) sehingga WO lahir tanpa operasi |
+
+Master Card — belum ada satu pun yang jadi:
+- `prod_mastercard_signoff` = **0 baris** (butuh 5: Desainer/Marketing/PPIC/QA/Plant Manager). Itu sebabnya watermark **NOT CONFIRMED** masih muncul di mockup.
+- `prod_product.card_status` = `DRAFT` untuk **seluruh 14.013** produk.
+- `vw_master_card` = `prod_product JOIN prod_part` -> hanya **37 baris**, dan **34 dari 37 kosong melompong** (tanpa pisau, finishing, warna, routing, layer).
+- `prod_dieline_template` = 0 baris.
+
+Tiga sampel UAT yang sudah ada (dari `2026_09_17_000002_seed_uat_samples...` & `2026_09_17_000005_align_alsamsi_top_sample...`):
+
+| Kode produk | Pelanggan | Inquiry | routing | ink | material | Hilir |
+|---|---|---|---|---|---|---|
+| `UAT-ALSAMSI-SIG` (#14184) | AL SAMSI - SARUNG TENUN (#992) | IQUAT260903 | **8** | **4** | **9** | tidak ada costing/quo/CO/WO |
+| `UAT-ALSAMSI-TOP` (#14182) | PAK MUKRI (#49) | IQUAT260901 | 0 | 0 | 0 | tidak ada |
+| `UAT-OSIMA` (#14183) | PT. SELATAN JADI JAYA (#67) | IQUAT260902 | 0 | 0 | 0 | tidak ada |
+
+Ketiganya: `dieline_ref` kosong, `printsize` kosong, `up_per_print` kosong,
+artwork 0, signoff 0, inquiry masih `sub_state='DRAFT'`, `iqp_tier` 0 baris,
+2 dari 3 `parent_product_id` NULL.
+
+### 25.2 Rencana (PLAN must be continue)
+
+Bangun rantai utuh DI ATAS ketiga sampel UAT itu — bukan bikin produk karangan
+baru — karena nama, dimensi, routing, dan mesinnya sudah dipakai user sebagai
+acuan UAT dan sudah cocok dengan `docs/mockups/mockup_mastercard_ver2.jpg`.
+
+Per kasus UAT, satu rantai penuh:
+
+```
+Master Card lengkap (part + pisau + printsize + ink + material + artwork + 5 signoff -> card_status=APPROVED)
+  -> Inquiry (tier qty, finishing, pack_qty)
+    -> Costing -> PUBLISH (Direksi)
+      -> Quotation PUBLISHED
+        -> CO CONFIRMED
+          -> Plan Delivery (CPDEL)
+            -> Work Order + operasi terjadwal (BOM/BOP dari ProDev)
+```
+
+Syarat yang sudah diketahui, jangan ditemukan ulang:
+- `WoGenerationService` menolak generate WO kalau CO belum CONFIRMED **atau**
+  costing belum `published_flag=1`/`is_approved=1` (guard Jo 2026-09-18, BACKLOG 19.3).
+  Jadi costing WAJIB dipublish dulu di seeder.
+- Semua baris baru wajib `data_origin='DUMMY'` supaya ikut fasilitas
+  hide/show & reset dummy (BACKLOG 18.7). **Catatan:** 16 baris `prd_wo` yang
+  ada sekarang semuanya bertanda `data_origin='LIVE'` padahal dummy — perlu
+  dibetulkan, kalau tidak WO tidak akan pernah ikut tersaring.
+- Jangan sentuh `iqp_inquiry#5`/`co_order#2` lagi. Rantai lama itu rancu
+  (lihat 25.1) dan dipakai banyak test; biarkan apa adanya.
+
+### 25.3 Yang menggantung — butuh jawaban user
+
+| # | Pertanyaan | Status |
+|---|---|---|
+| 25.3.1 | "PLONG 2" di mockup Master Card = **Pond/Plong kodok manual**, model **ML 750** (foto dikirim user 2026-09-22). Di master mesin ada 4 die cutter: `DIE-01` Ruian, `DIE-02` Shanghai, `DIE-03` Daxiang, `DIE-04` Daxiang Auto. DIE-04 otomatis, jadi yang manual tinggal DIE-01/02/03. **Mana yang "PLONG 2"?** Jangan ditebak | menunggu user |
+| 25.3.2 | Spesifikasi 4 die cutter itu KOSONG semua di `prod_machine`: `max_sheet_length_mm`, `max_sheet_width_mm`, `max_speed_per_hour`, `operator_min`, `helper_min`, `brand_model` cuma merek tanpa model. Padahal Master Card butuh ukuran & efisiensi. Riset ke situs pabrikan (ML 750 dst.) atau minta data user | menunggu user |
+| 25.3.3 | Angka lain di mockup yang belum ada sumbernya di DB: Kode Pisau, efisiensi material 72%, lembar cetak 114 lbr, pemakaian tinta per KG. Boleh dipakai apa adanya dari mockup, atau konfirmasi dulu ke bagian produksi? | menunggu user |
+| 25.3.4 | Mockup sendiri mencatat lubang: *"Material: (kertas belum dipilih di Inquiry)"* — pemilihan kertas di Inquiry belum ada | BELUM |
+
+### 25.4 JANGAN DIHAPUS
+
+- Branch `claude/exciting-hypatia-1d0d5a` — lihat `docs/globalgitbranch.md` §4.
+  Migration-nya sudah jalan di DB (tabel `prd_mrp_run`, `prd_mrp_requirement`
+  hidup) tapi kodenya (MrpEngine/MpsEngine/WoCreationService/kanban) tidak ada
+  di jalur utama. Gabungkan dulu, baru boleh hapus.
+- `co_order_delivery` #458 (`created_by='operator'`) — hasil aksi Split/Gabung
+  CPDEL manual, bukan sampah test.
+- WO2600261 & WO2600262 beserta delivery #4 dan #15 — dipakai
+  `ProductionWoDetailRebuildTest` & `ProductionWoGenerationTest` sebagai
+  fixture read-only.
+- WO2600225/227/228/230/231/245/250/260 — dipakai
+  `ProductionSchedulingBoardSmokeTest` & `ProductionWorklistWoTest`.
+
+---
+
 ## HISTORY PENGERJAAN
 
 Dipindah ke **[`docs/LOG_JOB_DONE.md`](LOG_JOB_DONE.md)** (file terpisah,
