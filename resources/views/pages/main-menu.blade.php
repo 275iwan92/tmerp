@@ -123,6 +123,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'MD_EXCHRATE' => route('master.exchange-rate'),
             'MD_HOLIDAY' => route('master.holiday'),
             'PROD_MST_PROCESS' => route('production.master-process'),
+            'PROD_ROUTING_TPL' => route('production.routing-template'),
             'PROD_MST_BOP_RULE' => route('production.bop-rule'),
             'PROD_MST_CREW' => route('production.master-crew'),
             // Dua item ini activate=0 di sys_app_menu (belum pernah tayang);
