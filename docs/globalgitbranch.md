@@ -55,34 +55,27 @@ merah, dikira regresi Master Mesin. Ternyata bukan.
 - `claude/peaceful-moser-845855` (lokal)
 - `origin/claude/finance-accounting-hr-payroll-docs-0ctbgl` (remote)
 
-### BELUM boleh dihapus — masih ada isi yang hilang kalau dihapus
+### Diarsipkan sebagai TAG lalu branch-nya dihapus
 
-**`claude/exciting-hypatia-1d0d5a` — JANGAN HAPUS SEBELUM DIGABUNG.**
-2 commit (2026-08-30), ~780 baris yang **tidak ada** di jalur utama:
+Tag tidak bercabang dan tidak bisa di-commit, jadi kodenya aman tanpa
+melanggar aturan "satu jalur".
 
-| File | Ada di jalur utama? |
-|---|---|
-| `app/Services/Production/MrpEngine.php` | TIDAK |
-| `app/Services/Scheduling/MpsEngine.php` | TIDAK |
-| `app/Services/Production/WoCreationService.php` | TIDAK |
-| `app/Models/Prd/PrdMrpRun.php`, `PrdMrpRequirement.php` | TIDAK |
-| `resources/views/pages/production/kanban.blade.php` | TIDAK |
-| `tests/Feature/WoCreationEngineTest.php`, `ProductionKanbanSmokeTest.php` | TIDAK |
-| migration `2026_08_28_000013/000014/000015` | TIDAK (tapi **sudah tercatat jalan** di `tm2sys.migrations`) |
+| Tag | Isi | Kenapa tidak digabung |
+|---|---|---|
+| `arsip/mrp-mps-2026-08-30` | Engine MRP + MPS + Kanban (commit `9e8bfc3`): MrpEngine, MpsEngine, WoCreationService, PrdMrpRun, PrdMrpRequirement, kanban.blade.php, 2 test, migration `2026_08_28_000013/000014/000015` | **Keputusan user 2026-09-22**: hasilnya tidak disukai, akan dirancang ulang meniru UI/UX ProDev & Inquiry. Lihat BACKLOG 26 |
+| `arsip/smoke-test-login-2026-08-27` | "Perbaiki smoke test yang masih pakai login admin lama" (commit `8f96b48`) | 3 dari 5 file sudah identik dgn jalur utama; 2 sisanya sudah berubah jauh sesudahnya |
 
-Bahaya khusus: ketiga migration itu **sudah dieksekusi di database** — tabel
-`prd_mrp_run` & `prd_mrp_requirement` betul-betul ada di `tm2prd`, menu MRP
-sudah disembunyikan, menu Kanban sudah ditambah. Jadi database memegang
-struktur yang tidak ada kodenya. Menghapus branch ini = kehilangan satu-satunya
-salinan kode untuk tabel yang terlanjur hidup.
+Catatan penting: ketiga migration di `arsip/mrp-mps-2026-08-30` **sudah
+terlanjur dieksekusi** di database -- `tm2prd.prd_mrp_run` dan
+`prd_mrp_requirement` betul-betul ada, tanpa kode yang memakainya.
+Biarkan apa adanya; jangan dipakai, jangan di-drop tanpa perintah user.
 
-**`claude/sleepy-solomon-81458e`** — 1 commit (2026-08-27) "Perbaiki smoke test
-yang masih pakai login admin lama", 5 file. 3 dari 5 file sudah identik dengan
-jalur utama; 2 sisanya (`CostingEngineTest.php`, `MainMenuShellSmokeTest.php`)
-sudah berubah jauh di jalur utama, hampir pasti tersalip. Perlu dicek sebentar
-sebelum dihapus.
+### Tersisa -- tinggal 1 langkah
 
-**`main` / `origin/main`** — calon jalur tunggal terakhir (lihat §6).
+`claude/beautiful-heisenberg-2be009` (worktree) dan
+`claude/bentuk-customer-order-clarity-jnehjg` (folder utama) sekarang
+**isinya sudah seluruhnya ada di `main`**. Keduanya tidak bisa dihapus
+selagi masih di-checkout. Lihat section 6.
 
 ## 5. DUA AGEN, SATU JALUR
 
@@ -100,16 +93,20 @@ Catatan: beberapa sesi dari agen yang sama juga bisa jalan bersamaan (tercatat
 11 sesi pada 2026-09-22), jadi "sesi lain yang mengubah" sama mungkinnya
 dengan "agen satunya yang mengubah".
 
-## 6. LANGKAH PENYELESAIAN YANG BELUM DIKERJAKAN
+## 6. LANGKAH TERAKHIR
 
-1. Gabungkan `claude/exciting-hypatia-1d0d5a` ke jalur utama (MRP/MPS/Kanban).
-   Perkiraan konflik di `routes/web.php`, `SchedulingServiceProvider.php`,
-   `scheduling-board.blade.php`, `wo-entry.blade.php`,
-   `ProductionSchedulingBoardSmokeTest.php`.
-2. Putuskan `claude/sleepy-solomon-81458e`: gabung atau hapus.
-3. Samakan `main` dengan jalur utama, jadikan `main` satu-satunya branch,
-   hapus semua `claude/*` (lokal + remote).
-4. Tutup worktree `.claude/worktrees/*` dan bekerja hanya di
-   `C:\Users\iwanp\Herd\tmerp`.
-5. Pertimbangkan menjadikan jalur utama sebagai **default branch** di GitHub
-   supaya worktree/clone baru tidak pernah lagi lahir dari titik yang salah.
+`main` sudah berisi SEMUANYA (jalur utama + perbaikan test + dokumen ini),
+commit `5a8162f`, sudah di-push. Sisa satu langkah, dijalankan saat tidak ada
+sesi lain yang memakai folder utama:
+
+```bash
+git checkout main
+git branch -D claude/bentuk-customer-order-clarity-jnehjg claude/beautiful-heisenberg-2be009
+git push origin --delete claude/bentuk-customer-order-clarity-jnehjg claude/beautiful-heisenberg-2be009
+git worktree remove .claude/worktrees/beautiful-heisenberg-2be009 --force
+git worktree prune
+```
+
+Sesudah itu: **satu folder, satu branch `main`, nol worktree.** `main` sudah
+jadi default branch di GitHub, jadi clone/worktree baru otomatis lahir dari
+titik yang benar -- tidak perlu ubah setelan apa pun lagi.

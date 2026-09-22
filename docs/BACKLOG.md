@@ -1947,10 +1947,8 @@ Syarat yang sudah diketahui, jangan ditemukan ulang:
 
 ### 25.4 JANGAN DIHAPUS
 
-- Branch `claude/exciting-hypatia-1d0d5a` — lihat `docs/globalgitbranch.md` §4.
-  Migration-nya sudah jalan di DB (tabel `prd_mrp_run`, `prd_mrp_requirement`
-  hidup) tapi kodenya (MrpEngine/MpsEngine/WoCreationService/kanban) tidak ada
-  di jalur utama. Gabungkan dulu, baru boleh hapus.
+- Tag `arsip/mrp-mps-2026-08-30` — satu-satunya salinan kode Engine MRP/MPS/
+  Kanban. Lihat section 26.
 - `co_order_delivery` #458 (`created_by='operator'`) — hasil aksi Split/Gabung
   CPDEL manual, bukan sampah test.
 - WO2600261 & WO2600262 beserta delivery #4 dan #15 — dipakai
@@ -1958,6 +1956,54 @@ Syarat yang sudah diketahui, jangan ditemukan ulang:
   fixture read-only.
 - WO2600225/227/228/230/231/245/250/260 — dipakai
   `ProductionSchedulingBoardSmokeTest` & `ProductionWorklistWoTest`.
+
+---
+
+## 26. MRP & MPS — DITELANTARKAN SENGAJA, DIRANCANG ULANG NANTI (keputusan user 2026-09-22)
+
+> User: *"MRP dan MPS ini kenapa saya telantarkan, karena saya sama sekali
+> tidak suka dengan apa yang sudah di buat. Saya ingin nanti nya mengambil
+> data dan meniru model UI UX nya dari prodev dan inquiry system."*
+
+**Status: BUKAN pekerjaan tertunda — ini keputusan membuang hasil lama.**
+Jangan digabung, jangan dihidupkan, jangan "diperbaiki sedikit".
+
+| Hal | Keadaan |
+|---|---|
+| Kode | Diarsipkan di tag **`arsip/mrp-mps-2026-08-30`** (commit `9e8bfc3`, 2026-08-30). Tag, bukan branch — tidak bercabang, tidak bisa di-commit |
+| Isi arsip | `MrpEngine`, `MpsEngine`, `WoCreationService`, `PrdMrpRun`, `PrdMrpRequirement`, `kanban.blade.php`, `WoCreationEngineTest`, `ProductionKanbanSmokeTest`, migration `2026_08_28_000013/000014/000015` |
+| Database | Tabel `tm2prd.prd_mrp_run` & `prd_mrp_requirement` **terlanjur ada** (ketiga migration tercatat "Ran"), tapi tidak ada kode yang memakainya. **Biarkan — jangan dipakai, jangan di-drop** tanpa perintah user |
+| Rencana | Rancang ulang dari nol, **meniru model UI/UX ProDev & Inquiry**, dan mengambil datanya dari sana. Belum dijadwalkan |
+
+Catatan 2026-09-22: sempat digabung ke jalur utama, lalu **dibatalkan** begitu
+user menjelaskan bahwa penelantarannya disengaja. Penggabungan itu juga
+sempat menambahkan tautan "Lihat di Kanban" di Scheduling Board dan
+menghidupkan kembali route `production.kanban` yang sudah dibersihkan
+migration `2026_08_28_000032_cleanup_mps_kanban_menu` — keduanya ikut batal.
+
+---
+
+## 27. [SEKARANG] MASTER MESIN & MASTER PROSES — LURUSKAN UI/UX + DATA (instruksi user 2026-09-22)
+
+> User: *"sebelum itu saya ingin meluruskan dulu master mesin dan master
+> process, baik dari UI UX ataupun data nya karena ini yang saya masukkan
+> data real. INGAT data real hanya saja banyak mesin yang terdaftar belum
+> ada spek."*
+
+Urutan kerja yang dikunci user:
+`Inquiry Product -> ProDev -> ProCost` (SELESAI & BEKU) `-> Master Mesin &
+Master Proses` (**sekarang**) `-> Customer Order` (berikutnya).
+
+**Ini DATA REAL.** Jangan mengarang spek, jangan tandai `data_origin='DUMMY'`.
+Kalau perlu angka: riset ke situs pabrikan atau tanya user.
+
+| # | Pekerjaan | Status |
+|---|---|---|
+| 27.1 | Lengkapi spek mesin yang kosong. Contoh terverifikasi 2026-09-22: keempat die cutter (`DIE-01` Ruian, `DIE-02` Shanghai, `DIE-03` Daxiang, `DIE-04` Daxiang Auto) punya `max_sheet_length_mm`, `max_sheet_width_mm`, `max_speed_per_hour`, `operator_min`, `helper_min` = NULL semua, dan `brand_model` cuma merek tanpa model | **BELUM** |
+| 27.2 | Petakan nama mesin di mockup/dokumen ke master. "PLONG 2" di `mockup_mastercard_ver2.jpg` = Pond/Plong kodok **manual model ML 750** (foto user 2026-09-22). DIE-04 otomatis, jadi kandidatnya DIE-01/02/03. **Mana? Jangan ditebak** | menunggu user |
+| 27.3 | Audit menyeluruh mesin mana lagi yang speknya kosong (bukan cuma die cutter) — bikin daftar, lalu isi bertahap | **BELUM** |
+| 27.4 | UI/UX layar Master Mesin & Master Proses diluruskan sesuai maunya user | **BELUM** — user belum merinci maunya apa |
+| 27.5 | Referensi ke mesin yang dinonaktifkan | lihat section 23 |
 
 ---
 
