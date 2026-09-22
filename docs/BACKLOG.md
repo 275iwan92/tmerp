@@ -1786,21 +1786,39 @@ dgn Font Awesome tombol Back) menjadi **ikon berbingkai kotak**:
   menyatakan default tanpa border).
 - Mockup pembanding: `docs/mockups/pilihan_ikon_aksi_grid_konteks.jpg`.
 
-### 22.3 Kerapatan baris + Baris per sel (mockup disetujui konsepnya)
+### 22.3 Kerapatan baris + Baris per sel — KEPUTUSAN LENGKAP, siap dibangun
 Panel dari toolbar grid, **dua setelan yang berdiri sendiri**:
-- **Kerapatan**: Rapat / Normal / Longgar → mengubah padding sel saja.
+- **Kerapatan**: Rapat / Normal / Longgar → hanya mengubah padding sel.
 - **Baris per sel**: Otomatis (teks membungkus penuh, tinggi baris ikut isi) atau
   Tetap N (dipotong `line-clamp` + titik tiga, semua baris sama tinggi). Saat
-  Otomatis, kotak angka N dikelabukan.
-- Plus tautan "Kembalikan ke bawaan".
+  Otomatis, kotak angka N dikelabukan & tidak bisa diisi.
+- Plus tautan "Kembalikan ke bawaan". Bawaan app = Normal + Tetap 1.
 - Mockup: `docs/mockups/grid_kerapatan_baris.jpg` (6 kombinasi).
-- **Gotcha implementasi**: `-webkit-line-clamp` TIDAK bisa dipasang langsung di
-  `<td>` (merusak layout sel) — bungkus isi sel dalam `<div>`.
-- **2 keputusan user yang belum dijawab** (kalau tak dijawab, pakai saran ini):
-  (a) satu setelan berlaku semua grid, boleh ditimpa per grid; (b) disimpan di
-  PERANGKAT (browser), bukan ikut user seperti `sys_grid_preference` — karena
-  kerapatan bergantung layar yang sedang dipakai, bukan siapa yang memakai.
 
+**Keputusan user 2026-09-22:**
+1. **SATU setelan berlaku di semua grid** — disimpan "di user profile", BUKAN
+   per grid. Tidak ada override per grid (jangan dibangun tanpa diminta).
+2. **Ikut PENGGUNA, bukan perangkat** — jadi kolom baru di `sec_user`, satu
+   rumah dgn `theme_code`/`lang_code` yang sudah ada (pola preferensi tampilan
+   per user memang sudah di situ). BUKAN localStorage.
+3. **Manual, TANPA deteksi resolusi otomatis.** Lebar layar sebetulnya bisa
+   dibaca browser (`window.innerWidth`, tidak bergantung versi Windows), TAPI
+   user memutuskan tidak dipakai: penskalaan DPI 125/150% & ukuran jendela
+   bikin angka itu menyesatkan, dan ganti tampilan sendiri tanpa diminta
+   membingungkan. Jangan bangun auto-switch, jangan pula popup saran.
+
+**Rencana teknis** (belum dikerjakan):
+- Migration: `sec_user.grid_density` (enum RAPAT/NORMAL/LONGGAR, default NORMAL)
+  + `sec_user.grid_lines` (tinyint, 0 = Otomatis, default 1).
+- Dibaca sekali di layout/trait grid → class CSS di pembungkus tabel; jangan
+  query per baris.
+- 2 pintu masuk, 1 nilai yang sama: layar Pengaturan Akun/Profil (rumah resmi)
+  dan panel cepat di toolbar grid (menulis ke record user yang sama, supaya
+  user tidak perlu meninggalkan grid saat menyetel).
+- **Gotcha**: `-webkit-line-clamp` TIDAK bisa dipasang langsung di `<td>`
+  (merusak layout sel) — bungkus isi sel dalam `<div>`.
+- Tulis aturannya di `griduistandard.md` + `_manifest.yaml` + 2 skill, pola sama
+  seperti §22.1/§22.2, supaya grid baru ikut tanpa diperintah ulang.
 ### 22.4 Navigasi keyboard di grid (instruksi user 2026-09-21)
 Sel grid bisa difokus & dijelajahi dengan keyboard, plus panel bantuan pintasan
 (ikon keyboard di toolbar). Daftar dari contoh user:
