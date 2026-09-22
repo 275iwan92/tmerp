@@ -39,7 +39,10 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 
 ### Dokumen yang sering basi / jangan dipercaya mentah
 - `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang**. Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/uistandardindex.md`.
-- `docs/BACKLOG.md` = item terbuka (verifikasi ke kode dulu); selesai → hapus di sana, catat di `docs/LOG_JOB_DONE.md`. QC user → `docs/qc_feedback.md`.
+- `docs/BACKLOG.md` = **indeks** backlog + bagian lintas-modul. Item terbuka ada di
+  10 pecahan per domain `docs/backlog01_*.md` .. `backlog10_*.md` (dipecah 2026-09-22
+  atas permintaan user). Verifikasi ke kode dulu; selesai → hapus di pecahannya,
+  catat di `docs/LOG_JOB_DONE.md`. QC user → `docs/qc_feedback.md`.
 - Root repo berisi file sampah salah-ketik (`getColumnListing('iqp_costing'))`, `toArray())`, `v`) — jangan di-commit.
 
 ---
@@ -233,7 +236,7 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   `griduistandard.md` §6), boleh sebut objeknya karena memang aksi yg
   berbeda, bukan variasi kata untuk aksi yang sama.
 - Detail spesifikasi lengkap & daftar file yang masih menyimpang (perlu
-  perbaikan bertahap): `docs/FORM_UI_STANDARD.md` §1a, `docs/BACKLOG.md` §10.
+  perbaikan bertahap): `docs/FORM_UI_STANDARD.md` §1a, `docs/backlog01_uiux_component.md` §10.
 
 ---
 
@@ -526,6 +529,54 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   matahari/bulan di topbar. Cakupan baru shell lama (`layouts::shell`) —
   halaman transaksi via `<iframe>` & panel Filament `/admin` (sengaja
   dipaksa terang, `darkMode(false)`) belum ikut sistem ini.
+
+---
+
+## 6B. ZONA BEKU & URUTAN KERJA (LOCKED — instruksi user 2026-09-22)
+
+### JANGAN DISENTUH tanpa permintaan eksplisit user
+**Inquiry Product, ProDev, dan ProCost — beku total.** Bukan hanya kodenya:
+**data dummy DAN tampilan UI/UX-nya juga**. Tiga modul ini sudah dianggap
+jadi oleh user.
+
+> User 2026-09-22: *"pastikan prodev dan inquiry prod, prodcost tidak diubah
+> baik dari segi dummy data dan interface UI UX nya sampai saya sendiri yang
+> memintanya dengan kesadaran penuh."*
+
+Artinya: jangan rapikan, jangan seragamkan ke standar grid/form terbaru,
+jangan tambah/hapus/seed dummy, jangan "sekalian perbaiki" apa pun di sana —
+walaupun kelihatan menyimpang dari standar, dan walaupun sedang mengerjakan
+tugas lain yang kebetulan menyenggol file-nya. Kalau sebuah pekerjaan
+memaksa menyentuh ketiganya, **berhenti dan tanya dulu**.
+
+### Urutan kerja yang dikunci user
+```
+Inquiry Product -> ProDev -> ProCost   (SELESAI, beku)
+   -> Master Mesin & Master Proses     <- SEKARANG di sini
+      -> Customer Order                <- berikutnya
+```
+User ingin **meluruskan Master Mesin & Master Proses dulu** — UI/UX maupun
+datanya — sebelum lanjut ke Customer Order.
+
+### Master Mesin & Master Proses = DATA REAL
+Isi `prod_machine` / `prod_process` / `prod_process_machine` adalah **data
+nyata pabrik**, bukan dummy. Banyak mesin sudah terdaftar tapi **speknya
+belum ada** (kolom ukuran lembar, kecepatan, operator, model masih kosong).
+
+- Jangan mengarang spek. Riset ke situs pabrikan atau tanya user.
+  Lihat `feedback_research_master_data_online` & `feedback_ask_before_inserting_data`.
+- Jangan tandai `data_origin='DUMMY'`.
+- Setiap mesin wajib punya proses (`feedback_every_machine_must_have_process`).
+
+### MRP & MPS — sengaja ditelantarkan
+Engine MRP/MPS/Kanban buatan 2026-08-30 **tidak dipakai** karena user tidak
+menyukai hasilnya. Kodenya diarsipkan di tag `arsip/mrp-mps-2026-08-30`
+(bukan branch). Tabel `tm2prd.prd_mrp_run` & `prd_mrp_requirement` terlanjur
+ada di DB tanpa kode — biarkan, jangan dipakai dan jangan di-drop.
+Rencana user: dirancang ulang nanti, **meniru model UI/UX ProDev & Inquiry**.
+
+### Git: satu jalur, tanpa cabang
+Lihat `docs/globalgitbranch.md`. Tidak boleh ada branch baru maupun worktree.
 
 ---
 
