@@ -436,6 +436,38 @@ mesin (semua aktif), 44 tidak punya `max_sheet_length_mm` DAN tidak punya
 
 ---
 
+## 2026-09-22 -- Master Mesin: identitas 4 die cutter dikonfirmasi + placeholder ML750 (BACKLOG §27.2)
+
+User mengonfirmasi (foto mesin "Pond Manual ML 750" sbg acuan bentuk):
+dari 4 die cutter di master (`DIE-01` Ruian, `DIE-02` Shanghai, `DIE-03`
+Daxiang, `DIE-04` Daxiang Auto), **hanya DIE-04 yang otomatis** -- DIE-01/
+02/03 SEMUA plong manual sekelas mesin di foto. Ini menutup pertanyaan
+"PLONG 2 di mockup Master Card itu mesin yang mana" -- jawabannya bukan
+1 mesin spesifik, tapi kategori (manual), dipenuhi ketiga unit itu.
+
+User lalu mengizinkan ("boleh dan sementara pakai ML 750, nanti Sabtu aku
+fotokan kenyataannya") mengisi ketiganya dengan spek generik ML750 sbg
+PLACEHOLDER sampai nameplate asli difoto. Diriset (bukan ditebak) --
+2 sumber independen cocok persis:
+- https://www.smart-equipments.com/postpress/die-cutting-machine/die-cutting-machine-ml750/
+- WebSearch ringkasan multi-listing (made-in-china.com, chinaguangya.com, dst.)
+
+Spek yang diisi (migration `2026_09_22_000015`): platen 750x520mm ->
+`max_sheet_length_mm`/`max_sheet_width_mm`, speed 25±2 strokes/min = 1500
+lembar/jam (nominal pabrikan, BUKAN hasil ukur lapangan) -> `max_speed_per_hour`,
+motor 2,2 kW -> `power_kw`. Kolom `notes` tiap baris ditandai jelas
+"PLACEHOLDER ... BELUM diverifikasi ke nameplate mesin sungguhan" supaya
+tidak keliru dianggap final. `min_sheet_*`, `operator_min`/`helper_min`,
+`serial_no` SENGAJA dibiarkan NULL -- tidak ada sumber utk itu, tidak
+ditebak. DIE-04 (otomatis) tidak disentuh sama sekali -- beda kategori,
+user belum kasih data.
+
+**Sisa terbuka**: 42 dari 45 mesin lain masih 0% berspek (lihat backlog02
+§27.1). Placeholder ML750 ini WAJIB diganti data real begitu foto
+nameplate Sabtu masuk -- jangan biarkan tertinggal jadi "spek permanen".
+
+---
+
 ## 2026-09-16 (pagi) — Komponen `<x-form.badge>` dipasang di 6/6 layar entry transaksi
 
 Sebelumnya masing-masing layar (`pur/pr/entry.blade.php`, `pur/po/entry.blade.php`,
