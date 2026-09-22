@@ -96,6 +96,19 @@ lewat JPEG (`docs/mockups/master_mesin_update_2026.jpg`) sebelum ditulis ke DB.
   `ProductionWoGenerationTest` lookup `CETAK-01`→`OFF-02` (CETAK-01 sudah di-rename
   migration 2026-09-17, test-nya ketinggalan). Suite: 138 lulus / 5 gagal, kelimanya
   diverifikasi PRE-EXISTING & tidak terkait mesin (lihat catatan di bawah).
+**Koreksi user 2026-09-22** (migration `2026_09_22_000001_fix_machine_asset_list_corrections`):
+- **Laminator Huawei (LAM-02, id 22) sudah TERJUAL** -> baris mesinnya DIHAPUS (user
+  eksplisit "dihapus tidak papa"). Tidak ada routing/rate/WO yang merujuknya; 1
+  `emp_work_center` (WC-LAMINATING) + 48 baris `emp_shift_roster` di-NULL-kan
+  `machine_id`-nya -- stasiunnya tetap hidup lewat `work_center_id`, cuma mesinnya
+  hilang. Penomoran LAM lain TIDAK digeser (LAM-01/03/04, gap di 02 disengaja supaya
+  kode yang sudah dicatat orang tidak berubah). Total mesin aktif: 46 -> 45.
+- **Folder Gluer ikut nomor lantai produksi**: Daxiang = `FGL-03`, YDM = `FGL-04`
+  (bukan FGL-01/02 hasil urut tanggal datang). FGL-01/02 memang tidak ada.
+- **Kolom grid Master Mesin disamakan dengan mockup** (permintaan user): tambah
+  **Tahun** + **Divisi** (badge OFFSET/DIGITAL). Kode tetap di kolom identitas
+  avatar+nama+kode sesuai `griduistandard.md`, Status & Aksi tetap.
+
 - Sisa yang sengaja TIDAK dikerjakan → `BACKLOG.md` §23 (129 roster + 12 routing + 11
   operasi WO masih menunjuk mesin nonaktif; pemetaan penggantinya butuh keputusan user,
   jangan ditebak) dan §24 (test yang meninggalkan sampah data).

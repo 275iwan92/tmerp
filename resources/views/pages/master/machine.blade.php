@@ -274,9 +274,11 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Mesin</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[110px]">Jenis</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[140px]">Jenis</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Merk/Model</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Tgl. Datang</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[60px]">Tahun</th>
+                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[90px]">Divisi</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[80px]">Status</th>
                             <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[150px]">Aksi</th>
                         </tr>
@@ -288,7 +290,15 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->machine_type ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->brand_model ?: '—' }}</td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5] whitespace-nowrap">
-                                    {{ $m->acquired_date?->format('d/m/Y') ?: ($m->year_acquired ?: '—') }}
+                                    {{ $m->acquired_date?->format('d/m/Y') ?: '—' }}
+                                </td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">{{ $m->year_acquired ?: '—' }}</td>
+                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                    @if ($m->division)
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block bg-accent-soft text-navy">{{ $m->division->division_code }}</span>
+                                    @else
+                                        —
+                                    @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-[#eef1f5]">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $m->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $m->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
@@ -301,7 +311,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                 </td>
                             </tr>
                         @empty
-                            <x-grid.empty-row :colspan="6" message="Tidak ada." />
+                            <x-grid.empty-row :colspan="8" message="Tidak ada." />
                         @endforelse
                     </tbody>
                 </table>
