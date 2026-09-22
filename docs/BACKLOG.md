@@ -1999,9 +1999,10 @@ Kalau perlu angka: riset ke situs pabrikan atau tanya user.
 
 | # | Pekerjaan | Status |
 |---|---|---|
-| 27.1 | Lengkapi spek mesin yang kosong. Contoh terverifikasi 2026-09-22: keempat die cutter (`DIE-01` Ruian, `DIE-02` Shanghai, `DIE-03` Daxiang, `DIE-04` Daxiang Auto) punya `max_sheet_length_mm`, `max_sheet_width_mm`, `max_speed_per_hour`, `operator_min`, `helper_min` = NULL semua, dan `brand_model` cuma merek tanpa model | **BELUM** |
+| 27.1 | Lengkapi spek mesin yang kosong. **Terukur 2026-09-22: dari 45 mesin (semua aktif), 44 tidak punya `max_sheet_length_mm` DAN tidak punya `max_speed_per_hour`** — jadi praktis seluruh master mesin belum berspek. Contoh keempat die cutter (`DIE-01` Ruian, `DIE-02` Shanghai, `DIE-03` Daxiang, `DIE-04` Daxiang Auto): ukuran lembar, kecepatan, `operator_min`, `helper_min` NULL semua, `brand_model` cuma merek tanpa model | **BELUM** |
 | 27.2 | Petakan nama mesin di mockup/dokumen ke master. "PLONG 2" di `mockup_mastercard_ver2.jpg` = Pond/Plong kodok **manual model ML 750** (foto user 2026-09-22). DIE-04 otomatis, jadi kandidatnya DIE-01/02/03. **Mana? Jangan ditebak** | menunggu user |
 | 27.3 | Audit menyeluruh mesin mana lagi yang speknya kosong (bukan cuma die cutter) — bikin daftar, lalu isi bertahap | **BELUM** |
+| 27.6 | `MasterMachineMigratedDataTest::test_grid_renders_asset_machines_with_new_codes` sempat merah: masih `assertSee('FUJI')` padahal 29 baris legacy itu sudah DIHAPUS migration `2026_09_22_000008` (instruksi user: legacy salah dihapus, bukan dinonaktifkan). Harapan test-nya yang basi, bukan layarnya | SELESAI 2026-09-22 |
 | 27.4 | UI/UX layar Master Mesin & Master Proses diluruskan sesuai maunya user | **BELUM** — user belum merinci maunya apa |
 | 27.5 | Referensi ke mesin yang dinonaktifkan | lihat section 23 |
 
