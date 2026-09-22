@@ -93,20 +93,35 @@ Catatan: beberapa sesi dari agen yang sama juga bisa jalan bersamaan (tercatat
 11 sesi pada 2026-09-22), jadi "sesi lain yang mengubah" sama mungkinnya
 dengan "agen satunya yang mengubah".
 
-## 6. LANGKAH TERAKHIR
+## 6. LANGKAH TERAKHIR -- 90% SELESAI, 1 LANGKAH TERTAHAN
 
-`main` sudah berisi SEMUANYA (jalur utama + perbaikan test + dokumen ini),
-commit `5a8162f`, sudah di-push. Sisa satu langkah, dijalankan saat tidak ada
-sesi lain yang memakai folder utama:
+Sudah dijalankan 2026-09-22 (folder utama = C:\Users\iwanp\Herd\tmerp):
+- main berisi SEMUANYA (jalur utama + perbaikan test + dokumen ini +
+  backlog hygiene), commit 48b5971, sudah di-push ke origin.
+- Folder utama sudah git checkout main.
+- claude/bentuk-customer-order-clarity-jnehjg SUDAH DIHAPUS (lokal +
+  remote) -- 0 commit unik, aman.
+
+Tertahan: claude/beautiful-heisenberg-2be009 BELUM bisa dihapus, dan
+worktree-nya BELUM bisa dilepas, karena sesi Claude Code yang mengerjakan
+seluruh pembersihan ini berjalan DARI DALAM worktree tersebut
+(.claude/worktrees/beautiful-heisenberg-2be009) -- proses tidak bisa
+menghapus direktori kerjanya sendiri (Permission denied, dicoba
+2026-09-22). Ini bukan kegagalan, cuma keterbatasan wajar: harus dijalankan
+dari LUAR sesi itu (terminal baru, atau sesi lain yang tidak sedang
+membuka worktree ini).
+
+Jalankan ini dari terminal manapun SELAIN sesi worktree tsb (misalnya
+buka cmd/PowerShell baru, atau tunggu sesi worktree itu ditutup dulu):
 
 ```bash
-git checkout main
-git branch -D claude/bentuk-customer-order-clarity-jnehjg claude/beautiful-heisenberg-2be009
-git push origin --delete claude/bentuk-customer-order-clarity-jnehjg claude/beautiful-heisenberg-2be009
+cd C:\Users\iwanp\Herd\tmerp
 git worktree remove .claude/worktrees/beautiful-heisenberg-2be009 --force
+git branch -D claude/beautiful-heisenberg-2be009
+git push origin --delete claude/beautiful-heisenberg-2be009
 git worktree prune
 ```
 
-Sesudah itu: **satu folder, satu branch `main`, nol worktree.** `main` sudah
+Sesudah itu: satu folder, satu branch main, nol worktree. main sudah
 jadi default branch di GitHub, jadi clone/worktree baru otomatis lahir dari
 titik yang benar -- tidak perlu ubah setelan apa pun lagi.
