@@ -39,7 +39,10 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 
 ### Dokumen yang sering basi / jangan dipercaya mentah
 - `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang**. Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/uistandardindex.md`.
-- `docs/BACKLOG.md` = item terbuka (verifikasi ke kode dulu); selesai → hapus di sana, catat di `docs/LOG_JOB_DONE.md`. QC user → `docs/qc_feedback.md`.
+- `docs/BACKLOG.md` = **indeks** backlog + bagian lintas-modul. Item terbuka ada di
+  10 pecahan per domain `docs/backlog01_*.md` .. `backlog10_*.md` (dipecah 2026-09-22
+  atas permintaan user). Verifikasi ke kode dulu; selesai → hapus di pecahannya,
+  catat di `docs/LOG_JOB_DONE.md`. QC user → `docs/qc_feedback.md`.
 - Root repo berisi file sampah salah-ketik (`getColumnListing('iqp_costing'))`, `toArray())`, `v`) — jangan di-commit.
 
 ---
@@ -233,7 +236,7 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   `griduistandard.md` §6), boleh sebut objeknya karena memang aksi yg
   berbeda, bukan variasi kata untuk aksi yang sama.
 - Detail spesifikasi lengkap & daftar file yang masih menyimpang (perlu
-  perbaikan bertahap): `docs/FORM_UI_STANDARD.md` §1a, `docs/BACKLOG.md` §10.
+  perbaikan bertahap): `docs/FORM_UI_STANDARD.md` §1a, `docs/backlog01_uiux_component.md` §10.
 
 ---
 

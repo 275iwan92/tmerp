@@ -287,7 +287,7 @@ Daftar filename saja (isi TIDAK dibaca ulang di sesi ini — dokumen ini sudah a
 
 **Opening App (BANYAK SUDAH USANG, cek dulu ke DB sebelum percaya)**: `openingapp_tier1.md`..`tier4.md`, `openingapp_instruksi_layout.md`
 
-**Meta/Tracking**: `BACKLOG.md` (kerjaan tertunda), `LOG_JOB_DONE.md` (histori selesai), `checklistmockuperp.md`, `queue.md`, `qc_feedback.md`, `attachments_index.md`
+**Meta/Tracking**: `BACKLOG.md` (indeks + lintas-modul) dan 10 pecahannya `backlog01_uiux_component.md` .. `backlog10_mobile_app.md` (kerjaan tertunda per domain), `LOG_JOB_DONE.md` (histori selesai), `checklistmockuperp.md`, `queue.md`, `qc_feedback.md`, `attachments_index.md`
 
 ---
 
