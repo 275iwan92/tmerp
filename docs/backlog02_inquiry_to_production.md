@@ -42,27 +42,9 @@ ini ada di katalog tools §4.3 dokumen itu tapi TIDAK termasuk checklist
   maksudnya field tambahan atau alur terpisah — perlu klarifikasi ulang
   scope-nya sebelum eksekusi (catatan lama 2026-08-27, kemungkinan sudah
   berubah konteksnya sejak CO dibangun).
-- **ProCost konsumsi "urutan proses" sbg parameter HPP — SEBAGIAN SELESAI
-  2026-09-04** (keputusan user: "keputusan spt bahan baku, urutan proses,
-  jumlah UP dan lain sebagainya menjadi masukan parameter bagi procost").
-  Bahan baku & jumlah UP **SUDAH LIVE** (via `addPartFromInquiry()` /
-  toggle "Ambil Data (ProDev)" → `prod_layout_group.up_count`).
-  **Urutan proses**: dicek ulang ke kode nyata dulu (bukan tebak) — ternyata
-  ProDev SUDAH punya fitur routing lengkap & terpakai (`prod_part_process`,
-  tm2mst, diisi via `prodev.blade.php::addProcess()`, live sejak
-  2026-09-02), TAPI `prod_process`/`prod_part_process` **TIDAK punya kolom
-  rate Rupiah sama sekali** (satu-satunya "rate" yg ada,
-  `process-rate.blade.php::target_qty_per_hour`, itu KECEPATAN produksi utk
-  WO Generation, besaran beda total dgn biaya) — auto-hitung HPP dari situ
-  akan MENEBAK angka, berbahaya utk engine yg "rahasia" (CLAUDE.md §4).
-  **Yang dibangun**: `costing.blade.php` sekarang tarik routing part (via
-  `prodev_part_id` yang sudah ada sejak `pickLayoutGroup()`) dan validasi
-  silang 2 arah terhadap 3 field ongkos manual DC (cetak/plong/lem) —
-  tampil sbg chip "Urutan Proses (ProDev)" + warning kalau step ADA di
-  routing tapi field masih 0, atau field TERISI tapi step TIDAK ada di
-  routing (indikasi data basi). Pola "engine suggests (warning), officer
-  confirms (isi manual)" — TIDAK ada angka Rupiah ditebak/di-auto-fill.
-  Diuji `tests/Feature/CostingRoutingWarningTest.php` (7 assertion).
+- **ProCost konsumsi bahan baku, urutan proses & jumlah UP sbg parameter
+  HPP** — sudah live sepenuhnya (`docs/LOG_JOB_DONE.md` 2026-09-04). Bukan
+  item terbuka.
   **Scope sengaja DC saja** — proses SHEET_DIGITAL/KRAFT (diecut/slitter/
   slotter/join/partisi/layer/packing/kirim, 8 dari 10 bucket ongkos) TIDAK
   punya padanan nama di `prod_process` saat ini (isinya migrasi offset lama:
@@ -99,20 +81,11 @@ Keputusan user 2026-09-17 (jangan ditanya ulang):
   fasilitas **reset dummy kembali seperti semula** (kalau terhapus/terubah
   saat UAT); hide/show diatur **setting admin** dengan UI sendiri.
 
-| # | Gap | Status |
-|---|---|---|
-| 18.1 | Ukuran pisau + kode pisau ("…ISI n MATA") disimpan dari hasil ProDev | SELESAI 2026-09-17 (prod_layout_group/iqp_layout.knife_*) |
-| 18.2 | Finishing Inquiry terstruktur: pilih dari `ref_finishing_type` + atribut (warna foil "Gold Puyeh", doff/glossy) | SELESAI 2026-09-17 (iqp_part_finishing) |
-| 18.3 | Engine Ink: `cfg_color` + analisa warna artwork (% & cm² per tinta, warna dominan), unit K-C-M-Y | SELESAI 2026-09-17 (analisa di browser; file PDF/AI belum -- server tanpa Imagick/Ghostscript, perlu pdf.js) |
-| 18.4 | Engine BOP: routing standar offset + sisipan dari finishing (aturan diatur admin) | SELESAI 2026-09-17 (prod_bop_rule + layar BOP Rule Setting) |
-| 18.5 | Engine BOM: bahan utama + bahan finishing (plastik laminasi lebar roll >= lebar lembar, foil) + tinta | SELESAI 2026-09-17 |
-| 18.6 | Isi per pack (Pack Wrapping /400 pcs) diinput di Inquiry | SELESAI 2026-09-17 (iqp_part.pack_qty) |
-| 18.7 | Flag `data_origin` (LIVE/DUMMY/LEGACY) + setting admin hide/show + reset dummy | SELESAI 2026-09-17 (210 tabel; Settings > Dummy & Legacy Data; query DB::table/VIEW belum ikut tersaring) |
-| 18.8 | BOP/BOM/Ink bisa di-edit (override) officer di ProDev dengan dropdown; tidak ditimpa engine | SELESAI 2026-09-17 |
-| 18.9 | BOM: qty kebutuhan + stok tersedia gudang + tombol Buat PR per baris yang kurang; tinta & lem dgn estimasi pemakaian | SELESAI 2026-09-17 -- item kategori Others/Lamination belum punya akun COA sehingga PR-nya ditolak; takaran = estimasi awal |
-| 18.10 | BOP: mesin, target default, waste & toleransi (qty + %) per langkah | SELESAI 2026-09-17 (persen default = estimasi awal) |
-| 18.11 | BOP: tombol Subkon per langkah yang tidak in-house -> PR subkon -> Surat Jalan subkon yang menunjuk CO (track costing) | SELESAI 2026-09-17 (layar entry DO belum khusus SUBKON) |
-| 18.12 | BOM & BOP mengalir ke Work Order; officer PPIC yang memastikan final | BELUM -- alur dicatat di bawah; WoGenerationService belum membaca BOM/BOP baru |
+Semua 12 gap sudah ditutup (`docs/LOG_JOB_DONE.md` 2026-09-17 & 2026-09-18):
+ukuran+kode pisau, finishing terstruktur, engine Ink/BOP/BOM, isi per pack,
+flag `data_origin`+reset dummy, override officer, BOM qty+PR, BOP
+mesin+waste, tombol Subkon, dan jalur BOM/BOP ke Work Order. **Bukan item
+terbuka.**
 
 **Alur data & sistem (dikunci user 2026-09-17):**
 
@@ -135,12 +108,13 @@ Inquiry Product (finishing, bahan, warna, isi/pack, artwork, qty)
 
 ## 19. [MALAM] LANJUTAN ENGINE PRODEV & SUBKON (instruksi user 2026-09-18)
 
+3 dari 4 sudah ditutup 2026-09-18 (`docs/LOG_JOB_DONE.md`): 19.3 (jalur ke WO,
+sekaligus menutup 18.12), engine takaran pemakaian bahan otomatis, Imagick+
+Ghostscript. **Sisa satu:**
+
 | # | Pekerjaan | Status |
 |---|---|---|
-| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. **User minta dikerjakan malam** (pengingat dipasang 2026-09-18 20:00) | BELUM |
-| 19.2 | Engine takaran pemakaian bahan otomatis dari data pemakaian nyata 1 periode (bulan), officer tetap bisa override manual | SELESAI 2026-09-18 (UsageRateEngine + prodev:usage-rates, usulan + saklar AUTO per aturan) |
-| 19.3 | Jalur BOM & BOP -> Work Order setelah Inquiry berharga -> CO CONFIRMED & APPROVED; officer PPIC memastikan final | SELESAI 2026-09-18 (WoGenerationService: syarat CO CONFIRMED + costing dipublish) |
-| 19.4 | Imagick + Ghostscript supaya artwork PDF/AI bisa dianalisa di server | SELESAI 2026-09-18 (Imagick 3.8.1 + Ghostscript 10.08 terpasang; upload PDF/AI di ProDev dianalisa & dipratinjau server) |
+| 19.1 | Layar Surat Jalan Subkon sendiri (entry + cetak): penerima supplier, rujukan PR & CO, barang setengah jadi keluar/masuk. Saat ini surat jalan SUBKON dibuat otomatis dari ProDev dan tampil di daftar DO, tapi layar entry & cetaknya masih memakai bentuk surat jalan customer. | **BELUM** |
 
 ---
 
@@ -281,7 +255,6 @@ Kalau perlu angka: riset ke situs pabrikan atau tanya user.
 | 27.1 | Lengkapi spek mesin yang kosong. **Terukur 2026-09-22: dari 45 mesin (semua aktif), 44 tidak punya `max_sheet_length_mm` DAN tidak punya `max_speed_per_hour`** — jadi praktis seluruh master mesin belum berspek. Contoh keempat die cutter (`DIE-01` Ruian, `DIE-02` Shanghai, `DIE-03` Daxiang, `DIE-04` Daxiang Auto): ukuran lembar, kecepatan, `operator_min`, `helper_min` NULL semua, `brand_model` cuma merek tanpa model | **BELUM** |
 | 27.2 | Petakan nama mesin di mockup/dokumen ke master. "PLONG 2" di `mockup_mastercard_ver2.jpg` = Pond/Plong kodok **manual model ML 750** (foto user 2026-09-22). DIE-04 otomatis, jadi kandidatnya DIE-01/02/03. **Mana? Jangan ditebak** | menunggu user |
 | 27.3 | Audit menyeluruh mesin mana lagi yang speknya kosong (bukan cuma die cutter) — bikin daftar, lalu isi bertahap | **BELUM** |
-| 27.6 | `MasterMachineMigratedDataTest::test_grid_renders_asset_machines_with_new_codes` sempat merah: masih `assertSee('FUJI')` padahal 29 baris legacy itu sudah DIHAPUS migration `2026_09_22_000008` (instruksi user: legacy salah dihapus, bukan dinonaktifkan). Harapan test-nya yang basi, bukan layarnya | SELESAI 2026-09-22 |
 | 27.4 | UI/UX layar Master Mesin & Master Proses diluruskan sesuai maunya user | **BELUM** — user belum merinci maunya apa |
 | 27.5 | Referensi ke mesin yang dinonaktifkan | lihat section 23 |
 

@@ -75,18 +75,10 @@ Konteks lengkap audit ini ada di `BACKLOG.md`.
   Billing Status, Payment Record, AR/AP Aging, Statement of Account,
   Kwitansi, GL Trial Balance dashboard) — belum ada 1 layar pun,
   Journal Entry sendiri sudah live (Cash & Bank + auto-posting).
-- **[BARU 2026-09-11] Grup A (Kategori Produk → akun COA, §2 dokumen di atas)
-  SELESAI** — ALTER `tm2mst.prod_category` (2 kolom nullable, TANPA seed nilai),
-  resolve 3-lapis `ProdPart`/`ProdProduct::resolveStockAccountId()`/
-  `resolveCogsAccountId()`, wiring ke `StockPostingService::postUsageJournal()`
-  (dulu baca kolom `prod_part` langsung TANPA fallback sama sekali, sekarang
-  jatuh ke `product` lalu `category`). **UI layar Master Kategori Produk BELUM
-  dibangun** (ternyata belum pernah ada screen CRUD utk `prod_category` sama
-  sekali, cuma dropdown read-only di `produk.blade.php`) — kolom akun tetap
-  NULL sampai ada cara isi, tapi behavior saat ini TIDAK berubah (resolve()
-  null-safe, sama seperti sebelumnya kalau semua lapis kosong). Diverifikasi
-  tinker (resolve chain part→product→category benar) + `PvStockIntegrationTest`
-  2/2 pass. Detail: `docs/LOG_JOB_DONE.md`.
+- **Grup A (Kategori Produk → akun COA)** — resolve chain sudah dibangun
+  (`docs/LOG_JOB_DONE.md` 2026-09-11). **Sisa yang BELUM**: UI layar Master
+  Kategori Produk CRUD (belum pernah ada, cuma dropdown read-only di
+  `produk.blade.php`) — kolom akun tetap NULL sampai ada cara isi.
 - **Grup B (Partner Account local/import, §3.1-3.2) — TERNYATA BUKAN "boleh
   jalan sekarang" lagi, dicabut dari kategori itu.** Verifikasi §4 (2026-09-11,
   sesuai instruksi dokumen sendiri "jangan ALTER buta") menemukan akun `211`/

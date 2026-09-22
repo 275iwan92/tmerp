@@ -1,12 +1,20 @@
 # TIER 1 — MASTER EMPLOYEE + PERSONAL SELF-SERVICE (HRM) · BUSINESS REQUIREMENTS
 **ERP Cetak Offset & Packaging — CV Telasih Makmur Group · Modul 08_security terkait (login) + HRM baru**
 
-> **Catatan scope:** dokumen ini awalnya ditulis saat HR (recruitment/attendance/payroll penuh)
-> resmi ditunda di luar 10 minggu aktif. **UPDATE 2026-08-26 (DEC-SCOPE-OPEN, lihat
-> `globalstarthere.md`):** pembatasan itu sudah dicabut — Recruitment (`tm2hrr`) dan Payroll
-> (`tm2pyr`) penuh, termasuk perhitungan potongan gaji/BPJS aktual, **sekarang boleh dikerjakan**,
-> bukan lagi pengecualian tunggal. Modul ini (Master Employee + Personal Self-Service, termasuk
-> engine cuti) tetap fondasi yang harus jalan lebih dulu karena modul lain bergantung padanya.
+> **Catatan scope (KOREKSI 2026-09-22):** dokumen ini awalnya ditulis saat HR
+> (recruitment/attendance/payroll penuh) resmi ditunda di luar 10 minggu aktif.
+> **DEC-SCOPE-OPEN (2026-08-26, lihat `globalstarthere.md`)** mencabut
+> pembatasan itu. Sejak itu ketiganya **SUDAH DIBANGUN AKTIF**, bukan lagi
+> sekadar "boleh dikerjakan": Recruitment (`tm2hrr`) L1-L9 selesai & teruji,
+> Payroll (`tm2pyr`) skema+enkripsi+lifecycle+PPh21 bulanan+GPS clock-in+slip
+> gaji+transfer bank sudah live, Attendance punya layar presensi harian &
+> roster nyata. **Semua kata "ditunda" di SISA dokumen ini adalah riwayat
+> keputusan LAMA (sebelum 2026-08-26) — sengaja dibiarkan apa adanya sebagai
+> catatan sejarah, BUKAN status terkini.** Untuk status Payroll/Attendance/
+> Recruitment yang benar, cek Tier doc modul masing-masing atau
+> `docs/LOG_JOB_DONE.md`, jangan percaya frasa "ditunda" di bawah ini.
+> Modul Master Employee + Personal Self-Service (termasuk engine cuti) tetap
+> fondasi yang harus jalan lebih dulu karena modul lain bergantung padanya.
 >
 > **2026-08-24 — Time Attendance: implementasi dicabut (REVERT), bukan lagi live.** §13 di bawah
 > mendeskripsikan implementasi lama (`emp_attendance_log` + route `hrm.attendance.*`) yang sempat
@@ -93,7 +101,7 @@ Kategori pengajuan (detail lengkap di `selfservice_panduan.md`):
 - **View-only**: Jadwal (hanya versi CONFIRMED), Kartu Pengenal digital, Saldo Cuti.
 
 ## 6. Engine Cuti (pengecualian scope eksplisit)
-Berbeda dari Payroll yang tetap ditunda, **engine cuti dibangun sekarang** karena diminta eksplisit.
+Payroll sudah dibangun sebagai modul terpisah (`tm2pyr`); **engine cuti** di file ini dibangun lebih dulu karena diminta eksplisit.
 Parameter saat ini (BISA BERUBAH, disimpan sebagai data konfigurasi bukan hardcode):
 | Aturan | Nilai saat ini |
 |---|---|
@@ -121,17 +129,18 @@ dan memperkaya** desain awal di atas. Poin-poin **koreksi penting**:
    **Kepengurusan Musibah** (tidak bisa diwakilkan + bukti). Di luar 3 kategori ini → **Alpha**.
 5. **Surat Izin Keluar** (modul BARU) — karyawan yang keluar area perusahaan pada jam kerja wajib
    pengajuan + persetujuan **Atasan Langsung DAN HRD** (dual approval) SEBELUM keluar. Terkait
-   fingerprint (finger out/in) — placeholder untuk integrasi Attendance (ditunda), tidak dihitung
-   otomatis sekarang. Satpam berhak menolak karyawan keluar tanpa surat izin yang sudah disetujui.
+   fingerprint (finger out/in) — placeholder untuk integrasi ke modul Attendance (sudah ada, tapi
+   integrasinya ke Surat Izin Keluar belum disambungkan), tidak dihitung otomatis sekarang. Satpam berhak menolak karyawan keluar tanpa surat izin yang sudah disetujui.
 6. **Eskalasi disiplin** — Alpha 3 hari kerja berturut-turut → Surat Peringatan (SP); Izin+Alpha >5x
    dalam 2 bulan berturut-turut → SP; tidak hadir tanpa keterangan 5 hari kerja berturut-turut → proses
    PHK sesuai Peraturan Perusahaan. Dokumen palsu untuk dasar izin → verbal hingga SP.
 7. **Dirumahkan** tetap memperoleh **gaji pokok** (bukan 0, bukan gaji penuh+tunjangan) — aturan bisnis
    dicatat untuk konteks, perhitungan aktual tetap ranah Payroll.
 
-**Di luar scope** (dicatat sebagai referensi saja, TIDAK dibangun sebagai engine): nominal sanksi (denda
-Alpha Rp100rb, potongan SP1/SP2 50% pendapatan, dst) dan matriks komponen gaji (Gaji Pokok + 5 jenis
-tunjangan yang checklist per skenario kehadiran) — keduanya perhitungan **Payroll**, yang tetap ditunda.
+**Di luar scope FILE INI** (dicatat sebagai referensi saja, TIDAK dibangun di modul Master Employee):
+nominal sanksi (denda Alpha Rp100rb, potongan SP1/SP2 50% pendapatan, dst) dan matriks komponen gaji
+(Gaji Pokok + 5 jenis tunjangan checklist per skenario kehadiran) — keduanya perhitungan **Payroll**,
+yang sudah dibangun sebagai modul sendiri (`tm2pyr`), bukan lagi ditunda.
 Detail lengkap semua aturan di `masteremployee_state.yaml` → `sop_perizinan_resmi`.
 
 ## 7. Kerahasiaan Gaji & Kontrol Akses Berbasis Peran (BARU)
@@ -148,7 +157,8 @@ Menyimpan status kepesertaan **BPJS Kesehatan** (no. kepesertaan, kelas rawat, t
 **BPJS Ketenagakerjaan** (5 program: JKK, JKM, JHT, JP, JKP) sebagai referensi, termasuk skema iuran
 regulasi saat ini (Kesehatan: Perusahaan 4%+Karyawan 1%; JHT: 3,7%+2%; JP: 2%+1%; JKK/JKM/JKP: mayoritas
 perusahaan). **Perhitungan potongan gaji aktual TIDAK dibangun di sini** — itu ranah modul Payroll
-yang ditunda. HR kelola status di panel Admin; karyawan hanya bisa ajukan koreksi nomor kepesertaan.
+(`tm2pyr`, sudah dibangun sebagai modul sendiri). HR kelola status di panel Admin; karyawan
+hanya bisa ajukan koreksi nomor kepesertaan.
 
 ## 9. Monitoring Dokumen Kedaluwarsa (BARU)
 Dashboard HR lintas-karyawan (bukan cuma per-orang) menampilkan dokumen legal (Passport, SIM, SKCK,
@@ -174,11 +184,14 @@ kedua sisi sistem.
 `ACTIVE` (default saat entri) ⇄ `INACTIVE` (resign/terminated, `resign_date`+`resign_reason` wajib).
 `work_status` (WORKING/DIRUMAHKAN/CUTI) bergerak independen dari `is_active`.
 
-## 12. Non-Goals (eksplisit di luar scope file ini)
-- Recruitment pipeline (`tm2hrr`) — ditunda total.
-- Payroll calculation & slip gaji, termasuk **perhitungan potongan BPJS aktual** (`tm2pyr`) —
-  ditunda total. Data BPJS di sini murni referensi.
-- Time attendance/absensi (clock-in/out) — ditunda.
+## 12. Non-Goals (eksplisit di luar scope FILE INI — bukan "di luar scope aplikasi")
+- Recruitment pipeline (`tm2hrr`) — **SUDAH DIBANGUN**, cuma di luar scope file
+  Master Employee ini (modulnya sendiri, lihat Tier doc Recruitment).
+- Payroll calculation & slip gaji, termasuk perhitungan potongan BPJS aktual
+  (`tm2pyr`) — **SUDAH DIBANGUN**, di luar scope file ini. Data BPJS di sini
+  murni referensi utk Master Employee.
+- Time attendance/absensi (clock-in/out) — **SUDAH DIBANGUN** (modul Attendance
+  tersendiri), di luar scope file ini.
 - Matriks approval berjenjang otomatis berdasar `org_level` — data disiapkan, engine belum.
 - RBAC (role/permission) detail granular — bagian modul `08_security`; di sini hanya disinggung
   sebatas 2 role simulasi (HR Officer/Admin App) untuk kebutuhan tab Akun & masking gaji.

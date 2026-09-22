@@ -53,9 +53,6 @@ sisa lama yang belum dihapus.
 
 | # | Pekerjaan | Status |
 |---|---|---|
-| 24.1 | `ProductionWoDetailRebuildTest::test_plan_delivery_modal_generates_wo_and_redirects` — berhenti menumpang `co_order#2`/`iqp_inquiry#5`, semai fixture sendiri (inquiry + part + costing PUBLISHED + CO CONFIRMED + item + Plan Delivery), cleanup manual per tabel di `tearDown` tanpa `RefreshDatabase` | SELESAI 2026-09-22 |
-| 24.2 | Sapu bersih residu lama: 11 baris `co_order_delivery` `created_by='test'` + 6 WO turunan (WO2600263-268) + 18 operasi | SELESAI 2026-09-22 (diverifikasi ulang ke DB: sisa 0, WO yatim 0) |
-| 24.3 | `php artisan test` (84 test 1 proses) kehabisan memori 256M di tengah jalan — akumulasi Blade/Livewire, BUKAN bocor di satu test. `php artisan test` tidak meneruskan `-d memory_limit` ke proses anak phpunit, jadi disetel lewat `<ini>` di `phpunit.xml` (512M; suite tuntas mulai 384M) | SELESAI 2026-09-22 |
 | 24.4 | **`ProductionWoGenerationTest` masih bocor** — pola rusak yang sama (hardcode `order_id=2`/`inquiry_id=5` di baris 38-41, cleanup baris 69-71 hanya jalan di happy path). Kedua test-nya sekarang gagal di assertion angka (`6000.0` vs `6400`, `0.0` vs `6000`), jadi tiap `php artisan test` meninggalkan 5 delivery + 5 WO + 20 operasi. Terapkan pola fixture 24.1. Kegagalan angkanya dipisah — itu soal perilaku engine, bukan fixture | **BELUM** |
 
 ---

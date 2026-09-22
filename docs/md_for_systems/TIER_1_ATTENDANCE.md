@@ -8,14 +8,24 @@
 | Prefix tabel | `att_` |
 | Versi dokumen | **v1.2 — DRAFT UNTUK REVIEW TELMA** |
 | Tanggal | 2026-08-24 |
-| Status modul | Diaktifkan sebagai modul kerja (keluar dari status "ditunda") |
+| Status modul | Aktif dibangun -- lihat KOREKSI 2026-09-22 di bawah |
 | Dokumen sumber | Lihat **§0 Hierarki Otoritas Sumber** — keempat artefak tidak setara |
 
 > **Catatan revisi scope.** Sebelumnya seluruh domain Attendance tercatat sebagai *ditunda*
 > (`GLOBAL_START_HERE.md → modules_excluded.hr`) dan sebagian isinya menumpang di
 > `TIER_1..4_PAYROLL.md`. Dokumen ini **memisahkan Attendance menjadi modul mandiri** yang
-> aktif dikerjakan. **Payroll tetap ditunda** dan hanya menjadi *konsumen* keluaran modul ini.
-> Lihat §12 (Pemisahan Attendance vs Payroll) dan §14 (Instruksi split file lama).
+> aktif dikerjakan. Waktu dokumen ini ditulis (2026-08-24), **Payroll masih ditunda** dan
+> hanya menjadi *konsumen* keluaran modul ini. Lihat §12 (Pemisahan Attendance vs Payroll)
+> dan §14 (Instruksi split file lama).
+>
+> **KOREKSI 2026-09-22 (DEC-SCOPE-OPEN, 2026-08-26):** Payroll (`tm2pyr`) dan Recruitment
+> (`tm2hrr`) SUDAH DIBUKA & DIBANGUN AKTIF sejak 2026-08-26, dua hari setelah dokumen ini
+> ditulis -- Payroll sekarang punya skema+enkripsi+lifecycle+PPh21 bulanan+GPS clock-in+slip
+> gaji+transfer bank, Recruitment L1-L9 selesai & teruji. **Absensi GPS/mobile clock-in (§3.2)
+> juga SUDAH DIBANGUN** (bukan lagi "tidak diminta, tidak dibangun" seperti tercatat di bawah)
+> -- backend nyata pakai `navigator.geolocation` + geofence Haversine. Semua kata "ditunda" /
+> "tetap ditunda" / klaim GPS "tidak dibangun" di SISA dokumen ini (ditulis sebelum tanggal di
+> atas) adalah riwayat keputusan LAMA, BUKAN status terkini -- jangan dipercaya begitu saja.
 
 ---
 
@@ -209,7 +219,7 @@ Bucket lembur yang dipakai kertas kerja payroll eksisting (`REKAP ABSEN` di file
 
 **Keputusan T1-02.** Attendance **menghasilkan jam lembur per bucket** (`OT_BIASA`, `OT_BESAR`,
 `OT_BESAR_MINGGU`), **tidak menghitung rupiah**. Konversi jam → rupiah, Uang Makan, Uang Roti, dan
-Bonus Hadir Besar adalah ranah Payroll (ditunda).
+Bonus Hadir Besar adalah ranah Payroll (sudah dibangun sebagai modul sendiri, lihat KOREKSI di atas).
 
 ### 2.5 Dokumen administratif eksisting (sheet `Rekap Surat Ijin`)
 
@@ -407,10 +417,10 @@ Sheet `REFF_KEAHLIAN` memetakan posisi → tarif harian, dan posisinya **berjenj
 
 ### 3.2 Di luar scope (tegas)
 
-- **Semua konversi ke rupiah**: tarif lembur, denda, potongan, Uang Makan, Uang Roti, prorata komponen gaji, slip gaji → **modul Payroll (tetap ditunda)**.
+- **Semua konversi ke rupiah**: tarif lembur, denda, potongan, Uang Makan, Uang Roti, prorata komponen gaji, slip gaji → **modul Payroll (sudah dibangun, lihat KOREKSI di atas)**.
 - **Koneksi langsung / real-time ke mesin** (SDK, ADMS, pull via jaringan) → v2. v1 murni berbasis file export. Lihat §13.
-- **Absensi berbasis GPS / selfie / mobile clock-in** → tidak diminta, tidak dibangun.
-- **Recruitment** (`tm2hrr`) → tetap ditunda.
+- **Absensi berbasis GPS / selfie / mobile clock-in** → **sudah dibangun** (lihat KOREKSI di atas), di luar scope dokumen absensi-file-export ini saja.
+- **Recruitment** (`tm2hrr`) → **sudah dibangun** sebagai modul sendiri (lihat KOREKSI di atas).
 - **Perhitungan PPh 21 & BPJS** → ranah Payroll.
 - **Master karyawan, shift, mesin produksi, roster** → sudah ada di modul HRM; modul ini **memakai**, tidak mendefinisikan ulang.
 
@@ -654,7 +664,7 @@ tidak boleh mengabaikannya.
 | **HRM / Master Employee** | ATT ← HRM | `emp_employee`, `emp_contract` (work_status), `emp_shift`, `emp_shift_detail`, `emp_shift_roster`, `emp_shift_swap_request` (disetujui), `emp_leave_request`, `emp_out_permit_request`, `emp_leave_balance`, `org_position` |
 | **HRM / Kedisiplinan** | ATT → HRM | Usulan `emp_disciplinary` (teguran verbal / SP) beserta bukti hitungannya |
 | **HRM / Portal karyawan** | ATT → HRM | Tab baru "Absensi Saya": tap harian, status, rekap bulanan |
-| **Payroll (ditunda)** | ATT → PYR | `att_period_summary` — **satu-satunya** antarmuka resmi. Payroll tidak boleh membaca `att_daily`/`att_punch` langsung |
+| **Payroll (sudah dibangun, lihat KOREKSI §atas)** | ATT → PYR | `att_period_summary` — **satu-satunya** antarmuka resmi. Payroll tidak boleh membaca `att_daily`/`att_punch` langsung |
 | **Produksi / PPIC** | ATT ← PPIC | Roster shift per mesin; ATT tidak mengubah roster |
 | **Flow Engine** | ATT ↔ FLOW | Approval lembur, approval koreksi, otorisasi reopen periode memakai `flow_*` yang sudah dirancang |
 
@@ -694,7 +704,7 @@ Payroll dapat dibangun belakangan tanpa membekukan struktur internal Attendance.
 
 ## 12. Pemisahan Attendance vs Payroll
 
-| Aspek | Attendance (aktif) | Payroll (tetap ditunda) |
+| Aspek | Attendance (aktif) | Payroll (aktif -- lihat KOREKSI di atas) |
 |---|---|---|
 | Pertanyaan yang dijawab | Karyawan ini hadir seperti apa? | Karyawan ini dibayar berapa? |
 | Satuan | Menit, jam, hari | Rupiah |
@@ -728,7 +738,7 @@ dahulu berarti menunda seluruh nilai modul demi kenyamanan satu langkah operasio
 
 1. **Review dokumen ini**, khususnya sepuluh keputusan bertanda T1-01 s.d. T1-14 dan tiga konflik di §15.
 2. Setelah disetujui: `TIER_2_ATTENDANCE.md` (logika & algoritma), `TIER_3_ATTENDANCE.sql` (DDL), `TIER_4_ATTENDANCE.md` (wireframe & mockup).
-3. **Buat `ATTENDANCE_STATE.yaml`** dan daftarkan modul di `GLOBAL_START_HERE.md` — status HR yang semula "ditunda seluruhnya" kini punya dua pengecualian aktif: HRM Master Employee dan Attendance.
+3. **Buat `ATTENDANCE_STATE.yaml`** dan daftarkan modul di `GLOBAL_START_HERE.md` — status HR yang semula "ditunda seluruhnya" kini SUDAH TERBUKA PENUH sejak DEC-SCOPE-OPEN 2026-08-26 (bukan cuma dua pengecualian).
 4. **Perbarui `TIER_0_GLOBAL_ARCHITECTURE.md`** dengan database `tm2hrm` dan domain `att_*`.
 5. **Split `TIER_1..4_PAYROLL.md`** sesuai §12 — jangan biarkan dua dokumen mengklaim aturan yang sama.
 6. Putuskan DELTA-01 s.d. DELTA-10, terutama **DELTA-02 (tabel hari libur)** yang menjadi blocker.

@@ -127,13 +127,11 @@ ke-close tanpa sadar". Diverifikasi: `php artisan route:list --path=admin`
 
 ## 10. TEKNIS / UI STANDAR — TECHNICAL DEBT
 
-- **[SELESAI 2026-09-10 malam] Standarisasi tombol aksi umum (Save/Cancel/Close)**
-  — 5 titik yang menyimpang dari standar LOCKED (`CLAUDE.md` §3,
-  `FORM_UI_STANDARD.md` §1a) sudah diperbaiki (`button-label-standardization-rollout`,
-  dieksekusi manual krn task terjadwal 21:07 WIB fire tapi 0 progres nyata).
-  Detail lengkap: `docs/LOG_JOB_DONE.md` 2026-09-10. **Belum termasuk**
-  mekanisme toggle label ikut `lang_code` scr otomatis (masih perlu
-  integrasi ke `Translator::t()`, lihat `project_i18n_shell_framework`).
+- **Standarisasi tombol aksi umum (Save/Cancel/Close)** — 5 titik yang
+  menyimpang sudah diperbaiki (`docs/LOG_JOB_DONE.md` 2026-09-10 malam).
+  **Sisa yang BELUM**: mekanisme toggle label ikut `lang_code` secara
+  otomatis (perlu integrasi ke `Translator::t()`, lihat
+  `project_i18n_shell_framework`).
 
 - **Halaman transaksi iframe** (Inquiry, Stock In, Quotation, dst) —
   belum ikut sistem tema `sys_theme` (themestandard.md §6), masih warna
@@ -184,18 +182,10 @@ ke-close tanpa sadar". Diverifikasi: `php artisan route:list --path=admin`
     kemunculan tombol cetak beda (`@unless` vs `@if`), sebagian layar (CO,
     Quotation) tambah elemen ekstra kanan (ringkasan angka, tombol
     wire:click) di wrapper `ml-auto flex items-center gap-4` sendiri.
-  - **[SELESAI 2026-09-16 pagi] Komponen `<x-form.badge>` sekarang
-    dipakai di 6/6 layar** (`pur/pr/entry.blade.php`, `pur/po/entry.blade.php`,
-    `pur/pq/entry.blade.php`, `pur/prt/entry.blade.php`, `co/entry.blade.php`,
-    `quotation/entry.blade.php`) — sebelumnya masing-masing menulis ulang
-    span+`match()`/ternary warna badge sendiri (menganggur sebelum ini).
-    Diverifikasi `Livewire::test()` 4/6 render OK (PR/PO/CO/Quotation, ada
-    data live); `pq_quotation`/`prt_return` kosong 0 baris (bukan bug
-    dari perubahan ini) jadi 2 sisanya cuma lolos `php -l` + kesamaan
-    pola persis dgn yang sudah terverifikasi — sesi berikutnya boleh
-    re-verify begitu ada transaksi PQ/PRT nyata. Header form entry
-    (ikon+judul+doc_no+tombol cetak+Back) masih BELUM diekstrak jadi
-    komponen — itu tugas berikutnya di item ini kalau mau dilanjutkan.
+  - Komponen `<x-form.badge>` sudah dipakai di 6/6 layar entry transaksi
+    (`docs/LOG_JOB_DONE.md` 2026-09-16 pagi). **Sisa yang BELUM**: header
+    form entry (ikon+judul+doc_no+tombol cetak+Back) belum diekstrak jadi
+    komponen.
   - **Tombol Back — instruksi eksplisit user: standarkan juga** (bukan
     cuma didokumentasikan). Polanya sudah tertulis detail di
     `FORM_UI_STANDARD.md` §1 (pill navy `bg-[#43508a]` + lingkaran panah
@@ -208,31 +198,11 @@ ke-close tanpa sadar". Diverifikasi: `php artisan route:list --path=admin`
     pakai sistem visual beda, `master/supplier.blade.php`/
     `master/employee.blade.php` tombol "Kembali" untuk toggle state
     bukan navigasi, JANGAN ikut disamakan).
-    **[SELESAI 2026-09-11]** Rollout ikon `←` Unicode → Font Awesome
-    `fa-solid fa-arrow-left` ke SEMUA 24 layar nyata yang masih pakai
-    pola lama (1 lokasi acuan `component-library.blade.php` sudah lebih
-    dulu jadi 25). Diverifikasi: grep pola lama nihil hasil, `npm run
-    build` sukses, `MainMenuShellSmokeTest` 12/12 tetap pass. Detail
-    daftar file: `docs/LOG_JOB_DONE.md`.
-  - **Footer pagination — komponennya SUDAH ada & baik**
-    (`components/grid/pagination-footer.blade.php`, dipakai konsisten 13+
-    layar). **[SELESAI 2026-09-10 malam, 8/8]**: `hrm/position.blade.php`,
-    `recruitment/assessment-result.blade.php`,
-    `recruitment/candidate-review/list.blade.php`,
-    `recruitment/offer/list.blade.php`,
-    `recruitment/requisition/list.blade.php`,
-    `recruitment/talent-pool.blade.php`, `recruitment/vacancy.blade.php`,
-    `setup/support-tickets.blade.php` (terakhir, tadinya sengaja dilewati
-    krn dikira tabrakan dgn `button-label-standardization-rollout` — task
-    itu ternyata tidak pernah benar-benar jalan, jadi dituntaskan sekalian
-    saat file itu disentuh utk perbaikan label tombol) — pola sama semua:
-    tambah `use App\Livewire\Concerns\HasGridPagination;` (import + trait),
-    `->paginate(20)` → `->paginate($this->perPage)`, ganti
-    `<div class="mt-3">{{ $this->rows->links() }}</div>` jadi
-    `@include('components.grid.pagination-footer', ['paginator' => $this->rows])`.
-    Diverifikasi via `Livewire::test()` (8/8 render OK, footer baru
-    terkonfirmasi muncul). Tidak ada class Tailwind baru → tidak perlu
-    `npm run build`.
+    (Rollout ikon `←` Unicode → Font Awesome ke 24 layar SELESAI
+    2026-09-11, `docs/LOG_JOB_DONE.md` — tapi itu baru ikonnya saja,
+    komponen `<x-form.back-button>` di atas masih belum ada.)
+  - Footer pagination sudah diseragamkan 100% (13+ layar lama + 8 layar
+    terakhir, `docs/LOG_JOB_DONE.md` 2026-09-10 malam) — bukan item terbuka.
 
 ---
 
@@ -252,10 +222,6 @@ HP/tablet, menekan Shift tiap kata merepotkan. Yang berlaku = versi ini.
 Audit 2026-09-21 atas seluruh `x-form.input`: mayoritas field ber-nama-master
 ternyata SAH teks bebas (itu nama/kode master yang sedang dibuat di layar itu).
 Sisa yang benar-benar perlu diubah jadi lookup:
-- ~~`production/rule-library` → `applies_to_process`~~ **SELESAI 2026-09-22** —
-  sekarang `x-form.select` dari master `prod_process` (24 proses aktif, simpan
-  NAMA proses karena kolomnya varchar & lintas-DB tm2prd→tm2mst, tanpa FK).
-  Tidak ada data lama yang perlu dipetakan (kolomnya masih kosong semua).
 - `production/process-rate` → `part_code` — **DILEWATI 2026-09-22, butuh
   keputusan user.** Sumbernya AMBIGU, dua kandidat yang artinya bertabrakan:
   (a) `tm2mst.prod_part.part_code` isinya kode hasil generate (`PDDUM1-1`,
@@ -283,17 +249,9 @@ Sisa yang benar-benar perlu diubah jadi lookup:
   terbuka: itu form master-nya sendiri.
 
 ### 21.2 Layar yang inputnya masih HTML mentah (belum lewat komponen)
-- ~~**Inquiry Form / Revise / Hub**~~ — **SELESAI 2026-09-22** untuk semua
-  field yang memang berlaku: `cancel_reason` + `lost_reason` (textarea),
-  `part_name`, `cfg_ink` (Catatan Warna) di Form, dan 3 field readonly header
-  di Revise. Hub **tidak ada yang diubah**: 2 input-nya kotak CARI (standar
-  grid sendiri, tanpa badge). Yang SENGAJA dibiarkan mentah + alasannya:
-  autocomplete Customer/Sales/Bahan (kotak cari di dalam `<div class="f
-  ac-wrap">` — `x-form.input :legacy` akan bikin `.f` bersarang dan CSS-nya
-  rusak), serta input di dalam `<td>` (finishing attribute, tooling remark,
-  external cost description) yang masuk item "input di dalam sel tabel" di
-  bawah. `part_name` memakai `:legacy="'flex-1 min-w-0'"` (wrapper netral,
-  bukan `.f`) karena pemanggilnya sudah punya `.f` sendiri.
+- Inquiry Form/Revise/Hub sudah diselesaikan (`docs/LOG_JOB_DONE.md`
+  2026-09-22) -- SEBELUM zona beku dikunci di hari yang sama (CLAUDE.md §6B).
+  **Bukan item terbuka; JANGAN disentuh lagi tanpa izin eksplisit user.**
 - **BUG KOMPONEN yang ikut ketahuan & sudah diperbaiki 2026-09-22**:
   `x-form.input`/`x-form.textarea` menentukan readonly/disabled pakai
   `$attributes->has()` — padahal pemanggil yang menulis `:disabled="$expr"`
@@ -349,18 +307,11 @@ dianggap regresi dari pekerjaan 2026-09-21.
 Semua berlaku untuk SELURUH grid (pola sama), bukan per layar. Referensi visual
 dari user: aplikasi grid pihak ketiga (tangkapan layar di sesi 2026-09-21).
 
-### 22.1 Kotak statistik jadi FILTER DATA — MEKANISME SELESAI 2026-09-22
-Aturan tetapnya sudah dikunci di `griduistandard.md` §2b (+ skill
-`tmerp-screen`/`tmerp-ui-mockup`), mekanismenya dibangun di PUSAT:
-trait `App\Livewire\Concerns\HasGridStatFilter` (`statFilterDefs()`,
-`toggleStatFilter()`, `clearStatFilter()`, `applyStatFilter()`, `statBoxes()`)
-+ komponen `x-grid.stat-filter-row`. Layar cukup mendeklarasikan definisinya.
-
-**Sudah dipasang & diuji (26 grid)**: Master Employee (pilot, 146/341/102/44
-cocok dgn angka kotak), Machine, Shift, Customer, Supplier, Produk, UOM,
-Currency, Gudang · Quotation List, CO List, Delivery Order List · COA ·
-HRM Position · ProDev List, WO List, Master Proses, Scrap Type, Rule Library ·
-PR Index, PO Index · Stock In/Out/Return · Costing List, Costing Instant List.
+### 22.1 Kotak statistik jadi FILTER DATA — mekanisme sudah ada, rollout ± 42 grid tersisa
+Mekanisme (trait `App\Livewire\Concerns\HasGridStatFilter` + komponen
+`x-grid.stat-filter-row`) SELESAI dan sudah dipasang di 26 grid pilot
+(`docs/LOG_JOB_DONE.md` 2026-09-22). Layar baru cukup mendeklarasikan
+`statFilterDefs()` (± 15 baris + 1 baris markup), tidak perlu bangun ulang.
 
 **Belum dipasang (± 42 grid)** — mekanismenya sudah ada, sisanya tinggal
 mendeklarasikan `statFilterDefs()` per layar (± 15 baris + 1 baris markup):
@@ -385,29 +336,6 @@ mendeklarasikan `statFilterDefs()` per layar (± 15 baris + 1 baris markup):
 - Catatan grid laporan (`pur/report/*`, `sales/win-rate`,
   `finance/cash-*`): sebagian kotaknya angka RUPIAH/rata-rata → sesuai §2b
   dibiarkan tidak bisa diklik, bukan dipaksa jadi kategori.
-
-### 22.2 Ikon kolom Aksi — PILIHAN C — SELESAI 2026-09-22
-Sapu bersih 90 titik pemanggilan `x-grid.action-icon` di 55 file: karakter
-Unicode diganti Font Awesome, bingkai kotak jadi DEFAULT komponen
-(`bordered=true`), dan tombol aktif/nonaktif jadi `:active="$row->activate"`
-(ikon+warna ditentukan komponen: `fa-ban` merah / `fa-circle-check` hijau)
-sehingga tidak ada layar yang bisa menyimpang. Ikon non-Master yang dipilih:
-Buka `fa-up-right-from-square`, Confirm/Post `fa-check`, Batal/Tolak
-`fa-xmark`, Lihat `fa-eye`, Reset password `fa-key`, Konversi `fa-rotate`,
-Split `fa-scissors`, Naik/Turun `fa-chevron-up`/`fa-chevron-down`.
-`griduistandard.md` §5 & §10 sudah diperbarui (§5 tidak lagi menyatakan
-default tanpa border; §10 tinggal menyisakan "Aksi di KIRI" sbg pilot).
-
-Rincian keputusan aslinya:
-Ganti karakter Unicode `✎`/`⏻` (tipis, beda-beda antar perangkat, tidak sebaris
-dgn Font Awesome tombol Back) menjadi **ikon berbingkai kotak**:
-- Edit = `fa-pen` dalam kotak bergaris.
-- Nonaktifkan = `fa-ban` (merah) · Aktifkan = `fa-circle-check` (hijau).
-- Bingkai = varian `bordered` yang SUDAH ada di `x-grid.action-icon` tapi selama
-  ini cuma dipakai 2 layar pilot (`co/list`, `raw-material/index`) — sekarang
-  jadi standar, jadi `griduistandard.md` §5 & §10 WAJIB diperbarui (§5 masih
-  menyatakan default tanpa border).
-- Mockup pembanding: `docs/mockups/pilihan_ikon_aksi_grid_konteks.jpg`.
 
 ### 22.3 Kerapatan baris + Baris per sel — KEPUTUSAN LENGKAP, siap dibangun
 Panel dari toolbar grid, **dua setelan yang berdiri sendiri**:
