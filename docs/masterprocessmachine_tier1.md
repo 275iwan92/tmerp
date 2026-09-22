@@ -232,6 +232,93 @@ Sesudah perbaikan: **0 proses tanpa mesin, 0 mesin tanpa proses,
 
 ---
 
+## 9b. PURGE DATA MESIN LEGACY (perintah user 2026-09-22)
+
+User menolak keputusan migration `2026_09_21_000007` yang hanya men-set
+`activate=0` pada 29 baris warisan ScriptCase: daftar aset resmi diberikan
+untuk **mengganti** data lama, bukan berdampingan dengannya.
+
+### Cacat datanya
+
+`prod_machine` mencampur tiga hal yang bukan mesin:
+
+| Contoh baris | Sebenarnya apa |
+|---|---|
+| `KOMORI_GL440_FANDIK` / `_AGUS` / `_DIMAS` / `_YANTO` | **Mesin + NAMA KRU.** Satu Komori GL440 fisik jadi 5 "mesin" karena sistem lama mengunci baris per mesin+operator per shift |
+| `SUBKON_HOTPRINT`, `SUBKON_LAMINATING`, `SUBCON_PLONG`, `SUBKON_UV` | **Subkontraktor**, bukan mesin |
+| `LAM_YOUBOND` | **Merek film laminasi**, bukan mesin |
+| `LIPAT`, `LAMINASI MANUAL` | Pekerjaan tangan, bukan unit mesin |
+
+### Cara menghapusnya
+
+Ke-29 baris **semuanya** masih dirujuk, jadi DELETE polos akan meng-orphan WO
+yang sedang jalan dan roster HR. Referensi dipindah lebih dulu:
+
+- **Keluarga KOMORI → OFF-02.** Pasti: hanya satu Komori di daftar aset resmi,
+  dan "Lithrone 40" = "GL440" mesin yang sama. Nama kru dibuang, identitas
+  mesin dipertahankan sehingga histori WO tetap menunjuk unit fisik yang benar.
+- **Sisanya → `machine_id` NULL.** **Sengaja tidak ditebak**: "PLONG 3" tidak
+  bisa dipastikan DIE-01/02/03/04 yang mana, dan menempelkan histori WO ke unit
+  fisik yang SALAH lebih merusak daripada mengosongkannya.
+  `prd_wo_operation.process_name` tetap menyimpan proses apa yang dikerjakan.
+
+Cadangan mentah 29 baris + seluruh referensinya:
+`storage/app/backup_legacy_machine_*.json` (di luar git).
+
+### Pencemaran yang sama di emp_work_center
+
+Work center dulu di-generate 1:1 dari `prod_machine`, jadi ikut tercemar
+(`WC-KOMORI_GL440_YANTO`). Diukur dulu sebelum dihapus: 10 work center
+tercemar, ketergantungannya hanya 12 baris
+`emp_employee_work_center_skill` dan **0** baris `emp_shift_roster`.
+
+- 4 work center bernama kru **digabung** ke work center kanonis mesin yang
+  sama; 12 baris skill dipindah, yang duplikat digabung. **Sertifikasi tidak
+  hilang** — diverifikasi: 3 pegawai yang sama (MAHMUD SUPA'AT, HERU
+  KURNIAWAN, +1) tetap tersertifikasi di work center OFF-02.
+- 6 work center subkon/merek bahan **dibuang** (0 ketergantungan).
+
+### Cacat di migration 000008 yang ketemu saat audit ulang
+
+`prd_breakdown_event.machine_id` ternyata **NOT NULL**, sehingga update ke NULL
+gagal — dan blok `catch` di migration itu **menelan error-nya**, meninggalkan 1
+referensi yatim yang tidak ketahuan kalau tidak diaudit ulang ke DB.
+Diperbaiki di `000009`: kolomnya dibuat nullable (konsisten dengan
+`prd_wo_operation.machine_id` yang sudah nullable) lalu yatimnya dibersihkan.
+**Pelajaran: jangan menelan exception pada operasi integritas data.**
+
+### Hasil akhir terverifikasi
+
+| | Sebelum | Sesudah |
+|---|---|---|
+| `prod_machine` | 74 (29 legacy nonaktif) | **45, semua aktif** |
+| `emp_work_center` | 67 | 57 |
+| Pasangan proses × mesin | 66 | **68** |
+| Mesin tanpa proses | 6 | **0** |
+| Referensi yatim (8 tabel diperiksa) | 1 | **0** |
+| `emp_shift_roster` | 628 | 628 (utuh) |
+
+### SETIAP MESIN WAJIB PUNYA PROSES
+
+Perintah user. CMP-01 (kompresor) & FKL-01 (forklift) sebelumnya saya tandai
+"bukan mesin proses" — itu keliru. Keduanya punya fungsi produksi nyata dan
+sekarang punya proses sendiri: **SUPLAI UDARA** (tanpanya die cutter & press
+berhenti) dan **HANDLING MATERIAL**. `is_process_machine` dikembalikan ke 1.
+
+Migration `000008` juga memasang **jaring pengaman**: mesin aktif yang belum
+punya pasangan otomatis dipetakan ke proses yang jenisnya cocok, dan kalau
+prosesnya belum ada, dibuat dari nama jenis mesin. Jadi aturan "setiap mesin
+punya proses" tidak bisa bocor lagi saat mesin baru ditambahkan lewat ETL.
+
+### Sisa yang belum dibereskan (butuh keputusan user)
+
+Masih ada **4 work center menunjuk OFF-02** (`WC-CETAK-01`, `WC-CETAK-02`,
+`WC-KOMORI_GL440`, `WC-KOMORI_L40`) — duplikat mesin yang sama, tapi sudah
+tidak mengandung nama kru. Nama warisan lain seperti `WC-LILIN` juga masih
+ada. Menggabungkannya menyentuh roster HR, jadi tidak diputuskan sendiri.
+
+---
+
 ## 10. YANG BELUM DIBANGUN
 
 Jangan diasumsikan sudah ada:
