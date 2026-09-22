@@ -18,6 +18,10 @@
         </include>
     </source>
     <php>
+        <!-- Suite ini jalan 1 proses utk 84 test; akumulasi Blade/Livewire
+             tembus default 256M di tengah jalan (puncak ~300M, bukan bocor
+             di satu test). 512M memberi ruang tanpa menyembunyikan bocor besar. -->
+        <ini name="memory_limit" value="512M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

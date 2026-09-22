@@ -24,9 +24,137 @@ use Tests\TestCase;
 // prod_part_process_machine_rate/_employee_rate, dulu cuma tinker).
 class ProductionWoDetailRebuildTest extends TestCase
 {
+    // Fixture Plan Delivery milik test ini sendiri. Sebelumnya test menumpang
+    // baris hardcode (co_order#2 / iqp_inquiry#5) -- rapuh: sesi lain bisa
+    // menggeser datanya, dan costing inquiry#5 masih DRAFT sehingga
+    // WoGenerationService menolak generate WO (syarat "harga sudah final").
+    // Marker tetap, supaya sisa run yang gagal di tengah bisa disapu ulang.
+    private const FIXTURE_INQ_NO = 'IQTESTWO01';
+
+    private const FIXTURE_CO_NO = 'COTESTWO01';
+
+    private bool $planFixtureSeeded = false;
+
+    protected function tearDown(): void
+    {
+        if ($this->planFixtureSeeded) {
+            $this->purgePlanDeliveryFixture();
+            $this->planFixtureSeeded = false;
+        }
+
+        parent::tearDown();
+    }
+
     private function admin(): SecUser
     {
         return SecUser::where('login', 'johiwan')->firstOrFail();
+    }
+
+    /**
+     * Inquiry (1 part, costing dipublish) + CO CONFIRMED + item + 1 Plan
+     * Delivery PLANNED. Tanpa RefreshDatabase -- cleanup manual per tabel,
+     * pola yang sama dgn tests/Feature/CostingEngineTest.php.
+     *
+     * @return array{inquiry_id: int, order_id: int, item_id: int, delivery_id: int}
+     */
+    private function seedPlanDeliveryFixture(): array
+    {
+        $this->purgePlanDeliveryFixture();
+
+        $sdi = DB::connection('tm2sdi');
+        $now = now();
+        $productId = ProdProduct::firstOrFail()->id_product;
+
+        $inquiryId = $sdi->table('iqp_inquiry')->insertGetId([
+            'inquiry_no' => self::FIXTURE_INQ_NO,
+            'inquiry_date' => $now->toDateString(),
+            'is_prospect' => 1,
+            'prospect_name' => 'Prospek Test WO Generation',
+            'product_draft_name' => 'Box Test WO Generation',
+            'inquiry_type' => 'NEW',
+            'parent_product_id' => $productId,
+            'sub_state' => 'CONVERTED',
+            'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
+        ]);
+
+        // 1 iqp_part = 1 prd_wo (production_scheduling_wo_generation_delta.md §2).
+        $sdi->table('iqp_part')->insert([
+            'inquiry_id' => $inquiryId, 'part_seq' => 1,
+            'part_code' => 'WOTEST', 'part_name' => 'Body Test WO',
+            'qty_per_sku' => 1,
+            'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
+        ]);
+
+        // Costing dipublish: WO hanya boleh lahir dari Inquiry yang harganya
+        // sudah final (instruksi user 2026-09-18).
+        $sdi->table('iqp_costing')->insert([
+            'inquiry_id' => $inquiryId,
+            'doc_status' => 'PUBLISHED', 'published_flag' => 1, 'is_approved' => 1,
+            'approved_by' => 'test', 'approved_at' => $now,
+            'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
+        ]);
+
+        $orderId = $sdi->table('co_order')->insertGetId([
+            'co_no' => self::FIXTURE_CO_NO, 'co_date' => $now->toDateString(),
+            'doc_status' => 'CONFIRMED',
+            'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
+        ]);
+
+        $itemId = $sdi->table('co_order_item')->insertGetId([
+            'order_id' => $orderId, 'line_seq' => 1, 'line_kind' => 'PRODUCT',
+            'inquiry_id' => $inquiryId, 'product_id' => $productId,
+            'description' => 'Box Test WO Generation', 'qty' => 500,
+            'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
+        ]);
+
+        $deliveryId = $sdi->table('co_order_delivery')->insertGetId([
+            'order_id' => $orderId, 'item_id' => $itemId, 'shipment_type' => 'PARTIAL',
+            'ship_date' => $now->copy()->addDays(30)->toDateString(), 'ship_qty' => 150,
+            'status' => 'PLANNED',
+            'created_by' => 'test', 'created_at' => $now, 'updated_at' => $now,
+        ]);
+
+        $this->planFixtureSeeded = true;
+
+        return [
+            'inquiry_id' => (int) $inquiryId, 'order_id' => (int) $orderId,
+            'item_id' => (int) $itemId, 'delivery_id' => (int) $deliveryId,
+        ];
+    }
+
+    /** Hapus fixture + WO turunannya, anak dulu baru induk (FK dalam-DB tegak). */
+    private function purgePlanDeliveryFixture(): void
+    {
+        $sdi = DB::connection('tm2sdi');
+        $prd = DB::connection('tm2prd');
+
+        $inquiryId = $sdi->table('iqp_inquiry')->where('inquiry_no', self::FIXTURE_INQ_NO)->value('id_inquiry');
+        $orderId = $sdi->table('co_order')->where('co_no', self::FIXTURE_CO_NO)->value('id_order');
+
+        if ($orderId) {
+            $deliveryIds = $sdi->table('co_order_delivery')->where('order_id', $orderId)->pluck('id_delivery');
+
+            if ($deliveryIds->isNotEmpty()) {
+                $woIds = $prd->table('prd_wo')->whereIn('source_delivery_id', $deliveryIds)->pluck('wo_id');
+
+                if ($woIds->isNotEmpty()) {
+                    $prd->table('prd_wo_operation')->whereIn('wo_id', $woIds)->delete();
+                    $prd->table('prd_wo_material')->whereIn('wo_id', $woIds)->delete();
+                    $prd->table('prd_wo')->whereIn('wo_id', $woIds)->delete();
+                }
+
+                $sdi->table('co_order_delivery')->whereIn('id_delivery', $deliveryIds)->delete();
+            }
+
+            $sdi->table('co_order_item')->where('order_id', $orderId)->delete();
+            $sdi->table('co_order')->where('id_order', $orderId)->delete();
+        }
+
+        if ($inquiryId) {
+            $sdi->table('iqp_costing')->where('inquiry_id', $inquiryId)->delete();
+            $sdi->table('iqp_part')->where('inquiry_id', $inquiryId)->delete();
+            $sdi->table('iqp_inquiry')->where('id_inquiry', $inquiryId)->delete();
+        }
     }
 
     private function seededWo(): PrdWo
@@ -114,26 +242,18 @@ class ProductionWoDetailRebuildTest extends TestCase
         $this->actingAs($this->admin());
         $wo = $this->seededWo();
 
-        $itemId = DB::connection('tm2sdi')->table('co_order_item')
-            ->where('order_id', 2)->where('inquiry_id', 5)->value('id_item');
-        $deliveryId = DB::connection('tm2sdi')->table('co_order_delivery')->insertGetId([
-            'order_id' => 2, 'item_id' => $itemId, 'shipment_type' => 'PARTIAL',
-            'ship_date' => now()->addDays(30)->toDateString(), 'ship_qty' => 150, 'status' => 'PLANNED',
-            'created_by' => 'test', 'created_at' => now(), 'updated_at' => now(),
-        ]);
+        $fixture = $this->seedPlanDeliveryFixture();
+        $deliveryId = $fixture['delivery_id'];
 
         $test = Livewire::test('pages::production.wo-entry', ['wo' => $wo->wo_id])
             ->call('openDeliveryModal')
-            ->assertSee('CO2600001');
+            ->assertSee(self::FIXTURE_CO_NO);
 
         $test->call('pickPlanDelivery', $deliveryId);
         $newWo = PrdWo::where('source_delivery_id', $deliveryId)->first();
         $this->assertNotNull($newWo);
+        $this->assertSame($fixture['order_id'], (int) $newWo->source_co_id);
         $test->assertRedirect(route('production.wo.entry', ['wo' => $newWo->wo_id]));
-
-        $newWo->operations()->delete();
-        $newWo->delete();
-        DB::connection('tm2sdi')->table('co_order_delivery')->where('id_delivery', $deliveryId)->delete();
     }
 
     public function test_process_rate_management_screen_crud(): void
