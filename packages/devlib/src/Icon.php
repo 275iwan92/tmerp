@@ -14,7 +14,7 @@ final class Icon
         'print' => 'fa-print', 'download' => 'fa-download', 'upload' => 'fa-upload', 'export' => 'fa-file-export', 'import' => 'fa-file-import',
         'refresh' => 'fa-rotate', 'lock' => 'fa-lock', 'unlock' => 'fa-lock-open', 'activate' => 'fa-circle-check', 'deactivate' => 'fa-ban',
         // grid & navigasi
-        'search' => 'fa-magnifying-glass', 'filter' => 'fa-filter', 'sort' => 'fa-sort', 'columns' => 'fa-table-columns', 'more' => 'fa-ellipsis-vertical',
+        'search' => 'fa-magnifying-glass', 'filter' => 'fa-filter', 'sort' => 'fa-sort', 'columns' => 'fa-table-columns', 'group' => 'fa-layer-group', 'density' => 'fa-table-cells', 'expand-row' => 'fa-chevron-right', 'more' => 'fa-ellipsis-vertical',
         'expand' => 'fa-chevron-down', 'collapse' => 'fa-chevron-up', 'next' => 'fa-chevron-right', 'prev' => 'fa-chevron-left', 'menu' => 'fa-bars', 'home' => 'fa-house',
         // status & info
         'info' => 'fa-circle-info', 'warning' => 'fa-triangle-exclamation', 'error' => 'fa-circle-xmark', 'success' => 'fa-circle-check', 'help' => 'fa-circle-question',

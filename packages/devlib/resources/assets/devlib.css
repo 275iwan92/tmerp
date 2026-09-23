@@ -865,3 +865,60 @@ body.dl-dev .dl-meta__dev{display:inline}
 .dl-keys kbd,.dl-demo kbd{background:var(--dl-code-bg);border:1px solid var(--dl-border);border-bottom-width:2px;border-radius:5px;padding:1px 7px;font-family:var(--dl-font-mono);font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-ink-strong)}
 form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--dl-amber);font-size:calc(12px * var(--dl-font-scale));font-weight:600}
 .dl-note{font-size:calc(13px * var(--dl-font-scale));color:var(--dl-ink);line-height:1.6;margin:0}
+
+/* ================= GRID (Part 5) ================= */
+.dl-grid{display:flex;flex-direction:column;gap:12px;--dl-grid-pad:calc(9px * var(--dl-density))}
+.dl-grid[data-density="compact"]{--dl-grid-pad:4px}
+.dl-grid[data-density="comfortable"]{--dl-grid-pad:14px}
+.dl-grid__stats{display:flex;gap:10px;flex-wrap:wrap}
+.dl-grid__stats .dl-stat{flex:1 1 150px}
+.dl-grid__panel{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);min-width:0}
+.dl-grid__tabs{padding:0 10px}
+.dl-grid__tabcount{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--dl-code-bg);color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale))}
+.dl-tabs__tab.is-active .dl-grid__tabcount{background:var(--dl-accent-soft);color:var(--dl-accent)}
+.dl-grid__toolbar{display:flex;align-items:center;gap:6px;padding:10px;flex-wrap:wrap}
+.dl-grid__spacer{flex:1}
+.dl-grid__search{display:flex;align-items:center;gap:6px;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius);padding:0 10px;background:var(--dl-surface);width:260px;max-width:100%;color:var(--dl-muted)}
+.dl-grid__search input{border:none;outline:none;background:none;padding:7px 0;flex:1;min-width:0;font-family:inherit;font-size:calc(13px * var(--dl-font-scale));color:var(--dl-ink)}
+.dl-grid__search:focus-within{box-shadow:0 0 0 3px var(--dl-accent-ring);border-color:var(--dl-accent)}
+.dl-grid__badge{margin-left:5px;background:var(--dl-accent);color:var(--dl-white);border-radius:9px;padding:0 6px;font-size:calc(10.5px * var(--dl-font-scale))}
+.dl-pop2{position:relative}
+.dl-pop2__panel{display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:60;min-width:240px;max-height:360px;overflow:auto;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);box-shadow:var(--dl-shadow-pop);padding:12px;flex-direction:column;gap:8px}
+.dl-pop2__panel.is-open{display:flex}
+.dl-pop2__title{font-size:calc(11px * var(--dl-font-scale));font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--dl-muted)}
+.dl-pop2__field{display:flex;flex-direction:column;gap:3px;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-f-label);font-weight:600;margin-bottom:6px}
+.dl-pop2__field select{padding:6px 8px;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);background:var(--dl-surface);color:var(--dl-ink);font-family:inherit}
+.dl-grid__chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:0 10px 10px}
+.dl-grid__bulk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 10px 10px;padding:8px 12px;border-radius:var(--dl-radius);background:var(--dl-accent-soft);color:var(--dl-ink);font-size:calc(13px * var(--dl-font-scale))}
+.dl-grid__chips[hidden],.dl-grid__bulk[hidden]{display:none}
+.dl-grid__wrap{overflow-x:auto;border-top:1px solid var(--dl-border-soft)}
+.dl-grid__table{width:100%;border-collapse:collapse;font-size:calc(13px * var(--dl-font-scale))}
+.dl-grid__table th{position:sticky;top:0;background:var(--dl-surface-alt);text-align:left;padding:var(--dl-grid-pad) 10px;font-size:calc(11.5px * var(--dl-font-scale));font-weight:700;color:var(--dl-muted);white-space:nowrap;border-bottom:1px solid var(--dl-border);user-select:none}
+.dl-grid__table th.is-sortable{cursor:pointer}
+.dl-grid__table th.is-sortable:hover{color:var(--dl-ink-strong)}
+.dl-grid__table th i{opacity:.4;margin-left:3px}
+.dl-grid__table th.is-sorted{color:var(--dl-accent)}
+.dl-grid__table th.is-sorted i{opacity:1}
+.dl-grid__table td{padding:var(--dl-grid-pad) 10px;border-bottom:1px solid var(--dl-border-soft);color:var(--dl-ink);vertical-align:middle}
+.dl-grid__txt{max-width:320px}
+.dl-grid.is-clamped .dl-grid__txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--dl-grid-lines);line-clamp:var(--dl-grid-lines);overflow:hidden}
+.dl-grid .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dl-grid__row{cursor:default}
+.dl-grid__row:hover td{background:var(--dl-hover)}
+.dl-grid__row.is-selected td{background:var(--dl-accent-soft)}
+.dl-grid__row.is-inactive td:not(.dl-grid__act){opacity:.55}
+.dl-grid__chk,.dl-grid__exp{width:34px;text-align:center!important}
+.dl-grid__chk input{accent-color:var(--dl-accent);cursor:pointer}
+.dl-grid__act{width:1%;white-space:nowrap;text-align:right!important}
+.dl-grid__act .dl-iconbtn+.dl-iconbtn{margin-left:4px}
+.dl-grid__chev{border:none;background:none;color:var(--dl-muted);cursor:pointer;padding:4px;transition:transform .15s}
+.dl-grid__chev.is-open{transform:rotate(90deg);color:var(--dl-accent)}
+.dl-grid__detail td{background:var(--dl-surface-alt)}
+.dl-grid__detailbox{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 18px;padding:6px 44px}
+.dl-grid__detailbox small{display:block;color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale))}
+.dl-grid__group td{background:var(--dl-accent-soft);padding:0}
+.dl-grid__group button{width:100%;text-align:left;border:none;background:none;padding:var(--dl-grid-pad) 12px;font-family:inherit;font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink);cursor:pointer}
+.dl-grid__group button span{color:var(--dl-muted);margin-left:6px}
+.dl-grid__table tfoot td{background:var(--dl-surface-alt);border-top:2px solid var(--dl-border)}
+.dl-grid [data-g-pager] .dl-pager{border-radius:0 0 var(--dl-radius-lg) var(--dl-radius-lg)}
+@media (max-width:640px){.dl-grid__search{width:100%}.dl-grid__spacer{display:none}.dl-pop2__panel{right:auto;left:0}}
