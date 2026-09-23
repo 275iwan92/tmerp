@@ -11,6 +11,7 @@ class Lookup extends Field
     public function __construct(
         public string $lookup = '',
         public array $fill = [],
+        public bool $create = false,
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

@@ -48,19 +48,7 @@ final class Catalog
                 ],
                 'files' => ['Mockup' => ['mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html']]],
             ['code' => 'P2', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
-                'pages' => $fieldPages + [
-                    'field-lookup' => ['label' => 'Field · Lookup', 'icon' => 'fa-solid fa-magnifying-glass', 'classes' => ['Devlib\\Components\\Field\\Lookup'], 'mockup' => 'UIUX_components_part1.html'],
-                    'input-theme' => ['label' => 'Input · Themes', 'icon' => 'fa-solid fa-swatchbook', 'classes' => ['Devlib\\Components\\Field\\Text', 'Devlib\\Components\\Field\\Select'], 'mockup' => 'bukti_komponen_input_tema.html'],
-                    'badge' => ['label' => 'Badge (status dokumen)', 'icon' => 'fa-solid fa-tag', 'classes' => ['Devlib\\Components\\Badge']],
-                    'tooltip' => ['label' => 'Tooltip', 'icon' => 'fa-solid fa-comment', 'classes' => ['Devlib\\Components\\Tooltip']],
-                    'tabs-accordion' => ['label' => 'Tabs · Accordion', 'icon' => 'fa-solid fa-folder-open', 'classes' => ['Devlib\\Components\\Tabs', 'Devlib\\Components\\Accordion']],
-                    'pagination' => ['label' => 'Pagination', 'icon' => 'fa-solid fa-ellipsis', 'classes' => ['Devlib\\Components\\Pagination']],
-                    'avatar-progress' => ['label' => 'Avatar · Progress', 'icon' => 'fa-solid fa-user', 'classes' => ['Devlib\\Components\\Avatar', 'Devlib\\Components\\Progress']],
-                    'stat-box' => ['label' => 'Stat Box (filter)', 'icon' => 'fa-solid fa-chart-simple', 'classes' => ['Devlib\\Components\\StatBox']],
-                    'breadcrumb' => ['label' => 'Breadcrumb', 'icon' => 'fa-solid fa-signs-post', 'classes' => ['Devlib\\Components\\Breadcrumb']],
-                    'button' => ['label' => 'Button', 'icon' => 'fa-solid fa-hand-pointer', 'classes' => ['Devlib\\Components\\Button', 'Devlib\\Components\\SplitButton'], 'mockup' => 'UIUX_components_part1.html'],
-                    'misc' => ['label' => 'Alert · Divider · Brand · Language', 'icon' => 'fa-solid fa-shapes', 'classes' => ['Devlib\\Components\\Alert', 'Devlib\\Components\\Divider', 'Devlib\\Components\\Brand', 'Devlib\\Components\\LangSwitch'], 'mockup' => 'login.html'],
-                ],
+                'pages' => self::smallCategories(),
                 'files' => ['Mockup' => ['bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html']]],
             ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'files' => ['Mockup' => ['mockup_notification.jpg']]],
             ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'files' => []],
@@ -105,6 +93,54 @@ final class Catalog
     {
         return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
             'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html'];
+    }
+
+    // Part 2 dikelompokkan per kategori (menu kiri ringkas); isi kategori dipilih lewat breadcrumb.
+    // member: slug demo => [label, [class...]]
+    public static function smallCategories(): array
+    {
+        $f = fn ($cls) => ['Devlib\\Components\\Field\\'.$cls];
+        $c = fn (...$cls) => array_map(fn ($x) => 'Devlib\\Components\\'.$x, $cls);
+
+        $cats = [
+            'p2-inputs' => ['Inputs', 'fa-solid fa-i-cursor', [
+                'field-text' => ['Text', $f('Text')], 'text-affix' => ['Prefix · Suffix · Counter', $f('Text')], 'field-password' => ['Password', $f('Password')],
+                'field-masked' => ['Masked (NIK)', $f('Masked')], 'field-phone' => ['Phone', $f('Phone')], 'field-tags' => ['Tags', $f('Tags')],
+                'field-key-value' => ['Key Value', $f('KeyValue')], 'field-rich-text' => ['Rich Text', $f('RichText')], 'input-theme' => ['Input · Themes', $f('Text')],
+            ]],
+            'p2-choices' => ['Choices & Lookup', 'fa-solid fa-list-check', [
+                'field-lookup' => ['Lookup', $f('Lookup')], 'field-select' => ['Select', $f('Select')], 'field-multi-select' => ['Multi Select', $f('MultiSelect')],
+                'field-radio' => ['Radio', $f('Radio')], 'field-checkboxes' => ['Checkboxes', $f('Checkboxes')], 'field-checkbox' => ['Checkbox', $f('Checkbox')],
+                'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-rating' => ['Rating', $f('Rating')],
+                'field-color' => ['Color', $f('Color')], 'field-slider' => ['Slider', $f('Slider')], 'field-otp' => ['OTP', $f('Otp')],
+            ]],
+            'p2-datetime' => ['Date & Time', 'fa-solid fa-calendar-days', [
+                'field-date' => ['Date', $f('Date')], 'field-time' => ['Time', $f('Time')], 'field-date-time' => ['Date Time', $f('DateTime')], 'field-date-range' => ['Date Range', $f('DateRange')],
+            ]],
+            'p2-numbers' => ['Numbers & Money', 'fa-solid fa-calculator', [
+                'field-money' => ['Money', $f('Money')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-number' => ['Number (spinner)', $f('Number')],
+            ]],
+            'p2-files' => ['Files', 'fa-solid fa-paperclip', ['field-upload' => ['Upload', $f('Upload')]]],
+            'p2-buttons' => ['Buttons', 'fa-solid fa-hand-pointer', [
+                'button' => ['Button · Preset · Split', $c('Button', 'SplitButton', 'BackButton')], 'icon-button' => ['Icon Button', $c('IconButton')],
+            ]],
+            'p2-display' => ['Display & Status', 'fa-solid fa-tag', [
+                'field-display' => ['Display (read-only)', $f('Display')], 'badge' => ['Badge', $c('Badge')], 'stat-box' => ['Stat Box', $c('StatBox')],
+                'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress')], 'tooltip' => ['Tooltip', $c('Tooltip')], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch')],
+            ]],
+            'p2-containers' => ['Containers & Navigation', 'fa-solid fa-table-cells-large', [
+                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'table' => ['Table', $c('Table')], 'tabs-accordion' => ['Tabs · Accordion', $c('Tabs', 'Accordion')],
+                'breadcrumb' => ['Breadcrumb', $c('Breadcrumb')], 'pagination' => ['Pagination', $c('Pagination')],
+            ]],
+        ];
+
+        $out = [];
+        foreach ($cats as $slug => [$label, $icon, $members]) {
+            $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'part' => '2 · Small Components',
+                'classes' => array_values(array_unique(array_merge(...array_column($members, 1)))), 'mockup' => 'UIUX_components_part1.html'];
+        }
+
+        return $out;
     }
 
     public static function page(string $slug): ?array

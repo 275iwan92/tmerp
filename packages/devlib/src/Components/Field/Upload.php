@@ -7,6 +7,8 @@ class Upload extends Field
 {
     public function __construct(
         public ?string $accept = null,
+        public bool $multiple = false,
+        public bool $preview = true,
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

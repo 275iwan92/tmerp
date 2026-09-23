@@ -6,6 +6,9 @@ return [
         ['login' => 'admin', 'password' => 'admin', 'name' => 'Administrator DevLib', 'email' => 'admin@devlib.test', 'role' => 'Administrator', 'developer' => true],
     ],
 
+    // Bahasa antarmuka bawaan (id | en); label tombol preset ikut ini.
+    'lang' => env('DEVLIB_LANG', 'id'),
+
     // Zona waktu yang ditampilkan semua komponen jam/tanggal/salam (bukan jam komputer pengguna).
     'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
     'timezone_label' => 'WIB',

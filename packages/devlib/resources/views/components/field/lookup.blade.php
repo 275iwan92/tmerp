@@ -1,5 +1,5 @@
 @php($cur = $current())
-<div class="dl-dd dl-lookup" data-dl-lookup data-fill="{{ json_encode($fill) }}" data-rows="{{ json_encode($def['rows']) }}" data-key="{{ $def['key'] }}" data-label="{{ $def['label'] }}">
+<div class="dl-dd dl-lookup" data-dl-lookup data-fill="{{ json_encode($fill) }}" data-rows="{{ json_encode($def['rows']) }}" data-key="{{ $def['key'] }}" data-label="{{ $def['label'] }}" @if ($create) data-create @endif>
     <input type="hidden" name="{{ $name }}" value="{{ $value }}" data-dl-value>
     <button type="button" id="{{ $uid }}" class="dl-dd__btn" data-dl-dd-toggle @disabled($disabled || $readonly)>
         <span data-dl-dd-text>{{ $cur[$def['label']] ?? ($placeholder ?? 'Pilih...') }}</span><span><i class="fa-solid fa-magnifying-glass"></i></span>
@@ -14,5 +14,6 @@
                 @endforeach
             </tbody>
         </table>
+        @if ($create)<button type="button" class="dl-lookup__create" data-dl-lookup-create hidden>+ Tambah baru: <b data-dl-lookup-new></b></button>@endif
     </div>
 </div>

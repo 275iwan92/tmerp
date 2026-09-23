@@ -45,6 +45,22 @@ Route::middleware('devlib.auth')->group(function () {
     // Halaman komponen: komponen hidup + ikon </> berisi kode pemakaiannya.
     Route::get('/lib/{slug}', function (Request $r, string $slug) {
         $page = Catalog::page($slug) ?? abort(404);
+        $data = [
+            'action' => 'javascript:void(0)',
+            'error' => null,
+            'username' => '',
+            'modules' => Catalog::modules(),
+            'user' => session('devlib_user'),
+            'locations' => config('devlib.demo.locations'),
+            'languages' => config('devlib.demo.languages'),
+        ];
+
+        // Halaman kategori (Part 2): beberapa komponen + breadcrumb; kode = gabungan demo.
+        if (isset($page['members'])) {
+            $code = collect($page['members'])->map(fn ($m, $s) => '{{-- '.$m[0].' --}}'."\n".file_get_contents(resource_path("views/demos/{$s}.blade.php")))->implode("\n");
+
+            return view('lib-cat', ['page' => $page, 'code' => $code, 'data' => $data]);
+        }
 
         return view('lib', [
             'page' => $page,

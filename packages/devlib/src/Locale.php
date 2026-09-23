@@ -9,6 +9,12 @@ use DateTimeInterface;
 // Semua layar memakai ini -- jangan number_format/date() sendiri-sendiri.
 final class Locale
 {
+    // Bahasa antarmuka aktif: id | en (tmerp: sec_user.lang_code).
+    public static function lang(): string
+    {
+        return config('devlib.lang', str_starts_with(app()->getLocale(), 'en') ? 'en' : 'id');
+    }
+
     public static function timezone(): string
     {
         return config('devlib.timezone', 'Asia/Jakarta');

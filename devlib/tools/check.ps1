@@ -8,7 +8,7 @@ param(
     [string]$Base = 'http://devlib.test',
     [string]$User = 'admin',
     [string]$Pass = 'admin',
-    [string[]]$Pages = @('/', '/lib/basic-colors', '/lib/basic-typography', '/lib/basic-shape', '/lib/basic-themes', '/lib/basic-density', '/lib/basic-icons', '/lib/basic-breakpoints', '/lib/basic-locale', '/lib/field-lookup', '/lib/input-theme', '/lib/badge', '/lib/tooltip', '/lib/tabs-accordion', '/lib/pagination', '/lib/avatar-progress', '/lib/stat-box', '/lib/breadcrumb', '/mockup/grid_kerapatan_baris.html', '/lib/form', '/lib/shell', '/lib/button', '/lib/misc', '/lib/login-1', '/lib/login-2', '/lib/login-3', '/lib/field-text', '/lib/field-password', '/lib/field-select', '/lib/field-color', '/lib/field-radio', '/lib/field-toggle', '/lib/field-checkboxes', '/lib/field-slider', '/lib/field-date-range', '/lib/field-multi-select', '/lib/field-otp', '/lib/field-rating', '/lib/field-masked', '/lib/field-phone', '/lib/field-money', '/lib/field-date', '/lib/field-date-time', '/lib/field-time', '/lib/field-decimal', '/lib/field-number', '/lib/field-upload', '/mockup/register.html'),
+    [string[]]$Pages = @('/', '/lib/basic-colors', '/lib/basic-typography', '/lib/basic-shape', '/lib/basic-themes', '/lib/basic-density', '/lib/basic-icons', '/lib/basic-breakpoints', '/lib/basic-locale', '/lib/p2-inputs', '/lib/p2-choices', '/lib/p2-datetime', '/lib/p2-numbers', '/lib/p2-files', '/lib/p2-buttons', '/lib/p2-display', '/lib/p2-containers', '/lib/form', '/lib/shell', '/lib/login-1', '/lib/login-2', '/lib/login-3', '/mockup/register.html', '/mockup/grid_kerapatan_baris.html'),
     [string[]]$Modules = @('P1', 'P2'),
     [int]$Width = 1440,
     [int]$Height = 900,

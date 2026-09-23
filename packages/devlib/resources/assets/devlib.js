@@ -226,19 +226,6 @@
       inp.addEventListener('blur', () => { inp.value = clamp(parseInt(inp.value, 10) || 0); });
     }
 
-    const up = $(f, '[data-dl-upload]');
-    if (up) {
-      const file = $(up, 'input[type=file]'), name = $(up, '[data-dl-upload-name]');
-      const show = () => { const fl = file.files[0]; up.classList.toggle('has-file', !!fl); name.textContent = fl ? fl.name : ''; };
-      up.addEventListener('click', e => { if (!e.target.closest('[data-dl-upload-remove]')) file.click(); });
-      file.addEventListener('click', e => e.stopPropagation());
-      file.addEventListener('change', show);
-      $(up, '[data-dl-upload-remove]').addEventListener('click', e => { e.stopPropagation(); file.value = ''; show(); });
-      ['dragover', 'dragenter'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('is-drag'); }));
-      ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('is-drag'); }));
-      up.addEventListener('drop', e => { if (e.dataTransfer.files.length) { file.files = e.dataTransfer.files; show(); } });
-    }
-
     const dt = $(f, '[data-dl-date]');
     if (dt) {
       const hidden = $(dt, '[data-dl-value]'), text = $(dt, '[data-dl-date-text]'), days = $(dt, '[data-dl-cal-days]'), title = $(dt, '[data-dl-cal-title]');
@@ -684,6 +671,26 @@
         if (box) { box.classList.remove('is-filled'); void box.offsetWidth; box.classList.add('is-filled'); }
       });
     }));
+    if (root.hasAttribute('data-create')) {
+      const btn = $(root, '[data-dl-lookup-create]'), label = root.dataset.label;
+      p.search.addEventListener('input', () => {
+        const q = p.search.value.trim();
+        btn.hidden = !q || rows.some(r => String(r[label]).toLowerCase() === q.toLowerCase());
+        $(btn, '[data-dl-lookup-new]').textContent = q;
+      });
+      // Tambah baru dari dalam pilihan: baris baru langsung terpilih; aplikasi menyimpannya ke master lewat event dl:lookup-create.
+      btn.addEventListener('click', () => {
+        const q = p.search.value.trim(), r = {[root.dataset.key]: 'new:' + q, [label]: q};
+        rows.push(r);
+        const tr = document.createElement('tr'); tr.className = 'dl-dd__item'; tr.dataset.i = rows.length - 1;
+        tr.innerHTML = $$(root, 'thead th').map((th, i) => `<td>${i === 0 ? '(baru)' : ''}</td>`).join('');
+        tr.children[Math.min(1, tr.children.length - 1)].textContent = q;
+        $(root, '[data-dl-dd-list]').appendChild(tr);
+        $(root, '[data-dl-value]').value = r[root.dataset.key]; $(root, '[data-dl-dd-text]').textContent = q; btn.hidden = true; p.close();
+        root.dispatchEvent(new CustomEvent('dl:lookup-create', {bubbles: true, detail: {text: q}}));
+        toast('Ditambahkan: ' + q);
+      });
+    }
   }
 
   function initTabs(root) {
@@ -702,6 +709,103 @@
       btn.dispatchEvent(new CustomEvent('dl:stat', {bubbles: true, detail: {active: on}}));
     });
   }
+
+  /* ================= SMALL COMPONENTS (lanjutan) ================= */
+  const PRESET_T = {save: ['Simpan', 'Save'], cancel: ['Batal', 'Cancel'], close: ['Tutup', 'Close'], delete: ['Hapus', 'Delete'], apply: ['Terapkan', 'Apply'],
+    print: ['Cetak', 'Print'], submit: ['Ajukan', 'Submit'], approve: ['Setujui', 'Approve'], reject: ['Tolak', 'Reject'], hold: ['Tahan', 'Hold']};
+  // Label tombol preset ikut bahasa aktif (Back & Confirm & + New Record tetap).
+  document.addEventListener('dl:lang', () => $$(document, '[data-dl-preset]').forEach(b => {
+    const t = PRESET_T[b.dataset.dlPreset]; if (!t) return;
+    const node = [...b.childNodes].reverse().find(n => n.nodeType === 3 && n.textContent.trim());
+    if (node) node.textContent = t[currentLang === 'en' ? 1 : 0];
+  }));
+
+  function initSegment(root) {
+    const hidden = $(root, '[data-dl-value]');
+    $$(root, '.dl-segment__opt').forEach(b => b.addEventListener('click', () => {
+      $$(root, '.dl-segment__opt').forEach(x => x.classList.toggle('is-active', x === b));
+      hidden.value = b.dataset.value; hidden.dispatchEvent(new Event('change', {bubbles: true}));
+    }));
+  }
+
+  function initTags(root) {
+    const input = $(root, '.dl-tags__input'), box = $(root, '.dl-tags__box'), name = root.dataset.name;
+    const add = v => {
+      v = v.trim().replace(/,$/, ''); if (!v) return;
+      if ($$(root, 'input[type=hidden]').some(h => h.value.toLowerCase() === v.toLowerCase())) { input.value = ''; return; }
+      const chip = document.createElement('span'); chip.className = 'dl-tags__chip';
+      chip.innerHTML = `${esc(v)}<input type="hidden" name="${esc(name)}[]" value="${esc(v)}"><button type="button" data-dl-tag-x>&times;</button>`;
+      box.insertBefore(chip, input); input.value = '';
+    };
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(input.value); }
+      else if (e.key === 'Backspace' && !input.value) { const last = [...box.querySelectorAll('.dl-tags__chip')].pop(); if (last) last.remove(); }
+    });
+    input.addEventListener('change', () => add(input.value));
+    box.addEventListener('click', e => { if (e.target.closest('[data-dl-tag-x]')) e.target.closest('.dl-tags__chip').remove(); else input.focus(); });
+  }
+
+  function initKv(root) {
+    const body = $(root, '[data-dl-kv-body]'), name = root.dataset.name;
+    const renumber = () => $$(body, 'tr').forEach((tr, i) => { const [k, v] = $$(tr, 'input'); k.name = `${name}[${i}][key]`; v.name = `${name}[${i}][value]`; });
+    $(root, '[data-dl-kv-add]').addEventListener('click', () => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = '<td><input type="text"></td><td><input type="text"></td><td><button type="button" data-dl-kv-x title="Hapus baris">&times;</button></td>';
+      body.appendChild(tr); renumber(); $(tr, 'input').focus();
+    });
+    body.addEventListener('click', e => { if (e.target.closest('[data-dl-kv-x]')) { e.target.closest('tr').remove(); renumber(); } });
+  }
+
+  function initRich(root) {
+    const area = $(root, '.dl-rich__area'), val = $(root, '[data-dl-rich-value]');
+    const sync = () => { val.value = area.innerHTML; };
+    $$(root, '[data-cmd]').forEach(b => b.addEventListener('mousedown', e => { e.preventDefault(); document.execCommand(b.dataset.cmd); sync(); }));
+    area.addEventListener('input', sync);
+  }
+
+  function initUpload(up) {
+    const file = $(up, 'input[type=file]'), list = $(up, '[data-dl-upload-list]'), preview = up.hasAttribute('data-preview');
+    let files = [];
+    const draw = () => {
+      up.classList.toggle('has-file', files.length > 0);
+      list.innerHTML = '';
+      files.forEach((f, i) => {
+        const row = document.createElement('div'); row.className = 'dl-upload__file';
+        const isImg = preview && f.type.startsWith('image/');
+        row.innerHTML = (isImg ? '<img class="dl-upload__thumb" alt="">' : '<span>📄</span>') + `<span class="dl-upload__name">${esc(f.name)}</span><small>${Math.max(1, Math.round(f.size / 1024))} KB</small><button type="button" data-i="${i}" title="Hapus">✕</button>`;
+        if (isImg) { const img = $(row, 'img'); img.src = URL.createObjectURL(f); img.onload = () => URL.revokeObjectURL(img.src); }
+        list.appendChild(row);
+      });
+      const dt = new DataTransfer(); files.forEach(f => dt.items.add(f)); file.files = dt.files;
+    };
+    const take = incoming => { files = file.multiple ? files.concat([...incoming]) : [...incoming].slice(0, 1); draw(); };
+    up.addEventListener('click', e => { if (!e.target.closest('button') && !e.target.closest('.dl-upload__file')) file.click(); });
+    file.addEventListener('click', e => e.stopPropagation());
+    file.addEventListener('change', () => { if (file.files.length) take(file.files); });
+    list.addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { e.stopPropagation(); files.splice(+b.dataset.i, 1); draw(); } });
+    ['dragover', 'dragenter'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('is-drag'); }));
+    ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('is-drag'); }));
+    up.addEventListener('drop', e => { if (e.dataTransfer.files.length) take(e.dataTransfer.files); });
+  }
+
+  function initCounter(el) {
+    const input = el.closest('.dl-field').querySelector('.dl-input'), max = el.dataset.max;
+    const upd = () => { el.textContent = input.value.length + (max ? ' / ' + max : '') + ' karakter'; el.classList.toggle('is-full', !!max && input.value.length >= +max); };
+    input.addEventListener('input', upd); upd();
+  }
+
+  // Back: ke layar sebelumnya bila datang dari situs ini, selain itu ke alamat fallback.
+  function initBack(a) {
+    a.addEventListener('click', e => {
+      if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); }
+    });
+  }
+
+  // Konfirmasi sementara memakai dialog browser; Part 3 menggantinya dengan modal konfirmasi library.
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-dl-confirm]');
+    if (b && !window.confirm(b.dataset.dlConfirm)) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
 
   /* ============================ BASIC ============================ */
   // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
@@ -762,6 +866,13 @@
     document.querySelectorAll('[data-dl-lookup]').forEach(initLookup);
     document.querySelectorAll('[data-dl-tabs]').forEach(initTabs);
     document.querySelectorAll('[data-dl-stat]').forEach(initStat);
+    document.querySelectorAll('[data-dl-segment]').forEach(initSegment);
+    document.querySelectorAll('[data-dl-tags]').forEach(initTags);
+    document.querySelectorAll('[data-dl-kv]').forEach(initKv);
+    document.querySelectorAll('[data-dl-rich]').forEach(initRich);
+    document.querySelectorAll('[data-dl-upload]').forEach(initUpload);
+    document.querySelectorAll('[data-dl-counter]').forEach(initCounter);
+    document.querySelectorAll('[data-dl-back]').forEach(initBack);
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.addEventListener('click', () => {
