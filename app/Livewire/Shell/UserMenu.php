@@ -4,11 +4,8 @@ namespace App\Livewire\Shell;
 
 use App\Models\Sys\SysChatMessage;
 use App\Models\Sys\SysChatParticipant;
-use App\Models\Sys\SysLanguage;
 use App\Models\Sys\SysNotification;
-use App\Models\Sys\SysTheme;
 use App\Models\Sys\SysUserMenu;
-use App\Support\ActiveTheme;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -86,12 +83,6 @@ class UserMenu extends Component
         return $this->visibleUserMenuItems(['Pesan & Info', 'Akun'])->groupBy('section');
     }
 
-    #[Computed]
-    public function configMenuItems()
-    {
-        return $this->visibleUserMenuItems(['Configuration']);
-    }
-
     protected function visibleUserMenuItems(array $sections)
     {
         $user = Auth::user();
@@ -120,64 +111,6 @@ class UserMenu extends Component
             'SET_USER', 'SET_GROUP', 'SET_PERM', 'SET_MIGRATION' => (bool) Auth::user()->is_admin,
             default => true,
         };
-    }
-
-    #[Computed]
-    public function availableLanguages()
-    {
-        $flags = ['id' => '🇮🇩', 'en' => '🇬🇧'];
-
-        return SysLanguage::orderByDesc('is_default')->orderBy('code')->get()
-            ->map(fn ($l) => ['code' => $l->code, 'name' => $l->name, 'flag' => $flags[$l->code] ?? null]);
-    }
-
-    #[Computed]
-    public function themeMatrix(): array
-    {
-        $themes = SysTheme::where('activate', true)->orderBy('sort_order')->get();
-
-        $families = ['pastel' => 'Pastel', 'cerah' => 'Cerah', 'dark' => 'Dark', 'hitam' => 'Hitam'];
-        $hues = ['blue' => 'B', 'green' => 'G', 'red' => 'R'];
-
-        $matrix = [];
-        foreach ($families as $fKey => $fLabel) {
-            $cells = [];
-            foreach ($hues as $hKey => $hLabel) {
-                $t = $themes->first(fn ($x) => $x->family === $fKey && $x->hue === $hKey);
-                $cells[] = $t ? ['code' => $t->code, 'name' => $t->name, 'primary' => $t->primary_color] : null;
-            }
-            $matrix[] = ['label' => $fLabel, 'cells' => $cells];
-        }
-
-        $classic = $themes->whereNull('family')
-            ->map(fn ($t) => ['code' => $t->code, 'name' => $t->name, 'primary' => $t->primary_color, 'mode' => $t->mode])
-            ->values()->all();
-
-        return ['families' => array_values($families), 'hues' => array_values($hues), 'matrix' => $matrix, 'classic' => $classic];
-    }
-
-    public function currentThemeCode(): string
-    {
-        return ActiveTheme::resolve()->code;
-    }
-
-    public function setTheme(string $code): void
-    {
-        if (! SysTheme::where('code', $code)->where('activate', true)->exists()) {
-            return;
-        }
-
-        Auth::user()->update(['theme_code' => $code]);
-    }
-
-    public function currentLangCode(): string
-    {
-        return Translator::lang();
-    }
-
-    public function setLang(string $code): void
-    {
-        Translator::setLang($code);
     }
 
     public function logout()

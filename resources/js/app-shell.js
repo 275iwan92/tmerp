@@ -69,7 +69,7 @@ document.addEventListener('alpine:init', () => {
             // & tabel sys_user_menu.action_target.
             const openParam = new URLSearchParams(window.location.search).get('open');
             if (openParam) {
-                const booleanFlags = ['profileOpen', 'passwordOpen', 'notifOpen', 'chatOpen', 'aiOpen', 'portalOpen'];
+                const booleanFlags = ['profileOpen', 'passwordOpen', 'notifOpen', 'chatOpen', 'aiOpen', 'portalOpen', 'configWinOpen', 'activityWinOpen'];
                 if (booleanFlags.includes(openParam)) {
                     this.$nextTick(() => { this[openParam] = true; });
                 } else {
@@ -90,6 +90,8 @@ document.addEventListener('alpine:init', () => {
         chatOpen: false,
         aiOpen: false,
         portalOpen: false,
+        configWinOpen: false,
+        activityWinOpen: false,
 
         paletteOpen: false,
         paletteQuery: '',
@@ -283,13 +285,14 @@ document.addEventListener('alpine:init', () => {
     // AI di sini mencari dashboard laporan, tidak membuka Menu Operasional.
     Alpine.data('reportShell', (navItems) => ({
         ddOpen: false,
-        configOpen: false,
         notifOpen: false,
         chatOpen: false,
         aiOpen: false,
         profileOpen: false,
         passwordOpen: false,
         portalOpen: false,
+        configWinOpen: false,
+        activityWinOpen: false,
         pageUrl: '',
         pageTitle: '',
         ...aiPreview(),

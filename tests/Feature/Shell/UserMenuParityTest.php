@@ -16,6 +16,23 @@ use Tests\TestCase;
 // yang kebetulan mirip.
 class UserMenuParityTest extends TestCase
 {
+    private ?string $origLang = null;
+
+    // Label yang dicek berbahasa Indonesia; akun johiwan bisa sedang ber-lang
+    // 'en' -- paksa 'id' selama test, kembalikan nilai asli di tearDown.
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->origLang = SecUser::where('login', 'johiwan')->value('lang_code');
+        SecUser::where('login', 'johiwan')->update(['lang_code' => 'id']);
+    }
+
+    protected function tearDown(): void
+    {
+        SecUser::where('login', 'johiwan')->update(['lang_code' => $this->origLang]);
+        parent::tearDown();
+    }
+
     public function test_operational_menu_renders_full_user_menu_dropdown(): void
     {
         $admin = SecUser::where('login', 'johiwan')->firstOrFail();

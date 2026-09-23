@@ -149,6 +149,16 @@
         </div></div>
     @endif
 
+    {{-- Jendela (x-ui.window: geser/perkecil/perbesar/tutup), 2026-09-23. --}}
+    <x-ui.window open="configWinOpen" id="config" icon="fa-solid fa-sliders" :width="760" :height="520"
+        :title="Translator::t('shell_section_configuration', 'Configuration')">
+        <livewire:shell.user-configuration />
+    </x-ui.window>
+    <x-ui.window open="activityWinOpen" id="activity" icon="fa-solid fa-clock-rotate-left" :width="620" :height="560"
+        :title="Translator::t('shell_activity_title', 'Aktivitas saya')">
+        <livewire:shell.user-activity />
+    </x-ui.window>
+
     @if ($standalone)
         <div class="mov" :class="{ on: !!pageUrl }"><div class="modal wide">
             <div class="mh"><h3 x-text="pageTitle"></h3><button type="button" class="x" @click="pageUrl = ''">&times;</button></div>

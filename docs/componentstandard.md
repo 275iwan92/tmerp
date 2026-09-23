@@ -53,6 +53,7 @@ UiComponent (abstract)       base() + variants() + sizes() + extra() -> classes(
 │   └── BadgeButton          tampilan Badge, elemen <button>
 ├── Card                     section|panel|muted|plain
 ├── Tabs, Table, Modal, Progress, Metric, ActionBar, PanelHeader
+├── Window                   jendela popup geser/perkecil/perbesar/tutup (menu profil)
 Tone (final)                 palet semantik tunggal: neutral|muted|code|accent|info|
                              success|warn|danger|highlight|extra  -> SOFT/SOLID/TEXT
 ```
@@ -92,7 +93,15 @@ Detail props ada di `resources/views/components/_manifest.yaml` bagian `ui:`.
 <x-ui.metric label="MTTR aktual">1,5 jam</x-ui.metric>
 <x-ui.panel-header title="Edit Mesin"><x-slot:aside>2 proses</x-slot:aside></x-ui.panel-header>
 <x-ui.action-bar> <x-ui.button preset="save" /> <x-ui.button preset="cancel" /> </x-ui.action-bar>
+<x-ui.window open="configWinOpen" id="config" title="Configuration" :width="760" :height="520"> ... </x-ui.window>
 ```
+
+`x-ui.window` (2026-09-23): perilaku di `resources/js/ui-window.js` (Alpine
+`tmWindow` + store `tmWin` untuk z-index & dok). Buka/tutup = flag Alpine milik
+shell (`appShell` & `reportShell`), jadi item `sys_user_menu` bertipe `modal`
+cukup menunjuk nama flag-nya. Jendela yang diperkecil disembunyikan lewat class
+`is-min` di CSS — **bukan** `x-show` pada body, karena `x-show` itu terbukti
+tidak bereaksi bila body membungkus komponen Livewire anak.
 
 **Preset tombol** mengunci label baku CLAUDE.md §3 (Simpan/Batal/Tutup ikut
 `lang_code`, kunci terjemahan `shared_btn_*`). Slot mengalahkan label preset

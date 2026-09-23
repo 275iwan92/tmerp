@@ -30,6 +30,7 @@ ui: # Layer 1 PRIMITIVE (class PHP app/View/Components/Ui, turunan UiComponent) 
   x-ui.metric: {props: {label: null, hint: null, tone: neutral, size: "sm|lg", emphasis: false}, slots: "default = nilai, footer"}
   x-ui.panel-header: {props: {title: null, variant: "navy|light"}, slots: "aside"}
   x-ui.action-bar: {props: {variant: "footer|inline|end"}, note: "footer = strip bawah form p-5"}
+  x-ui.window: {props: {open: "nama flag Alpine di shell (req, mis. configWinOpen)", id: "req, unik", title: null, icon: null, width: 720, height: 500}, slot: "isi jendela", note: "geser/perkecil(dok)/perbesar/tutup -- resources/js/ui-window.js; flag baru wajib didaftarkan di appShell+reportShell (app-shell.js). Dipakai menu profil (sys_user_menu action_type modal)."}
   Tone: "App\\View\\Components\\Ui\\Tone::soft|solid|text(tone), ::forScore(nilai, good=80, fair=50)"
 
 tones: # palet bersama, jangan bikin warna baru

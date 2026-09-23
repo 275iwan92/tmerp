@@ -8,4 +8,5 @@ import './row-multiselect.js';
 import './date-picker.js';
 import './component-library.js';
 import './case-input.js';
+import './ui-window.js';
 import './report-charts.js';

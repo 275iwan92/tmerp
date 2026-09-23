@@ -931,3 +931,68 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .tm-table-hover tbody tr:hover { @apply bg-surface-hover; }
 .tm-table :is(th, td).text-right { text-align: right; }
 .tm-table :is(th, td).text-center { text-align: center; }
+
+/* x-ui.window (App\View\Components\Ui\Window + resources/js/ui-window.js).
+ * Warna ikut variabel shell (--sh-*: sadar mode gelap/terang sys_theme) dengan
+ * cadangan token @theme bila dipakai di luar .shell. */
+.tm-win { position: fixed; display: flex; flex-direction: column; overflow: hidden; border-radius: 12px;
+    background: var(--sh-surface, var(--color-surface)); color: var(--sh-ink-strong, var(--color-ink));
+    border: 1px solid var(--sh-border, var(--color-line)); box-shadow: 0 18px 50px rgba(15, 23, 42, .28); }
+.tm-win.is-min { border-radius: 10px; }
+.tm-win-head { display: flex; align-items: center; gap: 9px; padding: 9px 8px 9px 14px; cursor: move; user-select: none; touch-action: none;
+    background: var(--color-navy); color: #fff; font-size: 13px; font-weight: 700; }
+.tm-win.is-max .tm-win-head, .tm-win.is-min .tm-win-head { cursor: default; }
+.tm-win-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tm-win-ctl { display: flex; gap: 2px; }
+.tm-win-ctl button { width: 28px; height: 26px; border: 0; border-radius: 6px; background: transparent; color: rgba(255,255,255,.8); cursor: pointer; font-size: 12px; }
+.tm-win-ctl button:hover { background: rgba(255,255,255,.14); color: #fff; }
+.tm-win-ctl .tm-win-x:hover { background: var(--color-danger); }
+.tm-win-body { flex: 1; min-height: 0; overflow: auto; }
+.tm-win.is-min .tm-win-body { display: none; }
+
+/* Isi jendela Configuration (livewire/shell/user-configuration) & Aktivitas saya. */
+.tm-cfg { display: flex; height: 100%; font-size: 12.5px; }
+.tm-cfg-nav { width: 172px; flex-shrink: 0; padding: 10px 8px; border-right: 1px solid var(--sh-border, var(--color-line));
+    background: var(--sh-bg-soft, var(--color-surface-alt)); display: flex; flex-direction: column; gap: 2px; }
+.tm-cfg-nav-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; border: 0; border-radius: 8px;
+    background: transparent; color: var(--sh-ink, var(--color-ink-soft)); cursor: pointer; text-align: left; font: inherit; }
+.tm-cfg-nav-item i { width: 16px; text-align: center; opacity: .8; }
+.tm-cfg-nav-item:hover { background: var(--sh-hover, var(--color-line-soft)); }
+.tm-cfg-nav-item.on { background: var(--color-accent); color: #fff; font-weight: 700; }
+.tm-cfg-nav-item em, .tm-cfg-soon { margin-left: auto; font-style: normal; font-size: 9.5px; font-weight: 700; padding: 1px 6px; border-radius: 99px;
+    background: var(--color-highlight-soft); color: var(--color-highlight-ink); }
+.tm-cfg-main { flex: 1; min-width: 0; overflow: auto; padding: 16px 18px; }
+.tm-cfg-main h4 { margin: 0 0 4px; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.tm-cfg-main h5 { margin: 16px 0 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--sh-muted, var(--color-muted)); }
+.tm-cfg-hint { margin: 0 0 14px; color: var(--sh-muted, var(--color-muted)); font-size: 11.5px; }
+.tm-cfg-matrix { display: grid; grid-template-columns: 64px repeat(3, minmax(0, 1fr)); gap: 8px; align-items: center; }
+.tm-cfg-colhead { text-align: center; font-size: 10.5px; font-weight: 800; text-transform: uppercase; color: var(--sh-muted, var(--color-muted)); }
+.tm-cfg-rowhead { font-size: 11.5px; font-weight: 700; }
+.tm-cfg-classic { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.tm-cfg-theme { display: flex; flex-direction: column; align-items: stretch; gap: 5px; padding: 6px; border-radius: 10px; cursor: pointer; font: inherit;
+    background: var(--sh-surface, var(--color-surface)); color: inherit; border: 2px solid var(--sh-border, var(--color-line-soft)); }
+.tm-cfg-theme:hover { border-color: var(--color-accent); }
+.tm-cfg-theme.on { border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-soft); }
+.tm-cfg-theme small { font-size: 10px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-cfg-swatch { display: flex; height: 30px; border-radius: 6px; overflow: hidden; }
+.tm-cfg-swatch i { width: 34%; } .tm-cfg-swatch b { flex: 1; }
+.tm-cfg-langs { display: flex; flex-direction: column; gap: 8px; max-width: 360px; }
+.tm-cfg-lang { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 10px; cursor: pointer; font: inherit; text-align: left;
+    background: var(--sh-surface, var(--color-surface)); color: inherit; border: 2px solid var(--sh-border, var(--color-line-soft)); }
+.tm-cfg-lang .flag { font-size: 20px; }
+.tm-cfg-lang i { margin-left: auto; color: var(--color-accent); }
+.tm-cfg-lang.on { border-color: var(--color-accent); }
+.tm-cfg-soonbox { display: grid; grid-template-columns: 130px 1fr; gap: 10px 12px; align-items: center; opacity: .6; max-width: 420px; }
+.tm-cfg-soonbox .lbl { font-weight: 700; font-size: 11.5px; }
+.tm-cfg-soonbox .opts { display: flex; gap: 6px; }
+.tm-cfg-soonbox .opts span { padding: 5px 10px; border-radius: 7px; border: 1px solid var(--sh-border, var(--color-line)); font-size: 11px; }
+.tm-cfg-soonbox .opts span.on { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
+.tm-act { padding: 14px 16px; font-size: 12px; display: flex; flex-direction: column; gap: 16px; }
+.tm-act h4 { margin: 0 0 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--sh-muted, var(--color-muted)); }
+.tm-act-row { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-bottom: 1px solid var(--sh-border, var(--color-line-soft)); }
+.tm-act-row .ic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; background: var(--color-accent-soft); color: var(--color-accent); }
+.tm-act-row .ic.bad { background: var(--color-danger-soft); color: var(--color-danger-ink); }
+.tm-act-row .main { flex: 1; min-width: 0; }
+.tm-act-row .main b { display: block; font-size: 12.5px; }
+.tm-act-row .main span, .tm-act-row time { font-size: 11px; color: var(--sh-muted, var(--color-muted)); }
+.tm-act-row time { white-space: nowrap; }
