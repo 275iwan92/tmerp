@@ -678,3 +678,4 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 .dl-theme-row__head{display:flex;align-items:center;gap:8px;font-size:calc(12px * var(--dl-font-scale));color:var(--dl-muted);margin-bottom:10px}
 .dl-theme-row__head b{color:var(--dl-ink-strong);font-size:calc(13px * var(--dl-font-scale))}
 .dl-theme-row__dot{width:12px;height:12px;border-radius:50%;background:var(--dl-accent)}
+.dl-pick__preview{padding:4px 10px 8px;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-accent);font-weight:600}

@@ -13,12 +13,13 @@ use Symfony\Component\Finder\Finder;
 final class Catalog
 {
     public const FIELDS = [
-        'text' => ['Teks', 'Text'], 'password' => ['Password', 'Password'], 'select' => ['Pilihan + cari', 'Select'],
-        'color' => ['Warna', 'Color'], 'radio' => ['Radio', 'Radio'], 'toggle' => ['Saklar', 'Toggle'],
-        'checkboxes' => ['Checkbox group', 'Checkboxes'], 'slider' => ['Slider', 'Slider'], 'date-range' => ['Rentang tanggal', 'DateRange'],
-        'multi-select' => ['Dropdown centang', 'MultiSelect'], 'otp' => ['OTP', 'Otp'], 'rating' => ['Rating bintang', 'Rating'],
-        'masked' => ['Mask (NIK)', 'Masked'], 'phone' => ['No. HP', 'Phone'], 'money' => ['Uang', 'Money'], 'date' => ['Tanggal', 'Date'],
-        'time' => ['Jam', 'Time'], 'decimal' => ['Desimal', 'Decimal'], 'number' => ['Angka spin', 'Number'], 'upload' => ['Upload', 'Upload'],
+        'text' => ['Text', 'Text'], 'password' => ['Password', 'Password'], 'select' => ['Select (searchable)', 'Select'],
+        'color' => ['Color', 'Color'], 'radio' => ['Radio', 'Radio'], 'toggle' => ['Toggle', 'Toggle'],
+        'checkboxes' => ['Checkboxes', 'Checkboxes'], 'slider' => ['Slider', 'Slider'], 'date' => ['Date', 'Date'], 'time' => ['Time', 'Time'],
+        'date-time' => ['Date Time', 'DateTime'], 'date-range' => ['Date Range', 'DateRange'],
+        'multi-select' => ['Multi Select', 'MultiSelect'], 'otp' => ['OTP', 'Otp'], 'rating' => ['Rating', 'Rating'],
+        'masked' => ['Masked (NIK)', 'Masked'], 'phone' => ['Phone', 'Phone'], 'money' => ['Money', 'Money'],
+        'decimal' => ['Decimal', 'Decimal'], 'number' => ['Number (spinner)', 'Number'], 'upload' => ['Upload', 'Upload'],
     ];
 
     public const LOGIN_CLASSES = ['Devlib\Components\Frame', 'Devlib\Components\LoginBox', 'Devlib\Components\Clock', 'Devlib\Components\Quote',
@@ -48,7 +49,7 @@ final class Catalog
                 'files' => ['Mockup' => ['mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html']]],
             ['code' => 'P2', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
                 'pages' => $fieldPages + [
-                    'field-lookup' => ['label' => 'Lookup (pilih dari master)', 'icon' => 'fa-solid fa-magnifying-glass', 'classes' => ['Devlib\\Components\\Field\\Lookup'], 'mockup' => 'UIUX_components_part1.html'],
+                    'field-lookup' => ['label' => 'Field · Lookup', 'icon' => 'fa-solid fa-magnifying-glass', 'classes' => ['Devlib\\Components\\Field\\Lookup'], 'mockup' => 'UIUX_components_part1.html'],
                     'input-theme' => ['label' => 'Input · Themes', 'icon' => 'fa-solid fa-swatchbook', 'classes' => ['Devlib\\Components\\Field\\Text', 'Devlib\\Components\\Field\\Select'], 'mockup' => 'bukti_komponen_input_tema.html'],
                     'badge' => ['label' => 'Badge (status dokumen)', 'icon' => 'fa-solid fa-tag', 'classes' => ['Devlib\\Components\\Badge']],
                     'tooltip' => ['label' => 'Tooltip', 'icon' => 'fa-solid fa-comment', 'classes' => ['Devlib\\Components\\Tooltip']],

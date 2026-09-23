@@ -263,6 +263,41 @@
       if (hidden.value) setVal(new Date(hidden.value));
     }
 
+    const dtt = $(f, '[data-dl-datetime]');
+    if (dtt) {
+      const hidden = $(dtt, '[data-dl-value]'), text = $(dtt, '[data-dl-date-text]'), days = $(dtt, '[data-dl-cal-days]'), title = $(dtt, '[data-dl-cal-title]');
+      const hh = $(dtt, '[data-dl-time-h]'), mm = $(dtt, '[data-dl-time-m]'), prev = $(dtt, '[data-dl-dt-preview]'), tz = dtt.dataset.tzLabel || 'WIB';
+      const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const pad = n => String(n).padStart(2, '0');
+      let [d0, t0] = (hidden.value || '').split(/[ T]/);
+      let sel = d0 ? d0 : null;
+      let view = sel ? new Date(sel) : new Date();
+      if (t0) { hh.value = t0.slice(0, 2); const m = Math.round(+t0.slice(3, 5) / +mm.options[1].value) * +mm.options[1].value; mm.value = pad(m % 60); }
+      const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      const label = (ds, h, m) => { const d = new Date(ds); return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}, ${h}:${m} ${tz}`; };
+      const preview = () => { prev.textContent = 'Selected: ' + (sel ? label(sel, hh.value, mm.value) : '-'); };
+      const draw = () => {
+        title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
+        const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+        let h = '<div></div>'.repeat(first);
+        for (let d = 1; d <= total; d++) { const v = iso(new Date(view.getFullYear(), view.getMonth(), d)); h += `<button type="button" data-d="${v}" class="${v === sel ? 'is-sel' : ''}">${d}</button>`; }
+        days.innerHTML = h; preview();
+      };
+      const p = bindPanel(dtt, draw);
+      days.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { sel = b.dataset.d; draw(); } });
+      [hh, mm].forEach(s => s.addEventListener('change', preview));
+      $(dtt, '[data-dl-cal-prev]').addEventListener('click', () => { view.setMonth(view.getMonth() - 1); draw(); });
+      $(dtt, '[data-dl-cal-next]').addEventListener('click', () => { view.setMonth(view.getMonth() + 1); draw(); });
+      $(dtt, '[data-dl-cal-clear]').addEventListener('click', () => { sel = null; hidden.value = ''; text.value = ''; p.close(); });
+      $(dtt, '[data-dl-dt-apply]').addEventListener('click', () => {
+        if (!sel) { sel = iso(new Date()); }
+        hidden.value = `${sel} ${hh.value}:${mm.value}`; text.value = label(sel, hh.value, mm.value); p.close();
+        hidden.dispatchEvent(new Event('change', {bubbles: true}));
+      });
+      text.addEventListener('click', () => $(dtt, '[data-dl-dd-toggle]').click());
+      if (sel) text.value = label(sel, hh.value, mm.value);
+    }
+
     const tm = $(f, '[data-dl-time]');
     if (tm) {
       const text = $(tm, '[data-dl-time-text]'), h = $(tm, '[data-dl-time-h]'), m = $(tm, '[data-dl-time-m]');
