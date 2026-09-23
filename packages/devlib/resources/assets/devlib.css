@@ -1852,3 +1852,14 @@ td.dl-print__no{text-align:center}
 
 .dl-dieline__foot{display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:center}
 .dl-dieline__foot .dl-dieline__3d{position:relative;right:auto;top:auto;height:120px;border:1px solid var(--dl-border);box-shadow:none;background:var(--dl-surface)}
+
+/* ================= FLOW CONFIG (Part 6) ================= */
+.dl-flowcfg{display:flex;flex-direction:column;gap:10px}
+.dl-flowcfg__panel{display:grid;grid-template-columns:1fr 320px;gap:12px;align-items:start;padding-top:10px}
+.dl-flowcfg__sim{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:12px;margin-top:12px;display:flex;flex-direction:column;gap:10px}
+.dl-flowcfg__sim label{display:flex;flex-direction:column;gap:3px;font-size:calc(11.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-f-label)}
+.dl-flowcfg__sim input{border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);padding:7px 9px;font-family:inherit;text-align:right;background:var(--dl-surface);color:var(--dl-f-ink)}
+.dl-flowcfg__path .is-skip{opacity:.45}
+.dl-flowcfg__path .is-skip b{text-decoration:line-through}
+.dl-flowcfg__foot{display:flex;justify-content:flex-end}
+@media (max-width:900px){.dl-flowcfg__panel{grid-template-columns:1fr}}
