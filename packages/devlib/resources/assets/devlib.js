@@ -3614,6 +3614,193 @@
     drawList(); drawMain();
   }
 
+  /* ============================ RIBBON (Excel) ============================ */
+  function initRibbon(el) {
+    const closeMenus = except => $$(el, '.dl-rb__drop.is-open, .dl-rb__split.is-open, .dl-rb__mi.is-open').forEach(x => { if (!except || !x.contains(except)) x.classList.remove('is-open'); });
+    const panelOf = b => b.closest('[data-rb-panel]');
+    const labelOf = b => (b.querySelector('.dl-rb__lbl, span:not(.dl-rb__ico):not(.dl-rb__mico)')?.textContent || b.title || b.dataset.rbKey).trim();
+    const tabs = () => $$(el, '[data-rb-tab]');
+    const setTab = key => { tabs().forEach(t => t.classList.toggle('is-active', t.dataset.rbTab === key)); $$(el, '[data-rb-panel]').forEach(p => p.classList.toggle('is-active', p.dataset.rbPanel === key)); };
+    function run(b) {
+      let on = null;
+      if (b.hasAttribute('data-rb-toggle')) {
+        const r = b.dataset.rbRadio;
+        on = r ? true : b.getAttribute('aria-pressed') !== 'true';
+        if (r) $$(el, `[data-rb-radio="${r}"]`).forEach(x => { x.setAttribute('aria-pressed', 'false'); x.classList.remove('is-on'); });
+        b.setAttribute('aria-pressed', String(on)); b.classList.toggle('is-on', on);
+      }
+      closeMenus(); el.classList.remove('is-float'); tips(false);
+      const ev = new CustomEvent('dl:ribbon', {bubbles: true, cancelable: true, detail: {key: b.dataset.rbKey, label: labelOf(b), on}});
+      if (el.dispatchEvent(ev)) toast(`${labelOf(b)}${on == null ? '' : on ? ' — aktif' : ' — mati'} (pratinjau)`);
+    }
+    el.addEventListener('click', e => {
+      const x = e.target;
+      const tab = x.closest('[data-rb-tab]');
+      if (tab) { const was = tab.classList.contains('is-active'); setTab(tab.dataset.rbTab); if (el.classList.contains('is-min')) el.classList.toggle('is-float', !(was && el.classList.contains('is-float'))); return; }
+      if (x.closest('[data-rb-pin]')) { el.classList.toggle('is-min'); el.classList.remove('is-float'); return; }
+      if (x.closest('[data-rb-file]')) { $(el, '[data-rb-stage]').hidden = false; return; }
+      if (x.closest('[data-rb-stagex]')) { $(el, '[data-rb-stage]').hidden = true; return; }
+      const drop = x.closest('[data-rb-drop]');
+      if (drop) {
+        const box = drop.parentElement, open = !box.classList.contains('is-open'); closeMenus(); box.classList.toggle('is-open', open);
+        // Panel ribbon bisa di-scroll horizontal -> menu dipasang fixed supaya tidak terpotong.
+        if (open) { const m = $(box, ':scope > .dl-rb__menu'), r = box.getBoundingClientRect(); m.style.position = 'fixed'; m.style.top = r.bottom + 'px'; m.style.left = Math.max(8, Math.min(r.left, innerWidth - m.offsetWidth - 8)) + 'px'; }
+        return;
+      }
+      const sub = x.closest('[data-rb-sub]');
+      if (sub) { sub.parentElement.classList.toggle('is-open'); return; }
+      const f = x.closest('[data-rb-run]'); if (f) { const b = $(el, `[data-rb-key="${CSS.escape(f.dataset.rbRun)}"]`); $(el, '[data-rb-found]').hidden = true; $(el, '[data-rb-find]').value = ''; if (b) run(b); return; }
+      const k = x.closest('[data-rb-key]');
+      if (k) { if ($(el, '[data-rb-stage]') && k.closest('[data-rb-stage]')) $(el, '[data-rb-stage]').hidden = true; return run(k); }
+    });
+    el.addEventListener('dblclick', e => { if (e.target.closest('[data-rb-tab]')) { el.classList.toggle('is-min'); el.classList.remove('is-float'); } });
+    document.addEventListener('click', e => { if (!el.contains(e.target)) { closeMenus(); el.classList.remove('is-float'); } });
+    window.addEventListener('scroll', e => { if (!(e.target instanceof Element && e.target.closest('.dl-rb__menu'))) closeMenus(); }, true);
+    // Cari perintah (seperti "Tell me"): semua tombol ber-key dari semua tab + jalurnya.
+    el.addEventListener('input', e => {
+      if (!e.target.matches('[data-rb-find]')) return;
+      const q = e.target.value.trim().toLowerCase(), box = $(el, '[data-rb-found]');
+      if (!q) { box.hidden = true; return; }
+      const hits = $$(el, '[data-rb-panel] [data-rb-key]').map(b => { const p = panelOf(b), g = b.closest('.dl-rb__group'); return {key: b.dataset.rbKey, label: labelOf(b), path: `${$(el, `[data-rb-tab="${p.dataset.rbPanel}"]`).textContent} › ${g ? $(g, '.dl-rb__glabel').textContent : ''}`}; })
+        .filter((h, i, a) => h.label.toLowerCase().includes(q) && a.findIndex(z => z.key === h.key) === i).slice(0, 8);
+      box.innerHTML = hits.map(h => `<button type="button" data-rb-run="${esc(h.key)}"><b>${esc(h.label)}</b><small>${esc(h.path)}</small></button>`).join('') || '<p>Tidak ada perintah.</p>';
+      box.hidden = false;
+    });
+    // KeyTips: tekan Alt (lepas) -> huruf muncul di tab & tombol ber-tip; tekan hurufnya = klik.
+    let tipOn = false;
+    function tips(on) {
+      tipOn = on; $$(el, '.dl-rb__kt').forEach(t => t.remove());
+      if (!on) return;
+      const scope = [...tabs(), ...$$(el, '[data-rb-file]'), ...$$(el, '.dl-rb__panel.is-active [data-rb-tip]')];
+      scope.filter(b => b.dataset.rbTip).forEach(b => b.insertAdjacentHTML('beforeend', `<span class="dl-rb__kt">${esc(b.dataset.rbTip)}</span>`));
+    }
+    let hot = false, altAlone = false;
+    el.addEventListener('pointerenter', () => { hot = true; });
+    document.addEventListener('pointerdown', e => { hot = el.contains(e.target); });
+    document.addEventListener('keydown', e => {
+      if (!hot) return;
+      if (e.key === 'Alt') { altAlone = true; return; }
+      altAlone = false;
+      if (e.ctrlKey && e.key === 'F1') { e.preventDefault(); el.classList.toggle('is-min'); return; }
+      if (e.key === 'Escape') { closeMenus(); tips(false); el.classList.remove('is-float'); const st = $(el, '[data-rb-stage]'); if (st) st.hidden = true; return; }
+      if (tipOn && /^[a-z0-9]$/i.test(e.key)) {
+        const t = [...tabs(), ...$$(el, '[data-rb-file]'), ...$$(el, '.dl-rb__panel.is-active [data-rb-tip]')].find(b => (b.dataset.rbTip || '').toLowerCase() === e.key.toLowerCase());
+        if (t) { e.preventDefault(); t.click(); if (t.matches('[data-rb-tab]')) tips(true); else tips(false); }
+      }
+    });
+    document.addEventListener('keyup', e => { if (hot && e.key === 'Alt' && altAlone) { e.preventDefault(); tips(!tipOn); } });
+  }
+
+  /* ============================ MEGA MENU (ScriptCase) ============================ */
+  function initMegaMenu(el) {
+    const tops = () => $$(el, '.dl-mm__top');
+    const close = except => tops().forEach(t => { if (t !== except) { t.classList.remove('is-open'); $(t, '[data-mm-open]')?.setAttribute('aria-expanded', 'false'); } });
+    const open = t => { close(t); t.classList.add('is-open'); $(t, '[data-mm-open]')?.setAttribute('aria-expanded', 'true'); };
+    const narrow = () => el.classList.contains('is-narrow');
+    new ResizeObserver(() => { el.classList.toggle('is-narrow', el.clientWidth < 760); if (!narrow()) el.classList.remove('is-mobile'); }).observe(el);
+    let timer;
+    tops().forEach(t => {
+      if (!$(t, '[data-mm-open]')) return;
+      t.addEventListener('mouseenter', () => { if (narrow() || !matchMedia('(hover: hover)').matches) return; clearTimeout(timer); open(t); });
+      t.addEventListener('mouseleave', () => { if (narrow()) return; timer = setTimeout(() => t.classList.remove('is-open'), 180); });
+    });
+    el.addEventListener('click', e => {
+      const x = e.target;
+      if (x.closest('[data-mm-burger]')) { el.classList.toggle('is-mobile'); return; }
+      const o = x.closest('[data-mm-open]'); if (o) { const t = o.closest('.dl-mm__top'); t.classList.contains('is-open') ? close() : open(t); return; }
+      const s = x.closest('[data-mm-sub]'); if (s) { s.parentElement.classList.toggle('is-open'); return; }
+      const k = x.closest('[data-mm-key]');
+      if (k) {
+        e.preventDefault();
+        tops().forEach(t => t.classList.toggle('is-current', t.contains(k)));
+        close(); el.classList.remove('is-mobile');
+        const label = k.textContent.trim();
+        if (el.dispatchEvent(new CustomEvent('dl:menu', {bubbles: true, cancelable: true, detail: {key: k.dataset.mmKey, label}}))) toast(`Buka: ${label} (pratinjau)`);
+      }
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { close(); return; }
+      const cur = e.target.closest('.dl-mm__tl'); if (!cur || !['ArrowLeft', 'ArrowRight', 'ArrowDown'].includes(e.key)) return;
+      e.preventDefault();
+      const all = $$(el, '.dl-mm__tl'), i = all.indexOf(cur);
+      if (e.key === 'ArrowDown') { const t = cur.closest('.dl-mm__top'); if ($(t, '.dl-mm__panel')) { open(t); $(t, '.dl-mm__panel a, .dl-mm__panel button')?.focus(); } return; }
+      all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length].focus();
+    });
+    document.addEventListener('click', e => { if (!el.contains(e.target)) { close(); el.classList.remove('is-mobile'); } });
+  }
+
+  /* ============================ SIDE MENU (kiri / kanan) ============================ */
+  function initSideMenu(el) {
+    const key = 'dl-sm-' + el.dataset.id;
+    const load = (k, d) => { try { return JSON.parse(localStorage.getItem(key + k)) ?? d; } catch (e) { return d; } };
+    const save = (k, v) => { try { localStorage.setItem(key + k, JSON.stringify(v)); } catch (e) {} };
+    let fav = load('-fav', []), recent = load('-recent', []);
+    if (load('-mini', null) != null) el.classList.toggle('is-mini', load('-mini', false));
+    const tree = $(el, '[data-sm-tree]'), fly = $(el, '[data-sm-fly]');
+    const leaf = k => $(tree, `[data-sm-leaf="${CSS.escape(k)}"]`);
+    const labelOf = k => $(leaf(k) || el, '.dl-sm__t')?.textContent || k;
+    const openPath = li => { let p = li.parentElement.closest('[data-sm-node]'); while (p) { p.classList.add('is-open'); $(p, ':scope > [data-sm-toggle]').setAttribute('aria-expanded', 'true'); p = p.parentElement.closest('[data-sm-node]'); } };
+    const mini = () => el.classList.contains('is-mini');
+    function extras() {
+      const row = k => { const l = leaf(k); if (!l) return ''; const a = $(l, '.dl-sm__a'); return `<li class="dl-sm__leaf ${l.classList.contains('is-active') ? 'is-active' : ''}"><a href="${esc(a.getAttribute('href'))}" class="dl-sm__a" data-sm-key="${esc(k)}" title="${esc(labelOf(k))}">${$(l, '.dl-sm__ico') ? `<span class="dl-sm__ico">${$(l, '.dl-sm__ico').innerHTML}</span>` : '<span class="dl-sm__dot"></span>'}<span class="dl-sm__t">${esc(labelOf(k))}</span></a></li>`; };
+      const fb = $(el, '[data-sm-fav]'), rb = $(el, '[data-sm-recent]');
+      if (fb) { $(fb, '[data-sm-favlist]').innerHTML = fav.map(row).join(''); fb.hidden = !fav.some(leaf); }
+      if (rb) { $(rb, '[data-sm-recentlist]').innerHTML = recent.map(row).join(''); rb.hidden = !recent.some(leaf); }
+      $$(tree, '[data-sm-star]').forEach(s => { const on = fav.includes(s.dataset.smStar); s.classList.toggle('is-on', on); s.innerHTML = `<i class="fa-${on ? 'solid' : 'regular'} fa-star"></i>`; });
+    }
+    function showFly(node) {
+      const btn = $(node, ':scope > [data-sm-toggle]'), sub = $(node, ':scope > .dl-sm__ul');
+      fly.innerHTML = `<div class="dl-sm__flyhead">${esc($(btn, '.dl-sm__t').textContent)}</div>` + sub.outerHTML;
+      $$(fly, '.dl-sm__star').forEach(s => s.remove());
+      const r = btn.getBoundingClientRect(), base = el.getBoundingClientRect();
+      fly.style.top = Math.max(0, r.top - base.top) + 'px';
+      fly.hidden = false; fly.dataset.for = $(btn, '.dl-sm__t').textContent;
+    }
+    const hideFly = () => { fly.hidden = true; fly.innerHTML = ''; };
+    let flyTimer;
+    tree.addEventListener('mouseover', e => {
+      if (!mini()) return;
+      const n = e.target.closest('[data-sm-node]'); if (!n || n.parentElement.dataset.depth !== '0') return;
+      clearTimeout(flyTimer); showFly(n);
+    });
+    el.addEventListener('mouseleave', () => { if (mini()) flyTimer = setTimeout(hideFly, 200); });
+    fly.addEventListener('mouseenter', () => clearTimeout(flyTimer));
+    el.addEventListener('click', e => {
+      const x = e.target;
+      if (x.closest('[data-sm-mini]')) { el.classList.toggle('is-mini'); hideFly(); save('-mini', mini()); return; }
+      const t = x.closest('[data-sm-toggle]');
+      if (t) {
+        const node = t.parentElement;
+        if (mini() && !fly.contains(t) && node.parentElement.dataset.depth === '0') { fly.hidden || fly.dataset.for !== $(t, '.dl-sm__t').textContent ? showFly(node) : hideFly(); return; }
+        const on = !node.classList.contains('is-open'); node.classList.toggle('is-open', on); t.setAttribute('aria-expanded', String(on)); return;
+      }
+      const s = x.closest('[data-sm-star]');
+      if (s) { const k = s.dataset.smStar; fav = fav.includes(k) ? fav.filter(z => z !== k) : [...fav, k]; save('-fav', fav); extras(); toast(fav.includes(k) ? `${labelOf(k)} ditambahkan ke Favorit.` : `${labelOf(k)} dilepas dari Favorit.`); return; }
+      const a = x.closest('[data-sm-key]');
+      if (a) {
+        const k = a.dataset.smKey;
+        if (a.getAttribute('href') === '#') e.preventDefault();
+        $$(tree, '.dl-sm__leaf.is-active').forEach(l => l.classList.remove('is-active'));
+        const l = leaf(k); if (l) { l.classList.add('is-active'); openPath(l); }
+        recent = [k, ...recent.filter(z => z !== k)].slice(0, 5); save('-recent', recent); extras(); hideFly();
+        if (el.dispatchEvent(new CustomEvent('dl:side-menu', {bubbles: true, cancelable: true, detail: {key: k, label: labelOf(k)}}))) toast(`Buka: ${labelOf(k)} (pratinjau)`);
+      }
+    });
+    el.addEventListener('input', e => {
+      if (!e.target.matches('[data-sm-q]')) return;
+      const q = e.target.value.trim().toLowerCase();
+      $$(tree, 'li').forEach(li => li.classList.remove('is-hidden', 'is-hit'));
+      if (!q) return;
+      $$(tree, '.dl-sm__cap').forEach(c => c.classList.add('is-hidden'));
+      $$(tree, '[data-sm-leaf]').forEach(l => { const hit = $(l, '.dl-sm__t').textContent.toLowerCase().includes(q); l.classList.toggle('is-hidden', !hit); l.classList.toggle('is-hit', hit); if (hit) openPath(l); });
+      // Nama grup cocok -> seluruh isinya ikut tampil.
+      $$(tree, '[data-sm-node]').forEach(n => { if ($(n, ':scope > [data-sm-toggle] .dl-sm__t').textContent.toLowerCase().includes(q)) { $$(n, 'li').forEach(li => li.classList.remove('is-hidden')); const l = $(n, '[data-sm-leaf]'); if (l) openPath(l); } });
+      $$(tree, '[data-sm-node]').reverse().forEach(n => n.classList.toggle('is-hidden', !$(n, '[data-sm-leaf]:not(.is-hidden)')));
+    });
+    const act = $(tree, '.dl-sm__leaf.is-active'); if (act) openPath(act);
+    extras();
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -3651,6 +3838,9 @@
     document.querySelectorAll('[data-dl-filter]').forEach(initFilterForm);
     document.querySelectorAll('[data-dl-formation]').forEach(initFormation);
     document.querySelectorAll('[data-dl-chat]').forEach(initChat);
+    document.querySelectorAll('[data-dl-ribbon]').forEach(initRibbon);
+    document.querySelectorAll('[data-dl-mega]').forEach(initMegaMenu);
+    document.querySelectorAll('[data-dl-side-menu]').forEach(initSideMenu);
     document.querySelectorAll('[data-dl-sheet]').forEach(initSheet);
     document.querySelectorAll('[data-dl-pivot]').forEach(initPivot);
     document.querySelectorAll('[data-dl-drill]').forEach(initDrill);

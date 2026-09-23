@@ -157,6 +157,13 @@ final class Catalog
                     'tata layout layar imposistion.jpg', 'Organization-Structure-Mockup.html', 'mockup_ID_card.png', 'mockup_mastercard.jpg', 'mockup_mastercard_ver2.jpg']]],
             ['code' => 'P7', 'short' => 'MD', 'label' => '7 · Menu & Dashboard', 'icon' => 'fa-solid fa-table-columns',
                 'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html'],
+                    'p7-menus' => ['label' => 'Menu (Ribbon · Mega · Side Panel)', 'icon' => 'fa-solid fa-bars-staggered', 'part' => '7 · Menu & Dashboard', 'mockup' => 'main_menu_v2.html',
+                        'members' => [
+                            'ribbon' => ['Ribbon ala Microsoft Excel (tab, grup, multi ikon, submenu, split, toggle, KeyTips)', ['Devlib\\Components\\Ribbon']],
+                            'mega-menu' => ['Mega Menu ala ScriptCase (bilah warna + panel 4 kolom ber-ikon)', ['Devlib\\Components\\MegaMenu']],
+                            'side-menu' => ['Side Panel kiri & kanan (akordeon bertingkat, rail ikon + flyout, favorit, terakhir dibuka)', ['Devlib\\Components\\SideMenu']],
+                        ],
+                        'classes' => ['Devlib\\Components\\Ribbon', 'Devlib\\Components\\MegaMenu', 'Devlib\\Components\\SideMenu']],
                     'p7-chat' => ['label' => 'Chat (gaya WhatsApp)', 'icon' => 'fa-solid fa-comment-dots', 'part' => '7 · Menu & Dashboard', 'mockup' => 'main_menu_v2.html',
                         'members' => ['chat' => ['Chat: yang sedang login, + untuk yang tidak login, foto profil & kirim foto', ['Devlib\\Components\\Chat']]], 'classes' => ['Devlib\\Components\\Chat']]],
                 'files' => ['Mockup' => ['main_menu_v2.html']]],
