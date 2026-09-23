@@ -1,4 +1,4 @@
-<x-dl::kanban me="Johannes Iwan" :cards="\App\Support\DemoData::kanbanCards()"
+<x-dl::kanban me="Johannes Iwan" :members="['Budi Santoso', 'Rina Wulandari', 'Joko Santoso', 'Andi Pratama', 'Siti Rahma']" :cards="\App\Support\DemoData::kanbanCards()"
     :columns="[
         ['key' => 'queue', 'label' => 'Antrian', 'tone' => 'neutral'],
         ['key' => 'print', 'label' => 'Cetak', 'tone' => 'accent', 'limit' => 2],

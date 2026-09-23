@@ -1235,3 +1235,37 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-words__text{margin-top:4px;padding:5px 8px;border-left:3px solid var(--dl-accent);background:var(--dl-accent-soft);border-radius:0 var(--dl-radius-sm) var(--dl-radius-sm) 0;font-size:calc(12px * var(--dl-font-scale));font-style:italic;color:var(--dl-ink-strong);line-height:1.4}
 .dl-words__text.is-empty{display:none}
 .dl-words__input{text-align:right;font-variant-numeric:tabular-nums}
+
+/* Kanban popup gaya mockup (bilah aksi + popover) */
+.dl-kmodal__head{display:flex;align-items:flex-start;gap:10px;padding:16px 18px 6px}
+.dl-kmodal__hicon{color:var(--dl-accent);font-size:20px;margin-top:6px}
+.dl-kmodal__actions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.dl-kmodal__ag{position:relative}
+.dl-kmodal__abtn{border:none;background:var(--dl-chip);color:var(--dl-ink);border-radius:var(--dl-radius-sm);padding:6px 10px;font-family:inherit;font-weight:600;font-size:calc(12.5px * var(--dl-font-scale));cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.dl-kmodal__abtn:hover,.dl-kmodal__abtn.is-on{background:var(--dl-accent-soft);color:var(--dl-accent)}
+.dl-kpop{position:absolute;left:0;top:calc(100% + 4px);z-index:5;width:280px;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius);box-shadow:var(--dl-shadow-pop);padding:10px;display:flex;flex-direction:column;gap:8px}
+.dl-kpop__head{display:flex;justify-content:center;position:relative;font-weight:700;font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink-strong);padding-bottom:6px;border-bottom:1px solid var(--dl-border-soft)}
+.dl-kpop__head button{position:absolute;right:0;top:-3px;border:none;background:none;font-size:18px;color:var(--dl-muted);cursor:pointer}
+.dl-kpop__lbl{font-size:calc(11.5px * var(--dl-font-scale));font-weight:600;color:var(--dl-f-label)}
+.dl-kpop__list{display:flex;flex-direction:column;gap:4px;max-height:220px;overflow:auto}
+.dl-kpop__row{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:4px;cursor:pointer;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-kpop__row:hover{background:var(--dl-hover)}
+.dl-kpop__opt{border:none;background:none;text-align:left;padding:6px 8px;border-radius:4px;font-family:inherit;color:var(--dl-ink);cursor:pointer}
+.dl-kpop__opt:hover:not(:disabled),.dl-kpop__opt.is-active{background:var(--dl-accent-soft)}
+.dl-kpop__opt:disabled{opacity:.45;cursor:not-allowed}
+.dl-kmodal__meta{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:6px}
+.dl-kmodal__meta > div{display:flex;flex-direction:column;gap:4px}
+.dl-kmodal__meta > div > span:first-child{font-size:calc(11px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted)}
+.dl-kmodal__meta .dl-row{gap:4px}
+.dl-kmodal__descview{min-height:60px;padding:10px 12px;border-radius:var(--dl-radius);background:var(--dl-chip);font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink);white-space:pre-wrap;cursor:pointer}
+.dl-kmodal__descview.is-empty{color:var(--dl-muted)}
+.dl-kmodal__descview:hover{background:var(--dl-hover)}
+.dl-kmodal__ckhead{display:flex;justify-content:space-between;align-items:center}
+.dl-btn--danger-soft{background:var(--dl-danger-soft);color:var(--dl-danger);border:none}
+.dl-kmodal__pct{display:flex;align-items:center;gap:8px;font-size:calc(11px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-kmodal__pct .dl-progress__track{flex:1}
+.dl-progress__bar.is-done{background:var(--dl-green)}
+.dl-kmodal__additem{border:none;background:var(--dl-chip);border-radius:var(--dl-radius-sm);padding:8px 12px;font-family:inherit;font-weight:600;cursor:pointer;color:var(--dl-ink);text-align:left}
+.dl-kmodal__additem:hover{background:var(--dl-hover)}
+.dl-kmodal__cmt{display:flex;gap:8px;align-items:flex-start}
+.dl-kmodal__meta .dl-kcard__prio{font-size:calc(11.5px * var(--dl-font-scale));align-self:flex-start}
