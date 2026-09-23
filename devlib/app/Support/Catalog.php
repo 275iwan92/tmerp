@@ -83,6 +83,9 @@ final class Catalog
                     'p5-report' => ['label' => 'Report', 'icon' => 'fa-solid fa-file-lines', 'part' => '5 · Big Components', 'mockup' => 'mockup_print_master_stock.html',
                         'members' => ['report-stock-card' => ['Kartu Stok (saldo berjalan, per bulan)', ['Devlib\\Components\\Report']], 'report-master-stock' => ['Master Stok (KPI, kelompok + subtotal, sorot < MIN)', ['Devlib\\Components\\Report']]],
                         'classes' => ['Devlib\\Components\\Report', 'Devlib\\Components\\PrintOut']],
+                    'p5-import' => ['label' => 'Import / Export', 'icon' => 'fa-solid fa-file-import', 'part' => '5 · Big Components', 'mockup' => null,
+                        'members' => ['import-items' => ['Import CSV (cocokkan kolom, validasi, baris gagal)', ['Devlib\\Components\\Import']], 'grid-master' => ['Export CSV dari Grid (kolom yang tampil)', ['Devlib\\Components\\Grid']]],
+                        'classes' => ['Devlib\\Components\\Import', 'Devlib\\Components\\Grid']],
                     'form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                     'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
                 'files' => [
