@@ -57,6 +57,21 @@ final class DemoData
         return $out;
     }
 
+    // Kartu kanban alur produksi (contoh fiktif).
+    public static function kanbanCards(): array
+    {
+        $t = fn ($l, $tone) => ['label' => $l, 'tone' => $tone];
+
+        return [
+            ['id' => 1, 'col' => 'queue', 'title' => 'CO-2609-0031 · Box Snack 50.000 pcs', 'desc' => 'Menunggu plat & kertas Ivory 310.', 'tags' => [$t('Offset', 'accent'), $t('Urgent', 'danger')], 'priority' => 'High', 'due' => '2026-09-26 16:00', 'assignee' => 'Budi Santoso', 'checklist' => [['text' => 'Plat CTP siap', 'done' => true], ['text' => 'Kertas di-issue', 'done' => false]]],
+            ['id' => 2, 'col' => 'queue', 'title' => 'CO-2609-0034 · Label Botol', 'tags' => [$t('Digital', 'violet')], 'priority' => 'Low', 'due' => '2026-10-02 12:00', 'assignee' => 'Rina Wulandari'],
+            ['id' => 3, 'col' => 'print', 'title' => 'CO-2609-0027 · Dus Farmasi', 'desc' => 'KOMORI Lithrone 1, 4 warna + varnish.', 'tags' => [$t('Offset', 'accent')], 'priority' => 'Medium', 'due' => '2026-09-22 10:00', 'assignee' => 'Joko Santoso', 'checklist' => [['text' => 'Approval warna', 'done' => true], ['text' => 'Cetak sisi A', 'done' => true], ['text' => 'Cetak sisi B', 'done' => false]], 'comments' => [['by' => 'QC', 'at' => '23 Sep 2026 08:10', 'text' => 'Warna cyan sedikit tua, sudah dikoreksi.']]],
+            ['id' => 4, 'col' => 'finish', 'title' => 'CO-2609-0020 · Kotak Kosmetik', 'desc' => 'Laminasi doff + pond + lem samping.', 'tags' => [$t('Finishing', 'warn')], 'priority' => 'High', 'due' => '2026-09-25 17:00', 'assignee' => 'Andi Pratama'],
+            ['id' => 5, 'col' => 'qc', 'title' => 'CO-2609-0018 · Sleeve Teh', 'tags' => [$t('QC', 'success')], 'priority' => 'Medium', 'due' => '2026-09-24 09:00', 'assignee' => 'Siti Rahma', 'checklist' => [['text' => 'Sampling 1%', 'done' => true], ['text' => 'Cek potong', 'done' => true]]],
+            ['id' => 6, 'col' => 'done', 'title' => 'CO-2609-0011 · Brosur Promo', 'tags' => [$t('Digital', 'violet')], 'priority' => 'Low', 'due' => '2026-09-18 15:00', 'assignee' => 'Rina Wulandari'],
+        ];
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];
