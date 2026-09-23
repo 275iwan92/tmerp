@@ -1,7 +1,7 @@
 @php use App\Support\Localization\Translator; @endphp
-{{-- Isi jendela Configuration (App\Livewire\Shell\UserConfiguration). Tema &
-     bahasa berlaku saat halaman dimuat ulang (theme-vars.blade.php); jendela
-     dibuka lagi otomatis lewat sessionStorage tmWinReopen (ui-window.js). --}}
+{{-- Isi drawer Configuration (App\Livewire\Shell\UserConfiguration). Tema &
+     bahasa berlaku saat halaman dimuat ulang (theme-vars.blade.php); drawer
+     dibuka lagi otomatis lewat sessionStorage tmDrawerReopen (profileDrawers di app-shell.js). --}}
 <div class="tm-cfg">
     <nav class="tm-cfg-nav">
         @foreach ($this->sections() as $key => $s)
@@ -26,7 +26,7 @@
                         @if ($cell)
                             <button type="button" wire:key="th-{{ $cell['code'] }}" title="{{ $cell['name'] }}"
                                 class="tm-cfg-theme {{ $cell['code'] === $this->currentThemeCode() ? 'on' : '' }}"
-                                @click="sessionStorage.setItem('tmWinReopen', 'config'); $wire.setTheme('{{ $cell['code'] }}').then(() => location.reload())">
+                                @click="sessionStorage.setItem('tmDrawerReopen', 'configOpen'); $wire.setTheme('{{ $cell['code'] }}').then(() => location.reload())">
                                 <span class="tm-cfg-swatch"><i style="background:{{ $cell['sidebar'] }}"></i><b style="background:{{ $cell['primary'] }}"></b></span>
                                 <small>{{ $cell['name'] }}</small>
                             </button>
@@ -42,7 +42,7 @@
                     @foreach ($this->themeMatrix['classic'] as $t)
                         <button type="button" wire:key="thc-{{ $t['code'] }}" title="{{ $t['name'] }}"
                             class="tm-cfg-theme {{ $t['code'] === $this->currentThemeCode() ? 'on' : '' }}"
-                            @click="sessionStorage.setItem('tmWinReopen', 'config'); $wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
+                            @click="sessionStorage.setItem('tmDrawerReopen', 'configOpen'); $wire.setTheme('{{ $t['code'] }}').then(() => location.reload())">
                             <span class="tm-cfg-swatch"><i style="background:{{ $t['sidebar'] }}"></i><b style="background:{{ $t['primary'] }}"></b></span>
                             <small>{{ $t['name'] }}</small>
                         </button>
@@ -58,7 +58,7 @@
                 @foreach ($this->languages as $lang)
                     <button type="button" wire:key="lang-{{ $lang['code'] }}"
                         class="tm-cfg-lang {{ $lang['code'] === $this->currentLangCode() ? 'on' : '' }}"
-                        @click="sessionStorage.setItem('tmWinReopen', 'config'); $wire.setLang('{{ $lang['code'] }}').then(() => location.reload())">
+                        @click="sessionStorage.setItem('tmDrawerReopen', 'configOpen'); $wire.setLang('{{ $lang['code'] }}').then(() => location.reload())">
                         <span class="flag">{{ $lang['flag'] }}</span><span>{{ $lang['name'] }}</span>
                         @if ($lang['code'] === $this->currentLangCode())<i class="fa-solid fa-circle-check"></i>@endif
                     </button>

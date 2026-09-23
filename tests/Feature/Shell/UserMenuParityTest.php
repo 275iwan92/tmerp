@@ -72,8 +72,8 @@ class UserMenuParityTest extends TestCase
         $standalone->assertOk();
         $standalone->assertDontSee(route('menu', ['open' => 'chatOpen']), false);
         $standalone->assertDontSee(route('menu', ['open' => 'notifOpen']), false);
-        $standalone->assertSee('chatOpen = true', false);
-        $standalone->assertSee('profileOpen = true', false);
+        $standalone->assertSee("openDrawer('chatOpen')", false);
+        $standalone->assertSee("openDrawer('profileOpen')", false);
 
         $response = $this->get(route('report.executive'));
         $response->assertOk();

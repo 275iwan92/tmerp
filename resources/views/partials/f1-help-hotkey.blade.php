@@ -1,22 +1,25 @@
-{{-- F1 = buka Help Center (docs/... instruksi user 2026-08-30: "F1 as Help
-     and Support" di setiap grid/menu). Listener PLAIN JS di tiap layout
-     (BUKAN cuma di shell terluar) -- hampir semua grid/menu di app ini
-     dirender lewat <iframe> terpisah (main-menu.blade.php t.url), jadi 1
-     listener global di shell TIDAK CUKUP: keydown di dalam iframe tidak
-     bubble ke window parent (batasan browser antar-document). @include ini
-     dipasang di layouts/app.blade.php (dipakai default oleh semua screen
-     Livewire full-page yang di-iframe-kan) + layouts/shell.blade.php (frame
-     terluar sendiri) supaya F1 benar2 kepencet di mana pun fokus keyboard
-     berada. Buka tab baru (bukan navigasi keluar dari kerjaan yg sedang
-     berjalan) -- konsisten dgn link "Panduan Penggunaan" di profile dropdown. --}}
+{{-- F1 = Bantuan & Support (instruksi user 2026-08-30: "F1 as Help and
+     Support" di setiap grid/menu). Listener PLAIN JS di tiap layout (bukan
+     cuma shell terluar): hampir semua layar dirender di <iframe>, dan keydown
+     di dalam iframe tidak bubble ke window induk. Dipasang di
+     layouts/app.blade.php + layouts/shell.blade.php.
+
+     Sejak 2026-09-23 (semua menu profil = drawer kanan, keputusan user) F1
+     membuka DRAWER Bantuan di shell, bukan tab browser baru: dari iframe lewat
+     postMessage ke induk; di halaman shell sendiri lewat window.tmOpenHelp
+     (profileDrawers() di resources/js/app-shell.js). Tab baru hanya cadangan
+     bila halaman dibuka di luar shell. --}}
 <script>
     window.addEventListener('keydown', function (e) {
-        if (e.key === 'F1') {
-            e.preventDefault();
-            // Bawa konteks layar otomatis ke tab Tiket Bantuan -- document.title
-            // tiap screen Livewire full-page diisi #[Title('Nama Layar — TELASIH...')],
-            // ambil bagian sebelum ' — ' saja.
-            var ctx = (document.title || '').split(' — ')[0] || 'Aplikasi';
+        if (e.key !== 'F1') return;
+        e.preventDefault();
+        // Konteks = judul layar (#[Title('Nama Layar — ...')]), bagian sebelum ' — '.
+        var ctx = (document.title || '').split(' — ')[0] || 'Aplikasi';
+        if (window.parent !== window) {
+            window.parent.postMessage({ tmerp: 'openHelp', ctx: ctx }, window.location.origin);
+        } else if (typeof window.tmOpenHelp === 'function') {
+            window.tmOpenHelp(ctx);
+        } else {
             window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(ctx), '_blank');
         }
     });

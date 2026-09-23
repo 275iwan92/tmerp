@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 
-// Isi jendela "Aktivitas saya" (disetujui user 2026-09-23): riwayat login +
+// Isi drawer "Aktivitas saya" (disetujui user 2026-09-23): riwayat login +
 // dokumen yang terakhir dibuat/diubah user ini. Tidak ada audit trail terpusat
 // di tm2*, jadi sumbernya kolom created_by/updated_by (berisi login) di header
-// dokumen utama. Dimuat hanya saat jendela dibuka (load()), bukan tiap render shell.
+// dokumen utama. Dimuat hanya saat drawer dibuka (load()), bukan tiap render shell.
 class UserActivity extends Component
 {
     public bool $loaded = false;

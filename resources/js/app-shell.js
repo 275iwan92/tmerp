@@ -29,6 +29,7 @@ document.addEventListener('alpine:init', () => {
         // dgn @media di app.css) supaya topbar/avatar dropdown tidak kegencet saat
         // load pertama. Toggle ☰ ("nosidebar") tetap sama, ini cuma nilai awal.
         init() {
+            this.initDrawers();
             if (window.matchMedia('(max-width: 767px)').matches) {
                 this.nosidebar = true;
             }
@@ -69,9 +70,8 @@ document.addEventListener('alpine:init', () => {
             // & tabel sys_user_menu.action_target.
             const openParam = new URLSearchParams(window.location.search).get('open');
             if (openParam) {
-                const booleanFlags = ['profileOpen', 'passwordOpen', 'notifOpen', 'chatOpen', 'aiOpen', 'portalOpen', 'configWinOpen', 'activityWinOpen'];
-                if (booleanFlags.includes(openParam)) {
-                    this.$nextTick(() => { this[openParam] = true; });
+                if (DRAWER_FLAGS.includes(openParam)) {
+                    this.$nextTick(() => this.openDrawer(openParam));
                 } else {
                     this.$nextTick(() => this.openTab(openParam));
                 }
@@ -84,14 +84,7 @@ document.addEventListener('alpine:init', () => {
         activeTabCode: null,
 
         ddOpen: false,
-        profileOpen: false,
-        passwordOpen: false,
-        notifOpen: false,
-        chatOpen: false,
-        aiOpen: false,
-        portalOpen: false,
-        configWinOpen: false,
-        activityWinOpen: false,
+        ...profileDrawers(),
 
         paletteOpen: false,
         paletteQuery: '',
@@ -285,14 +278,10 @@ document.addEventListener('alpine:init', () => {
     // AI di sini mencari dashboard laporan, tidak membuka Menu Operasional.
     Alpine.data('reportShell', (navItems) => ({
         ddOpen: false,
-        notifOpen: false,
-        chatOpen: false,
-        aiOpen: false,
-        profileOpen: false,
-        passwordOpen: false,
-        portalOpen: false,
-        configWinOpen: false,
-        activityWinOpen: false,
+        ...profileDrawers(),
+        init() {
+            this.initDrawers();
+        },
         pageUrl: '',
         pageTitle: '',
         ...aiPreview(),
@@ -310,6 +299,57 @@ document.addEventListener('alpine:init', () => {
             }
         },
     }));
+
+    // Semua menu dropdown profil = drawer kanan (keputusan user 2026-09-23),
+    // dipakai appShell & reportShell. Nama flag = sys_user_menu.action_target.
+    const DRAWER_FLAGS = ['chatOpen', 'notifOpen', 'aiOpen', 'profileOpen', 'passwordOpen', 'portalOpen',
+        'configOpen', 'activityOpen', 'helpOpen', 'securityOpen'];
+
+    function profileDrawers() {
+        return {
+            ...Object.fromEntries(DRAWER_FLAGS.map((f) => [f, false])),
+            helpCtx: '',
+
+            // Method, bukan getter: spread ...profileDrawers() mengevaluasi getter sekali saja.
+            anyDrawer() {
+                return DRAWER_FLAGS.some((f) => this[f]);
+            },
+
+            // Satu drawer terbuka pada satu waktu -- membuka yang lain menutup yang lama.
+            openDrawer(flag) {
+                if (! DRAWER_FLAGS.includes(flag)) return;
+                DRAWER_FLAGS.forEach((f) => { this[f] = f === flag; });
+                this.ddOpen = false;
+            },
+
+            closeDrawers() {
+                DRAWER_FLAGS.forEach((f) => { this[f] = false; });
+            },
+
+            openHelp(ctx) {
+                this.helpCtx = ctx || '';
+                this.openDrawer('helpOpen');
+            },
+
+            initDrawers() {
+                // F1 di layar iframe (partials/f1-help-hotkey) mengirim pesan ke shell.
+                window.tmOpenHelp = (ctx) => this.openHelp(ctx);
+                window.addEventListener('message', (e) => {
+                    if (e.origin === window.location.origin && e.data && e.data.tmerp === 'openHelp') {
+                        this.openHelp(e.data.ctx);
+                    }
+                });
+                // Ganti tema/bahasa butuh reload -- drawer pemicunya dibuka lagi.
+                try {
+                    const again = sessionStorage.getItem('tmDrawerReopen');
+                    if (again) {
+                        sessionStorage.removeItem('tmDrawerReopen');
+                        this.$nextTick(() => this.openDrawer(again));
+                    }
+                } catch (err) {}
+            },
+        };
+    }
 
     function aiPreview() {
         return {

@@ -1,5 +1,5 @@
 @php use App\Support\Localization\Translator; @endphp
-<div class="tm-act" x-init="$watch('activityWinOpen', v => v && $wire.load())">
+<div class="tm-act" x-init="$watch('activityOpen', v => v && $wire.load())">
     @if (! $loaded)
         <div class="tm-cfg-hint">{{ Translator::t('shared_loading', 'Memuat…') }}</div>
     @else

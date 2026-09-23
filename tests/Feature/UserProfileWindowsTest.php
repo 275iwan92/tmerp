@@ -8,7 +8,7 @@ use Livewire\Livewire;
 use Tests\TestCase;
 
 // Menu profil 2026-09-23: jendela Configuration (Themes/Language/Grid segera)
-// + Aktivitas saya, dibuka lewat x-ui.window. Tema/bahasa johiwan diubah lalu
+// + Aktivitas saya, dibuka sebagai drawer kanan. Tema/bahasa johiwan diubah lalu
 // dikembalikan PERSIS ke nilai yang direkam di awal (bukan nilai tebakan).
 class UserProfileWindowsTest extends TestCase
 {
@@ -69,19 +69,35 @@ class UserProfileWindowsTest extends TestCase
         }
     }
 
-    public function test_profile_menu_items_open_windows_for_every_user(): void
+    // Keputusan user 2026-09-23: SEMUA menu profil = drawer kanan (bukan jendela).
+    public function test_every_profile_menu_item_opens_a_rendered_drawer(): void
     {
-        foreach (['johiwan', 'rina'] as $login) {
-            $this->actingAs(SecUser::where('login', $login)->firstOrFail());
-            $items = Livewire::test('shell.user-menu')->instance()->userMenuItems()->flatten(1)->keyBy('code');
+        foreach (['johiwan', 'rina', 'dummy_mgrops'] as $login) {
+            $user = SecUser::where('login', $login)->firstOrFail();
+            $this->actingAs($user);
 
-            $this->assertSame('configWinOpen', $items['UM_CONFIG']->action_target, $login);
-            $this->assertSame('activityWinOpen', $items['UM_ACTIVITY']->action_target, $login);
+            $items = Livewire::test('shell.user-menu')->instance()->userMenuItems()->flatten(1);
+            $panels = Livewire::test('shell.user-panels')->html();
+            $menu = html_entity_decode(Livewire::test('shell.user-menu')->html());
+
+            foreach ($items as $item) {
+                $this->assertSame('drawer', $item->action_type, "$login {$item->code}");
+                // Drawer tujuan benar-benar dirender (tidak ada item mati).
+                $this->assertStringContainsString("on: {$item->action_target} }", $panels, "$login {$item->code}");
+            }
+            $this->assertStringNotContainsString('window.open', $menu, $login);
+            $this->assertStringNotContainsString('= true', $menu, $login);
         }
+    }
 
-        $html = Livewire::test('shell.user-panels')->html();
-        $this->assertStringContainsString("tmWindow({ open: 'configWinOpen'", str_replace('&quot;', "'", html_entity_decode($html)));
-        $this->assertStringContainsString('activityWinOpen', $html);
+    public function test_drawer_component_renders_head_and_close(): void
+    {
+        $html = Blade::render('<x-ui.drawer open="demoOpen" title="Demo" icon="fa-solid fa-star" size="xl">isi</x-ui.drawer>');
+
+        $this->assertStringContainsString('class="drawer dr-xl"', $html);
+        $this->assertStringContainsString('on: demoOpen }', $html);
+        $this->assertStringContainsString('@click="demoOpen = false"', $html);
+        $this->assertStringContainsString('isi', $html);
     }
 
     public function test_window_component_renders_controls(): void

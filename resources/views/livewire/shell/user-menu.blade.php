@@ -11,9 +11,9 @@
     halaman penuh (Aktivitas saya, Pengaturan, My Security): dibuka di modal
     halaman (pageUrl), user tetap di mode Laporan.
 
-    Tema & Bahasa dulu widget di dalam dropdown (grup "Configuration" yang
-    dilipat); sejak 2026-09-23 pindah ke jendela Configuration (UM_CONFIG ->
-    configWinOpen, App\Livewire\Shell\UserConfiguration) atas permintaan user.
+    Sejak 2026-09-23 SEMUA item (kecuali tipe 'menu') membuka drawer kanan
+    lewat openDrawer(sys_user_menu.action_target) -- keputusan user. Tema &
+    Bahasa ada di drawer Configuration (App\Livewire\Shell\UserConfiguration).
 --}}
 <div class="pop">
     <button type="button" class="avatar-btn" @click.stop="ddOpen = !ddOpen" title="{{ auth()->user()->name }}">
@@ -36,42 +36,28 @@
             @foreach ($this->userMenuItems as $section => $items)
                 <div class="um-cap">{{ match ($section) { 'Pesan & Info' => Translator::t('shell_section_pesan_info', 'Pesan & info'), 'Akun' => Translator::t('shell_section_akun', 'Akun'), default => $section } }}</div>
                 @foreach ($items as $item)
-                    @switch($item->code)
-                        @case('UM_HELP')
-                            @if ($standalone)
-                                <a href="{{ route('help.index') }}" target="_blank" class="um-item" title="{{ Translator::t('shell_help_f1_hint', 'Jalan pintas: tekan F1 di mana saja') }}">
-                                    <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
-                                </a>
-                            @else
-                                <button type="button" class="um-item" title="{{ Translator::t('shell_help_f1_hint', 'Jalan pintas: tekan F1 di mana saja') }}"
-                                    @click="ddOpen = false; window.open('{{ route('help.index') }}?ctx=' + encodeURIComponent(openTabs.find(t => t.code === activeTabCode)?.label || 'Home'), '_blank')">
-                                    <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
-                                </button>
-                            @endif
-                            @break
-                        @case('UM_MYSECURITY')
-                            @if ($standalone)
+                    @if ($item->action_type === 'menu')
+                        {{-- Item yang membuka layar menu lain (bukan drawer). --}}
+                        @if ($standalone)
+                            @if ($this->standalonePageUrl($item))
                                 <button type="button" class="um-item" @click="ddOpen = false; pageTitle = @js($item->label); pageUrl = @js($this->standalonePageUrl($item))"><i class="{{ $item->icon }}"></i> {{ $item->label }}</button>
-                            @else
-                                <a href="{{ route('self-service.index', ['tab' => 'security']) }}" class="um-item"><i class="{{ $item->icon }}"></i> {{ $item->label }}</a>
                             @endif
-                            @break
-                        @default
-                            @if ($standalone && $item->action_type === 'menu')
-                                @if ($this->standalonePageUrl($item))
-                                    <button type="button" class="um-item" @click="ddOpen = false; pageTitle = @js($item->label); pageUrl = @js($this->standalonePageUrl($item))">
-                                        <i class="{{ $item->icon }}"></i> {{ $item->label }}
-                                    </button>
-                                @endif
-                            @else
-                                <button type="button" class="um-item"
-                                    @click="ddOpen = false; {{ $item->action_type === 'menu' ? "openTab('".$item->action_target."')" : $item->action_target.' = true' }}">
-                                    <i class="{{ $item->icon }}"></i> {{ $item->label }}
-                                    @if ($item->badge_source === 'chat' && $this->unreadChatCount > 0)<span class="um-count">{{ $this->unreadChatCount }}</span>@endif
-                                    @if ($item->badge_source === 'notif' && $this->unreadNotifCount > 0)<span class="um-count">{{ $this->unreadNotifCount }}</span>@endif
-                                </button>
-                            @endif
-                    @endswitch
+                        @else
+                            <button type="button" class="um-item" @click="ddOpen = false; openTab(@js($item->action_target))"><i class="{{ $item->icon }}"></i> {{ $item->label }}</button>
+                        @endif
+                    @elseif ($item->code === 'UM_HELP')
+                        {{-- Konteks = layar aktif (tab MDI di Operasional, judul halaman di Laporan). --}}
+                        <button type="button" class="um-item" title="{{ Translator::t('shell_help_f1_hint', 'Jalan pintas: tekan F1 di mana saja') }}"
+                            @click="openHelp({{ $standalone ? "(document.title || '').split(' — ')[0]" : "openTabs.find(t => t.code === activeTabCode)?.label || 'Home'" }})">
+                            <i class="{{ $item->icon }}"></i> {{ $item->label }} <span style="margin-left:auto;font-size:10px;opacity:.55;border:1px solid currentColor;border-radius:4px;padding:1px 4px">F1</span>
+                        </button>
+                    @else
+                        <button type="button" class="um-item" @click="openDrawer(@js($item->action_target))">
+                            <i class="{{ $item->icon }}"></i> {{ $item->label }}
+                            @if ($item->badge_source === 'chat' && $this->unreadChatCount > 0)<span class="um-count">{{ $this->unreadChatCount }}</span>@endif
+                            @if ($item->badge_source === 'notif' && $this->unreadNotifCount > 0)<span class="um-count">{{ $this->unreadNotifCount }}</span>@endif
+                        </button>
+                    @endif
                 @endforeach
                 <div class="um-sep"></div>
             @endforeach

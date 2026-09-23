@@ -1,18 +1,19 @@
 @php use App\Support\Localization\Translator; @endphp
 {{--
     Panel dropdown user -- SATU implementasi utk Menu Operasional & Laporan
-    Manajemen (lihat App\Livewire\Shell\UserPanels). Flag buka/tutup +
+    Manajemen (lihat App\Livewire\Shell\UserPanels). SEMUA panel = drawer
+    kanan x-ui.drawer (keputusan user 2026-09-23); flag & openDrawer() dari
+    profileDrawers() di resources/js/app-shell.js. Flag buka/tutup +
     aiMessages/aiInput/askAi() datang dari x-data shell yg membungkus.
     $standalone (Laporan Manajemen): tambah modal halaman (pageUrl) utk item
     yg di shell Operasional membuka tab/halaman penuh, supaya user tetap di
     mode Laporan.
 --}}
 <div class="upanels">
-    <div class="backdrop" :class="{ on: chatOpen || notifOpen || aiOpen }" @click="chatOpen = notifOpen = aiOpen = false"></div>
+    <div class="backdrop" :class="{ on: anyDrawer() }" @click="closeDrawers()" @keydown.escape.window="closeDrawers()"></div>
 
     {{-- Drawer Notifikasi (sys_notifications — real) --}}
-    <aside class="drawer" :class="{ on: notifOpen }">
-        <div class="dr-head"><i class="fa-solid fa-bell ico"></i><span class="dr-title">{{ Translator::t('shell_notif_title', 'Notifikasi') }}</span><button type="button" class="x" @click="notifOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
+    <x-ui.drawer open="notifOpen" icon="fa-solid fa-bell" :title="Translator::t('shell_notif_title', 'Notifikasi')">
         <div style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--sh-border)">
             <a wire:click="markAllNotifRead" style="font-size:12px;color:var(--sh-accent);cursor:pointer;font-weight:600">{{ Translator::t('shell_notif_mark_all_read', 'Tandai semua terbaca') }}</a>
         </div>
@@ -36,11 +37,10 @@
                 <a href="{{ route('notifications.index') }}" style="font-size:12px;color:var(--sh-accent);font-weight:600;text-decoration:none">{{ Translator::t('shell_notif_view_all', 'Lihat semua notifikasi →') }}</a>
             @endif
         </div>
-    </aside>
+    </x-ui.drawer>
 
     {{-- Drawer Chat (sys_chat_* — real) --}}
-    <aside class="drawer" :class="{ on: chatOpen }">
-        <div class="dr-head"><i class="fa-solid fa-comment-dots ico"></i><span class="dr-title">{{ Translator::t('shell_chat_title', 'Chat') }}</span><button type="button" class="x" @click="chatOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
+    <x-ui.drawer open="chatOpen" icon="fa-solid fa-comment-dots" :title="Translator::t('shell_chat_title', 'Chat')">
         <div class="chat-body">
             <div class="chat-list">
                 @forelse ($this->conversations as $c)
@@ -66,11 +66,10 @@
                 </form>
             </div>
         </div>
-    </aside>
+    </x-ui.drawer>
 
     {{-- Drawer Asisten AI (pratinjau, client-side -- askAi() milik shell pembungkus) --}}
-    <aside class="drawer" :class="{ on: aiOpen }">
-        <div class="dr-head"><i class="fa-solid fa-wand-magic-sparkles ico" style="color:#7a52d0"></i><span class="dr-title">{{ Translator::t('shell_ai_title', 'Asisten AI') }}</span><span style="font-size:11px;color:var(--sh-muted);margin-left:4px">{{ Translator::t('shell_ai_preview_badge', 'pratinjau') }}</span><button type="button" class="x" @click="aiOpen = false"><i class="fa-solid fa-xmark"></i></button></div>
+    <x-ui.drawer open="aiOpen" icon="fa-solid fa-wand-magic-sparkles" :title="Translator::t('shell_ai_title', 'Asisten AI')" :note="Translator::t('shell_ai_preview_badge', 'pratinjau')">
         <div class="ai-body" x-ref="aiBody">
             @if ($standalone)
                 <div class="ai-intro">{{ Translator::t('shell_ai_intro_report', 'Tanya dengan bahasa biasa — mis. “sales” atau “gudang”, saya bukakan dashboard laporannya. Versi ini masih pratinjau (pencocokan kata kunci, bukan LLM sungguhan).') }}
@@ -95,11 +94,10 @@
             <input type="text" x-model="aiInput" data-dirty-ignore placeholder="{{ Translator::t('shell_ai_input_placeholder', 'Ketik permintaan…') }}" @keydown.enter="askAi(aiInput); aiInput = ''">
             <button type="button" @click="askAi(aiInput); aiInput = ''"><i class="fa-solid fa-arrow-up"></i></button>
         </div>
-    </aside>
+    </x-ui.drawer>
 
-    {{-- Modal Edit profil --}}
-    <div class="mov" :class="{ on: profileOpen }"><div class="modal">
-        <div class="mh"><h3>{{ Translator::t('shell_profile_modal_title', 'Edit profil') }}</h3><button type="button" class="x" @click="profileOpen = false">&times;</button></div>
+    {{-- Drawer Edit profil --}}
+    <x-ui.drawer open="profileOpen" icon="fa-solid fa-user-pen" :title="Translator::t('shell_profile_modal_title', 'Edit profil')">
         <div class="mb">
             <div class="photo-row">
                 <span class="photo-big"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span>
@@ -117,11 +115,10 @@
             <button type="button" class="mbtn c" @click="profileOpen = false">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
             <button type="button" class="mbtn p" wire:click="saveProfile" wire:loading.attr="disabled">{{ Translator::t('shell_btn_save', 'Simpan') }}</button>
         </div>
-    </div></div>
+    </x-ui.drawer>
 
-    {{-- Modal Ubah password --}}
-    <div class="mov" :class="{ on: passwordOpen }"><div class="modal">
-        <div class="mh"><h3>{{ Translator::t('shell_password_modal_title', 'Ubah password') }}</h3><button type="button" class="x" @click="passwordOpen = false">&times;</button></div>
+    {{-- Drawer Ubah password --}}
+    <x-ui.drawer open="passwordOpen" icon="fa-solid fa-key" :title="Translator::t('shell_password_modal_title', 'Ubah password')">
         <div class="mb">
             @if ($passwordSaved)
                 <div class="mfield"><div class="hint ok">✅ {{ Translator::t('shell_password_updated', 'Password diperbarui.') }}</div></div>
@@ -137,27 +134,37 @@
             <button type="button" class="mbtn c" @click="passwordOpen = false">{{ Translator::t('shared_btn_cancel', 'Batal') }}</button>
             <button type="button" class="mbtn p" wire:click="savePassword" wire:loading.attr="disabled">{{ Translator::t('shell_btn_save_password', 'Simpan password') }}</button>
         </div>
-    </div></div>
+    </x-ui.drawer>
 
-    {{-- Modal "User Configuration" -- iframe lazy (:src cuma diisi saat portalOpen). --}}
+    {{-- Drawer "User Configuration" (portal self-service karyawan) -- iframe
+         dimuat saat pertama dibuka, tidak dikosongkan saat ditutup. --}}
     @if (auth()->user()->employee_id)
-        <div class="mov" :class="{ on: portalOpen }"><div class="modal wide">
-            <div class="mh"><h3>User Configuration</h3><button type="button" class="x" @click="portalOpen = false">&times;</button></div>
-            <div class="mb">
-                <iframe :src="portalOpen ? '{{ route('self-service.index') }}' : ''" title="User Configuration"></iframe>
-            </div>
-        </div></div>
+        <x-ui.drawer open="portalOpen" icon="fa-solid fa-id-card" title="User Configuration" size="2xl">
+            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (portalOpen && ! src) src = @js(route('self-service.index'))" :src="src" title="User Configuration"></iframe>
+        </x-ui.drawer>
     @endif
 
-    {{-- Jendela (x-ui.window: geser/perkecil/perbesar/tutup), 2026-09-23. --}}
-    <x-ui.window open="configWinOpen" id="config" icon="fa-solid fa-sliders" :width="760" :height="520"
-        :title="Translator::t('shell_section_configuration', 'Configuration')">
+    {{-- Drawer My Security --}}
+    @if (auth()->user()->employee_id)
+        <x-ui.drawer open="securityOpen" icon="fa-solid fa-shield-halved" :title="Translator::t('shell_mysecurity_title', 'My Security')" size="2xl">
+            <iframe class="dr-frame" x-data="{ src: '' }" x-effect="if (securityOpen && ! src) src = @js(route('self-service.index', ['tab' => 'security']))" :src="src" title="My Security"></iframe>
+        </x-ui.drawer>
+    @endif
+
+    {{-- Drawer Bantuan & Support -- konteks layar (helpCtx) dikirim F1 atau klik menu. --}}
+    <x-ui.drawer open="helpOpen" icon="fa-solid fa-circle-question" :title="Translator::t('shell_help_title', 'Bantuan & Support')" size="2xl">
+        <iframe class="dr-frame" x-data="{ src: '', ctx: null }"
+            x-effect="if (helpOpen && (! src || ctx !== helpCtx)) { ctx = helpCtx; src = @js(route('help.index')) + '?ctx=' + encodeURIComponent(helpCtx || 'Home'); }"
+            :src="src" title="Bantuan & Support"></iframe>
+    </x-ui.drawer>
+
+    {{-- Drawer Configuration (pengaturan milik tiap user) & Aktivitas saya. --}}
+    <x-ui.drawer open="configOpen" icon="fa-solid fa-sliders" :title="Translator::t('shell_section_configuration', 'Configuration')" size="xl">
         <livewire:shell.user-configuration />
-    </x-ui.window>
-    <x-ui.window open="activityWinOpen" id="activity" icon="fa-solid fa-clock-rotate-left" :width="620" :height="560"
-        :title="Translator::t('shell_activity_title', 'Aktivitas saya')">
+    </x-ui.drawer>
+    <x-ui.drawer open="activityOpen" icon="fa-solid fa-clock-rotate-left" :title="Translator::t('shell_activity_title', 'Aktivitas saya')" size="lg">
         <livewire:shell.user-activity />
-    </x-ui.window>
+    </x-ui.drawer>
 
     @if ($standalone)
         <div class="mov" :class="{ on: !!pageUrl }"><div class="modal wide">

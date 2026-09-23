@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
-// Isi jendela "Configuration" di menu profil (permintaan user 2026-09-23):
+// Isi drawer "Configuration" di menu profil (permintaan user 2026-09-23):
 // pengaturan MILIK TIAP USER (semua user), terpisah dari pengaturan tingkat
 // aplikasi yang tetap di grup Settings sidebar kiri bawah (khusus admin).
 // Bagian baru (mis. kerapatan grid, backlog01 §22.3) = tambah entri sections()

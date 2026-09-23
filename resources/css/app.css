@@ -568,6 +568,11 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 :is(.shell, .upanels) .backdrop.on { @apply opacity-100 pointer-events-auto; }
 :is(.shell, .upanels) .drawer { @apply fixed top-0 right-0 h-screen w-[390px] max-w-[92vw] bg-[var(--sh-surface)] z-[115] flex flex-col; box-shadow: -12px 0 40px rgba(15, 22, 45, .2); transform: translateX(100%); transition: transform .22s; }
 :is(.shell, .upanels) .drawer.on { transform: none; }
+:is(.shell, .upanels) .drawer.dr-lg { @apply w-[560px]; } :is(.shell, .upanels) .drawer.dr-xl { @apply w-[760px]; } :is(.shell, .upanels) .drawer.dr-2xl { @apply w-[1000px]; }
+:is(.shell, .upanels) .dr-body { @apply flex-1 min-h-0 flex flex-col overflow-y-auto; }
+:is(.shell, .upanels) .dr-note { @apply text-[11px] text-[var(--sh-muted)] ml-1; }
+:is(.shell, .upanels) .dr-frame { @apply block flex-1 w-full border-0; }
+:is(.shell, .upanels) .dr-body > .mf { @apply mt-auto; }
 :is(.shell, .upanels) .dr-head { @apply h-14 flex items-center gap-2.5 px-4 border-b border-[var(--sh-border)] flex-shrink-0; }
 :is(.shell, .upanels) .dr-head .ico { @apply text-[var(--sh-accent)]; } :is(.shell, .upanels) .dr-title { @apply font-bold text-[var(--sh-ink-strong)]; }
 :is(.shell, .upanels) .dr-head .x { @apply ml-auto bg-transparent border-none text-[var(--sh-muted)] cursor-pointer text-lg; }
