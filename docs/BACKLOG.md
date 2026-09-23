@@ -28,7 +28,7 @@
 
 | # | Cakupan | File |
 |---|---|---|
-| 01 | UI/UX, komponen & fasilitas grid/form | [`backlog01_uiux_component.md`](backlog01_uiux_component.md) |
+| 01 | UI/UX, komponen & fasilitas grid/form — **papan monitor bernomor + status (format acuan, 2026-09-23)** | [`backlog01_uiux_component.md`](backlog01_uiux_component.md) |
 | 02 | Inquiry Product s/d siap produksi | [`backlog02_inquiry_to_production.md`](backlog02_inquiry_to_production.md) |
 | 03 | Siap produksi s/d pengiriman | [`backlog03_production_to_delivery.md`](backlog03_production_to_delivery.md) |
 | 04 | Procurement: PR s/d barang masuk | [`backlog04_procurement.md`](backlog04_procurement.md) |

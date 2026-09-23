@@ -468,6 +468,41 @@ nameplate Sabtu masuk -- jangan biarkan tertinggal jadi "spek permanen".
 
 ---
 
+## 2026-09-23 -- UI/UX berbasis komponen OOP, menu profil drawer, angka rata kanan (backlog01)
+
+Dikerjakan agen Jo. Semua sudah di-commit & push; data real (Master Mesin,
+Proses, matriks Proses x Mesin, Pegawai) diverifikasi TIDAK berubah (checksum
+identik sebelum/sesudah).
+
+- **backlog01 §00 "komponen object oriented & bisa diturunkan" -- SELESAI
+  (fondasi).** Keputusan bentuk (§00.1): opsi (a) Blade class-based component.
+  Token warna di `@theme` + 16 primitive `App\View\Components\Ui\*` turunan
+  `UiComponent` (Button, IconButton, Badge, BadgeButton, Card, Tabs, Table,
+  Modal, Progress, Metric, ActionBar, PanelHeader, Window, Drawer) + palet
+  `Tone`. Komposit grid (action-icon 105 pemakaian/57 layar, toolbar,
+  pagination, modal Kolom/Sort) dibangun ulang di atasnya. Standar:
+  `docs/componentstandard.md`; pagar `UiRatchetTest`. Sisa migrasi layar =
+  backlog01 UI-01.
+- **Pilot Master Mesin & Master Proses** dimigrasi (kulit saja); bukti esensi:
+  0 `wire:*` hilang, teks/field/disabled sama.
+- **DevLib UI UX** jadi acuan hidup: tab "Dasar" membaca katalog dari class
+  induk; tab Grid mengikuti perilaku Master Pegawai (kotak statistik = filter).
+- **Menu profil**: item mati untuk non-admin ("Aktivitas saya" -> layar admin)
+  diperbaiki; lalu atas keputusan user **SEMUA item jadi drawer kanan**
+  (`x-ui.drawer`), termasuk drawer baru **Configuration** (Themes/Language/
+  Grid-segera) & **Aktivitas saya** (riwayat login + dokumen terakhir). F1
+  membuka drawer Bantuan (tidak bisa diblokir popup blocker). Bug lama ikut
+  diperbaiki: drawer dulu `<aside>` sehingga kena CSS sidebar (lebar 0 di HP).
+- **Angka rata kanan, teks rata kiri**: aturan tabel global dipindah ke
+  `@layer base` (dulu mematikan text-right/px-* di semua sel), class `num`
+  dipasang per kolom di 7 nota cetak + payroll + Master Pegawai/Mesin/Proses.
+- **backlog01 dirapikan** jadi papan monitor bernomor UI-01..UI-18 dengan
+  status 🔴/🟡/🔵/⚪. Catatan basi dikoreksi: komponen Back SUDAH ada
+  (`x-back-button`, 23 layar). Mitigasi Filament klik-luar-modal
+  (2026-09-11) dan standarisasi 5 tombol menyimpang sudah selesai sebelumnya.
+
+---
+
 ## 2026-09-16 (pagi) — Komponen `<x-form.badge>` dipasang di 6/6 layar entry transaksi
 
 Sebelumnya masing-masing layar (`pur/pr/entry.blade.php`, `pur/po/entry.blade.php`,
