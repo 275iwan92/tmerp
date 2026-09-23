@@ -258,6 +258,24 @@ Kalau perlu angka: riset ke situs pabrikan atau tanya user.
 
 ---
 
+## 28. PERAN PART & MATERIAL ROLE BOP — TEKS BEBAS JADI MASTER? (dipindah dari backlog01 UI-07, 2026-09-23)
+
+User: *"ini bagian dari Inquiry Product"*. Dua field di bawah saat ini diketik bebas, padahal nilainya
+seharusnya pilihan baku. **Butuh keputusan user** (zona beku Inquiry/ProDev/ProCost → tanya dulu per perubahan):
+
+1. **Peran Part** — `production/process-rate` kolom `part_code` (contoh data nyata: `BODY`). Daftar
+   peran part (body/lid/base/sleeve/tray/insert/divider/left/right/monoform) sekarang cuma array PHP
+   di `inquiry/form.blade.php::partRoleOptions()`. Pilihan: (a) jadikan tabel master `ref_part_role`
+   dipakai Inquiry + process-rate, (b) biarkan teks bebas.
+2. **Material Role BOP** — `production/bop-rule` kolom `material_role` (11 nilai yang hidup di tabel
+   itu sendiri: TINTA, FOIL, LEM BOX, VARNISH UV, dst). Pilihan: (a) master kecil `ref_bom_row`,
+   (b) dropdown dari nilai yang sudah ada + boleh ketik baru, (c) biarkan.
+   (`material_pattern` bukan kandidat — isinya pola LIKE multi-nilai.)
+
+**Aturan CLAUDE.md §7.12:** kalau dijadikan master, layar input master-nya WAJIB ikut dibuat.
+
+---
+
 ## DARI AUDIT MENYELURUH `docs/*.md` (agent riset 2026-09-02)
 
 Konteks lengkap audit ini ada di `BACKLOG.md`.

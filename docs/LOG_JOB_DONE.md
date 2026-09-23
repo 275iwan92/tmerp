@@ -507,6 +507,11 @@ identik sebelum/sesudah).
   Makmur" di 5 nota cetak ikut dihapus. NPWP sementara dummy (UI-20); tiga
   layar cetak SPB/Invoice/Pembayaran belum ada (UI-19). Test:
   `CompanyNamePpnPrintTest` (5).
+- **Dibatalkan user (jangan dihidupkan lagi):** backlog01 UI-06 (navigasi
+  keyboard grid) dan UI-08 (`x-form.cell-input` untuk input di sel tabel);
+  UI-20 (NPWP) diganti fasilitas input di Settings > Identifikasi. UI-07
+  dipindah: Peran Part & Material Role BOP -> backlog02 §28 (bagian Inquiry
+  Product), Master Bank -> backlog06 §21.
 - **backlog01 dirapikan** jadi papan monitor bernomor UI-01..UI-18 dengan
   status 🔴/🟡/🔵/⚪. Catatan basi dikoreksi: komponen Back SUDAH ada
   (`x-back-button`, 23 layar). Mitigasi Filament klik-luar-modal

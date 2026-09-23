@@ -30,9 +30,6 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-03 | Setelan grid "compact": kerapatan baris + baris per sel | 🟡 SIAP | — | Tempatnya sudah ada: drawer Configuration → Grid ("segera") |
 | UI-04 | Header form entry (ikon+judul+no dok+badge+cetak+Back) jadi komponen | 🟡 SIAP | — | ≥6 layar menyalin markup yang sama |
 | UI-05 | Angka rata kanan di semua grid/form lama | 🔵 BERJALAN | — | Selesai: 7 nota cetak, payroll, Master Pegawai/Mesin/Proses. Sisanya ikut UI-01 per modul |
-| UI-06 | Navigasi keyboard di grid | 🔴 KEPUTUSAN | Enter = buka baris, atau buka menu aksi sel? | Terbesar dari agenda grid |
-| UI-07 | Field teks bebas yang seharusnya lookup master | 🔴 KEPUTUSAN | 3 pertanyaan (Peran Part, Material Role BOP, Master Bank) | Lihat detail |
-| UI-08 | Input di dalam sel tabel (`x-form.cell-input`) | 🔴 KEPUTUSAN | Setujui bentuk komponennya | ±25 input mentah di grid editable |
 | UI-10 | Panel Filament `/admin`: klik sidebar saat modal terbuka | 🔴 KEPUTUSAN | 3 pertanyaan (auto-save draft) | Mitigasi sementara sudah terpasang |
 | UI-11 | Pindah modul lain ke Filament `/admin` | 🔴 KEPUTUSAN | Modul mana & kapan | Baru HRM (2 Resource + 1 Page) |
 | UI-12 | Filter dropdown toolbar yang dulu dihapus | 🔴 KEPUTUSAN | Dikembalikan atau tidak? | tipe/kategori/divisi/dimensi/sembunyikan-nonaktif |
@@ -79,18 +76,6 @@ Disalin manual di `pur/pr`, `pur/po`, `co`, `pur/pq`, `pur/prt`, `quotation` ent
 
 ### UI-05 — Angka rata kanan  🔵
 Aturan: class `num` pada judul kolom + sel angka (`componentstandard.md` §5). Default tabel lama sudah di `@layer base` sehingga class per sel kini berlaku di semua layar. Sisa kolom angka di grid lama dikerjakan bersama UI-01 per modul. Zona beku (Inquiry nota & costing, 4 sel) menunggu izin per perubahan.
-
-### UI-06 — Navigasi keyboard grid  🔴
-Tombol: panah, Home/End, Ctrl+Home/End, PageUp/Down, Enter, Esc, Ctrl+C + panel bantuan pintasan. **Pertanyaan:** Enter membuka baris (seperti klik 2x) atau membuka menu aksi sel? Tidak boleh bentrok dengan F1 & pintasan shell.
-
-### UI-07 — Teks bebas → lookup  🔴
-1. `production/process-rate` → `part_code`: jadikan **Peran Part** tabel master (`ref_part_role`, dipakai juga Inquiry) atau biarkan teks bebas?
-2. `production/bop-rule` → `material_role`: (a) master kecil `ref_bom_row`, (b) dropdown dari nilai yang sudah ada + boleh ketik baru, (c) biarkan?
-3. `hrm/payroll-employee-bank` → nama bank: buat master bank kecil / `ref_` lookup?
-(`bop-rule.material_pattern` bukan kandidat — isinya pola LIKE multi-nilai.)
-
-### UI-08 — `x-form.cell-input`  🔴
-Input di dalam sel grid editable (mps-spreadsheet, dst) perlu versi ringkas dengan badge huruf. Bentuk komponen belum disetujui.
 
 ### UI-10 — Filament: klik sidebar saat modal terbuka  🔴
 Penyebab: pola `ManageRecords --simple` membuka form sebagai modal ber-backdrop di atas sidebar (bawaan Filament). Mitigasi sudah ada (klik di luar tidak menutup form). Arah yang disetujui prinsip: auto-save draft ala SAP Fiori. **Pertanyaan:** (1) berlaku semua Resource atau tertentu? (2) pindah ke halaman Create/Edit terpisah? (3) mekanisme draft (trigger, penanda draft/final, 2 tab bersamaan)?
