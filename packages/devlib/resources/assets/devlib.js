@@ -43,8 +43,38 @@
 
   // Tombol tambahan form (mockup: "Generate QR Code Data") -> QR berisi semua isian form.
   function initForm(form) {
+    const fs = $(form, '[data-f-fs]'), viewMode = form.dataset.mode === 'view';
+    let snapshot = null;
+    const setView = on => { form.classList.toggle('is-view', on); if (fs) fs.disabled = on; const ed = $(form, '[data-f-edit]'); if (ed) ed.hidden = !on; };
+    if (viewMode) setView(true);
+    // Isian wajib + baris detail; error di tab tersembunyi -> tab dibuka & diberi tanda jumlah error.
+    const validate = () => {
+      $$(form, '.dl-tabs__err').forEach(x => x.remove());
+      const bad = $$(form, '.dl-field').filter(f => !f.closest('.dl-lines') && $(f, '.dl-field__req') && !hasValue(f));
+      bad.forEach(f => { f.classList.add('is-invalid'); const er = $(f, '[data-dl-field-error]'); if (er) er.textContent = 'Wajib diisi'; });
+      const lineBad = $$(form, '[data-dl-lines]').reduce((n, l) => n + (l.dlLines ? l.dlLines.validate() : 0), 0);
+      const panels = new Map();
+      [...bad, ...$$(form, '.dl-lines td.is-invalid')].forEach(x => { const p = x.closest('.dl-tabs__panel'); if (p) panels.set(p, (panels.get(p) || 0) + 1); });
+      panels.forEach((n, p) => { const tab = $(p.closest('[data-dl-tabs]'), `.dl-tabs__tab[data-tab="${p.dataset.panel}"]`); if (tab) tab.insertAdjacentHTML('beforeend', `<span class="dl-tabs__err">${n}</span>`); });
+      const first = bad[0] || $(form, '.dl-lines td.is-invalid');
+      if (first) { const p = first.closest('.dl-tabs__panel'); if (p && !p.classList.contains('is-active')) $(p.closest('[data-dl-tabs]'), `.dl-tabs__tab[data-tab="${p.dataset.panel}"]`)?.click(); setTimeout(() => { first.scrollIntoView({block: 'center'}); $(first, 'input:not([type=hidden]),textarea,button')?.focus(); }, 30); }
+      return bad.length + lineBad;
+    };
+    form.addEventListener('input', e => { const f = e.target.closest('.dl-field.is-invalid'); if (f && hasValue(f)) { f.classList.remove('is-invalid'); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = ''; } }, true);
     form.addEventListener('submit', e => {
-      if (!form.getAttribute('action')) { e.preventDefault(); toast('Aksi: ' + (form.querySelector('[data-dl-split-value]')?.value || 'Submit') + ' (pratinjau, tidak dikirim)'); }
+      const n = validate();
+      if (n) { e.preventDefault(); dirtyForms.add(form); form.classList.add('is-dirty'); toast(`${n} isian wajib belum diisi.`, 'danger'); return; }
+      if (form.getAttribute('action')) return;
+      e.preventDefault();
+      const data = {}; new FormData(form).forEach((v, k) => { if (k !== '_token') data[k] = v; });
+      toast('Aksi: ' + (form.querySelector('[data-dl-split-value]')?.value || 'Simpan') + ' (pratinjau, tidak dikirim)', 'success');
+      form.dispatchEvent(new CustomEvent('dl:form-submit', {bubbles: true, detail: data}));
+      if (viewMode) { snapshot = null; setView(true); }
+      const layer = form.closest('[data-dl-modal-id],[data-dl-drawer-id]'); if (layer) closeLayer(layer);
+    });
+    form.addEventListener('click', e => {
+      if (e.target.closest('[data-f-edit]')) { if (fs) fs.disabled = false; snapshot = {}; new FormData(form).forEach((v, k) => { snapshot[k] = v; }); $$(form, 'input[type=checkbox][name]').forEach(c => { snapshot[c.name] = c.checked; }); setView(false); $(form, '.dl-form__body input:not([type=hidden]),.dl-form__body textarea')?.focus(); return; }
+      if (e.target.closest('[data-f-cancel]') && snapshot) { fillForm(form, snapshot, false); snapshot = null; setView(true); toast('Perubahan dibatalkan.'); }
     });
     const extra = form.querySelector('[data-dl-form-extra]');
     if (!extra) return;
@@ -1591,7 +1621,8 @@
     $$(form, '.dl-field.is-invalid').forEach(f => { f.classList.remove('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = ''; });
     dirtyForms.delete(form); form.classList.remove('is-dirty');
   }
-  const hasValue = f => $$(f, '[name]').some(i => (i.type === 'checkbox' || i.type === 'radio') ? i.checked : i.value.trim() !== '');
+  // Input pendamping (mata uang / kode negara) selalu terisi, jadi tidak dihitung sebagai nilai.
+  const hasValue = f => $$(f, '[name]:not([data-dl-prefix-value])').some(i => (i.type === 'checkbox' || i.type === 'radio') ? i.checked : i.value.trim() !== '');
 
   function initMaster(m) {
     const grid = $(m, '[data-dl-grid]'), form = $(m, '[data-m-form]'), gridBox = $(m, '[data-m-grid]'), d = m.dataset;
@@ -3263,6 +3294,75 @@
     render();
   }
 
+
+  /* ============================ APPROVAL BAR ============================ */
+  function initApprovalBar(el) {
+    const fieldErr = (inp, msg) => { const f = inp.closest('.dl-field'); f.classList.toggle('is-invalid', !!msg); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = msg; };
+    const form = el.closest('form'), fs = form && $(form, '[data-f-fs]'), note = $(el, '[name=approval_note]');
+    // Bilah dipindah ke luar fieldset form supaya tetap bisa diklik saat isian dikunci.
+    if (fs && fs.contains(el)) fs.after(el);
+    const hist = JSON.parse(el.dataset.history || '[]'), me = el.dataset.me;
+    const STEPS = [['DRAFT', 'Draft'], ['SUBMITTED', 'Diajukan'], ['APPROVED', 'Disetujui']];
+    const WORD = {submit: 'Ajukan', approve: 'Setujui', reject: 'Tolak', revise: 'Revisi'}, NEXT = {submit: 'SUBMITTED', approve: 'APPROVED', reject: 'REJECTED', revise: 'DRAFT'};
+    const ICON = {SUBMITTED: 'fa-paper-plane', APPROVED: 'fa-check', REJECTED: 'fa-ban', DRAFT: 'fa-pen'};
+    function draw() {
+      const s = el.dataset.status, at = s === 'REJECTED' ? 1 : STEPS.findIndex(x => x[0] === s);
+      $(el, '[data-ab-pipe]').innerHTML = STEPS.map(([k, l], i) => `<span class="dl-master__step ${i < at ? 'is-done' : i === at ? (s === 'REJECTED' ? 'is-rejected' : 'is-active') : ''}">${i === at && s === 'REJECTED' ? 'Ditolak' : esc(l)}</span>`).join('');
+      const last = hist[hist.length - 1];
+      $(el, '[data-ab-banner]').innerHTML = s === 'APPROVED' ? `<i class="fa-solid fa-lock"></i> Disetujui${last ? ` oleh <b>${esc(last.by)}</b> · ${esc(last.at)}` : ''} — dokumen terkunci.` : s === 'SUBMITTED' ? '<i class="fa-solid fa-hourglass-half"></i> Menunggu persetujuan — isian dikunci.' : s === 'REJECTED' ? `<i class="fa-solid fa-circle-xmark"></i> Ditolak${last?.note ? `: “${esc(last.note)}”` : ''} — klik Revisi untuk memperbaiki.` : '';
+      el.dataset.tone = s;
+      const show = {submit: s === 'DRAFT', approve: s === 'SUBMITTED', reject: s === 'SUBMITTED', revise: s === 'REJECTED'};
+      $$(el, '[data-ab-do]').forEach(b => { b.hidden = !show[b.dataset.abDo]; });
+      $(el, '[data-ab-act]').hidden = s === 'APPROVED';
+      note.closest('.dl-field').hidden = s !== 'SUBMITTED';
+      $(el, '[data-ab-hist]').innerHTML = hist.slice().reverse().map(h => `<li><i class="fa-solid ${ICON[h.status] || 'fa-circle'}"></i><div><b>${esc(h.label)}</b><small>Oleh: ${esc(h.by)} · ${esc(h.at)}</small>${h.note ? `<q>${esc(h.note)}</q>` : ''}</div></li>`).join('');
+      if (fs) { fs.disabled = s !== 'DRAFT'; form.classList.toggle('is-view', s !== 'DRAFT'); }
+    }
+    el.addEventListener('click', e => {
+      const b = e.target.closest('[data-ab-do]'); if (!b) return;
+      e.preventDefault();
+      const a = b.dataset.abDo, n = note.value.trim();
+      if (a === 'reject' && !n) { fieldErr(note, 'Alasan penolakan wajib diisi.'); note.focus(); return; }
+      if (a === 'submit' && form) { const req = $$(form, '.dl-field').filter(f => !el.contains(f) && $(f, '.dl-field__req') && !hasValue(f)); if (req.length) { req.forEach(f => { f.classList.add('is-invalid'); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = 'Wajib diisi'; }); toast(`${req.length} isian wajib belum diisi sebelum diajukan.`, 'danger'); return; } }
+      confirmBox({message: `${WORD[a]} dokumen ini?`, tone: a === 'reject' ? 'danger' : 'warn'}).then(ok => {
+        if (!ok) return;
+        const status = NEXT[a];
+        hist.push({status, label: {submit: 'DIAJUKAN', approve: 'DISETUJUI', reject: 'DITOLAK', revise: 'DIREVISI'}[a], by: a === 'approve' || a === 'reject' ? el.dataset.approver : me, at: `${fmt.date()} ${fmt.time()}`, note: n});
+        el.dataset.status = status; note.value = ''; fieldErr(note, ''); draw();
+        el.dispatchEvent(new CustomEvent('dl:approval-status', {bubbles: true, detail: {status, action: a, note: n}}));
+        toast(`Dokumen ${status === 'DRAFT' ? 'kembali ke Draft' : {SUBMITTED: 'diajukan', APPROVED: 'disetujui', REJECTED: 'ditolak'}[status]}.`, a === 'reject' ? 'danger' : 'success');
+      });
+    });
+    draw();
+  }
+
+  /* ============================ FILTER FORM ============================ */
+  function initFilterForm(form) {
+    const key = 'dl-filter-' + form.dataset.id;
+    const load = () => { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { return {}; } };
+    const presets = () => { const P = load(); $(form, '[data-fl-presets]').innerHTML = '<option value="">Filter tersimpan…</option>' + Object.keys(P).map(n => `<option>${esc(n)}</option>`).join(''); };
+    const values = () => { const v = {}, aux = new Set($$(form, '[data-dl-prefix-value]').map(i => i.name)); new FormData(form).forEach((x, k) => { if (!aux.has(k) && String(x).trim() !== '') v[k] = x; }); return v; };
+    const labelOf = k => { const f = form.querySelector(`[name="${CSS.escape(k)}"]`)?.closest('.dl-field'); return f ? ($(f, '.dl-field__label')?.textContent || k) : k; };
+    function chips() {
+      const v = values();
+      const seen = new Set();
+      $(form, '[data-fl-chips]').innerHTML = Object.keys(v).map(k => { const f = form.querySelector(`[name="${CSS.escape(k)}"]`)?.closest('.dl-field'); if (f && seen.has(f)) return ''; if (f) seen.add(f); return `<span class="dl-tags__chip">${esc(labelOf(k))}: ${esc(f ? fieldText(f) || v[k] : v[k])}<button type="button" data-fl-chip="${esc(k)}" aria-label="Lepas">&times;</button></span>`; }).join('') || '<span class="dl-filter__none">Belum ada kriteria</span>';
+    }
+    const apply = () => { chips(); form.dispatchEvent(new CustomEvent('dl:filter', {bubbles: true, detail: {values: values()}})); };
+    form.addEventListener('submit', e => { e.preventDefault(); apply(); toast(`Filter diterapkan (${Object.keys(values()).length} kriteria).`, 'success'); });
+    form.addEventListener('click', e => {
+      const x = e.target;
+      if (x.closest('[data-fl-toggle]')) { form.classList.toggle('is-closed'); return; }
+      if (x.closest('[data-fl-reset]')) { fillForm(form, {}, true); apply(); return; }
+      const ch = x.closest('[data-fl-chip]'); if (ch) { setField(form, ch.dataset.flChip, ''); apply(); return; }
+      if (x.closest('[data-fl-save]')) { $(form, '[data-fl-savebox]').hidden = false; $(form, '[data-fl-name]').focus(); return; }
+      if (x.closest('[data-fl-saveok]')) { const n = $(form, '[data-fl-name]').value.trim(); if (!n) return; const P = load(); P[n] = values(); try { localStorage.setItem(key, JSON.stringify(P)); } catch (er) {} $(form, '[data-fl-savebox]').hidden = true; $(form, '[data-fl-name]').value = ''; presets(); toast(`Filter "${n}" disimpan.`, 'success'); }
+    });
+    form.addEventListener('change', e => { if (e.target.matches('[data-fl-presets]') && e.target.value) { fillForm(form, load()[e.target.value] || {}, true); apply(); e.target.value = ''; } });
+    form.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-fl-name]')) { e.preventDefault(); $(form, '[data-fl-saveok]').click(); } });
+    presets(); chips();
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -3296,6 +3396,8 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-apbar]').forEach(initApprovalBar);
+    document.querySelectorAll('[data-dl-filter]').forEach(initFilterForm);
     document.querySelectorAll('[data-dl-sheet]').forEach(initSheet);
     document.querySelectorAll('[data-dl-pivot]').forEach(initPivot);
     document.querySelectorAll('[data-dl-drill]').forEach(initDrill);
