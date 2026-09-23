@@ -1,4 +1,4 @@
 @extends('layout', ['title' => 'Masuk'])
 @section('body')
-    <x-dl::login :action="route('login.submit')" :model="$model" :error="$error" :username="$username" />
+    @include('demos.login-'.$variant, ['action' => route('login.submit'), 'error' => $error, 'username' => $username])
 @endsection

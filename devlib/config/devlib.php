@@ -6,8 +6,16 @@ return [
         ['login' => 'admin', 'password' => 'admin', 'name' => 'Administrator DevLib', 'email' => 'admin@devlib.test', 'role' => 'Administrator', 'developer' => true],
     ],
 
-    // Model tampilan login yang dipakai halaman /login (lihat Devlib\Components\Login::MODELS).
-    'login_model' => env('DEVLIB_LOGIN_MODEL', 'split'),
+    // Zona waktu yang ditampilkan semua komponen jam/tanggal/salam (bukan jam komputer pengguna).
+    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
+    'timezone_label' => 'WIB',
+
+    // Folder media (gambar latar bg/<kelompok>/*.jpg, teks text/*.txt).
+    'media_path' => public_path('media'),
+    'media_url' => '/media',
+
+    // Variasi login yang dipakai halaman /login = resources/views/demos/login-<n>.blade.php.
+    'login_variant' => env('DEVLIB_LOGIN_VARIANT', 1),
 
     // Folder mockup user (di repo tmerp, satu tingkat di atas situs ini).
     'mockup_path' => base_path('../docs/mockups'),

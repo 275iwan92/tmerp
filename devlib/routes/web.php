@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 // Situs DevLib tanpa database: sesi file + akun dari config/devlib.php.
 
 Route::get('/login', fn () => view('login', [
-    'model' => config('devlib.login_model'),
+    'variant' => config('devlib.login_variant'),
     'error' => session('login_error'),
     'username' => old('login', ''),
 ]))->name('login');
@@ -51,7 +51,9 @@ Route::middleware('devlib.auth')->group(function () {
             'demo' => $slug,
             'code' => file_get_contents(resource_path("views/demos/{$slug}.blade.php")),
             'data' => [
-                'model' => $r->query('model', config('devlib.login_model')),
+                'action' => 'javascript:void(0)',
+                'error' => null,
+                'username' => '',
                 'modules' => Catalog::modules(),
                 'user' => session('devlib_user'),
                 'locations' => config('devlib.demo.locations'),

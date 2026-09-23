@@ -21,6 +21,9 @@ final class Catalog
         'time' => ['Jam', 'Time'], 'decimal' => ['Desimal', 'Decimal'], 'number' => ['Angka spin', 'Number'], 'upload' => ['Upload', 'Upload'],
     ];
 
+    public const LOGIN_CLASSES = ['Devlib\Components\Frame', 'Devlib\Components\LoginBox', 'Devlib\Components\Clock', 'Devlib\Components\Quote',
+        'Devlib\Components\Greeting', 'Devlib\Components\Weather', 'Devlib\Components\Announce', 'Devlib\Components\UatAccounts'];
+
     public static function groups(): array
     {
         $fieldPages = [];
@@ -30,7 +33,11 @@ final class Catalog
 
         return [
             ['code' => 'LOGIN', 'label' => 'Login & Akun', 'icon' => 'fa-solid fa-right-to-bracket',
-                'pages' => ['login' => ['label' => 'Login', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'variants' => \Devlib\Components\Login::MODELS, 'classes' => ['Devlib\\Components\\Login'], 'mockup' => 'login.html']],
+                'pages' => [
+                    'login-1' => ['label' => 'Login 1 · sama dengan tmerp', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
+                    'login-2' => ['label' => 'Login 2 · popup kaca', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
+                    'login-3' => ['label' => 'Login 3 · panel kiri navy', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
+                ],
                 'files' => ['login.html', 'register.html', 'forgot-password.html', 'security.html']],
             ['code' => 'SHELL', 'label' => 'Shell & Menu', 'icon' => 'fa-solid fa-table-columns',
                 'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html']],
@@ -44,7 +51,6 @@ final class Catalog
                 'pages' => [
                     'button' => ['label' => 'Tombol', 'icon' => 'fa-solid fa-hand-pointer', 'classes' => ['Devlib\\Components\\Button', 'Devlib\\Components\\SplitButton'], 'mockup' => 'UIUX_components_part1.html'],
                     'misc' => ['label' => 'Pesan · Pemisah · Brand · Bahasa', 'icon' => 'fa-solid fa-shapes', 'classes' => ['Devlib\\Components\\Alert', 'Devlib\\Components\\Divider', 'Devlib\\Components\\Brand', 'Devlib\\Components\\LangSwitch'], 'mockup' => 'login.html'],
-                    'hero' => ['label' => 'Hero · Jam · Kutipan', 'icon' => 'fa-solid fa-image', 'full' => true, 'classes' => ['Devlib\\Components\\Hero', 'Devlib\\Components\\Clock', 'Devlib\\Components\\Quote'], 'mockup' => 'login.html'],
                 ], 'files' => []],
             ['code' => 'GRID', 'label' => 'Grid', 'icon' => 'fa-solid fa-table-list', 'files' => ['mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html',
                 'grid_kerapatan_baris.html', 'grid_kerapatan_baris.jpg', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid.jpg',
@@ -100,11 +106,8 @@ final class Catalog
             if (! empty($g['pages'])) {
                 $items = [];
                 foreach ($g['pages'] as $slug => $p) {
-                    // Komponen bermodel (mis. Login 5 model) = satu item per model.
-                    foreach ($p['variants'] ?? ['' => ''] as $v => $vLabel) {
-                        $items[] = ['code' => 'P-'.$slug.$v, 'label' => $p['label'].($v ? ' · '.$vLabel : ''), 'icon' => $p['icon'],
-                            'url' => route('lib', array_filter(['slug' => $slug, 'model' => $v])), 'type' => 'form', 'badge' => 'Review', 'badgeTone' => 'partial'];
-                    }
+                    $items[] = ['code' => 'P-'.$slug, 'label' => $p['label'], 'icon' => $p['icon'], 'url' => route('lib', ['slug' => $slug]),
+                        'type' => 'form', 'badge' => 'Review', 'badgeTone' => 'partial'];
                 }
                 $children[] = ['label' => 'Komponen', 'items' => $items];
             }

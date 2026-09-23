@@ -28,30 +28,6 @@
     $$(root, '.dl-flag').forEach(x => x.classList.toggle('is-active', x.dataset.lang === currentLang));
   }
 
-  function initClock(root) {
-    const t = $(root, '[data-dl-clock-time]'), d = $(root, '[data-dl-clock-date]');
-    const tick = () => {
-      const now = new Date(), loc = currentLang === 'id' ? 'id-ID' : 'en-US';
-      t.textContent = now.toLocaleTimeString(loc, {hour12: false});
-      d.textContent = now.toLocaleDateString(loc, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
-    };
-    tick(); setInterval(tick, 1000); document.addEventListener('dl:lang', tick);
-  }
-
-  function initQuote(root) {
-    const list = JSON.parse(root.dataset.quotes || '[]');
-    if (!list.length) return;
-    const q = list[Math.floor(Math.random() * list.length)];
-    $(root, '[data-dl-quote-text]').textContent = q.t;
-    $(root, '[data-dl-quote-author]').textContent = q.a;
-  }
-
-  function initHero(root) {
-    const imgs = JSON.parse(root.dataset.images || '[]'), img = $(root, '.dl-hero__img');
-    img.onload = () => img.classList.add('is-on');
-    if (imgs.length) img.src = imgs[Math.floor(Math.random() * imgs.length)];
-  }
-
   function initSplit(root) {
     const val = $(root, '[data-dl-split-value]');
     $(root, '[data-dl-split-toggle]').addEventListener('click', e => { e.stopPropagation(); root.classList.toggle('is-open'); });
@@ -297,37 +273,122 @@
     }
   }
 
-  /* ============================ LOGIN ============================ */
-  // Login hanya merangkai komponen; di sini tinggal teks 2 bahasa, grip, dan validasi kosong.
+  // Urutan pilihan dari daftar: random, atau sequence (lanjut tiap halaman dibuka, diingat per kunci).
+  function pickIndex(len, order, key) {
+    if (!len) return -1;
+    if (order !== 'sequence') return Math.floor(Math.random() * len);
+    let i = -1; try { i = parseInt(localStorage.getItem('dl-seq-' + key) ?? '-1', 10); } catch (e) {}
+    i = (i + 1) % len;
+    try { localStorage.setItem('dl-seq-' + key, i); } catch (e) {}
+    return i;
+  }
+
+  function initClock(root) {
+    const t = $(root, '[data-dl-clock-time]'), d = $(root, '[data-dl-clock-date]'), timeZone = root.dataset.tz || undefined;
+    const tick = () => {
+      const now = new Date(), loc = currentLang === 'id' ? 'id-ID' : 'en-US';
+      if (t) t.textContent = now.toLocaleTimeString(loc, {hour12: false, timeZone});
+      d.textContent = now.toLocaleDateString(loc, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone});
+    };
+    tick(); setInterval(tick, 1000); document.addEventListener('dl:lang', tick);
+  }
+
+  function initGreeting(root) {
+    const G = {id: ['Selamat pagi', 'Selamat siang', 'Selamat sore', 'Selamat malam'], en: ['Good morning', 'Good afternoon', 'Good evening', 'Good night']};
+    const upd = () => {
+      const h = +new Date().toLocaleString('en-US', {hour: 'numeric', hour12: false, timeZone: root.dataset.tz || undefined}) % 24;
+      const i = h < 11 ? 0 : h < 15 ? 1 : h < 18 ? 2 : 3;
+      root.textContent = G[currentLang][i] + (root.dataset.name ? ', ' + root.dataset.name : '') + ' 👋';
+    };
+    upd(); setInterval(upd, 60000); document.addEventListener('dl:lang', upd);
+  }
+
+  function initQuote(root) {
+    const list = JSON.parse(root.dataset.quotes || '[]');
+    if (!list.length) { root.style.display = 'none'; return; }
+    let i = pickIndex(list.length, root.dataset.order, 'quote');
+    const show = () => { $(root, '[data-dl-quote-text]').textContent = list[i].t; const a = $(root, '[data-dl-quote-author]'); a.textContent = list[i].a; a.style.display = list[i].a ? '' : 'none'; };
+    show();
+    const sec = +root.dataset.interval;
+    if (sec > 0) setInterval(() => { i = (i + 1) % list.length; show(); }, sec * 1000);
+  }
+
+  function initAnnounce(root) {
+    const lines = JSON.parse(root.dataset.lines || '[]'), txt = $(root, '[data-dl-announce-text]');
+    let i = 0;
+    if (lines.length > 1) setInterval(() => { i = (i + 1) % lines.length; txt.textContent = lines[i]; }, (+root.dataset.interval || 6) * 1000);
+  }
+
+  // Kode cuaca WMO (Open-Meteo) -> ikon + keterangan.
+  const WMO = [[0, '☀️', 'Cerah', 'Clear'], [2, '⛅', 'Berawan sebagian', 'Partly cloudy'], [3, '☁️', 'Berawan', 'Cloudy'], [48, '🌫️', 'Berkabut', 'Fog'],
+    [57, '🌦️', 'Gerimis', 'Drizzle'], [67, '🌧️', 'Hujan', 'Rain'], [77, '🌨️', 'Salju', 'Snow'], [82, '🌧️', 'Hujan deras', 'Showers'], [99, '⛈️', 'Badai petir', 'Thunderstorm']];
+  function initWeather(root) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${root.dataset.lat}&longitude=${root.dataset.lon}&current=temperature_2m,weather_code&timezone=auto`;
+    let w = null;
+    const paint = () => {
+      if (!w) return;
+      const m = WMO.find(x => w.code <= x[0]) || WMO[WMO.length - 1];
+      $(root, '[data-dl-weather-icon]').textContent = m[1];
+      $(root, '[data-dl-weather-temp]').textContent = Math.round(w.temp) + '°C';
+      $(root, '[data-dl-weather-desc]').textContent = currentLang === 'id' ? m[2] : m[3];
+    };
+    fetch(url).then(r => r.json()).then(j => { w = {temp: j.current.temperature_2m, code: j.current.weather_code}; paint(); })
+      .catch(() => { $(root, '[data-dl-weather-desc]').textContent = currentLang === 'id' ? 'cuaca tak tersedia' : 'weather unavailable'; });
+    document.addEventListener('dl:lang', paint);
+  }
+
+  function initFrame(root) {
+    const imgs = JSON.parse(root.dataset.images || '[]'), layers = $$(root, '.dl-frame__bg img');
+    const portrait = () => window.matchMedia('(orientation: portrait)').matches;
+    let i = pickIndex(imgs.length, root.dataset.order, 'bg-' + root.dataset.key), front = 0;
+    const show = () => {
+      if (i < 0) return;
+      const src = portrait() && imgs[i].portrait ? imgs[i].portrait : imgs[i].src, next = layers[1 - front];
+      next.onload = () => { next.classList.add('is-on'); layers[front].classList.remove('is-on'); front = 1 - front; };
+      next.src = src;
+    };
+    show();
+    const sec = +root.dataset.interval;
+    if (sec > 0 && imgs.length > 1) setInterval(() => { i = root.dataset.order === 'random' ? Math.floor(Math.random() * imgs.length) : (i + 1) % imgs.length; show(); }, sec * 1000);
+    window.matchMedia('(orientation: portrait)').addEventListener('change', show);
+
+    // Grip: lebarkan box sisi kiri/kanan (15%–40% layar).
+    const grip = $(root, '[data-dl-frame-grip]');
+    if (grip) {
+      const left = root.classList.contains('dl-frame--box-left');
+      let drag = false;
+      grip.addEventListener('mousedown', e => { drag = true; root.classList.add('is-resizing'); e.preventDefault(); });
+      window.addEventListener('mousemove', e => {
+        if (!drag) return;
+        const min = Math.max(window.innerWidth * 0.15, 260), max = window.innerWidth * 0.40;
+        root.style.setProperty('--dl-box-w', Math.max(min, Math.min(max, left ? e.clientX : window.innerWidth - e.clientX)) + 'px');
+      });
+      window.addEventListener('mouseup', () => { drag = false; root.classList.remove('is-resizing'); });
+    }
+  }
+
+  function initUat(root) {
+    $(root, '[data-dl-uat-toggle]').addEventListener('click', e => { e.stopPropagation(); root.classList.toggle('is-open'); });
+    root.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', () => root.classList.remove('is-open'));
+  }
+
+  /* ============================ LOGIN BOX ============================ */
+  // Isinya komponen; di sini tinggal teks 2 bahasa dan validasi kosong.
   const LOGIN_T = {
-    id: {heading:'Masuk',sub:'Gunakan akun terdaftar untuk mengakses aplikasi.',l_login:'Username atau email',l_pass:'Password',forgot:'Lupa password?',btn:'Masuk',or:'atau',no_acc:'Belum punya akun?',reg:'Daftar',err_empty:'Isi username/email dan password.',err_wrong:'Username atau password salah.'},
-    en: {heading:'Sign in',sub:'Use your registered account to access the app.',l_login:'Username or email',l_pass:'Password',forgot:'Forgot password?',btn:'Sign in',or:'or',no_acc:"Don't have an account?",reg:'Register',err_empty:'Enter your username/email and password.',err_wrong:'Incorrect username or password.'}
+    id: {heading:'Masuk',sub:'Gunakan akun terdaftar untuk mengakses aplikasi.',l_login:'Username atau email',l_email:'Email',l_pass:'Password',forgot:'Lupa password?',btn:'Masuk',or:'atau',no_acc:'Belum punya akun?',reg:'Daftar',err_empty:'Isi username/email dan password.',err_wrong:'Username atau password salah.'},
+    en: {heading:'Sign in',sub:'Use your registered account to access the app.',l_login:'Username or email',l_email:'Email',l_pass:'Password',forgot:'Forgot password?',btn:'Sign in',or:'or',no_acc:"Don't have an account?",reg:'Register',err_empty:'Enter your username/email and password.',err_wrong:'Incorrect username or password.'}
   };
 
-  function initLogin(root) {
+  function initLoginBox(root) {
     const alertBox = $(root, '[data-dl-alert]');
     let errCode = root.dataset.error || '';
-    const showError = () => { alertBox.textContent = errCode ? LOGIN_T[currentLang][errCode === 'empty' ? 'err_empty' : 'err_wrong'] : ''; alertBox.classList.toggle('is-show', !!errCode); };
+    const showError = () => { if (!alertBox) return; alertBox.textContent = errCode ? LOGIN_T[currentLang][errCode === 'empty' ? 'err_empty' : 'err_wrong'] : ''; alertBox.classList.toggle('is-show', !!errCode); };
     const applyLang = () => { $$(root, '[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (LOGIN_T[currentLang][k]) el.textContent = LOGIN_T[currentLang][k]; }); showError(); };
     document.addEventListener('dl:lang', applyLang);
-
-    const grip = $(root, '.dl-login__grip'), panel = $(root, '.dl-login__panel');
-    if (grip) {
-      const mirrored = root.classList.contains('dl-login--mirror');
-      let dragging = false;
-      grip.addEventListener('mousedown', e => { dragging = true; root.classList.add('is-resizing'); e.preventDefault(); });
-      window.addEventListener('mousemove', e => {
-        if (!dragging) return;
-        const min = Math.max(window.innerWidth * 0.15, 240), max = window.innerWidth * 0.40;
-        panel.style.width = Math.max(min, Math.min(max, mirrored ? e.clientX : window.innerWidth - e.clientX)) + 'px';
-      });
-      window.addEventListener('mouseup', () => { dragging = false; root.classList.remove('is-resizing'); });
-    }
-
     root.querySelector('form').addEventListener('submit', e => {
-      const fields = $$(root, '[data-dl-field]');
       let empty = false;
-      fields.forEach(fd => { const v = $(fd, 'input').value.trim(); fd.classList.toggle('is-invalid', !v); if (!v) empty = true; });
+      $$(root, '.dl-field--lg').forEach(fd => { const v = $(fd, 'input').value.trim(); fd.classList.toggle('is-invalid', !v); if (!v) empty = true; });
       if (empty) { e.preventDefault(); errCode = 'empty'; showError(); }
     });
     applyLang();
@@ -572,12 +633,16 @@
     document.querySelectorAll('[data-dl-langs]').forEach(initLangs);
     document.querySelectorAll('[data-dl-clock]').forEach(initClock);
     document.querySelectorAll('[data-dl-quote]').forEach(initQuote);
-    document.querySelectorAll('[data-dl-hero]').forEach(initHero);
+    document.querySelectorAll('[data-dl-frame]').forEach(initFrame);
+    document.querySelectorAll('[data-dl-greeting]').forEach(initGreeting);
+    document.querySelectorAll('[data-dl-weather]').forEach(initWeather);
+    document.querySelectorAll('[data-dl-announce]').forEach(initAnnounce);
+    document.querySelectorAll('[data-dl-uat]').forEach(initUat);
     document.querySelectorAll('[data-dl-split]').forEach(initSplit);
     document.querySelectorAll('[data-dl-device]').forEach(initDevice);
     document.querySelectorAll('[data-dl-form]').forEach(initForm);
     document.querySelectorAll('.dl-field').forEach(initField);
-    document.querySelectorAll('.dl-login').forEach(initLogin);
+    document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.addEventListener('click', () => {
       document.querySelectorAll('[data-dl-dd-panel].is-open').forEach(p => p.classList.remove('is-open'));

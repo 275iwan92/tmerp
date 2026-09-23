@@ -1,0 +1,8 @@
+# Satu kata motivasi per baris. Format: teks | penulis   (penulis boleh kosong)
+# Baris diawali # diabaikan.
+Cara memulai adalah berhenti bicara dan mulai melakukan. | Walt Disney
+Kesuksesan adalah hasil dari persiapan, kerja keras, dan belajar dari kegagalan. | Colin Powell
+Disiplin adalah jembatan antara tujuan dan pencapaian. | Jim Rohn
+Fokus pada progres, bukan kesempurnaan. | Anonim
+Kualitas bukan kebetulan; ia selalu hasil dari usaha yang cerdas. | John Ruskin
+Pekerjaan hebat lahir dari tim yang saling percaya. | Anonim

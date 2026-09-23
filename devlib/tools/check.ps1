@@ -3,12 +3,12 @@
 #   2. menyimpan HTML hasil render tiap halaman (sesi login ikut) ke storage/app/snap
 #   3. memotret tiap snapshot dengan browser headless -> PNG di folder yang sama
 # Pakai:  powershell -File tools\check.ps1                 (semua halaman bawaan)
-#         powershell -File tools\check.ps1 -Pages '/lib/login?model=center'
+#         powershell -File tools\check.ps1 -Pages '/lib/login-2'
 param(
     [string]$Base = 'http://devlib.test',
     [string]$User = 'admin',
     [string]$Pass = 'admin',
-    [string[]]$Pages = @('/', '/lib/form', '/lib/shell', '/lib/button', '/lib/misc', '/lib/hero', '/lib/login?model=split', '/lib/login?model=mirror', '/lib/login?model=center', '/lib/login?model=fullbg', '/lib/login?model=minimal', '/lib/field-text', '/lib/field-password', '/lib/field-select', '/lib/field-color', '/lib/field-radio', '/lib/field-toggle', '/lib/field-checkboxes', '/lib/field-slider', '/lib/field-date-range', '/lib/field-multi-select', '/lib/field-otp', '/lib/field-rating', '/lib/field-masked', '/lib/field-phone', '/lib/field-money', '/lib/field-date', '/lib/field-time', '/lib/field-decimal', '/lib/field-number', '/lib/field-upload', '/mockup/register.html'),
+    [string[]]$Pages = @('/', '/lib/form', '/lib/shell', '/lib/button', '/lib/misc', '/lib/login-1', '/lib/login-2', '/lib/login-3', '/lib/field-text', '/lib/field-password', '/lib/field-select', '/lib/field-color', '/lib/field-radio', '/lib/field-toggle', '/lib/field-checkboxes', '/lib/field-slider', '/lib/field-date-range', '/lib/field-multi-select', '/lib/field-otp', '/lib/field-rating', '/lib/field-masked', '/lib/field-phone', '/lib/field-money', '/lib/field-date', '/lib/field-time', '/lib/field-decimal', '/lib/field-number', '/lib/field-upload', '/mockup/register.html'),
     [string[]]$Modules = @('LOGIN', 'FORM'),
     [int]$Width = 1440,
     [int]$Height = 900,
@@ -72,7 +72,7 @@ foreach ($p in $Pages) {
 
 # Jendela kode </> halaman form dipotret (deep link #kode).
 $r = Req '/lib/form'; Shot 'lib_form_kode' $r.Content '#kode'
-$r = Req '/lib/login?model=split'; Shot 'lib_login_kode' $r.Content '#kode'
+$r = Req '/lib/login-2'; Shot 'lib_login_kode' $r.Content '#kode'
 
 # Tiap modul menu dipotret (deep link #KODE).
 foreach ($m in $Modules) { $r = Req '/'; Shot "modul_$m" $r.Content "#$m" }
