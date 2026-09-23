@@ -2760,6 +2760,24 @@
     let rw = plot.clientWidth; new ResizeObserver(() => { if (Math.abs(plot.clientWidth - rw) > 4) { rw = plot.clientWidth; draw(); } }).observe(plot);
   }
 
+
+  /* ============================ QR & BARCODE ============================ */
+  // Library dimuat sekali dari cdnjs saat komponen pertama muncul (tidak membebani halaman lain).
+  const libOnce = {};
+  const loadLib = (url, test) => test() ? Promise.resolve() : (libOnce[url] = libOnce[url] || new Promise((ok, no) => { const s = document.createElement('script'); s.src = url; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+  function initQrcode(el) {
+    loadLib('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', () => window.QRCode).then(() => {
+      el.innerHTML = ''; new window.QRCode(el, {text: el.dataset.text || ' ', width: +el.dataset.size, height: +el.dataset.size, colorDark: '#111827', colorLight: '#ffffff', correctLevel: window.QRCode.CorrectLevel.M});
+      const img = el.querySelector('img'); if (img) img.alt = 'QR ' + el.dataset.text;
+    }).catch(() => { el.textContent = el.dataset.text; el.classList.add('is-fallback'); });
+  }
+  function initBarcode(el) {
+    loadLib('https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js', () => window.JsBarcode).then(() => {
+      try { window.JsBarcode(el, el.dataset.value, {format: el.dataset.format, height: +el.dataset.height, width: +el.dataset.width, displayValue: el.dataset.text === '1', margin: 0, fontSize: 13, font: 'monospace', background: 'transparent'}); }
+      catch (e) { el.outerHTML = `<span class="dl-barcode__err">Barcode ${esc(el.dataset.format)} tidak sah: ${esc(el.dataset.value)}</span>`; }
+    }).catch(() => { el.outerHTML = `<code>${esc(el.dataset.value)}</code>`; });
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -2793,6 +2811,8 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-qrcode]').forEach(initQrcode);
+    document.querySelectorAll('[data-dl-barcode]').forEach(initBarcode);
     document.querySelectorAll('[data-dl-chart]').forEach(initChart);
     document.querySelectorAll('[data-dl-impo]').forEach(initImposition);
     document.querySelectorAll('[data-dl-dieline]').forEach(initDieline);
