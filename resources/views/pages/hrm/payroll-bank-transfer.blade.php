@@ -115,7 +115,7 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Bank</th>
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">No Rekening</th>
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Atas Nama</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Gaji Bersih</th>
+                        <th class="num p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Gaji Bersih</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,7 +125,7 @@ new #[Title('Generator Transfer Bank — TELASIH MAKMUR ERP')] class extends Com
                             <td class="p-2"><span class="bg-[#dbeafe] text-[#1e40af] font-bold px-2 py-0.5 rounded text-[10px]">{{ $r['bank']?->bank_name }}</span></td>
                             <td class="p-2 font-mono">{{ $r['bank']?->account_no }}</td>
                             <td class="p-2">{{ $r['bank']?->account_holder_name }}</td>
-                            <td class="p-2 font-mono font-bold text-[#166534]">Rp {{ number_format($r['net'], 0, ',', '.') }}</td>
+                            <td class="num p-2 font-mono font-bold text-[#166534]">Rp {{ number_format($r['net'], 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <x-grid.empty-row :colspan="5" message="Tidak ada pegawai dengan rekening bank utk periode ini." />

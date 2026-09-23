@@ -135,9 +135,9 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     <tr>
                         <th style="width:12%">Ref.</th>
                         <th class="desc">Deskripsi Produk &amp; Spesifikasi</th>
-                        <th style="width:11%">Qty</th>
-                        <th style="width:13%">Harga Satuan</th>
-                        <th style="width:16%">Subtotal</th>
+                        <th class="num" style="width:11%">Qty</th>
+                        <th class="num" style="width:13%">Harga Satuan</th>
+                        <th class="num" style="width:16%">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,9 +150,9 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                                     <div class="sp">{{ $item->spec_note }}</div>
                                 @endif
                             </td>
-                            <td class="q">{{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}</td>
-                            <td>{{ number_format($item->unit_price, 0, ',', '.') }}{{ $item->discount_pct > 0 ? ' (-'.number_format($item->discount_pct, 1).'%)' : '' }}</td>
-                            <td class="amt">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                            <td class="num q">{{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}</td>
+                            <td class="num">{{ number_format($item->unit_price, 0, ',', '.') }}{{ $item->discount_pct > 0 ? ' (-'.number_format($item->discount_pct, 1).'%)' : '' }}</td>
+                            <td class="num amt">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -184,18 +184,18 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                         <thead>
                             <tr>
                                 <th style="width:34%">Opsi Qty</th>
-                                <th>Qty (pcs)</th>
-                                <th>Harga Satuan</th>
-                                <th>Subtotal Produk</th>
+                                <th class="num">Qty (pcs)</th>
+                                <th class="num">Harga Satuan</th>
+                                <th class="num">Subtotal Produk</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($this->altRows as $row)
                                 <tr class="{{ $row->is_best ? 'best' : '' }}">
                                     <td>{{ number_format($row->tier->qty, 0, ',', '.') }} pcs</td>
-                                    <td>{{ number_format($row->tier->qty, 0, ',', '.') }}</td>
-                                    <td class="p">{{ number_format($row->price_excl, 0, ',', '.') }}</td>
-                                    <td>{{ number_format($row->value_total, 0, ',', '.') }}</td>
+                                    <td class="num">{{ number_format($row->tier->qty, 0, ',', '.') }}</td>
+                                    <td class="num p">{{ number_format($row->price_excl, 0, ',', '.') }}</td>
+                                    <td class="num">{{ number_format($row->value_total, 0, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -93,9 +93,9 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                     <tr>
                         <th style="width:12%">No. CO</th>
                         <th class="desc">Deskripsi Barang</th>
-                        <th style="width:14%">Qty</th>
-                        <th style="width:14%">Harga Satuan</th>
-                        <th style="width:16%">Subtotal</th>
+                        <th class="num" style="width:14%">Qty</th>
+                        <th class="num" style="width:14%">Harga Satuan</th>
+                        <th class="num" style="width:16%">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -103,9 +103,9 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                         <tr>
                             <td class="ref">{{ $line->order?->co_no ?? '—' }}</td>
                             <td class="desc"><div class="nm">{{ $line->item_description }}</div></td>
-                            <td class="q">{{ number_format($line->qty_do, 0, ',', '.') }} {{ $line->qty_unit }}</td>
-                            <td>{{ number_format($line->unit_price, 0, ',', '.') }}</td>
-                            <td class="amt">{{ number_format($line->subtotal, 0, ',', '.') }}</td>
+                            <td class="num q">{{ number_format($line->qty_do, 0, ',', '.') }} {{ $line->qty_unit }}</td>
+                            <td class="num">{{ number_format($line->unit_price, 0, ',', '.') }}</td>
+                            <td class="num amt">{{ number_format($line->subtotal, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

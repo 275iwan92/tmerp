@@ -306,10 +306,15 @@ body:has(.actionbar) { @apply pb-[74px]; }
  * sekarang sesuai instruksi "pertahankan CSS mockup", supaya iterasi
  * part & dieline berikutnya tidak perlu sentuh CSS lagi.
  * ============================================================ */
-table { @apply w-full border-collapse text-[12.5px]; }
-th, td { @apply border border-[#e2e7ee] px-2 py-1.5 text-left; }
-th { @apply bg-[#f4f6fa] text-[#556] font-semibold; }
-td input, td select { @apply px-1.5 py-1 text-xs; }
+/* Default elemen tabel -- SENGAJA di @layer base (keputusan user 2026-09-23):
+ * dulu tanpa layer sehingga mengalahkan SEMUA utilitas Tailwind; text-right/px-*
+ * yang ditulis di sel tabel mana pun tidak pernah berlaku. */
+@layer base {
+    table { @apply w-full border-collapse text-[12.5px]; }
+    th, td { @apply border border-[#e2e7ee] px-2 py-1.5 text-left; }
+    th { @apply bg-[#f4f6fa] text-[#556] font-semibold; }
+    td input, td select { @apply px-1.5 py-1 text-xs; }
+}
 
 .dcut { @apply w-full h-[280px] bg-[#0d0d0d] rounded-md; }
 .flx { @apply flex gap-3.5 items-start; }
@@ -920,22 +925,21 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 @media (max-width: 820px) { .secpage .side { @apply w-16; } .secpage .side .cap, .secpage .nav-item span.t { @apply hidden; } .secpage .nav-item { @apply justify-center; } .secpage .form-grid { @apply grid-cols-1; } .secpage .htitle { @apply hidden; } }
 @media (max-width: 640px) { .authpage .wrap { @apply flex-col; } .authpage .brand-panel { @apply flex-none py-[26px] px-6; } .authpage .clock .tagline { @apply hidden; } .authpage .form-panel { @apply pt-5 px-6 pb-8; } }
 
-/* x-ui.table (App\View\Components\Ui\Table) -- gaya th/td baku.
- * SENGAJA tanpa @layer: aturan global lama `th, td {border px-2 py-1.5 text-left}`
- * (atas file) juga tanpa layer, jadi selalu mengalahkan utilitas Tailwind --
- * text-right/px-* di sel tabel mana pun tidak pernah berlaku (bug lintas-
- * aplikasi, keputusan perbaikan global menunggu user). Selector .tm-table lebih
- * spesifik -> menang; perataan per sel disediakan ulang di bawah. */
-.tm-table th, .tm-table td { @apply border-0 border-b border-line-soft text-left; }
-.tm-table th { @apply bg-surface-alt text-head text-[10.5px] uppercase tracking-wide font-bold whitespace-nowrap; }
-.tm-table-md { @apply text-[12.5px]; }
-.tm-table-md th, .tm-table-md td { @apply px-3 py-2; }
-.tm-table-sm { @apply text-[11.5px]; }
-.tm-table-sm th, .tm-table-sm td { @apply px-2.5 py-1.5; }
-.tm-table-sticky th { @apply sticky top-0 z-[1]; }
-.tm-table-hover tbody tr:hover { @apply bg-surface-hover; }
-.tm-table :is(th, td).text-right { text-align: right; }
-.tm-table :is(th, td).text-center { text-align: center; }
+/* x-ui.table (App\View\Components\Ui\Table) -- gaya th/td baku, di @layer
+ * components: class utilitas per sel (lebar, text-right) tetap menang.
+ * ANGKA SELALU RATA KANAN, TEKS RATA KIRI (keputusan user 2026-09-23):
+ * sel & judul kolom angka diberi class `num` (componentstandard.md §5). */
+@layer components {
+    .tm-table th, .tm-table td { @apply border-0 border-b border-line-soft text-left; }
+    .tm-table th { @apply bg-surface-alt text-head text-[10.5px] uppercase tracking-wide font-bold whitespace-nowrap; }
+    .tm-table-md { @apply text-[12.5px]; }
+    .tm-table-md th, .tm-table-md td { @apply px-3 py-2; }
+    .tm-table-sm { @apply text-[11.5px]; }
+    .tm-table-sm th, .tm-table-sm td { @apply px-2.5 py-1.5; }
+    .tm-table-sticky th { @apply sticky top-0 z-[1]; }
+    .tm-table-hover tbody tr:hover { @apply bg-surface-hover; }
+    :is(td, th).num, .num { @apply text-right whitespace-nowrap; font-variant-numeric: tabular-nums; }
+}
 
 /* x-ui.window (App\View\Components\Ui\Window + resources/js/ui-window.js).
  * Warna ikut variabel shell (--sh-*: sadar mode gelap/terang sys_theme) dengan

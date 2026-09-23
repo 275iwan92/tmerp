@@ -704,7 +704,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                             @foreach ([
                                 'Kode' => 'w-[78px]', 'Nama Mesin & Merk' => '', 'Jenis' => 'w-[124px]',
                                 'Format Max (mm)' => 'w-[112px]', 'Kecepatan / Jam' => 'w-[150px]',
-                                'Tarif / Jam' => 'w-[104px]', 'Kru' => 'w-[62px]',
+                                'Tarif / Jam' => 'w-[104px] num', 'Kru' => 'w-[62px] num',
                                 'Proses' => 'w-[88px]', 'Kesiapan' => 'w-[100px]', 'Status' => 'w-[118px]',
                             ] as $label => $w)
                                 <th class="{{ $w }}">{{ $label }}</th>
@@ -764,7 +764,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10.5px] text-muted">N/A (Manual/Potong)</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="num">
                                     @if ($m->hourly_rate > 0)
                                         <span class="font-mono text-[11.5px]">{{ number_format((float) $m->hourly_rate, 0, ',', '.') }}</span>
                                     @elseif ($m->is_process_machine)
@@ -773,7 +773,7 @@ new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td class="font-mono text-[11.5px]">
+                                <td class="num font-mono text-[11.5px]">
                                     {{ $m->crewTotal() ?? '—' }}
                                 </td>
                                 <td>

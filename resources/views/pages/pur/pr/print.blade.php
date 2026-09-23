@@ -73,9 +73,9 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                     <tr>
                         <th style="width:6%">No.</th>
                         <th class="desc">Deskripsi</th>
-                        <th style="width:13%">Qty</th>
-                        <th style="width:15%">Est. Harga</th>
-                        <th style="width:16%">Est. Subtotal</th>
+                        <th class="num" style="width:13%">Qty</th>
+                        <th class="num" style="width:15%">Est. Harga</th>
+                        <th class="num" style="width:16%">Est. Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -91,9 +91,9 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
                                     <div class="sp">{{ $line->i_notes }}</div>
                                 @endif
                             </td>
-                            <td class="q">{{ number_format($line->i_qty, 2, ',', '.') }} {{ $line->i_uom }}</td>
-                            <td>{{ number_format($line->i_est_price, 2, ',', '.') }}</td>
-                            <td class="amt">{{ number_format($line->c_est_subtotal, 2, ',', '.') }}</td>
+                            <td class="num q">{{ number_format($line->i_qty, 2, ',', '.') }} {{ $line->i_uom }}</td>
+                            <td class="num">{{ number_format($line->i_est_price, 2, ',', '.') }}</td>
+                            <td class="num amt">{{ number_format($line->c_est_subtotal, 2, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

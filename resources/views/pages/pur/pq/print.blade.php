@@ -94,9 +94,9 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                     <tr>
                         <th style="width:6%">No.</th>
                         <th class="desc">Deskripsi</th>
-                        <th style="width:11%">Qty</th>
-                        <th style="width:15%">Harga ({{ $this->currencyCode }})</th>
-                        <th style="width:16%">Subtotal (IDR)</th>
+                        <th class="num" style="width:11%">Qty</th>
+                        <th class="num" style="width:15%">Harga ({{ $this->currencyCode }})</th>
+                        <th class="num" style="width:16%">Subtotal (IDR)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -109,9 +109,9 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
                                     <div class="sp">{{ $line->i_notes }}</div>
                                 @endif
                             </td>
-                            <td class="q">{{ number_format($line->i_qty, 2, ',', '.') }} {{ $line->i_uom }}</td>
-                            <td>{{ number_format($line->i_price_fx, 2, ',', '.') }}</td>
-                            <td class="amt">{{ number_format($line->c_subtotal_idr, 0, ',', '.') }}</td>
+                            <td class="num q">{{ number_format($line->i_qty, 2, ',', '.') }} {{ $line->i_uom }}</td>
+                            <td class="num">{{ number_format($line->i_price_fx, 2, ',', '.') }}</td>
+                            <td class="num amt">{{ number_format($line->c_subtotal_idr, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

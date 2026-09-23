@@ -97,7 +97,7 @@ new #[Title('Surat Jalan — TELASIH MAKMUR ERP')] class extends Component
                     <tr>
                         <th style="width:12%">No. CO</th>
                         <th class="desc">Deskripsi Barang</th>
-                        <th style="width:20%">Qty</th>
+                        <th class="num" style="width:20%">Qty</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,7 +105,7 @@ new #[Title('Surat Jalan — TELASIH MAKMUR ERP')] class extends Component
                         <tr>
                             <td class="ref">{{ $line->order?->co_no ?? '—' }}</td>
                             <td class="desc"><div class="nm">{{ $line->item_description }}</div></td>
-                            <td class="q">{{ number_format($line->qty_do, 0, ',', '.') }} {{ $line->qty_unit }}</td>
+                            <td class="num q">{{ number_format($line->qty_do, 0, ',', '.') }} {{ $line->qty_unit }}</td>
                         </tr>
                     @endforeach
                 </tbody>

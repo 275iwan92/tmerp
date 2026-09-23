@@ -112,13 +112,13 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                         <th style="width:13%">Proses</th>
                         <th style="width:12%">Mesin</th>
                         <th style="width:10%">Operator</th>
-                        <th style="width:8%">Target/Jam</th>
+                        <th class="num" style="width:8%">Target/Jam</th>
                         <th style="width:8%">Rencana Mulai</th>
                         <th style="width:8%">Aktual Mulai</th>
                         <th style="width:8%">Aktual Selesai</th>
-                        <th style="width:8%">Qty Baik</th>
-                        <th style="width:7%">Reject</th>
-                        <th style="width:7%">Waste</th>
+                        <th class="num" style="width:8%">Qty Baik</th>
+                        <th class="num" style="width:7%">Reject</th>
+                        <th class="num" style="width:7%">Waste</th>
                         <th style="width:7%">Paraf</th>
                     </tr>
                 </thead>
@@ -129,13 +129,13 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                             <td class="l"><b>{{ $op->process_name ?: '—' }}</b></td>
                             <td class="l">{{ $op->resource_type === 'MACHINE' ? ($op->machine?->machine_name ?? '—') : 'Manual' }}</td>
                             <td class="l">{{ $op->operatorUtama()?->employee?->full_name ?? '—' }}</td>
-                            <td class="c">{{ $op->rate_band_value ? number_format((float) $op->rate_band_value, 0, ',', '.') : '—' }}</td>
+                            <td class="num c">{{ $op->rate_band_value ? number_format((float) $op->rate_band_value, 0, ',', '.') : '—' }}</td>
                             <td class="c">{{ $op->target_start?->format('d/m H:i') ?? '—' }}</td>
                             <td class="blank"></td>
                             <td class="blank"></td>
-                            <td class="blank"></td>
-                            <td class="blank"></td>
-                            <td class="blank"></td>
+                            <td class="num blank"></td>
+                            <td class="num blank"></td>
+                            <td class="num blank"></td>
                             <td class="blank"></td>
                         </tr>
                     @empty
@@ -151,18 +151,18 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
                     <thead>
                         <tr>
                             <th class="l" style="width:40%">Material</th>
-                            <th style="width:18%">Qty Kebutuhan</th>
-                            <th style="width:18%">Qty Tersedia (Gudang)</th>
-                            <th style="width:24%">Qty Diambil (paraf)</th>
+                            <th class="num" style="width:18%">Qty Kebutuhan</th>
+                            <th class="num" style="width:18%">Qty Tersedia (Gudang)</th>
+                            <th class="num" style="width:24%">Qty Diambil (paraf)</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($this->billOfMaterialRows as $row)
                             <tr>
                                 <td class="l">{{ $row->name }}</td>
-                                <td>{{ number_format($row->qty_kebutuhan, 0, ',', '.') }} {{ $row->unit }}</td>
-                                <td>{{ number_format($row->qty_tersedia, 0, ',', '.') }} {{ $row->unit }}</td>
-                                <td class="blank"></td>
+                                <td class="num">{{ number_format($row->qty_kebutuhan, 0, ',', '.') }} {{ $row->unit }}</td>
+                                <td class="num">{{ number_format($row->qty_tersedia, 0, ',', '.') }} {{ $row->unit }}</td>
+                                <td class="num blank"></td>
                             </tr>
                         @endforeach
                     </tbody>

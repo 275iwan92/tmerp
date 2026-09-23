@@ -124,7 +124,13 @@ submit form (mis. simpan baris editor), tulis `type="button"` eksplisit.
 4. **Ratchet** — `tests/Feature/UiRatchetTest.php` menghitung pola mentah di
    halaman. Angka **tidak boleh naik**. Kalau turun (hasil migrasi), turunkan
    `BASELINE` di test itu ke angka baru.
-5. **Tailwind**: class di primitive ditulis utuh (bukan dirangkai `"bg-{$x}"`)
+5. **Angka selalu rata kanan, teks rata kiri** (keputusan user 2026-09-23).
+   Judul kolom DAN sel yang berisi angka (qty, harga, subtotal, gaji, tarif,
+   durasi, persen) diberi class `num` = rata kanan + angka lebar tetap.
+   Kode/nomor dokumen/NIK/telepon/tahun = identitas, bukan angka → tetap kiri.
+   Aturan default tabel lama di `app.css` kini di `@layer base`, jadi class per
+   sel (`num`, `text-right`, `px-*`) berlaku di semua layar — dulu tidak.
+6. **Tailwind**: class di primitive ditulis utuh (bukan dirangkai `"bg-{$x}"`)
    supaya terpindai build. Tetap `npm run build` sesudah mengubah primitive.
 
 ---

@@ -1161,13 +1161,13 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         <x-grid.table-shell>
                         <table class="w-full text-[12.5px]">
-                            <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Kegiatan</th><th class="pb-2">Tanggal</th><th class="pb-2">Biaya</th><th class="pb-2">Dibiayai</th></tr></thead>
+                            <thead><tr class="text-left text-[11px] uppercase text-muted"><th class="pb-2">Kegiatan</th><th class="pb-2">Tanggal</th><th class="num pb-2">Biaya</th><th class="pb-2">Dibiayai</th></tr></thead>
                             <tbody>
                                 @forelse ($emp->educations as $ed)
                                     <tr class="border-t border-[#f1f5f9]">
                                         <td class="py-2">{{ $ed->activity_name }}</td>
                                         <td class="py-2">{{ $ed->activity_date->format('d M Y') }}</td>
-                                        <td class="py-2">Rp {{ number_format((float) $ed->cost, 0, ',', '.') }}</td>
+                                        <td class="num py-2">Rp {{ number_format((float) $ed->cost, 0, ',', '.') }}</td>
                                         <td class="py-2">{{ $ed->funded_by }}</td>
                                     </tr>
                                 @empty

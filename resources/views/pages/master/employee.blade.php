@@ -1002,7 +1002,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                 <tr>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Kegiatan</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tanggal</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Biaya</th>
+                                    <th class="num px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Biaya</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Dibiayai</th>
                                 </tr>
                             </thead>
@@ -1011,7 +1011,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <tr wire:key="edu-{{ $ed->education_id }}" class="border-b border-[#f0f3f7]">
                                         <td class="px-2 py-1.5">{{ $ed->activity_name }} <span class="text-muted">({{ $ed->education_type }})</span></td>
                                         <td class="px-2 py-1.5">{{ $ed->activity_date->format('d M Y') }}</td>
-                                        <td class="px-2 py-1.5">Rp {{ number_format((float) $ed->cost, 0, ',', '.') }}</td>
+                                        <td class="num px-2 py-1.5">Rp {{ number_format((float) $ed->cost, 0, ',', '.') }}</td>
                                         <td class="px-2 py-1.5">{{ $ed->funded_by }}{{ $ed->is_bonding ? ' · Ikatan Dinas' : '' }}</td>
                                     </tr>
                                 @empty
@@ -1097,7 +1097,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Tipe</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Mulai</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Selesai</th>
-                                    <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Gaji</th>
+                                    <th class="num px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Gaji</th>
                                     <th class="text-left px-2 py-1.5 text-[10px] text-muted uppercase font-semibold border-b border-[#eef1f5]">Status</th>
                                 </tr>
                             </thead>
@@ -1107,7 +1107,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                                         <td class="px-2 py-1.5 font-semibold">{{ $c->employment_type }}{{ $c->is_probation ? ' (Probation)' : '' }}</td>
                                         <td class="px-2 py-1.5">{{ $c->start_date->format('d M Y') }}</td>
                                         <td class="px-2 py-1.5">{{ $c->end_date?->format('d M Y') ?: '—' }}</td>
-                                        <td class="px-2 py-1.5">
+                                        <td class="num px-2 py-1.5">
                                             @if ($this->canSeeSalary($c))
                                                 Rp {{ number_format((float) $c->salary_amount, 0, ',', '.') }} / {{ $c->salary_type }}
                                             @else

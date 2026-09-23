@@ -85,9 +85,9 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
                     <tr>
                         <th style="width:6%">No.</th>
                         <th class="desc">Deskripsi Produk &amp; Spesifikasi</th>
-                        <th style="width:11%">Qty</th>
-                        <th style="width:13%">Harga Satuan</th>
-                        <th style="width:16%">Subtotal</th>
+                        <th class="num" style="width:11%">Qty</th>
+                        <th class="num" style="width:13%">Harga Satuan</th>
+                        <th class="num" style="width:16%">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -100,9 +100,9 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
                                     <div class="sp">{{ $item->spec_note }}</div>
                                 @endif
                             </td>
-                            <td class="q">{{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}</td>
-                            <td>{{ number_format($item->unit_price, 0, ',', '.') }}{{ $item->discount_pct > 0 ? ' (-'.number_format($item->discount_pct, 1).'%)' : '' }}</td>
-                            <td class="amt">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                            <td class="num q">{{ number_format($item->qty, 0, ',', '.') }} {{ $item->qty_unit }}</td>
+                            <td class="num">{{ number_format($item->unit_price, 0, ',', '.') }}{{ $item->discount_pct > 0 ? ' (-'.number_format($item->discount_pct, 1).'%)' : '' }}</td>
+                            <td class="num amt">{{ number_format($item->subtotal, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -128,7 +128,7 @@ new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends 
                     <tr>
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Kode / Nama</th>
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Divisi</th>
-                        <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Gaji Bersih</th>
+                        <th class="num p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Gaji Bersih</th>
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667]">Rincian Amplop</th>
                         <th class="p-2 border-b border-[#eef1f5] bg-[#fafbfd] uppercase text-[11px] text-[#667] text-center">Tanda Tangan</th>
                     </tr>
@@ -138,7 +138,7 @@ new #[Title('Roster Cash & Pecahan Uang — TELASIH MAKMUR ERP')] class extends 
                         <tr class="border-b border-[#eef1f5]" wire:key="cr-{{ $r['employee']?->employee_id }}">
                             <td class="p-2 font-medium">{{ $r['employee']?->employee_code }} / {{ $r['employee']?->full_name }}</td>
                             <td class="p-2">{{ $r['employee']?->position?->department?->department_name ?? '—' }}</td>
-                            <td class="p-2 font-mono font-bold text-[#166534]">Rp {{ number_format($r['net'], 0, ',', '.') }}</td>
+                            <td class="num p-2 font-mono font-bold text-[#166534]">Rp {{ number_format($r['net'], 0, ',', '.') }}</td>
                             <td class="p-2 font-mono text-[11px]">{{ $this->formatBreakdown($r['breakdown']) }}</td>
                             <td class="p-2 text-center text-muted">___________________</td>
                         </tr>

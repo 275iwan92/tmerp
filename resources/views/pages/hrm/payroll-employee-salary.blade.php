@@ -194,8 +194,8 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
                     <thead>
                         <tr>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Karyawan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Gaji Pokok/Bulan</th>
-                            <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">TJ Keahlian/Bulan</th>
+                            <th class="num px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">Gaji Pokok/Bulan</th>
+                            <th class="num px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">TJ Keahlian/Bulan</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">PTKP</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">BPJS</th>
                             <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1]">PPh21</th>
@@ -207,8 +207,8 @@ new #[Title('Master Gaji & Pajak Pegawai — TELASIH MAKMUR ERP')] class extends
                             <tr class="border-b border-[#eef1f5] align-top" wire:key="salary-{{ $row['employee']->employee_id }}">
                                 <x-grid.identity-cell :id="$row['employee']->employee_id" :name="$row['employee']->full_name" :code="$row['employee']->employee_code" />
                                 @if ($row['salary'])
-                                    <td class="px-3 py-2 font-semibold">Rp {{ number_format((float) $row['salary']->basic_salary_monthly, 0, ',', '.') }}</td>
-                                    <td class="px-3 py-2">Rp {{ number_format((float) $row['salary']->tj_keahlian_monthly, 0, ',', '.') }}</td>
+                                    <td class="num px-3 py-2 font-semibold">Rp {{ number_format((float) $row['salary']->basic_salary_monthly, 0, ',', '.') }}</td>
+                                    <td class="num px-3 py-2">Rp {{ number_format((float) $row['salary']->tj_keahlian_monthly, 0, ',', '.') }}</td>
                                     <td class="px-3 py-2">{{ $row['salary']->ptkp_status ?: '—' }}</td>
                                     <td class="px-3 py-2">
                                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $row['salary']->bpjs_active ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#e2e8f0] text-[#334155]' }}">

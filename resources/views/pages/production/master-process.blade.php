@@ -479,8 +479,8 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                             @foreach ([
                                 'Kode' => 'w-[72px]', 'Proses & Departemen' => '', 'Tahap' => 'w-[110px]',
                                 'Eksekusi' => 'w-[96px]', 'Kapasitas / Jam' => 'w-[132px]',
-                                'Setup' => 'w-[70px]', 'Waste Std' => 'w-[92px]',
-                                'Mesin' => 'w-[92px]', 'Ongkos Std' => 'w-[124px]',
+                                'Setup' => 'w-[70px] num', 'Waste Std' => 'w-[92px] num',
+                                'Mesin' => 'w-[92px]', 'Ongkos Std' => 'w-[124px] num',
                                 'Kesiapan' => 'w-[104px]', 'Status' => 'w-[80px]',
                             ] as $label => $w)
                                 <th class="{{ $w }}">{{ $label }}</th>
@@ -541,14 +541,14 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                         <span class="text-[10.5px] text-warn-ink">belum diisi</span>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="num">
                                     @if ($p->default_setup_minutes !== null)
                                         <span class="font-mono text-[12px]">{{ $p->default_setup_minutes }}</span><span class="text-[10px] text-muted"> mnt</span>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td class="text-[11.5px]">
+                                <td class="num text-[11.5px]">
                                     @if ($p->default_waste_pct !== null || $p->default_waste_fixed_qty !== null)
                                         <span class="font-mono font-semibold {{ (float) $p->default_waste_pct >= 2.5 ? 'text-danger-ink' : 'text-success-ink' }}">{{ $this->num($p->default_waste_pct) ?: '0' }}%</span>
                                         @if ($p->default_waste_fixed_qty)
@@ -569,7 +569,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                         <x-ui.badge tone="danger" title="Proses ini belum bisa dijadwalkan">belum ada</x-ui.badge>
                                     @endif
                                 </td>
-                                <td>
+                                <td class="num">
                                     @if ($p->standard_rate > 0)
                                         <div class="font-mono text-[11.5px]">{{ number_format((float) $p->standard_rate, 0, ',', '.') }}</div>
                                         <div class="text-[10px] text-muted">{{ \App\Models\Master\ProdProcess::COST_BASIS[$p->cost_basis] ?? '—' }}</div>
