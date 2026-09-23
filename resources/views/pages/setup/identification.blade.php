@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Master\OrgCompany;
 use App\Models\Sys\SysConstant;
 use App\Support\Branding\FontPresets;
 use Illuminate\Support\Facades\Auth;
@@ -10,8 +11,11 @@ use Livewire\WithFileUploads;
 
 // Layar Identifikasi (dulu section pertama setup.configuration, dipecah jadi
 // route sendiri 2026-09-07 -- docs/configurationstandard.md). Identitas
-// APLIKASI (nama app/tagline/font/logo) -- BUKAN identitas perusahaan
-// (org_company, dipakai kop cetak dokumen, punya layar/UI sendiri terpisah).
+// APLIKASI (nama app/tagline/font/logo), plus kartu Identitas PERUSAHAAN
+// (2026-09-23, keputusan user: admin harus bisa mengisi sendiri & semua yang
+// diisi tercetak di kop): nama perusahaan & nama terdaftar -> sys_constant
+// COMPANY_NAME / COMPANY_LEGAL_NAME; NPWP/alamat/telepon/email -> org_company
+// baris TM (sumber kop x-print.header). Lihat configurationstandard.md §3.1.
 new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
 {
     use WithFileUploads;
@@ -26,12 +30,57 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
 
     public ?string $currentLogoPath = null;
 
+    public string $companyName = '';
+
+    public string $companyLegalName = '';
+
+    public string $companyNpwp = '';
+
+    public string $companyAddress = '';
+
+    public string $companyPhone = '';
+
+    public string $companyEmail = '';
+
     public function mount(): void
     {
         $this->appName = SysConstant::text('APP_NAME', 'ERP TM');
         $this->appTagline = SysConstant::text('APP_TAGLINE', '');
         $this->appFontKey = SysConstant::text('APP_FONT_FAMILY', 'system-ui');
         $this->currentLogoPath = SysConstant::text('APP_LOGO_PATH');
+
+        $company = OrgCompany::where('company_code', 'TM')->first();
+        $this->companyName = SysConstant::text('COMPANY_NAME', 'Telasih Makmur');
+        $this->companyLegalName = SysConstant::text('COMPANY_LEGAL_NAME', 'CV. Langgeng Jaya Makmur');
+        $this->companyNpwp = (string) $company?->npwp_number;
+        $this->companyAddress = (string) $company?->address;
+        $this->companyPhone = (string) $company?->phone;
+        $this->companyEmail = (string) $company?->email;
+    }
+
+    public function saveCompany(): void
+    {
+        $this->validate([
+            'companyName' => ['required', 'string', 'max:150'],
+            'companyLegalName' => ['required', 'string', 'max:150'],
+            'companyNpwp' => ['nullable', 'string', 'max:30'],
+            'companyAddress' => ['nullable', 'string', 'max:500'],
+            'companyPhone' => ['nullable', 'string', 'max:50'],
+            'companyEmail' => ['nullable', 'email', 'max:100'],
+        ]);
+
+        $this->setConstant('COMPANY_NAME', trim($this->companyName));
+        $this->setConstant('COMPANY_LEGAL_NAME', trim($this->companyLegalName));
+
+        OrgCompany::where('company_code', 'TM')->update([
+            'npwp_number' => trim($this->companyNpwp) ?: null,
+            'address' => trim($this->companyAddress) ?: null,
+            'phone' => trim($this->companyPhone) ?: null,
+            'email' => trim($this->companyEmail) ?: null,
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->dispatch('app-alert', type: 'success', message: 'Identitas perusahaan tersimpan.');
     }
 
     public function fontPresetOptions(): array
@@ -131,6 +180,29 @@ new #[Title('Identifikasi — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </form>
         </div>
+
+        <x-ui.card variant="panel" size="none" class="mt-4 p-5">
+            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Identitas Perusahaan</div>
+            <p class="text-[11px] text-muted mb-4">Dipakai di seluruh aplikasi dan kop semua dokumen cetak. Nama Terdaftar + NPWP hanya muncul saat dokumen ber-PPN dicetak dengan pilihan "PPN".</p>
+
+            <form wire:submit="saveCompany" class="flex flex-col gap-3.5">
+                <div class="grid two gap-3.5">
+                    <x-form.input label="Nama Perusahaan *" wire:model="companyName" name="companyName" placeholder="mis. Telasih Makmur" hint="Default di aplikasi & cetakan (Non PPN)" />
+                    <x-form.input label="Nama Terdaftar (Badan Hukum) *" wire:model="companyLegalName" name="companyLegalName" placeholder="mis. CV. Langgeng Jaya Makmur" hint="Kop cetakan dokumen PPN" />
+                </div>
+                <div class="grid two gap-3.5">
+                    <x-form.input label="NPWP" wire:model="companyNpwp" name="companyNpwp" :case-toggle="false" placeholder="mis. 01.234.567.8-901.000" hint="Tercetak a.n. Nama Terdaftar pada dokumen PPN" />
+                    <x-form.input label="Telepon" wire:model="companyPhone" name="companyPhone" :case-toggle="false" placeholder="mis. (031) 1234567" />
+                </div>
+                <div class="grid two gap-3.5">
+                    <x-form.textarea label="Alamat" wire:model="companyAddress" name="companyAddress" autogrow placeholder="Alamat lengkap untuk kop dokumen" />
+                    <x-form.input label="Email" type="email" wire:model="companyEmail" name="companyEmail" placeholder="mis. info@perusahaan.co.id" />
+                </div>
+                <x-ui.action-bar variant="inline">
+                    <x-ui.button preset="save" />
+                </x-ui.action-bar>
+            </form>
+        </x-ui.card>
 
     </div>
 </div>

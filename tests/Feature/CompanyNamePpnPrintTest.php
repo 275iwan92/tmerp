@@ -138,6 +138,44 @@ class CompanyNamePpnPrintTest extends TestCase
         $this->assertStringNotContainsString('PT Telasih', $html);
     }
 
+    // Keputusan user 2026-09-23: admin bisa mengisi identitas perusahaan sendiri
+    // (Settings > Identifikasi) dan apa pun yang diisi harus tercetak di kop.
+    public function test_admin_inputs_company_identity_and_it_prints(): void
+    {
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
+        $consts = DB::connection('tm2sys')->table('sys_constant')->whereIn('constant_key', ['COMPANY_NAME', 'COMPANY_LEGAL_NAME'])->pluck('constant_text', 'constant_key')->all();
+        $company = (array) DB::connection('tm2mst')->table('org_company')->where('company_code', 'TM')->first(['npwp_number', 'address', 'phone', 'email']);
+
+        try {
+            Livewire::test('pages::setup.identification')
+                ->set('companyName', 'Telasih Uji')
+                ->set('companyLegalName', 'CV. Legal Uji')
+                ->set('companyNpwp', '11.222.333.4-555.666')
+                ->set('companyAddress', "Jl. Uji No. 1\nSurabaya")
+                ->set('companyPhone', '031-999')
+                ->set('companyEmail', 'uji@contoh.co.id')
+                ->call('saveCompany')
+                ->assertHasNoErrors();
+
+            $inquiryId = DB::connection('tm2sdi')->table('iqp_inquiry')->where('tax_scheme', 'PPN')->value('id_inquiry');
+            $html = Livewire::test('pages::inquiry.nota', ['inquiry' => $inquiryId])->html();
+            $this->assertStringContainsString('Telasih Uji', $html);
+            $this->assertStringContainsString('CV. Legal Uji', $html);
+            $this->assertStringContainsString('NPWP 11.222.333.4-555.666', $html);
+            $this->assertStringContainsString('Jl. Uji No. 1<br />', $html, 'Alamat multi-baris tetap berbaris.');
+            $this->assertStringContainsString('Telp 031-999', $html);
+
+            Livewire::test('pages::setup.identification')->set('companyName', '')->call('saveCompany')->assertHasErrors(['companyName']);
+        } finally {
+            foreach ($consts as $key => $text) {
+                DB::connection('tm2sys')->table('sys_constant')->where('constant_key', $key)->update(['constant_text' => $text]);
+            }
+            DB::connection('tm2mst')->table('org_company')->where('company_code', 'TM')->update($company);
+        }
+
+        $this->assertSame($company, (array) DB::connection('tm2mst')->table('org_company')->where('company_code', 'TM')->first(['npwp_number', 'address', 'phone', 'email']));
+    }
+
     public function test_inquiry_nota_with_ppn_offers_choice(): void
     {
         $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());

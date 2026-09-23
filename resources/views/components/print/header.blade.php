@@ -14,7 +14,7 @@
         <div>
             <div class="co-name"><x-print.company-name :ppn="$ppn" /></div>
             <div class="co-addr">
-                {{ $company?->address ?? '—' }}
+                {!! nl2br(e($company?->address ?? '—')) !!}
                 @if ($company?->phone) <br>Telp {{ $company->phone }} @endif
                 @if ($company?->email) · {{ $company->email }} @endif
             </div>

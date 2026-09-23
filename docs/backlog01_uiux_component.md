@@ -43,7 +43,6 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
 | UI-18 | Kategori `sys_constant_category` baru (mis. HRM) | ⚪ IDE | Tambah saat ada konstanta baru | Sekarang 5 kategori |
 | UI-19 | Layar cetak SPB/Penerimaan, Invoice Penjualan, Pembayaran Pembelian — dengan pilihan kop Non PPN/PPN | 🟡 SIAP | — (mekanisme kop PPN sudah ada) | Ketiga layar cetak belum ada; pakai `x-print.* :ppn` |
-| UI-20 | NPWP asli + alamat/telepon perusahaan di kop | 🔴 KEPUTUSAN | **Data dari Anda**: NPWP CV. Langgeng Jaya Makmur, alamat, telepon | Sekarang NPWP dummy `00.000.000.0-000.000` (`org_company`) |
 
 ---
 
@@ -111,5 +110,3 @@ Mekanisme terverifikasi via HTTP kernel; tampilan tiap mode belum dilihat di bro
 ### UI-19 — Tiga layar cetak dokumen ber-PPN  🟡
 SPB/Penerimaan Barang (`pur/pv`), Invoice Penjualan (`fin_invoice`/`dp-invoice`), Pembayaran Pembelian (`fin_voucher`) belum punya layar cetak. Keputusan user 2026-09-23: dokumen ber-PPN diberi pilihan kop Non PPN (default, "Telasih Makmur") / PPN ("CV. Langgeng Jaya Makmur" + NPWP), hanya saat cetak/preview. Mekanisme siap: `x-print.document :ppn` + `x-print.header :ppn` (`printnotastandard.md` §3a). Sumber flag PPN tiap dokumen ditentukan saat layarnya dibangun (Voucher `ppn_type`, Invoice `tax_amount`).
 
-### UI-20 — NPWP & identitas perusahaan di kop  🔴
-`tm2mst.org_company` (baris TM): `npwp_number` diisi dummy `00.000.000.0-000.000` (pola nol sengaja jelas palsu, izin user) supaya tampilan kop PPN sudah jadi; `address`/`phone` masih kosong (kop menampilkan "—"). Ganti dengan data asli begitu user kirim — tidak perlu ubah kode.

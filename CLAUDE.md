@@ -38,7 +38,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - `DataOriginScope` (web-only) menyembunyikan data DUMMY/LEGACY sesuai setting admin; console/tinker/test melihat semua.
 
 ### Dokumen yang sering basi / jangan dipercaya mentah
-- `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang**. Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/uistandardindex.md`.
+- `START_HERE_onboarding.md` dan `tasks.md` (root) = artefak onboarding awal (mockup Tier 4, "10 DB", task T01–T92), **sudah usang**. Pintu masuk docs yang benar: `docs/index_master.md`, `docs/globalstarthere.md`, `docs/md_for_systems/uistandardindex.md`.
 - `docs/BACKLOG.md` = **indeks** backlog + bagian lintas-modul. Item terbuka ada di
   10 pecahan per domain `docs/backlog01_*.md` .. `backlog10_*.md` (dipecah 2026-09-22
   atas permintaan user). Verifikasi ke kode dulu; selesai → hapus di pecahannya,
@@ -645,6 +645,16 @@ Lihat `docs/globalgitbranch.md`. Tidak boleh ada branch baru maupun worktree.
    sebelum yang bermasalah) kalau ada pekerjaan yang keliru. Tetap ikuti
    Git Safety Protocol (jangan force-push/reset --hard tanpa izin eksplisit,
    review diff sebelum commit).
+
+12. **SEMUA DATA WAJIB PUNYA INPUTAN** (keputusan user 2026-09-23, tegas:
+   *"setiap ada hal yang tidak bisa di input oleh user, kamu HARUS membuatnya,
+   SEMUA HAL DATA HARUS ADA INPUTAN nya, INCLUDE CONSTANTS"*). Setiap nilai yang
+   dibaca aplikasi (konstanta, baris master, identitas perusahaan, parameter)
+   harus bisa dibuat/diubah user berwenang lewat layar — bukan cuma lewat
+   migration/tinker. Kalau belum ada layarnya, BUATKAN sebagai bagian pekerjaan
+   yang sama (bukan item backlog "menunggu data user"); pastikan yang diinput
+   benar-benar terpakai/tercetak. Rumah yang ada: Settings → Constants (semua
+   `sys_constant`), Settings → Identifikasi (identitas aplikasi + perusahaan).
 
 ---
 
