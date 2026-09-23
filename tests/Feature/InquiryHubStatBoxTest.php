@@ -16,8 +16,22 @@ class InquiryHubStatBoxTest extends TestCase
 {
     protected array $inquiryIds = [];
 
+    private ?string $origLang = null;
+
+    // Label kotak yang dicek berbahasa Indonesia; akun johiwan bisa sedang
+    // ber-lang 'en' (pilihan user) -- paksa 'id' selama test, kembalikan di
+    // tearDown (disetujui user 2026-09-23; layar/flow Inquiry tidak disentuh).
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->origLang = SecUser::where('login', 'johiwan')->value('lang_code');
+        SecUser::where('login', 'johiwan')->update(['lang_code' => 'id']);
+    }
+
     protected function tearDown(): void
     {
+        SecUser::where('login', 'johiwan')->update(['lang_code' => $this->origLang]);
+
         if ($this->inquiryIds) {
             DB::connection('tm2sdi')->table('iqp_tier')->whereIn('inquiry_id', $this->inquiryIds)->delete();
             DB::connection('tm2sdi')->table('iqp_inquiry')->whereIn('id_inquiry', $this->inquiryIds)->delete();
