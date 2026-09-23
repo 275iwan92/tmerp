@@ -122,24 +122,20 @@ Ghostscript. **Sisa satu:**
 
 ## 23. MASTER MESIN — REFERENSI KE MESIN YANG DINONAKTIFKAN (temuan 2026-09-21)
 
-Setelah `prod_machine` diganti daftar aset nyata (46 mesin aktif, 29 baris lama
-`activate=0`, migration `2026_09_21_000007_update_prod_machine_asset_list`), masih
-ada data yang menunjuk mesin yang sudah tidak dipakai. **Tidak dipetakan otomatis
-— butuh keputusan user mesin pengganti tiap baris, jangan ditebak:**
+**SELESAI/basi — diverifikasi ulang ke DB 2026-09-23.** Temuan aslinya (129 baris
+`emp_shift_roster`, 12 baris `prod_part_process`, 11 `prd_wo_operation` menunjuk
+mesin nonaktif) **sudah tidak ada lagi**: 29 baris legacy itu akhirnya DIHAPUS
+(migration `2026_09_22_000008`, instruksi user "data legacy salah HAPUS bukan
+dinonaktifkan") dan rujukannya ikut dibereskan. Hitungan sekarang: `prod_machine`
+45 baris, **semuanya `activate=1`** (tidak ada lagi mesin nonaktif), dan 0 baris
+menggantung di `emp_shift_roster`, `prod_part_process`, `prd_wo_operation`,
+maupun `prod_part_process_machine_rate`. Pengaman di
+`scheduling-board.blade.php::machines()` (memunculkan mesin nonaktif yang masih
+punya operasi) boleh tetap ada sebagai jaring pengaman, tapi sudah tidak ada
+data yang memicunya.
 
-- `tm2mst.emp_shift_roster` — **129 baris** roster menunjuk mesin nonaktif.
-- `tm2mst.prod_part_process` — 12 baris routing: machine_id 2 (KOMORI L 40, 2 baris),
-  4 (Laminasi/GMP Saturn, 4), 5 (Plong 1, 5), 28 (PLONG 4, 1).
-- `tm2prd.prd_wo_operation` — 11 operasi di 5 WO (WO2600228, WO2600230, WO2600261,
-  WO2600262, WO2600263).
-
-Sementara ini Scheduling Board sudah diamankan: barisnya tetap memunculkan mesin
-nonaktif yang masih punya operasi terjadwal (`scheduling-board.blade.php::machines()`),
-supaya WO-nya tidak hilang diam-diam dari papan. Layar lain belum dicek satu-satu.
-
-Sisa pekerjaan terkait Master Mesin yang datanya belum ada dari user:
-`max_paper_size`, `color_count`, `max_speed_per_hour`, `gsm_min/max`, `serial_no`
-masih NULL di 46 mesin baru — ProDev/ProCost masih pakai asumsi bed plano.
+Yang MASIH terbuka dari section ini cuma spek kosong — digabung ke §27.1, jangan
+dihitung dua kali.
 
 ---
 
@@ -252,7 +248,7 @@ Kalau perlu angka: riset ke situs pabrikan atau tanya user.
 
 | # | Pekerjaan | Status |
 |---|---|---|
-| 27.1 | Lengkapi spek mesin yang kosong. **Terukur 2026-09-22: dari 45 mesin (semua aktif), 44 tidak punya `max_sheet_length_mm` DAN tidak punya `max_speed_per_hour`** — praktis seluruh master mesin belum berspek. **4 die cutter DIKONFIRMASI user 2026-09-22**: DIE-04 (Daxiang) satu-satunya OTOMATIS; DIE-01 (Ruian)/DIE-02 (Shanghai)/DIE-03 (Daxiang manual) SEMUA plong manual sekelas foto "Pond Manual ML 750". Ketiganya sudah diisi **PLACEHOLDER** spek generik ML750 (migration `2026_09_22_000015`, riset 2 sumber online cocok: platen 750x520mm, speed 25±2 strokes/min = 1500/jam nominal, motor 2,2 kW) — **user akan foto nameplate asli Sabtu**, ganti placeholder ini begitu ada data real (jangan dianggap final, lihat kolom `notes` tiap baris). DIE-04 & 41 mesin lain masih 100% kosong | **SEBAGIAN** — 3/45 mesin punya placeholder, 42 masih BELUM |
+| 27.1 | Lengkapi spek mesin yang kosong. **Terukur 2026-09-22: dari 45 mesin (semua aktif), 44 tidak punya `max_sheet_length_mm` DAN tidak punya `max_speed_per_hour`** — praktis seluruh master mesin belum berspek. **4 die cutter DIKONFIRMASI user 2026-09-22**: DIE-04 (Daxiang) satu-satunya OTOMATIS; DIE-01 (Ruian)/DIE-02 (Shanghai)/DIE-03 (Daxiang manual) SEMUA plong manual sekelas foto "Pond Manual ML 750". Ketiganya sudah diisi **PLACEHOLDER** spek generik ML750 (migration `2026_09_22_000015`, riset 2 sumber online cocok: platen 750x520mm, speed 25±2 strokes/min = 1500/jam nominal, motor 2,2 kW) — **user akan foto nameplate asli Sabtu**, ganti placeholder ini begitu ada data real (jangan dianggap final, lihat kolom `notes` tiap baris). DIE-04 & 41 mesin lain masih 100% kosong | **SEBAGIAN** — ukur ulang 2026-09-23: 4/45 mesin punya ukuran+kecepatan (DIE-01/02/03 placeholder ML750 + OFF-02 Komori GL440 1030x720 @8000/jam), **41 masih kosong**; `serial_no` kosong di 44 dari 45 |
 | 27.2 | Petakan nama mesin di mockup/dokumen ke master. "PLONG 2" di `mockup_mastercard_ver2.jpg` = kategori Pond/Plong manual — **SELESAI 2026-09-22**: bukan 1 mesin spesifik, tapi kategori yang dipenuhi DIE-01/02/03 (ketiganya manual). Tidak perlu pemetaan 1-ke-1 lagi | `docs/LOG_JOB_DONE.md` |
 | 27.3 | Audit menyeluruh mesin mana lagi yang speknya kosong (bukan cuma die cutter) — bikin daftar, lalu isi bertahap | **BELUM** |
 | 27.4 | UI/UX layar Master Mesin & Master Proses diluruskan sesuai maunya user | **BELUM** — user belum merinci maunya apa |
