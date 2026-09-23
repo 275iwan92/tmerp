@@ -14,6 +14,7 @@ namespace Devlib\Components;
 //   ]],
 // ]
 // ITEM = ['code', 'label', 'url', 'type' => form|grid|report, 'icon'?, 'badge'?, 'badgeTone'?]
+// $chat = ['me', 'people', 'convos'] -> drawer Chat (x-dl::chat, versi ringkas).
 class Shell extends DevlibComponent
 {
     public function __construct(
@@ -24,6 +25,7 @@ class Shell extends DevlibComponent
         public string $logoutAction = '',
         public string $menuSource = 'sys_app_menu',
         public bool $developer = false,
+        public array $chat = [],
     ) {}
 
     public function tag(): string

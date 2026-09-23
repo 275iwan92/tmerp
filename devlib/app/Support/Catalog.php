@@ -156,7 +156,9 @@ final class Catalog
                 'files' => ['Mockup' => ['inquiry_new.html', 'inquiry_revise_v2.html', 'inquiry_recalc_v2.html', 'mockup_inquiry_imposition_grid_form.html', 'mockup_prodev_imposition.html',
                     'tata layout layar imposistion.jpg', 'Organization-Structure-Mockup.html', 'mockup_ID_card.png', 'mockup_mastercard.jpg', 'mockup_mastercard_ver2.jpg']]],
             ['code' => 'P7', 'short' => 'MD', 'label' => '7 · Menu & Dashboard', 'icon' => 'fa-solid fa-table-columns',
-                'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html']],
+                'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html'],
+                    'p7-chat' => ['label' => 'Chat (gaya WhatsApp)', 'icon' => 'fa-solid fa-comment-dots', 'part' => '7 · Menu & Dashboard', 'mockup' => 'main_menu_v2.html',
+                        'members' => ['chat' => ['Chat: yang sedang login, + untuk yang tidak login, foto profil & kirim foto', ['Devlib\\Components\\Chat']]], 'classes' => ['Devlib\\Components\\Chat']]],
                 'files' => ['Mockup' => ['main_menu_v2.html']]],
             ['code' => 'P8', 'short' => 'LA', 'label' => '8 · Login & Account', 'icon' => 'fa-solid fa-right-to-bracket',
                 'pages' => [

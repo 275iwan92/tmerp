@@ -263,4 +263,52 @@ final class DemoData
 
         return $rows;
     }
+
+    // Foto profil ilustrasi (siluet, bukan foto orang sungguhan).
+    public static function avatarPhoto(string $bg, string $fg): string
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="'.$bg.'"/>'
+            .'<circle cx="50" cy="40" r="18" fill="'.$fg.'"/><path d="M14 100c2-22 17-34 36-34s34 12 36 34z" fill="'.$fg.'"/></svg>';
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    // Chat: orang (online = sedang login) + percakapan contoh. Nama fiktif.
+    public static function chat(): array
+    {
+        $ph = fn ($bg, $fg) => self::avatarPhoto($bg, $fg);
+        $people = [
+            ['id' => 2, 'name' => 'Rina Wijaya', 'role' => 'Sales', 'online' => true, 'photo' => $ph('#dbeafe', '#3b82f6')],
+            ['id' => 3, 'name' => 'Andi Pratama', 'role' => 'Finance', 'online' => true, 'photo' => $ph('#dcfce7', '#16a34a')],
+            ['id' => 4, 'name' => 'Sari Kusuma', 'role' => 'PPIC', 'online' => true, 'photo' => $ph('#fce7f3', '#db2777')],
+            ['id' => 5, 'name' => 'Bayu Nugroho', 'role' => 'Gudang', 'online' => true],
+            ['id' => 6, 'name' => 'Dewi Lestari', 'role' => 'HRD', 'online' => true, 'photo' => $ph('#ede9fe', '#7c3aed')],
+            ['id' => 7, 'name' => 'Joko Santoso', 'role' => 'Kepala Produksi', 'online' => false, 'seen' => 'hari ini 07:42', 'photo' => $ph('#fef3c7', '#d97706')],
+            ['id' => 8, 'name' => 'Maya Putri', 'role' => 'Purchasing', 'online' => false, 'seen' => 'kemarin 16:05'],
+            ['id' => 9, 'name' => 'Hendra Gunawan', 'role' => 'QC', 'online' => false, 'seen' => 'kemarin 21:10', 'photo' => $ph('#e0f2fe', '#0284c7')],
+            ['id' => 10, 'name' => 'Lukman Hakim', 'role' => 'Direksi', 'online' => false, 'seen' => '20 Sep 2026'],
+            ['id' => 11, 'name' => 'Tari Anggraini', 'role' => 'Accounting', 'online' => false, 'seen' => 'hari ini 08:15'],
+        ];
+        $convos = [
+            2 => ['unread' => 2, 'msgs' => [
+                ['me' => false, 't' => 'Pak, PO dari PT Sarana sudah masuk?', 'at' => '16:40', 'day' => 'Kemarin'],
+                ['me' => true, 't' => 'Sudah, saya cek dulu ya.', 'at' => '16:42', 'day' => 'Kemarin', 'st' => 'read'],
+                ['me' => false, 't' => 'Ini foto sampel box yang diminta customer', 'img' => self::boxImage('#2563eb', 'SAMPEL'), 'at' => '08:05', 'day' => 'Hari ini'],
+                ['me' => false, 't' => 'Warnanya bisa disamakan?', 'at' => '08:06', 'day' => 'Hari ini'],
+            ]],
+            3 => ['unread' => 0, 'msgs' => [
+                ['me' => false, 't' => 'Invoice #2600393 sudah dibayar.', 'at' => '09:12', 'day' => 'Hari ini'],
+                ['me' => true, 't' => 'Noted, terima kasih.', 'at' => '09:15', 'day' => 'Hari ini', 'st' => 'read'],
+            ]],
+            4 => ['unread' => 1, 'msgs' => [
+                ['me' => true, 't' => 'Jadwal cetak WO-2609-014 bisa maju ke Rabu?', 'at' => '10:20', 'day' => 'Hari ini', 'st' => 'delivered'],
+                ['me' => false, 't' => 'Bisa, mesin kosong Rabu pagi.', 'at' => '10:31', 'day' => 'Hari ini'],
+            ]],
+            7 => ['unread' => 0, 'msgs' => [
+                ['me' => true, 't' => 'Pak, hasil cetak shift 2 kemarin', 'img' => self::boxImage('#16a34a', 'SHIFT 2'), 'at' => '07:30', 'day' => 'Hari ini', 'st' => 'delivered'],
+            ]],
+        ];
+
+        return ['me' => ['id' => 1, 'name' => 'Demo Admin', 'photo' => $ph('#e2e8f0', '#475569')], 'people' => $people, 'convos' => $convos];
+    }
 }

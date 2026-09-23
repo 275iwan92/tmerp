@@ -16,6 +16,9 @@ if ($Anchor) {
     # Tampilkan hanya bagian anchor (halaman kategori memakai scroller dalam, jadi #anchor tidak bisa dipakai).
     $html = (Get-Content $file -Raw) -replace '</body>', "<script>window.addEventListener('load',()=>{const s=document.getElementById('$Anchor');if(!s)return;const w=document.createElement('div');w.style.cssText='padding:24px;max-width:1100px';w.appendChild(s);document.body.replaceChildren(w);document.body.style.overflow='auto';$Js});</script></body>"
     $file = Join-Path $snap "_shot.html"; Set-Content $file $html -Encoding utf8
+} elseif ($Js) {
+    $html = (Get-Content $file -Raw) -replace '</body>', "<script>window.addEventListener('load',()=>{$Js});</script></body>"
+    $file = Join-Path $snap "_shot.html"; Set-Content $file $html -Encoding utf8
 }
 & $browser --headless=new --disable-gpu --hide-scrollbars "--window-size=$Width,$Height" --virtual-time-budget=4000 "--screenshot=$png" ("file:///" + ($file -replace '\\', '/') + $hash) 2>$null | Out-Null
 $png

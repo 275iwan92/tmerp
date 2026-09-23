@@ -70,13 +70,8 @@
 
     <aside class="dl-drawer" data-dl-drawer="chat" data-dl="drawer chat" data-dl-class="bagian Shell" data-dl-src="sys_chat_conversations / sys_chat_messages (rencana)">
         <div class="dl-dr-head"><i class="fa-solid fa-comment-dots dl-dr-ico"></i><span class="dl-dr-title">Chat</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
-        <div class="dl-chat">
-            <div class="dl-chat__list" data-dl-chat-list></div>
-            <div class="dl-chat__main">
-                <div class="dl-chat__msgs" data-dl-chat-msgs></div>
-                <div class="dl-chat__in"><input data-dl-chat-input placeholder="Tulis pesan…"><button type="button" data-dl-chat-send><i class="fa-solid fa-paper-plane"></i></button></div>
-            </div>
-        </div>
+        <x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" />
+
     </aside>
 
     <aside class="dl-drawer" data-dl-drawer="ai" data-dl="drawer asisten AI" data-dl-class="bagian Shell" data-dl-src="registry menu (pratinjau)">
