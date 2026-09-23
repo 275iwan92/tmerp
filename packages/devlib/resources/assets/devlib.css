@@ -1034,3 +1034,20 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-cc [data-dl-cc-num]{font-family:var(--dl-font-mono);letter-spacing:.04em}
 /* phone */
 .dl-phone__read{font-size:calc(11px * var(--dl-font-scale));color:var(--dl-muted);margin-top:3px;min-height:14px}
+
+/* ================= MASTER (Part 5b) ================= */
+.dl-master__form{background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg)}
+.dl-master__form[hidden],[data-m-grid][hidden]{display:none}
+.dl-master__bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--dl-border);background:var(--dl-surface);border-radius:var(--dl-radius-lg) var(--dl-radius-lg) 0 0}
+.dl-master__heading{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.dl-master__heading b{font-size:calc(15px * var(--dl-font-scale));color:var(--dl-ink-strong)}
+.dl-master__heading small{font-family:var(--dl-font-mono);font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
+.dl-master__spacer{flex:1}
+.dl-master__pipe{display:flex;gap:0;padding:12px 14px 0;overflow-x:auto}
+.dl-master__step{position:relative;flex:1;min-width:110px;text-align:center;padding:7px 14px;font-size:calc(12px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);background:var(--dl-chip);clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%,10px 50%)}
+.dl-master__step:first-child{clip-path:polygon(0 0,calc(100% - 10px) 0,100% 50%,calc(100% - 10px) 100%,0 100%)}
+.dl-master__step.is-done{background:var(--dl-accent-soft);color:var(--dl-accent)}
+.dl-master__step.is-active{background:var(--dl-accent);color:var(--dl-white)}
+.dl-master__body{padding:16px 14px}
+form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:var(--dl-amber);font-size:calc(12px * var(--dl-font-scale));font-weight:600}
+@media (max-width:640px){.dl-master__spacer{display:none}.dl-master__heading{order:-1;flex-basis:100%}}

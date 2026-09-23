@@ -873,9 +873,9 @@
   }
   function submitForm(f) { const btn = f.querySelector('[type=submit]'); if (f.requestSubmit) f.requestSubmit(btn || undefined); else if (btn) btn.click(); }
   document.addEventListener('click', e => {
-    const a = e.target.closest('[data-dl-back], a[href]:not([href^="#"]):not([target=_blank]):not([href^="javascript"])');
+    const a = e.target.closest('[data-dl-back], [data-dl-leave], a[href]:not([href^="#"]):not([target=_blank]):not([href^="javascript"])');
     const live = [...dirtyForms].filter(f => document.contains(f));
-    if (!a || !live.length || a.closest('form[data-dl-guard]') === live[0] && !a.hasAttribute('data-dl-back')) return;
+    if (!a || !live.length || a.closest('form[data-dl-guard]') === live[0] && !a.hasAttribute('data-dl-back') && !a.hasAttribute('data-dl-leave')) return;
     e.preventDefault(); e.stopImmediatePropagation();
     askDirty().then(v => {
       if (v === 'save') submitForm(live[0]);
@@ -956,6 +956,8 @@
     const persist = () => { try { localStorage.setItem(saveKey, JSON.stringify({sort: st.sort, dir: st.dir, hidden: st.hidden, group: st.group, perPage: st.perPage, density: st.density, lines: st.lines, linesN: st.linesN, filters: st.filters, tab: st.tab})); } catch (e) {} };
     const q = s => $(root, s), qq = s => $$(root, s);
     const shown = () => cols.filter(c => !st.hidden.includes(c.key));
+    // true = tidak ada induk yang menangani (grid berdiri sendiri -> tampilkan pratinjau).
+    const emit = (name, detail) => root.dispatchEvent(new CustomEvent(name, {bubbles: true, cancelable: true, detail}));
     const val = (r, k) => r[k] ?? '';
     const match = (r, where) => !where || Object.entries(where).every(([k, v]) => Array.isArray(v) ? v.map(String).includes(String(val(r, k))) : String(val(r, k)) === String(v));
     const fmtCell = (c, v) => c.type === 'money' ? fmt.money(v) : c.type === 'number' ? fmt.number(v, String(v).includes('.') ? 2 : 0) : c.type === 'date' ? (v ? fmt.date(v) : '') : v;
@@ -1107,8 +1109,8 @@
       if (x.closest('[data-g-select-all]')) { filtered().forEach(r => sel.add(String(r[cfg.rowKey]))); drawBody(); return drawBulk(); }
       if (x.closest('[data-g-select-none]')) { sel.clear(); drawBody(); return drawBulk(); }
       const ba = x.closest('[data-g-bulk-action]'); if (ba) { toast(`${ba.textContent.trim()}: ${fmt.number(sel.size)} baris (pratinjau)`, 'success'); root.dispatchEvent(new CustomEvent('dl:grid-bulk', {bubbles: true, detail: {action: ba.dataset.gBulkAction, ids: [...sel]}})); return; }
-      const act = x.closest('[data-g-act]'); if (act) { const r = rows.find(v => String(v[cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && cfg.activeKey) { r[cfg.activeKey] = !r[cfg.activeKey]; toast((r[cfg.activeKey] ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || act.dataset.id), 'success'); redraw(); } else { toast(`${act.title.split(' (')[0]}: ${r.name || r[cfg.rowKey]} (pratinjau)`); root.dispatchEvent(new CustomEvent('dl:grid-open', {bubbles: true, detail: {id: act.dataset.id, action: act.dataset.gAct}})); } return; }
-      if (x.closest('[data-g-new]')) { toast('+ New Record (pratinjau)'); root.dispatchEvent(new CustomEvent('dl:grid-new', {bubbles: true})); return; }
+      const act = x.closest('[data-g-act]'); if (act) { const r = rows.find(v => String(v[cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && cfg.activeKey) { r[cfg.activeKey] = !r[cfg.activeKey]; toast((r[cfg.activeKey] ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || act.dataset.id), 'success'); redraw(); } else if (emit('dl:grid-open', {id: act.dataset.id, action: act.dataset.gAct})) toast(`${act.title.split(' (')[0]}: ${r.name || r[cfg.rowKey]} (pratinjau)`); return; }
+      if (x.closest('[data-g-new]')) { if (emit('dl:grid-new', {})) toast('+ New Record (pratinjau)'); return; }
       if (x.closest('[data-g-export]')) return exportCsv();
       const cb = x.matches('.dl-grid__row input[type=checkbox]') ? x : null;
       if (cb) {
@@ -1126,7 +1128,7 @@
       if (e.target.matches('[data-g-lines-n]')) { st.linesN = Math.max(1, Math.min(5, +e.target.value || 1)); return redraw(); }
       if (e.target.matches('[data-g-goto]')) { st.page = Math.max(1, +e.target.value || 1); drawBody(); }
     });
-    root.addEventListener('dblclick', e => { const tr = e.target.closest('.dl-grid__row'); if (!tr || e.target.closest('button,input')) return; const r = rows.find(v => String(v[cfg.rowKey]) === tr.dataset.id); toast('Buka: ' + (r.name || tr.dataset.id) + ' (klik 2x)'); root.dispatchEvent(new CustomEvent('dl:grid-open', {bubbles: true, detail: {id: tr.dataset.id, action: 'open'}})); });
+    root.addEventListener('dblclick', e => { const tr = e.target.closest('.dl-grid__row'); if (!tr || e.target.closest('button,input')) return; const r = rows.find(v => String(v[cfg.rowKey]) === tr.dataset.id); if (emit('dl:grid-open', {id: tr.dataset.id, action: 'open'})) toast('Buka: ' + (r.name || tr.dataset.id) + ' (klik 2x)'); });
     document.addEventListener('click', e => { if (!e.target.closest('[data-g-pop]')) qq('.dl-pop2__panel').forEach(p => p.classList.remove('is-open')); });
 
     // Export = kolom yang sedang tampil, semua baris hasil saringan (bukan hanya halaman ini).
@@ -1137,6 +1139,7 @@
       toast(`Export ${fmt.number(list.length)} baris × ${vis.length} kolom (kolom yang tampil).`, 'success');
     }
 
+    root.dlGrid = {rows, cfg, redraw};
     redraw();
   }
 
@@ -1327,7 +1330,71 @@
     upd();
   }
 
-  window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id))};
+
+  /* ============================ MASTER ============================ */
+  // Isi satu field library dari nilai (dipakai Master, bisa dipakai layar lain lewat Devlib.fill).
+  function setField(form, name, v) {
+    const els = $$(form, `[name="${CSS.escape(name)}"]`); if (!els.length) return;
+    const el = els[0], s = v == null ? '' : String(v);
+    if (el.type === 'radio') { els.forEach(r => { r.checked = r.value === s; }); return; }
+    if (el.type === 'checkbox') { el.checked = v === true || s === '1' || s === 'true'; el.dispatchEvent(new Event('change', {bubbles: true})); return; }
+    el.value = s;
+    const sel = el.closest('[data-dl-select]');
+    if (sel) { const it = $(sel, `.dl-dd__item[data-value="${CSS.escape(s)}"]`); $(sel, '[data-dl-dd-text]').textContent = it ? it.textContent : sel.dataset.empty; return; }
+    const dt = el.closest('[data-dl-date]');
+    if (dt) { $(dt, '[data-dl-date-text]').value = s ? fmt.date(s.slice(0, 10) + 'T12:00:00+07:00') : ''; return; }
+    const pb = el.closest('[data-dl-phonebox]');
+    if (pb) { const i = $(pb, '[data-dl-phone]'); i.value = s; i.dispatchEvent(new Event('input', {bubbles: true})); return; }
+    el.dispatchEvent(new Event('input', {bubbles: true}));
+  }
+  // clear=true: field yang tidak ada di data dikosongkan (untuk data baru).
+  function fillForm(form, data, clear = false) {
+    const names = new Set($$(form, '[name]').map(e => e.name).filter(n => n && n !== '_token' && !n.endsWith('_country') && !n.endsWith('_dial')));
+    names.forEach(n => { if (n in data) setField(form, n, data[n]); else if (clear) setField(form, n, ''); });
+    $$(form, '.dl-field.is-invalid').forEach(f => { f.classList.remove('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = ''; });
+    dirtyForms.delete(form); form.classList.remove('is-dirty');
+  }
+  const hasValue = f => $$(f, '[name]').some(i => (i.type === 'checkbox' || i.type === 'radio') ? i.checked : i.value.trim() !== '');
+
+  function initMaster(m) {
+    const grid = $(m, '[data-dl-grid]'), form = $(m, '[data-m-form]'), gridBox = $(m, '[data-m-grid]'), d = m.dataset;
+    let cur = null;
+    const show = onForm => { gridBox.hidden = onForm; form.hidden = !onForm; m.scrollIntoView({block: 'start'}); };
+    const open = id => {
+      const g = grid.dlGrid;
+      cur = id == null ? null : g.rows.find(r => String(r[g.cfg.rowKey]) === String(id));
+      fillForm(form, cur || {}, true);
+      $(form, '[data-m-heading]').textContent = cur ? `Edit ${d.title} · ${cur[d.nameKey] ?? ''}` : `${d.title} baru`;
+      $(form, '[data-m-sub]').textContent = cur ? (d.codeKey ? cur[d.codeKey] ?? '' : '') : 'Belum disimpan';
+      const pipe = $(form, '[data-m-pipe]');
+      if (pipe) { const steps = $$(pipe, '[data-step]'), at = cur ? steps.findIndex(s => s.dataset.step === String(cur[d.pipelineKey])) : 0; steps.forEach((s, i) => { s.classList.toggle('is-done', i < at); s.classList.toggle('is-active', i === at); }); }
+      show(true);
+      const first = $(form, '.dl-master__body input:not([type=hidden]):not([readonly]), .dl-master__body textarea'); if (first) first.focus({preventScroll: true});
+    };
+    m.addEventListener('dl:grid-open', e => { e.preventDefault(); open(e.detail.id); });
+    m.addEventListener('dl:grid-new', e => { e.preventDefault(); open(null); });
+    $$(form, '[data-m-back]').forEach(b => b.addEventListener('click', () => show(false)));
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const missing = $$(form, '.dl-field').filter(f => $(f, '.dl-field__req') && !hasValue(f));
+      missing.forEach(f => { f.classList.add('is-invalid'); const er = $(f, '[data-dl-field-error]'); if (er) er.textContent = 'Wajib diisi'; });
+      if (missing.length) { dirtyForms.add(form); toast(`${missing.length} isian wajib belum diisi.`, 'danger'); missing[0].scrollIntoView({block: 'center'}); return; }
+      const data = {};
+      new FormData(form).forEach((v, k) => { if (k !== '_token') data[k] = v; });
+      $$(form, 'input[type=checkbox][name]').forEach(c => { data[c.name] = c.checked; });
+      const g = grid.dlGrid, isNew = !cur;
+      if (isNew) {
+        cur = Object.assign({[g.cfg.rowKey]: Math.max(0, ...g.rows.map(r => +r[g.cfg.rowKey] || 0)) + 1}, g.cfg.activeKey ? {[g.cfg.activeKey]: true} : {}, data);
+        g.rows.unshift(cur);
+      } else Object.assign(cur, data);
+      g.redraw();
+      toast(`${d.title} ${cur[d.nameKey] ?? ''} ${isNew ? 'ditambahkan' : 'disimpan'}.`, 'success');
+      m.dispatchEvent(new CustomEvent('dl:master-save', {bubbles: true, detail: {record: cur, isNew}}));
+      show(false);
+    });
+  }
+
+  window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
     document.querySelectorAll('[data-dl-themepick]').forEach(initThemePicker);
@@ -1360,6 +1427,7 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-master]').forEach(initMaster);
     document.querySelectorAll('[data-dl-accgroup]').forEach(initAccGroup);
     document.querySelectorAll('[data-dl-slider]').forEach(initSlider);
     document.querySelectorAll('[data-dl-rating]').forEach(initRating);

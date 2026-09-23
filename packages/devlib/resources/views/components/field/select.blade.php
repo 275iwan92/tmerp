@@ -2,7 +2,7 @@
     $opts = array_is_list($options) ? array_combine($options, $options) : $options;
     $empty = $placeholder ?? 'Pilih...';
 @endphp
-<div class="dl-dd" data-dl-select>
+<div class="dl-dd" data-dl-select data-empty="{{ $empty }}">
     <input type="hidden" name="{{ $name }}" value="{{ $value }}" data-dl-value>
     <button type="button" id="{{ $uid }}" class="dl-dd__btn" data-dl-dd-toggle @disabled($disabled)>
         <span data-dl-dd-text>{{ $opts[$value] ?? $empty }}</span><span>▼</span>

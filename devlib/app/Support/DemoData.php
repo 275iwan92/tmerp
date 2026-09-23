@@ -22,7 +22,7 @@ final class DemoData
                 'position' => $dept[$d][$i % count($dept[$d])],
                 'status' => ['TETAP', 'KONTRAK', 'KONTRAK', 'HARIAN'][$i % 4],
                 'join_date' => date('Y-m-d', mktime(0, 0, 0, 1 + ($i * 5) % 12, 1 + ($i * 11) % 28, 2016 + $i % 10)),
-                'phone' => '08'.(1200000000 + $i * 7919),
+                'phone' => '+628'.(1200000000 + $i * 7919),
                 'city' => ['Surabaya', 'Sidoarjo', 'Gresik', 'Mojokerto'][$i % 4],
                 'active' => $i % 9 !== 0,
             ];
