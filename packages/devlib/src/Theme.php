@@ -51,21 +51,27 @@ final class Theme
             'accent-ring' => "color-mix(in srgb, $primary 15%, transparent)",
             'side' => $sidebar, 'navy' => $sidebar, 'navy-2' => "color-mix(in srgb, $sidebar 80%, #fff)",
             'topbar' => "color-mix(in srgb, $sidebar 70%, #000)",
+            'f-line' => "color-mix(in srgb, $primary 22%, #d1d5db)",
+            'f-badge' => "color-mix(in srgb, $primary 14%, #fff)",
+            'f-badge-ink' => "color-mix(in srgb, $primary 70%, #1f2937)",
+            'f-ro' => "color-mix(in srgb, $primary 4%, #fff)",
         ];
         if ($bg) {
             $t['bg'] = $bg;
         }
         if (isset(self::DARK[$family])) {
             $d = self::DARK[$family];
-            $t += [
+            $t['f-line'] = "color-mix(in srgb, $primary 30%, {$d['border']})";
+            $t = [
                 'surface' => $d['surface'], 'surface-alt' => $d['surface-alt'], 'surface-muted' => $d['hover'], 'hover' => $d['hover'],
                 'border' => $d['border'], 'border-soft' => $d['border'], 'border-hover' => $d['muted'],
                 'ink' => $d['ink'], 'ink-strong' => $d['ink-strong'], 'muted' => $d['muted'],
                 'chip' => $d['hover'], 'tabbar' => $d['surface-alt'], 'tab' => $d['hover'], 'tab-hover' => $d['border'], 'tab-ink' => $d['muted'],
-                'f-ink' => $d['ink-strong'], 'f-label' => $d['ink'], 'f-muted' => $d['muted'], 'f-line' => $d['border'], 'f-line-soft' => $d['border'], 'f-bg-soft' => $d['hover'],
+                'f-ink' => $d['ink-strong'], 'f-label' => $d['ink'], 'f-muted' => $d['muted'], 'f-line-soft' => $d['border'], 'f-bg-soft' => $d['hover'],
+                'f-ro' => $d['hover'], 'f-badge' => "color-mix(in srgb, $primary 22%, {$d['surface']})", 'f-badge-ink' => $d['ink-strong'],
                 'info-soft' => "color-mix(in srgb, $primary 14%, {$d['surface']})", 'info-line' => "color-mix(in srgb, $primary 35%, {$d['surface']})",
                 'danger-soft' => '#3a1d20', 'danger-line' => '#5c2a2e', 'code-bg' => $d['border'],
-            ];
+            ] + $t;
         }
 
         return $t;

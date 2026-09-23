@@ -1,4 +1,4 @@
-<div {{ $attributes->class(['dl-field', 'dl-field--'.$control(), 'dl-field--'.$size, 'is-invalid' => $error]) }} {!! $dl() !!} data-dl-field="{{ $name }}">
+<div {{ $attributes->class(['dl-field', 'dl-field--'.$control(), 'dl-field--'.$size, 'is-invalid' => $error, 'is-readonly' => $readonly]) }} {!! $dl() !!} data-dl-field="{{ $name }}">
     @if ($label !== '')
         <div class="dl-field__labelrow">
             <label class="dl-field__label" for="{{ $uid }}" @if ($i18n) data-i18n="{{ $i18n }}" @endif>{{ $label }}</label>

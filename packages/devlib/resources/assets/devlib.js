@@ -627,6 +627,47 @@
     }));
   }
 
+  /* ======================= SMALL COMPONENTS ======================= */
+  // Lookup: cari di semua kolom, pilih baris -> nilai tersimpan + field lain terisi otomatis.
+  function initLookup(root) {
+    const rows = JSON.parse(root.dataset.rows || '[]'), fill = JSON.parse(root.dataset.fill || '{}');
+    const p = bindPanel(root, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); p.search.focus(); } });
+    $$(root, 'tr.dl-dd__item').forEach(tr => tr.addEventListener('click', () => {
+      const r = rows[+tr.dataset.i];
+      $(root, '[data-dl-value]').value = r[root.dataset.key];
+      $(root, '[data-dl-dd-text]').textContent = r[root.dataset.label];
+      p.close();
+      const scope = root.closest('form') || document;
+      Object.entries(fill).forEach(([field, col]) => {
+        const box = scope.querySelector(`[data-dl-field="${field}"]`);
+        const input = box ? (box.querySelector('[data-dl-value]') || box.querySelector('input,textarea,select')) : scope.querySelector(`[name="${field}"]`);
+        if (!input) return;
+        input.value = r[col] ?? '';
+        input.dispatchEvent(new Event('input', {bubbles: true})); input.dispatchEvent(new Event('change', {bubbles: true}));
+        const txt = box && box.querySelector('[data-dl-dd-text]');
+        if (txt) txt.textContent = r[col] ?? '';
+        if (box) { box.classList.remove('is-filled'); void box.offsetWidth; box.classList.add('is-filled'); }
+      });
+    }));
+  }
+
+  function initTabs(root) {
+    $$(root, ':scope > .dl-tabs__bar .dl-tabs__tab').forEach(t => t.addEventListener('click', () => {
+      $$(root, ':scope > .dl-tabs__bar .dl-tabs__tab').forEach(x => x.classList.toggle('is-active', x === t));
+      $$(root, ':scope > .dl-tabs__panel').forEach(p => p.classList.toggle('is-active', p.dataset.panel === t.dataset.tab));
+    }));
+  }
+
+  // Kotak statistik = filter: klik menyalakan, klik lagi melepas (satu aktif per kelompok).
+  function initStat(btn) {
+    btn.addEventListener('click', () => {
+      const on = !btn.classList.contains('is-active');
+      (btn.parentElement ? $$(btn.parentElement, '[data-dl-stat]') : [btn]).forEach(b => b.classList.remove('is-active'));
+      btn.classList.toggle('is-active', on);
+      btn.dispatchEvent(new CustomEvent('dl:stat', {bubbles: true, detail: {active: on}}));
+    });
+  }
+
   /* ============================ BASIC ============================ */
   // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
   const TZ = () => document.documentElement.dataset.dlTz || 'Asia/Jakarta';
@@ -683,6 +724,9 @@
     document.querySelectorAll('[data-dl-device]').forEach(initDevice);
     document.querySelectorAll('[data-dl-form]').forEach(initForm);
     document.querySelectorAll('.dl-field').forEach(initField);
+    document.querySelectorAll('[data-dl-lookup]').forEach(initLookup);
+    document.querySelectorAll('[data-dl-tabs]').forEach(initTabs);
+    document.querySelectorAll('[data-dl-stat]').forEach(initStat);
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.addEventListener('click', () => {

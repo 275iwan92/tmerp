@@ -32,4 +32,26 @@ return [
             'Bahasa Jepang' => '🇯🇵 Bahasa Jepang', 'Bahasa Arab' => '🇸🇦 Bahasa Arab', 'Bahasa Jerman' => '🇩🇪 Bahasa Jerman',
         ],
     ],
+
+    // Data contoh Lookup (di tmerp: query tabel/VIEW master). Nama sengaja fiktif.
+    'lookups' => [
+        'supplier' => [
+            'source' => 'tm2mst.sup_supplier (contoh)',
+            'key' => 'id', 'label' => 'name',
+            'columns' => ['code' => 'Kode', 'name' => 'Nama Supplier', 'city' => 'Kota', 'term' => 'Syarat Bayar'],
+            'fill' => ['payment_term' => 'term', 'ship_address' => 'address'],
+            'rows' => [
+                ['id' => 1, 'code' => 'SUP-001', 'name' => 'PT Contoh Kertas Jaya', 'city' => 'Surabaya', 'term' => 'Net 30', 'address' => 'Jl. Contoh Industri 1, Surabaya'],
+                ['id' => 2, 'code' => 'SUP-002', 'name' => 'CV Contoh Tinta Prima', 'city' => 'Sidoarjo', 'term' => 'Net 14', 'address' => 'Jl. Contoh Raya 22, Sidoarjo'],
+                ['id' => 3, 'code' => 'SUP-003', 'name' => 'PT Contoh Karton Nusantara', 'city' => 'Gresik', 'term' => 'COD', 'address' => 'Kawasan Contoh Blok C3, Gresik'],
+                ['id' => 4, 'code' => 'SUP-004', 'name' => 'UD Contoh Lem Sejahtera', 'city' => 'Malang', 'term' => 'Net 45', 'address' => 'Jl. Contoh Timur 8, Malang'],
+            ],
+        ],
+        'uom' => [
+            'source' => 'tm2mst.uom_unit (contoh)',
+            'key' => 'code', 'label' => 'code',
+            'columns' => ['code' => 'Kode', 'name' => 'Satuan'],
+            'rows' => [['code' => 'PCS', 'name' => 'Pieces'], ['code' => 'LBR', 'name' => 'Lembar'], ['code' => 'RIM', 'name' => 'Rim (500 lembar)'], ['code' => 'KG', 'name' => 'Kilogram'], ['code' => 'ROLL', 'name' => 'Roll']],
+        ],
+    ],
 ];

@@ -23,6 +23,7 @@ abstract class Field extends DevlibComponent
         public ?string $placeholder = null,
         public bool $required = false,
         public bool $disabled = false,
+        public bool $readonly = false,
         public ?string $icon = null,
         public string $size = 'sm',
         public ?string $i18n = null,

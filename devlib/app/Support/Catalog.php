@@ -45,22 +45,29 @@ final class Catalog
                     'basic-breakpoints' => $basic('Breakpoints', 'fa-solid fa-mobile-screen', ['Devlib\\Components\\TokenTable']),
                     'basic-locale' => $basic('Locale & Formats', 'fa-solid fa-earth-asia', []),
                 ],
-                'files' => ['Mockup' => ['mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html',
-                    'bukti_komponen_input_tema.html', 'bukti_komponen_input_tema.jpg', 'grid_kerapatan_baris.html', 'grid_kerapatan_baris.jpg',
-                    'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid.jpg', 'pilihan_ikon_aksi_grid_konteks.html', 'pilihan_ikon_aksi_grid_konteks.jpg']]],
+                'files' => ['Mockup' => ['mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html']]],
             ['code' => 'P2', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
                 'pages' => $fieldPages + [
+                    'field-lookup' => ['label' => 'Lookup (pilih dari master)', 'icon' => 'fa-solid fa-magnifying-glass', 'classes' => ['Devlib\\Components\\Field\\Lookup'], 'mockup' => 'UIUX_components_part1.html'],
+                    'input-theme' => ['label' => 'Input · Themes', 'icon' => 'fa-solid fa-swatchbook', 'classes' => ['Devlib\\Components\\Field\\Text', 'Devlib\\Components\\Field\\Select'], 'mockup' => 'bukti_komponen_input_tema.html'],
+                    'badge' => ['label' => 'Badge (status dokumen)', 'icon' => 'fa-solid fa-tag', 'classes' => ['Devlib\\Components\\Badge']],
+                    'tooltip' => ['label' => 'Tooltip', 'icon' => 'fa-solid fa-comment', 'classes' => ['Devlib\\Components\\Tooltip']],
+                    'tabs-accordion' => ['label' => 'Tabs · Accordion', 'icon' => 'fa-solid fa-folder-open', 'classes' => ['Devlib\\Components\\Tabs', 'Devlib\\Components\\Accordion']],
+                    'pagination' => ['label' => 'Pagination', 'icon' => 'fa-solid fa-ellipsis', 'classes' => ['Devlib\\Components\\Pagination']],
+                    'avatar-progress' => ['label' => 'Avatar · Progress', 'icon' => 'fa-solid fa-user', 'classes' => ['Devlib\\Components\\Avatar', 'Devlib\\Components\\Progress']],
+                    'stat-box' => ['label' => 'Stat Box (filter)', 'icon' => 'fa-solid fa-chart-simple', 'classes' => ['Devlib\\Components\\StatBox']],
+                    'breadcrumb' => ['label' => 'Breadcrumb', 'icon' => 'fa-solid fa-signs-post', 'classes' => ['Devlib\\Components\\Breadcrumb']],
                     'button' => ['label' => 'Button', 'icon' => 'fa-solid fa-hand-pointer', 'classes' => ['Devlib\\Components\\Button', 'Devlib\\Components\\SplitButton'], 'mockup' => 'UIUX_components_part1.html'],
                     'misc' => ['label' => 'Alert · Divider · Brand · Language', 'icon' => 'fa-solid fa-shapes', 'classes' => ['Devlib\\Components\\Alert', 'Devlib\\Components\\Divider', 'Devlib\\Components\\Brand', 'Devlib\\Components\\LangSwitch'], 'mockup' => 'login.html'],
                 ],
-                'files' => ['Mockup' => ['penjelasan_standar_input_teks.html', 'penjelasan_standar_input_teks.jpg']]],
+                'files' => ['Mockup' => ['bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html']]],
             ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'files' => ['Mockup' => ['mockup_notification.jpg']]],
             ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'files' => []],
             ['code' => 'P5', 'label' => '5 · Big Components', 'icon' => 'fa-solid fa-table-list',
                 'pages' => ['form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                     'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
                 'files' => [
-                    'Mockup · Grid & Master' => ['mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_uom_v4.html', 'mockup_master_customer.html',
+                    'Mockup · Grid & Master' => ['grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid_konteks.html', 'mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_uom_v4.html', 'mockup_master_customer.html',
                         'mockup_master_rawmaterial.html', 'mockup_master_warehouse.html', 'mockup_master_produksi.html', 'master_mesin_update_2026.html', 'master_mesin_update_2026.jpg', 'master_coa_mockup.html'],
                     'Mockup · Dokumen & Approval' => ['mockup_purchase_requisition.html', 'mockup_pr_approval_center.html', 'mockup_po_approval_center.html', 'mockup_purchase_quotation.html',
                         'mockup_purchase_receive.html', 'mockup_purchase_return.html', 'mockup_flow_engine.html', 'mockup_sales_quotation_entry.html', 'mockup_co_entry.html',
@@ -96,7 +103,7 @@ final class Catalog
     public static function builtMockups(): array
     {
         return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
-            'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html'];
+            'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html'];
     }
 
     public static function page(string $slug): ?array
@@ -189,6 +196,10 @@ final class Catalog
 
         foreach ((new Finder)->files()->in($root)->name(['*.html', '*.jpg', '*.jpeg', '*.png'])->sortByName() as $f) {
             $rel = str_replace('\\', '/', $f->getRelativePathname());
+            // Gambar yang punya pasangan .html bernama sama = lampiran, bukan item sendiri.
+            if (strtolower($f->getExtension()) !== 'html' && is_file(preg_replace('/\\.(jpe?g|png)$/i', '.html', $f->getPathname()))) {
+                continue;
+            }
             $base = preg_replace('/^(mockup_|MODULE_)/', '', pathinfo($f->getFilename(), PATHINFO_FILENAME));
             $items[$rel] = [
                 'file' => $rel,

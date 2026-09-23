@@ -2,7 +2,7 @@
 
 namespace Devlib\Components;
 
-// Tombol baku. href terisi = dirender <a>. variant link = tampil sebagai tautan.
+// Tombol baku. icon = arti baku (save, delete, print... lihat Devlib\Icon) atau emoji. href terisi = dirender <a>. variant link = tampil sebagai tautan.
 class Button extends DevlibComponent
 {
     public function __construct(
@@ -30,9 +30,9 @@ class Button extends DevlibComponent
     {
         return <<<'BLADE'
             @if ($href)
-                <a href="{{ $href }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif>@if ($icon)<span class="dl-btn__icon">{{ $icon }}</span>@endif{{ $label }}{{ $slot }}</a>
+                <a href="{{ $href }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</a>
             @else
-                <button type="{{ $type }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif>@if ($icon)<span class="dl-btn__icon">{{ $icon }}</span>@endif{{ $label }}{{ $slot }}</button>
+                <button type="{{ $type }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</button>
             @endif
             BLADE;
     }
