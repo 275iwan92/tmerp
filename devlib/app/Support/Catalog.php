@@ -59,6 +59,9 @@ final class Catalog
                     'p5-master' => ['label' => 'Master', 'icon' => 'fa-solid fa-address-book', 'part' => '5 · Big Components', 'mockup' => 'mockup_master_customer.html',
                         'members' => ['master-employee' => ['Master Pegawai (grid + form edit)', ['Devlib\\Components\\Master', 'Devlib\\Components\\Grid']]],
                         'classes' => ['Devlib\\Components\\Master', 'Devlib\\Components\\Grid']],
+                    'p5-master-detail' => ['label' => 'Master-Detail', 'icon' => 'fa-solid fa-file-invoice', 'part' => '5 · Big Components', 'mockup' => 'mockup_purchase_requisition.html',
+                        'members' => ['master-detail-po' => ['Purchase Order (header + baris item)', ['Devlib\\Components\\Master', 'Devlib\\Components\\Lines', 'Devlib\\Components\\Grid']]],
+                        'classes' => ['Devlib\\Components\\Lines', 'Devlib\\Components\\Master']],
                     'form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                     'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
                 'files' => [
@@ -99,7 +102,7 @@ final class Catalog
     {
         return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_notification.jpg', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
             'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html',
-            'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid_konteks.html', 'mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_customer.html', 'mockup_master_uom_v4.html'];
+            'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid_konteks.html', 'mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_customer.html', 'mockup_master_uom_v4.html', 'mockup_purchase_requisition.html'];
     }
 
     // Part 2 dikelompokkan per kategori (menu kiri ringkas); isi kategori dipilih lewat breadcrumb.

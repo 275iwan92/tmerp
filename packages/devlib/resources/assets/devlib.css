@@ -1051,3 +1051,41 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-master__body{padding:16px 14px}
 form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:var(--dl-amber);font-size:calc(12px * var(--dl-font-scale));font-weight:600}
 @media (max-width:640px){.dl-master__spacer{display:none}.dl-master__heading{order:-1;flex-basis:100%}}
+
+/* ================= LINES / MASTER-DETAIL (Part 5c) ================= */
+.dl-lines{border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);background:var(--dl-surface);margin-top:12px}
+.dl-lines__head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--dl-border-soft)}
+.dl-lines__head b{font-size:calc(13.5px * var(--dl-font-scale));color:var(--dl-ink-strong)}
+.dl-lines__count{font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted);background:var(--dl-chip);border-radius:10px;padding:1px 8px}
+.dl-lines__spacer{flex:1}
+.dl-lines__wrap{overflow-x:auto}
+.dl-lines__table{width:100%;border-collapse:collapse;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-lines__table th{background:var(--dl-surface-alt);text-align:left;padding:7px 8px;font-size:calc(11px * var(--dl-font-scale));font-weight:700;color:var(--dl-muted);white-space:nowrap;border-bottom:1px solid var(--dl-border)}
+.dl-lines__table td{padding:3px 4px;border-bottom:1px solid var(--dl-border-soft);vertical-align:middle}
+.dl-lines__table .num{text-align:right}
+.dl-lines__no{width:34px;text-align:center!important;color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale))}
+.dl-lines__in{width:100%;min-width:70px;border:1px solid transparent;border-radius:var(--dl-radius-sm);background:none;padding:6px 7px;font-family:inherit;font-size:inherit;color:var(--dl-f-ink)}
+.dl-lines__in:hover{border-color:var(--dl-f-line)}
+.dl-lines__in:focus{outline:none;border-color:var(--dl-accent);background:var(--dl-surface);box-shadow:0 0 0 3px var(--dl-accent-ring)}
+.dl-lines__num{text-align:right;font-variant-numeric:tabular-nums}
+.dl-lines__ro{padding:6px 10px!important;color:var(--dl-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.dl-lines__txt,.dl-lines__lk{position:relative}
+.dl-lines__txt .dl-lines__in{padding-right:30px}
+.dl-lines__case{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;border-radius:4px;background:var(--dl-f-badge);color:var(--dl-f-badge-ink);font-size:10px;font-weight:700;padding:1px 4px;cursor:pointer;opacity:0}
+.dl-lines__txt:focus-within .dl-lines__case,.dl-lines__txt:hover .dl-lines__case{opacity:1}
+.dl-lines__lk i{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--dl-muted);font-size:11px;pointer-events:none}
+.dl-lines__table td.is-invalid .dl-lines__in{border-color:var(--dl-danger);background:var(--dl-danger-soft)}
+.dl-lines__act{width:70px;white-space:nowrap;text-align:right}
+.dl-lines__table tfoot td{background:var(--dl-surface-alt);padding:7px 10px;border-top:2px solid var(--dl-border)}
+.dl-lines__empty{text-align:center;color:var(--dl-muted);padding:16px!important}
+.dl-lines__pop{position:absolute;z-index:300;max-height:260px;overflow:auto;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:var(--dl-radius);box-shadow:var(--dl-shadow-pop)}
+.dl-lines__pop tr[data-key]{cursor:pointer}
+.dl-lines__pop tr[data-key]:hover td{background:var(--dl-hover)}
+.dl-lines__totals{margin-left:auto;width:min(340px,100%);padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-lines__totals > div{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dl-lines__totals b{font-variant-numeric:tabular-nums;color:var(--dl-ink-strong)}
+.dl-lines__disc{width:140px;text-align:right;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);padding:4px 7px;font-family:inherit;background:var(--dl-surface);color:var(--dl-f-ink)}
+.dl-lines__grand{border-top:2px solid var(--dl-border);padding-top:8px;font-size:calc(14.5px * var(--dl-font-scale))}
+.dl-lines__grand b{color:var(--dl-accent)}
+.dl-lines__err{color:var(--dl-danger);font-size:calc(12px * var(--dl-font-scale));font-weight:600;padding:0 12px 8px}
+.dl-lines__err:empty{display:none}

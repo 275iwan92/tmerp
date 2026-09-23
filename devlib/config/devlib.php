@@ -53,6 +53,21 @@ return [
                 ['id' => 4, 'code' => 'SUP-004', 'name' => 'UD Contoh Lem Sejahtera', 'city' => 'Malang', 'term' => 'Net 45', 'address' => 'Jl. Contoh Timur 8, Malang'],
             ],
         ],
+        'item' => [
+            'source' => 'tm2mst.mat_raw (contoh)',
+            'key' => 'code', 'label' => 'name',
+            'columns' => ['code' => 'Kode', 'name' => 'Nama Item', 'uom' => 'Satuan', 'price_txt' => 'Harga'],
+            'fill' => ['spec' => 'spec', 'uom' => 'uom', 'price' => 'price'],
+            'rows' => [
+                ['code' => 'RM-KRT-0012', 'name' => 'Kertas HVS 210 gsm', 'spec' => 'Plano 79x109', 'uom' => 'RIM', 'price' => 21500, 'price_txt' => '21.500'],
+                ['code' => 'RM-IVR-0310', 'name' => 'Ivory 310 gsm', 'spec' => 'Plano 65x100', 'uom' => 'LBR', 'price' => 4200, 'price_txt' => '4.200'],
+                ['code' => 'RM-TNT-0044', 'name' => 'Tinta Offset Cyan', 'spec' => '5 kg/kaleng', 'uom' => 'KG', 'price' => 185000, 'price_txt' => '185.000'],
+                ['code' => 'RM-TNT-0045', 'name' => 'Tinta Offset Magenta', 'spec' => '5 kg/kaleng', 'uom' => 'KG', 'price' => 192000, 'price_txt' => '192.000'],
+                ['code' => 'RM-PLT-0072', 'name' => 'Plat CTP 72x103', 'spec' => 'Thermal, 0,30 mm', 'uom' => 'PCS', 'price' => 96000, 'price_txt' => '96.000'],
+                ['code' => 'RM-LEM-0005', 'name' => 'Lem Samping PVAc', 'spec' => 'Jerigen 20 kg', 'uom' => 'KG', 'price' => 27500, 'price_txt' => '27.500'],
+                ['code' => 'RM-LAM-0020', 'name' => 'Film Laminasi Doff', 'spec' => 'Lebar 65 cm, 3000 m', 'uom' => 'ROLL', 'price' => 1450000, 'price_txt' => '1.450.000'],
+            ],
+        ],
         'uom' => [
             'source' => 'tm2mst.uom_unit (contoh)',
             'key' => 'code', 'label' => 'code',
