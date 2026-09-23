@@ -8,7 +8,7 @@ namespace Devlib\Components;
 // menyerahkan array $modules.
 //
 // $modules = [
-//   ['code' => 'SALES', 'label' => 'Sales', 'icon' => 'fa-solid fa-…', 'children' => [
+//   ['code' => 'SALES', 'short' => 'SLS' (opsional: tampil di bilah atas, nama lengkap di tooltip), 'label' => 'Sales', 'icon' => 'fa-solid fa-…', 'children' => [
 //       ['label' => 'Transaksi', 'items' => [ITEM, …]],   // grup
 //       ITEM,                                              // item langsung
 //   ]],

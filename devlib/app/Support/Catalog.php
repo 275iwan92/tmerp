@@ -35,7 +35,7 @@ final class Catalog
 
         // Urutan = urutan membangun (bawah ke atas): tiap Part memakai Part sebelumnya.
         return [
-            ['code' => 'P1', 'label' => '1 · Basic & Themes', 'icon' => 'fa-solid fa-palette',
+            ['code' => 'P1', 'short' => 'BT', 'label' => '1 · Basic & Themes', 'icon' => 'fa-solid fa-palette',
                 'pages' => [
                     'basic-colors' => $basic('Colors', 'fa-solid fa-droplet', ['Devlib\\Components\\TokenTable'], 'mockup_dashboardcolor.html'),
                     'basic-typography' => $basic('Typography', 'fa-solid fa-font', ['Devlib\\Components\\TokenTable']),
@@ -47,12 +47,12 @@ final class Catalog
                     'basic-locale' => $basic('Locale & Formats', 'fa-solid fa-earth-asia', []),
                 ],
                 'files' => ['Mockup' => ['mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html']]],
-            ['code' => 'P2', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
+            ['code' => 'P2', 'short' => 'SC', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
                 'pages' => self::smallCategories(),
                 'files' => ['Mockup' => ['bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html']]],
-            ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'pages' => self::feedbackCategories(), 'files' => []],
-            ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'pages' => self::behaviorCategories(), 'files' => []],
-            ['code' => 'P5', 'label' => '5 · Big Components', 'icon' => 'fa-solid fa-table-list',
+            ['code' => 'P3', 'short' => 'FS', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'pages' => self::feedbackCategories(), 'files' => []],
+            ['code' => 'P4', 'short' => 'GB', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'pages' => self::behaviorCategories(), 'files' => []],
+            ['code' => 'P5', 'short' => 'BC', 'label' => '5 · Big Components', 'icon' => 'fa-solid fa-table-list',
                 'pages' => ['p5-grid' => ['label' => 'Grid', 'icon' => 'fa-solid fa-table', 'part' => '5 · Big Components', 'mockup' => 'grid_kerapatan_baris.html',
                     'members' => ['grid-master' => ['Grid Master (Edit + Aktif/Nonaktif)', ['Devlib\\Components\\Grid']], 'grid-worklist' => ['Grid Worklist (Buka + Confirm, tab, grup, subtotal)', ['Devlib\\Components\\Grid']]],
                     'classes' => ['Devlib\\Components\\Grid']],
@@ -108,13 +108,13 @@ final class Catalog
                         'inquiry_product_costing/mockup_product_costing_v1_scriptcase.png', 'procost_instant_hasil_build.png', 'procost_integrasi_hasil_build.png',
                         'procost_instant_deviasi.jpg', 'procost_instant_deviasi_v2.jpg', 'procost_integrasi_deviasi.jpg', 'procost_integrasi_deviasi_v2.jpg'],
                 ]],
-            ['code' => 'P6', 'label' => '6 · Special Components', 'icon' => 'fa-solid fa-draw-polygon',
+            ['code' => 'P6', 'short' => 'SP', 'label' => '6 · Special Components', 'icon' => 'fa-solid fa-draw-polygon',
                 'files' => ['Mockup' => ['inquiry_new.html', 'inquiry_revise_v2.html', 'inquiry_recalc_v2.html', 'mockup_inquiry_imposition_grid_form.html', 'mockup_prodev_imposition.html',
                     'tata layout layar imposistion.jpg', 'Organization-Structure-Mockup.html', 'mockup_ID_card.png', 'mockup_mastercard.jpg', 'mockup_mastercard_ver2.jpg']]],
-            ['code' => 'P7', 'label' => '7 · Menu & Dashboard', 'icon' => 'fa-solid fa-table-columns',
+            ['code' => 'P7', 'short' => 'MD', 'label' => '7 · Menu & Dashboard', 'icon' => 'fa-solid fa-table-columns',
                 'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html']],
                 'files' => ['Mockup' => ['main_menu_v2.html']]],
-            ['code' => 'P8', 'label' => '8 · Login & Account', 'icon' => 'fa-solid fa-right-to-bracket',
+            ['code' => 'P8', 'short' => 'LA', 'label' => '8 · Login & Account', 'icon' => 'fa-solid fa-right-to-bracket',
                 'pages' => [
                     'login-1' => ['label' => 'Login 1 · sama dengan tmerp', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
                     'login-2' => ['label' => 'Login 2 · popup kaca', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
@@ -265,11 +265,11 @@ final class Catalog
                     $children[] = ['label' => $caption.' (belum dibangun)', 'items' => $pending];
                 }
             }
-            $modules[] = ['code' => $g['code'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => $children];
+            $modules[] = ['code' => $g['code'], 'short' => $g['short'] ?? null, 'label' => $g['label'], 'icon' => $g['icon'], 'children' => $children];
         }
 
         if ($all) {
-            $modules[] = ['code' => 'ETC', 'label' => 'Lainnya', 'icon' => 'fa-solid fa-folder-open',
+            $modules[] = ['code' => 'ETC', 'short' => 'ETC', 'label' => 'Lainnya', 'icon' => 'fa-solid fa-folder-open',
                 'children' => [['label' => 'Mockup belum dibangun', 'items' => array_map(self::mockupItem(...), array_values($all))]]];
         }
 

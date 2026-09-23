@@ -408,7 +408,15 @@
     let activeTab = null;
     const openTabs = new Map();
 
-    mega.innerHTML = [HOME, ...modules].map(m => `<button type="button" class="dl-mega__item" data-mod="${esc(m.code)}"><span class="mi"><i class="${esc(m.icon || '')}"></i></span>${esc(m.label)}</button>`).join('');
+    // Bilah modul: singkatan (short) + tooltip nama lengkap; bila tetap tidak muat -> panah geser + roda mouse.
+    mega.innerHTML = [HOME, ...modules].map(m => `<button type="button" class="dl-mega__item" data-mod="${esc(m.code)}" title="${esc(m.label)}"><span class="mi"><i class="${esc(m.icon || '')}"></i></span>${esc(m.short || m.label)}</button>`).join('');
+    const megaWrap = document.createElement('div'); megaWrap.className = 'dl-mega__wrap'; mega.before(megaWrap); megaWrap.append(mega);
+    const arrow = d => { const b = document.createElement('button'); b.type = 'button'; b.className = `dl-mega__arrow is-${d < 0 ? 'l' : 'r'}`; b.innerHTML = `<i class="fa-solid fa-chevron-${d < 0 ? 'left' : 'right'}"></i>`; b.title = d < 0 ? 'Geser kiri' : 'Geser kanan'; b.addEventListener('click', () => mega.scrollBy({left: d * 200, behavior: 'smooth'})); return b; };
+    const aL = arrow(-1), aR = arrow(1); megaWrap.prepend(aL); megaWrap.append(aR);
+    const megaEdge = () => { aL.hidden = mega.scrollLeft <= 2; aR.hidden = mega.scrollLeft + mega.clientWidth >= mega.scrollWidth - 2; };
+    mega.addEventListener('scroll', megaEdge); window.addEventListener('resize', megaEdge);
+    mega.addEventListener('wheel', e => { if (mega.scrollWidth > mega.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); mega.scrollLeft += e.deltaY; } }, {passive: false});
+    setTimeout(megaEdge);
     $$(mega, '.dl-mega__item').forEach(b => b.addEventListener('click', () => selectModule(b.dataset.mod)));
 
     const badge = it => it.badge ? `<span class="dl-leaf__badge ${it.badgeTone ? 'is-' + esc(it.badgeTone) : ''}">${esc(it.badge)}</span>` : '';

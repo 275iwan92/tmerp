@@ -1586,3 +1586,10 @@ td.dl-print__no{text-align:center}
 .dl-org__txt em{font-style:normal;font-size:calc(10.5px * var(--dl-font-scale));color:var(--dl-muted)}
 .dl-org__fold{position:absolute;left:50%;bottom:-11px;transform:translateX(-50%);min-width:22px;height:22px;border-radius:11px;border:1px solid var(--dl-border);background:var(--dl-surface);color:var(--dl-muted);font-size:11px;font-weight:700;cursor:pointer;padding:0 5px;z-index:1}
 .dl-org__fold:hover{color:var(--dl-accent);border-color:var(--dl-accent)}
+
+/* Bilah modul shell: pembungkus + panah geser bila tidak muat */
+.dl-mega__wrap{position:relative;display:flex;align-items:stretch;height:100%;min-width:0;flex:0 1 auto}
+.dl-mega__wrap .dl-mega{flex:0 1 auto;min-width:0}
+.dl-mega__arrow{flex:none;width:26px;border:none;background:rgba(255,255,255,.08);color:var(--dl-on-dark);cursor:pointer}
+.dl-mega__arrow:hover{background:rgba(255,255,255,.18);color:var(--dl-white)}
+.dl-mega__arrow[hidden]{display:none}
