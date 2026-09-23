@@ -9,7 +9,7 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   /* ========================= PRIMITIVE ========================= */
-  let currentLang = new URLSearchParams(location.search).get('lang') || 'id';
+  let currentLang = new URLSearchParams(location.search).get('lang') || window.DL_LANG_ACTIVE || 'id';
 
   function initLangs(root) {
     $$(root, '.dl-flag').forEach(f => f.addEventListener('click', () => {
@@ -626,7 +626,7 @@
     });
     window.addEventListener('message', e => { if (e.data && typeof e.data.dlDev === 'boolean') setDevMode(e.data.dlDev); });
     let saved = false; try { saved = localStorage.getItem('dl-dev') === '1'; } catch (e) {}
-    const allowed = !!document.querySelector('[data-dl-developer="1"]') || window.self !== window.top;
+    const allowed = !!document.querySelector('[data-dl-developer="1"],[data-dl-devtoggle]') || window.self !== window.top;
     setDevMode(document.body.dataset.dlDev === '1' || (saved && allowed));
   }
 
@@ -860,6 +860,69 @@
     if (all) all.addEventListener('click', () => { $$(root, '.dl-notif__item.is-unread').forEach(it => { it.classList.remove('is-unread'); const d = $(it, '.dl-notif__dot'); if (d) d.remove(); }); refresh(); toast('Semua notifikasi ditandai dibaca.', 'success'); });
   }
 
+  /* ======================= GLOBAL BEHAVIORS ======================= */
+  const T = k => (window.DL_LANG && window.DL_LANG[k]) ? window.DL_LANG[k][currentLang === 'en' ? 1 : 0] : k;
+
+  // Bahasa: pilihan diingat (cookie dibaca server + localStorage), semua [data-dl-t] ikut berganti.
+  document.addEventListener('dl:lang', () => {
+    try { localStorage.setItem('dl-lang', currentLang); } catch (e) {}
+    document.cookie = 'dl_lang=' + currentLang + ';path=/;max-age=31536000;SameSite=Lax';
+    $$(document, '[data-dl-t]').forEach(el => { el.textContent = T(el.dataset.dlT); });
+  });
+
+  // Dirty-guard: form ber-atribut data-dl-guard yang sudah diubah -> tanya sebelum ditinggal.
+  const dirtyForms = new Set();
+  const markDirty = e => { const f = e.target.closest && e.target.closest('form[data-dl-guard]'); if (f) { dirtyForms.add(f); f.classList.add('is-dirty'); } };
+  document.addEventListener('input', markDirty, true);
+  document.addEventListener('change', markDirty, true);
+  document.addEventListener('submit', e => { dirtyForms.delete(e.target); e.target.classList.remove('is-dirty'); }, true);
+  window.addEventListener('beforeunload', e => { if ([...dirtyForms].some(f => document.contains(f))) { e.preventDefault(); e.returnValue = ''; } });
+
+  // Tiga pilihan: Simpan (kirim form), Buang (lanjut pergi), Batal (tetap di sini).
+  function askDirty() {
+    return new Promise(resolve => {
+      const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
+      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--warn"><i class="fa-solid fa-floppy-disk"></i></span><div><h3>${esc(T('dirty_title'))}</h3><p>${esc(T('dirty_msg'))}</p></div></div>`
+        + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-v="stay">${esc(T('cancel'))}</button><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-v="discard">${esc(T('discard'))}</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-v="save">${esc(T('save'))}</button></div></div>`;
+      const done = v => { ov.remove(); resolve(v); };
+      ov.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) done(b.dataset.v); else if (e.target === ov) done('stay'); });
+      document.body.appendChild(ov); $(ov, '[data-v=save]').focus();
+    });
+  }
+  function submitForm(f) { const btn = f.querySelector('[type=submit]'); if (f.requestSubmit) f.requestSubmit(btn || undefined); else if (btn) btn.click(); }
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-dl-back], a[href]:not([href^="#"]):not([target=_blank]):not([href^="javascript"])');
+    const live = [...dirtyForms].filter(f => document.contains(f));
+    if (!a || !live.length || a.closest('form[data-dl-guard]') === live[0] && !a.hasAttribute('data-dl-back')) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    askDirty().then(v => {
+      if (v === 'save') submitForm(live[0]);
+      else if (v === 'discard') { live.forEach(f => { dirtyForms.delete(f); f.classList.remove('is-dirty'); }); a.click(); }
+    });
+  }, true);
+
+  // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
+  const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
+  const visible = el => el.offsetParent !== null && !el.disabled;
+  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['ctrl+shift+d', 'Mode Developer (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
+  function showShortcuts() {
+    const own = $$(document, '[data-dl-key]').filter(visible).map(b => [b.dataset.dlKey, b.textContent.trim() || b.title]);
+    const rows = [...new Map([...own, ...BUILTIN].map(r => [r[0], r])).values()];
+    const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
+    ov.innerHTML = `<div class="dl-modal dl-modal--sm"><div class="dl-modal__head"><h3><i class="fa-solid fa-keyboard"></i> ${esc(T('shortcuts'))}</h3><button type="button" class="dl-modal__x">&times;</button></div><div class="dl-modal__body"><table class="dl-keys">${rows.map(([k, d]) => `<tr><td>${k.split('+').map(p => `<kbd>${esc(p === 'ctrl' ? 'Ctrl' : p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1))}</kbd>`).join(' + ')}</td><td>${esc(d)}</td></tr>`).join('')}</table></div></div>`;
+    ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.dl-modal__x')) ov.remove(); });
+    document.body.appendChild(ov);
+  }
+  document.addEventListener('keydown', e => {
+    const k = keyName(e), typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
+    if (k === 'ctrl+shift+d' && document.querySelector('[data-dl-devtoggle],[data-dl-developer="1"]')) { e.preventDefault(); setDevMode(!document.body.classList.contains('dl-dev')); return; }
+    if ((k === '?' || k === 'shift+?') && !typing) { e.preventDefault(); showShortcuts(); return; }
+    const btn = $$(document, `[data-dl-key="${k}"]`).find(visible);
+    if (btn) { e.preventDefault(); btn.click(); }
+  });
+
+  function initDevToggle(b) { b.addEventListener('click', () => setDevMode(!document.body.classList.contains('dl-dev'))); }
+
   /* ============================ BASIC ============================ */
   // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
   const TZ = () => document.documentElement.dataset.dlTz || 'Asia/Jakarta';
@@ -927,6 +990,7 @@
     document.querySelectorAll('[data-dl-counter]').forEach(initCounter);
     document.querySelectorAll('[data-dl-back]').forEach(initBack);
     document.querySelectorAll('[data-dl-notif]').forEach(initNotif);
+    document.querySelectorAll('[data-dl-devtoggle]').forEach(initDevToggle);
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.addEventListener('click', () => {

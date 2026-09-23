@@ -850,3 +850,18 @@ body.dl-page-body{overflow:auto;height:auto;min-height:100vh}
 .dl-error__actions{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
 .dl-errors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
 .dl-errors-grid .dl-error{padding:0}.dl-errors-grid .dl-error__card{max-width:none;box-shadow:none;height:100%}
+
+/* ================= GLOBAL BEHAVIORS (Part 4) ================= */
+.dl-devtoggle{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--dl-violet);background:var(--dl-dev-bg);color:var(--dl-dev-ink);border-radius:20px;padding:6px 12px;font-size:calc(12px * var(--dl-font-scale));font-weight:600;cursor:pointer;font-family:inherit}
+.dl-devtoggle.is-floating{position:fixed;left:12px;bottom:46px;z-index:190}
+.dl-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted);padding:8px 0;border-top:1px dashed var(--dl-border)}
+.dl-meta i{margin-right:3px}
+.dl-meta b{color:var(--dl-ink)}
+.dl-meta__dev{display:none;font-family:var(--dl-font-mono);color:var(--dl-violet)}
+body.dl-dev .dl-meta__dev{display:inline}
+.dl-keys{width:100%;border-collapse:collapse;font-size:calc(13px * var(--dl-font-scale))}
+.dl-keys td{padding:7px 4px;border-bottom:1px solid var(--dl-border-soft);color:var(--dl-ink)}
+.dl-keys td:first-child{white-space:nowrap;width:45%}
+.dl-keys kbd,.dl-demo kbd{background:var(--dl-code-bg);border:1px solid var(--dl-border);border-bottom-width:2px;border-radius:5px;padding:1px 7px;font-family:var(--dl-font-mono);font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-ink-strong)}
+form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--dl-amber);font-size:calc(12px * var(--dl-font-scale));font-weight:600}
+.dl-note{font-size:calc(13px * var(--dl-font-scale));color:var(--dl-ink);line-height:1.6;margin:0}

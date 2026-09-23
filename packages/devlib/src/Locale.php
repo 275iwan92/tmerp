@@ -12,6 +12,12 @@ final class Locale
     // Bahasa antarmuka aktif: id | en (tmerp: sec_user.lang_code).
     public static function lang(): string
     {
+        // Pilihan bahasa pengguna (cookie dari x-dl::lang-switch) mengalahkan bawaan aplikasi.
+        $cookie = request()?->cookie('dl_lang') ?? ($_COOKIE['dl_lang'] ?? null);
+        if (in_array($cookie, ['id', 'en'], true)) {
+            return $cookie;
+        }
+
         return config('devlib.lang', str_starts_with(app()->getLocale(), 'en') ? 'en' : 'id');
     }
 

@@ -6,6 +6,9 @@ return [
         ['login' => 'admin', 'password' => 'admin', 'name' => 'Administrator DevLib', 'email' => 'admin@devlib.test', 'role' => 'Administrator', 'developer' => true],
     ],
 
+    // Hak akses akun DevLib (Devlib\\Access). '*' = semua; 'po.*' = semua aksi PO.
+    'abilities' => ['po.*', 'devlib.*'],
+
     // Bahasa antarmuka bawaan (id | en); label tombol preset ikut ini.
     'lang' => env('DEVLIB_LANG', 'id'),
 

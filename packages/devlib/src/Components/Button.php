@@ -48,6 +48,12 @@ class Button extends DevlibComponent
         return 'x-dl::button '.($this->preset ? 'preset='.$this->preset.' ' : '').'variant='.$this->variant.' size='.$this->size;
     }
 
+    // Pintasan keyboard baku untuk preset tertentu.
+    public function shortcut(): ?string
+    {
+        return ['save' => 'ctrl+s', 'new' => 'alt+n'][$this->preset] ?? null;
+    }
+
     public function classes(): string
     {
         return 'dl-btn dl-btn--'.$this->variant.' dl-btn--'.$this->size.($this->block ? ' dl-btn--block' : '');
@@ -59,7 +65,7 @@ class Button extends DevlibComponent
             @if ($href)
                 <a href="{{ $href }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</a>
             @else
-                <button type="{{ $type }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</button>
+                <button type="{{ $type }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif @if ($shortcut()) data-dl-key="{{ $shortcut() }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</button>
             @endif
             BLADE;
     }

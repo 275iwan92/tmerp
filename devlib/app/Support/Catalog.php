@@ -51,7 +51,7 @@ final class Catalog
                 'pages' => self::smallCategories(),
                 'files' => ['Mockup' => ['bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html']]],
             ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'pages' => self::feedbackCategories(), 'files' => []],
-            ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'files' => []],
+            ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'pages' => self::behaviorCategories(), 'files' => []],
             ['code' => 'P5', 'label' => '5 · Big Components', 'icon' => 'fa-solid fa-table-list',
                 'pages' => ['form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                     'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
@@ -161,6 +161,26 @@ final class Catalog
             [$label, $icon, $members] = $cat;
             $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'part' => '3 · Feedback & States',
                 'classes' => array_values(array_unique(array_merge([], ...array_column($members, 1)))), 'mockup' => $cat[3] ?? null];
+        }
+
+        return $out;
+    }
+
+    public static function behaviorCategories(): array
+    {
+        $c = fn (...$cls) => array_map(fn ($x) => 'Devlib\\Components\\'.$x, $cls);
+        $cats = [
+            'p4-developer' => ['Developer Mode', 'fa-solid fa-bug', ['dev-mode' => ['Developer Mode', $c('DevToggle')]]],
+            'p4-guard' => ['Dirty Guard', 'fa-solid fa-shield-halved', ['dirty-guard' => ['Dirty Guard', $c('Form', 'BackButton')]]],
+            'p4-shortcuts' => ['Keyboard Shortcuts', 'fa-solid fa-keyboard', ['shortcuts' => ['Shortcuts', $c('Button')]]],
+            'p4-permissions' => ['Permissions', 'fa-solid fa-user-lock', ['permissions' => ['can="..." di semua komponen', $c('DevlibComponent')]]],
+            'p4-i18n' => ['Multi-language', 'fa-solid fa-language', ['i18n' => ['ID / EN', $c('LangSwitch', 'LangText')]]],
+            'p4-metadata' => ['Metadata', 'fa-solid fa-circle-info', ['metadata' => ['Dibuat / diubah oleh', $c('Meta')]]],
+        ];
+        $out = [];
+        foreach ($cats as $slug => [$label, $icon, $members]) {
+            $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'part' => '4 · Global Behaviors',
+                'classes' => array_values(array_unique(array_merge([], ...array_column($members, 1)))), 'mockup' => null];
         }
 
         return $out;

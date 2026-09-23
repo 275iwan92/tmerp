@@ -13,6 +13,7 @@ class Form extends DevlibComponent
         public ?string $extraAction = null,
         public string $extraIcon = '📱',
         public bool $footer = true,
+        public bool $guard = true,
     ) {}
 
     public function tag(): string
@@ -23,7 +24,7 @@ class Form extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <form {{ $attributes->class('dl-form') }} {!! $dl() !!} method="{{ $method === 'GET' ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif data-dl-form novalidate>
+            <form {{ $attributes->class('dl-form') }} {!! $dl() !!} method="{{ $method === 'GET' ? 'GET' : 'POST' }}" @if ($action) action="{{ $action }}" @endif data-dl-form @if ($guard) data-dl-guard @endif novalidate>
                 @if ($method !== 'GET')
                     @csrf
                 @endif

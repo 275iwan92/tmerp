@@ -28,6 +28,34 @@ abstract class DevlibComponent extends Component
         return implode(' ← ', $chain);
     }
 
+    // Hak akses: atribut can="modul.aksi" di komponen mana pun; tanpa hak = tidak dirender.
+    // Urutan Laravel: shouldRender() -> withAttributes() -> render tampilan. Atribut can hanya
+    // ada di withAttributes(), jadi ditangkap di sana dan dicek saat tampilan dirender.
+    protected ?string $ability = null;
+
+    public function withAttributes(array $attributes)
+    {
+        if (array_key_exists('can', $attributes)) {
+            $this->ability = (string) $attributes['can'];
+            unset($attributes['can']);
+        }
+
+        return parent::withAttributes($attributes);
+    }
+
+    public function resolveView()
+    {
+        $view = parent::resolveView();
+
+        return function (array $data = []) use ($view) {
+            if ($this->ability !== null && ! \Devlib\Access::can($this->ability)) {
+                return new \Illuminate\Support\HtmlString('');
+            }
+
+            return $view instanceof \Closure ? $view($data) : $view;
+        };
+    }
+
     // Dipakai di elemen akar view: <div {!! $dl() !!}>.
     public function dl(): string
     {
