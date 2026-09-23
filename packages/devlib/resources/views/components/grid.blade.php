@@ -31,6 +31,7 @@
                     <x-dl::button variant="link" label="Kembalikan ke bawaan" data-g-density-reset />
                 </div>
             </div>
+            @if ($cards)<div class="dl-segment" data-g-view><button type="button" class="dl-segment__opt is-active" data-value="table" title="Tampilan tabel"><i class="fa-solid fa-table-list"></i></button><button type="button" class="dl-segment__opt" data-value="cards" title="Tampilan kartu"><i class="fa-solid fa-grip"></i></button></div>@endif
             <x-dl::button variant="secondary" size="sm" icon="export" label="Export" data-g-export title="Export CSV = kolom yang sedang tampil (atur dulu lewat Kolom)" />
             @if ($newRecord)<x-dl::button preset="new" size="sm" data-g-new :label="$newRecord" />@endif
         </div>
@@ -41,6 +42,7 @@
             @foreach ($bulk as $b)<x-dl::button variant="{{ $b['variant'] ?? 'secondary' }}" size="sm" :icon="$b['icon'] ?? null" :label="$b['label']" data-g-bulk-action="{{ $b['key'] }}" :data-dl-confirm="$b['confirm'] ?? null" />@endforeach
             <x-dl::button variant="ghost" size="sm" label="Batal pilih" data-g-select-none />
         </div>
+        <div class="dl-grid__cards" data-g-cards hidden></div>
         <div class="dl-grid__wrap"><table class="dl-grid__table"><thead data-g-head></thead><tbody data-g-body></tbody><tfoot data-g-foot></tfoot></table></div>
         <div data-g-pager></div>
     </div>

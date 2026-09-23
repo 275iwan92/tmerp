@@ -159,6 +159,63 @@ final class DemoData
         return $d;
     }
 
+    // Ringkasan per supplier dari PO (untuk drill-down).
+    public static function supplierSummary(): array
+    {
+        $out = [];
+        foreach (self::purchaseOrders() as $p) {
+            $k = $p['supplier'];
+            $out[$k] ??= ['id' => $k, 'name' => $k, 'po' => 0, 'items' => 0, 'total' => 0, 'open' => 0];
+            $out[$k]['po']++;
+            $out[$k]['items'] += $p['items'];
+            $out[$k]['total'] += $p['total'];
+            $out[$k]['open'] += in_array($p['status'], ['DRAFT', 'SUBMITTED', 'APPROVED']) ? 1 : 0;
+        }
+
+        return array_values($out);
+    }
+
+    // Gambar produk contoh: kotak isometrik SVG (data URI) -- tanpa foto nyata.
+    public static function boxImage(string $hex, string $label): string
+    {
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#f1f4f9"/>'
+            .'<polygon points="60,18 100,38 60,58 20,38" fill="'.$hex.'" opacity=".55"/><polygon points="20,38 60,58 60,104 20,84" fill="'.$hex.'"/>'
+            .'<polygon points="60,58 100,38 100,84 60,104" fill="'.$hex.'" opacity=".78"/><text x="40" y="76" font-family="Arial" font-size="9" fill="#fff" font-weight="700">'.htmlspecialchars($label).'</text></svg>';
+
+        return 'data:image/svg+xml;base64,'.base64_encode($svg);
+    }
+
+    // Produk jadi contoh (grid foto / mix component).
+    public static function products(): array
+    {
+        $names = [['Box Snack 200g', 'Box'], ['Sleeve Teh Celup', 'Sleeve'], ['Dus Obat Herbal', 'Box'], ['Label Botol Saus', 'Label'], ['Kotak Kosmetik', 'Box'], ['Pouch Kopi Sachet', 'Pouch'],
+            ['Karton Master 12in1', 'Karton'], ['Hang Tag Baju', 'Tag'], ['Box Parcel Lebaran', 'Box'], ['Sleeve Cup Es Krim', 'Sleeve'], ['Kotak Sepatu Anak', 'Box'], ['Label Madu 500ml', 'Label']];
+        $colors = ['Box' => '#2f6fed', 'Sleeve' => '#22b07d', 'Label' => '#e5a324', 'Pouch' => '#8b5cf6', 'Karton' => '#b6852a', 'Tag' => '#d0453f'];
+        $out = [];
+        foreach ($names as $i => [$n, $cat]) {
+            $out[] = ['id' => $i + 1, 'name' => $n, 'code' => sprintf('FG-%04d', 101 + $i), 'category' => $cat, 'image' => self::boxImage($colors[$cat], strtoupper(substr($cat, 0, 3))),
+                'price' => 150 + $i * 45, 'stock_pct' => (17 * $i + 23) % 100, 'rating' => 3 + ($i % 3) * 0.5 + ($i % 2) * 0.5, 'active' => $i % 5 !== 3,
+                'trend' => array_map(fn ($k) => 40 + (($i * 13 + $k * 7) % 30) + ($i % 2 ? $k * 3 : -$k * 2), range(0, 7)), 'status' => $i % 5 === 3 ? 'NONAKTIF' : ($i % 4 === 0 ? 'BARU' : 'AKTIF')];
+        }
+
+        return $out;
+    }
+
+    // Work order contoh dengan tahapan produksi (grid status bar).
+    public static function workOrders(): array
+    {
+        $steps = ['Plat', 'Cetak', 'Laminasi', 'Pond', 'Lem', 'QC', 'Kirim'];
+        $out = [];
+        foreach (self::products() as $i => $p) {
+            $at = ($i * 3) % count($steps);
+            $out[] = ['id' => $i + 1, 'wo' => sprintf('WO-2609-%04d', 200 + $i), 'product' => $p['name'], 'qty' => 5000 + $i * 1250, 'stage' => $steps[$at],
+                'progress' => (int) round(($at + 0.5) / count($steps) * 100), 'due' => date('Y-m-d', strtotime('2026-09-24 +'.($i % 9).' days')),
+                'status' => $at === 6 ? 'SELESAI' : ($i % 5 === 2 ? 'TERLAMBAT' : 'JALAN')];
+        }
+
+        return $out;
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];
