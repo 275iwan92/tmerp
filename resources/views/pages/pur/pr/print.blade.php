@@ -112,7 +112,7 @@ new #[Title('Purchase Requisition — TELASIH MAKMUR ERP')] class extends Compon
         <x-print.signatures>
             <x-print.signature company="Diajukan oleh" role="{{ $this->pr->department?->department_name ?? 'Departemen' }}"
                 name="{{ $this->pr->created_by ?? '—' }}" sub="Requester" />
-            <x-print.signature company="{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="{{ \App\Support\Branding\Brand::companyName() }}"
                 role="Approval" name="( ................................. )" sub="Kepala Purchasing/Direksi" />
         </x-print.signatures>
 

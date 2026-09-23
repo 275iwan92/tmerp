@@ -2,6 +2,7 @@
 
 namespace App\Services\Dispatch;
 
+use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\DoLine;
@@ -29,6 +30,9 @@ class DispatchService
         DB::connection('tm2sdi')->transaction(function () use ($do, $coDeliveryIds, $actingUser, &$errors) {
             $existing = DoLine::where('delivery_id', $do->id_delivery)->pluck('co_delivery_id')->filter()->all();
             $nextSeq = ((int) DoLine::where('delivery_id', $do->id_delivery)->max('line_no')) + 1;
+            // Flag PPN DO ikut CO-nya (backlog01 UI-09): baris pertama menentukan,
+            // CO dengan status PPN berbeda ditolak -- 1 DO tidak boleh campur.
+            $hasLines = ! empty($existing);
 
             foreach ($coDeliveryIds as $coDeliveryId) {
                 if (in_array((int) $coDeliveryId, $existing, true)) {
@@ -64,6 +68,17 @@ class DispatchService
                     $errors[] = "{$row->co_no} — {$row->item_description}: qty sudah habis terserap.";
 
                     continue;
+                }
+
+                $coPpn = (bool) CoOrder::whereKey($row->co_order_id)->value('is_ppn');
+                if ($hasLines && $coPpn !== (bool) $do->is_ppn) {
+                    $errors[] = "{$row->co_no} ".($coPpn ? 'PPN' : 'Non PPN').' -- dokumen ini '.($do->is_ppn ? 'PPN' : 'Non PPN').'; tidak boleh dicampur dalam 1 DO.';
+
+                    continue;
+                }
+                if (! $hasLines) {
+                    $do->update(['is_ppn' => $coPpn]);
+                    $hasLines = true;
                 }
 
                 $qtyDo = min((float) $row->qty_available, (float) $row->ship_qty);

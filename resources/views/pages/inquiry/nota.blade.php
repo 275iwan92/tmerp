@@ -107,6 +107,7 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
      print) tapi lewat class modifier `.bw` + rule CSS lokal di bawah -- pola
      sama seperti versi asli sebelum diekstrak. --}}
 <x-print.document
+    :ppn="$this->inquiry->tax_scheme === 'PPN'"
     :theme="['accent' => '#0d5c46', 'accent-soft' => '#eaf3f0']"
     class="{{ $this->bw ? 'bw' : '' }}"
     info="{{ $this->inquiry->inquiry_no }} · {{ $this->inquiry->parts->count() }} part · {{ $this->inquiry->tiers->count() }} jenjang qty">
@@ -118,7 +119,7 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
 
     {{-- ================= HALAMAN 1 ================= --}}
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="NOTA INQUIRY" :doc-no="$this->inquiry->inquiry_no">
+        <x-print.header :company="$this->company" :ppn="$this->inquiry->tax_scheme === 'PPN'" doc-title="NOTA INQUIRY" :doc-no="$this->inquiry->inquiry_no">
             <x-slot:meta>
                 {{ $this->inquiry->inquiry_date?->translatedFormat('d F Y') }}
                 @if ($this->inquiry->revision_no > 0) · Rev. {{ str_pad($this->inquiry->revision_no, 2, '0', STR_PAD_LEFT) }} @endif

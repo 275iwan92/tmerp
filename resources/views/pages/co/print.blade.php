@@ -133,11 +133,11 @@ new #[Title('Nota Customer Order — TELASIH MAKMUR ERP')] class extends Compone
 
         <x-print.signatures>
             <x-slot:intro>
-                Nota ini adalah konfirmasi resmi pesanan setelah CO dikonfirmasi oleh {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}.
+                Nota ini adalah konfirmasi resmi pesanan setelah CO dikonfirmasi oleh {{ \App\Support\Branding\Brand::companyName() }}.
                 Mohon simpan dokumen ini sebagai acuan pengiriman &amp; penagihan.
             </x-slot:intro>
 
-            <x-print.signature company="Dikonfirmasi oleh, {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="Dikonfirmasi oleh, {{ \App\Support\Branding\Brand::companyName() }}"
                 role="Sales" name="{{ $this->order->updated_by ?? '—' }}" sub="Order Confirmed" />
             <x-print.signature company="Diterima &amp; disetujui oleh" role="Customer"
                 name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />

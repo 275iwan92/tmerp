@@ -19,7 +19,7 @@ class DoDelivery extends Model
     protected $primaryKey = 'id_delivery';
 
     protected $fillable = [
-        'do_no', 'do_type', 'do_date',
+        'do_no', 'do_type', 'is_ppn', 'do_date',
         'customer_id', 'supplier_id', 'pr_id', 'ref_part_id', 'subcon_process', 'ship_area_id', 'ship_area_level', 'ship_address_label', 'ship_address_detail', 'ship_postal_code',
         'scheduled_ship_date', 'actual_ship_date',
         'status',
@@ -33,6 +33,7 @@ class DoDelivery extends Model
         'scheduled_ship_date' => 'date',
         'actual_ship_date' => 'datetime',
         'price_change_flag' => 'boolean',
+        'is_ppn' => 'boolean',
     ];
 
     public function lines(): HasMany

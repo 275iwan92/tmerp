@@ -120,7 +120,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </x-print.party>
             <x-print.party label="DARI">
-                <div class="nm">{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
+                <div class="nm">{{ \App\Support\Branding\Brand::companyName() }}</div>
                 <div class="dt">
                     PIC Sales: <b>{{ $this->quotation->issued_by ?? '—' }}</b><br>
                     Mata Uang: <b>{{ $this->quotation->currency_code }}</b> · Skema Pajak:
@@ -250,15 +250,15 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
 
         <x-print.signatures>
             <x-slot:intro>
-                Penawaran ini diterbitkan secara resmi oleh {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}.
+                Penawaran ini diterbitkan secara resmi oleh {{ \App\Support\Branding\Brand::companyName() }}.
                 Untuk melanjutkan ke pesanan produksi, mohon terbitkan Purchase Order dengan mengacu nomor quotation
                 <b>{{ $this->quotation->quotation_no }}</b>, atau tandatangani kolom persetujuan customer
                 di bawah dan kirim kembali sebelum masa berlaku berakhir.
             </x-slot:intro>
 
-            <x-print.signature company="Hormat kami, {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="Hormat kami, {{ \App\Support\Branding\Brand::companyName() }}"
                 role="Direksi" name="( ................................. )" sub="Authorized signatory &amp; stempel" />
-            <x-print.signature company="{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="{{ \App\Support\Branding\Brand::companyName() }}"
                 role="Disiapkan" name="{{ $this->quotation->issued_by ?? '—' }}" sub="Sales Executive" />
             <x-print.signature company="Disetujui oleh customer" role="Customer"
                 name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />

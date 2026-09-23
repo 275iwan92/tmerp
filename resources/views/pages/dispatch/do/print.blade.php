@@ -57,13 +57,13 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->do->do_no }} · {{ $this->do->status }}">
+<x-print.document :ppn="$this->do->is_ppn" :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->do->do_no }} · {{ $this->do->status }}">
     <x-slot:toolbar>
         <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc" data-back>← Kembali ke DO</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="DELIVERY ORDER" :doc-no="$this->do->do_no">
+        <x-print.header :company="$this->company" :ppn="$this->do->is_ppn" doc-title="DELIVERY ORDER" :doc-no="$this->do->do_no">
             <x-slot:meta>
                 Tanggal DO: {{ $this->do->do_date?->translatedFormat('d F Y') }}
                 @if ($this->do->actual_ship_date) · Terkirim: {{ $this->do->actual_ship_date->translatedFormat('d F Y') }} @endif
@@ -82,7 +82,7 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </x-print.party>
             <x-print.party label="DIKIRIM DARI">
-                <div class="nm">{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
+                <div class="nm"><x-print.company-name :ppn="$this->do->is_ppn" /></div>
                 <div class="dt">Status: <b>{{ $this->do->status }}</b></div>
             </x-print.party>
         </x-print.parties>
@@ -124,7 +124,7 @@ new #[Title('Delivery Order — TELASIH MAKMUR ERP')] class extends Component
         </x-print.section>
 
         <x-print.signatures>
-            <x-print.signature company="{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}" role="Disiapkan"
+            <x-print.signature :company-ppn="$this->do->is_ppn" role="Disiapkan"
                 name="( ................................. )" sub="Admin Sales / Dispatch" />
             <x-print.signature role="Diperiksa" name="( ................................. )" sub="Kepala Gudang" />
         </x-print.signatures>

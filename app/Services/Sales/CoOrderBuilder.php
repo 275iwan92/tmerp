@@ -47,6 +47,7 @@ class CoOrderBuilder
                 'sales_person_id' => self::resolveSalesPerson($primaryInquiry?->pic_sales),
                 'payment_term' => $quotation->payment_term,
                 'currency_code' => $quotation->currency_code,
+                'is_ppn' => self::defaultPpn($primaryInquiry, $quotation->customer_id),
                 'discount_doc_pct' => $primaryInquiry?->discount_doc_value,
                 'discount_qty_pct' => $primaryInquiry?->discount_qty_value,
                 'doc_status' => 'DRAFT',
@@ -100,6 +101,17 @@ class CoOrderBuilder
         });
     }
 
+    // Flag PPN awal CO (backlog01 UI-09): dari Inquiry asal kalau ada, kalau tidak
+    // dari profil pajak customer. Boleh diubah user selama CO masih DRAFT.
+    private static function defaultPpn($inquiry, $customerId): bool
+    {
+        if ($inquiry) {
+            return $inquiry->tax_scheme === 'PPN';
+        }
+
+        return CustCustomer::whereKey($customerId)->value('tax_profile') === 'PPN_11';
+    }
+
     // MODE INSTANT (keputusan user 2026-09-21): CO lahir langsung dari grid tanpa
     // Quotation -- meniru alur manual ScriptCase V1 & kebiasaan order verbal yang
     // masih hidup. Bedanya cuma JALUR INPUT: dokumen, validasi lanjutan, dan
@@ -117,6 +129,7 @@ class CoOrderBuilder
             'sales_person_id' => $salesPersonId,
             'payment_term' => $customer->payment_term,
             'currency_code' => $customer->currency_code ?: 'IDR',
+            'is_ppn' => $customer->tax_profile === 'PPN_11',
             'ship_address_detail' => $customer->default_address,
             'doc_status' => 'DRAFT',
             'created_by' => $login,

@@ -17,6 +17,8 @@
 @props([
     'theme' => [],
     'printLabel' => '🖶 Cetak / Simpan PDF',
+    // true = dokumen ber-PPN: muncul pilihan kop Non PPN / PPN (backlog01 UI-09).
+    'ppn' => false,
 ])
 @php
     $defaultTheme = [
@@ -26,9 +28,17 @@
     $vars = array_merge($defaultTheme, $theme);
     $styleVars = collect($vars)->map(fn ($v, $k) => "--print-{$k}:{$v}")->implode(';');
 @endphp
-<div {{ $attributes->merge(['class' => 'print-doc']) }} style="{{ $styleVars }}">
+{{-- Pilihan kop hanya di layar (bar tidak ikut tercetak) & tidak disimpan: Non PPN =
+     nama perusahaan, PPN = nama terdaftar + NPWP. Keputusan user 2026-09-23. --}}
+<div {{ $attributes->merge(['class' => 'print-doc']) }} style="{{ $styleVars }}" @if ($ppn) x-data="{ ppnKop: false }" @endif>
     <div class="print-bar">
         <button type="button" onclick="window.print()" class="pr">{{ $printLabel }}</button>
+        @if ($ppn)
+            <span class="kop-choice" role="group" aria-label="Kop dokumen">
+                <button type="button" :class="! ppnKop && 'on'" @click="ppnKop = false">Non PPN</button>
+                <button type="button" :class="ppnKop && 'on'" @click="ppnKop = true">PPN</button>
+            </span>
+        @endif
         {{ $toolbar ?? '' }}
         <span class="info">{{ $info ?? '' }}</span>
     </div>
@@ -48,6 +58,10 @@
                     cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
         .print-doc .print-bar .pr{background:var(--print-accent);color:#fff}
         .print-doc .print-bar .sc{background:#fff;color:var(--print-ink);border:1px solid var(--print-line)}
+        .print-doc .print-bar .kop-choice{display:inline-flex;background:#fff;border:1px solid var(--print-line);border-radius:6px;padding:2px;gap:2px}
+        .print-doc .print-bar .kop-choice button{background:transparent;color:var(--print-ink);padding:6px 14px}
+        .print-doc .print-bar .kop-choice button.on{background:var(--print-accent);color:#fff}
+        .print-doc .print-kop .co-npwp{font-size:7.6pt;color:var(--print-ink);margin-top:2px;font-weight:600}
         .print-doc .print-bar .info{color:#fff;font-size:8.5pt;margin-left:auto;opacity:.9}
 
         .print-doc .print-page{width:210mm;min-height:297mm;margin:0 auto 18px;background:#fff;

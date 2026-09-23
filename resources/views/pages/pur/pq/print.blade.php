@@ -131,7 +131,7 @@ new #[Title('Purchase Quotation — TELASIH MAKMUR ERP')] class extends Componen
         <x-print.signatures>
             <x-print.signature company="Dicatat oleh" role="Purchasing"
                 name="{{ $this->pq->created_by ?? '—' }}" sub="Dibuat" />
-            <x-print.signature company="{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="{{ \App\Support\Branding\Brand::companyName() }}"
                 role="Konfirmasi" name="( ................................. )" sub="Kepala Purchasing" />
         </x-print.signatures>
 

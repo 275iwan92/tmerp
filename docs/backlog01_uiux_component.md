@@ -33,7 +33,6 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-06 | Navigasi keyboard di grid | 🔴 KEPUTUSAN | Enter = buka baris, atau buka menu aksi sel? | Terbesar dari agenda grid |
 | UI-07 | Field teks bebas yang seharusnya lookup master | 🔴 KEPUTUSAN | 3 pertanyaan (Peran Part, Material Role BOP, Master Bank) | Lihat detail |
 | UI-08 | Input di dalam sel tabel (`x-form.cell-input`) | 🔴 KEPUTUSAN | Setujui bentuk komponennya | ±25 input mentah di grid editable |
-| UI-09 | Kop cetak: "Telasih Makmur" vs "CV Langgeng Jaya Makmur" ikut PPN | 🔴 KEPUTUSAN | 3 pertanyaan desain (sumber PPN, override, helper) | Semua cetakan saat ini "CV Langgeng" |
 | UI-10 | Panel Filament `/admin`: klik sidebar saat modal terbuka | 🔴 KEPUTUSAN | 3 pertanyaan (auto-save draft) | Mitigasi sementara sudah terpasang |
 | UI-11 | Pindah modul lain ke Filament `/admin` | 🔴 KEPUTUSAN | Modul mana & kapan | Baru HRM (2 Resource + 1 Page) |
 | UI-12 | Filter dropdown toolbar yang dulu dihapus | 🔴 KEPUTUSAN | Dikembalikan atau tidak? | tipe/kategori/divisi/dimensi/sembunyikan-nonaktif |
@@ -43,6 +42,8 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-16 | Grid spreadsheet: panah, multi-sel, tanda "berubah", undo | ⚪ IDE | — | `spreadsheetgridstandard.md` §8 |
 | UI-17 | Edit tampilan nota lewat GUI (WYSIWYG) | ⚪ IDE | — | `printnotastandard.md` §8 |
 | UI-18 | Kategori `sys_constant_category` baru (mis. HRM) | ⚪ IDE | Tambah saat ada konstanta baru | Sekarang 5 kategori |
+| UI-19 | Layar cetak SPB/Penerimaan, Invoice Penjualan, Pembayaran Pembelian — dengan pilihan kop Non PPN/PPN | 🟡 SIAP | — (mekanisme kop PPN sudah ada) | Ketiga layar cetak belum ada; pakai `x-print.* :ppn` |
+| UI-20 | NPWP asli + alamat/telepon perusahaan di kop | 🔴 KEPUTUSAN | **Data dari Anda**: NPWP CV. Langgeng Jaya Makmur, alamat, telepon | Sekarang NPWP dummy `00.000.000.0-000.000` (`org_company`) |
 
 ---
 
@@ -92,11 +93,6 @@ Tombol: panah, Home/End, Ctrl+Home/End, PageUp/Down, Enter, Esc, Ctrl+C + panel 
 ### UI-08 — `x-form.cell-input`  🔴
 Input di dalam sel grid editable (mps-spreadsheet, dst) perlu versi ringkas dengan badge huruf. Bentuk komponen belum disetujui.
 
-### UI-09 — Kop cetak ikut PPN  🔴
-Aturan user: dokumen yang **mengandung PPN** → "CV Langgeng Jaya Makmur", lainnya → "Telasih Makmur", **bisa di-override user**. Sekarang semua cetakan memakai nama legal (1 baris `org_company`).
-Sinyal PPN tidak seragam per dokumen: Inquiry `tax_scheme` (PPN/NON_PPN) · Costing `ppn_mode` · Quotation `tax_scheme` (**EXCL/INCL — arti beda!**) · CO & DO **tidak punya kolom** · PO `c_ppn` (nominal) · PR/PQ/PRT tidak ada (selalu Telasih) · Invoice `tax_amount` (belum ada cetakan) · Voucher `ppn_type` · Customer `tax_profile`.
-**Pertanyaan:** (1) sumber kebenaran PPN per jenis dokumen (kolom sendiri vs warisan induk)? (2) override per dokumen (kolom baru) atau tombol di layar cetak? (3) setuju satu helper terpusat `hasPpn()` + kolom nickname di `org_company`? Setelah dieksekusi, perbarui `configurationstandard.md` §233-236.
-
 ### UI-10 — Filament: klik sidebar saat modal terbuka  🔴
 Penyebab: pola `ManageRecords --simple` membuka form sebagai modal ber-backdrop di atas sidebar (bawaan Filament). Mitigasi sudah ada (klik di luar tidak menutup form). Arah yang disetujui prinsip: auto-save draft ala SAP Fiori. **Pertanyaan:** (1) berlaku semua Resource atau tertentu? (2) pindah ke halaman Create/Edit terpisah? (3) mekanisme draft (trigger, penanda draft/final, 2 tab bersamaan)?
 
@@ -111,3 +107,9 @@ Pola & gotcha ada di `admindashboardstandard.md` §6. Jangan mulai tanpa arahan 
 
 ### UI-14 — Visual tema Filament  🔴
 Mekanisme terverifikasi via HTTP kernel; tampilan tiap mode belum dilihat di browser sungguhan (butuh login Anda).
+
+### UI-19 — Tiga layar cetak dokumen ber-PPN  🟡
+SPB/Penerimaan Barang (`pur/pv`), Invoice Penjualan (`fin_invoice`/`dp-invoice`), Pembayaran Pembelian (`fin_voucher`) belum punya layar cetak. Keputusan user 2026-09-23: dokumen ber-PPN diberi pilihan kop Non PPN (default, "Telasih Makmur") / PPN ("CV. Langgeng Jaya Makmur" + NPWP), hanya saat cetak/preview. Mekanisme siap: `x-print.document :ppn` + `x-print.header :ppn` (`printnotastandard.md` §3a). Sumber flag PPN tiap dokumen ditentukan saat layarnya dibangun (Voucher `ppn_type`, Invoice `tax_amount`).
+
+### UI-20 — NPWP & identitas perusahaan di kop  🔴
+`tm2mst.org_company` (baris TM): `npwp_number` diisi dummy `00.000.000.0-000.000` (pola nol sengaja jelas palsu, izin user) supaya tampilan kop PPN sudah jadi; `address`/`phone` masih kosong (kop menampilkan "—"). Ganti dengan data asli begitu user kirim — tidak perlu ubah kode.

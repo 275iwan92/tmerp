@@ -154,6 +154,23 @@ multi-company) tetap di `tm2mst.org_company`, **tidak disentuh** oleh
 Configuration. APP_NAME murni identitas produk/aplikasi (contoh: "ERP TM"),
 tampil di topbar shell lama, halaman login, dan brand Filament `/admin`.
 
+**Nama perusahaan vs nama terdaftar (keputusan user 2026-09-23, MENGGANTIKAN
+aturan lama "kop dokumen selalu nama legal"):** dua konstanta `sys_constant`
+kategori BRANDING, grup COMPANY -- `COMPANY_NAME` = "Telasih Makmur" dan
+`COMPANY_LEGAL_NAME` = "CV. Langgeng Jaya Makmur" (dibaca lewat
+`Brand::companyName()` / `Brand::companyLegalName()`). **Seluruh aplikasi &
+semua cetakan memakai COMPANY_NAME.** Dokumen ber-PPN (saat ini: Delivery
+Order, Surat Jalan, Nota Inquiry; menyusul SPB, Invoice Penjualan, Pembayaran
+Pembelian) punya pilihan di layar preview cetak **Non PPN (default) / PPN**;
+PPN = kop COMPANY_LEGAL_NAME + NPWP (`org_company.npwp_number`) a.n. nama
+terdaftar. Pilihan hanya untuk cetak/preview, TIDAK disimpan. Mekanisme:
+`x-print.document :ppn` + `x-print.header :ppn` + `x-print.company-name`
+(`docs/printnotastandard.md`). Flag PPN dokumen: `co_order.is_ppn` (default
+dari Inquiry asal / profil pajak customer, boleh diubah saat CO DRAFT) ->
+`do_delivery.is_ppn` ikut CO-nya; 1 DO tidak boleh mencampur CO PPN & Non PPN.
+`org_company` tetap sumber alamat/telepon/NPWP -- `company_name`-nya tidak
+lagi dipakai untuk tampilan.
+
 ### 3.2 Language
 
 Lihat §2.3. Grid spreadsheet-editable (code/name/decimal_separator/
@@ -231,8 +248,8 @@ PDF footer (`exports/generic-grid-pdf.blade.php`) dan email
 `verify-email.blade.php` — flag ini kalau diminta eksplisit nanti.
 `layouts::portal.blade.php` (portal karir eksternal) **sengaja TIDAK
 disentuh** — "Telasih Makmur" di situ representasi NICKNAME company ke
-calon karyawan/customer eksternal (nama legal terdaftar: **CV. Langgeng
-Jaya Makmur**, `org_company.company_name` — dikoreksi 2026-09-02),
+calon karyawan/customer eksternal (nama terdaftar **CV. Langgeng
+Jaya Makmur** = konstanta `COMPANY_LEGAL_NAME`, lihat §3.1 — 2026-09-23),
 konsepnya beda dari APP_NAME aplikasi internal, jangan digabung.
 
 ---

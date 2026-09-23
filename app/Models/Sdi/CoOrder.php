@@ -26,6 +26,7 @@ class CoOrder extends Model
         'sales_person_id',
         'payment_term',
         'currency_code',
+        'is_ppn',
         'customer_po_no',
         'ship_area_id',
         'ship_area_level',
@@ -45,6 +46,7 @@ class CoOrder extends Model
 
     protected $casts = [
         'co_date' => 'date',
+        'is_ppn' => 'boolean',
         'share_expires_at' => 'datetime',
         'shared_at' => 'datetime',
         'discount_doc_pct' => 'decimal:2',

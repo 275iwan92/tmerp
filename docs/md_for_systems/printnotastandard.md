@@ -102,6 +102,20 @@ menempel ke class generik `.print-doc` (lihat §5).
 
 ---
 
+## 3a. NAMA PERUSAHAAN, PILIHAN KOP PPN & ANGKA RATA KANAN (2026-09-23)
+
+- Nama di kop/badan/tanda tangan **selalu** `Brand::companyName()` (konstanta
+  `COMPANY_NAME`, "Telasih Makmur") -- jangan pakai `$company->company_name`.
+  Detail keputusan: `configurationstandard.md` §3.1.
+- Dokumen ber-PPN: pasang `:ppn="<bool>"` di **`x-print.document` DAN
+  `x-print.header`**. Bar cetak menampilkan pilihan **Non PPN (default) / PPN**
+  (tidak ikut tercetak, tidak disimpan). PPN = `COMPANY_LEGAL_NAME` + baris NPWP.
+- Nama perusahaan di badan dokumen/pengirim dokumen ber-PPN: `x-print.company-name
+  :ppn`; di tanda tangan: `x-print.signature :company-ppn="<bool>"` (bukan
+  `company="..."`) supaya ikut pilihan kop.
+- Kolom angka (qty, harga, subtotal): class `num` di judul kolom & sel
+  (`componentstandard.md` §5).
+
 ## 4. TEMA WARNA — prop `theme`, bukan class per dokumen
 
 Tiap dokumen boleh punya warna identitas sendiri (Nota Inquiry hijau,

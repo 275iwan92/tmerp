@@ -141,13 +141,13 @@ new #[Title('Purchase Order — TELASIH MAKMUR ERP')] class extends Component
 
         <x-print.signatures>
             <x-slot:intro>
-                Purchase Order ini diterbitkan resmi oleh {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}.
+                Purchase Order ini diterbitkan resmi oleh {{ \App\Support\Branding\Brand::companyName() }}.
                 Mohon konfirmasi ketersediaan &amp; jadwal pengiriman kepada PIC Purchasing kami.
             </x-slot:intro>
 
-            <x-print.signature company="Diterbitkan oleh, {{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="Diterbitkan oleh, {{ \App\Support\Branding\Brand::companyName() }}"
                 role="Purchasing" name="{{ $this->po->created_by ?? '—' }}" sub="Dibuat" />
-            <x-print.signature company="{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}"
+            <x-print.signature company="{{ \App\Support\Branding\Brand::companyName() }}"
                 role="Approval" name="( ................................. )" sub="Kepala Purchasing/Direksi" />
             <x-print.signature company="Diterima &amp; disetujui oleh" role="Supplier"
                 name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />

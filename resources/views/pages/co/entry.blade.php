@@ -116,7 +116,7 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
             return;
         }
 
-        $allowed = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term'];
+        $allowed = ['co_date', 'customer_po_no', 'ship_address_detail', 'discount_qty_pct', 'notes', 'sales_person_id', 'payment_term', 'is_ppn'];
 
         if (! in_array($field, $allowed, true)) {
             return;
@@ -480,7 +480,10 @@ new #[Title('Customer Order — Entry — TELASIH MAKMUR ERP')] class extends Co
                                 <option value="{{ $pt->payment_term_code }}" @selected($this->order->payment_term === $pt->payment_term_code)>{{ $pt->term_label }}</option>
                             @endforeach
                         </x-form.select>
-                        <div></div>
+                        {{-- Flag PPN (backlog01 UI-09): default dari Inquiry/customer; Surat Jalan & DO ikut flag ini. --}}
+                        <x-form.select label="Pajak" :disabled="$this->order->doc_status !== 'DRAFT'" :placeholder="false"
+                            :options="['1' => 'PPN', '0' => 'Non PPN']" :selected="$this->order->is_ppn ? '1' : '0'"
+                            wire:change="updateHeader('is_ppn', $event.target.value)" class="disabled:bg-surface-alt" />
 
                         <div class="col-span-3">
                             <label class="text-[10px] text-muted uppercase font-semibold block mb-1">Shipment Location</label>

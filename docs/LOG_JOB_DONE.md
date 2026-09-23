@@ -496,6 +496,17 @@ identik sebelum/sesudah).
 - **Angka rata kanan, teks rata kiri**: aturan tabel global dipindah ke
   `@layer base` (dulu mematikan text-right/px-* di semua sel), class `num`
   dipasang per kolom di 7 nota cetak + payroll + Master Pegawai/Mesin/Proses.
+- **backlog01 UI-09 -- nama perusahaan & kop PPN (SELESAI).** Keputusan user:
+  konstanta `COMPANY_NAME` = "Telasih Makmur" (dipakai di seluruh aplikasi &
+  semua cetakan) dan `COMPANY_LEGAL_NAME` = "CV. Langgeng Jaya Makmur".
+  Dokumen ber-PPN (DO, Surat Jalan, Nota Inquiry) punya pilihan di preview
+  cetak **Non PPN (default) / PPN**; PPN = nama terdaftar + NPWP. Tidak
+  disimpan. `co_order.is_ppn` baru (default dari Inquiry/profil customer,
+  field "Pajak" di CO Entry, terkunci setelah DRAFT) -> `do_delivery.is_ppn`
+  ikut CO; 1 DO menolak campuran PPN/Non PPN. Teks cadangan salah "PT Telasih
+  Makmur" di 5 nota cetak ikut dihapus. NPWP sementara dummy (UI-20); tiga
+  layar cetak SPB/Invoice/Pembayaran belum ada (UI-19). Test:
+  `CompanyNamePpnPrintTest` (5).
 - **backlog01 dirapikan** jadi papan monitor bernomor UI-01..UI-18 dengan
   status 🔴/🟡/🔵/⚪. Catatan basi dikoreksi: komponen Back SUDAH ada
   (`x-back-button`, 23 layar). Mitigasi Filament klik-luar-modal

@@ -62,13 +62,13 @@ new #[Title('Surat Jalan — TELASIH MAKMUR ERP')] class extends Component
 };
 ?>
 
-<x-print.document :theme="['accent' => '#0d5c46', 'accent-soft' => '#eaf3f0']" info="{{ $this->do->do_no }} · Surat Jalan">
+<x-print.document :ppn="$this->do->is_ppn" :theme="['accent' => '#0d5c46', 'accent-soft' => '#eaf3f0']" info="{{ $this->do->do_no }} · Surat Jalan">
     <x-slot:toolbar>
         <a href="{{ route('dispatch.do.entry', ['doId' => $this->doId]) }}" class="sc" data-back>← Kembali ke DO</a>
     </x-slot:toolbar>
 
     <x-print.sheet>
-        <x-print.header :company="$this->company" doc-title="SURAT JALAN" :doc-no="$this->do->do_no">
+        <x-print.header :company="$this->company" :ppn="$this->do->is_ppn" doc-title="SURAT JALAN" :doc-no="$this->do->do_no">
             <x-slot:meta>
                 Tanggal: {{ $this->do->do_date?->translatedFormat('d F Y') }}
                 @if ($this->do->actual_ship_date) · Kirim: {{ $this->do->actual_ship_date->translatedFormat('d F Y') }} @endif
@@ -86,7 +86,7 @@ new #[Title('Surat Jalan — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </x-print.party>
             <x-print.party label="DIKIRIM DARI">
-                <div class="nm">{{ $this->company?->company_name ?? 'PT Telasih Makmur' }}</div>
+                <div class="nm"><x-print.company-name :ppn="$this->do->is_ppn" /></div>
                 <div class="dt">{{ $this->company?->address ?? '—' }}</div>
             </x-print.party>
         </x-print.parties>

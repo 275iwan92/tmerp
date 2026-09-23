@@ -16,6 +16,23 @@ class Brand
         return SysConstant::text('APP_NAME', 'ERP TM');
     }
 
+    // Nama perusahaan (keputusan user 2026-09-23): SELALU dipakai di aplikasi &
+    // kop cetak. Nama terdaftar hanya pilihan "PPN" saat mencetak dokumen ber-PPN.
+    public static function companyName(): string
+    {
+        return SysConstant::text('COMPANY_NAME', 'Telasih Makmur');
+    }
+
+    public static function companyLegalName(): string
+    {
+        return SysConstant::text('COMPANY_LEGAL_NAME', 'CV. Langgeng Jaya Makmur');
+    }
+
+    public static function companyNpwp(): ?string
+    {
+        return \App\Models\Master\OrgCompany::where('company_code', 'TM')->value('npwp_number');
+    }
+
     public static function tagline(): string
     {
         return SysConstant::text('APP_TAGLINE', '') ?? '';
