@@ -113,7 +113,7 @@
     const sel = $(f, '[data-dl-select]');
     if (sel) {
       const p = bindPanel(sel, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); p.search.focus(); } });
-      $$(sel, '.dl-dd__item').forEach(it => it.addEventListener('click', () => { $(sel, '[data-dl-value]').value = it.dataset.value; $(sel, '[data-dl-dd-text]').textContent = it.textContent; p.close(); }));
+      $$(sel, '.dl-dd__item').forEach(it => it.addEventListener('click', () => { const h = $(sel, '[data-dl-value]'); h.value = it.dataset.value; $(sel, '[data-dl-dd-text]').textContent = it.textContent; p.close(); h.dispatchEvent(new Event('change', {bubbles: true})); }));
     }
 
     const multi = $(f, '[data-dl-multi]');
@@ -207,7 +207,7 @@
       const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
       let view = hidden.value ? new Date(hidden.value) : new Date();
       const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      const setVal = d => { hidden.value = d ? iso(d) : ''; text.value = d ? `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}` : ''; };
+      const setVal = (d, quiet) => { hidden.value = d ? iso(d) : ''; text.value = d ? `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}` : ''; if (!quiet) hidden.dispatchEvent(new Event('change', {bubbles: true})); };
       const draw = () => {
         title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
         const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
@@ -222,7 +222,7 @@
       $(dt, '[data-dl-cal-clear]').addEventListener('click', () => { setVal(null); p.close(); });
       $(dt, '[data-dl-cal-today]').addEventListener('click', () => { setVal(new Date()); p.close(); });
       text.addEventListener('click', () => $(dt, '[data-dl-dd-toggle]').click());
-      if (hidden.value) setVal(new Date(hidden.value));
+      if (hidden.value) setVal(new Date(hidden.value), true);
     }
 
     const dtt = $(f, '[data-dl-datetime]');
@@ -634,6 +634,7 @@
       $(root, '[data-dl-value]').value = r[root.dataset.key];
       $(root, '[data-dl-dd-text]').textContent = r[root.dataset.label];
       p.close();
+      $(root, '[data-dl-value]').dispatchEvent(new Event('change', {bubbles: true}));
       const scope = root.closest('form') || document;
       Object.entries(fill).forEach(([field, col]) => {
         const box = scope.querySelector(`[data-dl-field="${field}"]`);
@@ -1594,6 +1595,67 @@
     });
   }
 
+
+  /* ============================ WIZARD ============================ */
+  // Teks tampil sebuah field library (untuk ringkasan Review).
+  function fieldText(f) {
+    const q = s => $(f, s);
+    if (q('[data-dl-select], [data-dl-lookup]')) return q('[data-dl-dd-text]').textContent.trim();
+    if (q('[data-dl-date]')) return q('[data-dl-date-text]').value;
+    if (q('[data-dl-phonebox]')) return q('[data-dl-phone]').value ? q('[data-dl-prefix-b]').textContent + ' ' + q('[data-dl-phone]').value : '';
+    if (q('[data-dl-toggle]')) return q('[data-dl-toggle-label]').textContent;
+    if (q('[data-dl-sign]')) return q('[data-dl-value]').value ? '✓ Sudah ditandatangani' : '';
+    const radio = q('input[type=radio]:checked'); if (radio) return radio.closest('label').textContent.trim();
+    const checks = $$(f, 'input[type=checkbox]:checked'); if (checks.length) return checks.map(c => c.closest('label')?.textContent.trim() || '✓').join(', ');
+    const i = q('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea, select');
+    return i ? (i.type === 'password' ? (i.value ? '••••••' : '') : i.value) : '';
+  }
+  function initWizard(w) {
+    const steps = $$(w, '[data-w-step]'), bar = $(w, '[data-w-steps]');
+    let at = 0, reached = 0;
+    bar.innerHTML = steps.map((s, i) => `<li data-w-go="${i}"><span class="dl-wizard__num">${s.dataset.icon ? `<i class="fa-solid ${esc(s.dataset.icon)}"></i>` : i + 1}</span><span class="dl-wizard__lbl"><small>Langkah ${i + 1}</small>${esc(s.dataset.title)}</span></li>`).join('');
+    const invalid = s => $$(s, '.dl-field').filter(f => $(f, '.dl-field__req') && !hasValue(f));
+    function summary() {
+      const box = $(w, '[data-w-summary]'); if (!box) return;
+      box.innerHTML = steps.filter(s => !s.hasAttribute('data-w-review')).map((s, i) => `<div class="dl-wizard__sum"><div class="dl-wizard__sumhead"><b>${esc(s.dataset.title)}</b><button type="button" class="dl-btn dl-btn--link dl-btn--sm" data-w-go="${i}">Ubah</button></div><dl>${$$(s, '.dl-field').map(f => `<dt>${esc($(f, '.dl-field__label')?.textContent || '')}</dt><dd>${esc(fieldText(f)) || '<span class="dl-wizard__none">—</span>'}</dd>`).join('')}</dl></div>`).join('');
+    }
+    function go(i) {
+      at = Math.max(0, Math.min(i, steps.length - 1)); reached = Math.max(reached, at);
+      steps.forEach((s, k) => { s.hidden = k !== at; });
+      $$(bar, 'li').forEach((li, k) => { li.className = k < at ? 'is-done' : k === at ? 'is-active' : k <= reached ? 'is-reached' : ''; });
+      const last = at === steps.length - 1;
+      $(w, '[data-w-prev]').disabled = at === 0;
+      $(w, '[data-w-next]').hidden = last; $(w, '[data-w-finish]').hidden = !last;
+      $(w, '[data-w-pos]').textContent = `${at + 1} / ${steps.length}`;
+      if (steps[at].hasAttribute('data-w-review')) summary();
+      w.dispatchEvent(new CustomEvent('dl:wizard-step', {bubbles: true, detail: {index: at, title: steps[at].dataset.title}}));
+    }
+    function check(i) {
+      const bad = invalid(steps[i]);
+      bad.forEach(f => { f.classList.add('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = 'Wajib diisi'; });
+      if (bad.length) { toast(`${bad.length} isian wajib di langkah "${steps[i].dataset.title}" belum diisi.`, 'danger'); $(bad[0], 'input:not([type=hidden]), textarea, button')?.focus(); }
+      return !bad.length;
+    }
+    const clearOk = e => { const f = e.target.closest('.dl-field.is-invalid'); if (f && hasValue(f)) { f.classList.remove('is-invalid'); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = ''; } };
+    w.addEventListener('input', clearOk, true); w.addEventListener('change', clearOk, true);
+    w.addEventListener('click', e => {
+      if (e.target.closest('[data-w-next]')) { if (check(at)) go(at + 1); return; }
+      if (e.target.closest('[data-w-prev]')) return go(at - 1);
+      const g = e.target.closest('[data-w-go]');
+      if (g) { const i = +g.dataset.wGo; if (i <= reached || (i === at + 1 && check(at))) go(i); }
+    });
+    w.addEventListener('submit', e => {
+      for (let i = 0; i < steps.length; i++) if (!check(i)) { e.preventDefault(); go(i); return; }
+      if (!w.getAttribute('action')) {
+        e.preventDefault();
+        const data = {}; new FormData(w).forEach((v, k) => { if (k !== '_token') data[k] = v; });
+        toast('Selesai: data terkumpul (pratinjau, tidak dikirim).', 'success');
+        w.dispatchEvent(new CustomEvent('dl:wizard-finish', {bubbles: true, detail: data}));
+      }
+    });
+    go(0);
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -1627,6 +1689,7 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-wizard]').forEach(initWizard);
     document.querySelectorAll('[data-dl-approval]').forEach(initApproval);
     document.querySelectorAll('[data-dl-lines]').forEach(initLines);
     document.querySelectorAll('[data-dl-master]').forEach(initMaster);

@@ -65,6 +65,9 @@ final class Catalog
                     'p5-approval' => ['label' => 'Approval', 'icon' => 'fa-solid fa-stamp', 'part' => '5 · Big Components', 'mockup' => 'mockup_po_approval_center.html',
                         'members' => ['approval-po' => ['Approval Center PO', ['Devlib\\Components\\Approval']]],
                         'classes' => ['Devlib\\Components\\Approval']],
+                    'p5-wizard' => ['label' => 'Wizard', 'icon' => 'fa-solid fa-shoe-prints', 'part' => '5 · Big Components', 'mockup' => null,
+                        'members' => ['wizard-customer' => ['Registrasi Customer (3 langkah + Review)', ['Devlib\\Components\\Wizard', 'Devlib\\Components\\Wizard\\Step']]],
+                        'classes' => ['Devlib\\Components\\Wizard', 'Devlib\\Components\\Wizard\\Step']],
                     'form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                     'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
                 'files' => [
