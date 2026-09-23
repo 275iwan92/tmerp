@@ -457,30 +457,23 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
         @if ($panel === 'grid')
         <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
-        <div class="bg-white border border-[#d9dfe8] rounded-[10px] overflow-hidden">
+        <x-ui.card variant="panel" size="none">
             <x-grid.toolbar>
                 <div class="flex items-center gap-1.5 shrink-0">
                     <span class="text-sm">🔍</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari kode atau nama proses…"
-                        class="w-56 shrink-0 px-2.5 py-1.5 border border-[#d7dbe2] rounded text-xs">
+                    <x-form.input wire:model.live.debounce.300ms="search" placeholder="Cari kode atau nama proses…" :case-toggle="false" class="w-56 shrink-0" />
                 </div>
                 <x-slot:tools>
-                    <select wire:model.live="stageFilter"
-                        class="shrink-0 px-2 py-1.5 border border-[#d7dbe2] rounded text-xs bg-white">
-                        <option value="">Semua Tahap</option>
-                        @foreach (\App\Models\Master\ProdProcess::STAGES as $k => $v)
-                            <option value="{{ $k }}">{{ $v }}</option>
-                        @endforeach
-                    </select>
+                    <x-form.select wire:model.live="stageFilter" liveSync :selected="$stageFilter" placeholder="Semua Tahap"
+                        :options="\App\Models\Master\ProdProcess::STAGES" class="shrink-0" />
                 </x-slot:tools>
                 <x-slot:newRecord>
-                    <button type="button" wire:click="openModal('new')"
-                        class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
+                    <x-ui.button preset="new" size="sm" class="shrink-0" wire:click="openModal('new')" />
                 </x-slot:newRecord>
             </x-grid.toolbar>
 
             <x-grid.table-shell>
-                <table class="w-full border-collapse text-[12.5px]">
+                <x-ui.table sticky hover>
                     <thead>
                         <tr>
                             @foreach ([
@@ -490,77 +483,74 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                 'Mesin' => 'w-[92px]', 'Ongkos Std' => 'w-[124px]',
                                 'Kesiapan' => 'w-[104px]', 'Status' => 'w-[80px]',
                             ] as $label => $w)
-                                <th class="text-left px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] {{ $w }}">{{ $label }}</th>
+                                <th class="{{ $w }}">{{ $label }}</th>
                             @endforeach
-                            <th class="text-right px-3 py-2 bg-[#fafbfd] text-[#667] text-[11px] uppercase tracking-wide border-b border-[#eef1f5] sticky top-0 z-[1] w-[100px]">Aksi</th>
+                            <th class="text-right w-[100px]">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($this->processes as $p)
                             @php($ready = $p->readinessScore())
-                            <tr wire:key="process-{{ $p->id_process }}" wire:dblclick="openModal('edit', {{ $p->id_process }})" class="hover:bg-[#f7faff] cursor-pointer" title="Klik 2x untuk buka detail">
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                            <tr wire:key="process-{{ $p->id_process }}" wire:dblclick="openModal('edit', {{ $p->id_process }})" class="cursor-pointer" title="Klik 2x untuk buka detail">
+                                <td>
                                     @if ($p->process_code)
-                                        <span class="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#2c3e69]">{{ $p->process_code }}</span>
+                                        <x-ui.badge tone="code" size="md" mono>{{ $p->process_code }}</x-ui.badge>
                                     @else
-                                        <span class="text-[10px] text-[#c2410c]" title="Kode proses belum diisi">belum</span>
+                                        <span class="text-[10px] text-warn-ink" title="Kode proses belum diisi">belum</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     <div class="flex items-center gap-2">
-                                        <span class="w-2.5 h-2.5 rounded-full shrink-0 border border-[#d7dbe2]" style="background:{{ $p->gantt_color ?: '#cbd5e1' }}"></span>
+                                        <span class="w-2.5 h-2.5 rounded-full shrink-0 border border-line" style="background:{{ $p->gantt_color ?: '#cbd5e1' }}"></span>
                                         <div class="min-w-0">
                                             <div class="font-semibold text-[12.5px] truncate">{{ $p->process_name }}</div>
                                             <div class="text-[10.5px] text-muted truncate">
                                                 {{ $p->department?->department_name ?? 'Dept belum diisi' }}
-                                                @if ($p->is_bottleneck) <span class="text-[#b45309] font-bold">· BOTTLENECK</span> @endif
+                                                @if ($p->is_bottleneck) <span class="text-warn-ink font-bold">· BOTTLENECK</span> @endif
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     @if ($p->process_stage)
-                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#eff6ff] text-[#1d4ed8]">{{ $p->stageLabel() }}</span>
+                                        <x-ui.badge tone="info">{{ $p->stageLabel() }}</x-ui.badge>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     @if ($p->is_manual)
-                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#f5f3ff] text-[#6d28d9]">Manual</span>
+                                        <x-ui.badge tone="extra">Manual</x-ui.badge>
                                     @elseif ($p->inhouse)
-                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#eff6ff] text-[#1d4ed8]">In-house</span>
+                                        <x-ui.badge tone="info">In-house</x-ui.badge>
                                     @else
-                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-[#fff7ed] text-[#c2410c]">Subkon</span>
+                                        <x-ui.badge tone="warn">Subkon</x-ui.badge>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     @if ($p->default_speed_per_hour > 0)
                                         <div class="text-[11.5px] leading-tight">
                                             <span class="font-mono font-semibold">{{ number_format((float) $p->default_speed_per_hour, 0, ',', '.') }}</span>
                                             <span class="text-[10px] text-muted">{{ $p->output_uom === 'LEMBAR' ? 'Lembar' : ucfirst(strtolower($p->output_uom)) }} / Jam</span>
                                         </div>
                                         {{-- Bar pembanding kapasitas antar-baris (permintaan user 2026-09-22) --}}
-                                        <div class="mt-1 h-1.5 rounded-full bg-[#eef1f5] overflow-hidden">
-                                            <div class="h-full rounded-full bg-[#2f80ed]"
-                                                style="width:{{ max(3, round((float) $p->default_speed_per_hour / $this->speedScaleMax * 100)) }}%"></div>
-                                        </div>
+                                        <x-ui.progress class="mt-1" tone="info" :value="max(3, round((float) $p->default_speed_per_hour / $this->speedScaleMax * 100))" />
                                     @elseif ($p->is_manual)
                                         <span class="text-[10.5px] text-muted">Manual</span>
                                     @else
-                                        <span class="text-[10.5px] text-[#c2410c]">belum diisi</span>
+                                        <span class="text-[10.5px] text-warn-ink">belum diisi</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     @if ($p->default_setup_minutes !== null)
                                         <span class="font-mono text-[12px]">{{ $p->default_setup_minutes }}</span><span class="text-[10px] text-muted"> mnt</span>
                                     @else
                                         <span class="text-muted">—</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[11.5px]">
+                                <td class="text-[11.5px]">
                                     @if ($p->default_waste_pct !== null || $p->default_waste_fixed_qty !== null)
-                                        <span class="font-mono font-semibold {{ (float) $p->default_waste_pct >= 2.5 ? 'text-[#b91c1c]' : 'text-[#15803d]' }}">{{ $this->num($p->default_waste_pct) ?: '0' }}%</span>
+                                        <span class="font-mono font-semibold {{ (float) $p->default_waste_pct >= 2.5 ? 'text-danger-ink' : 'text-success-ink' }}">{{ $this->num($p->default_waste_pct) ?: '0' }}%</span>
                                         @if ($p->default_waste_fixed_qty)
                                             <div class="text-[10px] text-muted">+{{ number_format($p->default_waste_fixed_qty, 0, ',', '.') }} tetap</div>
                                         @endif
@@ -569,35 +559,32 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                     @endif
                                 </td>
                                 {{-- Kolom inti permintaan user: berapa mesin bisa mengerjakan proses ini --}}
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     @if ($p->capabilities_count > 0)
-                                        <button type="button" wire:click="openModal('edit', {{ $p->id_process }})"
-                                            class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-[#eaf7ee] text-[#166534] cursor-pointer"
-                                            title="Lihat mesin pelaksana">
-                                            <i class="fa-solid fa-gears text-[9px]"></i> {{ $p->capabilities_count }} unit
-                                        </button>
+                                        <x-ui.badge-button tone="success" size="md" icon="fa-gears" wire:click="openModal('edit', {{ $p->id_process }})"
+                                            title="Lihat mesin pelaksana">{{ $p->capabilities_count }} unit</x-ui.badge-button>
                                     @elseif ($p->is_manual)
                                         <span class="text-[10.5px] text-muted">tanpa mesin</span>
                                     @else
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-[#fef2f2] text-[#b91c1c]" title="Proses ini belum bisa dijadwalkan">belum ada</span>
+                                        <x-ui.badge tone="danger" title="Proses ini belum bisa dijadwalkan">belum ada</x-ui.badge>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
+                                <td>
                                     @if ($p->standard_rate > 0)
                                         <div class="font-mono text-[11.5px]">{{ number_format((float) $p->standard_rate, 0, ',', '.') }}</div>
                                         <div class="text-[10px] text-muted">{{ \App\Models\Master\ProdProcess::COST_BASIS[$p->cost_basis] ?? '—' }}</div>
                                     @else
-                                        <span class="text-[10.5px] text-[#c2410c]">belum diisi</span>
+                                        <span class="text-[10.5px] text-warn-ink">belum diisi</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded {{ $ready >= 80 ? 'bg-[#eaf7ee] text-[#166534]' : ($ready >= 50 ? 'bg-[#fff7ed] text-[#c2410c]' : 'bg-[#fef2f2] text-[#b91c1c]') }}"
-                                        title="Kelengkapan data agar bisa dipakai engine">{{ $ready }}%</span>
+                                <td>
+                                    <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore($ready)" size="md" mono
+                                        title="Kelengkapan data agar bisa dipakai engine">{{ $ready }}%</x-ui.badge>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block {{ $p->activate ? 'bg-[#eaf7ee] text-[#1f8a4c]' : 'bg-[#eef0f3] text-[#8a8f98]' }}">{{ $p->activate ? 'AKTIF' : 'NONAKTIF' }}</span>
+                                <td>
+                                    <x-ui.badge :tone="$p->activate ? 'success' : 'muted'" pill>{{ $p->activate ? 'AKTIF' : 'NONAKTIF' }}</x-ui.badge>
                                 </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                <td class="text-right whitespace-nowrap">
                                     <x-grid.action-icon icon="fa-pen" title="Edit" action="openModal('edit', {{ $p->id_process }})" />
                                     <x-grid.action-icon :active="$p->activate" :title="$p->activate ? 'Nonaktifkan' : 'Aktifkan'" action="toggleActive({{ $p->id_process }})"
                                         :confirm="($p->activate ? 'Nonaktifkan' : 'Aktifkan').' proses '.$p->process_name.'?'"
@@ -608,39 +595,29 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                             <x-grid.empty-row :colspan="12" message="Tidak ada." />
                         @endforelse
                     </tbody>
-                </table>
+                </x-ui.table>
             </x-grid.table-shell>
-        </div>
+        </x-ui.card>
         @endif
 
         {{-- ============ FORM (NEW/EDIT) ============ --}}
         @if ($panel === 'form')
-            <div class="flex justify-between items-center bg-navy text-white px-4 py-3 rounded-t-md">
-                <div class="text-sm font-bold">
-                    {{ $mode === 'edit' ? 'Edit Proses'.($process_code ? ' : '.$process_code : '') : 'Proses Baru' }}
-                </div>
+            <x-ui.panel-header :title="$mode === 'edit' ? 'Edit Proses'.($process_code ? ' : '.$process_code : '') : 'Proses Baru'">
                 @if ($mode === 'edit')
-                    <div class="text-[11px] opacity-80">{{ $this->capabilityRows->where('activate', true)->count() }} mesin pelaksana</div>
+                    <x-slot:aside>{{ $this->capabilityRows->where('activate', true)->count() }} mesin pelaksana</x-slot:aside>
                 @endif
-            </div>
+            </x-ui.panel-header>
 
-            <div class="bg-white border border-t-0 border-[#d7dbe2] rounded-b-md overflow-hidden">
-                <div class="flex bg-[#eef1f5] border-b border-[#d7dbe2] flex-wrap">
-                    @foreach ([
-                        'main' => '1. Info Utama',
-                        'capacity' => '2. Parameter & Kapasitas',
-                        'cost' => '3. Ongkos & Tooling',
-                        'machines' => '4. Mesin Pelaksana',
-                    ] as $key => $label)
-                        <button type="button" wire:click="$set('activeTab', '{{ $key }}')"
-                            class="px-4 py-2 text-xs font-semibold border-r border-[#d7dbe2] {{ $activeTab === $key ? 'bg-white text-accent border-b-2 border-b-accent' : 'text-[#4b5568]' }}">
-                            {{ $label }}
-                            @if ($key === 'machines' && $mode === 'edit')
-                                <span class="ml-1 text-[10px] px-1.5 py-0.5 rounded-full {{ $this->capabilityRows->where('activate', true)->count() > 0 ? 'bg-[#eaf7ee] text-[#166534]' : 'bg-[#fef2f2] text-[#b91c1c]' }}">{{ $this->capabilityRows->where('activate', true)->count() }}</span>
-                            @endif
-                        </button>
-                    @endforeach
-                </div>
+            <div class="bg-surface border border-t-0 border-line rounded-b-md overflow-hidden">
+                <x-ui.tabs model="activeTab" :active="$activeTab" :tabs="[
+                    'main' => '1. Info Utama',
+                    'capacity' => '2. Parameter & Kapasitas',
+                    'cost' => '3. Ongkos & Tooling',
+                    'machines' => '4. Mesin Pelaksana',
+                ]" :badges="$mode === 'edit' ? ['machines' => [
+                    'text' => $this->capabilityRows->where('activate', true)->count(),
+                    'tone' => $this->capabilityRows->where('activate', true)->count() > 0 ? 'success' : 'danger',
+                ]] : []" />
 
                 <form wire:submit="save" class="p-5">
                     {{-- TAB 1 --}}
@@ -665,11 +642,11 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.input label="Sertifikasi Kru" name="skill_code" wire:model="skill_code" placeholder="mis. OP-OFFSET" />
                         </div>
 
-                        <div class="mt-3 border border-[#d7dbe2] rounded-md p-3 [display:grid] grid-cols-1 md:grid-cols-3 gap-2">
+                        <x-ui.card class="mt-3  [display:grid] grid-cols-1 md:grid-cols-3 gap-2">
                             <x-form.checkbox label="Dikerjakan sendiri (in-house)" wire:model="inhouse" />
                             <x-form.checkbox label="Proses tangan — tanpa mesin" wire:model="is_manual" />
                             <x-form.checkbox label="Wajib lewat QC gate" wire:model="qc_required" />
-                        </div>
+                        </x-ui.card>
                         @if (! $inhouse)
                             <div class="mt-3 max-w-xs">
                                 <x-form.input label="Lead Time Subkon (hari)" type="number" name="subcon_lead_days" wire:model="subcon_lead_days" />
@@ -695,22 +672,21 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.input label="Jumlah Kru Standar / Shift" type="number" name="default_manpower" wire:model="default_manpower" placeholder="mis. 3" />
                         </div>
 
-                        <div class="mt-4 border border-[#d7dbe2] rounded-md p-3">
-                            <p class="text-[10px] font-bold text-accent uppercase mb-2">Waste / Spoilage</p>
-                            <p class="text-[11px] text-muted mb-2.5">Offset punya dua komponen waste: lembar make-ready yang <em>tetap</em> (habis berapa pun ordernya) plus persentase yang ikut naik sesuai volume. Isi keduanya.</p>
+                        <x-ui.card class="mt-4" title="Waste / Spoilage">
+                            <x-slot:intro>Offset punya dua komponen waste: lembar make-ready yang <em>tetap</em> (habis berapa pun ordernya) plus persentase yang ikut naik sesuai volume. Isi keduanya.</x-slot:intro>
                             <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
                                 <x-form.input label="Waste Berjalan (%)" name="default_waste_pct" wire:model="default_waste_pct" placeholder="mis. 2.5" />
                                 <x-form.input label="Insheet Tetap (qty)" type="number" name="default_waste_fixed_qty" wire:model="default_waste_fixed_qty" placeholder="mis. 150" />
                                 <x-form.input label="Toleransi Kirim (%)" name="default_tolerance_pct" wire:model="default_tolerance_pct" placeholder="mis. 5" />
                             </div>
-                        </div>
+                        </x-ui.card>
 
                         <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                             <x-form.input label="Lot Minimum" type="number" name="min_lot_qty" wire:model="min_lot_qty" />
                             <x-form.input label="Lot Maksimum" type="number" name="max_lot_qty" wire:model="max_lot_qty" />
                         </div>
 
-                        <div class="mt-3 border border-[#d7dbe2] rounded-md p-3 [display:grid] grid-cols-1 md:grid-cols-2 gap-2">
+                        <x-ui.card class="mt-3  [display:grid] grid-cols-1 md:grid-cols-2 gap-2">
                             <x-form.checkbox wire:model="is_bottleneck">
                                 <span class="font-semibold">Proses bottleneck</span>
                                 <span class="block text-[10.5px] text-muted">Kapasitas penentu — dijadwalkan lebih dulu</span>
@@ -719,7 +695,7 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                 <span class="font-semibold">Boleh paralel antar-mesin</span>
                                 <span class="block text-[10.5px] text-muted">1 WO boleh dipecah ke beberapa mesin sekaligus</span>
                             </x-form.checkbox>
-                        </div>
+                        </x-ui.card>
                     </div>
 
                     {{-- TAB 3 --}}
@@ -730,29 +706,27 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                         </div>
                         <p class="text-[11px] text-muted mt-2">Tarif tanpa basis tidak akan disimpan — "250.000" bisa berarti per jam atau per 1.000 lembar, dan CostingEngine tidak boleh menebak.</p>
 
-                        <div class="mt-4 border border-[#d7dbe2] rounded-md p-3">
-                            <p class="text-[10px] font-bold text-accent uppercase mb-2">Kebutuhan Tooling</p>
-                            <p class="text-[11px] text-muted mb-2.5">Dipakai ProDev untuk memunculkan biaya tooling & memperingatkan kalau tooling-nya belum ada.</p>
+                        <x-ui.card class="mt-4" title="Kebutuhan Tooling">
+                            <x-slot:intro>Dipakai ProDev untuk memunculkan biaya tooling & memperingatkan kalau tooling-nya belum ada.</x-slot:intro>
                             <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-2">
                                 <x-form.checkbox label="Butuh Plate (CTP)" wire:model="requires_plate" />
                                 <x-form.checkbox label="Butuh Pisau / Plong" wire:model="requires_die" />
                                 <x-form.checkbox label="Butuh tooling lain (mould/cliche/film)" wire:model="requires_tooling" />
                             </div>
-                        </div>
+                        </x-ui.card>
 
                         @if ($mode === 'edit' && $this->whereUsed)
-                            <div class="mt-4 border border-[#d7dbe2] rounded-md p-3">
-                                <p class="text-[10px] font-bold text-accent uppercase mb-2">Dipakai Di Mana (Where-used)</p>
-                                <p class="text-[11px] text-muted mb-2.5">Relasi ke modul lain adalah FK <em>logis</em> lintas-database — MySQL tidak menjaganya, jadi periksa daftar ini sebelum menonaktifkan proses.</p>
+                            <x-ui.card class="mt-4" title="Dipakai Di Mana (Where-used)">
+                                <x-slot:intro>Relasi ke modul lain adalah FK <em>logis</em> lintas-database — MySQL tidak menjaganya, jadi periksa daftar ini sebelum menonaktifkan proses.</x-slot:intro>
                                 <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-1.5">
                                     @foreach ($this->whereUsed as $label => $count)
-                                        <div class="flex justify-between items-center text-[11.5px] px-2 py-1 rounded bg-[#fafbfd]">
-                                            <span class="text-[#4b5568]">{{ $label }}</span>
-                                            <span class="font-mono font-bold {{ $count > 0 ? 'text-[#b45309]' : 'text-muted' }}">{{ $count }}</span>
+                                        <div class="flex justify-between items-center text-[11.5px] px-2 py-1 rounded bg-surface-alt">
+                                            <span class="text-ink-soft">{{ $label }}</span>
+                                            <span class="font-mono font-bold {{ $count > 0 ? 'text-warn-ink' : 'text-muted' }}">{{ $count }}</span>
                                         </div>
                                     @endforeach
                                 </div>
-                            </div>
+                            </x-ui.card>
                         @endif
                     </div>
 
@@ -767,20 +741,18 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                 <x-alert.banner type="warn" message="Proses ini ditandai proses tangan (tanpa mesin). Kalau ternyata ada mesinnya, hapus centang 'Proses tangan' di tab 1." />
                             @endif
 
-                            <div class="flex flex-wrap items-end gap-2 mb-3 p-3 bg-[#fafbfd] border border-[#d7dbe2] rounded-md">
+                            <x-ui.card variant="muted" class="flex flex-wrap items-end gap-2 mb-3">
                                 <div class="flex-1 min-w-[280px]">
                                     <x-form.select label="Tambah mesin pelaksana" name="capPickId" wire:model="capPickId" :options="$this->machineCandidates" placeholder="— pilih mesin —" />
                                 </div>
-                                <button type="button" wire:click="capAdd" @disabled(! $capPickId)
-                                    class="px-3.5 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">+ Tambah Mesin</button>
-                            </div>
+                                <x-ui.button wire:click="capAdd" :disabled="! $capPickId">+ Tambah Mesin</x-ui.button>
+                            </x-ui.card>
 
-                            <div class="border border-[#d7dbe2] rounded-md overflow-x-auto">
-                                <table class="w-full border-collapse text-[12px]">
+                            <x-ui.table size="sm" framed>
                                     <thead>
-                                        <tr class="bg-[#fafbfd]">
+                                        <tr>
                                             @foreach (['Mesin', 'Jenis / Dept', 'Kapasitas Efektif', 'Setup', 'Waste', 'Tarif / Jam', 'Kru', 'Est. 10.000 unit', 'Peran', ''] as $h)
-                                                <th class="text-left px-2.5 py-2 text-[10px] uppercase tracking-wide text-[#667] border-b border-[#eef1f5] whitespace-nowrap">{{ $h }}</th>
+                                                <th>{{ $h }}</th>
                                             @endforeach
                                         </tr>
                                     </thead>
@@ -788,44 +760,44 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                         @forelse ($this->capabilityRows as $cap)
                                             @php($rp = $this->resolvedParams[$cap->capability_id] ?? null)
                                             <tr wire:key="cap-{{ $cap->capability_id }}" class="{{ $cap->activate ? '' : 'opacity-45' }}">
-                                                <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
-                                                    <span class="font-mono font-bold text-[11.5px] px-1.5 py-0.5 rounded bg-[#eef1f5] text-[#2c3e69]">{{ $cap->machine->machine_code }}</span>
+                                                <td class="whitespace-nowrap">
+                                                    <x-ui.badge tone="code" size="md" mono>{{ $cap->machine->machine_code }}</x-ui.badge>
                                                     <div class="text-[11px] mt-0.5">{{ $cap->machine->machine_name }}</div>
                                                 </td>
-                                                <td class="px-2.5 py-2 border-b border-[#eef1f5]">
+                                                <td>
                                                     <div class="text-[11px]">{{ $cap->machine->machine_type }}</div>
                                                     <div class="text-[10px] text-muted">{{ $cap->machine->department?->department_name ?? '—' }}</div>
                                                     @if (in_array($cap->machine->machine_status, \App\Models\Master\ProdMachine::STATUSES_BLOCKING, true))
-                                                        <div class="text-[10px] font-bold text-[#b91c1c] mt-0.5">{{ $cap->machine->statusLabel() }}</div>
+                                                        <div class="text-[10px] font-bold text-danger-ink mt-0.5">{{ $cap->machine->statusLabel() }}</div>
                                                     @endif
                                                 </td>
                                                 @if ($rp)
                                                     @foreach (['speed_per_hour', 'setup_minutes'] as $f)
-                                                        <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
+                                                        <td class="whitespace-nowrap">
                                                             @if ($rp['params'][$f]['value'] !== null)
                                                                 <span class="font-mono text-[11.5px]">{{ number_format((float) $rp['params'][$f]['value'], 0, ',', '.') }}</span>
-                                                                <span class="block text-[9.5px] {{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'text-[#1d4ed8] font-bold' : 'text-muted' }}">{{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'khusus mesin' : ($rp['params'][$f]['source'] === 'PROCESS' ? 'default proses' : 'dari mesin') }}</span>
+                                                                <span class="block text-[9.5px] {{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'text-info-ink font-bold' : 'text-muted' }}">{{ $rp['params'][$f]['source'] === 'CAPABILITY' ? 'khusus mesin' : ($rp['params'][$f]['source'] === 'PROCESS' ? 'default proses' : 'dari mesin') }}</span>
                                                             @else
-                                                                <span class="text-[10px] text-[#c2410c]">belum ada</span>
+                                                                <span class="text-[10px] text-warn-ink">belum ada</span>
                                                             @endif
                                                         </td>
                                                     @endforeach
-                                                    <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
+                                                    <td class="whitespace-nowrap">
                                                         @if ($rp['params']['waste_pct']['value'] !== null)
                                                             <span class="font-mono text-[11.5px]">{{ rtrim(rtrim((string) $rp['params']['waste_pct']['value'], '0'), '.') ?: '0' }}%</span>
                                                         @else
                                                             <span class="text-[10px] text-muted">—</span>
                                                         @endif
                                                     </td>
-                                                    <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
+                                                    <td class="whitespace-nowrap">
                                                         @if ($rp['params']['hourly_rate']['value'] > 0)
                                                             <span class="font-mono text-[11.5px]">{{ number_format((float) $rp['params']['hourly_rate']['value'], 0, ',', '.') }}</span>
                                                         @else
-                                                            <span class="text-[10px] text-[#c2410c]">belum ada</span>
+                                                            <span class="text-[10px] text-warn-ink">belum ada</span>
                                                         @endif
                                                     </td>
-                                                    <td class="px-2.5 py-2 border-b border-[#eef1f5] font-mono text-[11.5px]">{{ $rp['params']['manpower']['value'] ?? '—' }}</td>
-                                                    <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
+                                                    <td class="font-mono text-[11.5px]">{{ $rp['params']['manpower']['value'] ?? '—' }}</td>
+                                                    <td class="whitespace-nowrap">
                                                         @if ($rp['hours_10k'] !== null)
                                                             <span class="font-mono font-semibold text-[11.5px]">{{ number_format($rp['hours_10k'], 2, ',', '.') }}</span><span class="text-[10px] text-muted"> jam</span>
                                                         @else
@@ -833,17 +805,15 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                                         @endif
                                                     </td>
                                                 @else
-                                                    <td colspan="6" class="px-2.5 py-2 border-b border-[#eef1f5] text-muted">—</td>
+                                                    <td colspan="6" class="text-muted">—</td>
                                                 @endif
-                                                <td class="px-2.5 py-2 border-b border-[#eef1f5] whitespace-nowrap">
-                                                    <button type="button" wire:click="capTogglePrimary({{ $cap->capability_id }})"
-                                                        class="text-[10px] font-bold px-2 py-0.5 rounded cursor-pointer {{ $cap->preference_rank === 1 ? 'bg-[#fef9c3] text-[#92400e]' : 'bg-[#eef1f5] text-[#8a8f98]' }}"
-                                                        title="Klik untuk ubah mesin utama / alternatif">{{ $cap->preference_rank === 1 ? '★ Utama' : 'Alternatif' }}</button>
-                                                    <button type="button" wire:click="capToggleCertified({{ $cap->capability_id }})"
-                                                        class="block mt-1 text-[9.5px] font-semibold px-1.5 py-0.5 rounded cursor-pointer {{ $cap->is_certified ? 'bg-[#eaf7ee] text-[#166534]' : 'bg-[#fff7ed] text-[#c2410c]' }}"
-                                                        title="Sudah terbukti produksi?">{{ $cap->is_certified ? 'Tervalidasi' : 'Belum divalidasi' }}</button>
+                                                <td class="whitespace-nowrap">
+                                                    <x-ui.badge-button :tone="$cap->preference_rank === 1 ? 'highlight' : 'muted'" wire:click="capTogglePrimary({{ $cap->capability_id }})"
+                                                        title="Klik untuk ubah mesin utama / alternatif">{{ $cap->preference_rank === 1 ? '★ Utama' : 'Alternatif' }}</x-ui.badge-button>
+                                                    <x-ui.badge-button size="xs" class="flex mt-1" :tone="$cap->is_certified ? 'success' : 'warn'" wire:click="capToggleCertified({{ $cap->capability_id }})"
+                                                        title="Sudah terbukti produksi?">{{ $cap->is_certified ? 'Tervalidasi' : 'Belum divalidasi' }}</x-ui.badge-button>
                                                 </td>
-                                                <td class="px-2.5 py-2 border-b border-[#eef1f5] text-right whitespace-nowrap">
+                                                <td class="text-right whitespace-nowrap">
                                                     <x-grid.action-icon icon="fa-sliders" title="Atur parameter khusus mesin ini" action="capEdit({{ $cap->capability_id }})" />
                                                     @if ($cap->activate)
                                                         <x-grid.action-icon icon="fa-ban" title="Lepas mesin dari proses ini" variant="danger"
@@ -857,8 +827,8 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
 
                                             {{-- Baris editor parameter override --}}
                                             @if ($capEditingId === $cap->capability_id)
-                                                <tr wire:key="capedit-{{ $cap->capability_id }}" class="bg-[#f7faff]">
-                                                    <td colspan="10" class="px-3 py-3 border-b border-[#eef1f5]">
+                                                <tr wire:key="capedit-{{ $cap->capability_id }}" class="bg-surface-hover">
+                                                    <td colspan="10" class="px-3 py-3">
                                                         <p class="text-[10px] font-bold text-accent uppercase mb-1">Parameter khusus {{ $cap->machine->machine_code }}</p>
                                                         <p class="text-[11px] text-muted mb-2.5">Kosongkan sebuah kotak berarti <strong>ikut nilai default proses</strong>. Isi hanya yang memang beda di mesin ini.</p>
                                                         <div class="[display:grid] grid-cols-2 md:grid-cols-4 gap-2.5">
@@ -874,10 +844,10 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                                         <div class="mt-2.5">
                                                             <x-form.input label="Catatan" name="capForm.note" wire:model="capForm.note" placeholder="mis. hanya untuk duplex di atas 250 gsm" />
                                                         </div>
-                                                        <div class="flex gap-2 mt-3">
-                                                            <button type="button" wire:click="capSaveParams" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                                                            <button type="button" wire:click="capCancelEdit" class="px-3.5 py-1.5 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
-                                                        </div>
+                                                        <x-ui.action-bar variant="inline">
+                                                            <x-ui.button preset="save" size="sm" type="button" wire:click="capSaveParams" />
+                                                            <x-ui.button preset="cancel" size="sm" wire:click="capCancelEdit" />
+                                                        </x-ui.action-bar>
                                                     </td>
                                                 </tr>
                                             @endif
@@ -887,16 +857,15 @@ new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
                                             </td></tr>
                                         @endforelse
                                     </tbody>
-                                </table>
-                            </div>
+                            </x-ui.table>
                         @endif
                     </div>
 
-                    <div class="flex gap-2 mt-4 -mx-5 -mb-5 px-4 py-3.5 bg-[#fafbfc] border-t border-[#d7dbe2]">
-                        <button type="submit" class="px-4 py-2 rounded text-xs font-semibold bg-accent text-white cursor-pointer">Simpan</button>
-                        <button type="button" wire:click="showGrid" class="px-4 py-2 rounded text-xs font-semibold bg-white border border-[#d7dbe2] cursor-pointer">Batal</button>
+                    <x-ui.action-bar>
+                        <x-ui.button preset="save" />
+                        <x-ui.button preset="cancel" wire:click="showGrid" />
                         <x-back-button fallback="production.master-process" class="ml-auto" />
-                    </div>
+                    </x-ui.action-bar>
                 </form>
             </div>
         @endif
