@@ -8,13 +8,6 @@
   const $$ = (root, sel) => Array.from(root.querySelectorAll(sel));
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  function toast(msg) {
-    let t = document.querySelector('.dl-toast');
-    if (!t) { t = document.createElement('div'); t.className = 'dl-toast'; document.body.appendChild(t); }
-    t.textContent = msg; t.classList.add('is-show');
-    clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('is-show'), 2200);
-  }
-
   /* ========================= PRIMITIVE ========================= */
   let currentLang = new URLSearchParams(location.search).get('lang') || 'id';
 
@@ -801,11 +794,71 @@
     });
   }
 
-  // Konfirmasi sementara memakai dialog browser; Part 3 menggantinya dengan modal konfirmasi library.
+  /* ======================= FEEDBACK & STATES ======================= */
+  // Toast bertumpuk: Devlib.toast('Tersimpan', 'success', 'Judul opsional').
+  function toast(msg, tone = 'info', title = null) {
+    let host = document.querySelector('.dl-toasts');
+    if (!host) { host = document.createElement('div'); host.className = 'dl-toasts'; host.setAttribute('aria-live', 'polite'); document.body.appendChild(host); }
+    const icon = {success: 'fa-circle-check', danger: 'fa-circle-xmark', warn: 'fa-triangle-exclamation', info: 'fa-circle-info'}[tone] || 'fa-circle-info';
+    const t = document.createElement('div'); t.className = 'dl-toast2 dl-toast2--' + tone;
+    t.innerHTML = `<i class="fa-solid ${icon}"></i><div>${title ? `<b>${esc(title)}</b>` : ''}<span>${esc(msg)}</span></div><button type="button" aria-label="Tutup">&times;</button>`;
+    const bye = () => { t.classList.add('is-out'); setTimeout(() => t.remove(), 250); };
+    $(t, 'button').addEventListener('click', bye);
+    host.appendChild(t); setTimeout(bye, tone === 'danger' ? 7000 : 3500);
+  }
+
+  // Modal konfirmasi library (pengganti window.confirm): Devlib.confirm({...}).then(ok => ...)
+  function confirmBox({title = 'Konfirmasi', message = 'Lanjutkan?', tone = 'warn', ok = 'Ya, lanjutkan', cancel = null} = {}) {
+    return new Promise(resolve => {
+      const cancelLabel = cancel || (currentLang === 'en' ? 'Cancel' : 'Batal');
+      const icon = {danger: 'fa-trash-can', warn: 'fa-triangle-exclamation', success: 'fa-circle-check', info: 'fa-circle-info'}[tone] || 'fa-circle-question';
+      const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
+      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p></div></div>`
+        + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-no>${esc(cancelLabel)}</button><button type="button" class="dl-btn dl-btn--${tone === 'danger' ? 'danger' : 'primary'} dl-btn--md" data-yes>${esc(ok)}</button></div></div>`;
+      const done = v => { ov.remove(); document.removeEventListener('keydown', key); resolve(v); };
+      const key = e => { if (e.key === 'Escape') done(false); else if (e.key === 'Enter') done(true); };
+      ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-no]')) done(false); else if (e.target.closest('[data-yes]')) done(true); });
+      document.addEventListener('keydown', key);
+      document.body.appendChild(ov); $(ov, '[data-yes]').focus();
+    });
+  }
+
+  // data-dl-confirm="pesan" (+ data-dl-confirm-tone) di tombol/tautan: tanya dulu lewat modal library.
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-dl-confirm]');
-    if (b && !window.confirm(b.dataset.dlConfirm)) { e.preventDefault(); e.stopImmediatePropagation(); }
+    if (!b || b.dataset.dlConfirmed) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    confirmBox({message: b.dataset.dlConfirm, tone: b.dataset.dlConfirmTone || (b.closest('.dl-iconbtn--danger,.dl-btn--danger') ? 'danger' : 'warn')}).then(ok => {
+      if (!ok) return;
+      b.dataset.dlConfirmed = '1'; b.click(); delete b.dataset.dlConfirmed;
+    });
   }, true);
+
+  // Modal & drawer library: data-dl-open="<id>" membuka, [data-dl-close-modal] / Esc / klik luar menutup.
+  const layer = id => document.querySelector(`[data-dl-modal-id="${id}"],[data-dl-drawer-id="${id}"]`);
+  const openLayer = id => { const l = layer(id); if (l) { l.classList.add('is-on'); const f = l.querySelector('input,textarea,select,button:not([data-dl-close-modal])'); if (f) setTimeout(() => f.focus(), 50); } };
+  const closeLayer = l => l && l.classList.remove('is-on');
+  document.addEventListener('click', e => {
+    const o = e.target.closest('[data-dl-open]'); if (o) { e.preventDefault(); openLayer(o.dataset.dlOpen); return; }
+    const c = e.target.closest('[data-dl-close-modal]'); if (c) { closeLayer(c.closest('[data-dl-modal-id],[data-dl-drawer-id]')); return; }
+    if (e.target.matches('[data-dl-modal-id].dl-mov')) closeLayer(e.target);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $$(document, '[data-dl-modal-id].is-on,[data-dl-drawer-id].is-on').slice(-1).forEach(closeLayer); });
+
+  // Form dikirim -> tombol submit terkunci + "Memproses…" (cegah klik ganda).
+  document.addEventListener('submit', e => {
+    if (e.defaultPrevented) return;
+    const btn = e.submitter || e.target.querySelector('[type=submit]');
+    if (!btn || btn.dataset.dlNoBusy !== undefined) return;
+    setTimeout(() => { if (e.defaultPrevented) return; btn.disabled = true; btn.classList.add('is-busy'); btn.dataset.dlLabel = btn.innerHTML; btn.innerHTML = '<span class="dl-spinner__ring dl-spinner__ring--inline"></span> ' + (currentLang === 'en' ? 'Processing…' : 'Memproses…'); }, 0);
+  });
+
+  function initNotif(root) {
+    const all = $(root, '[data-dl-notif-all]'), count = $(root, '[data-dl-notif-count]');
+    const refresh = () => { const n = $$(root, '.dl-notif__item.is-unread').length; if (count) { count.textContent = n + ' belum dibaca'; count.hidden = !n; } if (all) all.hidden = !n; };
+    root.addEventListener('click', e => { const it = e.target.closest('[data-dl-notif-item]'); if (it) { it.classList.remove('is-unread'); const d = $(it, '.dl-notif__dot'); if (d) d.remove(); refresh(); } });
+    if (all) all.addEventListener('click', () => { $$(root, '.dl-notif__item.is-unread').forEach(it => { it.classList.remove('is-unread'); const d = $(it, '.dl-notif__dot'); if (d) d.remove(); }); refresh(); toast('Semua notifikasi ditandai dibaca.', 'success'); });
+  }
 
   /* ============================ BASIC ============================ */
   // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
@@ -845,7 +898,7 @@
     tick(); setInterval(tick, 1000);
   }
 
-  window.Devlib = {toast, setDevMode, fmt};
+  window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id))};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
     document.querySelectorAll('[data-dl-themepick]').forEach(initThemePicker);
@@ -873,6 +926,7 @@
     document.querySelectorAll('[data-dl-upload]').forEach(initUpload);
     document.querySelectorAll('[data-dl-counter]').forEach(initCounter);
     document.querySelectorAll('[data-dl-back]').forEach(initBack);
+    document.querySelectorAll('[data-dl-notif]').forEach(initNotif);
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.addEventListener('click', () => {

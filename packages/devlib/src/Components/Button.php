@@ -9,7 +9,7 @@ class Button extends DevlibComponent
         public string $label = '',
         public string $variant = 'primary',
         public string $size = 'md',
-        public string $type = 'button',
+        public ?string $type = null,
         public ?string $href = null,
         public ?string $icon = null,
         public bool $block = false,
@@ -21,8 +21,9 @@ class Button extends DevlibComponent
             $this->label = $this->label !== '' ? $this->label : (\Devlib\Locale::lang() === 'en' ? $en : $id);
             $this->variant = $this->variant === 'primary' ? $variant : $this->variant;
             $this->icon ??= $icon;
-            $this->type = $this->type === 'button' ? $type : $this->type;
+            $this->type ??= $type;
         }
+        $this->type ??= 'button';
     }
 
     // Aksi umum berlabel BAKU (LOCKED): satu kata sama di semua layar, ikut bahasa.

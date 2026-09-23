@@ -50,7 +50,7 @@ final class Catalog
             ['code' => 'P2', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
                 'pages' => self::smallCategories(),
                 'files' => ['Mockup' => ['bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html']]],
-            ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'files' => ['Mockup' => ['mockup_notification.jpg']]],
+            ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'pages' => self::feedbackCategories(), 'files' => []],
             ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'files' => []],
             ['code' => 'P5', 'label' => '5 · Big Components', 'icon' => 'fa-solid fa-table-list',
                 'pages' => ['form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
@@ -91,7 +91,7 @@ final class Catalog
     // Mockup yang sudah punya komponen -> tidak diulang di daftar "belum dibangun".
     public static function builtMockups(): array
     {
-        return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
+        return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_notification.jpg', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
             'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html'];
     }
 
@@ -138,6 +138,29 @@ final class Catalog
         foreach ($cats as $slug => [$label, $icon, $members]) {
             $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'part' => '2 · Small Components',
                 'classes' => array_values(array_unique(array_merge(...array_column($members, 1)))), 'mockup' => 'UIUX_components_part1.html'];
+        }
+
+        return $out;
+    }
+
+    public static function feedbackCategories(): array
+    {
+        $c = fn (...$cls) => array_map(fn ($x) => 'Devlib\\Components\\'.$x, $cls);
+        $cats = [
+            'p3-feedback' => ['Toast · Confirm · Modal · Drawer', 'fa-solid fa-comment-dots', [
+                'toast' => ['Toast', []], 'confirm' => ['Confirm modal', $c('Button', 'IconButton')], 'modal-drawer' => ['Modal · Drawer', $c('Modal', 'Drawer')],
+            ]],
+            'p3-loading' => ['Loading · Empty', 'fa-solid fa-spinner', [
+                'skeleton' => ['Skeleton', $c('Skeleton')], 'spinner' => ['Spinner', $c('Spinner')], 'empty-state' => ['Empty State', $c('EmptyState')],
+            ]],
+            'p3-notifications' => ['Notifications', 'fa-solid fa-bell', ['notification-list' => ['Notification List', $c('NotificationList')]], 'mockup_notification.jpg'],
+            'p3-errors' => ['Error Pages', 'fa-solid fa-triangle-exclamation', ['error-pages' => ['403 · 404 · 419 · 500 · 503 · Offline', $c('ErrorPage')]]],
+        ];
+        $out = [];
+        foreach ($cats as $slug => $cat) {
+            [$label, $icon, $members] = $cat;
+            $out[$slug] = ['label' => $label, 'icon' => $icon, 'members' => $members, 'part' => '3 · Feedback & States',
+                'classes' => array_values(array_unique(array_merge([], ...array_column($members, 1)))), 'mockup' => $cat[3] ?? null];
         }
 
         return $out;
