@@ -21,6 +21,11 @@ return [
     'media_url' => '/media',
 
     // Variasi login yang dipakai halaman /login = resources/views/demos/login-<n>.blade.php.
+    // Identitas cetak contoh. Non PPN = nama dagang; PPN = badan usaha terdaftar + NPWP (keputusan user 2026-09-23).
+    // Di tmerp nilainya dari Settings > Identifikasi (sys_constant COMPANY_NAME / COMPANY_LEGAL_NAME / NPWP).
+    'company' => ['name' => 'Telasih Makmur', 'initials' => 'TM', 'tagline' => 'Offset Printing & Packaging', 'address' => 'Jl. Contoh Industri No. 42, Surabaya (contoh)', 'contact' => 'Telp. (031) 000-0000 · contoh@telasihmakmur.test'],
+    'company_ppn' => ['name' => 'CV. Langgeng Jaya Makmur', 'initials' => 'LJ', 'tagline' => 'Offset Printing & Packaging', 'address' => 'Jl. Contoh Industri No. 42, Surabaya (contoh)', 'contact' => 'Telp. (031) 000-0000', 'npwp' => '00.000.000.0-000.000 (contoh)'],
+
     'login_variant' => env('DEVLIB_LOGIN_VARIANT', 1),
 
     // Folder mockup user (di repo tmerp, satu tingkat di atas situs ini).

@@ -89,6 +89,21 @@ final class DemoData
         ];
     }
 
+    // Baris nota CO contoh (mengikuti nota_co_mockup).
+    public static function coLines(int $n = 18): array
+    {
+        $names = ['Box Snack 200g', 'Sleeve Teh Celup 25s', 'Jasa Cetak Kemasan (bahan customer)', 'Pouch Kopi Sachet 10g', 'Box Biskuit Family Pack', 'Label Botol Saus 250ml', 'Karton Master Box 12in1', 'Sleeve Cup Es Krim 90ml', 'Box Obat Herbal 30 Tab'];
+        $specs = ['230x160x60mm, DC 350gsm, UV varnish, cetak 4/0', '180x60mm, art paper 210gsm, cetak 4/1 +1 PMS 032C', '200x140mm, bahan customer, cetak 4/0', '120x80mm, laminasi metalize, cetak 4/4', '300x200x80mm, DC 400gsm, cetak 2/0 +1 PMS 286C'];
+        $out = [];
+        for ($i = 0; $i < $n; $i++) {
+            $qty = 3000 + $i * 770; $price = 150 + $i * 37; $disc = $i % 4 === 0 ? 2 : 0;
+            $out[] = ['name' => $names[$i % count($names)], 'code' => sprintf('FG-%04d', 101 + $i), 'spec' => $specs[$i % count($specs)], 'ship' => date('j M y', strtotime('2026-09-05 +'.$i.' days')),
+                'qty' => $qty, 'price' => $price, 'disc' => $disc ? $disc.'%' : '–', 'subtotal' => round($qty * $price * (1 - $disc / 100))];
+        }
+
+        return $out;
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];

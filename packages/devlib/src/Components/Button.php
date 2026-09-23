@@ -63,9 +63,9 @@ class Button extends DevlibComponent
     {
         return <<<'BLADE'
             @if ($href)
-                <a href="{{ $href }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</a>
+                <a href="{{ $href }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]) || str_starts_with($icon, 'fa-'))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</a>
             @else
-                <button type="{{ $type }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif @if ($shortcut()) data-dl-key="{{ $shortcut() }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</button>
+                <button type="{{ $type }}" {{ $attributes->class($classes()) }} {!! $dl() !!} @if ($i18n) data-i18n="{{ $i18n }}" @endif @if ($preset) data-dl-preset="{{ $preset }}" @endif @if ($shortcut()) data-dl-key="{{ $shortcut() }}" @endif>@if ($icon)<span class="dl-btn__icon">@if (isset(\Devlib\Icon::MAP[$icon]) || str_starts_with($icon, 'fa-'))<i class="fa-solid {{ \Devlib\Icon::fa($icon) }}"></i>@else{{ $icon }}@endif</span>@endif{{ $label }}{{ $slot }}</button>
             @endif
             BLADE;
     }

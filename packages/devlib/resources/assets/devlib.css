@@ -1407,3 +1407,72 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-cal2{container-type:inline-size}
 @container (max-width:1150px){.dl-cal2__body{grid-template-columns:220px 1fr}.dl-cal2__right{display:none}}
 @container (max-width:720px){.dl-cal2__body{grid-template-columns:1fr}.dl-cal2__left{display:none}}
+
+/* ================= PRINT OUT (Part 5i) ================= */
+/* Kertas cetak selalu putih & tinta tetap (tidak ikut tema layar). */
+:root{--dl-pr-warnbg:#fff7ed;--dl-pr-soft:#f8fafc;--dl-pr-head:#eef2f7;--dl-pr-line:#cbd5e1;--dl-pr-line2:#e5e7eb;--dl-pr-ink:#1f2937;--dl-pr-brand:#1f2d4d;--dl-pr-muted:#6b7280;--dl-pr-strong:#111827;--dl-pr-ok:#059669;--dl-pr-violet:#6d28d9;--dl-pr-net:#047857;--dl-pr-warn:#d97706;--dl-pr-sign:#374151;--dl-pr-faint:#9ca3af;--dl-pr-paper:#fff}
+.dl-print{--dl-pw:210mm;--dl-ph:297mm;--dl-pad:14mm;display:flex;flex-direction:column;gap:14px}
+.dl-print[data-paper="a5"]{--dl-pw:210mm;--dl-ph:148mm;--dl-pad:9mm}
+.dl-print__bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:var(--dl-navy);color:var(--dl-white);border-radius:var(--dl-radius-lg)}
+.dl-print__doc{opacity:.8;font-size:calc(12.5px * var(--dl-font-scale))}
+.dl-print__spacer{flex:1}
+.dl-print__lbl{font-size:calc(11.5px * var(--dl-font-scale));opacity:.8}
+.dl-print__bar .dl-segment{background:var(--dl-surface)}
+.dl-print__pages{display:flex;flex-direction:column;align-items:center;gap:16px;overflow-x:auto;padding-bottom:10px}
+.dl-print__sheet{width:var(--dl-pw);height:var(--dl-ph);flex:none;background:var(--dl-pr-paper);color:var(--dl-pr-ink);box-shadow:0 4px 18px rgba(15,22,45,.18);font-family:var(--dl-font);font-size:10.5px;line-height:1.35}
+.dl-print__inner{height:100%;padding:var(--dl-pad);display:flex;flex-direction:column;overflow:hidden}
+[data-p-body]{flex:1;min-height:0}
+.dl-print__kop{display:flex;justify-content:space-between;gap:16px;padding-bottom:8px;border-bottom:2px solid var(--dl-pr-brand);margin-bottom:10px}
+.dl-print__co{display:flex;gap:10px;align-items:flex-start}
+.dl-print__co[hidden]{display:none}
+.dl-print__logo{width:40px;height:40px;border-radius:8px;background:var(--dl-pr-brand);color:var(--dl-pr-paper);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex:none;text-transform:uppercase}
+.dl-print__co b{display:block;font-size:14px;color:var(--dl-pr-brand)}
+.dl-print__co > div small,.dl-print__co > div span{display:block;color:var(--dl-pr-muted);font-size:9.5px}
+.dl-print__npwp{color:var(--dl-pr-brand)!important;font-weight:700}
+.dl-print__titlebox{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.dl-print__title{font-size:14px;color:var(--dl-pr-brand);text-transform:uppercase;letter-spacing:.02em}
+.dl-print__titlebox small{color:var(--dl-pr-muted);font-size:9.5px}
+.dl-print__docno{font-size:12px;font-weight:800;color:var(--dl-pr-strong)}
+.dl-print__meta{color:var(--dl-pr-muted);font-size:9.5px}
+.dl-print__status{margin-top:3px;border:1.5px solid var(--dl-pr-ok);color:var(--dl-pr-ok);border-radius:4px;padding:1px 8px;font-weight:800;font-size:9.5px;letter-spacing:.05em}
+.dl-print__parties{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin-bottom:10px}
+.dl-print__parties > div{display:grid;grid-template-columns:110px 1fr;gap:6px}
+.dl-print__parties span{color:var(--dl-pr-muted)}
+.dl-print__parties span::after{content:" :";float:right}
+.dl-print__parties small{font-weight:400;color:var(--dl-pr-muted)}
+.dl-print__table{width:100%;border-collapse:collapse;margin-bottom:8px}
+.dl-print__table th{background:var(--dl-pr-head);border:1px solid var(--dl-pr-line);padding:4px 5px;font-size:9.5px;color:var(--dl-pr-ink);text-align:center}
+.dl-print__table td{border:1px solid var(--dl-pr-line);padding:3px 5px;vertical-align:top}
+.dl-print__table td.num{text-align:right;white-space:nowrap}
+.dl-print__table th{white-space:nowrap}
+.dl-print__table td small{display:block;color:var(--dl-pr-muted);font-size:8.5px;font-family:var(--dl-font-mono)}
+.dl-print__no{width:26px;text-align:center}
+td.dl-print__no{text-align:center}
+.dl-print__tail{break-inside:avoid}
+.dl-print__totals{margin-left:auto;width:260px;display:flex;flex-direction:column;gap:2px}
+.dl-print__totals > div{display:flex;justify-content:space-between}
+.dl-print__totals span{color:var(--dl-pr-muted)}
+.dl-print__totals .is-strong span,.dl-print__totals .is-strong b{color:var(--dl-pr-strong);font-weight:800}
+.dl-print__totals .is-muted span{color:var(--dl-pr-muted)}
+.dl-print__totals .is-violet span,.dl-print__totals .is-violet b{color:var(--dl-pr-violet)}
+.dl-print__totals .is-net{border-top:1px solid var(--dl-pr-line);padding-top:3px}
+.dl-print__totals .is-net span,.dl-print__totals .is-net b{color:var(--dl-pr-net);font-weight:800}
+.dl-print__words{margin:6px 0 8px;padding:5px 8px;background:var(--dl-pr-soft);border-left:3px solid var(--dl-pr-brand);font-size:10px}
+.dl-print__words span{font-weight:700}
+.dl-print__notes{border-left:3px solid var(--dl-pr-warn);background:var(--dl-pr-warnbg);padding:6px 10px;margin:6px 0;font-size:9.5px}
+.dl-print__sign{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:20px;margin-top:14px;text-align:center}
+.dl-print__sign span{color:var(--dl-pr-muted)}
+.dl-print__sign i{display:block;height:44px;border-bottom:1px solid var(--dl-pr-sign);margin:0 10px}
+.dl-print__sign b{display:block;margin-top:3px;font-weight:500}
+.dl-print__sign small{color:var(--dl-pr-muted)}
+.dl-print__foot{display:flex;justify-content:space-between;margin-top:8px;padding-top:4px;border-top:1px solid var(--dl-pr-line2);color:var(--dl-pr-faint);font-size:8.5px}
+.dl-print.is-bw .dl-print__sheet{filter:grayscale(1)}
+.dl-print.is-bw .dl-print__table th,.dl-print.is-bw .dl-print__words,.dl-print.is-bw .dl-print__notes{background:var(--dl-pr-paper)}
+[data-p-bw].is-on{outline:2px solid var(--dl-amber-2)}
+@media print{
+  body *{visibility:hidden}
+  .dl-print__pages,.dl-print__pages *{visibility:visible}
+  .dl-print__pages{position:absolute;left:0;top:0;gap:0;padding:0;display:block}
+  .dl-print__sheet{box-shadow:none;break-after:page;margin:0}
+  .dl-print__bar{display:none}
+}

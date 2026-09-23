@@ -2219,6 +2219,84 @@
     setInterval(() => { const nl = $(main, '.dl-cal2__now'), n = nowW(); if (nl) nl.style.top = (n.getHours() + n.getMinutes() / 60) * HPX + 'px'; }, 60000);
   }
 
+
+  /* ============================ PRINT OUT ============================ */
+  // Menyusun dokumen ke lembar A4/A5: isi baris sampai lembar penuh (diukur, bukan ditebak), header tabel diulang,
+  // total + catatan + tanda tangan hanya di lembar terakhir.
+  function initPrint(el) {
+    const cfg = JSON.parse(el.dataset.config), cols = cfg.columns, rows = cfg.rows, T = cfg.totals || {}, pages = $(el, '[data-p-pages]');
+    const tpl = n => $(el, `template[data-p-${n}]`).innerHTML;
+    const num = v => (+v || 0).toLocaleString('id-ID', {maximumFractionDigits: 2});
+    const vis = () => cols.filter(c => el.dataset.prices === '1' || !c.price);
+    const cell = (c, r) => { const v = r[c.key]; const txt = c.type === 'money' || c.type === 'number' ? (v === '' || v == null ? '' : num(v)) : esc(v ?? ''); return `<td class="${c.type === 'text' ? '' : 'num'}">${txt}${c.sub && r[c.sub] ? `<small>${esc(r[c.sub])}</small>` : ''}</td>`; };
+    function thead() {
+      const v = vis(), grouped = v.some(c => c.group);
+      if (!grouped) return `<tr><th class="dl-print__no">No</th>${v.map(c => `<th class="${c.type === 'text' ? '' : 'num'}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}</th>`).join('')}</tr>`;
+      let top = '<tr><th rowspan="2" class="dl-print__no">No</th>', bottom = '<tr>';
+      v.forEach((c, i) => {
+        if (!c.group) { top += `<th rowspan="2">${esc(c.label)}</th>`; return; }
+        if (i && v[i - 1].group === c.group) { bottom += `<th>${esc(c.label)}</th>`; return; }
+        top += `<th colspan="${v.filter(x => x.group === c.group).length}">${esc(c.group)}</th>`; bottom += `<th>${esc(c.label)}</th>`;
+      });
+      return top + '</tr>' + bottom + '</tr>';
+    }
+    function totals() {
+      if (!T.of || el.dataset.prices !== '1') return '';
+      const sub = rows.reduce((t, r) => t + (+r[T.of] || 0), 0), disc = +T.discount || 0, dpp = sub - disc;
+      const ppnOn = T.ppn && (!cfg.hasPpnKop || el.dataset.ppn === '1'), dec = 10 ** (cfg.currency ? cfg.currency[5] : 2), ppn = ppnOn ? Math.round(dpp * T.ppn / 100 * dec) / dec : 0, grand = dpp + ppn;
+      const extra = (T.extra || []).reduce((t, [, v]) => t + (+v || 0), 0);
+      const line = (l, v, cls = '') => `<div class="${cls}"><span>${esc(l)}</span><b>${v < 0 ? `(${num(-v)})` : num(v)}</b></div>`;
+      const final = T.net ? grand + extra : grand;
+      return `<div class="dl-print__totals">${line('Subtotal', sub)}${disc ? line('Diskon', -disc) + line('DPP', dpp, 'is-strong') : ''}${ppnOn ? line(`PPN ${T.ppn}%`, ppn, 'is-muted') : ''}${line(T.net ? 'Total Tagihan' : 'Total', grand, 'is-strong')}${T.net ? (T.extra || []).map(([l, v]) => line(l, v, 'is-violet')).join('') + line(T.net, final, 'is-net') : ''}</div>
+        <p class="dl-print__words"><span>Terbilang:</span> <i># ${esc(words(String(Math.round(final * 100) / 100), cfg.currency))} #</i></p>`;
+    }
+    function sheet() {
+      const s = document.createElement('section'); s.className = 'dl-print__sheet';
+      s.innerHTML = `<div class="dl-print__inner">${tpl('head')}<div data-p-body></div>${tpl('foot')}</div>`;
+      const ppn = el.dataset.ppn === '1';
+      $$(s, '[data-p-kop]').forEach(k => { k.hidden = (k.dataset.pKop === '1') !== (ppn && cfg.hasPpnKop); });
+      pages.appendChild(s); return s;
+    }
+    const fits = s => { const inner = $(s, '.dl-print__inner'); return inner.scrollHeight <= inner.clientHeight + 1; };
+    function build() {
+      pages.innerHTML = '';
+      el.dataset.paperNow = el.dataset.paper;
+      let s = sheet(), body = $(s, '[data-p-body]');
+      body.insertAdjacentHTML('beforeend', tpl('parties'));
+      const table = () => { body.insertAdjacentHTML('beforeend', `<table class="dl-print__table"><thead>${thead()}</thead><tbody></tbody></table>`); return $(body, 'tbody:last-of-type'); };
+      let tb = table();
+      rows.forEach((r, i) => {
+        tb.insertAdjacentHTML('beforeend', `<tr><td class="dl-print__no">${i + 1}</td>${vis().map(c => cell(c, r)).join('')}</tr>`);
+        if (!fits(s) && tb.rows.length > 1) { const last = tb.lastElementChild; last.remove(); s = sheet(); body = $(s, '[data-p-body]'); tb = table(); tb.appendChild(last); }
+      });
+      // Penutup (total, terbilang, catatan, tanda tangan) harus utuh di satu lembar; bila tidak muat, baris terakhir ikut pindah.
+      const tail = totals() + tpl('notes') + tpl('sign');
+      body.insertAdjacentHTML('beforeend', `<div class="dl-print__tail">${tail}</div>`);
+      if (!fits(s)) {
+        $(body, '.dl-print__tail').remove();
+        const n = Math.min(2, tb.rows.length - 1), carry = n > 0 ? [...tb.rows].slice(-n) : [];
+        s = sheet(); body = $(s, '[data-p-body]');
+        if (carry.length) { const nt = table(); carry.forEach(tr => nt.appendChild(tr)); }
+        body.insertAdjacentHTML('beforeend', `<div class="dl-print__tail">${tail}</div>`);
+      }
+      const all = $$(pages, '.dl-print__sheet');
+      all.forEach((sh, i) => $$(sh, '[data-p-pg]').forEach(x => { x.textContent = `${i + 1}/${all.length}`; }));
+      let st = document.getElementById('dl-print-page'); if (!st) { st = document.createElement('style'); st.id = 'dl-print-page'; document.head.appendChild(st); }
+      st.textContent = `@page{size:${el.dataset.paper === 'a5' ? 'A5 landscape' : 'A4 portrait'};margin:0}`;
+      const seg = (sel, v) => $$(el, `${sel} .dl-segment__opt`).forEach(b => b.classList.toggle('is-active', b.dataset.value === v));
+      seg('[data-p-paper]', el.dataset.paper); seg('[data-p-prices]', el.dataset.prices); seg('[data-p-ppn]', el.dataset.ppn);
+      el.dispatchEvent(new CustomEvent('dl:print-built', {bubbles: true, detail: {pages: all.length}}));
+    }
+    el.addEventListener('click', e => {
+      const o = e.target.closest('.dl-segment__opt');
+      if (o) { const k = o.closest('[data-p-paper]') ? 'paper' : o.closest('[data-p-prices]') ? 'prices' : o.closest('[data-p-ppn]') ? 'ppn' : null; if (k) { el.dataset[k] = o.dataset.value; build(); } return; }
+      if (e.target.closest('[data-p-bw]')) { el.classList.toggle('is-bw'); e.target.closest('[data-p-bw]').classList.toggle('is-on'); return; }
+      if (e.target.closest('[data-p-print]')) window.print();
+    });
+    build();
+    el.dlPrint = {build};
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -2252,6 +2330,7 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-print]').forEach(initPrint);
     document.querySelectorAll('[data-dl-calendar]').forEach(initCalendar);
     document.querySelectorAll('[data-dl-gantt]').forEach(initGantt);
     document.querySelectorAll('[data-dl-words]').forEach(initNumberWords);
