@@ -15,48 +15,302 @@
     clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('is-show'), 2200);
   }
 
+  /* ========================= PRIMITIVE ========================= */
+  let currentLang = new URLSearchParams(location.search).get('lang') || 'id';
+
+  function initLangs(root) {
+    $$(root, '.dl-flag').forEach(f => f.addEventListener('click', () => {
+      currentLang = f.dataset.lang;
+      document.querySelectorAll('[data-dl-langs] .dl-flag').forEach(x => x.classList.toggle('is-active', x.dataset.lang === currentLang));
+      document.documentElement.lang = currentLang;
+      document.dispatchEvent(new CustomEvent('dl:lang', {detail: currentLang}));
+    }));
+    $$(root, '.dl-flag').forEach(x => x.classList.toggle('is-active', x.dataset.lang === currentLang));
+  }
+
+  function initClock(root) {
+    const t = $(root, '[data-dl-clock-time]'), d = $(root, '[data-dl-clock-date]');
+    const tick = () => {
+      const now = new Date(), loc = currentLang === 'id' ? 'id-ID' : 'en-US';
+      t.textContent = now.toLocaleTimeString(loc, {hour12: false});
+      d.textContent = now.toLocaleDateString(loc, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
+    };
+    tick(); setInterval(tick, 1000); document.addEventListener('dl:lang', tick);
+  }
+
+  function initQuote(root) {
+    const list = JSON.parse(root.dataset.quotes || '[]');
+    if (!list.length) return;
+    const q = list[Math.floor(Math.random() * list.length)];
+    $(root, '[data-dl-quote-text]').textContent = q.t;
+    $(root, '[data-dl-quote-author]').textContent = q.a;
+  }
+
+  function initHero(root) {
+    const imgs = JSON.parse(root.dataset.images || '[]'), img = $(root, '.dl-hero__img');
+    img.onload = () => img.classList.add('is-on');
+    if (imgs.length) img.src = imgs[Math.floor(Math.random() * imgs.length)];
+  }
+
+  function initSplit(root) {
+    const val = $(root, '[data-dl-split-value]');
+    $(root, '[data-dl-split-toggle]').addEventListener('click', e => { e.stopPropagation(); root.classList.toggle('is-open'); });
+    $$(root, '.dl-split__item').forEach(it => it.addEventListener('click', e => {
+      e.stopPropagation();
+      val.value = it.dataset.action;
+      $(root, '[data-dl-split-label]').textContent = it.dataset.action;
+      $(root, '[data-dl-split-icon]').textContent = it.dataset.icon;
+      root.classList.remove('is-open');
+    }));
+  }
+
+  function initDevice(root) {
+    const view = $(root, '[data-dl-device-view]');
+    $$(root, '.dl-device__btn').forEach(b => b.addEventListener('click', () => {
+      $$(root, '.dl-device__btn').forEach(x => x.classList.toggle('is-active', x === b));
+      view.className = 'dl-device__view is-' + b.dataset.mode;
+    }));
+  }
+
+  // Tombol tambahan form (mockup: "Generate QR Code Data") -> QR berisi semua isian form.
+  function initForm(form) {
+    form.addEventListener('submit', e => {
+      if (!form.getAttribute('action')) { e.preventDefault(); toast('Aksi: ' + (form.querySelector('[data-dl-split-value]')?.value || 'Submit') + ' (pratinjau, tidak dikirim)'); }
+    });
+    const extra = form.querySelector('[data-dl-form-extra]');
+    if (!extra) return;
+    extra.addEventListener('click', () => {
+      const data = {};
+      new FormData(form).forEach((v, k) => {
+        if (k === '_token' || k === '_action' || v instanceof File) return;
+        if (/password/i.test(k)) v = v ? '********' : '-';
+        k = k.replace(/\[\]$/, '');
+        data[k] = k in data ? [].concat(data[k], v) : v;
+      });
+      showQr(JSON.stringify(data, null, 2));
+    });
+  }
+
+  function showQr(text) {
+    let ov = document.querySelector('.dl-qr');
+    if (!ov) {
+      ov = document.createElement('div'); ov.className = 'dl-mov dl-qr';
+      ov.innerHTML = '<div class="dl-modal" style="max-width:300px"><div class="dl-modal__head"><h3>Form QR Code Data</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div><div class="dl-modal__body" style="display:flex;justify-content:center"><div data-qr></div></div><div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-x>Tutup</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-qr-dl>Download PNG</button></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-x]')) ov.classList.remove('is-on'); });
+      ov.querySelector('[data-dl-qr-dl]').addEventListener('click', () => { const img = ov.querySelector('[data-qr] img, [data-qr] canvas'); if (!img) return; const a = document.createElement('a'); a.href = img.src || img.toDataURL(); a.download = 'form-qrcode.png'; a.click(); });
+    }
+    const draw = () => { const box = ov.querySelector('[data-qr]'); box.innerHTML = ''; new window.QRCode(box, {text, width: 180, height: 180, colorDark: '#111827', colorLight: '#ffffff'}); ov.classList.add('is-on'); };
+    if (window.QRCode) return draw();
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload = draw; document.head.appendChild(s);
+  }
+
+  /* ============================ FIELD ============================ */
+  const CASES = ['none', 'capitalize', 'uppercase'], CASE_LABEL = {none: 'aa', capitalize: 'Aa', uppercase: 'AA'};
+  const applyCase = (t, m) => m === 'uppercase' ? t.toUpperCase() : m === 'capitalize' ? t.replace(/\b\w/g, c => c.toUpperCase()) : t;
+  const idNum = n => Number(n).toLocaleString('id-ID');
+
+  // Panel dropdown/popover milik field: buka/tutup; klik di luar menutup semua.
+  function bindPanel(root, onOpen) {
+    const toggle = $(root, '[data-dl-dd-toggle]'), panel = $(root, '[data-dl-dd-panel]');
+    if (!toggle || !panel) return {};
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !panel.classList.contains('is-open');
+      document.querySelectorAll('[data-dl-dd-panel].is-open').forEach(p => p.classList.remove('is-open'));
+      panel.classList.toggle('is-open', open);
+      if (open && onOpen) onOpen();
+    });
+    panel.addEventListener('click', e => e.stopPropagation());
+    const search = $(panel, '[data-dl-dd-search]');
+    if (search) search.addEventListener('input', () => $$(panel, '.dl-dd__item').forEach(it => { it.style.display = it.textContent.toLowerCase().includes(search.value.toLowerCase()) ? '' : 'none'; }));
+    return {panel, search, close: () => panel.classList.remove('is-open')};
+  }
+
+  function initField(f) {
+    const input = $(f, '.dl-input');
+
+    const caseBtn = $(f, '[data-dl-case]');
+    if (caseBtn && input) {
+      let idx = 0;
+      caseBtn.addEventListener('click', () => { idx = (idx + 1) % 3; caseBtn.textContent = CASE_LABEL[CASES[idx]]; input.value = applyCase(input.value, CASES[idx]); });
+      input.addEventListener('input', () => { const p = input.selectionStart; input.value = applyCase(input.value, CASES[idx]); try { input.setSelectionRange(p, p); } catch (e) {} });
+    }
+    $$(f, '[data-dl-autogrow]').forEach(t => { const g = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }; t.addEventListener('input', g); g(); });
+
+    const eye = $(f, '[data-dl-eye]');
+    if (eye) eye.addEventListener('click', () => { const show = input.type === 'password'; input.type = show ? 'text' : 'password'; eye.innerHTML = `<i class="fa-solid fa-eye${show ? '-slash' : ''}"></i>`; });
+
+    const sel = $(f, '[data-dl-select]');
+    if (sel) {
+      const p = bindPanel(sel, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); p.search.focus(); } });
+      $$(sel, '.dl-dd__item').forEach(it => it.addEventListener('click', () => { $(sel, '[data-dl-value]').value = it.dataset.value; $(sel, '[data-dl-dd-text]').textContent = it.textContent; p.close(); }));
+    }
+
+    const multi = $(f, '[data-dl-multi]');
+    if (multi) {
+      bindPanel(multi);
+      const upd = () => {
+        const v = $$(multi, 'input:checked').map(c => c.dataset.label);
+        $(multi, '[data-dl-dd-text]').textContent = !v.length ? multi.dataset.empty : v.length === 1 ? v[0] : `${v.length} ${multi.dataset.noun} (${v.join(', ')})`;
+      };
+      $$(multi, 'input').forEach(c => c.addEventListener('change', upd)); upd();
+    }
+
+    const color = $(f, '[data-dl-color]');
+    if (color) color.addEventListener('input', () => { $(f, '[data-dl-color-code]').textContent = color.value.toUpperCase(); });
+
+    const tg = $(f, '[data-dl-toggle]');
+    if (tg) { const cb = $(tg, 'input'); cb.addEventListener('change', () => { $(tg, '[data-dl-toggle-label]').textContent = cb.checked ? tg.dataset.on : tg.dataset.off; }); }
+
+    const sl = $(f, '[data-dl-slider]');
+    if (sl) { const r = $(sl, 'input'), o = $(sl, '[data-dl-slider-value]'); const u = () => { o.textContent = sl.dataset.format.replace('{v}', idNum(r.value)); }; r.addEventListener('input', u); u(); }
+
+    const dr = $(f, '[data-dl-daterange]');
+    if (dr) {
+      const [a, b] = $$(dr, 'input'), hint = $(f, '[data-dl-duration]');
+      const u = () => {
+        if (!hint || !a.value || !b.value) return;
+        const d1 = new Date(a.value), d2 = new Date(b.value);
+        if (d2 < d1) { hint.textContent = 'Durasi: Tanggal akhir tidak valid.'; return; }
+        const m = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+        hint.textContent = `Durasi: ${Math.floor(m / 12)} Tahun ${m % 12} Bulan`;
+      };
+      a.addEventListener('change', u); b.addEventListener('change', u); u();
+    }
+
+    const otp = $(f, '[data-dl-otp]');
+    if (otp) {
+      const boxes = $$(otp, '.dl-otp__box'), hidden = $(otp, '[data-dl-value]');
+      boxes.forEach((bx, i) => bx.addEventListener('keyup', e => {
+        bx.value = bx.value.replace(/\D/g, '');
+        if (e.key >= '0' && e.key <= '9' && i < boxes.length - 1) boxes[i + 1].focus();
+        else if (e.key === 'Backspace' && i > 0) boxes[i - 1].focus();
+        hidden.value = boxes.map(x => x.value).join('');
+      }));
+    }
+
+    const rt = $(f, '[data-dl-rating]');
+    if (rt) {
+      const stars = $$(rt, '.dl-rating__star'), hidden = $(rt, '[data-dl-value]'), max = rt.dataset.max;
+      const paint = (v, cls) => stars.forEach(s => s.classList.toggle(cls, +s.dataset.value <= v));
+      stars.forEach(s => {
+        s.addEventListener('click', () => { hidden.value = s.dataset.value; paint(+hidden.value, 'is-active'); $(rt, '[data-dl-rating-text]').textContent = `${hidden.value} / ${max} Star${hidden.value > 1 ? 's' : ''}`; });
+        s.addEventListener('mouseover', () => paint(+s.dataset.value, 'is-hover'));
+        s.addEventListener('mouseout', () => paint(0, 'is-hover'));
+      });
+    }
+
+    const mask = $(f, '[data-dl-mask]');
+    if (mask) {
+      const pat = mask.dataset.dlMask, digits = (pat.match(/9/g) || []).length, err = $(f, '[data-dl-field-error]');
+      mask.addEventListener('input', () => {
+        const raw = mask.value.replace(/\D/g, '').slice(0, digits); let out = '', j = 0;
+        for (const ch of pat) { if (j >= raw.length) break; out += ch === '9' ? raw[j++] : ch; }
+        mask.value = out;
+      });
+      mask.addEventListener('blur', () => { const n = mask.value.replace(/\D/g, '').length; const bad = n > 0 && n < digits; f.classList.toggle('is-invalid', bad); err.textContent = bad ? mask.dataset.invalid : ''; });
+    }
+
+    const pre = $(f, '[data-dl-prefix]');
+    if (pre) {
+      const p = bindPanel(pre, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); } });
+      const money = pre.hasAttribute('data-dl-money'), mi = $(pre, '[data-dl-money-input]'), hint = $(f, '[data-dl-money-hint]');
+      const updMoney = () => {
+        const raw = mi.value.replace(/\D/g, '');
+        mi.value = raw ? BigInt(raw).toLocaleString('id-ID') : '';
+        hint.textContent = raw ? `Terbaca: ${$(pre, '[data-dl-prefix-a]').textContent} ${BigInt(raw).toLocaleString('id-ID')} (${$(pre, '[data-dl-prefix-b]').textContent})` : 'Terbaca: -';
+      };
+      $$(pre, '.dl-dd__item').forEach(it => it.addEventListener('click', () => {
+        $(pre, '[data-dl-prefix-value]').value = it.dataset.value;
+        $(pre, '[data-dl-prefix-a]').textContent = it.dataset.a; $(pre, '[data-dl-prefix-b]').textContent = it.dataset.b;
+        p.close(); if (money) updMoney();
+      }));
+      if (money) { mi.addEventListener('input', updMoney); updMoney(); }
+      const ph = $(pre, '[data-dl-phone]');
+      if (ph) ph.addEventListener('input', () => {
+        const r = ph.value.replace(/\D/g, '').slice(0, 12);
+        ph.value = [r.slice(0, 3), r.slice(3, 7), r.slice(7, 12)].filter(Boolean).join('-');
+      });
+    }
+
+    const dec = $(f, '[data-dl-decimal]');
+    if (dec) {
+      const n = +dec.dataset.dlDecimal;
+      dec.addEventListener('input', () => { dec.value = dec.value.replace(/[^0-9.,]/g, '').replace(',', '.'); });
+      dec.addEventListener('blur', () => { if (dec.value !== '' && !isNaN(parseFloat(dec.value))) dec.value = parseFloat(dec.value).toFixed(n); });
+    }
+
+    const num = $(f, '[data-dl-number]');
+    if (num) {
+      const inp = $(num, 'input'), min = num.dataset.min === '' ? -Infinity : +num.dataset.min, max = num.dataset.max === '' ? Infinity : +num.dataset.max, step = +num.dataset.step || 1;
+      const clamp = v => Math.min(max, Math.max(min, v));
+      $$(num, '[data-dl-spin]').forEach(b => b.addEventListener('click', () => { inp.value = clamp((parseInt(inp.value, 10) || 0) + step * b.dataset.dlSpin); }));
+      inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, ''); });
+      inp.addEventListener('blur', () => { inp.value = clamp(parseInt(inp.value, 10) || 0); });
+    }
+
+    const up = $(f, '[data-dl-upload]');
+    if (up) {
+      const file = $(up, 'input[type=file]'), name = $(up, '[data-dl-upload-name]');
+      const show = () => { const fl = file.files[0]; up.classList.toggle('has-file', !!fl); name.textContent = fl ? fl.name : ''; };
+      up.addEventListener('click', e => { if (!e.target.closest('[data-dl-upload-remove]')) file.click(); });
+      file.addEventListener('click', e => e.stopPropagation());
+      file.addEventListener('change', show);
+      $(up, '[data-dl-upload-remove]').addEventListener('click', e => { e.stopPropagation(); file.value = ''; show(); });
+      ['dragover', 'dragenter'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.add('is-drag'); }));
+      ['dragleave', 'drop'].forEach(ev => up.addEventListener(ev, e => { e.preventDefault(); up.classList.remove('is-drag'); }));
+      up.addEventListener('drop', e => { if (e.dataTransfer.files.length) { file.files = e.dataTransfer.files; show(); } });
+    }
+
+    const dt = $(f, '[data-dl-date]');
+    if (dt) {
+      const hidden = $(dt, '[data-dl-value]'), text = $(dt, '[data-dl-date-text]'), days = $(dt, '[data-dl-cal-days]'), title = $(dt, '[data-dl-cal-title]');
+      const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      let view = hidden.value ? new Date(hidden.value) : new Date();
+      const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const setVal = d => { hidden.value = d ? iso(d) : ''; text.value = d ? `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}` : ''; };
+      const draw = () => {
+        title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
+        const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+        let h = '<div></div>'.repeat(first);
+        for (let d = 1; d <= total; d++) { const v = iso(new Date(view.getFullYear(), view.getMonth(), d)); h += `<button type="button" data-d="${v}" class="${v === hidden.value ? 'is-sel' : ''}">${d}</button>`; }
+        days.innerHTML = h;
+      };
+      const p = bindPanel(dt, draw);
+      days.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { setVal(new Date(b.dataset.d)); p.close(); } });
+      $(dt, '[data-dl-cal-prev]').addEventListener('click', () => { view.setMonth(view.getMonth() - 1); draw(); });
+      $(dt, '[data-dl-cal-next]').addEventListener('click', () => { view.setMonth(view.getMonth() + 1); draw(); });
+      $(dt, '[data-dl-cal-clear]').addEventListener('click', () => { setVal(null); p.close(); });
+      $(dt, '[data-dl-cal-today]').addEventListener('click', () => { setVal(new Date()); p.close(); });
+      text.addEventListener('click', () => $(dt, '[data-dl-dd-toggle]').click());
+      if (hidden.value) setVal(new Date(hidden.value));
+    }
+
+    const tm = $(f, '[data-dl-time]');
+    if (tm) {
+      const text = $(tm, '[data-dl-time-text]'), h = $(tm, '[data-dl-time-h]'), m = $(tm, '[data-dl-time-m]');
+      const p = bindPanel(tm, () => { const [hh, mm] = text.value.split(':'); if (hh) h.value = hh.padStart(2, '0'); if (mm) m.value = String(Math.round(+mm / 5) * 5 % 60).padStart(2, '0'); });
+      $(tm, '[data-dl-time-apply]').addEventListener('click', () => { text.value = `${h.value}:${m.value}`; p.close(); });
+      $(tm, '[data-dl-time-clear]').addEventListener('click', () => { text.value = ''; p.close(); });
+      text.addEventListener('input', () => { const r = text.value.replace(/\D/g, '').slice(0, 4); text.value = r.length > 2 ? r.slice(0, 2) + ':' + r.slice(2) : r; });
+    }
+  }
+
   /* ============================ LOGIN ============================ */
+  // Login hanya merangkai komponen; di sini tinggal teks 2 bahasa, grip, dan validasi kosong.
   const LOGIN_T = {
     id: {heading:'Masuk',sub:'Gunakan akun terdaftar untuk mengakses aplikasi.',l_login:'Username atau email',l_pass:'Password',forgot:'Lupa password?',btn:'Masuk',or:'atau',no_acc:'Belum punya akun?',reg:'Daftar',err_empty:'Isi username/email dan password.',err_wrong:'Username atau password salah.'},
     en: {heading:'Sign in',sub:'Use your registered account to access the app.',l_login:'Username or email',l_pass:'Password',forgot:'Forgot password?',btn:'Sign in',or:'or',no_acc:"Don't have an account?",reg:'Register',err_empty:'Enter your username/email and password.',err_wrong:'Incorrect username or password.'}
   };
 
   function initLogin(root) {
-    let lang = new URLSearchParams(location.search).get('lang') || 'id';
     const alertBox = $(root, '[data-dl-alert]');
-    const timeEl = $(root, '[data-dl-clock-time]'), dateEl = $(root, '[data-dl-clock-date]');
+    let errCode = root.dataset.error || '';
+    const showError = () => { alertBox.textContent = errCode ? LOGIN_T[currentLang][errCode === 'empty' ? 'err_empty' : 'err_wrong'] : ''; alertBox.classList.toggle('is-show', !!errCode); };
+    const applyLang = () => { $$(root, '[data-i18n]').forEach(el => { const k = el.dataset.i18n; if (LOGIN_T[currentLang][k]) el.textContent = LOGIN_T[currentLang][k]; }); showError(); };
+    document.addEventListener('dl:lang', applyLang);
 
-    function tick() {
-      if (!timeEl) return;
-      const now = new Date(), loc = lang === 'id' ? 'id-ID' : 'en-US';
-      timeEl.textContent = now.toLocaleTimeString(loc, {hour12: false});
-      dateEl.textContent = now.toLocaleDateString(loc, {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-    }
-    function showError(code) {
-      if (!code) { alertBox.classList.remove('is-show'); return; }
-      alertBox.textContent = LOGIN_T[lang][code === 'empty' ? 'err_empty' : 'err_wrong'];
-      alertBox.classList.add('is-show');
-    }
-    function applyLang() {
-      $$(root, '[data-i18n]').forEach(el => { const k = el.getAttribute('data-i18n'); if (LOGIN_T[lang][k]) el.textContent = LOGIN_T[lang][k]; });
-      $$(root, '.dl-flag').forEach(f => f.classList.toggle('is-active', f.dataset.lang === lang));
-      document.documentElement.lang = lang;
-      if (alertBox.classList.contains('is-show')) showError(alertBox.dataset.code);
-      tick();
-    }
-    $$(root, '.dl-flag').forEach(f => f.addEventListener('click', () => { lang = f.dataset.lang; applyLang(); }));
-    setInterval(tick, 1000);
-
-    const img = $(root, '.dl-login__img');
-    if (img) {
-      const heroes = JSON.parse(root.dataset.heroes || '[]');
-      img.onload = () => img.classList.add('is-on');
-      if (heroes.length) img.src = heroes[Math.floor(Math.random() * heroes.length)];
-      const quotes = JSON.parse(root.dataset.quotes || '[]');
-      if (quotes.length) { const q = quotes[Math.floor(Math.random() * quotes.length)]; $(root, '[data-dl-quote]').textContent = q.t; $(root, '[data-dl-author]').textContent = q.a; }
-    }
-
-    // Grip: lebarkan panel 15%–40% layar (arah tarik ikut posisi panel).
     const grip = $(root, '.dl-login__grip'), panel = $(root, '.dl-login__panel');
     if (grip) {
       const mirrored = root.classList.contains('dl-login--mirror');
@@ -65,28 +319,18 @@
       window.addEventListener('mousemove', e => {
         if (!dragging) return;
         const min = Math.max(window.innerWidth * 0.15, 240), max = window.innerWidth * 0.40;
-        let w = mirrored ? e.clientX : window.innerWidth - e.clientX;
-        panel.style.width = Math.max(min, Math.min(max, w)) + 'px';
+        panel.style.width = Math.max(min, Math.min(max, mirrored ? e.clientX : window.innerWidth - e.clientX)) + 'px';
       });
       window.addEventListener('mouseup', () => { dragging = false; root.classList.remove('is-resizing'); });
     }
 
-    const pass = $(root, '#dl-pass'), user = $(root, '#dl-user');
-    $(root, '[data-dl-eye]').addEventListener('click', function () {
-      const show = pass.type === 'password'; pass.type = show ? 'text' : 'password';
-      this.innerHTML = `<i class="fa-solid fa-eye${show ? '-slash' : ''}"></i>`;
-    });
-
     root.querySelector('form').addEventListener('submit', e => {
-      const u = user.value.trim(), p = pass.value.trim();
-      $(root, '[data-dl-wrap-user]').classList.toggle('is-invalid', !u);
-      $(root, '[data-dl-wrap-pass]').classList.toggle('is-invalid', !p);
-      if (!u || !p) { e.preventDefault(); alertBox.dataset.code = 'empty'; showError('empty'); }
+      const fields = $$(root, '[data-dl-field]');
+      let empty = false;
+      fields.forEach(fd => { const v = $(fd, 'input').value.trim(); fd.classList.toggle('is-invalid', !v); if (!v) empty = true; });
+      if (empty) { e.preventDefault(); errCode = 'empty'; showError(); }
     });
-
-    if (root.dataset.error) { alertBox.dataset.code = root.dataset.error; }
     applyLang();
-    if (root.dataset.error) showError(root.dataset.error);
   }
 
   /* ============================ SHELL ============================ */
@@ -307,13 +551,38 @@
     window.addEventListener('message', e => { if (e.data && typeof e.data.dlDev === 'boolean') setDevMode(e.data.dlDev); });
     let saved = false; try { saved = localStorage.getItem('dl-dev') === '1'; } catch (e) {}
     const allowed = !!document.querySelector('[data-dl-developer="1"]') || window.self !== window.top;
-    setDevMode(saved && allowed);
+    setDevMode(document.body.dataset.dlDev === '1' || (saved && allowed));
+  }
+
+  function initCode(root) {
+    const modal = root.querySelector('[data-dl-code-modal]');
+    root.querySelector('[data-dl-code-open]').addEventListener('click', () => modal.classList.add('is-on'));
+    root.querySelector('[data-dl-code-close]').addEventListener('click', () => modal.classList.remove('is-on'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('is-on'); });
+    if (location.hash === '#kode') modal.classList.add('is-on');
+    root.querySelectorAll('[data-tab]').forEach(t => t.addEventListener('click', () => {
+      root.querySelectorAll('[data-tab]').forEach(x => x.classList.toggle('is-active', x === t));
+      root.querySelectorAll('[data-pane]').forEach(p => p.classList.toggle('is-active', p.dataset.pane === t.dataset.tab));
+    }));
   }
 
   window.Devlib = {toast, setDevMode};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
+    document.querySelectorAll('[data-dl-langs]').forEach(initLangs);
+    document.querySelectorAll('[data-dl-clock]').forEach(initClock);
+    document.querySelectorAll('[data-dl-quote]').forEach(initQuote);
+    document.querySelectorAll('[data-dl-hero]').forEach(initHero);
+    document.querySelectorAll('[data-dl-split]').forEach(initSplit);
+    document.querySelectorAll('[data-dl-device]').forEach(initDevice);
+    document.querySelectorAll('[data-dl-form]').forEach(initForm);
+    document.querySelectorAll('.dl-field').forEach(initField);
     document.querySelectorAll('.dl-login').forEach(initLogin);
+    document.querySelectorAll('[data-dl-code]').forEach(initCode);
+    document.addEventListener('click', () => {
+      document.querySelectorAll('[data-dl-dd-panel].is-open').forEach(p => p.classList.remove('is-open'));
+      document.querySelectorAll('[data-dl-split].is-open').forEach(p => p.classList.remove('is-open'));
+    });
     document.querySelectorAll('.dl-shell').forEach(initShell);
   });
 })();

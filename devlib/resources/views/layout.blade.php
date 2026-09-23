@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{{ \Devlib\DevlibServiceProvider::asset('devlib.css') }}">
     <script src="{{ \Devlib\DevlibServiceProvider::asset('devlib.js') }}" defer></script>
 </head>
-<body class="dl-body">
+<body class="dl-body {{ $bodyClass ?? '' }}" @if ($dev ?? false) data-dl-dev="1" @endif>
     @yield('body')
 </body>
 </html>

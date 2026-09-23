@@ -3,14 +3,13 @@
 #   2. menyimpan HTML hasil render tiap halaman (sesi login ikut) ke storage/app/snap
 #   3. memotret tiap snapshot dengan browser headless -> PNG di folder yang sama
 # Pakai:  powershell -File tools\check.ps1                 (semua halaman bawaan)
-#         powershell -File tools\check.ps1 -Pages '/pratinjau/login?model=center'
+#         powershell -File tools\check.ps1 -Pages '/lib/login?model=center'
 param(
     [string]$Base = 'http://devlib.test',
     [string]$User = 'admin',
     [string]$Pass = 'admin',
-    [string[]]$Pages = @('/', '/pratinjau/shell', '/pratinjau/login?model=split', '/pratinjau/login?model=mirror',
-        '/pratinjau/login?model=center', '/pratinjau/login?model=fullbg', '/pratinjau/login?model=minimal'),
-    [string[]]$Modules = @('LOGIN', 'SHELL', 'GRID'),
+    [string[]]$Pages = @('/', '/lib/form', '/lib/shell', '/lib/button', '/lib/misc', '/lib/hero', '/lib/login?model=split', '/lib/login?model=mirror', '/lib/login?model=center', '/lib/login?model=fullbg', '/lib/login?model=minimal', '/lib/field-text', '/lib/field-password', '/lib/field-select', '/lib/field-color', '/lib/field-radio', '/lib/field-toggle', '/lib/field-checkboxes', '/lib/field-slider', '/lib/field-date-range', '/lib/field-multi-select', '/lib/field-otp', '/lib/field-rating', '/lib/field-masked', '/lib/field-phone', '/lib/field-money', '/lib/field-date', '/lib/field-time', '/lib/field-decimal', '/lib/field-number', '/lib/field-upload', '/mockup/register.html'),
+    [string[]]$Modules = @('LOGIN', 'FORM'),
     [int]$Width = 1440,
     [int]$Height = 900,
     [switch]$NoShots
@@ -59,7 +58,7 @@ Shot 'login' $r.Content
 
 $r = Req '/login' 'POST' @{ _token = (Token $r.Content); login = $User; password = 'salah-' + $Pass }
 $r = Req '/login'
-Check 'password salah -> pesan salah + username tetap' ($r.Content -match 'data-error="wrong"' -and $r.Content -match "name=`"login`" value=`"$User`"")
+Check 'password salah -> pesan salah + username tetap' ($r.Content -match 'data-error="wrong"' -and $r.Content -match "name=`"login`"[^>]*value=`"$User`"")
 Shot 'login_salah' $r.Content
 
 $r = Req '/login' 'POST' @{ _token = (Token $r.Content); login = $User; password = $Pass }
@@ -70,6 +69,10 @@ foreach ($p in $Pages) {
     Check "GET $p" ($r.StatusCode -eq 200) "$($r.StatusCode)"
     if ($r.StatusCode -eq 200) { Shot (SafeName $p) $r.Content }
 }
+
+# Jendela kode </> halaman form dipotret (deep link #kode).
+$r = Req '/lib/form'; Shot 'lib_form_kode' $r.Content '#kode'
+$r = Req '/lib/login?model=split'; Shot 'lib_login_kode' $r.Content '#kode'
 
 # Tiap modul menu dipotret (deep link #KODE).
 foreach ($m in $Modules) { $r = Req '/'; Shot "modul_$m" $r.Content "#$m" }

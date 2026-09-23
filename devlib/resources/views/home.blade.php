@@ -1,9 +1,7 @@
 @extends('layout', ['title' => 'DevLib'])
 @section('body')
-    <x-dl::shell :modules="$modules" :user="$user" :logout-action="route('logout')" :developer="$user['developer'] ?? false"
-        menu-source="Catalog (docs/mockups) — tanpa database">
-        <p class="dl-home__lib">Ini <b>DevLib</b>: library induk semua komponen. Setiap menu membuka satu mockup Anda
-            berdampingan dengan komponen library yang menirunya. Nyalakan <b>Mode Developer</b> di menu avatar untuk
-            melihat asal-usul setiap objek.</p>
+    <x-dl::shell :modules="$modules" :user="$user" :logout-action="route('logout')" :developer="$user['developer'] ?? false" menu-source="Catalog DevLib — tanpa database">
+        <p>Ini <b>DevLib</b>: library induk semua komponen. Tiap menu membuka satu komponen hidup. Arahkan mouse ke objek untuk melihat
+            namanya; klik ikon <b>&lt;/&gt;</b> di pojok kanan bawah untuk melihat kode pemakaiannya.</p>
     </x-dl::shell>
 @endsection

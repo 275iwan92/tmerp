@@ -1,13 +1,12 @@
 <?php
 
 use App\Support\Catalog;
-use Devlib\Components\Login;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Situs DevLib tanpa database: sesi file + akun dari config/devlib.php.
 
-Route::get('/login', fn (Request $r) => view('login', [
+Route::get('/login', fn () => view('login', [
     'model' => config('devlib.login_model'),
     'error' => session('login_error'),
     'username' => old('login', ''),
@@ -43,16 +42,30 @@ Route::post('/logout', function (Request $r) {
 Route::middleware('devlib.auth')->group(function () {
     Route::get('/', fn () => view('home', ['modules' => Catalog::modules(), 'user' => session('devlib_user')]))->name('home');
 
-    // Halaman banding: kiri mockup asli, kanan komponen library.
-    Route::get('/komponen/{file}', function (string $file) {
+    // Halaman komponen: komponen hidup + ikon </> berisi kode pemakaiannya.
+    Route::get('/lib/{slug}', function (Request $r, string $slug) {
+        $page = Catalog::page($slug) ?? abort(404);
+
+        return view('lib', [
+            'page' => $page,
+            'demo' => $slug,
+            'code' => file_get_contents(resource_path("views/demos/{$slug}.blade.php")),
+            'data' => [
+                'model' => $r->query('model', config('devlib.login_model')),
+                'modules' => Catalog::modules(),
+                'user' => session('devlib_user'),
+                'locations' => config('devlib.demo.locations'),
+                'languages' => config('devlib.demo.languages'),
+            ],
+        ]);
+    })->name('lib');
+
+    // Mockup asli (untuk yang komponennya belum dibangun, dan tautan dari ikon </>).
+    Route::get('/mockup/{file}', function (string $file) {
         $mockup = Catalog::find($file) ?? abort(404);
 
-        return view('compare', ['mockup' => $mockup, 'component' => Catalog::component($file), 'models' => Login::MODELS]);
-    })->where('file', '.*')->name('compare');
-
-    // Pratinjau komponen (dimuat di panel kanan halaman banding).
-    Route::get('/pratinjau/login', fn (Request $r) => view('preview.login', ['model' => $r->query('model', 'split')]))->name('preview.login');
-    Route::get('/pratinjau/shell', fn () => view('preview.shell', ['modules' => Catalog::modules(), 'user' => session('devlib_user')]))->name('preview.shell');
+        return view('mockup', ['mockup' => $mockup]);
+    })->where('file', '.*')->name('mockup');
 
     Route::get('/berkas/{file}', function (string $file) {
         $path = Catalog::path($file);
