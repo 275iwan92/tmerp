@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Situs tinjau mockup (routes/web.php, grup Route::domain).
+    'mockup_host' => env('MOCKUP_HOST', 'mockuperp.test'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

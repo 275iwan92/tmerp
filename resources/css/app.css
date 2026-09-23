@@ -54,15 +54,19 @@
     --color-warn: #f59e0b;
     --color-warn-ink: #c2410c;
     --color-warn-soft: #fff7ed;
+    --color-warn-line: #f0c6a0;
     --color-info: #2f80ed;
     --color-info-ink: #1d4ed8;
     --color-info-soft: #eff6ff;
+    --color-info-line: #9cc0f0;
     --color-highlight: #eab308;
     --color-highlight-ink: #92400e;
     --color-highlight-soft: #fef9c3;
+    --color-highlight-line: #e7d48a;
     --color-extra: #7c3aed;
     --color-extra-ink: #6d28d9;
     --color-extra-soft: #f5f3ff;
+    --color-extra-line: #ddd0f7;
     --color-overlay: rgba(20, 26, 40, .45);
 }
 

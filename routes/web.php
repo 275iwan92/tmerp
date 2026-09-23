@@ -2,8 +2,23 @@
 
 use App\Services\Portal\CandidateAuthService;
 use App\Support\Branding\Brand;
+use App\Support\Mockup\MockupCatalog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+// Situs tinjau mockup (mockuperp.test = link Herd ke aplikasi YANG SAMA, bukan
+// app terpisah -- supaya library komponen tetap satu). Didaftarkan paling atas
+// supaya '/' di domain ini tidak tertangkap redirect '/menu' di bawah.
+Route::domain(config('app.mockup_host'))->middleware('auth')->group(function () {
+    Route::livewire('/', 'pages::mockup.index')->name('mockup.index');
+    Route::livewire('/lihat/{file}', 'pages::mockup.show')->where('file', '.*')->name('mockup.show');
+    Route::get('/berkas/{file}', function (string $file) {
+        $path = MockupCatalog::path($file);
+        abort_unless($path, 404);
+
+        return response()->file($path);
+    })->where('file', '.*')->name('mockup.file');
+});
 
 Route::redirect('/', '/menu');
 
