@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Hrm\EmployeeBankService;
 use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Sys\SecUser;
 use App\Models\Sys\SysNotification;
@@ -19,9 +20,10 @@ use Livewire\Component;
 new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Component
 {
     // Field yang bisa diterapkan otomatis ke emp_employee saat Approve --
-    // BPJS/Rekening Bank/dst (tabel relasi terpisah) TIDAK masuk di sini,
-    // approve utk field itu cuma tutup request (HR update manual di layar
-    // masing-masing), lihat autoApplyColumn().
+    // BPJS/dst (tabel relasi terpisah) TIDAK masuk di sini -- approve utk field
+    // itu cuma tutup request (HR update manual), lihat autoApplyColumn().
+    // Rekening Bank Payroll DITERAPKAN otomatis lewat EmployeeBankService
+    // (keputusan user 2026-09-23 -- dulu cuma ditutup, rekening tak berubah).
     private const FIELD_COLUMN_MAP = [
         'Tanggal Lahir' => 'birth_date',
         'NIK KTP' => 'nik_ktp',
@@ -73,6 +75,11 @@ new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Compo
 
         if ($column && $req->employee) {
             $req->employee->update([$column => $req->new_value, 'updated_by' => Auth::user()->login]);
+        }
+
+        if ($bank = $req->bankPayload()) {
+            EmployeeBankService::setPrimary($req->employee_id, $bank['bank_supplier_id'], $bank['account_no'] ?? null,
+                $bank['account_holder_name'] ?? null, Auth::user()->login);
         }
 
         $req->update([
@@ -158,7 +165,7 @@ new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Compo
                                 <td class="px-3 py-2 text-[11px]">
                                     <span class="text-muted line-through">{{ $r->old_value ?: '(kosong)' }}</span>
                                     →
-                                    <span class="font-semibold">{{ $r->new_value }}</span>
+                                    <span class="font-semibold">{{ $r->newValueLabel() }}</span>
                                 </td>
                                 <td class="px-3 py-2 text-[11px] text-muted max-w-[220px] truncate" title="{{ $r->reason }}">{{ $r->reason ?: '—' }}</td>
                                 <td class="px-3 py-2 text-[11px]">{{ $r->requested_at?->format('d M Y H:i') }}</td>
@@ -168,7 +175,7 @@ new #[Title('Koreksi Data Karyawan — TELASIH MAKMUR ERP')] class extends Compo
                                 <td class="px-3 py-2 text-right whitespace-nowrap">
                                     @if ($r->status === 'PENDING')
                                         <x-grid.action-icon icon="fa-check" title="Setujui" action="approve({{ $r->request_id }})"
-                                            confirm="Setujui koreksi {{ $r->field_name }} jadi \"{{ $r->new_value }}\"?" variant="success" />
+                                            confirm="Setujui koreksi {{ $r->field_name }} jadi \"{{ $r->newValueLabel() }}\"?" variant="success" />
                                         <x-grid.action-icon icon="fa-xmark" title="Tolak" action="openReject({{ $r->request_id }})" variant="danger" />
                                     @endif
                                 </td>

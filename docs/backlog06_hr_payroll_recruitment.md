@@ -112,15 +112,6 @@ DIDIN, SHOFIA, TEGAR), tgl lahir SHOFIA AZKIA (Excel 2026-04-10), 8 nama panggil
 
 ---
 
-## 21. MASTER BANK UNTUK REKENING KARYAWAN (dipindah dari backlog01 UI-07, 2026-09-23)
-
-`hrm/payroll-employee-bank` — nama bank diketik bebas (rawan beda ejaan: "BCA"/"Bank BCA"/"B.C.A").
-Belum ada master bank di tm2mst. **Butuh keputusan user:** buat master bank kecil (kode + nama +
-kode kliring untuk file transfer bank) atau biarkan teks bebas. Kalau dibuat, layar input master-nya
-WAJIB ikut dibuat (CLAUDE.md §7.12).
-
----
-
 ## DARI AUDIT MENYELURUH `docs/*.md` (agent riset 2026-09-02)
 
 Konteks lengkap audit ini ada di `BACKLOG.md`.

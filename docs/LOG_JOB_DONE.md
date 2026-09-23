@@ -507,6 +507,22 @@ identik sebelum/sesudah).
   Makmur" di 5 nota cetak ikut dihapus. NPWP sementara dummy (UI-20); tiga
   layar cetak SPB/Invoice/Pembayaran belum ada (UI-19). Test:
   `CompanyNamePpnPrintTest` (5).
+- **Rekening bank pegawai TUNTAS (permintaan lama user yang dulu cuma separuh):**
+  bank = **Master Supplier kategori BANK** (keputusan user: bank adalah vendor;
+  6 bank yang sudah dipakai dibuat sbg supplier BANK-*, 58/58 rekening lama
+  ditautkan lewat `emp_bank_account.bank_supplier_id`). Pegawai hanya simpan
+  No. Rekening + Atas Nama. Input ada di: Master Employee tab **Rekening Bank**
+  (tombol simpan sendiri), Payroll > Master Karyawan & Rekening Bank (lookup,
+  opsi Cash), Self-Service **Ajukan Ganti** (bank+rek+atas nama) -> **Approve
+  HR langsung menerapkan** (dulu cuma menutup request). Satu jalur:
+  `App\Services\Hrm\EmployeeBankService`. Layar baru **Master Kategori
+  Supplier** (sup_category dulu tak punya input) + kategori EKSPEDISI (vendor
+  truk angkut). backlog06 §21 selesai. Test: `EmployeeBankSupplierTest` (5).
+- **Master Employee mode longgar (keputusan user):** selama belum go-live HANYA
+  Nama wajib. Saklar `HRM_EMPLOYEE_MANDATORY_STRICT` (Settings > Constants,
+  kategori HRM baru) = 0; `emp_employee.position_id` sementara NULLABLE.
+  **GO-LIVE:** set saklar = 1 DAN jalankan down() migration
+  `2026_09_23_000007` (position_id NOT NULL) setelah semua pegawai berjabatan.
 - **Dibatalkan user (jangan dihidupkan lagi):** backlog01 UI-06 (navigasi
   keyboard grid) dan UI-08 (`x-form.cell-input` untuk input di sel tabel);
   UI-20 (NPWP) diganti fasilitas input di Settings > Identifikasi. UI-07

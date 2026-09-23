@@ -165,6 +165,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/master/produk', 'pages::master.produk')->name('master.produk');
             Route::livewire('/master/customer', 'pages::master.customer')->name('master.customer');
             Route::livewire('/master/supplier', 'pages::master.supplier')->name('master.supplier');
+            Route::livewire('/master/supplier-category', 'pages::master.supplier-category')->name('master.supplier-category');
             Route::livewire('/master/uom', 'pages::master.uom')->name('master.uom');
             Route::livewire('/master/currency', 'pages::master.currency')->name('master.currency');
             Route::livewire('/master/exchange-rate', 'pages::master.exchange-rate')->name('master.exchange-rate');

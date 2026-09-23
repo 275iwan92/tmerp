@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Hrm\EmployeeBankService;
 use App\Models\Master\EmpBadgePhotoRequest;
 use App\Models\Master\EmpCorrectionRequest;
 use App\Models\Master\EmpDisciplinary;
@@ -52,6 +53,13 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
     public string $corr_new_value = '';
 
     public string $corr_reason = '';
+
+    // Ganti rekening (2026-09-23): bank dari Master Supplier kategori BANK.
+    public string $corr_bank_supplier_id = '';
+
+    public string $corr_bank_account_no = '';
+
+    public string $corr_bank_holder = '';
 
     // ---- modal: keluarga ----
     public bool $showFamilyReqModal = false;
@@ -300,14 +308,42 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
     // ============== TAB 1: DATA SAYA — KOREKSI & RESIGN ==============
     public function openCorrection(string $field, ?string $oldValue): void
     {
-        $this->reset(['corr_new_value', 'corr_reason']);
+        $this->reset(['corr_new_value', 'corr_reason', 'corr_bank_supplier_id', 'corr_bank_account_no', 'corr_bank_holder']);
         $this->corr_field_name = $field;
         $this->corr_old_value = (string) $oldValue;
+
+        if ($field === EmpCorrectionRequest::FIELD_BANK) {
+            $bank = EmployeeBankService::primary($this->employeeId);
+            $this->corr_old_value = $bank ? trim($bank->bank_name).' · '.$bank->account_no.' · a.n. '.$bank->account_holder_name : 'Cash / Tunai';
+            $this->corr_bank_supplier_id = (string) ($bank?->bank_supplier_id ?? '');
+            $this->corr_bank_account_no = (string) ($bank?->account_no ?? '');
+            $this->corr_bank_holder = (string) ($bank?->account_holder_name ?? '');
+        }
+
         $this->showCorrectionModal = true;
+    }
+
+    public function bankOptions(): array
+    {
+        return EmployeeBankService::bankOptions();
     }
 
     public function saveCorrection(): void
     {
+        if ($this->corr_field_name === EmpCorrectionRequest::FIELD_BANK) {
+            $bank = $this->validate([
+                'corr_bank_supplier_id' => ['required', 'integer', 'exists:tm2mst.sup_supplier,id_supplier'],
+                'corr_bank_account_no' => ['required', 'string', 'max:50'],
+                'corr_bank_holder' => ['required', 'string', 'max:150'],
+                'corr_reason' => ['nullable', 'string', 'max:255'],
+            ]);
+            $this->corr_new_value = json_encode([
+                'bank_supplier_id' => (int) $bank['corr_bank_supplier_id'],
+                'account_no' => trim($bank['corr_bank_account_no']),
+                'account_holder_name' => trim($bank['corr_bank_holder']),
+            ]);
+        }
+
         $data = $this->validate([
             'corr_new_value' => ['required', 'string', 'max:255'],
             'corr_reason' => ['nullable', 'string', 'max:255'],
@@ -1522,7 +1558,14 @@ new #[Title('Portal Karyawan — TELASIH MAKMUR ERP')] class extends Component
                 <div class="text-xs text-muted mb-3">Field: <b>{{ $corr_field_name }}</b></div>
                 <form wire:submit="saveCorrection" class="flex flex-col gap-3">
                     <x-form.input label="Nilai Saat Ini" value="{{ $corr_old_value }}" disabled class="bg-[#f1f5f9]" />
-                    <x-form.input label="Nilai Baru" wire:model="corr_new_value" name="corr_new_value" />
+                    @if ($corr_field_name === \App\Models\Master\EmpCorrectionRequest::FIELD_BANK)
+                        <x-form.select label="Bank Baru" name="corr_bank_supplier_id" wire:model="corr_bank_supplier_id" :options="$this->bankOptions()"
+                            :selected="$corr_bank_supplier_id" placeholder="— pilih bank —" />
+                        <x-form.input label="No. Rekening Baru" wire:model="corr_bank_account_no" name="corr_bank_account_no" :case-toggle="false" />
+                        <x-form.input label="Atas Nama" wire:model="corr_bank_holder" name="corr_bank_holder" />
+                    @else
+                        <x-form.input label="Nilai Baru" wire:model="corr_new_value" name="corr_new_value" />
+                    @endif
                     <x-form.textarea label="Alasan" wire:model="corr_reason" rows="2" />
                     <div class="flex gap-2 mt-1"><button type="button" wire:click="$set('showCorrectionModal', false)" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-[#f1f5f9] text-[#334] cursor-pointer">Batal</button><button type="submit" class="flex-1 px-4 py-2 rounded-md text-xs font-semibold bg-accent text-white cursor-pointer">Kirim Pengajuan</button></div>
                 </form>

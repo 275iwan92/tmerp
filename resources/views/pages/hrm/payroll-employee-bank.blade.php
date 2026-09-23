@@ -2,6 +2,7 @@
 
 use App\Models\Master\EmpBankAccount;
 use App\Models\Master\EmpEmployee;
+use App\Services\Hrm\EmployeeBankService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -13,6 +14,8 @@ use Livewire\Component;
 // "Metode Gaji" TIDAK disimpan sbg kolom terpisah -- diturunkan dari ada/
 // tidaknya emp_bank_account aktif+primary (konsisten dgn payroll-bank-transfer.
 // blade.php/payroll-cash-roster.blade.php yang sudah pakai pola sama).
+// Bank dipilih dari Master Supplier kategori BANK, simpan lewat
+// EmployeeBankService (keputusan user 2026-09-23).
 new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class extends Component
 {
     public string $search = '';
@@ -27,7 +30,7 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
 
     public ?int $editingBankAccountId = null;
 
-    public string $bankName = '';
+    public string $bankSupplierId = '';
 
     public string $accountNo = '';
 
@@ -72,44 +75,30 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
         $this->editingEmployeeId = $employeeId;
         $this->editingEmployeeName = $employee->full_name;
         $this->editingBankAccountId = $bank?->bank_account_id;
-        $this->bankName = $bank->bank_name ?? '';
+        $this->bankSupplierId = (string) ($bank->bank_supplier_id ?? '');
         $this->accountNo = $bank->account_no ?? '';
         $this->accountHolderName = $bank->account_holder_name ?? '';
         $this->showFormModal = true;
     }
 
+    public function bankOptions(): array
+    {
+        return EmployeeBankService::bankOptions();
+    }
+
     public function save(): void
     {
-        // bankName kosong = pegawai dibayar CASH -- kalau ada rekening lama,
-        // nonaktifkan (bukan hapus, jejak histori tetap ada).
-        if (! $this->bankName) {
-            if ($this->editingBankAccountId) {
-                EmpBankAccount::where('bank_account_id', $this->editingBankAccountId)->update(['activate' => false]);
-            }
-            $this->showFormModal = false;
-            unset($this->rows, $this->stats);
-
-            return;
+        // Bank kosong = pegawai dibayar CASH (rekening lama dinonaktifkan di service).
+        if ($this->bankSupplierId !== '') {
+            $this->validate([
+                'bankSupplierId' => ['required', 'integer', 'exists:tm2mst.sup_supplier,id_supplier'],
+                'accountNo' => ['required', 'string', 'max:50'],
+                'accountHolderName' => ['required', 'string', 'max:150'],
+            ]);
         }
 
-        $data = $this->validate([
-            'bankName' => ['required', 'string', 'max:100'],
-            'accountNo' => ['required', 'string', 'max:50'],
-            'accountHolderName' => ['required', 'string', 'max:150'],
-        ]);
-
-        EmpBankAccount::updateOrCreate(
-            ['bank_account_id' => $this->editingBankAccountId],
-            [
-                'employee_id' => $this->editingEmployeeId,
-                'bank_name' => $data['bankName'],
-                'account_no' => $data['accountNo'],
-                'account_holder_name' => $data['accountHolderName'],
-                'is_primary' => true,
-                'activate' => true,
-                'updated_by' => Auth::user()->login,
-            ] + ($this->editingBankAccountId ? [] : ['created_by' => Auth::user()->login]),
-        );
+        EmployeeBankService::setPrimary($this->editingEmployeeId, $this->bankSupplierId !== '' ? (int) $this->bankSupplierId : null,
+            $this->accountNo, $this->accountHolderName, Auth::user()->login);
 
         $this->showFormModal = false;
         unset($this->rows, $this->stats);
@@ -182,20 +171,18 @@ new #[Title('Master Karyawan & Rekening Bank — TELASIH MAKMUR ERP')] class ext
     </div>
 
     @if ($showFormModal)
-        <div class="fixed inset-0 bg-[rgba(20,26,40,.45)] z-[100] flex items-center justify-center p-5" wire:click.self="$set('showFormModal', false)">
-            <div class="bg-white rounded-xl w-[440px] max-w-[92vw] shadow-2xl">
-                <div class="bg-navy text-white px-4 py-3.5 text-sm font-semibold">Rekening Bank — {{ $editingEmployeeName }}</div>
-                <form wire:submit="save" class="p-4 flex flex-col gap-3">
-                    <x-form.input label="Nama Bank (kosongkan jika Cash/Tunai)" wire:model="bankName" name="bankName" placeholder="mis. BCA, Mandiri, BRI" />
-                    <x-form.input label="Nomor Rekening" wire:model="accountNo" name="accountNo" />
-                    <x-form.input label="Atas Nama Rekening" wire:model="accountHolderName" name="accountHolderName" />
-                    <p class="text-[11px] text-muted">Nama Bank dikosongkan berarti pegawai ini dibayar tunai (Cash) — rekening lama otomatis dinonaktifkan, bukan dihapus.</p>
-                    <div class="flex gap-2 justify-end pt-2 border-t border-[#eef1f5] mt-1">
-                        <button type="button" wire:click="$set('showFormModal', false)" class="px-4 py-2 rounded-md text-xs font-semibold bg-[#e6eaf0] text-[#333] cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 rounded-md text-xs font-semibold bg-navy text-white cursor-pointer">Simpan</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+        <x-ui.modal :title="'Rekening Bank — '.$editingEmployeeName" close="$set('showFormModal', false)" size="sm">
+            <form wire:submit="save" class="p-4 flex flex-col gap-3">
+                <x-form.select label="Bank" name="bankSupplierId" wire:model="bankSupplierId" :options="$this->bankOptions()"
+                    :selected="$bankSupplierId" placeholder="— Cash / Tunai —" />
+                <x-form.input label="Nomor Rekening" wire:model="accountNo" name="accountNo" :case-toggle="false" />
+                <x-form.input label="Atas Nama Rekening" wire:model="accountHolderName" name="accountHolderName" />
+                <p class="text-[11px] text-muted">Bank diambil dari Master Supplier kategori BANK. Pilih "Cash / Tunai" bila pegawai dibayar tunai — rekening lama dinonaktifkan, bukan dihapus.</p>
+                <x-ui.action-bar variant="end" class="pt-3 border-t border-line-soft">
+                    <x-ui.button preset="cancel" variant="neutral" wire:click="$set('showFormModal', false)" />
+                    <x-ui.button preset="save" />
+                </x-ui.action-bar>
+            </form>
+        </x-ui.modal>
     @endif
 </div>

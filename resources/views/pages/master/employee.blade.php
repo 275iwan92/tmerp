@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Hrm\EmployeeBankService;
 use App\Models\Master\EmpContract;
 use App\Models\Master\EmpDisciplinary;
 use App\Models\Master\EmpEducation;
@@ -36,6 +37,15 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     public string $panel = 'grid'; // grid | form
 
     public string $formTab = 'overview';
+
+    // Rekening gaji (keputusan user 2026-09-23): bank = lookup Master Supplier
+    // kategori BANK; di sini cuma No. Rekening + Atas Nama. Disimpan terpisah
+    // (saveBank) supaya tidak tertahan validasi wajib biodata di save().
+    public string $bank_supplier_id = '';
+
+    public string $bank_account_no = '';
+
+    public string $bank_account_holder = '';
 
     public ?int $editingId = null;
 
@@ -312,10 +322,18 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
     }
 
     // ============== NAVIGASI GRID <-> FORM ==============
+    // Saklar field wajib (keputusan user 2026-09-23): mode longgar = HANYA Nama
+    // wajib, selama aplikasi belum go-live. Dinyalakan lewat Settings > Constants
+    // (HRM_EMPLOYEE_MANDATORY_STRICT) -- lihat migration 2026_09_23_000007.
+    public function strictMandatory(): bool
+    {
+        return \App\Models\Sys\SysConstant::number('HRM_EMPLOYEE_MANDATORY_STRICT', 0) >= 1;
+    }
+
     public function showDirectory(): void
     {
         if ($this->justRegistered && $this->editingId) {
-            if ($this->missingMandatoryFamily()) {
+            if ($this->strictMandatory() && $this->missingMandatoryFamily()) {
                 $this->formTab = 'family';
 
                 return;
@@ -377,6 +395,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'address_detail_ktp', 'address_detail_domisili', 'join_date',
             'work_status_since', 'emergency_contact_name', 'emergency_contact_relation',
             'emergency_contact_phone', 'position_id', 'default_machine_id', 'default_shift_id',
+            'bank_supplier_id', 'bank_account_no', 'bank_account_holder',
         ]);
         $this->gender = 'L';
         $this->work_status = 'WORKING';
@@ -421,7 +440,37 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $this->default_machine_id = $e->default_machine_id;
         $this->default_shift_id = $e->default_shift_id;
 
+        $bank = EmployeeBankService::primary($e->employee_id);
+        $this->bank_supplier_id = (string) ($bank?->bank_supplier_id ?? '');
+        $this->bank_account_no = (string) ($bank?->account_no ?? '');
+        $this->bank_account_holder = (string) ($bank?->account_holder_name ?? '');
+
         $this->panel = 'form';
+    }
+
+    public function bankOptions(): array
+    {
+        return EmployeeBankService::bankOptions();
+    }
+
+    public function saveBank(): void
+    {
+        if (! $this->editingId) {
+            return;
+        }
+
+        if ($this->bank_supplier_id !== '') {
+            $this->validate([
+                'bank_supplier_id' => ['required', 'integer', 'exists:tm2mst.sup_supplier,id_supplier'],
+                'bank_account_no' => ['required', 'string', 'max:50'],
+                'bank_account_holder' => ['required', 'string', 'max:150'],
+            ]);
+        }
+
+        EmployeeBankService::setPrimary($this->editingId, $this->bank_supplier_id !== '' ? (int) $this->bank_supplier_id : null,
+            $this->bank_account_no, $this->bank_account_holder, Auth::user()->login);
+
+        $this->dispatch('app-alert', type: 'success', message: $this->bank_supplier_id !== '' ? 'Rekening bank tersimpan.' : 'Pegawai diset dibayar tunai (Cash).');
     }
 
     private function nextEmployeeCode(int $companyId): string
@@ -448,31 +497,33 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         // tidak diubah instruksi ini). Nama ibu kandung tetap dicek terpisah
         // di tab Keluarga (lihat showDirectory()/missingMandatoryFamily()).
         $isNew = ! $this->editingId;
-        $reqNew = $isNew ? 'required' : 'nullable';
+        $strict = $this->strictMandatory();
+        $req = $strict ? 'required' : 'nullable';
+        $reqNew = $isNew && $strict ? 'required' : 'nullable';
         $minBirthDate = now()->subYears(17)->format('Y-m-d');
 
         $data = $this->validate([
             'full_name' => ['required', 'string', 'max:150'],
             'nickname' => ['nullable', 'string', 'max:50'],
-            'gender' => ['required', 'in:L,P'],
+            'gender' => [$req, 'in:L,P'],
             'birth_place' => ['nullable', 'string', 'max:100'],
-            'birth_date' => ['required', 'date', 'before_or_equal:'.$minBirthDate],
-            'nik_ktp' => ['required', 'digits:16'],
-            'no_kk' => ['required', 'string', 'max:20'],
+            'birth_date' => [$req, 'date', 'before_or_equal:'.$minBirthDate],
+            'nik_ktp' => [$req, 'digits:16'],
+            'no_kk' => [$req, 'string', 'max:20'],
             'npwp_number' => ['nullable', 'string', 'max:30'],
             'religion' => ['nullable', 'string', 'in:'.implode(',', $this->religions)],
-            'phone' => ['required', 'string', 'max:30'],
+            'phone' => [$req, 'string', 'max:30'],
             'email_personal' => [$reqNew, 'email', 'max:100'],
             'address_detail_ktp' => ['nullable', 'string', 'max:255'],
-            'address_detail_domisili' => ['required', 'string', 'max:255'],
-            'join_date' => ['required', 'date'],
-            'work_status' => ['required', 'in:WORKING,DIRUMAHKAN,CUTI'],
+            'address_detail_domisili' => [$req, 'string', 'max:255'],
+            'join_date' => [$req, 'date'],
+            'work_status' => [$req, 'in:WORKING,DIRUMAHKAN,CUTI'],
             'work_status_since' => ['nullable', 'date'],
             'emergency_contact_name' => ['nullable', 'string', 'max:150'],
             'emergency_contact_relation' => ['nullable', 'string', 'max:50'],
             'emergency_contact_phone' => ['nullable', 'string', 'max:30'],
             'emp_activate' => ['boolean'],
-            'position_id' => ['required', 'integer', 'exists:tm2mst.org_position,position_id'],
+            'position_id' => [$req, 'integer', 'exists:tm2mst.org_position,position_id'],
             'default_machine_id' => ['nullable', 'integer', 'exists:tm2mst.prod_machine,machine_id'],
             'default_shift_id' => ['nullable', 'integer', 'exists:tm2mst.emp_shift,shift_id'],
             'photo' => ['nullable', 'image', 'max:5120'],
@@ -484,7 +535,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
         $payload = [
             'full_name' => $data['full_name'],
             'nickname' => $data['nickname'] ?: null,
-            'gender' => $data['gender'],
+            'gender' => $data['gender'] ?: null,
             'birth_place' => $data['birth_place'] ?: null,
             'birth_date' => $data['birth_date'] ?: null,
             'nik_ktp' => $data['nik_ktp'] ?: null,
@@ -495,14 +546,14 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             'email_personal' => $data['email_personal'] ?: null,
             'address_detail_ktp' => $data['address_detail_ktp'] ?: null,
             'address_detail_domisili' => $data['address_detail_domisili'] ?: null,
-            'join_date' => $data['join_date'],
-            'work_status' => $data['work_status'],
+            'join_date' => $data['join_date'] ?: null,
+            'work_status' => $data['work_status'] ?: 'WORKING',
             'work_status_since' => $data['work_status_since'] ?: null,
             'emergency_contact_name' => $data['emergency_contact_name'] ?: null,
             'emergency_contact_relation' => $data['emergency_contact_relation'] ?: null,
             'emergency_contact_phone' => $data['emergency_contact_phone'] ?: null,
             'activate' => $data['emp_activate'],
-            'position_id' => $data['position_id'],
+            'position_id' => $data['position_id'] ?: null,
             'default_machine_id' => $data['default_machine_id'] ?: null,
             'default_shift_id' => $data['default_shift_id'] ?: null,
             'updated_by' => Auth::user()->login,
@@ -915,7 +966,7 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
             </div>
 
             <div class="flex gap-1 border-b border-[#e2e7ee] mb-3.5 flex-wrap">
-                @foreach (['overview' => 'Overview & Identitas', 'job' => 'Job Alignment', 'education' => 'Pendidikan & Sertifikasi', 'family' => 'Keluarga', 'career' => 'Karier & Kontrak', 'performance' => 'Kedisiplinan'] as $key => $label)
+                @foreach (['overview' => 'Overview & Identitas', 'job' => 'Job Alignment', 'education' => 'Pendidikan & Sertifikasi', 'family' => 'Keluarga', 'career' => 'Karier & Kontrak', 'bank' => 'Rekening Bank', 'performance' => 'Kedisiplinan'] as $key => $label)
                     <button type="button" wire:click="$set('formTab', '{{ $key }}')"
                         class="px-3.5 py-2 text-xs font-semibold cursor-pointer border-b-2 {{ $formTab === $key ? 'text-accent border-accent' : 'text-muted border-transparent' }}">{{ $label }}</button>
                 @endforeach
@@ -1128,6 +1179,25 @@ new #[Title('Master Employee — TELASIH MAKMUR ERP')] class extends Component
                 </div>
 
                 {{-- TAB: PERFORMANCE / SP LOG --}}
+                {{-- TAB: REKENING BANK (tombol simpan sendiri, lihat saveBank) --}}
+                <div class="{{ $formTab === 'bank' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4 flex flex-col gap-3">
+                    @if (! $editingId)
+                        <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum mengisi rekening bank.</div>
+                    @else
+                        <div class="text-xs font-bold text-navy uppercase tracking-wide">Rekening Gaji</div>
+                        <div class="[display:grid] grid-cols-1 md:grid-cols-3 gap-3">
+                            <x-form.select label="Bank" name="bank_supplier_id" wire:model="bank_supplier_id" :options="$this->bankOptions()"
+                                :selected="$bank_supplier_id" placeholder="— Cash / Tunai —" />
+                            <x-form.input label="No. Rekening" name="bank_account_no" wire:model="bank_account_no" :case-toggle="false" />
+                            <x-form.input label="Atas Nama" name="bank_account_holder" wire:model="bank_account_holder" />
+                        </div>
+                        <p class="text-[11px] text-muted">Daftar bank diambil dari Master Supplier kategori BANK — tambah bank baru di sana. Pilih "Cash / Tunai" bila pegawai dibayar tunai.</p>
+                        <x-ui.action-bar variant="inline">
+                            <x-ui.button preset="save" type="button" wire:click="saveBank" />
+                        </x-ui.action-bar>
+                    @endif
+                </div>
+
                 <div class="{{ $formTab === 'performance' ? '' : 'hidden' }} bg-white border border-[#d9dfe8] rounded-[10px] p-4">
                     @if (! $editingId)
                         <div class="text-xs text-muted py-6 text-center">Simpan data Overview dahulu sebelum mencatat kedisiplinan.</div>

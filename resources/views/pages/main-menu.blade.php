@@ -104,6 +104,7 @@ new #[Layout('layouts::shell')] #[Title('Home — TELASIH MAKMUR ERP')] class ex
             'MD_PROD' => route('master.produk'),
             'MD_CUST' => route('master.customer'),
             'MD_SUPP' => route('master.supplier'),
+            'MD_SUPCAT' => route('master.supplier-category'),
             'MD_RAW' => route('master.raw-material.list'),
             'MD_MATCAT' => route('master.mat-category'),
             'MD_WH' => route('master.warehouse.list'),

@@ -15,6 +15,7 @@ class EmpBankAccount extends Model
 
     protected $fillable = [
         'employee_id',
+        'bank_supplier_id',
         'bank_name',
         'account_no',
         'account_holder_name',
@@ -28,6 +29,12 @@ class EmpBankAccount extends Model
         'is_primary' => 'boolean',
         'activate' => 'boolean',
     ];
+
+    // Bank = supplier kategori BANK (keputusan user 2026-09-23).
+    public function bank(): BelongsTo
+    {
+        return $this->belongsTo(SupSupplier::class, 'bank_supplier_id', 'id_supplier');
+    }
 
     public function employee(): BelongsTo
     {
