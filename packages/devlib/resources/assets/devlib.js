@@ -176,6 +176,8 @@
         const raw = mi.value.replace(/\D/g, '');
         mi.value = raw ? BigInt(raw).toLocaleString('id-ID') : '';
         hint.textContent = raw ? `Terbaca: ${$(pre, '[data-dl-prefix-a]').textContent} ${BigInt(raw).toLocaleString('id-ID')} (${$(pre, '[data-dl-prefix-b]').textContent})` : 'Terbaca: -';
+        const wt = $(f, '[data-dl-money-words]');
+        if (wt) { const C = JSON.parse(wt.dataset.currencies), code = $(pre, '[data-dl-prefix-value]').value; wt.textContent = raw ? words(raw, C[code] || null) : ''; }
       };
       $$(pre, '.dl-dd__item').forEach(it => it.addEventListener('click', () => {
         $(pre, '[data-dl-prefix-value]').value = it.dataset.value;
@@ -1829,7 +1831,57 @@
     render();
   }
 
-  window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField};
+
+  /* ============================ TERBILANG ============================ */
+  // Sama persis dengan Devlib\Terbilang (PHP). cur = [simbol, nama ID, nama EN, sub ID, sub EN, desimal].
+  const W_ID = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+  const W_EN = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const W_EN_T = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const W_SC_ID = [[1e15, 'kuadriliun'], [1e12, 'triliun'], [1e9, 'miliar'], [1e6, 'juta'], [1e3, 'ribu']];
+  const W_SC_EN = [[1e15, 'quadrillion'], [1e12, 'trillion'], [1e9, 'billion'], [1e6, 'million'], [1e3, 'thousand']];
+  const wScale = (n, sc, say) => { for (const [d, w] of sc) if (n >= d) return `${say(Math.floor(n / d))} ${w} ${say(n % d)}`.trim(); return ''; };
+  const wId = n => n < 12 ? W_ID[n] : n < 20 ? W_ID[n - 10] + ' belas' : n < 100 ? `${W_ID[Math.floor(n / 10)]} puluh ${W_ID[n % 10]}`.trim()
+    : n < 200 ? `seratus ${wId(n - 100)}`.trim() : n < 1000 ? `${W_ID[Math.floor(n / 100)]} ratus ${wId(n % 100)}`.trim()
+    : n < 2000 ? `seribu ${wId(n - 1000)}`.trim() : wScale(n, W_SC_ID, wId);
+  const wEn = n => n < 20 ? W_EN[n] : n < 100 ? W_EN_T[Math.floor(n / 10)] + (n % 10 ? '-' + W_EN[n % 10] : '')
+    : n < 1000 ? `${W_EN[Math.floor(n / 100)]} hundred ${wEn(n % 100)}`.trim() : wScale(n, W_SC_EN, wEn);
+  function words(value, cur = null, lang = currentLang) {
+    const s = String(value ?? '').trim(); if (s === '' || s === '-') return '';
+    const en = lang === 'en', say = en ? wEn : wId, neg = s.startsWith('-');
+    let [int, frac = ''] = s.replace(/^[-+]/, '').split('.');
+    int = int.replace(/\D/g, '').replace(/^0+/, ''); frac = frac.replace(/\D/g, '');
+    let out = int === '' ? (en ? 'zero' : 'nol') : say(+int);
+    if (cur) {
+      out += ' ' + (en ? cur[2] : cur[1]);
+      const sub = cur[5] > 0 ? +frac.padEnd(cur[5], '0').slice(0, cur[5]) : 0;
+      if (sub > 0) out += (en ? ' and ' : ' dan ') + say(sub) + ' ' + (en ? cur[4] : cur[3]);
+    } else if (frac.replace(/0+$/, '')) out += (en ? ' point ' : ' koma ') + [...frac.replace(/0+$/, '')].map(d => d === '0' ? (en ? 'zero' : 'nol') : say(+d)).join(' ');
+    out = (neg ? 'minus ' : '') + out;
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  }
+
+  function initNumberWords(box) {
+    const C = JSON.parse(box.dataset.currencies), inp = $(box, '[data-dl-words-input]'), hid = $(box, '[data-dl-words-value]'), out = $(box, '[data-dl-words-text]'), cc = $(box, '[data-dl-prefix-value]');
+    const places = () => cc ? C[cc.value][5] : +box.dataset.decimals;
+    // Ketik gaya Indonesia: titik = ribuan (otomatis), koma = desimal.
+    const upd = () => {
+      const p = places(), neg = inp.value.trim().startsWith('-');
+      let [a, b] = inp.value.replace(/[^\d,]/g, '').split(',');
+      a = (a || '').replace(/^0+(?=\d)/, '').slice(0, 15);
+      const hasComma = p > 0 && inp.value.includes(',');
+      b = p > 0 ? (b || '').slice(0, p) : '';
+      inp.value = (neg ? '-' : '') + (a ? (+a).toLocaleString('id-ID') : (hasComma ? '0' : '')) + (hasComma ? ',' + b : '');
+      hid.value = a || b ? (neg ? '-' : '') + (a || '0') + (b ? '.' + b : '') : '';
+      out.textContent = hid.value ? words(hid.value, cc ? C[cc.value] : null) : '';
+      out.classList.toggle('is-empty', !hid.value);
+    };
+    inp.addEventListener('input', upd);
+    $$(box, '.dl-dd__item').forEach(it => it.addEventListener('click', () => { upd(); hid.dispatchEvent(new Event('change', {bubbles: true})); }));
+    if (hid.value) inp.value = String(hid.value).replace('.', ',');
+    upd();
+  }
+
+  window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
     document.querySelectorAll('[data-dl-themepick]').forEach(initThemePicker);
@@ -1862,6 +1914,7 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-words]').forEach(initNumberWords);
     document.querySelectorAll('[data-dl-kanban]').forEach(initKanban);
     document.querySelectorAll('[data-dl-wizard]').forEach(initWizard);
     document.querySelectorAll('[data-dl-approval]').forEach(initApproval);

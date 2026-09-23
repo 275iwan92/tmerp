@@ -1,10 +1,5 @@
 @php
-    $list = $currencies ?: [
-        ['code' => 'USD', 'symbol' => '$'],
-        ['code' => 'IDR', 'symbol' => 'Rp'],
-        ['code' => 'EUR', 'symbol' => '€'],
-        ['code' => 'JPY', 'symbol' => '¥'],
-    ];
+    $list = $currencies ?: collect(\Devlib\Terbilang::CURRENCIES)->map(fn ($c, $code) => ['code' => $code, 'symbol' => $c[0]])->values()->all();
     $cur = collect($list)->firstWhere('code', $currency) ?? $list[0];
 @endphp
 <div class="dl-prefix" data-dl-prefix data-dl-money>
@@ -21,3 +16,4 @@
     </div>
 </div>
 <div class="dl-field__hint" data-dl-money-hint>Terbaca: -</div>
+<div class="dl-words__text is-empty" data-dl-money-words data-currencies="{{ json_encode(\Devlib\Terbilang::CURRENCIES) }}"></div>

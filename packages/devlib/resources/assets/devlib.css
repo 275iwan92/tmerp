@@ -1230,3 +1230,8 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-kmodal__act small{display:block;color:var(--dl-muted)}
 .dl-kmodal__act q{display:block;margin-top:3px;background:var(--dl-surface-alt);border:1px solid var(--dl-border-soft);border-radius:6px;padding:5px 8px;quotes:none}
 @media (max-width:760px){.dl-kmodal__body{grid-template-columns:1fr}.dl-kcol{flex-basis:84vw}}
+
+/* ================= TERBILANG ================= */
+.dl-words__text{margin-top:4px;padding:5px 8px;border-left:3px solid var(--dl-accent);background:var(--dl-accent-soft);border-radius:0 var(--dl-radius-sm) var(--dl-radius-sm) 0;font-size:calc(12px * var(--dl-font-scale));font-style:italic;color:var(--dl-ink-strong);line-height:1.4}
+.dl-words__text.is-empty{display:none}
+.dl-words__input{text-align:right;font-variant-numeric:tabular-nums}

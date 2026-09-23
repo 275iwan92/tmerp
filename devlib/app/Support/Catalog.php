@@ -18,7 +18,7 @@ final class Catalog
         'checkboxes' => ['Checkboxes', 'Checkboxes'], 'slider' => ['Slider', 'Slider'], 'date' => ['Date', 'Date'], 'time' => ['Time', 'Time'],
         'date-time' => ['Date Time', 'DateTime'], 'date-range' => ['Date Range', 'DateRange'],
         'multi-select' => ['Multi Select', 'MultiSelect'], 'otp' => ['OTP', 'Otp'], 'rating' => ['Rating', 'Rating'],
-        'masked' => ['Masked (NIK)', 'Masked'], 'phone' => ['Phone', 'Phone'], 'credit-card' => ['Credit Card', 'CreditCard'], 'signature' => ['Signature', 'Signature'], 'date-slider' => ['Date Slider', 'DateSlider'], 'money' => ['Money', 'Money'],
+        'masked' => ['Masked (NIK)', 'Masked'], 'phone' => ['Phone', 'Phone'], 'credit-card' => ['Credit Card', 'CreditCard'], 'signature' => ['Signature', 'Signature'], 'date-slider' => ['Date Slider', 'DateSlider'], 'money' => ['Money', 'Money'], 'number-words' => ['Number + Terbilang', 'NumberWords'],
         'decimal' => ['Decimal', 'Decimal'], 'number' => ['Number (spinner)', 'Number'], 'upload' => ['Upload', 'Upload'],
     ];
 
@@ -137,7 +137,7 @@ final class Catalog
                 'field-date' => ['Date', $f('Date')], 'field-time' => ['Time', $f('Time')], 'field-date-time' => ['Date Time', $f('DateTime')], 'field-date-range' => ['Date Range', $f('DateRange')], 'field-date-slider' => ['Date Slider', $f('DateSlider')],
             ]],
             'p2-numbers' => ['Numbers & Money', 'fa-solid fa-calculator', [
-                'field-money' => ['Money', $f('Money')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-number' => ['Number (spinner)', $f('Number')],
+                'field-money' => ['Money', $f('Money')], 'field-number-words' => ['Number + Terbilang', $f('NumberWords')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-number' => ['Number (spinner)', $f('Number')],
             ]],
             'p2-files' => ['Files', 'fa-solid fa-paperclip', ['field-upload' => ['Upload', $f('Upload')]]],
             'p2-buttons' => ['Buttons', 'fa-solid fa-hand-pointer', [
