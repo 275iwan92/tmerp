@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Concerns\HasGridPagination;
+use App\Livewire\Concerns\HasGridStatFilter;
+use App\View\Components\Ui;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Carbon;
@@ -21,6 +23,7 @@ use Livewire\WithPagination;
 new #[Title('DevLib UI UX')] class extends Component
 {
     use HasGridPagination;
+    use HasGridStatFilter;
     use WithFileUploads;
     use WithPagination;
 
@@ -70,15 +73,46 @@ new #[Title('DevLib UI UX')] class extends Component
     // Alpine.$data() vs computed style langsung di browser). Server jadi
     // satu-satunya sumber kebenaran menghindari SELURUH kelas bug ini --
     // konten tab dipilih via @if PHP biasa, bukan x-show/x-if Alpine.
-    public string $mainTab = 'forms';
+    public string $mainTab = 'base';
 
     public string $device = 'laptop';
 
     public function setMainTab(string $tab): void
     {
-        if (in_array($tab, ['grid', 'forms', 'calendar', 'kanban', 'gantt', 'graphics'], true)) {
+        if (in_array($tab, ['base', 'grid', 'forms', 'calendar', 'kanban', 'gantt', 'graphics'], true)) {
             $this->mainTab = $tab;
         }
+    }
+
+    // Tab Dasar (2026-09-23, docs/componentstandard.md) -- katalog Layer 0-1.
+    // Semua daftar di bawah DIBACA dari definisi induknya (token di app.css,
+    // variants()/sizes() class Ui\*, Tone), bukan ditulis ulang di sini --
+    // ubah/tambah variant di class induk = katalog ini ikut sendiri.
+    public string $demoUiTab = 'satu';
+
+    public bool $demoModalOpen = false;
+
+    public function uiTokens(): array
+    {
+        $css = @file_get_contents(resource_path('css/app.css')) ?: '';
+        preg_match('/@theme\s*\{(.*?)\n\}/s', $css, $m);
+        preg_match_all('/--color-([a-z0-9-]+)\s*:/', $m[1] ?? '', $t);
+
+        return array_values(array_unique($t[1]));
+    }
+
+    public function uiCatalog(): array
+    {
+        return [
+            'buttonVariants' => (new Ui\Button)->variantKeys(),
+            'buttonSizes' => (new Ui\Button)->sizeKeys(),
+            'presets' => array_keys(Ui\Button::PRESETS),
+            'iconSizes' => (new Ui\IconButton('fa-pen'))->sizeKeys(),
+            'tones' => array_keys(Ui\Tone::SOFT),
+            'badgeSizes' => (new Ui\Badge)->sizeKeys(),
+            'cardVariants' => (new Ui\Card)->variantKeys(),
+            'modalSizes' => (new Ui\Modal)->sizeKeys(),
+        ];
     }
 
     public function setDevice(string $device): void
@@ -502,13 +536,22 @@ new #[Title('DevLib UI UX')] class extends Component
         return "width: calc({$span}*100% + {$span}*2px); position: relative; z-index: 5;";
     }
 
-    // Tab Grid (2026-09-09) -- showcase pola docs/griduistandard.md (kotak
-    // statistik pastel, toolbar search, kolom identitas avatar+nama+kode,
-    // Aksi Edit+Toggle-aktif ala grid Master, footer pagination 3-bagian).
-    // Data dummy statis di memori (bukan tabel DB) -- HasGridPagination
-    // dipakai apa adanya (perPage/gridPageRange), paginasi dibangun manual
+    // Tab Grid -- acuan hidup docs/griduistandard.md, disamakan dgn perilaku
+    // grid Master Pegawai (acuan user 2026-09-23): 4 kotak statistik = FILTER
+    // DATA (HasGridStatFilter; klik = saring, klik lagi = lepas), toggle
+    // List/Card, + New Record preset, kolom identitas, Aksi Edit + aktif/
+    // nonaktif. Data dummy statis di memori (bukan tabel DB), paginasi manual
     // di atas Collection krn sumbernya array, bukan Eloquent builder.
     public string $demoGridSearch = '';
+
+    public string $demoGridView = 'list';
+
+    public function setDemoGridView(string $view): void
+    {
+        if (in_array($view, ['list', 'card'], true)) {
+            $this->demoGridView = $view;
+        }
+    }
 
     protected function demoGridSourceRows(): array
     {
@@ -518,16 +561,40 @@ new #[Title('DevLib UI UX')] class extends Component
             'code' => 'CUST-'.str_pad((string) $i, 4, '0', STR_PAD_LEFT),
             'city' => ['Surabaya', 'Jakarta', 'Bandung', 'Medan'][$i % 4],
             'active' => $i % 5 !== 0,
+            'term' => $i % 3 === 0 ? 'CASH' : 'CREDIT',
             'balance' => $i * 1250000,
         ])->all();
     }
 
-    public function demoGridItems(): LengthAwarePaginator
+    // Angka kotak dihitung dari data hasil CARI (bukan hasil saringan kotak) --
+    // kontrak HasGridStatFilter: angka tidak boleh berubah sendiri saat diklik.
+    protected function demoGridSearched()
     {
-        $filtered = collect($this->demoGridSourceRows())
+        return collect($this->demoGridSourceRows())
             ->when($this->demoGridSearch !== '', fn ($c) => $c->filter(fn ($r) => str_contains(strtolower($r['name']), strtolower($this->demoGridSearch))
                 || str_contains(strtolower($r['code']), strtolower($this->demoGridSearch))))
             ->values();
+    }
+
+    protected function statFilterDefs(): array
+    {
+        $rows = $this->demoGridSearched();
+
+        return [
+            'active' => ['label' => 'Customer Aktif', 'value' => $rows->where('active', true)->count(), 'tone' => 'active',
+                'filter' => fn ($c) => $c->where('active', true)],
+            'inactive' => ['label' => 'Customer Non Aktif', 'value' => $rows->where('active', false)->count(), 'tone' => 'critical',
+                'filter' => fn ($c) => $c->where('active', false)],
+            'credit' => ['label' => 'Termin Kredit', 'value' => $rows->where('active', true)->where('term', 'CREDIT')->count(), 'tone' => 'warn',
+                'filter' => fn ($c) => $c->where('active', true)->where('term', 'CREDIT')],
+            'cash' => ['label' => 'Termin Tunai', 'value' => $rows->where('active', true)->where('term', 'CASH')->count(), 'tone' => 'total',
+                'filter' => fn ($c) => $c->where('active', true)->where('term', 'CASH')],
+        ];
+    }
+
+    public function demoGridItems(): LengthAwarePaginator
+    {
+        $filtered = $this->applyStatFilter($this->demoGridSearched())->values();
 
         $page = Paginator::resolveCurrentPage('page') ?: 1;
 
@@ -998,17 +1065,14 @@ new #[Title('DevLib UI UX')] class extends Component
     <div class="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-[#e2e8f0] px-4 py-3 flex items-center justify-between gap-3 flex-wrap shadow-sm">
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
             <span class="text-muted text-[10.5px] font-semibold pl-2.5 pr-1">Mode Tampilan:</span>
-            <button type="button" wire:click="setDevice('laptop')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'laptop' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">🖥️ Laptop</button>
-            <button type="button" wire:click="setDevice('tablet')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'tablet' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">📱 Tablet</button>
-            <button type="button" wire:click="setDevice('mobile')" class="px-3 py-1 rounded-full text-[11px] font-semibold cursor-pointer transition-colors {{ $device === 'mobile' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-navy' }}">📱 Smartphone</button>
+            @foreach (['laptop' => '🖥️ Laptop', 'tablet' => '📱 Tablet', 'mobile' => '📱 Smartphone'] as $dk => $dl)
+                <x-ui.button variant="chip" size="xs" :active="$device === $dk" wire:click="setDevice('{{ $dk }}')" wire:key="dev-{{ $dk }}">{{ $dl }}</x-ui.button>
+            @endforeach
         </div>
         <div class="inline-flex items-center gap-1 bg-[#f1f3f7] border border-[#e2e8f0] rounded-full p-1">
-            <button type="button" wire:click="setMainTab('grid')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'grid' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Grid</button>
-            <button type="button" wire:click="setMainTab('forms')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'forms' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Form</button>
-            <button type="button" wire:click="setMainTab('calendar')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'calendar' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Calendar</button>
-            <button type="button" wire:click="setMainTab('kanban')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'kanban' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Kanban</button>
-            <button type="button" wire:click="setMainTab('gantt')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'gantt' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Gantt Chart</button>
-            <button type="button" wire:click="setMainTab('graphics')" class="px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-colors {{ $mainTab === 'graphics' ? 'bg-navy text-white shadow-sm' : 'text-muted hover:text-navy' }}">Graphics</button>
+            @foreach (['base' => 'Dasar', 'grid' => 'Grid', 'forms' => 'Form', 'calendar' => 'Calendar', 'kanban' => 'Kanban', 'gantt' => 'Gantt Chart', 'graphics' => 'Graphics'] as $tk => $tl)
+                <x-ui.button variant="chip" size="sm" :active="$mainTab === $tk" wire:click="setMainTab('{{ $tk }}')" wire:key="mt-{{ $tk }}">{{ $tl }}</x-ui.button>
+            @endforeach
         </div>
     </div>
 
@@ -1039,69 +1103,221 @@ new #[Title('DevLib UI UX')] class extends Component
         reaktif thd DOM setelah morph Livewire dari tab lain, lihat catatan
         panjang di $mainTab properti PHP atas). --}}
 
+        <!-- Tab Dasar -->
+        {{-- Katalog Layer 0-1 (docs/componentstandard.md). Isi daftar dibaca dari
+        class induk lewat uiCatalog()/uiTokens() -- JANGAN menulis variant manual di sini. --}}
+        @php $ui = $this->uiCatalog(); @endphp
+        <div class="flex flex-col gap-5 {{ $mainTab === 'base' ? '' : 'hidden' }}">
+            <x-ui.card variant="panel" size="md" title="Dasar — token & primitive x-ui.*">
+                <x-slot:intro>Semua komponen lain (form, grid, layar) disusun dari bahan di tab ini. Ubah induknya (<code>app/View/Components/Ui/*</code> atau token <code>@theme</code> di <code>app.css</code>) dan seluruh aplikasi ikut — daftar di bawah juga ikut sendiri karena dibaca langsung dari class induk. Standar: <code>docs/componentstandard.md</code>.</x-slot:intro>
+            </x-ui.card>
+
+            <x-ui.card title="Layer 0 — Token warna (--color-*)">
+                <x-slot:intro>Satu-satunya tempat nilai warna. Dipakai sebagai class Tailwind: <code>bg-&lt;token&gt;</code>, <code>text-&lt;token&gt;</code>, <code>border-&lt;token&gt;</code>. Hex literal di layar dilarang.</x-slot:intro>
+                <div class="flex flex-wrap gap-2">
+                    @foreach ($this->uiTokens() as $tok)
+                        <div class="flex items-center gap-1.5 border border-line-soft rounded px-2 py-1 bg-surface" wire:key="tok-{{ $tok }}">
+                            <span class="w-5 h-5 rounded border border-line" style="background: var(--color-{{ $tok }})"></span>
+                            <code class="text-[10.5px] text-ink-soft">{{ $tok }}</code>
+                        </div>
+                    @endforeach
+                </div>
+            </x-ui.card>
+
+            <x-ui.card title="x-ui.button — variant">
+                <x-slot:intro>Ubah warna/bentuk di <code>Button::variants()</code>. <code>x-ui.icon-button</code> mewarisi semua variant ini.</x-slot:intro>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach ($ui['buttonVariants'] as $v)
+                        <div class="flex flex-col items-center gap-1" wire:key="bv-{{ $v }}">
+                            <x-ui.button :variant="$v" size="sm" :active="$v === 'chip'" wire:click="demoSave('Button {{ $v }}')">{{ $v }}</x-ui.button>
+                            <code class="text-[9.5px] text-muted">variant="{{ $v }}"</code>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">Size</p>
+                <div class="flex flex-wrap items-end gap-2">
+                    @foreach ($ui['buttonSizes'] as $sz)
+                        <div class="flex flex-col items-center gap-1" wire:key="bs-{{ $sz }}">
+                            <x-ui.button :size="$sz">{{ $sz === 'square' ? '1' : $sz }}</x-ui.button>
+                            <code class="text-[9.5px] text-muted">size="{{ $sz }}"</code>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">Preset — label baku terkunci (CLAUDE.md §3)</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach ($ui['presets'] as $pr)
+                        <div class="flex flex-col items-center gap-1" wire:key="bp-{{ $pr }}">
+                            <x-ui.button :preset="$pr" size="sm" type="button" wire:click="demoSave('Preset {{ $pr }}')" />
+                            <code class="text-[9.5px] text-muted">preset="{{ $pr }}"</code>
+                        </div>
+                    @endforeach
+                </div>
+                <p class="text-[10px] font-bold text-accent uppercase mt-4 mb-2">x-ui.icon-button (turunan Button)</p>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach (['action', 'action-danger', 'action-success', 'primary', 'ghost'] as $v)
+                        <x-ui.icon-button :icon="$v === 'action-danger' ? 'fa-ban' : ($v === 'action-success' ? 'fa-circle-check' : 'fa-pen')" :variant="$v" :title="$v" wire:key="ib-{{ $v }}" />
+                    @endforeach
+                </div>
+            </x-ui.card>
+
+            <x-ui.card title="x-ui.badge / x-ui.badge-button — tone (palet Tone)">
+                <x-slot:intro>Ubah palet di <code>Tone::SOFT</code>; badge, badge-button, badge di tab, dan progress ikut.</x-slot:intro>
+                <div class="flex flex-wrap items-center gap-2">
+                    @foreach ($ui['tones'] as $t)
+                        <x-ui.badge :tone="$t" wire:key="bt-{{ $t }}">{{ $t }}</x-ui.badge>
+                    @endforeach
+                </div>
+                <div class="flex flex-wrap items-center gap-2 mt-2">
+                    @foreach ($ui['tones'] as $t)
+                        <x-ui.badge :tone="$t" pill wire:key="bp2-{{ $t }}">{{ $t }}</x-ui.badge>
+                    @endforeach
+                </div>
+                <div class="flex flex-wrap items-center gap-2 mt-2">
+                    <x-ui.badge tone="code" size="md" mono>OFF-02</x-ui.badge>
+                    <x-ui.badge tone="success" icon="fa-diagram-project">3</x-ui.badge>
+                    <x-ui.badge-button tone="highlight" wire:click="demoSave('Badge Button')">★ Utama</x-ui.badge-button>
+                    <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore(85)" mono>85%</x-ui.badge>
+                    <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore(60)" mono>60%</x-ui.badge>
+                    <x-ui.badge :tone="\App\View\Components\Ui\Tone::forScore(20)" mono>20%</x-ui.badge>
+                </div>
+            </x-ui.card>
+
+            <div class="[display:grid] grid-cols-1 md:grid-cols-2 gap-4">
+                <x-ui.card title="x-ui.card — variant">
+                    <div class="flex flex-col gap-2">
+                        @foreach ($ui['cardVariants'] as $v)
+                            <x-ui.card :variant="$v" size="sm" wire:key="cv-{{ $v }}"><code class="text-[11px]">variant="{{ $v }}"</code></x-ui.card>
+                        @endforeach
+                    </div>
+                </x-ui.card>
+
+                <x-ui.card title="x-ui.progress & x-ui.metric">
+                    <div class="flex flex-col gap-2">
+                        <x-ui.progress :value="82" tone="success" />
+                        <x-ui.progress :value="61" tone="warn" :marker="75" marker-title="Target" />
+                        <x-ui.progress :value="28" tone="danger" />
+                    </div>
+                    <div class="[display:grid] grid-cols-2 gap-2 mt-3">
+                        <x-ui.metric label="MTTR aktual">1,5 jam</x-ui.metric>
+                        <x-ui.metric label="OEE" size="lg" tone="success" hint="Target 80%">84,2%</x-ui.metric>
+                    </div>
+                </x-ui.card>
+            </div>
+
+            <x-ui.card title="x-ui.tabs, x-ui.table, x-ui.modal, x-ui.action-bar, x-ui.panel-header">
+                <x-ui.panel-header title="Edit Mesin : OFF-02"><x-slot:aside>2 proses bisa dijalankan</x-slot:aside></x-ui.panel-header>
+                <div class="border border-t-0 border-line rounded-b-md">
+                    <x-ui.tabs model="demoUiTab" :active="$demoUiTab" :tabs="['satu' => '1. Identitas', 'dua' => '2. Spesifikasi', 'tiga' => '3. Proses']"
+                        :badges="['tiga' => ['text' => 2, 'tone' => 'success']]" />
+                    <form wire:submit="demoSave('Form x-ui')" class="p-5">
+                        <x-ui.table size="sm" framed>
+                            <thead><tr><th>Proses</th><th>Kapasitas</th><th class="text-right">Aksi</th></tr></thead>
+                            <tbody>
+                                <tr><td>CETAK — tab aktif: {{ $demoUiTab }}</td><td class="font-mono">8.000</td><td class="text-right"><x-grid.action-icon icon="fa-sliders" title="Atur" action="demoSave('Atur')" /></td></tr>
+                                <tr><td>QC CETAK</td><td class="font-mono">8.000</td><td class="text-right"><x-grid.action-icon :active="true" title="Nonaktifkan" action="demoSave('Toggle')" /></td></tr>
+                            </tbody>
+                        </x-ui.table>
+                        <x-ui.action-bar>
+                            <x-ui.button preset="save" />
+                            <x-ui.button preset="cancel" wire:click="$set('demoModalOpen', false)" />
+                            <x-ui.button variant="outline" class="ml-auto" wire:click="$set('demoModalOpen', true)">Buka x-ui.modal</x-ui.button>
+                        </x-ui.action-bar>
+                    </form>
+                </div>
+            </x-ui.card>
+
+            @if ($demoModalOpen)
+                <x-ui.modal title="Contoh x-ui.modal" close="$set('demoModalOpen', false)" size="sm">
+                    <div class="p-4 text-[12px] text-ink-soft">Tampil/tidaknya diatur <code>@@if</code> di layar (state Livewire). Klik di luar kotak atau ✕ untuk menutup.</div>
+                    <x-slot:footer>
+                        <x-ui.button preset="close" variant="neutral" wire:click="$set('demoModalOpen', false)" />
+                    </x-slot:footer>
+                </x-ui.modal>
+            @endif
+        </div>
+
         <!-- Tab Grid -->
-        <div class="flex flex-col gap-5 {{ $mainTab === 'grid' ? '' : 'hidden' }}">
-
-        <div class="bg-white border border-[#e2e8f0] rounded-xl p-5">
-            <div class="text-sm font-bold text-navy uppercase tracking-wide mb-1">Grid</div>
-            {{-- Showcase docs/griduistandard.md — kotak statistik pastel, toolbar
-            search minimal, kolom identitas avatar+nama+kode, Aksi Edit+Toggle-
-            aktif (pola grid Master), footer pagination 3-bagian ala ScriptCase. --}}
-        </div>
-
+        {{-- Acuan grid (docs/griduistandard.md) = perilaku grid Master Pegawai:
+        kotak statistik = FILTER (HasGridStatFilter), toggle List/Card, preset
+        + New Record, kolom identitas, Aksi Edit + aktif/nonaktif, pagination. --}}
         @php $gridPaginator = $this->demoGridItems(); @endphp
-        <div class="bg-white border border-[#e2e8f0] rounded-xl overflow-hidden">
-            <x-grid.stat-row :count="3">
-                <x-grid.stat-box tone="total" label="Total Customer" :value="count($this->demoGridSourceRows())" />
-                <x-grid.stat-box tone="active" label="Aktif" :value="collect($this->demoGridSourceRows())->where('active', true)->count()" />
-                <x-grid.stat-box tone="critical" label="Nonaktif" :value="collect($this->demoGridSourceRows())->where('active', false)->count()" />
-            </x-grid.stat-row>
+        <div class="flex flex-col gap-5 {{ $mainTab === 'grid' ? '' : 'hidden' }}">
+            <x-grid.stat-filter-row :boxes="$this->statBoxes()" :active="$statFilter" />
 
-            <x-grid.toolbar>
-                <input type="text" wire:model.live.debounce.300ms="demoGridSearch" placeholder="Cari nama/kode..."
-                    class="px-2.5 py-1.5 border border-[#d7dbe2] rounded-md text-[12px] w-56 focus:border-accent">
-                <x-slot:newRecord>
-                    <button type="button" wire:click="demoSave('Grid + New Record')" class="px-3 py-1.5 rounded-md bg-accent text-white text-[11.5px] font-semibold cursor-pointer hover:opacity-90">➕ New Record</button>
-                </x-slot:newRecord>
-            </x-grid.toolbar>
+            <x-ui.card variant="panel" size="none">
+                <x-grid.toolbar>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span class="text-sm">🔍</span>
+                        <x-form.input wire:model.live.debounce.300ms="demoGridSearch" placeholder="Cari nama/kode..." :case-toggle="false" class="w-56 shrink-0" />
+                    </div>
+                    <x-slot:tools>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <x-ui.button variant="chip" size="xs" :active="$demoGridView === 'list'" wire:click="setDemoGridView('list')" title="Tampilan Daftar">☰ List</x-ui.button>
+                            <x-ui.button variant="chip" size="xs" :active="$demoGridView === 'card'" wire:click="setDemoGridView('card')" title="Tampilan Kartu">▦ Card</x-ui.button>
+                        </div>
+                    </x-slot:tools>
+                    <x-slot:newRecord>
+                        <x-ui.button preset="new" size="sm" class="shrink-0" wire:click="demoSave('Grid + New Record')" />
+                    </x-slot:newRecord>
+                </x-grid.toolbar>
 
-            <x-grid.table-shell>
-                <table class="w-full text-[12px]">
-                    <thead>
-                        <tr>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Identitas</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Kota</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Saldo</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-left px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase">Status</th>
-                            <th class="sticky top-0 z-[1] bg-[#f8f9fb] text-center px-3 py-2 border-b border-[#e2e7ee] font-bold text-[11px] text-muted uppercase w-[90px]">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                @if ($demoGridView === 'card')
+                    <div class="[display:grid] grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 p-3.5">
                         @forelse ($gridPaginator as $row)
-                            <tr wire:key="demo-grid-row-{{ $row['id'] }}" class="hover:bg-[#f8f9fb]">
-                                <x-grid.identity-cell :id="$row['id']" :name="$row['name']" :code="$row['code']" />
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#374151]">{{ $row['city'] }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5] text-[#374151]">Rp {{ number_format($row['balance'], 0, ',', '.') }}</td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded {{ $row['active'] ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#eef1f5] text-[#4b5568]' }}">{{ $row['active'] ? 'Aktif' : 'Nonaktif' }}</span>
-                                </td>
-                                <td class="px-3 py-2 border-b border-[#eef1f5]">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <x-grid.action-icon icon="fa-pen" title="Edit" action="demoSave('Grid Edit')" />
-                                        <x-grid.action-icon icon="fa-rotate" title="Toggle Aktif" action="demoSave('Grid Toggle Aktif')" />
+                            <div wire:key="demo-grid-card-{{ $row['id'] }}" wire:dblclick="demoSave('Grid Buka')"
+                                class="cursor-pointer bg-surface border border-line-soft rounded-xl p-3 hover:shadow-md hover:border-accent transition-shadow" title="Klik 2x untuk buka detail">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-br {{ \App\Support\Grid\Avatar::gradient($row['id']) }} text-white text-xs font-bold flex items-center justify-center">{{ \App\Support\Grid\Avatar::initials($row['name']) }}</div>
+                                    <div class="min-w-0">
+                                        <div class="font-semibold text-[13px] truncate">{{ $row['name'] }}</div>
+                                        <div class="text-[11px] text-muted">{{ $row['code'] }} · {{ $row['city'] }}</div>
                                     </div>
-                                </td>
-                            </tr>
+                                </div>
+                                <div class="flex items-center gap-1.5 mt-2">
+                                    <x-ui.badge :tone="$row['active'] ? 'success' : 'muted'" pill>{{ $row['active'] ? 'Aktif' : 'Nonaktif' }}</x-ui.badge>
+                                    <x-ui.badge :tone="$row['term'] === 'CASH' ? 'info' : 'warn'">{{ $row['term'] === 'CASH' ? 'Tunai' : 'Kredit' }}</x-ui.badge>
+                                </div>
+                            </div>
                         @empty
-                            <x-grid.empty-row :colspan="5" />
+                            <div class="col-span-full text-center text-muted py-6">Tidak ada data.</div>
                         @endforelse
-                    </tbody>
-                </table>
-            </x-grid.table-shell>
+                    </div>
+                @else
+                    <x-grid.table-shell>
+                        <x-ui.table sticky hover>
+                            <thead>
+                                <tr>
+                                    <th>Identitas</th>
+                                    <th class="w-[120px]">Kota</th>
+                                    <th class="w-[100px]">Termin</th>
+                                    <th class="w-[140px] text-right">Saldo</th>
+                                    <th class="w-[100px]">Status</th>
+                                    <th class="w-[100px] text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($gridPaginator as $row)
+                                    <tr wire:key="demo-grid-row-{{ $row['id'] }}" wire:dblclick="demoSave('Grid Buka')" class="cursor-pointer" title="Klik 2x untuk buka detail">
+                                        <x-grid.identity-cell :id="$row['id']" :name="$row['name']" :code="$row['code']" />
+                                        <td>{{ $row['city'] }}</td>
+                                        <td><x-ui.badge :tone="$row['term'] === 'CASH' ? 'info' : 'warn'">{{ $row['term'] === 'CASH' ? 'Tunai' : 'Kredit' }}</x-ui.badge></td>
+                                        <td class="text-right font-mono">Rp {{ number_format($row['balance'], 0, ',', '.') }}</td>
+                                        <td><x-ui.badge :tone="$row['active'] ? 'success' : 'muted'" pill>{{ $row['active'] ? 'AKTIF' : 'NONAKTIF' }}</x-ui.badge></td>
+                                        <td class="text-right whitespace-nowrap">
+                                            <x-grid.action-icon icon="fa-pen" title="Edit" action="demoSave('Grid Edit')" />
+                                            <x-grid.action-icon :active="$row['active']" :title="$row['active'] ? 'Nonaktifkan' : 'Aktifkan'" action="demoSave('Grid Toggle Aktif')" />
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <x-grid.empty-row :colspan="6" />
+                                @endforelse
+                            </tbody>
+                        </x-ui.table>
+                    </x-grid.table-shell>
+                @endif
 
-            @include('components.grid.pagination-footer', ['paginator' => $gridPaginator])
-        </div>
-
+                @include('components.grid.pagination-footer', ['paginator' => $gridPaginator])
+            </x-ui.card>
         </div>
 
         {{-- SEMUA tab SELALU dirender (bukan @if yang menghapus dari DOM) --

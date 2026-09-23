@@ -35,6 +35,18 @@ abstract class UiComponent extends Component
         return '';
     }
 
+    // Dibaca DevLib UI UX (setup/component-library) supaya katalognya selalu
+    // sama dengan definisi di class, tidak pernah basi.
+    public function variantKeys(): array
+    {
+        return array_keys($this->variants());
+    }
+
+    public function sizeKeys(): array
+    {
+        return array_keys($this->sizes());
+    }
+
     public function classes(): string
     {
         $variants = $this->variants();

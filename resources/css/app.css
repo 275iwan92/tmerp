@@ -915,15 +915,19 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 @media (max-width: 820px) { .secpage .side { @apply w-16; } .secpage .side .cap, .secpage .nav-item span.t { @apply hidden; } .secpage .nav-item { @apply justify-center; } .secpage .form-grid { @apply grid-cols-1; } .secpage .htitle { @apply hidden; } }
 @media (max-width: 640px) { .authpage .wrap { @apply flex-col; } .authpage .brand-panel { @apply flex-none py-[26px] px-6; } .authpage .clock .tagline { @apply hidden; } .authpage .form-panel { @apply pt-5 px-6 pb-8; } }
 
-/* x-ui.table (App\View\Components\Ui\Table) -- gaya th/td baku. Di @layer
- * components supaya class utilitas per sel (w-*, text-right) tetap menang. */
-@layer components {
-    .tm-table th { @apply text-left bg-surface-alt text-head text-[10.5px] uppercase tracking-wide font-bold border-b border-line-soft whitespace-nowrap; }
-    .tm-table td { @apply border-b border-line-soft; }
-    .tm-table-md { @apply text-[12.5px]; }
-    .tm-table-md th, .tm-table-md td { @apply px-3 py-2; }
-    .tm-table-sm { @apply text-[11.5px]; }
-    .tm-table-sm th, .tm-table-sm td { @apply px-2.5 py-1.5; }
-    .tm-table-sticky th { @apply sticky top-0 z-[1]; }
-    .tm-table-hover tbody tr:hover { @apply bg-surface-hover; }
-}
+/* x-ui.table (App\View\Components\Ui\Table) -- gaya th/td baku.
+ * SENGAJA tanpa @layer: aturan global lama `th, td {border px-2 py-1.5 text-left}`
+ * (atas file) juga tanpa layer, jadi selalu mengalahkan utilitas Tailwind --
+ * text-right/px-* di sel tabel mana pun tidak pernah berlaku (bug lintas-
+ * aplikasi, keputusan perbaikan global menunggu user). Selector .tm-table lebih
+ * spesifik -> menang; perataan per sel disediakan ulang di bawah. */
+.tm-table th, .tm-table td { @apply border-0 border-b border-line-soft text-left; }
+.tm-table th { @apply bg-surface-alt text-head text-[10.5px] uppercase tracking-wide font-bold whitespace-nowrap; }
+.tm-table-md { @apply text-[12.5px]; }
+.tm-table-md th, .tm-table-md td { @apply px-3 py-2; }
+.tm-table-sm { @apply text-[11.5px]; }
+.tm-table-sm th, .tm-table-sm td { @apply px-2.5 py-1.5; }
+.tm-table-sticky th { @apply sticky top-0 z-[1]; }
+.tm-table-hover tbody tr:hover { @apply bg-surface-hover; }
+.tm-table :is(th, td).text-right { text-align: right; }
+.tm-table :is(th, td).text-center { text-align: center; }

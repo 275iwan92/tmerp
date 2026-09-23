@@ -201,7 +201,8 @@ class MainMenuShellSmokeTest extends TestCase
         $this->actingAs($admin);
 
         $c = \Livewire\Livewire::test('pages::setup.component-library');
-        foreach (['grid', 'forms', 'calendar', 'kanban', 'gantt', 'graphics'] as $tab) {
+        $this->assertSame('base', \Livewire\Livewire::test('pages::setup.component-library')->get('mainTab'), 'Tab Dasar (x-ui) = tab pembuka.');
+        foreach (['base', 'grid', 'forms', 'calendar', 'kanban', 'gantt', 'graphics'] as $tab) {
             $c->call('setMainTab', $tab);
             $this->assertSame($tab, $c->get('mainTab'));
         }
@@ -279,6 +280,35 @@ class MainMenuShellSmokeTest extends TestCase
         $all = $c->instance()->demoGridItems();
         $this->assertSame(34, $all->total());
         $this->assertSame(25, $all->perPage());
+    }
+
+    // 2026-09-23: tab Grid DevLib = acuan perilaku grid Master Pegawai --
+    // kotak statistik = filter (klik saring, klik lagi lepas), angka kotak
+    // tidak ikut berubah saat disaring; tab Dasar membaca katalog dari class.
+    public function test_devlib_grid_stat_boxes_filter_and_base_catalog(): void
+    {
+        $this->actingAs(SecUser::where('login', 'johiwan')->firstOrFail());
+
+        $c = \Livewire\Livewire::test('pages::setup.component-library');
+        $boxesBefore = collect($c->instance()->statBoxes())->pluck('value', 'label')->all();
+        $this->assertCount(4, $boxesBefore);
+
+        $c->call('toggleStatFilter', 'inactive');
+        $this->assertSame('inactive', $c->get('statFilter'));
+        $this->assertSame(6, $c->instance()->demoGridItems()->total(), 'id kelipatan 5 (5..30) = 6 nonaktif.');
+        $this->assertSame($boxesBefore, collect($c->instance()->statBoxes())->pluck('value', 'label')->all());
+
+        $c->call('toggleStatFilter', 'inactive');
+        $this->assertSame('', $c->get('statFilter'));
+        $this->assertSame(34, $c->instance()->demoGridItems()->total());
+
+        $c->call('setDemoGridView', 'card');
+        $this->assertSame('card', $c->get('demoGridView'));
+
+        $cat = $c->instance()->uiCatalog();
+        $this->assertSame((new \App\View\Components\Ui\Button)->variantKeys(), $cat['buttonVariants']);
+        $this->assertContains('accent', $c->instance()->uiTokens());
+        $c->assertSee('preset="save"', false);
     }
 
     // Tab Graphics (2026-09-09) -- pie/bar/line via Chart.js, config dibangun
