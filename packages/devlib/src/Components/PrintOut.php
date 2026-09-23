@@ -10,6 +10,10 @@ use Devlib\Terbilang;
 //   'price' => true (hilang saat "Tanpa Harga"), 'sub' => kolom baris kecil kedua, 'group' => judul header atas, 'width']]
 // totals: ['of' => kolom, 'discount' => angka, 'ppn' => 11, 'extra' => [[label, angka]], 'net' => 'Net Diterima']
 // Halaman dipotong otomatis per ukuran kertas; header tabel diulang; total + tanda tangan di halaman terakhir.
+// Laporan (x-dl::report): criteria [label => nilai] (kotak kriteria), summary [['label', 'sum' => kolom | 'value', 'signed']],
+//   groups [kolom => label] (dipilih di bilah, subtotal per kelompok), groupBy, opening (saldo awal kolom berjalan).
+//   Kolom tambahan: 'sum' => true, 'signed' => true (+ hijau / - merah), 'type' => badge + 'tones' [nilai => tone],
+//   'rowTones' [nilai => tone] (sorot baris), 'running' => 'in - out + adj' (+ 'prev' => kolom saldo awal baris).
 class PrintOut extends DevlibComponent
 {
     public function __construct(
@@ -30,6 +34,11 @@ class PrintOut extends DevlibComponent
         public string $paper = 'a4',
         public bool $prices = true,
         public ?string $printedBy = null,
+        public array $criteria = [],
+        public array $summary = [],
+        public array $groups = [],
+        public ?string $groupBy = null,
+        public ?float $opening = null,
         public ?string $source = null,
     ) {}
 
@@ -46,7 +55,8 @@ class PrintOut extends DevlibComponent
     public function config(): array
     {
         return ['columns' => array_map(fn ($c) => $c + ['type' => 'text'], $this->columns), 'rows' => $this->rows, 'totals' => (object) $this->totals,
-            'currency' => Terbilang::CURRENCIES[$this->currency] ?? null, 'hasPpnKop' => (bool) $this->companyPpn];
+            'currency' => Terbilang::CURRENCIES[$this->currency] ?? null, 'hasPpnKop' => (bool) $this->companyPpn,
+            'summary' => $this->summary, 'groups' => (object) $this->groups, 'opening' => $this->opening];
     }
 
     public function render()

@@ -1476,3 +1476,33 @@ td.dl-print__no{text-align:center}
   .dl-print__sheet{box-shadow:none;break-after:page;margin:0}
   .dl-print__bar{display:none}
 }
+
+/* ================= REPORT (Part 5j) ================= */
+.dl-print[data-paper="a4l"]{--dl-pw:297mm;--dl-ph:210mm;--dl-pad:11mm}
+.dl-print__criteria{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px 14px;border:1px solid var(--dl-pr-line);border-radius:6px;background:var(--dl-pr-soft);padding:8px 12px;margin-bottom:8px}
+.dl-print__criteria small{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--dl-pr-muted)}
+.dl-print__criteria b{font-size:11px;color:var(--dl-pr-strong)}
+.dl-print__kpis{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:6px;margin-bottom:8px}
+.dl-print__kpis > div{border:1px solid var(--dl-pr-line);border-radius:6px;padding:5px 8px;text-align:right}
+.dl-print__kpis small{display:block;text-align:left;font-size:8.5px;text-transform:uppercase;color:var(--dl-pr-muted)}
+.dl-print__kpis b{font-size:13px;color:var(--dl-pr-strong)}
+.dl-print .is-pos{color:var(--dl-pr-net)!important}
+.dl-print .is-neg{color:var(--dl-pr-neg)!important}
+.dl-print .is-zero{color:var(--dl-pr-faint)}
+.dl-print .is-b{font-weight:800}
+.dl-print__c{text-align:center}
+.dl-print__badge{display:inline-block;border-radius:4px;padding:0 5px;font-size:8.5px;font-weight:800;background:var(--dl-pr-head);color:var(--dl-pr-muted)}
+.dl-print__badge.is-success{background:var(--dl-pr-okbg);color:var(--dl-pr-ok)}
+.dl-print__badge.is-danger{background:var(--dl-pr-negbg);color:var(--dl-pr-neg)}
+.dl-print__badge.is-warn{background:var(--dl-pr-warnbg);color:var(--dl-pr-warn)}
+.dl-print__badge.is-info{background:var(--dl-pr-head);color:var(--dl-pr-brand)}
+.dl-print__badge.is-violet{background:var(--dl-pr-violetbg);color:var(--dl-pr-violet)}
+.dl-print__table tr.is-row-danger td{background:var(--dl-pr-negbg)}
+.dl-print__table tr.is-row-danger td:first-child{box-shadow:inset 3px 0 0 var(--dl-pr-neg)}
+.dl-print__table tr.is-row-warn td{background:var(--dl-pr-warnbg)}
+.dl-print__grp td{background:var(--dl-pr-head);font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--dl-pr-brand)}
+.dl-print__sub td{background:var(--dl-pr-soft);font-weight:700;color:var(--dl-pr-ink)}
+.dl-print__grand td{background:var(--dl-pr-brand);color:var(--dl-pr-paper)!important;font-weight:800}
+:root{--dl-pr-neg:#b91c1c;--dl-pr-negbg:#fdecec;--dl-pr-okbg:#e7f7ef;--dl-pr-violetbg:#f1eafe}
+.dl-print .dl-print__grand td{color:var(--dl-pr-paper)!important}
+.dl-print__badge{white-space:nowrap}

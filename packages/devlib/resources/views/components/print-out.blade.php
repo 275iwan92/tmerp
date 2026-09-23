@@ -1,10 +1,14 @@
 @php($cfg = $config())
-<div {{ $attributes->class('dl-print') }} {!! $dl() !!} data-dl-print data-config="{{ json_encode($cfg) }}" data-paper="{{ $paper }}" data-prices="{{ $prices ? 1 : 0 }}" data-ppn="{{ $ppn ? 1 : 0 }}">
+<div {{ $attributes->class('dl-print') }} {!! $dl() !!} data-dl-print data-config="{{ json_encode($cfg) }}" data-paper="{{ $paper }}" data-prices="{{ $prices ? 1 : 0 }}" data-ppn="{{ $ppn ? 1 : 0 }}" data-group="{{ $groupBy }}">
     <div class="dl-print__bar">
         <b>Pratinjau Cetak</b><span class="dl-print__doc">— {{ $title }}{{ $number ? ' · '.$number : '' }}</span>
         <span class="dl-print__spacer"></span>
         <span class="dl-print__lbl">Ukuran</span>
-        <div class="dl-segment" data-p-paper><button type="button" class="dl-segment__opt" data-value="a4">A4 potret</button><button type="button" class="dl-segment__opt" data-value="a5">A5 lanskap</button></div>
+        <div class="dl-segment" data-p-paper><button type="button" class="dl-segment__opt" data-value="a4">A4 potret</button><button type="button" class="dl-segment__opt" data-value="a4l">A4 lanskap</button><button type="button" class="dl-segment__opt" data-value="a5">A5 lanskap</button></div>
+        @if ($groups)
+            <span class="dl-print__lbl">Kelompok</span>
+            <div class="dl-segment" data-p-group><button type="button" class="dl-segment__opt" data-value="">Tanpa</button>@foreach ($groups as $k => $l)<button type="button" class="dl-segment__opt" data-value="{{ $k }}">{{ $l }}</button>@endforeach</div>
+        @endif
         @if (collect($columns)->contains(fn ($c) => $c['price'] ?? false))
             <span class="dl-print__lbl">Harga</span>
             <div class="dl-segment" data-p-prices><button type="button" class="dl-segment__opt" data-value="1">Dengan Harga</button><button type="button" class="dl-segment__opt" data-value="0">Tanpa Harga</button></div>
@@ -34,6 +38,11 @@
                 @if ($status)<span class="dl-print__status">{{ $status }}</span>@endif
             </div>
         </header>
+    </template>
+    <template data-p-criteria>
+        @if ($criteria)
+            <div class="dl-print__criteria">@foreach ($criteria as $k => $v)<div><small>{{ $k }}</small><b>{{ $v }}</b></div>@endforeach</div>
+        @endif
     </template>
     <template data-p-parties>
         @if ($parties)
