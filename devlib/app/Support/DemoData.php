@@ -216,6 +216,23 @@ final class DemoData
         return $out;
     }
 
+    // Penjualan contoh (datar) untuk pivot.
+    public static function sales(int $n = 240): array
+    {
+        $cust = ['PT Contoh Snackindo', 'CV Farma Jaya', 'PT Kosmetik Indah', 'UD Teh Wangi', 'PT Label Prima'];
+        $cat = ['Box', 'Sleeve', 'Label', 'Pouch', 'Karton'];
+        $sales = ['Andi', 'Rina', 'Joko'];
+        $mon = ['01 Jan', '02 Feb', '03 Mar', '04 Apr', '05 Mei', '06 Jun'];
+        $out = [];
+        for ($i = 0; $i < $n; $i++) {
+            $qty = 1000 * (1 + ($i * 7) % 12);
+            $out[] = ['bulan' => $mon[intdiv($i, 5) % 6], 'customer' => $cust[$i % 5], 'kategori' => $cat[intdiv($i, 30) % 5], 'sales' => $sales[intdiv($i, 7) % 3],
+                'qty' => $qty, 'nilai' => $qty * (120 + ($i * 13) % 180)];
+        }
+
+        return $out;
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];
