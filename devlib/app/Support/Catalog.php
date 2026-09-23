@@ -110,7 +110,7 @@ final class Catalog
                 ]],
             ['code' => 'P6', 'short' => 'SP', 'label' => '6 · Special Components', 'icon' => 'fa-solid fa-draw-polygon',
                 'pages' => ['p6-dieline' => ['label' => 'Dieline (mockup kemasan)', 'icon' => 'fa-solid fa-box-open', 'part' => '6 · Special Components', 'mockup' => 'inquiry_new.html',
-                    'members' => ['dieline' => ['Dieline hidup: tipe, ukuran pasaran, dimensi, bentang', ['Devlib\\Components\\Dieline']]], 'classes' => ['Devlib\\Components\\Dieline']],
+                    'members' => ['dieline' => ['v1 · Dieline hidup: tipe, ukuran pasaran, dimensi, bentang', ['Devlib\\Components\\Dieline']], 'dieline-v2' => ['v2 · + garis ukuran, istilah internasional, mm/cm', ['Devlib\\Components\\DielineV2']], 'dieline-v3' => ['v3 · + judul, panjang cutting/creasing, 3D statis', ['Devlib\\Components\\DielineV3']]], 'classes' => ['Devlib\\Components\\Dieline', 'Devlib\\Components\\DielineV2', 'Devlib\\Components\\DielineV3']],
                     'p6-imposition' => ['label' => 'Imposition (tata letak plano)', 'icon' => 'fa-solid fa-table-cells', 'part' => '6 · Special Components', 'mockup' => 'mockup_prodev_imposition.html',
                     'members' => ['imposition' => ['Kanvas imposition: hasil ImpositionEngine + dieline + PCS/PLANO', ['Devlib\\Components\\Imposition']]], 'classes' => ['Devlib\\Components\\Imposition']],
                     'p6-charts' => ['label' => 'Charts', 'icon' => 'fa-solid fa-chart-pie', 'part' => '6 · Special Components', 'mockup' => 'mockup_dashboardcolor.html',

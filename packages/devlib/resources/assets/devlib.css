@@ -1820,3 +1820,35 @@ td.dl-print__no{text-align:center}
 .dl-idc__nfc{transform:rotate(90deg);color:var(--brand2);font-size:16px}
 .dl-idc__foot{background:var(--band);color:#fff;font-size:7.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 14px;text-align:center}
 .dl-idc--portrait .dl-idc__foot{text-align:left;line-height:1.5;padding:10px 14px}
+
+/* Dieline: garis ukuran (gambar teknik) */
+:root{--dl-dl-dim:#e8ecf3;--dl-dl-dimcode:#ffd166}
+.dl-dim__l{stroke:var(--dl-dl-dim);stroke-width:.8;vector-effect:non-scaling-stroke}
+.dl-dim__e{stroke:var(--dl-dl-dim);stroke-width:.5;opacity:.45;vector-effect:non-scaling-stroke}
+.dl-dim__a{fill:var(--dl-dl-dim)}
+.dl-dim__t{fill:var(--dl-dl-dim);font-family:var(--dl-font);font-weight:700}
+.dl-dim__t.is-code{fill:var(--dl-dl-dimcode)}
+.dl-dieline__unit .dl-segment__opt{padding:4px 10px}
+.dl-dieline__terms{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted);align-items:center}
+.dl-dieline__terms b{color:var(--dl-ink-strong)}
+.dl-dieline__terms i{font-style:normal;font-weight:800;color:var(--dl-amber);margin-right:4px}
+.dl-dieline__terms .is-note{font-style:italic}
+
+.dl-dieline__title{font-weight:800;letter-spacing:.03em;color:var(--dl-ink-strong);font-size:calc(14px * var(--dl-font-scale))}
+.dl-dieline__canvas{position:relative}
+.dl-dieline__3d{position:absolute;right:10px;top:10px;width:150px;height:130px;border-radius:10px;background:rgba(255,255,255,.94);box-shadow:0 4px 14px rgba(0,0,0,.35);padding:6px}
+.dl-dieline__3d svg{width:100%;height:100%}
+.dl-dieline__3d span{position:absolute;left:8px;top:5px;font-size:10px;font-weight:800;color:var(--dl-muted)}
+.dl-3d__front{fill:var(--dl-3d-front);stroke:var(--dl-dl-cut);stroke-width:1;vector-effect:non-scaling-stroke}
+.dl-3d__side{fill:var(--dl-3d-side);stroke:var(--dl-dl-cut);stroke-width:1;vector-effect:non-scaling-stroke}
+.dl-3d__top{fill:var(--dl-3d-top);stroke:var(--dl-dl-cut);stroke-width:1;vector-effect:non-scaling-stroke}
+.dl-3d__edge{stroke:var(--dl-dl-crease);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.dl-dieline__lens{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dl-dieline__lens > div{display:flex;flex-direction:column;align-items:center;padding:6px;border-bottom:3px solid var(--k)}
+.dl-dieline__lens .is-cut{--k:var(--dl-dl-cut)}.dl-dieline__lens .is-crease{--k:var(--dl-dl-crease)}.dl-dieline__lens .is-hole{--k:var(--dl-dl-hole);border-bottom-style:dotted}
+.dl-dieline__lens b{font-size:calc(15px * var(--dl-font-scale));color:var(--dl-ink-strong);font-variant-numeric:tabular-nums}
+.dl-dieline__lens span{font-size:calc(11px * var(--dl-font-scale));font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--dl-muted)}
+:root{--dl-3d-front:#e9c9a0;--dl-3d-side:#d4a878;--dl-3d-top:#f6e2c5}
+
+.dl-dieline__foot{display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:center}
+.dl-dieline__foot .dl-dieline__3d{position:relative;right:auto;top:auto;height:120px;border:1px solid var(--dl-border);box-shadow:none;background:var(--dl-surface)}
