@@ -31,6 +31,32 @@ final class DemoData
         return $rows;
     }
 
+    // Dokumen PO menunggu approval (untuk x-dl::approval): diambil dari purchaseOrders berstatus SUBMITTED.
+    public static function approvals(): array
+    {
+        $out = [];
+        foreach (array_filter(self::purchaseOrders(), fn ($p) => $p['status'] === 'SUBMITTED') as $i => $p) {
+            $big = $p['total'] > 50000000;
+            $steps = [['role' => 'Pembuat', 'by' => $p['requester'], 'at' => date('j M', strtotime($p['po_date'])), 'status' => 'done'],
+                ['role' => 'Kepala Pembelian', 'by' => $i % 2 ? 'PLT — Kepala PPIC' : 'Dewi Kusuma', 'at' => date('j M', strtotime($p['po_date'].' +1 day')), 'status' => 'done', 'plt' => (bool) ($i % 2)],
+                ['role' => 'Operational Manager', 'status' => 'current']];
+            if ($big) {
+                $steps[] = ['role' => 'Direksi (> Rp 50 jt)', 'status' => 'pending'];
+            }
+            $out[] = [
+                'id' => $p['id'], 'no' => $p['po_no'], 'title' => 'Purchase Order', 'amount' => $p['total'], 'party' => $p['supplier'], 'date' => $p['po_date'],
+                'submitted_by' => $p['requester'].' (Purchasing)',
+                'summary' => ['Nilai' => 'Rp '.number_format($p['total'], 0, ',', '.'), 'Termin' => ['Net 30', 'Net 14', 'COD'][$i % 3], 'Estimasi Tiba' => date('j M Y', strtotime($p['po_date'].' +7 days')), 'Jumlah Item' => $p['items']],
+                'lines' => $p['lines'],
+                'steps' => $steps,
+                'history' => [['action' => 'SUBMITTED', 'by' => $p['requester'], 'at' => date('j M Y', strtotime($p['po_date'])).', 10:05'],
+                    ['action' => 'APPROVED', 'by' => $steps[1]['by'], 'at' => date('j M Y', strtotime($p['po_date'].' +1 day')).', 15:40', 'plt' => $steps[1]['plt'], 'note' => 'Harga sesuai penawaran.']],
+            ];
+        }
+
+        return $out;
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];
