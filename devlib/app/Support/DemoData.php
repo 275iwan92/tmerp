@@ -147,6 +147,18 @@ final class DemoData
         return json_decode(file_get_contents(resource_path('data/dieline_types.json')), true);
     }
 
+    // Hasil ImpositionEngine asli (dijalankan baca-saja) + dieline tiap job (resources/data/imposition_demo.json).
+    public static function imposition(): array
+    {
+        $d = json_decode(file_get_contents(resource_path('data/imposition_demo.json')), true);
+        $types = self::dielineTypes();
+        foreach ($d['jobs'] as &$j) {
+            $j['spec'] = $types[$j['type']]['spec'];
+        }
+
+        return $d;
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];
