@@ -551,7 +551,15 @@ jadi oleh user.
 > baik dari segi dummy data dan interface UI UX nya sampai saya sendiri yang
 > memintanya dengan kesadaran penuh."*
 
-Artinya: jangan rapikan, jangan seragamkan ke standar grid/form terbaru,
+**Diperjelas user 2026-09-23 (menggantikan tafsir kaku di bawah):** zona beku
+= **tidak boleh mengubah ESENSI dan FLOW — flow data maupun flow dokumen —
+tanpa izin user**. Bukan berarti modul ini selalu dilewati. Sebelum mengubah
+apa pun di sini, **tanyakan dengan jelas apa yang akan diubah** (file, elemen,
+sebelum→sesudah) dan tunggu persetujuan. Sudah disetujui tanpa perlu tanya:
+mengubah teks UI bahasa Indonesia → English. Tidak pernah boleh tanpa izin:
+apa pun yang mengubah flow/esensi.
+
+Tafsir awal (2026-09-22): jangan rapikan, jangan seragamkan ke standar grid/form terbaru,
 jangan tambah/hapus/seed dummy, jangan "sekalian perbaiki" apa pun di sana —
 walaupun kelihatan menyimpang dari standar, dan walaupun sedang mengerjakan
 tugas lain yang kebetulan menyenggol file-nya. Kalau sebuah pekerjaan
