@@ -2,12 +2,14 @@
 
 namespace Devlib\Components\Field;
 
-// No. HP + pilihan kode negara.
+// Telepon per negara (Devlib\PhoneFormat): mask otomatis, buang 0 / +kode di depan, cek pola & panjang.
+// kind: mobile (HP) | landline (rumah/kantor, kode area) | any. Terkirim: name = E.164 (+62812...), name_country.
 class Phone extends Field
 {
     public function __construct(
         public array $countries = [],
-        public string $dial = '+62',
+        public string $country = 'ID',
+        public string $kind = 'mobile',
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

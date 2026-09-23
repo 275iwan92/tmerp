@@ -2,11 +2,13 @@
 
 namespace Devlib\Components\Field;
 
-// Rating bintang.
+// Rating bintang. half = boleh setengah bintang (klik sisi kiri bintang). readonly = tampil saja.
+// Klik bintang yang sama lagi = kosongkan.
 class Rating extends Field
 {
     public function __construct(
         public int $max = 5,
+        public bool $half = false,
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

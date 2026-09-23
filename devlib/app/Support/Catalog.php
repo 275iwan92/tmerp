@@ -18,7 +18,7 @@ final class Catalog
         'checkboxes' => ['Checkboxes', 'Checkboxes'], 'slider' => ['Slider', 'Slider'], 'date' => ['Date', 'Date'], 'time' => ['Time', 'Time'],
         'date-time' => ['Date Time', 'DateTime'], 'date-range' => ['Date Range', 'DateRange'],
         'multi-select' => ['Multi Select', 'MultiSelect'], 'otp' => ['OTP', 'Otp'], 'rating' => ['Rating', 'Rating'],
-        'masked' => ['Masked (NIK)', 'Masked'], 'phone' => ['Phone', 'Phone'], 'money' => ['Money', 'Money'],
+        'masked' => ['Masked (NIK)', 'Masked'], 'phone' => ['Phone', 'Phone'], 'credit-card' => ['Credit Card', 'CreditCard'], 'signature' => ['Signature', 'Signature'], 'date-slider' => ['Date Slider', 'DateSlider'], 'money' => ['Money', 'Money'],
         'decimal' => ['Decimal', 'Decimal'], 'number' => ['Number (spinner)', 'Number'], 'upload' => ['Upload', 'Upload'],
     ];
 
@@ -109,17 +109,17 @@ final class Catalog
         $cats = [
             'p2-inputs' => ['Inputs', 'fa-solid fa-i-cursor', [
                 'field-text' => ['Text', $f('Text')], 'text-affix' => ['Prefix · Suffix · Counter', $f('Text')], 'field-password' => ['Password', $f('Password')],
-                'field-masked' => ['Masked (NIK)', $f('Masked')], 'field-phone' => ['Phone', $f('Phone')], 'field-tags' => ['Tags', $f('Tags')],
+                'field-masked' => ['Masked (NIK)', $f('Masked')], 'field-phone' => ['Phone (HP & kantor, per negara)', $f('Phone')], 'field-credit-card' => ['Credit Card', $f('CreditCard')], 'field-signature' => ['Signature', $f('Signature')], 'field-tags' => ['Tags', $f('Tags')],
                 'field-key-value' => ['Key Value', $f('KeyValue')], 'field-rich-text' => ['Rich Text', $f('RichText')], 'input-theme' => ['Input · Themes', $f('Text')],
             ]],
             'p2-choices' => ['Choices & Lookup', 'fa-solid fa-list-check', [
                 'field-lookup' => ['Lookup', $f('Lookup')], 'field-select' => ['Select', $f('Select')], 'field-multi-select' => ['Multi Select', $f('MultiSelect')],
                 'field-radio' => ['Radio', $f('Radio')], 'field-checkboxes' => ['Checkboxes', $f('Checkboxes')], 'field-checkbox' => ['Checkbox', $f('Checkbox')],
-                'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-rating' => ['Rating', $f('Rating')],
-                'field-color' => ['Color', $f('Color')], 'field-slider' => ['Slider', $f('Slider')], 'field-otp' => ['OTP', $f('Otp')],
+                'field-toggle' => ['Toggle', $f('Toggle')], 'field-toggle-group' => ['Toggle Group', $f('ToggleGroup')], 'field-rating' => ['Rating (half · read-only)', $f('Rating')],
+                'field-color' => ['Color', $f('Color')], 'field-slider' => ['Slider (range · vertical)', $f('Slider')], 'field-otp' => ['OTP', $f('Otp')],
             ]],
             'p2-datetime' => ['Date & Time', 'fa-solid fa-calendar-days', [
-                'field-date' => ['Date', $f('Date')], 'field-time' => ['Time', $f('Time')], 'field-date-time' => ['Date Time', $f('DateTime')], 'field-date-range' => ['Date Range', $f('DateRange')],
+                'field-date' => ['Date', $f('Date')], 'field-time' => ['Time', $f('Time')], 'field-date-time' => ['Date Time', $f('DateTime')], 'field-date-range' => ['Date Range', $f('DateRange')], 'field-date-slider' => ['Date Slider', $f('DateSlider')],
             ]],
             'p2-numbers' => ['Numbers & Money', 'fa-solid fa-calculator', [
                 'field-money' => ['Money', $f('Money')], 'field-decimal' => ['Decimal', $f('Decimal')], 'field-number' => ['Number (spinner)', $f('Number')],
@@ -129,11 +129,11 @@ final class Catalog
                 'button' => ['Button · Preset · Split', $c('Button', 'SplitButton', 'BackButton')], 'icon-button' => ['Icon Button', $c('IconButton')],
             ]],
             'p2-display' => ['Display & Status', 'fa-solid fa-tag', [
-                'field-display' => ['Display (read-only)', $f('Display')], 'badge' => ['Badge', $c('Badge')], 'stat-box' => ['Stat Box', $c('StatBox')],
+                'field-display' => ['Display (read-only)', $f('Display')], 'badge' => ['Badge', $c('Badge')], 'stat-box' => ['Stat Box', $c('StatBox')], 'status-card' => ['Status Card', $c('StatusCard')],
                 'avatar-progress' => ['Avatar · Progress', $c('Avatar', 'Progress')], 'tooltip' => ['Tooltip', $c('Tooltip')], 'misc' => ['Alert · Divider · Brand · Language', $c('Alert', 'Divider', 'Brand', 'LangSwitch')],
             ]],
             'p2-containers' => ['Containers & Navigation', 'fa-solid fa-table-cells-large', [
-                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'table' => ['Table', $c('Table')], 'tabs-accordion' => ['Tabs · Accordion', $c('Tabs', 'Accordion')],
+                'card-actionbar' => ['Card · Action Bar', $c('Card', 'ActionBar')], 'table' => ['Table', $c('Table')], 'tabs-accordion' => ['Tabs', $c('Tabs')], 'accordion' => ['Accordion (vertical · horizontal)', $c('Accordion', 'AccordionGroup')],
                 'breadcrumb' => ['Breadcrumb', $c('Breadcrumb')], 'pagination' => ['Pagination', $c('Pagination')],
             ]],
         ];

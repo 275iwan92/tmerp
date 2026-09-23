@@ -132,8 +132,6 @@
     const tg = $(f, '[data-dl-toggle]');
     if (tg) { const cb = $(tg, 'input'); cb.addEventListener('change', () => { $(tg, '[data-dl-toggle-label]').textContent = cb.checked ? tg.dataset.on : tg.dataset.off; }); }
 
-    const sl = $(f, '[data-dl-slider]');
-    if (sl) { const r = $(sl, 'input'), o = $(sl, '[data-dl-slider-value]'); const u = () => { o.textContent = sl.dataset.format.replace('{v}', idNum(r.value)); }; r.addEventListener('input', u); u(); }
 
     const dr = $(f, '[data-dl-daterange]');
     if (dr) {
@@ -157,17 +155,6 @@
         else if (e.key === 'Backspace' && i > 0) boxes[i - 1].focus();
         hidden.value = boxes.map(x => x.value).join('');
       }));
-    }
-
-    const rt = $(f, '[data-dl-rating]');
-    if (rt) {
-      const stars = $$(rt, '.dl-rating__star'), hidden = $(rt, '[data-dl-value]'), max = rt.dataset.max;
-      const paint = (v, cls) => stars.forEach(s => s.classList.toggle(cls, +s.dataset.value <= v));
-      stars.forEach(s => {
-        s.addEventListener('click', () => { hidden.value = s.dataset.value; paint(+hidden.value, 'is-active'); $(rt, '[data-dl-rating-text]').textContent = `${hidden.value} / ${max} Star${hidden.value > 1 ? 's' : ''}`; });
-        s.addEventListener('mouseover', () => paint(+s.dataset.value, 'is-hover'));
-        s.addEventListener('mouseout', () => paint(0, 'is-hover'));
-      });
     }
 
     const mask = $(f, '[data-dl-mask]');
@@ -196,11 +183,6 @@
         p.close(); if (money) updMoney();
       }));
       if (money) { mi.addEventListener('input', updMoney); updMoney(); }
-      const ph = $(pre, '[data-dl-phone]');
-      if (ph) ph.addEventListener('input', () => {
-        const r = ph.value.replace(/\D/g, '').slice(0, 12);
-        ph.value = [r.slice(0, 3), r.slice(3, 7), r.slice(7, 12)].filter(Boolean).join('-');
-      });
     }
 
     const dec = $(f, '[data-dl-decimal]');
@@ -1158,6 +1140,193 @@
     redraw();
   }
 
+
+  /* ===================== SMALL COMPONENTS (lanjutan) ===================== */
+  // Mask: 9 = digit, karakter lain disisipkan apa adanya.
+  const applyMask = (pat, d) => { let out = '', j = 0; for (const ch of pat) { if (j >= d.length) break; out += ch === '9' ? d[j++] : ch; } return out; };
+  const fieldErr = (el, msg) => { const f = el.closest('.dl-field'); if (!f) return; f.classList.toggle('is-invalid', !!msg); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = msg || ''; };
+
+  // Accordion: satu kode untuk vertikal & horizontal; aturan buka/tutup dari grupnya.
+  document.addEventListener('click', e => {
+    const h = e.target.closest('.dl-accordion__head'); if (!h) return;
+    const acc = h.parentElement, grp = acc.parentElement.closest('[data-dl-accgroup]'), horiz = grp && grp.classList.contains('dl-accgroup--horizontal');
+    const open = !acc.classList.contains('is-open');
+    if (!open && horiz) return;
+    if (open && grp && grp.dataset.multiple !== '1') $$(grp, ':scope > .dl-accordion.is-open').forEach(a => { a.classList.remove('is-open'); $(a, '.dl-accordion__head').setAttribute('aria-expanded', 'false'); });
+    acc.classList.toggle('is-open', open); h.setAttribute('aria-expanded', String(open));
+  });
+  function initAccGroup(g) {
+    if (g.classList.contains('dl-accgroup--horizontal') && !$(g, ':scope > .dl-accordion.is-open')) { const a = $(g, ':scope > .dl-accordion'); if (a) a.classList.add('is-open'); }
+  }
+
+  // Slider: angka / tanggal, satu gagang / rentang, horizontal / vertikal.
+  function initSlider(sl) {
+    const [ia, ib] = $$(sl, '.dl-slider__input'), ha = $(sl, '[data-dl-slider-a]'), hb = $(sl, '[data-dl-slider-b]'), out = $(sl, '[data-dl-slider-value]');
+    const min = +ia.min, max = +ia.max, date = sl.dataset.kind === 'date';
+    const s0 = date ? Date.parse(sl.dataset.start + 'T00:00:00Z') : 0;
+    const iso = n => new Date(s0 + n * 86400000).toISOString().slice(0, 10);
+    const show = n => date ? fmt.date(iso(n) + 'T12:00:00+07:00') : sl.dataset.format.replace('{v}', idNum(n));
+    const pct = v => max === min ? 0 : (v - min) / (max - min) * 100;
+    const u = e => {
+      if (ib && +ia.value > +ib.value) { if (e && e.target === ib) ib.value = ia.value; else ia.value = ib.value; }
+      const a = +ia.value, b = ib ? +ib.value : a;
+      sl.style.setProperty('--a', ib ? pct(a) : 0); sl.style.setProperty('--b', pct(b));
+      ia.style.zIndex = ib && a >= max - (max - min) * 0.02 ? 3 : 1;
+      ha.value = date ? iso(a) : a; if (hb) hb.value = date ? iso(b) : b;
+      out.textContent = ib ? `${show(a)} – ${show(b)}` + (date ? ` · ${b - a + 1} hari` : '') : show(a);
+    };
+    [ia, ib].filter(Boolean).forEach(i => i.addEventListener('input', u)); u();
+  }
+
+  // Rating: bintang penuh / setengah, klik yang sama = kosongkan, readonly tanpa interaksi.
+  function initRating(rt) {
+    const stars = $$(rt, '.dl-rating__star'), hidden = $(rt, '[data-dl-value]'), max = +rt.dataset.max, half = rt.dataset.half === '1';
+    const paint = v => { stars.forEach(s => { const i = +s.dataset.value; s.classList.toggle('is-active', i <= v); s.classList.toggle('is-half', i - 0.5 === v); }); };
+    const text = v => { $(rt, '[data-dl-rating-text]').textContent = `${String(v).replace('.', ',')} / ${max}`; rt.setAttribute('aria-valuenow', v); };
+    const at = (s, e) => { const i = +s.dataset.value; return half && e.offsetX < s.offsetWidth / 2 ? i - 0.5 : i; };
+    paint(+hidden.value); text(+hidden.value);
+    if (rt.classList.contains('is-readonly')) return;
+    stars.forEach(s => {
+      s.addEventListener('click', e => { const v = at(s, e); hidden.value = v === +hidden.value ? 0 : v; paint(+hidden.value); text(+hidden.value); hidden.dispatchEvent(new Event('change', {bubbles: true})); });
+      s.addEventListener('mousemove', e => paint(at(s, e)));
+    });
+    rt.addEventListener('mouseleave', () => paint(+hidden.value));
+  }
+
+  // Tanda tangan: goresan disimpan per garis (untuk Undo), digambar ulang saat ukuran berubah.
+  function initSignature(box) {
+    const cv = $(box, 'canvas'), ctx = cv.getContext('2d'), hidden = $(box, '[data-dl-value]'), ph = $(box, '[data-dl-sign-ph]'), st = $(box, '[data-dl-sign-status]');
+    const ro = box.classList.contains('is-readonly'); let strokes = [], cur = null, bg = null;
+    const ink = () => getComputedStyle(box).getPropertyValue('--dl-ink-strong').trim() || '#111';
+    const draw = () => {
+      const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+      cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (bg) ctx.drawImage(bg, 0, 0, r.width, r.height);
+      ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = ink();
+      strokes.forEach(p => { ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length - 1; i++) ctx.quadraticCurveTo(p[i][0], p[i][1], (p[i][0] + p[i + 1][0]) / 2, (p[i][1] + p[i + 1][1]) / 2); const l = p[p.length - 1]; ctx.lineTo(l[0], l[1] + (p.length === 1 ? 0.1 : 0)); ctx.stroke(); });
+    };
+    const sync = () => {
+      const has = strokes.length > 0 || !!bg;
+      ph.hidden = has; st.textContent = has ? 'Sudah ditandatangani' : 'Belum ditandatangani'; box.classList.toggle('is-signed', has);
+      hidden.value = has ? cv.toDataURL('image/png') : ''; hidden.dispatchEvent(new Event('change', {bubbles: true}));
+    };
+    const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+    if (!ro) {
+      cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); cur = [pos(e)]; strokes.push(cur); draw(); });
+      cv.addEventListener('pointermove', e => { if (!cur) return; cur.push(pos(e)); draw(); });
+      const end = () => { if (cur) { cur = null; sync(); } };
+      cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+      $(box, '[data-dl-sign-undo]').addEventListener('click', () => { if (strokes.length) strokes.pop(); else bg = null; draw(); sync(); });
+      $(box, '[data-dl-sign-clear]').addEventListener('click', () => { strokes = []; bg = null; draw(); sync(); });
+    }
+    $(box, '[data-dl-sign-png]').addEventListener('click', () => { if (!hidden.value) { toast('Belum ada tanda tangan.', 'warn'); return; } const a = document.createElement('a'); a.href = hidden.value; a.download = 'tanda-tangan.png'; a.click(); });
+    if (hidden.value) { const im = new Image(); im.onload = () => { bg = im; draw(); sync(); }; im.src = hidden.value; }
+    new ResizeObserver(draw).observe(cv); draw(); if (!hidden.value) sync();
+  }
+
+  // Kartu kredit: [kode, awalan, kelompok digit, panjang sah, digit CVV, ikon FA, nama].
+  const CC = [
+    ['amex', /^3[47]/, [4, 6, 5], [15], 4, 'fa-brands fa-cc-amex', 'American Express'],
+    ['diners', /^3(0[0-5]|[689])/, [4, 6, 4], [14], 3, 'fa-brands fa-cc-diners-club', 'Diners Club'],
+    ['visa', /^4/, [4, 4, 4, 4, 3], [13, 16, 19], 3, 'fa-brands fa-cc-visa', 'Visa'],
+    ['mastercard', /^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]|720))/, [4, 4, 4, 4], [16], 3, 'fa-brands fa-cc-mastercard', 'Mastercard'],
+    ['jcb', /^35/, [4, 4, 4, 4, 3], [16, 19], 3, 'fa-brands fa-cc-jcb', 'JCB'],
+    ['discover', /^(6011|65|64[4-9])/, [4, 4, 4, 4, 3], [16, 19], 3, 'fa-brands fa-cc-discover', 'Discover'],
+    ['unionpay', /^62/, [4, 4, 4, 4, 3], [16, 17, 18, 19], 3, 'fa-solid fa-credit-card', 'UnionPay'],
+  ];
+  const luhn = d => { let s = 0; for (let i = 0; i < d.length; i++) { let x = +d[d.length - 1 - i]; if (i % 2) { x *= 2; if (x > 9) x -= 9; } s += x; } return s % 10 === 0; };
+  function initCreditCard(box) {
+    const num = $(box, '[data-dl-cc-num]'), exp = $(box, '[data-dl-cc-exp]'), cvv = $(box, '[data-dl-cc-cvv]'), hol = $(box, '[data-dl-cc-holder]');
+    const q = s => $(box, s), brandIn = q('[data-dl-cc-brand]');
+    let brand = null, caseIdx = 2;
+    const upd = () => {
+      const d = num.value.replace(/\D/g, '');
+      brand = CC.find(b => b[1].test(d)) || null;
+      const groups = brand ? brand[2] : [4, 4, 4, 4, 3], maxLen = brand ? Math.max(...brand[3]) : 19, dd = d.slice(0, maxLen);
+      let out = [], k = 0; for (const g of groups) { if (k >= dd.length) break; out.push(dd.slice(k, k + g)); k += g; }
+      num.value = out.join(' ');
+      brandIn.value = brand ? brand[0] : '';
+      q('[data-dl-cc-icon]').className = (brand ? brand[5] : 'fa-regular fa-credit-card') + ' dl-cc__icon';
+      q('[data-dl-cc-brandname]').textContent = brand ? brand[6] : '';
+      cvv.maxLength = brand ? brand[4] : 3; cvv.placeholder = '•'.repeat(cvv.maxLength);
+      const card = q('[data-dl-cc-card]');
+      if (card) {
+        card.dataset.brand = brand ? brand[0] : '';
+        q('[data-dl-cc-logo]').className = (brand ? brand[5] : 'fa-solid fa-credit-card') + ' dl-cc__logo';
+        const mask = groups.map((g, i) => { const part = dd.slice(groups.slice(0, i).reduce((a, b) => a + b, 0)).slice(0, g); return part.padEnd(g, '•'); });
+        let used = 0; const shownGroups = mask.filter((_, i) => { const st = used; used += groups[i]; return st < Math.max(dd.length, (brand ? Math.min(...brand[3]) : 16)); });
+        q('[data-dl-cc-shown]').textContent = shownGroups.join(' ');
+        q('[data-dl-cc-exp-shown]').textContent = exp.value || 'MM/YY';
+        if (hol) q('[data-dl-cc-holder-shown]').textContent = hol.value.toUpperCase() || 'NAMA PEMEGANG';
+      }
+    };
+    const check = () => {
+      const d = num.value.replace(/\D/g, ''), msgs = [];
+      if (d) {
+        if (!brand) msgs.push('Jenis kartu tidak dikenal');
+        else if (!brand[3].includes(d.length)) msgs.push(`Nomor ${brand[6]} harus ${brand[3].join(' / ')} digit`);
+        else if (!luhn(d)) msgs.push('Nomor kartu tidak valid (cek kembali angkanya)');
+      }
+      const m = exp.value.match(/^(\d{2})\/(\d{2})$/);
+      if (exp.value && !m) msgs.push('Masa berlaku harus MM/YY');
+      else if (m) {
+        const now = new Date(new Date().toLocaleString('en-US', {timeZone: TZ()})), mm = +m[1], yy = 2000 + +m[2];
+        if (mm < 1 || mm > 12) msgs.push('Bulan berlaku 01–12');
+        else if (yy < now.getFullYear() || yy === now.getFullYear() && mm < now.getMonth() + 1) msgs.push('Kartu sudah kedaluwarsa');
+      }
+      if (cvv.value && cvv.value.length !== cvv.maxLength) msgs.push(`CVV harus ${cvv.maxLength} digit`);
+      fieldErr(box, msgs.join(' · '));
+    };
+    num.addEventListener('input', upd);
+    exp.addEventListener('input', e => {
+      let d = exp.value.replace(/\D/g, '').slice(0, 4);
+      if (d.length === 1 && d > '1') d = '0' + d;
+      exp.value = d.length > 2 || (d.length === 2 && e.inputType !== 'deleteContentBackward') ? d.slice(0, 2) + '/' + d.slice(2) : d;
+      upd();
+    });
+    cvv.addEventListener('input', () => { cvv.value = cvv.value.replace(/\D/g, '').slice(0, cvv.maxLength); });
+    if (hol) {
+      const cb = q('[data-dl-cc-case]');
+      cb.addEventListener('click', () => { caseIdx = (caseIdx + 1) % 3; cb.textContent = CASE_LABEL[CASES[caseIdx]]; hol.value = applyCase(hol.value, CASES[caseIdx]); upd(); });
+      hol.addEventListener('input', () => { const p = hol.selectionStart; hol.value = applyCase(hol.value, CASES[caseIdx]); try { hol.setSelectionRange(p, p); } catch (e) {} upd(); });
+    }
+    [num, exp, cvv].forEach(i => i.addEventListener('blur', check));
+    upd();
+  }
+
+  // Telepon per negara: aturan dari Devlib\PhoneFormat (data-countries).
+  function initPhone(box) {
+    const C = JSON.parse(box.dataset.countries), kind = box.dataset.kind, inp = $(box, '[data-dl-phone]'), hid = $(box, '[data-dl-phone-value]'), cc = $(box, '[data-dl-prefix-value]');
+    const f = box.closest('.dl-field'), read = f && $(f, '[data-dl-phone-read]');
+    const rules = c => kind === 'any' ? [...C[c].mobile, ...C[c].landline] : C[c][kind];
+    const pick = (c, d) => rules(c).find(r => new RegExp(r[0]).test(d));
+    const clean = (c, v) => {
+      let d = v.replace(/\D/g, ''); const dial = C[c].dial.slice(1);
+      if (/^\s*(\+|00)/.test(v)) { d = d.replace(/^00/, ''); if (d.startsWith(dial)) d = d.slice(dial.length); }
+      if (C[c].trunk && d.startsWith('0')) d = d.slice(1);
+      return d;
+    };
+    const kindName = (c, r) => C[c].mobile.includes(r) ? 'seluler' : 'rumah/kantor';
+    let last = { d: '', r: null };
+    const upd = () => {
+      const c = cc.value, d = clean(c, inp.value), r = pick(c, d), rule = r || rules(c)[0];
+      const alts = rule[1].split('|'), len = m => (m.match(/9/g) || []).length, dd = d.slice(0, Math.max(...alts.map(len)));
+      inp.value = applyMask(alts.find(m => len(m) >= dd.length) || alts[alts.length - 1], dd);
+      hid.value = dd ? C[c].dial + dd : '';
+      inp.placeholder = C[c].example[kind === 'landline' ? 'landline' : 'mobile'];
+      if (read) read.textContent = dd ? `Terbaca: ${C[c].dial} ${inp.value}` + (C[c].trunk ? ` · lokal 0${inp.value}` : '') + ` · ${C[c].name}${r ? ', ' + kindName(c, r) : ''}` : '';
+      last = { d: dd, r };
+    };
+    const check = () => {
+      const c = cc.value, { d, r } = last, what = kind === 'landline' ? 'telepon rumah/kantor' : kind === 'mobile' ? 'HP' : 'telepon';
+      fieldErr(box, !d ? '' : !r ? `Nomor ${what} ${C[c].name} tidak sesuai pola, contoh ${C[c].dial} ${inp.placeholder}` : d.length < r[2] ? `Terlalu pendek: minimal ${r[2]} digit setelah ${C[c].dial}` : '');
+    };
+    inp.addEventListener('input', upd); inp.addEventListener('blur', check);
+    $$(box, '.dl-dd__item').forEach(it => it.addEventListener('click', () => { upd(); if (last.d) check(); }));
+    if (hid.value) inp.value = hid.value;
+    upd();
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id))};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -1191,6 +1360,12 @@
     document.querySelectorAll('[data-dl-loginbox]').forEach(initLoginBox);
     document.querySelectorAll('[data-dl-code]').forEach(initCode);
     document.querySelectorAll('[data-dl-grid]').forEach(initGrid);
+    document.querySelectorAll('[data-dl-accgroup]').forEach(initAccGroup);
+    document.querySelectorAll('[data-dl-slider]').forEach(initSlider);
+    document.querySelectorAll('[data-dl-rating]').forEach(initRating);
+    document.querySelectorAll('[data-dl-sign]').forEach(initSignature);
+    document.querySelectorAll('[data-dl-cc]').forEach(initCreditCard);
+    document.querySelectorAll('[data-dl-phonebox]').forEach(initPhone);
     document.addEventListener('click', () => {
       document.querySelectorAll('[data-dl-dd-panel].is-open').forEach(p => p.classList.remove('is-open'));
       document.querySelectorAll('[data-dl-split].is-open').forEach(p => p.classList.remove('is-open'));
