@@ -86,6 +86,9 @@ final class Catalog
                     'p5-import' => ['label' => 'Import / Export', 'icon' => 'fa-solid fa-file-import', 'part' => '5 · Big Components', 'mockup' => null,
                         'members' => ['import-items' => ['Import CSV (cocokkan kolom, validasi, baris gagal)', ['Devlib\\Components\\Import']], 'grid-master' => ['Export CSV dari Grid (kolom yang tampil)', ['Devlib\\Components\\Grid']]],
                         'classes' => ['Devlib\\Components\\Import', 'Devlib\\Components\\Grid']],
+                    'p5-org' => ['label' => 'Org Chart', 'icon' => 'fa-solid fa-sitemap', 'part' => '5 · Big Components', 'mockup' => 'Organization-Structure-Mockup.html',
+                        'members' => ['org-chart' => ['Struktur Organisasi (drag pindah atasan, lowong, multi pemegang)', ['Devlib\\Components\\OrgChart']]],
+                        'classes' => ['Devlib\\Components\\OrgChart']],
                     'form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                     'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
                 'files' => [
@@ -126,7 +129,7 @@ final class Catalog
     {
         return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_notification.jpg', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
             'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html',
-            'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid_konteks.html', 'mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_customer.html', 'mockup_master_uom_v4.html', 'mockup_purchase_requisition.html', 'mockup_pr_approval_center.html', 'mockup_po_approval_center.html', 'mockup_UIUX_kanban.html', 'mockup_scheduling_board.html', 'mockup_UIUX_calendar.html', 'nota_co_mockup.html', 'nota_pv_spb.html', 'mockup_print_stock_card.html', 'mockup_print_master_stock.html'];
+            'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid_konteks.html', 'mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_customer.html', 'mockup_master_uom_v4.html', 'mockup_purchase_requisition.html', 'mockup_pr_approval_center.html', 'mockup_po_approval_center.html', 'mockup_UIUX_kanban.html', 'mockup_scheduling_board.html', 'mockup_UIUX_calendar.html', 'nota_co_mockup.html', 'nota_pv_spb.html', 'mockup_print_stock_card.html', 'mockup_print_master_stock.html', 'Organization-Structure-Mockup.html'];
     }
 
     // Part 2 dikelompokkan per kategori (menu kiri ringkas); isi kategori dipilih lewat breadcrumb.
