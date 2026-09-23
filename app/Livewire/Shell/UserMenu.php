@@ -106,7 +106,20 @@ class UserMenu extends Component
                 'non_employee_linked' => ! $user->employee_id,
                 'setup_non_admin' => $user->canSetup() && ! $user->is_admin,
                 default => true,
-            });
+            })
+            ->filter(fn ($item) => $item->action_type !== 'menu' || $this->menuTargetAllowed($item->action_target));
+    }
+
+    // Item bertipe 'menu' membuka layar lain; kalau layar itu tidak boleh dibuka
+    // user ini, item-nya disembunyikan -- dulu tetap tampil tapi klik tidak
+    // berbuat apa-apa (QC user 2026-09-23: "Aktivitas saya" -> SET_USER, layar
+    // Security yang ber-middleware admin, mati utk semua non-admin).
+    protected function menuTargetAllowed(string $code): bool
+    {
+        return match ($code) {
+            'SET_USER', 'SET_GROUP', 'SET_PERM', 'SET_MIGRATION' => (bool) Auth::user()->is_admin,
+            default => true,
+        };
     }
 
     #[Computed]

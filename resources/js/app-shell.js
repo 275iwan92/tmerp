@@ -133,7 +133,11 @@ document.addEventListener('alpine:init', () => {
 
         openTab(code) {
             const it = this.findItem(code);
-            if (! it) return;
+            // Target di luar menu milik user ini (hak akses) -- beri tahu, jangan diam.
+            if (! it) {
+                this.toast('Menu ini tidak tersedia untuk akun Anda.');
+                return;
+            }
             // module_status_system (globalrules.yaml): NOT_BUILT = is_clickable
             // false di DB (sys_app_menu_color) -- layar belum ada, jangan buka apa-apa.
             if (! it.isClickable) {
