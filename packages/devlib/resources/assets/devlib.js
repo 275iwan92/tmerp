@@ -627,9 +627,50 @@
     }));
   }
 
-  window.Devlib = {toast, setDevMode};
+  /* ============================ BASIC ============================ */
+  // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
+  const TZ = () => document.documentElement.dataset.dlTz || 'Asia/Jakarta';
+  const fmt = {
+    number: (n, d = 0) => Number(n).toLocaleString('id-ID', {minimumFractionDigits: d, maximumFractionDigits: d}),
+    money: (n, cur = 'IDR', d = 0) => ({IDR: 'Rp', USD: '$', EUR: '€', JPY: '¥'}[cur] || cur) + ' ' + fmt.number(n, d),
+    date: (v = new Date(), style = 'short') => new Date(v).toLocaleDateString('id-ID', style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : style === 'numeric' ? {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()} : {day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ()}),
+    time: (v = new Date()) => new Date(v).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ()}) + ' WIB',
+  };
+
+  function initThemePicker(root) {
+    const html = document.documentElement;
+    const save = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+    const mark = () => {
+      $$(root, '[data-theme]').forEach(b => b.classList.toggle('is-active', b.dataset.theme === html.dataset.dlTheme));
+      $$(root, '[data-density]').forEach(b => b.classList.toggle('is-active', b.dataset.density === (html.dataset.dlDensity || 'normal')));
+      const sc = html.style.getPropertyValue('--dl-font-scale') || '1';
+      $$(root, '[data-scale]').forEach(b => b.classList.toggle('is-active', b.dataset.scale === sc.trim()));
+      document.dispatchEvent(new CustomEvent('dl:theme'));
+    };
+    $$(root, '[data-theme]').forEach(b => b.addEventListener('click', () => { html.dataset.dlTheme = b.dataset.theme; save('dl-theme', b.dataset.theme); mark(); }));
+    $$(root, '[data-density]').forEach(b => b.addEventListener('click', () => { html.dataset.dlDensity = b.dataset.density; save('dl-density', b.dataset.density); mark(); }));
+    $$(root, '[data-scale]').forEach(b => b.addEventListener('click', () => { html.style.setProperty('--dl-font-scale', b.dataset.scale); save('dl-font-scale', b.dataset.scale); mark(); }));
+    mark();
+  }
+
+  // Nilai token terkini (ikut tema aktif) ditulis ke tabel dokumentasi.
+  function initTokens(root) {
+    const paint = () => $$(root, '[data-dl-token-value]').forEach(td => { td.textContent = getComputedStyle(document.documentElement).getPropertyValue(td.dataset.dlTokenValue).trim() || '—'; });
+    paint(); document.addEventListener('dl:theme', paint);
+  }
+
+  // Contoh format lokal hidup (halaman Locale & Formats).
+  function initFmtDemo(root) {
+    const tick = () => $$(root, '[data-fmt]').forEach(el => { el.textContent = new Function('fmt', 'return ' + el.dataset.fmt)(fmt); });
+    tick(); setInterval(tick, 1000);
+  }
+
+  window.Devlib = {toast, setDevMode, fmt};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
+    document.querySelectorAll('[data-dl-themepick]').forEach(initThemePicker);
+    document.querySelectorAll('.dl-tokens').forEach(initTokens);
+    document.querySelectorAll('[data-dl-fmt-demo]').forEach(initFmtDemo);
     document.querySelectorAll('[data-dl-langs]').forEach(initLangs);
     document.querySelectorAll('[data-dl-clock]').forEach(initClock);
     document.querySelectorAll('[data-dl-quote]').forEach(initQuote);

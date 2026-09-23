@@ -1,0 +1,35 @@
+<?php
+
+namespace Devlib\Components;
+
+use Devlib\Theme;
+
+// Dipasang SEKALI di <head>: CSS 12 tema (dari Devlib\Theme) + skrip kecil yang
+// memasang tema/density/skala huruf tersimpan SEBELUM halaman tampil (tanpa kedip).
+class ThemeBoot extends DevlibComponent
+{
+    public function __construct(public ?string $theme = null) {}
+
+    public function tag(): string
+    {
+        return 'x-dl::theme-boot';
+    }
+
+    public function css(): string
+    {
+        return Theme::css();
+    }
+
+    public function fallback(): string
+    {
+        return $this->theme ?? config('devlib.theme', Theme::DEFAULT);
+    }
+
+    public function render()
+    {
+        return <<<'BLADE'
+            <style data-dl-themes>{!! $css() !!}</style>
+            <script>(function(d){var g=function(k,v){try{return localStorage.getItem(k)||v}catch(e){return v}};var q=(location.search+location.hash).match(/theme=([a-z_]+)/);d.dataset.dlTheme=q?q[1]:g('dl-theme',@json($fallback()));d.dataset.dlDensity=g('dl-density','normal');d.style.setProperty('--dl-font-scale',g('dl-font-scale','1'));})(document.documentElement);</script>
+            BLADE;
+    }
+}

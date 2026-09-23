@@ -30,51 +30,73 @@ final class Catalog
         foreach (self::FIELDS as $slug => [$label, $cls]) {
             $fieldPages['field-'.$slug] = ['label' => 'Field · '.$label, 'icon' => 'fa-solid fa-i-cursor', 'classes' => ['Devlib\\Components\\Field\\'.$cls], 'mockup' => 'UIUX_components_part1.html'];
         }
+        $basic = fn ($label, $icon, $classes = [], $mockup = 'UIUX_components_part1.html') => ['label' => $label, 'icon' => $icon, 'classes' => $classes, 'mockup' => $mockup];
 
+        // Urutan = urutan membangun (bawah ke atas): tiap Part memakai Part sebelumnya.
         return [
-            ['code' => 'LOGIN', 'label' => 'Login & Akun', 'icon' => 'fa-solid fa-right-to-bracket',
+            ['code' => 'P1', 'label' => '1 · Basic & Themes', 'icon' => 'fa-solid fa-palette',
+                'pages' => [
+                    'basic-colors' => $basic('Colors', 'fa-solid fa-droplet', ['Devlib\\Components\\TokenTable'], 'mockup_dashboardcolor.html'),
+                    'basic-typography' => $basic('Typography', 'fa-solid fa-font', ['Devlib\\Components\\TokenTable']),
+                    'basic-shape' => $basic('Spacing · Radius · Shadow', 'fa-solid fa-vector-square', ['Devlib\\Components\\TokenTable']),
+                    'basic-themes' => $basic('Themes', 'fa-solid fa-swatchbook', ['Devlib\\Components\\ThemePicker', 'Devlib\\Components\\ThemeBoot'], 'bukti_komponen_tema_navy.html'),
+                    'basic-density' => $basic('Density', 'fa-solid fa-table-cells', ['Devlib\\Components\\ThemePicker'], 'grid_kerapatan_baris.html'),
+                    'basic-icons' => $basic('Icons', 'fa-solid fa-icons', ['Devlib\\Components\\Icon'], 'pilihan_ikon_aksi_grid.html'),
+                    'basic-breakpoints' => $basic('Breakpoints', 'fa-solid fa-mobile-screen', ['Devlib\\Components\\TokenTable']),
+                    'basic-locale' => $basic('Locale & Formats', 'fa-solid fa-earth-asia', []),
+                ],
+                'files' => ['Mockup' => ['mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html',
+                    'bukti_komponen_input_tema.html', 'bukti_komponen_input_tema.jpg', 'grid_kerapatan_baris.html', 'grid_kerapatan_baris.jpg',
+                    'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid.jpg', 'pilihan_ikon_aksi_grid_konteks.html', 'pilihan_ikon_aksi_grid_konteks.jpg']]],
+            ['code' => 'P2', 'label' => '2 · Small Components', 'icon' => 'fa-solid fa-shapes',
+                'pages' => $fieldPages + [
+                    'button' => ['label' => 'Button', 'icon' => 'fa-solid fa-hand-pointer', 'classes' => ['Devlib\\Components\\Button', 'Devlib\\Components\\SplitButton'], 'mockup' => 'UIUX_components_part1.html'],
+                    'misc' => ['label' => 'Alert · Divider · Brand · Language', 'icon' => 'fa-solid fa-shapes', 'classes' => ['Devlib\\Components\\Alert', 'Devlib\\Components\\Divider', 'Devlib\\Components\\Brand', 'Devlib\\Components\\LangSwitch'], 'mockup' => 'login.html'],
+                ],
+                'files' => ['Mockup' => ['penjelasan_standar_input_teks.html', 'penjelasan_standar_input_teks.jpg']]],
+            ['code' => 'P3', 'label' => '3 · Feedback & States', 'icon' => 'fa-solid fa-bell', 'files' => ['Mockup' => ['mockup_notification.jpg']]],
+            ['code' => 'P4', 'label' => '4 · Global Behaviors', 'icon' => 'fa-solid fa-gears', 'files' => []],
+            ['code' => 'P5', 'label' => '5 · Big Components', 'icon' => 'fa-solid fa-table-list',
+                'pages' => ['form' => ['label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
+                    'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']],
+                'files' => [
+                    'Mockup · Grid & Master' => ['mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_uom_v4.html', 'mockup_master_customer.html',
+                        'mockup_master_rawmaterial.html', 'mockup_master_warehouse.html', 'mockup_master_produksi.html', 'master_mesin_update_2026.html', 'master_mesin_update_2026.jpg', 'master_coa_mockup.html'],
+                    'Mockup · Dokumen & Approval' => ['mockup_purchase_requisition.html', 'mockup_pr_approval_center.html', 'mockup_po_approval_center.html', 'mockup_purchase_quotation.html',
+                        'mockup_purchase_receive.html', 'mockup_purchase_return.html', 'mockup_flow_engine.html', 'mockup_sales_quotation_entry.html', 'mockup_co_entry.html',
+                        'co_delivery_plan_mockup.html', 'mockup_down_payment.html', 'mockup_stock_in.html', 'mockup_stock_out.html', 'mockup_stock_return.html', 'mockup_stock_adjustment.html',
+                        'mockup_personal_data_self_service.html', 'MODULE_accounting-mockup-blueprint.html', 'MODULE_accounting-process-engine-blueprint.html'],
+                    'Mockup · Kanban, Kalender, Gantt' => ['mockup_UIUX_kanban.html', 'mockup_UIUX_calendar.html', 'mockup_scheduling_board.html', 'mockup_roster_shift.html',
+                        'mockup_roster_formasi_harian.html', 'mockup_roster_formasi_harian.jpg', 'real_roster_formasi_editor.jpg', 'real_roster_formasi_ringkas.jpg', 'real_roster_formasi_harian.jpg'],
+                    'Mockup · Report & Print Out' => ['nota_co_mockup.html', 'nota_pv_spb.html', 'mockup_print_stock_card.html', 'mockup_print_master_stock.html',
+                        'mockup_sales_quotation_letter_print.html', 'payroll_payslip_list.html', 'payroll_payslip_list.jpg'],
+                    'Mockup · Inquiry & ProCost (zona beku)' => ['inquiry_main_hub.html', 'inquiry_costing_hub.html', 'inquiry_costing_manual.html', 'inquiry_proof.html', 'inquiry_quotation.html',
+                        'inquiry_nota_new.html', 'inquiry_nota_revise.html', 'inquiry_nota_recalc.html', 'inquiry_nota_quotation.html', 'nota_inquiry_mockup.html', 'nota_inquiry_mockup_bw.html',
+                        'ERP_Product_Costing_Mockup.html', 'Kalkulasi_HPP_UAT.html', 'product_costing.html', 'mockup_legacy_product_costing.png',
+                        'inquiry_product_costing/mockup_product_costing_v1_scriptcase.png', 'procost_instant_hasil_build.png', 'procost_integrasi_hasil_build.png',
+                        'procost_instant_deviasi.jpg', 'procost_instant_deviasi_v2.jpg', 'procost_integrasi_deviasi.jpg', 'procost_integrasi_deviasi_v2.jpg'],
+                ]],
+            ['code' => 'P6', 'label' => '6 · Special Components', 'icon' => 'fa-solid fa-draw-polygon',
+                'files' => ['Mockup' => ['inquiry_new.html', 'inquiry_revise_v2.html', 'inquiry_recalc_v2.html', 'mockup_inquiry_imposition_grid_form.html', 'mockup_prodev_imposition.html',
+                    'tata layout layar imposistion.jpg', 'Organization-Structure-Mockup.html', 'mockup_ID_card.png', 'mockup_mastercard.jpg', 'mockup_mastercard_ver2.jpg']]],
+            ['code' => 'P7', 'label' => '7 · Menu & Dashboard', 'icon' => 'fa-solid fa-table-columns',
+                'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html']],
+                'files' => ['Mockup' => ['main_menu_v2.html']]],
+            ['code' => 'P8', 'label' => '8 · Login & Account', 'icon' => 'fa-solid fa-right-to-bracket',
                 'pages' => [
                     'login-1' => ['label' => 'Login 1 · sama dengan tmerp', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
                     'login-2' => ['label' => 'Login 2 · popup kaca', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
                     'login-3' => ['label' => 'Login 3 · panel kiri navy', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
                 ],
-                'files' => ['login.html', 'register.html', 'forgot-password.html', 'security.html']],
-            ['code' => 'SHELL', 'label' => 'Shell & Menu', 'icon' => 'fa-solid fa-table-columns',
-                'pages' => ['shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => ['Devlib\\Components\\Shell'], 'mockup' => 'main_menu_v2.html']],
-                'files' => ['main_menu_v2.html', 'mockup_notification.jpg', 'mockup_dashboardcolor.html']],
-            ['code' => 'FORM', 'label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square',
-                'pages' => ['form' => ['label' => 'Form lengkap', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
-                    'classes' => ['Devlib\\Components\\Form', 'Devlib\\Components\\Form\\Col', 'Devlib\\Components\\Form\\Row', 'Devlib\\Components\\DeviceFrame'], 'mockup' => 'UIUX_components_part1.html']] + $fieldPages,
-                'files' => ['UIUX_components_part1.html', 'penjelasan_standar_input_teks.html', 'penjelasan_standar_input_teks.jpg',
-                    'bukti_komponen_input_tema.html', 'bukti_komponen_input_tema.jpg', 'bukti_komponen_tema_navy.html', 'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html']],
-            ['code' => 'BASE', 'label' => 'Tombol & Dasar', 'icon' => 'fa-solid fa-shapes',
-                'pages' => [
-                    'button' => ['label' => 'Tombol', 'icon' => 'fa-solid fa-hand-pointer', 'classes' => ['Devlib\\Components\\Button', 'Devlib\\Components\\SplitButton'], 'mockup' => 'UIUX_components_part1.html'],
-                    'misc' => ['label' => 'Pesan · Pemisah · Brand · Bahasa', 'icon' => 'fa-solid fa-shapes', 'classes' => ['Devlib\\Components\\Alert', 'Devlib\\Components\\Divider', 'Devlib\\Components\\Brand', 'Devlib\\Components\\LangSwitch'], 'mockup' => 'login.html'],
-                ], 'files' => []],
-            ['code' => 'GRID', 'label' => 'Grid', 'icon' => 'fa-solid fa-table-list', 'files' => ['mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html',
-                'grid_kerapatan_baris.html', 'grid_kerapatan_baris.jpg', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid.jpg',
-                'pilihan_ikon_aksi_grid_konteks.html', 'pilihan_ikon_aksi_grid_konteks.jpg', 'mockup_master_uom_v4.html']],
-            ['code' => 'MASTER', 'label' => 'Master Data', 'icon' => 'fa-solid fa-database', 'files' => ['mockup_master_customer.html', 'mockup_master_rawmaterial.html', 'mockup_master_warehouse.html',
-                'mockup_master_produksi.html', 'master_mesin_update_2026.html', 'master_mesin_update_2026.jpg', 'master_coa_mockup.html', 'mockup_mastercard.jpg', 'mockup_mastercard_ver2.jpg']],
-            ['code' => 'DOC', 'label' => 'Dokumen & Approval', 'icon' => 'fa-solid fa-file-signature', 'files' => ['mockup_purchase_requisition.html', 'mockup_pr_approval_center.html', 'mockup_po_approval_center.html',
-                'mockup_purchase_quotation.html', 'mockup_purchase_receive.html', 'mockup_purchase_return.html', 'mockup_flow_engine.html',
-                'mockup_sales_quotation_entry.html', 'mockup_co_entry.html', 'co_delivery_plan_mockup.html', 'mockup_down_payment.html',
-                'mockup_stock_in.html', 'mockup_stock_out.html', 'mockup_stock_return.html', 'mockup_stock_adjustment.html']],
-            ['code' => 'BOARD', 'label' => 'Kanban · Kalender · Gantt', 'icon' => 'fa-solid fa-chart-gantt', 'files' => ['mockup_UIUX_kanban.html', 'mockup_UIUX_calendar.html', 'mockup_scheduling_board.html',
-                'mockup_roster_shift.html', 'mockup_roster_formasi_harian.html', 'mockup_roster_formasi_harian.jpg', 'real_roster_formasi_editor.jpg', 'real_roster_formasi_ringkas.jpg', 'real_roster_formasi_harian.jpg']],
-            ['code' => 'CHART', 'label' => 'Bagan & Kartu', 'icon' => 'fa-solid fa-sitemap', 'files' => ['Organization-Structure-Mockup.html', 'mockup_ID_card.png', 'mockup_personal_data_self_service.html']],
-            ['code' => 'PRINT', 'label' => 'Cetak / Nota', 'icon' => 'fa-solid fa-print', 'files' => ['nota_co_mockup.html', 'nota_pv_spb.html', 'mockup_print_stock_card.html', 'mockup_print_master_stock.html',
-                'mockup_sales_quotation_letter_print.html', 'payroll_payslip_list.html', 'payroll_payslip_list.jpg']],
-            ['code' => 'SVG', 'label' => 'SVG Packaging & Optimasi', 'icon' => 'fa-solid fa-draw-polygon', 'files' => ['inquiry_new.html', 'inquiry_revise_v2.html', 'inquiry_recalc_v2.html',
-                'mockup_inquiry_imposition_grid_form.html', 'mockup_prodev_imposition.html', 'tata layout layar imposistion.jpg']],
-            ['code' => 'INQ', 'label' => 'Inquiry', 'icon' => 'fa-solid fa-clipboard-question', 'files' => ['inquiry_main_hub.html', 'inquiry_costing_hub.html', 'inquiry_costing_manual.html', 'inquiry_proof.html',
-                'inquiry_quotation.html', 'inquiry_nota_new.html', 'inquiry_nota_revise.html', 'inquiry_nota_recalc.html', 'inquiry_nota_quotation.html', 'nota_inquiry_mockup.html', 'nota_inquiry_mockup_bw.html']],
-            ['code' => 'COST', 'label' => 'ProCost & Costing', 'icon' => 'fa-solid fa-calculator', 'files' => ['ERP_Product_Costing_Mockup.html', 'Kalkulasi_HPP_UAT.html', 'product_costing.html', 'mockup_legacy_product_costing.png',
-                'inquiry_product_costing/mockup_product_costing_v1_scriptcase.png', 'procost_instant_hasil_build.png', 'procost_integrasi_hasil_build.png',
-                'procost_instant_deviasi.jpg', 'procost_instant_deviasi_v2.jpg', 'procost_integrasi_deviasi.jpg', 'procost_integrasi_deviasi_v2.jpg']],
-            ['code' => 'ACC', 'label' => 'Accounting', 'icon' => 'fa-solid fa-sack-dollar', 'files' => ['MODULE_accounting-mockup-blueprint.html', 'MODULE_accounting-process-engine-blueprint.html']],
+                'files' => ['Mockup' => ['login.html', 'register.html', 'forgot-password.html', 'security.html']]],
         ];
+    }
+
+    // Mockup yang sudah punya komponen -> tidak diulang di daftar "belum dibangun".
+    public static function builtMockups(): array
+    {
+        return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
+            'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html'];
     }
 
     public static function page(string $slug): ?array
@@ -86,12 +108,6 @@ final class Catalog
         }
 
         return null;
-    }
-
-    // Mockup yang sudah punya komponen -> tidak diulang di daftar "belum dibangun".
-    public static function builtMockups(): array
-    {
-        return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html'];
     }
 
     // Bentuk siap-pakai untuk <x-dl::shell :modules>.
@@ -111,17 +127,19 @@ final class Catalog
                 }
                 $children[] = ['label' => 'Komponen', 'items' => $items];
             }
-            $pending = [];
-            foreach ($g['files'] as $f) {
-                if (isset($all[$f])) {
-                    if (! in_array($f, $built, true)) {
-                        $pending[] = self::mockupItem($all[$f]);
+            foreach ($g['files'] as $caption => $files) {
+                $pending = [];
+                foreach ($files as $f) {
+                    if (isset($all[$f])) {
+                        if (! in_array($f, $built, true)) {
+                            $pending[] = self::mockupItem($all[$f]);
+                        }
+                        unset($all[$f]);
                     }
-                    unset($all[$f]);
                 }
-            }
-            if ($pending) {
-                $children[] = ['label' => 'Mockup belum dibangun', 'items' => $pending];
+                if ($pending) {
+                    $children[] = ['label' => $caption.' (belum dibangun)', 'items' => $pending];
+                }
             }
             $modules[] = ['code' => $g['code'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => $children];
         }
