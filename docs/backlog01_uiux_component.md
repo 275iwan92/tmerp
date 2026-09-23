@@ -30,10 +30,7 @@ kolom Catatan. Item yang selesai **dihapus dari papan** dan dicatat di LOG.
 | UI-03 | Setelan grid "compact": kerapatan baris + baris per sel | 🟡 SIAP | — | Tempatnya sudah ada: drawer Configuration → Grid ("segera") |
 | UI-04 | Header form entry (ikon+judul+no dok+badge+cetak+Back) jadi komponen | 🟡 SIAP | — | ≥6 layar menyalin markup yang sama |
 | UI-05 | Angka rata kanan di semua grid/form lama | 🔵 BERJALAN | — | Selesai: 7 nota cetak, payroll, Master Pegawai/Mesin/Proses. Sisanya ikut UI-01 per modul |
-| UI-10 | Panel Filament `/admin`: klik sidebar saat modal terbuka | 🔴 KEPUTUSAN | 3 pertanyaan (auto-save draft) | Mitigasi sementara sudah terpasang |
-| UI-11 | Pindah modul lain ke Filament `/admin` | 🔴 KEPUTUSAN | Modul mana & kapan | Baru HRM (2 Resource + 1 Page) |
 | UI-12 | Filter dropdown toolbar yang dulu dihapus | 🔴 KEPUTUSAN | Dikembalikan atau tidak? | tipe/kategori/divisi/dimensi/sembunyikan-nonaktif |
-| UI-13 | Menu profil "Pengaturan (Setup)" tidak tampil untuk siapa pun | 🔴 KEPUTUSAN | Hapus, atau arahkan ke layar apa? | Tujuannya layar admin, item khusus non-admin |
 | UI-14 | Verifikasi visual tema panel Filament | 🔴 KEPUTUSAN | Perlu Anda login & lihat tiap mode | Mekanisme sudah benar (cek via HTTP) |
 | UI-15 | Layar transaksi (iframe) ikut tema gelap `sys_theme` | ⚪ IDE | — | Token warna (UI-01) prasyaratnya |
 | UI-16 | Grid spreadsheet: panah, multi-sel, tanda "berubah", undo | ⚪ IDE | — | `spreadsheetgridstandard.md` §8 |
@@ -77,17 +74,8 @@ Disalin manual di `pur/pr`, `pur/po`, `co`, `pur/pq`, `pur/prt`, `quotation` ent
 ### UI-05 — Angka rata kanan  🔵
 Aturan: class `num` pada judul kolom + sel angka (`componentstandard.md` §5). Default tabel lama sudah di `@layer base` sehingga class per sel kini berlaku di semua layar. Sisa kolom angka di grid lama dikerjakan bersama UI-01 per modul. Zona beku (Inquiry nota & costing, 4 sel) menunggu izin per perubahan.
 
-### UI-10 — Filament: klik sidebar saat modal terbuka  🔴
-Penyebab: pola `ManageRecords --simple` membuka form sebagai modal ber-backdrop di atas sidebar (bawaan Filament). Mitigasi sudah ada (klik di luar tidak menutup form). Arah yang disetujui prinsip: auto-save draft ala SAP Fiori. **Pertanyaan:** (1) berlaku semua Resource atau tertentu? (2) pindah ke halaman Create/Edit terpisah? (3) mekanisme draft (trigger, penanda draft/final, 2 tab bersamaan)?
-
-### UI-11 — Modul lain ke Filament  🔴
-Pola & gotcha ada di `admindashboardstandard.md` §6. Jangan mulai tanpa arahan modul & waktu.
-
 ### UI-12 — Filter dropdown yang dulu dihapus  🔴
 `griduistandard.md` §10: filter tipe/kategori/divisi/dimensi/sembunyikan-nonaktif pernah dihapus dari beberapa toolbar. Kembalikan?
-
-### UI-13 — Menu profil "Pengaturan (Setup)"  🔴
-`sys_user_menu.UM_SETUP` (visibility `setup_non_admin`) menunjuk `SET_USER` (layar Security, khusus admin) → disaring untuk semua orang. Hapus item, atau arahkan ke layar setup yang memang boleh dibuka non-admin?
 
 ### UI-14 — Visual tema Filament  🔴
 Mekanisme terverifikasi via HTTP kernel; tampilan tiap mode belum dilihat di browser sungguhan (butuh login Anda).

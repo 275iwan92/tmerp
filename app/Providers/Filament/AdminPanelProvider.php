@@ -43,13 +43,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 // disesuaikan ke `login`, bukan `email`.
 class AdminPanelProvider extends PanelProvider
 {
-    // Mitigasi cepat BACKLOG §9.1 (2026-09-10, "klik menu sidebar tidak
-    // merespons saat modal form terbuka"): root cause adalah backdrop modal
-    // ManageRecords --simple menelan klik pertama ke sidebar. Solusi jangka
-    // panjang (auto-save draft / pindah ke halaman Create-Edit terpisah)
-    // masih menunggu diskusi user -- ini cuma matikan tutup-modal-diam-diam
-    // via klik-di-luar, supaya user tidak kehilangan input tanpa sadar
-    // selagi menunggu. Method ini toggle STATIS global Filament (bukan
+    // Modal yang tersisa (konfirmasi hapus, dst) tidak tertutup diam-diam oleh
+    // klik di luar. Form Create/Edit sudah halaman penuh (UI-10 selesai
+    // 2026-09-23, lihat unsavedChangesAlerts() di panel()). Method ini toggle STATIS global Filament (bukan
     // fluent per-Action -- versi Filament ini tidak punya
     // Action::closedByClickingAway()), jadi berlaku ke SEMUA modal panel
     // /admin, bukan cuma EmpEmployeeResource/OrgPositionResource -- sejalan
@@ -105,6 +101,12 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::HEAD_END, fn (): string => view('filament.partials.theme-matrix')->render())
             ->profile(EditProfile::class, isSimple: false)
             ->sidebarCollapsibleOnDesktop()
+            // UI-10 (2026-09-23): form Create/Edit = halaman penuh, bukan modal
+            // (modal menelan klik sidebar). Pindah halaman dgn input belum
+            // disimpan -> konfirmasi browser; setelah Simpan kembali ke grid.
+            ->unsavedChangesAlerts()
+            ->resourceCreatePageRedirect('index')
+            ->resourceEditPageRedirect('index')
             // Override menu atas (2026-08-30): ->topNavigation() adalah fitur
             // BAWAAN Filament yang TERNYATA sudah persis meniru pola shell lama
             // (top mega-nav pilih modul + sub-sidebar kiri isi grup/item), tanpa

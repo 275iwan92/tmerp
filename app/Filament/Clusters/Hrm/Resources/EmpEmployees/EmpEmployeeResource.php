@@ -3,7 +3,9 @@
 namespace App\Filament\Clusters\Hrm\Resources\EmpEmployees;
 
 use App\Filament\Clusters\Hrm\HrmCluster;
-use App\Filament\Clusters\Hrm\Resources\EmpEmployees\Pages\ManageEmpEmployees;
+use App\Filament\Clusters\Hrm\Resources\EmpEmployees\Pages\CreateEmpEmployee;
+use App\Filament\Clusters\Hrm\Resources\EmpEmployees\Pages\EditEmpEmployee;
+use App\Filament\Clusters\Hrm\Resources\EmpEmployees\Pages\ListEmpEmployees;
 use App\Models\Master\EmpEmployee;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -122,12 +124,9 @@ class EmpEmployeeResource extends Resource
                     ]),
             ])
             ->recordActions([
-                // Standar tombol aksi LOCKED (CLAUDE.md §3) -- label modal
-                // Save/Cancel bawaan Filament (Inggris) di-override manual,
-                // bukan dibiarkan default framework.
-                EditAction::make()
-                    ->modalSubmitActionLabel('Simpan')
-                    ->modalCancelActionLabel('Batal'),
+                // Buka halaman Edit penuh (bukan modal) -- label Simpan/Batal
+                // di Edit/CreateEmpEmployee (standar tombol CLAUDE.md §3).
+                EditAction::make(),
                 DeleteAction::make()
                     ->modalCancelActionLabel('Batal'),
             ])
@@ -141,7 +140,9 @@ class EmpEmployeeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageEmpEmployees::route('/'),
+            'index' => ListEmpEmployees::route('/'),
+            'create' => CreateEmpEmployee::route('/create'),
+            'edit' => EditEmpEmployee::route('/{record}/edit'),
         ];
     }
 }

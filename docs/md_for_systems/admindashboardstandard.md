@@ -163,6 +163,8 @@ mv app/Filament/Resources/Master/NamaModels app/Filament/Clusters/<Cluster>/Reso
 
 Pola sama berlaku untuk `make:filament-page` di dalam cluster.
 
+**Halaman Resource WAJIB turunan induk `App\Filament\Base\*` (UI-10, 2026-09-23).** Jangan pakai `--simple`/`ManageRecords` (form modal menelan klik sidebar). Daftarkan 3 halaman `index`/`create`/`edit`; tiap halaman cukup `class ListX extends TmListRecords { protected static string $resource = XResource::class; }` (juga `TmCreateRecord`, `TmEditRecord`). Label Simpan/Batal, tanpa 'create another', redirect ke grid, dan peringatan perubahan belum tersimpan (`unsavedChangesAlerts()` di panel) sudah diurus induk. Contoh: `app/Filament/Clusters/Hrm/Resources/*/Pages`.
+
 **Gotcha kedua yang WAJIB diperhatikan tiap bikin Resource/Page baru:**
 override properti `$navigationGroup` **HARUS** persis tipe union induknya
 (`string|UnitEnum|null`) — PHP menuntut override properti INVARIANT (beda

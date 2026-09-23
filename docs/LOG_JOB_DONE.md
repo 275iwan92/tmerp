@@ -468,6 +468,13 @@ nameplate Sabtu masuk -- jangan biarkan tertinggal jadi "spek permanen".
 
 ---
 
+## 2026-09-23 -- UI-10 Filament form halaman penuh (induk Base), UI-13, UI-11 dibatalkan (backlog01)
+
+- **UI-10**: form Create/Edit panel `/admin` dipindah dari modal (`ManageRecords`, menelan klik sidebar) ke halaman penuh. Induk baru `app/Filament/Base/{TmListRecords,TmCreateRecord,TmEditRecord}` (label Simpan/Batal, tanpa create-another); panel: `unsavedChangesAlerts()` + redirect ke grid. 6 halaman HRM (Posisi, Pegawai) kini turunan 3 baris. Test: `FilamentHrmPagesTest` (18 assertion). Standar: `admindashboardstandard.md`. Keputusan auto-save draft jadi tidak diperlukan.
+- **UI-13**: `sys_user_menu.UM_SETUP` dinonaktifkan (migration `2026_09_23_000010`) -- menunjuk layar khusus admin padahal hanya tampil utk non-admin; semua layar Setup ber-middleware admin.
+- **UI-11** (modul lain ke Filament): dibatalkan atas instruksi user ("kalau tidak jelas modul mana, hapus saja").
+
+---
 ## 2026-09-23 -- UI/UX berbasis komponen OOP, menu profil drawer, angka rata kanan (backlog01)
 
 Dikerjakan agen Jo. Semua sudah di-commit & push; data real (Master Mesin,

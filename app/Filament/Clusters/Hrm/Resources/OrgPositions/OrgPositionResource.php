@@ -3,7 +3,9 @@
 namespace App\Filament\Clusters\Hrm\Resources\OrgPositions;
 
 use App\Filament\Clusters\Hrm\HrmCluster;
-use App\Filament\Clusters\Hrm\Resources\OrgPositions\Pages\ManageOrgPositions;
+use App\Filament\Clusters\Hrm\Resources\OrgPositions\Pages\CreateOrgPosition;
+use App\Filament\Clusters\Hrm\Resources\OrgPositions\Pages\EditOrgPosition;
+use App\Filament\Clusters\Hrm\Resources\OrgPositions\Pages\ListOrgPositions;
 use App\Models\Master\OrgPosition;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -90,12 +92,9 @@ class OrgPositionResource extends Resource
                     ->boolean(),
             ])
             ->recordActions([
-                // Standar tombol aksi LOCKED (CLAUDE.md §3) -- label modal
-                // Save/Cancel bawaan Filament (Inggris) di-override manual,
-                // bukan dibiarkan default framework.
-                EditAction::make()
-                    ->modalSubmitActionLabel('Simpan')
-                    ->modalCancelActionLabel('Batal'),
+                // Buka halaman Edit penuh (bukan modal) -- label Simpan/Batal
+                // di Edit/CreateOrgPosition (standar tombol CLAUDE.md §3).
+                EditAction::make(),
                 DeleteAction::make()
                     ->modalCancelActionLabel('Batal'),
             ])
@@ -109,7 +108,9 @@ class OrgPositionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ManageOrgPositions::route('/'),
+            'index' => ListOrgPositions::route('/'),
+            'create' => CreateOrgPosition::route('/create'),
+            'edit' => EditOrgPosition::route('/{record}/edit'),
         ];
     }
 }
