@@ -25,6 +25,45 @@
     --color-field-soft: color-mix(in srgb, var(--color-accent) 7%, #f4f6fa);
     --color-field-badge: color-mix(in srgb, var(--color-accent) 12%, #eef1f6);
     --color-accent-soft: color-mix(in srgb, var(--color-accent) 12%, #ffffff);
+
+    /* Layer 0 design system (2026-09-23, docs/componentstandard.md) -- SATU-
+     * SATUNYA tempat nilai warna. Primitive app/View/Components/Ui/* hanya
+     * memakai nama token ini; ganti nilai di sini = semua layar ikut.
+     * Nilai awal = hex yang sudah paling sering dipakai verbatim di halaman,
+     * jadi tampilan lama tidak bergeser saat dimigrasi.
+     * Tiap tone: <tone> (isi solid tombol/bar), -ink (teks di atas soft), -soft (latar badge). */
+    --color-ink: #233;
+    --color-ink-soft: #4b5568;
+    --color-head: #667;
+    --color-line: #d7dbe2;
+    --color-line-soft: #eef1f5;
+    --color-surface: #ffffff;
+    --color-surface-alt: #fafbfd;
+    --color-surface-hover: #f7faff;
+    --color-neutral: #8a8f98;
+    --color-neutral-ink: #333;
+    --color-neutral-soft: #e6eaf0;
+    --color-success: #22a06b;
+    --color-success-ink: #166534;
+    --color-success-soft: #eaf7ee;
+    --color-success-line: #c8ecd6;
+    --color-danger: #e55353;
+    --color-danger-ink: #b91c1c;
+    --color-danger-soft: #fef2f2;
+    --color-danger-line: #f5c6c6;
+    --color-warn: #f59e0b;
+    --color-warn-ink: #c2410c;
+    --color-warn-soft: #fff7ed;
+    --color-info: #2f80ed;
+    --color-info-ink: #1d4ed8;
+    --color-info-soft: #eff6ff;
+    --color-highlight: #eab308;
+    --color-highlight-ink: #92400e;
+    --color-highlight-soft: #fef9c3;
+    --color-extra: #7c3aed;
+    --color-extra-ink: #6d28d9;
+    --color-extra-soft: #f5f3ff;
+    --color-overlay: rgba(20, 26, 40, .45);
 }
 
 html, body { @apply h-full m-0; }
@@ -55,9 +94,9 @@ header.app-header .back { @apply ml-auto bg-[#43508a] text-[#cfd6ef] border-none
 .hint { @apply text-[10.5px] text-muted mt-0.5; }
 .btn { @apply border-none px-3.5 py-1.5 rounded-md text-[13px] cursor-pointer font-semibold; font-family: inherit; }
 .btn.p { @apply bg-accent text-white; }
-.btn.g { @apply bg-[#e6eaf0] text-[#333]; }
-.btn.s { @apply bg-[#22a06b] text-white; }
-.btn.d { @apply bg-[#e55353] text-white; }
+.btn.g { @apply bg-neutral-soft text-neutral-ink; }
+.btn.s { @apply bg-success text-white; }
+.btn.d { @apply bg-danger text-white; }
 .btn.o { @apply bg-white text-accent border border-accent; }
 .btn.xs { @apply px-[9px] py-[3px] text-[11px]; }
 .btn:disabled { @apply opacity-45 cursor-not-allowed; }
@@ -875,3 +914,16 @@ td input, td select { @apply px-1.5 py-1 text-xs; }
 .secpage .toast.show { @apply opacity-100; }
 @media (max-width: 820px) { .secpage .side { @apply w-16; } .secpage .side .cap, .secpage .nav-item span.t { @apply hidden; } .secpage .nav-item { @apply justify-center; } .secpage .form-grid { @apply grid-cols-1; } .secpage .htitle { @apply hidden; } }
 @media (max-width: 640px) { .authpage .wrap { @apply flex-col; } .authpage .brand-panel { @apply flex-none py-[26px] px-6; } .authpage .clock .tagline { @apply hidden; } .authpage .form-panel { @apply pt-5 px-6 pb-8; } }
+
+/* x-ui.table (App\View\Components\Ui\Table) -- gaya th/td baku. Di @layer
+ * components supaya class utilitas per sel (w-*, text-right) tetap menang. */
+@layer components {
+    .tm-table th { @apply text-left bg-surface-alt text-head text-[10.5px] uppercase tracking-wide font-bold border-b border-line-soft whitespace-nowrap; }
+    .tm-table td { @apply border-b border-line-soft; }
+    .tm-table-md { @apply text-[12.5px]; }
+    .tm-table-md th, .tm-table-md td { @apply px-3 py-2; }
+    .tm-table-sm { @apply text-[11.5px]; }
+    .tm-table-sm th, .tm-table-sm td { @apply px-2.5 py-1.5; }
+    .tm-table-sticky th { @apply sticky top-0 z-[1]; }
+    .tm-table-hover tbody tr:hover { @apply bg-surface-hover; }
+}

@@ -16,6 +16,22 @@ gotchas:
   - "Warna field: border-field-border/bg-field-soft/bg-field-badge/bg-accent-soft (token @theme app.css), JANGAN hex abu-abu literal -- supaya ikut corak sys_theme."
   - "Tombol baku: Simpan/Batal/Tutup (ID), Back selalu Inggris. Grid: '+ New Record'."
 
+ui: # Layer 1 PRIMITIVE (class PHP app/View/Components/Ui, turunan UiComponent) -- docs/componentstandard.md
+  # Pakai ini SEBELUM menulis <button>/<span badge>/<table>/modal mentah. Warna dari token @theme, bukan hex.
+  x-ui.button: {props: {variant: "primary|secondary|neutral|navy|success|danger|outline|ghost|link|chip|action|action-danger|action-success|action-plain*", size: "md|sm|xs|square", preset: "save|cancel|close|confirm|apply|delete|new (label+variant+type terkunci)", type: "null=ikut preset/button", href: "null -> <a>", icon: "fa-xxx", iconRight: null, active: "false (utk chip)", block: false}, slot: "label (mengalahkan preset)"}
+  x-ui.icon-button: {props: {icon: req, variant: ghost, size: "md|sm|xs", type: null, href: null, active: false}, note: "turunan Button"}
+  x-ui.badge: {props: {tone: "neutral|muted|code|accent|info|success|warn|danger|highlight|extra", size: "sm|xs|md", pill: false, mono: false, icon: null}}
+  x-ui.badge-button: {props: "sama dgn x-ui.badge", note: "badge yg bisa diklik (toggle di baris tabel)"}
+  x-ui.card: {props: {variant: "section|panel|muted|plain", size: "md|sm|none", title: null, description: "teks polos"}, slots: "intro (teks kaya), actions (kanan judul), default"}
+  x-ui.tabs: {props: {tabs: "[key=>label]", active: req, model: "nama properti -> \$set(model,key)", badges: "[key=>[text,tone]]"}}
+  x-ui.table: {props: {size: "md|sm", framed: false, sticky: false, hover: false}, note: "th/td polos otomatis bergaya (.tm-table @layer components); class per sel utk lebar/align saja"}
+  x-ui.modal: {props: {title: null, close: "ekspresi wire:click penutup", size: "xs|sm|md|lg|xl|2xl"}, slots: "default, header, footer", note: "tampil/tidak diatur @if di pemanggil"}
+  x-ui.progress: {props: {value: "0-100", tone: info, marker: "null|0-100", markerTitle: null, min: 0}}
+  x-ui.metric: {props: {label: null, hint: null, tone: neutral, size: "sm|lg", emphasis: false}, slots: "default = nilai, footer"}
+  x-ui.panel-header: {props: {title: null, variant: "navy|light"}, slots: "aside"}
+  x-ui.action-bar: {props: {variant: "footer|inline|end"}, note: "footer = strip bawah form p-5"}
+  Tone: "App\\View\\Components\\Ui\\Tone::soft|solid|text(tone), ::forScore(nilai, good=80, fair=50)"
+
 tones: # palet bersama, jangan bikin warna baru
   form.badge: [default, active|success, warn, danger, info, extra]
   grid.stat-box: [total, active, extra, critical, warn]

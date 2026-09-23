@@ -36,6 +36,7 @@ yang mana, supaya sesi baru tidak perlu menebak dari nama file saja.
 
 | Dokumen | Untuk layar jenis apa | Baca SEBELUM |
 |---|---|---|
+| [`componentstandard.md`](componentstandard.md) | **FONDASI semua layar** — token warna + primitive OOP `x-ui.*` (Button/Badge/Card/Tabs/Table/Modal/...) yang diwarisi komponen & layar lain; ratchet test | Menulis markup layar apa pun (tombol, badge, tabel, modal, warna) |
 | [`griduistandard.md`](griduistandard.md) | Tabel data — Master (CRUD) & Worklist/transaksi (grid + toolbar + kolom Aksi) | Bikin/ubah grid apa pun, Master maupun non-Master |
 | [`FORM_UI_STANDARD.md`](FORM_UI_STANDARD.md) | Layar form/entry dengan header navy + tombol Back (CO Entry, PR/PO/PV, Master Warehouse, dst) | Bikin/ubah header layar form/entry |
 | [`sidebarmenustandard.md`](sidebarmenustandard.md) | Struktur menu sidebar per modul (grup input + grup "Laporan", collapsible) | Menata `sys_app_menu`/sidebar modul apa pun |

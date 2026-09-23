@@ -456,6 +456,14 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
 > file ini dulu** kalau bingung standar mana yang relevan untuk 1 layar baru,
 > daripada baca satu-satu daftar di bawah.
 
+- `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
+  pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
+  token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,
+  `badge`, `card`, `tabs`, `table`, `modal`, ...; turunan `UiComponent`,
+  palet `Tone`) → komposit `x-form/x-grid` → layar. Ubah induk = semua ikut.
+  Dilarang `<button class>`/hex/`fixed inset-0`/`<table class>` mentah di
+  halaman baru; `UiRatchetTest` menjaga angkanya tidak naik. Migrasi layar lama
+  (termasuk zona beku §6B) = kulit saja, esensi wajib dibuktikan sama (§6 dok).
 - `globalarchitecture_tier0.md` — arsitektur global, keputusan LOCKED.
 - `inquiryproduct_tier1.md` — alur & proses inquiry (aktor, state, aturan bisnis).
 - `inquiryproduct_tier2.md` — business logic, state machine, pseudocode HPP.
