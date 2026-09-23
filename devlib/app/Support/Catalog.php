@@ -109,6 +109,8 @@ final class Catalog
                         'procost_instant_deviasi.jpg', 'procost_instant_deviasi_v2.jpg', 'procost_integrasi_deviasi.jpg', 'procost_integrasi_deviasi_v2.jpg'],
                 ]],
             ['code' => 'P6', 'short' => 'SP', 'label' => '6 · Special Components', 'icon' => 'fa-solid fa-draw-polygon',
+                'pages' => ['p6-dieline' => ['label' => 'Dieline (mockup kemasan)', 'icon' => 'fa-solid fa-box-open', 'part' => '6 · Special Components', 'mockup' => 'inquiry_new.html',
+                    'members' => ['dieline' => ['Dieline hidup: tipe, ukuran pasaran, dimensi, bentang', ['Devlib\\Components\\Dieline']]], 'classes' => ['Devlib\\Components\\Dieline']]],
                 'files' => ['Mockup' => ['inquiry_new.html', 'inquiry_revise_v2.html', 'inquiry_recalc_v2.html', 'mockup_inquiry_imposition_grid_form.html', 'mockup_prodev_imposition.html',
                     'tata layout layar imposistion.jpg', 'Organization-Structure-Mockup.html', 'mockup_ID_card.png', 'mockup_mastercard.jpg', 'mockup_mastercard_ver2.jpg']]],
             ['code' => 'P7', 'short' => 'MD', 'label' => '7 · Menu & Dashboard', 'icon' => 'fa-solid fa-table-columns',

@@ -141,6 +141,12 @@ final class DemoData
         }, $rows);
     }
 
+    // Tipe produk + dieline_spec + parameter + ukuran pasaran, diekspor BACA-SAJA dari tm2mst (resources/data/dieline_types.json).
+    public static function dielineTypes(): array
+    {
+        return json_decode(file_get_contents(resource_path('data/dieline_types.json')), true);
+    }
+
     public static function purchaseOrders(int $n = 48): array
     {
         $sup = ['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima'];

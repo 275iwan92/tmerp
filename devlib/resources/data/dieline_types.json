@@ -1,0 +1,3710 @@
+{
+    "CARD_BOX": {
+        "label": "Card Box (Tuck End)",
+        "category": "FOLDING_CARTON",
+        "spec": {
+            "gen": "TUCK_END",
+            "flat": {
+                "h": "max(TT,DF)+C+max(BT,DF)+2*P",
+                "w": "G+2*A+2*B+2*P"
+            },
+            "vars": {
+                "H": "max(TT,DF)+C+max(BT,DF)",
+                "W": "G+2*A+2*B",
+                "bR": "max(BT,DF)",
+                "ga": "min(8, C/10, G)",
+                "tR": "max(TT,DF)",
+                "x0": "0",
+                "x1": "G",
+                "x2": "G+A",
+                "x3": "G+A+B",
+                "x4": "G+2*A+B",
+                "x5": "G+2*A+2*B",
+                "yB": "max(TT,DF)+C",
+                "yT": "max(TT,DF)"
+            },
+            "style": "REVERSE_TUCK",
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x4",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x5",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "TT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x2",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x3",
+                    "b": "x4",
+                    "h": "BT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "g": "ga",
+                    "k": "CUT",
+                    "t": "glue",
+                    "x0": "x0",
+                    "x1": "x1",
+                    "yB": "yB",
+                    "yT": "yT"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang (A)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar (B)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi (C)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "top_tuck_flap": {
+                "label": "Top Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "dust_flap": {
+                "label": "Dust Flap",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 12,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "bottom_tuck_flap": {
+                "label": "Bottom Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Serum 30ml (40x40x110)",
+                "dims": {
+                    "product_height": 110,
+                    "product_length": 40,
+                    "product_width": 40
+                }
+            },
+            {
+                "label": "Skincare 50ml (50x50x150)",
+                "dims": {
+                    "product_height": 150,
+                    "product_length": 50,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Kosmetik sedang (60x60x100)",
+                "dims": {
+                    "product_height": 100,
+                    "product_length": 60,
+                    "product_width": 60
+                }
+            },
+            {
+                "label": "Dus obat strip (105x32x22)",
+                "dims": {
+                    "product_height": 22,
+                    "product_length": 105,
+                    "product_width": 32
+                }
+            },
+            {
+                "label": "Slim/masker (95x20x150)",
+                "dims": {
+                    "product_height": 150,
+                    "product_length": 95,
+                    "product_width": 20
+                }
+            },
+            {
+                "label": "Kotak teh (70x70x120)",
+                "dims": {
+                    "product_height": 120,
+                    "product_length": 70,
+                    "product_width": 70
+                }
+            }
+        ]
+    },
+    "RTE_BOX": {
+        "label": "Reverse Tuck End (RTE)",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "TUCK_END",
+            "flat": {
+                "h": "max(TT,DF)+C+max(BT,DF)+2*P",
+                "w": "G+2*A+2*B+2*P"
+            },
+            "vars": {
+                "H": "max(TT,DF)+C+max(BT,DF)",
+                "W": "G+2*A+2*B",
+                "bR": "max(BT,DF)",
+                "ga": "min(8, C/10, G)",
+                "tR": "max(TT,DF)",
+                "x0": "0",
+                "x1": "G",
+                "x2": "G+A",
+                "x3": "G+A+B",
+                "x4": "G+2*A+B",
+                "x5": "G+2*A+2*B",
+                "yB": "max(TT,DF)+C",
+                "yT": "max(TT,DF)"
+            },
+            "style": "REVERSE_TUCK",
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x4",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x5",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "TT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x2",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x3",
+                    "b": "x4",
+                    "h": "BT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "g": "ga",
+                    "k": "CUT",
+                    "t": "glue",
+                    "x0": "x0",
+                    "x1": "x1",
+                    "yB": "yB",
+                    "yT": "yT"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang (A)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar (B)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi (C)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "top_tuck_flap": {
+                "label": "Top Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "dust_flap": {
+                "label": "Dust Flap",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 12,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "bottom_tuck_flap": {
+                "label": "Bottom Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Serum 30ml (40x40x110)",
+                "dims": {
+                    "product_height": 110,
+                    "product_length": 40,
+                    "product_width": 40
+                }
+            },
+            {
+                "label": "Skincare 50ml (50x50x150)",
+                "dims": {
+                    "product_height": 150,
+                    "product_length": 50,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Kosmetik sedang (60x60x100)",
+                "dims": {
+                    "product_height": 100,
+                    "product_length": 60,
+                    "product_width": 60
+                }
+            },
+            {
+                "label": "Dus obat strip (105x32x22)",
+                "dims": {
+                    "product_height": 22,
+                    "product_length": 105,
+                    "product_width": 32
+                }
+            },
+            {
+                "label": "Slim/masker (95x20x150)",
+                "dims": {
+                    "product_height": 150,
+                    "product_length": 95,
+                    "product_width": 20
+                }
+            },
+            {
+                "label": "Kotak teh (70x70x120)",
+                "dims": {
+                    "product_height": 120,
+                    "product_length": 70,
+                    "product_width": 70
+                }
+            }
+        ]
+    },
+    "STE_BOX": {
+        "label": "Straight Tuck End (STE)",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "TUCK_END",
+            "flat": {
+                "h": "max(TT,DF)+C+max(BT,DF)+2*P",
+                "w": "G+2*A+2*B+2*P"
+            },
+            "vars": {
+                "H": "max(TT,DF)+C+max(BT,DF)",
+                "W": "G+2*A+2*B",
+                "ga": "min(8, C/10, G)",
+                "x0": "0",
+                "x1": "G",
+                "x2": "G+A",
+                "x3": "G+A+B",
+                "x4": "G+2*A+B",
+                "x5": "G+2*A+2*B",
+                "yB": "max(TT,DF)+C",
+                "yT": "max(TT,DF)"
+            },
+            "style": "STRAIGHT_TUCK",
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x4",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x5",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "TT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "BT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x4",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "g": "ga",
+                    "k": "CUT",
+                    "t": "glue",
+                    "x0": "x0",
+                    "x1": "x1",
+                    "yB": "yB",
+                    "yT": "yT"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang (A)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar (B)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi (C)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "top_tuck_flap": {
+                "label": "Top Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "dust_flap": {
+                "label": "Dust Flap",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 12,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "bottom_tuck_flap": {
+                "label": "Bottom Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Serum 30ml (40x40x110)",
+                "dims": {
+                    "product_height": 110,
+                    "product_length": 40,
+                    "product_width": 40
+                }
+            },
+            {
+                "label": "Skincare 50ml (50x50x150)",
+                "dims": {
+                    "product_height": 150,
+                    "product_length": 50,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Kosmetik sedang (60x60x100)",
+                "dims": {
+                    "product_height": 100,
+                    "product_length": 60,
+                    "product_width": 60
+                }
+            },
+            {
+                "label": "Dus obat strip (105x32x22)",
+                "dims": {
+                    "product_height": 22,
+                    "product_length": 105,
+                    "product_width": 32
+                }
+            },
+            {
+                "label": "Slim/masker (95x20x150)",
+                "dims": {
+                    "product_height": 150,
+                    "product_length": 95,
+                    "product_width": 20
+                }
+            },
+            {
+                "label": "Kotak teh (70x70x120)",
+                "dims": {
+                    "product_height": 120,
+                    "product_length": 70,
+                    "product_width": 70
+                }
+            }
+        ]
+    },
+    "CRASH_LOCK": {
+        "label": "Auto / Crash Lock Bottom",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "CRASH_LOCK",
+            "flat": {
+                "h": "max(TT,DF)+C+B*0.75+2*P",
+                "w": "G+2*A+2*B+2*P"
+            },
+            "vars": {
+                "H": "max(TT,DF)+C+B*0.75",
+                "W": "G+2*A+2*B",
+                "ga": "min(8, C/10, G)",
+                "lk": "B*0.5",
+                "x0": "0",
+                "x1": "G",
+                "x2": "G+A",
+                "x3": "G+A+B",
+                "x4": "G+2*A+B",
+                "x5": "G+2*A+2*B",
+                "yB": "max(TT,DF)+C",
+                "yT": "max(TT,DF)"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x4",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x5",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "TT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "DF",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "lk",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "lk",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x3",
+                    "b": "x4",
+                    "h": "lk",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "lk",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "g": "ga",
+                    "k": "CUT",
+                    "t": "glue",
+                    "x0": "x0",
+                    "x1": "x1",
+                    "yB": "yB",
+                    "yT": "yT"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang (A)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar (B)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi (C)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "top_tuck_flap": {
+                "label": "Top Tuck",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "dust_flap": {
+                "label": "Dust Flap",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 12,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Food box kecil (120x80x180)",
+                "dims": {
+                    "product_height": 180,
+                    "product_length": 120,
+                    "product_width": 80
+                }
+            },
+            {
+                "label": "Food box besar (150x100x220)",
+                "dims": {
+                    "product_height": 220,
+                    "product_length": 150,
+                    "product_width": 100
+                }
+            },
+            {
+                "label": "Kotak nasi (200x120x60)",
+                "dims": {
+                    "product_height": 60,
+                    "product_length": 200,
+                    "product_width": 120
+                }
+            }
+        ]
+    },
+    "SLEEVE": {
+        "label": "Sleeve",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "SLEEVE",
+            "flat": {
+                "h": "C+2*P",
+                "w": "G+2*A+2*B+2*P"
+            },
+            "vars": {
+                "H": "C",
+                "W": "G+2*A+2*B",
+                "ga": "min(8, C/10, G)",
+                "x0": "0",
+                "x1": "G",
+                "x2": "G+A",
+                "x3": "G+A+B",
+                "x4": "G+2*A+B",
+                "x5": "G+2*A+2*B",
+                "yB": "C",
+                "yT": "0"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x4",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x5",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "g": "ga",
+                    "k": "CUT",
+                    "t": "glue",
+                    "x0": "x0",
+                    "x1": "x1",
+                    "yB": "yB",
+                    "yT": "yT"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang (A)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar (B)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi (C)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Sleeve kecil (90x50x160)",
+                "dims": {
+                    "product_height": 160,
+                    "product_length": 90,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Sleeve sedang (110x60x180)",
+                "dims": {
+                    "product_height": 180,
+                    "product_length": 110,
+                    "product_width": 60
+                }
+            }
+        ]
+    },
+    "GIFT_BOX": {
+        "label": "Gift Box",
+        "category": "PACKAGING",
+        "spec": {
+            "flat": {
+                "h": "H + 2*P",
+                "w": "W + 2*P"
+            },
+            "vars": {
+                "H": "max(6, top_tuck_flap) + C + (C + A*0.9)",
+                "W": "G + 2*A + 2*B",
+                "SH": "max(3, A*0.14)",
+                "TH": "max(6, thumb_hole_width)",
+                "TT": "max(6, top_tuck_flap)",
+                "x1": "G",
+                "x2": "G + A",
+                "x3": "G + A + B",
+                "x4": "G + 2*A + B",
+                "x5": "G + 2*A + 2*B",
+                "yB": "max(6, top_tuck_flap) + C",
+                "yK": "max(6, top_tuck_flap) + C + (C + A*0.9)",
+                "yT": "max(6, top_tuck_flap)",
+                "KAKI": "C + A*0.9",
+                "mid3": "G + A + B/2"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "g": "G*0.6",
+                    "k": "CUT",
+                    "t": "glue",
+                    "x0": "0",
+                    "x1": "x1",
+                    "yB": "yB",
+                    "yT": "yT"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x4",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x5",
+                    "y1": "yB",
+                    "y2": "yB"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x5",
+                    "x2": "x5",
+                    "y1": "yT",
+                    "y2": "yB"
+                },
+                {
+                    "a": "x1 + SH",
+                    "b": "x2 - SH",
+                    "h": "TT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x1",
+                    "x2": "x1 + SH",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x2 - SH",
+                    "x2": "x2",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "a": "x3 + SH",
+                    "b": "x4 - SH",
+                    "h": "TT",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3 + SH",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x4 - SH",
+                    "x2": "x4",
+                    "y1": "yT",
+                    "y2": "yT"
+                },
+                {
+                    "a": "x2",
+                    "b": "mid3 - TH/2",
+                    "h": "TT*0.75",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "a": "mid3 + TH/2",
+                    "b": "x3",
+                    "h": "TT*0.75",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "r": "TH/2",
+                    "t": "circle",
+                    "cx": "mid3",
+                    "cy": "yT"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "TT*0.75",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yT",
+                    "dir": "up"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x2",
+                    "y1": "yB",
+                    "y2": "yK - TH/2"
+                },
+                {
+                    "k": "CUT",
+                    "t": "line",
+                    "x1": "x3",
+                    "x2": "x3",
+                    "y1": "yB",
+                    "y2": "yK - TH/2"
+                },
+                {
+                    "a": "x2",
+                    "b": "x3",
+                    "h": "TH/2",
+                    "k": "CUT",
+                    "t": "tuck",
+                    "y": "yK - TH/2",
+                    "dir": "down"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x3",
+                    "y1": "yB + C",
+                    "y2": "yB + C"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "x2",
+                    "x2": "x3",
+                    "y1": "yK - A*0.28",
+                    "y2": "yK - A*0.28"
+                },
+                {
+                    "a": "x1",
+                    "b": "x2",
+                    "h": "TT*0.7",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x3",
+                    "b": "x4",
+                    "h": "TT*0.7",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                },
+                {
+                    "a": "x4",
+                    "b": "x5",
+                    "h": "TT*0.7",
+                    "k": "CUT",
+                    "t": "dust",
+                    "y": "yB",
+                    "dir": "down"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 40,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 60,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "top_tuck_flap": {
+                "label": "Tuck Flap (mm)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": 5,
+                "max": 80,
+                "options": null
+            },
+            "thumb_hole_width": {
+                "label": "Lubang Jempol (mm)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 15,
+                "min": 0,
+                "max": 60,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Kubus 100 (100x100x100)",
+                "dims": {
+                    "product_height": 100,
+                    "product_length": 100,
+                    "product_width": 100
+                }
+            },
+            {
+                "label": "Hampers (150x150x80)",
+                "dims": {
+                    "product_height": 80,
+                    "product_length": 150,
+                    "product_width": 150
+                }
+            },
+            {
+                "label": "Parcel besar (200x150x100)",
+                "dims": {
+                    "product_height": 100,
+                    "product_length": 200,
+                    "product_width": 150
+                }
+            }
+        ]
+    },
+    "MAILER": {
+        "label": "Mailer",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "TRAY",
+            "flat": {
+                "h": "B+2*C+2*P",
+                "w": "A+2*C+2*P"
+            },
+            "vars": {
+                "H": "B+2*C",
+                "W": "A+2*C",
+                "ox": "C",
+                "oy": "C"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CREASE",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "0"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy+B"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "0",
+                    "y": "oy"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "ox+A",
+                    "y": "oy"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 154,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 110,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 10,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overlap": {
+                "label": "Overlap",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 20,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "E-comm S (200x140x70)",
+                "dims": {
+                    "product_height": 70,
+                    "product_length": 200,
+                    "product_width": 140
+                }
+            },
+            {
+                "label": "E-comm A5 (235x180x50)",
+                "dims": {
+                    "product_height": 50,
+                    "product_length": 235,
+                    "product_width": 180
+                }
+            },
+            {
+                "label": "E-comm A4 (330x250x50)",
+                "dims": {
+                    "product_height": 50,
+                    "product_length": 330,
+                    "product_width": 250
+                }
+            }
+        ]
+    },
+    "SHALLOW_BOX": {
+        "label": "Shallow Box",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "TRAY",
+            "flat": {
+                "h": "B+2*C+2*P",
+                "w": "A+2*C+2*P"
+            },
+            "vars": {
+                "H": "B+2*C",
+                "W": "A+2*C",
+                "ox": "C",
+                "oy": "C"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CREASE",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "0"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy+B"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "0",
+                    "y": "oy"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "ox+A",
+                    "y": "oy"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 20,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Dus kue (250x250x70)",
+                "dims": {
+                    "product_height": 70,
+                    "product_length": 250,
+                    "product_width": 250
+                }
+            },
+            {
+                "label": "Dus pizza (300x300x40)",
+                "dims": {
+                    "product_height": 40,
+                    "product_length": 300,
+                    "product_width": 300
+                }
+            }
+        ]
+    },
+    "BOX_WITH_LID": {
+        "label": "Box with Lid",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "TRAY",
+            "flat": {
+                "h": "B+2*C+2*P",
+                "w": "A+2*C+2*P"
+            },
+            "vars": {
+                "H": "B+2*C",
+                "W": "A+2*C",
+                "ox": "C",
+                "oy": "C"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CREASE",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "0"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy+B"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "0",
+                    "y": "oy"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "ox+A",
+                    "y": "oy"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 170,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 110,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 70,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "lid_height": {
+                "label": "Tinggi Tutup",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 40,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Shoe box (300x180x110)",
+                "dims": {
+                    "lid_height": 40,
+                    "product_height": 110,
+                    "product_length": 300,
+                    "product_width": 180
+                }
+            },
+            {
+                "label": "Parcel tray (250x200x80)",
+                "dims": {
+                    "lid_height": 35,
+                    "product_height": 80,
+                    "product_length": 250,
+                    "product_width": 200
+                }
+            }
+        ]
+    },
+    "ROUND_BOX": {
+        "label": "Round Box (Hat Box)",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "CYLINDER",
+            "flat": {
+                "h": "C+LH+2*P",
+                "w": "PI*D+2*P"
+            },
+            "vars": {
+                "H": "max(C+LH,D)",
+                "W": "PI*D+max(20,D*0.3)+D",
+                "r": "D/2",
+                "bh": "C+LH",
+                "cx": "PI*D+max(20,D*0.3)+D/2",
+                "cy": "(C+LH)/2",
+                "cir": "PI*D",
+                "gap": "max(20, D*0.3)"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "bh",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "cir",
+                    "x": "0",
+                    "y": "0"
+                },
+                {
+                    "k": "CREASE",
+                    "t": "line",
+                    "x1": "0",
+                    "x2": "cir",
+                    "y1": "C",
+                    "y2": "C"
+                },
+                {
+                    "k": "CUT",
+                    "r": "r",
+                    "t": "circle",
+                    "cx": "cx",
+                    "cy": "cy"
+                },
+                {
+                    "s": "tutup",
+                    "t": "text",
+                    "x": "cx",
+                    "y": "cy+r+16"
+                }
+            ]
+        },
+        "params": {
+            "diameter": {
+                "label": "Diameter",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 80,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 60,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "lid_height": {
+                "label": "Tinggi Tutup",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 30,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "extra_offset_caps": {
+                "label": "Offset Ekstra Cap",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 0.5,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Cookie D100 (D100x80)",
+                "dims": {
+                    "diameter": 100,
+                    "lid_height": 30,
+                    "product_height": 80
+                }
+            },
+            {
+                "label": "Hat box D200 (D200x120)",
+                "dims": {
+                    "diameter": 200,
+                    "lid_height": 50,
+                    "product_height": 120
+                }
+            },
+            {
+                "label": "Kaleng D80 (D80x60)",
+                "dims": {
+                    "diameter": 80,
+                    "lid_height": 25,
+                    "product_height": 60
+                }
+            }
+        ]
+    },
+    "CYLINDER": {
+        "label": "Cylinder (Mitered)",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "CYLINDER",
+            "flat": {
+                "h": "C+2*P",
+                "w": "PI*D+2*P"
+            },
+            "vars": {
+                "H": "max(C,D)",
+                "W": "PI*D+max(20,D*0.3)+D",
+                "r": "D/2",
+                "bh": "C",
+                "cx": "PI*D+max(20,D*0.3)+D/2",
+                "cy": "C/2",
+                "cir": "PI*D",
+                "gap": "max(20, D*0.3)"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "bh",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "cir",
+                    "x": "0",
+                    "y": "0"
+                },
+                {
+                    "k": "CUT",
+                    "r": "r",
+                    "t": "circle",
+                    "cx": "cx",
+                    "cy": "cy"
+                },
+                {
+                    "s": "tutup",
+                    "t": "text",
+                    "x": "cx",
+                    "y": "cy+r+16"
+                }
+            ]
+        },
+        "params": {
+            "diameter": {
+                "label": "Diameter",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 45,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 90,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "top_miter_angle": {
+                "label": "Sudut Miter Atas",
+                "unit": "deg",
+                "type": "NUM",
+                "default": 45,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "bottom_miter_angle": {
+                "label": "Sudut Miter Bawah",
+                "unit": "deg",
+                "type": "NUM",
+                "default": 20,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "twist": {
+                "label": "Twist",
+                "unit": "deg",
+                "type": "NUM",
+                "default": 60,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Tube poster D63x430",
+                "dims": {
+                    "diameter": 63,
+                    "product_height": 430
+                }
+            },
+            {
+                "label": "Tube kecil D45x90",
+                "dims": {
+                    "diameter": 45,
+                    "product_height": 90
+                }
+            },
+            {
+                "label": "Tube parfum D40x130",
+                "dims": {
+                    "diameter": 40,
+                    "product_height": 130
+                }
+            }
+        ]
+    },
+    "COUNTER_DISPLAY": {
+        "label": "Counter Display",
+        "category": "DISPLAY",
+        "spec": {
+            "gen": "TRAY",
+            "flat": {
+                "h": "B+2*C+2*P",
+                "w": "A+2*C+2*P"
+            },
+            "vars": {
+                "H": "B+2*C",
+                "W": "A+2*C",
+                "ox": "C",
+                "oy": "C"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CREASE",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "0"
+                },
+                {
+                    "h": "C",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "ox",
+                    "y": "oy+B"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "0",
+                    "y": "oy"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "C",
+                    "x": "ox+A",
+                    "y": "oy"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 60,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 80,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "front": {
+                "label": "Tinggi Depan",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 25,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Display kecil (200x150x120)",
+                "dims": {
+                    "product_height": 120,
+                    "product_length": 200,
+                    "product_width": 150
+                }
+            },
+            {
+                "label": "Display sedang (300x200x180)",
+                "dims": {
+                    "product_height": 180,
+                    "product_length": 300,
+                    "product_width": 200
+                }
+            }
+        ]
+    },
+    "HANG_TAG": {
+        "label": "Hang Tag",
+        "category": "DISPLAY",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 80,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 40,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "thumb_hole_width": {
+                "label": "Diameter Lubang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 5,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Tag 80x40",
+                "dims": {
+                    "product_length": 80,
+                    "product_width": 40
+                }
+            },
+            {
+                "label": "Tag 50x90",
+                "dims": {
+                    "product_length": 50,
+                    "product_width": 90
+                }
+            },
+            {
+                "label": "Tag 60x100",
+                "dims": {
+                    "product_length": 60,
+                    "product_width": 100
+                }
+            }
+        ]
+    },
+    "KALENDER_DINDING": {
+        "label": "Kalender Dinding",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT_CAL",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A",
+                "nh": "max(5, A/50)"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                },
+                {
+                    "k": "HOLE",
+                    "n": "nh",
+                    "r": "1.8",
+                    "t": "holes",
+                    "w": "A",
+                    "y": "7"
+                },
+                {
+                    "k": "HOLE",
+                    "r": "3",
+                    "t": "circle",
+                    "cx": "A/2",
+                    "cy": "4"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 330,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 480,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "page_count": {
+                "label": "Jumlah Lembar",
+                "unit": "x",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "binding_type": {
+                "label": "Tipe Jilid",
+                "unit": null,
+                "type": "ENUM",
+                "default": "KLEM_SENG",
+                "min": null,
+                "max": null,
+                "options": [
+                    {
+                        "c": "SPIRAL",
+                        "l": "Spiral"
+                    },
+                    {
+                        "c": "WIRE_O",
+                        "l": "Wire-O"
+                    },
+                    {
+                        "c": "KLEM_SENG",
+                        "l": "Klem Seng"
+                    },
+                    {
+                        "c": "SADDLE",
+                        "l": "Saddle Stitch (Jahit Kawat)"
+                    },
+                    {
+                        "c": "PERFECT",
+                        "l": "Perfect Binding (Lem Punggung)"
+                    },
+                    {
+                        "c": "NONE",
+                        "l": "Tanpa Jilid"
+                    }
+                ]
+            },
+            "hanger_type": {
+                "label": "Tipe Gantungan",
+                "unit": null,
+                "type": "ENUM",
+                "default": "EYELET",
+                "min": null,
+                "max": null,
+                "options": [
+                    {
+                        "c": "EYELET",
+                        "l": "Eyelet (Mata Ayam)"
+                    },
+                    {
+                        "c": "HOOK",
+                        "l": "Hook (Gantungan Kait)"
+                    },
+                    {
+                        "c": "DIECUT",
+                        "l": "Die-cut (Lubang Potong)"
+                    },
+                    {
+                        "c": "NONE",
+                        "l": "Tanpa Gantungan"
+                    }
+                ]
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "31x48 (A3+, ekonomis)",
+                "dims": {
+                    "binding_type": "KLEM_SENG",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 310,
+                    "product_width": 480
+                }
+            },
+            {
+                "label": "31x54",
+                "dims": {
+                    "binding_type": "KLEM_SENG",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 310,
+                    "product_width": 540
+                }
+            },
+            {
+                "label": "38x53 (kantor)",
+                "dims": {
+                    "binding_type": "WIRE_O",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 380,
+                    "product_width": 530
+                }
+            },
+            {
+                "label": "26x38 (kecil)",
+                "dims": {
+                    "binding_type": "KLEM_SENG",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 260,
+                    "product_width": 380
+                }
+            },
+            {
+                "label": "A3 (29,7x42)",
+                "dims": {
+                    "binding_type": "KLEM_SENG",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 297,
+                    "product_width": 420
+                }
+            },
+            {
+                "label": "44x64 (besar/promo)",
+                "dims": {
+                    "binding_type": "WIRE_O",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 440,
+                    "product_width": 640
+                }
+            },
+            {
+                "label": "B2 70x50",
+                "dims": {
+                    "binding_type": "WIRE_O",
+                    "hanger_type": "EYELET",
+                    "page_count": 7,
+                    "product_length": 700,
+                    "product_width": 500
+                }
+            },
+            {
+                "label": "Poster A2 1 lembar",
+                "dims": {
+                    "binding_type": "NONE",
+                    "hanger_type": "EYELET",
+                    "page_count": 1,
+                    "product_length": 420,
+                    "product_width": 594
+                }
+            }
+        ]
+    },
+    "KALENDER_DUDUK": {
+        "label": "Kalender Duduk (Meja)",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 210,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 150,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_height": {
+                "label": "Tinggi Kaki",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 100,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "page_count": {
+                "label": "Jumlah Lembar",
+                "unit": "x",
+                "type": "NUM",
+                "default": 13,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "binding_type": {
+                "label": "Tipe Jilid",
+                "unit": null,
+                "type": "ENUM",
+                "default": "KLEM_SENG",
+                "min": null,
+                "max": null,
+                "options": [
+                    {
+                        "c": "SPIRAL",
+                        "l": "Spiral"
+                    },
+                    {
+                        "c": "WIRE_O",
+                        "l": "Wire-O"
+                    },
+                    {
+                        "c": "KLEM_SENG",
+                        "l": "Klem Seng"
+                    },
+                    {
+                        "c": "SADDLE",
+                        "l": "Saddle Stitch (Jahit Kawat)"
+                    },
+                    {
+                        "c": "PERFECT",
+                        "l": "Perfect Binding (Lem Punggung)"
+                    },
+                    {
+                        "c": "NONE",
+                        "l": "Tanpa Jilid"
+                    }
+                ]
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "A5 15x21 (populer)",
+                "dims": {
+                    "binding_type": "SPIRAL",
+                    "page_count": 13,
+                    "product_height": 100,
+                    "product_length": 150,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "15x20",
+                "dims": {
+                    "binding_type": "SPIRAL",
+                    "page_count": 13,
+                    "product_height": 100,
+                    "product_length": 150,
+                    "product_width": 200
+                }
+            },
+            {
+                "label": "17x23",
+                "dims": {
+                    "binding_type": "SPIRAL",
+                    "page_count": 13,
+                    "product_height": 100,
+                    "product_length": 170,
+                    "product_width": 230
+                }
+            }
+        ]
+    },
+    "BROSUR": {
+        "label": "Brosur / Leaflet",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT_FOLD",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                },
+                {
+                    "h": "B",
+                    "k": "CREASE",
+                    "n": "fold_count",
+                    "t": "foldlines",
+                    "w": "A"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang (buka)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 297,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar (buka)",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 210,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "fold_count": {
+                "label": "Jumlah Lipatan",
+                "unit": "x",
+                "type": "NUM",
+                "default": 2,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "fold_type": {
+                "label": "Tipe Lipat",
+                "unit": null,
+                "type": "ENUM",
+                "default": "TRI",
+                "min": null,
+                "max": null,
+                "options": [
+                    {
+                        "c": "HALF",
+                        "l": "Lipat 2 (Half / Bi-fold)"
+                    },
+                    {
+                        "c": "TRI",
+                        "l": "Lipat 3 (Tri-fold)"
+                    },
+                    {
+                        "c": "Z",
+                        "l": "Lipat Z (Zig-zag)"
+                    },
+                    {
+                        "c": "GATE",
+                        "l": "Gate Fold"
+                    },
+                    {
+                        "c": "ROLL",
+                        "l": "Roll Fold"
+                    }
+                ]
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "A4 lipat 3 (tri-fold)",
+                "dims": {
+                    "fold_count": 2,
+                    "fold_type": "TRI",
+                    "product_length": 297,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "A4 lipat 2 (bi-fold)",
+                "dims": {
+                    "fold_count": 1,
+                    "fold_type": "HALF",
+                    "product_length": 297,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "A4 lipat Z",
+                "dims": {
+                    "fold_count": 2,
+                    "fold_type": "Z",
+                    "product_length": 297,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "A3 lipat 2 (jadi A4)",
+                "dims": {
+                    "fold_count": 1,
+                    "fold_type": "HALF",
+                    "product_length": 420,
+                    "product_width": 297
+                }
+            },
+            {
+                "label": "A3 lipat 3",
+                "dims": {
+                    "fold_count": 2,
+                    "fold_type": "TRI",
+                    "product_length": 420,
+                    "product_width": 297
+                }
+            }
+        ]
+    },
+    "FLYER": {
+        "label": "Flyer",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 210,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 148,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "A5 (14,8x21)",
+                "dims": {
+                    "product_length": 148,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "A6 (10,5x14,8)",
+                "dims": {
+                    "product_length": 105,
+                    "product_width": 148
+                }
+            },
+            {
+                "label": "DL (9,9x21)",
+                "dims": {
+                    "product_length": 99,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "A4 (21x29,7)",
+                "dims": {
+                    "product_length": 210,
+                    "product_width": 297
+                }
+            }
+        ]
+    },
+    "POSTER": {
+        "label": "Poster",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 594,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 420,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "A3 (29,7x42) - poster",
+                "dims": {
+                    "product_length": 297,
+                    "product_width": 420
+                }
+            },
+            {
+                "label": "A2 (42x59,4)",
+                "dims": {
+                    "product_length": 420,
+                    "product_width": 594
+                }
+            },
+            {
+                "label": "A1 (59,4x84,1)",
+                "dims": {
+                    "product_length": 594,
+                    "product_width": 841
+                }
+            },
+            {
+                "label": "50x70",
+                "dims": {
+                    "product_length": 500,
+                    "product_width": 700
+                }
+            }
+        ]
+    },
+    "BUKU": {
+        "label": "Buku / Katalog",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 210,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 148,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "page_count": {
+                "label": "Jumlah Halaman",
+                "unit": "x",
+                "type": "NUM",
+                "default": 64,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "binding_type": {
+                "label": "Tipe Jilid",
+                "unit": null,
+                "type": "ENUM",
+                "default": "KLEM_SENG",
+                "min": null,
+                "max": null,
+                "options": [
+                    {
+                        "c": "SPIRAL",
+                        "l": "Spiral"
+                    },
+                    {
+                        "c": "WIRE_O",
+                        "l": "Wire-O"
+                    },
+                    {
+                        "c": "KLEM_SENG",
+                        "l": "Klem Seng"
+                    },
+                    {
+                        "c": "SADDLE",
+                        "l": "Saddle Stitch (Jahit Kawat)"
+                    },
+                    {
+                        "c": "PERFECT",
+                        "l": "Perfect Binding (Lem Punggung)"
+                    },
+                    {
+                        "c": "NONE",
+                        "l": "Tanpa Jilid"
+                    }
+                ]
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "A5 64 hal",
+                "dims": {
+                    "binding_type": "PERFECT",
+                    "page_count": 64,
+                    "product_length": 148,
+                    "product_width": 210
+                }
+            },
+            {
+                "label": "A4 64 hal",
+                "dims": {
+                    "binding_type": "SADDLE",
+                    "page_count": 64,
+                    "product_length": 210,
+                    "product_width": 297
+                }
+            },
+            {
+                "label": "B5 80 hal",
+                "dims": {
+                    "binding_type": "PERFECT",
+                    "page_count": 80,
+                    "product_length": 176,
+                    "product_width": 250
+                }
+            }
+        ]
+    },
+    "LABEL_STIKER": {
+        "label": "Label / Stiker",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 50,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 2,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Kotak 5x5",
+                "dims": {
+                    "product_length": 50,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Kotak 7x7",
+                "dims": {
+                    "product_length": 70,
+                    "product_width": 70
+                }
+            },
+            {
+                "label": "Kotak 10x10",
+                "dims": {
+                    "product_length": 100,
+                    "product_width": 100
+                }
+            },
+            {
+                "label": "Label 9x5",
+                "dims": {
+                    "product_length": 90,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Label 10x5",
+                "dims": {
+                    "product_length": 100,
+                    "product_width": 50
+                }
+            },
+            {
+                "label": "Label 9x6 (botol)",
+                "dims": {
+                    "product_length": 90,
+                    "product_width": 60
+                }
+            },
+            {
+                "label": "Label 12x8 (pouch)",
+                "dims": {
+                    "product_length": 120,
+                    "product_width": 80
+                }
+            },
+            {
+                "label": "Bulat D5 (kotak 50x50)",
+                "dims": {
+                    "product_length": 50,
+                    "product_width": 50
+                }
+            }
+        ]
+    },
+    "KARTU_NAMA": {
+        "label": "Kartu Nama",
+        "category": "COMMERCIAL_PRINT",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 90,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 55,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 2,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Standar 90x55",
+                "dims": {
+                    "product_length": 90,
+                    "product_width": 55
+                }
+            },
+            {
+                "label": "90x54",
+                "dims": {
+                    "product_length": 90,
+                    "product_width": 54
+                }
+            }
+        ]
+    },
+    "AMPLOP_KOP": {
+        "label": "Amplop & Kop Surat",
+        "category": "PACKAGING",
+        "spec": {
+            "gen": "FLAT",
+            "flat": {
+                "h": "B+2*P",
+                "w": "A+2*P"
+            },
+            "vars": {
+                "H": "B",
+                "W": "A"
+            },
+            "canvas": {
+                "h": "H",
+                "w": "W"
+            },
+            "elements": [
+                {
+                    "k": "BLEED",
+                    "p": "P",
+                    "t": "bleed"
+                },
+                {
+                    "h": "B",
+                    "k": "CUT",
+                    "t": "rect",
+                    "w": "A",
+                    "x": "0",
+                    "y": "0"
+                }
+            ]
+        },
+        "params": {
+            "product_length": {
+                "label": "Panjang",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 220,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "product_width": {
+                "label": "Lebar",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 110,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "glue_flap": {
+                "label": "Lidah Lem",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 10,
+                "min": null,
+                "max": null,
+                "options": null
+            },
+            "overflow_margin": {
+                "label": "Overflow / Bleed",
+                "unit": "mm",
+                "type": "NUM",
+                "default": 3,
+                "min": null,
+                "max": null,
+                "options": null
+            }
+        },
+        "sizes": [
+            {
+                "label": "Amplop DL 220x110",
+                "dims": {
+                    "product_length": 220,
+                    "product_width": 110
+                }
+            },
+            {
+                "label": "Kop A4 210x297",
+                "dims": {
+                    "product_length": 210,
+                    "product_width": 297
+                }
+            }
+        ]
+    }
+}
