@@ -11,8 +11,6 @@ use Devlib\Components\DevlibComponent;
 // Batalkan/Tandai Kalah hanya setelah Confirm & wajib alasan; Kirim ke ProDev hanya part tersimpan + inkuiri Confirm.
 class InquiryForm extends DevlibComponent
 {
-    public const TITLES = ['NEW' => ['✨', 'Inkuiri Produk Baru'], 'RECALC' => ['🔁', 'Hitung Ulang Harga'], 'REVISE' => ['✏️', 'Ubah Spesifikasi']];
-
     // Peran Part (sama dengan partRoleOptions() tmerp).
     public const ROLES = [
         'body' => ['Body', '📦', 'Bagian struktural utama'], 'lid' => ['Lid', '🔝', 'Tutup terpisah'], 'base' => ['Base', '⬇️', 'Alas terpisah'],
@@ -45,11 +43,6 @@ class InquiryForm extends DevlibComponent
         return \MockupParts\Src::of('tm2sdi.iqp_inquiry');
     }
 
-    public function title(): array
-    {
-        return self::TITLES[$this->mode] ?? self::TITLES['NEW'];
-    }
-
     public function roles(): array
     {
         return self::ROLES;
@@ -64,16 +57,9 @@ class InquiryForm extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            @php([$emoji, $title] = $title())
             @php($d = $doc)
             <div {{ $attributes->class('mp-inq') }} {!! $dl() !!} data-mp-inquiry data-config="{{ json_encode($config()) }}">
-                <div class="mp-docbar">
-                    <b>{{ $emoji }} {{ $title }}</b>
-                    <x-dl::badge :label="$mode" :tone="['NEW' => 'info', 'RECALC' => 'accent', 'REVISE' => 'warn'][$mode] ?? 'info'" />
-                    <span class="mp-docbar__sub"><span data-inq-no>{{ $d['inquiry_no'] ?: 'belum tersimpan' }}</span> · <span data-inq-sub>{{ $d['sub_state'] }}</span></span>
-                    <span class="mp-grow"></span>
-                    @if ($backUrl)<x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$backUrl" data-inq-keep />@endif
-                </div>
+                <x-mp::sales.doc-bar :mode="$mode" :no="$d['inquiry_no']" :state="$d['sub_state']" :back-url="$backUrl" />
 
                 <x-dl::alert tone="success" data-inq-flash />
                 @if ($readonly)

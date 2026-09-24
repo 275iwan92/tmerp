@@ -11,11 +11,17 @@ class Table extends DevlibComponent
         public string $empty = 'Belum ada data.',
         public bool $striped = true,
         public array $totals = [],
+        public ?string $source = null,
     ) {}
 
     public function tag(): string
     {
         return 'x-dl::table';
+    }
+
+    public function source(): string
+    {
+        return $this->source ?? 'baris tabel';
     }
 
     public function render()

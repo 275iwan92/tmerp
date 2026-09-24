@@ -1,5 +1,5 @@
 {
-    "_note": "Ekspor baca-saja dari tm2mst (mat_raw Paper confirmed, ref_finishing_type, prod_type.has_multi_part) 2026-09-24 11:31:15",
+    "_note": "Ekspor baca-saja dari tm2mst (mat_raw Paper confirmed, ref_finishing_type, prod_type.has_multi_part) 2026-09-24 11:55:20",
     "materials": [
         {
             "material_id": 231,
@@ -9,7 +9,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "LBR",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 230,
@@ -19,7 +22,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 233,
@@ -29,7 +35,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 234,
@@ -39,7 +48,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 232,
@@ -49,7 +61,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 286,
@@ -59,7 +74,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 285,
@@ -69,7 +87,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 287,
@@ -79,7 +100,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 288,
@@ -89,7 +113,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 283,
@@ -99,7 +126,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 284,
@@ -109,7 +139,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 281,
@@ -119,7 +152,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 280,
@@ -129,7 +165,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 235,
@@ -139,7 +178,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 237,
@@ -149,7 +191,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 238,
@@ -159,7 +204,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 239,
@@ -169,7 +217,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 242,
@@ -179,7 +230,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 243,
@@ -189,7 +243,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 245,
@@ -199,7 +256,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 244,
@@ -209,7 +269,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 246,
@@ -219,7 +282,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 247,
@@ -229,7 +295,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 248,
@@ -239,7 +308,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 236,
@@ -249,7 +321,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 249,
@@ -259,7 +334,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 250,
@@ -269,7 +347,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 241,
@@ -279,7 +360,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 251,
@@ -289,7 +373,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 252,
@@ -299,7 +386,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 253,
@@ -309,7 +399,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 254,
@@ -319,7 +412,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 255,
@@ -329,7 +425,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 256,
@@ -339,7 +438,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 257,
@@ -349,7 +451,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 258,
@@ -359,7 +464,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 259,
@@ -369,7 +477,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 260,
@@ -379,7 +490,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 268,
@@ -389,7 +503,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 261,
@@ -399,7 +516,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 263,
@@ -409,7 +529,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 264,
@@ -419,7 +542,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 265,
@@ -429,7 +555,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 266,
@@ -439,7 +568,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 262,
@@ -449,7 +581,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 267,
@@ -459,7 +594,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 229,
@@ -469,7 +607,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 289,
@@ -479,7 +620,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 293,
@@ -489,7 +633,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 292,
@@ -499,7 +646,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "LBR",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 291,
@@ -509,7 +659,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 295,
@@ -519,7 +672,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 294,
@@ -529,7 +685,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 303,
@@ -539,7 +698,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 299,
@@ -549,7 +711,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 298,
@@ -559,7 +724,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 300,
@@ -569,7 +737,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 296,
@@ -579,7 +750,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 297,
@@ -589,7 +763,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         },
         {
             "material_id": 302,
@@ -599,7 +776,10 @@
             "category": "Paper",
             "gram_weight": 0,
             "cm_length": "0.0000",
-            "cm_width": "0.0000"
+            "cm_width": "0.0000",
+            "uom_purchase": "RIM",
+            "avg_unitprice": null,
+            "last_unitprice": null
         }
     ],
     "finishing_types": [

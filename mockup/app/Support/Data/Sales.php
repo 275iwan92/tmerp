@@ -67,11 +67,18 @@ final class Sales
 
         return $row + [
             'source' => ['EMAIL', 'WA', 'PHONE', 'VISIT'][$id % 4], 'customer_id' => $cust['id_customer'] ?? null, 'sales_note' => '', 'material_source' => 'OWN',
-            'type_code' => $code, 'stat_cancel' => $row['sub_state'] === 'CANCELLED',
+            'type_code' => $code, 'stat_cancel' => $row['sub_state'] === 'CANCELLED', 'revision_no' => $id % 3, 'design_number' => sprintf('DS%06d', 3400 + $id),
+            'revise_scope' => $row['inquiry_type'] === 'REVISE' ? ['MATERIAL', 'COLOR'] : [], 'revise_reason' => $row['inquiry_type'] === 'REVISE' ? 'Tambah logo Halal (spot ink) — permintaan customer' : '',
             'tiers' => [['qty' => $row['qty'], 'is_primary' => true], ['qty' => $row['qty'] * 2, 'is_primary' => false]],
             'parts' => $multi ? [$part('body'), $part('lid')] : [$part('monoform')],
             'toolings' => [], 'external_costs' => [],
         ];
+    }
+
+    // Inkuiri asal dari dokumen REVISE/RECALC contoh (tmerp: parentInquiry()).
+    public static function parentDoc(int $id): ?array
+    {
+        return self::inquiryDoc($id - 5) ?? self::inquiryDoc($id + 5);
     }
 
     public static function inquiries(int $n = 42): array

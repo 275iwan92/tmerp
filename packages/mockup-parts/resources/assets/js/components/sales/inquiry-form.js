@@ -3,15 +3,15 @@
 (function (Devlib) {
   'use strict';
   const {$, $$, esc, toast, confirmBox, openLayer, closeLayer, setField, fieldErr} = Devlib.h;
+  const InquiryDoc = Devlib.classes.InquiryDoc;
   const CATEGORY = {BOX_KOSMETIK: 'BOX_WITH_LID', BOX_SEPATU: 'BOX_WITH_LID', BOX_KUE: 'SHALLOW_BOX', BOX_MAKANAN: 'CARD_BOX', BOX_FARMASI: 'STE_BOX',
     BOX_SOUVENIR: 'GIFT_BOX', BOX_SILINDER: 'ROUND_BOX', HANG_TAG: 'HANG_TAG'};
 
-  class InquiryForm extends Devlib.Component {
+  class InquiryForm extends InquiryDoc {
     static selector = '[data-mp-inquiry]';
 
     init() {
-      this.cfg = JSON.parse(this.el.dataset.config);
-      this.doc = this.cfg.doc;
+      super.init();
       this.tpl = $(this.el, 'template[data-inq-part-tpl]');
       this.seq = this.parts().length;
       this.type = this.input('type_code')?.value || '';
@@ -26,11 +26,8 @@
       if (this.cfg.readonly || this.doc.stat_confirm) this.lock();
     }
 
-    input(name) { return $(this.el, `[name="${name}"]`); }
-    value(name) { return (this.input(name)?.value || '').trim(); }
     parts() { return $$(this.el, '[data-inq-part]'); }
     needsRole(code) { return !!this.cfg.templates[code]; }
-    flash(msg, tone = 'success') { const a = $(this.el, '[data-inq-flash]'); a.className = `dl-alert dl-alert--${tone} is-show`; a.textContent = (tone === 'success' ? '✅ ' : '⚠️ ') + msg; a.scrollIntoView({behavior: 'smooth', block: 'center'}); }
 
     changed(e) {
       const n = e.target.name || '';
@@ -154,15 +151,11 @@
 
     persist() {
       if (!this.validate()) return false;
-      if (!this.doc.inquiry_no) this.doc.inquiry_no = 'IQ' + this.cfg.yy + String(Math.floor(Math.random() * 90000) + 10000);
-      this.doc.id ||= 'baru';
-      $(this.el, '[data-inq-no]').textContent = this.doc.inquiry_no;
+      this.number();
       $$(this.el, '[data-inq-saved-only]').forEach(b => { b.hidden = false; });
       this.parts().forEach(p => { p.dataset.saved = '1'; });
       return true;
     }
-
-    state(s) { this.doc.sub_state = s; $(this.el, '[data-inq-sub]').textContent = s; $(this.el, '[data-inq-state]').textContent = s; }
 
     save() { if (this.persist()) this.flash(`Tersimpan sebagai ${this.doc.inquiry_no} (${this.doc.sub_state}).`); }
 
@@ -174,14 +167,13 @@
 
     // Form terkunci (lihat-saja): semua isian & tombol mati kecuali yang bertanda data-inq-keep.
     lock() {
-      $$(this.el, 'input, select, textarea, button').forEach(x => { if (!x.closest('[data-inq-keep], .dl-mov')) x.disabled = true; });
-      $$(this.el, '[data-inq-officer]').forEach(a => a.classList.remove('is-show'));
+      this.lockAll();
       const s = this.doc.sub_state, done = ['CANCELLED', 'CONVERTED', 'LOST'].includes(s);
       $(this.el, '[data-inq-confirm]').hidden = true;
       $(this.el, '[data-inq-when="cancel"]').hidden = !!this.doc.stat_cancel || done;
       $(this.el, '[data-inq-when="lost"]').hidden = done;
       this.parts().forEach(p => { $(p, '[data-inq-send]').hidden = !p.dataset.saved; $(p, '[data-inq-remove]').hidden = true; });
-      $$(this.el, '[data-inq-add-part], [data-l-add], [data-l-del], [data-l-dup]').forEach(b => { b.hidden = true; });
+      $$(this.el, '[data-inq-add-part]').forEach(b => { b.hidden = true; });
     }
 
     end(state, modal) {
