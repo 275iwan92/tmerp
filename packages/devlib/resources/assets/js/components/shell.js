@@ -120,7 +120,7 @@
         else if (k === 'edit' || k === 'pass') $(this.el, `[data-dl-modal="${k}"]`).classList.add('is-on');
         else if (k === 'logout') $(this.el, '[data-dl-usermenu] form').requestSubmit();
       });
-      let nav = 'classic'; try { nav = localStorage.getItem('dl-shell-nav') || nav; } catch (e) {}
+      let nav = this.el.dataset.dlNav || 'layer'; try { nav = localStorage.getItem('dl-shell-menu') || nav; } catch (e) {}
       this.setNav(nav, false);
     }
 
@@ -130,7 +130,7 @@
       if (!this.lm) return;
       if (mode !== 'layer' && this.lm.dlComponent?.st.chat) this.lm.dlComponent.closeChat();
       this.el.classList.toggle('is-layer', mode === 'layer');
-      try { localStorage.setItem('dl-shell-nav', mode); } catch (e) {}
+      if (announce) try { localStorage.setItem('dl-shell-menu', mode); } catch (e) {}
       if (announce) toast(mode === 'layer' ? 'Menu: Layer Menu' : 'Menu: Classic');
     }
 

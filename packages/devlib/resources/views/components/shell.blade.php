@@ -1,4 +1,4 @@
-<div class="dl-shell" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}">
+<div class="dl-shell" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}" data-dl-nav="{{ $nav }}">
     {{-- Navigasi mode "Layer" (dipilih lewat menu avatar / roda gigi; tersimpan per browser). --}}
     <x-dl::layer-menu class="dl-shell__lm" id="shell" :items="$layerTree()" :title="$brand" :user="$user['name']" :role="$user['role'] ?? null" :login="$user['email'] ?? null" dock="[data-dl-lm-dock]"
         :actions="[
@@ -73,7 +73,7 @@
                 <div class="dl-home">
                     <div class="dl-home__hero"></div>
                     <h1>Selamat datang, {{ \Illuminate\Support\Str::before($user['name'], ' ') }} 👋</h1>
-                    <p>Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar. Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.</p>
+                    <p>Pilih modul di <b>menu kiri</b> (Menu Classic: mega menu atas, submenunya di sidebar). Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.</p>
                     {{ $slot }}
                     <div class="dl-home__hint">Ctrl+K cari cepat · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>⤒</kbd> sembunyikan top bar.</div>
                 </div>
