@@ -67,6 +67,9 @@ final class Catalog
                         'grid-sheet' => ['10 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', ['Devlib\\Components\\Sheet']],
                     ],
                     'classes' => ['Devlib\\Components\\Grid', 'Devlib\\Components\\Drilldown', 'Devlib\\Components\\Pivot', 'Devlib\\Components\\Sheet']],
+                    'p5-override' => ['label' => 'Pola Override (OO)', 'icon' => 'fa-solid fa-code-branch', 'part' => '5 · Big Components',
+                        'members' => ['oo-override' => ['Turunan Kanban: properti ditimpa di PHP, method ditimpa di JS (super)', ['App\\View\\Components\\Demo\\KanbanProduksi', 'Devlib\\Components\\Kanban']]],
+                        'classes' => ['Devlib\\Components\\Kanban']],
                     'p5-forms' => ['label' => 'Form (9 varian)', 'icon' => 'fa-solid fa-pen-to-square', 'part' => '5 · Big Components', 'mockup' => 'UIUX_components_part1.html',
                     'members' => [
                         'form' => ['1 · Form Standard (semua jenis field)', ['Devlib\\Components\\Form']],

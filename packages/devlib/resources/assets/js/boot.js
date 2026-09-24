@@ -1,6 +1,11 @@
 /* DevLib boot — urutan mount dipertahankan; komponen yang didaftarkan kemudian ikut dipasang di akhir. */
 (function (Devlib) {
   'use strict';
+  // Turunan dari aplikasi/mockup: (window.DevlibReady ||= []).push(Devlib => { class X extends Devlib.classes.Kanban {...}; Devlib.register(X); })
+  // Skrip itu boleh dimuat sebelum devlib.js (defer); antrean dijalankan di sini, sebelum komponen dipasang.
+  const ready = window.DevlibReady || [];
+  window.DevlibReady = {push: fn => fn(Devlib)};
+  ready.forEach(fn => fn(Devlib));
   document.addEventListener('DOMContentLoaded', () => {
     Devlib.initDevMode();
     Devlib.mountOne("ThemePicker");

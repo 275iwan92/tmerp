@@ -6,8 +6,7 @@
   class AccGroup extends Devlib.Component {
     static selector = "[data-dl-accgroup]";
     init() {
-      const g = this.el;
-      if (g.classList.contains('dl-accgroup--horizontal') && !$(g, ':scope > .dl-accordion.is-open')) { const a = $(g, ':scope > .dl-accordion'); if (a) a.classList.add('is-open'); }
+      if (this.el.classList.contains('dl-accgroup--horizontal') && !$(this.el, ':scope > .dl-accordion.is-open')) { const a = $(this.el, ':scope > .dl-accordion'); if (a) a.classList.add('is-open'); }
     }
   }
   Devlib.define("AccGroup", AccGroup);

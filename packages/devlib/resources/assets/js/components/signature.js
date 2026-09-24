@@ -6,35 +6,47 @@
   class Signature extends Devlib.Component {
     static selector = "[data-dl-sign]";
     init() {
-      const box = this.el;
-      const cv = $(box, 'canvas'), ctx = cv.getContext('2d'), hidden = $(box, '[data-dl-value]'), ph = $(box, '[data-dl-sign-ph]'), st = $(box, '[data-dl-sign-status]');
-      const ro = box.classList.contains('is-readonly'); let strokes = [], cur = null, bg = null;
-      const ink = () => getComputedStyle(box).getPropertyValue('--dl-ink-strong').trim() || '#111';
-      const draw = () => {
-        const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
-        cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        if (bg) ctx.drawImage(bg, 0, 0, r.width, r.height);
-        ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = ink();
-        strokes.forEach(p => { ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length - 1; i++) ctx.quadraticCurveTo(p[i][0], p[i][1], (p[i][0] + p[i + 1][0]) / 2, (p[i][1] + p[i + 1][1]) / 2); const l = p[p.length - 1]; ctx.lineTo(l[0], l[1] + (p.length === 1 ? 0.1 : 0)); ctx.stroke(); });
-      };
-      const sync = () => {
-        const has = strokes.length > 0 || !!bg;
-        ph.hidden = has; st.textContent = has ? 'Sudah ditandatangani' : 'Belum ditandatangani'; box.classList.toggle('is-signed', has);
-        hidden.value = has ? cv.toDataURL('image/png') : ''; hidden.dispatchEvent(new Event('change', {bubbles: true}));
-      };
-      const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-      if (!ro) {
-        cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); cur = [pos(e)]; strokes.push(cur); draw(); });
-        cv.addEventListener('pointermove', e => { if (!cur) return; cur.push(pos(e)); draw(); });
-        const end = () => { if (cur) { cur = null; sync(); } };
-        cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
-        $(box, '[data-dl-sign-undo]').addEventListener('click', () => { if (strokes.length) strokes.pop(); else bg = null; draw(); sync(); });
-        $(box, '[data-dl-sign-clear]').addEventListener('click', () => { strokes = []; bg = null; draw(); sync(); });
+      this.cv = $(this.el, 'canvas');
+      this.ctx = this.cv.getContext('2d');
+      this.hidden = $(this.el, '[data-dl-value]');
+      this.ph = $(this.el, '[data-dl-sign-ph]');
+      this.st = $(this.el, '[data-dl-sign-status]');
+      this.ro = this.el.classList.contains('is-readonly');
+      this.strokes = [];
+      this.cur = null;
+      this.bg = null;
+      if (!this.ro) {
+        this.cv.addEventListener('pointerdown', e => { this.cv.setPointerCapture(e.pointerId); this.cur = [this.pos(e)]; this.strokes.push(this.cur); this.draw(); });
+        this.cv.addEventListener('pointermove', e => { if (!this.cur) return; this.cur.push(this.pos(e)); this.draw(); });
+        const end = () => { if (this.cur) { this.cur = null; this.sync(); } };
+        this.cv.addEventListener('pointerup', end); this.cv.addEventListener('pointercancel', end);
+        $(this.el, '[data-dl-sign-undo]').addEventListener('click', () => { if (this.strokes.length) this.strokes.pop(); else this.bg = null; this.draw(); this.sync(); });
+        $(this.el, '[data-dl-sign-clear]').addEventListener('click', () => { this.strokes = []; this.bg = null; this.draw(); this.sync(); });
       }
-      $(box, '[data-dl-sign-png]').addEventListener('click', () => { if (!hidden.value) { toast('Belum ada tanda tangan.', 'warn'); return; } const a = document.createElement('a'); a.href = hidden.value; a.download = 'tanda-tangan.png'; a.click(); });
-      if (hidden.value) { const im = new Image(); im.onload = () => { bg = im; draw(); sync(); }; im.src = hidden.value; }
-      new ResizeObserver(draw).observe(cv); draw(); if (!hidden.value) sync();
+      $(this.el, '[data-dl-sign-png]').addEventListener('click', () => { if (!this.hidden.value) { toast('Belum ada tanda tangan.', 'warn'); return; } const a = document.createElement('a'); a.href = this.hidden.value; a.download = 'tanda-tangan.png'; a.click(); });
+      if (this.hidden.value) { const im = new Image(); im.onload = () => { this.bg = im; this.draw(); this.sync(); }; im.src = this.hidden.value; }
+      new ResizeObserver(this.draw).observe(this.cv);this.draw();if (!this.hidden.value) this.sync();
     }
+
+    ink() {
+      return getComputedStyle(this.el).getPropertyValue('--dl-ink-strong').trim() || '#111';
+    }
+
+    draw() {
+      const r = this.cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+      this.cv.width = r.width * dpr; this.cv.height = r.height * dpr; this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (this.bg) this.ctx.drawImage(this.bg, 0, 0, r.width, r.height);
+      this.ctx.lineCap = this.ctx.lineJoin = 'round'; this.ctx.strokeStyle = this.ink();
+      this.strokes.forEach(p => { this.ctx.lineWidth = 2.2; this.ctx.beginPath(); this.ctx.moveTo(p[0][0], p[0][1]); for (let i = 1; i < p.length - 1; i++) this.ctx.quadraticCurveTo(p[i][0], p[i][1], (p[i][0] + p[i + 1][0]) / 2, (p[i][1] + p[i + 1][1]) / 2); const l = p[p.length - 1]; this.ctx.lineTo(l[0], l[1] + (p.length === 1 ? 0.1 : 0)); this.ctx.stroke(); });
+    }
+
+    sync() {
+      const has = this.strokes.length > 0 || !!this.bg;
+      this.ph.hidden = has; this.st.textContent = has ? 'Sudah ditandatangani' : 'Belum ditandatangani'; this.el.classList.toggle('is-signed', has);
+      this.hidden.value = has ? this.cv.toDataURL('image/png') : ''; this.hidden.dispatchEvent(new Event('change', {bubbles: true}));
+    }
+
+    pos(e) { const r = this.cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
   }
   Devlib.define("Signature", Signature);
 })(window.Devlib);

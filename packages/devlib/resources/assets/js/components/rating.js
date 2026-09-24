@@ -6,19 +6,21 @@
   class Rating extends Devlib.Component {
     static selector = "[data-dl-rating]";
     init() {
-      const rt = this.el;
-      const stars = $$(rt, '.dl-rating__star'), hidden = $(rt, '[data-dl-value]'), max = +rt.dataset.max, half = rt.dataset.half === '1';
-      const paint = v => { stars.forEach(s => { const i = +s.dataset.value; s.classList.toggle('is-active', i <= v); s.classList.toggle('is-half', i - 0.5 === v); }); };
-      const text = v => { $(rt, '[data-dl-rating-text]').textContent = `${String(v).replace('.', ',')} / ${max}`; rt.setAttribute('aria-valuenow', v); };
-      const at = (s, e) => { const i = +s.dataset.value; return half && e.offsetX < s.offsetWidth / 2 ? i - 0.5 : i; };
-      paint(+hidden.value); text(+hidden.value);
-      if (rt.classList.contains('is-readonly')) return;
-      stars.forEach(s => {
-        s.addEventListener('click', e => { const v = at(s, e); hidden.value = v === +hidden.value ? 0 : v; paint(+hidden.value); text(+hidden.value); hidden.dispatchEvent(new Event('change', {bubbles: true})); });
-        s.addEventListener('mousemove', e => paint(at(s, e)));
+      this.stars = $$(this.el, '.dl-rating__star');
+      this.hidden = $(this.el, '[data-dl-value]');
+      this.max = +this.el.dataset.max;
+      this.half = this.el.dataset.half === '1';
+      this.paint(+this.hidden.value);this.text(+this.hidden.value);
+      if (this.el.classList.contains('is-readonly')) return;
+      this.stars.forEach(s => {
+        s.addEventListener('click', e => { const v = this.at(s, e); this.hidden.value = v === +this.hidden.value ? 0 : v; this.paint(+this.hidden.value); this.text(+this.hidden.value); this.hidden.dispatchEvent(new Event('change', {bubbles: true})); });
+        s.addEventListener('mousemove', e => this.paint(this.at(s, e)));
       });
-      rt.addEventListener('mouseleave', () => paint(+hidden.value));
+      this.el.addEventListener('mouseleave', () => this.paint(+this.hidden.value));
     }
+    paint(v) { this.stars.forEach(s => { const i = +s.dataset.value; s.classList.toggle('is-active', i <= v); s.classList.toggle('is-half', i - 0.5 === v); }); }
+    text(v) { $(this.el, '[data-dl-rating-text]').textContent = `${String(v).replace('.', ',')} / ${this.max}`; this.el.setAttribute('aria-valuenow', v); }
+    at(s, e) { const i = +s.dataset.value; return this.half && e.offsetX < s.offsetWidth / 2 ? i - 0.5 : i; }
   }
   Devlib.define("Rating", Rating);
 })(window.Devlib);

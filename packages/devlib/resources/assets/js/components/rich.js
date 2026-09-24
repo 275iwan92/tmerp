@@ -6,12 +6,12 @@
   class Rich extends Devlib.Component {
     static selector = "[data-dl-rich]";
     init() {
-      const root = this.el;
-      const area = $(root, '.dl-rich__area'), val = $(root, '[data-dl-rich-value]');
-      const sync = () => { val.value = area.innerHTML; };
-      $$(root, '[data-cmd]').forEach(b => b.addEventListener('mousedown', e => { e.preventDefault(); document.execCommand(b.dataset.cmd); sync(); }));
-      area.addEventListener('input', sync);
+      this.area = $(this.el, '.dl-rich__area');
+      this.val = $(this.el, '[data-dl-rich-value]');
+      $$(this.el, '[data-cmd]').forEach(b => b.addEventListener('mousedown', e => { e.preventDefault(); document.execCommand(b.dataset.cmd); this.sync(); }));
+      this.area.addEventListener('input', this.sync);
     }
+    sync() { this.val.value = this.area.innerHTML; }
   }
   Devlib.define("Rich", Rich);
 })(window.Devlib);

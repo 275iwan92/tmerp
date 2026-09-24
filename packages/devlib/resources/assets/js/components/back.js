@@ -5,8 +5,7 @@
   class Back extends Devlib.Component {
     static selector = "[data-dl-back]";
     init() {
-      const a = this.el;
-      a.addEventListener('click', e => {
+      this.el.addEventListener('click', e => {
         if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) { e.preventDefault(); history.back(); }
       });
     }

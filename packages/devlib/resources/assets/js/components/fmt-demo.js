@@ -6,9 +6,11 @@
   class FmtDemo extends Devlib.Component {
     static selector = "[data-dl-fmt-demo]";
     init() {
-      const root = this.el;
-      const tick = () => $$(root, '[data-fmt]').forEach(el => { el.textContent = new Function('fmt', 'return ' + el.dataset.fmt)(fmt); });
-      tick(); setInterval(tick, 1000);
+      this.tick();setInterval(this.tick, 1000);
+    }
+
+    tick() {
+      return $$(this.el, '[data-fmt]').forEach(el => { el.textContent = new Function('fmt', 'return ' + el.dataset.fmt)(fmt); });
     }
   }
   Devlib.define("FmtDemo", FmtDemo);

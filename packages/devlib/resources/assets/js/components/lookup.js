@@ -7,17 +7,17 @@
   class Lookup extends Devlib.Component {
     static selector = "[data-dl-lookup]";
     init() {
-      const root = this.el;
-      const rows = JSON.parse(root.dataset.rows || '[]'), fill = JSON.parse(root.dataset.fill || '{}');
-      const p = bindPanel(root, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); p.search.focus(); } });
-      $$(root, 'tr.dl-dd__item').forEach(tr => tr.addEventListener('click', () => {
-        const r = rows[+tr.dataset.i];
-        $(root, '[data-dl-value]').value = r[root.dataset.key];
-        $(root, '[data-dl-dd-text]').textContent = r[root.dataset.label];
-        p.close();
-        $(root, '[data-dl-value]').dispatchEvent(new Event('change', {bubbles: true}));
-        const scope = root.closest('form') || document;
-        Object.entries(fill).forEach(([field, col]) => {
+      this.rows = JSON.parse(this.el.dataset.rows || '[]');
+      this.fill = JSON.parse(this.el.dataset.fill || '{}');
+      this.p = bindPanel(this.el, () => { if (this.p.search) { this.p.search.value = ''; this.p.search.dispatchEvent(new Event('input')); this.p.search.focus(); } });
+      $$(this.el, 'tr.dl-dd__item').forEach(tr => tr.addEventListener('click', () => {
+        const r = this.rows[+tr.dataset.i];
+        $(this.el, '[data-dl-value]').value = r[this.el.dataset.key];
+        $(this.el, '[data-dl-dd-text]').textContent = r[this.el.dataset.label];
+        this.p.close();
+        $(this.el, '[data-dl-value]').dispatchEvent(new Event('change', {bubbles: true}));
+        const scope = this.el.closest('form') || document;
+        Object.entries(this.fill).forEach(([field, col]) => {
           const box = scope.querySelector(`[data-dl-field="${field}"]`);
           const input = box ? (box.querySelector('[data-dl-value]') || box.querySelector('input,textarea,select')) : scope.querySelector(`[name="${field}"]`);
           if (!input) return;
@@ -28,23 +28,23 @@
           if (box) { box.classList.remove('is-filled'); void box.offsetWidth; box.classList.add('is-filled'); }
         });
       }));
-      if (root.hasAttribute('data-create')) {
-        const btn = $(root, '[data-dl-lookup-create]'), label = root.dataset.label;
-        p.search.addEventListener('input', () => {
-          const q = p.search.value.trim();
-          btn.hidden = !q || rows.some(r => String(r[label]).toLowerCase() === q.toLowerCase());
+      if (this.el.hasAttribute('data-create')) {
+        const btn = $(this.el, '[data-dl-lookup-create]'), label = this.el.dataset.label;
+        this.p.search.addEventListener('input', () => {
+          const q = this.p.search.value.trim();
+          btn.hidden = !q || this.rows.some(r => String(r[label]).toLowerCase() === q.toLowerCase());
           $(btn, '[data-dl-lookup-new]').textContent = q;
         });
         // Tambah baru dari dalam pilihan: baris baru langsung terpilih; aplikasi menyimpannya ke master lewat event dl:lookup-create.
         btn.addEventListener('click', () => {
-          const q = p.search.value.trim(), r = {[root.dataset.key]: 'new:' + q, [label]: q};
-          rows.push(r);
-          const tr = document.createElement('tr'); tr.className = 'dl-dd__item'; tr.dataset.i = rows.length - 1;
-          tr.innerHTML = $$(root, 'thead th').map((th, i) => `<td>${i === 0 ? '(baru)' : ''}</td>`).join('');
+          const q = this.p.search.value.trim(), r = {[this.el.dataset.key]: 'new:' + q, [label]: q};
+          this.rows.push(r);
+          const tr = document.createElement('tr'); tr.className = 'dl-dd__item'; tr.dataset.i = this.rows.length - 1;
+          tr.innerHTML = $$(this.el, 'thead th').map((th, i) => `<td>${i === 0 ? '(baru)' : ''}</td>`).join('');
           tr.children[Math.min(1, tr.children.length - 1)].textContent = q;
-          $(root, '[data-dl-dd-list]').appendChild(tr);
-          $(root, '[data-dl-value]').value = r[root.dataset.key]; $(root, '[data-dl-dd-text]').textContent = q; btn.hidden = true; p.close();
-          root.dispatchEvent(new CustomEvent('dl:lookup-create', {bubbles: true, detail: {text: q}}));
+          $(this.el, '[data-dl-dd-list]').appendChild(tr);
+          $(this.el, '[data-dl-value]').value = r[this.el.dataset.key]; $(this.el, '[data-dl-dd-text]').textContent = q; btn.hidden = true; this.p.close();
+          this.el.dispatchEvent(new CustomEvent('dl:lookup-create', {bubbles: true, detail: {text: q}}));
           toast('Ditambahkan: ' + q);
         });
       }

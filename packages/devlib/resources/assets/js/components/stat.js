@@ -6,12 +6,11 @@
   class Stat extends Devlib.Component {
     static selector = "[data-dl-stat]";
     init() {
-      const btn = this.el;
-      btn.addEventListener('click', () => {
-        const on = !btn.classList.contains('is-active');
-        (btn.parentElement ? $$(btn.parentElement, '[data-dl-stat]') : [btn]).forEach(b => b.classList.remove('is-active'));
-        btn.classList.toggle('is-active', on);
-        btn.dispatchEvent(new CustomEvent('dl:stat', {bubbles: true, detail: {active: on}}));
+      this.el.addEventListener('click', () => {
+        const on = !this.el.classList.contains('is-active');
+        (this.el.parentElement ? $$(this.el.parentElement, '[data-dl-stat]') : [this.el]).forEach(b => b.classList.remove('is-active'));
+        this.el.classList.toggle('is-active', on);
+        this.el.dispatchEvent(new CustomEvent('dl:stat', {bubbles: true, detail: {active: on}}));
       });
     }
   }

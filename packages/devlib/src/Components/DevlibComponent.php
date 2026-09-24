@@ -56,9 +56,18 @@ abstract class DevlibComponent extends Component
         };
     }
 
+    // Kelas perilaku JS untuk turunan ini (null = kelas JS induk). Turunan PHP + turunan JS = satu pasang:
+    //   class KanbanProduksi extends Kanban { public function jsClass(): ?string { return 'KanbanProduksi'; } }
+    //   Devlib.register(class KanbanProduksi extends Devlib.classes.Kanban { allowed(from, to) {...} })
+    public function jsClass(): ?string
+    {
+        return null;
+    }
+
     // Dipakai di elemen akar view: <div {!! $dl() !!}>.
     public function dl(): string
     {
-        return 'data-dl="'.e($this->tag()).'" data-dl-class="'.e($this->lineage()).'" data-dl-src="'.e($this->source()).'"';
+        return 'data-dl="'.e($this->tag()).'" data-dl-class="'.e($this->lineage()).'" data-dl-src="'.e($this->source()).'"'
+            .($this->jsClass() ? ' data-dl-js="'.e($this->jsClass()).'"' : '');
     }
 }

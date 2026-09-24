@@ -6,14 +6,16 @@
   class Clock extends Devlib.Component {
     static selector = "[data-dl-clock]";
     init() {
-      const root = this.el;
-      const t = $(root, '[data-dl-clock-time]'), d = $(root, '[data-dl-clock-date]'), timeZone = root.dataset.tz || undefined;
-      const tick = () => {
-        const now = new Date(), loc = Devlib.lang === 'id' ? 'id-ID' : 'en-US';
-        if (t) t.textContent = now.toLocaleTimeString(loc, {hour12: false, timeZone});
-        d.textContent = now.toLocaleDateString(loc, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone});
-      };
-      tick(); setInterval(tick, 1000); document.addEventListener('dl:lang', tick);
+      this.t = $(this.el, '[data-dl-clock-time]');
+      this.d = $(this.el, '[data-dl-clock-date]');
+      this.timeZone = this.el.dataset.tz || undefined;
+      this.tick();setInterval(this.tick, 1000);document.addEventListener('dl:lang', this.tick);
+    }
+
+    tick() {
+      const now = new Date(), loc = Devlib.lang === 'id' ? 'id-ID' : 'en-US';
+      if (this.t) this.t.textContent = now.toLocaleTimeString(loc, {hour12: false, timeZone: this.timeZone});
+      this.d.textContent = now.toLocaleDateString(loc, {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: this.timeZone});
     }
   }
   Devlib.define("Clock", Clock);

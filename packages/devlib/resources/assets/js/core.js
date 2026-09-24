@@ -9,7 +9,19 @@ window.Devlib = window.Devlib || {};
 
   class DlComponent {
     static selector = null;
-    constructor(el) { this.el = el; el.dlComponent = this; }
+    constructor(el) {
+      this.el = el; el.dlComponent = this;
+      // Autobind: method boleh dioper sebagai callback. Yang terikat = versi turunan paling akhir (override dihormati).
+      const seen = new Set();
+      for (let p = Object.getPrototypeOf(this); p && p !== DlComponent.prototype; p = Object.getPrototypeOf(p)) {
+        for (const k of Object.getOwnPropertyNames(p)) {
+          if (k === 'constructor' || seen.has(k)) continue;
+          seen.add(k);
+          const d = Object.getOwnPropertyDescriptor(p, k);
+          if (typeof d.value === 'function') this[k] = d.value.bind(this);
+        }
+      }
+    }
     $(sel) { return this.el.querySelector(sel); }
     $$(sel) { return Array.from(this.el.querySelectorAll(sel)); }
     // Event keluar komponen. Kembali false bila listener memanggil preventDefault (cancelable).

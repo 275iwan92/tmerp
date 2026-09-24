@@ -6,138 +6,169 @@
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
     init() {
-      const el = this.el;
-      const cfg = JSON.parse(el.dataset.config), cols = cfg.columns, wrap = $(el, '[data-s-wrap]'), table = $(el, '[data-s-table]');
-      let data = JSON.parse(el.dataset.rows || '[]').map(r => ({...r}));
-      const orig = new Map(data.map(r => [String(r[cfg.rowKey]), {...r}]));
-      const undo = [], redo = [];
-      let cur = {r: 0, c: firstEditable()}, anchor = null, edit = null, fill = null, drag = false, seq = 0;
-      function firstEditable() { const i = cols.findIndex(c => !c.readonly); return i < 0 ? 0 : i; }
-      const num = c => c.type === 'number' || c.type === 'money';
-      const parse = (c, raw) => {
-        const s = String(raw ?? '').trim();
-        if (c.type === 'check') return /^(1|true|ya|y|x|✓)$/i.test(s);
-        if (num(c)) { if (s === '') return ''; const t = s.replace(/\s|Rp/gi, ''); const n = t.includes(',') ? +t.replace(/\./g, '').replace(',', '.') : (/^-?\d{1,3}(\.\d{3})+$/.test(t) ? +t.replace(/\./g, '') : +t); return isNaN(n) ? s : n; }
-        if (c.type === 'select' && c.options) { const hit = Object.entries(c.options).find(([k, l]) => k.toLowerCase() === s.toLowerCase() || String(l).toLowerCase() === s.toLowerCase()); return hit ? hit[0] : s; }
-        return s;
-      };
-      const show = (c, v) => c.type === 'check' ? (v ? '✓' : '') : num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + v.toLocaleString('id-ID') : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' && v ? fmt.date(v + 'T12:00:00+07:00') : (v ?? '');
-      const bad = (c, v) => (c.required && (v === '' || v == null)) || (num(c) && v !== '' && v != null && typeof v !== 'number') || (c.type === 'select' && v && c.options && !(v in c.options));
-      const dirty = (r, c) => { const o = orig.get(String(r[cfg.rowKey])); return !o || String(o[c.key] ?? '') !== String(r[c.key] ?? ''); };
-      const rng = () => { const a = anchor || cur; return {r0: Math.min(a.r, cur.r), r1: Math.max(a.r, cur.r), c0: Math.min(a.c, cur.c), c1: Math.max(a.c, cur.c)}; };
-      function render() {
-        const R = rng();
-        table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${cols.map(c => `<th class="${num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-          + data.map((r, i) => `<tr class="${orig.has(String(r[cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${num(c) ? 'num' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === cur.r && j === cur.c ? 'is-cur' : ''} ${dirty(r, c) ? 'is-dirty' : ''} ${bad(c, v) ? 'is-bad' : ''}">${esc(show(c, v))}${i === R.r1 && j === R.c1 && !edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
-        const changed = changes(); $(el, '[data-s-info]').textContent = `${data.length} baris · ${changed.length} berubah`;
-        const sv = $(el, '[data-s-save]'); sv.disabled = !changed.length; sv.lastChild.textContent = changed.length ? `Simpan Semua (${changed.length})` : 'Simpan Semua';
-        $(el, '[data-s-undo]').disabled = !undo.length; $(el, '[data-s-redo]').disabled = !redo.length;
-        const td = cellEl(cur.r, cur.c); if (td) td.scrollIntoView({block: 'nearest', inline: 'nearest'});
-      }
-      const changes = () => data.filter(r => !orig.has(String(r[cfg.rowKey])) || cols.some(c => dirty(r, c)));
-      const cellEl = (r, c) => $(table, `td[data-r="${r}"][data-c="${c}"]`);
-      // Semua perubahan lewat sini supaya Undo/Redo benar.
-      function apply(list, noUndo) {
-        const back = list.map(({r, k, v}) => ({r, k, v: data[r][k]}));
-        list.forEach(({r, k, v}) => { data[r][k] = v; });
-        if (!noUndo) { undo.push(back); redo.length = 0; }
-        render(); el.dispatchEvent(new CustomEvent('dl:sheet-change', {bubbles: true, detail: {changes: list}}));
-        return back;
-      }
-      const move = (dr, dc, extend) => { if (extend && !anchor) anchor = {...cur}; if (!extend) anchor = null; cur = {r: Math.max(0, Math.min(data.length - 1, cur.r + dr)), c: Math.max(0, Math.min(cols.length - 1, cur.c + dc))}; render(); };
-      function startEdit(initial) {
-        const c = cols[cur.c]; if (c.readonly) return;
-        if (c.type === 'check') { apply([{r: cur.r, k: c.key, v: !data[cur.r][c.key]}]); return; }
-        const td = cellEl(cur.r, cur.c); if (!td) return;
-        edit = {r: cur.r, c: cur.c};
-        const v = data[cur.r][c.key];
-        if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...Object.keys(c.options || {})].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
-        else td.innerHTML = `<input class="dl-sheet__in" type="${c.type === 'date' ? 'date' : 'text'}" value="${esc(initial ?? (num(c) && typeof v === 'number' ? String(v).replace('.', ',') : v ?? ''))}">`;
-        const inp = $(td, '.dl-sheet__in'); inp.focus(); if (initial == null && inp.select) inp.select();
-        if (c.type === 'select') inp.addEventListener('change', () => commit());
-      }
-      function commit(cancel) {
-        if (!edit) return; const {r, c} = edit, inp = $(cellEl(r, c) || document, '.dl-sheet__in'); edit = null;
-        if (!cancel && inp) { const col = cols[c], v = parse(col, inp.value); if (String(v) !== String(data[r][col.key] ?? '')) { apply([{r, k: col.key, v}]); wrap.focus(); return; } }
-        render(); wrap.focus();
-      }
-      wrap.addEventListener('keydown', e => {
-        if (edit) {
-          if (e.key === 'Escape') { e.preventDefault(); commit(true); }
-          else if (e.key === 'Enter') { e.preventDefault(); commit(); move(1, 0); }
-          else if (e.key === 'Tab') { e.preventDefault(); commit(); move(0, e.shiftKey ? -1 : 1); }
+      const self = this;
+      this.cfg = JSON.parse(this.el.dataset.config);
+      this.cols = this.cfg.columns;
+      this.wrap = $(this.el, '[data-s-wrap]');
+      this.table = $(this.el, '[data-s-table]');
+      this.data = JSON.parse(this.el.dataset.rows || '[]').map(r => ({...r}));
+      this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}]));
+      this.undo = [];
+      this.redo = [];
+      this.cur = {r: 0, c: this.firstEditable()};
+      this.anchor = null;
+      this.edit = null;
+      this.fill = null;
+      this.drag = false;
+      this.seq = 0;
+      this.wrap.addEventListener('keydown', e => {
+        if (this.edit) {
+          if (e.key === 'Escape') { e.preventDefault(); this.commit(true); }
+          else if (e.key === 'Enter') { e.preventDefault(); this.commit(); this.move(1, 0); }
+          else if (e.key === 'Tab') { e.preventDefault(); this.commit(); this.move(0, e.shiftKey ? -1 : 1); }
           return;
         }
         const ctrl = e.ctrlKey || e.metaKey;
-        if (ctrl && e.key.toLowerCase() === 'z') { e.preventDefault(); const u = undo.pop(); if (u) redo.push(apply(u, true)); return render(); }
-        if (ctrl && e.key.toLowerCase() === 'y') { e.preventDefault(); const u = redo.pop(); if (u) undo.push(apply(u, true)); return render(); }
+        if (ctrl && e.key.toLowerCase() === 'z') { e.preventDefault(); const u = this.undo.pop(); if (u) this.redo.push(this.apply(u, true)); return this.render(); }
+        if (ctrl && e.key.toLowerCase() === 'y') { e.preventDefault(); const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return this.render(); }
         if (ctrl) return;  // Ctrl+C / Ctrl+V lewat event copy/paste
         const k = e.key;
-        if (k === 'ArrowDown') { e.preventDefault(); move(1, 0, e.shiftKey); }
-        else if (k === 'ArrowUp') { e.preventDefault(); move(-1, 0, e.shiftKey); }
-        else if (k === 'ArrowRight') { e.preventDefault(); move(0, 1, e.shiftKey); }
-        else if (k === 'ArrowLeft') { e.preventDefault(); move(0, -1, e.shiftKey); }
-        else if (k === 'Tab') { e.preventDefault(); move(0, e.shiftKey ? -1 : 1); }
-        else if (k === 'Enter' || k === 'F2') { e.preventDefault(); startEdit(); }
-        else if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); const R = rng(), list = []; for (let r = R.r0; r <= R.r1; r++) for (let c = R.c0; c <= R.c1; c++) if (!cols[c].readonly) list.push({r, k: cols[c].key, v: cols[c].type === 'check' ? false : ''}); if (list.length) apply(list); }
-        else if (k === ' ' && cols[cur.c].type === 'check') { e.preventDefault(); startEdit(); }
-        else if (k.length === 1 && !e.altKey) { e.preventDefault(); anchor = null; startEdit(k); }
+        if (k === 'ArrowDown') { e.preventDefault(); this.move(1, 0, e.shiftKey); }
+        else if (k === 'ArrowUp') { e.preventDefault(); this.move(-1, 0, e.shiftKey); }
+        else if (k === 'ArrowRight') { e.preventDefault(); this.move(0, 1, e.shiftKey); }
+        else if (k === 'ArrowLeft') { e.preventDefault(); this.move(0, -1, e.shiftKey); }
+        else if (k === 'Tab') { e.preventDefault(); this.move(0, e.shiftKey ? -1 : 1); }
+        else if (k === 'Enter' || k === 'F2') { e.preventDefault(); this.startEdit(); }
+        else if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); const R = this.rng(), list = []; for (let r = R.r0; r <= R.r1; r++) for (let c = R.c0; c <= R.c1; c++) if (!this.cols[c].readonly) list.push({r, k: this.cols[c].key, v: this.cols[c].type === 'check' ? false : ''}); if (list.length) this.apply(list); }
+        else if (k === ' ' && this.cols[this.cur.c].type === 'check') { e.preventDefault(); this.startEdit(); }
+        else if (k.length === 1 && !e.altKey) { e.preventDefault(); this.anchor = null; this.startEdit(k); }
       });
       // Salin rentang sebagai TSV (bisa ditempel ke Excel); tempel TSV dari Excel mulai sel aktif (baris baru dibuat bila perlu).
-      wrap.addEventListener('copy', e => { if (edit) return; const R = rng(), lines = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let c = R.c0; c <= R.c1; c++) { const col = cols[c], v = data[r][col.key]; row.push(num(col) && typeof v === 'number' ? String(v).replace('.', ',') : col.type === 'select' ? (col.options?.[v] ?? v ?? '') : v ?? ''); } lines.push(row.join('\t')); } e.clipboardData.setData('text/plain', lines.join('\r\n')); e.preventDefault(); toast(`${(R.r1 - R.r0 + 1) * (R.c1 - R.c0 + 1)} sel disalin.`); });
-      wrap.addEventListener('paste', e => {
-        if (edit) return; e.preventDefault();
+      this.wrap.addEventListener('copy', e => { if (this.edit) return; const R = this.rng(), lines = []; for (let r = R.r0; r <= R.r1; r++) { const row = []; for (let c = R.c0; c <= R.c1; c++) { const col = this.cols[c], v = this.data[r][col.key]; row.push(this.num(col) && typeof v === 'number' ? String(v).replace('.', ',') : col.type === 'select' ? (col.options?.[v] ?? v ?? '') : v ?? ''); } lines.push(row.join('\t')); } e.clipboardData.setData('text/plain', lines.join('\r\n')); e.preventDefault(); toast(`${(R.r1 - R.r0 + 1) * (R.c1 - R.c0 + 1)} sel disalin.`); });
+      this.wrap.addEventListener('paste', e => {
+        if (this.edit) return; e.preventDefault();
         const grid = (e.clipboardData.getData('text/plain') || '').replace(/\r/g, '').replace(/\n$/, '').split('\n').map(l => l.split('\t'));
         const list = [];
-        grid.forEach((line, i) => { const r = cur.r + i; while (r >= data.length) data.push(blank()); line.forEach((v, j) => { const c = cur.c + j; if (c < cols.length && !cols[c].readonly) list.push({r, k: cols[c].key, v: parse(cols[c], v)}); }); });
-        anchor = {...cur}; cur = {r: Math.min(data.length - 1, cur.r + grid.length - 1), c: Math.min(cols.length - 1, cur.c + (grid[0]?.length || 1) - 1)};
-        apply(list); toast(`${list.length} sel ditempel.`, 'success');
+        grid.forEach((line, i) => { const r = this.cur.r + i; while (r >= this.data.length) this.data.push(this.blank()); line.forEach((v, j) => { const c = this.cur.c + j; if (c < this.cols.length && !this.cols[c].readonly) list.push({r, k: this.cols[c].key, v: this.parse(this.cols[c], v)}); }); });
+        this.anchor = {...this.cur}; this.cur = {r: Math.min(this.data.length - 1, this.cur.r + grid.length - 1), c: Math.min(this.cols.length - 1, this.cur.c + (grid[0]?.length || 1) - 1)};
+        this.apply(list); toast(`${list.length} sel ditempel.`, 'success');
       });
-      const blank = () => { const r = {[cfg.rowKey]: 'new' + (++seq)}; cols.forEach(c => { r[c.key] = c.type === 'check' ? false : ''; }); return r; };
       // Mouse: klik = sel aktif, drag = rentang, pegangan isi = AutoFill ke bawah.
-      table.addEventListener('mousedown', e => {
-        const fh = e.target.closest('[data-s-fill]'); if (fh) { e.preventDefault(); fill = {...rng(), to: rng().r1}; return; }
-        const rs = e.target.closest('[data-s-rowsel]'); if (rs) { anchor = {r: +rs.dataset.sRowsel, c: 0}; cur = {r: +rs.dataset.sRowsel, c: cols.length - 1}; render(); wrap.focus(); return; }
-        const td = e.target.closest('td[data-r]'); if (!td || edit) return;
-        if (e.shiftKey) { if (!anchor) anchor = {...cur}; } else anchor = null;
-        cur = {r: +td.dataset.r, c: +td.dataset.c}; drag = true; render(); wrap.focus();
+      this.table.addEventListener('mousedown', e => {
+        const fh = e.target.closest('[data-s-fill]'); if (fh) { e.preventDefault(); this.fill = {...this.rng(), to: this.rng().r1}; return; }
+        const rs = e.target.closest('[data-s-rowsel]'); if (rs) { this.anchor = {r: +rs.dataset.sRowsel, c: 0}; this.cur = {r: +rs.dataset.sRowsel, c: this.cols.length - 1}; this.render(); this.wrap.focus(); return; }
+        const td = e.target.closest('td[data-r]'); if (!td || this.edit) return;
+        if (e.shiftKey) { if (!this.anchor) this.anchor = {...this.cur}; } else this.anchor = null;
+        this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.drag = true; this.render(); this.wrap.focus();
       });
-      table.addEventListener('mouseover', e => {
+      this.table.addEventListener('mouseover', e => {
         const td = e.target.closest('td[data-r]'); if (!td) return;
-        if (fill) { fill.to = Math.max(fill.r1, +td.dataset.r); $$(table, '.is-filltgt').forEach(x => x.classList.remove('is-filltgt')); for (let r = fill.r1 + 1; r <= fill.to; r++) for (let c = fill.c0; c <= fill.c1; c++) cellEl(r, c)?.classList.add('is-filltgt'); return; }
-        if (drag) { if (!anchor) anchor = {...cur}; cur = {r: +td.dataset.r, c: +td.dataset.c}; render(); }
+        if (this.fill) { this.fill.to = Math.max(this.fill.r1, +td.dataset.r); $$(this.table, '.is-filltgt').forEach(x => x.classList.remove('is-filltgt')); for (let r = this.fill.r1 + 1; r <= this.fill.to; r++) for (let c = this.fill.c0; c <= this.fill.c1; c++) this.cellEl(r, c)?.classList.add('is-filltgt'); return; }
+        if (this.drag) { if (!this.anchor) this.anchor = {...this.cur}; this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.render(); }
       });
       document.addEventListener('mouseup', () => {
-        drag = false; if (!fill) return;
-        const F = fill; fill = null; if (F.to <= F.r1) return render();
+        this.drag = false; if (!this.fill) return;
+        const F = this.fill; this.fill = null; if (F.to <= F.r1) return this.render();
         const list = [];
         for (let c = F.c0; c <= F.c1; c++) {
-          const col = cols[c]; if (col.readonly) continue;
-          const src = []; for (let r = F.r0; r <= F.r1; r++) src.push(data[r][col.key]);
-          const step = num(col) && src.length >= 2 && src.every(v => typeof v === 'number') && src.every((v, i) => !i || v - src[i - 1] === src[1] - src[0]) ? src[1] - src[0] : null;
+          const col = this.cols[c]; if (col.readonly) continue;
+          const src = []; for (let r = F.r0; r <= F.r1; r++) src.push(this.data[r][col.key]);
+          const step = this.num(col) && src.length >= 2 && src.every(v => typeof v === 'number') && src.every((v, i) => !i || v - src[i - 1] === src[1] - src[0]) ? src[1] - src[0] : null;
           for (let r = F.r1 + 1, i = 0; r <= F.to; r++, i++) list.push({r, k: col.key, v: step !== null ? src[src.length - 1] + step * (i + 1) : src[i % src.length]});
         }
-        anchor = {r: F.r0, c: F.c0}; cur = {r: F.to, c: F.c1}; if (list.length) { apply(list); toast(`${list.length} sel diisi otomatis.`, 'success'); } else render();
+        this.anchor = {r: F.r0, c: F.c0}; this.cur = {r: F.to, c: F.c1}; if (list.length) { this.apply(list); toast(`${list.length} sel diisi otomatis.`, 'success'); } else this.render();
       });
-      table.addEventListener('dblclick', e => { const td = e.target.closest('td[data-r]'); if (td) { cur = {r: +td.dataset.r, c: +td.dataset.c}; anchor = null; startEdit(); } });
-      wrap.addEventListener('focusout', e => { if (edit && !wrap.contains(e.relatedTarget)) commit(); });
-      el.addEventListener('click', e => {
-        if (e.target.closest('[data-s-add]')) { data.push(blank()); cur = {r: data.length - 1, c: firstEditable()}; anchor = null; render(); wrap.focus(); return; }
-        if (e.target.closest('[data-s-del]')) { const R = rng(), n = R.r1 - R.r0 + 1; confirmBox({message: `Hapus ${n} baris terpilih?`, tone: 'danger'}).then(ok => { if (!ok) return; data.splice(R.r0, n); cur = {r: Math.max(0, Math.min(R.r0, data.length - 1)), c: cur.c}; anchor = null; undo.length = 0; render(); }); return; }
-        if (e.target.closest('[data-s-undo]')) { const u = undo.pop(); if (u) redo.push(apply(u, true)); return; }
-        if (e.target.closest('[data-s-redo]')) { const u = redo.pop(); if (u) undo.push(apply(u, true)); return; }
+      this.table.addEventListener('dblclick', e => { const td = e.target.closest('td[data-r]'); if (td) { this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.anchor = null; this.startEdit(); } });
+      this.wrap.addEventListener('focusout', e => { if (this.edit && !this.wrap.contains(e.relatedTarget)) this.commit(); });
+      this.el.addEventListener('click', e => {
+        if (e.target.closest('[data-s-add]')) { this.data.push(this.blank()); this.cur = {r: this.data.length - 1, c: this.firstEditable()}; this.anchor = null; this.render(); this.wrap.focus(); return; }
+        if (e.target.closest('[data-s-del]')) { const R = this.rng(), n = R.r1 - R.r0 + 1; confirmBox({message: `Hapus ${n} baris terpilih?`, tone: 'danger'}).then(ok => { if (!ok) return; this.data.splice(R.r0, n); this.cur = {r: Math.max(0, Math.min(R.r0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.undo.length = 0; this.render(); }); return; }
+        if (e.target.closest('[data-s-undo]')) { const u = this.undo.pop(); if (u) this.redo.push(this.apply(u, true)); return; }
+        if (e.target.closest('[data-s-redo]')) { const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-save]')) {
-          const nBad = data.reduce((t, r) => t + cols.filter(c => bad(c, r[c.key])).length, 0);
-          if (nBad) { toast(`${nBad} sel belum benar (wajib / angka / pilihan).`, 'danger'); const b = $(table, 'td.is-bad'); if (b) { cur = {r: +b.dataset.r, c: +b.dataset.c}; anchor = null; render(); } return; }
-          const changed = changes();
-          el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: data.map(r => ({...r})), changed}}));
-          data.forEach(r => orig.set(String(r[cfg.rowKey]), {...r})); undo.length = 0; redo.length = 0;
-          toast(`${changed.length} baris disimpan.`, 'success'); render();
+          const nBad = this.data.reduce((t, r) => t + this.cols.filter(c => this.bad(c, r[c.key])).length, 0);
+          if (nBad) { toast(`${nBad} sel belum benar (wajib / angka / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
+          const changed = this.changes();
+          this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
+          this.data.forEach(r => this.orig.set(String(r[this.cfg.rowKey]), {...r})); this.undo.length = 0; this.redo.length = 0;
+          toast(`${changed.length} baris disimpan.`, 'success'); this.render();
         }
       });
-      el.dlSheet = {get data() { return data; }, render, apply, get cur() { return cur; }, set cur(v) { cur = v; anchor = null; render(); }};
-      render();
+      this.el.dlSheet = {get data() { return self.data; }, render: this.render, apply: this.apply, get cur() { return self.cur; }, set cur(v) { self.cur = v; self.anchor = null; self.render(); }};
+      this.render();
     }
+    firstEditable() { const i = this.cols.findIndex(c => !c.readonly); return i < 0 ? 0 : i; }
+
+    num(c) {
+      return c.type === 'number' || c.type === 'money';
+    }
+
+    parse(c, raw) {
+      const s = String(raw ?? '').trim();
+      if (c.type === 'check') return /^(1|true|ya|y|x|✓)$/i.test(s);
+      if (this.num(c)) { if (s === '') return ''; const t = s.replace(/\s|Rp/gi, ''); const n = t.includes(',') ? +t.replace(/\./g, '').replace(',', '.') : (/^-?\d{1,3}(\.\d{3})+$/.test(t) ? +t.replace(/\./g, '') : +t); return isNaN(n) ? s : n; }
+      if (c.type === 'select' && c.options) { const hit = Object.entries(c.options).find(([k, l]) => k.toLowerCase() === s.toLowerCase() || String(l).toLowerCase() === s.toLowerCase()); return hit ? hit[0] : s; }
+      return s;
+    }
+
+    show(c, v) {
+      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + v.toLocaleString('id-ID') : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' && v ? fmt.date(v + 'T12:00:00+07:00') : (v ?? '');
+    }
+
+    bad(c, v) {
+      return (c.required && (v === '' || v == null)) || (this.num(c) && v !== '' && v != null && typeof v !== 'number') || (c.type === 'select' && v && c.options && !(v in c.options));
+    }
+
+    dirty(r, c) { const o = this.orig.get(String(r[this.cfg.rowKey])); return !o || String(o[c.key] ?? '') !== String(r[c.key] ?? ''); }
+    rng() { const a = this.anchor || this.cur; return {r0: Math.min(a.r, this.cur.r), r1: Math.max(a.r, this.cur.r), c0: Math.min(a.c, this.cur.c), c1: Math.max(a.c, this.cur.c)}; }
+
+    render() {
+      const R = this.rng();
+      this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
+        + this.data.map((r, i) => `<tr class="${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v) ? 'is-bad' : ''}">${esc(this.show(c, v))}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+      const changed = this.changes(); $(this.el, '[data-s-info]').textContent = `${this.data.length} baris · ${changed.length} berubah`;
+      const sv = $(this.el, '[data-s-save]'); sv.disabled = !changed.length; sv.lastChild.textContent = changed.length ? `Simpan Semua (${changed.length})` : 'Simpan Semua';
+      $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
+      const td = this.cellEl(this.cur.r, this.cur.c); if (td) td.scrollIntoView({block: 'nearest', inline: 'nearest'});
+    }
+
+    changes() {
+      return this.data.filter(r => !this.orig.has(String(r[this.cfg.rowKey])) || this.cols.some(c => this.dirty(r, c)));
+    }
+
+    cellEl(r, c) {
+      return $(this.table, `td[data-r="${r}"][data-c="${c}"]`);
+    }
+
+    apply(list, noUndo) {
+      const back = list.map(({r, k, v}) => ({r, k, v: this.data[r][k]}));
+      list.forEach(({r, k, v}) => { this.data[r][k] = v; });
+      if (!noUndo) { this.undo.push(back); this.redo.length = 0; }
+      this.render(); this.el.dispatchEvent(new CustomEvent('dl:sheet-change', {bubbles: true, detail: {changes: list}}));
+      return back;
+    }
+
+    move(dr, dc, extend) { if (extend && !this.anchor) this.anchor = {...this.cur}; if (!extend) this.anchor = null; this.cur = {r: Math.max(0, Math.min(this.data.length - 1, this.cur.r + dr)), c: Math.max(0, Math.min(this.cols.length - 1, this.cur.c + dc))}; this.render(); }
+
+    startEdit(initial) {
+      const c = this.cols[this.cur.c]; if (c.readonly) return;
+      if (c.type === 'check') { this.apply([{r: this.cur.r, k: c.key, v: !this.data[this.cur.r][c.key]}]); return; }
+      const td = this.cellEl(this.cur.r, this.cur.c); if (!td) return;
+      this.edit = {r: this.cur.r, c: this.cur.c};
+      const v = this.data[this.cur.r][c.key];
+      if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...Object.keys(c.options || {})].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
+      else td.innerHTML = `<input class="dl-sheet__in" type="${c.type === 'date' ? 'date' : 'text'}" value="${esc(initial ?? (this.num(c) && typeof v === 'number' ? String(v).replace('.', ',') : v ?? ''))}">`;
+      const inp = $(td, '.dl-sheet__in'); inp.focus(); if (initial == null && inp.select) inp.select();
+      if (c.type === 'select') inp.addEventListener('change', () => this.commit());
+    }
+
+    commit(cancel) {
+      if (!this.edit) return; const {r, c} = this.edit, inp = $(this.cellEl(r, c) || document, '.dl-sheet__in'); this.edit = null;
+      if (!cancel && inp) { const col = this.cols[c], v = this.parse(col, inp.value); if (String(v) !== String(this.data[r][col.key] ?? '')) { this.apply([{r, k: col.key, v}]); this.wrap.focus(); return; } }
+      this.render(); this.wrap.focus();
+    }
+
+    blank() { const r = {[this.cfg.rowKey]: 'new' + (++this.seq)}; this.cols.forEach(c => { r[c.key] = c.type === 'check' ? false : ''; }); return r; }
   }
   Devlib.define("Sheet", Sheet);
 })(window.Devlib);

@@ -6,10 +6,9 @@
   class Uat extends Devlib.Component {
     static selector = "[data-dl-uat]";
     init() {
-      const root = this.el;
-      $(root, '[data-dl-uat-toggle]').addEventListener('click', e => { e.stopPropagation(); root.classList.toggle('is-open'); });
-      root.addEventListener('click', e => e.stopPropagation());
-      document.addEventListener('click', () => root.classList.remove('is-open'));
+      $(this.el, '[data-dl-uat-toggle]').addEventListener('click', e => { e.stopPropagation(); this.el.classList.toggle('is-open'); });
+      this.el.addEventListener('click', e => e.stopPropagation());
+      document.addEventListener('click', () => this.el.classList.remove('is-open'));
     }
   }
   Devlib.define("Uat", Uat);

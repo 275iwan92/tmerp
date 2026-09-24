@@ -6,11 +6,10 @@
   class Segment extends Devlib.Component {
     static selector = "[data-dl-segment]";
     init() {
-      const root = this.el;
-      const hidden = $(root, '[data-dl-value]');
-      $$(root, '.dl-segment__opt').forEach(b => b.addEventListener('click', () => {
-        $$(root, '.dl-segment__opt').forEach(x => x.classList.toggle('is-active', x === b));
-        hidden.value = b.dataset.value; hidden.dispatchEvent(new Event('change', {bubbles: true}));
+      this.hidden = $(this.el, '[data-dl-value]');
+      $$(this.el, '.dl-segment__opt').forEach(b => b.addEventListener('click', () => {
+        $$(this.el, '.dl-segment__opt').forEach(x => x.classList.toggle('is-active', x === b));
+        this.hidden.value = b.dataset.value; this.hidden.dispatchEvent(new Event('change', {bubbles: true}));
       }));
     }
   }
