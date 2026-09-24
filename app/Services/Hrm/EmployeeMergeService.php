@@ -2,6 +2,7 @@
 
 namespace App\Services\Hrm;
 
+use App\Support\DbName;
 use Illuminate\Support\Facades\DB;
 
 // Menggabungkan beberapa baris emp_employee yang ternyata 1 orang ke 1 baris
@@ -135,12 +136,13 @@ class EmployeeMergeService
     private function moveReferences($db, int $fromId, int $toId): array
     {
         $counts = [];
-        foreach (self::REFERENCES as [$table, $col]) {
+        foreach (self::REFERENCES as [$ref, $col]) {
+            $table = DbName::table($ref);
             $n = $db->update("UPDATE IGNORE {$table} SET {$col} = ? WHERE {$col} = ?", [$toId, $fromId]);
             $dupes = $db->delete("DELETE FROM {$table} WHERE {$col} = ?", [$fromId]);
-            $counts["{$table}.{$col}"] = $n;
+            $counts["{$ref}.{$col}"] = $n;
             if ($dupes) {
-                $counts["{$table}.{$col}:duplikat_dihapus"] = $dupes;
+                $counts["{$ref}.{$col}:duplikat_dihapus"] = $dupes;
             }
         }
 

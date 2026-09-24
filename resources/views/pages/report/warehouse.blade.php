@@ -51,7 +51,7 @@ new #[Layout('layouts::report')] #[Title('Laporan Gudang — TELASIH MAKMUR ERP'
     public function topRawMaterials(): array
     {
         return DB::connection('tm2inv')->table('v_rm_onhand as v')
-            ->join('tm2mst.mat_raw as m', 'm.material_id', '=', 'v.material_id')
+            ->join(\App\Support\DbName::table('tm2mst.mat_raw').' as m', 'm.material_id', '=', 'v.material_id')
             ->where('v.qty_onhand', '>', 0)
             ->selectRaw('m.material_name, v.uom_code, SUM(v.qty_onhand) as qty, SUM(v.value_onhand) as value')
             ->groupBy('m.material_name', 'v.uom_code')
