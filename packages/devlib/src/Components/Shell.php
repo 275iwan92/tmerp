@@ -15,7 +15,8 @@ namespace Devlib\Components;
 // ]
 // ITEM = ['code', 'label', 'url', 'type' => form|grid|report, 'icon'?, 'badge'?, 'badgeTone'?]
 // $chat = ['me', 'people', 'convos'] -> drawer Chat (x-dl::chat, versi ringkas).
-// $nav = layer (bawaan: x-dl::layer-menu di kiri) | classic (mega menu + sidebar); pilihan user di browser menang.
+// Turunan: LayerShell (x-dl::layer-shell) = kerangka yang sama, navigasi Layer Menu tanpa top bar.
+// Layar pemakai memanggil <x-dynamic-component :component="Shell::preferred()"> supaya pilihan menu user ikut.
 class Shell extends DevlibComponent
 {
     public function __construct(
@@ -27,7 +28,6 @@ class Shell extends DevlibComponent
         public string $menuSource = 'sys_app_menu',
         public bool $developer = false,
         public array $chat = [],
-        public string $nav = 'layer',
     ) {}
 
     public function tag(): string
@@ -40,19 +40,11 @@ class Shell extends DevlibComponent
         return 'menu = '.$this->menuSource;
     }
 
-    // Modul yang sama sebagai tree x-dl::layer-menu (mode navigasi "Layer"): modul -> item, grup = caption.
-    // Kunci daun = code item, jadi klik daun membuka tab MDI yang sama dengan menu Classic.
-    public function layerTree(): array
+    // Menu pilihan user (cookie dl_menu, diset JS saat menukar menu). Bawaan = Layer Menu.
+    // Dibaca dari $_COOKIE mentah: cookie ini ditulis browser, bukan cookie terenkripsi Laravel.
+    public static function preferred(): string
     {
-        $tone = ['partial' => 'warn', 'done' => 'success', 'danger' => 'danger'];
-        $leaf = fn (array $it, ?string $group) => array_filter([
-            'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
-            'badge' => $it['badge'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
-        ]);
-
-        return array_map(fn ($m) => ['label' => $m['label'], 'icon' => $m['icon'] ?? null, 'items' => collect($m['children'] ?? [])
-            ->flatMap(fn ($c) => isset($c['items']) ? array_map(fn ($it) => $leaf($it, $c['label']), $c['items']) : [$leaf($c, null)])
-            ->values()->all()], $this->modules);
+        return ($_COOKIE['dl_menu'] ?? 'layer') === 'classic' ? 'dl::shell' : 'dl::layer-shell';
     }
 
     public function render()

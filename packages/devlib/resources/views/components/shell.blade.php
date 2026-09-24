@@ -1,18 +1,4 @@
-<div class="dl-shell" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}" data-dl-nav="{{ $nav }}">
-    {{-- Navigasi mode "Layer" (dipilih lewat menu avatar / roda gigi; tersimpan per browser). --}}
-    <x-dl::layer-menu class="dl-shell__lm" id="shell" :items="$layerTree()" :title="$brand" :user="$user['name']" :role="$user['role'] ?? null" :login="$user['email'] ?? null" dock="[data-dl-lm-dock]"
-        :actions="[
-            ['key' => 'notif', 'label' => 'Notifikasi', 'icon' => 'notification'],
-            ['key' => 'edit', 'label' => 'Edit profil', 'icon' => 'fa-user-pen'],
-            ['key' => 'pass', 'label' => 'Ubah password', 'icon' => 'password'],
-            ['key' => 'nav-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'],
-            ['key' => 'logout', 'label' => 'Keluar aplikasi', 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
-        ]">
-        <x-slot:chat><x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" /></x-slot:chat>
-        <x-slot:profile>
-            <section data-lm-page="theme" data-label="Tema" data-icon="fa-palette"><x-dl::theme-picker /></section>
-        </x-slot:profile>
-    </x-dl::layer-menu>
+<div class="dl-shell" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}">
     <aside class="dl-side" data-dl="sidebar kontekstual" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (grup + item modul aktif)">
         <div class="dl-side__head">
             <span class="dl-logo-badge dl-logo-badge--sm"></span>
@@ -49,7 +35,7 @@
                         <div class="dl-um-cap">Akun</div>
                         <button type="button" class="dl-um-item" data-dl-um="edit"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
                         <button type="button" class="dl-um-item" data-dl-um="pass"><i class="fa-solid fa-key"></i> Ubah password</button>
-                        <button type="button" class="dl-um-item" data-dl-um="nav-layer"><i class="fa-solid fa-layer-group"></i> Layer Menu (menu baru)</button>
+                        <button type="button" class="dl-um-item" data-dl-um="menu-layer"><i class="fa-solid fa-layer-group"></i> Layer Menu (menu baru)</button>
                         <button type="button" class="dl-um-item" data-dl-um="help"><i class="fa-solid fa-circle-question"></i> Bantuan &amp; dukungan</button>
                         <div class="dl-um-item dl-um-item--static"><i class="fa-solid fa-globe"></i> Bahasa<span class="dl-um-langs"><button type="button" class="dl-um-flag is-active" data-dl-lang="id">🇮🇩</button><button type="button" class="dl-um-flag" data-dl-lang="en">🇬🇧</button></span></div>
                         @if ($developer)
@@ -58,7 +44,7 @@
                             <button type="button" class="dl-um-item" data-dl-um="devmode"><i class="fa-solid fa-bug"></i> Mode Developer<span class="dl-um-switch" data-dl-devswitch></span></button>
                         @endif
                         <div class="dl-um-sep"></div>
-                        <form method="POST" action="{{ $logoutAction }}">
+                        <form method="POST" action="{{ $logoutAction }}" data-dl-logout>
                             @csrf
                             <button type="submit" class="dl-um-item dl-um-item--danger"><i class="fa-solid fa-right-from-bracket"></i> Keluar aplikasi</button>
                         </form>
@@ -67,77 +53,8 @@
             </div>
         </header>
         <div class="dl-topbar-restore"><button type="button" data-dl-act="showtopbar">▾ Tampilkan top bar</button></div>
-        <div class="dl-tabbar" data-dl-tabbar data-dl="tab MDI" data-dl-class="bagian Shell" data-dl-src="—"></div>
-        <div class="dl-content" data-dl-content>
-            <div class="dl-pane is-active" data-dl-home>
-                <div class="dl-home">
-                    <div class="dl-home__hero"></div>
-                    <h1>Selamat datang, {{ \Illuminate\Support\Str::before($user['name'], ' ') }} 👋</h1>
-                    <p>Pilih modul di <b>menu kiri</b> (Menu Classic: mega menu atas, submenunya di sidebar). Setiap form/grid terbuka sebagai <b>tab</b> di frame ini dan tetap terbuka meski Anda berpindah modul.</p>
-                    {{ $slot }}
-                    <div class="dl-home__hint">Ctrl+K cari cepat · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>⤒</kbd> sembunyikan top bar.</div>
-                </div>
-            </div>
-        </div>
+        @include('devlib::components.shell.work', ['intro' => 'Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar.', 'hint' => 'Ctrl+K cari cepat · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>⤒</kbd> sembunyikan top bar.'])
     </div>
 
-    <aside class="dl-lm-dock dl-shell__dock" data-dl-lm-dock></aside>
-
-    <div class="dl-backdrop" data-dl-backdrop></div>
-
-    <aside class="dl-drawer" data-dl-drawer="chat" data-dl="drawer chat" data-dl-class="bagian Shell" data-dl-src="sys_chat_conversations / sys_chat_messages (rencana)">
-        <div class="dl-dr-head"><i class="fa-solid fa-comment-dots dl-dr-ico"></i><span class="dl-dr-title">Chat</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
-        <x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" />
-
-    </aside>
-
-    <aside class="dl-drawer" data-dl-drawer="ai" data-dl="drawer asisten AI" data-dl-class="bagian Shell" data-dl-src="registry menu (pratinjau)">
-        <div class="dl-dr-head"><i class="fa-solid fa-wand-magic-sparkles dl-dr-ico dl-dr-ico--ai"></i><span class="dl-dr-title">Asisten AI</span><span class="dl-dr-note">pratinjau</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
-        <div class="dl-ai" data-dl-ai-body>
-            <div class="dl-ai__intro">Tanya dengan bahasa biasa — mis. <b>“buka login”</b> atau <b>“grid”</b>, saya bantu bukakan di tab. Versi ini masih pratinjau.
-                <div class="dl-ai__chips"><button type="button" class="dl-ai__chip" data-dl-ai="login">login</button><button type="button" class="dl-ai__chip" data-dl-ai="kanban">kanban</button><button type="button" class="dl-ai__chip" data-dl-ai="grid">grid</button></div>
-            </div>
-        </div>
-        <div class="dl-ai__in"><input data-dl-ai-input placeholder="Ketik permintaan…"><button type="button" data-dl-ai-send><i class="fa-solid fa-arrow-up"></i></button></div>
-    </aside>
-
-    <aside class="dl-drawer" data-dl-drawer="notif" data-dl="drawer notifikasi" data-dl-class="bagian Shell" data-dl-src="sys_notifications (rencana)">
-        <div class="dl-dr-head"><i class="fa-solid fa-bell dl-dr-ico"></i><span class="dl-dr-title">Notifikasi</span><button type="button" class="dl-dr-x" data-dl-close><i class="fa-solid fa-xmark"></i></button></div>
-        <div class="dl-notif__bar"><a data-dl-markread>Tandai semua terbaca</a></div>
-        <div class="dl-notif__list">
-            <div class="dl-nz"><span class="dl-nz__dot" style="--dot:var(--dl-accent)"></span><div><div class="dl-nz__t">PO baru menunggu approval</div><div class="dl-nz__s">Procurement · 5 menit lalu</div></div></div>
-            <div class="dl-nz"><span class="dl-nz__dot" style="--dot:var(--dl-amber-2)"></span><div><div class="dl-nz__t">Stok Bahan A di bawah minimum</div><div class="dl-nz__s">Inventory · 1 jam lalu</div></div></div>
-            <div class="dl-nz"><span class="dl-nz__dot" style="--dot:var(--dl-green)"></span><div><div class="dl-nz__t">Invoice #2600393 lunas</div><div class="dl-nz__s">Finance · kemarin</div></div></div>
-        </div>
-    </aside>
-
-    <div class="dl-mov" data-dl-modal="edit"><div class="dl-modal" data-dl="modal edit profil" data-dl-class="bagian Shell" data-dl-src="sec_user">
-        <div class="dl-modal__head"><h3>Edit profil</h3><button type="button" class="dl-modal__x" data-dl-mclose>&times;</button></div>
-        <div class="dl-modal__body">
-            <div class="dl-photo-row"><span class="dl-photo-big"><svg viewBox="0 0 24 24"><path d="M12 12a5 5 0 100-10 5 5 0 000 10zm0 2c-5 0-9 2.5-9 6v1h18v-1c0-3.5-4-6-9-6z"/></svg></span><button type="button" class="dl-ghost">Ubah foto</button></div>
-            <div class="dl-mfield"><label>Nama lengkap</label><input value="{{ $user['name'] }}"></div>
-            <div class="dl-mfield"><label>Email</label><input value="{{ $user['email'] }}"></div>
-            <div class="dl-mfield"><label>No. telepon</label><input value="0812-3456-7890"></div>
-            <div class="dl-mfield"><label>Jabatan</label><input value="{{ $user['role'] }}" readonly></div>
-        </div>
-        <div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-dl-mclose>Batal</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-mclose>Simpan</button></div>
-    </div></div>
-
-    <div class="dl-mov" data-dl-modal="pass"><div class="dl-modal" data-dl="modal ubah password" data-dl-class="bagian Shell" data-dl-src="sec_user.pswd">
-        <div class="dl-modal__head"><h3>Ubah password</h3><button type="button" class="dl-modal__x" data-dl-mclose>&times;</button></div>
-        <div class="dl-modal__body">
-            <div class="dl-mfield"><label>Password lama</label><input type="password" placeholder="Password saat ini"></div>
-            <div class="dl-mfield"><label>Password baru</label><input type="password" placeholder="Min. 8 karakter"></div>
-            <div class="dl-mfield"><label>Konfirmasi password baru</label><input type="password" placeholder="Ulangi password"></div>
-        </div>
-        <div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-dl-mclose>Batal</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-mclose>Simpan</button></div>
-    </div></div>
-
-    <div class="dl-pal-ov" data-dl-palette data-dl="palet perintah Ctrl+K" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (semua item)">
-        <div class="dl-pal">
-            <div class="dl-pal__in"><span>🔎</span><input data-dl-pal-input placeholder="Ketik nama form, grid, atau laporan…" autocomplete="off"></div>
-            <div class="dl-pal__list" data-dl-pal-list></div>
-            <div class="dl-pal__foot"><span><kbd>↑</kbd><kbd>↓</kbd> pilih</span><span><kbd>↵</kbd> buka</span><span><kbd>esc</kbd> tutup</span></div>
-        </div>
-    </div>
+    @include('devlib::components.shell.overlays', ['chatDrawer' => true])
 </div>

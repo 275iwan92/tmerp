@@ -2292,9 +2292,6 @@ html.dl-locked body{overflow:hidden}
 @media (prefers-reduced-motion:reduce){.dl-lm__track,.dl-lm__ov,.dl-lm__pop,.dl-lm-dock{transition:none}}
 .dl-lm-demo{display:flex;gap:12px;height:600px;align-items:stretch}
 .dl-lm-dock [data-lm-chatx]{display:none}
-.dl-shell__lm{display:none;border-radius:0;height:100%}
-.dl-shell.is-layer .dl-shell__lm{display:flex}
-.dl-shell.is-layer .dl-side,.dl-shell.is-layer .dl-mega__wrap,.dl-shell.is-layer [data-dl-act="nosidebar"]{display:none}
-.dl-shell.is-layer .dl-topbar .dl-tb-spacer{flex:1}
+.dl-shell__lm{border-radius:0;height:100%}
 .dl-shell__dock{border-radius:0}
 .dl-shell__dock.is-on{border:none;border-left:1px solid var(--dl-border)}

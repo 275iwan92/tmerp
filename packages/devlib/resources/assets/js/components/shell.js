@@ -3,35 +3,28 @@
   'use strict';
   const {$, $$, esc, typeIcon, HOME, setDevMode, toast} = Devlib.h;
 
+  // Kerangka aplikasi = kerangka kerja (tab MDI, konten, laci, modal, palet Ctrl+K, asisten AI) + navigasi.
+  // Shell = navigasi Classic (mega menu + sidebar + top bar). Turunan menimpa initNav() & markActiveLeaf().
   class Shell extends Devlib.Component {
     static selector = ".dl-shell";
     init() {
       this.modules = JSON.parse(this.el.dataset.dlModules || '[]');
       this.items = [];
       this.modules.forEach(m => (m.children || []).forEach(c => (c.items ? c.items : [c]).forEach(it => this.items.push({...it, mod: m.label}))));
-      this.mega = $(this.el, '[data-dl-mega]');
-      this.modTitle = $(this.el, '[data-dl-mod-title]');
-      this.sideNav = $(this.el, '[data-dl-side-nav]');
       this.tabbar = $(this.el, '[data-dl-tabbar]');
       this.content = $(this.el, '[data-dl-content]');
       this.homePane = $(this.el, '[data-dl-home]');
       this.activeTab = null;
       this.openTabs = new Map();
+      this.chatCount = 2;
+      this.notifCount = 3;
+      this.initFrame();
+      this.initNav();
+      this.refreshCounts();
+    }
 
-      // Bilah modul: singkatan (short) + tooltip nama lengkap; bila tetap tidak muat -> panah geser + roda mouse.
-      this.mega.innerHTML = [HOME, ...this.modules].map(m => `<button type="button" class="dl-mega__item" data-mod="${esc(m.code)}" title="${esc(m.label)}"><span class="mi"><i class="${esc(m.icon || '')}"></i></span>${esc(m.short || m.label)}</button>`).join('');
-      this.megaWrap = document.createElement('div');
-      this.megaWrap.className = 'dl-mega__wrap';this.mega.before(this.megaWrap);this.megaWrap.append(this.mega);
-      this.aL = this.arrow(-1);
-      this.aR = this.arrow(1);
-      this.megaWrap.prepend(this.aL);this.megaWrap.append(this.aR);
-      this.mega.addEventListener('scroll', this.megaEdge);window.addEventListener('resize', this.megaEdge);
-      this.mega.addEventListener('wheel', e => { if (this.mega.scrollWidth > this.mega.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); this.mega.scrollLeft += e.deltaY; } }, {passive: false});
-      setTimeout(this.megaEdge);
-      $$(this.mega, '.dl-mega__item').forEach(b => b.addEventListener('click', () => this.selectModule(b.dataset.mod)));
-
-      this.sideNav.addEventListener('click', e => { const el = e.target.closest('[data-code]'); if (el) this.openTab(el.dataset.code); });
-
+    /* ---------------- kerangka kerja (dipakai semua turunan) ---------------- */
+    initFrame() {
       this.palOv = $(this.el, '[data-dl-palette]');
       this.palIn = $(this.el, '[data-dl-pal-input]');
       this.palList = $(this.el, '[data-dl-pal-list]');
@@ -51,7 +44,63 @@
         else if (e.key === 'Escape') this.closePalette();
       });
 
-      // Tombol top bar / sidebar
+      $$(this.el, '[data-dl-mclose]').forEach(b => b.addEventListener('click', () => b.closest('.dl-mov').classList.remove('is-on')));
+      $$(this.el, '.dl-mov').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('is-on'); }));
+
+      this.backdrop = $(this.el, '[data-dl-backdrop]');
+      this.backdrop.addEventListener('click', this.closeDrawers);
+      $$(this.el, '[data-dl-close]').forEach(b => b.addEventListener('click', this.closeDrawers));
+      $(this.el, '[data-dl-markread]').addEventListener('click', () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast('Semua notifikasi ditandai terbaca.'); });
+
+      this.chatEl = $(this.el, '[data-dl-drawer="chat"] [data-dl-chat]');
+      if (this.chatEl?.dlChat) this.chatCount = this.chatEl.dlChat.unread;
+      this.chatEl?.addEventListener('dl:chat-unread', e => { this.chatCount = e.detail.count; this.refreshCounts(); });
+
+      this.aiBody = $(this.el, '[data-dl-ai-body]');
+      this.aiIn = $(this.el, '[data-dl-ai-input]');
+      $(this.el, '[data-dl-ai-send]').addEventListener('click', () => { this.askAi(this.aiIn.value); this.aiIn.value = ''; });
+      this.aiIn.addEventListener('keydown', e => { if (e.key === 'Enter') { this.askAi(this.aiIn.value); this.aiIn.value = ''; } });
+      this.aiBody.addEventListener('click', e => { const c = e.target.closest('[data-dl-ai]'); if (c) this.askAi(c.dataset.dlAi); });
+    }
+
+    // Aksi akun yang sama untuk menu avatar (Classic) maupun roda gigi (Layer Menu).
+    command(a) {
+      if (a === 'chat') this.openDrawer('chat');
+      else if (a === 'notif' || a === 'ai') this.openDrawer(a);
+      else if (a === 'edit' || a === 'pass') $(this.el, `[data-dl-modal="${a}"]`).classList.add('is-on');
+      else if (a === 'palette') this.openPalette();
+      else if (a === 'devmode') setDevMode(!document.body.classList.contains('dl-dev'));
+      else if (a === 'help') toast('Bantuan & dukungan — segera (tiket ke tim dev / sys_support_tickets).');
+      else if (a === 'menu-layer' || a === 'menu-classic') this.switchMenu(a.slice(5));
+      else if (a === 'logout') $(this.el, 'form[data-dl-logout]')?.requestSubmit();
+    }
+
+    // Pilihan menu = cookie dl_menu (dibaca server lewat Shell::preferred()), lalu halaman dimuat ulang.
+    switchMenu(mode) {
+      document.cookie = `dl_menu=${mode}; path=/; max-age=31536000; samesite=lax`;
+      location.reload();
+    }
+
+    /* ---------------- navigasi Classic: mega menu + sidebar + top bar ---------------- */
+    initNav() {
+      this.mega = $(this.el, '[data-dl-mega]');
+      this.modTitle = $(this.el, '[data-dl-mod-title]');
+      this.sideNav = $(this.el, '[data-dl-side-nav]');
+
+      // Bilah modul: singkatan (short) + tooltip nama lengkap; bila tetap tidak muat -> panah geser + roda mouse.
+      this.mega.innerHTML = [HOME, ...this.modules].map(m => `<button type="button" class="dl-mega__item" data-mod="${esc(m.code)}" title="${esc(m.label)}"><span class="mi"><i class="${esc(m.icon || '')}"></i></span>${esc(m.short || m.label)}</button>`).join('');
+      this.megaWrap = document.createElement('div');
+      this.megaWrap.className = 'dl-mega__wrap';this.mega.before(this.megaWrap);this.megaWrap.append(this.mega);
+      this.aL = this.arrow(-1);
+      this.aR = this.arrow(1);
+      this.megaWrap.prepend(this.aL);this.megaWrap.append(this.aR);
+      this.mega.addEventListener('scroll', this.megaEdge);window.addEventListener('resize', this.megaEdge);
+      this.mega.addEventListener('wheel', e => { if (this.mega.scrollWidth > this.mega.clientWidth && Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); this.mega.scrollLeft += e.deltaY; } }, {passive: false});
+      setTimeout(this.megaEdge);
+      $$(this.mega, '.dl-mega__item').forEach(b => b.addEventListener('click', () => this.selectModule(b.dataset.mod)));
+
+      this.sideNav.addEventListener('click', e => { const el = e.target.closest('[data-code]'); if (el) this.openTab(el.dataset.code); });
+
       $$(this.el, '[data-dl-act]').forEach(b => b.addEventListener('click', e => {
         const a = b.dataset.dlAct;
         if (a === 'mini') this.el.classList.toggle('is-mini');
@@ -64,74 +113,18 @@
 
       this.userMenu = $(this.el, '[data-dl-usermenu]');
       document.addEventListener('click', () => this.userMenu.classList.remove('is-open'));
-      this.userMenu.addEventListener('click', e => e.stopPropagation());
-      this.chatCount = 2;
-      this.notifCount = 3;
-      this.refreshCounts();
       this.userMenu.addEventListener('click', e => {
+        e.stopPropagation();
         const fl = e.target.closest('[data-dl-lang]');
         if (fl) { $$(this.userMenu, '.dl-um-flag').forEach(x => x.classList.remove('is-active')); fl.classList.add('is-active'); toast('Bahasa: ' + (fl.dataset.dlLang === 'id' ? 'Indonesia' : 'English')); return; }
         const b = e.target.closest('[data-dl-um]'); if (!b) return;
-        const a = b.dataset.dlUm;
-        if (a === 'devmode') { setDevMode(!document.body.classList.contains('dl-dev')); return; }
-        this.userMenu.classList.remove('is-open');
-        if (a === 'nav-layer') this.setNav('layer');
-        else if (a === 'chat') this.isLayer() ? this.lm.dlComponent.openChat() : this.openDrawer('chat');
-        else if (a === 'notif') this.openDrawer('notif');
-        else if (a === 'ai') this.openDrawer('ai');
-        else if (a === 'edit' || a === 'pass') $(this.el, `[data-dl-modal="${a}"]`).classList.add('is-on');
-        else if (a === 'help') toast('Bantuan & dukungan — segera (tiket ke tim dev / sys_support_tickets).');
+        if (b.dataset.dlUm !== 'devmode') this.userMenu.classList.remove('is-open');
+        this.command(b.dataset.dlUm);
       });
-
-      // Modal
-      $$(this.el, '[data-dl-mclose]').forEach(b => b.addEventListener('click', () => b.closest('.dl-mov').classList.remove('is-on')));
-      $$(this.el, '.dl-mov').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('is-on'); }));
-
-      this.backdrop = $(this.el, '[data-dl-backdrop]');
-      this.backdrop.addEventListener('click', this.closeDrawers);
-      $$(this.el, '[data-dl-close]').forEach(b => b.addEventListener('click', this.closeDrawers));
-      $(this.el, '[data-dl-markread]').addEventListener('click', () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast('Semua notifikasi ditandai terbaca.'); });
-
-      this.chatEl = $(this.el, '[data-dl-drawer="chat"] [data-dl-chat]');
-      if (this.chatEl?.dlChat) { this.chatCount = this.chatEl.dlChat.unread; this.refreshCounts(); }
-      this.chatEl?.addEventListener('dl:chat-unread', e => { this.chatCount = e.detail.count; this.refreshCounts(); });
-      this.initLayerNav();
-
-      this.aiBody = $(this.el, '[data-dl-ai-body]');
-      this.aiIn = $(this.el, '[data-dl-ai-input]');
-      $(this.el, '[data-dl-ai-send]').addEventListener('click', () => { this.askAi(this.aiIn.value); this.aiIn.value = ''; });
-      this.aiIn.addEventListener('keydown', e => { if (e.key === 'Enter') { this.askAi(this.aiIn.value); this.aiIn.value = ''; } });
-      this.aiBody.addEventListener('click', e => { const c = e.target.closest('[data-dl-ai]'); if (c) this.askAi(c.dataset.dlAi); });
 
       this.hash = decodeURIComponent(location.hash.slice(1));
       this.selectModule(this.modules.some(m => m.code === this.hash) ? this.hash : 'HOME');
       window.addEventListener('hashchange', () => { const h = decodeURIComponent(location.hash.slice(1)); if (h === 'HOME' || this.modules.some(m => m.code === h)) this.selectModule(h); });
-    }
-
-    // Dua gaya navigasi di shell yang sama: Classic (mega menu + sidebar) atau Layer (x-dl::layer-menu).
-    // Klik daun Layer Menu = buka tab MDI yang sama; pilihan diingat per browser.
-    initLayerNav() {
-      this.lm = $(this.el, '[data-dl-layer-menu]'); if (!this.lm) return;
-      this.lm.addEventListener('dl:layer-menu', e => { e.preventDefault(); this.openTab(e.detail.key); });
-      this.lm.addEventListener('dl:layer-menu-action', e => {
-        const k = e.detail.key; e.preventDefault();
-        if (k === 'nav-classic') this.setNav('classic');
-        else if (k === 'notif') this.openDrawer('notif');
-        else if (k === 'edit' || k === 'pass') $(this.el, `[data-dl-modal="${k}"]`).classList.add('is-on');
-        else if (k === 'logout') $(this.el, '[data-dl-usermenu] form').requestSubmit();
-      });
-      let nav = this.el.dataset.dlNav || 'layer'; try { nav = localStorage.getItem('dl-shell-menu') || nav; } catch (e) {}
-      this.setNav(nav, false);
-    }
-
-    isLayer() { return this.el.classList.contains('is-layer'); }
-
-    setNav(mode, announce = true) {
-      if (!this.lm) return;
-      if (mode !== 'layer' && this.lm.dlComponent?.st.chat) this.lm.dlComponent.closeChat();
-      this.el.classList.toggle('is-layer', mode === 'layer');
-      if (announce) try { localStorage.setItem('dl-shell-menu', mode); } catch (e) {}
-      if (announce) toast(mode === 'layer' ? 'Menu: Layer Menu' : 'Menu: Classic');
     }
 
     findItem(code) {
@@ -166,6 +159,7 @@
       return $$(this.sideNav, '.dl-leaf').forEach(l => l.classList.toggle('is-active', l.dataset.code === this.activeTab));
     }
 
+    /* ---------------- tab MDI ---------------- */
     openTab(code) {
       const it = this.findItem(code); if (!it) return;
       if (this.openTabs.has(code)) { this.activate(code); return; }
@@ -199,6 +193,7 @@
       this.homePane.classList.add('is-active'); this.markActiveLeaf();
     }
 
+    /* ---------------- palet Ctrl+K ---------------- */
     openPalette() { this.palOv.classList.add('is-open'); this.palIn.value = ''; this.prender(''); this.palIn.focus(); }
 
     closePalette() {
@@ -217,12 +212,13 @@
     }
 
     refreshCounts() {
-      const c = $(this.el, '[data-dl-count="chat"]'), n = $(this.el, '[data-dl-count="notif"]');
-      c.textContent = this.chatCount; c.style.display = this.chatCount ? '' : 'none';
-      n.textContent = this.notifCount; n.style.display = this.notifCount ? '' : 'none';
-      $(this.el, '[data-dl-avdot]').classList.toggle('is-hide', !(this.chatCount || this.notifCount));
+      const c = $(this.el, '[data-dl-count="chat"]'), n = $(this.el, '[data-dl-count="notif"]'), dot = $(this.el, '[data-dl-avdot]');
+      if (c) { c.textContent = this.chatCount; c.style.display = this.chatCount ? '' : 'none'; }
+      if (n) { n.textContent = this.notifCount; n.style.display = this.notifCount ? '' : 'none'; }
+      dot?.classList.toggle('is-hide', !(this.chatCount || this.notifCount));
     }
 
+    /* ---------------- laci & asisten AI ---------------- */
     openDrawer(id) {
       $$(this.el, '.dl-drawer.is-on').forEach(d => d.classList.remove('is-on'));
       $(this.el, `[data-dl-drawer="${id}"]`).classList.add('is-on'); this.backdrop.classList.add('is-on');

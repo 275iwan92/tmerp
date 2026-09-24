@@ -81,7 +81,7 @@ final class Catalog
                 ]],
             ['code' => 'MA', 'short' => 'MA', 'label' => 'Menu, Akun & Layout', 'icon' => 'fa-solid fa-table-columns',
                 'pages' => [
-                    'shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => $c('Shell'), 'mockup' => 'main_menu_v2.html'],
+                    'shell' => ['label' => 'Shell (menu utama)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => $c('Shell', 'LayerShell', 'LayerMenu'), 'mockup' => 'main_menu_v2.html'],
                     'p7-menus' => $page('Menu (Ribbon · Mega · Side Panel)', 'fa-solid fa-bars-staggered', [
                         'ribbon' => ['Ribbon ala Microsoft Excel (tab, grup, multi ikon, submenu, split, toggle, KeyTips)', $c('Ribbon')],
                         'mega-menu' => ['Mega Menu ala ScriptCase (bilah warna + panel 4 kolom ber-ikon)', $c('MegaMenu')],
