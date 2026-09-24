@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Roster mingguan (mockup_roster_shift): baris = shift (pola jam per hari), kolom = hari; 1 penempatan =
 // 1 minggu penuh mengikuti pola shift. Pool pegawai di kanan (cari, grup per jabatan, centang banyak).

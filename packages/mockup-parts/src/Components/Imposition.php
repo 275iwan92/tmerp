@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Kanvas tata letak di plano (ProDev / mockup_prodev_imposition). PENAMPIL hasil ImpositionEngine
 // (zona beku: angka UP & posisi sel TIDAK dihitung ulang di sini; layar memanggil mesin lalu mengoper hasilnya).

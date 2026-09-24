@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Dieline v2 = v1 (x-dl::dieline, TIDAK diubah) + garis ukuran seperti gambar teknik (rantai panel di atas/kiri,
 // total di bawah/kanan), kode istilah internasional (L, W, H, GF, TF, DF, BF), satuan mm/cm, saklar tampil ukuran.

@@ -141,23 +141,6 @@ final class DemoData
         }, $rows);
     }
 
-    // Tipe produk + dieline_spec + parameter + ukuran pasaran, diekspor BACA-SAJA dari tm2mst (resources/data/dieline_types.json).
-    public static function dielineTypes(): array
-    {
-        return json_decode(file_get_contents(resource_path('data/dieline_types.json')), true);
-    }
-
-    // Hasil ImpositionEngine asli (dijalankan baca-saja) + dieline tiap job (resources/data/imposition_demo.json).
-    public static function imposition(): array
-    {
-        $d = json_decode(file_get_contents(resource_path('data/imposition_demo.json')), true);
-        $types = self::dielineTypes();
-        foreach ($d['jobs'] as &$j) {
-            $j['spec'] = $types[$j['type']]['spec'];
-        }
-
-        return $d;
-    }
 
     // Ringkasan per supplier dari PO (untuk drill-down).
     public static function supplierSummary(): array

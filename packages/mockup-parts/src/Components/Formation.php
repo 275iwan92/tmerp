@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Formasi Harian (mockup_roster_formasi_harian.html): baris = posisi/unit x shift, isi = orang yang bertugas.
 // Ringkas seminggu (orang yang masuk semua hari cukup 1 chip; pergantian tengah minggu tampil "Sen–Rab A -> Kam–Sab B"

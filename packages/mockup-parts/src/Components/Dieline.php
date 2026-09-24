@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Dieline kemasan hidup (InqProd Engine): pilih tipe -> ukuran pasaran / isi dimensi -> SVG langsung berubah.
 // Render = TMDieline (resources/assets/tmdieline.js), salinan UTUH dari tmerp (zona beku: esensi tidak diubah).

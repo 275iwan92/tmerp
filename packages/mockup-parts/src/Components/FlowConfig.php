@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Setup alur approval per jenis dokumen (mockup_flow_engine: Setup Flow Config). Disusun dari komponen
 // yang sudah ada: tab (dl-tabs) + x-dl::lines per dokumen + simulator nilai (langkah mana yang aktif).

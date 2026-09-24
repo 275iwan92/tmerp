@@ -1,6 +1,8 @@
 <?php
 
-namespace Devlib\Components;
+namespace MockupParts\Components;
+
+use Devlib\Components\DevlibComponent;
 
 // Kartu identitas pegawai (mockup_ID_card: 6 desain). design: blue | green | gold | red; orientation: landscape | portrait.
 // Ukuran CR80 (85,6 x 54 mm). QR otomatis berisi ID (bisa diganti qr). Foto kosong = inisial.
