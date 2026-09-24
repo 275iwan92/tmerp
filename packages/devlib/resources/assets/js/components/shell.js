@@ -18,9 +18,21 @@
       this.openTabs = new Map();
       this.chatCount = 2;
       this.notifCount = 3;
+      // Dibaca sebelum initNav: navigasi Classic memanggil showHome() saat mulai, yang menyimpan daftar kosong.
+      let saved = null; try { saved = JSON.parse(sessionStorage.getItem('dl-shell-tabs')); } catch (e) {}
       this.initFrame();
       this.initNav();
       this.refreshCounts();
+      this.restoreTabs(saved);
+    }
+
+    // Tab terbuka bertahan saat halaman dimuat ulang (mis. menukar Menu Classic <-> Layer Menu). Per tab browser.
+    saveTabs() { try { sessionStorage.setItem('dl-shell-tabs', JSON.stringify({open: [...this.openTabs.keys()], active: this.activeTab})); } catch (e) {} }
+
+    restoreTabs(s) {
+      if (!s?.open?.length) return;
+      s.open.forEach(c => this.openTab(c));
+      s.active && this.openTabs.has(s.active) ? this.activate(s.active) : this.showHome();
     }
 
     /* ---------------- kerangka kerja (dipakai semua turunan) ---------------- */
@@ -178,6 +190,7 @@
       this.homePane.classList.remove('is-active'); this.activeTab = code;
       this.openTabs.forEach((v, c) => { const on = c === code; v.tab.classList.toggle('is-active', on); v.pane.classList.toggle('is-active', on); });
       this.markActiveLeaf();
+      this.saveTabs();
     }
 
     closeTab(code) {
@@ -185,12 +198,14 @@
       const was = t.tab.classList.contains('is-active');
       t.tab.remove(); t.pane.remove(); this.openTabs.delete(code);
       if (was) { const last = [...this.openTabs.keys()].pop(); last ? this.activate(last) : this.showHome(); }
+      this.saveTabs();
     }
 
     showHome() {
       this.activeTab = null;
       this.openTabs.forEach(v => { v.tab.classList.remove('is-active'); v.pane.classList.remove('is-active'); });
       this.homePane.classList.add('is-active'); this.markActiveLeaf();
+      this.saveTabs();
     }
 
     /* ---------------- palet Ctrl+K ---------------- */
