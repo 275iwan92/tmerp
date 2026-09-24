@@ -10,9 +10,11 @@ use Illuminate\Support\Facades\DB;
 //   php artisan ddt:copy-sys                       -> buat ddtsys bila belum ada, lengkapi tabel, salin semua kelompok
 //   php artisan ddt:copy-sys --only=security       -> salin ulang sec_* saja (mis. ada pengguna baru di tmerp)
 //   php artisan ddt:copy-sys --fresh               -> buang ddtsys, bangun ulang dari nol
+// ddtsys sudah punya perubahan sendiri (mis. akun carrij, status menu v2): kelompok yang sudah terisi TIDAK
+// ditimpa kecuali --force, supaya salin ulang tidak diam-diam menghapusnya.
 class DdtCopySys extends Command
 {
-    protected $signature = 'ddt:copy-sys {--only= : menu,security,config (dipisah koma)} {--fresh : buang dan bangun ulang ddtsys}';
+    protected $signature = 'ddt:copy-sys {--only= : menu,security,config (dipisah koma)} {--fresh : buang dan bangun ulang ddtsys} {--force : timpa kelompok yang sudah terisi (hapus perubahan milik ddtsys)}';
 
     protected $description = 'Salin skema tm2sys + data menu/security/config ke database dummy ddtsys';
 
@@ -55,6 +57,12 @@ class DdtCopySys extends Command
 
             $groups = $this->option('only') ? array_map('trim', explode(',', $this->option('only'))) : array_keys(self::GROUPS);
             foreach ($groups as $g) {
+                $filled = collect(self::GROUPS[$g] ?? [])->first(fn ($t) => $db->table("$dst.$t")->exists());
+                if ($filled && ! $this->option('force') && ! $this->option('fresh')) {
+                    $this->warn("  lewati kelompok $g: $dst.$filled sudah terisi (pakai --force untuk menimpa)");
+
+                    continue;
+                }
                 foreach (self::GROUPS[$g] ?? [] as $table) {
                     $db->statement("DELETE FROM `$dst`.`$table`");
                     $db->statement("INSERT INTO `$dst`.`$table` SELECT * FROM `$src`.`$table`");
