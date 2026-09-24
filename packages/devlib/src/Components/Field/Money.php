@@ -2,12 +2,14 @@
 
 namespace Devlib\Components\Field;
 
-// Nominal uang + pilihan mata uang + hint terbaca.
+// Nominal uang + pilihan mata uang. words = tampilkan terbilang di bawahnya, mengikuti mata uang terpilih
+// (IDR -> "satu juta dua ratus lima puluh ribu rupiah"). Tanpa words = nominal saja.
 class Money extends Field
 {
     public function __construct(
         public array $currencies = [],
         public string $currency = 'IDR',
+        public bool $words = false,
         string $name = '',
         string $label = '',
         ?string $tooltip = null,

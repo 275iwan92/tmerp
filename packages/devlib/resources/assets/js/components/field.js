@@ -79,12 +79,11 @@
       this.pre = $(this.el, '[data-dl-prefix]');
       if (this.pre) {
         const p = bindPanel(this.pre, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); } });
-        const money = this.pre.hasAttribute('data-dl-money'), mi = $(this.pre, '[data-dl-money-input]'), hint = $(this.el, '[data-dl-money-hint]');
+        const money = this.pre.hasAttribute('data-dl-money'), mi = $(this.pre, '[data-dl-money-input]'), wt = $(this.el, '[data-dl-money-words]');
         const updMoney = () => {
           const raw = mi.value.replace(/\D/g, '');
           mi.value = raw ? BigInt(raw).toLocaleString('id-ID') : '';
-          hint.textContent = raw ? `Terbaca: ${$(this.pre, '[data-dl-prefix-a]').textContent} ${BigInt(raw).toLocaleString('id-ID')} (${$(this.pre, '[data-dl-prefix-b]').textContent})` : 'Terbaca: -';
-          const wt = $(this.el, '[data-dl-money-words]');
+          // Terbilang mengikuti mata uang yang dipilih (Rp -> rupiah, USD -> dolar, ...).
           if (wt) { const C = JSON.parse(wt.dataset.currencies), code = $(this.pre, '[data-dl-prefix-value]').value; wt.textContent = raw ? words(raw, C[code] || null) : ''; }
         };
         $$(this.pre, '.dl-dd__item').forEach(it => it.addEventListener('click', () => {

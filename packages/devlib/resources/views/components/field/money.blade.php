@@ -15,5 +15,4 @@
         </div>
     </div>
 </div>
-<div class="dl-field__hint" data-dl-money-hint>Terbaca: -</div>
-<div class="dl-words__text is-empty" data-dl-money-words data-currencies="{{ json_encode(\Devlib\Terbilang::CURRENCIES) }}"></div>
+@if ($words)<div class="dl-words__text" data-dl-money-words data-currencies="{{ json_encode(\Devlib\Terbilang::CURRENCIES) }}"></div>@endif
