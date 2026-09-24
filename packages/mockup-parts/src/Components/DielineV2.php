@@ -33,7 +33,7 @@ class DielineV2 extends Dieline
 
     public function tag(): string
     {
-        return 'x-dl::dieline-v2';
+        return 'x-mp::dieline-v2';
     }
 
     public function level(): int
@@ -49,7 +49,7 @@ class DielineV2 extends Dieline
     public function render()
     {
         return <<<'BLADE'
-            @once<script src="{{ \Devlib\DevlibServiceProvider::asset('tmdieline.js') }}"></script>@endonce
+            @once<script src="{{ \MockupParts\MockupPartsServiceProvider::asset('tmdieline.js') }}"></script>@endonce
             <div {{ $attributes->class(['dl-dieline', 'dl-dieline--v'.$level()]) }} {!! $dl() !!} data-dl-dieline-x data-level="{{ $level() }}" data-types="{{ json_encode($types) }}" data-type="{{ $type ?? array_key_first($types) }}" data-dims="{{ json_encode((object) $dims) }}" data-name="{{ $name }}" data-terms="{{ json_encode($terms()) }}" data-unit="{{ $unit }}" style="--dl-dl-h:{{ $height }}">
                 <div class="dl-dieline__side">
                     @if ($picker)

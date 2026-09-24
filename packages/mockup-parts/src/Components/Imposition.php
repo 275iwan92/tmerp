@@ -24,7 +24,7 @@ class Imposition extends DevlibComponent
 
     public function tag(): string
     {
-        return 'x-dl::imposition';
+        return 'x-mp::imposition';
     }
 
     public function source(): string
@@ -35,7 +35,7 @@ class Imposition extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            @once<script src="{{ \Devlib\DevlibServiceProvider::asset('tmdieline.js') }}"></script>@endonce
+            @once<script src="{{ \MockupParts\MockupPartsServiceProvider::asset('tmdieline.js') }}"></script>@endonce
             <div {{ $attributes->class('dl-impo') }} {!! $dl() !!} data-dl-impo data-jobs="{{ json_encode($jobs) }}" data-planos="{{ json_encode($planos) }}" data-gripper="{{ $gripper }}" data-margin="{{ $margin }}" data-gap="{{ $gap }}">
                 <aside class="dl-impo__side">
                     <p class="dl-impo__cap">Job</p>

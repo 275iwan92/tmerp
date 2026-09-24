@@ -10,7 +10,7 @@ class DielineV3 extends DielineV2
 {
     public function tag(): string
     {
-        return 'x-dl::dieline-v3';
+        return 'x-mp::dieline-v3';
     }
 
     public function level(): int

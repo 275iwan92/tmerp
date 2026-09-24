@@ -19,7 +19,7 @@ class FlowConfig extends DevlibComponent
 
     public function tag(): string
     {
-        return 'x-dl::flow-config';
+        return 'x-mp::flow-config';
     }
 
     public function source(): string

@@ -29,7 +29,7 @@ class Formation extends DevlibComponent
 
     public function tag(): string
     {
-        return 'x-dl::formation';
+        return 'x-mp::formation';
     }
 
     public function source(): string

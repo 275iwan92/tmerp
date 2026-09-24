@@ -27,7 +27,7 @@ class IdCard extends DevlibComponent
 
     public function tag(): string
     {
-        return 'x-dl::id-card design='.$this->design.' '.$this->orientation;
+        return 'x-mp::id-card design='.$this->design.' '.$this->orientation;
     }
 
     public function ini(): string

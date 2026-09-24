@@ -24,7 +24,7 @@ class RosterBoard extends DevlibComponent
 
     public function tag(): string
     {
-        return 'x-dl::roster-board';
+        return 'x-mp::roster-board';
     }
 
     public function source(): string
