@@ -140,9 +140,15 @@ window.Devlib = window.Devlib || {};
 
 
   /* ======================= MODE DEVELOPER ======================= */
-  // Tooltip asal-usul tiap objek library (data-dl*). Elemen interaktif yang
-  // TIDAK berada di dalam komponen library diberi garis merah (.dl-nolib).
-  let tip, badge;
+  // Asal-usul tiap objek library (data-dl*). Nyala/mati: F10, HANYA pengguna ber-security Developer/Administrator
+  // (halaman menandainya dengan data-dl-developer="1"; keputusan user 2026-09-25). Tab (iframe) tidak pernah
+  // menyalakan dirinya sendiri: statusnya selalu dari jendela utama, jadi pengguna lain tidak bisa memunculkannya.
+  // Keterangan objek yang disorot tampil di SATU kotak tetap (kanan bawah, tidak menangkap klik) -- bukan tooltip
+  // yang ikut mouse, supaya tidak menutupi menu (keputusan user 2026-09-25). Objeknya diberi garis biru.
+  // Elemen interaktif yang TIDAK berada di dalam komponen library diberi garis merah (.dl-nolib).
+  let box, hit;
+  const devOn = () => document.body.classList.contains('dl-dev');
+  const devAllowed = () => !!document.querySelector('[data-dl-developer="1"],[data-dl-devtoggle]') || document.body.dataset.dlDev === '1';
   function setDevMode(on) {
     try { localStorage.setItem('dl-dev', on ? '1' : '0'); } catch (e) {}
     document.body.classList.toggle('dl-dev', on);
@@ -151,33 +157,47 @@ window.Devlib = window.Devlib || {};
     if (on) {
       const all = $$(document, 'button,a,input,select,textarea,table');
       const lib = all.filter(el => el.closest('[data-dl]')).length;
-      badge.textContent = `Mode Developer · ${all.length ? Math.round(lib * 100 / all.length) : 100}% objek dari library`;
-    }
-    if (!on) tip.style.display = 'none';
+      box.querySelector('[data-dev-pct]').textContent = `${all.length ? Math.round(lib * 100 / all.length) : 100}% objek dari library`;
+      box.querySelector('[data-dev-body]').innerHTML = '<span class="k">Arahkan mouse ke objek…</span>';
+    } else if (hit) { hit.classList.remove('dl-dev-hit'); hit = null; }
     // Frame tab ikut diberi tahu supaya isinya juga menampilkan inspektur.
     document.querySelectorAll('iframe').forEach(f => { try { f.contentWindow.postMessage({dlDev: on}, '*'); } catch (e) {} });
   }
+  // F10: di jendela utama langsung; di dalam tab (iframe) minta jendela utama yang memutuskan & menyebarkan.
+  function toggleDev() {
+    if (window.self !== window.top) { try { window.top.postMessage({dlDevToggle: true}, '*'); } catch (e) {} return; }
+    if (devAllowed()) setDevMode(!devOn());
+  }
   function initDevMode() {
-    tip = document.createElement('div'); tip.className = 'dl-dev-tip'; document.body.appendChild(tip);
-    badge = document.createElement('div'); badge.className = 'dl-dev-badge'; document.body.appendChild(badge);
+    box = document.createElement('div'); box.className = 'dl-dev-box'; box.setAttribute('aria-live', 'polite');
+    box.innerHTML = '<div class="dl-dev-box__head"><b>Mode Developer</b><span>F10 = mati</span></div><div class="dl-dev-box__body" data-dev-body></div><div class="dl-dev-box__foot" data-dev-pct></div>';
+    document.body.appendChild(box);
     document.addEventListener('mousemove', e => {
-      if (!document.body.classList.contains('dl-dev')) return;
+      if (!devOn()) return;
       const el = e.target.closest && e.target.closest('[data-dl]');
-      if (!el) {
-        if (e.target.classList && e.target.classList.contains('dl-nolib')) {
-          tip.innerHTML = '<b>BUKAN dari library</b><br><span class="k">elemen:</span> &lt;' + esc(e.target.tagName.toLowerCase()) + '&gt;';
-        } else { tip.style.display = 'none'; return; }
-      } else {
-        tip.innerHTML = `<b>${esc(el.dataset.dl)}</b><br><span class="k">turunan:</span> ${esc(el.dataset.dlClass || '—')}<br><span class="k">sumber data:</span> ${esc(el.dataset.dlSrc || '—')}`;
+      const body = box.querySelector('[data-dev-body]');
+      if (el) {
+        body.innerHTML = `<b>${esc(el.dataset.dl)}</b><br><span class="k">turunan:</span> ${esc(el.dataset.dlClass || '—')}<br><span class="k">sumber data:</span> ${esc(el.dataset.dlSrc || '—')}`;
+      } else if (e.target.classList && e.target.classList.contains('dl-nolib')) {
+        body.innerHTML = '<b>BUKAN dari library</b><br><span class="k">elemen:</span> &lt;' + esc(e.target.tagName.toLowerCase()) + '&gt;';
       }
-      tip.style.display = 'block';
-      const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 16, window.innerHeight - tip.offsetHeight - 8);
-      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+      if (el !== hit) { hit?.classList.remove('dl-dev-hit'); hit = el; hit?.classList.add('dl-dev-hit'); }
     });
-    window.addEventListener('message', e => { if (e.data && typeof e.data.dlDev === 'boolean') setDevMode(e.data.dlDev); });
-    let saved = false; try { saved = localStorage.getItem('dl-dev') === '1'; } catch (e) {}
-    const allowed = !!document.querySelector('[data-dl-developer="1"],[data-dl-devtoggle]') || window.self !== window.top;
-    setDevMode(document.body.dataset.dlDev === '1' || (saved && allowed));
+    const top = window.self === window.top;
+    window.addEventListener('message', e => {
+      if (!e.data) return;
+      if (typeof e.data.dlDev === 'boolean' && !top && e.source === window.parent) setDevMode(e.data.dlDev);
+      if (!top || !devAllowed()) return;
+      if (e.data.dlDevToggle) setDevMode(!devOn());
+      if (e.data.dlDevAsk && e.source) e.source.postMessage({dlDev: devOn()}, '*');
+    });
+    if (top) {
+      let saved = false; try { saved = localStorage.getItem('dl-dev') === '1'; } catch (e) {}
+      setDevMode(document.body.dataset.dlDev === '1' || (saved && devAllowed()));
+    } else {
+      setDevMode(false);
+      try { window.parent.postMessage({dlDevAsk: true}, '*'); } catch (e) {}
+    }
   }
 
 
@@ -305,7 +325,7 @@ window.Devlib = window.Devlib || {};
   // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
   const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
   const visible = el => el.offsetParent !== null && !el.disabled;
-  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['ctrl+shift+d', 'Mode Developer (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
+  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['f10', 'Mode Developer nyala / mati (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
   function showShortcuts() {
     const own = $$(document, '[data-dl-key]').filter(visible).map(b => [b.dataset.dlKey, b.textContent.trim() || b.title]);
     const rows = [...new Map([...own, ...BUILTIN].map(r => [r[0], r])).values()];
@@ -316,7 +336,7 @@ window.Devlib = window.Devlib || {};
   }
   document.addEventListener('keydown', e => {
     const k = keyName(e), typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
-    if (k === 'ctrl+shift+d' && document.querySelector('[data-dl-devtoggle],[data-dl-developer="1"]')) { e.preventDefault(); setDevMode(!document.body.classList.contains('dl-dev')); return; }
+    if (k === 'f10') { e.preventDefault(); toggleDev(); return; }
     if ((k === '?' || k === 'shift+?') && !typing) { e.preventDefault(); showShortcuts(); return; }
     const btn = $$(document, `[data-dl-key="${k}"]`).find(visible);
     if (btn) { e.preventDefault(); btn.click(); }

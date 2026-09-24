@@ -504,12 +504,16 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-toast.is-show{opacity:1}
 
 /* ================= MODE DEVELOPER (inspektur) ================= */
-body.dl-dev [data-dl]:hover{outline:2px solid var(--dl-violet)}
+body.dl-dev .dl-dev-hit{outline:2px solid var(--dl-accent);outline-offset:-1px}
+/* Kotak Mode Developer: tetap di kanan bawah, tidak menangkap klik (tidak pernah menutupi tombol yang dituju). */
+.dl-dev-box{position:fixed;right:12px;bottom:12px;z-index:200;pointer-events:none;width:min(360px,calc(100vw - 24px));background:var(--dl-dev-bg);color:var(--dl-dev-ink);border:1px solid var(--dl-accent);border-radius:var(--dl-radius-lg);font:12px/1.5 ui-monospace,Consolas,monospace;box-shadow:0 10px 30px rgba(0,0,0,.3);display:none}
+body.dl-dev .dl-dev-box{display:block}
+.dl-dev-box__head{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.12)}
+.dl-dev-box__head span{color:var(--dl-dev-key)}
+.dl-dev-box__body{padding:8px 10px;word-break:break-word}
+.dl-dev-box__foot{padding:4px 10px 6px;color:var(--dl-dev-key);border-top:1px solid rgba(255,255,255,.12)}
+.dl-dev-box b{color:var(--dl-white)}.dl-dev-box .k{color:var(--dl-dev-key)}
 body.dl-dev .dl-nolib{outline:2px solid var(--dl-danger)!important;outline-offset:-2px}
-.dl-dev-tip{position:fixed;z-index:200;pointer-events:none;max-width:420px;background:var(--dl-dev-bg);color:var(--dl-dev-ink);border:1px solid var(--dl-violet);border-radius:var(--dl-radius);padding:8px 10px;font:12px/1.45 ui-monospace,Consolas,monospace;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
-.dl-dev-tip b{color:var(--dl-white)}.dl-dev-tip .k{color:var(--dl-dev-key)}
-.dl-dev-badge{position:fixed;left:12px;bottom:12px;z-index:201;background:var(--dl-dev-bg);color:var(--dl-dev-ink);border:1px solid var(--dl-violet);border-radius:20px;padding:5px 12px;font:12px ui-monospace,Consolas,monospace;display:none}
-body.dl-dev .dl-dev-badge{display:block}
 
 /* ================= HALAMAN BANDING (mockup | komponen) ================= */
 .dl-compare{display:flex;flex-direction:column;height:100vh;font-family:var(--dl-font);color:var(--dl-ink)}

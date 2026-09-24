@@ -50,7 +50,7 @@ final class AppMenu
             }
         }
 
-        if ($user->is_admin) {
+        if (self::user($user)['developer']) {
             $modules[] = ['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'children' => [
                 ['label' => 'Database', 'items' => [['code' => 'V2-dictionary', 'label' => 'Data Dictionary', 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report']]],
             ]];
@@ -99,9 +99,14 @@ final class AppMenu
         return $v1 ? ['v1', $v1, $i] : ['none', null, $i];
     }
 
+    // Mode Developer (F10) hanya untuk Administrator (is_admin) atau anggota grup security DEVELOPER.
+    public const DEVELOPER_GROUP = 'DEVELOPER';
+
     public static function user(SecUser $u): array
     {
-        return ['name' => $u->name, 'email' => (string) $u->email, 'role' => $u->groups()->pluck('group_name')->implode(', ') ?: ($u->is_admin ? 'Administrator' : ''),
-            'developer' => (bool) $u->is_admin];
+        $groups = $u->groups()->get(['group_code', 'group_name']);
+
+        return ['name' => $u->name, 'email' => (string) $u->email, 'role' => $groups->pluck('group_name')->implode(', ') ?: ($u->is_admin ? 'Administrator' : ''),
+            'developer' => (bool) $u->is_admin || $groups->contains('group_code', self::DEVELOPER_GROUP)];
     }
 }

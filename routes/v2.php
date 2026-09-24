@@ -40,9 +40,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
     Route::get('/flow/{module}', fn (string $module) => view('v2.flow', ['flow' => Flows::get($module) ?? abort(404)]))->name('flow');
 
-    // Data Dictionary: khusus admin/developer.
+    // Data Dictionary: khusus Administrator / grup DEVELOPER.
     Route::get('/dictionary', function () {
-        abort_unless(Auth::user()->is_admin, 403);
+        abort_unless(AppMenu::user(Auth::user())['developer'], 403);
 
         return view('v2.dictionary', ['stats' => Schema::stats(), 'columns' => Schema::columns(), 'tables' => Schema::tables(),
             'duplicates' => Schema::duplicates(), 'copies' => Schema::copies(), 'changes' => Schema::changes()]);
