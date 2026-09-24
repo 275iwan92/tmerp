@@ -1,0 +1,288 @@
+/* ProDev · Imposition Plano Optimizer — salinan PERSIS CSS tmerp pages/production/prodev.blade.php (semua selector .io-app). */
+/* CSS mockup_prodev_imposition.html -- SEMUA selector di-prefix .io-app
+   / .io-* karena app.css punya rule global tak-berlapis (.grid, .toolbar,
+   .pill, .note, label, input/select/textarea) yang kalau tidak diisolasi
+   akan menimpa tampilan layar ini (lihat memory legacy .grid collision). */
+.io-app{--io-panel:#0d1b2d;--io-line:#294761;--io-text:#edf5ff;--io-muted:#9db0c4;--io-cyan:#35c8f5;--io-purple:#7732e2;
+    background:linear-gradient(130deg,#07111f,#0b1c34 56%,#07111f);color:var(--io-text);
+    font:14px/1.4 Inter,system-ui,Segoe UI,sans-serif;min-height:100vh;padding:20px}
+.io-app *{box-sizing:border-box}
+/* app.css:257-259 memberi border kotak + latar abu ke SEMUA th/td global.
+   Dinetralkan dulu di sini, baru rule .io-spec di bawah yang berlaku. */
+.io-app table{width:100%;border-collapse:collapse}
+.io-app th,.io-app td{border:0;padding:0;background:none;color:inherit;text-align:left;font-weight:inherit}
+.io-shell{max-width:1780px;margin:auto}
+/* Top bar dipadatkan -- ruang vertikal dipakai canvas, bukan judul. */
+.io-top{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:11px}
+.io-top h1{font-size:18px;margin:0;color:var(--io-text)}
+.io-sub{margin:4px 0 0;color:var(--io-muted);font-size:13px}
+.io-badge{padding:7px 11px;border:1px solid #2c6c92;background:#0b2b44;color:#91e8ff;border-radius:999px;font-weight:700;font-size:12px}
+/* Tata letak diubah 2026-09-17 (permintaan user): canvas dulu terjepit di
+   tengah antara dua panel, jadi sempit. Sekarang kedua panel naik ke BARIS
+   ATAS berdampingan, dan canvas turun ke bawah selebar penuh. Dipetakan
+   lewat grid-area supaya urutan markup tidak perlu diacak. */
+.io-layout{display:block}
+
+/* ===== Accordion horizontal (mockup draft user 2026-09-17) =====
+   Satu bagian terbuka memakai sisa lebar; bagian lain menyempit jadi strip
+   46px berjudul vertikal. Isi bagian yang terbuka mengalir KE BAWAH dalam
+   beberapa kolom -- sengaja TANPA batas tinggi: versi sebelumnya membatasi
+   tinggi panel sehingga CSS multi-kolom meluberkan isinya ke samping, dan
+   user tidak mau panel yang di-scroll ke samping. */
+.io-acc{display:flex;gap:10px;align-items:stretch;margin-bottom:14px}
+.io-sec{display:flex;min-width:0;background:#0d1b2df2;border:1px solid var(--io-line);
+    border-radius:14px;box-shadow:0 12px 28px #0005;overflow:hidden}
+.io-sec.open{flex:1 1 auto;flex-direction:column}
+.io-sec:not(.open){flex:0 0 46px}
+.io-sec-head{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:8px;
+    color:#c6eafb;font:700 13px/1.2 Inter,system-ui,Segoe UI,sans-serif;letter-spacing:.04em}
+.io-sec.open .io-sec-head{padding:12px 16px;border-bottom:2px solid var(--io-cyan);background:#0b2236}
+.io-sec:not(.open) .io-sec-head{width:46px;align-self:stretch;min-height:160px;justify-content:center;
+    writing-mode:vertical-rl;transform:rotate(180deg);background:#0a1a2b}
+.io-sec:not(.open) .io-sec-head:hover{background:#12304a;color:#fff}
+.io-sec-head:focus-visible{outline:2px solid var(--io-cyan);outline-offset:-2px}
+.io-sec:not(.open) .io-sec-body{display:none}
+.io-sec-body{padding:14px 16px;columns:250px;column-gap:18px}
+.io-sec-body--single{columns:auto}
+.io-sec-body > .io-group{break-inside:avoid;border-top:0;padding-top:0;margin:0 0 14px}
+.io-sec-count{font-style:normal;font-size:10px;font-weight:800;padding:2px 6px;border-radius:9px;
+    background:#17415f;color:#c8efff}
+.io-sec-count:empty{display:none}
+.io-empty{color:var(--io-muted);font-size:12px;padding:14px;border:1px dashed #315570;border-radius:9px}
+.io-src{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.05em;padding:2px 7px;
+    border-radius:5px;background:#17415f;color:#c8efff;margin-bottom:8px}
+.io-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.io-tbl th{text-align:left;color:var(--io-muted);font-size:10.5px;font-weight:700;padding:5px 8px;
+    border-bottom:1px solid #25445f;text-transform:uppercase;letter-spacing:.04em}
+.io-tbl td{padding:6px 8px;border-bottom:1px solid #1d3a52;color:#d9f5ff}
+.io-inputs{font-size:12px;color:#c6eafb;margin:4px 0 10px;line-height:2}
+.io-chip{display:inline-block;padding:1px 8px;border-radius:10px;background:#12304a;border:1px solid #2d5878;font-size:11px;line-height:1.7}
+.io-sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:6px;border:1px solid #ffffff40}
+.io-warns{margin:10px 0 0;padding-left:18px;color:#ffd9a1;font-size:11.5px;line-height:1.6}
+.io-subh{margin:12px 0 6px;font-size:10.5px;font-weight:800;letter-spacing:.05em;color:var(--io-muted);text-transform:uppercase}
+.io-colors{display:flex;flex-wrap:wrap;gap:6px}
+.io-colorchip{font-size:11.5px;color:#d9f5ff;padding:3px 9px;border-radius:8px;background:#0b2236;border:1px solid #1d3a52}
+.io-sectools{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:6px}
+.io-sectools .io-src{margin:0}
+.io-src.warn{background:#3a2a0c;color:#ffd08a;border-color:#7a5a1c}
+.io-note-s{font-size:10.5px;color:var(--io-muted)}
+.io-grow{flex:1}
+.io-mbtn{all:unset;box-sizing:border-box;cursor:pointer;font:700 11px/1 Inter,system-ui,sans-serif;color:#c6eafb;
+    padding:6px 10px;border-radius:7px;border:1px solid #2d5878;background:#0f2a40;white-space:nowrap}
+.io-mbtn:hover{background:#15395a;color:#fff}
+.io-mbtn.on{background:#0e6b8f;border-color:#35b5e0;color:#fff}
+.io-mbtn.warn{border-color:#8a6420;color:#ffd08a;background:#2c2210}
+.io-mbtn:disabled{opacity:.5;cursor:wait}
+.io-ibtn{all:unset;cursor:pointer;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+    border-radius:5px;color:#9cc7de;font-size:10px}
+.io-ibtn:hover{background:#15395a;color:#fff}
+.io-ibtn.bad:hover{background:#5a1c1c;color:#ffb4b4}
+.io-sub{font-size:10.5px;color:var(--io-muted);margin-top:2px;font-weight:400}
+.io-tblwrap{overflow-x:auto}
+.io-nowrap{white-space:nowrap}
+.io-edit td{padding:4px 5px;vertical-align:top}
+.io-edit input,.io-edit select{width:100%;min-width:60px;padding:5px 6px;font-size:11.5px;margin:0}
+.io-edit input[type=color]{padding:1px;height:28px;min-width:40px}
+.io-edit + .io-mbtn{margin-top:8px}
+.io-rel{position:relative;min-width:220px}
+.io-dd{position:absolute;left:5px;right:5px;top:100%;z-index:20;max-height:260px;overflow:auto;background:#081626;
+    border:1px solid #35b5e0;border-radius:8px;box-shadow:0 14px 30px #000a;padding:4px}
+.io-dd button{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:6px 8px;border-radius:6px}
+.io-dd button:hover{background:#12304a}
+.io-dd b{display:block;font-size:11.5px;color:#e6f7ff}
+.io-dd span{font-size:10.5px;color:var(--io-muted)}
+.io-dialog{margin-top:10px;padding:12px;border:1px solid #7a5a1c;border-radius:10px;background:#1c160b;color:#f3e3c3;font-size:12px}
+.io-row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:8px}
+.io-row3 label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:#e8d3a8;margin:0}
+.io-stat{display:inline-block;font-size:10px;font-weight:800;padding:2px 7px;border-radius:9px;white-space:nowrap}
+.io-stat.ok{background:#12391f;color:#8ff0b0}
+.io-stat.warn{background:#3d2c0c;color:#ffd08a}
+.io-stat.bad{background:#401616;color:#ffb0b0}
+.io-stat.mute{background:#1d2c3b;color:#a9bfd0}
+.io-panel,.io-canvas-card{background:#0d1b2df2;border:1px solid var(--io-line);border-radius:14px;box-shadow:0 12px 28px #0005}
+.io-panel{padding:16px}
+.io-panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.09em;color:#c6eafb;margin:0 0 11px}
+.io-group{border-top:1px solid var(--io-line);padding-top:13px;margin-top:13px}
+.io-group:first-of-type{padding-top:0;margin-top:0;border:0}
+.io-app label{display:block;font-size:12px;color:#bed0df;margin:8px 0 4px;font-weight:400;text-transform:none;letter-spacing:0}
+.io-app select,.io-app input{width:100%;background:#081624!important;color:var(--io-text)!important;
+    border:1px solid #375873!important;border-radius:8px!important;padding:9px!important;outline:none;font:inherit}
+.io-app select:focus,.io-app input:focus{border-color:var(--io-cyan)!important;box-shadow:0 0 0 3px #36c7f421}
+.io-app select option{background:#081624;color:var(--io-text)}
+.io-btn{border:1px solid #3b6c86;border-radius:8px;background:#123653;color:#effaff;padding:9px;cursor:pointer;font-weight:700;font:inherit}
+.io-btn:hover{background:#194866}
+.io-btn.green{background:#123d2f;border-color:#308b65;color:#beffda}
+.io-btn.warn{background:#4a3512;border-color:#9d6e24;color:#ffe1a4}
+.io-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.io-metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.io-metric{padding:8px;background:#081624;border:1px solid #25435e;border-radius:8px}
+.io-metric span{font-size:10px;color:var(--io-muted);display:block}
+.io-metric b{font-size:13px;word-break:break-word}
+.io-spec{background:#091827;border:1px solid #315570;border-radius:9px;padding:10px;margin-top:9px}
+.io-spec table{font-size:11px;width:100%;border-collapse:collapse}
+.io-spec td{padding:4px 0;border-bottom:1px solid #25445f}
+.io-spec td:last-child{text-align:right;color:#d9f5ff;font-weight:700}
+.io-notice{font-size:12px;padding:9px;border-radius:8px;margin-top:8px}
+.io-notice.info{color:#bdeaff;background:#102e47;border:1px solid #285b80}
+.io-notice.ok{color:#c3f8d9;background:#123827;border:1px solid #28794f}
+.io-notice.bad{color:#ffd4dd;background:#461825;border:1px solid #a33d54}
+.io-note{font-size:11px;color:var(--io-muted);margin:7px 0 0}
+.io-auto-box{background:#0a2439;border:1px solid #286487;border-radius:10px;padding:10px}
+.io-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.io-toggle-row b{color:#a3eaff;font-size:13px}
+.io-toggle{position:relative;width:48px;height:27px;flex:none;margin:0}
+.io-toggle input{opacity:0;width:0!important;height:0;padding:0!important;border:0!important}
+.io-slider{position:absolute;inset:0;background:#5a2632;border:1px solid #a3465b;border-radius:30px;cursor:pointer;transition:.2s}
+.io-slider:before{content:"";position:absolute;width:19px;height:19px;left:3px;top:3px;background:#ffe9ec;border-radius:50%;transition:.2s}
+.io-toggle input:checked+.io-slider{background:#177351;border-color:#53d093}
+.io-toggle input:checked+.io-slider:before{transform:translateX(20px);background:#e8fff3}
+.io-manual-disabled{opacity:.45;pointer-events:none}
+.io-jobfix{background:#081624;border:1px solid #375873;border-radius:8px;padding:9px 10px}
+.io-jobfix b{display:block;font-size:13.5px;color:#d9f5ff;line-height:1.3}
+.io-jobfix span{display:block;margin-top:3px;font-size:11px;color:var(--io-muted)}
+.io-auto-result{margin-top:9px;padding:9px 10px;background:#08222f;border:1px solid #2b6a86;border-radius:8px}
+.io-auto-result span{display:block;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--io-muted)}
+.io-auto-result b{font-size:22px;color:#9fe9ff;line-height:1.25}
+/* Tinggi ikut tinggi layar: makin tinggi area gambar, makin besar artwork
+   ter-render (SVG-nya menskala mengikuti wadah), makin gampang di-drag. */
+.io-canvas-card{padding:15px;display:flex;flex-direction:column;min-height:max(600px,84vh)}
+.io-toolbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:11px;background:none;border:0;padding:0}
+.io-toolbar .io-btn{padding:7px 9px}
+.io-status{margin-left:auto;color:var(--io-muted);font-size:12px}
+.io-pill{padding:3px 7px;border-radius:5px;background:#17415f;color:#c8efff;font-size:11px}
+.io-stage{position:relative;flex:1;min-height:max(520px,72vh);overflow:hidden;border:1px solid #284860;border-radius:11px;background:#071522;
+    background-image:linear-gradient(#102940 1px,transparent 1px),linear-gradient(90deg,#102940 1px,transparent 1px);background-size:20px 20px}
+.io-rulerx{position:absolute;z-index:3;left:0;right:0;top:0;height:25px;background:#0b2032;border-bottom:1px solid #31536d;padding:5px 8px;font-size:10px;color:#88a7bd}
+.io-rulery{position:absolute;z-index:3;top:25px;bottom:0;width:25px;background:#0b2032;border-right:1px solid #31536d}
+.io-viewport{position:absolute;left:25px;right:0;top:25px;bottom:0;overflow:auto}
+/* SVG-nya bersistem koordinat tetap (viewBox 650x500) tapi UKURAN TAMPILnya
+   mengikuti wadah -- tanpa ini melebarkan area canvas cuma menambah ruang
+   kosong di kiri-kanan, gambarnya tetap sebesar itu-itu saja. Konversi
+   koordinat pointer sudah memperhitungkan skala (lihat point()), jadi drag
+   tetap akurat berapa pun ukuran tampilnya. */
+.io-wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform-origin:center}
+.io-wrap svg{width:100%;height:100%;display:block}
+.io-sheetlabel{position:absolute;z-index:4;top:36px;left:38px;background:#0b2134de;padding:5px 8px;border-radius:6px;font-size:12px;font-weight:700}
+.io-warn{position:absolute;z-index:5;right:12px;top:36px;background:#591725e8;border:1px solid #dc4c69;color:#ffd7df;font-weight:700;padding:8px 10px;border-radius:7px;display:none}
+.io-warn.show{display:block}
+.io-print{fill:#f9fbff;stroke:#1e86b1;stroke-width:2}
+.io-safe{fill:none;stroke:#a8c7da;stroke-width:1;stroke-dasharray:5 4}
+.io-grain{stroke:#9c6b12;stroke-width:2;marker-end:url(#io-arrow)}
+.io-graintext{fill:#805700;font-size:10px;font-weight:700}
+.io-art{cursor:grab;touch-action:none}
+.io-app.dragging .io-art{cursor:grabbing}
+.io-art.selected .io-artfill{stroke:var(--io-purple)!important;stroke-width:3.4}
+.io-art.selected{filter:drop-shadow(0 0 5px #a06cffcc)}
+.io-artfill{fill:#c7f1ff;fill-opacity:.92;stroke:#056c90;stroke-width:1.4}
+/* Garis dieline WAJIB jelas terbaca berapa pun ukuran object di canvas
+   (permintaan user 2026-09-14) -- karena itu strokenya ditebalkan dan
+   dikunci non-scaling supaya tidak ikut mengecil saat object diperkecil. */
+.io-die{fill:none;stroke:#fc2458;stroke-width:1.9;stroke-dasharray:5 2.5}
+.io-fold{fill:none;stroke:#27a560;stroke-width:1.5;stroke-dasharray:4 2.5}
+.io-cutmark{stroke:#fc2458;stroke-width:1.4}
+.io-die,.io-fold,.io-cutmark{vector-effect:non-scaling-stroke}
+.io-uploader input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.io-toast{position:fixed;right:16px;bottom:16px;z-index:60;padding:10px 14px;border-radius:9px;
+    background:#123827;border:1px solid #28794f;color:#c3f8d9;font-size:12px;font-weight:700;box-shadow:0 8px 20px #0007}
+.io-toast.bad{background:#461825;border-color:#a33d54;color:#ffd4dd}
+.io-lbl{font-size:8px;fill:#06445d;font-weight:800;pointer-events:none}
+.io-out .io-artfill{fill:#ffc8d2!important;stroke:#d31f49!important}
+.io-out .io-die,.io-out .io-cutmark{stroke:#b91135}
+.io-legend{margin-top:10px;color:var(--io-muted);font-size:11px;display:flex;gap:14px;flex-wrap:wrap}
+.io-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.io-upload{display:block;border:1px dashed #3d6685;border-radius:8px;background:#081929;color:#bce9ff;text-align:center;padding:9px;cursor:pointer}
+.io-upload input{display:none}
+.io-file{margin-top:4px;color:#8eb2c9;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.io-mode-switch{display:grid;grid-template-columns:1fr 1fr;background:#071421;border:1px solid #315570;border-radius:9px;padding:3px;gap:3px}
+.io-mode-switch button{border:0;border-radius:6px;padding:8px 5px;background:transparent;color:#8eacc1;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+.io-mode-switch button.active{background:#174667;color:#e8f8ff;box-shadow:0 2px 8px #0006}
+.io-compact{background:#091827;border:1px solid #315570;border-radius:11px;padding:12px;margin-top:9px}
+.io-result{padding:12px;border-radius:9px;background:#123d2f;border:1px solid #2f8f67;color:#c6ffe0;margin-top:10px}
+.io-result .caption{font-size:11px;color:#a4e7c1;text-transform:uppercase;letter-spacing:.05em}
+.io-result b{font-size:27px;line-height:1.2;color:#fff}
+.io-result small{font-size:12px;color:#c6ffe0}
+.io-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.io-mini{background:#081624;border:1px solid #29465f;border-radius:7px;padding:8px}
+.io-mini span{display:block;color:var(--io-muted);font-size:10px}
+.io-mini b{font-size:14px}
+.io-bar{position:relative;height:23px;border-radius:6px;background:#081624;border:1px solid #29465f;margin-top:9px;overflow:hidden}
+.io-bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#1a5f45,#4fd18a);transition:width .25s}
+.io-bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#eafff4;text-shadow:0 1px 2px #000a}
+.io-spec table.rank td{padding:3px 0}
+.io-spec table.rank td:nth-child(n+2){text-align:right}
+.io-spec table.rank tr.best td{color:#bdf5d6;font-weight:800}
+.io-spec table.rank th{font-size:10px;color:var(--io-muted);text-align:right;font-weight:700;padding-bottom:4px;border-bottom:1px solid #25445f}
+.io-spec table.rank th:first-child{text-align:left}
+.io-cut{min-height:150px;padding:6px;background:#07131f;border:1px solid #395a76;border-radius:8px;margin:9px 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.io-instructions{font-size:12px;line-height:1.45;color:#c7e7f7;background:#102b41;border:1px solid #2d6689;border-radius:8px;padding:9px;margin-top:9px}
+.io-instructions b{color:#9eeaff}
+/* Layar sempit: kedua panel ikut menumpuk, canvas tetap paling bawah &
+   selebar penuh. Urutannya dijaga lewat grid-template-areas, bukan
+   mengubah urutan markup. */
+/* Layar sempit: accordion jadi vertikal (judul bagian yang tertutup
+   tampil mendatar), canvas tetap paling bawah. */
+@media(max-width:900px){
+    .io-acc{flex-direction:column}
+    .io-sec:not(.open){flex:0 0 auto}
+    .io-sec:not(.open) .io-sec-head{width:auto;height:auto;min-height:0;padding:11px 14px;
+        writing-mode:horizontal-tb;transform:none}}
+@media(max-width:800px){.io-app{padding:10px}
+    .io-sec-body{columns:1}
+    .io-canvas-card{min-height:70vh}
+    .io-top{align-items:flex-start}.io-badge{display:none}}
+
+/* ===== MASTER CARD: pratinjau pop-up + cetak A4 landscape 1 halaman ===== */
+.io-mc-modal{display:none;position:fixed;inset:0;z-index:9000;background:#040d18ee;backdrop-filter:blur(2px)}
+.io-mc-modal.open{display:flex;flex-direction:column}
+.io-mc-bar{display:flex;align-items:center;gap:9px;padding:10px 14px;background:#0b1f31;border-bottom:1px solid var(--io-line);
+    color:#d9f5ff;font:700 13px Inter,system-ui,sans-serif}
+.io-mc-state{font-size:11px;font-weight:800;padding:2px 8px;border-radius:9px;background:#3d2c0c;color:#ffd08a}
+.io-mc-state.ok{background:#12391f;color:#8ff0b0}
+.io-mc-scroll{flex:1;overflow:auto;padding:18px;display:flex;justify-content:center;align-items:flex-start}
+/* Lembar 1 halaman A4 landscape: 297 x 210 mm dikurangi margin cetak. */
+/* Kotak cetak A4 landscape dikurangi margin 6mm: 285 x 198 mm. */
+.io-mc-sheet{position:relative;width:285mm;height:198mm;overflow:hidden;background:#fff;color:#111;
+    box-shadow:0 20px 60px #0009;font:10px/1.25 Arial,Helvetica,sans-serif}
+.io-mc-sheet *{box-sizing:border-box}
+.io-mc-pad{padding:5mm 6mm;height:100%;position:relative}
+.io-mc-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #111;padding-bottom:3px;margin-bottom:5px}
+.io-mc-head h2{margin:0;font-size:14px;letter-spacing:.02em}
+.io-mc-head .brand{font-size:14px;font-weight:700}
+.io-mc-head .brand i{font-weight:400;font-style:italic}
+.io-mc-head .item{font:700 11px "Courier New",monospace;text-align:right}
+.io-mc-body{display:grid;grid-template-columns:1fr 0.92fr;gap:7px;align-items:start}
+.io-mc-tbl{width:100%;border-collapse:collapse}
+.io-mc-tbl th,.io-mc-tbl td{border:1px solid #333;padding:2px 5px;vertical-align:middle;font-size:9.5px}
+/* Kolom label menyesuaikan isinya (bukan 30% paksa) supaya baris
+   berkolom-banyak seperti Dimensi P/L/T tidak membungkus. */
+.io-mc-tbl th{background:#f1f3f7;text-align:left;font-weight:700;white-space:nowrap;width:1%}
+.io-mc-tbl td.mono{font-family:"Courier New",monospace}
+.io-mc-sub{margin-top:5px;display:grid;grid-template-columns:1.2fr 0.8fr;gap:6px;align-items:start}
+.io-mc-sub .io-mc-tbl td,.io-mc-sub .io-mc-tbl th{padding:1.5px 5px;font-size:9px}
+.io-mc-cap{border:1px solid #333;border-bottom:0;background:#f1f3f7;padding:2px 5px;font-weight:700;font-size:9.5px;text-align:center}
+/* Layout dicetak di atas PUTIH (hemat tinta, permintaan user 2026-09-18). */
+.io-mc-layout{border:1px solid #333;background:#fff;padding:3px}
+.io-mc-layout .ttl{color:#333;font:700 8.5px "Courier New",monospace;text-align:center;margin-bottom:2px}
+.io-mc-layout svg{width:100%;height:auto;max-height:96mm;display:block;background:#fff}
+.io-mc-note{color:#c0392b;font-weight:700;font-size:9.5px;text-align:center;margin-top:3px}
+.io-mc-extra{margin-top:5px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;align-items:start}
+.io-mc-extra .io-mc-tbl th,.io-mc-extra .io-mc-tbl td{font-size:8.5px;padding:1.5px 4px}
+.io-mc-extra .io-mc-tbl td{white-space:nowrap}
+.io-mc-sign{margin-top:8px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 26px;text-align:center;font-size:9px;padding:0 10px}
+.io-mc-sign .who{color:#666;margin-bottom:30px}
+.io-mc-sign .line{border-top:1px solid #111;padding-top:2px;font-weight:700}
+.io-mc-stamp{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2}
+.io-mc-stamp span{font:900 72px/1 Arial,Helvetica,sans-serif;color:#c0392b26;border:6px solid #c0392b26;
+    padding:10px 26px;transform:rotate(-18deg);letter-spacing:.06em;white-space:nowrap}
+
+@media print{
+    @page{size:A4 landscape;margin:6mm}
+    html,body{background:#fff !important}
+    .io-shell{display:none !important}
+    .io-mc-modal{display:block !important;position:static !important;inset:auto;background:#fff;backdrop-filter:none}
+    .io-mc-bar{display:none !important}
+    .io-mc-scroll{overflow:visible;padding:0;display:block}
+    .io-mc-sheet{width:285mm;height:198mm;box-shadow:none;overflow:hidden;page-break-inside:avoid;page-break-after:avoid}
+    .io-mc-layout{background:#fff !important}
+    .io-mc-stamp span{color:#c0392b40;border-color:#c0392b40;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
