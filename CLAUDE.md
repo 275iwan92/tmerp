@@ -24,6 +24,21 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - **Skill**: Laravel Boost (`livewire-development`, `tailwindcss-development`, `laravel-best-practices`, `testing-best-practices`) generik & ditimpa tiap install; skill proyek bersumber di `.ai/skills/` (edit di sana, lalu `php artisan boost:install --skills --mcp -n` — JANGAN tambah `--guidelines`, itu menimpa file ini). Bila bertentangan, `tmerp-stack-rules` menang (mis. file Livewire TANPA prefix `⚡`).
 
 - **Nama koneksi Laravel = nama database**: `tm2mst`, `tm2sdi`, `tm2pur`, `tm2inv`, `tm2prd`, `tm2acc`, `tm2hrm`, `tm2hrr`, `tm2pyr`, `tm2sys`, `tm2old`, `tm2crp` (`config/database.php`). Tabel §2 menulis `mst`/`sdi` sebagai singkatan; di kode (`$connection`, `DB::connection(...)`) pakai nama `tm2*`. Default connection = `tm2sys`.
+### Fase & situs (keputusan user 2026-09-24/25 — baca ini dulu)
+3 fase, satu kode. Pegangan lengkap untuk user: `docs/pegangan_fase_tmerp.html`.
+| Fase | Situs | Isi | Database |
+|---|---|---|---|
+| 1 DevLib | devlib.test (folder `devlib/`, library `packages/devlib`) | objek komponen `x-dl::*` | tanpa DB bisnis |
+| 2 Build & UAT | **mockup.test = folder tmerp yang SAMA** | layar v2 dari objek DevLib + alur bisnis diuji | **semua `ddt*`** (dummy) via `.env.mockup` |
+| 3 Live | tmerp.test | kode yang sama | `tm2*` real + migrasi `tm2old` |
+- `bootstrap/app.php` memuat `.env.mockup` bila host = mockup.test (DB_* -> `ddt*`, `DB_OLD=tm2old` dipakai bersama, `APP_UI=v2`, pengaturan `UAT_*`). Artisan situs dummy: `php artisan ... --env=mockup`. **Jangan pernah menulis ke `tm2*` saat kerja UAT/mockup.**
+- `ddt*` = salinan penuh `tm2*`: `php artisan ddt:copy` (bisnis), `ddt:copy-sys` (menu/security/config; menolak menimpa tanpa `--force` karena `ddtsys` punya perubahan sendiri). Nanti `ddtsys` yang benar disalin ke `tm2sys`.
+- SQL mentah lintas-DB WAJIB `App\Support\DbName::table('tm2mst.x')` (dijaga `NoHardcodedDatabaseNameTest`).
+- **Menu v2** (disetujui user) = `x-dl::layer-shell` + `App\Support\V2\AppMenu` dari `sys_app_menu`; item `target='v2:<slug>'` -> layar v2 (`routes/v2.php`, `resources/views/v2`), selain itu layar v1 (`App\Support\Menu\MenuRoutes`). v1 = menu lama (top bar).
+- Data khusus UAT (akun di halaman login, lewati pertanyaan keamanan) HANYA di `.env.mockup` (`config/uat.php`) — **jangan** di konstanta/DB.
+- Mode Developer = F10, hanya Administrator / grup `DEVELOPER`.
+- Serah terima antar-agen (Jo/Iwan): memori `project_handoff_*` terbaru di MEMORY.md ("START HERE").
+
 - **Test memakai MySQL lokal sungguhan**, bukan SQLite in-memory walau `phpunit.xml` menyebut sqlite: test menulis ke database `tm2*` dan **membersihkan sendiri** di `tearDown()` (hapus manual per tabel, lihat `tests/Feature/CostingEngineTest.php`). Tidak ada `RefreshDatabase`. Test baru yang menyisipkan data wajib cleanup sendiri, lalu verifikasi ke DB (jangan percaya skripnya saja).
 - `CareersPortalTest` di-skip (bukan gagal) bila Firebase Emulator tidak menyala — itu baseline normal.
 - Skema aktual = dump `docs/tm2*.sql`; migration `database/migrations` mencerminkannya.
@@ -568,11 +583,12 @@ memaksa menyentuh ketiganya, **berhenti dan tanya dulu**.
 ### Urutan kerja yang dikunci user
 ```
 Inquiry Product -> ProDev -> ProCost   (SELESAI, beku)
-   -> Master Mesin & Master Proses     <- SEKARANG di sini
-      -> Customer Order                <- berikutnya
+   -> Master Mesin & Master Proses     (dikerjakan 2026-09-22/23)
+      -> Customer Order                <- SEKARANG (mulai 2026-09-26), dibangun sebagai layar v2 di Fase 2
 ```
-User ingin **meluruskan Master Mesin & Master Proses dulu** — UI/UX maupun
-datanya — sebelum lanjut ke Customer Order.
+Customer Order sudah punya 2 mode di v1 (INTEGRATED dari Quotation / INSTANT manual + Master Product,
+commit 59fab26). Layar v2 = alur & field yang sama dengan v1, ditulis ulang dengan objek DevLib, membaca
+database dummy lewat model/service yang ada (bukan data contoh JSON). Konfirmasi user journey dulu.
 
 ### Master Mesin & Master Proses = DATA REAL
 Isi `prod_machine` / `prod_process` / `prod_process_machine` adalah **data
