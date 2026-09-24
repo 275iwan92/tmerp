@@ -16,7 +16,9 @@ class V2ShellTest extends TestCase
     public function test_v2_home_renders_layer_shell_from_sys_app_menu(): void
     {
         $this->actingAs($this->admin())->get('/v2')
-            ->assertOk()->assertSee('data-dl-layer-menu', false)->assertDontSee('class="dl-topbar"', false)->assertSee('Inquiry Product');
+            ->assertOk()->assertSee('data-dl-layer-menu', false)->assertDontSee('class="dl-topbar"', false)->assertSee('Inquiry Product')
+            // Pengalih ikon Operasional | Laporan Manajemen (pilihan A, user 2026-09-25).
+            ->assertSee('&quot;key&quot;:&quot;mgmt&quot;', false)->assertSee('data-lm-views', false);
     }
 
     public function test_v2_screens_flows_and_dictionary_open(): void

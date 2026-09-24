@@ -19,6 +19,8 @@ use Devlib\Icon;
 //   dock         = selector wadah dok kanan di layout (kosong = laci tetap di tepi kanan layar)
 //   actions      = [['key','label','icon','tone'?,'confirm'?]]: kunci = halaman profil -> buka halaman itu,
 //                  selain itu -> event dl:layer-menu-action {key} (didahului konfirmasi bila `confirm` diisi).
+//   views        = [['key','label','icon','items' => [ITEM..]]]: beberapa akar menu yang ditukar lewat ikon kecil di kepala
+//                  panel (mis. Operasional | Laporan Manajemen). Diisi = `items` diabaikan. `initial-view` = key view awal (nama `view` dipakai Laravel sendiri).
 class LayerMenu extends DevlibComponent
 {
     public function __construct(
@@ -34,6 +36,8 @@ class LayerMenu extends DevlibComponent
         public string $rootCaption = 'Modules',
         public ?string $dock = null,
         public array $actions = [],
+        public array $views = [],
+        public ?string $initialView = null,
     ) {}
 
     public function tag(): string
@@ -61,6 +65,11 @@ class LayerMenu extends DevlibComponent
         }, $items ?? $this->items);
     }
 
+    public function viewData(): array
+    {
+        return array_map(fn ($v) => ['key' => $v['key'], 'label' => $v['label'], 'icon' => $this->fa($v['icon'] ?? 'fa-circle-dot'), 'items' => $this->tree($v['items'])], $this->views);
+    }
+
     public function fa(string $icon): string
     {
         $icon = Icon::fa($icon);
@@ -76,10 +85,11 @@ class LayerMenu extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <aside {{ $attributes->class('dl-lm') }} {!! $dl() !!} data-dl-layer-menu data-id="{{ $id }}" data-active="{{ $active }}" data-counts="{{ $counts ? 1 : 0 }}" data-root="{{ $rootCaption }}" data-dock="{{ $dock }}" data-tree="{{ json_encode($tree()) }}">
+            <aside {{ $attributes->class('dl-lm') }} {!! $dl() !!} data-dl-layer-menu data-id="{{ $id }}" data-active="{{ $active }}" data-counts="{{ $counts ? 1 : 0 }}" data-root="{{ $rootCaption }}" data-dock="{{ $dock }}" data-tree="{{ $views ? '[]' : json_encode($tree()) }}" data-views="{{ json_encode($viewData()) }}" data-view="{{ $initialView }}">
                 <div class="dl-lm__head">
                     <span class="dl-lm__logo">{{ $logo }}</span>
                     <span class="dl-lm__brand"><b>{{ $title }}</b><span class="dl-lm__sub"><span class="dl-lm__dots" data-lm-dots aria-hidden="true"></span><small data-lm-mode hidden></small></span></span>
+                    <span class="dl-lm__views" data-lm-views role="group" aria-label="Pilih menu" hidden></span>
                     <button type="button" class="dl-lm__ib" data-lm-swap title="Tukar menu / chat" aria-label="Tukar menu dan chat" hidden><i class="fa-solid fa-right-left"></i><em class="dl-lm__dot-badge" data-lm-unread="swap" hidden></em></button>
                     <button type="button" class="dl-lm__ib" data-lm-dockbtn title="Chat di sisi kanan layar" aria-label="Pindahkan chat ke kanan" hidden><i class="fa-solid fa-table-columns"></i></button>
                 </div>

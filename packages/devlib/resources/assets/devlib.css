@@ -2226,6 +2226,12 @@ html.dl-locked body{overflow:hidden}
 .dl-lm__ib{position:relative;width:30px;height:30px;flex:none;display:grid;place-items:center;border:none;background:none;border-radius:var(--dl-radius-sm);color:var(--dl-side-muted);cursor:pointer;font-size:calc(14px * var(--dl-font-scale))}
 .dl-lm__ib:hover{background:var(--dl-side-hover);color:var(--dl-white)}
 .dl-lm__ib[hidden]{display:none}
+.dl-lm__views{display:flex;gap:2px;padding:2px;border-radius:var(--dl-radius);background:var(--dl-side-hover);flex:none}
+.dl-lm__views[hidden]{display:none}
+.dl-lm__views button{width:26px;height:24px;display:grid;place-items:center;border:none;background:none;border-radius:var(--dl-radius-sm);color:var(--dl-side-muted);cursor:pointer;font-size:calc(12.5px * var(--dl-font-scale));padding:0}
+.dl-lm__views button:hover{color:var(--dl-white)}
+.dl-lm__views button.is-on{background:var(--dl-accent);color:var(--dl-white)}
+.dl-lm__views button:focus-visible{outline:2px solid var(--dl-accent);outline-offset:1px}
 .dl-lm__dot-badge{position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;padding:0 4px;box-sizing:border-box;border-radius:8px;background:var(--dl-badge);color:var(--dl-white);font-style:normal;font-size:calc(10px * var(--dl-font-scale));font-weight:800;display:grid;place-items:center}
 .dl-lm__dot-badge[hidden],.dl-lm__badge[hidden]{display:none}
 .dl-lm__modes{flex:1;min-height:0;position:relative;overflow:hidden}

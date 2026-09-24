@@ -7,14 +7,17 @@
   class LayerMenu extends Devlib.Component {
     static selector = "[data-dl-layer-menu]";
     init() {
-      this.root = JSON.parse(this.el.dataset.tree || '[]');
+      // views = beberapa akar menu (mis. Operasional | Laporan Manajemen) yang ditukar lewat ikon di kepala panel.
+      this.views = JSON.parse(this.el.dataset.views || '[]');
+      this.view = 0;
+      this.root = this.views.length ? this.views[0].items : JSON.parse(this.el.dataset.tree || '[]');
       this.track = this.$('[data-lm-track]');
       this.dots = this.$('[data-lm-dots]');
       this.key = 'dl-lm-' + this.el.dataset.id;
       this.path = [];     // cabang yang sedang dibuka, path[d-1] = induk layer d
       this.sel = null;    // key layar akhir terpilih
       this.st = {chat: false, dock: false, show: 'menu'};   // show = menu | chat | profile (yang tampil di panel kiri)
-      this.dots.innerHTML = '<i></i>'.repeat(this.depthOf(this.root));
+      this.initViews();
       this.track.addEventListener('click', e => { const t = e.target.closest('button, a'); if (t) this.click(e, t); });
       this.el.addEventListener('keydown', e => {
         if (e.key === 'Escape' && this.pop?.classList.contains('is-on')) { this.togglePop(false); return; }
@@ -41,13 +44,41 @@
       let saved = {};
       try { saved = JSON.parse(localStorage.getItem(this.key)) || {}; } catch (e) {}
       const k = this.el.dataset.active || saved.sel;
+      // View awal: prop view > view yang memuat layar aktif > view terakhir dipakai.
+      const want = this.el.dataset.view || (k && this.views.find(v => this.find(k, v.items))?.key) || saved.view;
+      this.setView(Math.max(0, this.views.findIndex(v => v.key === want)), false);
       const trail = k ? this.find(k) : null;
       if (trail) { this.path = trail; this.sel = k; }
       else (saved.path || []).every(lbl => { const n = this.nodes(this.path.length).find(x => x.items && x.label === lbl); return n && this.path.push(n); });
       this.draw(false);
     }
 
-    save() { try { localStorage.setItem(this.key, JSON.stringify({path: this.path.map(n => n.label), sel: this.sel})); } catch (e) {} }
+    save() { try { localStorage.setItem(this.key, JSON.stringify({path: this.path.map(n => n.label), sel: this.sel, view: this.views[this.view]?.key})); } catch (e) {} }
+
+    initViews() {
+      const box = this.$('[data-lm-views]');
+      if (this.views.length > 1) {
+        box.innerHTML = this.views.map((v, i) => `<button type="button" data-lm-view="${i}" title="${esc(v.label)}" aria-label="${esc(v.label)}"><i class="${esc(v.icon)}"></i></button>`).join('');
+        box.hidden = false;
+        box.addEventListener('click', e => { const b = e.target.closest('[data-lm-view]'); if (b) this.setView(+b.dataset.lmView); });
+      }
+      this.dots.innerHTML = '<i></i>'.repeat(this.depthOf(this.root));
+    }
+
+    // Tukar akar menu: layer kembali ke 1, panel kembali ke menu (bila sedang Chat/Profile).
+    setView(i, animate = true) {
+      if (!this.views.length) return;
+      const changed = i !== this.view;
+      this.view = i;
+      this.root = this.views[i].items;
+      this.$$('[data-lm-view]').forEach(b => { const on = +b.dataset.lmView === i; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', String(on)); });
+      this.dots.innerHTML = '<i></i>'.repeat(this.depthOf(this.root));
+      if (!changed && !animate) return;
+      this.path = [];
+      if (this.st.show !== 'menu') this.show('menu');
+      this.draw(animate);
+      this.emit('dl:layer-menu-view', {key: this.views[i].key});
+    }
 
     // Satu panel per layer. Tanpa animasi saat pertama tampil (restore) supaya tidak "terbang" dari layer 1.
     draw(animate = true) {
@@ -73,7 +104,7 @@
         const p = this.path[d - 1];
         h += BACK + `<div class="dl-lm__title"><i class="${esc(p.icon)}"></i><b>${esc(p.label)}</b></div>`
           + `<div class="dl-lm__crumb">${this.path.slice(0, d).map(n => esc(n.label)).join(' <i class="fa-solid fa-angle-right"></i> ')}</div>`;
-      } else h += `<div class="dl-lm__cap">${esc(this.el.dataset.root)}</div>`;
+      } else h += `<div class="dl-lm__cap">${esc(this.views.length ? this.views[this.view].label : this.el.dataset.root)}</div>`;
       let g = null;
       this.nodes(d).forEach((n, x) => {
         if (n.group && n.group !== g) { g = n.group; h += `<div class="dl-lm__cap">${esc(g)}</div>`; }
