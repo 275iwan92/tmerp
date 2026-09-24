@@ -17,6 +17,9 @@ class DevlibServiceProvider extends ServiceProvider
         Blade::componentNamespace('Devlib\\Components', 'dl');
 
         Route::get('/_devlib/{file}', function (string $file) {
+            if ($file === 'devlib.js') {
+                return response(self::bundle(), 200, ['Content-Type' => 'application/javascript', 'Cache-Control' => 'no-cache']);
+            }
             $path = realpath(__DIR__.'/../resources/assets/'.$file);
             $root = realpath(__DIR__.'/../resources/assets');
             abort_unless($path && str_starts_with($path, $root.DIRECTORY_SEPARATOR), 404);
@@ -30,8 +33,26 @@ class DevlibServiceProvider extends ServiceProvider
     // URL aset + versi dari waktu ubah file, supaya perubahan library langsung terlihat.
     public static function asset(string $file): string
     {
-        $v = @filemtime(__DIR__.'/../resources/assets/'.$file) ?: 0;
+        $v = $file === 'devlib.js'
+            ? max(array_map('filemtime', self::scripts()))
+            : (@filemtime(__DIR__.'/../resources/assets/'.$file) ?: 0);
 
         return route('devlib.asset', ['file' => $file]).'?v='.$v;
+    }
+
+    // Perilaku JS = satu kelas per file (resources/assets/js): core (kelas induk + helper) -> komponen -> boot.
+    // Disajikan sebagai satu devlib.js supaya pemakai cukup memuat satu file dan tidak ada langkah build.
+    public static function scripts(): array
+    {
+        $dir = __DIR__.'/../resources/assets/js';
+        $components = glob($dir.'/components/*.js');
+        sort($components);
+
+        return [$dir.'/core.js', ...$components, $dir.'/boot.js'];
+    }
+
+    public static function bundle(): string
+    {
+        return implode("\n", array_map(fn ($f) => "/* ---- ".basename($f)." ---- */\n".file_get_contents($f), self::scripts()));
     }
 }

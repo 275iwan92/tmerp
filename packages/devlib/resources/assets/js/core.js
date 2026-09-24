@@ -1,0 +1,549 @@
+/* DevLib core — kelas induk DlComponent, registry, helper bersama & perilaku global.
+ * Komponen = kelas turunan DlComponent (satu file per komponen di js/components). Override:
+ *   class KanbanProduksi extends Devlib.classes.Kanban { ... }  lalu  Devlib.define('Kanban', KanbanProduksi)
+ * (semua elemen Kanban memakai turunan), atau per elemen: data-dl-js="KanbanProduksi" + Devlib.register(KanbanProduksi). */
+window.Devlib = window.Devlib || {};
+(function () {
+  'use strict';
+  const Devlib = window.Devlib;
+
+  class DlComponent {
+    static selector = null;
+    constructor(el) { this.el = el; el.dlComponent = this; }
+    $(sel) { return this.el.querySelector(sel); }
+    $$(sel) { return Array.from(this.el.querySelectorAll(sel)); }
+    // Event keluar komponen. Kembali false bila listener memanggil preventDefault (cancelable).
+    emit(name, detail = {}, cancelable = false) { return this.el.dispatchEvent(new CustomEvent(name, {bubbles: true, cancelable, detail})); }
+    // Delegasi event: on('click', '[data-x]', (e, target) => ...)
+    on(type, sel, fn, opts) { this.el.addEventListener(type, e => { const t = sel ? e.target.closest && e.target.closest(sel) : this.el; if (t && this.el.contains(t)) fn.call(this, e, t); }, opts); return this; }
+    init() {}
+  }
+
+  Devlib.Component = DlComponent;
+  Devlib.classes = {};     // nama kelas -> kelas (untuk data-dl-js)
+  Devlib.registry = [];    // [{name, selector}] berurutan = urutan mount
+  // Daftarkan / timpa kelas komponen. Nama sama = ganti kelas untuk semua elemennya.
+  Devlib.define = (name, cls, selector = cls.selector) => {
+    Devlib.classes[name] = cls;
+    const r = Devlib.registry.find(x => x.name === name);
+    if (r) { r.cls = cls; r.selector = selector || r.selector; } else Devlib.registry.push({name, cls, selector});
+    return cls;
+  };
+  // Daftarkan turunan tanpa mengganti induk (dipilih per elemen lewat data-dl-js="Nama").
+  Devlib.register = cls => { Devlib.classes[cls.name] = cls; return cls; };
+  Devlib.mountOne = (name, root = document) => {
+    const r = Devlib.registry.find(x => x.name === name); if (!r || !r.selector) return;
+    const els = [...(root.matches && root.matches(r.selector) ? [root] : []), ...root.querySelectorAll(r.selector)];
+    els.forEach(el => {
+      if (el.dlMounted && el.dlMounted[name]) return;
+      (el.dlMounted ||= {})[name] = true;
+      const C = (el.dataset.dlJs && Devlib.classes[el.dataset.dlJs]) || r.cls;
+      new C(el).init();
+    });
+  };
+  // Pasang semua komponen di dalam root (dipanggil saat halaman siap; panggil lagi untuk isi dinamis/Livewire).
+  Devlib.mount = (root = document, order = null) => (order || Devlib.registry.map(r => r.name)).forEach(n => Devlib.mountOne(n, root));
+
+  let currentLang = new URLSearchParams(location.search).get('lang') || window.DL_LANG_ACTIVE || 'id';
+  Object.defineProperty(Devlib, 'lang', {get: () => currentLang, set: v => { currentLang = v; }, configurable: true});
+
+  const $ = (root, sel) => root.querySelector(sel);
+  const $$ = (root, sel) => Array.from(root.querySelectorAll(sel));
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* ========================= PRIMITIVE ========================= */
+
+
+
+
+
+  function showQr(text) {
+    let ov = document.querySelector('.dl-qr');
+    if (!ov) {
+      ov = document.createElement('div'); ov.className = 'dl-mov dl-qr';
+      ov.innerHTML = '<div class="dl-modal" style="max-width:300px"><div class="dl-modal__head"><h3>Form QR Code Data</h3><button type="button" class="dl-modal__x" data-x>&times;</button></div><div class="dl-modal__body" style="display:flex;justify-content:center"><div data-qr></div></div><div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-x>Tutup</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-qr-dl>Download PNG</button></div></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-x]')) ov.classList.remove('is-on'); });
+      ov.querySelector('[data-dl-qr-dl]').addEventListener('click', () => { const img = ov.querySelector('[data-qr] img, [data-qr] canvas'); if (!img) return; const a = document.createElement('a'); a.href = img.src || img.toDataURL(); a.download = 'form-qrcode.png'; a.click(); });
+    }
+    const draw = () => { const box = ov.querySelector('[data-qr]'); box.innerHTML = ''; new window.QRCode(box, {text, width: 180, height: 180, colorDark: '#111827', colorLight: '#ffffff'}); ov.classList.add('is-on'); };
+    if (window.QRCode) return draw();
+    const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; s.onload = draw; document.head.appendChild(s);
+  }
+
+  /* ============================ FIELD ============================ */
+  const CASES = ['none', 'capitalize', 'uppercase'], CASE_LABEL = {none: 'aa', capitalize: 'Aa', uppercase: 'AA'};
+  const applyCase = (t, m) => m === 'uppercase' ? t.toUpperCase() : m === 'capitalize' ? t.replace(/\b\w/g, c => c.toUpperCase()) : t;
+  const idNum = n => Number(n).toLocaleString('id-ID');
+
+  // Panel dropdown/popover milik field: buka/tutup; klik di luar menutup semua.
+  function bindPanel(root, onOpen) {
+    const toggle = $(root, '[data-dl-dd-toggle]'), panel = $(root, '[data-dl-dd-panel]');
+    if (!toggle || !panel) return {};
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = !panel.classList.contains('is-open');
+      document.querySelectorAll('[data-dl-dd-panel].is-open').forEach(p => p.classList.remove('is-open'));
+      panel.classList.toggle('is-open', open);
+      if (open && onOpen) onOpen();
+    });
+    panel.addEventListener('click', e => e.stopPropagation());
+    const search = $(panel, '[data-dl-dd-search]');
+    if (search) search.addEventListener('input', () => $$(panel, '.dl-dd__item').forEach(it => { it.style.display = it.textContent.toLowerCase().includes(search.value.toLowerCase()) ? '' : 'none'; }));
+    return {panel, search, close: () => panel.classList.remove('is-open')};
+  }
+
+
+  // Urutan pilihan dari daftar: random, atau sequence (lanjut tiap halaman dibuka, diingat per kunci).
+  function pickIndex(len, order, key) {
+    if (!len) return -1;
+    if (order !== 'sequence') return Math.floor(Math.random() * len);
+    let i = -1; try { i = parseInt(localStorage.getItem('dl-seq-' + key) ?? '-1', 10); } catch (e) {}
+    i = (i + 1) % len;
+    try { localStorage.setItem('dl-seq-' + key, i); } catch (e) {}
+    return i;
+  }
+
+
+
+
+
+  // Kode cuaca WMO (Open-Meteo) -> ikon + keterangan.
+  const WMO = [[0, '☀️', 'Cerah', 'Clear'], [2, '⛅', 'Berawan sebagian', 'Partly cloudy'], [3, '☁️', 'Berawan', 'Cloudy'], [48, '🌫️', 'Berkabut', 'Fog'],
+    [57, '🌦️', 'Gerimis', 'Drizzle'], [67, '🌧️', 'Hujan', 'Rain'], [77, '🌨️', 'Salju', 'Snow'], [82, '🌧️', 'Hujan deras', 'Showers'], [99, '⛈️', 'Badai petir', 'Thunderstorm']];
+
+
+
+  /* ============================ LOGIN BOX ============================ */
+  // Isinya komponen; di sini tinggal teks 2 bahasa dan validasi kosong.
+  const LOGIN_T = {
+    id: {heading:'Masuk',sub:'Gunakan akun terdaftar untuk mengakses aplikasi.',l_login:'Username atau email',l_email:'Email',l_pass:'Password',forgot:'Lupa password?',btn:'Masuk',or:'atau',no_acc:'Belum punya akun?',reg:'Daftar',err_empty:'Isi username/email dan password.',err_wrong:'Username atau password salah.'},
+    en: {heading:'Sign in',sub:'Use your registered account to access the app.',l_login:'Username or email',l_email:'Email',l_pass:'Password',forgot:'Forgot password?',btn:'Sign in',or:'or',no_acc:"Don't have an account?",reg:'Register',err_empty:'Enter your username/email and password.',err_wrong:'Incorrect username or password.'}
+  };
+
+
+  /* ============================ SHELL ============================ */
+  const typeIcon = t => t === 'grid' ? 'fa-solid fa-table-list' : t === 'report' ? 'fa-solid fa-chart-column' : 'fa-solid fa-pen-to-square';
+  const HOME = {code: 'HOME', label: 'Home', icon: 'fa-solid fa-house'};
+
+
+  /* ======================= MODE DEVELOPER ======================= */
+  // Tooltip asal-usul tiap objek library (data-dl*). Elemen interaktif yang
+  // TIDAK berada di dalam komponen library diberi garis merah (.dl-nolib).
+  let tip, badge;
+  function setDevMode(on) {
+    try { localStorage.setItem('dl-dev', on ? '1' : '0'); } catch (e) {}
+    document.body.classList.toggle('dl-dev', on);
+    document.querySelectorAll('[data-dl-devswitch]').forEach(s => s.classList.toggle('is-on', on));
+    $$(document, 'button,a,input,select,textarea,table').forEach(el => el.classList.toggle('dl-nolib', on && !el.closest('[data-dl]')));
+    if (on) {
+      const all = $$(document, 'button,a,input,select,textarea,table');
+      const lib = all.filter(el => el.closest('[data-dl]')).length;
+      badge.textContent = `Mode Developer · ${all.length ? Math.round(lib * 100 / all.length) : 100}% objek dari library`;
+    }
+    if (!on) tip.style.display = 'none';
+    // Frame tab ikut diberi tahu supaya isinya juga menampilkan inspektur.
+    document.querySelectorAll('iframe').forEach(f => { try { f.contentWindow.postMessage({dlDev: on}, '*'); } catch (e) {} });
+  }
+  function initDevMode() {
+    tip = document.createElement('div'); tip.className = 'dl-dev-tip'; document.body.appendChild(tip);
+    badge = document.createElement('div'); badge.className = 'dl-dev-badge'; document.body.appendChild(badge);
+    document.addEventListener('mousemove', e => {
+      if (!document.body.classList.contains('dl-dev')) return;
+      const el = e.target.closest && e.target.closest('[data-dl]');
+      if (!el) {
+        if (e.target.classList && e.target.classList.contains('dl-nolib')) {
+          tip.innerHTML = '<b>BUKAN dari library</b><br><span class="k">elemen:</span> &lt;' + esc(e.target.tagName.toLowerCase()) + '&gt;';
+        } else { tip.style.display = 'none'; return; }
+      } else {
+        tip.innerHTML = `<b>${esc(el.dataset.dl)}</b><br><span class="k">turunan:</span> ${esc(el.dataset.dlClass || '—')}<br><span class="k">sumber data:</span> ${esc(el.dataset.dlSrc || '—')}`;
+      }
+      tip.style.display = 'block';
+      const x = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 16, window.innerHeight - tip.offsetHeight - 8);
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    });
+    window.addEventListener('message', e => { if (e.data && typeof e.data.dlDev === 'boolean') setDevMode(e.data.dlDev); });
+    let saved = false; try { saved = localStorage.getItem('dl-dev') === '1'; } catch (e) {}
+    const allowed = !!document.querySelector('[data-dl-developer="1"],[data-dl-devtoggle]') || window.self !== window.top;
+    setDevMode(document.body.dataset.dlDev === '1' || (saved && allowed));
+  }
+
+
+
+
+
+  /* ================= SMALL COMPONENTS (lanjutan) ================= */
+  const PRESET_T = {save: ['Simpan', 'Save'], cancel: ['Batal', 'Cancel'], close: ['Tutup', 'Close'], delete: ['Hapus', 'Delete'], apply: ['Terapkan', 'Apply'],
+    print: ['Cetak', 'Print'], submit: ['Ajukan', 'Submit'], approve: ['Setujui', 'Approve'], reject: ['Tolak', 'Reject'], hold: ['Tahan', 'Hold']};
+  // Label tombol preset ikut bahasa aktif (Back & Confirm & + New Record tetap).
+  document.addEventListener('dl:lang', () => $$(document, '[data-dl-preset]').forEach(b => {
+    const t = PRESET_T[b.dataset.dlPreset]; if (!t) return;
+    const node = [...b.childNodes].reverse().find(n => n.nodeType === 3 && n.textContent.trim());
+    if (node) node.textContent = t[currentLang === 'en' ? 1 : 0];
+  }));
+
+
+
+
+
+
+
+
+  /* ======================= FEEDBACK & STATES ======================= */
+  // Toast bertumpuk: Devlib.toast('Tersimpan', 'success', 'Judul opsional').
+  function toast(msg, tone = 'info', title = null) {
+    let host = document.querySelector('.dl-toasts');
+    if (!host) { host = document.createElement('div'); host.className = 'dl-toasts'; host.setAttribute('aria-live', 'polite'); document.body.appendChild(host); }
+    const icon = {success: 'fa-circle-check', danger: 'fa-circle-xmark', warn: 'fa-triangle-exclamation', info: 'fa-circle-info'}[tone] || 'fa-circle-info';
+    const t = document.createElement('div'); t.className = 'dl-toast2 dl-toast2--' + tone;
+    t.innerHTML = `<i class="fa-solid ${icon}"></i><div>${title ? `<b>${esc(title)}</b>` : ''}<span>${esc(msg)}</span></div><button type="button" aria-label="Tutup">&times;</button>`;
+    const bye = () => { t.classList.add('is-out'); setTimeout(() => t.remove(), 250); };
+    $(t, 'button').addEventListener('click', bye);
+    host.appendChild(t); setTimeout(bye, tone === 'danger' ? 7000 : 3500);
+  }
+
+  // Modal konfirmasi library (pengganti window.confirm): Devlib.confirm({...}).then(ok => ...)
+  function confirmBox({title = 'Konfirmasi', message = 'Lanjutkan?', tone = 'warn', ok = 'Ya, lanjutkan', cancel = null} = {}) {
+    return new Promise(resolve => {
+      const cancelLabel = cancel || (currentLang === 'en' ? 'Cancel' : 'Batal');
+      const icon = {danger: 'fa-trash-can', warn: 'fa-triangle-exclamation', success: 'fa-circle-check', info: 'fa-circle-info'}[tone] || 'fa-circle-question';
+      const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
+      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p></div></div>`
+        + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-no>${esc(cancelLabel)}</button><button type="button" class="dl-btn dl-btn--${tone === 'danger' ? 'danger' : 'primary'} dl-btn--md" data-yes>${esc(ok)}</button></div></div>`;
+      const done = v => { ov.remove(); document.removeEventListener('keydown', key); resolve(v); };
+      const key = e => { if (e.key === 'Escape') done(false); else if (e.key === 'Enter') done(true); };
+      ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-no]')) done(false); else if (e.target.closest('[data-yes]')) done(true); });
+      document.addEventListener('keydown', key);
+      document.body.appendChild(ov); $(ov, '[data-yes]').focus();
+    });
+  }
+
+  // data-dl-confirm="pesan" (+ data-dl-confirm-tone) di tombol/tautan: tanya dulu lewat modal library.
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-dl-confirm]');
+    if (!b || b.dataset.dlConfirmed) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    confirmBox({message: b.dataset.dlConfirm, tone: b.dataset.dlConfirmTone || (b.closest('.dl-iconbtn--danger,.dl-btn--danger') ? 'danger' : 'warn')}).then(ok => {
+      if (!ok) return;
+      b.dataset.dlConfirmed = '1'; b.click(); delete b.dataset.dlConfirmed;
+    });
+  }, true);
+
+  // Modal & drawer library: data-dl-open="<id>" membuka, [data-dl-close-modal] / Esc / klik luar menutup.
+  const layer = id => document.querySelector(`[data-dl-modal-id="${id}"],[data-dl-drawer-id="${id}"]`);
+  const openLayer = id => { const l = layer(id); if (l) { l.classList.add('is-on'); const f = l.querySelector('input,textarea,select,button:not([data-dl-close-modal])'); if (f) setTimeout(() => f.focus(), 50); } };
+  const closeLayer = l => l && l.classList.remove('is-on');
+  document.addEventListener('click', e => {
+    const o = e.target.closest('[data-dl-open]'); if (o) { e.preventDefault(); openLayer(o.dataset.dlOpen); return; }
+    const c = e.target.closest('[data-dl-close-modal]'); if (c) { closeLayer(c.closest('[data-dl-modal-id],[data-dl-drawer-id]')); return; }
+    if (e.target.matches('[data-dl-modal-id].dl-mov')) closeLayer(e.target);
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') $$(document, '[data-dl-modal-id].is-on,[data-dl-drawer-id].is-on').slice(-1).forEach(closeLayer); });
+
+  // Form dikirim -> tombol submit terkunci + "Memproses…" (cegah klik ganda).
+  document.addEventListener('submit', e => {
+    if (e.defaultPrevented) return;
+    const btn = e.submitter || e.target.querySelector('[type=submit]');
+    if (!btn || btn.dataset.dlNoBusy !== undefined) return;
+    setTimeout(() => { if (e.defaultPrevented) return; btn.disabled = true; btn.classList.add('is-busy'); btn.dataset.dlLabel = btn.innerHTML; btn.innerHTML = '<span class="dl-spinner__ring dl-spinner__ring--inline"></span> ' + (currentLang === 'en' ? 'Processing…' : 'Memproses…'); }, 0);
+  });
+
+
+  /* ======================= GLOBAL BEHAVIORS ======================= */
+  const T = k => (window.DL_LANG && window.DL_LANG[k]) ? window.DL_LANG[k][currentLang === 'en' ? 1 : 0] : k;
+
+  // Bahasa: pilihan diingat (cookie dibaca server + localStorage), semua [data-dl-t] ikut berganti.
+  document.addEventListener('dl:lang', () => {
+    try { localStorage.setItem('dl-lang', currentLang); } catch (e) {}
+    document.cookie = 'dl_lang=' + currentLang + ';path=/;max-age=31536000;SameSite=Lax';
+    $$(document, '[data-dl-t]').forEach(el => { el.textContent = T(el.dataset.dlT); });
+  });
+
+  // Dirty-guard: form ber-atribut data-dl-guard yang sudah diubah -> tanya sebelum ditinggal.
+  const dirtyForms = new Set();
+  const markDirty = e => { const f = e.target.closest && e.target.closest('form[data-dl-guard]'); if (f) { dirtyForms.add(f); f.classList.add('is-dirty'); } };
+  document.addEventListener('input', markDirty, true);
+  document.addEventListener('change', markDirty, true);
+  document.addEventListener('submit', e => { dirtyForms.delete(e.target); e.target.classList.remove('is-dirty'); }, true);
+  window.addEventListener('beforeunload', e => { if ([...dirtyForms].some(f => document.contains(f))) { e.preventDefault(); e.returnValue = ''; } });
+
+  // Tiga pilihan: Simpan (kirim form), Buang (lanjut pergi), Batal (tetap di sini).
+  function askDirty() {
+    return new Promise(resolve => {
+      const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
+      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--warn"><i class="fa-solid fa-floppy-disk"></i></span><div><h3>${esc(T('dirty_title'))}</h3><p>${esc(T('dirty_msg'))}</p></div></div>`
+        + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-v="stay">${esc(T('cancel'))}</button><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-v="discard">${esc(T('discard'))}</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-v="save">${esc(T('save'))}</button></div></div>`;
+      const done = v => { ov.remove(); resolve(v); };
+      ov.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) done(b.dataset.v); else if (e.target === ov) done('stay'); });
+      document.body.appendChild(ov); $(ov, '[data-v=save]').focus();
+    });
+  }
+  function submitForm(f) { const btn = f.querySelector('[type=submit]'); if (f.requestSubmit) f.requestSubmit(btn || undefined); else if (btn) btn.click(); }
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-dl-back], [data-dl-leave], a[href]:not([href^="#"]):not([target=_blank]):not([href^="javascript"])');
+    const live = [...dirtyForms].filter(f => document.contains(f));
+    if (!a || !live.length || a.closest('form[data-dl-guard]') === live[0] && !a.hasAttribute('data-dl-back') && !a.hasAttribute('data-dl-leave')) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    askDirty().then(v => {
+      if (v === 'save') submitForm(live[0]);
+      else if (v === 'discard') { live.forEach(f => { dirtyForms.delete(f); f.classList.remove('is-dirty'); }); a.click(); }
+    });
+  }, true);
+
+  // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
+  const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
+  const visible = el => el.offsetParent !== null && !el.disabled;
+  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['ctrl+shift+d', 'Mode Developer (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
+  function showShortcuts() {
+    const own = $$(document, '[data-dl-key]').filter(visible).map(b => [b.dataset.dlKey, b.textContent.trim() || b.title]);
+    const rows = [...new Map([...own, ...BUILTIN].map(r => [r[0], r])).values()];
+    const ov = document.createElement('div'); ov.className = 'dl-mov is-on';
+    ov.innerHTML = `<div class="dl-modal dl-modal--sm"><div class="dl-modal__head"><h3><i class="fa-solid fa-keyboard"></i> ${esc(T('shortcuts'))}</h3><button type="button" class="dl-modal__x">&times;</button></div><div class="dl-modal__body"><table class="dl-keys">${rows.map(([k, d]) => `<tr><td>${k.split('+').map(p => `<kbd>${esc(p === 'ctrl' ? 'Ctrl' : p.length === 1 ? p.toUpperCase() : p[0].toUpperCase() + p.slice(1))}</kbd>`).join(' + ')}</td><td>${esc(d)}</td></tr>`).join('')}</table></div></div>`;
+    ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('.dl-modal__x')) ov.remove(); });
+    document.body.appendChild(ov);
+  }
+  document.addEventListener('keydown', e => {
+    const k = keyName(e), typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
+    if (k === 'ctrl+shift+d' && document.querySelector('[data-dl-devtoggle],[data-dl-developer="1"]')) { e.preventDefault(); setDevMode(!document.body.classList.contains('dl-dev')); return; }
+    if ((k === '?' || k === 'shift+?') && !typing) { e.preventDefault(); showShortcuts(); return; }
+    const btn = $$(document, `[data-dl-key="${k}"]`).find(visible);
+    if (btn) { e.preventDefault(); btn.click(); }
+  });
+
+  function initDevToggle(b) { b.addEventListener('click', () => setDevMode(!document.body.classList.contains('dl-dev'))); }
+
+  /* ============================ BASIC ============================ */
+  // Format lokal baku di browser (sama dengan Devlib\Locale di PHP): zona waktu sistem, Rupiah, angka.
+  const TZ = () => document.documentElement.dataset.dlTz || 'Asia/Jakarta';
+  const fmt = {
+    number: (n, d = 0) => Number(n).toLocaleString('id-ID', {minimumFractionDigits: d, maximumFractionDigits: d}),
+    money: (n, cur = 'IDR', d = 0) => ({IDR: 'Rp', USD: '$', EUR: '€', JPY: '¥'}[cur] || cur) + ' ' + fmt.number(n, d),
+    date: (v = new Date(), style = 'short') => new Date(v).toLocaleDateString('id-ID', style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : style === 'numeric' ? {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()} : {day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ()}),
+    time: (v = new Date()) => new Date(v).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ()}) + ' WIB',
+  };
+
+
+
+
+
+
+  /* ===================== SMALL COMPONENTS (lanjutan) ===================== */
+  // Mask: 9 = digit, karakter lain disisipkan apa adanya.
+  const applyMask = (pat, d) => { let out = '', j = 0; for (const ch of pat) { if (j >= d.length) break; out += ch === '9' ? d[j++] : ch; } return out; };
+  const fieldErr = (el, msg) => { const f = el.closest('.dl-field'); if (!f) return; f.classList.toggle('is-invalid', !!msg); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = msg || ''; };
+
+  // Accordion: satu kode untuk vertikal & horizontal; aturan buka/tutup dari grupnya.
+  document.addEventListener('click', e => {
+    const h = e.target.closest('.dl-accordion__head'); if (!h) return;
+    const acc = h.parentElement, grp = acc.parentElement.closest('[data-dl-accgroup]'), horiz = grp && grp.classList.contains('dl-accgroup--horizontal');
+    const open = !acc.classList.contains('is-open');
+    if (!open && horiz) return;
+    if (open && grp && grp.dataset.multiple !== '1') $$(grp, ':scope > .dl-accordion.is-open').forEach(a => { a.classList.remove('is-open'); $(a, '.dl-accordion__head').setAttribute('aria-expanded', 'false'); });
+    acc.classList.toggle('is-open', open); h.setAttribute('aria-expanded', String(open));
+  });
+
+
+
+
+  // Kartu kredit: [kode, awalan, kelompok digit, panjang sah, digit CVV, ikon FA, nama].
+  const CC = [
+    ['amex', /^3[47]/, [4, 6, 5], [15], 4, 'fa-brands fa-cc-amex', 'American Express'],
+    ['diners', /^3(0[0-5]|[689])/, [4, 6, 4], [14], 3, 'fa-brands fa-cc-diners-club', 'Diners Club'],
+    ['visa', /^4/, [4, 4, 4, 4, 3], [13, 16, 19], 3, 'fa-brands fa-cc-visa', 'Visa'],
+    ['mastercard', /^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]|720))/, [4, 4, 4, 4], [16], 3, 'fa-brands fa-cc-mastercard', 'Mastercard'],
+    ['jcb', /^35/, [4, 4, 4, 4, 3], [16, 19], 3, 'fa-brands fa-cc-jcb', 'JCB'],
+    ['discover', /^(6011|65|64[4-9])/, [4, 4, 4, 4, 3], [16, 19], 3, 'fa-brands fa-cc-discover', 'Discover'],
+    ['unionpay', /^62/, [4, 4, 4, 4, 3], [16, 17, 18, 19], 3, 'fa-solid fa-credit-card', 'UnionPay'],
+  ];
+  const luhn = d => { let s = 0; for (let i = 0; i < d.length; i++) { let x = +d[d.length - 1 - i]; if (i % 2) { x *= 2; if (x > 9) x -= 9; } s += x; } return s % 10 === 0; };
+
+
+
+
+
+
+
+  /* ============================ MASTER ============================ */
+  // Isi satu field library dari nilai (dipakai Master, bisa dipakai layar lain lewat Devlib.fill).
+  function setField(form, name, v) {
+    const els = $$(form, `[name="${CSS.escape(name)}"]`); if (!els.length) return;
+    const el = els[0], s = v == null ? '' : String(v);
+    if (el.type === 'radio') { els.forEach(r => { r.checked = r.value === s; }); return; }
+    if (el.type === 'checkbox') { el.checked = v === true || s === '1' || s === 'true'; el.dispatchEvent(new Event('change', {bubbles: true})); return; }
+    el.value = s;
+    const sel = el.closest('[data-dl-select]');
+    if (sel) { const it = $(sel, `.dl-dd__item[data-value="${CSS.escape(s)}"]`); $(sel, '[data-dl-dd-text]').textContent = it ? it.textContent : sel.dataset.empty; return; }
+    const lk = el.closest('[data-dl-lookup]');
+    if (lk) { const r = JSON.parse(lk.dataset.rows || '[]').find(x => String(x[lk.dataset.key]) === s); $(lk, '[data-dl-dd-text]').textContent = r ? r[lk.dataset.label] : 'Pilih...'; return; }
+    const dt = el.closest('[data-dl-date]');
+    if (dt) { $(dt, '[data-dl-date-text]').value = s ? fmt.date(s.slice(0, 10) + 'T12:00:00+07:00') : ''; return; }
+    const pb = el.closest('[data-dl-phonebox]');
+    if (pb) { const i = $(pb, '[data-dl-phone]'); i.value = s; i.dispatchEvent(new Event('input', {bubbles: true})); return; }
+    el.dispatchEvent(new Event('input', {bubbles: true}));
+  }
+  // clear=true: field yang tidak ada di data dikosongkan (untuk data baru).
+  function fillForm(form, data, clear = false) {
+    const names = new Set($$(form, '[name]').filter(e => !e.closest('[data-l-inputs]')).map(e => e.name).filter(n => n && n !== '_token' && !n.includes('[') && !n.endsWith('_country') && !n.endsWith('_dial')));
+    names.forEach(n => { if (n in data) setField(form, n, data[n]); else if (clear) setField(form, n, n.endsWith('_ppn') ? true : n.endsWith('_discount') ? '0' : ''); });
+    $$(form, '[data-dl-lines]').forEach(l => { if (l.dlLines && (clear || l.dataset.name in data)) l.dlLines.set(data[l.dataset.name] || []); });
+    $$(form, '.dl-field.is-invalid').forEach(f => { f.classList.remove('is-invalid'); const e = $(f, '[data-dl-field-error]'); if (e) e.textContent = ''; });
+    dirtyForms.delete(form); form.classList.remove('is-dirty');
+  }
+  // Input pendamping (mata uang / kode negara) selalu terisi, jadi tidak dihitung sebagai nilai.
+  const hasValue = f => $$(f, '[name]:not([data-dl-prefix-value])').some(i => (i.type === 'checkbox' || i.type === 'radio') ? i.checked : i.value.trim() !== '');
+
+
+
+  /* ============================ WIZARD ============================ */
+  // Teks tampil sebuah field library (untuk ringkasan Review).
+  function fieldText(f) {
+    const q = s => $(f, s);
+    if (q('[data-dl-select], [data-dl-lookup]')) return q('[data-dl-dd-text]').textContent.trim();
+    if (q('[data-dl-date]')) return q('[data-dl-date-text]').value;
+    if (q('[data-dl-phonebox]')) return q('[data-dl-phone]').value ? q('[data-dl-prefix-b]').textContent + ' ' + q('[data-dl-phone]').value : '';
+    if (q('[data-dl-toggle]')) return q('[data-dl-toggle-label]').textContent;
+    if (q('[data-dl-sign]')) return q('[data-dl-value]').value ? '✓ Sudah ditandatangani' : '';
+    const radio = q('input[type=radio]:checked'); if (radio) return radio.closest('label').textContent.trim();
+    const checks = $$(f, 'input[type=checkbox]:checked'); if (checks.length) return checks.map(c => c.closest('label')?.textContent.trim() || '✓').join(', ');
+    const i = q('input:not([type=hidden]):not([type=checkbox]):not([type=radio]), textarea, select');
+    return i ? (i.type === 'password' ? (i.value ? '••••••' : '') : i.value) : '';
+  }
+
+
+
+
+  /* ============================ TERBILANG ============================ */
+  // Sama persis dengan Devlib\Terbilang (PHP). cur = [simbol, nama ID, nama EN, sub ID, sub EN, desimal].
+  const W_ID = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+  const W_EN = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const W_EN_T = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const W_SC_ID = [[1e15, 'kuadriliun'], [1e12, 'triliun'], [1e9, 'miliar'], [1e6, 'juta'], [1e3, 'ribu']];
+  const W_SC_EN = [[1e15, 'quadrillion'], [1e12, 'trillion'], [1e9, 'billion'], [1e6, 'million'], [1e3, 'thousand']];
+  const wScale = (n, sc, say) => { for (const [d, w] of sc) if (n >= d) return `${say(Math.floor(n / d))} ${w} ${say(n % d)}`.trim(); return ''; };
+  const wId = n => n < 12 ? W_ID[n] : n < 20 ? W_ID[n - 10] + ' belas' : n < 100 ? `${W_ID[Math.floor(n / 10)]} puluh ${W_ID[n % 10]}`.trim()
+    : n < 200 ? `seratus ${wId(n - 100)}`.trim() : n < 1000 ? `${W_ID[Math.floor(n / 100)]} ratus ${wId(n % 100)}`.trim()
+    : n < 2000 ? `seribu ${wId(n - 1000)}`.trim() : wScale(n, W_SC_ID, wId);
+  const wEn = n => n < 20 ? W_EN[n] : n < 100 ? W_EN_T[Math.floor(n / 10)] + (n % 10 ? '-' + W_EN[n % 10] : '')
+    : n < 1000 ? `${W_EN[Math.floor(n / 100)]} hundred ${wEn(n % 100)}`.trim() : wScale(n, W_SC_EN, wEn);
+  function words(value, cur = null, lang = currentLang) {
+    const s = String(value ?? '').trim(); if (s === '' || s === '-') return '';
+    const en = lang === 'en', say = en ? wEn : wId, neg = s.startsWith('-');
+    let [int, frac = ''] = s.replace(/^[-+]/, '').split('.');
+    int = int.replace(/\D/g, '').replace(/^0+/, ''); frac = frac.replace(/\D/g, '');
+    let out = int === '' ? (en ? 'zero' : 'nol') : say(+int);
+    if (cur) {
+      out += ' ' + (en ? cur[2] : cur[1]);
+      const sub = cur[5] > 0 ? +frac.padEnd(cur[5], '0').slice(0, cur[5]) : 0;
+      if (sub > 0) out += (en ? ' and ' : ' dan ') + say(sub) + ' ' + (en ? cur[4] : cur[3]);
+    } else if (frac.replace(/0+$/, '')) out += (en ? ' point ' : ' koma ') + [...frac.replace(/0+$/, '')].map(d => d === '0' ? (en ? 'zero' : 'nol') : say(+d)).join(' ');
+    out = (neg ? 'minus ' : '') + out;
+    return out.charAt(0).toUpperCase() + out.slice(1);
+  }
+
+
+
+
+
+
+
+
+
+  /* ============================ IMPORT ============================ */
+  // CSV sederhana tapi benar: tanda kutip, "" di dalam kutip, baris baru di dalam kutip, BOM, deteksi pemisah.
+  function parseCsv(text) {
+    text = text.replace(/^\ufeff/, '');
+    const first = text.split(/\r?\n/)[0] || '', delim = [';', '\t', ','].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+    const rows = []; let row = [], cur = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) { if (ch === '"' && text[i + 1] === '"') { cur += '"'; i++; } else if (ch === '"') q = false; else cur += ch; continue; }
+      if (ch === '"') q = true; else if (ch === delim) { row.push(cur); cur = ''; } else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; } else cur += ch;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return {delim, rows: rows.filter(r => r.some(c => c.trim() !== ''))};
+  }
+  const csvCell = v => /[",;\n\t]/.test(String(v ?? '')) ? `"${String(v).replace(/"/g, '""')}"` : String(v ?? '');
+  const downloadCsv = (name, lines) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + lines.map(r => r.map(csvCell).join(';')).join('\r\n')], {type: 'text/csv'})); a.download = name; a.click(); };
+  // Angka gaya Indonesia (1.234,5) maupun biasa (1234.5).
+  const parseNum = v => { let s = String(v).trim().replace(/\s|Rp/gi, ''); if (s === '') return NaN; if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.'); else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ''); return /^-?\d+(\.\d+)?$/.test(s) ? +s : NaN; };
+  const parseDate = v => {
+    const s = String(v).trim(); let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/), y, mo, d;
+    if (m) [, y, mo, d] = m.map(Number); else if ((m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/))) [, d, mo, y] = m.map(Number); else return null;
+    const t = new Date(y, mo - 1, d);  // tanggal mustahil (31-13, 30 Feb) ditolak
+    return t.getFullYear() === y && t.getMonth() === mo - 1 && t.getDate() === d ? `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}` : null;
+  };
+
+
+
+
+
+
+
+
+
+
+  /* ============================ CHARTS ============================ */
+  const CH_TONES = ['accent', 'success', 'warn', 'danger', 'violet', 'info', 'neutral', 'teal'];
+  const chNum = (v, f) => {
+    if (v == null || isNaN(v)) return '–';
+    const a = Math.abs(v), s = a >= 1e12 ? [1e12, ' T'] : a >= 1e9 ? [1e9, ' M'] : a >= 1e6 ? [1e6, ' jt'] : a >= 1e4 ? [1e3, ' rb'] : [1, ''];
+    const n = (v / s[0]).toLocaleString('id-ID', {maximumFractionDigits: s[0] > 1 ? 1 : 2}) + s[1];
+    return f === 'money' ? 'Rp ' + n : f === 'percent' ? n + '%' : n;
+  };
+  const niceMax = m => { if (m <= 0) return 1; const p = 10 ** Math.floor(Math.log10(m)), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; };
+
+
+  /* ============================ QR & BARCODE ============================ */
+  // Library dimuat sekali dari cdnjs saat komponen pertama muncul (tidak membebani halaman lain).
+  const libOnce = {};
+  const loadLib = (url, test) => test() ? Promise.resolve() : (libOnce[url] = libOnce[url] || new Promise((ok, no) => { const s = document.createElement('script'); s.src = url; s.onload = ok; s.onerror = no; document.head.appendChild(s); }));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* ============================ AUTH: REGISTER / FORGOT ============================ */
+  const AUTH_T = {
+    id: {r_heading: 'Daftar akun', r_sub: 'Buat akun baru untuk mengakses aplikasi.', r_approval: 'Akun baru harus disetujui admin. Grup & hak akses ditentukan admin saat persetujuan.', r_type: 'Daftar sebagai', r_name: 'Nama lengkap', r_email: 'Email', r_verify: 'Verifikasi', r_user: 'Username (otomatis dari email)', r_wa: 'No. WhatsApp aktif', r_send_otp: 'Kirim OTP', r_otp: 'Kode OTP dari WhatsApp', r_pass: 'Password', r_conf: 'Konfirmasi', r_submit: 'Kirim pendaftaran', r_done_h: 'Pendaftaran terkirim', r_done_b: 'Akun Anda menunggu persetujuan admin. Setelah disetujui, Anda bisa masuk memakai email dan password ini.',
+      nik: 'NIK (No. KTP)', nrp: 'NRP (No. Induk Pegawai)', nik_bad: 'NIK harus 16 digit angka.', nik_ok: 'Format NIK valid.', email_bad: 'Format email tidak valid.', email_sent: 'Email terverifikasi.', otp_sent: 'OTP dikirim ke WhatsApp.', wa_ok: 'WhatsApp terverifikasi.', wa_bad: 'Masukkan nomor WhatsApp dulu.', otp_bad: 'Kode OTP belum lengkap.', c_len: 'Min. 8 karakter.', c_weak: 'Tambahkan huruf & angka.', c_ok: 'Password kuat.', m_ok: 'Password cocok.', m_bad: 'Password belum cocok.', need_verify: 'Verifikasi email dan WhatsApp dulu sebelum mengirim.', need_fill: 'Lengkapi semua isian wajib (*).',
+      f_heading: 'Lupa password', f_sub_email: 'Masukkan email akun Anda. Kami kirim tautan untuk atur ulang password.', f_send: 'Kirim tautan reset', f_done_email: 'Jika email terdaftar, tautan reset sudah dikirim.', f_s1: 'Verifikasi', f_s2: 'Password baru', f_sub_q: 'Jawab 4 pertanyaan sesuai data akun Anda. Tanpa email.', f_birth: 'Tanggal lahir', f_phone: 'No. HP terdaftar', f_mother: 'Nama ibu kandung', f_next: 'Lanjut', f_sub_new: 'Data cocok. Buat password baru.', f_new: 'Password baru', f_save: 'Simpan', f_done_h: 'Password diperbarui', f_done_b: 'Silakan masuk memakai password baru.', f_wrong: 'Data tidak cocok dengan akun mana pun.', l_email: 'Email', l_login: 'Username'},
+    en: {r_heading: 'Create account', r_sub: 'Create a new account to access the app.', r_approval: 'New accounts require admin approval. Group & permissions are set by the admin on approval.', r_type: 'Register as', r_name: 'Full name', r_email: 'Email', r_verify: 'Verify', r_user: 'Username (auto from email)', r_wa: 'Active WhatsApp number', r_send_otp: 'Send OTP', r_otp: 'OTP code from WhatsApp', r_pass: 'Password', r_conf: 'Confirm', r_submit: 'Submit registration', r_done_h: 'Registration submitted', r_done_b: 'Your account is awaiting admin approval. Once approved, you can sign in with this email and password.',
+      nik: 'NIK (ID card no.)', nrp: 'Employee ID (NRP)', nik_bad: 'NIK must be 16 digits.', nik_ok: 'Valid NIK format.', email_bad: 'Invalid email format.', email_sent: 'Email verified.', otp_sent: 'OTP sent to WhatsApp.', wa_ok: 'WhatsApp verified.', wa_bad: 'Enter a WhatsApp number first.', otp_bad: 'OTP code is incomplete.', c_len: 'Min. 8 characters.', c_weak: 'Add letters & numbers.', c_ok: 'Strong password.', m_ok: 'Passwords match.', m_bad: 'Passwords do not match yet.', need_verify: 'Verify email and WhatsApp before submitting.', need_fill: 'Complete all required (*) fields.',
+      f_heading: 'Forgot password', f_sub_email: 'Enter your account email. We will send a reset link.', f_send: 'Send reset link', f_done_email: 'If the email is registered, a reset link has been sent.', f_s1: 'Verify', f_s2: 'New password', f_sub_q: 'Answer 4 questions matching your account. No email needed.', f_birth: 'Date of birth', f_phone: 'Registered phone', f_mother: "Mother's maiden name", f_next: 'Next', f_sub_new: 'Data matched. Create a new password.', f_new: 'New password', f_save: 'Save', f_done_h: 'Password updated', f_done_b: 'Please sign in with your new password.', f_wrong: 'The data does not match any account.', l_email: 'Email', l_login: 'Username'},
+  };
+  const at = k => AUTH_T[currentLang]?.[k] ?? AUTH_T.id[k] ?? k;
+  const authLang = root => { const f = () => $$(root, '[data-i18n]').forEach(x => { const t = AUTH_T[currentLang]?.[x.dataset.i18n]; if (t) x.textContent = t; }); document.addEventListener('dl:lang', f); f(); return f; };
+  // Pesan di bawah field: ok -> hint hijau, bad -> error merah, '' -> kosong.
+  const fieldMsg = (f, msg, ok) => { if (!f) return; const er = $(f, '[data-dl-field-error]'), h = $(f, '[data-dl-field-hint]'); f.classList.toggle('is-invalid', !!msg && !ok); f.classList.toggle('is-valid', !!msg && ok); if (er) er.textContent = ok ? '' : msg; if (h && ok) { h.dataset.orig ??= h.textContent; h.textContent = msg; } if (h && !msg && h.dataset.orig != null) h.textContent = h.dataset.orig; };
+  const fld = (root, name) => $(root, `[data-dl-field="${name}"]`);
+  const val = (root, name) => (root.querySelector(`[name="${name}"]`)?.value || '').trim();
+  const passCheck = (root, pName, cName) => {
+    const p = val(root, pName), c = val(root, cName);
+    const pm = !p ? '' : p.length < 8 ? at('c_len') : !(/[a-z]/i.test(p) && /\d/.test(p)) ? at('c_weak') : at('c_ok');
+    fieldMsg(fld(root, pName), pm, pm === at('c_ok'));
+    fieldMsg(fld(root, cName), c ? (c === p ? at('m_ok') : at('m_bad')) : '', c === p);
+    return pm === at('c_ok') && c === p;
+  };
+  const emit = (root, n, detail) => root.dispatchEvent(new CustomEvent(n, {bubbles: true, cancelable: true, detail}));
+
+
+
+
+
+  Devlib.h = {$, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
+})();
