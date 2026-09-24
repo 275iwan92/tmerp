@@ -9,6 +9,12 @@ use Symfony\Component\Finder\Finder;
 // status komponen: review = menunggu penilaian user; hanya user yang boleh menaikkan ke approved.
 final class Catalog
 {
+    // Halaman yang sudah DISETUJUI user (slug => tanggal). Hanya ditambah atas persetujuan eksplisit user.
+    public const APPROVED = [
+        'p7-layer' => '2026-09-24',   // Layer Menu
+        'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
+    ];
+
     public const LOGIN_CLASSES = ['Devlib\Components\Frame', 'Devlib\Components\LoginBox', 'Devlib\Components\Clock', 'Devlib\Components\Quote',
         'Devlib\Components\Greeting', 'Devlib\Components\Weather', 'Devlib\Components\Announce', 'Devlib\Components\UatAccounts'];
 
@@ -220,7 +226,7 @@ final class Catalog
             $items = [];
             foreach ($g['pages'] as $slug => $p) {
                 $items[] = ['code' => 'P-'.$slug, 'label' => $p['label'], 'icon' => $p['icon'], 'url' => route('lib', ['slug' => $slug]),
-                    'type' => 'form', 'badge' => 'Review', 'badgeTone' => 'partial'];
+                    'type' => 'form'] + (isset(self::APPROVED[$slug]) ? ['badge' => 'Approved', 'badgeTone' => 'done'] : ['badge' => 'Review', 'badgeTone' => 'partial']);
             }
             $modules[] = ['code' => $g['code'], 'short' => $g['short'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => [['label' => 'Komponen', 'items' => $items]]];
         }
