@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pegangan Fase TMERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F5F6F2; --paper:#FFFFFF; --ink:#1B231F; --ink-2:#48534C; --muted:#707B73; --line:#DDE2DA; --line-2:#C9D0C5;
+  --basil:#2E6A4E; --basil-soft:#E3EEE7; --p1:#3B5878; --p1-soft:#E4EAF1; --p2:#2E6A4E; --p2-soft:#E3EEE7; --p3:#9A4A2E; --p3-soft:#F4E6DF;
+  --warn:#8A5A00; --warn-soft:#FBF0D9; --code-bg:#EEF1EC;
+  --serif:"Newsreader", "Georgia", "Times New Roman", serif;
+  --sans:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#121714; --paper:#19201C; --ink:#E6ECE7; --ink-2:#BAC4BD; --muted:#8B978F; --line:#2A332E; --line-2:#37423C;
+    --basil:#7CC19D; --basil-soft:#1E3228; --p1:#8FB0D6; --p1-soft:#1D2733; --p2:#7CC19D; --p2-soft:#1E3228; --p3:#E39A7C; --p3-soft:#33221B;
+    --warn:#E9C06A; --warn-soft:#2E2715; --code-bg:#202925;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#121714; --paper:#19201C; --ink:#E6ECE7; --ink-2:#BAC4BD; --muted:#8B978F; --line:#2A332E; --line-2:#37423C;
+  --basil:#7CC19D; --basil-soft:#1E3228; --p1:#8FB0D6; --p1-soft:#1D2733; --p2:#7CC19D; --p2-soft:#1E3228; --p3:#E39A7C; --p3-soft:#33221B;
+  --warn:#E9C06A; --warn-soft:#2E2715; --code-bg:#202925;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15.5px/1.65 var(--sans);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:13.5px}
+.toc b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--line)}
+.toc a:hover,.toc a:focus-visible{color:var(--ink);border-left-color:var(--basil);outline:none}
+main{min-width:0}
+header.top{padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--basil);font-weight:600}
+h1{font:600 38px/1.15 var(--serif);margin:6px 0 10px;text-wrap:balance}
+h2{font:600 27px/1.2 var(--serif);margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:22px 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+.lead{font-size:17px;color:var(--ink-2);max-width:62ch}
+.meta{font-size:13px;color:var(--muted)}
+code,.mono{font-family:var(--mono);font-size:.88em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+section{scroll-margin-top:20px;margin-bottom:44px}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:68ch}
+li{margin:3px 0}
+
+.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 8px}
+@media (max-width:640px){.flow{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--c);border-radius:0 0 10px 10px;padding:14px 16px}
+.stage .n{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--c);font-weight:600}
+.stage .t{font:600 19px/1.25 var(--serif);margin:3px 0 6px}
+.stage dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:13px}
+.stage dt{color:var(--muted)} .stage dd{margin:0}
+
+.phase-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:12px;font-weight:600;color:var(--c);background:var(--cs);padding:2px 10px;border-radius:20px;letter-spacing:.02em}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:14px 0 18px}
+.facts div{background:var(--paper);padding:10px 14px}
+.facts small{display:block;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.facts span{font-size:14px}
+
+.prompt{position:relative;background:var(--paper);border:1px solid var(--line-2);border-radius:10px;margin:18px 0 6px}
+.prompt .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.prompt pre{margin:0;padding:14px 16px;white-space:pre-wrap;font:13.5px/1.6 var(--mono);color:var(--ink);overflow-x:auto}
+.copy{font:500 12.5px var(--sans);color:var(--basil);background:var(--basil-soft);border:0;border-radius:6px;padding:5px 11px;cursor:pointer}
+.copy:hover{filter:brightness(.97)} .copy:focus-visible{outline:2px solid var(--basil);outline-offset:2px}
+
+.tbl{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--ground)}
+tr:last-child td{border-bottom:0}
+td.num{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:12px;white-space:nowrap}
+.pill.copy-data{color:var(--basil);background:var(--basil-soft)} .pill.schema{color:var(--muted);background:var(--code-bg)}
+.pill.done{color:var(--basil);background:var(--basil-soft)} .pill.open{color:var(--warn);background:var(--warn-soft)}
+
+.note{border:1px solid var(--line-2);background:var(--warn-soft);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14.5px}
+.note b{color:var(--warn)}
+.qs{counter-reset:q;list-style:none;padding:0;max-width:none}
+.qs li{counter-increment:q;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 52px;position:relative;margin:0 0 10px}
+.qs li::before{content:counter(q);position:absolute;left:16px;top:12px;width:24px;height:24px;border-radius:50%;background:var(--warn-soft);color:var(--warn);font:600 13px/24px var(--sans);text-align:center}
+.qs li b{display:block}
+.qs li span{color:var(--ink-2);font-size:14px}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <nav class="toc" aria-label="Daftar isi">
+    <b>Isi</b>
+    <a href="#ringkas">Tiga fase sekilas</a>
+    <a href="#istilah">Istilah</a>
+    <a href="#fase1">Fase 1 · DevLib</a>
+    <a href="#fase2">Fase 2 · Build &amp; UAT</a>
+    <a href="#fase3">Fase 3 · Live</a>
+    <a href="#database">Tabel yang dipakai</a>
+    <a href="#status">Yang sudah dikerjakan</a>
+    <a href="#diskusi">Untuk didiskusikan</a>
+  </nav>
+
+  <main>
+    <header class="top">
+      <div class="eyebrow">ERP CV. Telasih Makmur · Versi 2</div>
+      <h1>Pegangan Fase TMERP</h1>
+      <p class="lead">Aturan main dari komponen sampai aplikasi live: apa yang dibangun di tiap fase, database yang dipakai, dan kapan satu fase dianggap selesai. Setiap fase punya teks prompt siap salin untuk sesi Claude.</p>
+      <p class="meta">Disusun 24 September 2026 dari diskusi dengan Johannes Iwan. Menggantikan rencana 4 fase sebelumnya: Fase 2 (mockup) dan Fase 3 (dummy) digabung.</p>
+    </header>
+
+    <section id="ringkas">
+      <h2>Tiga fase sekilas</h2>
+      <p>Kode ditulis <b>satu kali</b>. Yang berubah dari fase ke fase hanyalah isi database: dummy dulu, lalu real. Tidak ada kode yang dikerjakan dua kali.</p>
+      <div class="flow">
+        <div class="stage" style="--c:var(--p1)"><div class="n">Fase 1</div><div class="t">DevLib</div>
+          <dl><dt>Situs</dt><dd>devlib.test</dd><dt>Isi</dt><dd>objek komponen</dd><dt>Database</dt><dd><code>ddtsys</code> saja</dd></dl></div>
+        <div class="stage" style="--c:var(--p2)"><div class="n">Fase 2</div><div class="t">Build &amp; UAT</div>
+          <dl><dt>Situs</dt><dd>mockup.test</dd><dt>Isi</dt><dd>layar ERP + alur bisnis</dd><dt>Database</dt><dd>semua <code>ddt*</code> (dummy)</dd></dl></div>
+        <div class="stage" style="--c:var(--p3)"><div class="n">Fase 3</div><div class="t">Live</div>
+          <dl><dt>Situs</dt><dd>tmerp.test</dd><dt>Isi</dt><dd>kode yang sama</dd><dt>Database</dt><dd><code>tm2*</code> real + migrasi</dd></dl></div>
+      </div>
+    </section>
+
+    <section id="istilah">
+      <h2>Istilah</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Istilah</th><th>Arti</th></tr></thead>
+        <tbody>
+          <tr><td><b>Objek / komponen</b></td><td>Bagian layar yang dibuat sekali di DevLib, misalnya Grid, Form, Layer Menu, dan Chat. Punya <b>properti</b> (pengaturan), <b>method</b> (kemampuan), dan <b>perilaku</b> (reaksi terhadap klik atau ketikan).</td></tr>
+          <tr><td><b>Induk &amp; turunan</b></td><td>Turunan mewarisi semua isi induk dan hanya mengubah bagian yang perlu. Ubah induknya, maka semua turunan ikut berubah tanpa dicari satu per satu.</td></tr>
+          <tr><td><b>v1 / v2</b></td><td>v1 = menu, dashboard, atau system dashboard yang lama (top bar, label disingkat SD, MM, WM). v2 = Layer Menu di panel kiri tanpa top bar, label tampil lengkap. v2 adalah menu utama; v1 tetap bisa dipilih.</td></tr>
+          <tr><td><code>tm2*</code></td><td>Database real: <code>tm2mst</code>, <code>tm2sdi</code>, <code>tm2pur</code>, <code>tm2inv</code>, <code>tm2prd</code>, <code>tm2acc</code>, <code>tm2hrm</code>, <code>tm2hrr</code>, <code>tm2pyr</code>, <code>tm2sys</code>.</td></tr>
+          <tr><td><code>ddt*</code></td><td>"Data dummy test": pasangan 1-banding-1 dengan <code>tm2*</code> (<code>ddtmst</code> … <code>ddtsys</code>) dengan skema identik. <code>ddt*</code> dan <code>tm2*</code> tidak pernah saling menyentuh.</td></tr>
+          <tr><td><code>tm2old</code></td><td>Data lama dari ScriptCase V1. Tidak diduplikasi, dipakai bersama sebagai bahan baca saja.</td></tr>
+          <tr><td><b>UAT</b></td><td>User Acceptance Test: pengguna mencoba alur bisnis dengan data dummy sampai dinyatakan benar.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="fase1" style="--c:var(--p1);--cs:var(--p1-soft)">
+      <div class="phase-head"><h2>Fase 1 · DevLib</h2><span class="tag">devlib.test</span></div>
+      <p>Perpustakaan objek. Di sini Anda mengubah <b>method, perilaku, dan properti</b> sebuah komponen, dan semua layar di Fase 2 yang memakainya ikut berubah.</p>
+      <div class="facts">
+        <div><small>Tujuan</small><span>Komponen dasar &amp; layar standar, berorientasi objek</span></div>
+        <div><small>Database</small><span><code>ddtsys</code> hanya untuk system: login, tema, preferensi</span></div>
+        <div><small>Menu situs</small><span>Katalog komponen di kode (bukan menu ERP)</span></div>
+        <div><small>Selesai bila</small><span>Komponen berstatus Approved oleh Anda</span></div>
+      </div>
+      <h3>Aturan</h3>
+      <ul>
+        <li>Hanya komponen dan layar standar. Layar khusus ERP (dieline, imposition, Master Card, nota) dibangun di Fase 2.</li>
+        <li>Setiap komponen punya induk. Varian dibuat sebagai turunan yang menimpa properti (PHP) atau method (JS), bukan salinan.</li>
+        <li>Alur kerja per komponen: mockup → komponen → Anda menilai (<b>Review</b>) → Anda menyetujui (<b>Approved</b>). Hanya Anda yang boleh memberi Approved.</li>
+        <li>Tema mengikuti 12 tema yang sudah ada (Pastel, Cerah, Dark, Hitam × Biru, Hijau, Merah).</li>
+        <li>Menu utama situs = Menu v2 (Layer Menu). Menu v1 bisa dipilih lewat roda gigi.</li>
+      </ul>
+      <div class="prompt" id="p1"><div class="bar">Prompt Fase 1 untuk sesi Claude<button class="copy" type="button" data-copy="p1">Salin</button></div><pre>Kerjakan FASE 1 (DevLib) proyek TMERP.
+Situs: devlib.test. Kode library: packages/devlib (komponen x-dl::...).
+Tujuan: objek komponen UI yang dipakai ulang oleh Fase 2. User harus bisa mengubah
+properti, method, dan perilaku sebuah komponen di DevLib, dan semua layar Fase 2 ikut berubah.
+Aturan:
+- Object oriented: setiap komponen = kelas PHP + kelas JS dengan induk. Varian = turunan
+  yang menimpa properti/method, bukan salinan kode.
+- Hanya komponen dasar & layar standar. Layar khusus ERP dibangun di Fase 2.
+- Database: HANYA ddtsys (skema identik tm2sys) untuk system (login, tema, preferensi).
+  Tidak ada database lain. Menu situs = katalog komponen di kode.
+- Menu utama = Menu v2 (x-dl::layer-shell, tanpa top bar). Menu v1 (x-dl::shell) tetap bisa dipilih.
+- Setiap komponen baru: mockup dulu -> bangun -> status Review -> tunggu user.
+  Hanya user yang memberi Approved (devlib/app/Support/Catalog.php, const APPROVED).
+- Tema ikut 12 tema yang ada. Label tombol baku (Save/Cancel/Close, Back selalu "Back").
+- Selesai = verifikasi otomatis (tools/check.ps1) lalu commit + push per potongan kerja.</pre></div>
+    </section>
+
+    <section id="fase2" style="--c:var(--p2);--cs:var(--p2-soft)">
+      <div class="phase-head"><h2>Fase 2 · Build &amp; UAT</h2><span class="tag">mockup.test</span></div>
+      <p>Layar ERP disusun dari objek DevLib, lalu <b>alur bisnis diuji dengan data dummy</b> sampai benar. Semua yang ingin Anda bongkar atau perbaiki dikerjakan di fase ini. Kodenya sudah kode akhir, jadi tidak ada yang dibangun ulang saat live.</p>
+      <div class="facts">
+        <div><small>Tujuan</small><span>Semua layar + alur bisnis benar lewat UAT</span></div>
+        <div><small>Database</small><span>Semua <code>ddt*</code>, dengan <code>tm2old</code> dibaca bersama</span></div>
+        <div><small>Kode</small><span>Satu kode dengan tmerp, beda <code>.env</code> saja</span></div>
+        <div><small>Selesai bila</small><span>Setiap alur lulus UAT &amp; disetujui Anda</span></div>
+      </div>
+
+      <h3>Menu &amp; hak akses</h3>
+      <ul>
+        <li>Isi menu sama dengan tmerp.test, dibaca dari <code>ddtsys.sys_app_menu</code> dan ditampilkan dengan Menu v2.</li>
+        <li>Hak akses dari <code>ddtsys.sec_*</code> (salinan lengkap dari tmerp: pengguna, password, grup, izin).</li>
+        <li>Pro-Cost tetap di bawah Sales, tetapi <b>hanya terlihat oleh pengguna yang diizinkan</b>: wiwik, carrij (Carrij Soehendra), johiwan, dan siapa pun yang nanti Anda tambahkan lewat layar Security. Sales biasa tidak melihatnya.</li>
+        <li>Kolom <code>target</code> = alamat layar, <code>status_code</code> = progres pembangunan v2: NOT_BUILT → READY_FOR_QC → LOCKED. LOCKED hanya diberikan oleh Anda.</li>
+      </ul>
+
+      <h3>Data dummy untuk UAT</h3>
+      <ul>
+        <li><b>Berbasis skenario:</b> setiap alur punya contoh di setiap status, misalnya Inquiry Baru yang masih Draft, menunggu ProDev, sudah publish, dan yang kalah; Revisi per scope; Rekalkulasi; CO dari Quotation dan CO manual; CPDEL split dan gabung. Termasuk kasus sulit: due date kosong, harga bahan naik, multi-part.</li>
+        <li><b>Master = salinan data real</b> (mesin, proses, bahan, customer, pegawai) supaya terasa nyata. Transaksinya dummy.</li>
+        <li><b>Tombol reset:</b> satu tombol (dan perintah <code>php artisan ddt:reset</code>) mengembalikan semua <code>ddt*</code> ke data skenario awal. Dipakai saat alur bisnis ternyata tidak tepat dan perlu dicoba ulang.</li>
+        <li><b>Akun UAT per peran:</b> Sales, ProDev, Costing, Direksi, dari salinan <code>sec_user</code>.</li>
+        <li><b>Skrip UAT = halaman Alur</b> per modul. Hasilnya dicatat di <code>docs/qc_feedback.md</code>.</li>
+      </ul>
+
+      <h3>Urutan kerja</h3>
+      <ol>
+        <li><b>Fondasi:</b> <code>ddtsys</code> (sudah), <code>ddt*</code> lainnya, mockup.test memakai kode tmerp dengan <code>.env</code> dummy, menu dari database, login lewat <code>sec_user</code>, tombol reset.</li>
+        <li><b>Irisan per modul</b>, sesuai urutan yang Anda kunci: Inquiry → ProDev → ProCost → Quotation → Customer Order → CPDEL → modul berikutnya. Tiap irisan terdiri dari layar, aturan bisnis di PHP, data skenario, dan skrip UAT. Anda menguji dan menyetujui dulu, baru lanjut.</li>
+        <li><b>Zona beku</b> (Inquiry Product, ProDev, ProCost): tampilannya boleh dibangun ulang dengan objek DevLib, tetapi <b>esensi dan alur data/dokumen harus terbukti sama</b> sebelum yang lama diganti.</li>
+      </ol>
+
+      <div class="prompt" id="p2"><div class="bar">Prompt Fase 2 untuk sesi Claude<button class="copy" type="button" data-copy="p2">Salin</button></div><pre>Kerjakan FASE 2 (Build &amp; UAT) proyek TMERP.
+Situs: mockup.test = KODE YANG SAMA dengan tmerp, .env menunjuk ke database dummy ddt*.
+Tujuan: semua layar ERP disusun dari objek DevLib, lalu alur bisnis diuji dengan data
+dummy sampai benar (UAT). Kode ini adalah kode akhir yang nanti live, jangan dibuat dua kali.
+Database:
+- Semua database dummy ddt* (ddtmst, ddtsdi, ddtpur, ddtinv, ddtprd, ddtacc, ddthrm,
+  ddthrr, ddtpyr, ddtsys), skema identik tm2*. tm2old dibaca bersama (read-only).
+- Nama koneksi di kode tetap tm2*; nama database dari .env. JANGAN menulis ke tm2*.
+- ddtsys berisi salinan tm2sys: sys_app_menu, sec_* (pengguna, password, grup, izin), config.
+  Salin ulang security: php artisan ddt:copy-sys --only=security.
+Menu &amp; akses:
+- Menu = ddtsys.sys_app_menu, tampil dengan Menu v2. Hak akses dari sec_*.
+- Pro-Cost di bawah Sales, hanya terlihat oleh grup yang diizinkan (wiwik, carrij, johiwan, dst).
+- status_code = progres v2 (NOT_BUILT -> READY_FOR_QC). LOCKED hanya oleh user.
+Data dummy:
+- Berbasis skenario: tiap alur punya contoh di tiap status + kasus sulit. Master = salinan
+  data real (baca saja dari sumber), transaksi dummy. Ditulis sebagai seeder (kode).
+- Tombol + perintah reset (php artisan ddt:reset) mengembalikan ddt* ke skenario awal.
+- Akun UAT per peran. Skrip UAT = halaman Alur per modul; hasil ke docs/qc_feedback.md.
+Cara kerja:
+- Irisan per modul: Inquiry -> ProDev -> ProCost -> Quotation -> CO -> CPDEL -> ...
+  Tiap irisan: layar (objek DevLib) + aturan bisnis di PHP + data skenario + skrip UAT.
+  Tunggu persetujuan user sebelum irisan berikutnya.
+- Zona beku (Inquiry Product, ProDev, ProCost): esensi dan alur data/dokumen harus terbukti
+  sama sebelum menggantikan layar lama. Tanya user sebelum mengubah alur.
+- Aturan bisnis & validasi WAJIB di PHP (server), tidak hanya di JS.
+- Verifikasi ke database (jangan percaya skrip), lalu commit + push per potongan kerja.</pre></div>
+    </section>
+
+    <section id="fase3" style="--c:var(--p3);--cs:var(--p3-soft)">
+      <div class="phase-head"><h2>Fase 3 · Live</h2><span class="tag">tmerp.test</span></div>
+      <p>Setelah semua alur lulus UAT, aplikasi yang <b>sama</b> dijalankan dengan database real. Yang dipindahkan adalah data dan pengaturan, bukan kode.</p>
+      <div class="facts">
+        <div><small>Tujuan</small><span>Siap dipakai dengan data real &amp; hasil migrasi</span></div>
+        <div><small>Database</small><span><code>tm2*</code> real</span></div>
+        <div><small>Kode</small><span>Sama dengan Fase 2</span></div>
+        <div><small>Selesai bila</small><span>Cek akhir lulus &amp; Anda menyatakan live</span></div>
+      </div>
+      <h3>Langkah go-live</h3>
+      <ol>
+        <li>Salin pengaturan yang sudah benar dari <code>ddtsys</code> ke <code>tm2sys</code>: menu, security, config. Baris khusus mockup (menu Alur, Developer) ditandai supaya bisa disaring.</li>
+        <li>Migrasi data lama dari <code>tm2old</code> ke <code>tm2*</code> (sudah ada ETL di <code>app/Services/Migration</code>). Lakukan geladi dulu ke <code>ddt*</code>.</li>
+        <li>Arahkan <code>.env</code> tmerp.test ke <code>tm2*</code>.</li>
+        <li>Cek akhir: login, menu, hak akses, satu alur penuh per modul dengan data real.</li>
+      </ol>
+      <div class="prompt" id="p3"><div class="bar">Prompt Fase 3 untuk sesi Claude<button class="copy" type="button" data-copy="p3">Salin</button></div><pre>Kerjakan FASE 3 (Live) proyek TMERP.
+Situs: tmerp.test = kode yang sama dengan Fase 2, .env menunjuk ke database real tm2*.
+Syarat mulai: semua alur yang akan live sudah lulus UAT di Fase 2 dan disetujui user.
+Langkah:
+1. Salin pengaturan dari ddtsys ke tm2sys (menu, sec_*, config). Saring baris khusus
+   mockup (Alur, Developer). Tunjukkan perbedaannya ke user dan minta persetujuan dulu.
+2. Migrasi data lama tm2old -> tm2* memakai ETL di app/Services/Migration.
+   Geladi dulu ke ddt*, bandingkan hasilnya, baru jalankan ke tm2*.
+3. Arahkan .env tmerp.test ke tm2*.
+4. Cek akhir: login, menu, hak akses, satu alur penuh per modul dengan data real.
+Aturan: data real mesin &amp; pegawai tidak boleh diubah tanpa izin. Setiap langkah yang
+sulit dibalik (salin ke tm2sys, migrasi) harus disetujui user lebih dulu.
+Perubahan setelah live tetap lewat Fase 2 dulu (uji di ddt*), baru dibawa ke live.</pre></div>
+    </section>
+
+    <section id="database">
+      <h2>Tabel yang dipakai</h2>
+      <p><code>ddtsys</code> dibuat dengan perintah <code>php artisan ddt:copy-sys</code>. Skemanya identik dengan <code>tm2sys</code> (38 tabel, 316 kolom, 90 index, 14 foreign key), dan perintah ini hanya <b>membaca</b> <code>tm2sys</code>. Data disalin per kelompok:</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Kelompok</th><th>Tabel</th><th>Isi</th><th style="text-align:right">Baris</th></tr></thead>
+        <tbody>
+          <tr><td><b>Menu</b></td><td><code>sys_app_menu</code>, <code>sys_app_menu_color</code>, <code>sys_user_menu</code></td><td><span class="pill copy-data">disalin</span></td><td class="num">218 · 3 · 11</td></tr>
+          <tr><td><b>Security</b></td><td><code>sec_user</code>, <code>sec_group</code>, <code>sec_user_group</code>, <code>sec_module</code>, <code>sec_group_permission</code>, <code>sec_recovery_question</code></td><td><span class="pill copy-data">disalin</span></td><td class="num">155 · 12 · 10 · 10 · 28 · 6</td></tr>
+          <tr><td><b>Config</b></td><td><code>sys_constant</code>, <code>sys_constant_category</code>, <code>sys_setting</code>, <code>sys_theme</code>, <code>sys_languages</code>, <code>sys_translations</code>, <code>sys_login_hero</code>, <code>sys_quotes</code>, <code>sys_doc_reference</code>, <code>sys_data_origin_rule</code>, <code>sys_data_requirement</code>, <code>migrations</code></td><td><span class="pill copy-data">disalin</span></td><td class="num">2.566 total</td></tr>
+          <tr><td><b>Runtime</b></td><td><code>sessions</code>, <code>cache</code>, <code>cache_locks</code>, <code>jobs</code>, <code>job_batches</code>, <code>failed_jobs</code>, <code>password_reset_tokens</code>, <code>sec_login_attempt</code></td><td><span class="pill schema">skema saja</span></td><td class="num">0</td></tr>
+          <tr><td><b>Transaksi system</b></td><td><code>sys_chat_*</code> (3), <code>sys_notifications</code>, <code>sys_support_*</code> (3), <code>sys_grid_preference</code>, <code>sys_dummy_snapshot</code></td><td><span class="pill schema">skema saja</span></td><td class="num">0</td></tr>
+        </tbody>
+      </table></div>
+      <p>Kelompok <b>Config</b> ikut disalin karena system tidak bisa berjalan tanpanya: tema, terjemahan, konstanta, dan gambar halaman login. Kelompok Runtime dan Transaksi system hanya disalin skemanya, karena isinya milik aplikasi tmerp yang sedang berjalan.</p>
+      <p><code>ddt*</code> lainnya (<code>ddtmst</code>, <code>ddtsdi</code>, <code>ddtpur</code>, <code>ddtinv</code>, <code>ddtprd</code>, <code>ddtacc</code>, <code>ddthrm</code>, <code>ddthrr</code>, <code>ddtpyr</code>) dibuat pada fondasi Fase 2. Skemanya disalin dari <code>tm2*</code>, master diisi salinan data real, dan transaksi diisi data skenario.</p>
+    </section>
+
+    <section id="status">
+      <h2>Yang sudah dikerjakan</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Hal</th><th>Keadaan</th><th>Catatan</th></tr></thead>
+        <tbody>
+          <tr><td>Menu v2 (Layer Menu + Layer Shell)</td><td><span class="pill done">Approved</span></td><td>Menu utama devlib.test &amp; mockup.test, tanpa top bar.</td></tr>
+          <tr><td><code>ddtsys</code></td><td><span class="pill done">Terbentuk</span></td><td>Skema identik, data menu/security/config tersalin, <code>tm2sys</code> tidak tersentuh. Commit <code>c6ffa3d</code>.</td></tr>
+          <tr><td>Status menu di <code>ddtsys</code></td><td><span class="pill done">Diset</span></td><td>170 item NOT_BUILT (status v1 disimpan di catatan sebagai <code>[v1 …]</code>). 2 item READY_FOR_QC: Inquiry Product dan Pro-Dev, yang objek v2-nya sudah dibangun.</td></tr>
+          <tr><td>Login <code>carrij</code></td><td><span class="pill done">Dibuat</span></td><td>Carrij Soehendra, Presiden Direktur (pegawai TM-00491), grup DIREKSI, hanya di <code>ddtsys</code>. Akun UAT <code>direksi</code> dihapus dari <code>ddtsys</code>. Password harus diganti sebelum <code>ddtsys</code> disalin ke live.</td></tr>
+          <tr><td>Situs</td><td><span class="pill done">Dirapikan</span></td><td>erptest.test dihapus (hanya alias). Tersisa devlib.test, mockup.test, tmerp.test.</td></tr>
+          <tr><td>mockup.test memakai <code>ddtsys</code></td><td><span class="pill open">Belum</span></td><td>Menunggu hasil diskusi pegangan ini.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="diskusi">
+      <h2>Untuk didiskusikan</h2>
+      <p>Setelah poin-poin ini diputuskan, pegangan ini menjadi ketentuan tetap.</p>
+      <ol class="qs">
+        <li><b>Akun UAT per jabatan</b><span>Anda akan memberi nama login untuk beberapa jabatan sebagai akun UAT. Akun UAT lama (operator, supervs, mgr-sal, mgr-pur, mgr-inv, mgr-acc) diganti atau dipertahankan?</span></li>
+        <li><b>Menu v1</b><span>Tetap tersedia sebagai pilihan selamanya, atau dihapus setelah semua pengguna terbiasa dengan v2?</span></li>
+        <li><b>Menu Alur &amp; Developer</b><span>Dimasukkan sebagai baris menu di <code>ddtsys</code> dan ditandai, supaya bisa disaring saat disalin ke <code>tm2sys</code>. Developer hanya terlihat oleh admin.</span></li>
+        <li><b>Tombol reset data dummy</b><span>Siapa yang boleh menekan (admin saja, atau semua penguji UAT)? Reset berlaku untuk semua orang yang sedang menguji sekaligus.</span></li>
+        <li><b>Master yang disalin dari data real</b><span>Mesin, proses, bahan, customer, dan pegawai. Ada yang tidak boleh ikut, misalnya data gaji di <code>tm2pyr</code> yang terenkripsi?</span></li>
+        <li><b>Nama situs Fase 2</b><span>Tetap mockup.test, atau diganti erptest.test sesuai rencana lama? Isinya sama, hanya nama.</span></li>
+        <li><b>Aplikasi <code>mockup/</code> yang sekarang</b><span>Setelah layar pindah ke kode tmerp, folder <code>mockup/</code> dipensiunkan. Objek di <code>packages/mockup-parts</code> tetap dipakai.</span></li>
+        <li><b>Test otomatis</b><span>Test tmerp sekarang menulis ke <code>tm2*</code>. Usul: dialihkan ke <code>ddt*</code> supaya data real tidak pernah tersentuh test.</span></li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<script>
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-copy]'); if (!b) return;
+  const pre = document.querySelector('#' + b.dataset.copy + ' pre');
+  const done = t => { b.textContent = t; setTimeout(() => { b.textContent = 'Salin'; }, 1800); };
+  try { await navigator.clipboard.writeText(pre.innerText); done('Tersalin'); }
+  catch (err) { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); done('Tekan Ctrl+C'); }
+});
+</script>
+
+</body>
+</html>
