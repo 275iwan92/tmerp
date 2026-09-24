@@ -86,7 +86,7 @@ final class Catalog
                         'ribbon' => ['Ribbon ala Microsoft Excel (tab, grup, multi ikon, submenu, split, toggle, KeyTips)', $c('Ribbon')],
                         'mega-menu' => ['Mega Menu ala ScriptCase (bilah warna + panel 4 kolom ber-ikon)', $c('MegaMenu')],
                         'side-menu' => ['Side Panel kiri & kanan (akordeon bertingkat, rail ikon + flyout, favorit, terakhir dibuka)', $c('SideMenu')],
-                        'layer-menu' => ['Layer Menu: panel kiri berlapis (modul › menu › sub › sub-sub), geser + Back + breadcrumb', $c('LayerMenu')],
+                        'layer-menu' => ['Layer Menu: panel kiri berlapis (modul › menu › sub › sub-sub) + roda gigi: Chat (tukar / dok kanan) & Profile naik dari bawah', $c('LayerMenu', 'Chat')],
                     ], 'main_menu_v2.html'),
                     'p7-chat' => $page('Chat (gaya WhatsApp)', 'fa-solid fa-comment-dots', ['chat' => ['Chat: yang sedang login, + untuk yang tidak login, foto profil & kirim foto', $c('Chat')]], 'main_menu_v2.html'),
                     'login-1' => ['label' => 'Login 1 · sama dengan tmerp', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],

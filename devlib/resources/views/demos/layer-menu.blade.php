@@ -79,8 +79,46 @@
             ['key' => 'm-proc', 'label' => 'Process', 'icon' => 'fa-code-branch', 'group' => 'Master'],
         ]],
     ];
+    $chat = \App\Support\DemoData::chat();
+    $actions = [
+        ['key' => 'theme', 'label' => 'Theme', 'icon' => 'fa-palette'],
+        ['key' => 'logout', 'label' => 'Log out', 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
+    ];
 @endphp
 <div class="dl-lm-demo">
-    <x-dl::layer-menu id="demo-layer" :items="$tree" user="Johannes Iwan" />
-    <div class="dl-sm-demo__page"><div><b>Area layar</b><br>Klik modul → layer 2 → layer 3 → layer 4, semua di panel kiri yang sama.<br>Back (atau Esc / ←) naik satu layer. Garis di kanan atas = layer aktif; angka = jumlah layar di bawah cabang.<br>Contoh sampai layer 4: Sales › Inquiry Product › New / Revise / Recalc › …</div></div>
+    <x-dl::layer-menu id="demo-layer" :items="$tree" user="Johannes Iwan" role="Administrator" login="johiwan" dock="#demo-lm-dock" :actions="$actions">
+        <x-slot:chat><x-dl::chat compact :me="$chat['me']" :people="$chat['people']" :convos="$chat['convos']" /></x-slot:chat>
+        <x-slot:profile>
+            <section data-lm-page="me" data-label="My Profile" data-icon="fa-user">
+                <x-dl::field.display label="Full name" value="Johannes Iwan" />
+                <x-dl::field.display label="Login" value="johiwan" format="mono" />
+                <x-dl::field.display label="Group" value="Administrator" />
+                <x-dl::field.display label="Email" value="johiwan@telasih.co.id" />
+            </section>
+            <section data-lm-page="password" data-label="Change Password" data-icon="fa-lock">
+                <x-dl::field.password name="pw_old" label="Current password" />
+                <x-dl::field.password name="pw_new" label="New password" hint="Minimal 6 karakter" />
+                <x-dl::field.password name="pw_new2" label="Confirm new password" />
+                <x-dl::button preset="save" />
+            </section>
+            <section data-lm-page="language" data-label="Language" data-icon="fa-language">
+                <x-dl::field.radio name="lm_lang" label="Language" :options="['Bahasa Indonesia', 'English']" value="English" />
+            </section>
+            <section data-lm-page="theme" data-label="Theme" data-icon="fa-palette"><x-dl::theme-picker /></section>
+        </x-slot:profile>
+    </x-dl::layer-menu>
+    <div class="dl-sm-demo__page"><div><b>Area layar</b><br>Klik modul → layer 2 → layer 3 → layer 4, semua di panel kiri yang sama. Back (atau Esc / ←) naik satu layer.<br>Roda gigi di sebelah nama → Chat / Profile (naik dari bawah, lebar panel tetap).<br>Selama chat terbuka: ⇄ tukar menu/chat, ▥ chat pindah ke sisi kanan layar (menu tetap di kiri).</div></div>
+    <aside id="demo-lm-dock" class="dl-lm-dock"></aside>
 </div>
+<script>
+    // Simulasi balasan (demo saja; di aplikasi pesan masuk dari server): kirim pesan -> 1,5 detik kemudian dibalas.
+    document.addEventListener('dl:chat-send', e => {
+        const chat = e.target.dlComponent, lm = document.querySelector('#demo-layer, [data-id="demo-layer"]')?.dlComponent;
+        setTimeout(() => {
+            const c = chat.conv(e.detail.to), seen = String(chat.cur) === String(e.detail.to) && lm?.chatVisible();
+            c.msgs.push({me: false, t: 'Oke, noted', at: chat.now(), day: 'Hari ini'});
+            if (!seen) c.unread = (c.unread || 0) + 1;
+            chat.drawList(); chat.drawMain();
+        }, 1500);
+    });
+</script>
