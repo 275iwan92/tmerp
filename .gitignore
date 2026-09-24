@@ -44,3 +44,6 @@ Thumbs.db
 # bisa di-push sama sekali. Dump per-database di docs/ddl/*.sql lain tetap
 # versioned (semuanya < 40 MB).
 /docs/ddl/tm_20260911.sql
+
+# Hasil tools/render-as.php (pratinjau halaman sebagai pengguna)
+/public/_t.html
