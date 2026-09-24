@@ -4,7 +4,10 @@ namespace App\Providers;
 
 use App\Models\Sys\SysConstant;
 use App\Support\DataOrigin\DataOriginScope;
+use Illuminate\Database\Events\MigrationsEnded;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +32,13 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->applyTimezone();
+
+        // Struktur DB berubah (migrate / rollback) -> Data Dictionary mockup.test ikut diperbarui.
+        Event::listen(MigrationsEnded::class, function () {
+            if (is_dir(base_path('mockup'))) {
+                Artisan::call('schema:dictionary');
+            }
+        });
     }
 
     // Zona waktu dari Settings -> Constants (APP_TIMEZONE). DB belum siap (install awal) atau nilai

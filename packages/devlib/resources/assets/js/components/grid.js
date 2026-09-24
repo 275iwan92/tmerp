@@ -1,7 +1,7 @@
 /* DevLib · Grid */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, fmt, at, val, emit} = Devlib.h;
+  const {srcAttr, $, $$, esc, toast, fmt, at, val, emit} = Devlib.h;
   /* ============================ GRID ============================ */
   // Mesin grid sisi-browser (DevLib, tanpa DB). Di tmerp, versi server (Livewire) memakai
   // markup & kelas yang sama; hanya sumber data & query-nya yang berpindah ke server.
@@ -136,7 +136,7 @@
       this.q('[data-g-head]').innerHTML = '<tr><th class="dl-grid__chk"><input type="checkbox" data-g-all aria-label="Pilih semua di halaman"></th>' + (this.hasExp ? '<th class="dl-grid__exp"></th>' : '')
         + vis.map(c => {
           const on = this.st.sort === c.key, arrow = on ? (this.st.dir > 0 ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short') : 'fa-sort';
-          return `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
+          return `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
         }).join('') + (this.cfg.actions !== 'none' ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
     }
 

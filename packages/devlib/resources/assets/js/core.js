@@ -556,6 +556,8 @@ window.Devlib = window.Devlib || {};
 
 
 
-  Devlib.h = {$, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
+  const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
 })();

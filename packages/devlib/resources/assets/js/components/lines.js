@@ -1,7 +1,7 @@
 /* DevLib · Lines */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox} = Devlib.h;
+  const {srcAttr, $, $$, esc, CASES, CASE_LABEL, applyCase, confirmBox} = Devlib.h;
   /* ============================ LINES (detail dokumen) ============================ */
   class Lines extends Devlib.Component {
     static selector = "[data-dl-lines]";
@@ -108,7 +108,7 @@
       }
     }
 
-    head() { $(this.el, '[data-l-head]').innerHTML = `<tr><th class="dl-lines__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}${this.ro ? '' : '<th class="dl-lines__act"></th>'}</tr>`; }
+    head() { $(this.el, '[data-l-head]').innerHTML = `<tr><th class="dl-lines__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}${this.ro ? '' : '<th class="dl-lines__act"></th>'}</tr>`; }
 
     body() {
       $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${i + 1}</td>${this.cols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act"><button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris"><i class="fa-solid fa-trash-can"></i></button></td>`}</tr>`).join('')
