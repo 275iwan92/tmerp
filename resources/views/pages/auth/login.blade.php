@@ -2,6 +2,7 @@
 
 use App\Models\Sys\SecLoginAttempt;
 use App\Models\Sys\SecUser;
+use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysLoginHero;
 use App\Models\Sys\SysQuote;
 use App\Models\Sys\SysTranslation;
@@ -73,6 +74,27 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
             'url' => $h?->image_url ?? 'https://upload.wikimedia.org/wikipedia/commons/e/ea/Offset_press_4_color.jpg',
             'caption' => $h?->caption ?? '',
         ];
+    }
+
+    // Akun UAT (keputusan user 2026-09-25): konstanta grup UAT_ACCOUNTS (UAT_ACCOUNT_01, _02, ...), satu akun per
+    // konstanta: "login | password | peran". Hanya diisi di ddtsys (mockup.test); tidak ada = panel tidak tampil (live).
+    #[Computed]
+    public function uatAccounts(): array
+    {
+        return SysConstant::query()->where('constant_group', 'UAT_ACCOUNTS')->where('activate', true)->orderBy('constant_key')->pluck('constant_text')
+            ->map(fn ($l) => array_map('trim', explode('|', (string) $l)))
+            ->filter(fn ($p) => count($p) >= 2 && $p[0] !== '')
+            ->map(fn ($p) => ['login' => $p[0], 'password' => $p[1], 'role' => $p[2] ?? ''])
+            ->values()->all();
+    }
+
+    public function fillUat(int $i): void
+    {
+        $a = $this->uatAccounts[$i] ?? null;
+        if ($a) {
+            $this->loginField = $a['login'];
+            $this->pswd = $a['password'];
+        }
     }
 
     public function submit()
@@ -225,30 +247,25 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
                     <div class="divider"><span>atau</span></div>
                     <div class="reg">Belum punya akun? <a href="{{ route('register', ['lang' => $lang]) }}">Daftar</a></div>
 
-                    {{-- Akun contoh UAT (permintaan user 2026-09-03) -- 7 akun lintas 4 level
-                         (operator/supervs/4x manager per-bidang/direksi), password sama supaya
-                         tim UAT gampang coba lintas role. HAPUS/sembunyikan panel ini sebelum
-                         rilis produksi sungguhan -- ini sengaja terlihat di layar login demi
-                         kemudahan UAT, bukan pola yang aman utk end-user asli. --}}
-                    <div class="uat-box" x-data="{ open: false }">
-                        <button type="button" class="uat-toggle" @click="open = !open" title="Daftar akun contoh untuk UAT (User Acceptance Test)">
-                            🧪 Akun Uji Coba (UAT) <span x-text="open ? '▲' : '▼'"></span>
-                        </button>
-                        <div class="uat-panel" x-show="open" x-cloak x-transition>
-                            <p class="uat-note">Semua password sama: <code>contoh!23</code></p>
-                            <table class="uat-table">
-                                <tbody>
-                                    <tr><td>Level 1 — Operator</td><td><code>operator</code></td></tr>
-                                    <tr><td>Level 2 — Supervisor</td><td><code>supervs</code></td></tr>
-                                    <tr><td>Level 3 — Manager Sales</td><td><code>mgr-sal</code></td></tr>
-                                    <tr><td>Level 3 — Manager Purchasing</td><td><code>mgr-pur</code></td></tr>
-                                    <tr><td>Level 3 — Manager Inventory</td><td><code>mgr-inv</code></td></tr>
-                                    <tr><td>Level 3 — Manager Finance & Acc.</td><td><code>mgr-acc</code></td></tr>
-                                    <tr><td>Level 4 — Direksi</td><td><code>direksi</code></td></tr>
-                                </tbody>
-                            </table>
+                    {{-- Akun UAT: daftar dari konstanta grup UAT_ACCOUNTS (Settings > Constants), klik baris = login & password
+                         terisi. Hanya tampil bila konstanta ada (mockup.test); tmerp.test live tidak menampilkannya. --}}
+                    @if ($this->uatAccounts)
+                        <div class="uat-box" x-data="{ open: false }">
+                            <button type="button" class="uat-toggle" @click="open = !open" title="Daftar akun untuk UAT (User Acceptance Test)">
+                                🧪 Akun Uji Coba (UAT) <span x-text="open ? '▲' : '▼'"></span>
+                            </button>
+                            <div class="uat-panel" x-show="open" x-cloak x-transition>
+                                <p class="uat-note">Klik satu baris: login &amp; password terisi, lalu tekan Masuk.</p>
+                                <table class="uat-table">
+                                    <tbody>
+                                        @foreach ($this->uatAccounts as $i => $a)
+                                            <tr wire:click="fillUat({{ $i }})" style="cursor:pointer" title="Isi login {{ $a['login'] }}"><td>{{ $a['role'] }}</td><td><code>{{ $a['login'] }}</code></td></tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
