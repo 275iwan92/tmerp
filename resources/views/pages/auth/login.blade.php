@@ -2,7 +2,6 @@
 
 use App\Models\Sys\SecLoginAttempt;
 use App\Models\Sys\SecUser;
-use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysLoginHero;
 use App\Models\Sys\SysQuote;
 use App\Models\Sys\SysTranslation;
@@ -76,13 +75,12 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         ];
     }
 
-    // Akun UAT (keputusan user 2026-09-25): konstanta grup UAT_ACCOUNTS (UAT_ACCOUNT_01, _02, ...), satu akun per
-    // konstanta: "login | password | peran". Hanya diisi di ddtsys (mockup.test); tidak ada = panel tidak tampil (live).
+    // Akun UAT: config uat.accounts (hanya di .env.mockup, keputusan user 2026-09-25). Kosong = panel tidak tampil.
     #[Computed]
     public function uatAccounts(): array
     {
-        return SysConstant::query()->where('constant_group', 'UAT_ACCOUNTS')->where('activate', true)->orderBy('constant_key')->pluck('constant_text')
-            ->map(fn ($l) => array_map('trim', explode('|', (string) $l)))
+        return collect(explode(';', (string) config('uat.accounts')))
+            ->map(fn ($l) => array_map('trim', explode('|', $l)))
             ->filter(fn ($p) => count($p) >= 2 && $p[0] !== '')
             ->map(fn ($p) => ['login' => $p[0], 'password' => $p[1], 'role' => $p[2] ?? ''])
             ->values()->all();
@@ -247,8 +245,8 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
                     <div class="divider"><span>atau</span></div>
                     <div class="reg">Belum punya akun? <a href="{{ route('register', ['lang' => $lang]) }}">Daftar</a></div>
 
-                    {{-- Akun UAT: daftar dari konstanta grup UAT_ACCOUNTS (Settings > Constants), klik baris = login & password
-                         terisi. Hanya tampil bila konstanta ada (mockup.test); tmerp.test live tidak menampilkannya. --}}
+                    {{-- Akun UAT: daftar dari .env.mockup (UAT_ACCOUNTS), klik baris = login & password terisi.
+                         Hanya tampil di mockup.test; tmerp.test live tidak menampilkannya. --}}
                     @if ($this->uatAccounts)
                         <div class="uat-box" x-data="{ open: false }">
                             <button type="button" class="uat-toggle" @click="open = !open" title="Daftar akun untuk UAT (User Acceptance Test)">

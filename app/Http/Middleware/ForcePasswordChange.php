@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Sys\SysConstant;
 use App\Services\Security\SecurityRecoveryService;
 use Closure;
 use Illuminate\Http\Request;
@@ -43,12 +42,12 @@ class ForcePasswordChange
         return $next($request);
     }
 
-    // UAT (Fase 2) dengan pengamanan dilonggarkan (keputusan user 2026-09-25): konstanta SECURITY_SETUP_SKIP
+    // UAT (Fase 2) dengan pengamanan dilonggarkan (keputusan user 2026-09-25): config uat.security_setup_skip
     // ('*' = semua, atau daftar login dipisah koma) melewati kewajiban 4 pertanyaan keamanan. Hanya diisi di
-    // ddtsys (mockup.test); di tm2sys tidak ada -> gerbang tetap penuh. Diubah lewat Settings > Constants.
+    // .env.mockup; di tmerp.test kosong -> gerbang tetap penuh.
     public static function skipsSecuritySetup(string $login): bool
     {
-        $list = array_filter(array_map('trim', explode(',', strtolower(SysConstant::text('SECURITY_SETUP_SKIP', '')))));
+        $list = array_filter(array_map('trim', explode(',', strtolower((string) config('uat.security_setup_skip')))));
 
         return in_array('*', $list, true) || in_array(strtolower($login), $list, true);
     }
