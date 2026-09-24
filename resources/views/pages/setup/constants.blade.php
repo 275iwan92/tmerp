@@ -2,6 +2,7 @@
 
 use App\Livewire\Concerns\HasSpreadsheetGrid;
 use App\Models\Sys\SysConstant;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Sys\SysConstantCategory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -67,7 +68,7 @@ new #[Title('Constants — TELASIH MAKMUR ERP')] class extends Component
         return Validator::make($data, [
             'category_code' => ['nullable', 'string', 'exists:tm2sys.sys_constant_category,code'],
             'constant_key' => ['required', 'string', 'max:50', $unique],
-            'constant_text' => ['nullable', 'string', 'max:255'],
+            'constant_text' => array_merge(['nullable', 'string', 'max:255'], $data['constant_key'] === 'APP_TIMEZONE' ? ['required', 'timezone:all'] : []),
             'constant_number' => ['nullable', 'numeric'],
             'description' => ['nullable', 'string', 'max:255'],
             'activate' => ['boolean'],
@@ -92,6 +93,8 @@ new #[Title('Constants — TELASIH MAKMUR ERP')] class extends Component
             $payload['created_by'] = Auth::user()->login;
             SysConstant::create($payload);
         }
+        // AppServiceProvider meng-cache zona waktu; hapus supaya perubahan langsung berlaku.
+        Cache::forget('app.timezone');
     }
 };
 ?>
