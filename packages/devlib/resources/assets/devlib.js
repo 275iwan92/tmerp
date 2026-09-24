@@ -3801,6 +3801,164 @@
     extras();
   }
 
+  /* ============================ AUTH: REGISTER / FORGOT ============================ */
+  const AUTH_T = {
+    id: {r_heading: 'Daftar akun', r_sub: 'Buat akun baru untuk mengakses aplikasi.', r_approval: 'Akun baru harus disetujui admin. Grup & hak akses ditentukan admin saat persetujuan.', r_type: 'Daftar sebagai', r_name: 'Nama lengkap', r_email: 'Email', r_verify: 'Verifikasi', r_user: 'Username (otomatis dari email)', r_wa: 'No. WhatsApp aktif', r_send_otp: 'Kirim OTP', r_otp: 'Kode OTP dari WhatsApp', r_pass: 'Password', r_conf: 'Konfirmasi', r_submit: 'Kirim pendaftaran', r_done_h: 'Pendaftaran terkirim', r_done_b: 'Akun Anda menunggu persetujuan admin. Setelah disetujui, Anda bisa masuk memakai email dan password ini.',
+      nik: 'NIK (No. KTP)', nrp: 'NRP (No. Induk Pegawai)', nik_bad: 'NIK harus 16 digit angka.', nik_ok: 'Format NIK valid.', email_bad: 'Format email tidak valid.', email_sent: 'Email terverifikasi.', otp_sent: 'OTP dikirim ke WhatsApp.', wa_ok: 'WhatsApp terverifikasi.', wa_bad: 'Masukkan nomor WhatsApp dulu.', otp_bad: 'Kode OTP belum lengkap.', c_len: 'Min. 8 karakter.', c_weak: 'Tambahkan huruf & angka.', c_ok: 'Password kuat.', m_ok: 'Password cocok.', m_bad: 'Password belum cocok.', need_verify: 'Verifikasi email dan WhatsApp dulu sebelum mengirim.', need_fill: 'Lengkapi semua isian wajib (*).',
+      f_heading: 'Lupa password', f_sub_email: 'Masukkan email akun Anda. Kami kirim tautan untuk atur ulang password.', f_send: 'Kirim tautan reset', f_done_email: 'Jika email terdaftar, tautan reset sudah dikirim.', f_s1: 'Verifikasi', f_s2: 'Password baru', f_sub_q: 'Jawab 4 pertanyaan sesuai data akun Anda. Tanpa email.', f_birth: 'Tanggal lahir', f_phone: 'No. HP terdaftar', f_mother: 'Nama ibu kandung', f_next: 'Lanjut', f_sub_new: 'Data cocok. Buat password baru.', f_new: 'Password baru', f_save: 'Simpan', f_done_h: 'Password diperbarui', f_done_b: 'Silakan masuk memakai password baru.', f_wrong: 'Data tidak cocok dengan akun mana pun.', l_email: 'Email', l_login: 'Username'},
+    en: {r_heading: 'Create account', r_sub: 'Create a new account to access the app.', r_approval: 'New accounts require admin approval. Group & permissions are set by the admin on approval.', r_type: 'Register as', r_name: 'Full name', r_email: 'Email', r_verify: 'Verify', r_user: 'Username (auto from email)', r_wa: 'Active WhatsApp number', r_send_otp: 'Send OTP', r_otp: 'OTP code from WhatsApp', r_pass: 'Password', r_conf: 'Confirm', r_submit: 'Submit registration', r_done_h: 'Registration submitted', r_done_b: 'Your account is awaiting admin approval. Once approved, you can sign in with this email and password.',
+      nik: 'NIK (ID card no.)', nrp: 'Employee ID (NRP)', nik_bad: 'NIK must be 16 digits.', nik_ok: 'Valid NIK format.', email_bad: 'Invalid email format.', email_sent: 'Email verified.', otp_sent: 'OTP sent to WhatsApp.', wa_ok: 'WhatsApp verified.', wa_bad: 'Enter a WhatsApp number first.', otp_bad: 'OTP code is incomplete.', c_len: 'Min. 8 characters.', c_weak: 'Add letters & numbers.', c_ok: 'Strong password.', m_ok: 'Passwords match.', m_bad: 'Passwords do not match yet.', need_verify: 'Verify email and WhatsApp before submitting.', need_fill: 'Complete all required (*) fields.',
+      f_heading: 'Forgot password', f_sub_email: 'Enter your account email. We will send a reset link.', f_send: 'Send reset link', f_done_email: 'If the email is registered, a reset link has been sent.', f_s1: 'Verify', f_s2: 'New password', f_sub_q: 'Answer 4 questions matching your account. No email needed.', f_birth: 'Date of birth', f_phone: 'Registered phone', f_mother: "Mother's maiden name", f_next: 'Next', f_sub_new: 'Data matched. Create a new password.', f_new: 'New password', f_save: 'Save', f_done_h: 'Password updated', f_done_b: 'Please sign in with your new password.', f_wrong: 'The data does not match any account.', l_email: 'Email', l_login: 'Username'},
+  };
+  const at = k => AUTH_T[currentLang]?.[k] ?? AUTH_T.id[k] ?? k;
+  const authLang = root => { const f = () => $$(root, '[data-i18n]').forEach(x => { const t = AUTH_T[currentLang]?.[x.dataset.i18n]; if (t) x.textContent = t; }); document.addEventListener('dl:lang', f); f(); return f; };
+  // Pesan di bawah field: ok -> hint hijau, bad -> error merah, '' -> kosong.
+  const fieldMsg = (f, msg, ok) => { if (!f) return; const er = $(f, '[data-dl-field-error]'), h = $(f, '[data-dl-field-hint]'); f.classList.toggle('is-invalid', !!msg && !ok); f.classList.toggle('is-valid', !!msg && ok); if (er) er.textContent = ok ? '' : msg; if (h && ok) { h.dataset.orig ??= h.textContent; h.textContent = msg; } if (h && !msg && h.dataset.orig != null) h.textContent = h.dataset.orig; };
+  const fld = (root, name) => $(root, `[data-dl-field="${name}"]`);
+  const val = (root, name) => (root.querySelector(`[name="${name}"]`)?.value || '').trim();
+  const passCheck = (root, pName, cName) => {
+    const p = val(root, pName), c = val(root, cName);
+    const pm = !p ? '' : p.length < 8 ? at('c_len') : !(/[a-z]/i.test(p) && /\d/.test(p)) ? at('c_weak') : at('c_ok');
+    fieldMsg(fld(root, pName), pm, pm === at('c_ok'));
+    fieldMsg(fld(root, cName), c ? (c === p ? at('m_ok') : at('m_bad')) : '', c === p);
+    return pm === at('c_ok') && c === p;
+  };
+  const emit = (root, n, detail) => root.dispatchEvent(new CustomEvent(n, {bubbles: true, cancelable: true, detail}));
+
+  function initRegister(root) {
+    const form = $(root, '[data-rg-form]'), alertBox = $(root, '[data-dl-alert]');
+    const ok = {email: false, wa: false};
+    const alert = m => { if (!alertBox) return; alertBox.textContent = m; alertBox.classList.toggle('is-show', !!m); };
+    const internal = () => val(root, 'reg_type') === 'internal';
+    const idField = $(root, '[data-rg-idno]');
+    function idLabel() { $(idField, '.dl-field__label').textContent = at(internal() ? 'nrp' : 'nik'); $(idField, 'input').placeholder = internal() ? '—' : '16 digit'; chkId(); }
+    function chkId() { const v = val(root, 'id_no'); if (!v || internal()) return fieldMsg(idField, ''); const good = v.replace(/\D/g, '').length === 16; fieldMsg(idField, at(good ? 'nik_ok' : 'nik_bad'), good); }
+    function verified(kind, good, msg) {
+      ok[kind] = good;
+      if (kind === 'email') { fieldMsg(fld(root, 'email'), msg || at(good ? 'email_sent' : 'email_bad'), good); $(root, '[data-rg-verify-email]').hidden = good; }
+      else { fieldMsg(fld(root, 'whatsapp'), msg || at(good ? 'wa_ok' : 'otp_bad'), good); if (good) { $(root, '[data-rg-otp]').hidden = true; $(root, '[data-rg-send-otp]').hidden = true; } }
+    }
+    const lang = authLang(root); document.addEventListener('dl:lang', idLabel);
+    root.addEventListener('input', e => {
+      const n = e.target.name;
+      if (n === 'email') { $(root, '[name=username]').value = (e.target.value.split('@')[0] || '').toLowerCase().replace(/[^a-z0-9._-]/g, ''); ok.email = false; $(root, '[data-rg-verify-email]').hidden = false; fieldMsg(fld(root, 'email'), ''); }
+      if (n === 'id_no') chkId();
+      if (n === 'password' || n === 'password_confirmation') passCheck(root, 'password', 'password_confirmation');
+      if (e.target.closest('[data-dl-field="whatsapp"]') && ok.wa) { ok.wa = false; $(root, '[data-rg-send-otp]').hidden = false; fieldMsg(fld(root, 'whatsapp'), ''); }
+    });
+    root.addEventListener('change', e => { if (e.target.name === 'reg_type') idLabel(); });
+    root.addEventListener('click', e => {
+      if (e.target.closest('[data-rg-verify-email]')) {
+        const em = val(root, 'email');
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return fieldMsg(fld(root, 'email'), at('email_bad'), false);
+        if (emit(root, 'dl:verify-email', {email: em})) verified('email', true);
+      }
+      if (e.target.closest('[data-rg-send-otp]')) {
+        const ph = val(root, 'whatsapp');
+        if (!ph) return fieldMsg(fld(root, 'whatsapp'), at('wa_bad'), false);
+        if (emit(root, 'dl:send-otp', {phone: ph})) { $(root, '[data-rg-otp]').hidden = false; fieldMsg(fld(root, 'whatsapp'), at('otp_sent'), true); $(root, '[data-rg-otp] input:not([type=hidden])')?.focus(); }
+      }
+      if (e.target.closest('[data-rg-verify-otp]')) {
+        const code = val(root, 'otp');
+        if (code.length < 4) return fieldMsg(fld(root, 'otp'), at('otp_bad'), false);
+        fieldMsg(fld(root, 'otp'), '');
+        if (emit(root, 'dl:verify-otp', {phone: val(root, 'whatsapp'), code})) verified('wa', true);
+      }
+    });
+    form.addEventListener('submit', e => {
+      const req = $$(root, '[data-rg-box] .dl-field').filter(f => $(f, '.dl-field__req') && !hasValue(f));
+      req.forEach(f => fieldMsg(f, at('need_fill'), false));
+      const idOk = internal() ? !!val(root, 'id_no') : val(root, 'id_no').replace(/\D/g, '').length === 16;
+      const passOk = passCheck(root, 'password', 'password_confirmation');
+      if (req.length || !idOk || !passOk) { e.preventDefault(); if (!idOk) chkId(); return alert(at('need_fill')); }
+      if (!ok.email || !ok.wa) { e.preventDefault(); return alert(at('need_verify')); }
+      alert('');
+      const data = {}; new FormData(form).forEach((v, k) => { if (!/_token|password/.test(k)) data[k] = v; });
+      if (!emit(root, 'dl:register', {data}) || form.getAttribute('action')) { if (!form.getAttribute('action')) e.preventDefault(); return; }
+      e.preventDefault(); $(root, '[data-rg-box]').hidden = true; $(root, '[data-rg-done]').hidden = false;
+    });
+    root.dlRegister = {verified, done: () => { $(root, '[data-rg-box]').hidden = true; $(root, '[data-rg-done]').hidden = false; }};
+    idLabel(); lang();
+  }
+
+  function initForgot(root) {
+    const form = $(root, '[data-fg-form]'), alertBox = $(root, '[data-dl-alert]'), mode = root.dataset.mode;
+    let cur = '1';
+    const step = n => { cur = String(n); $$(root, '[data-fg-step]').forEach(s => { s.hidden = s.dataset.fgStep !== cur; }); $$(root, '[data-fg-dot]').forEach(d => { d.classList.toggle('is-active', d.dataset.fgDot === cur); d.classList.toggle('is-done', cur === 'done' || +d.dataset.fgDot < +cur); }); $(root, `[data-fg-step="${cur}"] input:not([type=hidden])`)?.focus(); };
+    const fail = m => { if (alertBox) { alertBox.textContent = m || at('f_wrong'); alertBox.classList.add('is-show'); } };
+    authLang(root);
+    root.addEventListener('input', e => { if (/^new_password/.test(e.target.name)) passCheck(root, 'new_password', 'new_password_confirmation'); });
+    form.addEventListener('submit', e => {
+      if (form.getAttribute('action') && mode === 'email') return;
+      e.preventDefault();
+      if (alertBox) alertBox.classList.remove('is-show');
+      const box = $(root, `[data-fg-step="${cur}"]`), req = $$(box, '.dl-field').filter(f => $(f, '.dl-field__req') && !hasValue(f));
+      $$(box, '.dl-field').forEach(f => fieldMsg(f, ''));
+      if (req.length) { req.forEach(f => fieldMsg(f, at('need_fill'), false)); return; }
+      if (mode === 'email') { if (emit(root, 'dl:forgot', {email: val(root, 'email')})) step('done'); return; }
+      if (cur === '1') { const answers = {}; ['login', 'birth_date', 'phone', 'mother_name', 'security_answer'].forEach(k => { answers[k] = val(root, k); }); if (emit(root, 'dl:recover', {answers})) step(2); return; }
+      if (cur === '2') { if (!passCheck(root, 'new_password', 'new_password_confirmation')) return; if (emit(root, 'dl:reset', {password: val(root, 'new_password')})) step('done'); }
+    });
+    root.dlForgot = {step, fail};
+  }
+
+  /* ============================ LOCK SCREEN ============================ */
+  function initLockScreen(el) {
+    const key = 'dl-lock-' + el.dataset.id, idle = +el.dataset.idle || 0, form = $(el, '[data-lk-form]'), pw = $(el, '[name=unlock_password]');
+    let timer, clock;
+    const tick = () => { const d = new Date(); $(el, '[data-lk-time]').textContent = d.toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ()}).replace('.', ':'); $(el, '[data-lk-date]').textContent = fmt.date(d, 'long'); };
+    const store = v => { try { v ? sessionStorage.setItem(key, '1') : sessionStorage.removeItem(key); } catch (e) {} };
+    function lock() { if (!el.hidden) return; el.hidden = false; document.documentElement.classList.add('dl-locked'); store(true); tick(); clock = setInterval(tick, 10000); pw.value = ''; fieldMsg(pw.closest('.dl-field'), ''); setTimeout(() => pw.focus(), 50); el.dispatchEvent(new CustomEvent('dl:lock', {bubbles: true})); }
+    function unlock() { el.hidden = true; document.documentElement.classList.remove('dl-locked'); store(false); clearInterval(clock); arm(); el.dispatchEvent(new CustomEvent('dl:unlocked', {bubbles: true})); }
+    const fail = m => { fieldMsg(pw.closest('.dl-field'), m || 'Password salah.', false); pw.select(); };
+    function arm() { clearTimeout(timer); if (idle > 0 && el.hidden) timer = setTimeout(lock, idle * 60000); }
+    ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(n => document.addEventListener(n, () => { if (el.hidden) arm(); }, {passive: true}));
+    document.addEventListener('keydown', e => { if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'l') { e.preventDefault(); lock(); } });
+    document.addEventListener('click', e => { if (e.target.closest('[data-dl-lock]')) lock(); });
+    form.addEventListener('submit', e => {
+      if (e.submitter?.hasAttribute('data-lk-out')) { store(false); return; }
+      e.preventDefault();
+      if (!pw.value) return fail('Isi password.');
+      if (el.dispatchEvent(new CustomEvent('dl:unlock', {bubbles: true, cancelable: true, detail: {password: pw.value}}))) unlock();
+    });
+    el.dlLock = {lock, unlock, fail};
+    try { if (sessionStorage.getItem(key)) lock(); } catch (e) {}
+    arm();
+  }
+
+  /* ============================ PERMISSION MATRIX ============================ */
+  function initPermMatrix(el) {
+    const OBJ = JSON.parse(el.dataset.objects || '[]'), LV = JSON.parse(el.dataset.levels || '[]'), DEF = +el.dataset.default || 0;
+    const saved = JSON.parse(el.dataset.perms || '{}'), work = JSON.parse(JSON.stringify(saved));
+    const gSel = $(el, '[data-pm-group]'), mSel = $(el, '[data-pm-module]'), q = $(el, '[data-pm-q]');
+    const get = (src, g, k) => src[g]?.[k] ?? DEF;
+    const shown = () => OBJ.filter(o => (!mSel.value || o.module === mSel.value) && (!q.value.trim() || o.name.toLowerCase().includes(q.value.trim().toLowerCase())));
+    const dirtyCount = () => Object.keys(work).reduce((n, g) => n + OBJ.filter(o => get(work, g, o.key) !== get(saved, g, o.key)).length, 0);
+    function draw() {
+      const g = gSel.value;
+      $(el, '[data-pm-body]').innerHTML = shown().map(o => { const v = get(work, g, o.key), ch = v !== get(saved, g, o.key); return `<tr class="${ch ? 'is-dirty' : ''}"><td>${esc(o.name)}</td><td><span class="dl-perm__pill is-${esc(String(o.type).toLowerCase())}">${esc(o.type)}</span></td><td>${esc(o.module)}</td><td><select data-pm-obj="${esc(o.key)}" aria-label="Hak akses ${esc(o.name)}" class="is-l${v}">${LV.map((l, i) => `<option value="${i}" ${i === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></td></tr>`; }).join('') || '<tr><td colspan="4" class="dl-perm__none">Tidak ada objek.</td></tr>';
+      const n = dirtyCount(); $(el, '[data-pm-dirty]').textContent = n ? `${n} perubahan belum disimpan` : 'Tidak ada perubahan';
+      el.classList.toggle('is-dirty', n > 0);
+    }
+    const set = (k, v) => { (work[gSel.value] ||= {})[k] = +v; };
+    el.addEventListener('change', e => {
+      if (e.target.matches('[data-pm-obj]')) { set(e.target.dataset.pmObj, e.target.value); return draw(); }
+      if (e.target.matches('[data-pm-bulk]') && e.target.value !== '') { shown().forEach(o => set(o.key, e.target.value)); toast(`${shown().length} objek diset ke: ${LV[+e.target.value]}`); e.target.value = ''; return draw(); }
+      if (e.target === gSel || e.target === mSel) draw();
+    });
+    q.addEventListener('input', draw);
+    el.addEventListener('click', e => {
+      if (e.target.closest('[data-pm-reset]')) { Object.keys(work).forEach(k => delete work[k]); Object.assign(work, JSON.parse(JSON.stringify(saved))); return draw(); }
+      if (e.target.closest('[data-pm-save]')) {
+        const perms = Object.fromEntries(OBJ.map(o => [o.key, get(work, gSel.value, o.key)]));
+        Object.keys(work).forEach(g => { saved[g] = {...(saved[g] || {}), ...work[g]}; });
+        el.dispatchEvent(new CustomEvent('dl:permissions-save', {bubbles: true, detail: {group: gSel.value, perms, all: work}}));
+        toast('Hak akses grup disimpan.', 'success'); draw();
+      }
+    });
+    draw();
+  }
+
   window.Devlib = {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words};
   document.addEventListener('DOMContentLoaded', () => {
     initDevMode();
@@ -3841,6 +3999,10 @@
     document.querySelectorAll('[data-dl-ribbon]').forEach(initRibbon);
     document.querySelectorAll('[data-dl-mega]').forEach(initMegaMenu);
     document.querySelectorAll('[data-dl-side-menu]').forEach(initSideMenu);
+    document.querySelectorAll('[data-dl-register]').forEach(initRegister);
+    document.querySelectorAll('[data-dl-forgot]').forEach(initForgot);
+    document.querySelectorAll('[data-dl-lockscreen]').forEach(initLockScreen);
+    document.querySelectorAll('[data-dl-perm]').forEach(initPermMatrix);
     document.querySelectorAll('[data-dl-sheet]').forEach(initSheet);
     document.querySelectorAll('[data-dl-pivot]').forEach(initPivot);
     document.querySelectorAll('[data-dl-drill]').forEach(initDrill);

@@ -172,6 +172,13 @@ final class Catalog
                     'login-1' => ['label' => 'Login 1 · sama dengan tmerp', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
                     'login-2' => ['label' => 'Login 2 · popup kaca', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
                     'login-3' => ['label' => 'Login 3 · panel kiri navy', 'icon' => 'fa-solid fa-right-to-bracket', 'full' => true, 'classes' => self::LOGIN_CLASSES, 'mockup' => 'login.html'],
+                    'register' => ['label' => 'Daftar Akun', 'icon' => 'fa-solid fa-user-plus', 'full' => true, 'classes' => ['Devlib\\Components\\RegisterBox', 'Devlib\\Components\\Frame'], 'mockup' => 'register.html'],
+                    'forgot-1' => ['label' => 'Lupa Password · email', 'icon' => 'fa-solid fa-key', 'full' => true, 'classes' => ['Devlib\\Components\\ForgotBox', 'Devlib\\Components\\Frame'], 'mockup' => 'forgot-password.html'],
+                    'forgot-2' => ['label' => 'Lupa Password · 4 pertanyaan', 'icon' => 'fa-solid fa-key', 'full' => true, 'classes' => ['Devlib\\Components\\ForgotBox', 'Devlib\\Components\\Frame'], 'mockup' => 'forgot-password.html'],
+                    'p8-lock' => ['label' => 'Lock Screen', 'icon' => 'fa-solid fa-lock', 'part' => '8 · Login & Account', 'members' => ['lock-screen' => ['Layar kunci (idle / manual / Ctrl+Shift+L)', ['Devlib\\Components\\LockScreen']]], 'classes' => ['Devlib\\Components\\LockScreen']],
+                    'p8-security' => ['label' => 'Setup & Security', 'icon' => 'fa-solid fa-user-shield', 'part' => '8 · Login & Account', 'mockup' => 'security.html',
+                        'members' => ['security' => ['Pengguna, Grup, Objek, Hak Akses Grup, Bahasa, Tema (tab vertikal)', ['Devlib\\Components\\Tabs', 'Devlib\\Components\\Grid', 'Devlib\\Components\\PermissionMatrix', 'Devlib\\Components\\ThemePicker']]],
+                        'classes' => ['Devlib\\Components\\PermissionMatrix', 'Devlib\\Components\\Tabs']],
                 ],
                 'files' => ['Mockup' => ['login.html', 'register.html', 'forgot-password.html', 'security.html']]],
         ];
@@ -180,7 +187,7 @@ final class Catalog
     // Mockup yang sudah punya komponen -> tidak diulang di daftar "belum dibangun".
     public static function builtMockups(): array
     {
-        return ['login.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_notification.jpg', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
+        return ['login.html', 'register.html', 'forgot-password.html', 'security.html', 'mockup_roster_formasi_harian.html', 'main_menu_v2.html', 'UIUX_components_part1.html', 'mockup_notification.jpg', 'mockup_dashboardcolor.html', 'bukti_komponen_tema_navy.html',
             'bukti_komponen_tema_emerald.html', 'bukti_komponen_tema_cerah_red.html', 'bukti_komponen_input_tema.html', 'penjelasan_standar_input_teks.html',
             'grid_kerapatan_baris.html', 'pilihan_ikon_aksi_grid.html', 'pilihan_ikon_aksi_grid_konteks.html', 'mockup_master_employee.html', 'filament_table_demo.html', 'powergrid_demo.html', 'mockup_master_customer.html', 'mockup_master_uom_v4.html', 'mockup_purchase_requisition.html', 'mockup_pr_approval_center.html', 'mockup_po_approval_center.html', 'mockup_UIUX_kanban.html', 'mockup_scheduling_board.html', 'mockup_UIUX_calendar.html', 'nota_co_mockup.html', 'nota_pv_spb.html', 'mockup_print_stock_card.html', 'mockup_print_master_stock.html', 'Organization-Structure-Mockup.html'];
     }
