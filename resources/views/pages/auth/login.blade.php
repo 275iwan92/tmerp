@@ -134,6 +134,8 @@ new #[Layout('layouts::guest')] #[Title('Masuk — TELASIH MAKMUR ERP')] class e
         // ke Laporan Manajemen sudah 1 klik kapan saja -- pertanyaan
         // "mana dulu" di setiap login jadi friksi tanpa guna.
         $default = match (true) {
+            // v2: Direksi / akses MGMT mendarat di Home v2 dengan tab Laporan Eksekutif terbuka (menu operasional tetap bisa dibuka).
+            config('app.ui') === 'v2' => ($user->isDireksiOnly() || $user->canAccessModule('MGMT')) ? route('v2.home', ['open' => 'MGMT_EXEC']) : route('v2.home'),
             $user->isDireksiOnly() => route('report.executive'),
             $user->canAccessModule('MGMT') => route('report.executive'),
             default => route('menu'),

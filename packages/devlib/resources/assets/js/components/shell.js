@@ -30,7 +30,7 @@
     saveTabs() { try { sessionStorage.setItem('dl-shell-tabs', JSON.stringify({open: [...this.openTabs.keys()], active: this.activeTab})); } catch (e) {} }
 
     restoreTabs(s) {
-      if (!s?.open?.length) return;
+      if (!s?.open?.length) { if (this.el.dataset.dlOpen) this.openTab(this.el.dataset.dlOpen); return; }
       s.open.forEach(c => this.openTab(c));
       s.active && this.openTabs.has(s.active) ? this.activate(s.active) : this.showHome();
     }

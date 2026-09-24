@@ -1,3 +1,0 @@
-# Satu pengumuman per baris (bergantian bila lebih dari satu).
-Selamat datang di ERP CV. Telasih Makmur.
-Jaga K3: gunakan APD lengkap di area produksi.

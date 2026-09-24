@@ -6,22 +6,17 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 // Data Dictionary untuk mockup.test (khusus developer): STRUKTUR semua database tm2* dari information_schema
-// (tidak membaca data) -> mockup/resources/data/schema.json + riwayat perubahan schema-changes.json.
+// (tidak membaca data) -> resources/data/v2/schema.json + riwayat perubahan schema-changes.json.
 // Otomatis jalan setelah `php artisan migrate` (AppServiceProvider), atau manual: php artisan schema:dictionary
 class SchemaDictionary extends Command
 {
     protected $signature = 'schema:dictionary';
 
-    protected $description = 'Ekspor struktur database tm2* ke Data Dictionary mockup.test (+ catat perubahan)';
+    protected $description = 'Ekspor struktur database tm2* ke Data Dictionary layar v2 (resources/data/v2) (+ catat perubahan)';
 
     public function handle(): int
     {
-        $dir = base_path('mockup/resources/data');
-        if (! is_dir(base_path('mockup'))) {
-            $this->warn('Folder mockup/ tidak ada — dilewati.');
-
-            return self::SUCCESS;
-        }
+        $dir = resource_path('data/v2');
         @mkdir($dir, 0777, true);
 
         $db = DB::connection('tm2sys');

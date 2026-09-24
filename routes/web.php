@@ -5,7 +5,7 @@ use App\Support\Branding\Brand;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/menu');
+Route::get('/', fn () => redirect(config('app.ui') === 'v2' ? '/v2' : '/menu'));
 
 // PWA manifest -- dibuat dinamis (bukan public/manifest.json statis) supaya
 // nama aplikasi ikut Brand::name() (tm2sys.sys_constant APP_NAME, bisa
@@ -94,6 +94,8 @@ Route::middleware(['auth', 'locale'])->group(function () {
 
     Route::middleware('force.password')->group(function () {
         Route::livewire('/menu', 'pages::main-menu')->name('menu');
+
+        require __DIR__.'/v2.php';
 
         Route::middleware('module:SALES')->group(function () {
             Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');

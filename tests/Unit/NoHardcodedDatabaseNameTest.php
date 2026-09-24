@@ -36,7 +36,8 @@ class NoHardcodedDatabaseNameTest extends TestCase
                     if (preg_match('#^\s*(//|\*|/\*|\{\{--)#', $line)) {
                         continue;
                     }
-                    if (str_contains($line, 'DbName::table(')) {
+                    // DbName::table() = sudah aman; Src::of()/'source' => = label tooltip sumber data, bukan SQL.
+                    if (preg_match('/DbName::table\(|Src::(of|calc)\(|[\'"]source[\'"]\s*=>/', $line)) {
                         continue;
                     }
                     if (preg_match('/[\'"`]tm2(mst|sdi|pur|inv|prd|acc|hrm|hrr|pyr|sys)`?\.`?[a-z_]+/', $line)) {

@@ -1,0 +1,40 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Sys\SecUser;
+use Tests\TestCase;
+
+// Layar v2 (Menu v2 / objek DevLib) di dalam tmerp: semua halaman v2 terbuka tanpa error. Hanya membaca data.
+class V2ShellTest extends TestCase
+{
+    private function admin(): SecUser
+    {
+        return SecUser::where('login', 'johiwan')->firstOrFail();
+    }
+
+    public function test_v2_home_renders_layer_shell_from_sys_app_menu(): void
+    {
+        $this->actingAs($this->admin())->get('/v2')
+            ->assertOk()->assertSee('data-dl-layer-menu', false)->assertDontSee('class="dl-topbar"', false)->assertSee('Inquiry Product');
+    }
+
+    public function test_v2_screens_flows_and_dictionary_open(): void
+    {
+        $this->actingAs($this->admin());
+        foreach (['/v2/s/inquiry', '/v2/s/inquiry-new', '/v2/s/inquiry-revise', '/v2/s/inquiry-recalc', '/v2/s/prodev', '/v2/s/quotation', '/v2/flow/SALES', '/v2/flow/COSTING', '/v2/dictionary'] as $url) {
+            $this->get($url)->assertOk();
+        }
+    }
+
+    public function test_menu_item_resolves_to_v1_screen_when_no_v2_target(): void
+    {
+        $this->actingAs($this->admin())->get('/v2/item/PROC_PO')->assertRedirect(route('pur.po.list'));
+    }
+
+    public function test_dictionary_is_admin_only(): void
+    {
+        $user = SecUser::where('is_admin', false)->where('activate', true)->firstOrFail();
+        $this->actingAs($user)->get('/v2/dictionary')->assertForbidden();
+    }
+}

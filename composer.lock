@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "580e4e13ed5d6973433271c4627b524d",
+    "content-hash": "7ab429d13956ec0c56824fdbc388a90f",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -10174,6 +10174,41 @@
             "time": "2026-08-30T20:10:55+00:00"
         },
         {
+            "name": "telasih/devlib",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/devlib",
+                "reference": "fdfcef5daeeb9468b192d9bd3b625f3b1754b626"
+            },
+            "require": {
+                "illuminate/support": "^13.0",
+                "illuminate/view": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Devlib\\DevlibServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Devlib\\": "src/"
+                }
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "DevLib — library induk komponen UI/UX ERP Telasih Makmur (dipakai mockuperp & tmerp)",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "thecodingmachine/safe",
             "version": "v3.4.0",
             "source": {
@@ -13169,7 +13204,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "telasih/devlib": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

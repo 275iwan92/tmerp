@@ -1,8 +1,15 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\AdminPanelProvider;
+use App\Providers\RecruitmentServiceProvider;
+use App\Providers\SchedulingServiceProvider;
+use MockupParts\MockupPartsServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\AdminPanelProvider::class,
-    App\Providers\SchedulingServiceProvider::class,
-    App\Providers\RecruitmentServiceProvider::class,
+    AppServiceProvider::class,
+    AdminPanelProvider::class,
+    SchedulingServiceProvider::class,
+    RecruitmentServiceProvider::class,
+    MockupPartsServiceProvider::class,
 ];

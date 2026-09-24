@@ -4,11 +4,13 @@ namespace App\Providers;
 
 use App\Models\Sys\SysConstant;
 use App\Support\DataOrigin\DataOriginScope;
+use App\Support\V2\Lookups;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use MockupParts\Src;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Layar v2 (objek DevLib + mockup-parts): tooltip sumber data & Lookup master yang dipilih di layar.
+        Src::$resolver = \App\Support\V2\Src::of(...);
+        Lookups::register();
+
         // Setting admin sembunyikan data DUMMY/LEGACY hanya berlaku di request
         // web -- migration, job, dan tinker selalu melihat semua data.
         if (! $this->app->runningInConsole()) {
@@ -33,12 +39,8 @@ class AppServiceProvider extends ServiceProvider
 
         $this->applyTimezone();
 
-        // Struktur DB berubah (migrate / rollback) -> Data Dictionary mockup.test ikut diperbarui.
-        Event::listen(MigrationsEnded::class, function () {
-            if (is_dir(base_path('mockup'))) {
-                Artisan::call('schema:dictionary');
-            }
-        });
+        // Struktur DB berubah (migrate / rollback) -> Data Dictionary layar v2 ikut diperbarui.
+        Event::listen(MigrationsEnded::class, fn () => Artisan::call('schema:dictionary'));
     }
 
     // Zona waktu dari Settings -> Constants (APP_TIMEZONE). DB belum siap (install awal) atau nilai

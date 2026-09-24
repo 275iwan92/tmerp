@@ -15,6 +15,7 @@ namespace Devlib\Components;
 // ]
 // ITEM = ['code', 'label', 'url', 'type' => form|grid|report, 'icon'?, 'badge'?, 'badgeTone'?]
 // $chat = ['me', 'people', 'convos'] -> drawer Chat (x-dl::chat, versi ringkas).
+// $open = code item yang dibuka sebagai tab saat mulai (bila tidak ada tab yang dipulihkan dari sesi browser).
 // Turunan: LayerShell (x-dl::layer-shell) = kerangka yang sama, navigasi Layer Menu tanpa top bar.
 // Layar pemakai memanggil <x-dynamic-component :component="Shell::preferred()"> supaya pilihan menu user ikut.
 class Shell extends DevlibComponent
@@ -28,6 +29,7 @@ class Shell extends DevlibComponent
         public string $menuSource = 'sys_app_menu',
         public bool $developer = false,
         public array $chat = [],
+        public ?string $open = null,
     ) {}
 
     public function tag(): string
