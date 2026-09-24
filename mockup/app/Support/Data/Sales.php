@@ -18,6 +18,62 @@ final class Sales
         return ['CV. Sinar Kemasan', 'PT. Boga Rasa Nusantara', 'Toko Manis Jaya', 'PT. Kosmetika Indah', 'PT. Sari Roti Jatim', 'UD. Kopi Arjuno', 'PT. Farma Sehat', 'CV. Batik Tulis Madura'];
     }
 
+    // Baris lookup customer (bentuk tm2mst.cust_customer).
+    public static function customerRows(): array
+    {
+        return array_map(fn ($n, $i) => ['id_customer' => 101 + $i, 'customer_code' => sprintf('C%04d', 101 + $i), 'customer_name' => $n], self::customers(), array_keys(self::customers()));
+    }
+
+    // Bentuk tm2mst.sales_person (nama fiktif).
+    public static function salesPersons(): array
+    {
+        return [['id_sales_person' => 1, 'sales_name' => 'Andi Pratama', 'sales_type' => 'INTERNAL'], ['id_sales_person' => 2, 'sales_name' => 'Citra Rahma', 'sales_type' => 'INTERNAL'],
+            ['id_sales_person' => 3, 'sales_name' => 'Maya Lestari', 'sales_type' => 'INTERNAL'], ['id_sales_person' => 4, 'sales_name' => 'Budi Agen Jatim', 'sales_type' => 'EXTERNAL']];
+    }
+
+    // Ekspor baca-saja tm2mst (bahan kertas, jenis finishing, tipe multi-part): resources/data/sales_masters.json.
+    public static function masters(): array
+    {
+        static $m;
+
+        return $m ??= json_decode(file_get_contents(resource_path('data/sales_masters.json')), true);
+    }
+
+    // Tipe produk + dieline_spec + parameter + ukuran pasaran (ekspor baca-saja tm2mst.prod_type*, milik paket mockup-parts).
+    public static function dielineTypes(): array
+    {
+        static $t;
+
+        return $t ??= json_decode(file_get_contents(base_path('../packages/mockup-parts/data/dieline_types.json')), true);
+    }
+
+    // Satu dokumen inkuiri lengkap (header + tier + part) untuk dibuka dari worklist.
+    public static function inquiryDoc(int $id): ?array
+    {
+        $row = collect(self::inquiries())->firstWhere('id', $id);
+        if (! $row) {
+            return null;
+        }
+        $types = self::dielineTypes();
+        $code = isset($types[$row['part_type']]) ? $row['part_type'] : 'CARD_BOX';
+        $mat = self::masters()['materials'][$id % 60];
+        $multi = in_array($code, ['BOX_WITH_LID', 'ROUND_BOX', 'SHALLOW_BOX'], true);
+        $slug = strtolower(preg_replace('/[^a-z0-9]/i', '', $row['product_draft_name']));
+        $part = fn (string $role) => ['part_name' => $slug.'-'.$role, 'part_role' => $role, 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => 400,
+            'dims' => array_map(fn ($p) => $p['default'], $types[$code]['params']), 'cfg_color' => '4/4', 'cfg_ink' => '',
+            'materials' => [['material' => $mat['material_id'], 'material_label' => $mat['material_name'], 'brand' => $mat['brand'], 'category' => $mat['category'], 'is_primary' => true]],
+            'finishings' => $id % 2 ? [['finishing_type_id' => 1, 'attribute' => '']] : [], 'sent' => in_array($row['sub_state'], ['PRICE_APPROVED', 'QUOTED', 'PROVING', 'PROVE_APPROVED', 'CONVERTED'], true)];
+        $cust = collect(self::customerRows())->firstWhere('customer_name', $row['customer']);
+
+        return $row + [
+            'source' => ['EMAIL', 'WA', 'PHONE', 'VISIT'][$id % 4], 'customer_id' => $cust['id_customer'] ?? null, 'sales_note' => '', 'material_source' => 'OWN',
+            'type_code' => $code, 'stat_cancel' => $row['sub_state'] === 'CANCELLED',
+            'tiers' => [['qty' => $row['qty'], 'is_primary' => true], ['qty' => $row['qty'] * 2, 'is_primary' => false]],
+            'parts' => $multi ? [$part('body'), $part('lid')] : [$part('monoform')],
+            'toolings' => [], 'external_costs' => [],
+        ];
+    }
+
     public static function inquiries(int $n = 42): array
     {
         $cust = self::customers();

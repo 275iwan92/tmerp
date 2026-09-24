@@ -283,3 +283,24 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-typecard .dl-actionbar>*{flex:1;justify-content:center}
 .mp-inq-grid .dl-grid__stats>*{flex:1 1 calc(25% - 10px);min-width:0}
 @media (max-width:760px){.mp-inq-grid .dl-grid__stats>*{flex-basis:calc(50% - 10px)}}
+
+/* ===== Sales · Inquiry (form dokumen) ===== */
+.mp-grow{flex:1}
+.mp-hint{margin:0 0 6px;font-size:calc(11.5px * var(--dl-font-scale));color:var(--dl-muted)}
+.mp-narrow{max-width:420px}
+.mp-inq{display:flex;flex-direction:column;gap:12px}
+.mp-inq .dl-alert{margin-bottom:0}
+.mp-docbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:var(--dl-radius-lg);background:var(--dl-navy);color:var(--dl-on-dark)}
+.mp-docbar b{font-size:calc(14px * var(--dl-font-scale))}
+.mp-docbar__sub{font-size:calc(12px * var(--dl-font-scale));color:var(--dl-on-dark-muted)}
+.mp-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--dl-border-soft)}
+.mp-part{border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);margin-bottom:12px;background:var(--dl-surface)}
+.mp-part__head{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--dl-surface-alt);border-bottom:1px solid var(--dl-border-soft);border-radius:var(--dl-radius-lg) var(--dl-radius-lg) 0 0}
+.mp-part__head b{color:var(--dl-ink-strong)}
+.mp-part__body{padding:12px;display:flex;flex-direction:column;gap:10px}
+.mp-part__main{display:flex;flex-direction:column;gap:10px}
+.mp-part__name{display:flex;align-items:flex-end;gap:6px;align-self:start}.mp-part__name>.dl-field{flex:1;min-width:0}.mp-part__name>.dl-iconbtn{margin-bottom:2px}
+.mp-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.mp-role{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:2px solid var(--dl-border);border-radius:var(--dl-radius-lg);background:var(--dl-surface);cursor:pointer;text-align:center;font-family:inherit}
+.mp-role:hover{border-color:var(--dl-accent);background:var(--dl-accent-soft)}
+.mp-role__icon{font-size:36px;line-height:1}.mp-role b{color:var(--dl-ink-strong);font-size:calc(12.5px * var(--dl-font-scale))}.mp-role small{color:var(--dl-muted);font-size:calc(10px * var(--dl-font-scale));line-height:1.3}

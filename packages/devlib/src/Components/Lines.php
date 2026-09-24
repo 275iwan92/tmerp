@@ -7,6 +7,8 @@ use Devlib\Lookup;
 // Tabel baris item dokumen (detail dari Master-Detail: PO, PR, CO, Stock In, ...).
 // columns: [['key', 'label', 'type' => text|number|money|select|lookup|date|display,
 //            'required', 'width', 'options' (select), 'lookup' => nama Devlib\Lookup (fill -> kolom lain di baris),
+//            'placeholder', 'readonlyUnless' => kolom bool (sel terkunci sampai kolom itu true),
+//            type primary = tepat 1 baris true (tier/bahan Utama; 'labels' => [on, off]), type bool = tombol Ya/Tidak,
 //            'formula' => 'qty * price' (hanya nama kolom + angka + - * / ( )), 'sum' => true, 'default']]
 // totals: ['of' => kolom, 'discount' => true, 'ppn' => 11]  -> Subtotal, Diskon, DPP, PPN, Total.
 // Terkirim: name[i][kolom] per baris, name_discount, name_ppn. Di dalam x-dl::master: baris = data[name].
@@ -18,7 +20,7 @@ class Lines extends DevlibComponent
         public array $rows = [],
         public string $title = 'Item',
         public string $addLabel = '+ Tambah Baris',
-        public int $minRows = 1,
+        public int $minRows = 1, // 0 = boleh kosong (tanpa baris awal); tombol hapus mati bila jumlah baris <= minRows
         public array $totals = [],
         public ?string $totalKey = null,
         public ?string $countKey = null,

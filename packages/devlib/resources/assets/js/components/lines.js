@@ -42,10 +42,14 @@
       this.el.addEventListener('click', e => {
         const x = e.target;
         if (x.closest('[data-l-add]')) return this.add();
+        const pr = x.closest('[data-l-primary]');
+        if (pr) { const i = +pr.closest('tr').dataset.i; this.rows.forEach((r, j) => { r[pr.dataset.lPrimary] = j === i; }); this.body(); this.changed(); return; }
+        const bo = x.closest('[data-l-bool]');
+        if (bo) { const r = this.rowOf(bo); r[bo.dataset.lBool] = !r[bo.dataset.lBool]; this.body(); this.changed(); return; }
         if (x.closest('[data-l-dup]')) { const i = +x.closest('tr').dataset.i; this.rows.splice(i + 1, 0, {...this.rows[i]}); this.body(); this.changed(); return; }
         const del = x.closest('[data-l-del]');
         if (del) {
-          const i = +del.closest('tr').dataset.i, go = () => { this.rows.splice(i, 1); this.body(); this.changed(); };
+          const i = +del.closest('tr').dataset.i, go = () => { const [gone] = this.rows.splice(i, 1); this.keepPrimary(gone); this.body(); this.changed(); };
           if (this.filled(this.rows[i])) confirmBox({message: `Hapus baris ${i + 1}?`, tone: 'danger'}).then(ok => ok && go()); else go();
           return;
         }
@@ -64,7 +68,7 @@
         validate: this.validate, total: this.total,
       };
       this.head();
-      if (!this.rows.length && !this.ro) this.rows.push(this.blank());
+      if (!this.rows.length && !this.ro && this.cfg.minRows > 0) this.rows.push(this.blank());
       this.body();
     }
 
@@ -76,12 +80,18 @@
       return String(v ?? '').replace(/\./g, '').replace(',', '.');
     }
 
+    // Kolom 'primary' (tepat satu baris bernilai true, mis. tier/bahan Utama): baris pertama otomatis Utama.
     blank() {
-      return Object.fromEntries(this.cols.map(c => [c.key, c.default ?? '']));
+      return Object.fromEntries(this.cols.map(c => [c.key, c.type === 'primary' ? !this.rows.some(r => r[c.key]) : c.type === 'bool' ? !!c.default : c.default ?? '']));
+    }
+
+    // Baris Utama dihapus -> baris pertama yang tersisa menjadi Utama.
+    keepPrimary(gone) {
+      this.cols.filter(c => c.type === 'primary').forEach(c => { if (gone && gone[c.key] && this.rows.length && !this.rows.some(r => r[c.key])) this.rows[0][c.key] = true; });
     }
 
     filled(r) {
-      return this.cols.some(c => !c.formula && c.type !== 'display' && String(r[c.key] ?? '').trim() !== '');
+      return this.cols.some(c => !c.formula && !['display', 'primary', 'bool'].includes(c.type) && String(r[c.key] ?? '').trim() !== '');
     }
 
     calc(r) {
@@ -97,21 +107,27 @@
     }
 
     cell(c, r, i) {
-      const v = r[c.key] ?? '', req = c.required ? ' data-req' : '';
+      const v = r[c.key] ?? '', req = c.required ? ' data-req' : '', ph = c.placeholder ? ` placeholder="${esc(c.placeholder)}"` : '';
+      // readonlyUnless: sel hanya bisa diisi bila kolom bool lain di baris yang sama bernilai true (mis. Biaya hanya bila Biaya Baru = Ya).
+      const lock = c.readonlyUnless && !r[c.readonlyUnless] ? ' readonly tabindex="-1"' : '';
+      if (c.type === 'primary' || c.type === 'bool') {
+        const on = !!v, [yes, no] = c.labels || (c.type === 'primary' ? ['✓ Utama', 'Pilih'] : ['Ya', 'Tidak']);
+        return `<td class="dl-lines__pick"><button type="button" class="dl-btn dl-btn--sm ${on ? 'dl-btn--primary' : 'dl-btn--secondary'}" data-l-${c.type}="${esc(c.key)}" ${this.ro ? 'disabled' : ''}>${esc(on ? yes : no)}</button></td>`;
+      }
       if (c.fn || c.type === 'display' || this.ro) return `<td class="${this.num(c) ? 'num' : ''} dl-lines__ro" data-k="${esc(c.key)}">${esc(c.type === 'lookup' ? (r[c.key + '_label'] ?? v) : this.show(c, v))}</td>`;
       switch (c.type) {
         case 'select': return `<td${req}><select class="dl-lines__in" data-k="${esc(c.key)}"><option value=""></option>${Object.entries(c.options || {}).map(([k, l]) => `<option value="${esc(k)}" ${String(k) === String(v) ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></td>`;
         case 'date': return `<td${req}><input type="date" class="dl-lines__in" data-k="${esc(c.key)}" value="${esc(v)}"></td>`;
-        case 'number': case 'money': return `<td class="num"${req}><input type="text" inputmode="decimal" class="dl-lines__in dl-lines__num" data-k="${esc(c.key)}" value="${esc(this.show(c, v))}"></td>`;
+        case 'number': case 'money': return `<td class="num"${req}><input type="text" inputmode="decimal" class="dl-lines__in dl-lines__num" data-k="${esc(c.key)}" value="${esc(this.show(c, v))}"${ph}${lock}></td>`;
         case 'lookup': return `<td${req} class="dl-lines__lk"><input type="text" class="dl-lines__in" data-k="${esc(c.key)}" data-lk value="${esc(r[c.key + '_label'] ?? '')}" placeholder="Cari..." autocomplete="off"><i class="fa-solid fa-magnifying-glass"></i></td>`;
-        default: return `<td${req} class="dl-lines__txt"><input type="text" class="dl-lines__in" data-k="${esc(c.key)}" value="${esc(v)}"><button type="button" class="dl-lines__case" data-l-case tabindex="-1" title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">aa</button></td>`;
+        default: return `<td${req} class="dl-lines__txt"><input type="text" class="dl-lines__in" data-k="${esc(c.key)}" value="${esc(v)}"${ph}${lock}><button type="button" class="dl-lines__case" data-l-case tabindex="-1" title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">aa</button></td>`;
       }
     }
 
     head() { $(this.el, '[data-l-head]').innerHTML = `<tr><th class="dl-lines__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}${this.ro ? '' : '<th class="dl-lines__act"></th>'}</tr>`; }
 
     body() {
-      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${i + 1}</td>${this.cols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act"><button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris"><i class="fa-solid fa-trash-can"></i></button></td>`}</tr>`).join('')
+      $(this.el, '[data-l-body]').innerHTML = this.rows.map((r, i) => `<tr data-i="${i}"><td class="dl-lines__no">${i + 1}</td>${this.cols.map(c => this.cell(c, r, i)).join('')}${this.ro ? '' : `<td class="dl-lines__act"><button type="button" class="dl-iconbtn dl-iconbtn--plain" data-l-dup title="Duplikat baris"><i class="fa-solid fa-copy"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--plain dl-iconbtn--danger" data-l-del title="Hapus baris" ${this.rows.length <= this.cfg.minRows ? 'disabled' : ''}><i class="fa-solid fa-trash-can"></i></button></td>`}</tr>`).join('')
         || `<tr><td colspan="${this.cols.length + 2}" class="dl-lines__empty">Belum ada baris. Klik <b>${esc($(this.el, '[data-l-add]')?.textContent.trim() || '+ Tambah Baris')}</b>.</td></tr>`;
       this.refresh();
     }

@@ -1,0 +1,648 @@
+{
+    "_note": "Ekspor baca-saja dari tm2mst (mat_raw Paper confirmed, ref_finishing_type, prod_type.has_multi_part) 2026-09-24 11:31:15",
+    "materials": [
+        {
+            "material_id": 231,
+            "material_code": "PCC03003",
+            "material_name": "AC 210 GR GOLDEN 79 X 109 CM",
+            "brand": "GOLDEN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 230,
+            "material_code": "PCC02002",
+            "material_name": "AC 210 GR GOLDEN COIN 65 X 100 CM",
+            "brand": "GOLDEN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 233,
+            "material_code": "PCE07007",
+            "material_name": "AC 260 GR GOLDEN COIN 79 X 109 CM",
+            "brand": "GOLDEN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 234,
+            "material_code": "PCF08008",
+            "material_name": "AC 310 GR GOLDEN COIN 79 X 109 CM",
+            "brand": "GOLDEN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 232,
+            "material_code": "PCD05005",
+            "material_name": "AC GOLDEN COIN 230 GR 79 X 109 CM",
+            "brand": "GOLDEN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 286,
+            "material_code": "PRB02003",
+            "material_name": "AP 120 GR GOLDEN COIN 79 X 109 CM",
+            "brand": "GOLDEN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 285,
+            "material_code": "PRB01002",
+            "material_name": "AP 120 GR NEVIA 65 X 100 CM",
+            "brand": "NEVIA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 287,
+            "material_code": "PRC04004",
+            "material_name": "AP 150 GR NEVIA  65 X 100 CM",
+            "brand": "NEVIA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 288,
+            "material_code": "PRC05005",
+            "material_name": "AP 150 GR NEVIA 65 X 90 CM",
+            "brand": "NEVIA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 283,
+            "material_code": "PRA06006",
+            "material_name": "AP 85 GR NEVIA 65 X 100 CM",
+            "brand": "NEVIA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 284,
+            "material_code": "PRA07007",
+            "material_name": "AP 85 GR NEVIA 79 X 109 CM",
+            "brand": "NEVIA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 281,
+            "material_code": "PKN13013",
+            "material_name": "B KRAFT 265 GR 108,5 X 75 CM ( XTRU GLOSS)",
+            "brand": "XTRU",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 280,
+            "material_code": "PKM23023",
+            "material_name": "B KRAFT 290 GR 79 X 82 CM (XTRU)",
+            "brand": "XTRU",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 235,
+            "material_code": "PDA01001",
+            "material_name": "DC 250 GR DAYASA 105 X 102 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 237,
+            "material_code": "PDA02002",
+            "material_name": "DC 250 GR DAYASA 105 X 56 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 238,
+            "material_code": "PDA03003",
+            "material_name": "DC 250 GR DAYASA 105 X 79 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 239,
+            "material_code": "PDA04004",
+            "material_name": "DC 250 GR DAYASA 120 X 76 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 242,
+            "material_code": "PDA07007",
+            "material_name": "DC 250 GR DAYASA 70 X 100 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 243,
+            "material_code": "PDA08008",
+            "material_name": "DC 250 GR DAYASA 79 X 109 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 245,
+            "material_code": "PDA09009",
+            "material_name": "DC 250 GR DAYASA 99 X 121 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 244,
+            "material_code": "PDA08010",
+            "material_name": "DC 250 GR FAJAR 79 X 109 CM",
+            "brand": "FAJAR",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 246,
+            "material_code": "PDA10010",
+            "material_name": "DC 250 GR FAJAR 90 X 120 CM",
+            "brand": "FAJAR",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 247,
+            "material_code": "PDA11011",
+            "material_name": "DC 250 GR IKA DA 89 X 120 CM",
+            "brand": "IKA DA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 248,
+            "material_code": "PDA12012",
+            "material_name": "DC 250 GR IKA DP 100 X 114 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 236,
+            "material_code": "PDA01012",
+            "material_name": "DC 250 GR IKA DP 105 X 102 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 249,
+            "material_code": "PDA14014",
+            "material_name": "DC 250 GR IKA DP 114 X 79 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 250,
+            "material_code": "PDA15015",
+            "material_name": "DC 250 GR IKA DP 119 X 92 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 241,
+            "material_code": "PDA0616",
+            "material_name": "DC 250 GR IKA DP 65 X 100 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 251,
+            "material_code": "PDA17017",
+            "material_name": "DC 250 GR IKA DP 67 X 86 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 252,
+            "material_code": "PDA19019",
+            "material_name": "DC 250 GR IKA DP 70 X 83 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 253,
+            "material_code": "PDA20020",
+            "material_name": "DC 250 GR IKA DP 77 X 125 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 254,
+            "material_code": "PDA24024",
+            "material_name": "DC 250 GR IKA DP 79 X 104 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 255,
+            "material_code": "PDA25025",
+            "material_name": "DC 250 GR IKA DP 79 X 125 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 256,
+            "material_code": "PDA29029",
+            "material_name": "DC 250 GR IKA DP 85 X 79 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 257,
+            "material_code": "PDA30030",
+            "material_name": "DC 250 GR IKA DP 89 X 124 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 258,
+            "material_code": "PDA32032",
+            "material_name": "DC 250 GR IKA DP 95 X 105 CM",
+            "brand": "IKA DP",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 259,
+            "material_code": "PDA35035",
+            "material_name": "DC 250 GR KUAN YUAN 72 X 102 CM",
+            "brand": "KUAN YUAN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 260,
+            "material_code": "PDB01001",
+            "material_name": "DC 270 GR MSE 66 X 96 CM",
+            "brand": "MSE",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 268,
+            "material_code": "PDH02002",
+            "material_name": "DC 300 GR DAYASA 79 X 92 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 261,
+            "material_code": "PDC02002",
+            "material_name": "DC 310 GR DAYASA 70 X 100 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 263,
+            "material_code": "PDC04004",
+            "material_name": "DC 310 GR DAYASA 79 X 120 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 264,
+            "material_code": "PDC05005",
+            "material_name": "DC 310 GR DAYASA 80 X 120 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 265,
+            "material_code": "PDC06006",
+            "material_name": "DC 310 GR DAYASA 90 x 120 CM",
+            "brand": "DAYASA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 266,
+            "material_code": "PDC06007",
+            "material_name": "DC 310 GR FAJAR 90 X 120 CM",
+            "brand": "FAJAR",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 262,
+            "material_code": "PDC02007",
+            "material_name": "DC 310 GR IKA DA 70 X 100 CM",
+            "brand": "IKA DA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 267,
+            "material_code": "PDC07007",
+            "material_name": "DC 310 GR IKA DA 79 X 109 CM",
+            "brand": "IKA DA",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 229,
+            "material_code": "P4454",
+            "material_name": "HVS 58 GR RAINBOW 79 X 109 CM",
+            "brand": "RAINBOW",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 289,
+            "material_code": "PY111",
+            "material_name": "IVORY 190 GR BOHUI 65 X 75 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 293,
+            "material_code": "PY265",
+            "material_name": "IVORY 210 GR BOHUI 90 X 120 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 292,
+            "material_code": "PY255",
+            "material_name": "IVORY 210 GR IKA VA 79 X 109 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 291,
+            "material_code": "PY236",
+            "material_name": "IVORY 210 GR IPSUN 65 X 100 CM",
+            "brand": "IPSUN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 295,
+            "material_code": "PY345",
+            "material_name": "IVORY 230 BOHUI 80 X 51 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 294,
+            "material_code": "PY335",
+            "material_name": "IVORY 230 GR BOHUI 120 X 82 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 303,
+            "material_code": "PYH36",
+            "material_name": "IVORY 230 GR SP KW2 79 X 109 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 299,
+            "material_code": "PY466",
+            "material_name": "IVORY 250 GR BOHUI 105 X 53,5 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 298,
+            "material_code": "PY416",
+            "material_name": "IVORY 250 GR BOHUI 79 X 109 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 300,
+            "material_code": "PY471",
+            "material_name": "IVORY 250 GR BOHUI 89 X 61 CM",
+            "brand": "BOHUI",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 296,
+            "material_code": "PY411",
+            "material_name": "IVORY 250 GR IKA VA 79 X 109 CM",
+            "brand": "APRIL",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 297,
+            "material_code": "PY412",
+            "material_name": "IVORY 250 GR IPSUN 90 X 120 CM",
+            "brand": "IPSUN",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        },
+        {
+            "material_id": 302,
+            "material_code": "PY533",
+            "material_name": "IVORY 265 GR IKA VA 79 X 109 CM (XTRU)",
+            "brand": "XTRU",
+            "category": "Paper",
+            "gram_weight": 0,
+            "cm_length": "0.0000",
+            "cm_width": "0.0000"
+        }
+    ],
+    "finishing_types": [
+        {
+            "id_finishing_type": 1,
+            "finishing_name": "Laminating Doff"
+        },
+        {
+            "id_finishing_type": 2,
+            "finishing_name": "Laminating Glossy"
+        },
+        {
+            "id_finishing_type": 3,
+            "finishing_name": "UV Spot"
+        },
+        {
+            "id_finishing_type": 4,
+            "finishing_name": "Hot Print"
+        },
+        {
+            "id_finishing_type": 5,
+            "finishing_name": "Varnish"
+        },
+        {
+            "id_finishing_type": 6,
+            "finishing_name": "Emboss"
+        },
+        {
+            "id_finishing_type": 7,
+            "finishing_name": "Deboss"
+        },
+        {
+            "id_finishing_type": 8,
+            "finishing_name": "Foil Stamping"
+        }
+    ],
+    "multi_part_types": [
+        "AMPLOP_KOP",
+        "BOX_WITH_LID",
+        "BUKU",
+        "KALENDER_DINDING",
+        "KALENDER_DUDUK",
+        "ROUND_BOX",
+        "SHALLOW_BOX"
+    ]
+}

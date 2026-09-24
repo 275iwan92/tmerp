@@ -45,6 +45,7 @@
     Devlib.mountOne("Ribbon");
     Devlib.mountOne("MegaMenu");
     Devlib.mountOne("SideMenu");
+    Devlib.mountOne("LayerMenu");
     Devlib.mountOne("Register");
     Devlib.mountOne("Forgot");
     Devlib.mountOne("LockScreen");
