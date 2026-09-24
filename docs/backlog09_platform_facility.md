@@ -13,7 +13,10 @@ Fasilitas yang dipakai lintas-modul: chat antar user, AI lokal untuk menjawab ke
 
 > **Keputusan user**: database data dummy memakai prefix **`ddt`** = "data
 > dummy test" — `ddtmst`, `ddtsdi`, `ddtpur`, `ddtinv`, `ddtprd`, `ddtacc`,
-> `ddthrm`, `ddthrr`, `ddtpyr`, `ddtsys`, `ddtold` (pasangan 1-1 dgn `tm2*`).
+> `ddthrm`, `ddthrr`, `ddtpyr`, `ddtsys` (pasangan 1-1 dgn `tm2*`).
+> **Pengecualian `tm2old`**: TIDAK diduplikasi (tidak ada `ddtold`) — data
+> lama khusus dibaca (sumber migrasi), dipakai BERSAMA oleh erptest.test &
+> tmerp.test (`DB_OLD` tetap `tm2old` di kedua env; keputusan user 2026-09-24).
 > **Target waktu**: sebelum Fase 4 (tmerp.test pakai data asli).
 
 **State saat ini**: `erptest.test` (Fase 3) = junction Herd ke folder
