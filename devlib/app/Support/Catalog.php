@@ -19,7 +19,7 @@ final class Catalog
         $page = fn ($label, $icon, $members, $mockup = null, $classes = null) => ['label' => $label, 'icon' => $icon, 'mockup' => $mockup, 'members' => $members,
             'classes' => $classes ?? array_values(array_unique(array_merge([], ...array_column($members, 1))))];
 
-        // DevLib = komponen dasar & layar standar saja (keputusan user 2026-09-24). Layar khusus -> mockup.local (packages/mockup-parts).
+        // DevLib = komponen dasar & layar standar saja (keputusan user 2026-09-24). Layar khusus -> mockup.test (packages/mockup-parts).
         $groups = [
             ['code' => 'DT', 'short' => 'DT', 'label' => 'Dasar & Tema', 'icon' => 'fa-solid fa-palette',
                 'pages' => [
@@ -211,7 +211,7 @@ final class Catalog
     }
 
     // Bentuk siap-pakai untuk <x-dl::shell :modules>. Menu DevLib = komponen saja; mockup (termasuk yang
-    // belum dibangun) pindah ke mockup.local (Fase 2), tetap bisa dibuka dari tautan mockup di ikon </>.
+    // belum dibangun) pindah ke mockup.test (Fase 2), tetap bisa dibuka dari tautan mockup di ikon </>.
     public static function modules(): array
     {
         $modules = [];

@@ -1,4 +1,4 @@
-/* Komponen khusus yang diparkir dari DevLib untuk mockup.local (Fase 2). Token = var(--dl-*) dari devlib.css. */
+/* Komponen khusus yang diparkir dari DevLib untuk mockup.test (Fase 2). Token = var(--dl-*) dari devlib.css. */
 :root{--dl-impo-bg:#0f1624;--dl-impo-grid:rgba(255,255,255,.04);--dl-impo-paper:#fbfcfe;--dl-impo-edge:#2c7be5;--dl-impo-hatch:#c9d3e0;--dl-impo-muted:#8a97ab;--dl-impo-hover:rgba(44,123,229,.10);--dl-impo-num:rgba(44,123,229,.35)}
 /* ================= DIELINE (Part 6) ================= */
 .dl-dieline{display:grid;grid-template-columns:300px 1fr;gap:12px;align-items:start}

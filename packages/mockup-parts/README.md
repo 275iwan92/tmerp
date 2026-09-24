@@ -1,7 +1,7 @@
-# mockup-parts (diparkir untuk mockup.local — Fase 2)
+# mockup-parts (diparkir untuk mockup.test — Fase 2)
 
 Komponen **khusus** yang dikeluarkan dari DevLib (keputusan user 2026-09-24: DevLib hanya komponen dasar & layar standar).
-Belum dimuat aplikasi mana pun. Saat mockup.local dibangun, paket ini didaftarkan di sana dan tiap
+Belum dimuat aplikasi mana pun. Saat mockup.test dibangun, paket ini didaftarkan di sana dan tiap
 komponen menjadi turunan objek DevLib (namespace `MockupParts\Components`, JS `Devlib.register(...)`).
 
 | Komponen | PHP | JS | Demo |
