@@ -125,7 +125,15 @@
             .rs-topactions{display:flex;align-items:center;gap:10px;min-width:0}
             @media(max-width:1100px){.rs-app{grid-template-columns:65px 1fr}.rs-aside{padding:18px 8px}.rs-brand span,.rs-navgroup,.rs-nav .rs-text,.rs-side-note{display:none}.rs-brand{padding:3px 7px 20px;justify-content:center}.rs-nav a{justify-content:center;padding:10px}}
             @media(max-width:620px){.rs-app{display:block}.rs-aside{height:56px;position:fixed;left:0;right:0;bottom:0;top:auto;z-index:5;padding:5px;overflow:hidden}.rs-brand,.rs-side-note{display:none}.rs-nav{display:flex;justify-content:space-around;overflow-x:auto}.rs-nav a{width:auto;margin:0;padding:10px}.rs-top{padding:0 10px;height:52px}.rs-crumb{display:none}.rs-switch a span{display:none}.rs-switch a{padding:8px 10px}}
+            /* Dibuka di tab Menu v2 (mockup.test): panel kiri & top bar laporan disembunyikan -- daftar laporan dan
+               pengalih Operasional | Laporan Manajemen sudah ada di Menu v2 (keputusan user 2026-09-25). */
+            .rs-embed .rs-app{grid-template-columns:1fr}
+            .rs-embed .rs-aside,.rs-embed .rs-top{display:none}
         </style>
+            @if (config('app.ui') === 'v2')
+            {{-- Hanya di dalam tab (iframe) Menu v2; dibuka langsung di tab browser tetap lengkap. --}}
+            <script>if (window.self !== window.top) document.documentElement.classList.add('rs-embed');</script>
+        @endif
     </head>
     <body>
         @php
