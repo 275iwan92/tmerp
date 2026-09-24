@@ -1,4 +1,18 @@
 <div class="dl-shell" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}">
+    {{-- Navigasi mode "Layer" (dipilih lewat menu avatar / roda gigi; tersimpan per browser). --}}
+    <x-dl::layer-menu class="dl-shell__lm" id="shell" :items="$layerTree()" :title="$brand" :user="$user['name']" :role="$user['role'] ?? null" :login="$user['email'] ?? null" dock="[data-dl-lm-dock]"
+        :actions="[
+            ['key' => 'notif', 'label' => 'Notifikasi', 'icon' => 'notification'],
+            ['key' => 'edit', 'label' => 'Edit profil', 'icon' => 'fa-user-pen'],
+            ['key' => 'pass', 'label' => 'Ubah password', 'icon' => 'password'],
+            ['key' => 'nav-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'],
+            ['key' => 'logout', 'label' => 'Keluar aplikasi', 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
+        ]">
+        <x-slot:chat><x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" /></x-slot:chat>
+        <x-slot:profile>
+            <section data-lm-page="theme" data-label="Tema" data-icon="fa-palette"><x-dl::theme-picker /></section>
+        </x-slot:profile>
+    </x-dl::layer-menu>
     <aside class="dl-side" data-dl="sidebar kontekstual" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (grup + item modul aktif)">
         <div class="dl-side__head">
             <span class="dl-logo-badge dl-logo-badge--sm"></span>
@@ -35,6 +49,7 @@
                         <div class="dl-um-cap">Akun</div>
                         <button type="button" class="dl-um-item" data-dl-um="edit"><i class="fa-solid fa-user-pen"></i> Edit profil</button>
                         <button type="button" class="dl-um-item" data-dl-um="pass"><i class="fa-solid fa-key"></i> Ubah password</button>
+                        <button type="button" class="dl-um-item" data-dl-um="nav-layer"><i class="fa-solid fa-layer-group"></i> Layer Menu (menu baru)</button>
                         <button type="button" class="dl-um-item" data-dl-um="help"><i class="fa-solid fa-circle-question"></i> Bantuan &amp; dukungan</button>
                         <div class="dl-um-item dl-um-item--static"><i class="fa-solid fa-globe"></i> Bahasa<span class="dl-um-langs"><button type="button" class="dl-um-flag is-active" data-dl-lang="id">🇮🇩</button><button type="button" class="dl-um-flag" data-dl-lang="en">🇬🇧</button></span></div>
                         @if ($developer)
@@ -65,6 +80,8 @@
             </div>
         </div>
     </div>
+
+    <aside class="dl-lm-dock dl-shell__dock" data-dl-lm-dock></aside>
 
     <div class="dl-backdrop" data-dl-backdrop></div>
 

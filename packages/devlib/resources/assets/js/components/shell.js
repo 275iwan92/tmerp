@@ -75,7 +75,8 @@
         const a = b.dataset.dlUm;
         if (a === 'devmode') { setDevMode(!document.body.classList.contains('dl-dev')); return; }
         this.userMenu.classList.remove('is-open');
-        if (a === 'chat') this.openDrawer('chat');
+        if (a === 'nav-layer') this.setNav('layer');
+        else if (a === 'chat') this.isLayer() ? this.lm.dlComponent.openChat() : this.openDrawer('chat');
         else if (a === 'notif') this.openDrawer('notif');
         else if (a === 'ai') this.openDrawer('ai');
         else if (a === 'edit' || a === 'pass') $(this.el, `[data-dl-modal="${a}"]`).classList.add('is-on');
@@ -91,9 +92,10 @@
       $$(this.el, '[data-dl-close]').forEach(b => b.addEventListener('click', this.closeDrawers));
       $(this.el, '[data-dl-markread]').addEventListener('click', () => { this.notifCount = 0; this.refreshCounts(); $$(this.el, '.dl-nz__dot').forEach(d => d.classList.add('is-read')); toast('Semua notifikasi ditandai terbaca.'); });
 
-      this.chatEl = $(this.el, '[data-dl-chat]');
+      this.chatEl = $(this.el, '[data-dl-drawer="chat"] [data-dl-chat]');
       if (this.chatEl?.dlChat) { this.chatCount = this.chatEl.dlChat.unread; this.refreshCounts(); }
-      this.el.addEventListener('dl:chat-unread', e => { this.chatCount = e.detail.count; this.refreshCounts(); });
+      this.chatEl?.addEventListener('dl:chat-unread', e => { this.chatCount = e.detail.count; this.refreshCounts(); });
+      this.initLayerNav();
 
       this.aiBody = $(this.el, '[data-dl-ai-body]');
       this.aiIn = $(this.el, '[data-dl-ai-input]');
@@ -104,6 +106,32 @@
       this.hash = decodeURIComponent(location.hash.slice(1));
       this.selectModule(this.modules.some(m => m.code === this.hash) ? this.hash : 'HOME');
       window.addEventListener('hashchange', () => { const h = decodeURIComponent(location.hash.slice(1)); if (h === 'HOME' || this.modules.some(m => m.code === h)) this.selectModule(h); });
+    }
+
+    // Dua gaya navigasi di shell yang sama: Classic (mega menu + sidebar) atau Layer (x-dl::layer-menu).
+    // Klik daun Layer Menu = buka tab MDI yang sama; pilihan diingat per browser.
+    initLayerNav() {
+      this.lm = $(this.el, '[data-dl-layer-menu]'); if (!this.lm) return;
+      this.lm.addEventListener('dl:layer-menu', e => { e.preventDefault(); this.openTab(e.detail.key); });
+      this.lm.addEventListener('dl:layer-menu-action', e => {
+        const k = e.detail.key; e.preventDefault();
+        if (k === 'nav-classic') this.setNav('classic');
+        else if (k === 'notif') this.openDrawer('notif');
+        else if (k === 'edit' || k === 'pass') $(this.el, `[data-dl-modal="${k}"]`).classList.add('is-on');
+        else if (k === 'logout') $(this.el, '[data-dl-usermenu] form').requestSubmit();
+      });
+      let nav = 'classic'; try { nav = localStorage.getItem('dl-shell-nav') || nav; } catch (e) {}
+      this.setNav(nav, false);
+    }
+
+    isLayer() { return this.el.classList.contains('is-layer'); }
+
+    setNav(mode, announce = true) {
+      if (!this.lm) return;
+      if (mode !== 'layer' && this.lm.dlComponent?.st.chat) this.lm.dlComponent.closeChat();
+      this.el.classList.toggle('is-layer', mode === 'layer');
+      try { localStorage.setItem('dl-shell-nav', mode); } catch (e) {}
+      if (announce) toast(mode === 'layer' ? 'Menu: Layer Menu' : 'Menu: Classic');
     }
 
     findItem(code) {

@@ -63,7 +63,9 @@ class LayerMenu extends DevlibComponent
 
     public function fa(string $icon): string
     {
-        return 'fa-solid '.Icon::fa($icon);
+        $icon = Icon::fa($icon);
+
+        return str_contains($icon, ' ') ? $icon : 'fa-solid '.$icon;
     }
 
     public function initials(): string

@@ -38,6 +38,21 @@ class Shell extends DevlibComponent
         return 'menu = '.$this->menuSource;
     }
 
+    // Modul yang sama sebagai tree x-dl::layer-menu (mode navigasi "Layer"): modul -> item, grup = caption.
+    // Kunci daun = code item, jadi klik daun membuka tab MDI yang sama dengan menu Classic.
+    public function layerTree(): array
+    {
+        $tone = ['partial' => 'warn', 'done' => 'success', 'danger' => 'danger'];
+        $leaf = fn (array $it, ?string $group) => array_filter([
+            'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
+            'badge' => $it['badge'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
+        ]);
+
+        return array_map(fn ($m) => ['label' => $m['label'], 'icon' => $m['icon'] ?? null, 'items' => collect($m['children'] ?? [])
+            ->flatMap(fn ($c) => isset($c['items']) ? array_map(fn ($it) => $leaf($it, $c['label']), $c['items']) : [$leaf($c, null)])
+            ->values()->all()], $this->modules);
+    }
+
     public function render()
     {
         return view('devlib::components.shell');
