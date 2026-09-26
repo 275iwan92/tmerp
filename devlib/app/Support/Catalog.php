@@ -16,6 +16,19 @@ final class Catalog
         'p5-grid' => '2026-09-26',        // Grid for Pre-Data Entry
         'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
         'p5-grid-special' => '2026-09-26', // Grid Special (spreadsheet)
+        // Menu Form & Dokumen disetujui user 2026-09-26
+        'p5-form-single' => '2026-09-26',
+        'p5-form-md' => '2026-09-26',
+        'p5-form-special' => '2026-09-26',
+        'form' => '2026-09-26',
+        'p5-master' => '2026-09-26',
+        'p5-master-detail' => '2026-09-26',
+        'p5-approval' => '2026-09-26',
+        'p5-wizard' => '2026-09-26',
+        'p5-print' => '2026-09-26',
+        'p5-report' => '2026-09-26',
+        'p5-import' => '2026-09-26',
+        'p5-override' => '2026-09-26',
     ];
 
     public const LOGIN_CLASSES = ['Devlib\Components\Frame', 'Devlib\Components\LoginBox', 'Devlib\Components\Clock', 'Devlib\Components\Quote',
