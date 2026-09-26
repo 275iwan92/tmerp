@@ -92,11 +92,26 @@ window.Devlib = window.Devlib || {};
   function bindPanel(root, onOpen) {
     const toggle = $(root, '[data-dl-dd-toggle]'), panel = $(root, '[data-dl-dd-panel]');
     if (!toggle || !panel) return {};
+    // Panel terbuka = position:fixed di atas kotak field, supaya tidak terpotong card/section ber-overflow
+    // (user 2026-09-26: daftar hanya tampak 2 item). Lebar & posisi awal diukur dari tata letak normalnya;
+    // bila ruang di bawah kurang dan di atas lebih lega, panel dibuka ke atas.
+    const place = () => {
+      Object.assign(panel.style, {position: '', left: '', top: '', bottom: '', width: ''});
+      const r = panel.getBoundingClientRect(), t = toggle.getBoundingClientRect();
+      Object.assign(panel.style, {position: 'fixed', width: r.width + 'px', left: Math.max(8, Math.min(r.left, innerWidth - r.width - 8)) + 'px'});
+      const below = innerHeight - t.bottom - 8, above = t.top - 8;
+      if (panel.offsetHeight > below && above > below) Object.assign(panel.style, {top: 'auto', bottom: (innerHeight - t.top + 4) + 'px'});
+      else Object.assign(panel.style, {top: (t.bottom + 4) + 'px', bottom: 'auto'});
+    };
+    const follow = () => { if (panel.classList.contains('is-open')) place(); };
+    addEventListener('scroll', follow, true);
+    addEventListener('resize', follow);
     toggle.addEventListener('click', e => {
       e.stopPropagation();
       const open = !panel.classList.contains('is-open');
       document.querySelectorAll('[data-dl-dd-panel].is-open').forEach(p => p.classList.remove('is-open'));
       panel.classList.toggle('is-open', open);
+      if (open) place();
       if (open && onOpen) onOpen();
     });
     panel.addEventListener('click', e => e.stopPropagation());
