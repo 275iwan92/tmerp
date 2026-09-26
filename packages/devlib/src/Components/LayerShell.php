@@ -34,8 +34,9 @@ class LayerShell extends Shell
             ]);
         };
 
+        // Grup menu = submenu (dibuka ke panel berikutnya, ada breadcrumb), bukan judul + daftar panjang (user 2026-09-26).
         return array_map(fn ($m) => ['label' => $m['label'], 'icon' => $m['icon'] ?? null, 'items' => collect($m['children'] ?? [])
-            ->flatMap(fn ($c) => isset($c['items']) ? array_map(fn ($it) => $leaf($it, $c['label']), $c['items']) : [$leaf($c, null)])
+            ->map(fn ($c) => $leaf(isset($c['items']) ? $c + ['icon' => 'fa-solid fa-folder'] : $c, null))
             ->values()->all()], $this->modules);
     }
 

@@ -36,7 +36,7 @@ final class AppMenu
                 if ($c->menu_type === 'group') {
                     $items = self::nodes($c, $children, $ok, $routes);
                     if ($items) {
-                        $out[] = ['label' => self::label($c), 'items' => $items];
+                        $out[] = ['label' => self::label($c), 'icon' => $c->icon ?: 'fa-solid fa-folder', 'items' => $items];
                     }
                 } else {
                     $out[] = self::item($c, $routes);
@@ -92,7 +92,7 @@ final class AppMenu
     private static function extraGroups(string $module): array
     {
         return match ($module) {
-            'SALES' => [['label' => 'Alur', 'items' => [
+            'SALES' => [['label' => 'Alur', 'icon' => 'fa-solid fa-diagram-project', 'items' => [
                 ['code' => 'F-SALES', 'label' => 'Alur Sales: Inquiry → CPDEL', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'SALES'), 'type' => 'report'],
                 ['code' => 'F-COSTING', 'label' => 'Alur Costing: ProDev → ProCost → Publish', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'COSTING'), 'type' => 'report'],
             ]]],
