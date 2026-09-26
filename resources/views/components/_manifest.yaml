@@ -65,6 +65,7 @@ form: # dialek default Tailwind; legacy=true|'namaClass' untuk CSS lama (.f/.fld
   x-form.file-dropzone: {props: {label: null, name: null, hint: null, accept: null, currentName: null}}
   x-form.display: {props: {label: required}, slot: "nilai read-only"}
   x-form.badge: {props: {tone: default}, slot: teks status}
+  x-form.auto-chip: {props: {state: "auto|override|null", field: "null = legenda; diisi -> chip override klik = resetAuto(field)"}, note: "penanda field terisi otomatis (Quotation), taruh absolute top-0 right-0 di wrapper relative"}
   x-form.split-button: {props: {label: Simpan, icon: '💾', actions: []}}
   x-form.mini-calendar: {props: {events: []}}
 

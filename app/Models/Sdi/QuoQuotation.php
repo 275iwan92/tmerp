@@ -18,9 +18,12 @@ class QuoQuotation extends Model
     protected $fillable = [
         'quotation_no',
         'customer_id',
+        'attn_contact',
+        'sales_pic',
         'revision_no',
         'issued_date',
         'valid_until',
+        'deadline_date',
         'payment_term',
         'tax_scheme',
         'currency_code',
@@ -35,6 +38,7 @@ class QuoQuotation extends Model
         'revision_no' => 'integer',
         'issued_date' => 'date',
         'valid_until' => 'date',
+        'deadline_date' => 'date',
     ];
 
     // customer_id -> cust_customer (tm2mst): FK lintas-DB, relasi logis.
