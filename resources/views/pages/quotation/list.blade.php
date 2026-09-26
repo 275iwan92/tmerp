@@ -2,9 +2,7 @@
 
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
-use App\Models\Master\CustCustomer;
 use App\Models\Sdi\QuoQuotation;
-use App\Services\Sales\QuotationBuilder;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -13,8 +11,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 
 // griduistandard.md diikuti (2026-08-22, diperluas ke grid worklist/transaksi).
-// Grid transaksi TETAP boleh punya "+ New Record" (di sini "+ Quotation Baru"
-// via picker customer) karena Quotation memang dibuat dari grid ini -- beda
+// Grid transaksi TETAP boleh punya "+ New Record" (langsung membuka form baru;
+// customer dipilih di form, instruksi user 2026-09-26) -- beda
 // dari Imposition/Costing worklist yang recordnya lahir di layar lain.
 // Kolom Aksi non-master: bukan Edit+Toggle-aktif (§5), tapi ↗ Buka + ✓ Confirm
 // (DRAFT->PUBLISHED langsung dari grid, sesuai instruksi user 2026-08-22).
@@ -26,10 +24,6 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
     use WithPagination;
 
     public string $search = '';
-
-    public string $customerSearch = '';
-
-    public bool $pickerOpen = false;
 
     // grid_performance (globalrules.yaml): server-side pagination + WHERE, bukan load-semua-lalu-filter.
     #[Computed]
@@ -48,39 +42,9 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
             ->paginate($this->perPage);
     }
 
-    #[Computed]
-    public function customerResults()
+    public function newQuotation()
     {
-        if (mb_strlen(trim($this->customerSearch)) < 2) {
-            return collect();
-        }
-
-        return CustCustomer::where('activate', true)
-            ->where(function ($q) {
-                $q->where('customer_name', 'like', "%{$this->customerSearch}%")
-                    ->orWhere('customer_code', 'like', "%{$this->customerSearch}%");
-            })
-            ->orderBy('customer_name')
-            ->limit(15)
-            ->get();
-    }
-
-    public function openPicker(): void
-    {
-        $this->pickerOpen = true;
-        $this->customerSearch = '';
-    }
-
-    public function closePicker(): void
-    {
-        $this->pickerOpen = false;
-    }
-
-    public function startForCustomer(int $customerId)
-    {
-        $quotation = QuotationBuilder::findOrCreateDraft($customerId);
-
-        return $this->redirect(route('quotation.entry', ['quotation' => $quotation->id_quotation]));
+        return $this->redirect(route('quotation.create'));
     }
 
     public function openQuotation(int $id)
@@ -168,7 +132,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                         class="w-64 shrink-0 px-2.5 py-1.5 border border-field-border rounded text-xs">
                 </div>
                 <x-slot:newRecord>
-                    <button type="button" wire:click="openPicker"
+                    <button type="button" wire:click="newQuotation"
                         class="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs font-semibold bg-[#2c3e69] text-white border border-[#2c3e69] cursor-pointer">+ New Record</button>
                 </x-slot:newRecord>
             </x-grid.toolbar>
@@ -211,28 +175,4 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
             @include('components.grid.pagination-footer', ['paginator' => $this->quotations])
         </div>
     </div>
-
-    @if ($pickerOpen)
-        <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" wire:click.self="closePicker">
-            <div class="bg-white rounded-lg p-4 w-[480px] shadow-xl">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-sm font-bold text-navy">{{ Translator::t('sales_quo_picker_title', 'Pilih Customer') }}</h3>
-                    <button type="button" wire:click="closePicker" class="text-muted hover:text-navy cursor-pointer">✕</button>
-                </div>
-                <x-form.input :case-toggle="false" wire:model.live.debounce.300ms="customerSearch" autofocus placeholder="{{ Translator::t('sales_quo_picker_search_placeholder', 'Ketik min. 2 huruf nama/kode customer...') }}" class="mb-2" />
-                <div class="max-h-72 overflow-y-auto">
-                    @forelse ($this->customerResults as $c)
-                        <button type="button" wire:click="startForCustomer({{ $c->id_customer }})" class="w-full text-left px-2.5 py-2 rounded hover:bg-accent-soft cursor-pointer border-b border-field-badge last:border-b-0">
-                            <div class="text-xs font-semibold text-navy">{{ $c->customer_name }}</div>
-                            <div class="text-[10.5px] text-muted">{{ $c->customer_code }}</div>
-                        </button>
-                    @empty
-                        <div class="text-[11px] text-muted text-center py-4">
-                            {{ mb_strlen(trim($customerSearch)) < 2 ? Translator::t('sales_quo_picker_min_chars', 'Ketik min. 2 huruf untuk cari.') : Translator::t('sales_quo_picker_no_match', 'Tidak ada customer cocok.') }}
-                        </div>
-                    @endforelse
-                </div>
-            </div>
-        </div>
-    @endif
 </div>

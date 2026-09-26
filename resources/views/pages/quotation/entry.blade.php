@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Master\CustCustomer;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
@@ -12,13 +13,61 @@ use Livewire\Component;
 
 new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 {
-    public int $quotationId;
+    // null = form baru: customer belum dipilih, draft baru lahir saat customer dipilih.
+    public ?int $quotationId = null;
 
     public string $addInquirySearch = '';
 
-    public function mount(int $quotation): void
+    public string $customerPick = '';
+
+    public function mount(?int $quotation = null): void
     {
         $this->quotationId = $quotation;
+    }
+
+    // Hanya customer yang punya inquiry berharga (costing published) yang belum masuk
+    // quotation mana pun, plus customer yang masih punya DRAFT -- supaya user lain
+    // tinggal memilih, tidak menebak customer (instruksi user 2026-09-26).
+    // label => id_customer (x-form.searchable-select hanya membawa label).
+    #[Computed]
+    public function customerOptions(): array
+    {
+        $quotedIds = QuoQuotationItem::where('source_type', 'INQUIRY_TIER')->whereNotNull('inquiry_id')->pluck('inquiry_id');
+
+        $pending = IqpInquiry::whereHas('costing', fn ($q) => $q->where('published_flag', true))
+            ->whereNotIn('id_inquiry', $quotedIds)
+            ->whereNotNull('customer_id')
+            ->selectRaw('customer_id, COUNT(*) AS n')
+            ->groupBy('customer_id')
+            ->pluck('n', 'customer_id');
+
+        $drafts = QuoQuotation::where('doc_status', 'DRAFT')->whereNotNull('customer_id')->pluck('quotation_no', 'customer_id');
+
+        return CustCustomer::whereIn('id_customer', $pending->keys()->merge($drafts->keys())->unique())
+            ->orderBy('customer_name')
+            ->get(['id_customer', 'customer_name', 'customer_code'])
+            ->mapWithKeys(function ($c) use ($pending, $drafts) {
+                $info = array_filter([
+                    ($n = $pending[$c->id_customer] ?? 0) ? $n.' inquiry' : null,
+                    isset($drafts[$c->id_customer]) ? 'draft '.$drafts[$c->id_customer] : null,
+                ]);
+
+                return ["{$c->customer_name} ({$c->customer_code}) — ".implode(', ', $info) => $c->id_customer];
+            })
+            ->all();
+    }
+
+    public function updatedCustomerPick(string $label)
+    {
+        $customerId = $this->customerOptions[$label] ?? null;
+
+        if (! $customerId) {
+            return;
+        }
+
+        $quotation = QuotationBuilder::findOrCreateDraft($customerId);
+
+        return $this->redirect(route('quotation.entry', ['quotation' => $quotation->id_quotation]));
     }
 
     #[Computed]
@@ -174,6 +223,45 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 ?>
 
 <div>
+    @if (! $quotationId)
+    <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
+        <b class="text-[15px]">📄 Quotation Entry</b>
+        <x-form.badge tone="info">NEW</x-form.badge>
+        <x-back-button :fallback="route('quotation.list')" title="Kembali ke Daftar Quotation" class="ml-auto" />
+    </header>
+
+    <div class="max-w-[1280px] mx-auto my-5 px-4">
+        <div class="flex flex-col lg:flex-row gap-4">
+            <div class="lg:flex-1 min-w-0">
+                <div class="bg-white border border-field-border rounded-md p-4 mb-4">
+                    <h3 class="text-xs text-navy uppercase font-bold mb-3">Header Quotation</h3>
+                    <div class="grid">
+                        <x-form.input label="No. Quotation" readonly value="(otomatis)" class="bg-field-soft" />
+                        <x-form.input label="Tanggal" readonly value="{{ now()->format('d M Y') }}" class="bg-field-soft" />
+                        <div class="col-span-2">
+                            <x-form.searchable-select label="Customer" wire:model.live="customerPick" :options="array_keys($this->customerOptions)"
+                                placeholder="Pilih customer yang inquiry-nya sudah berharga..." />
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-muted mt-2">
+                        @if ($this->customerOptions)
+                            Hanya customer dengan inquiry yang costing-nya sudah published dan belum masuk quotation (atau masih punya draft).
+                        @else
+                            Belum ada customer dengan inquiry berharga yang belum di-quotation-kan.
+                        @endif
+                    </p>
+                </div>
+
+                <div class="bg-white border border-field-border rounded-md mb-4 overflow-hidden">
+                    <div class="px-4 py-2.5 bg-field-soft border-b border-field-border">
+                        <h3 class="text-xs text-navy uppercase font-bold">Daftar Inquiry Terkonsolidasi</h3>
+                    </div>
+                    <div class="text-center py-8 text-xs text-muted">Pilih customer dulu.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @else
     <header class="bg-navy text-white px-5 py-3 flex items-center gap-3.5 sticky top-0 z-50">
         <b class="text-[15px]">📄 Quotation Entry</b>
         <span class="text-xs text-white/75">{{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }}</span>
@@ -356,4 +444,5 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
         </div>
     </div>
+    @endif
 </div>

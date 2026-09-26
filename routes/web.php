@@ -108,6 +108,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             Route::livewire('/sales/win-rate', 'pages::sales.win-rate')->name('sales.win-rate');
 
             Route::livewire('/quotation', 'pages::quotation.list')->name('quotation.list');
+            Route::livewire('/quotation/new', 'pages::quotation.entry')->name('quotation.create');
             Route::livewire('/quotation/{quotation}/edit', 'pages::quotation.entry')->name('quotation.entry');
             Route::livewire('/quotation/{quotation}/print', 'pages::quotation.print')->name('quotation.print');
 
