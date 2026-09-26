@@ -1,0 +1,222 @@
+<title>Aturan Layar TMERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F4F5F7; --paper:#FFFFFF; --ink:#1A2130; --ink-2:#465063; --muted:#6E7789; --line:#DCE0E7; --line-2:#C7CDD8;
+  --accent:#2C3E69; --accent-soft:#E6EAF3; --ok:#2E6A4E; --ok-soft:#E3EEE7; --warn:#8A5A00; --warn-soft:#FBF0D9;
+  --info:#1D4ED8; --info-soft:#EAF2FF; --code-bg:#EEF0F4;
+  --serif:"Newsreader","Georgia","Times New Roman",serif;
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Consolas",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#11151C; --paper:#181D26; --ink:#E5E9F0; --ink-2:#B8C0CE; --muted:#8B94A5; --line:#2A313D; --line-2:#37404E;
+    --accent:#9DB2E6; --accent-soft:#1E2638; --ok:#7CC19D; --ok-soft:#1E3228; --warn:#E9C06A; --warn-soft:#2E2715;
+    --info:#8FB3FF; --info-soft:#1B2640; --code-bg:#202733;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#11151C; --paper:#181D26; --ink:#E5E9F0; --ink-2:#B8C0CE; --muted:#8B94A5; --line:#2A313D; --line-2:#37404E;
+  --accent:#9DB2E6; --accent-soft:#1E2638; --ok:#7CC19D; --ok-soft:#1E3228; --warn:#E9C06A; --warn-soft:#2E2715;
+  --info:#8FB3FF; --info-soft:#1B2640; --code-bg:#202733;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15.5px/1.65 var(--sans);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:210px minmax(0,1fr);gap:40px}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:13.5px}
+.toc b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--line)}
+.toc a:hover,.toc a:focus-visible{color:var(--ink);border-left-color:var(--accent);outline:none}
+main{min-width:0}
+header.top{padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font:600 38px/1.15 var(--serif);margin:6px 0 10px;text-wrap:balance}
+h2{font:600 27px/1.2 var(--serif);margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:24px 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+.lead{font-size:17px;color:var(--ink-2);max-width:62ch}
+.meta{font-size:13px;color:var(--muted)}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+section{scroll-margin-top:20px;margin-bottom:48px}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:70ch}
+li{margin:4px 0}
+.head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:12px;font-weight:600;padding:2px 10px;border-radius:20px;letter-spacing:.02em}
+.tag.draft{color:var(--warn);background:var(--warn-soft)} .tag.read{color:var(--info);background:var(--info-soft)} .tag.lock{color:var(--ok);background:var(--ok-soft)}
+.tbl{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:600px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--ground)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+.rules{list-style:none;padding:0;max-width:none;display:grid;gap:8px}
+.rules li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0}
+.rules li b{display:block;font-size:14.5px}
+.rules li span{color:var(--ink-2);font-size:14px}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:12px;white-space:nowrap}
+.pill.on{color:var(--ok);background:var(--ok-soft)} .pill.off{color:var(--muted);background:var(--code-bg)} .pill.new{color:var(--warn);background:var(--warn-soft)}
+.note{border:1px solid var(--line-2);background:var(--warn-soft);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14.5px;max-width:74ch}
+.note b{color:var(--warn)}
+.prompt{background:var(--paper);border:1px solid var(--line-2);border-radius:10px;margin:18px 0 6px}
+.prompt .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.prompt pre{margin:0;padding:14px 16px;white-space:pre-wrap;font:13px/1.6 var(--mono);color:var(--ink);overflow-x:auto}
+.copy{font:500 12.5px var(--sans);color:var(--accent);background:var(--accent-soft);border:0;border-radius:6px;padding:5px 11px;cursor:pointer}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btnrow{display:flex;flex-wrap:wrap;gap:6px}
+.b{font:600 12px var(--sans);padding:3px 10px;border-radius:6px;border:1px solid var(--line-2);background:var(--paper)}
+.b.p{background:var(--accent);color:var(--paper);border-color:var(--accent)}
+.qs{counter-reset:q;list-style:none;padding:0;max-width:none}
+.qs li{counter-increment:q;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 50px;position:relative;margin:0 0 10px}
+.qs li::before{content:counter(q);position:absolute;left:16px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font:600 12px/22px var(--sans);text-align:center}
+</style>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Isi">
+    <b>Isi</b>
+    <a href="#cara">Cara pakai</a>
+    <a href="#grid">Grid</a>
+    <a href="#grid-jenis">&nbsp;· Master vs Transaksi</a>
+    <a href="#grid-inti">&nbsp;· Aturan inti</a>
+    <a href="#grid-opsi">&nbsp;· Fitur opsional</a>
+    <a href="#grid-prompt">&nbsp;· Prompt Grid</a>
+    <a href="#form">Form dokumen</a>
+    <a href="#diskusi">Untuk didiskusikan</a>
+  </nav>
+
+  <main>
+    <header class="top">
+      <div class="eyebrow">ERP CV. Telasih Makmur · Versi 2</div>
+      <h1>Aturan Layar TMERP</h1>
+      <p class="lead">Aturan baku per jenis layar: grid, form dokumen, dan seterusnya. Setiap bagian punya teks prompt siap salin untuk sesi Claude, jadi aturan yang sama dipakai di semua layar tanpa diulang dari awal.</p>
+      <p class="meta">Disusun 26 September 2026 dari standar yang sudah berjalan (<code>docs/md_for_systems/griduistandard.md</code>, objek DevLib <code>x-dl::grid</code> / <code>x-dl::master</code>) dan arahan Johannes Iwan hari ini. Pendamping <em>Pegangan Fase TMERP</em>.</p>
+    </header>
+
+    <section id="cara">
+      <h2>Cara pakai</h2>
+      <ul>
+        <li>Bagian bertanda <span class="tag read">Untuk dibaca</span> sudah berlaku di kode, menunggu Anda baca dan koreksi.</li>
+        <li>Bagian bertanda <span class="tag draft">Draf</span> belum dikunci. Masih ada keputusan terbuka.</li>
+        <li>Setelah Anda setuju, tanda berubah jadi <span class="tag lock">Dikunci</span>. Prompt di bagian itu lalu dipakai apa adanya di setiap sesi.</li>
+        <li>Perubahan aturan cukup dilakukan di halaman ini. Sesi Claude berikutnya membaca dari sini.</li>
+      </ul>
+    </section>
+
+    <section id="grid">
+      <div class="head"><h2>Grid</h2><span class="tag read">Untuk dibaca</span></div>
+      <p>Grid adalah daftar data yang dibuka dari menu: daftar Customer, Mesin, Quotation, Customer Order, dan seterusnya. Semua grid memakai tampilan yang sama. Yang berbeda hanya isi toolbar dan kolom Aksi, tergantung jenisnya.</p>
+
+      <h3 id="grid-jenis">Master vs Transaksi</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Bagian</th><th>Grid Master<br>(Customer, Mesin, Bahan…)</th><th>Grid Transaksi / Worklist<br>(Quotation, CO, PR, PO…)</th></tr></thead>
+          <tbody>
+            <tr><td>Toolbar</td><td>Kotak cari + <b>+ New Record</b></td><td>Kotak cari + <b>+ New Record</b>, <i>hanya</i> bila dokumen memang lahir dari grid ini. Bila lahir di layar lain (CO dari Quotation, worklist ProDev/Costing): kotak cari saja, plus satu baris catatan asal dokumen.</td></tr>
+            <tr><td>Kolom Aksi</td><td><b>Edit</b> lalu <b>Aktif/Nonaktif</b>, selalu dua ikon, urutan tetap</td><td><b>Buka</b> selalu ada. <b>Confirm</b> hanya muncul pada baris Draft yang sudah punya isi. Tidak ada Aktif/Nonaktif.</td></tr>
+            <tr><td>Klik 2x baris</td><td colspan="2">Membuka form record itu. Form Edit = form New yang sama persis <span class="pill new">baru, 26 Sep</span></td></tr>
+            <tr><td>Hapus</td><td colspan="2">Tidak pernah di toolbar grid. Hapus ada di form (lihat Form dokumen).</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="grid-inti">Aturan inti (berlaku di semua grid)</h3>
+      <ul class="rules">
+        <li><b>Tanpa judul halaman</b><span>Nama layar sudah tampil di tab/menu. Grid langsung mulai dari kotak statistik.</span></li>
+        <li><b>Kotak statistik pastel = filter</b><span>Maksimal 5 per baris, 5 warna baku (Total biru, Baik hijau, Perhatian kuning, Kritis merah, Tambahan ungu). Klik kotak = grid tersaring, klik lagi = lepas. Angka di kotak tetap menghitung keseluruhan. Kotak Total dan kotak rupiah tidak bisa diklik.</span></li>
+        <li><b>Kolom identitas</b><span>Satu kolom paling kiri: avatar inisial + Nama (tebal) + Kode (kecil, abu). Bukan kolom Kode dan Nama terpisah. Kalau tidak ada kode, jangan dikarang.</span></li>
+        <li><b>Klik 2x = buka</b><span>Satu-satunya cara membuka form dari baris, selain ikon Edit/Buka. Tidak ada kolom radio/checkbox pilih baris.</span></li>
+        <li><b>Ikon Aksi berbingkai (Pilihan C)</b><span>Font Awesome dalam kotak: Edit <code>fa-pen</code>, Buka <code>fa-up-right-from-square</code>, Confirm <code>fa-check</code>, Batal <code>fa-xmark</code>, Lihat <code>fa-eye</code>. Tanpa teks, ada tooltip. Toggle Aktif/Nonaktif ikon & warnanya diatur komponen. Setiap aksi yang mengubah data minta konfirmasi dulu.</span></li>
+        <li><b>Toolbar minimal</b><span>Hanya kotak cari dan <b>+ New Record</b> (tulisan persis, navy, paling kanan). Dilarang: dropdown filter, checkbox, tombol yang butuh "baris terpilih", tombol Hapus.</span></li>
+        <li><b>Badge status</b><span>Status dokumen (Draft, Published, Confirmed…) memakai 5 warna pastel yang sama, dipetakan per status. Tidak membuat warna baru.</span></li>
+        <li><b>Intip detail (dokumen ber-item)</b><span>Panah di kiri baris membuka tabel item di tempat, hanya baca. Klik panah tidak membuka form.</span></li>
+        <li><b>Paginasi ala ScriptCase</b><span>Kiri: Go to halaman + View 10/25/50/100. Tengah: nomor halaman. Kanan: rentang dari total. Default 25 baris.</span></li>
+        <li><b>Performa</b><span>Paginasi dan penyaringan di server (bukan muat semua lalu saring). Relasi lintas database dicari bertahap, bukan <code>whereHas</code> bertingkat.</span></li>
+      </ul>
+
+      <h3 id="grid-opsi">Fitur opsional (dipasang hanya bila diminta)</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Fitur</th><th>Isi</th><th>Terpasang di</th></tr></thead>
+          <tbody>
+            <tr><td>Kolom · Sort · Export</td><td>Pilih kolom tampil (Tersedia ↔ Tampil), sort satu kolom, export Excel/CSV/PDF sesuai kolom yang tampil (PDF maks. 200 baris). Setelan diingat per pengguna.</td><td>Customer Order, Bahan Baku</td></tr>
+            <tr><td>Filters</td><td>Tombol Filters + panel baris per kolom (mengandung / diawali / sama dengan / tidak mengandung).</td><td>Customer Order, Bahan Baku</td></tr>
+            <tr><td>Centang + hapus massal</td><td>Hanya baris yang belum confirmed. Shift = pilih rentang. Aksi di kolom kiri.</td><td>Pilot: CO, Bahan Baku</td></tr>
+            <tr><td>Tampilan Kartu</td><td>Tombol List/Card, hanya untuk data yang punya foto asli.</td><td>Master Employee</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note"><b>Belum seragam di kode:</b> Quotation sekarang “+ New Record” langsung membuka form (diubah 26 Sep). Customer Order dan Delivery Order masih memakai pop-up pilih customer. <code>griduistandard.md</code> juga masih menulis Quotation “lewat picker customer”. Menunggu keputusan Anda di bagian <a href="#diskusi">Untuk didiskusikan</a>.</div>
+
+      <div class="prompt" id="grid-prompt">
+        <div class="bar"><span>Prompt Grid untuk sesi Claude</span><button class="copy" type="button" data-copy="p-grid">Salin</button></div>
+<pre id="p-grid">Bangun/ubah GRID di TMERP mengikuti "Aturan Layar TMERP" bagian Grid.
+Acuan detail: docs/md_for_systems/griduistandard.md. Layar v2: objek x-dl::grid
+(actions = master | worklist | none, openUrl untuk klik 2x/Edit/Buka).
+
+Tentukan dulu jenisnya:
+- MASTER: toolbar = cari + "+ New Record". Aksi = Edit, lalu Aktif/Nonaktif.
+- TRANSAKSI/WORKLIST: Aksi = Buka (selalu) + Confirm (hanya baris Draft yang ada isinya).
+  "+ New Record" hanya bila dokumen lahir dari grid ini; bila lahir di layar lain,
+  toolbar = cari saja + satu baris catatan asal dokumen.
+
+Wajib di semua grid:
+1. Tanpa judul halaman; mulai dari kotak statistik.
+2. Kotak statistik pastel (5 warna baku, maks. 5/baris) = filter klik/lepas.
+   Angka kotak = keseluruhan. Klausa filter = klausa hitung angkanya.
+3. Kolom identitas paling kiri: avatar + Nama tebal + Kode kecil. Jangan mengarang kode.
+4. Klik 2x baris = buka form. Form Edit SAMA dengan form New (satu layar, satu bentuk).
+5. Ikon Aksi Font Awesome berbingkai lewat komponen (x-grid.action-icon / x-dl::grid),
+   tanpa teks, ada tooltip, aksi pengubah data minta konfirmasi.
+6. Toolbar HANYA cari + "+ New Record". Dilarang dropdown filter, checkbox,
+   tombol butuh-baris-terpilih, tombol Hapus.
+7. Badge status pakai 5 warna pastel yang sama. Dokumen ber-item: panah intip detail
+   (baca saja). Paginasi ala ScriptCase, default 25.
+8. Paginasi & saring di server. Relasi lintas database: query terpisah, cocokkan di PHP.
+Fitur opsional (Kolom/Sort/Export, Filters, centang massal, Kartu) HANYA bila user minta.
+Teks UI lewat Translator::t(). Setelah ubah class Tailwind: npm run build.
+Verifikasi ke database dummy (ddt*), lalu commit + push per potongan kerja.</pre>
+      </div>
+    </section>
+
+    <section id="form">
+      <div class="head"><h2>Form dokumen (master-detail)</h2><span class="tag draft">Draf</span></div>
+      <p>Form satu dokumen dengan bagian kepala (header) dan daftar item di bawahnya: Quotation, Customer Order, PR, PO, dan seterusnya. Arahan 26 September: New dan Edit adalah form yang sama, dan tombolnya baku mengikuti status dokumen.</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Keadaan dokumen</th><th>Tombol di form</th><th>Isi form</th></tr></thead>
+          <tbody>
+            <tr><td>New / belum confirmed</td><td><div class="btnrow"><span class="b">Back</span><span class="b">Delete</span><span class="b">Confirm</span><span class="b p">Save</span></div></td><td>Bisa diubah</td></tr>
+            <tr><td>Sudah confirmed</td><td><div class="btnrow"><span class="b">Back</span><span class="b">Cancel</span><span class="b p">Print</span></div></td><td>Terkunci (baca saja)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Setelah keputusan di bawah dijawab, bagian ini diberi mockup dan prompt siap salin seperti bagian Grid, lalu dibuat sekali sebagai objek DevLib yang dipakai semua form dokumen. Quotation menjadi layar pertama.</p>
+    </section>
+
+    <section id="diskusi">
+      <h2>Untuk didiskusikan</h2>
+      <ol class="qs">
+        <li><b>Cancel sesudah confirmed</b>: membatalkan dokumen (status Cancelled, wajib isi alasan, sesuai kolom <code>stat_cancel</code> + <code>cancel_reason</code>), bukan sekadar menutup layar?</li>
+        <li><b>Delete sebelum confirmed</b>: dokumen dihapus permanen dari database, atau hanya ditandai terhapus?</li>
+        <li><b>Print sebelum confirmed</b>: disembunyikan sama sekali, atau tampil abu-abu dengan keterangan “Confirm dulu untuk cetak”?</li>
+        <li><b>Customer Order & Delivery Order</b>: “+ New Record” ikut langsung membuka form (customer dipilih di form), seperti Quotation sekarang?</li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var el = document.getElementById(btn.dataset.copy);
+    var done = function () { btn.textContent = 'Tersalin'; setTimeout(function () { btn.textContent = 'Salin'; }, 1600); };
+    var fallback = function () { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Tekan Ctrl+C'; };
+    try { navigator.clipboard.writeText(el.textContent).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
