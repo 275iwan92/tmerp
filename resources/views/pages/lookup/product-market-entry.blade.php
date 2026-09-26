@@ -258,7 +258,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         foreach ($this->sizes as $i => $row) {
             $size = $row['id'] ? ProdTypeSize::where('market_id', $market->id_market)->findOrFail($row['id']) : new ProdTypeSize(['market_id' => $market->id_market, 'created_by' => $login]);
             $size->fill(['type_code' => $market->type_code, 'size_label' => trim($row['label']), 'sort_order' => ($i + 1) * 10, 'activate' => true, 'updated_by' => $login,
-                'size_code' => Str::upper(Str::limit(Str::slug($market->market_code.' '.$row['label'], '_'), 60, ''))])->save();
+                'size_code' => rtrim(Str::upper(Str::limit(Str::slug($market->market_code.' '.$row['label'], '_'), 40, '')), '_')])->save();
             $keep[] = $size->id_type_size;
 
             $size->values()->delete();
