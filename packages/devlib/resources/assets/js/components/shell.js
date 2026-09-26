@@ -10,7 +10,9 @@
     init() {
       this.modules = JSON.parse(this.el.dataset.dlModules || '[]');
       this.items = [];
-      this.modules.forEach(m => (m.children || []).forEach(c => (c.items ? c.items : [c]).forEach(it => this.items.push({...it, mod: m.label}))));
+      // Item bisa bersarang (grup di dalam grup = submenu); yang didaftar hanya daun (punya url).
+      const leaves = n => n.items ? n.items.flatMap(leaves) : [n];
+      this.modules.forEach(m => (m.children || []).flatMap(leaves).forEach(it => this.items.push({...it, mod: m.label})));
       this.tabbar = $(this.el, '[data-dl-tabbar]');
       this.content = $(this.el, '[data-dl-content]');
       this.homePane = $(this.el, '[data-dl-home]');
@@ -163,7 +165,7 @@
       }
       const m = this.modules.find(x => x.code === code);
       this.modTitle.innerHTML = `<span class="ic"><i class="${esc(m.icon || '')}"></i></span><span class="lbl">${esc(m.label.toUpperCase())}</span>`;
-      this.sideNav.innerHTML = (m.children || []).map(c => c.items ? `<div class="dl-side__cap">${esc(c.label)}</div>` + c.items.map(this.leaf).join('') : this.leaf(c)).join('');
+      this.sideNav.innerHTML = (m.children || []).map(c => c.items ? `<div class="dl-side__cap">${esc(c.label)}</div>` + c.items.map(it => it.items ? `<div class="dl-side__cap">${esc(c.label)} › ${esc(it.label)}</div>` + it.items.map(this.leaf).join('') : this.leaf(it)).join('') : this.leaf(c)).join('');
       this.markActiveLeaf();
     }
 

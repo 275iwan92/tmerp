@@ -34,7 +34,7 @@ final class AppMenu
             $out = [];
             foreach ($children->get($m->id, collect())->filter($ok) as $c) {
                 if ($c->menu_type === 'group') {
-                    $items = $children->get($c->id, collect())->filter($ok)->map(fn ($i) => self::item($i, $routes))->values()->all();
+                    $items = self::nodes($c, $children, $ok, $routes);
                     if ($items) {
                         $out[] = ['label' => self::label($c), 'items' => $items];
                     }
@@ -57,6 +57,20 @@ final class AppMenu
         }
 
         return $modules;
+    }
+
+    // Isi satu grup. Grup di dalam grup (mis. Inquiry & Quotation > Pro-Dev > ...) = submenu bertingkat
+    // (user 2026-09-26), bukan diratakan: node ber-'items' yang dibuka Layer Menu sebagai panel berikutnya.
+    private static function nodes(SysAppMenu $group, $children, callable $ok, array $routes): array
+    {
+        return $children->get($group->id, collect())->filter($ok)->map(function ($n) use ($children, $ok, $routes) {
+            if ($n->menu_type !== 'group') {
+                return self::item($n, $routes);
+            }
+            $items = self::nodes($n, $children, $ok, $routes);
+
+            return $items ? ['code' => $n->code, 'label' => self::label($n), 'icon' => $n->icon ?: 'fa-solid fa-folder', 'items' => $items] : null;
+        })->filter()->values()->all();
     }
 
     private static function item(SysAppMenu $i, array $routes): array

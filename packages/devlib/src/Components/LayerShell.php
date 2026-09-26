@@ -21,10 +21,18 @@ class LayerShell extends Shell
     public function layerTree(): array
     {
         $tone = ['partial' => 'warn', 'done' => 'success', 'danger' => 'danger'];
-        $leaf = fn (array $it, ?string $group) => array_filter([
-            'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
-            'badge' => $it['badge'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
-        ]);
+        // Item ber-'items' = submenu bertingkat (dibuka sebagai panel berikutnya), selain itu daun.
+        $leaf = function (array $it, ?string $group) use (&$leaf, $tone) {
+            if (isset($it['items'])) {
+                return array_filter(['label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
+                    'items' => array_map(fn ($c) => $leaf($c, null), $it['items'])]);
+            }
+
+            return array_filter([
+                'key' => $it['code'], 'label' => $it['label'], 'icon' => $it['icon'] ?? null, 'group' => $group,
+                'badge' => $it['badge'] ?? null, 'tone' => $tone[$it['badgeTone'] ?? ''] ?? null,
+            ]);
+        };
 
         return array_map(fn ($m) => ['label' => $m['label'], 'icon' => $m['icon'] ?? null, 'items' => collect($m['children'] ?? [])
             ->flatMap(fn ($c) => isset($c['items']) ? array_map(fn ($it) => $leaf($it, $c['label']), $c['items']) : [$leaf($c, null)])
