@@ -20,7 +20,8 @@ class ProdMarket extends Model
         'market_label',
         'type_code',
         'photo_path',
-        'default_material_id',
+        'paper_category_id',
+        'sheet_category_id',
         'default_color',
         'default_tiers',
         'notes',
@@ -40,10 +41,21 @@ class ProdMarket extends Model
         return $this->belongsTo(ProdType::class, 'type_code', 'type_code');
     }
 
-    // default_material_id -> mat_raw (tm2mst, satu DB): relasi biasa.
-    public function material(): BelongsTo
+    // Bahan awal = kategori bahan baku (mat_category, rantai 5 tingkat): #1 Paper, #2 Sheet/SF.
+    public function paperCategory(): BelongsTo
     {
-        return $this->belongsTo(MatRaw::class, 'default_material_id', 'material_id');
+        return $this->belongsTo(MatCategory::class, 'paper_category_id', 'id_category');
+    }
+
+    public function sheetCategory(): BelongsTo
+    {
+        return $this->belongsTo(MatCategory::class, 'sheet_category_id', 'id_category');
+    }
+
+    // "Paper › Kraft › 275 GR" -- nama rantai dari root sampai kategori terpilih.
+    public static function chainLabel(?MatCategory $c): ?string
+    {
+        return $c ? implode(' › ', array_map(fn ($n) => $n->category_name, $c->ancestorChain())) : null;
     }
 
     public function sizes(): HasMany

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Master\MatRaw;
+use App\Models\Master\MatCategory;
 use App\Models\Master\ProdMarket;
 use App\Models\Master\ProdType;
 use App\Models\Master\ProdTypeParam;
@@ -34,7 +34,13 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
     public string $type_code = '';
 
-    public ?int $default_material_id = null;
+    // Rantai kategori bahan baku (mat_category level 1..5) per bahan: [level => id_category|null].
+    // Level 1 dikunci: #1 selalu Paper, #2 selalu Sheet/SF (user 2026-09-26).
+    public array $picks = ['paper' => [], 'sheet' => []];
+
+    private const CHAIN_ROOT = ['paper' => 'Paper', 'sheet' => 'Sheet'];
+
+    private const LEVEL_LABEL = [1 => 'Kategori', 2 => 'Jenis', 3 => 'Gramatur/Spec', 4 => 'Ukuran (opsional)', 5 => 'Merek (opsional)'];
 
     public string $default_color = '';
 
@@ -51,13 +57,16 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
     public ?string $photo_path = null;
 
-    public string $materialSearch = '';
 
     // [['id' => ?int, 'label' => '', 'dims' => [param_key => value]]]
     public array $sizes = [];
 
     public function mount(?int $market = null): void
     {
+        foreach (self::CHAIN_ROOT as $chain => $root) {
+            $this->picks[$chain] = [1 => MatCategory::roots()->where('category_name', $root)->value('id_category'), 2 => null, 3 => null, 4 => null, 5 => null];
+        }
+
         if (! $market) {
             $this->sort_order = $this->autoSortOrder();
 
@@ -66,7 +75,12 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
         $r = ProdMarket::with('sizes.values')->findOrFail($market);
         $this->recordId = $r->id_market;
-        $this->fill($r->only(['market_code', 'market_label', 'type_code', 'default_material_id', 'photo_path']));
+        $this->fill($r->only(['market_code', 'market_label', 'type_code', 'photo_path']));
+        foreach (['paper' => $r->paperCategory, 'sheet' => $r->sheetCategory] as $chain => $cat) {
+            foreach ($cat?->ancestorChain() ?? [] as $node) {
+                $this->picks[$chain][$node->level] = $node->id_category;
+            }
+        }
         $this->default_color = (string) $r->default_color;
         $this->default_tiers = (string) $r->default_tiers;
         $this->notes = (string) $r->notes;
@@ -108,27 +122,46 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             ->whereIn('param_key', self::SIZE_KEYS)->orderBy('seq')->get(['param_key', 'param_label', 'unit']);
     }
 
+    // [chain => [level => [id => label]]] -- anak dari pilihan level sebelumnya (dropdown bersambung).
     #[Computed]
-    public function material(): ?MatRaw
+    public function pickOptions(): array
     {
-        return $this->default_material_id ? MatRaw::find($this->default_material_id) : null;
+        $out = [];
+        foreach ($this->picks as $chain => $p) {
+            for ($lv = 2; $lv <= 5; $lv++) {
+                $out[$chain][$lv] = $p[$lv - 1] ? MatCategory::where('parent_id', $p[$lv - 1])->where('activate', true)->orderBy('category_name')
+                    ->get()->mapWithKeys(fn ($o) => [$o->id_category => $o->category_name.' ('.$o->prefix_char.')'])->all() : [];
+            }
+        }
+
+        return $out;
     }
 
-    #[Computed]
-    public function materialResults()
+    public function levelLabel(int $level): string
     {
-        $term = trim($this->materialSearch);
-
-        return mb_strlen($term) < 2 ? collect() : MatRaw::where('activate', 1)
-            ->where(fn ($q) => $q->where('material_name', 'like', "%{$term}%")->orWhere('material_code', 'like', "%{$term}%"))
-            ->orderBy('material_name')->limit(8)->get(['material_id', 'material_code', 'material_name']);
+        return self::LEVEL_LABEL[$level] ?? 'Level '.$level;
     }
 
-    public function pickMaterial(?int $id): void
+    public function setPick(string $chain, int $level, ?string $value): void
     {
-        $this->default_material_id = $id;
-        $this->materialSearch = '';
-        unset($this->material, $this->materialResults);
+        if (! isset($this->picks[$chain]) || $level < 2 || $level > 5) {
+            return;
+        }
+        $this->picks[$chain][$level] = $value === '' || $value === null ? null : (int) $value;
+        for ($lv = $level + 1; $lv <= 5; $lv++) {
+            $this->picks[$chain][$lv] = null;
+        }
+        unset($this->pickOptions);
+    }
+
+    // Kategori terdalam yang dipilih. #1 Paper boleh berhenti di level 1 (kertas apa saja);
+    // #2 Sheet baru dianggap diisi bila minimal jenisnya (level 2) dipilih -- produk tanpa sheet = kosong.
+    private function deepest(string $chain): ?int
+    {
+        $ids = array_filter($this->picks[$chain]);
+        $min = $chain === 'sheet' ? 2 : 1;
+
+        return $ids && max(array_keys($ids)) >= $min ? $ids[max(array_keys($ids))] : null;
     }
 
     public function updatedTypeCode(): void
@@ -155,7 +188,6 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             'market_code' => ['required', 'max:40', Rule::unique('tm2mst.prod_market', 'market_code')->ignore($this->recordId, 'id_market')],
             'market_label' => 'required|max:100',
             'type_code' => 'required|exists:tm2mst.prod_type,type_code',
-            'default_material_id' => 'nullable|exists:tm2mst.mat_raw,material_id',
             'default_color' => ['nullable', 'regex:/^\d\/\d$/'],
             'default_tiers' => ['nullable', 'regex:/^\s*\d[\d.]*(\s*,\s*\d[\d.]*)*\s*$/'],
             'notes' => 'nullable|max:500',
@@ -170,7 +202,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         DB::connection('tm2mst')->transaction(function () use ($login) {
             $data = [
                 'market_code' => $this->market_code, 'market_label' => trim($this->market_label), 'type_code' => $this->type_code,
-                'default_material_id' => $this->default_material_id, 'default_color' => $this->default_color ?: null,
+                'paper_category_id' => $this->deepest('paper'), 'sheet_category_id' => $this->deepest('sheet'), 'default_color' => $this->default_color ?: null,
                 'default_tiers' => $this->default_tiers ? preg_replace('/\s+/', '', $this->default_tiers) : null,
                 'notes' => $this->notes ?: null, 'sort_order' => (int) $this->sort_order, 'activate' => $this->activate, 'updated_by' => $login,
             ];
@@ -209,7 +241,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             foreach ($this->dimParams as $p) {
                 $v = $row['dims'][$p->param_key] ?? '';
                 if ($v !== '' && $v !== null) {
-                    ProdTypeSizeVal::create(['type_size_id' => $size->id_type_size, 'param_key' => $p->param_key, 'value_num' => $v, 'created_by' => $login]);
+                    ProdTypeSizeVal::create(['type_size_id' => $size->id_type_size, 'param_key' => $p->param_key, 'value_num' => $v]);
                 }
             }
         }
@@ -265,26 +297,23 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             <h3 class="text-xs text-navy uppercase font-bold mb-3">2. Nilai awal di Inquiry New</h3>
             <div class="grid two">
                 <x-form.select label="Tipe Produk (dieline)" wire:change="$set('type_code', $event.target.value)" name="type_code" :selected="$type_code" :options="$this->types" />
-                <div class="relative">
-                    @if ($this->material)
-                        <x-form.input label="Bahan utama" readonly value="{{ $this->material->material_name }} ({{ $this->material->material_code }})" class="bg-field-soft" />
-                        <button type="button" wire:click="pickMaterial(null)" class="absolute top-0 right-0 text-[11px] text-accent font-semibold cursor-pointer">Ganti</button>
-                    @else
-                        <x-form.input label="Bahan utama (cari di master bahan)" :case-toggle="false" wire:model.live.debounce.300ms="materialSearch" placeholder="ketik min. 2 huruf, mis. kraft 290" />
-                        @if ($this->materialResults->isNotEmpty())
-                            <div class="absolute z-20 left-0 right-0 bg-white border border-field-border rounded shadow-lg max-h-56 overflow-y-auto">
-                                @foreach ($this->materialResults as $m)
-                                    <button type="button" wire:key="mat-{{ $m->material_id }}" wire:click="pickMaterial({{ $m->material_id }})"
-                                        class="block w-full text-left px-2.5 py-1.5 text-xs hover:bg-field-soft cursor-pointer">{{ $m->material_name }} <span class="text-muted font-mono">{{ $m->material_code }}</span></button>
-                                @endforeach
-                            </div>
-                        @endif
-                    @endif
-                </div>
                 <x-form.select label="Warna cetak" wire:change="$set('default_color', $event.target.value)" name="default_color" :selected="$default_color"
                     :options="['1/0' => '1/0 (1 warna, 1 sisi)', '2/0' => '2/0', '4/0' => '4/0 (full color 1 sisi)', '4/1' => '4/1', '4/4' => '4/4 (full color 2 sisi)']" />
                 <x-form.input label="Jenjang qty (dipisah koma)" :case-toggle="false" wire:model="default_tiers" name="default_tiers" placeholder="mis. 1000,3000,5000" />
             </div>
+            @foreach (['paper' => '#1 Paper', 'sheet' => '#2 Sheet / SF'] as $chain => $title)
+                <div class="border border-field-border rounded-md p-3 mt-3" wire:key="chain-{{ $chain }}">
+                    <p class="text-[10px] font-bold text-accent uppercase mb-2">Bahan {{ $title }} <span class="normal-case font-normal text-muted">— hirarki 5 kategori bahan baku</span></p>
+                    <div class="[display:grid] grid-cols-5 gap-2">
+                        <x-form.input label="Kategori" readonly value="{{ $chain === 'paper' ? 'Paper (P)' : 'Sheet (S)' }}" class="bg-field-soft" />
+                        @foreach ([2, 3, 4, 5] as $lv)
+                            <x-form.select wire:key="pick-{{ $chain }}-{{ $lv }}" wire:change="setPick('{{ $chain }}', {{ $lv }}, $event.target.value)"
+                                :label="$this->levelLabel($lv)" :disabled="! $picks[$chain][$lv - 1] || empty($this->pickOptions[$chain][$lv])" class="disabled:bg-field-soft"
+                                :placeholder="$lv >= 3 ? '— semua —' : null" :selected="$picks[$chain][$lv]" :options="$this->pickOptions[$chain][$lv]" />
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
             <x-form.textarea label="Catatan untuk sales" wire:model="notes" rows="2" placeholder="mis. untuk makanan berminyak pakai kraft lapis PE" />
         </div>
 

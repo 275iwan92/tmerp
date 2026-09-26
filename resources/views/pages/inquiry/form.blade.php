@@ -1161,9 +1161,10 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     {
         // Sejak 2026-09-26 dari master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev),
         // bukan lagi daftar tetap di kode.
-        return ProdMarket::where('activate', true)->orderBy('sort_order')->orderBy('market_label')->get()
+        return ProdMarket::with(['paperCategory', 'sheetCategory'])->where('activate', true)->orderBy('sort_order')->orderBy('market_label')->get()
             ->mapWithKeys(fn ($m) => [$m->market_code => ['label' => $m->market_label, 'type_code' => $m->type_code, 'id' => $m->id_market,
-                'material_id' => $m->default_material_id, 'color' => $m->default_color, 'tiers' => $m->tierList()]])->all();
+                'materials' => array_values(array_filter([ProdMarket::chainLabel($m->paperCategory), ProdMarket::chainLabel($m->sheetCategory)])),
+                'color' => $m->default_color, 'tiers' => $m->tierList()]])->all();
     }
 
     public function applyProductCategory(string $category): void
@@ -1186,8 +1187,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             if ($market['color']) {
                 $this->parts[$i]['cfg_color'] = $market['color'];
             }
-            if ($market['material_id'] && isset($this->parts[$i]['materials'][0])) {
-                $this->selectMaterial($i, 0, (int) $market['material_id']);
+            // Bahan lapis 1 = #1 Paper, lapis 2 = #2 Sheet/SF (nama rantai kategori; item persis dipilih kemudian).
+            foreach ($market['materials'] as $layer => $name) {
+                if (! isset($this->parts[$i]['materials'][$layer])) {
+                    $this->addMaterialRow($i);
+                }
+                if (empty($this->parts[$i]['materials'][$layer]['rawmat_id'])) {
+                    $this->parts[$i]['materials'][$layer]['display_name'] = $name;
+                }
             }
         }
 

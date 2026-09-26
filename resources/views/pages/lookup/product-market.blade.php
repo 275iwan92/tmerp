@@ -30,7 +30,7 @@ new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Compo
     {
         $term = trim($this->search);
 
-        return $this->applyStatFilter(ProdMarket::query()->with(['type', 'material'])->withCount('sizes'))
+        return $this->applyStatFilter(ProdMarket::query()->with(['type', 'paperCategory.parent.parent.parent.parent', 'sheetCategory.parent.parent.parent.parent'])->withCount('sizes'))
             ->when($term !== '', fn ($q) => $q->where(fn ($w) => $w->where('market_label', 'like', "%{$term}%")
                 ->orWhere('market_code', 'like', "%{$term}%")->orWhere('type_code', 'like', "%{$term}%")))
             ->orderBy('sort_order')->orderBy('market_label')
@@ -106,7 +106,10 @@ new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Compo
                             </td>
                             <td>{{ $row->type?->type_name ?? $row->type_code }}</td>
                             <td class="text-right">{{ $row->sizes_count ?: '—' }}</td>
-                            <td>{{ $row->material?->material_name ?? '—' }}</td>
+                            <td class="text-[11px] leading-snug">
+                                <div><span class="text-muted">#1</span> {{ ProdMarket::chainLabel($row->paperCategory) ?? '—' }}</div>
+                                <div><span class="text-muted">#2</span> {{ ProdMarket::chainLabel($row->sheetCategory) ?? '—' }}</div>
+                            </td>
                             <td>{{ $row->default_color ?: '—' }}</td>
                             <td>{{ $row->tierList() ? collect($row->tierList())->map(fn ($q) => number_format($q, 0, ',', '.'))->implode(' / ') : '—' }}</td>
                             <td class="text-right whitespace-nowrap">
