@@ -84,9 +84,17 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
      spt Nota Inquiry) sesuai docs/mockups/mockup_sales_quotation_letter_print.html. --}}
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->quotation->quotation_no }} · {{ $this->quotation->doc_status }}">
     <x-slot:toolbar>
-        {{-- Cetak dibuka di tab baru dari form: tutup tab = kembali ke ERP (menu utuh).
-             Link ke daftar di tab ini membuka layar tanpa menu (laporan user 2026-09-26). --}}
-        <button type="button" class="sc" onclick="window.close(); setTimeout(() => history.length > 1 ? history.back() : location.replace('{{ url('/') }}'), 150)">{{ \App\Support\Localization\Translator::t('shared_btn_close', 'Tutup') }}</button>
+        {{-- Biasanya tampil di panel kiri form (iframe): Tutup/Esc = kirim pesan ke form
+             supaya panel hilang. Dibuka langsung (tab sendiri) = tutup tab / kembali. --}}
+        <button type="button" class="sc" onclick="tmPrintClose()">{{ \App\Support\Localization\Translator::t('shared_btn_close', 'Tutup') }}</button>
+        <script>
+            function tmPrintClose() {
+                if (window.parent !== window) { window.parent.postMessage('tm-print-close', location.origin); return; }
+                window.close();
+                setTimeout(() => history.length > 1 ? history.back() : location.replace('{{ url('/') }}'), 150);
+            }
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && window.parent !== window) tmPrintClose(); });
+        </script>
     </x-slot:toolbar>
 
     <x-print.sheet>

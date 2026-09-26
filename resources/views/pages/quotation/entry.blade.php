@@ -356,7 +356,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         {{-- Cetak cuma boleh setelah diterbitkan (PUBLISHED) -- instruksi user
              2026-08-24, dikunci juga di sisi mount() quotation/print.blade.php. --}}
         @if ($this->quotation->doc_status === 'PUBLISHED')
-            <a href="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" target="_blank" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md no-underline hover:brightness-110">🖨️ Preview Cetak</a>
+            <button type="button" x-data @click="$dispatch('tm-print-open')" class="bg-[#43508a] text-[#cfd6ef] text-xs px-3.5 py-1.5 rounded-md cursor-pointer hover:brightness-110">🖨️ Preview Cetak</button>
         @endif
         <x-back-button :fallback="route('quotation.list')" title="Kembali ke Daftar Quotation" class="ml-auto" />
     </header>
@@ -543,6 +543,22 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
         </div>
     </div>
+
+    {{-- Preview cetak = panel dari kiri di atas form (user 2026-09-26), bukan tab baru:
+         Tutup/Esc/klik area gelap -> panel & iframe-nya hilang (x-if). --}}
+    @if ($this->quotation->doc_status === 'PUBLISHED')
+        <div wire:ignore x-data="{ open: false }" @tm-print-open.window="open = true" @keydown.escape.window="open = false"
+            @message.window="if ($event.origin === location.origin && $event.data === 'tm-print-close') open = false">
+            <template x-if="open">
+                <div class="fixed inset-0 z-[100] flex">
+                    <div class="w-full md:w-[65vw] h-full bg-white shadow-2xl flex flex-col" x-transition:enter="transition duration-200" x-transition:enter-start="-translate-x-full">
+                        <iframe src="{{ route('quotation.print', ['quotation' => $this->quotationId]) }}" class="flex-1 w-full border-0" title="Preview cetak {{ $this->quotation->quotation_no }}"></iframe>
+                    </div>
+                    <div class="flex-1 bg-black/40 cursor-pointer" @click="open = false" title="Tutup"></div>
+                </div>
+            </template>
+        </div>
+    @endif
 
     @if ($showChooser)
         <x-ui.modal title="Choose inquiry window" close="closeChooser" size="2xl">
