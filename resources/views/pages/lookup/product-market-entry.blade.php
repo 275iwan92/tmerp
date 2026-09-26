@@ -28,6 +28,9 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
     public ?int $recordId = null;
 
+    // '' = record ini Kategori Produk (induk); terisi = Detail Kategori di bawah kategori itu.
+    public string $parent_id = '';
+
     public string $market_code = '';
 
     public string $market_label = '';
@@ -74,7 +77,9 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
         $r = ProdMarket::with('sizes.values')->findOrFail($market);
         $this->recordId = $r->id_market;
-        $this->fill($r->only(['market_code', 'market_label', 'type_code', 'photo_path']));
+        $this->fill($r->only(['market_code', 'market_label', 'photo_path']));
+        $this->type_code = (string) $r->type_code;
+        $this->parent_id = (string) $r->parent_id;
         foreach (['paper' => $r->paperCategory, 'sheet' => $r->sheetCategory] as $chain => $cat) {
             foreach ($cat?->ancestorChain() ?? [] as $node) {
                 $this->picks[$chain][$node->level] = $node->id_category;
@@ -106,6 +111,19 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         if ($field === 'sort_order' && ! $this->recordId) {
             $this->sort_order = $this->autoSortOrder();
         }
+    }
+
+    // Pilihan induk: Kategori Produk lain (bukan diri sendiri).
+    #[Computed]
+    public function groups(): array
+    {
+        return ProdMarket::whereNull('parent_id')->where('activate', true)->when($this->recordId, fn ($q) => $q->whereKeyNot($this->recordId))
+            ->orderBy('sort_order')->orderBy('market_label')->pluck('market_label', 'id_market')->all();
+    }
+
+    public function isDetail(): bool
+    {
+        return $this->parent_id !== '';
     }
 
     #[Computed]
@@ -186,7 +204,8 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         $this->validate([
             'market_code' => ['required', 'max:40', Rule::unique('tm2mst.prod_market', 'market_code')->ignore($this->recordId, 'id_market')],
             'market_label' => 'required|max:100',
-            'type_code' => 'required|exists:tm2mst.prod_type,type_code',
+            'parent_id' => 'nullable|exists:tm2mst.prod_market,id_market',
+            'type_code' => ($this->isDetail() ? 'required' : 'nullable').'|exists:tm2mst.prod_type,type_code',
             'default_color' => ['nullable', 'regex:/^\d\/\d$/'],
             'default_tiers' => ['nullable', 'regex:/^\s*\d[\d.]*(\s*,\s*\d[\d.]*)*\s*$/'],
             'notes' => 'nullable|max:500',
@@ -200,9 +219,12 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
         DB::connection('tm2mst')->transaction(function () use ($login) {
             $data = [
-                'market_code' => $this->market_code, 'market_label' => trim($this->market_label), 'type_code' => $this->type_code,
-                'paper_category_id' => $this->deepest('paper'), 'sheet_category_id' => $this->deepest('sheet'), 'default_color' => $this->default_color ?: null,
-                'default_tiers' => $this->default_tiers ? preg_replace('/\s+/', '', $this->default_tiers) : null,
+                // Kategori (induk) hanya pengelompok: tanpa Tipe Produk, bahan, warna, jenjang qty, ukuran.
+                'parent_id' => $this->isDetail() ? (int) $this->parent_id : null,
+                'market_code' => $this->market_code, 'market_label' => trim($this->market_label), 'type_code' => $this->isDetail() ? $this->type_code : null,
+                'paper_category_id' => $this->isDetail() ? $this->deepest('paper') : null, 'sheet_category_id' => $this->isDetail() ? $this->deepest('sheet') : null,
+                'default_color' => $this->isDetail() ? ($this->default_color ?: null) : null,
+                'default_tiers' => $this->isDetail() && $this->default_tiers ? preg_replace('/\s+/', '', $this->default_tiers) : null,
                 'notes' => $this->notes ?: null, 'sort_order' => (int) $this->sort_order, 'activate' => $this->activate, 'updated_by' => $login,
             ];
             $market = $this->recordId ? tap(ProdMarket::findOrFail($this->recordId))->update($data) : ProdMarket::create($data + ['created_by' => $login]);
@@ -218,6 +240,9 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                 $this->photo = null;
             }
 
+            if (! $this->isDetail()) {
+                $this->sizes = [];
+            }
             $this->saveSizes($market, $login);
         });
 
@@ -281,7 +306,9 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                     <label class="block mt-1.5 text-[11px] text-accent font-semibold cursor-pointer">Ganti foto<input type="file" wire:model="photo" accept="image/*" class="hidden"></label>
                 </div>
                 <div class="flex-1 grid two">
-                    <x-form.input label="Nama Product Market (bahasa sales)" wire:model="market_label" name="market_label" placeholder="mis. Dus Nasi Kotak" />
+                    <x-form.select label="Kategori Produk (induk)" wire:change="$set('parent_id', $event.target.value)" name="parent_id" :selected="$parent_id"
+                        placeholder="— kosong = ini Kategori Produk —" :options="$this->groups" hint="Kosong = record ini jadi Kategori (mis. Dus Makanan). Isi = Detail Kategori (mis. PPL)." />
+                    <x-form.input label="Nama (bahasa sales)" wire:model="market_label" name="market_label" placeholder="mis. Dus Makanan / Paper Lunch Box (PPL)" />
                     <x-form.input label="Kode" wire:model="market_code" name="market_code" placeholder="otomatis dari nama bila kosong" />
                     <div class="relative">
                         <x-form.input label="Urutan tampil" type="number" wire:model.live.debounce.400ms="sort_order" name="sort_order" hint="Otomatis setelah urutan terakhir; boleh diubah." />
@@ -292,6 +319,9 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             </div>
         </div>
 
+        @if (! $this->isDetail())
+            <x-alert.banner type="info" message="Ini Kategori Produk (pengelompok). Tipe Produk, bahan, dan ukuran diisi di Detail Kategori — buat record baru lalu pilih kategori ini sebagai induk." />
+        @else
         <div class="bg-white border border-field-border rounded-md p-4 mb-4">
             <h3 class="text-xs text-navy uppercase font-bold mb-3">2. Nilai awal di Inquiry New</h3>
             <div class="grid two">
@@ -350,5 +380,6 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                 </x-ui.table>
             @endif
         </div>
+        @endif
     </div>
 </div>

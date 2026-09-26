@@ -12,9 +12,8 @@
     $blankPart = ['materials' => [['is_primary' => true]]];
     $parts = $doc['parts'] ?? [$blankPart];
     $tiers = $doc['tiers'] ?? [['qty' => 10000, 'is_primary' => true], ['qty' => 50000, 'is_primary' => false], ['qty' => 200000, 'is_primary' => false]];
-    // Kategori Produk = master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev).
-    $markets = \App\Models\Master\ProdMarket::where('activate', true)->orderBy('sort_order')->orderBy('market_label')->get(['market_code', 'market_label', 'type_code']);
-    $categories = $markets->pluck('market_label', 'market_code')->all();
+    // Kategori Produk -> Detail Kategori -> Ukuran Pasaran = master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev).
+    $markets = Sales::productMarkets();
     $i = fn (string $col) => Src::of('tm2sdi.iqp_inquiry.'.$col);
 @endphp
 
@@ -36,14 +35,22 @@
                 :source="Src::of('tm2sdi.iqp_inquiry.customer_id', 'tm2mst.cust_customer.customer_name')" />
             <x-dl::field.text name="product_draft_name" label="Nama Produk (draft)" multiline required :maxlength="150" placeholder="mis. Box Kosmetik Serum 30ml"
                 :hint="'Nama sementara selama quotation. Karakter khusus (/@#%'.chr(34).chr(39).';) tidak diperbolehkan.'" :value="$doc['product_draft_name'] ?? ''" :source="$i('product_draft_name')" />
-            <script type="application/json" data-inq-categories>@json($markets->pluck('type_code', 'market_code'))</script>
-            <x-dl::field.select name="product_category" label="Kategori Produk (opsional, isi cepat Part 1)" placeholder="— pilih kategori pasar —" :options="$categories"
-                hint="Isi cepat Tipe Produk & part umum — tetap bisa diedit manual di bawah." :source="'tm2mst.prod_market (Lookup Product Market) → Tipe Produk, tidak disimpan'" />
+        </x-dl::form.row>
+        {{-- Kategori -> Detail -> Ukuran bersambung (user 2026-09-26); Tipe Produk = nama dieline internasional, terisi otomatis
+             dari Detail & terkunci (tetap bisa dipilih manual bila tidak memakai kategori, mis. produk custom). --}}
+        <script type="application/json" data-inq-markets>@json($markets)</script>
+        <x-dl::form.row cols="4">
+            <x-dl::field.select name="product_group" label="Kategori Produk" placeholder="— pilih kategori —" :options="collect($markets)->pluck('label', 'code')->all()"
+                hint="Opsional — isi cepat Tipe Produk & ukuran." :source="'tm2mst.prod_market (induk), tidak disimpan'" />
+            <x-dl::field.select name="product_detail" label="Detail Kategori" placeholder="— pilih kategori dulu —" :options="[]" disabled
+                :source="'tm2mst.prod_market (detail) → Tipe Produk, tidak disimpan'" />
+            <x-dl::field.select name="market_size" label="Ukuran Pasaran" placeholder="— pilih detail dulu —" :options="[]" disabled
+                :source="'tm2mst.prod_type_size (milik detail) → dimensi semua Part'" />
+            <x-dl::field.select name="type_code" label="Tipe Produk (dieline internasional)" placeholder="— pilih tipe produk —" :value="$typeCode"
+                :options="collect($types)->map(fn ($t) => $t['label'])->all()" hint="Otomatis dari Detail Kategori — nama ini yang dicari di Pacdora."
+                :source="Src::of('tm2sdi.iqp_part.part_type', 'tm2mst.prod_type.type_code')" />
         </x-dl::form.row>
         <x-dl::form.row cols="2">
-            <x-dl::field.select name="type_code" label="Tipe Produk (berlaku utk semua Part)" placeholder="— pilih tipe produk —" :value="$typeCode"
-                :options="collect($types)->map(fn ($t) => $t['label'])->all()" hint="Kategori Produk di atas cuma jalan pintas — bisa juga pilih langsung di sini."
-                :source="Src::of('tm2sdi.iqp_part.part_type', 'tm2mst.prod_type.type_code')" />
             <x-dl::alert tone="info" data-inq-template-note><span data-inq-template-text></span><x-dl::button size="sm" variant="secondary" label="Tambahkan Otomatis" data-inq-template /></x-dl::alert>
         </x-dl::form.row>
         <x-dl::form.row cols="2">

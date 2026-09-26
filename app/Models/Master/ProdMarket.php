@@ -16,6 +16,7 @@ class ProdMarket extends Model
     protected $primaryKey = 'id_market';
 
     protected $fillable = [
+        'parent_id',
         'market_code',
         'market_label',
         'type_code',
@@ -35,6 +36,22 @@ class ProdMarket extends Model
         'activate' => 'boolean',
         'sort_order' => 'integer',
     ];
+
+    // 2 tingkat: parent_id null = Kategori Produk (tanpa Tipe Produk), terisi = Detail Kategori.
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id', 'id_market');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id', 'id_market')->orderBy('sort_order')->orderBy('market_label');
+    }
+
+    public function isGroup(): bool
+    {
+        return $this->parent_id === null;
+    }
 
     public function type(): BelongsTo
     {

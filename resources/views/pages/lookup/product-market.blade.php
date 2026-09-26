@@ -30,10 +30,12 @@ new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Compo
     {
         $term = trim($this->search);
 
-        return $this->applyStatFilter(ProdMarket::query()->with(['type', 'paperCategory.parent.parent.parent.parent', 'sheetCategory.parent.parent.parent.parent'])->withCount('sizes'))
-            ->when($term !== '', fn ($q) => $q->where(fn ($w) => $w->where('market_label', 'like', "%{$term}%")
-                ->orWhere('market_code', 'like', "%{$term}%")->orWhere('type_code', 'like', "%{$term}%")))
-            ->orderBy('sort_order')->orderBy('market_label')
+        // Urut per Kategori: baris Kategori lalu Detail-nya (parent_id null = Kategori).
+        return $this->applyStatFilter(ProdMarket::query()->with(['parent', 'type', 'paperCategory.parent.parent.parent.parent', 'sheetCategory.parent.parent.parent.parent'])->withCount(['sizes', 'children'])
+            ->leftJoin('prod_market as g', 'g.id_market', '=', 'prod_market.parent_id')->select('prod_market.*'))
+            ->when($term !== '', fn ($q) => $q->where(fn ($w) => $w->where('prod_market.market_label', 'like', "%{$term}%")
+                ->orWhere('prod_market.market_code', 'like', "%{$term}%")->orWhere('prod_market.type_code', 'like', "%{$term}%")->orWhere('g.market_label', 'like', "%{$term}%")))
+            ->orderByRaw('COALESCE(g.sort_order, prod_market.sort_order), COALESCE(g.id_market, prod_market.id_market), prod_market.parent_id IS NOT NULL, prod_market.sort_order, prod_market.market_label')
             ->paginate($this->perPage);
     }
 
@@ -41,12 +43,14 @@ new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Compo
     {
         return [
             'total' => ['label' => 'Total Product Market', 'value' => ProdMarket::count(), 'tone' => 'total'],
+            'group' => ['label' => 'Kategori', 'value' => ProdMarket::whereNull('parent_id')->count(), 'tone' => 'extra',
+                'filter' => fn ($q) => $q->whereNull('prod_market.parent_id')],
             'active' => ['label' => 'Aktif', 'value' => ProdMarket::where('activate', true)->count(), 'tone' => 'active',
-                'filter' => fn ($q) => $q->where('activate', true)],
+                'filter' => fn ($q) => $q->where('prod_market.activate', true)],
             'inactive' => ['label' => 'Nonaktif', 'value' => ProdMarket::where('activate', false)->count(), 'tone' => 'critical',
-                'filter' => fn ($q) => $q->where('activate', false)],
-            'nosize' => ['label' => 'Belum ada ukuran', 'value' => ProdMarket::doesntHave('sizes')->count(), 'tone' => 'warning',
-                'filter' => fn ($q) => $q->doesntHave('sizes')],
+                'filter' => fn ($q) => $q->where('prod_market.activate', false)],
+            'nosize' => ['label' => 'Detail tanpa ukuran', 'value' => ProdMarket::whereNotNull('parent_id')->doesntHave('sizes')->count(), 'tone' => 'warning',
+                'filter' => fn ($q) => $q->whereNotNull('prod_market.parent_id')->doesntHave('sizes')],
         ];
     }
 
@@ -100,9 +104,16 @@ new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Compo
                                     <span class="w-12 h-12 rounded border border-field-border bg-accent-soft text-accent font-bold flex items-center justify-center">{{ $row->initials() }}</span>
                                 @endif
                             </td>
-                            <td>
-                                <div class="font-semibold text-navy">{{ $row->market_label }}</div>
-                                <div class="text-[10.5px] text-muted font-mono">{{ $row->market_code }}</div>
+                            <td @class(['pl-7' => ! $row->isGroup()])>
+                                <div class="font-semibold text-navy">
+                                    @if ($row->isGroup())
+                                        <x-ui.badge tone="accent" size="xs" pill>Kategori</x-ui.badge>
+                                    @else
+                                        <span class="text-muted">{{ $row->parent?->market_label }} ›</span>
+                                    @endif
+                                    {{ $row->market_label }}
+                                </div>
+                                <div class="text-[10.5px] text-muted font-mono">{{ $row->market_code }}{{ $row->isGroup() ? ' · '.$row->children_count.' detail' : '' }}</div>
                             </td>
                             <td>{{ $row->type?->type_name ?? $row->type_code }}</td>
                             <td class="text-right">{{ $row->sizes_count ?: '—' }}</td>

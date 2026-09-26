@@ -1161,8 +1161,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     {
         // Sejak 2026-09-26 dari master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev),
         // bukan lagi daftar tetap di kode.
-        return ProdMarket::with(['paperCategory', 'sheetCategory'])->where('activate', true)->orderBy('sort_order')->orderBy('market_label')->get()
-            ->mapWithKeys(fn ($m) => [$m->market_code => ['label' => $m->market_label, 'type_code' => $m->type_code, 'id' => $m->id_market,
+        // Hanya Detail Kategori (punya Tipe Produk); Kategori induk jadi awalan label.
+        return ProdMarket::with(['parent', 'paperCategory', 'sheetCategory'])->where('activate', true)->whereNotNull('type_code')->orderBy('sort_order')->orderBy('market_label')->get()
+            ->mapWithKeys(fn ($m) => [$m->market_code => ['label' => ($m->parent ? $m->parent->market_label.' › ' : '').$m->market_label, 'type_code' => $m->type_code, 'id' => $m->id_market,
                 'materials' => array_values(array_filter([ProdMarket::chainLabel($m->paperCategory), ProdMarket::chainLabel($m->sheetCategory)])),
                 'color' => $m->default_color, 'tiers' => $m->tierList()]])->all();
     }

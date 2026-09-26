@@ -45,7 +45,8 @@
           const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out.outerHTML], {type: 'image/svg+xml'})); a.download = `dieline-${this.code.toLowerCase()}.svg`; a.click();
         }
       });
-      this.el.dlDielineX = {get dims() { return {...self.dims}; }, setType: c => { this.code = c; this.dims = {}; this.fields(); this.redraw(); }, redraw: this.redraw};
+      this.el.dlDielineX = {get dims() { return {...self.dims}; }, setType: c => { this.code = c; this.dims = {}; this.fields(); this.redraw(); },
+        setDims: d => { Object.assign(this.dims, d); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); this.redraw(); }, redraw: this.redraw};
       if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
       this.fields();this.redraw();
     }

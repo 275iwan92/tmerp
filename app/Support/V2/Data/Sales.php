@@ -39,12 +39,45 @@ final class Sales
         return $m ??= json_decode(file_get_contents(resource_path('data/v2/sales_masters.json')), true);
     }
 
-    // Tipe produk + dieline_spec + parameter + ukuran pasaran (ekspor baca-saja tm2mst.prod_type*, milik paket mockup-parts).
+    // Tipe produk + dieline_spec + parameter + ukuran pasaran umum, langsung dari tm2mst.prod_type* (2026-09-26;
+    // sebelumnya salinan JSON statis yang identik untuk 22 tipe lama). Hanya tipe yang punya dieline (elements).
     public static function dielineTypes(): array
     {
         static $t;
 
-        return $t ??= json_decode(file_get_contents(base_path('packages/mockup-parts/data/dieline_types.json')), true);
+        return $t ??= \App\Models\Master\ProdType::query()->where('activate', true)->orderBy('sort_order')
+            ->with(['params' => fn ($q) => $q->where('activate', true)->orderBy('seq'),
+                'sizes' => fn ($q) => $q->where('activate', true)->whereNull('market_id')->orderBy('sort_order')->with('values')])
+            ->get()->filter(fn ($t) => ! empty($t->dieline_spec['elements'] ?? null))
+            ->mapWithKeys(fn ($t) => [$t->type_code => [
+                'label' => $t->type_name, 'category' => $t->category, 'spec' => $t->dieline_spec,
+                'params' => $t->params->mapWithKeys(fn ($p) => [$p->param_key => ['label' => $p->param_label, 'unit' => $p->unit, 'type' => $p->param_type,
+                    'default' => $p->param_type === 'ENUM' ? $p->default_str : ($p->default_value !== null ? (float) $p->default_value : null),
+                    'min' => $p->min_value !== null ? (float) $p->min_value : null, 'max' => $p->max_value !== null ? (float) $p->max_value : null, 'options' => $p->option_json]])->all(),
+                'sizes' => $t->sizes->map(fn ($z) => ['label' => $z->size_label, 'dims' => self::sizeDims($z)])->values()->all(),
+            ]])->all();
+    }
+
+    private static function sizeDims($size): array
+    {
+        return $size->values->mapWithKeys(fn ($v) => [$v->param_key => $v->value_num !== null ? (float) $v->value_num : $v->value_str])->all();
+    }
+
+    // Kategori Produk (induk) -> Detail Kategori (Tipe Produk) -> Ukuran Pasaran, dari Lookup Product Market (tm2mst.prod_market).
+    public static function productMarkets(): array
+    {
+        return \App\Models\Master\ProdMarket::query()->where('activate', true)->whereNull('parent_id')->orderBy('sort_order')->orderBy('market_label')
+            ->with(['children' => fn ($q) => $q->where('activate', true)->with(['type', 'paperCategory', 'sheetCategory', 'sizes' => fn ($z) => $z->where('activate', true)->with('values')])])
+            ->get()->map(fn ($g) => ['code' => $g->market_code, 'label' => $g->market_label,
+                'details' => $g->children->filter(fn ($d) => $d->type_code)->map(fn ($d) => [
+                    'code' => $d->market_code, 'label' => $d->market_label, 'type_code' => $d->type_code, 'type_name' => $d->type?->type_name,
+                    'color' => $d->default_color, 'tiers' => $d->tierList(),
+                    // Bahan awal = rantai kategori bahan baku: #1 Paper, #2 Sheet/SF (item persis dipilih kemudian).
+                    'materials' => collect([$d->paperCategory, $d->sheetCategory])->filter()->map(fn ($c) => [
+                        'label' => \App\Models\Master\ProdMarket::chainLabel($c), 'category' => $c->category_name])->values()->all(),
+                    'sizes' => $d->sizes->map(fn ($z) => ['label' => $z->size_label, 'dims' => self::sizeDims($z)])->values()->all(),
+                ])->values()->all()])
+            ->filter(fn ($g) => $g['details'])->values()->all();
     }
 
     // Satu dokumen inkuiri lengkap (header + tier + part) untuk dibuka dari worklist.

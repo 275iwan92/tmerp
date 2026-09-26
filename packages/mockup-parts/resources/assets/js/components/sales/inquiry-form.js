@@ -2,10 +2,8 @@
    Tanpa database: Simpan/Confirm hanya mengubah keadaan di layar (nomor, status, kunci form). */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, openLayer, closeLayer, setField, fieldErr} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, openLayer, closeLayer, setField, setOptions, fieldErr} = Devlib.h;
   const InquiryDoc = Devlib.classes.InquiryDoc;
-  const CATEGORY = {BOX_KOSMETIK: 'BOX_WITH_LID', BOX_SEPATU: 'BOX_WITH_LID', BOX_KUE: 'SHALLOW_BOX', BOX_MAKANAN: 'CARD_BOX', BOX_FARMASI: 'STE_BOX',
-    BOX_SOUVENIR: 'GIFT_BOX', BOX_SILINDER: 'ROUND_BOX', HANG_TAG: 'HANG_TAG'};
 
   class InquiryForm extends InquiryDoc {
     static selector = '[data-mp-inquiry]';
@@ -15,8 +13,8 @@
       this.tpl = $(this.el, 'template[data-inq-part-tpl]');
       this.seq = this.parts().length;
       this.type = this.input('type_code')?.value || '';
-      // Kategori Produk -> Tipe Produk dari master Lookup Product Market (layar mengirim JSON); cadangan = daftar lama.
-      try { this.categories = JSON.parse($(this.el, 'script[data-inq-categories]')?.textContent || 'null') || CATEGORY; } catch (err) { this.categories = CATEGORY; }
+      // Kategori Produk -> Detail Kategori -> Ukuran Pasaran (master Lookup Product Market, dikirim layar sebagai JSON).
+      try { this.markets = JSON.parse($(this.el, 'script[data-inq-markets]')?.textContent || '[]'); } catch (err) { this.markets = []; }
       this.on('change', null, e => this.changed(e));
       this.on('click', null, e => this.clicked(e));
       this.on('input', '[data-inq-name] input', (e, t) => { this.title(t.closest('[data-inq-part]')); });
@@ -34,7 +32,9 @@
     changed(e) {
       const n = e.target.name || '';
       if (n === 'type_code') return this.setType(e.target.value);
-      if (n === 'product_category' && this.categories[e.target.value]) { const t = this.categories[e.target.value]; if (!this.parts().length) this.addPart(); setField(this.el, 'type_code', t); return this.setType(t); }
+      if (n === 'product_group') return this.pickGroup(e.target.value);
+      if (n === 'product_detail') return this.pickDetail(e.target.value);
+      if (n === 'market_size') return this.pickSize(e.target.value);
       if (n === 'material_source') return this.custMaterial();
       if (n.endsWith('[cfg_color]')) return this.derived(e.target.closest('[data-inq-part]'), e.target.value);
     }
@@ -56,8 +56,66 @@
 
     // Tipe Produk level Inquiry berlaku untuk SEMUA part (setSharedProductType tmerp): tipe tunggal -> peran MonoForm otomatis,
     // tipe multi-part -> peran dikosongkan dulu (part yang sudah tersimpan tetap tampil apa adanya).
+    // Pilih Kategori -> isi Detail; Tipe Produk dibuka lagi sampai Detail dipilih.
+    pickGroup(code) {
+      this.group = this.markets.find(g => g.code === code) || null;
+      this.detail = null;
+      setOptions(this.el, 'product_detail', (this.group?.details || []).map(d => [d.code, d.label]));
+      setOptions(this.el, 'market_size', [], {disabled: true});
+      this.lockType(false);
+    }
+
+    // Pilih Detail -> Tipe Produk (nama dieline internasional) otomatis & terkunci, Ukuran Pasaran milik detail.
+    pickDetail(code) {
+      this.detail = (this.group?.details || []).find(d => d.code === code) || null;
+      if (!this.detail) return;
+      if (!this.parts().length) this.addPart();
+      setField(this.el, 'type_code', this.detail.type_code);
+      this.setType(this.detail.type_code);
+      this.lockType(true);
+      setOptions(this.el, 'market_size', this.detail.sizes.map((s, i) => [String(i), s.label]));
+      this.fillParts(null);
+    }
+
+    // Pilih Ukuran -> dimensi semua part (Tipe Produk berlaku untuk semua part).
+    pickSize(i) {
+      const s = this.detail?.sizes[+i];
+      if (!s) return;
+      this.parts().forEach(p => { const d = $(p, '[data-dl-dieline-x]'); if (d && d.dlDielineX && d.dlDielineX.setDims) d.dlDielineX.setDims(s.dims); });
+      this.fillParts(s);
+    }
+
+    // Part terisi otomatis dari Product Market: nama part, warna, bahan (#1 Paper, #2 Sheet/SF). Tanpa ketik.
+    fillParts(size) {
+      const d = this.detail; if (!d) return;
+      const sizeName = size ? size.label.split(' (')[0] : '';
+      this.parts().forEach(p => {
+        const nm = $(p, '[data-inq-name] input');
+        if (nm) { nm.value = d.label.split(' (')[0] + (sizeName ? ' ' + sizeName : ''); nm.dispatchEvent(new Event('input', {bubbles: true})); }
+        const col = $(p, '[data-inq-color] [data-dl-value]');
+        if (col && d.color) { setField(p, col.name, d.color); col.dispatchEvent(new Event('change', {bubbles: true})); }
+        const lines = $(p, '[data-dl-lines]');
+        if (lines && lines.dlLines && d.materials.length) {
+          lines.dlLines.set(d.materials.map((m, i) => ({material: 'CAT:' + m.label, material_label: m.label, brand: '', category: m.category, is_primary: i === 0})));
+        }
+      });
+    }
+
+    // Nama dieline internasional (nama Tipe Produk) tampil di tiap part -- nama inilah yang dicari di Pacdora.
+    showDielineName(code) {
+      const sel = this.input('type_code')?.closest('[data-dl-select]');
+      const item = sel && code ? $(sel, `.dl-dd__item[data-value="${CSS.escape(code)}"]`) : null;
+      this.parts().forEach(p => { const t = $(p, '[data-inq-dieline-name]'); if (!t) return; t.hidden = !item; if (item) t.innerHTML = `Dieline: <b>${esc(item.textContent)}</b> <span class="mp-hint__code">${esc(code)}</span>`; });
+    }
+
+    lockType(on) {
+      const sel = this.input('type_code')?.closest('[data-dl-select]');
+      if (sel) $(sel, '[data-dl-dd-toggle]').disabled = on;
+    }
+
     setType(code) {
       this.type = code;
+      this.showDielineName(code);
       this.parts().forEach(p => {
         const d = $(p, '[data-dl-dieline-x]'); if (code && d && d.dlDielineX) d.dlDielineX.setType(code);
         if (code && !this.needsRole(code)) this.applyRole(p, 'monoform'); else if (!p.dataset.saved) { $(p, '[data-inq-role]').value = ''; p.dataset.role = ''; }
@@ -112,7 +170,7 @@
       Devlib.mount(p);
       const d = $(p, '[data-dl-dieline-x]'); if (this.type && d && d.dlDielineX) d.dlDielineX.setType(this.type);
       if (this.type && !this.needsRole(this.type)) this.applyRole(p, 'monoform'); else this.gate(p);
-      this.title(p); this.removable();
+      this.title(p); this.removable(); this.showDielineName(this.type);
       return p;
     }
 

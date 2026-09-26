@@ -21,7 +21,8 @@
       this.sel = $(this.el, '[data-dl-select]');
       if (this.sel) {
         const p = bindPanel(this.sel, () => { if (p.search) { p.search.value = ''; p.search.dispatchEvent(new Event('input')); p.search.focus(); } });
-        $$(this.sel, '.dl-dd__item').forEach(it => it.addEventListener('click', () => { const h = $(this.sel, '[data-dl-value]'); h.value = it.dataset.value; $(this.sel, '[data-dl-dd-text]').textContent = it.textContent; p.close(); h.dispatchEvent(new Event('change', {bubbles: true})); }));
+        // Delegasi: pilihan bisa diganti belakangan lewat Devlib.h.setOptions (dropdown bersambung).
+        $(this.sel, '[data-dl-dd-list]').addEventListener('click', e => { const it = e.target.closest('.dl-dd__item'); if (!it) return; const h = $(this.sel, '[data-dl-value]'); h.value = it.dataset.value; $(this.sel, '[data-dl-dd-text]').textContent = it.textContent; p.close(); h.dispatchEvent(new Event('change', {bubbles: true})); });
       }
 
       this.multi = $(this.el, '[data-dl-multi]');

@@ -412,6 +412,18 @@ window.Devlib = window.Devlib || {};
 
   /* ============================ MASTER ============================ */
   // Isi satu field library dari nilai (dipakai Master, bisa dipakai layar lain lewat Devlib.fill).
+  // Ganti daftar pilihan field select (dropdown bersambung). opts = [[value, label], ...] atau {value: label}.
+  // Nilai lama dikosongkan; disabled = kotak dikunci (mis. tak ada pilihan).
+  function setOptions(form, name, opts, {disabled = false} = {}) {
+    const h = $(form, `[name="${CSS.escape(name)}"]`), sel = h && h.closest('[data-dl-select]');
+    if (!sel) return;
+    const list = Array.isArray(opts) ? opts : Object.entries(opts || {});
+    $(sel, '[data-dl-dd-list]').innerHTML = list.map(([v, l]) => `<div class="dl-dd__item" data-value="${esc(v)}">${esc(l)}</div>`).join('');
+    h.value = '';
+    $(sel, '[data-dl-dd-text]').textContent = sel.dataset.empty;
+    $(sel, '[data-dl-dd-toggle]').disabled = disabled || !list.length;
+  }
+
   function setField(form, name, v) {
     const els = $$(form, `[name="${CSS.escape(name)}"]`); if (!els.length) return;
     const el = els[0], s = v == null ? '' : String(v);
@@ -593,6 +605,6 @@ window.Devlib = window.Devlib || {};
 
   // Asal data kolom (grid/lines): {src: 'tm2sdi.iqp_inquiry.qty'} -> tooltip Mode Developer di header kolom.
   const srcAttr = (c, kind = 'kolom') => c && c.src ? ` data-dl="${kind} ${esc(c.label || c.key)}" data-dl-class="kolom" data-dl-src="${esc(c.src)}"` : '';
-  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
+  Devlib.h = {srcAttr, $, $$, esc, showQr, CASES, CASE_LABEL, applyCase, idNum, bindPanel, pickIndex, WMO, LOGIN_T, typeIcon, HOME, setDevMode, initDevMode, PRESET_T, toast, confirmBox, layer, openLayer, closeLayer, T, dirtyForms, markDirty, askDirty, submitForm, keyName, visible, BUILTIN, showShortcuts, initDevToggle, TZ, fmt, applyMask, fieldErr, CC, luhn, setField, setOptions, fillForm, hasValue, fieldText, W_ID, W_EN, W_EN_T, W_SC_ID, W_SC_EN, wScale, wId, wEn, words, parseCsv, csvCell, downloadCsv, parseNum, parseDate, CH_TONES, chNum, niceMax, libOnce, loadLib, AUTH_T, at, authLang, fieldMsg, fld, val, passCheck, emit};
   Object.assign(Devlib, {toast, setDevMode, fmt, confirm: confirmBox, open: openLayer, close: id => closeLayer(layer(id)), fill: fillForm, setField, words}, {initDevMode});
 })();
