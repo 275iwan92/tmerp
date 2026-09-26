@@ -2,7 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Master\FinPaymentTerm;
+use App\Models\Sys\SecUser;
+use App\Services\Sales\QuotationBuilder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -61,9 +65,33 @@ class UatQuotationInquirySeeder extends Seeder
                     'data_origin' => 'DUMMY',
                 ]);
             }
+
+            $this->sampleQuotations();
         });
 
-        $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* siap di '.$this->db->getDatabaseName().'.');
+        $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* + 2 draft quotation contoh siap di '.$this->db->getDatabaseName().'.');
+    }
+
+    // 2 draft untuk mencoba layar Edit: #1 persis hasil otomatis, #2 ada field yang
+    // di-override officer (chip kuning). Lewat QuotationBuilder = jalur yang sama dgn layar.
+    private function sampleQuotations(): void
+    {
+        Auth::login(SecUser::where('is_admin', 1)->orderBy('id_user')->firstOrFail());
+        $id = fn (array $nos) => $this->db->table('iqp_inquiry')->whereIn('inquiry_no', $nos)->pluck('id_inquiry')->all();
+
+        QuotationBuilder::createFromInquiries($id([self::PREFIX.'001', self::PREFIX.'002']));
+
+        $q = QuotationBuilder::createFromInquiries($id([self::PREFIX.'003', self::PREFIX.'004']));
+        $q->update([
+            'payment_term' => FinPaymentTerm::where('activate', true)->where('payment_term_code', '<>', $q->payment_term)->orderBy('sort_order')->value('payment_term_code'),
+            'deadline_date' => $q->deadline_date->copy()->addDays(7),
+            'notes' => 'Harga belum termasuk ongkos kirim. (contoh UAT)',
+        ]);
+        if ($item = $q->items()->where('source_type', 'INQUIRY_TIER')->orderBy('line_seq')->first()) {
+            $item->discount_pct = 5;
+            $item->recalcSubtotal();
+            $item->save();
+        }
     }
 
     // Customer nyata (salinan master) yang kontak & termin bayarnya terisi, termin dibuat beragam.

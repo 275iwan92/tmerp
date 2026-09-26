@@ -47,11 +47,10 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
         return $this->redirect(route('quotation.create'));
     }
 
+    // Klik 2x / Buka selalu ke form (sama dgn New); yang sudah terbit tampil terkunci + tombol cetak.
     public function openQuotation(int $id)
     {
-        $status = QuoQuotation::whereKey($id)->value('doc_status');
-
-        return $this->redirect(route($status === 'DRAFT' ? 'quotation.entry' : 'quotation.print', ['quotation' => $id]));
+        return $this->redirect(route('quotation.entry', ['quotation' => $id]));
     }
 
     // Bukan master data -- tidak ada konsep aktif/nonaktif, jadi kolom Aksi
