@@ -1,4 +1,5 @@
 import './tmdieline.js';
+import './tm-box3d.js';
 import './dieline-part.js';
 import './app-shell.js';
 import './app-alerts.js';

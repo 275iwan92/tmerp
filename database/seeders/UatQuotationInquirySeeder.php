@@ -8,6 +8,7 @@ use App\Services\Sales\QuotationBuilder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 // Data UAT Quotation (user 2026-09-26): inquiry berharga (costing published) yang
@@ -66,10 +67,11 @@ class UatQuotationInquirySeeder extends Seeder
                 ]);
             }
 
+            $this->dielinesAndArtwork();
             $this->sampleQuotations();
         });
 
-        $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* + 2 draft quotation contoh siap di '.$this->db->getDatabaseName().'.');
+        $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* + 3 quotation contoh (2 draft, 1 terbit) siap di '.$this->db->getDatabaseName().'.');
     }
 
     // 2 draft untuk mencoba layar Edit: #1 persis hasil otomatis, #2 ada field yang
@@ -92,6 +94,71 @@ class UatQuotationInquirySeeder extends Seeder
             $item->recalcSubtotal();
             $item->save();
         }
+
+        // #3 sudah terbit -> Preview Cetak + Lampiran (dieline/artwork/3D) bisa langsung dicoba.
+        QuotationBuilder::createFromInquiries($id([self::PREFIX.'007', self::PREFIX.'008']))->update(['doc_status' => 'PUBLISHED']);
+    }
+
+    // Sumber IQ99DUM* tak punya dieline: pinjam dieline_spec part dummy lain (beragam tipe box)
+    // + artwork contoh PNG (digambar GD). IQ99UAT006 & 009 sengaja tanpa artwork (uji "belum ada").
+    private function dielinesAndArtwork(): void
+    {
+        $pool = $this->db->table('iqp_part')->whereNotNull('dieline_spec')
+            ->where('inquiry_id', '<>', 0)->orderBy('id_part')->get(['dieline_spec', 'flat_w', 'flat_h', 'flat_area'])
+            ->unique(fn ($p) => json_decode($p->dieline_spec, true)['type_code'] ?? '')
+            ->filter(fn ($p) => in_array(json_decode($p->dieline_spec, true)['type_code'] ?? '', ['RTE_BOX', 'STE_BOX', 'CARD_BOX', 'CRASH_LOCK', 'SLEEVE', 'GIFT_BOX'], true))
+            ->values();
+
+        if ($pool->isEmpty()) {
+            return;
+        }
+
+        $parts = $this->db->table('iqp_part as p')->join('iqp_inquiry as i', 'i.id_inquiry', '=', 'p.inquiry_id')
+            ->where('i.inquiry_no', 'like', self::PREFIX.'%')->orderBy('i.inquiry_no')->orderBy('p.part_seq')
+            ->get(['p.id_part', 'i.inquiry_no', 'i.product_draft_name']);
+
+        foreach ($parts->values() as $n => $part) {
+            $src = $pool[$n % $pool->count()];
+            $values = ['dieline_spec' => $src->dieline_spec, 'flat_w' => $src->flat_w, 'flat_h' => $src->flat_h, 'flat_area' => $src->flat_area,
+                'artwork_path' => null, 'artwork_original_filename' => null];
+
+            if (! in_array($part->inquiry_no, [self::PREFIX.'006', self::PREFIX.'009'], true)) {
+                $path = "inquiry/{$part->id_part}/artwork/uat-artwork.png";
+                Storage::disk('public')->put($path, $this->artworkPng($part->product_draft_name, $n));
+                $values['artwork_path'] = $path;
+                $values['artwork_original_filename'] = 'uat-artwork.png';
+            }
+
+            $this->db->table('iqp_part')->where('id_part', $part->id_part)->update($values);
+        }
+    }
+
+    // Desain contoh: pita warna + lingkaran + nama produk (teks GD bawaan diperbesar).
+    private function artworkPng(string $label, int $seed): string
+    {
+        $palette = [[44, 62, 105], [22, 128, 96], [176, 66, 42], [109, 40, 217], [180, 83, 9], [3, 105, 161]];
+        [$r, $g, $b] = $palette[$seed % count($palette)];
+        $w = 1200;
+        $h = 800;
+        $im = imagecreatetruecolor($w, $h);
+        imagefill($im, 0, 0, imagecolorallocate($im, $r, $g, $b));
+        $light = imagecolorallocatealpha($im, 255, 255, 255, 90);
+        for ($x = -$h; $x < $w; $x += 90) {
+            imagefilledpolygon($im, [$x, 0, $x + 40, 0, $x + 40 + $h, $h, $x + $h, $h], $light);
+        }
+        imagefilledellipse($im, (int) ($w * .72), (int) ($h * .45), 320, 320, imagecolorallocate($im, 250, 204, 21));
+
+        $txt = imagecreatetruecolor(200, 34);
+        imagefill($txt, 0, 0, imagecolorallocate($txt, $r, $g, $b));
+        $white = imagecolorallocate($txt, 255, 255, 255);
+        imagestring($txt, 5, 4, 2, mb_strimwidth(strtoupper($label), 0, 22), $white);
+        imagestring($txt, 3, 4, 19, 'TELASIH MAKMUR - UAT', $white);
+        imagecopyresized($im, $txt, 60, (int) ($h * .30), 0, 0, 800, 136, 200, 34);
+
+        ob_start();
+        imagepng($im);
+
+        return (string) ob_get_clean();
     }
 
     // Customer nyata (salinan master) yang kontak & termin bayarnya terisi, termin dibuat beragam.
@@ -119,6 +186,9 @@ class UatQuotationInquirySeeder extends Seeder
             ->whereNotExists(fn ($q) => $q->from('quo_quotation_item')->whereColumn('quotation_id', 'quo_quotation.id_quotation'))->delete();
 
         $parts = $this->db->table('iqp_part')->whereIn('inquiry_id', $inq)->pluck('id_part');
+        foreach ($parts as $partId) {
+            Storage::disk('public')->deleteDirectory("inquiry/{$partId}/artwork");
+        }
         $costings = $this->db->table('iqp_costing')->whereIn('inquiry_id', $inq)->pluck('id_costing');
         $cparts = $this->db->table('iqp_costing_part')->whereIn('costing_id', $costings)->pluck('id_costing_part');
         $proves = $this->db->table('iqp_prove')->whereIn('inquiry_id', $inq)->pluck('id_prove');

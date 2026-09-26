@@ -2,6 +2,7 @@
 
 use App\Models\Master\OrgCompany;
 use App\Models\Sys\SysConstant;
+use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Inquiry\TierPricingResolver;
 use Livewire\Attributes\Computed;
@@ -75,6 +76,33 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
             ->filter(fn ($r) => $r->price_excl !== null)
             ->values();
     }
+
+    // Lampiran: tiap produk (inquiry) -> tiap part: dieline (TMDieline) + artwork dari Inquiry
+    // + 3D isometrik (TMBox3D). Snapshot iqp_part apa adanya, tidak dihitung ulang.
+    #[Computed]
+    public function attachments(): array
+    {
+        $ids = $this->quotation->items->where('source_type', 'INQUIRY_TIER')->pluck('inquiry_id')->filter()->unique();
+
+        return IqpInquiry::with('parts')->whereIn('id_inquiry', $ids)->orderBy('inquiry_no')->get()->map(fn ($inq) => [
+            'no' => $inq->inquiry_no,
+            'product' => $inq->product_draft_name,
+            'parts' => $inq->parts->sortBy('part_seq')->values()->map(function ($part) {
+                $spec = $part->dieline_spec;
+                $dims = $spec['dims'] ?? [];
+
+                return [
+                    'key' => 'p'.$part->id_part,
+                    'name' => $part->part_name,
+                    'type' => $spec['type_code'] ?? $part->part_type,
+                    'size' => collect(['product_length', 'product_width', 'product_height'])->map(fn ($k) => $dims[$k] ?? null)->filter()->map(fn ($v) => rtrim(rtrim(number_format((float) $v, 2, '.', ''), '0'), '.'))->implode(' × '),
+                    'spec' => $spec,
+                    'dims' => $dims,
+                    'artwork' => $part->artwork_path ? asset('storage/'.$part->artwork_path) : null,
+                ];
+            })->all(),
+        ])->all();
+    }
 };
 ?>
 
@@ -125,14 +153,14 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                 <div class="nm">{{ $this->quotation->customer?->customer_name ?? '—' }}</div>
                 <div class="dt">
                     Kode Customer: <b>{{ $this->quotation->customer?->customer_code ?? '—' }}</b><br>
-                    @if ($this->quotation->customer?->contact_name) UP. <b>{{ $this->quotation->customer->contact_name }}</b> @endif
+                    @if ($attn = $this->quotation->attn_contact ?: $this->quotation->customer?->contact_name) UP. <b>{{ $attn }}</b> @endif
                     @if ($this->quotation->customer?->phone) · {{ $this->quotation->customer->phone }} @endif
                 </div>
             </x-print.party>
             <x-print.party label="DARI">
                 <div class="nm">{{ \App\Support\Branding\Brand::companyName() }}</div>
                 <div class="dt">
-                    PIC Sales: <b>{{ $this->quotation->issued_by ?? '—' }}</b><br>
+                    PIC Sales: <b>{{ $this->quotation->sales_pic ?: ($this->quotation->issued_by ?? '—') }}</b><br>
                     Mata Uang: <b>{{ $this->quotation->currency_code }}</b> · Skema Pajak:
                     <b>{{ $this->quotation->tax_scheme === 'INCL' ? 'Inclusive' : 'Exclusive' }} PPN {{ number_format($this->totals['ppn_pct'], 0) }}%</b>
                 </div>
@@ -274,13 +302,74 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                 name="( ................................. )" sub="Nama jelas, jabatan &amp; stempel" />
         </x-print.signatures>
 
-        <x-print.footer page="Halaman 1 dari 1">
+        <x-print.footer page="Halaman 1 dari {{ $this->attachments ? 2 : 1 }}">
             {{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} ·
             dicetak {{ now()->format('d/m/Y H:i') }} · dokumen sah terbit sistem TMERP
         </x-print.footer>
     </x-print.sheet>
 
+    @if ($this->attachments)
+        <x-print.sheet>
+            <x-print.header :company="$this->company" doc-title="LAMPIRAN · MOCKUP PRODUK" :doc-no="$this->quotation->quotation_no">
+                <x-slot:meta>Dieline &amp; pratinjau 3D dari Inquiry Product · ilustrasi, bukan proof warna</x-slot:meta>
+            </x-print.header>
+
+            @foreach ($this->attachments as $a)
+                @foreach ($a['parts'] as $p)
+                    <div class="att">
+                        <div class="att-h"><span class="ref">{{ $a['no'] }}</span> <b>{{ $a['product'] }}</b>@if (count($a['parts']) > 1) · {{ $p['name'] }}@endif
+                            <span class="att-s">{{ $p['type'] }}@if ($p['size']) · {{ $p['size'] }} mm @endif</span></div>
+                        <div class="att-b">
+                            <figure class="att-dl" data-att="{{ $p['key'] }}"><div class="att-cv"></div><figcaption>Dieline{{ $p['artwork'] ? ' + artwork' : '' }}</figcaption></figure>
+                            <figure class="att-3d" data-att3d="{{ $p['key'] }}"><div class="att-cv"></div><figcaption>Pratinjau 3D</figcaption></figure>
+                        </div>
+                        @if (! $p['spec'] || ! $p['artwork'])
+                            <div class="att-n">{{ ! $p['spec'] ? 'Dieline belum ada di Inquiry.' : '' }} {{ ! $p['artwork'] ? 'Artwork belum di-upload di Inquiry — tampil garis dieline saja.' : '' }}</div>
+                        @endif
+                    </div>
+                @endforeach
+            @endforeach
+
+            <x-print.footer page="Halaman 2 dari 2">
+                {{ $this->quotation->quotation_no }} · {{ $this->quotation->customer?->customer_name }} · lampiran mockup
+            </x-print.footer>
+        </x-print.sheet>
+    @endif
+
+    <script>
+        // TMDieline + TMBox3D datang dari app.js (module, deferred) -> tunggu DOMContentLoaded.
+        (function () {
+            const scriptEl = document.currentScript;
+            const DATA = @json(collect($this->attachments)->flatMap(fn ($a) => $a['parts'])->keyBy('key'));
+            const run = function () {
+                const root = scriptEl.closest('.print-doc');
+                Object.entries(DATA).forEach(function ([key, p]) {
+                    const dl = root.querySelector('[data-att="' + key + '"] .att-cv'), td = root.querySelector('[data-att3d="' + key + '"] .att-cv');
+                    let svg = null;
+                    if (p.spec && dl) {
+                        window.TMDieline.render(dl, p.spec, p.dims);
+                        svg = dl.querySelector('svg');
+                        if (svg && p.artwork) window.TMBox3D.overlay(svg, p.artwork);
+                    }
+                    if (td) window.TMBox3D.render(td, p.dims || {}, svg, p.artwork);
+                });
+            };
+            document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', run) : run();
+        })();
+    </script>
+
     <style>
+        .print-doc .att{border:1px solid var(--print-line);margin-top:10px;break-inside:avoid}
+        .print-doc .att-h{padding:6px 10px;background:var(--print-accent-soft);font-size:9pt;border-bottom:1px solid var(--print-line)}
+        .print-doc .att-h .ref{font-family:monospace;font-weight:700;color:var(--print-accent);margin-right:4px}
+        .print-doc .att-s{float:right;color:var(--print-muted);font-size:8pt}
+        .print-doc .att-b{display:grid;grid-template-columns:3fr 2fr;gap:0}
+        .print-doc .att-b figure{margin:0;padding:8px 10px;display:flex;flex-direction:column}
+        .print-doc .att-dl{border-right:1px solid var(--print-line2)}
+        .print-doc .att-cv{height:62mm;display:flex;align-items:center;justify-content:center}
+        .print-doc .att-cv svg{max-width:100%;max-height:100%}
+        .print-doc .att-b figcaption{font-size:7.5pt;color:var(--print-muted);text-align:center;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+        .print-doc .att-n{padding:5px 10px;font-size:8pt;color:var(--print-warn);border-top:1px dashed var(--print-line)}
         {{-- Hanya style KONTEN spesifik quotation -- kerangka (bar/page/kop/
              parties/sec-h/sign/foot) sudah dari resources/views/components/print/*. --}}
         .print-doc .nopr{border:1.5px dashed var(--print-warn);background:#fffbf2;padding:14px 16px}
