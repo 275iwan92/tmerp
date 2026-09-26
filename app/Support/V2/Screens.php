@@ -77,7 +77,7 @@ final class Screens
         $status = is_file(resource_path("views/v2/screens/{$slug}.blade.php")) ? 'review' : 'todo';
 
         return ['code' => 'S-'.$slug, 'slug' => $slug, 'label' => $label, 'icon' => $icon, 'ref' => $ref, 'mockup' => $mockup, 'status' => $status,
-            'url' => route('v2.screen', $slug), 'type' => 'form', 'badge' => $status === 'review' ? 'Review' : 'Belum', 'badgeTone' => $status === 'review' ? 'partial' : null];
+            'url' => route('v2.screen', $slug), 'type' => 'form', 'badge' => $status === 'review' ? 'Review' : 'Belum', 'badgeTone' => $status === 'review' ? 'partial' : 'todo'];
     }
 
     private static function flowItem(string $module, string $label): array

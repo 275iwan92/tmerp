@@ -62,8 +62,8 @@ final class AppMenu
     private static function item(SysAppMenu $i, array $routes): array
     {
         $v2 = str_starts_with((string) $i->target, 'v2:');
-        [$badge, $tone] = $v2 ? (self::BADGE[$i->status_code] ?? ['Belum', null])
-            : (isset($routes[$i->code]) ? ['v1', null] : ['Belum', null]);
+        [$badge, $tone] = $v2 ? (self::BADGE[$i->status_code] ?? ['Belum', 'todo'])
+            : (isset($routes[$i->code]) ? ['v1', null] : ['Belum', 'todo']);
 
         return ['code' => $i->code, 'label' => self::label($i), 'icon' => $i->icon ?: null, 'type' => $i->object_type ?: 'form',
             'url' => route('v2.item', $i->code), 'badge' => $badge, 'badgeTone' => $tone];
