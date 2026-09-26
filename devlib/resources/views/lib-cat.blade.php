@@ -16,5 +16,5 @@
             </section>
         @endforeach
     </div>
-    <x-dl::code-button :code="$code" :file="'resources/views/demos/*.blade.php ('.count($page['members']).' komponen)'" :classes="$page['classes']" :mockup-url="isset($page['mockup']) ? route('mockup', ['file' => $page['mockup']]) : null" />
+    <x-dl::code-button :code="$code" :file="'resources/views/demos/*.blade.php ('.count($page['members']).' components)'" :classes="$page['classes']" :mockup-url="isset($page['mockup']) ? route('mockup', ['file' => $page['mockup']]) : null" />
 @endsection
