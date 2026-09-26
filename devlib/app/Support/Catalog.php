@@ -13,6 +13,9 @@ final class Catalog
     public const APPROVED = [
         'p7-layer' => '2026-09-24',   // Layer Menu
         'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
+        'p5-grid' => '2026-09-26',        // Grid for Pre-Data Entry
+        'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
+        'p5-grid-special' => '2026-09-26', // Grid Special (spreadsheet)
     ];
 
     public const LOGIN_CLASSES = ['Devlib\Components\Frame', 'Devlib\Components\LoginBox', 'Devlib\Components\Clock', 'Devlib\Components\Quote',
