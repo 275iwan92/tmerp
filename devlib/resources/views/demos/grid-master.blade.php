@@ -1,6 +1,7 @@
 <x-dl::grid id="employee" :rows="\App\Support\DemoData::employees()" search="Cari nama, kode, jabatan..."
     :columns="[
-        ['key' => 'name', 'label' => 'Pegawai', 'type' => 'identity', 'code' => 'code'],
+        ['key' => 'photo', 'label' => 'Foto', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
+        ['key' => 'name', 'label' => 'Pegawai', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
         ['key' => 'dept', 'label' => 'Departemen'],
         ['key' => 'position', 'label' => 'Jabatan'],
         ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['TETAP' => 'success', 'KONTRAK' => 'info', 'HARIAN' => 'warn']],
@@ -16,4 +17,4 @@
     ]"
     :filters="['dept' => 'Departemen', 'status' => 'Status', 'city' => 'Kota']"
     :bulk="[['key' => 'export', 'label' => 'Export terpilih', 'icon' => 'export'], ['key' => 'deactivate', 'label' => 'Nonaktifkan', 'icon' => 'deactivate', 'variant' => 'danger', 'confirm' => 'Nonaktifkan semua baris terpilih?']]"
-    :expand="['phone', 'city', 'join_date']" />
+/>

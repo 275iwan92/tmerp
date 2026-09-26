@@ -10,7 +10,8 @@ namespace Devlib\Components;
 //   export CSV = kolom yang tampil, pagination ala ScriptCase, setelan diingat per grid.
 //
 // columns: [['key', 'label', 'type' => text|identity|number|money|date|badge|toggle,
-//            'code' => kolom kode (identity), 'tones' => [nilai => tone] (badge),
+//            'code' => kolom kode (identity), 'avatar' => false (identity tanpa bulatan), 'tones' => [nilai => tone] (badge),
+//            'fallback' => kolom nama (image: tanpa foto -> inisial di kotak yang sama),
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]
 // stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total)
 // actions: master (Edit + Aktif/Nonaktif, Pilihan C) | worklist (Buka + Confirm) | none
@@ -22,6 +23,7 @@ namespace Devlib\Components;
 // quickAdd: [kolom..] -> baris isian cepat di atas tabel (Enter = tambah, event dl:grid-add). groupBy = grup awal.
 // mode (user 2026-09-26, dua keluarga grid yang dipisah):
 //   entry  = Grid for Pre-Data Entry: baris lega, centang + kotak ikon Aksi per baris, + New Record; pintu ke form.
+//            Grid for Master: kolom pertama = kotak foto (image + fallback inisial), identity tanpa bulatan avatar.
 //   report = Grid for Reporting: rapat (banyak baris per layar, data ribuan), TANPA centang/Aksi/New Record,
 //            fokus cari + Filters terbuka di atas tabel + saring per kolom (teks mengandung; angka boleh >, <, >=, <=, =).
 // confirmWhen: baris worklist yang boleh di-Confirm ([kolom => nilai|[nilai..]]), per layar (Quotation = DRAFT, PO = SUBMITTED).
