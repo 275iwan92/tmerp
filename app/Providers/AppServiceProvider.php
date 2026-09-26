@@ -19,7 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Herd di Windows: kompilasi view paralel bisa gagal rename (Access is denied) -> lihat kelasnya.
+        if (PHP_OS_FAMILY === 'Windows') {
+            $this->app->singleton('files', fn () => new \App\Support\Filesystem\WindowsSafeFilesystem);
+        }
     }
 
     /**
