@@ -82,6 +82,7 @@ td:first-child{font-weight:600;white-space:nowrap}
     <a href="#grid">Grid</a>
     <a href="#grid-entry">&nbsp;· A. Pre-Data Entry</a>
     <a href="#grid-report">&nbsp;· B. Reporting</a>
+    <a href="#grid-special">&nbsp;· C. Special</a>
     <a href="#grid-prompt">&nbsp;· Prompt Grid</a>
     <a href="#form">Form dokumen</a>
     <a href="#diskusi">Untuk didiskusikan</a>
@@ -107,7 +108,7 @@ td:first-child{font-weight:600;white-space:nowrap}
 
     <section id="grid">
       <div class="head"><h2>Grid</h2><span class="tag read">Untuk dibaca</span></div>
-      <p><b>Sumber kebenaran = DevLib</b> (devlib.test → Grid, Form &amp; Dokumen). Layar tidak menggambar grid sendiri: pilih satu varian DevLib, isi kolom dan data asli, selesai. Perilaku (cari, sort, filter, kolom, export, paginasi, klik 2x) datang dari komponen <code>x-dl::grid</code>. Kalau ada yang kurang, yang diubah komponen DevLib-nya, bukan layarnya. Grid dibagi <b>dua keluarga</b> dengan tujuan berbeda.</p>
+      <p><b>Sumber kebenaran = DevLib</b> (devlib.test → Grid, Form &amp; Dokumen). Layar tidak menggambar grid sendiri: pilih satu varian DevLib, isi kolom dan data asli, selesai. Perilaku (cari, sort, filter, kolom, export, paginasi, klik 2x) datang dari komponen <code>x-dl::grid</code>. Kalau ada yang kurang, yang diubah komponen DevLib-nya, bukan layarnya. Grid dibagi <b>tiga keluarga</b> dengan tujuan berbeda: Pre-Data Entry, Reporting, dan Special.</p>
 
       <h3 id="grid-entry">A. Grid for Pre-Data Entry <code>mode="entry"</code></h3>
       <p>Pintu menuju form: mencari record untuk dibuka, diubah, atau di-Confirm. Baris lega dan setiap baris diberi <b>kotak kecil</b> (centang di kiri, kotak ikon Aksi di kanan). <b>Grid for Master</b> punya kotak pratinjau di kolom pertama: <b>kotak foto</b> (klik = perbesar); bila record belum punya foto, kotak yang sama berisi inisial nama. Kolom nama di sebelahnya tanpa bulatan avatar.</p>
@@ -121,7 +122,6 @@ td:first-child{font-weight:600;white-space:nowrap}
             <tr><td>4</td><td>Status Bar (tahapan + progres)</td><td>Worklist produksi (WO)</td></tr>
             <tr><td>5</td><td>Photos (tabel ↔ kartu)</td><td>Data dengan foto asli</td></tr>
             <tr><td>6</td><td>Mix Component</td><td>Saklar, rating, tren, tombol di dalam sel</td></tr>
-            <tr><td>7</td><td>Spreadsheet</td><td>Edit massal master kecil (harga, satuan)</td></tr>
           </tbody>
         </table>
       </div>
@@ -153,6 +153,17 @@ td:first-child{font-weight:600;white-space:nowrap}
         <li><b>Data ribuan</b><span>Di tmerp, paginasi dan penyaringan jalan di server (bukan muat semua lalu saring). Relasi lintas database dicari bertahap, bukan <code>whereHas</code> bertingkat. Kriteria besar (periode, dsb.) boleh didahului Form Filter / Kriteria Laporan.</span></li>
       </ul>
 
+      <h3 id="grid-special">C. Grid Special <code>x-dl::sheet</code></h3>
+      <p>Grid yang selnya langsung diedit seperti Excel, bukan pintu ke form dan bukan laporan. Dipakai hanya untuk edit massal master kecil berkolom sederhana (harga bahan, satuan, kurs).</p>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>#</th><th>Varian DevLib</th><th>Dipakai untuk</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Spreadsheet (edit langsung, copy/paste Excel, drag-fill)</td><td>Edit massal master kecil: harga, satuan, kurs</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <div class="note"><b>Belum seragam di kode:</b> <code>griduistandard.md</code> masih menulis toolbar hanya cari + New Record dan tanpa centang; halaman ini yang berlaku. Grid Quotation, CO, DO di v1 belum memakai <code>x-dl::grid</code>. CO dan DO masih memakai pop-up pilih customer (wajib langsung ke form, diputuskan 26 Sep).</div>
 
       <div class="prompt" id="grid-prompt">
@@ -164,9 +175,10 @@ kalau kurang, ubah komponen DevLib-nya.
 
 1. Tentukan keluarga:
    - PRE-DATA ENTRY (mode="entry"): pintu ke form. Varian: Master, Single Transaction,
-     Master-Detail (dokumen ber-item: Quotation/CO/DO/PR/PO), Status Bar, Photos, Mix, Spreadsheet.
+     Master-Detail (dokumen ber-item: Quotation/CO/DO/PR/PO), Status Bar, Photos, Mix.
    - REPORTING (mode="report"): baca data ribuan baris. Varian: Report List, Group By,
      Summary -&gt; Details, Pivot.
+   - SPECIAL (x-dl::sheet): sel langsung diedit ala Excel, hanya master kecil berkolom sederhana.
 2. Tiru demo varian itu apa adanya (devlib/resources/views/demos/grid-*.blade.php);
    ganti hanya kolom dan sumber data asli.
 3. Entry: centang kiri, Aksi Master = Edit + Aktif/Nonaktif, Transaksi = Buka + Confirm

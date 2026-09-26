@@ -41,17 +41,21 @@ final class Catalog
             ['code' => 'IN', 'short' => 'IN', 'label' => 'Input & Tombol', 'icon' => 'fa-solid fa-i-cursor', 'pages' => self::smallCategories()],
             ['code' => 'GF', 'short' => 'GF', 'label' => 'Grid, Form & Dokumen', 'icon' => 'fa-solid fa-table-list',
                 'pages' => [
-                    // Dua keluarga grid (user 2026-09-26): Pre-Data Entry = pintu ke form (baris lega, centang, kotak Aksi,
+                    // Tiga keluarga grid (user 2026-09-26): Pre-Data Entry, Reporting, Special (spreadsheet).
+                    // Dua keluarga pertama: Pre-Data Entry = pintu ke form (baris lega, centang, kotak Aksi,
                     // + New Record); Reporting = baca data ribuan baris (rapat, tanpa Aksi, fokus cari + filter). x-dl::grid mode=entry|report.
-                    'p5-grid' => $page('Grid for Pre-Data Entry (7 varian)', 'fa-solid fa-table', [
+                    'p5-grid' => $page('Grid for Pre-Data Entry (6 varian)', 'fa-solid fa-table', [
                         'grid-master' => ['1 · Grid for Master (kotak foto + Edit + Aktif/Nonaktif)', $c('Grid')],
                         'grid-worklist' => ['2 · Grid for Single Transaction (worklist)', $c('Grid')],
                         'grid-master-detail' => ['3 · Grid for Master-Detail (baris dibuka = item)', $c('Grid')],
                         'grid-status' => ['4 · Grid with Status Bar (tahapan + progres)', $c('Grid')],
                         'grid-photos' => ['5 · Grid with Photos (tabel ↔ kartu)', $c('Grid')],
                         'grid-mix' => ['6 · Grid with Mix Component', $c('Grid')],
-                        'grid-sheet' => ['7 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', $c('Sheet')],
                     ], 'grid_kerapatan_baris.html'),
+                    // Grid Special (user 2026-09-26): grid yang selnya langsung diedit, bukan pintu ke form maupun laporan.
+                    'p5-grid-special' => $page('Grid Special (1 varian)', 'fa-solid fa-table-cells', [
+                        'grid-sheet' => ['1 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', $c('Sheet')],
+                    ]),
                     'p5-grid-report' => $page('Grid for Reporting (4 varian)', 'fa-solid fa-table-list', [
                         'grid-report' => ['1 · Grid Report List (rapat, ribuan baris, saring per kolom)', $c('Grid')],
                         'grid-group' => ['2 · Grid Group By (+ subtotal)', $c('Grid')],
