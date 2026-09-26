@@ -138,7 +138,6 @@ final class Catalog
                     'p5-print' => $page('Print Out', 'fa-solid fa-print', ['print-co' => ['Customer Order Note (prices, VAT, amount in words, multi-page)', $c('PrintOut')], 'print-spb' => ['Goods Receipt Note (multi-level header, no prices)', $c('PrintOut')]], 'nota_co_mockup.html', [...$c('PrintOut'), 'Devlib\\Terbilang']),
                     'p5-report' => $page('Report', 'fa-solid fa-file-lines', ['report-stock-card' => ['Stock Card (running balance, per month)', $c('Report')], 'report-master-stock' => ['Stock Master (KPI, groups + subtotal, highlight < MIN)', $c('Report')]], 'mockup_print_master_stock.html'),
                     'p5-import' => $page('Import / Export', 'fa-solid fa-file-import', ['import-items' => ['Import CSV (column mapping, validation, failed rows)', $c('Import')], 'grid-master' => ['Export CSV from Grid (visible columns)', $c('Grid')]]),
-                    'p5-override' => $page('Override Pattern (OO)', 'fa-solid fa-code-branch', ['oo-override' => ['Kanban subclass: properties overridden in PHP, methods overridden in JS (super)', ['App\\View\\Components\\Demo\\KanbanProduksi', ...$c('Kanban')]]], null, $c('Kanban')),
                 ]],
             ['code' => 'PJ', 'short' => 'PJ', 'label' => 'Boards, Schedules & Charts', 'icon' => 'fa-solid fa-chart-pie',
                 'pages' => [
@@ -168,6 +167,11 @@ final class Catalog
                     'forgot-2' => ['label' => 'Forgot Password · 4 questions', 'icon' => 'fa-solid fa-key', 'full' => true, 'classes' => $c('ForgotBox', 'Frame'), 'mockup' => 'forgot-password.html'],
                     'p8-lock' => $page('Lock Screen', 'fa-solid fa-lock', ['lock-screen' => ['Lock screen (idle / manual / Ctrl+Shift+L)', $c('LockScreen')]]),
                     'p8-security' => $page('Setup & Security', 'fa-solid fa-user-shield', ['security' => ['Users, Groups, Objects, Group Permissions, Language, Theme (vertical tabs)', $c('Tabs', 'Grid', 'PermissionMatrix', 'ThemePicker')]], 'security.html', $c('PermissionMatrix', 'Tabs')),
+                ]],
+            // Aturan untuk developer, bukan komponen yang dipakai user (user 2026-09-26).
+            ['code' => 'DR', 'short' => 'DR', 'label' => 'DEV Rules', 'icon' => 'fa-solid fa-code',
+                'pages' => [
+                    'p5-override' => $page('OO Methods and Properties', 'fa-solid fa-code-branch', ['oo-override' => ['Kanban subclass: properties overridden in PHP, methods overridden in JS (super)', ['App\\View\\Components\\Demo\\KanbanProduksi', ...$c('Kanban')]]], null, $c('Kanban')),
                 ]],
         ];
         // Label breadcrumb halaman kategori = nama grupnya.
