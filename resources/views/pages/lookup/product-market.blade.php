@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Concerns\HasGridPagination;
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\ProdMarket;
 use App\Support\Localization\Translator;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 // Inquiry New. Pola Grid for Master DevLib: kotak foto di kolom pertama, Edit + Aktif/Nonaktif.
 new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Component
 {
+    use HasGridPagination;
     use HasGridStatFilter;
     use WithPagination;
 
@@ -32,7 +34,7 @@ new #[Title('Lookup Product Market — TELASIH MAKMUR ERP')] class extends Compo
             ->when($term !== '', fn ($q) => $q->where(fn ($w) => $w->where('market_label', 'like', "%{$term}%")
                 ->orWhere('market_code', 'like', "%{$term}%")->orWhere('type_code', 'like', "%{$term}%")))
             ->orderBy('sort_order')->orderBy('market_label')
-            ->paginate(25);
+            ->paginate($this->perPage);
     }
 
     protected function statFilterDefs(): array
