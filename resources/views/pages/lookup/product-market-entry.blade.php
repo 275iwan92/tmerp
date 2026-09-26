@@ -42,7 +42,8 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
 
     public string $notes = '';
 
-    public int $sort_order = 999;
+    // tanpa tipe: kotak angka bisa kosong sesaat saat diketik ulang
+    public $sort_order = 999;
 
     public bool $activate = true;
 
@@ -58,6 +59,8 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
     public function mount(?int $market = null): void
     {
         if (! $market) {
+            $this->sort_order = $this->autoSortOrder();
+
             return;
         }
 
@@ -71,6 +74,25 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         $this->activate = (bool) $r->activate;
         $this->sizes = $r->sizes->map(fn ($s) => ['id' => $s->id_type_size, 'label' => $s->size_label,
             'dims' => $s->values->mapWithKeys(fn ($v) => [$v->param_key => $v->value_num !== null ? rtrim(rtrim((string) $v->value_num, '0'), '.') : ''])->all()])->all();
+    }
+
+    // Urutan tampil otomatis = urutan terakhir + 10 (record baru); officer tetap boleh mengubahnya.
+    private function autoSortOrder(): int
+    {
+        return (int) ProdMarket::where('sort_order', '<', 999)->max('sort_order') + 10;
+    }
+
+    #[Computed]
+    public function sortState(): ?string
+    {
+        return $this->recordId ? null : ((int) $this->sort_order === $this->autoSortOrder() ? 'auto' : 'override');
+    }
+
+    public function resetAuto(string $field): void
+    {
+        if ($field === 'sort_order' && ! $this->recordId) {
+            $this->sort_order = $this->autoSortOrder();
+        }
     }
 
     #[Computed]
@@ -137,7 +159,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
             'default_color' => ['nullable', 'regex:/^\d\/\d$/'],
             'default_tiers' => ['nullable', 'regex:/^\s*\d[\d.]*(\s*,\s*\d[\d.]*)*\s*$/'],
             'notes' => 'nullable|max:500',
-            'sort_order' => 'integer|min:0|max:65535',
+            'sort_order' => 'required|integer|min:0|max:65535',
             'photo' => 'nullable|image|max:4096',
             'sizes.*.label' => 'required|max:100',
             'sizes.*.dims.*' => 'nullable|numeric|min:0',
@@ -150,7 +172,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                 'market_code' => $this->market_code, 'market_label' => trim($this->market_label), 'type_code' => $this->type_code,
                 'default_material_id' => $this->default_material_id, 'default_color' => $this->default_color ?: null,
                 'default_tiers' => $this->default_tiers ? preg_replace('/\s+/', '', $this->default_tiers) : null,
-                'notes' => $this->notes ?: null, 'sort_order' => $this->sort_order, 'activate' => $this->activate, 'updated_by' => $login,
+                'notes' => $this->notes ?: null, 'sort_order' => (int) $this->sort_order, 'activate' => $this->activate, 'updated_by' => $login,
             ];
             $market = $this->recordId ? tap(ProdMarket::findOrFail($this->recordId))->update($data) : ProdMarket::create($data + ['created_by' => $login]);
             $this->recordId = $market->id_market;
@@ -230,7 +252,10 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
                 <div class="flex-1 grid two">
                     <x-form.input label="Nama Product Market (bahasa sales)" wire:model="market_label" name="market_label" placeholder="mis. Dus Nasi Kotak" />
                     <x-form.input label="Kode" wire:model="market_code" name="market_code" placeholder="otomatis dari nama bila kosong" />
-                    <x-form.input label="Urutan tampil" type="number" wire:model="sort_order" name="sort_order" />
+                    <div class="relative">
+                        <x-form.input label="Urutan tampil" type="number" wire:model.live.debounce.400ms="sort_order" name="sort_order" hint="Otomatis setelah urutan terakhir; boleh diubah." />
+                        <x-form.auto-chip field="sort_order" :state="$this->sortState" class="absolute top-0 right-0" />
+                    </div>
                     <div class="flex items-end pb-1"><x-form.checkbox wire:model="activate" label="Aktif (muncul di Inquiry New)" /></div>
                 </div>
             </div>
