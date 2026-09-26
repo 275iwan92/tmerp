@@ -4,6 +4,7 @@
   'use strict';
   const {$, $$, esc, toast, confirmBox, openLayer, closeLayer, setField, setOptions, fieldErr} = Devlib.h;
   const InquiryDoc = Devlib.classes.InquiryDoc;
+  const CUSTOM = '__CUSTOM__', CUSTOM_DETAIL = '➕ Custom (belum ada di daftar)', CUSTOM_SIZE = '✎ Ukuran custom (isi dimensi di part)';
 
   class InquiryForm extends InquiryDoc {
     static selector = '[data-mp-inquiry]';
@@ -35,6 +36,7 @@
       if (n === 'product_group') return this.pickGroup(e.target.value);
       if (n === 'product_detail') return this.pickDetail(e.target.value);
       if (n === 'market_size') return this.pickSize(e.target.value);
+      if (n === 'product_detail_custom') return this.parts().forEach(p => { const nm = $(p, '[data-inq-name] input'); if (nm) { nm.value = e.target.value; nm.dispatchEvent(new Event('input', {bubbles: true})); } });
       if (n === 'material_source') return this.custMaterial();
       if (n.endsWith('[cfg_color]')) return this.derived(e.target.closest('[data-inq-part]'), e.target.value);
     }
@@ -56,33 +58,57 @@
 
     // Tipe Produk level Inquiry berlaku untuk SEMUA part (setSharedProductType tmerp): tipe tunggal -> peran MonoForm otomatis,
     // tipe multi-part -> peran dikosongkan dulu (part yang sudah tersimpan tetap tampil apa adanya).
-    // Pilih Kategori -> isi Detail; Tipe Produk dibuka lagi sampai Detail dipilih.
+    // Pilih Kategori -> isi Detail (+ Custom); Tipe Produk dibuka lagi sampai Detail dipilih.
     pickGroup(code) {
-      this.group = this.markets.find(g => g.code === code) || null;
+      this.group = code === CUSTOM ? {code, details: []} : (this.markets.find(g => g.code === code) || null);
       this.detail = null;
-      setOptions(this.el, 'product_detail', (this.group?.details || []).map(d => [d.code, d.label]));
+      this.showCustom(false);
+      setOptions(this.el, 'product_detail', [...(this.group?.details || []).map(d => [d.code, d.label]), [CUSTOM, CUSTOM_DETAIL]]);
       setOptions(this.el, 'market_size', [], {disabled: true});
       this.lockType(false);
+      if (code === CUSTOM) { setField(this.el, 'product_detail', CUSTOM); this.pickDetail(CUSTOM); }
     }
 
-    // Pilih Detail -> Tipe Produk (nama dieline internasional) otomatis & terkunci, Ukuran Pasaran milik detail.
+    // Pilih Detail -> Tipe Produk (nama dieline internasional) otomatis & terkunci, Ukuran Pasaran milik detail (+ Custom).
+    // Detail Custom -> nama produk diketik, Tipe Produk dipilih sendiri (dieline terdekat), ukuran diisi manual di part.
     pickDetail(code) {
+      if (code === CUSTOM) {
+        this.detail = null;
+        this.showCustom(true);
+        this.lockType(false);
+        setOptions(this.el, 'market_size', [[CUSTOM, CUSTOM_SIZE]]);
+        setField(this.el, 'market_size', CUSTOM);
+        return;
+      }
       this.detail = (this.group?.details || []).find(d => d.code === code) || null;
       if (!this.detail) return;
+      this.showCustom(false);
       if (!this.parts().length) this.addPart();
       setField(this.el, 'type_code', this.detail.type_code);
       this.setType(this.detail.type_code);
       this.lockType(true);
-      setOptions(this.el, 'market_size', this.detail.sizes.map((s, i) => [String(i), s.label]));
+      setOptions(this.el, 'market_size', [...this.detail.sizes.map((s, i) => [String(i), s.label]), [CUSTOM, CUSTOM_SIZE]]);
       this.fillParts(null);
     }
 
-    // Pilih Ukuran -> dimensi semua part (Tipe Produk berlaku untuk semua part).
+    // Pilih Ukuran -> dimensi semua part (Tipe Produk berlaku untuk semua part). Custom = dimensi diisi manual di part.
     pickSize(i) {
-      const s = this.detail?.sizes[+i];
+      const s = i === CUSTOM ? null : this.detail?.sizes[+i];
       if (!s) return;
       this.parts().forEach(p => { const d = $(p, '[data-dl-dieline-x]'); if (d && d.dlDielineX && d.dlDielineX.setDims) d.dlDielineX.setDims(s.dims); });
       this.fillParts(s);
+    }
+
+    showCustom(on) {
+      const box = $(this.el, '[data-inq-custom]');
+      if (box) box.hidden = !on;
+      const inp = this.input('product_detail_custom');
+      if (!on && inp) { setField(this.el, 'product_detail_custom', ''); fieldErr(inp, ''); }
+    }
+
+    lockType(on) {
+      const sel = this.input('type_code')?.closest('[data-dl-select]');
+      if (sel) $(sel, '[data-dl-dd-toggle]').disabled = on;
     }
 
     // Part terisi otomatis dari Product Market: nama part, warna, bahan (#1 Paper, #2 Sheet/SF). Tanpa ketik.
@@ -200,6 +226,12 @@
       bad += this.err('customer_id', this.value('customer_id') ? '' : 'Customer wajib dipilih.');
       bad += this.err('product_draft_name', !name ? 'Nama Produk wajib diisi.' : /[/@#%"']/.test(name) ? 'Karakter khusus (/@#%"\') tidak diperbolehkan.' : '');
       bad += this.err('deadline_quotation', dl && date && dl < date ? 'Tgl Kebutuhan Pelanggan tidak boleh sebelum Tanggal.' : '');
+      // Kategori Produk wajib sampai Ukuran (dieline muncul); Custom = nama produk + Tipe Produk wajib.
+      bad += this.err('product_group', this.value('product_group') ? '' : 'Kategori Produk wajib dipilih (pilih Custom bila belum ada).');
+      bad += this.err('product_detail', this.value('product_detail') ? '' : 'Detail Kategori wajib dipilih.');
+      bad += this.err('market_size', this.value('market_size') ? '' : 'Ukuran Pasaran wajib dipilih.');
+      bad += this.err('product_detail_custom', this.value('product_detail') === CUSTOM && !this.value('product_detail_custom') ? 'Nama produk custom wajib diisi.' : '');
+      bad += this.err('type_code', this.value('type_code') ? '' : 'Tipe Produk (dieline) wajib dipilih.');
       bad += this.err('cust_material_spec', this.input('material_source')?.checked && !this.value('cust_material_spec') ? 'Wajib diisi bila bahan dari customer.' : '');
       const tl = $(this.el, '[data-dl-lines][data-name="tiers"]'), tiers = tl && tl.dlLines ? tl.dlLines.rows : [];
       const prim = tiers.filter(t => t.is_primary).length, zero = tiers.findIndex(t => !(+String(t.qty).replace(/\./g, '') > 0));
