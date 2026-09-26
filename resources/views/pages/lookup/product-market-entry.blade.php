@@ -24,7 +24,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
     use WithFileUploads;
 
     // Dimensi yang disimpan per ukuran pasaran; parameter teknis (bleed, overlap, flap) tetap default Tipe Produk.
-    private const SIZE_KEYS = ['product_length', 'product_width', 'product_height', 'lid_height', 'diameter'];
+    private const SIZE_KEYS = ['product_length', 'product_width', 'product_height', 'top_length', 'top_width', 'lid_height', 'diameter'];
 
     public ?int $recordId = null;
 
@@ -56,7 +56,6 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
     public $photo = null;
 
     public ?string $photo_path = null;
-
 
     // [['id' => ?int, 'label' => '', 'dims' => [param_key => value]]]
     public array $sizes = [];
