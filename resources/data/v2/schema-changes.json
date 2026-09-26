@@ -1,0 +1,35 @@
+[
+    {
+        "at": "2026-09-26 12:35:34",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "quo_quotation",
+                "column": "attn_contact",
+                "detail": "varchar(150)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "quo_quotation",
+                "column": "sales_pic",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "quo_quotation",
+                "column": "deadline_date",
+                "detail": "date"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "quo_quotation_cc",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    }
+]

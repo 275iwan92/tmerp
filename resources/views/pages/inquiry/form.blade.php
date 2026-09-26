@@ -2,6 +2,7 @@
 
 use App\Models\Master\CustCustomer;
 use App\Models\Master\MatRaw;
+use App\Models\Master\ProdMarket;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdPartAttachment;
 use App\Models\Master\ProdPartFinishing;
@@ -123,6 +124,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     public ?string $deadline_quotation = null;
 
     public string $product_draft_name = '';
+
+    // Product Market terpilih di "Kategori Produk" (tidak disimpan) -- membuka Ukuran Pasaran milik market itu.
+    public ?int $productMarketId = null;
 
     public string $sales_note = '';
 
@@ -869,7 +873,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                         'options' => $p->option_json ?? [],
                         'default' => $p->param_type === 'ENUM' ? ($p->default_str ?? '') : (float) $p->default_value,
                     ])->values()->all(),
-                    'sizes' => $t->sizes->map(fn ($s) => [
+                    // Ukuran umum Tipe Produk + ukuran milik Product Market yang sedang dipilih.
+                    'sizes' => $t->sizes->filter(fn ($s) => $s->market_id === null || (int) $s->market_id === $this->productMarketId)->map(fn ($s) => [
                         'id' => $s->id_type_size,
                         'label' => $s->size_label,
                         'values' => $s->values->mapWithKeys(fn ($v) => [
@@ -1154,16 +1159,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     // point, bukan kunci mati.
     protected function productCategoryMap(): array
     {
-        return [
-            'BOX_KOSMETIK' => ['label' => 'Box Kosmetik', 'type_code' => 'BOX_WITH_LID'],
-            'BOX_SEPATU' => ['label' => 'Box Sepatu', 'type_code' => 'BOX_WITH_LID'],
-            'BOX_KUE' => ['label' => 'Box Kue / Pizza', 'type_code' => 'SHALLOW_BOX'],
-            'BOX_MAKANAN' => ['label' => 'Box Makanan (Tuck End)', 'type_code' => 'CARD_BOX'],
-            'BOX_FARMASI' => ['label' => 'Kemasan Farmasi / Obat', 'type_code' => 'STE_BOX'],
-            'BOX_SOUVENIR' => ['label' => 'Box Souvenir / Gift', 'type_code' => 'GIFT_BOX'],
-            'BOX_SILINDER' => ['label' => 'Box Silinder / Tube', 'type_code' => 'ROUND_BOX'],
-            'HANG_TAG' => ['label' => 'Hang Tag / Label Produk', 'type_code' => 'HANG_TAG'],
-        ];
+        // Sejak 2026-09-26 dari master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev),
+        // bukan lagi daftar tetap di kode.
+        return ProdMarket::where('activate', true)->orderBy('sort_order')->orderBy('market_label')->get()
+            ->mapWithKeys(fn ($m) => [$m->market_code => ['label' => $m->market_label, 'type_code' => $m->type_code, 'id' => $m->id_market,
+                'material_id' => $m->default_material_id, 'color' => $m->default_color, 'tiers' => $m->tierList()]])->all();
     }
 
     public function applyProductCategory(string $category): void
@@ -1176,7 +1176,29 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             $this->addPart();
         }
 
-        $this->setSharedProductType($this->productCategoryMap()[$category]['type_code']);
+        $market = $this->productCategoryMap()[$category];
+        $this->productMarketId = $market['id'];
+        unset($this->productTypeOptions);
+        $this->setSharedProductType($market['type_code']);
+
+        // Nilai awal dari Product Market -- tetap bisa diedit sesudahnya.
+        foreach (array_keys($this->parts) as $i) {
+            if ($market['color']) {
+                $this->parts[$i]['cfg_color'] = $market['color'];
+            }
+            if ($market['material_id'] && isset($this->parts[$i]['materials'][0])) {
+                $this->selectMaterial($i, 0, (int) $market['material_id']);
+            }
+        }
+
+        // Jenjang qty hanya diganti selama belum ada tier yang tersimpan.
+        if ($market['tiers'] && collect($this->tiers)->every(fn ($t) => empty($t['id']))) {
+            $this->tiers = [];
+            foreach ($market['tiers'] as $qty) {
+                $this->addTier();
+                $this->tiers[count($this->tiers) - 1]['qty'] = (string) $qty;
+            }
+        }
     }
 
     // ================= TIPE PRODUK level Inquiry, bukan per-part (2026-09-04) =================

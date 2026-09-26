@@ -31,6 +31,7 @@ final class MenuRoutes
             // diarahkan langsung ke form 2026-09-14 dan user menegaskan grid
             // tidak boleh hilang; dari grid klik 2x baru masuk layar kerja.
             'SALES_IMPO' => route('production.prodev.list'),
+            'SALES_PMKT' => route('lookup.product-market'),
             'SALES_COST' => route('inquiry.costing.list'),
             // Nota TIDAK LAGI menu top-level -- dokumen per-inquiry, reachable lewat
             // tombol "🖨 Cetak Nota" di dalam Inquiry Product (inquiry/form.blade.php toolbar).

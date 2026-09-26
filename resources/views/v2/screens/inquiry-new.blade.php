@@ -12,8 +12,9 @@
     $blankPart = ['materials' => [['is_primary' => true]]];
     $parts = $doc['parts'] ?? [$blankPart];
     $tiers = $doc['tiers'] ?? [['qty' => 10000, 'is_primary' => true], ['qty' => 50000, 'is_primary' => false], ['qty' => 200000, 'is_primary' => false]];
-    $categories = ['BOX_KOSMETIK' => 'Box Kosmetik', 'BOX_SEPATU' => 'Box Sepatu', 'BOX_KUE' => 'Box Kue / Pizza', 'BOX_MAKANAN' => 'Box Makanan (Tuck End)',
-        'BOX_FARMASI' => 'Kemasan Farmasi / Obat', 'BOX_SOUVENIR' => 'Box Souvenir / Gift', 'BOX_SILINDER' => 'Box Silinder / Tube', 'HANG_TAG' => 'Hang Tag / Label Produk'];
+    // Kategori Produk = master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev).
+    $markets = \App\Models\Master\ProdMarket::where('activate', true)->orderBy('sort_order')->orderBy('market_label')->get(['market_code', 'market_label', 'type_code']);
+    $categories = $markets->pluck('market_label', 'market_code')->all();
     $i = fn (string $col) => Src::of('tm2sdi.iqp_inquiry.'.$col);
 @endphp
 
@@ -35,8 +36,9 @@
                 :source="Src::of('tm2sdi.iqp_inquiry.customer_id', 'tm2mst.cust_customer.customer_name')" />
             <x-dl::field.text name="product_draft_name" label="Nama Produk (draft)" multiline required :maxlength="150" placeholder="mis. Box Kosmetik Serum 30ml"
                 :hint="'Nama sementara selama quotation. Karakter khusus (/@#%'.chr(34).chr(39).';) tidak diperbolehkan.'" :value="$doc['product_draft_name'] ?? ''" :source="$i('product_draft_name')" />
+            <script type="application/json" data-inq-categories>@json($markets->pluck('type_code', 'market_code'))</script>
             <x-dl::field.select name="product_category" label="Kategori Produk (opsional, isi cepat Part 1)" placeholder="— pilih kategori pasar —" :options="$categories"
-                hint="Isi cepat Tipe Produk & part umum — tetap bisa diedit manual di bawah." :source="'jalan pintas ke Tipe Produk (tidak disimpan)'" />
+                hint="Isi cepat Tipe Produk & part umum — tetap bisa diedit manual di bawah." :source="'tm2mst.prod_market (Lookup Product Market) → Tipe Produk, tidak disimpan'" />
         </x-dl::form.row>
         <x-dl::form.row cols="2">
             <x-dl::field.select name="type_code" label="Tipe Produk (berlaku utk semua Part)" placeholder="— pilih tipe produk —" :value="$typeCode"

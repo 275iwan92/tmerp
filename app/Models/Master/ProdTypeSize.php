@@ -16,6 +16,7 @@ class ProdTypeSize extends Model
 
     protected $fillable = [
         'type_code',
+        'market_id',
         'size_code',
         'size_label',
         'sort_order',
@@ -31,6 +32,11 @@ class ProdTypeSize extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(ProdType::class, 'type_code', 'type_code');
+    }
+
+    public function market(): BelongsTo
+    {
+        return $this->belongsTo(ProdMarket::class, 'market_id', 'id_market');
     }
 
     public function values(): HasMany

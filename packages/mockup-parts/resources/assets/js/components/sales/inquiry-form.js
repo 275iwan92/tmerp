@@ -15,6 +15,8 @@
       this.tpl = $(this.el, 'template[data-inq-part-tpl]');
       this.seq = this.parts().length;
       this.type = this.input('type_code')?.value || '';
+      // Kategori Produk -> Tipe Produk dari master Lookup Product Market (layar mengirim JSON); cadangan = daftar lama.
+      try { this.categories = JSON.parse($(this.el, 'script[data-inq-categories]')?.textContent || 'null') || CATEGORY; } catch (err) { this.categories = CATEGORY; }
       this.on('change', null, e => this.changed(e));
       this.on('click', null, e => this.clicked(e));
       this.on('input', '[data-inq-name] input', (e, t) => { this.title(t.closest('[data-inq-part]')); });
@@ -32,7 +34,7 @@
     changed(e) {
       const n = e.target.name || '';
       if (n === 'type_code') return this.setType(e.target.value);
-      if (n === 'product_category' && CATEGORY[e.target.value]) { if (!this.parts().length) this.addPart(); setField(this.el, 'type_code', CATEGORY[e.target.value]); return this.setType(CATEGORY[e.target.value]); }
+      if (n === 'product_category' && this.categories[e.target.value]) { const t = this.categories[e.target.value]; if (!this.parts().length) this.addPart(); setField(this.el, 'type_code', t); return this.setType(t); }
       if (n === 'material_source') return this.custMaterial();
       if (n.endsWith('[cfg_color]')) return this.derived(e.target.closest('[data-inq-part]'), e.target.value);
     }
