@@ -39,7 +39,8 @@ final class Catalog
                     'basic-locale' => $basic('Locale & Formats', 'fa-solid fa-earth-asia'),
                 ] + self::feedbackCategories() + self::behaviorCategories()],
             ['code' => 'IN', 'short' => 'IN', 'label' => 'Input & Tombol', 'icon' => 'fa-solid fa-i-cursor', 'pages' => self::smallCategories()],
-            ['code' => 'GF', 'short' => 'GF', 'label' => 'Grid, Form & Dokumen', 'icon' => 'fa-solid fa-table-list',
+            // Grid, Form, Dokumen = 3 menu terpisah (user 2026-09-26) supaya breadcrumb menunjukkan keluarganya.
+            ['code' => 'GR', 'short' => 'GR', 'label' => 'Grid', 'icon' => 'fa-solid fa-table',
                 'pages' => [
                     // Tiga keluarga grid (user 2026-09-26): Pre-Data Entry, Reporting, Special (spreadsheet).
                     // Dua keluarga pertama: Pre-Data Entry = pintu ke form (baris lega, centang, kotak Aksi,
@@ -52,29 +53,40 @@ final class Catalog
                         'grid-photos' => ['5 · Grid with Photos (tabel ↔ kartu)', $c('Grid')],
                         'grid-mix' => ['6 · Grid with Mix Component', $c('Grid')],
                     ], 'grid_kerapatan_baris.html'),
-                    // Grid Special (user 2026-09-26): grid yang selnya langsung diedit, bukan pintu ke form maupun laporan.
-                    'p5-grid-special' => $page('Grid Special (1 varian)', 'fa-solid fa-table-cells', [
-                        'grid-sheet' => ['1 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', $c('Sheet')],
-                    ]),
                     'p5-grid-report' => $page('Grid for Reporting (4 varian)', 'fa-solid fa-table-list', [
                         'grid-report' => ['1 · Grid Report List (rapat, ribuan baris, saring per kolom)', $c('Grid')],
                         'grid-group' => ['2 · Grid Group By (+ subtotal)', $c('Grid')],
                         'grid-drilldown' => ['3 · Grid Summary → Details (drill-down)', $c('Drilldown', 'Grid')],
                         'grid-pivot' => ['4 · Grid Pivot (baris × kolom × nilai)', $c('Pivot')],
                     ]),
-                    'p5-forms' => $page('Form (9 varian)', 'fa-solid fa-pen-to-square', [
+                    // Grid Special (user 2026-09-26): grid yang selnya langsung diedit, bukan pintu ke form maupun laporan.
+                    'p5-grid-special' => $page('Grid Special (1 varian)', 'fa-solid fa-table-cells', [
+                        'grid-sheet' => ['1 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', $c('Sheet')],
+                    ]),
+                ]],
+            // Tiga keluarga form (user 2026-09-26): Single, Master-Detail, Special.
+            ['code' => 'FM', 'short' => 'FM', 'label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square',
+                'pages' => [
+                    'p5-form-single' => $page('Single Form (4 varian)', 'fa-solid fa-pen-to-square', [
                         'form' => ['1 · Form Standard (semua jenis field)', $c('Form')],
                         'form-tabs' => ['2 · Form with Tabs (tabular)', $c('Form', 'Tabs')],
-                        'form-md' => ['3 · Form Master-Detail (header + baris item)', $c('Form', 'Lines')],
-                        'form-approval' => ['4 · Form with Approval', $c('Form', 'ApprovalBar')],
-                        'form-view' => ['5 · Form Read-only (mode lihat + Edit)', $c('Form')],
-                        'form-popup' => ['6 · Form Pop-up (modal & drawer)', $c('Modal', 'Drawer', 'Form')],
-                        'wizard-customer' => ['7 · Form Wizard (bertahap)', $c('Wizard')],
-                        'form-filter' => ['8 · Form Filter / Kriteria Laporan', $c('FilterForm')],
-                        'form-quickadd' => ['9 · Form Quick-add di dalam Grid', $c('Grid')],
+                        'form-view' => ['3 · Form Read-only (mode lihat + Edit)', $c('Form')],
+                        'form-popup' => ['4 · Form Pop-up (modal & drawer)', $c('Modal', 'Drawer', 'Form')],
+                    ], 'UIUX_components_part1.html'),
+                    'p5-form-md' => $page('Form Master-Detail (2 varian)', 'fa-solid fa-file-invoice', [
+                        'form-md' => ['1 · Form Master-Detail (header + baris item)', $c('Form', 'Lines')],
+                        'form-approval' => ['2 · Form with Approval', $c('Form', 'ApprovalBar')],
+                    ], 'UIUX_components_part1.html'),
+                    'p5-form-special' => $page('Form Special (3 varian)', 'fa-solid fa-wand-magic-sparkles', [
+                        'wizard-customer' => ['1 · Form Wizard (bertahap)', $c('Wizard')],
+                        'form-filter' => ['2 · Form Filter / Kriteria Laporan', $c('FilterForm')],
+                        'form-quickadd' => ['3 · Form Quick-add di dalam Grid', $c('Grid')],
                     ], 'UIUX_components_part1.html'),
                     'form' => ['label' => 'Form · semua field (layar penuh)', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
-                        'classes' => $c('Form', 'Form\\Col', 'Form\\Row', 'DeviceFrame'), 'mockup' => 'UIUX_components_part1.html'],
+                        'classes' => $c('Form', 'Form\Col', 'Form\Row', 'DeviceFrame'), 'mockup' => 'UIUX_components_part1.html'],
+                ]],
+            ['code' => 'DK', 'short' => 'DK', 'label' => 'Dokumen', 'icon' => 'fa-solid fa-file-lines',
+                'pages' => [
                     'p5-master' => $page('Master', 'fa-solid fa-address-book', ['master-employee' => ['Master Pegawai (grid + form edit)', $c('Master', 'Grid')]], 'mockup_master_customer.html'),
                     'p5-master-detail' => $page('Master-Detail', 'fa-solid fa-file-invoice', ['master-detail-po' => ['Purchase Order (header + baris item)', $c('Master', 'Lines', 'Grid')]], 'mockup_purchase_requisition.html'),
                     'p5-approval' => $page('Approval', 'fa-solid fa-stamp', ['approval-po' => ['Approval Center PO', $c('Approval')]], 'mockup_po_approval_center.html'),
