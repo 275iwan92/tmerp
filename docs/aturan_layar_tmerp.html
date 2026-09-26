@@ -148,8 +148,7 @@ td:first-child{font-weight:600;white-space:nowrap}
       </div>
       <ul class="rules">
         <li><b>Tanpa kotak per baris</b><span>Tidak ada kolom centang, kolom Aksi, maupun + New Record; avatar disembunyikan. Baris rapat, huruf lebih kecil, warna selang-seling.</span></li>
-        <li><b>Filter selalu terbuka</b><span>Pilihan Filters tampil di atas tabel (bukan pop-up), disertai hitungan "N baris cocok dari M".</span></li>
-        <li><b>Saring per kolom</b><span>Baris isian di bawah judul kolom. Teks = mengandung; angka boleh <code>&gt;1000</code>, <code>&lt;=5</code>, <code>=12</code>. Setiap saringan tampil sebagai chip yang bisa dilepas.</span></li>
+        <li><b>Satu tombol Filter → pop-up</b><span>Tidak ada bilah filter atau baris saring di atas tabel. Tombol <b>Filter</b> di toolbar membuka pop-up berisi <b>Pilihan</b> (dropdown seperti Kategori, Sales, Status) dan <b>Per kolom</b> (teks = mengandung; angka boleh <code>&gt;1000</code>, <code>&lt;=5</code>, <code>=12</code>). Berlaku setelah <b>Terapkan</b> (atau Enter); <b>Reset</b> mengosongkan semua. Angka di tombol = jumlah kriteria aktif, dan tiap kriteria tampil sebagai chip yang bisa dilepas. Di samping tombol: "N baris cocok dari M".</span></li>
         <li><b>Kepala tabel tetap</b><span>Tabel bergulir di dalam kotaknya dan judul kolom tetap terlihat. Paginasi 50/100/250/500, default 100. Export = kolom yang tampil.</span></li>
         <li><b>Data ribuan</b><span>Di tmerp, paginasi dan penyaringan jalan di server (bukan muat semua lalu saring). Relasi lintas database dicari bertahap, bukan <code>whereHas</code> bertingkat. Kriteria besar (periode, dsb.) boleh didahului Form Filter / Kriteria Laporan.</span></li>
       </ul>
@@ -173,7 +172,7 @@ kalau kurang, ubah komponen DevLib-nya.
 3. Entry: centang kiri, Aksi Master = Edit + Aktif/Nonaktif, Transaksi = Buka + Confirm
    (confirm-when per layar, mis. Quotation ['status' =&gt; 'DRAFT']). Klik 2x/Buka/Edit =
    open-url ke form yang sama dengan New. Dokumen ber-item: detail = tabel item.
-4. Report: tanpa centang/Aksi/New Record, rapat, Filters terbuka + saring per kolom,
+4. Report: tanpa centang/Aksi/New Record, rapat, satu tombol Filter -> pop-up (Pilihan + Per kolom),
    default 100 baris. Paginasi &amp; saring di server untuk data besar.
 5. Relasi lintas database: query terpisah, cocokkan di PHP.
 Teks UI lewat Translator::t(). Setelah ubah class Tailwind: npm run build.

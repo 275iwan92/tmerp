@@ -53,6 +53,10 @@
         const act = x.closest('[data-g-act]'); if (act) { const r = this.rows.find(v => String(v[this.cfg.rowKey]) === act.dataset.id); if (act.dataset.gAct === 'toggle' && this.cfg.activeKey) { r[this.cfg.activeKey] = !r[this.cfg.activeKey]; toast((r[this.cfg.activeKey] ? 'Diaktifkan: ' : 'Dinonaktifkan: ') + (r.name || act.dataset.id), 'success'); this.redraw(); } else if (this._emit('dl:grid-open', {id: act.dataset.id, action: act.dataset.gAct})) toast(`${act.title.split(' (')[0]}: ${r.name || r[this.cfg.rowKey]} (pratinjau)`); return; }
         if (x.closest('[data-g-new]')) { if (this._emit('dl:grid-new', {})) toast('+ New Record (pratinjau)'); return; }
         if (x.closest('[data-g-export]')) return this.exportCsv();
+        if (x.closest('[data-g-fopen]')) return this.openFilter();
+        if (x.closest('[data-g-fclose]') || x.matches('[data-g-fmodal]')) return this.closeFilter();
+        if (x.closest('[data-g-fapply]')) return this.applyFilter();
+        if (x.closest('[data-g-freset]')) { this.st.filters = {}; this.st.colf = {}; this.st.page = 1; this.closeFilter(); return this.redraw(); }
         const cb = x.matches('.dl-grid__row input[type=checkbox]') ? x : null;
         if (cb) {
           const tr = cb.closest('tr'), idx = +tr.dataset.idx;
@@ -62,9 +66,7 @@
         }
         if (x.matches('[data-g-all]')) { this.current.forEach(r => x.checked ? this.sel.add(String(r[this.cfg.rowKey])) : this.sel.delete(String(r[this.cfg.rowKey]))); this.drawBody(); this.drawBulk(); }
       });
-      // Saring per kolom: kepala tabel TIDAK digambar ulang supaya fokus & kursor tetap di kotak isian.
-      this.el.addEventListener('input', e => { const cf = e.target.closest('[data-g-colf]'); if (!cf) return; clearTimeout(this.tc); this.tc = setTimeout(() => { this.st.colf[cf.dataset.gColf] = cf.value; this.st.page = 1; this.drawStats(); this.drawTabs(); this.drawTools(); this.drawBody(); }, 250); });
-      this.el.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-g-qa]')) { e.preventDefault(); this.quickAdd(); } });
+      this.el.addEventListener('keydown', e => { if (e.target.closest('[data-g-fmodal]')) { if (e.key === 'Escape') this.closeFilter(); else if (e.key === 'Enter' && e.target.matches('input')) { e.preventDefault(); this.applyFilter(); } return; } if (e.key === 'Enter' && e.target.matches('[data-g-qa]')) { e.preventDefault(); this.quickAdd(); } });
       this.el.addEventListener('change', e => {
         const tc = e.target.closest('[data-g-cell]'); if (tc) { const id = tc.closest('tr').dataset.id, r = this.rows.find(v => String(v[this.cfg.rowKey]) === id); r[tc.dataset.gCell] = tc.checked; this._emit('dl:grid-cell', {id, key: tc.dataset.gCell, value: tc.checked}); return; }
         const f = e.target.closest('[data-g-filter]'); if (f) { this.st.filters[f.dataset.gFilter] = f.value; this.st.page = 1; return this.redraw(); }
@@ -130,6 +132,25 @@
       return String(this.fmtCell(c, v)).toLowerCase().includes(t.toLowerCase()) || (c.code && String(this.val(r, c.code)).toLowerCase().includes(t.toLowerCase()));
     }
 
+    // Pop-up Filter (Grid for Reporting): pilihan tetap (filters) + kriteria per kolom; berlaku setelah Terapkan.
+    openFilter() {
+      const sel = Object.entries(this.cfg.filters).map(([k, label]) => { const opts = [...new Set(this.rows.map(r => String(this.val(r, k))))].sort(); return `<label class="dl-pop2__field"><span>${esc(label)}</span><select data-gf-sel="${esc(k)}"><option value="">Semua</option>${opts.map(o => `<option ${this.st.filters[k] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`; }).join('');
+      const cols = this.cols.filter(c => !['image', 'toggle', 'spark', 'button', 'steps', 'progress', 'rating'].includes(c.type)).map(c => { const num = ['number', 'money'].includes(c.type); return `<label class="dl-pop2__field"><span>${esc(c.label)}</span><input type="search" data-gf-col="${esc(c.key)}" value="${esc(this.st.colf[c.key] || '')}" placeholder="${num ? 'mis. >1000, <=5, =12' : 'mengandung...'}"></label>`; }).join('');
+      this.q('[data-g-fform]').innerHTML = (sel ? `<div class="dl-pop2__title">Pilihan</div><div class="dl-grid__fgrid">${sel}</div>` : '') + `<div class="dl-pop2__title">Per kolom</div><div class="dl-grid__fgrid">${cols}</div>`;
+      this.q('[data-g-fmodal]').classList.add('is-on');
+      const first = this.q('[data-g-fform] select, [data-g-fform] input'); if (first) first.focus();
+    }
+
+    closeFilter() {
+      this.q('[data-g-fmodal]').classList.remove('is-on');
+    }
+
+    applyFilter() {
+      this.qq('[data-gf-sel]').forEach(el => { this.st.filters[el.dataset.gfSel] = el.value; });
+      this.st.colf = {}; this.qq('[data-gf-col]').forEach(el => { if (el.value.trim()) this.st.colf[el.dataset.gfCol] = el.value.trim(); });
+      this.st.page = 1; this.closeFilter(); this.redraw();
+    }
+
     span() {
       return this.shown().length + (this.chk ? 1 : 0) + (this.hasExp ? 1 : 0) + (this.cfg.actions !== 'none' ? 1 : 0);
     }
@@ -158,8 +179,7 @@
         + vis.map(c => {
           const on = this.st.sort === c.key, arrow = on ? (this.st.dir > 0 ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short') : 'fa-sort';
           return `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
-        }).join('') + (this.cfg.actions !== 'none' ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>'
-        + (this.report ? '<tr class="dl-grid__colf">' + (this.hasExp ? '<th></th>' : '') + vis.map(c => `<th><input type="search" data-g-colf="${esc(c.key)}" value="${esc(this.st.colf[c.key] || '')}" placeholder="${['number', 'money'].includes(c.type) ? '>, <, =' : 'saring'}" aria-label="Saring ${esc(c.label)}"></th>`).join('') + '</tr>' : '');
+        }).join('') + (this.cfg.actions !== 'none' ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
     }
 
     cell(c, r) {
@@ -244,7 +264,7 @@
     drawTools() {
       const ff = this.q('[data-g-filter-fields]');
       if (ff) ff.innerHTML = Object.entries(this.cfg.filters).map(([k, label]) => { const opts = [...new Set(this.rows.map(r => String(this.val(r, k))))].sort(); return `<label class="dl-pop2__field"><span>${esc(label)}</span><select data-g-filter="${esc(k)}"><option value="">Semua</option>${opts.map(o => `<option ${this.st.filters[k] === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`; }).join('');
-      const n = Object.values(this.st.filters).filter(v => v !== '').length, badge = this.q('[data-g-filter-count]');
+      const n = Object.values(this.st.filters).filter(v => v !== '').length + Object.values(this.st.colf).filter(v => String(v).trim()).length, badge = this.q('[data-g-filter-count]');
       if (badge) { badge.hidden = !n; badge.textContent = n; }
       this.q('[data-g-col-list]').innerHTML = this.cols.map(c => `<label class="dl-choice"><input type="checkbox" data-g-col="${esc(c.key)}" ${this.st.hidden.includes(c.key) ? '' : 'checked'}> ${esc(c.label)}</label>`).join('');
       const gl = this.q('[data-g-group-list]');

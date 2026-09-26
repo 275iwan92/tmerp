@@ -4,6 +4,10 @@
         @if ($tabs)<div class="dl-tabs__bar dl-grid__tabs" data-g-tabs></div>@endif
         <div class="dl-grid__toolbar">
             <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ $search }}" data-g-search aria-label="Cari"></div>
+            @if ($isReport())
+                <x-dl::button variant="secondary" size="sm" icon="filter" label="Filter" data-g-fopen><span class="dl-grid__badge" data-g-filter-count hidden>0</span></x-dl::button>
+                <span class="dl-grid__count" data-g-count></span>
+            @endif
             <span class="dl-grid__spacer"></span>
             @if ($filters && ! $isReport())
                 <div class="dl-pop2" data-g-pop>
@@ -35,13 +39,6 @@
             <x-dl::button variant="secondary" size="sm" icon="export" label="Export" data-g-export title="Export CSV = kolom yang sedang tampil (atur dulu lewat Kolom)" />
             @if ($newRecord)<x-dl::button preset="new" size="sm" data-g-new :label="$newRecord" />@endif
         </div>
-        @if ($isReport())
-            <div class="dl-grid__filterbar">
-                @if ($filters)<i class="fa-solid fa-filter"></i><div class="dl-grid__filterfields" data-g-filter-fields></div>@endif
-                <span class="dl-grid__spacer"></span>
-                <span class="dl-grid__count" data-g-count></span>
-            </div>
-        @endif
         <div class="dl-grid__chips" data-g-chips hidden></div>
         <div class="dl-grid__bulk" data-g-bulk hidden>
             <b data-g-bulk-count>0</b> dipilih <x-dl::button variant="link" label="Pilih semua hasil" data-g-select-all />
@@ -52,5 +49,20 @@
         <div class="dl-grid__cards" data-g-cards hidden></div>
         <div class="dl-grid__wrap"><table class="dl-grid__table"><thead data-g-head></thead><tbody data-g-body></tbody><tfoot data-g-foot></tfoot></table></div>
         <div data-g-pager></div>
+        @if ($isReport())
+            {{-- Grid for Reporting: semua kriteria cari di satu pop-up (user 2026-09-26), bukan bilah filter di atas tabel. --}}
+            <div class="dl-mov" data-g-fmodal>
+                <div class="dl-modal dl-modal--md" role="dialog" aria-modal="true" aria-label="Filter">
+                    <div class="dl-modal__head"><h3><i class="fa-solid fa-filter"></i> Filter</h3><button type="button" class="dl-modal__x" data-g-fclose aria-label="Tutup">&times;</button></div>
+                    <div class="dl-modal__body"><div class="dl-grid__fform" data-g-fform></div></div>
+                    <div class="dl-modal__foot">
+                        <x-dl::button variant="link" label="Reset" data-g-freset />
+                        <span class="dl-grid__spacer"></span>
+                        <x-dl::button preset="cancel" data-g-fclose />
+                        <x-dl::button preset="apply" data-g-fapply />
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
