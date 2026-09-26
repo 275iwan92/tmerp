@@ -924,6 +924,22 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__table tfoot td{background:var(--dl-surface-alt);border-top:2px solid var(--dl-border)}
 .dl-grid [data-g-pager] .dl-pager{border-radius:0 0 var(--dl-radius-lg) var(--dl-radius-lg)}
 @media (max-width:640px){.dl-grid__search{width:100%}.dl-grid__spacer{display:none}.dl-pop2__panel{right:auto;left:0}}
+/* Grid for Reporting (mode=report): rapat, zebra, kepala tetap saat gulir, Filters terbuka + saring per kolom */
+.dl-grid--report .dl-grid__table{font-size:calc(12px * var(--dl-font-scale))}
+.dl-grid--report .dl-grid__wrap{max-height:70vh;overflow:auto}
+.dl-grid--report .dl-grid__table thead{position:sticky;top:0;z-index:2}
+.dl-grid--report .dl-grid__table th{position:static}
+.dl-grid--report .dl-grid__row:nth-child(even) td{background:var(--dl-surface-alt)}
+.dl-grid--report .dl-grid__row:hover td{background:var(--dl-hover)}
+.dl-grid--report .dl-grid__txt{max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-grid--report .dl-avatar-id__pic{display:none}
+.dl-grid__colf th{background:var(--dl-surface);padding:3px 6px!important}
+.dl-grid__colf input{width:100%;min-width:56px;padding:2px 6px;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);background:var(--dl-surface);color:var(--dl-ink);font:400 calc(11.5px * var(--dl-font-scale)) var(--dl-font, inherit)}
+.dl-grid__colf input:focus{outline:none;border-color:var(--dl-accent);box-shadow:0 0 0 2px var(--dl-accent-ring)}
+.dl-grid__filterbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:0 10px 10px;color:var(--dl-muted)}
+.dl-grid__filterfields{display:flex;flex-wrap:wrap;gap:6px 14px}
+.dl-grid__filterbar .dl-pop2__field{flex-direction:row;align-items:center;gap:6px;margin:0}
+.dl-grid__count{font-size:calc(12px * var(--dl-font-scale));font-variant-numeric:tabular-nums}
 
 /* ================= SMALL COMPONENTS lanjutan (Part 2b) ================= */
 .dl-badge--neutral{background:var(--dl-chip);color:var(--dl-muted)}

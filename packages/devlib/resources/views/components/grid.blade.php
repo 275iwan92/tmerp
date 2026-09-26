@@ -1,11 +1,11 @@
-<div {{ $attributes->class('dl-grid') }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
+<div {{ $attributes->class(['dl-grid', 'dl-grid--report' => $isReport()]) }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
     @if ($stats)<div class="dl-grid__stats" data-g-stats></div>@endif
     <div class="dl-grid__panel">
         @if ($tabs)<div class="dl-tabs__bar dl-grid__tabs" data-g-tabs></div>@endif
         <div class="dl-grid__toolbar">
             <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ $search }}" data-g-search aria-label="Cari"></div>
             <span class="dl-grid__spacer"></span>
-            @if ($filters)
+            @if ($filters && ! $isReport())
                 <div class="dl-pop2" data-g-pop>
                     <x-dl::button variant="secondary" size="sm" icon="filter" label="Filters" data-g-toggle="filters"><span class="dl-grid__badge" data-g-filter-count hidden>0</span></x-dl::button>
                     <div class="dl-pop2__panel" data-g-panel="filters"><div class="dl-pop2__title">Filters</div><div data-g-filter-fields></div><x-dl::button variant="link" label="Reset filter" data-g-filter-reset /></div>
@@ -35,6 +35,13 @@
             <x-dl::button variant="secondary" size="sm" icon="export" label="Export" data-g-export title="Export CSV = kolom yang sedang tampil (atur dulu lewat Kolom)" />
             @if ($newRecord)<x-dl::button preset="new" size="sm" data-g-new :label="$newRecord" />@endif
         </div>
+        @if ($isReport())
+            <div class="dl-grid__filterbar">
+                @if ($filters)<i class="fa-solid fa-filter"></i><div class="dl-grid__filterfields" data-g-filter-fields></div>@endif
+                <span class="dl-grid__spacer"></span>
+                <span class="dl-grid__count" data-g-count></span>
+            </div>
+        @endif
         <div class="dl-grid__chips" data-g-chips hidden></div>
         <div class="dl-grid__bulk" data-g-bulk hidden>
             <b data-g-bulk-count>0</b> dipilih <x-dl::button variant="link" label="Pilih semua hasil" data-g-select-all />

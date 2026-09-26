@@ -80,9 +80,8 @@ td:first-child{font-weight:600;white-space:nowrap}
     <b>Isi</b>
     <a href="#cara">Cara pakai</a>
     <a href="#grid">Grid</a>
-    <a href="#grid-jenis">&nbsp;· Master vs Transaksi</a>
-    <a href="#grid-inti">&nbsp;· Aturan inti</a>
-    <a href="#grid-opsi">&nbsp;· Fitur opsional</a>
+    <a href="#grid-entry">&nbsp;· A. Pre-Data Entry</a>
+    <a href="#grid-report">&nbsp;· B. Reporting</a>
     <a href="#grid-prompt">&nbsp;· Prompt Grid</a>
     <a href="#form">Form dokumen</a>
     <a href="#diskusi">Untuk didiskusikan</a>
@@ -93,7 +92,7 @@ td:first-child{font-weight:600;white-space:nowrap}
       <div class="eyebrow">ERP CV. Telasih Makmur · Versi 2</div>
       <h1>Aturan Layar TMERP</h1>
       <p class="lead">Aturan baku per jenis layar: grid, form dokumen, dan seterusnya. Setiap bagian punya teks prompt siap salin untuk sesi Claude, jadi aturan yang sama dipakai di semua layar tanpa diulang dari awal.</p>
-      <p class="meta">Disusun 26 September 2026 dari standar yang sudah berjalan (<code>docs/md_for_systems/griduistandard.md</code>, objek DevLib <code>x-dl::grid</code> / <code>x-dl::master</code>) dan arahan Johannes Iwan hari ini. Pendamping <em>Pegangan Fase TMERP</em>.</p>
+      <p class="meta">Disusun 26 September 2026 dari objek DevLib (<code>x-dl::grid</code> / <code>x-dl::master</code>, devlib.test) dan arahan Johannes Iwan hari ini. Pendamping <em>Pegangan Fase TMERP</em>.</p>
     </header>
 
     <section id="cara">
@@ -108,76 +107,75 @@ td:first-child{font-weight:600;white-space:nowrap}
 
     <section id="grid">
       <div class="head"><h2>Grid</h2><span class="tag read">Untuk dibaca</span></div>
-      <p>Grid adalah daftar data yang dibuka dari menu: daftar Customer, Mesin, Quotation, Customer Order, dan seterusnya. Semua grid memakai tampilan yang sama. Yang berbeda hanya isi toolbar dan kolom Aksi, tergantung jenisnya.</p>
+      <p><b>Sumber kebenaran = DevLib</b> (devlib.test → Grid, Form &amp; Dokumen). Layar tidak menggambar grid sendiri: pilih satu varian DevLib, isi kolom dan data asli, selesai. Perilaku (cari, sort, filter, kolom, export, paginasi, klik 2x) datang dari komponen <code>x-dl::grid</code>. Kalau ada yang kurang, yang diubah komponen DevLib-nya, bukan layarnya. Grid dibagi <b>dua keluarga</b> dengan tujuan berbeda.</p>
 
-      <h3 id="grid-jenis">Master vs Transaksi</h3>
+      <h3 id="grid-entry">A. Grid for Pre-Data Entry <code>mode="entry"</code></h3>
+      <p>Pintu menuju form: mencari record untuk dibuka, diubah, atau di-Confirm. Baris lega dan setiap baris punya <b>kotak besar</b> (centang di kiri, kotak ikon Aksi di kanan) supaya mudah dibaca dan diklik.</p>
       <div class="tbl">
         <table>
-          <thead><tr><th>Bagian</th><th>Grid Master<br>(Customer, Mesin, Bahan…)</th><th>Grid Transaksi / Worklist<br>(Quotation, CO, PR, PO…)</th></tr></thead>
+          <thead><tr><th>#</th><th>Varian DevLib</th><th>Dipakai untuk</th></tr></thead>
           <tbody>
-            <tr><td>Toolbar</td><td>Kotak cari + <b>+ New Record</b></td><td>Kotak cari + <b>+ New Record</b>, <i>hanya</i> bila dokumen memang lahir dari grid ini. Bila lahir di layar lain (CO dari Quotation, worklist ProDev/Costing): kotak cari saja, plus satu baris catatan asal dokumen.</td></tr>
-            <tr><td>Kolom Aksi</td><td><b>Edit</b> lalu <b>Aktif/Nonaktif</b>, selalu dua ikon, urutan tetap</td><td><b>Buka</b> selalu ada. <b>Confirm</b> hanya muncul pada baris Draft yang sudah punya isi. Tidak ada Aktif/Nonaktif.</td></tr>
-            <tr><td>Klik 2x baris</td><td colspan="2">Membuka form record itu. Form Edit = form New yang sama persis <span class="pill new">baru, 26 Sep</span></td></tr>
-            <tr><td>Hapus</td><td colspan="2">Tidak pernah di toolbar grid. Hapus ada di form (lihat Form dokumen).</td></tr>
+            <tr><td>1</td><td>Master (Edit + Aktif/Nonaktif)</td><td>Customer, Mesin, Bahan, Pegawai</td></tr>
+            <tr><td>2</td><td>Single Transaction (worklist)</td><td>Dokumen tanpa item; tab status + Buka/Confirm</td></tr>
+            <tr><td>3</td><td>Master-Detail (baris dibuka = item)</td><td>Dokumen ber-item: Quotation, CO, DO, PR, PO</td></tr>
+            <tr><td>4</td><td>Status Bar (tahapan + progres)</td><td>Worklist produksi (WO)</td></tr>
+            <tr><td>5</td><td>Photos (tabel ↔ kartu)</td><td>Data dengan foto asli</td></tr>
+            <tr><td>6</td><td>Mix Component</td><td>Saklar, rating, tren, tombol di dalam sel</td></tr>
+            <tr><td>7</td><td>Spreadsheet</td><td>Edit massal master kecil (harga, satuan)</td></tr>
           </tbody>
         </table>
       </div>
-
-      <h3 id="grid-inti">Aturan inti (berlaku di semua grid)</h3>
       <ul class="rules">
-        <li><b>Tanpa judul halaman</b><span>Nama layar sudah tampil di tab/menu. Grid langsung mulai dari kotak statistik.</span></li>
-        <li><b>Kotak statistik pastel = filter</b><span>Maksimal 5 per baris, 5 warna baku (Total biru, Baik hijau, Perhatian kuning, Kritis merah, Tambahan ungu). Klik kotak = grid tersaring, klik lagi = lepas. Angka di kotak tetap menghitung keseluruhan. Kotak Total dan kotak rupiah tidak bisa diklik.</span></li>
-        <li><b>Kolom identitas</b><span>Satu kolom paling kiri: avatar inisial + Nama (tebal) + Kode (kecil, abu). Bukan kolom Kode dan Nama terpisah. Kalau tidak ada kode, jangan dikarang.</span></li>
-        <li><b>Klik 2x = buka</b><span>Satu-satunya cara membuka form dari baris, selain ikon Edit/Buka. Tidak ada kolom radio/checkbox pilih baris.</span></li>
-        <li><b>Ikon Aksi berbingkai (Pilihan C)</b><span>Font Awesome dalam kotak: Edit <code>fa-pen</code>, Buka <code>fa-up-right-from-square</code>, Confirm <code>fa-check</code>, Batal <code>fa-xmark</code>, Lihat <code>fa-eye</code>. Tanpa teks, ada tooltip. Toggle Aktif/Nonaktif ikon & warnanya diatur komponen. Setiap aksi yang mengubah data minta konfirmasi dulu.</span></li>
-        <li><b>Toolbar minimal</b><span>Hanya kotak cari dan <b>+ New Record</b> (tulisan persis, navy, paling kanan). Dilarang: dropdown filter, checkbox, tombol yang butuh "baris terpilih", tombol Hapus.</span></li>
-        <li><b>Badge status</b><span>Status dokumen (Draft, Published, Confirmed…) memakai 5 warna pastel yang sama, dipetakan per status. Tidak membuat warna baru.</span></li>
-        <li><b>Intip detail (dokumen ber-item)</b><span>Panah di kiri baris membuka tabel item di tempat, hanya baca. Klik panah tidak membuka form.</span></li>
-        <li><b>Paginasi ala ScriptCase</b><span>Kiri: Go to halaman + View 10/25/50/100. Tengah: nomor halaman. Kanan: rentang dari total. Default 25 baris.</span></li>
-        <li><b>Performa</b><span>Paginasi dan penyaringan di server (bukan muat semua lalu saring). Relasi lintas database dicari bertahap, bukan <code>whereHas</code> bertingkat.</span></li>
+        <li><b>Toolbar</b><span>Cari + Kolom + Kerapatan + Export + <b>+ New Record</b> (Filters dan Grup muncul bila diisi). Semua bawaan DevLib, tidak ditambah atau dikurangi per layar.</span></li>
+        <li><b>Kolom centang di kiri</b><span>Selalu ada (Shift = pilih rentang). Aksi massal hanya dipasang bila layar memerlukannya.</span></li>
+        <li><b>Aksi</b><span>Master: Edit + Aktif/Nonaktif. Transaksi: Buka selalu, Confirm hanya pada baris yang memenuhi <code>confirm-when</code> per layar (Quotation = DRAFT, PO = SUBMITTED).</span></li>
+        <li><b>Klik 2x = buka form</b><span>Form Edit sama persis dengan form New. Panah di kiri membuka isi baris di tempat (field tambahan atau tabel item), hanya baca.</span></li>
+        <li><b>Kotak statistik, tab, baris Total</b><span>Kotak statistik pastel = filter klik/lepas; tab status untuk worklist; kolom bernilai dijumlah di baris "Total (semua hasil)". Paginasi ala ScriptCase, default 25.</span></li>
       </ul>
 
-      <h3 id="grid-opsi">Fitur opsional (dipasang hanya bila diminta)</h3>
+      <h3 id="grid-report">B. Grid for Reporting <code>mode="report"</code></h3>
+      <p>Untuk membaca data, bukan mengubahnya. Datanya bisa ribuan baris walau sudah difilter, jadi grid dibuat <b>rapat</b> supaya satu layar memuat banyak baris. Fokusnya <b>cari dan filter</b>.</p>
       <div class="tbl">
         <table>
-          <thead><tr><th>Fitur</th><th>Isi</th><th>Terpasang di</th></tr></thead>
+          <thead><tr><th>#</th><th>Varian DevLib</th><th>Dipakai untuk</th></tr></thead>
           <tbody>
-            <tr><td>Kolom · Sort · Export</td><td>Pilih kolom tampil (Tersedia ↔ Tampil), sort satu kolom, export Excel/CSV/PDF sesuai kolom yang tampil (PDF maks. 200 baris). Setelan diingat per pengguna.</td><td>Customer Order, Bahan Baku</td></tr>
-            <tr><td>Filters</td><td>Tombol Filters + panel baris per kolom (mengandung / diawali / sama dengan / tidak mengandung).</td><td>Customer Order, Bahan Baku</td></tr>
-            <tr><td>Centang + hapus massal</td><td>Hanya baris yang belum confirmed. Shift = pilih rentang. Aksi di kolom kiri.</td><td>Pilot: CO, Bahan Baku</td></tr>
-            <tr><td>Tampilan Kartu</td><td>Tombol List/Card, hanya untuk data yang punya foto asli.</td><td>Master Employee</td></tr>
+            <tr><td>1</td><td>Report List (rapat + saring per kolom)</td><td>Laporan daftar: faktur, mutasi stok, riwayat transaksi</td></tr>
+            <tr><td>2</td><td>Group By (+ subtotal)</td><td>Laporan yang dibaca per kelompok</td></tr>
+            <tr><td>3</td><td>Summary → Details (drill-down)</td><td>Ringkasan per supplier/customer, klik 2x = rincian</td></tr>
+            <tr><td>4</td><td>Pivot</td><td>Laporan silang (customer × bulan)</td></tr>
           </tbody>
         </table>
       </div>
+      <ul class="rules">
+        <li><b>Tanpa kotak besar per baris</b><span>Tidak ada kolom centang, kolom Aksi, maupun + New Record; avatar disembunyikan. Baris rapat, huruf lebih kecil, warna selang-seling.</span></li>
+        <li><b>Filter selalu terbuka</b><span>Pilihan Filters tampil di atas tabel (bukan pop-up), disertai hitungan "N baris cocok dari M".</span></li>
+        <li><b>Saring per kolom</b><span>Baris isian di bawah judul kolom. Teks = mengandung; angka boleh <code>&gt;1000</code>, <code>&lt;=5</code>, <code>=12</code>. Setiap saringan tampil sebagai chip yang bisa dilepas.</span></li>
+        <li><b>Kepala tabel tetap</b><span>Tabel bergulir di dalam kotaknya dan judul kolom tetap terlihat. Paginasi 50/100/250/500, default 100. Export = kolom yang tampil.</span></li>
+        <li><b>Data ribuan</b><span>Di tmerp, paginasi dan penyaringan jalan di server (bukan muat semua lalu saring). Relasi lintas database dicari bertahap, bukan <code>whereHas</code> bertingkat. Kriteria besar (periode, dsb.) boleh didahului Form Filter / Kriteria Laporan.</span></li>
+      </ul>
 
-      <div class="note"><b>Belum seragam di kode:</b> Quotation sudah “+ New Record” langsung membuka form (26 Sep). Customer Order dan Delivery Order <b>wajib ikut</b> (diputuskan 26 Sep) tetapi kodenya masih memakai pop-up pilih customer. <code>griduistandard.md</code> juga masih menulis Quotation “lewat picker customer”.</div>
+      <div class="note"><b>Belum seragam di kode:</b> <code>griduistandard.md</code> masih menulis toolbar hanya cari + New Record dan tanpa centang; halaman ini yang berlaku. Grid Quotation, CO, DO di v1 belum memakai <code>x-dl::grid</code>. CO dan DO masih memakai pop-up pilih customer (wajib langsung ke form, diputuskan 26 Sep).</div>
 
       <div class="prompt" id="grid-prompt">
         <div class="bar"><span>Prompt Grid untuk sesi Claude</span><button class="copy" type="button" data-copy="p-grid">Salin</button></div>
 <pre id="p-grid">Bangun/ubah GRID di TMERP mengikuti "Aturan Layar TMERP" bagian Grid.
-Acuan detail: docs/md_for_systems/griduistandard.md. Layar v2: objek x-dl::grid
-(actions = master | worklist | none, openUrl untuk klik 2x/Edit/Buka).
+Sumber kebenaran = DevLib (devlib.test &gt; Grid, Form &amp; Dokumen), komponen x-dl::grid.
+Jangan menggambar grid sendiri dan jangan menambah/mengurangi perilaku per layar;
+kalau kurang, ubah komponen DevLib-nya.
 
-Tentukan dulu jenisnya:
-- MASTER: toolbar = cari + "+ New Record". Aksi = Edit, lalu Aktif/Nonaktif.
-- TRANSAKSI/WORKLIST: Aksi = Buka (selalu) + Confirm (hanya baris Draft yang ada isinya).
-  "+ New Record" hanya bila dokumen lahir dari grid ini; bila lahir di layar lain,
-  toolbar = cari saja + satu baris catatan asal dokumen.
-
-Wajib di semua grid:
-1. Tanpa judul halaman; mulai dari kotak statistik.
-2. Kotak statistik pastel (5 warna baku, maks. 5/baris) = filter klik/lepas.
-   Angka kotak = keseluruhan. Klausa filter = klausa hitung angkanya.
-3. Kolom identitas paling kiri: avatar + Nama tebal + Kode kecil. Jangan mengarang kode.
-4. Klik 2x baris = buka form. Form Edit SAMA dengan form New (satu layar, satu bentuk).
-5. Ikon Aksi Font Awesome berbingkai lewat komponen (x-grid.action-icon / x-dl::grid),
-   tanpa teks, ada tooltip, aksi pengubah data minta konfirmasi.
-6. Toolbar HANYA cari + "+ New Record". Dilarang dropdown filter, checkbox,
-   tombol butuh-baris-terpilih, tombol Hapus.
-7. Badge status pakai 5 warna pastel yang sama. Dokumen ber-item: panah intip detail
-   (baca saja). Paginasi ala ScriptCase, default 25.
-8. Paginasi & saring di server. Relasi lintas database: query terpisah, cocokkan di PHP.
-Fitur opsional (Kolom/Sort/Export, Filters, centang massal, Kartu) HANYA bila user minta.
+1. Tentukan keluarga:
+   - PRE-DATA ENTRY (mode="entry"): pintu ke form. Varian: Master, Single Transaction,
+     Master-Detail (dokumen ber-item: Quotation/CO/DO/PR/PO), Status Bar, Photos, Mix, Spreadsheet.
+   - REPORTING (mode="report"): baca data ribuan baris. Varian: Report List, Group By,
+     Summary -&gt; Details, Pivot.
+2. Tiru demo varian itu apa adanya (devlib/resources/views/demos/grid-*.blade.php);
+   ganti hanya kolom dan sumber data asli.
+3. Entry: centang kiri, Aksi Master = Edit + Aktif/Nonaktif, Transaksi = Buka + Confirm
+   (confirm-when per layar, mis. Quotation ['status' =&gt; 'DRAFT']). Klik 2x/Buka/Edit =
+   open-url ke form yang sama dengan New. Dokumen ber-item: detail = tabel item.
+4. Report: tanpa centang/Aksi/New Record, rapat, Filters terbuka + saring per kolom,
+   default 100 baris. Paginasi &amp; saring di server untuk data besar.
+5. Relasi lintas database: query terpisah, cocokkan di PHP.
 Teks UI lewat Translator::t(). Setelah ubah class Tailwind: npm run build.
 Verifikasi ke database dummy (ddt*), lalu commit + push per potongan kerja.</pre>
       </div>

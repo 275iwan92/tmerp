@@ -12,12 +12,15 @@
       this.rows = JSON.parse(this.el.dataset.rows || '[]');
       this.cols = this.cfg.columns;
       this.hasExp = this.cfg.expand.length > 0 || !!this.cfg.detail;
+      // report = Grid for Reporting: rapat, tanpa centang/Aksi, saring per kolom di kepala tabel.
+      this.report = this.cfg.mode === 'report';
+      this.chk = !this.report;
       this.saveKey = 'dl-grid-' + this.cfg.id;
       this.saved = {};
       try { this.saved = JSON.parse(localStorage.getItem(this.saveKey) || '{}'); } catch (e) {}
 
       this.st = Object.assign({search: '', sort: null, dir: 1, stat: null, tab: 0, filters: {}, hidden: this.cols.filter(c => !c.visible).map(c => c.key),
-        group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: ''});
+        group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: this.report ? 'compact' : 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: '', colf: {}});
 
       this.sel = new Set();
       this.lastIdx = null;
@@ -37,7 +40,7 @@
         const l = x.closest('[data-g-lines] .dl-segment__opt'); if (l) { this.st.lines = l.dataset.value; return this.redraw(); }
         if (x.closest('[data-g-density-reset]')) { this.st.density = 'normal'; this.st.lines = 'fixed'; this.st.linesN = 1; return this.redraw(); }
         if (x.closest('[data-g-filter-reset]')) { this.st.filters = {}; this.st.page = 1; return this.redraw(); }
-        const ch = x.closest('[data-g-chip]'); if (ch) { const k = ch.dataset.gChip; if (k === 'all') { this.st.filters = {}; this.st.stat = null; this.st.search = ''; this.search.value = ''; } else if (k === 'stat') this.st.stat = null; else if (k === 'search') { this.st.search = ''; this.search.value = ''; } else this.st.filters[k.slice(2)] = ''; this.st.page = 1; return this.redraw(); }
+        const ch = x.closest('[data-g-chip]'); if (ch) { const k = ch.dataset.gChip; if (k === 'all') { this.st.filters = {}; this.st.colf = {}; this.st.stat = null; this.st.search = ''; this.search.value = ''; } else if (k === 'stat') this.st.stat = null; else if (k === 'search') { this.st.search = ''; this.search.value = ''; } else if (k.startsWith('c:')) delete this.st.colf[k.slice(2)]; else this.st.filters[k.slice(2)] = ''; this.st.page = 1; return this.redraw(); }
         const gr = x.closest('[data-g-grp]'); if (gr) { const g = gr.dataset.gGrp; this.st.collapsed = this.st.collapsed.includes(g) ? this.st.collapsed.filter(v => v !== g) : [...this.st.collapsed, g]; return this.drawBody(); }
         const vw = x.closest('[data-g-view] .dl-segment__opt'); if (vw) { this.st.view = vw.dataset.value; this.qq('[data-g-view] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b === vw)); return this.drawBody(); }
         const im = x.closest('[data-g-img]'); if (im) { const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-grid__lightbox'; ov.innerHTML = `<img src="${esc(im.dataset.gImg)}" alt=""><button type="button" class="dl-modal__x">&times;</button>`; ov.addEventListener('click', () => ov.remove()); document.body.appendChild(ov); return; }
@@ -59,6 +62,8 @@
         }
         if (x.matches('[data-g-all]')) { this.current.forEach(r => x.checked ? this.sel.add(String(r[this.cfg.rowKey])) : this.sel.delete(String(r[this.cfg.rowKey]))); this.drawBody(); this.drawBulk(); }
       });
+      // Saring per kolom: kepala tabel TIDAK digambar ulang supaya fokus & kursor tetap di kotak isian.
+      this.el.addEventListener('input', e => { const cf = e.target.closest('[data-g-colf]'); if (!cf) return; clearTimeout(this.tc); this.tc = setTimeout(() => { this.st.colf[cf.dataset.gColf] = cf.value; this.st.page = 1; this.drawStats(); this.drawTabs(); this.drawTools(); this.drawBody(); }, 250); });
       this.el.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-g-qa]')) { e.preventDefault(); this.quickAdd(); } });
       this.el.addEventListener('change', e => {
         const tc = e.target.closest('[data-g-cell]'); if (tc) { const id = tc.closest('tr').dataset.id, r = this.rows.find(v => String(v[this.cfg.rowKey]) === id); r[tc.dataset.gCell] = tc.checked; this._emit('dl:grid-cell', {id, key: tc.dataset.gCell, value: tc.checked}); return; }
@@ -112,7 +117,21 @@
         (opts.noStat || this.st.stat === null || this.match(r, this.cfg.stats[this.st.stat].where)) &&
         (opts.noTab || !this.cfg.tabs.length || this.match(r, this.cfg.tabs[this.st.tab].where)) &&
         Object.entries(this.st.filters).every(([k, v]) => v === '' || String(this.val(r, k)) === v) &&
+        Object.entries(this.st.colf).every(([k, t]) => this.colMatch(k, t, r)) &&
         (!term || vis.some(c => String(this.fmtCell(c, this.val(r, c.key))).toLowerCase().includes(term) || (c.code && String(this.val(r, c.code)).toLowerCase().includes(term)))));
+    }
+
+    // Angka: ">1000", "<=5", "=12"; selain itu teks mengandung (tanpa beda huruf besar/kecil).
+    colMatch(k, t, r) {
+      t = String(t || '').trim(); if (!t) return true;
+      const c = this.cols.find(x => x.key === k) || {key: k}, v = this.val(r, k);
+      const m = ['number', 'money'].includes(c.type) && t.match(/^(>=|<=|>|<|=)\s*(-?[\d.,]+)$/);
+      if (m) { const n = +m[2].replace(/\./g, '').replace(',', '.'), x = +v; return {'>': x > n, '<': x < n, '>=': x >= n, '<=': x <= n, '=': x === n}[m[1]]; }
+      return String(this.fmtCell(c, v)).toLowerCase().includes(t.toLowerCase()) || (c.code && String(this.val(r, c.code)).toLowerCase().includes(t.toLowerCase()));
+    }
+
+    span() {
+      return this.shown().length + (this.chk ? 1 : 0) + (this.hasExp ? 1 : 0) + (this.cfg.actions !== 'none' ? 1 : 0);
     }
 
     sorted(list) {
@@ -135,11 +154,12 @@
 
     drawHead() {
       const vis = this.shown();
-      this.q('[data-g-head]').innerHTML = '<tr><th class="dl-grid__chk"><input type="checkbox" data-g-all aria-label="Pilih semua di halaman"></th>' + (this.hasExp ? '<th class="dl-grid__exp"></th>' : '')
+      this.q('[data-g-head]').innerHTML = '<tr>' + (this.chk ? '<th class="dl-grid__chk"><input type="checkbox" data-g-all aria-label="Pilih semua di halaman"></th>' : '') + (this.hasExp ? '<th class="dl-grid__exp"></th>' : '')
         + vis.map(c => {
           const on = this.st.sort === c.key, arrow = on ? (this.st.dir > 0 ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short') : 'fa-sort';
           return `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
-        }).join('') + (this.cfg.actions !== 'none' ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
+        }).join('') + (this.cfg.actions !== 'none' ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>'
+        + (this.report ? '<tr class="dl-grid__colf">' + (this.hasExp ? '<th></th>' : '') + vis.map(c => `<th><input type="search" data-g-colf="${esc(c.key)}" value="${esc(this.st.colf[c.key] || '')}" placeholder="${['number', 'money'].includes(c.type) ? '>, <, =' : 'saring'}" aria-label="Saring ${esc(c.label)}"></th>`).join('') + '</tr>' : '');
     }
 
     cell(c, r) {
@@ -166,15 +186,15 @@
     actionsCell(r) {
       if (this.cfg.actions === 'none') return '';
       const id = esc(r[this.cfg.rowKey]);
-      if (this.cfg.actions === 'worklist') return `<td class="dl-grid__act"><button type="button" class="dl-iconbtn" data-g-act="open" data-id="${id}" title="Buka (klik 2x baris)"><i class="fa-solid fa-up-right-from-square"></i></button>${r.status === 'SUBMITTED' ? `<button type="button" class="dl-iconbtn dl-iconbtn--success" data-g-act="confirm" data-id="${id}" title="Confirm" data-dl-confirm="Confirm dokumen ini?"><i class="fa-solid fa-circle-check"></i></button>` : ''}</td>`;
+      if (this.cfg.actions === 'worklist') return `<td class="dl-grid__act"><button type="button" class="dl-iconbtn" data-g-act="open" data-id="${id}" title="Buka (klik 2x baris)"><i class="fa-solid fa-up-right-from-square"></i></button>${this.match(r, this.cfg.confirmWhen) ? `<button type="button" class="dl-iconbtn dl-iconbtn--success" data-g-act="confirm" data-id="${id}" title="Confirm" data-dl-confirm="Confirm dokumen ini?"><i class="fa-solid fa-circle-check"></i></button>` : ''}</td>`;
       const on = !!r[this.cfg.activeKey];
       return `<td class="dl-grid__act"><button type="button" class="dl-iconbtn" data-g-act="edit" data-id="${id}" title="Edit (klik 2x baris)"><i class="fa-solid fa-pen"></i></button><button type="button" class="dl-iconbtn dl-iconbtn--${on ? 'danger' : 'success'}" data-g-act="toggle" data-id="${id}" title="${on ? 'Nonaktifkan' : 'Aktifkan'}" data-dl-confirm="${on ? 'Nonaktifkan' : 'Aktifkan'} data ini?"><i class="fa-solid ${on ? 'fa-ban' : 'fa-circle-check'}"></i></button></td>`;
     }
 
     rowHtml(r, idx) {
-      const id = String(r[this.cfg.rowKey]), open = this.st.open.includes(id), span = this.shown().length + 1 + (this.hasExp ? 1 : 0) + (this.cfg.actions !== 'none' ? 1 : 0);
+      const id = String(r[this.cfg.rowKey]), open = this.st.open.includes(id), span = this.span();
       let h = `<tr class="dl-grid__row ${this.sel.has(id) ? 'is-selected' : ''} ${this.cfg.activeKey && r[this.cfg.activeKey] === false ? 'is-inactive' : ''}" data-id="${esc(id)}" data-idx="${idx}" title="Klik 2x untuk membuka">`
-        + `<td class="dl-grid__chk"><input type="checkbox" ${this.sel.has(id) ? 'checked' : ''} aria-label="Pilih baris"></td>`
+        + (this.chk ? `<td class="dl-grid__chk"><input type="checkbox" ${this.sel.has(id) ? 'checked' : ''} aria-label="Pilih baris"></td>` : '')
         + (this.hasExp ? `<td class="dl-grid__exp"><button type="button" class="dl-grid__chev ${open ? 'is-open' : ''}" data-g-exp aria-label="Buka detail"><i class="fa-solid fa-chevron-right"></i></button></td>` : '')
         + this.shown().map(c => this.cell(c, r)).join('') + this.actionsCell(r) + '</tr>';
       if (open && this.cfg.detail) { const D = this.cfg.detail, kids = r[D.key] || []; h += `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__nest"><b>${esc(D.title || 'Detail')} · ${kids.length} baris</b><table><thead><tr>${D.columns.map(c => `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${kids.map(k => `<tr>${D.columns.map(c => `<td class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${esc(this.fmtCell(c, k[c.key] ?? ''))}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${D.columns.length}">Tidak ada detail</td></tr>`}</tbody></table></div></td></tr>`; }
@@ -187,7 +207,7 @@
       this.st.page = Math.min(this.st.page, pages);
       const page = list.slice((this.st.page - 1) * this.st.perPage, this.st.page * this.st.perPage);
       this.current = page;
-      const span = this.shown().length + 1 + (this.hasExp ? 1 : 0) + (this.cfg.actions !== 'none' ? 1 : 0), sums = this.shown().filter(c => c.sum);
+      const span = this.span(), sums = this.shown().filter(c => c.sum);
       let html = '';
       if (!page.length) html = `<tr><td colspan="${span}"><div class="dl-empty"><span class="dl-empty__icon"><i class="fa-solid fa-magnifying-glass"></i></span><b class="dl-empty__title">Tidak ada data yang cocok</b><p class="dl-empty__msg">Ubah kata kunci, lepas filter, atau pilih tab lain.</p></div></td></tr>`;
       else if (this.st.group) {
@@ -207,7 +227,8 @@
       const cardsOn = this.cfg.cards && this.st.view === 'cards';
       this.q('[data-g-cards]').hidden = !cardsOn; this.q('.dl-grid__wrap').hidden = !!cardsOn;
       if (cardsOn) { const C = this.cfg.cards; this.q('[data-g-cards]').innerHTML = page.map(r => `<article class="dl-grid__card" data-id="${esc(r[this.cfg.rowKey])}"><div class="dl-grid__cardimg">${r[C.image] ? `<img src="${esc(r[C.image])}" alt="" loading="lazy">` : '<i class="fa-regular fa-image"></i>'}${C.badge && r[C.badge] ? `<span class="dl-badge dl-badge--pill dl-badge--${esc((C.tones || {})[r[C.badge]] || 'neutral')}">${esc(r[C.badge])}</span>` : ''}</div><div class="dl-grid__cardbody"><b>${esc(r[C.title])}</b><small>${esc(r[C.sub] ?? '')}</small>${(C.meta || []).map(k => { const c = this.cols.find(x => x.key === k) || {key: k}; return `<span><em>${esc(c.label || k)}</em>${esc(this.fmtCell(c, r[k] ?? ''))}</span>`; }).join('')}</div></article>`).join('') || '<div class="dl-empty"><b class="dl-empty__title">Tidak ada data yang cocok</b></div>'; }
-      this.q('[data-g-foot]').innerHTML = sums.length && page.length ? '<tr><td class="dl-grid__chk"></td>' + (this.hasExp ? '<td></td>' : '') + this.shown().map((c, i) => c.sum ? `<td class="num"><b>${esc(this.fmtCell(c, list.reduce((t, r) => t + (+this.val(r, c.key) || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Total (semua hasil)</b>' : ''}</td>`).join('') + (this.cfg.actions !== 'none' ? '<td></td>' : '') + '</tr>' : '';
+      const cnt = this.q('[data-g-count]'); if (cnt) cnt.textContent = `${fmt.number(total)} baris cocok dari ${fmt.number(this.rows.length)}`;
+      this.q('[data-g-foot]').innerHTML = sums.length && page.length ? '<tr>' + (this.chk ? '<td class="dl-grid__chk"></td>' : '') + (this.hasExp ? '<td></td>' : '') + this.shown().map((c, i) => c.sum ? `<td class="num"><b>${esc(this.fmtCell(c, list.reduce((t, r) => t + (+this.val(r, c.key) || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Total (semua hasil)</b>' : ''}</td>`).join('') + (this.cfg.actions !== 'none' ? '<td></td>' : '') + '</tr>' : '';
       this.drawPager(total, pages);
       const all = this.q('[data-g-all]'); if (all) { const ids = page.map(r => String(r[this.cfg.rowKey])); all.checked = ids.length > 0 && ids.every(i => this.sel.has(i)); all.indeterminate = !all.checked && ids.some(i => this.sel.has(i)); }
     }
@@ -215,7 +236,7 @@
     drawPager(total, pages) {
       const from = total ? (this.st.page - 1) * this.st.perPage + 1 : 0, to = Math.min(total, this.st.page * this.st.perPage), start = Math.max(1, Math.min(this.st.page - 2, pages - 4));
       let nums = ''; for (let p = start; p <= Math.min(pages, start + 4); p++) nums += `<button type="button" class="${p === this.st.page ? 'is-active' : ''}" data-p="${p}">${p}</button>`;
-      this.q('[data-g-pager]').innerHTML = `<div class="dl-pager"><div class="dl-pager__left">Go to <input type="number" min="1" max="${pages}" value="${this.st.page}" class="dl-pager__goto" data-g-goto> View ${[10, 25, 50, 100].map(n => `<button type="button" class="dl-pager__size ${n === this.st.perPage ? 'is-active' : ''}" data-pp="${n}">${n}</button>`).join('')}</div>`
+      this.q('[data-g-pager]').innerHTML = `<div class="dl-pager"><div class="dl-pager__left">Go to <input type="number" min="1" max="${pages}" value="${this.st.page}" class="dl-pager__goto" data-g-goto> View ${this.cfg.pageSizes.map(n => `<button type="button" class="dl-pager__size ${n === this.st.perPage ? 'is-active' : ''}" data-pp="${n}">${n}</button>`).join('')}</div>`
         + `<div class="dl-pager__nav"><button type="button" data-p="1" ${this.st.page <= 1 ? 'disabled' : ''} title="Halaman pertama">⏮</button><button type="button" data-p="${this.st.page - 1}" ${this.st.page <= 1 ? 'disabled' : ''} title="Sebelumnya">◀</button>${nums}<button type="button" data-p="${this.st.page + 1}" ${this.st.page >= pages ? 'disabled' : ''} title="Berikutnya">▶</button><button type="button" data-p="${pages}" ${this.st.page >= pages ? 'disabled' : ''} title="Halaman terakhir">⏭</button></div>`
         + `<div class="dl-pager__info">[${fmt.number(from)} – ${fmt.number(to)} dari ${fmt.number(total)}]</div></div>`;
     }
@@ -235,6 +256,7 @@
       const chips = [
         ...(this.st.stat !== null ? [['stat', 'Kotak: ' + this.cfg.stats[this.st.stat].label]] : []),
         ...Object.entries(this.st.filters).filter(([, v]) => v !== '').map(([k, v]) => ['f:' + k, `${this.cfg.filters[k]}: ${v}`]),
+        ...Object.entries(this.st.colf).filter(([, v]) => String(v).trim()).map(([k, v]) => ['c:' + k, `${(this.cols.find(c => c.key === k) || {label: k}).label}: ${v}`]),
         ...(this.st.search ? [['search', 'Cari: “' + this.st.search + '”']] : []),
       ];
       const cbox = this.q('[data-g-chips]'); cbox.hidden = !chips.length;

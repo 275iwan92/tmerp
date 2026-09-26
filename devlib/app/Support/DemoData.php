@@ -199,6 +199,27 @@ final class DemoData
         return $out;
     }
 
+    // Baris faktur penjualan (ribuan) untuk Grid for Reporting.
+    public static function salesLines(int $n = 2400): array
+    {
+        $cust = [['PT Contoh Snackindo', 'C-0012'], ['CV Farma Jaya', 'C-0031'], ['PT Kosmetik Indah', 'C-0044'], ['UD Teh Wangi', 'C-0058'], ['PT Label Prima', 'C-0063'], ['PT Roti Nusantara', 'C-0071'], ['CV Obat Sehat', 'C-0085']];
+        $prod = [['Box Snack 250g', 'Box'], ['Sleeve Teh Celup', 'Sleeve'], ['Label Botol 600ml', 'Label'], ['Pouch Kopi 200g', 'Pouch'], ['Karton Master 24', 'Karton'], ['Box Obat 10 Strip', 'Box']];
+        $sales = ['Andi', 'Rina', 'Joko', 'Sari'];
+        $status = ['LUNAS', 'LUNAS', 'LUNAS', 'JATUH TEMPO', 'BELUM LUNAS'];
+        $out = [];
+        for ($i = 1; $i <= $n; $i++) {
+            [$c, $code] = $cust[($i * 5) % count($cust)];
+            [$p, $cat] = $prod[($i * 7) % count($prod)];
+            $qty = 500 * (1 + ($i * 11) % 40);
+            $price = 90 + ($i * 13) % 260;
+            $out[] = ['id' => $i, 'inv_date' => date('Y-m-d', mktime(0, 0, 0, 1 + intdiv($i - 1, 267), 1 + ($i * 3) % 28, 2026)),
+                'inv_no' => sprintf('INV-26%05d', intdiv($i + 1, 2)), 'customer' => $c, 'customer_code' => $code, 'product' => $p, 'category' => $cat,
+                'sales' => $sales[intdiv($i, 9) % count($sales)], 'qty' => $qty, 'price' => $price, 'value' => $qty * $price, 'status' => $status[($i * 3) % count($status)]];
+        }
+
+        return $out;
+    }
+
     // Penjualan contoh (datar) untuk pivot.
     public static function sales(int $n = 240): array
     {

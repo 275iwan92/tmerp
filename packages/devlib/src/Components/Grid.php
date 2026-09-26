@@ -20,6 +20,11 @@ namespace Devlib\Components;
 // cards: ['image','title','sub','badge','tones','meta' => [kolom..]] -> tombol Tabel/Kartu (CardView).
 // openUrl: alamat buka baris, {id} diganti nilai rowKey (klik 2x / tombol Buka / Edit langsung pindah layar).
 // quickAdd: [kolom..] -> baris isian cepat di atas tabel (Enter = tambah, event dl:grid-add). groupBy = grup awal.
+// mode (user 2026-09-26, dua keluarga grid yang dipisah):
+//   entry  = Grid for Pre-Data Entry: baris lega, centang + kotak ikon Aksi per baris, + New Record; pintu ke form.
+//   report = Grid for Reporting: rapat (banyak baris per layar, data ribuan), TANPA centang/Aksi/New Record,
+//            fokus cari + Filters terbuka di atas tabel + saring per kolom (teks mengandung; angka boleh >, <, >=, <=, =).
+// confirmWhen: baris worklist yang boleh di-Confirm ([kolom => nilai|[nilai..]]), per layar (Quotation = DRAFT, PO = SUBMITTED).
 class Grid extends DevlibComponent
 {
     public function __construct(
@@ -36,7 +41,7 @@ class Grid extends DevlibComponent
         public string $actions = 'master',
         public ?string $activeKey = 'active',
         public ?string $newRecord = '+ New Record',
-        public int $perPage = 25,
+        public ?int $perPage = null,
         public array $detail = [],
         public array $cards = [],
         public array $quickAdd = [],
@@ -44,7 +49,22 @@ class Grid extends DevlibComponent
         public string $search = 'Cari...',
         public ?string $source = null,
         public ?string $openUrl = null,
-    ) {}
+        public string $mode = 'entry',
+        public array $confirmWhen = ['status' => 'SUBMITTED'],
+    ) {
+        if ($this->isReport()) {
+            $this->actions = 'none';
+            $this->newRecord = null;
+            $this->bulk = [];
+            $this->quickAdd = [];
+        }
+        $this->perPage ??= $this->isReport() ? 100 : 25;
+    }
+
+    public function isReport(): bool
+    {
+        return $this->mode === 'report';
+    }
 
     public function tag(): string
     {
@@ -63,6 +83,7 @@ class Grid extends DevlibComponent
             'rowKey' => $this->rowKey, 'stats' => $this->stats, 'tabs' => $this->tabs, 'filters' => $this->filters, 'groups' => $this->groups,
             'bulk' => $this->bulk, 'expand' => $this->expand, 'actions' => $this->actions, 'activeKey' => $this->activeKey, 'perPage' => $this->perPage,
             'openUrl' => $this->openUrl, 'detail' => $this->detail ?: null, 'cards' => $this->cards ?: null, 'quickAdd' => $this->quickAdd, 'groupBy' => $this->groupBy,
+            'mode' => $this->mode, 'confirmWhen' => $this->confirmWhen, 'pageSizes' => $this->isReport() ? [50, 100, 250, 500] : [10, 25, 50, 100],
         ];
     }
 

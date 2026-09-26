@@ -41,18 +41,23 @@ final class Catalog
             ['code' => 'IN', 'short' => 'IN', 'label' => 'Input & Tombol', 'icon' => 'fa-solid fa-i-cursor', 'pages' => self::smallCategories()],
             ['code' => 'GF', 'short' => 'GF', 'label' => 'Grid, Form & Dokumen', 'icon' => 'fa-solid fa-table-list',
                 'pages' => [
-                    'p5-grid' => $page('Grid (10 varian)', 'fa-solid fa-table', [
+                    // Dua keluarga grid (user 2026-09-26): Pre-Data Entry = pintu ke form (baris lega, centang, kotak Aksi,
+                    // + New Record); Reporting = baca data ribuan baris (rapat, tanpa Aksi, fokus cari + filter). x-dl::grid mode=entry|report.
+                    'p5-grid' => $page('Grid for Pre-Data Entry (7 varian)', 'fa-solid fa-table', [
                         'grid-master' => ['1 · Grid for Master (Edit + Aktif/Nonaktif)', $c('Grid')],
                         'grid-worklist' => ['2 · Grid for Single Transaction (worklist)', $c('Grid')],
                         'grid-master-detail' => ['3 · Grid for Master-Detail (baris dibuka = item)', $c('Grid')],
-                        'grid-drilldown' => ['4 · Grid Summary → Details (drill-down)', $c('Drilldown', 'Grid')],
-                        'grid-pivot' => ['5 · Grid Pivot (baris × kolom × nilai)', $c('Pivot')],
-                        'grid-group' => ['6 · Grid Group By (+ subtotal)', $c('Grid')],
-                        'grid-photos' => ['7 · Grid with Photos (tabel ↔ kartu)', $c('Grid')],
-                        'grid-status' => ['8 · Grid with Status Bar (tahapan + progres)', $c('Grid')],
-                        'grid-mix' => ['9 · Grid with Mix Component', $c('Grid')],
-                        'grid-sheet' => ['10 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', $c('Sheet')],
+                        'grid-status' => ['4 · Grid with Status Bar (tahapan + progres)', $c('Grid')],
+                        'grid-photos' => ['5 · Grid with Photos (tabel ↔ kartu)', $c('Grid')],
+                        'grid-mix' => ['6 · Grid with Mix Component', $c('Grid')],
+                        'grid-sheet' => ['7 · Grid Spreadsheet (edit langsung, Excel copy/paste, drag-fill)', $c('Sheet')],
                     ], 'grid_kerapatan_baris.html'),
+                    'p5-grid-report' => $page('Grid for Reporting (4 varian)', 'fa-solid fa-table-list', [
+                        'grid-report' => ['1 · Grid Report List (rapat, ribuan baris, saring per kolom)', $c('Grid')],
+                        'grid-group' => ['2 · Grid Group By (+ subtotal)', $c('Grid')],
+                        'grid-drilldown' => ['3 · Grid Summary → Details (drill-down)', $c('Drilldown', 'Grid')],
+                        'grid-pivot' => ['4 · Grid Pivot (baris × kolom × nilai)', $c('Pivot')],
+                    ]),
                     'p5-forms' => $page('Form (9 varian)', 'fa-solid fa-pen-to-square', [
                         'form' => ['1 · Form Standard (semua jenis field)', $c('Form')],
                         'form-tabs' => ['2 · Form with Tabs (tabular)', $c('Form', 'Tabs')],
