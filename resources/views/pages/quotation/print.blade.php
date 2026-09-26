@@ -84,7 +84,9 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
      spt Nota Inquiry) sesuai docs/mockups/mockup_sales_quotation_letter_print.html. --}}
 <x-print.document :theme="['accent' => '#2c3e69', 'accent-soft' => '#eef1f7']" info="{{ $this->quotation->quotation_no }} · {{ $this->quotation->doc_status }}">
     <x-slot:toolbar>
-        <a href="{{ route('quotation.list') }}" class="sc">← Daftar Quotation</a>
+        {{-- Cetak dibuka di tab baru dari form: tutup tab = kembali ke ERP (menu utuh).
+             Link ke daftar di tab ini membuka layar tanpa menu (laporan user 2026-09-26). --}}
+        <button type="button" class="sc" onclick="window.close(); setTimeout(() => history.length > 1 ? history.back() : location.replace('{{ url('/') }}'), 150)">{{ \App\Support\Localization\Translator::t('shared_btn_close', 'Tutup') }}</button>
     </x-slot:toolbar>
 
     <x-print.sheet>
