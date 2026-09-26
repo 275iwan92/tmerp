@@ -917,6 +917,9 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__chev.is-open{transform:rotate(90deg);color:var(--dl-accent)}
 .dl-grid__detail td{background:var(--dl-surface-alt)}
 .dl-grid__detailbox{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 18px;padding:6px 44px}
+.dl-grid__preview{width:26px;height:26px;font-size:calc(11.5px * var(--dl-font-scale))}
+.dl-grid__preview.is-open{background:var(--dl-accent-soft);border-color:var(--dl-accent)}
+.dl-grid__previewbox{margin:4px 10px 8px 44px;padding:10px 14px;border:1px solid var(--dl-border);border-left:3px solid var(--dl-accent);border-radius:var(--dl-radius);background:var(--dl-surface)}
 .dl-grid__detailbox small{display:block;color:var(--dl-muted);font-size:calc(11px * var(--dl-font-scale))}
 .dl-grid__group td{background:var(--dl-accent-soft);padding:0}
 .dl-grid__group button{width:100%;text-align:left;border:none;background:none;padding:var(--dl-grid-pad) 12px;font-family:inherit;font-size:calc(12.5px * var(--dl-font-scale));color:var(--dl-ink);cursor:pointer}

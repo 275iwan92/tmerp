@@ -44,7 +44,7 @@ final class Catalog
                     // Dua keluarga grid (user 2026-09-26): Pre-Data Entry = pintu ke form (baris lega, centang, kotak Aksi,
                     // + New Record); Reporting = baca data ribuan baris (rapat, tanpa Aksi, fokus cari + filter). x-dl::grid mode=entry|report.
                     'p5-grid' => $page('Grid for Pre-Data Entry (7 varian)', 'fa-solid fa-table', [
-                        'grid-master' => ['1 · Grid for Master (Edit + Aktif/Nonaktif)', $c('Grid')],
+                        'grid-master' => ['1 · Grid for Master (kotak Preview + Edit + Aktif/Nonaktif)', $c('Grid')],
                         'grid-worklist' => ['2 · Grid for Single Transaction (worklist)', $c('Grid')],
                         'grid-master-detail' => ['3 · Grid for Master-Detail (baris dibuka = item)', $c('Grid')],
                         'grid-status' => ['4 · Grid with Status Bar (tahapan + progres)', $c('Grid')],

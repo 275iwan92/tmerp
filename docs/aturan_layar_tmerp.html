@@ -110,12 +110,12 @@ td:first-child{font-weight:600;white-space:nowrap}
       <p><b>Sumber kebenaran = DevLib</b> (devlib.test → Grid, Form &amp; Dokumen). Layar tidak menggambar grid sendiri: pilih satu varian DevLib, isi kolom dan data asli, selesai. Perilaku (cari, sort, filter, kolom, export, paginasi, klik 2x) datang dari komponen <code>x-dl::grid</code>. Kalau ada yang kurang, yang diubah komponen DevLib-nya, bukan layarnya. Grid dibagi <b>dua keluarga</b> dengan tujuan berbeda.</p>
 
       <h3 id="grid-entry">A. Grid for Pre-Data Entry <code>mode="entry"</code></h3>
-      <p>Pintu menuju form: mencari record untuk dibuka, diubah, atau di-Confirm. Baris lega dan setiap baris punya <b>kotak besar</b> (centang di kiri, kotak ikon Aksi di kanan) supaya mudah dibaca dan diklik.</p>
+      <p>Pintu menuju form: mencari record untuk dibuka, diubah, atau di-Confirm. Baris lega dan setiap baris diberi <b>kotak kecil</b> (centang di kiri, kotak ikon Aksi di kanan). <b>Grid for Master</b> punya satu kotak kecil lagi: <b>Preview</b> (ikon mata) yang membuka kartu ringkas record itu di bawah barisnya tanpa masuk form.</p>
       <div class="tbl">
         <table>
           <thead><tr><th>#</th><th>Varian DevLib</th><th>Dipakai untuk</th></tr></thead>
           <tbody>
-            <tr><td>1</td><td>Master (Edit + Aktif/Nonaktif)</td><td>Customer, Mesin, Bahan, Pegawai</td></tr>
+            <tr><td>1</td><td>Master (kotak Preview + Edit + Aktif/Nonaktif)</td><td>Customer, Mesin, Bahan, Pegawai</td></tr>
             <tr><td>2</td><td>Single Transaction (worklist)</td><td>Dokumen tanpa item; tab status + Buka/Confirm</td></tr>
             <tr><td>3</td><td>Master-Detail (baris dibuka = item)</td><td>Dokumen ber-item: Quotation, CO, DO, PR, PO</td></tr>
             <tr><td>4</td><td>Status Bar (tahapan + progres)</td><td>Worklist produksi (WO)</td></tr>
@@ -134,7 +134,7 @@ td:first-child{font-weight:600;white-space:nowrap}
       </ul>
 
       <h3 id="grid-report">B. Grid for Reporting <code>mode="report"</code></h3>
-      <p>Untuk membaca data, bukan mengubahnya. Datanya bisa ribuan baris walau sudah difilter, jadi grid dibuat <b>rapat</b> supaya satu layar memuat banyak baris. Fokusnya <b>cari dan filter</b>.</p>
+      <p>Untuk membaca data, bukan mengubahnya. Datanya bisa ribuan baris walau sudah difilter, jadi grid dibuat <b>rapat</b> supaya satu layar memuat banyak baris. Fokusnya <b>cari dan filter</b>. Semua varian di keluarga ini (Report List, Group By, Summary, Pivot) <b>tanpa kotak</b> di baris.</p>
       <div class="tbl">
         <table>
           <thead><tr><th>#</th><th>Varian DevLib</th><th>Dipakai untuk</th></tr></thead>
@@ -147,7 +147,7 @@ td:first-child{font-weight:600;white-space:nowrap}
         </table>
       </div>
       <ul class="rules">
-        <li><b>Tanpa kotak besar per baris</b><span>Tidak ada kolom centang, kolom Aksi, maupun + New Record; avatar disembunyikan. Baris rapat, huruf lebih kecil, warna selang-seling.</span></li>
+        <li><b>Tanpa kotak per baris</b><span>Tidak ada kolom centang, kolom Aksi, maupun + New Record; avatar disembunyikan. Baris rapat, huruf lebih kecil, warna selang-seling.</span></li>
         <li><b>Filter selalu terbuka</b><span>Pilihan Filters tampil di atas tabel (bukan pop-up), disertai hitungan "N baris cocok dari M".</span></li>
         <li><b>Saring per kolom</b><span>Baris isian di bawah judul kolom. Teks = mengandung; angka boleh <code>&gt;1000</code>, <code>&lt;=5</code>, <code>=12</code>. Setiap saringan tampil sebagai chip yang bisa dilepas.</span></li>
         <li><b>Kepala tabel tetap</b><span>Tabel bergulir di dalam kotaknya dan judul kolom tetap terlihat. Paginasi 50/100/250/500, default 100. Export = kolom yang tampil.</span></li>
