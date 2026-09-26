@@ -107,6 +107,7 @@ class QuotationBuilder
         DB::connection('tm2sdi')->transaction(function () use ($quotation, $inquiries, $first) {
             if ((int) $first->customer_id !== (int) $quotation->customer_id) {
                 $quotation->items()->delete();
+                $quotation->ccs()->delete();
                 $quotation->update(['customer_id' => $first->customer_id, 'updated_by' => Auth::user()->login]
                     + static::autoHeader(CustCustomer::find($first->customer_id), $first, $quotation->issued_date));
             }

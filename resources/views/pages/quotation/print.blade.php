@@ -34,7 +34,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function quotation(): QuoQuotation
     {
-        return QuoQuotation::with(['customer', 'items.inquiry'])->findOrFail($this->quotationId);
+        return QuoQuotation::with(['customer', 'ccs', 'items.inquiry'])->findOrFail($this->quotationId);
     }
 
     #[Computed]
@@ -155,6 +155,7 @@ new #[Title('Quotation — TELASIH MAKMUR ERP')] class extends Component
                     Kode Customer: <b>{{ $this->quotation->customer?->customer_code ?? '—' }}</b><br>
                     @if ($attn = $this->quotation->attn_contact ?: $this->quotation->customer?->contact_name) UP. <b>{{ $attn }}</b> @endif
                     @if ($this->quotation->customer?->phone) · {{ $this->quotation->customer->phone }} @endif
+                    @if ($this->quotation->ccs->isNotEmpty())<br>CC: {{ $this->quotation->ccs->pluck('contact_name')->join(', ') }}@endif
                 </div>
             </x-print.party>
             <x-print.party label="DARI">

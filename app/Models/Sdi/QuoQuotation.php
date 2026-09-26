@@ -52,6 +52,11 @@ class QuoQuotation extends Model
         return $this->hasMany(QuoQuotationItem::class, 'quotation_id', 'id_quotation')->orderBy('line_seq');
     }
 
+    public function ccs(): HasMany
+    {
+        return $this->hasMany(QuoQuotationCc::class, 'quotation_id', 'id_quotation')->orderBy('line_seq');
+    }
+
     // Dipakai bersama oleh Quotation Entry (builder) & Quotation Print (dokumen resmi)
     // supaya perhitungan pajak selalu konsisten di 2 layar itu.
     public function totals(): array

@@ -150,7 +150,7 @@ td:first-child{font-weight:600;white-space:nowrap}
         </table>
       </div>
 
-      <div class="note"><b>Belum seragam di kode:</b> Quotation sekarang “+ New Record” langsung membuka form (diubah 26 Sep). Customer Order dan Delivery Order masih memakai pop-up pilih customer. <code>griduistandard.md</code> juga masih menulis Quotation “lewat picker customer”. Menunggu keputusan Anda di bagian <a href="#diskusi">Untuk didiskusikan</a>.</div>
+      <div class="note"><b>Belum seragam di kode:</b> Quotation sudah “+ New Record” langsung membuka form (26 Sep). Customer Order dan Delivery Order <b>wajib ikut</b> (diputuskan 26 Sep) tetapi kodenya masih memakai pop-up pilih customer. <code>griduistandard.md</code> juga masih menulis Quotation “lewat picker customer”.</div>
 
       <div class="prompt" id="grid-prompt">
         <div class="bar"><span>Prompt Grid untuk sesi Claude</span><button class="copy" type="button" data-copy="p-grid">Salin</button></div>
@@ -184,8 +184,8 @@ Verifikasi ke database dummy (ddt*), lalu commit + push per potongan kerja.</pre
     </section>
 
     <section id="form">
-      <div class="head"><h2>Form dokumen (master-detail)</h2><span class="tag draft">Draf</span></div>
-      <p>Form satu dokumen dengan bagian kepala (header) dan daftar item di bawahnya: Quotation, Customer Order, PR, PO, dan seterusnya. Arahan 26 September: New dan Edit adalah form yang sama, dan tombolnya baku mengikuti status dokumen.</p>
+      <div class="head"><h2>Form dokumen (master-detail)</h2><span class="tag lock">Dikunci 26 Sep</span></div>
+      <p>Form satu dokumen dengan bagian kepala (header) dan daftar item di bawahnya: Quotation, Customer Order, PR, PO, dan seterusnya. Arahan 26 September: New dan Edit adalah form yang sama, dan tombolnya baku mengikuti status dokumen. Berlaku untuk <b>semua modul</b> (pola ala ScriptCase supaya user cepat terbiasa); modul yang menyimpang hanya bila diputuskan per layar.</p>
       <div class="tbl">
         <table>
           <thead><tr><th>Keadaan dokumen</th><th>Tombol di form</th><th>Isi form</th></tr></thead>
@@ -196,19 +196,18 @@ Verifikasi ke database dummy (ddt*), lalu commit + push per potongan kerja.</pre
         </table>
       </div>
       <ul class="rules">
+        <li><b>Delete</b><span>Hanya sebelum confirmed. Dokumen dihapus permanen beserta itemnya.</span></li>
+        <li><b>Cancel</b><span>Hanya sesudah confirmed. Membatalkan dokumen: status Cancelled + alasan wajib diisi (<code>stat_cancel</code> + <code>cancel_reason</code>), bukan menutup layar.</span></li>
+        <li><b>Print</b><span>Hanya sesudah confirmed. Sebelum itu tombolnya tidak tampil.</span></li>
+        <li><b>+ New Record</b><span>Semua dokumen (Quotation, Customer Order, Delivery Order, dst.) langsung membuka form; pilihan customer/sumber ada di dalam form.</span></li>
         <li><b>Preview cetak = panel dari kiri <span class="tag lock">Dikunci 26 Sep</span></b><span>Tombol Preview Cetak membuka halaman cetak sebagai panel yang meluncur dari kiri di atas form (bukan tab baru, menu tetap utuh). Tutup dengan tombol Tutup, Esc, atau klik area gelap, dan panel langsung hilang. Cetak/PDF dan pilihan kop PPN tetap di bar cetak dalam panel. Contoh: Quotation.</span></li>
       </ul>
-      <p>Setelah keputusan di bawah dijawab, bagian ini diberi mockup dan prompt siap salin seperti bagian Grid, lalu dibuat sekali sebagai objek DevLib yang dipakai semua form dokumen. Quotation menjadi layar pertama.</p>
+      <p>Berikutnya: dibuat sekali sebagai objek DevLib yang dipakai semua form dokumen, Quotation menjadi layar pertama.</p>
     </section>
 
     <section id="diskusi">
       <h2>Untuk didiskusikan</h2>
-      <ol class="qs">
-        <li><b>Cancel sesudah confirmed</b>: membatalkan dokumen (status Cancelled, wajib isi alasan, sesuai kolom <code>stat_cancel</code> + <code>cancel_reason</code>), bukan sekadar menutup layar?</li>
-        <li><b>Delete sebelum confirmed</b>: dokumen dihapus permanen dari database, atau hanya ditandai terhapus?</li>
-        <li><b>Print sebelum confirmed</b>: disembunyikan sama sekali, atau tampil abu-abu dengan keterangan “Confirm dulu untuk cetak”?</li>
-        <li><b>Customer Order & Delivery Order</b>: “+ New Record” ikut langsung membuka form (customer dipilih di form), seperti Quotation sekarang?</li>
-      </ol>
+      <p>Tidak ada pertanyaan terbuka. Keputusan 26 Sep: form dokumen seragam di semua modul; Quotation: Attn satu orang, CC boleh banyak.</p>
     </section>
   </main>
 </div>

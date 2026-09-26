@@ -7,6 +7,7 @@ use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
+use App\Models\Sdi\QuoQuotationCc;
 use App\Models\Sdi\QuoQuotationItem;
 use App\Services\Sales\QuotationBuilder;
 use Illuminate\Support\Facades\Auth;
@@ -49,11 +50,12 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             $q = new QuoQuotation(['doc_status' => 'DRAFT', 'issued_date' => now(), 'tax_scheme' => 'EXCL', 'currency_code' => 'IDR']);
             $q->setRelation('items', collect());
             $q->setRelation('customer', null);
+            $q->setRelation('ccs', collect());
 
             return $q;
         }
 
-        return QuoQuotation::with(['customer', 'items' => fn ($q) => $q->orderBy('line_seq')])->findOrFail($this->quotationId);
+        return QuoQuotation::with(['customer', 'ccs', 'items' => fn ($q) => $q->orderBy('line_seq')])->findOrFail($this->quotationId);
     }
 
     #[Computed]
@@ -90,6 +92,15 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
             ->filter()->unique()->values();
 
         return $names->combine($names)->all();
+    }
+
+    // CC = kontak customer yang sama, selain orang Attn.
+    #[Computed]
+    public function ccOptions(): array
+    {
+        return collect($this->contactOptions)->keys()->push(...$this->quotation->ccs->pluck('contact_name'))
+            ->unique()->reject(fn ($n) => $n === $this->quotation->attn_contact)
+            ->map(fn ($n) => ['value' => $n, 'label' => $n])->values()->all();
     }
 
     #[Computed]
@@ -241,7 +252,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
     private function refresh(): void
     {
-        unset($this->quotation, $this->autoValues, $this->autoState, $this->contactOptions, $this->salesOptions, $this->totals, $this->chooserRows);
+        unset($this->quotation, $this->autoValues, $this->autoState, $this->contactOptions, $this->ccOptions, $this->salesOptions, $this->totals, $this->chooserRows);
     }
 
     public function updateHeader(string $field, $value): void
@@ -266,6 +277,29 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         }
 
         $this->quotation->update($changes + ['updated_by' => Auth::user()->login]);
+
+        if ($field === 'attn_contact' && $value) {
+            $this->quotation->ccs()->where('contact_name', $value)->delete();
+        }
+
+        $this->refresh();
+    }
+
+    // $json = array nama dari x-form.multi-select; urutan pilih = urutan cetak.
+    public function updateCc(string $json): void
+    {
+        $names = collect(json_decode($json, true) ?: [])->filter()->unique()
+            ->reject(fn ($n) => $n === $this->quotation->attn_contact)->values();
+
+        if (! $this->editable || $names->all() === $this->quotation->ccs->pluck('contact_name')->all()) {
+            return;
+        }
+
+        $login = Auth::user()->login;
+        $this->quotation->ccs()->delete();
+        $names->each(fn ($name, $i) => QuoQuotationCc::create([
+            'quotation_id' => $this->quotationId, 'line_seq' => $i + 1, 'contact_name' => $name, 'created_by' => $login,
+        ]));
         $this->refresh();
     }
 
@@ -403,6 +437,14 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                             <x-form.select label="Attn. (Contact)" :disabled="! $this->editable" wire:change="updateHeader('attn_contact', $event.target.value)" class="disabled:bg-field-soft"
                                 :selected="$this->quotation->attn_contact" :options="$this->contactOptions" />
                             <x-form.auto-chip field="attn_contact" :state="$this->autoState['attn_contact'] ?? null" class="absolute top-0 right-0" />
+                        </div>
+                        <div wire:key="cc-{{ md5($this->quotation->attn_contact.'|'.$this->quotation->ccs->pluck('contact_name')->join('|')) }}">
+                            @if ($this->editable)
+                                <x-form.multi-select label="CC" wire:change="updateCc($event.target.value)" placeholder="Pilih kontak CC..."
+                                    :options="$this->ccOptions" :selected="$this->quotation->ccs->pluck('contact_name')->all()" />
+                            @else
+                                <x-form.input label="CC" readonly value="{{ $this->quotation->ccs->pluck('contact_name')->join(', ') }}" class="bg-field-soft" />
+                            @endif
                         </div>
                         <div class="relative">
                             <x-form.select label="PIC Sales" :disabled="! $this->editable" wire:change="updateHeader('sales_pic', $event.target.value)" class="disabled:bg-field-soft"
