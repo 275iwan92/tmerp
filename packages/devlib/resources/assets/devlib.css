@@ -240,8 +240,9 @@ textarea.dl-input{resize:none;min-height:28px;line-height:1.3;overflow:hidden;di
 .dl-dd__panel.is-open{display:flex}
 .dl-dd__search{padding:6px;background:var(--dl-f-bg-soft);border-bottom:1px solid var(--dl-f-line-soft)}
 .dl-dd__search input{width:100%;padding:4px 6px;font-size:calc(12px * var(--dl-font-scale));border:1px solid var(--dl-f-line);border-radius:4px;outline:none;font-family:inherit}
-.dl-dd__list{max-height:140px;overflow-y:auto;display:flex;flex-direction:column}
-.dl-dd__item{padding:6px 10px;font-size:calc(12px * var(--dl-font-scale));cursor:pointer;color:var(--dl-f-label)}
+/* 12 baris item terlihat (user 2026-09-26); tinggi baris = 1.5em + padding 12px, dibatasi 60% tinggi layar */
+.dl-dd__list{--dl-dd-rows:12;font-size:calc(12px * var(--dl-font-scale));max-height:min(calc(var(--dl-dd-rows) * (1.5em + 12px) + 2px),60vh);overflow-y:auto;display:flex;flex-direction:column}
+.dl-dd__item{padding:6px 10px;font-size:calc(12px * var(--dl-font-scale));line-height:1.5;cursor:pointer;color:var(--dl-f-label)}
 .dl-dd__item:hover{background:var(--dl-f-bg-soft)}
 .dl-dd__item--split{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .dl-dd__item input{accent-color:var(--dl-accent);cursor:pointer}
