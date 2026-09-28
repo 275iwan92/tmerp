@@ -10,13 +10,14 @@
       this.list = $(this.el, '[data-dl-upload-list]');
       this.preview = this.el.hasAttribute('data-preview');
       this.files = [];
-      this.el.addEventListener('click', e => { if (!e.target.closest('button') && !e.target.closest('.dl-upload__file')) this.file.click(); });
+      // Terkunci (disabled/readonly, atau dimatikan layar lewat input.disabled) = klik & drop ditolak.
+      this.el.addEventListener('click', e => { if (!this.file.disabled && !e.target.closest('button') && !e.target.closest('.dl-upload__file')) this.file.click(); });
       this.file.addEventListener('click', e => e.stopPropagation());
       this.file.addEventListener('change', () => { if (this.file.files.length) this.take(this.file.files); });
       this.list.addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { e.stopPropagation(); this.files.splice(+b.dataset.i, 1); this.draw(); } });
-      ['dragover', 'dragenter'].forEach(ev => this.el.addEventListener(ev, e => { e.preventDefault(); this.el.classList.add('is-drag'); }));
+      ['dragover', 'dragenter'].forEach(ev => this.el.addEventListener(ev, e => { e.preventDefault(); if (!this.file.disabled) this.el.classList.add('is-drag'); }));
       ['dragleave', 'drop'].forEach(ev => this.el.addEventListener(ev, e => { e.preventDefault(); this.el.classList.remove('is-drag'); }));
-      this.el.addEventListener('drop', e => { if (e.dataTransfer.files.length) this.take(e.dataTransfer.files); });
+      this.el.addEventListener('drop', e => { if (!this.file.disabled && e.dataTransfer.files.length) this.take(e.dataTransfer.files); });
     }
 
     draw() {
