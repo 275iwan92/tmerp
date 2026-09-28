@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\Sdi\IqpInquiry;
+use App\Models\Sys\SysConstant;
 use App\Services\Sales\InquiryDuplicator;
+use App\Services\Sales\InquiryWriter;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Flows;
+use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
 use Illuminate\Http\Request;
@@ -53,6 +56,69 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return redirect()->route('v2.screen', 'inquiry')
             ->with('v2_flash', "Duplikat dibuat: {$new->inquiry_no} (Produk Baru, DRAFT) dari {$source->inquiry_no}.");
     })->name('inquiry.duplicate');
+
+    // Inquiry Baru v2 -> database situs (ddt* di mockup.test, tm2* live). Logika = App\Services\Sales\InquiryWriter (salinan persist*() v1).
+    Route::prefix('inquiry')->name('inquiry.')->group(function () {
+        $writer = fn () => new InquiryWriter(Auth::user()->login);
+        $doc = function (int $id) {
+            abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+
+            return IqpInquiry::findOrFail($id);
+        };
+
+        // Simpan / Confirm (action=confirm). Balasan JSON: url dokumen tersimpan untuk dimuat ulang.
+        Route::post('/save', function (Request $r) use ($writer) {
+            abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+            $old = $r->filled('id') ? IqpInquiry::findOrFail((int) $r->input('id')) : null;
+            $r->validate(InquiryPayload::rules(), [], ['customer_id' => 'Customer', 'type_code' => 'Tipe Produk', 'product_draft_name' => 'Nama Produk']);
+            $r->validate(['parts.*.artwork' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)]]);
+            $inq = $writer()->save(InquiryPayload::from($r, $old), $old, InquiryPayload::artworks($r));
+            $confirm = $r->input('action') === 'confirm';
+            if ($confirm) {
+                $writer()->confirm($inq);
+            }
+
+            return response()->json(['id' => $inq->id_inquiry, 'url' => route('v2.screen', 'inquiry-new').'?id='.$inq->id_inquiry,
+                'message' => $confirm ? "Inkuiri {$inq->inquiry_no} dikonfirmasi — status SUBMITTED, form terkunci." : "Tersimpan sebagai {$inq->inquiry_no} ({$inq->refresh()->sub_state})."]);
+        })->name('save');
+
+        Route::post('/{id}/end', function (Request $r, int $id) use ($writer, $doc) {
+            $inq = $doc($id);
+            $data = $r->validate(['state' => ['required', 'in:CANCELLED,LOST'], 'reason' => ['required', 'string', 'max:255']], [], ['reason' => 'Alasan']);
+            $data['state'] === 'CANCELLED' ? $writer()->cancel($inq, $data['reason']) : $writer()->markLost($inq, $data['reason']);
+
+            return response()->json(['message' => $data['state'] === 'CANCELLED' ? "Inkuiri {$inq->inquiry_no} dibatalkan." : "Inkuiri {$inq->inquiry_no} ditandai kalah (LOST)."]);
+        })->name('end');
+
+        // Artwork boleh diganti setelah Confirm (user 2026-09-28): langsung tersimpan tanpa tombol Simpan.
+        Route::post('/{id}/artwork', function (Request $r, int $id) use ($writer, $doc) {
+            $inq = $doc($id);
+            $r->validate(['part_id' => ['required', 'integer'], 'artwork' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)]]);
+            $part = $inq->parts()->findOrFail((int) $r->input('part_id'));
+            $writer()->storeArtwork($part, $r->file('artwork'));
+
+            return response()->json(['message' => "Artwork {$part->part_name} tersimpan.", 'url' => asset('storage/'.$part->refresh()->artwork_path)]);
+        })->name('artwork');
+
+        Route::post('/{id}/prodev', function (Request $r, int $id) use ($writer, $doc) {
+            $inq = $doc($id);
+            $part = $inq->parts()->findOrFail((int) $r->input('part_id'));
+            $prodPart = $writer()->sendToProDev($inq, $part);
+
+            return response()->json(['url' => route('v2.screen', 'prodev').'?part='.$prodPart.'&inquiry='.$inq->id_inquiry]);
+        })->name('prodev');
+
+        // Quick-add customer dari Inquiry (status DRAFT, review Finance/Credit tetap wajib).
+        Route::post('/customer', function (Request $r) use ($writer) {
+            abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+            $d = $r->validate(['name' => ['required', 'string', 'max:200'], 'type' => ['required', 'in:local,import'], 'phone' => ['nullable', 'string', 'max:50'],
+                'email' => ['nullable', 'email', 'max:150'], 'address' => ['nullable', 'string']], [], ['name' => 'Nama Customer']);
+            $c = $writer()->quickCustomer($d + ['phone' => null, 'email' => null, 'address' => null]);
+
+            return response()->json(['id' => $c->id_customer, 'label' => $c->customer_name, 'code' => $c->customer_code,
+                'message' => "Customer baru \"{$c->customer_name}\" ({$c->customer_code}) dibuat — status DRAFT."]);
+        })->name('customer');
+    });
 
     Route::get('/flow/{module}', fn (string $module) => view('v2.flow', ['flow' => Flows::get($module) ?? abort(404)]))->name('flow');
 

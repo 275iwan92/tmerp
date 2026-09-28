@@ -29,6 +29,7 @@ class InquiryForm extends DevlibComponent
         public ?string $backUrl = null,
         public array $links = [],
         public ?string $prodevUrl = null,
+        public array $urls = [],
     ) {
         $this->doc += ['id' => null, 'inquiry_no' => null, 'sub_state' => 'DRAFT', 'stat_confirm' => false, 'stat_cancel' => false];
     }
@@ -51,7 +52,8 @@ class InquiryForm extends DevlibComponent
     public function config(): array
     {
         return ['mode' => $this->mode, 'doc' => $this->doc, 'readonly' => $this->readonly, 'templates' => self::TEMPLATES,
-            'roles' => array_map(fn ($r) => $r[0], self::ROLES), 'prodevUrl' => $this->prodevUrl, 'yy' => date('y')];
+            'roles' => array_map(fn ($r) => $r[0], self::ROLES), 'prodevUrl' => $this->prodevUrl, 'yy' => date('y'),
+            'urls' => $this->urls + ['csrf' => csrf_token()]];
     }
 
     public function render()

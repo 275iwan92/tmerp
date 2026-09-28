@@ -27,7 +27,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
-            fn (Request $request) => $request->is('api/*'),
+            // v2: tombol form memanggil server lewat fetch (Accept: JSON) -> error validasi harus 422 JSON, bukan redirect.
+            fn (Request $request) => $request->is('api/*') || ($request->is('v2/*') && $request->expectsJson()),
         );
     })->create();
 

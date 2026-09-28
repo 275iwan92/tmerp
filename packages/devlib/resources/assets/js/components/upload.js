@@ -10,6 +10,7 @@
       this.list = $(this.el, '[data-dl-upload-list]');
       this.preview = this.el.hasAttribute('data-preview');
       this.files = [];
+      this.el.classList.toggle('has-file', !!this.list.children.length);
       // Terkunci (disabled/readonly, atau dimatikan layar lewat input.disabled) = klik & drop ditolak.
       this.el.addEventListener('click', e => { if (!this.file.disabled && !e.target.closest('button') && !e.target.closest('.dl-upload__file')) this.file.click(); });
       this.file.addEventListener('click', e => e.stopPropagation());

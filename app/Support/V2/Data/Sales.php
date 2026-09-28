@@ -2,13 +2,17 @@
 
 namespace App\Support\V2\Data;
 
+use App\Models\Master\CustCustomer;
+use App\Models\Master\MatRaw;
 use App\Models\Master\ProdMarket;
 use App\Models\Master\ProdType;
+use App\Models\Master\RefFinishingType;
+use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpInquiry;
 use App\Services\Sales\QuotationBuilder;
 
-// Data modul Sales untuk layar v2. Worklist Inquiry sudah dari database situs (2026-09-28);
-// isi part dokumen (inquiryDoc) masih disusun dari baris worklist + master.
+// Data modul Sales untuk layar v2 — SEMUA dari database situs (ddt* di mockup.test, tm2* live):
+// worklist, dokumen (inquiryDoc) dan lookup customer/sales/bahan/finishing (2026-09-28).
 // Bentuk baris = kolom tabel tujuannya (lihat tooltip Src di layar).
 final class Sales
 {
@@ -19,30 +23,33 @@ final class Sales
 
     public const TYPE_TONES = ['NEW' => 'info', 'RECALC' => 'accent', 'REVISE' => 'warn'];
 
-    public static function customers(): array
-    {
-        return ['CV. Sinar Kemasan', 'PT. Boga Rasa Nusantara', 'Toko Manis Jaya', 'PT. Kosmetika Indah', 'PT. Sari Roti Jatim', 'UD. Kopi Arjuno', 'PT. Farma Sehat', 'CV. Batik Tulis Madura'];
-    }
-
-    // Baris lookup customer (bentuk tm2mst.cust_customer).
+    // Lookup Customer (tm2mst.cust_customer aktif) — sama dengan customerResults() tmerp.
     public static function customerRows(): array
     {
-        return array_map(fn ($n, $i) => ['id_customer' => 101 + $i, 'customer_code' => sprintf('C%04d', 101 + $i), 'customer_name' => $n], self::customers(), array_keys(self::customers()));
+        return CustCustomer::query()->where('activate', true)->orderBy('customer_name')
+            ->get(['id_customer', 'customer_code', 'customer_name'])->toArray();
     }
 
-    // Bentuk tm2mst.sales_person (nama fiktif).
+    // Lookup PIC Sales (tm2mst.sales_person aktif); disimpan sebagai nama (iqp_inquiry.pic_sales) seperti tmerp.
     public static function salesPersons(): array
     {
-        return [['id_sales_person' => 1, 'sales_name' => 'Andi Pratama', 'sales_type' => 'INTERNAL'], ['id_sales_person' => 2, 'sales_name' => 'Citra Rahma', 'sales_type' => 'INTERNAL'],
-            ['id_sales_person' => 3, 'sales_name' => 'Maya Lestari', 'sales_type' => 'INTERNAL'], ['id_sales_person' => 4, 'sales_name' => 'Budi Agen Jatim', 'sales_type' => 'EXTERNAL']];
+        return SalesPerson::query()->where('activate', true)->orderBy('sales_type')->orderBy('sales_name')
+            ->get(['id_sales_person', 'sales_name', 'sales_type'])->toArray();
     }
 
-    // Ekspor baca-saja tm2mst (bahan kertas, jenis finishing, tipe multi-part): resources/data/sales_masters.json.
+    // Bahan (mat_raw aktif & confirmed, materialResults() tmerp) + jenis finishing aktif.
     public static function masters(): array
     {
         static $m;
 
-        return $m ??= json_decode(file_get_contents(resource_path('data/v2/sales_masters.json')), true);
+        return $m ??= [
+            'materials' => MatRaw::query()->where('activate', true)->where('stat_confirm', true)->orderBy('material_name')
+                ->get(['material_id', 'material_code', 'material_name', 'brand', 'category1', 'gram_weight'])
+                ->map(fn ($r) => ['material_id' => $r->material_id, 'material_code' => $r->material_code, 'material_name' => $r->material_name,
+                    'brand' => $r->brand, 'category' => $r->category1, 'gram_weight' => $r->gram_weight])->all(),
+            'finishing_types' => RefFinishingType::query()->where('activate', true)->orderBy('finishing_name')
+                ->get(['id_finishing_type', 'finishing_name'])->toArray(),
+        ];
     }
 
     // Tipe produk + dieline_spec + parameter + ukuran pasaran umum, langsung dari tm2mst.prod_type* (2026-09-26;
@@ -86,31 +93,47 @@ final class Sales
             ->filter(fn ($g) => $g['details'])->values()->all();
     }
 
-    // Satu dokumen inkuiri lengkap (header + tier + part) untuk dibuka dari worklist.
+    // Satu dokumen inkuiri lengkap dari database situs (header, tier, part+bahan+finishing, tooling, biaya eksternal) — fillFromInquiry() tmerp.
     public static function inquiryDoc(int $id): ?array
     {
-        $row = collect(self::inquiries())->firstWhere('id', $id);
-        if (! $row) {
+        $i = IqpInquiry::with(['customer:id_customer,customer_name', 'tiers' => fn ($q) => $q->orderBy('tier_seq'),
+            'parts' => fn ($q) => $q->orderBy('part_seq'), 'parts.materials' => fn ($q) => $q->orderBy('layer_seq'), 'parts.materials.rawMaterial',
+            'parts.finishings' => fn ($q) => $q->orderBy('seq'), 'toolings', 'externalCosts'])->find($id);
+        if (! $i) {
             return null;
         }
-        $types = self::dielineTypes();
-        $code = isset($types[$row['part_type']]) ? $row['part_type'] : 'CARD_BOX';
-        $mat = self::masters()['materials'][$id % 60];
-        $multi = in_array($code, ['BOX_WITH_LID', 'ROUND_BOX', 'SHALLOW_BOX'], true);
-        $slug = strtolower(preg_replace('/[^a-z0-9]/i', '', $row['product_draft_name']));
-        $part = fn (string $role) => ['part_name' => $slug.'-'.$role, 'part_role' => $role, 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => 400,
-            'dims' => array_map(fn ($p) => $p['default'], $types[$code]['params']), 'cfg_color' => '4/4', 'cfg_ink' => '',
-            'materials' => [['material' => $mat['material_id'], 'material_label' => $mat['material_name'], 'brand' => $mat['brand'], 'category' => $mat['category'], 'is_primary' => true]],
-            'finishings' => $id % 2 ? [['finishing_type_id' => 1, 'attribute' => '']] : [], 'sent' => in_array($row['sub_state'], ['PRICE_APPROVED', 'QUOTED', 'PROVING', 'PROVE_APPROVED', 'CONVERTED'], true)];
-        $cust = collect(self::customerRows())->firstWhere('customer_name', $row['customer']);
+        $num = fn ($v) => $v === null ? '' : rtrim(rtrim((string) $v, '0'), '.');
+        $code = $i->parts->first()?->dieline_spec['type_code'] ?? '';
 
-        return $row + [
-            'source' => ['EMAIL', 'WA', 'PHONE', 'VISIT'][$id % 4], 'customer_id' => $cust['id_customer'] ?? null, 'sales_note' => '', 'material_source' => 'OWN',
-            'type_code' => $code, 'stat_cancel' => $row['sub_state'] === 'CANCELLED', 'revision_no' => $id % 3, 'design_number' => sprintf('DS%06d', 3400 + $id),
-            'revise_scope' => $row['inquiry_type'] === 'REVISE' ? ['MATERIAL', 'COLOR'] : [], 'revise_reason' => $row['inquiry_type'] === 'REVISE' ? 'Tambah logo Halal (spot ink) — permintaan customer' : '',
-            'tiers' => [['qty' => $row['qty'], 'is_primary' => true], ['qty' => $row['qty'] * 2, 'is_primary' => false]],
-            'parts' => $multi ? [$part('body'), $part('lid')] : [$part('monoform')],
-            'toolings' => [], 'external_costs' => [],
+        return [
+            'id' => $i->id_inquiry, 'inquiry_no' => $i->inquiry_no, 'inquiry_type' => $i->inquiry_type, 'sub_state' => $i->sub_state,
+            'inquiry_date' => $i->inquiry_date?->toDateString(), 'deadline_quotation' => $i->deadline_quotation?->toDateString(),
+            'source' => $i->source, 'pic_sales' => $i->pic_sales, 'customer_id' => $i->customer_id, 'is_prospect' => (bool) $i->is_prospect,
+            'prospect_name' => $i->prospect_name, 'customer' => $i->is_prospect ? $i->prospect_name : ($i->customer?->customer_name ?? '—'),
+            'product_draft_name' => $i->product_draft_name, 'sales_note' => $i->sales_note ?? '', 'material_source' => $i->material_source,
+            'cust_material_spec' => $i->cust_material_spec ?? '', 'cust_material_eta' => $i->cust_material_eta?->toDateString(),
+            'stat_confirm' => (bool) $i->stat_confirm, 'stat_cancel' => (bool) $i->stat_cancel, 'cancel_reason' => $i->cancel_reason,
+            'is_approved' => (bool) $i->is_approved, 'revision_no' => (int) $i->revision_no, 'design_number' => $i->design_number,
+            'revise_scope' => $i->reviseScopeArray(), 'revise_reason' => $i->revise_reason ?? '', 'parent_id' => $i->parent_product_id,
+            'type_code' => isset(self::dielineTypes()[$code]) ? $code : '',
+            'qty' => (float) ($i->tiers->firstWhere('is_primary', true)?->qty ?? 0),
+            'tiers' => $i->tiers->map(fn ($t) => ['id' => $t->id_tier, 'qty' => $num($t->qty), 'is_primary' => (bool) $t->is_primary])->values()->all(),
+            'parts' => $i->parts->map(fn ($p) => [
+                'id' => $p->id_part, 'part_name' => $p->part_name, 'part_role' => '', 'part_type' => $p->part_type ?? 'DC',
+                'qty_per_sku' => $num($p->qty_per_sku) ?: '1', 'pack_qty' => $p->pack_qty ?? '', 'dims' => $p->dieline_spec['dims'] ?? [],
+                'flat_w' => $num($p->flat_w), 'flat_h' => $num($p->flat_h), 'flat_area' => $num($p->flat_area),
+                'cfg_color' => $p->cfg_color ?? '4/4', 'cfg_ink' => $p->cfg_ink ?? '',
+                'artwork_url' => $p->artwork_path ? asset('storage/'.$p->artwork_path) : null, 'artwork_name' => $p->artwork_original_filename,
+                'materials' => $p->materials->map(fn ($m) => ['id' => $m->id_part_material, 'material' => $m->rawmat_id ?: '',
+                    'material_label' => $m->rawmat_name ?? $m->rawMaterial?->material_name ?? '', 'brand' => $m->rawMaterial?->brand ?? '',
+                    'category' => $m->rawMaterial?->category1 ?? '', 'is_primary' => (bool) $m->is_primary])->values()->all(),
+                'finishings' => $p->finishings->map(fn ($f) => ['finishing_type_id' => $f->finishing_type_id, 'attribute' => $f->attribute ?? ''])->values()->all(),
+                'sent' => (bool) $p->prod_part_id, 'prod_part_id' => $p->prod_part_id,
+            ])->values()->all(),
+            'toolings' => $i->toolings->map(fn ($t) => ['id' => $t->id_tooling, 'tooling_kind' => $t->tooling_kind, 'tooling_status' => $t->tooling_status,
+                'is_new_charge' => (bool) $t->is_new_charge, 'cost' => $num($t->cost), 'remark' => $t->remark ?? ''])->values()->all(),
+            'external_costs' => $i->externalCosts->map(fn ($c) => ['id' => $c->id_external_cost, 'description' => $c->description ?? '', 'cost_kind' => $c->cost_kind,
+                'amount' => $num($c->amount), 'tax_treatment' => $c->tax_treatment])->values()->all(),
         ];
     }
 

@@ -22,7 +22,7 @@ class InquiryPart extends DevlibComponent
         public ?string $typeCode = null,
         public array $finishingTypes = [],
     ) {
-        $this->part += ['part_name' => '', 'part_role' => '', 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => '', 'dims' => [], 'cfg_color' => '4/4',
+        $this->part += ['id' => null, 'artwork_url' => null, 'artwork_name' => null, 'part_name' => '', 'part_role' => '', 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => '', 'dims' => [], 'cfg_color' => '4/4',
             'cfg_ink' => '', 'materials' => [], 'finishings' => [], 'sent' => false, 'saved' => false, 'suggestions' => []];
     }
 
@@ -90,12 +90,14 @@ class InquiryPart extends DevlibComponent
                             <x-dl::field.text :name="$n('part_name')" label="Nama Part" placeholder="mis. Body" :value="$p['part_name']" :source="$src('part_name')" data-inq-name />
                             <x-dl::icon-button icon="fa-tag" title="Pilih peran part (nama terisi otomatis)" data-inq-role-open />
                             <input type="hidden" name="{{ $n('part_role') }}" value="{{ $p['part_role'] }}" data-inq-role>
+                            <input type="hidden" name="{{ $n('id') }}" value="{{ $p['id'] }}" data-inq-part-id>
                         </div>
                         <x-dl::field.select :name="$n('part_type')" label="Tipe Part" :options="$partTypes()" :value="$p['part_type']" :placeholder="null" :source="$src('part_type')" />
                         <x-dl::field.decimal :name="$n('qty_per_sku')" label="Qty per Set" :value="$p['qty_per_sku']" :source="$src('qty_per_sku')" />
                         <x-dl::field.number :name="$n('pack_qty')" label="Isi per Pack (pcs)" placeholder="mis. 400" :min="1" :value="$p['pack_qty']" :source="$src('pack_qty')" />
                         {{-- data-inq-keep: artwork sering datang belakangan dari customer -> tetap bisa diunggah setelah Confirm (keputusan user 2026-09-28). --}}
-                        <x-dl::field.upload :name="$n('artwork')" label="Artwork / Desain" accept=".jpg,.jpeg,.png" data-inq-keep
+                        <x-dl::field.upload :name="$n('artwork')" label="Artwork / Desain" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork
+                            :value="$p['artwork_url'] ? ['url' => $p['artwork_url'], 'name' => $p['artwork_name']] : null"
                             :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_path', 'tm2sdi.iqp_part.artwork_original_filename', 'tm2sdi.iqp_part.artwork_colors')" />
                     </x-dl::form.row>
 

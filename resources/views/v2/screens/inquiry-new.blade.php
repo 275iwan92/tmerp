@@ -19,7 +19,9 @@
 
 <x-mp::sales.inquiry-form mode="NEW" :doc="$doc ?? []" :readonly="(bool) $readonly" :back-url="route('v2.screen', 'inquiry')"
     :links="['🔀 Imposition' => route('v2.screen', 'prodev'), '🖨 Cetak Nota' => route('v2.screen', 'nota-inquiry').($doc ? '?id='.$doc['id'] : '')]"
-    :prodev-url="route('v2.screen', 'prodev').'?part={part}&inquiry={inquiry}'">
+    :prodev-url="route('v2.screen', 'prodev').'?part={part}&inquiry={inquiry}'"
+    :urls="['save' => route('v2.inquiry.save'), 'end' => route('v2.inquiry.end', '__ID__'), 'artwork' => route('v2.inquiry.artwork', '__ID__'),
+        'prodev' => route('v2.inquiry.prodev', '__ID__'), 'customer' => route('v2.inquiry.customer')]">
 
     <x-slot:header>
         <x-dl::divider label="Header Inkuiri" />
@@ -27,7 +29,7 @@
             <x-dl::field.display label="No. Inkuiri" :value="$doc['inquiry_no'] ?? 'Otomatis saat disimpan'" format="mono" :source="$i('inquiry_no')" />
             <x-dl::field.date name="inquiry_date" label="Tanggal" required :value="$doc['inquiry_date'] ?? date('Y-m-d')" :source="$i('inquiry_date')" />
             <x-dl::field.date name="deadline_quotation" label="Tgl Kebutuhan Pelanggan" :value="$doc['deadline_quotation'] ?? date('Y-m-d', strtotime('+14 days'))" :source="$i('deadline_quotation')" />
-            <x-dl::field.lookup name="pic_sales" label="PIC Sales" lookup="sales_person" :value="$doc['pic_sales'] ?? 'Andi Pratama'" :source="$i('pic_sales').' ← tm2mst.sales_person'" />
+            <x-dl::field.lookup name="pic_sales" label="PIC Sales" lookup="sales_person" :value="$doc['pic_sales'] ?? auth()->user()->name" :source="$i('pic_sales').' ← tm2mst.sales_person'" />
             <x-dl::field.select name="source" label="Sumber" required :options="['EMAIL', 'WA', 'PHONE', 'VISIT', 'MARKETPLACE']" :value="$doc['source'] ?? 'EMAIL'" :source="$i('source')" />
         </x-dl::form.row>
         <x-dl::form.row cols="3">

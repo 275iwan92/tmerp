@@ -1,5 +1,6 @@
 /* MockupParts · Sales · InquiryForm — aturan layar Inquiry Product (sama dengan tmerp pages/inquiry/form.blade.php).
-   Tanpa database: Simpan/Confirm hanya mengubah keadaan di layar (nomor, status, kunci form). */
+   Simpan/Confirm/Batalkan/Tandai Kalah/Kirim ke ProDev/Customer baru/Artwork -> route v2.inquiry.* -> database situs
+   (ddt* di mockup.test, tm2* live) lewat App\Services\Sales\InquiryWriter. Setelah simpan halaman dimuat ulang dari database. */
 (function (Devlib) {
   'use strict';
   const {$, $$, esc, toast, confirmBox, openLayer, closeLayer, setField, setOptions, fieldErr} = Devlib.h;
@@ -25,6 +26,48 @@
       this.custMaterial();
       this.removable();
       if (this.cfg.readonly || this.doc.stat_confirm) this.lock();
+      // Artwork part tersimpan pada dokumen terkunci langsung dikirim (tidak ada tombol Simpan lagi).
+      this.on('change', '[data-inq-artwork] input[type=file]', (e, inp) => { if (this.locked() && inp.files.length) this.uploadArtwork(inp); });
+      try { const m = sessionStorage.getItem('inq-flash'); if (m) { sessionStorage.removeItem('inq-flash'); this.flash(m); } } catch (err) { /* tanpa storage: pesan dilewati */ }
+    }
+
+    locked() { return !!(this.cfg.readonly || this.doc.stat_confirm); }
+
+    // POST ke server (CSRF + JSON). 422 -> pesan per field; selain itu pesan umum.
+    async call(url, body) {
+      const res = await fetch(url, {method: 'POST', body, headers: {'X-CSRF-TOKEN': this.cfg.urls.csrf, Accept: 'application/json'}});
+      const json = await res.json().catch(() => ({}));
+      if (res.ok && !res.redirected && json.message) return json;
+      if (res.redirected) { toast('Sesi berakhir — muat ulang halaman lalu login lagi. Data BELUM tersimpan.', 'danger'); throw new Error('redirected'); }
+      if (res.status === 422 && json.errors) {
+        Object.entries(json.errors).forEach(([k, msg]) => { const el = this.input(k); if (el) fieldErr(el, msg[0]); });
+        const first = Object.values(json.errors)[0][0];
+        toast(first, 'danger'); this.flash(first, 'danger');
+      } else {
+        toast(json.message || `Gagal menyimpan (HTTP ${res.status}).`, 'danger');
+      }
+      throw new Error('request failed');
+    }
+
+    url(key) { return this.cfg.urls[key].replace('__ID__', this.doc.id); }
+
+    reload(json) {
+      try { sessionStorage.setItem('inq-flash', json.message); } catch (err) { /* abaikan */ }
+      location.href = json.url || location.href;
+    }
+
+    // Semua isian bernama di form ini (kecuali isian modal), termasuk file artwork & baris Lines (input hidden).
+    payload(action) {
+      const fd = new FormData();
+      $$(this.el, 'input[name], select[name], textarea[name]').forEach(x => {
+        if (x.closest('.dl-mov')) return;
+        if ((x.type === 'checkbox' || x.type === 'radio') && !x.checked) return;
+        if (x.type === 'file') { [...x.files].forEach(f => fd.append(x.name, f)); return; }
+        fd.append(x.name, x.value);
+      });
+      if (this.doc.id) fd.append('id', this.doc.id);
+      fd.append('action', action);
+      return fd;
     }
 
     parts() { return $$(this.el, '[data-inq-part]'); }
@@ -227,9 +270,11 @@
       bad += this.err('product_draft_name', !name ? 'Nama Produk wajib diisi.' : /[/@#%"']/.test(name) ? 'Karakter khusus (/@#%"\') tidak diperbolehkan.' : '');
       bad += this.err('deadline_quotation', dl && date && dl < date ? 'Tgl Kebutuhan Pelanggan tidak boleh sebelum Tanggal.' : '');
       // Kategori Produk wajib sampai Ukuran (dieline muncul); Custom = nama produk + Tipe Produk wajib.
-      bad += this.err('product_group', this.value('product_group') ? '' : 'Kategori Produk wajib dipilih (pilih Custom bila belum ada).');
-      bad += this.err('product_detail', this.value('product_detail') ? '' : 'Detail Kategori wajib dipilih.');
-      bad += this.err('market_size', this.value('market_size') ? '' : 'Ukuran Pasaran wajib dipilih.');
+      // Kategori/Detail/Ukuran hanya pemandu isian (tidak disimpan) -> wajib saat membuat, tidak ditagih lagi di dokumen tersimpan.
+      const guide = !this.doc.id;
+      bad += this.err('product_group', !guide || this.value('product_group') ? '' : 'Kategori Produk wajib dipilih (pilih Custom bila belum ada).');
+      bad += this.err('product_detail', !guide || this.value('product_detail') ? '' : 'Detail Kategori wajib dipilih.');
+      bad += this.err('market_size', !guide || this.value('market_size') ? '' : 'Ukuran Pasaran wajib dipilih.');
       bad += this.err('product_detail_custom', this.value('product_detail') === CUSTOM && !this.value('product_detail_custom') ? 'Nama produk custom wajib diisi.' : '');
       bad += this.err('type_code', this.value('type_code') ? '' : 'Tipe Produk (dieline) wajib dipilih.');
       bad += this.err('cust_material_spec', this.input('material_source')?.checked && !this.value('cust_material_spec') ? 'Wajib diisi bila bahan dari customer.' : '');
@@ -241,20 +286,21 @@
       return !bad;
     }
 
-    persist() {
-      if (!this.validate()) return false;
-      this.number();
-      $$(this.el, '[data-inq-saved-only]').forEach(b => { b.hidden = false; });
-      this.parts().forEach(p => { p.dataset.saved = '1'; });
-      return true;
+    async persist(action) {
+      if (this.busy || !this.validate()) return;
+      this.busy = true;
+      try { this.reload(await this.call(this.cfg.urls.save, this.payload(action))); } catch (err) { this.busy = false; }
     }
 
-    save() { if (this.persist()) this.flash(`Tersimpan sebagai ${this.doc.inquiry_no} (${this.doc.sub_state}).`); }
+    save() { return this.persist('save'); }
 
-    confirm() {
-      if (!this.persist()) return;
-      this.doc.stat_confirm = true; this.state('SUBMITTED'); this.lock();
-      this.flash(`Inkuiri ${this.doc.inquiry_no} dikonfirmasi — status SUBMITTED, form terkunci.`);
+    confirm() { return this.persist('confirm'); }
+
+    async uploadArtwork(inp) {
+      const p = inp.closest('[data-inq-part]'), fd = new FormData();
+      fd.append('part_id', $(p, '[data-inq-part-id]').value);
+      fd.append('artwork', inp.files[0]);
+      try { const j = await this.call(this.url('artwork'), fd); toast(j.message, 'success'); this.flash(j.message); } catch (err) { /* pesan sudah tampil */ }
     }
 
     // Form terkunci (lihat-saja): semua isian & tombol mati kecuali yang bertanda data-inq-keep.
@@ -271,25 +317,34 @@
     end(state, modal) {
       const f = state === 'CANCELLED' ? 'cancel_reason' : 'lost_reason', inp = $(modal, `[name="${f}"]`);
       if (!inp.value.trim()) return fieldErr(inp, 'Wajib diisi — tercatat di riwayat.');
-      fieldErr(inp, ''); closeLayer(modal);
-      if (state === 'CANCELLED') this.doc.stat_cancel = true;
-      this.state(state); this.lock();
-      this.flash(state === 'CANCELLED' ? `Inkuiri ${this.doc.inquiry_no} dibatalkan.` : `Inkuiri ${this.doc.inquiry_no} ditandai kalah (LOST).`);
+      fieldErr(inp, '');
+      const fd = new FormData(); fd.append('state', state); fd.append('reason', inp.value.trim());
+      this.call(this.url('end'), fd).then(j => { closeLayer(modal); this.reload(j); }).catch(() => {});
     }
 
     // Mode #1: part dikirim ke ProDev (seed prod_part) — wajib tersimpan & inkuiri sudah Confirm (sendToProDev tmerp).
     send(p) {
-      if (!p.dataset.saved) return this.flash('Simpan inquiry dulu (tombol Simpan) sebelum kirim part ke ProDev.', 'warn');
+      const partId = $(p, '[data-inq-part-id]').value;
+      if (!partId) return this.flash('Simpan inquiry dulu (tombol Simpan) sebelum kirim part ke ProDev.', 'warn');
       if (!this.doc.stat_confirm) return this.flash('Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).', 'warn');
-      toast(`Part ${$(p, '[data-inq-name] input').value} dikirim ke ProDev.`, 'success');
-      if (this.cfg.prodevUrl) location.href = this.cfg.prodevUrl.replace('{part}', encodeURIComponent($(p, '[data-inq-name] input').value)).replace('{inquiry}', encodeURIComponent(this.doc.inquiry_no));
+      const fd = new FormData(); fd.append('part_id', partId);
+      this.call(this.url('prodev'), fd).then(j => { location.href = j.url; }).catch(() => {});
     }
 
+    // Customer baru langsung tersimpan ke master (DRAFT) lalu dipakai di lookup Customer.
     newCustomer(modal) {
-      const inp = $(modal, '[name="new_customer_name"]');
+      const inp = $(modal, '[name="new_customer_name"]'), val = n => ($(modal, `[name="${n}"]`)?.value || '').trim();
       if (!inp.value.trim()) return fieldErr(inp, 'Nama Customer wajib diisi.');
-      fieldErr(inp, ''); closeLayer(modal);
-      toast(`Customer "${inp.value.trim()}" dibuat (DRAFT) dan dipakai.`, 'success');
+      fieldErr(inp, '');
+      const fd = new FormData();
+      fd.append('name', inp.value.trim()); fd.append('type', val('new_customer_type') || 'local');
+      fd.append('phone', val('new_customer_phone')); fd.append('email', val('new_customer_email')); fd.append('address', val('new_customer_address'));
+      this.call(this.cfg.urls.customer, fd).then(j => {
+        const box = $(this.el, '[data-dl-field="customer_id"]');
+        $(box, '[data-dl-value]').value = j.id; $(box, '[data-dl-dd-text]').textContent = j.label;
+        fieldErr($(box, '[data-dl-value]'), '');
+        closeLayer(modal); toast(j.message, 'success');
+      }).catch(() => {});
     }
   }
   Devlib.define('InquiryForm', InquiryForm);
