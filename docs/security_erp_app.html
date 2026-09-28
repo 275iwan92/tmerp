@@ -1,0 +1,306 @@
+<title>Security ERP App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --ground:#F4F5F7; --paper:#FFFFFF; --ink:#1A2130; --ink-2:#465063; --muted:#6E7789; --line:#DCE0E7; --line-2:#C7CDD8;
+  --accent:#2C3E69; --accent-soft:#E6EAF3; --lvl:#5B3FA0; --lvl-soft:#EEEAF8; --grp:#0F6E56; --grp-soft:#E1F3EC;
+  --ok:#2E6A4E; --ok-soft:#E3EEE7; --warn:#8A5A00; --warn-soft:#FBF0D9; --code-bg:#EEF0F4;
+  --serif:"Newsreader","Georgia","Times New Roman",serif;
+  --sans:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"Consolas",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#11151C; --paper:#181D26; --ink:#E5E9F0; --ink-2:#B8C0CE; --muted:#8B94A5; --line:#2A313D; --line-2:#37404E;
+    --accent:#9DB2E6; --accent-soft:#1E2638; --lvl:#B7A6EC; --lvl-soft:#2A2340; --grp:#7CCDB0; --grp-soft:#16302A;
+    --ok:#7CC19D; --ok-soft:#1E3228; --warn:#E9C06A; --warn-soft:#2E2715; --code-bg:#202733;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#11151C; --paper:#181D26; --ink:#E5E9F0; --ink-2:#B8C0CE; --muted:#8B94A5; --line:#2A313D; --line-2:#37404E;
+  --accent:#9DB2E6; --accent-soft:#1E2638; --lvl:#B7A6EC; --lvl-soft:#2A2340; --grp:#7CCDB0; --grp-soft:#16302A;
+  --ok:#7CC19D; --ok-soft:#1E3228; --warn:#E9C06A; --warn-soft:#2E2715; --code-bg:#202733;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font:15.5px/1.65 var(--sans);padding-inline:16px;padding-block:28px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;grid-template-columns:200px minmax(0,1fr);gap:40px}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.toc{display:none}}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:13.5px}
+.toc b{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.toc a{display:block;color:var(--ink-2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid var(--line)}
+.toc a:hover,.toc a:focus-visible{color:var(--ink);border-left-color:var(--accent);outline:none}
+main{min-width:0}
+header.top{padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:28px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+h1{font:600 38px/1.15 var(--serif);margin:6px 0 10px;text-wrap:balance}
+h2{font:600 26px/1.2 var(--serif);margin:0 0 6px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:22px 0 6px}
+p{margin:0 0 12px;max-width:68ch}
+.lead{font-size:17px;color:var(--ink-2);max-width:64ch}
+.meta{font-size:13px;color:var(--muted)}
+code{font-family:var(--mono);font-size:.86em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+section{scroll-margin-top:20px;margin-bottom:46px}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:70ch}
+li{margin:4px 0}
+.head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.tag{font-size:12px;font-weight:600;padding:2px 10px;border-radius:20px;letter-spacing:.02em}
+.tag.lock{color:var(--ok);background:var(--ok-soft)} .tag.draft{color:var(--warn);background:var(--warn-soft)}
+.tbl{overflow-x:auto;margin:12px 0 16px;border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--ground)}
+tr:last-child td{border-bottom:0}
+td.c,th.c{text-align:center}
+.yes{color:var(--ok);font-weight:600} .no{color:var(--line-2)}
+.num{font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.code{font-family:var(--mono);font-weight:500;color:var(--accent)}
+.lvl{font-family:var(--mono);font-size:13px;color:var(--lvl);font-weight:500}
+.rules{list-style:none;padding:0;max-width:none;display:grid;gap:8px}
+.rules li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:0}
+.rules li b{display:block;font-size:14.5px}
+.rules li span{color:var(--ink-2);font-size:14px}
+.diagram{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.diagram svg{display:block;min-width:560px;width:100%;height:auto}
+.diagram text{font-family:var(--sans)}
+.note{border:1px solid var(--line-2);background:var(--warn-soft);border-radius:10px;padding:12px 16px;margin:14px 0;font-size:14.5px;max-width:74ch}
+.note b{color:var(--warn)}
+.qs{counter-reset:q;list-style:none;padding:0;max-width:none}
+.qs li{counter-increment:q;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 50px;position:relative;margin:0 0 10px}
+.qs li::before{content:counter(q);position:absolute;left:16px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font:600 12px/22px var(--sans);text-align:center}
+.prompt{background:var(--paper);border:1px solid var(--line-2);border-radius:10px;margin:18px 0 6px}
+.prompt .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.prompt pre{margin:0;padding:14px 16px;white-space:pre-wrap;font:13px/1.6 var(--mono);color:var(--ink);overflow-x:auto}
+.copy{font:500 12.5px var(--sans);color:var(--accent);background:var(--accent-soft);border:0;border-radius:6px;padding:5px 11px;cursor:pointer}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Isi">
+    <b>Isi</b>
+    <a href="#model">Model</a>
+    <a href="#definisi">Definisi</a>
+    <a href="#level">Level</a>
+    <a href="#hak">Hak akses</a>
+    <a href="#aturan">Aturan gabungan</a>
+    <a href="#approval">Approval dokumen</a>
+    <a href="#layar">Penegakan di layar</a>
+    <a href="#global">Peran global</a>
+    <a href="#contoh">Contoh</a>
+    <a href="#prompt">Prompt</a>
+    <a href="#terbuka">Keputusan terbuka</a>
+  </nav>
+
+  <main>
+    <header class="top">
+      <div class="eyebrow">ERP CV. Telasih Makmur · Versi 2</div>
+      <h1>Security ERP App</h1>
+      <p class="lead">Ketentuan hak akses aplikasi: setiap user punya satu level dan ikut satu atau lebih group; group menentukan hak di tiap modul, level menentukan siapa yang boleh approve atau reject dokumen.</p>
+      <p class="meta">Disepakati bersama Johannes Iwan, 28 September 2026. Menggantikan grup lama yang dinamai jabatan (DIREKSI, MGR_SALES, dst.). Jabatan tetap hanya ada di struktur organisasi.</p>
+    </header>
+
+    <section id="model">
+      <div class="head"><h2>Model</h2><span class="tag lock">Disepakati</span></div>
+      <div class="diagram" role="img" aria-label="User punya satu level dan ikut group. Group dipetakan ke modul dan sub-modul. Approve bila level cukup dan hak RW. Peran global di luar group.">
+        <svg viewBox="0 0 680 500">
+          <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+          <g><rect x="40" y="150" width="170" height="56" rx="8" fill="var(--paper)" stroke="var(--line-2)"/><text x="125" y="172" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">User</text><text x="125" y="192" text-anchor="middle" font-size="12" fill="var(--muted)">1 level, 1..n group</text></g>
+          <g><rect x="255" y="60" width="170" height="56" rx="8" fill="var(--lvl-soft)" stroke="var(--lvl)"/><text x="340" y="82" text-anchor="middle" font-size="14" font-weight="600" fill="var(--lvl)">Level</text><text x="340" y="102" text-anchor="middle" font-size="12" fill="var(--lvl)">data-entry … presdir</text></g>
+          <g><rect x="470" y="60" width="170" height="56" rx="8" fill="var(--lvl-soft)" stroke="var(--lvl)"/><text x="555" y="82" text-anchor="middle" font-size="14" font-weight="600" fill="var(--lvl)">Approve / Reject</text><text x="555" y="102" text-anchor="middle" font-size="12" fill="var(--lvl)">level cukup + RW</text></g>
+          <g><rect x="255" y="240" width="170" height="56" rx="8" fill="var(--grp-soft)" stroke="var(--grp)"/><text x="340" y="262" text-anchor="middle" font-size="14" font-weight="600" fill="var(--grp)">Group</text><text x="340" y="282" text-anchor="middle" font-size="12" fill="var(--grp)">Sales · Produksi · HR</text></g>
+          <g><rect x="470" y="240" width="170" height="56" rx="8" fill="var(--grp-soft)" stroke="var(--grp)"/><text x="555" y="262" text-anchor="middle" font-size="14" font-weight="600" fill="var(--grp)">Module</text><text x="555" y="282" text-anchor="middle" font-size="12" fill="var(--grp)">RO · ROP · RW · RWP · RWPE</text></g>
+          <g><rect x="470" y="330" width="170" height="44" rx="8" fill="var(--grp-soft)" stroke="var(--grp)"/><text x="555" y="357" text-anchor="middle" font-size="14" font-weight="600" fill="var(--grp)">Sub-module</text></g>
+          <path d="M210 165 L232 165 L232 88 L253 88" fill="none" stroke="var(--muted)" marker-end="url(#a)"/>
+          <path d="M210 192 L232 192 L232 268 L253 268" fill="none" stroke="var(--muted)" marker-end="url(#a)"/>
+          <line x1="425" y1="88" x2="468" y2="88" stroke="var(--muted)" marker-end="url(#a)"/>
+          <line x1="425" y1="268" x2="468" y2="268" stroke="var(--muted)" marker-end="url(#a)"/>
+          <line x1="555" y1="240" x2="555" y2="118" stroke="var(--muted)" marker-end="url(#a)"/>
+          <line x1="555" y1="296" x2="555" y2="328" stroke="var(--muted)" marker-end="url(#a)"/>
+          <rect x="40" y="398" width="600" height="92" rx="12" fill="none" stroke="var(--line-2)" stroke-dasharray="4 4"/>
+          <text x="60" y="422" font-size="14" font-weight="600" fill="var(--ink)">Peran global, di luar group</text>
+          <g><rect x="60" y="436" width="170" height="40" rx="8" fill="var(--code-bg)" stroke="var(--line-2)"/><text x="145" y="461" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">super-admin</text></g>
+          <g><rect x="255" y="436" width="170" height="40" rx="8" fill="var(--code-bg)" stroke="var(--line-2)"/><text x="340" y="461" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">admin-app</text></g>
+          <g><rect x="450" y="436" width="170" height="40" rx="8" fill="var(--code-bg)" stroke="var(--line-2)"/><text x="535" y="461" text-anchor="middle" font-size="14" font-weight="600" fill="var(--ink)">developer</text></g>
+        </svg>
+      </div>
+    </section>
+
+    <section id="definisi">
+      <div class="head"><h2>Definisi</h2><span class="tag lock">Disepakati</span></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Istilah</th><th>Arti</th><th>Contoh</th></tr></thead>
+        <tbody>
+          <tr><td><b>User</b></td><td>Akun login. Punya <b>satu level</b> dan ikut <b>satu atau lebih group</b>.</td><td>yuna, firman, nisa</td></tr>
+          <tr><td><b>Level</b></td><td>Tingkat kewenangan orang. Dipakai untuk <b>approve / reject</b> alur dokumen, bukan untuk membuka modul.</td><td>data-entry, manager, director</td></tr>
+          <tr><td><b>Group</b></td><td>Kelompok kerja per modul. Dipetakan ke hak akses modul dan sub-modul. Tidak pernah dinamai jabatan.</td><td>Sales: yuna, purna, widita, eni, firman</td></tr>
+          <tr><td><b>Module</b></td><td>Area aplikasi.</td><td>Sales, Costing, Produksi, Pembelian, Inventory, Keuangan, HR, Laporan Manajemen</td></tr>
+          <tr><td><b>Sub-module</b></td><td>Bagian dari modul, dibuat hanya bila perlu. Tanpa pengaturan khusus, ikut hak modulnya.</td><td>Sales › Quotation, Sales › Delivery Order</td></tr>
+          <tr><td><b>Hak akses</b></td><td>Dipasang pada pasangan group × modul / sub-modul.</td><td>RO, ROP, RW, RWP, RWPE</td></tr>
+          <tr><td><b>Approve / Reject</b></td><td>Tidak disetel di group. Boleh bila level user ≥ level tahap dokumen <b>dan</b> hak di modulnya minimal RW.</td><td>firman (manager) approve quotation</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="level">
+      <div class="head"><h2>Level</h2><span class="tag lock">Disepakati</span></div>
+      <p>Tujuh tingkat, urut dari terendah. Level tahap approval ditulis sebagai level minimal: user dengan level sama atau lebih tinggi boleh memutuskan.</p>
+      <div class="tbl"><table>
+        <thead><tr><th class="c">Urut</th><th>Level</th><th>Contoh orang (struktur 28 Sep 2026)</th></tr></thead>
+        <tbody>
+          <tr><td class="c num">1</td><td class="lvl">data-entry</td><td>yuna, purna, eni (sales), ringga (NPD), sania (HR), eka (purchasing)</td></tr>
+          <tr><td class="c num">2</td><td class="lvl">supervisor</td><td>mia (F&amp;A SPV), SPV produksi</td></tr>
+          <tr><td class="c num">3</td><td class="lvl">vice-manager</td><td>belum ada pemegang</td></tr>
+          <tr><td class="c num">4</td><td class="lvl">manager</td><td>firman (Sales &amp; Marketing), nisa (Operational)</td></tr>
+          <tr><td class="c num">5</td><td class="lvl">general-manager</td><td>johannes iwan</td></tr>
+          <tr><td class="c num">6</td><td class="lvl">director</td><td>puspita dewi (Direktur F&amp;A)</td></tr>
+          <tr><td class="c num">7</td><td class="lvl">president-director</td><td>carrij soehendra</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="hak">
+      <div class="head"><h2>Hak akses per group × modul</h2><span class="tag lock">Disepakati</span></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Kode</th><th>Nama</th><th class="c">Lihat</th><th class="c">Print</th><th class="c">Input / ubah</th><th class="c">Export</th></tr></thead>
+        <tbody>
+          <tr><td class="code">RO</td><td>ReadOnly</td><td class="c yes">✓</td><td class="c no">–</td><td class="c no">–</td><td class="c no">–</td></tr>
+          <tr><td class="code">ROP</td><td>ReadOnly + Print</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">–</td><td class="c no">–</td></tr>
+          <tr><td class="code">RW</td><td>ReadWrite</td><td class="c yes">✓</td><td class="c no">–</td><td class="c yes">✓</td><td class="c no">–</td></tr>
+          <tr><td class="code">RWP</td><td>ReadWrite + Print</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">–</td></tr>
+          <tr><td class="code">RWPE</td><td>ReadWrite + Print + Export</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+        </tbody>
+      </table></div>
+      <ul class="rules">
+        <li><b>Print</b><span>Cetak dokumen dari form: nota, surat penawaran, PO, slip.</span></li>
+        <li><b>Export</b><span>Unduh data grid ke Excel / CSV / PDF daftar.</span></li>
+        <li><b>Penyimpanan</b><span>Di database disimpan sebagai saklar terpisah (tulis, print, export) supaya pengecekan tombol sederhana; di layar admin memilih salah satu dari lima kode.</span></li>
+      </ul>
+    </section>
+
+    <section id="aturan">
+      <div class="head"><h2>Aturan gabungan</h2><span class="tag lock">Disepakati</span></div>
+      <ul class="rules">
+        <li><b>Hak tertinggi yang berlaku</b><span>User di beberapa group mendapat hak tertinggi dari group-group itu per modul. Contoh: nisa ikut group Sales dan Produksi, jadi keduanya bisa dibuka.</span></li>
+        <li><b>Sub-module mewarisi modul</b><span>Kecuali diatur khusus, sub-module memakai hak modulnya. Pengaturan khusus boleh lebih rendah atau lebih tinggi.</span></li>
+        <li><b>Tanpa group = tanpa modul</b><span>Default tolak. User yang belum ikut group mana pun hanya melihat halaman awal dan profilnya.</span></li>
+        <li><b>Nama group bukan jabatan</b><span>Group dinamai menurut area kerja (Sales, Costing, HR). Jabatan hanya di struktur organisasi.</span></li>
+      </ul>
+    </section>
+
+    <section id="approval">
+      <div class="head"><h2>Approval alur dokumen</h2><span class="tag draft">Draf</span></div>
+      <p>Setiap jenis dokumen punya tahap approval berurutan. Tiap tahap menyebut level minimal. Pada tahap itu, tombol Approve dan Reject tampil bagi user yang levelnya cukup dan punya hak RW atau lebih di modul dokumennya.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Dokumen</th><th>Tahap 1</th><th>Tahap 2</th><th>Tahap 3</th></tr></thead>
+        <tbody>
+          <tr><td>Purchase Requisition</td><td class="lvl">supervisor</td><td class="lvl">manager</td><td>–</td></tr>
+          <tr><td>Purchase Order (di atas batas nilai)</td><td class="lvl">manager</td><td class="lvl">general-manager</td><td>–</td></tr>
+          <tr><td>Quotation</td><td class="lvl">manager</td><td>–</td><td>–</td></tr>
+          <tr><td>Publish costing (harga ke Sales)</td><td class="lvl">director</td><td>–</td><td>–</td></tr>
+        </tbody>
+      </table></div>
+      <p class="meta">Contoh isian awal. Isi final diatur di layar Tahap Approval oleh super-admin atau admin-app.</p>
+    </section>
+
+    <section id="layar">
+      <div class="head"><h2>Penegakan di layar</h2><span class="tag lock">Disepakati</span></div>
+      <p>Dipasang sekali di komponen form dan grid standar DevLib, sehingga semua layar ikut. Layar Inquiry, ProDev, dan ProCost ikut setelah diizinkan (zona beku).</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Kondisi</th><th>Yang terjadi</th></tr></thead>
+        <tbody>
+          <tr><td><span class="code">RO</span> / <span class="code">ROP</span></td><td>Field terkunci; tombol Save, Delete, Confirm, dan + New Record tidak tampil.</td></tr>
+          <tr><td><span class="code">RW</span> / <span class="code">RWP</span> / <span class="code">RWPE</span></td><td>Form normal sesuai status dokumen.</td></tr>
+          <tr><td><span class="code">ROP</span> / <span class="code">RWP</span> / <span class="code">RWPE</span></td><td>Tombol Print tampil.</td></tr>
+          <tr><td><span class="code">RWPE</span></td><td>Tombol Export di grid tampil.</td></tr>
+          <tr><td>Level ≥ level tahap, hak RW atau lebih</td><td>Tombol Approve dan Reject tampil pada dokumen yang sedang menunggu tahap itu.</td></tr>
+          <tr><td>Tanpa hak modul</td><td>Menu modul tidak tampil; akses lewat alamat langsung ditolak (403).</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="global">
+      <div class="head"><h2>Peran global</h2><span class="tag lock">Disepakati</span></div>
+      <div class="tbl"><table>
+        <thead><tr><th>Peran</th><th>Boleh</th><th>Tidak boleh</th><th>Pemegang</th></tr></thead>
+        <tbody>
+          <tr><td class="code">super-admin</td><td>Semua, termasuk pengaturan kritis.</td><td>–</td><td>johiwan</td></tr>
+          <tr><td class="code">admin-app</td><td>Semua modul RWPE, approve / reject, tambah dan nonaktifkan user, reset password, atur group dan hak modul, pengaturan ringan (tema, identitas perusahaan, label menu).</td><td>Pengaturan kritis.</td><td>carrij, dewi</td></tr>
+          <tr><td class="code">developer</td><td>Mode Developer (F10), Data Dictionary.</td><td>Tidak menambah hak modul.</td><td>dinul</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Pengaturan kritis (khusus super-admin)</h3>
+      <ul>
+        <li>Menjadikan user super-admin atau mencabutnya.</li>
+        <li>Konstanta perhitungan: PPN, konstanta costing.</li>
+        <li>Enkripsi dan visibilitas data gaji.</li>
+        <li>Penyembunyian data dummy / legacy.</li>
+        <li>Status menu terkunci (LOCKED).</li>
+        <li>Migrasi data, Mode Developer, Data Dictionary.</li>
+      </ul>
+    </section>
+
+    <section id="contoh">
+      <div class="head"><h2>Contoh</h2></div>
+      <h3>Group Sales</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Member</th><th>Level</th><th>Hak di modul Sales</th><th class="c">Approve quotation</th></tr></thead>
+        <tbody>
+          <tr><td>yuna, purna, widita, eni</td><td class="lvl">data-entry</td><td class="code">RWP</td><td class="c no">–</td></tr>
+          <tr><td>firman</td><td class="lvl">manager</td><td class="code">RWP</td><td class="c yes">✓</td></tr>
+        </tbody>
+      </table></div>
+      <h3>User di beberapa group</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>User</th><th>Level</th><th>Group</th><th>Sales</th><th>Costing</th><th>Produksi</th><th>Laporan Mgmt</th></tr></thead>
+        <tbody>
+          <tr><td>nisa</td><td class="lvl">manager</td><td>Sales, Produksi, Laporan</td><td class="code">RWPE</td><td>–</td><td class="code">RWPE</td><td class="code">RO</td></tr>
+          <tr><td>wiwik</td><td class="lvl">supervisor</td><td>Costing</td><td class="code">RO</td><td class="code">RWPE</td><td class="code">RO</td><td>–</td></tr>
+          <tr><td>ringga</td><td class="lvl">data-entry</td><td>Product Development</td><td class="code">RO</td><td>–</td><td class="code">RW</td><td>–</td></tr>
+        </tbody>
+      </table></div>
+      <p class="meta">Level wiwik dan kombinasi hak di atas adalah ilustrasi; nilai final mengikuti keputusan terbuka di bawah.</p>
+    </section>
+
+    <section id="prompt">
+      <div class="head"><h2>Prompt untuk sesi Claude</h2></div>
+      <div class="prompt">
+        <div class="bar"><span>Ketentuan Security ERP App</span><button class="copy" type="button" data-copy="p-sec" id="copy-sec">Salin</button></div>
+<pre id="p-sec">Ikuti "Security ERP App" TMERP:
+- User punya 1 level dan ikut 1..n group. Group = area kerja per modul, JANGAN dinamai jabatan.
+- Hak group x modul/sub-modul: RO, ROP, RW, RWP, RWPE (lihat / print / tulis / export).
+  Sub-modul mewarisi modul kecuali diatur. Beberapa group = hak tertinggi. Tanpa group = tolak.
+- Level (1..7): data-entry, supervisor, vice-manager, manager, general-manager, director,
+  president-director. Level HANYA untuk approve/reject alur dokumen (level >= tahap + hak RW).
+- Peran global: super-admin (semua + pengaturan kritis), admin-app (semua modul RWPE + kelola user,
+  tanpa pengaturan kritis), developer (F10, Data Dictionary).
+- Penegakan di komponen form/grid standar: RO/ROP kunci field & sembunyikan Save/Delete/Confirm/New;
+  Print hanya ROP/RWP/RWPE; Export hanya RWPE; Approve/Reject sesuai level tahap.
+- Profil user di menu: nama lengkap saja. Jabatan hanya di struktur organisasi.</pre>
+      </div>
+    </section>
+
+    <section id="terbuka">
+      <div class="head"><h2>Keputusan terbuka</h2><span class="tag draft">Draf</span></div>
+      <ol class="qs">
+        <li><b>Sumber level.</b> Level diambil otomatis dari jabatan di struktur organisasi, dengan penimpaan per user bila perlu?</li>
+        <li><b>Penerima approval.</b> Dikirim ke atasan langsung lebih dulu, atau ke siapa pun yang levelnya cukup di modul itu?</li>
+        <li><b>ROPE.</b> Perlu hak lihat + print + export tanpa tulis (untuk direksi atau auditor), atau lima hak di atas cukup?</li>
+        <li><b>Tahap approval awal.</b> Isian contoh per dokumen di bagian Approval alur dokumen dipakai sebagai titik awal?</li>
+        <li><b>Daftar group awal.</b> Satu group per modul (Sales, Costing, Product Development, Produksi, Pembelian, Inventory, Keuangan, HR, Laporan Manajemen), ditambah group khusus bila perlu?</li>
+      </ol>
+    </section>
+  </main>
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var el = document.getElementById(btn.dataset.copy);
+    var done = function () { btn.textContent = 'Tersalin'; setTimeout(function () { btn.textContent = 'Salin'; }, 1600); };
+    var fallback = function () { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Tekan Ctrl+C'; };
+    try { navigator.clipboard.writeText(el.textContent).then(done, fallback); } catch (e) { fallback(); }
+  });
+});
+</script>
