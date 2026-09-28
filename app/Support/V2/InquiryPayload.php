@@ -68,10 +68,10 @@ final class InquiryPayload
         ];
     }
 
-    // Artwork per part, dikunci dengan index part di form (parts[<key>][artwork]).
+    // Artwork per part, dikunci dengan index part di form: [<key> => ['artwork' => luar, 'artwork_inner' => dalam]].
     public static function artworks(Request $r): array
     {
-        return collect($r->file('parts', []))->map(fn ($f) => $f['artwork'] ?? null)->filter()->all();
+        return collect($r->file('parts', []))->map(fn ($f) => array_filter(['artwork' => $f['artwork'] ?? null, 'artwork_inner' => $f['artwork_inner'] ?? null]))->filter()->all();
     }
 
     private static function part(string $key, array $p, string $type): array

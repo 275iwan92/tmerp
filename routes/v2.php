@@ -71,7 +71,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
             abort_unless(Auth::user()->canAccessModule('SALES'), 403);
             $old = $r->filled('id') ? IqpInquiry::findOrFail((int) $r->input('id')) : null;
             $r->validate(InquiryPayload::rules(), [], ['customer_id' => 'Customer', 'type_code' => 'Tipe Produk', 'product_draft_name' => 'Nama Produk']);
-            $r->validate(['parts.*.artwork' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)]]);
+            $img = ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)];
+            $r->validate(['parts.*.artwork' => $img, 'parts.*.artwork_inner' => $img]);
             $inq = $writer()->save(InquiryPayload::from($r, $old), $old, InquiryPayload::artworks($r));
             $confirm = $r->input('action') === 'confirm';
             if ($confirm) {
@@ -95,9 +96,10 @@ Route::prefix('v2')->name('v2.')->group(function () {
             $inq = $doc($id);
             $r->validate(['part_id' => ['required', 'integer'], 'artwork' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:'.(int) (SysConstant::number('INQUIRY_ARTWORK_MAX_MB', 10) * 1024)]]);
             $part = $inq->parts()->findOrFail((int) $r->input('part_id'));
-            $writer()->storeArtwork($part, $r->file('artwork'));
+            $inner = $r->boolean('inner');
+            $writer()->storeArtwork($part, $r->file('artwork'), $inner);
 
-            return response()->json(['message' => "Artwork {$part->part_name} tersimpan.", 'url' => asset('storage/'.$part->refresh()->artwork_path)]);
+            return response()->json(['message' => 'Artwork '.($inner ? 'sisi dalam ' : '')."{$part->part_name} tersimpan."]);
         })->name('artwork');
 
         Route::post('/{id}/prodev', function (Request $r, int $id) use ($writer, $doc) {

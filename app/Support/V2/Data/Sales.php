@@ -125,6 +125,7 @@ final class Sales
                 'flat_w' => $num($p->flat_w), 'flat_h' => $num($p->flat_h), 'flat_area' => $num($p->flat_area),
                 'cfg_color' => $p->cfg_color ?? '4/4', 'cfg_ink' => $p->cfg_ink ?? '',
                 'artwork_url' => $p->artwork_path ? asset('storage/'.$p->artwork_path) : null, 'artwork_name' => $p->artwork_original_filename,
+                'artwork_inner_url' => $p->artwork_inner_path ? asset('storage/'.$p->artwork_inner_path) : null, 'artwork_inner_name' => $p->artwork_inner_original_filename,
                 'materials' => $p->materials->map(fn ($m) => ['id' => $m->id_part_material, 'material' => $m->rawmat_id ?: '',
                     'material_label' => $m->rawmat_name ?? $m->rawMaterial?->material_name ?? '', 'brand' => $m->rawMaterial?->brand ?? '',
                     'category' => $m->rawMaterial?->category1 ?? '', 'is_primary' => (bool) $m->is_primary])->values()->all(),

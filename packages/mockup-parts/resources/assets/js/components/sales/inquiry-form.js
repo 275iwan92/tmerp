@@ -29,10 +29,11 @@
       // Artwork part tersimpan pada dokumen terkunci langsung dikirim (tidak ada tombol Simpan lagi).
       // Artwork dipilih/ditarik/dihapus -> pratinjau transparan di dieline & 3D; dokumen terkunci -> langsung tersimpan.
       this.el.addEventListener('dl:upload', e => {
-        const p = e.target.closest('[data-inq-artwork]')?.closest('[data-inq-part]'); if (!p) return;
+        const inner = !!e.target.closest('[data-inq-artwork-inner]');
+        const p = e.target.closest('[data-inq-artwork], [data-inq-artwork-inner]')?.closest('[data-inq-part]'); if (!p) return;
         const f = e.detail.files[0];
-        this.artPreview(p, f);
-        if (f && this.locked()) this.uploadArtwork(p, f);
+        if (!inner) this.artPreview(p, f);
+        if (f && this.locked()) this.uploadArtwork(p, f, inner);
       });
       try { const m = sessionStorage.getItem('inq-flash'); if (m) { sessionStorage.removeItem('inq-flash'); this.flash(m); } } catch (err) { /* tanpa storage: pesan dilewati */ }
     }
@@ -308,8 +309,9 @@
       $(p, '[data-dl-dieline-x]')?.dlDielineX?.setArtwork(p.dlArtUrl);
     }
 
-    async uploadArtwork(p, file) {
+    async uploadArtwork(p, file, inner = false) {
       const fd = new FormData();
+      if (inner) fd.append('inner', '1');
       fd.append('part_id', $(p, '[data-inq-part-id]').value);
       fd.append('artwork', file);
       try { const j = await this.call(this.url('artwork'), fd); toast(j.message, 'success'); this.flash(j.message); } catch (err) { /* pesan sudah tampil */ }

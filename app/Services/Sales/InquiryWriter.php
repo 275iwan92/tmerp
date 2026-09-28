@@ -80,16 +80,18 @@ final class InquiryWriter
     }
 
     // Artwork = bahan desain, tetap boleh diganti setelah Confirm (keputusan user 2026-09-28).
-    public function storeArtwork(IqpPart $part, UploadedFile $file): void
+    // $inner = sisi dalam (kemasan cetak 2 sisi, user 2026-09-29); sisi luar yang tampil di dieline & 3D.
+    public function storeArtwork(IqpPart $part, UploadedFile $file, bool $inner = false): void
     {
-        $old = $part->artwork_path;
-        $path = $file->store("inquiry/{$part->id_part}/artwork", 'public');
+        [$col, $name] = $inner ? ['artwork_inner_path', 'artwork_inner_original_filename'] : ['artwork_path', 'artwork_original_filename'];
+        $old = $part->{$col};
+        $path = $file->store("inquiry/{$part->id_part}/artwork".($inner ? '-inner' : ''), 'public');
 
         if ($old && $old !== $path) {
             Storage::disk('public')->delete($old);
         }
 
-        $part->update(['artwork_path' => $path, 'artwork_original_filename' => $file->getClientOriginalName(), 'updated_by' => $this->login]);
+        $part->update([$col => $path, $name => $file->getClientOriginalName(), 'updated_by' => $this->login]);
     }
 
     // Mode #1 Inquiry(BARU) -> ProDev: seed prod_product draft + prod_part (sendToProDev() v1).
@@ -284,8 +286,10 @@ final class InquiryWriter
             $part = $inquiry->parts()->find($this->upsert($inquiry->parts(), $row['id'], $data));
             $keep[] = $part->id_part;
 
-            if (isset($artworks[$row['key']])) {
-                $this->storeArtwork($part, $artworks[$row['key']]);
+            foreach (['artwork' => false, 'artwork_inner' => true] as $field => $inner) {
+                if (isset($artworks[$row['key']][$field])) {
+                    $this->storeArtwork($part, $artworks[$row['key']][$field], $inner);
+                }
             }
             $this->persistMaterials($part, $row['materials'], $materialSource);
             $this->persistFinishings($part, $row['finishings']);

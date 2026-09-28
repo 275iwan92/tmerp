@@ -357,3 +357,4 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .dl-deco__lock{stroke:var(--dl-dl-lock);stroke-width:2.5;vector-effect:non-scaling-stroke}
 .dl-3d__art{opacity:.9}
 :root{--dl-dl-grain:#ffd166;--dl-dl-reg:#e6e6e6;--dl-dl-lock:#ff9f1c;--dl-dl-glue:rgba(255,255,255,.28)}
+.mp-part__art{display:flex;flex-direction:column;gap:8px}
