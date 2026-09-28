@@ -51,9 +51,10 @@
       this.el.dlDielineX = {get dims() { return {...self.dims}; }, setType: c => { this.code = c; this.dims = {}; this.fields(); this.redraw(); },
         setDims: d => { Object.assign(this.dims, d); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); this.redraw(); }, redraw: this.redraw,
         // url gambar (object URL / storage) atau null = kembali ke artwork tersimpan.
-        setArtwork: url => { this.art = url || this.saved; this.redraw(); }};
+        setArtwork: url => { this.art = url || this.saved; this.loadArt(); }};
       if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
       this.fields();this.redraw();
+      if (this.art) this.loadArt();
     }
 
     term(k, p) {
@@ -99,6 +100,63 @@
       this.q('[data-d-lens]').innerHTML = `<div class="is-cut"><b>${f(sum.cut)} ${this.unit}</b><span>Cutting line</span></div><div class="is-crease"><b>${f(sum.crease)} ${this.unit}</b><span>Creasing line</span></div><div class="is-hole"><b>${f(sum.hole)} ${this.unit}</b><span>Perforation / hole</span></div>`;
     }
 
+    // Proporsi gambar menentukan cara pasang (lihat artRect); digambar ulang setelah ukuran asli diketahui.
+    loadArt() {
+      this.artRatio = null; this.artImg = null; this.artPix = null;
+      if (!this.art) return this.redraw();
+      const im = new Image(), url = this.art;
+      im.onload = () => { if (this.art === url) { this.artImg = im; this.artRatio = im.naturalWidth / im.naturalHeight; this.redraw(); } };
+      im.onerror = () => this.redraw();
+      im.src = url;
+    }
+
+    // Artwork file cetak = satu lembar bentangan penuh (proporsi ~ bentangan dieline) -> dipasang ke seluruh tepi potong;
+    // selain itu (mis. foto) -> panel utama saja.
+    artRect(g) {
+      const blank = (g.x1 - g.x0) / (g.y1 - g.y0);
+      const full = this.artRatio && Math.abs(this.artRatio / blank - 1) <= 0.2;
+      return full ? {x: g.x0, y: g.y0, w: g.x1 - g.x0, h: g.y1 - g.y0, full: true} : {x: g.px0, y: g.py0, w: g.px1 - g.px0, h: g.py1 - g.py0, full: false};
+    }
+
+    // Sumber gambar tiap sisi 3D (koordinat bentangan). Kotak tuck (panel berjajar) = panel L, W, dan tutup di atas panel L;
+    // kotak model nampan (PPL, dus nasi, mailer) = panel terbesar sbg tutup, sel di bawahnya = depan, sel lebar di kanannya = samping.
+    faces3d(g) {
+      const cols = [g.x0, ...g.inX, g.x1], rows = [g.y0, ...g.ys, g.y1];
+      const i = cols.indexOf(g.px0);
+      if (g.ys.length <= 2 && g.inX.length >= 3 && i >= 0 && i + 2 < cols.length) {
+        const fx = [cols[i], cols[i + 1]], sx = [cols[i + 1], cols[i + 2]], w = sx[1] - sx[0];
+        return {front: [fx[0], g.py0, fx[1] - fx[0], g.py1 - g.py0], side: [sx[0], g.py0, w, g.py1 - g.py0], top: [fx[0], Math.max(g.y0, g.py0 - w), fx[1] - fx[0], Math.min(w, g.py0 - g.y0)]};
+      }
+      const cells = [];
+      for (let r = 0; r < rows.length - 1; r++) for (let c = 0; c < cols.length - 1; c++) cells.push({r, c, a: (cols[c + 1] - cols[c]) * (rows[r + 1] - rows[r])});
+      if (!cells.length) return null;
+      // Tutup = panel besar (>= 60% terbesar) yang paling "ramai" gambarnya (logo/desain), bukan sekadar yang terluas.
+      const maxA = Math.max(...cells.map(x => x.a)), big = cells.filter(x => x.a >= maxA * 0.6);
+      const R = this.artRect(g), busy = x => this.detail(R, [cols[x.c], rows[x.r], cols[x.c + 1] - cols[x.c], rows[x.r + 1] - rows[x.r]]);
+      const best = big.reduce((a, b) => (busy(b) > busy(a) ? b : a));
+      const cell = (r, c) => [cols[c], rows[r], cols[c + 1] - cols[c], rows[r + 1] - rows[r]], top = cell(best.r, best.c);
+      const fr = best.r + 1 < rows.length - 1 ? best.r + 1 : best.r - 1;
+      let sc = best.c + 1; while (sc < cols.length - 1 && cols[sc + 1] - cols[sc] < top[2] * 0.2) sc++;
+      if (sc >= cols.length - 1) sc = Math.max(0, best.c - 1);
+      return {top, front: fr >= 0 ? cell(fr, best.c) : top, side: cell(best.r, sc)};
+    }
+
+    // Kerapatan detail (simpangan baku terang piksel) artwork di satu area bentangan; 0 bila gambar belum/tidak bisa dibaca.
+    detail(R, src) {
+      if (!this.artImg) return 0;
+      if (!this.artPix) {
+        const cv = document.createElement('canvas'), w = 160, h = Math.max(1, Math.round(160 / this.artRatio));
+        cv.width = w; cv.height = h;
+        try { const x = cv.getContext('2d'); x.drawImage(this.artImg, 0, 0, w, h); this.artPix = {w, h, d: x.getImageData(0, 0, w, h).data}; } catch (err) { this.artPix = {w: 0}; }
+      }
+      const P = this.artPix; if (!P.w) return 0;
+      const x0 = Math.max(0, Math.floor((src[0] - R.x) / R.w * P.w)), x1 = Math.min(P.w, Math.ceil((src[0] + src[2] - R.x) / R.w * P.w));
+      const y0 = Math.max(0, Math.floor((src[1] - R.y) / R.h * P.h)), y1 = Math.min(P.h, Math.ceil((src[1] + src[3] - R.y) / R.h * P.h));
+      let n = 0, sum = 0, sq = 0;
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { const i = (y * P.w + x) * 4, v = P.d[i] * 0.3 + P.d[i + 1] * 0.59 + P.d[i + 2] * 0.11; n++; sum += v; sq += v * v; }
+      return n ? Math.sqrt(Math.max(0, sq / n - (sum / n) ** 2)) : 0;
+    }
+
     opt(k) { const c = this.q(`[data-d-opt="${k}"]`); return c ? c.checked : false; }
 
     // Tepi potong, garis lipat, kotak bleed, dan area panel utama (tanpa glue flap) dari hasil render TMDieline.
@@ -117,8 +175,9 @@
         }
       });
       if (!isFinite(x0)) return null;
-      const inX = [...new Set(xs.filter(v => v > x0 + 0.5 && v < x1 - 0.5).map(v => Math.round(v * 10) / 10))].sort((a, b) => a - b);
+      const inX0 = [...new Set(xs.filter(v => v > x0 + 0.5 && v < x1 - 0.5).map(v => Math.round(v * 10) / 10))].sort((a, b) => a - b);
       const ys = [...new Set(hs.map(h => Math.round(h.y * 10) / 10))].filter(v => v > y0 + 0.5 && v < y1 - 0.5).sort((a, b) => a - b);
+      const inX = inX0;
       // Glue flap = strip ujung yang lebih sempit (kiri/kanan) di luar lipatan vertikal pertama/terakhir.
       let px0 = x0, px1 = x1, glue = null;
       if (inX.length >= 2) {
@@ -127,7 +186,7 @@
       }
       const py0 = ys.length ? ys[0] : y0, py1 = ys.length > 1 ? ys[ys.length - 1] : y1;
       const bb = isFinite(b0) ? {x0: b0, y0: c0, x1: b1, y1: c1} : {x0, y0, x1, y1};
-      return {x0, y0, x1, y1, px0, px1, py0, py1, glue, inX, hs, bb};
+      return {x0, y0, x1, y1, px0, px1, py0, py1, glue, inX, ys, hs, bb};
     }
 
     // Lapisan tampilan di atas hasil TMDieline: artwork transparan, glue margin, arah serat, tanda register, lock tab, bleed on/off.
@@ -138,12 +197,13 @@
       const g = this.geo(svg); if (!g) return;
       $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => { if ((n.getAttribute('stroke') || '').toLowerCase() === bleed) n.style.display = this.opt('overflow') ? '' : 'none'; });
       const W = g.x1 - g.x0, H = g.y1 - g.y0, u = Math.max(W, H) / 100, ns = 'http://www.w3.org/2000/svg';
+      this.g = g;
       if (this.art && this.opt('artwork')) {
-        const img = document.createElementNS(ns, 'image');
+        const img = document.createElementNS(ns, 'image'), R = this.artRect(g);
         img.setAttribute('class', 'dl-deco dl-deco__art');
         img.setAttribute('href', this.art);
-        img.setAttribute('x', g.px0); img.setAttribute('y', g.py0);
-        img.setAttribute('width', g.px1 - g.px0); img.setAttribute('height', g.py1 - g.py0);
+        img.setAttribute('x', R.x); img.setAttribute('y', R.y);
+        img.setAttribute('width', R.w); img.setAttribute('height', R.h);
         img.setAttribute('preserveAspectRatio', 'none'); img.setAttribute('opacity', '.8');
         svg.insertBefore(img, svg.firstChild);
       }
@@ -177,10 +237,15 @@
 
     // Artwork di sisi 3D: tiap sisi = transformasi afin gambar ke bidang isometrik, dipotong sesuai urutan panel dieline (L, W, L, W).
     art3d(L, Wd, H, c, s) {
-      if (!this.art || !this.opt('artwork')) return '';
-      const tot = 2 * L + 2 * Wd, id = this.uid + 'f', href = esc(this.art);
-      const face = (k, m, w, h, off, full) => `<clipPath id="${id}${k}"><rect width="${w}" height="${h}"/></clipPath><g transform="matrix(${m.join(',')})"><image class="dl-3d__art" href="${href}" x="${full ? 0 : -off}" y="0" width="${full ? w : tot}" height="${h}" preserveAspectRatio="none" clip-path="url(#${id}${k})"/></g>`;
-      return face('a', [c, s, 0, 1, -Wd * c, Wd * s - H], L, H, 0) + face('b', [c, -s, 0, 1, (L - Wd) * c, (L + Wd) * s - H], Wd, H, L) + face('c', [c, s, -c, s, 0, -H], L, Wd, 0, true);
+      if (!this.art || !this.opt('artwork') || !this.g) return '';
+      const g = this.g, R = this.artRect(g), F = this.faces3d(g), id = this.uid + 'f', href = esc(this.art);
+      if (!F) return '';
+      // Sumber [x,y,w,h] di bentangan -> sisi w x h: gambar (menempati R) diskalakan & digeser agar sumber jatuh di 0..w, 0..h.
+      const face = (k, m, w, h, src) => {
+        const kx = w / src[2], ky = h / src[3];
+        return `<clipPath id="${id}${k}"><rect width="${w}" height="${h}"/></clipPath><g transform="matrix(${m.join(',')})"><image class="dl-3d__art" href="${href}" x="${(R.x - src[0]) * kx}" y="${(R.y - src[1]) * ky}" width="${R.w * kx}" height="${R.h * ky}" preserveAspectRatio="none" clip-path="url(#${id}${k})"/></g>`;
+      };
+      return face('a', [c, s, 0, 1, -Wd * c, Wd * s - H], L, H, F.front) + face('b', [c, -s, 0, 1, (L - Wd) * c, (L + Wd) * s - H], Wd, H, F.side) + face('c', [c, s, -c, s, 0, -H], L, Wd, F.top);
     }
 
     preview3d() {
@@ -201,7 +266,10 @@
         body = `<polygon points="${[P(0, 0), P(fwv, 0), P(fwv, fhv), P(0, fhv)].join(' ')}" class="dl-3d__top"/>`;
       }
       box.innerHTML = `<svg viewBox="0 0 10 10"><g>${body}</g></svg><span>3D</span>`;
-      const g = $(box, 'g'), bb = g.getBBox(), m = Math.max(bb.width, bb.height) * 0.1;
+      // Bingkai dari bentuk kotak saja (getBBox gambar artwork mengabaikan clip-path -> kotak jadi kecil).
+      const bb = [...$$(box, 'polygon, path, ellipse')].map(n => n.getBBox()).reduce((a, b) => ({x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), r: Math.max(a.r, b.x + b.width), b: Math.max(a.b, b.y + b.height)}), {x: Infinity, y: Infinity, r: -Infinity, b: -Infinity});
+      bb.width = bb.r - bb.x; bb.height = bb.b - bb.y;
+      const m = Math.max(bb.width, bb.height) * 0.1;
       $(box, 'svg').setAttribute('viewBox', `${bb.x - m} ${bb.y - m} ${bb.width + 2 * m} ${bb.height + 2 * m}`);
     }
 
