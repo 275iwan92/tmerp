@@ -94,7 +94,8 @@ class InquiryPart extends DevlibComponent
                         <x-dl::field.select :name="$n('part_type')" label="Tipe Part" :options="$partTypes()" :value="$p['part_type']" :placeholder="null" :source="$src('part_type')" />
                         <x-dl::field.decimal :name="$n('qty_per_sku')" label="Qty per Set" :value="$p['qty_per_sku']" :source="$src('qty_per_sku')" />
                         <x-dl::field.number :name="$n('pack_qty')" label="Isi per Pack (pcs)" placeholder="mis. 400" :min="1" :value="$p['pack_qty']" :source="$src('pack_qty')" />
-                        <x-dl::field.upload :name="$n('artwork')" label="Artwork / Desain" accept=".jpg,.jpeg,.png" hint="JPG/PNG, maks 10MB — preview & saran otomatis langsung jalan"
+                        {{-- data-inq-keep: artwork sering datang belakangan dari customer -> tetap bisa diunggah setelah Confirm (keputusan user 2026-09-28). --}}
+                        <x-dl::field.upload :name="$n('artwork')" label="Artwork / Desain" accept=".jpg,.jpeg,.png" data-inq-keep
                             :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_path', 'tm2sdi.iqp_part.artwork_original_filename', 'tm2sdi.iqp_part.artwork_colors')" />
                     </x-dl::form.row>
 
