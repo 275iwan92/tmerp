@@ -44,9 +44,10 @@ final class Sales
 
         return $m ??= [
             'materials' => MatRaw::query()->where('activate', true)->where('stat_confirm', true)->orderBy('material_name')
-                ->get(['material_id', 'material_code', 'material_name', 'brand', 'category1', 'gram_weight'])
+                ->get(['material_id', 'material_code', 'material_name', 'brand', 'category1', 'gram_weight', 'uom_purchase', 'avg_unitprice', 'last_unitprice'])
                 ->map(fn ($r) => ['material_id' => $r->material_id, 'material_code' => $r->material_code, 'material_name' => $r->material_name,
-                    'brand' => $r->brand, 'category' => $r->category1, 'gram_weight' => $r->gram_weight])->all(),
+                    'brand' => $r->brand, 'category' => $r->category1, 'gram_weight' => $r->gram_weight, 'uom_purchase' => $r->uom_purchase,
+                    'avg_unitprice' => $r->avg_unitprice, 'last_unitprice' => $r->last_unitprice])->all(),
             'finishing_types' => RefFinishingType::query()->where('activate', true)->orderBy('finishing_name')
                 ->get(['id_finishing_type', 'finishing_name'])->toArray(),
         ];

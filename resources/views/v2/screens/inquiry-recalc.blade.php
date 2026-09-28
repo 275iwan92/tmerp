@@ -5,14 +5,17 @@
     use App\Support\V2\Src;
 
     $doc = request('id') ? Sales::inquiryDoc((int) request('id')) : null;
-    $source = $doc ? Sales::parentDoc((int) $doc['id']) : Sales::inquiryDoc((int) request('source_id', 140));
+    // Sama dgn v1: sumber = inkuiri induk, bila tautannya kosong = dokumen itu sendiri (spec sudah disalin utuh); tanpa id/source_id = 404.
+    $source = $doc ? (Sales::parentDoc((int) $doc['id']) ?? $doc) : (request('source_id') ? Sales::inquiryDoc((int) request('source_id')) : null);
+    abort_if(request('id') ? ! $doc : ! $source, 404);
     $readonly = $doc && ($doc['stat_confirm'] || request('view'));
     $types = Sales::dielineTypes();
-    $type = $types[$source['type_code']];
+    $type = $types[$source['type_code']] ?? ['spec' => null];
     $finishing = array_column(Sales::masters()['finishing_types'], 'finishing_name', 'id_finishing_type');
     $materials = collect(Sales::masters()['materials'])->keyBy('material_id');
     $rp = fn ($v, $uom) => $v !== null ? 'Rp '.number_format((float) $v, 0, ',', '.').'/'.$uom : '—';
-    $priceRows = collect($source['parts'])->flatMap(fn ($p) => array_column($p['materials'], 'material'))->unique()->map(function ($id) use ($materials, $rp) {
+    // Bahan yang belum item persis (hanya nama dari Kategori Produk) tidak punya harga master -> tidak ditampilkan di tabel harga.
+    $priceRows = collect($source['parts'])->flatMap(fn ($p) => array_column($p['materials'], 'material'))->unique()->filter(fn ($id) => isset($materials[$id]))->map(function ($id) use ($materials, $rp) {
         $m = $materials[$id];
         $baku = $m['avg_unitprice'];
         $kini = $m['last_unitprice'] ?? $baku;

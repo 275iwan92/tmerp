@@ -5,7 +5,9 @@
     use App\Support\V2\Src;
 
     $doc = request('id') ? Sales::inquiryDoc((int) request('id')) : null;
-    $source = $doc ? Sales::parentDoc((int) $doc['id']) : Sales::inquiryDoc((int) request('source_id', 140));
+    // Sama dgn v1: sumber = inkuiri induk, bila tautannya kosong = dokumen itu sendiri (spec sudah disalin utuh); tanpa id/source_id = 404.
+    $source = $doc ? (Sales::parentDoc((int) $doc['id']) ?? $doc) : (request('source_id') ? Sales::inquiryDoc((int) request('source_id')) : null);
+    abort_if(request('id') ? ! $doc : ! $source, 404);
     $readonly = $doc && ($doc['stat_confirm'] || request('view'));
     $scope = $doc['revise_scope'] ?? [];
     $parts = ($doc ?? $source)['parts'];
