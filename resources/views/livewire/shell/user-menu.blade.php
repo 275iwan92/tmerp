@@ -29,7 +29,6 @@
             <div>
                 <div class="um-name">{{ auth()->user()->name ?: Translator::t('shell_user_fallback_name', 'Pengguna') }}</div>
                 <div class="um-mail">{{ auth()->user()->email }}</div>
-                <span class="um-role">{{ $this->roleLabel() }}</span>
             </div>
         </div>
         <div class="um-list">
