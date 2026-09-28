@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Sdi\IqpInquiry;
+use App\Services\Sales\InquiryDuplicator;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Flows;
 use App\Support\V2\Schema;
@@ -37,6 +39,20 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         return view('v2.screen', ['screen' => $screen, 'built' => is_file($file), 'code' => is_file($file) ? file_get_contents($file) : '']);
     })->name('screen');
+
+    // Duplicate inquiry (spec sama, customer lain) -> NEW DRAFT baru; logika = App\Services\Sales\InquiryDuplicator (sama dgn v1).
+    Route::post('/inquiry/duplicate', function (Request $r) {
+        abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+        $data = $r->validate([
+            'source_id' => ['required', 'integer', 'exists:tm2sdi.iqp_inquiry,id_inquiry'],
+            'customer_id' => ['required', 'integer', 'exists:tm2mst.cust_customer,id_customer'],
+        ], [], ['customer_id' => 'Customer tujuan']);
+        $source = IqpInquiry::findOrFail($data['source_id']);
+        $new = InquiryDuplicator::duplicate($source, (int) $data['customer_id'], Auth::user()->login);
+
+        return redirect()->route('v2.screen', 'inquiry')
+            ->with('v2_flash', "Duplikat dibuat: {$new->inquiry_no} (Produk Baru, DRAFT) dari {$source->inquiry_no}.");
+    })->name('inquiry.duplicate');
 
     Route::get('/flow/{module}', fn (string $module) => view('v2.flow', ['flow' => Flows::get($module) ?? abort(404)]))->name('flow');
 

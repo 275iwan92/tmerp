@@ -41,14 +41,15 @@ class QuotationBuilder
         ]);
     }
 
-    // Isi "Choose inquiry window": inquiry berharga (costing published) yang belum
-    // ditarik ke quotation mana pun.
+    // Isi "Choose inquiry window" = "Ready to Quote" di Inquiry Hub: inquiry berharga
+    // (costing published) yang belum ditarik ke quotation mana pun dan belum closed.
     public static function availableInquiries()
     {
         $quoted = QuoQuotationItem::where('source_type', 'INQUIRY_TIER')->whereNotNull('inquiry_id')->pluck('inquiry_id')->unique();
 
         return IqpInquiry::whereHas('costing', fn ($q) => $q->where('published_flag', true))
             ->whereNotNull('customer_id')
+            ->whereNotIn('sub_state', ['CANCELLED', 'LOST', 'CONVERTED'])
             ->whereNotIn('id_inquiry', $quoted);
     }
 

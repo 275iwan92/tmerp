@@ -2,8 +2,14 @@
 
 namespace App\Support\V2\Data;
 
-// Data contoh fiktif modul Sales (situs tanpa database). Deterministik: sama tiap muat.
-// Bentuk baris = kolom tabel tujuannya (lihat tooltip Src di layar), supaya Fase 3 tinggal ganti sumber.
+use App\Models\Master\ProdMarket;
+use App\Models\Master\ProdType;
+use App\Models\Sdi\IqpInquiry;
+use App\Services\Sales\QuotationBuilder;
+
+// Data modul Sales untuk layar v2. Worklist Inquiry sudah dari database situs (2026-09-28);
+// isi part dokumen (inquiryDoc) masih disusun dari baris worklist + master.
+// Bentuk baris = kolom tabel tujuannya (lihat tooltip Src di layar).
 final class Sales
 {
     public const STATES = ['DRAFT', 'WAITING_COST', 'SUBMITTED', 'PRICE_CALCULATED', 'PRICE_APPROVED', 'QUOTED', 'PROVING', 'PROVE_APPROVED', 'CONVERTED', 'CANCELLED', 'LOST'];
@@ -45,7 +51,7 @@ final class Sales
     {
         static $t;
 
-        return $t ??= \App\Models\Master\ProdType::query()->where('activate', true)->orderBy('sort_order')
+        return $t ??= ProdType::query()->where('activate', true)->orderBy('sort_order')
             ->with(['params' => fn ($q) => $q->where('activate', true)->orderBy('seq'),
                 'sizes' => fn ($q) => $q->where('activate', true)->whereNull('market_id')->orderBy('sort_order')->with('values')])
             ->get()->filter(fn ($t) => ! empty($t->dieline_spec['elements'] ?? null))
@@ -66,7 +72,7 @@ final class Sales
     // Kategori Produk (induk) -> Detail Kategori (Tipe Produk) -> Ukuran Pasaran, dari Lookup Product Market (tm2mst.prod_market).
     public static function productMarkets(): array
     {
-        return \App\Models\Master\ProdMarket::query()->where('activate', true)->whereNull('parent_id')->orderBy('sort_order')->orderBy('market_label')
+        return ProdMarket::query()->where('activate', true)->whereNull('parent_id')->orderBy('sort_order')->orderBy('market_label')
             ->with(['children' => fn ($q) => $q->where('activate', true)->with(['type', 'paperCategory', 'sheetCategory', 'sizes' => fn ($z) => $z->where('activate', true)->with('values')])])
             ->get()->map(fn ($g) => ['code' => $g->market_code, 'label' => $g->market_label,
                 'details' => $g->children->filter(fn ($d) => $d->type_code)->map(fn ($d) => [
@@ -74,7 +80,7 @@ final class Sales
                     'color' => $d->default_color, 'tiers' => $d->tierList(),
                     // Bahan awal = rantai kategori bahan baku: #1 Paper, #2 Sheet/SF (item persis dipilih kemudian).
                     'materials' => collect([$d->paperCategory, $d->sheetCategory])->filter()->map(fn ($c) => [
-                        'label' => \App\Models\Master\ProdMarket::chainLabel($c), 'category' => $c->category_name])->values()->all(),
+                        'label' => ProdMarket::chainLabel($c), 'category' => $c->category_name])->values()->all(),
                     'sizes' => $d->sizes->map(fn ($z) => ['label' => $z->size_label, 'dims' => self::sizeDims($z)])->values()->all(),
                 ])->values()->all()])
             ->filter(fn ($g) => $g['details'])->values()->all();
@@ -108,44 +114,54 @@ final class Sales
         ];
     }
 
-    // Inkuiri asal dari dokumen REVISE/RECALC contoh (tmerp: parentInquiry()).
+    // Inkuiri asal dari dokumen REVISE/RECALC (tmerp: parentInquiry() = parent_product_id).
     public static function parentDoc(int $id): ?array
     {
-        return self::inquiryDoc($id - 5) ?? self::inquiryDoc($id + 5);
+        $parent = IqpInquiry::whereKey($id)->value('parent_product_id');
+
+        return $parent ? self::inquiryDoc((int) $parent) : null;
     }
 
-    public static function inquiries(int $n = 42): array
+    // Worklist Inquiry dari database situs (mockup.test = ddtsdi). prodev/procost/ready =
+    // bendera untuk tombol & kotak statistik (keputusan user 2026-09-28):
+    // prodev = ada part yang sudah punya prod_part (Pro-Dev), procost = sudah ada costing,
+    // ready = sama persis dgn jendela "Choose inquiry" Quotation (costing published, belum di-quote).
+    public static function inquiries(): array
     {
-        $cust = self::customers();
-        $products = [['Box Lipat 4/4 Duplex 310gsm', 'CARD_BOX'], ['Paper Bag Twist Handle', 'SHALLOW_BOX'], ['Label Stiker Botol 60ml', 'LABEL_STIKER'], ['Box Kosmetik Serum 30ml', 'RTE_BOX'],
-            ['Dus Nasi Kotak Premium', 'STE_BOX'], ['Sleeve Kopi Drip', 'SLEEVE'], ['Hang Tag Batik', 'HANG_TAG'], ['Box Hampers Lebaran', 'BOX_WITH_LID'], ['Kalender Duduk 2027', 'KALENDER_DUDUK'],
-            ['Brosur Promo A4 Lipat 3', 'BROSUR'], ['Box Obat Strip 10', 'CRASH_LOCK'], ['Tube Teh Celup', 'CYLINDER']];
-        $states = ['DRAFT', 'DRAFT', 'WAITING_COST', 'SUBMITTED', 'PRICE_CALCULATED', 'PRICE_APPROVED', 'PRICE_APPROVED', 'QUOTED', 'PROVING', 'PROVE_APPROVED', 'CONVERTED', 'CONVERTED', 'CANCELLED', 'LOST'];
-        $types = ['NEW', 'NEW', 'NEW', 'RECALC', 'REVISE'];
-        $rows = [];
-        for ($i = 1; $i <= $n; $i++) {
-            [$product, $ptype] = $products[($i * 5) % count($products)];
-            $state = $states[($i * 3) % count($states)];
-            $prospect = $i % 7 === 0;
-            $date = date('Y-m-d', strtotime('2026-09-23 -'.(($n - $i) * 2).' days'));
-            $rows[] = [
-                'id' => 148 - $n + $i,
-                'inquiry_no' => $state === 'DRAFT' ? null : sprintf('IQ26%05d', 100 + $i),
-                'inquiry_date' => $date,
-                'customer' => $prospect ? ['PT. Calon Sukses Makmur', 'Ibu Ratna (Katering)'][$i % 2] : $cust[($i * 3) % count($cust)],
-                'is_prospect' => $prospect,
-                'product_draft_name' => $product,
-                'part_type' => $ptype,
-                'qty' => [1000, 2500, 5000, 10000, 20000, 3000][$i % 6],
-                'sub_state' => $state,
-                'inquiry_type' => $types[$i % count($types)],
-                'stat_confirm' => ! in_array($state, ['DRAFT', 'WAITING_COST'], true),
-                'is_approved' => in_array($state, ['PRICE_APPROVED', 'QUOTED', 'PROVING', 'PROVE_APPROVED', 'CONVERTED'], true),
-                'pic_sales' => ['Andi Pratama', 'Citra Rahma', 'Maya Lestari'][$i % 3],
-                'deadline_quotation' => date('Y-m-d', strtotime($date.' +20 days')),
-            ];
+        static $rows;
+
+        if ($rows !== null) {
+            return $rows;
         }
 
-        return array_reverse($rows);
+        $ready = QuotationBuilder::availableInquiries()->pluck('id_inquiry')->flip();
+
+        return $rows = IqpInquiry::query()
+            ->with(['customer:id_customer,customer_code,customer_name', 'tiers' => fn ($q) => $q->where('is_primary', true),
+                'parts' => fn ($q) => $q->orderBy('part_seq')])
+            ->withExists(['costing as procost', 'parts as prodev' => fn ($q) => $q->whereNotNull('prod_part_id')])
+            ->orderByDesc('id_inquiry')
+            ->limit(500)
+            ->get()
+            ->map(fn (IqpInquiry $i) => [
+                'id' => $i->id_inquiry,
+                'inquiry_no' => $i->inquiry_no,
+                'inquiry_date' => $i->inquiry_date?->toDateString(),
+                'customer' => $i->is_prospect ? $i->prospect_name : ($i->customer?->customer_name ?? '—'),
+                'customer_id' => $i->customer_id,
+                'is_prospect' => (bool) $i->is_prospect,
+                'product_draft_name' => $i->product_draft_name ?: '(tanpa nama produk)',
+                'part_type' => $i->parts->first()?->dieline_spec['type_code'] ?? $i->parts->first()?->part_type ?? '—',
+                'qty' => (float) ($i->tiers->first()?->qty ?? 0),
+                'sub_state' => $i->sub_state,
+                'inquiry_type' => $i->inquiry_type,
+                'stat_confirm' => (bool) $i->stat_confirm,
+                'is_approved' => (bool) $i->is_approved,
+                'pic_sales' => $i->pic_sales,
+                'deadline_quotation' => $i->deadline_quotation?->toDateString(),
+                'prodev' => (bool) $i->prodev,
+                'procost' => (bool) $i->procost,
+                'ready' => $ready->has($i->id_inquiry),
+            ])->all();
     }
 }

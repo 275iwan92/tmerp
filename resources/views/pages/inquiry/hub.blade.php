@@ -3,10 +3,10 @@
 use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Master\CustCustomer;
 use App\Models\Sdi\IqpInquiry;
+use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\QuotationBuilder;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -348,50 +348,13 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
             ->get(['id_customer', 'customer_code', 'customer_name']);
     }
 
-    // Struktur fisik (part/material/proses/finishing/tinta) disalin lewat
-    // cloneStructureFrom() -- mekanisme yang sama dgn RECALC. Tier qty & harga
-    // TIDAK ikut: customer lain = negosiasi baru, lewat Pro-Dev/Pro-Cost lagi.
     public function confirmDuplicate()
     {
-        $source = $this->dupSource;
-
-        if (! $source || ! $this->dupCustomerId) {
+        if (! $this->dupSource || ! $this->dupCustomerId) {
             return;
         }
 
-        $source->load([
-            'parts' => fn ($q) => $q->orderBy('part_seq'),
-            'parts.materials', 'parts.processes', 'parts.finishings', 'parts.inks',
-        ]);
-
-        $login = Auth::user()->login;
-
-        $new = DB::connection('tm2sdi')->transaction(function () use ($source, $login) {
-            $new = IqpInquiry::create([
-                'inquiry_no' => IqpInquiry::nextInquiryNo(),
-                'inquiry_date' => now()->toDateString(),
-                'source' => $source->source,
-                'pic_sales' => $source->pic_sales,
-                'customer_id' => $this->dupCustomerId,
-                'is_prospect' => false,
-                'product_draft_name' => $source->product_draft_name,
-                'sales_note' => 'Duplicate dari '.$source->inquiry_no,
-                'inquiry_type' => 'NEW',
-                'revision_no' => 0,
-                'material_source' => $source->material_source,
-                'job_nature' => $source->job_nature,
-                'cust_material_spec' => $source->cust_material_spec,
-                'tax_scheme' => $source->tax_scheme,
-                'pph_applicable' => $source->pph_applicable,
-                'sub_state' => 'DRAFT',
-                'created_by' => $login,
-                'updated_by' => $login,
-            ])->refresh();
-
-            $new->cloneStructureFrom($source);
-
-            return $new;
-        });
+        $new = InquiryDuplicator::duplicate($this->dupSource, $this->dupCustomerId, Auth::user()->login);
 
         return redirect()->route('inquiry.form', ['id' => $new->id_inquiry]);
     }
