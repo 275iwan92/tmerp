@@ -110,7 +110,7 @@ class InquiryPart extends DevlibComponent
                             <x-dl::alert :tone="$sug['tone'] ?? 'info'">{{ $sug['text'] }}<x-dl::button size="sm" variant="secondary" :label="$sug['action'] ?? 'Pakai'" data-inq-suggest="{{ $sug['apply'] ?? '' }}" /></x-dl::alert>
                         @endforeach
                         <p class="mp-hint" data-inq-dieline-name hidden></p>
-                        <x-mp::dieline-v3 :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
+                        <x-mp::dieline-v3 :data-artwork="$p['artwork_url']" :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
                             :source="\MockupParts\Src::of('tm2mst.prod_type.dieline_spec', 'tm2sdi.iqp_part.dieline_spec', 'tm2sdi.iqp_part.flat_w', 'tm2sdi.iqp_part.flat_h', 'tm2sdi.iqp_part.flat_area')" />
 
                         <x-dl::divider label="Bahan (Material)" />

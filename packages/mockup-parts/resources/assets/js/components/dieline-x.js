@@ -20,6 +20,9 @@
       this.zoom = 1;
       this.manual = false;
       this.unit = this.el.dataset.unit || 'mm';
+      // Artwork tersimpan (url) dipakai sampai user memilih file baru (setArtwork).
+      this.saved = this.el.dataset.artwork || null;
+      this.art = this.saved;
       this.q = s => $(this.el, s);
       this.fw = this.q('[data-d-fw]');
       this.fh = this.q('[data-d-fh]');
@@ -32,7 +35,7 @@
       this.el.addEventListener('change', e => {
         if (e.target.name === this.name + '[type]') { this.code = e.target.value; this.dims = {}; this.fields(); this.redraw(); }
         if (e.target.matches('[data-d-manual]')) { this.manual = e.target.checked; this.fw.readOnly = this.fh.readOnly = !this.manual; this.redraw(); }
-        if (e.target.matches('[data-d-dims-on]')) this.redraw();
+        if (e.target.matches('[data-d-dims-on], [data-d-opt]')) this.redraw();
       });
       this.el.addEventListener('click', e => {
         const s = e.target.closest('[data-d-size]');
@@ -46,7 +49,9 @@
         }
       });
       this.el.dlDielineX = {get dims() { return {...self.dims}; }, setType: c => { this.code = c; this.dims = {}; this.fields(); this.redraw(); },
-        setDims: d => { Object.assign(this.dims, d); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); this.redraw(); }, redraw: this.redraw};
+        setDims: d => { Object.assign(this.dims, d); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); this.redraw(); }, redraw: this.redraw,
+        // url gambar (object URL / storage) atau null = kembali ke artwork tersimpan.
+        setArtwork: url => { this.art = url || this.saved; this.redraw(); }};
       if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
       this.fields();this.redraw();
     }
@@ -75,6 +80,7 @@
       const a = (parseFloat(String(this.fw.value).replace(',', '.')) || 0) * (parseFloat(String(this.fh.value).replace(',', '.')) || 0);
       this.fa.value = a ? a.toFixed(2) : '';
       window.TMDieline.render(this.q('[data-d-preview]'), spec, this.dims);
+      this.decorate();
       this.annotate();
       this.q('[data-d-preview]').style.transform = `scale(${this.zoom})`; this.q('[data-d-zoomval]').textContent = Math.round(this.zoom * 100) + '%';
       this.q('[data-d-info]').innerHTML = t ? `<b>${esc(t.label)}</b>${t.category ? ` · ${esc(t.category)}` : ''} · Bentang <b>${this.numStr(this.fw.value)} × ${this.numStr(this.fh.value)} mm</b> · Luas <b>${this.numStr(a / 100)} cm²</b>${this.manual ? ' <span class="dl-badge dl-badge--warn">manual</span>' : ''}` : '';
@@ -85,12 +91,96 @@
     lengths(svg) {
       const S = window.TMDieline.STROKE, sum = {cut: 0, crease: 0, hole: 0};
       $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => {
-        if (n.closest('.dl-dim') || !n.getTotalLength) return;
+        if (n.closest('.dl-dim, .dl-deco') || !n.getTotalLength) return;
         const st = (n.getAttribute('stroke') || '').toLowerCase(), L = n.getTotalLength();
         if (st === S.CUT.toLowerCase()) sum.cut += L; else if (st === S.CREASE.toLowerCase()) sum.crease += L; else if (st === S.HOLE.toLowerCase()) sum.hole += L;
       });
       const f = v => this.unit === 'cm' ? (v / 10).toLocaleString('id-ID', {maximumFractionDigits: 1}) : Math.round(v).toLocaleString('id-ID');
       this.q('[data-d-lens]').innerHTML = `<div class="is-cut"><b>${f(sum.cut)} ${this.unit}</b><span>Cutting line</span></div><div class="is-crease"><b>${f(sum.crease)} ${this.unit}</b><span>Creasing line</span></div><div class="is-hole"><b>${f(sum.hole)} ${this.unit}</b><span>Perforation / hole</span></div>`;
+    }
+
+    opt(k) { const c = this.q(`[data-d-opt="${k}"]`); return c ? c.checked : false; }
+
+    // Tepi potong, garis lipat, kotak bleed, dan area panel utama (tanpa glue flap) dari hasil render TMDieline.
+    geo(svg) {
+      const S = window.TMDieline.STROKE, crease = S.CREASE.toLowerCase(), bleed = S.BLEED.toLowerCase();
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, b0 = Infinity, c0 = Infinity, b1 = -Infinity, c1 = -Infinity;
+      const xs = [], hs = [];
+      $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => {
+        if (n.closest('.dl-deco, .dl-dim')) return;
+        const st = (n.getAttribute('stroke') || '').toLowerCase(), b = n.getBBox();
+        if (st === bleed) { b0 = Math.min(b0, b.x); c0 = Math.min(c0, b.y); b1 = Math.max(b1, b.x + b.width); c1 = Math.max(c1, b.y + b.height); return; }
+        x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+        if (st === crease && n.tagName === 'line' && !n.getAttribute('stroke-dasharray')) {
+          const a = +n.getAttribute('x1'), c = +n.getAttribute('x2'), d = +n.getAttribute('y1'), f = +n.getAttribute('y2');
+          if (Math.abs(a - c) < 0.01) xs.push(a); else if (Math.abs(d - f) < 0.01) hs.push({y: d, a: Math.min(a, c), b: Math.max(a, c)});
+        }
+      });
+      if (!isFinite(x0)) return null;
+      const inX = [...new Set(xs.filter(v => v > x0 + 0.5 && v < x1 - 0.5).map(v => Math.round(v * 10) / 10))].sort((a, b) => a - b);
+      const ys = [...new Set(hs.map(h => Math.round(h.y * 10) / 10))].filter(v => v > y0 + 0.5 && v < y1 - 0.5).sort((a, b) => a - b);
+      // Glue flap = strip ujung yang lebih sempit (kiri/kanan) di luar lipatan vertikal pertama/terakhir.
+      let px0 = x0, px1 = x1, glue = null;
+      if (inX.length >= 2) {
+        const left = inX[0] - x0, right = x1 - inX[inX.length - 1];
+        if (left <= right) { px0 = inX[0]; glue = [x0, inX[0]]; } else { px1 = inX[inX.length - 1]; glue = [inX[inX.length - 1], x1]; }
+      }
+      const py0 = ys.length ? ys[0] : y0, py1 = ys.length > 1 ? ys[ys.length - 1] : y1;
+      const bb = isFinite(b0) ? {x0: b0, y0: c0, x1: b1, y1: c1} : {x0, y0, x1, y1};
+      return {x0, y0, x1, y1, px0, px1, py0, py1, glue, inX, hs, bb};
+    }
+
+    // Lapisan tampilan di atas hasil TMDieline: artwork transparan, glue margin, arah serat, tanda register, lock tab, bleed on/off.
+    decorate() {
+      const svg = this.q('[data-d-preview] svg'); if (!svg) return;
+      const S = window.TMDieline.STROKE, bleed = S.BLEED.toLowerCase();
+      // Ukur dulu (getBBox elemen tersembunyi = 0), baru sembunyikan bleed bila Overflow mati.
+      const g = this.geo(svg); if (!g) return;
+      $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => { if ((n.getAttribute('stroke') || '').toLowerCase() === bleed) n.style.display = this.opt('overflow') ? '' : 'none'; });
+      const W = g.x1 - g.x0, H = g.y1 - g.y0, u = Math.max(W, H) / 100, ns = 'http://www.w3.org/2000/svg';
+      if (this.art && this.opt('artwork')) {
+        const img = document.createElementNS(ns, 'image');
+        img.setAttribute('class', 'dl-deco dl-deco__art');
+        img.setAttribute('href', this.art);
+        img.setAttribute('x', g.px0); img.setAttribute('y', g.py0);
+        img.setAttribute('width', g.px1 - g.px0); img.setAttribute('height', g.py1 - g.py0);
+        img.setAttribute('preserveAspectRatio', 'none'); img.setAttribute('opacity', '.8');
+        svg.insertBefore(img, svg.firstChild);
+      }
+      let d = `<defs><pattern id="${this.uid}h" width="${u * 2}" height="${u * 2}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="${u * 2}" stroke="var(--dl-dl-glue)" stroke-width="${u * 0.6}"/></pattern></defs><g class="dl-deco">`;
+      if (g.glue && this.opt('glue')) d += `<rect x="${g.glue[0]}" y="${g.py0}" width="${g.glue[1] - g.glue[0]}" height="${g.py1 - g.py0}" fill="url(#${this.uid}h)"/>`;
+      if (this.opt('direction')) {
+        const cx = (g.px0 + g.px1) / 2, cy = g.py0 + (g.py1 - g.py0) * 0.18, len = Math.min(g.px1 - g.px0, W) * 0.22, fs = u * 2.6;
+        d += `<g class="dl-deco__grain"><line x1="${cx - len}" y1="${cy}" x2="${cx + len}" y2="${cy}" stroke-width="1.5"/><path d="M${cx + len},${cy} l${-u * 2.2},${-u * 1.2} v${u * 2.4} z"/><path d="M${cx - len},${cy} l${u * 2.2},${-u * 1.2} v${u * 2.4} z"/><text x="${cx}" y="${cy - fs * 0.5}" font-size="${fs}" text-anchor="middle">GRAIN</text></g>`;
+      }
+      if (this.opt('cross')) {
+        const r = u * 2, o = u * 4;
+        [[g.bb.x0 - o, g.bb.y0 - o], [g.bb.x1 + o, g.bb.y0 - o], [g.bb.x0 - o, g.bb.y1 + o], [g.bb.x1 + o, g.bb.y1 + o]].forEach(([x, y]) => {
+          d += `<g class="dl-deco__cross"><circle cx="${x}" cy="${y}" r="${r}"/><line x1="${x - r * 1.8}" y1="${y}" x2="${x + r * 1.8}" y2="${y}"/><line x1="${x}" y1="${y - r * 1.8}" x2="${x}" y2="${y + r * 1.8}"/></g>`;
+        });
+      }
+      if (this.opt('lock')) {
+        // Indikatif: takik kecil di kedua ujung lipatan horizontal teratas & terbawah (engsel tuck flap).
+        const t = u * 3;
+        g.hs.filter(h => Math.abs(h.y - g.py0) < 0.2 || Math.abs(h.y - g.py1) < 0.2).forEach(h => {
+          const dir = Math.abs(h.y - g.py0) < 0.2 ? -1 : 1;
+          [[h.a, 1], [h.b, -1]].forEach(([x, s]) => { d += `<line class="dl-deco__lock" x1="${x}" y1="${h.y}" x2="${x + s * t}" y2="${h.y + dir * t}"/>`; });
+        });
+      }
+      svg.insertAdjacentHTML('beforeend', d + '</g>');
+      // Tanda register di luar bleed: perlebar tampilan bila ukuran dimatikan (annotate memakai padding sendiri).
+      if (this.opt('cross')) {
+        const vb = svg.viewBox.baseVal, m = u * 8, ax = Math.min(vb.x, g.bb.x0 - m), ay = Math.min(vb.y, g.bb.y0 - m);
+        svg.setAttribute('viewBox', `${ax} ${ay} ${Math.max(vb.x + vb.width, g.bb.x1 + m) - ax} ${Math.max(vb.y + vb.height, g.bb.y1 + m) - ay}`);
+      }
+    }
+
+    // Artwork di sisi 3D: tiap sisi = transformasi afin gambar ke bidang isometrik, dipotong sesuai urutan panel dieline (L, W, L, W).
+    art3d(L, Wd, H, c, s) {
+      if (!this.art || !this.opt('artwork')) return '';
+      const tot = 2 * L + 2 * Wd, id = this.uid + 'f', href = esc(this.art);
+      const face = (k, m, w, h, off, full) => `<clipPath id="${id}${k}"><rect width="${w}" height="${h}"/></clipPath><g transform="matrix(${m.join(',')})"><image class="dl-3d__art" href="${href}" x="${full ? 0 : -off}" y="0" width="${full ? w : tot}" height="${h}" preserveAspectRatio="none" clip-path="url(#${id}${k})"/></g>`;
+      return face('a', [c, s, 0, 1, -Wd * c, Wd * s - H], L, H, 0) + face('b', [c, -s, 0, 1, (L - Wd) * c, (L + Wd) * s - H], Wd, H, L) + face('c', [c, s, -c, s, 0, -H], L, Wd, 0, true);
     }
 
     preview3d() {
@@ -104,6 +194,7 @@
       } else if (L && Wd && H) {
         const P = (x, y, z) => iso(x, y, z).join(','), poly = (pts, cls) => `<polygon points="${pts.join(' ')}" class="${cls}"/>`;
         body = poly([P(0, Wd, 0), P(L, Wd, 0), P(L, Wd, H), P(0, Wd, H)], 'dl-3d__front') + poly([P(L, 0, 0), P(L, Wd, 0), P(L, Wd, H), P(L, 0, H)], 'dl-3d__side') + poly([P(0, 0, H), P(L, 0, H), P(L, Wd, H), P(0, Wd, H)], 'dl-3d__top')
+          + this.art3d(L, Wd, H, c, s)
           + `<line x1="${iso(L, Wd, 0)[0]}" y1="${iso(L, Wd, 0)[1]}" x2="${iso(L, Wd, H)[0]}" y2="${iso(L, Wd, H)[1]}" class="dl-3d__edge"/>`;
       } else {
         const fwv = +this.fw.value || 100, fhv = +this.fh.value || 70, P = (x, y) => iso(x, y, 0).join(',');
@@ -127,7 +218,7 @@
       const xs = [], ys = [];
       $$(svg, 'line,rect,path,circle,polyline,polygon').forEach(n => {
         const st = (n.getAttribute('stroke') || '').toLowerCase();
-        if (st === bleed) return;
+        if (st === bleed || n.closest('.dl-deco')) return;
         const b = n.getBBox(); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
         if (st === crease && n.tagName === 'line') {
           const a = +n.getAttribute('x1'), c = +n.getAttribute('x2'), d = +n.getAttribute('y1'), f = +n.getAttribute('y2');

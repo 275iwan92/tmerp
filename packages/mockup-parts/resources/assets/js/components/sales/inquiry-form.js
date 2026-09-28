@@ -27,7 +27,13 @@
       this.removable();
       if (this.cfg.readonly || this.doc.stat_confirm) this.lock();
       // Artwork part tersimpan pada dokumen terkunci langsung dikirim (tidak ada tombol Simpan lagi).
-      this.on('change', '[data-inq-artwork] input[type=file]', (e, inp) => { if (this.locked() && inp.files.length) this.uploadArtwork(inp); });
+      // Artwork dipilih/ditarik/dihapus -> pratinjau transparan di dieline & 3D; dokumen terkunci -> langsung tersimpan.
+      this.el.addEventListener('dl:upload', e => {
+        const p = e.target.closest('[data-inq-artwork]')?.closest('[data-inq-part]'); if (!p) return;
+        const f = e.detail.files[0];
+        this.artPreview(p, f);
+        if (f && this.locked()) this.uploadArtwork(p, f);
+      });
       try { const m = sessionStorage.getItem('inq-flash'); if (m) { sessionStorage.removeItem('inq-flash'); this.flash(m); } } catch (err) { /* tanpa storage: pesan dilewati */ }
     }
 
@@ -296,10 +302,16 @@
 
     confirm() { return this.persist('confirm'); }
 
-    async uploadArtwork(inp) {
-      const p = inp.closest('[data-inq-part]'), fd = new FormData();
+    artPreview(p, file) {
+      if (p.dlArtUrl) URL.revokeObjectURL(p.dlArtUrl);
+      p.dlArtUrl = file && file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+      $(p, '[data-dl-dieline-x]')?.dlDielineX?.setArtwork(p.dlArtUrl);
+    }
+
+    async uploadArtwork(p, file) {
+      const fd = new FormData();
       fd.append('part_id', $(p, '[data-inq-part-id]').value);
-      fd.append('artwork', inp.files[0]);
+      fd.append('artwork', file);
       try { const j = await this.call(this.url('artwork'), fd); toast(j.message, 'success'); this.flash(j.message); } catch (err) { /* pesan sudah tampil */ }
     }
 

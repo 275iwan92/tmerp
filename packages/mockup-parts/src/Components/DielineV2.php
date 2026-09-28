@@ -75,10 +75,19 @@ class DielineV2 extends Dieline
                     <div class="dl-dieline__tools">
                         <span class="dl-dieline__legend"><i class="is-cut"></i>Cutting <i class="is-crease"></i>Creasing <i class="is-bleed"></i>Bleed <i class="is-hole"></i>Hole</span>
                         <span class="dl-print__spacer"></span>
-                        <label class="dl-choice"><input type="checkbox" data-d-dims-on @checked($dimensions)> Ukuran</label>
                         <div class="dl-segment dl-dieline__unit" data-d-unit><button type="button" class="dl-segment__opt" data-value="mm">mm</button><button type="button" class="dl-segment__opt" data-value="cm">cm</button></div>
                         <x-dl::icon-button icon="fa-magnifying-glass-minus" title="Perkecil" data-d-zoom="-1" /><b data-d-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Perbesar" data-d-zoom="1" />
                         <x-dl::button variant="secondary" size="sm" icon="download" label="SVG" data-d-svg />
+                    </div>
+                    {{-- Opsi tampilan (hanya gambar; tidak mengubah geometri TMDieline maupun panjang pisau). --}}
+                    <div class="dl-dieline__opts">
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="artwork" checked> Artwork</label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="overflow" checked> Overflow</label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="glue" checked> Glue margin</label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="direction" checked> Direction <x-dl::tooltip text="Arah serat kertas (grain) — sejajar panjang lembar."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="cross" checked> Cross <x-dl::tooltip text="Tanda register (crosshair) di sudut bleed untuk menyelaraskan cetak CMYK."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-opt="lock"> Lock tab <x-dl::tooltip text="Takik pengunci gesek (friction lock) di ujung lipatan tuck flap — indikatif."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
+                        <label class="dl-choice"><input type="checkbox" data-d-dims-on @checked($dimensions)> Dimension lines</label>
                     </div>
                     <div class="dl-dieline__canvas"><div class="dl-dieline__preview" data-d-preview></div></div>
                     @if ($level() >= 3)<div class="dl-dieline__foot"><div class="dl-dieline__lens" data-d-lens></div><div class="dl-dieline__3d" data-d-3d title="Tampilan 3D statis (ilustrasi)"></div></div>@endif

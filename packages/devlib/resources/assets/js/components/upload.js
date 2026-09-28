@@ -32,6 +32,8 @@
         this.list.appendChild(row);
       });
       const dt = new DataTransfer(); this.files.forEach(f => dt.items.add(f)); this.file.files = dt.files;
+      // Satu kabar untuk pilih / tarik-lepas / hapus (input.files diisi program tidak memicu 'change').
+      this.el.dispatchEvent(new CustomEvent('dl:upload', {bubbles: true, detail: {files: [...this.files]}}));
     }
 
     take(incoming) { this.files = this.file.multiple ? this.files.concat([...incoming]) : [...incoming].slice(0, 1); this.draw(); }
