@@ -11,6 +11,7 @@
 
 | File | Isi | Status pakai | Relevan untuk |
 |---|---|---|---|
+| `struktur_pimpinan_2026-09-28.webp` | **LANDASAN struktur pimpinan** (user 2026-09-28): Carrij Soehendra (Presiden Direktur) → Puspita Dewi (Direktur F&A → Mia Friani F&A SPV), Johannes Iwan (General Manager → Annisa Kusuma, Operational Manager → Firman Sales & Marketing Manager + departemen), Wiwik (Product Costing, langsung ke Presdir) | ✅ ACUAN WAJIB — cocok dengan `org_position` 60-72 | HR > Struktur Organisasi, approval/Flow Engine, label jabatan |
 | `STRUKTUR.pdf` | Struktur organisasi riil — 49 posisi + hierarki lengkap (Presiden Direktur s.d. staff/SPV per departemen) | ✅ SUDAH dipakai isi data Struktur Organisasi | HR > Organization > Struktur Organisasi (`hrm.org-chart`) |
 | `form portal.pdf` | Formulir resmi "Data Calon Karyawan" (No. Dok LJM/HRD/P01/F02) — data pribadi, keluarga, pendidikan, pengalaman kerja detail, minat & konsep pribadi, kesehatan, kesediaan, contoh terisi (Sufyan Anas) | ✅ SUDAH dipakai bangun form Apply Portal Candidate (12 langkah) | Recruitment > Portal Candidate |
 | `SOP PERIZINAN KARYAWAN TELASIH MAKMUR.pdf` | SOP lengkap 5 halaman: definisi Sakit/Izin/Cuti/Alpha/Tukar Shift/Keluar Jam Kerja, ketentuan pengajuan (H-7, H-1, dst), tabel potongan komponen gaji per kondisi kehadiran, sanksi (denda Rp25rb/Rp100rb, SP1-3, PHK) | ⬜ Belum dipakai bangun layar | Penyempurnaan Approval Cuti/Sakit/Izin (`hrm.leave-requests`) & modul Presensi |
