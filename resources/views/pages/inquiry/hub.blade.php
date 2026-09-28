@@ -130,6 +130,12 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     // ============== Stat box = filter data (griduistandard.md §2b) ==============
     // Win/Loss sengaja TIDAK di sini -- pindah ke Quotation (keputusan user 2026-09-28).
     #[Computed]
+    public function statUnconfirmed(): int
+    {
+        return IqpInquiry::where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])->count();
+    }
+
+    #[Computed]
     public function statProdev(): int
     {
         return IqpInquiry::whereHas('parts', fn ($p) => $p->whereNotNull('prod_part_id'))->count();
@@ -144,6 +150,10 @@ new #[Title('TELASIH MAKMUR — Sistem Inquiry')] class extends Component
     protected function statFilterDefs(): array
     {
         return [
+            'unconfirmed' => ['label' => Translator::t('sales_hub_stat_not_confirm', 'Not Confirm'), 'value' => $this->statUnconfirmed, 'tone' => 'warn',
+                'filter' => fn ($q) => $q->where('stat_confirm', false)->whereNotIn('sub_state', ['CANCELLED', 'LOST'])],
+            'ready' => ['label' => Translator::t('sales_hub_btn_ready_to_quote', 'Ready to Quote'), 'value' => $this->readyToQuoteIds->count(), 'tone' => 'total',
+                'filter' => fn ($q) => $q->whereKey($this->readyToQuoteIds)],
             'prodev' => ['label' => Translator::t('sales_hub_stat_prodev', 'Processed by Pro-Dev'), 'value' => $this->statProdev, 'tone' => 'extra',
                 'filter' => fn ($q) => $q->whereHas('parts', fn ($p) => $p->whereNotNull('prod_part_id'))],
             'procost' => ['label' => Translator::t('sales_hub_stat_procost', 'Processed by Pro-Cost'), 'value' => $this->statProcost, 'tone' => 'active',

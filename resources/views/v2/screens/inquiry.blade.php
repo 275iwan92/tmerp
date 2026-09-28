@@ -48,6 +48,8 @@
     source="{{ Src::of('tm2sdi.iqp_inquiry', 'tm2sdi.iqp_tier', 'tm2sdi.iqp_part', 'tm2sdi.iqp_costing', 'tm2mst.cust_customer') }}"
     :data-open="json_encode(['NEW' => route('v2.screen', 'inquiry-new').'?id={id}', 'RECALC' => route('v2.screen', 'inquiry-recalc').'?id={id}', 'REVISE' => route('v2.screen', 'inquiry-revise').'?id={id}'])"
     :stats="[
+        ['label' => 'Not Confirm', 'where' => ['stat_confirm' => false, 'sub_state' => array_values(array_diff(Sales::STATES, ['CANCELLED', 'LOST']))], 'tone' => 'warn'],
+        ['label' => 'Ready to Quote', 'where' => ['ready' => true], 'tone' => 'accent'],
         ['label' => 'Processed by Pro-Dev', 'where' => ['prodev' => true], 'tone' => 'info'],
         ['label' => 'Processed by Pro-Cost', 'where' => ['procost' => true], 'tone' => 'success'],
     ]"
