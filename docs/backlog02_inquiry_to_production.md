@@ -248,10 +248,8 @@ Kalau perlu angka: riset ke situs pabrikan atau tanya user.
 
 | # | Pekerjaan | Status |
 |---|---|---|
-| 27.1 | Lengkapi spek mesin yang kosong. **Terukur 2026-09-22: dari 45 mesin (semua aktif), 44 tidak punya `max_sheet_length_mm` DAN tidak punya `max_speed_per_hour`** — praktis seluruh master mesin belum berspek. **4 die cutter DIKONFIRMASI user 2026-09-22**: DIE-04 (Daxiang) satu-satunya OTOMATIS; DIE-01 (Ruian)/DIE-02 (Shanghai)/DIE-03 (Daxiang manual) SEMUA plong manual sekelas foto "Pond Manual ML 750". Ketiganya sudah diisi **PLACEHOLDER** spek generik ML750 (migration `2026_09_22_000015`, riset 2 sumber online cocok: platen 750x520mm, speed 25±2 strokes/min = 1500/jam nominal, motor 2,2 kW) — **user akan foto nameplate asli Sabtu**, ganti placeholder ini begitu ada data real (jangan dianggap final, lihat kolom `notes` tiap baris). DIE-04 & 41 mesin lain masih 100% kosong | **SEBAGIAN** — ukur ulang 2026-09-23: 4/45 mesin punya ukuran+kecepatan (DIE-01/02/03 placeholder ML750 + OFF-02 Komori GL440 1030x720 @8000/jam), **41 masih kosong**; `serial_no` kosong di 44 dari 45 |
-| 27.2 | Petakan nama mesin di mockup/dokumen ke master. "PLONG 2" di `mockup_mastercard_ver2.jpg` = kategori Pond/Plong manual — **SELESAI 2026-09-22**: bukan 1 mesin spesifik, tapi kategori yang dipenuhi DIE-01/02/03 (ketiganya manual). Tidak perlu pemetaan 1-ke-1 lagi | `docs/LOG_JOB_DONE.md` |
+| 27.1 | Lengkapi spek mesin yang kosong. **Cek ulang 2026-09-28: masih 41 dari 45 mesin tanpa ukuran lembar & kecepatan** (turun dari 44 setelah OFF-02 diisi 2026-09-23). Placeholder ML750 di DIE-01/02/03 (migration `2026_09_22_000015`) **BELUM diganti data nyata** — `serial_no` masih NULL, kolom `notes` masih bertuliskan PLACEHOLDER. **User janji foto nameplate Sabtu 2026-09-26 — tanggal itu sudah lewat, follow up: sudah difoto belum?** Kalau belum, jangan dianggap final; kalau sudah tapi belum dikirim, tagih fotonya | **SEBAGIAN, TERTUNDA** |
 | 27.3 | Audit menyeluruh mesin mana lagi yang speknya kosong (bukan cuma die cutter) — bikin daftar, lalu isi bertahap | **BELUM** |
-| 27.4 | UI/UX layar Master Mesin & Master Proses diluruskan sesuai maunya user | **BELUM** — user belum merinci maunya apa |
 | 27.5 | Referensi ke mesin yang dinonaktifkan | lihat section 23 |
 
 ---

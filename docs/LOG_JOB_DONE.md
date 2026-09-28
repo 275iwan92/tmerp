@@ -542,6 +542,85 @@ identik sebelum/sesudah).
 
 ---
 
+## 2026-09-22 -- Git disatukan jadi 1 branch `main`; hasil ditelusuri dari bug nyata
+
+Terpicu bug nyata: `ProductionWoDetailRebuildTest::test_plan_delivery_modal_generates_wo_and_redirects`
+hijau di satu sesi (worktree), merah di komputer user. Ditelusuri: worktree
+sesi itu lahir dari `main`, dan `main` ternyata **357 commit tertinggal**
+dari jalur kerja sesungguhnya (`claude/bentuk-customer-order-clarity-jnehjg`)
+-- isinya cuma 1 merge commit lama 2026-08-29. Guard "costing harus
+dipublish" di `WoGenerationService` (ditambah 2026-09-18) tidak ada di
+salinan basi itu, jadi test lolos di tempat yang salah.
+
+**Diselesaikan hari itu juga:**
+- Semua pekerjaan disatukan ke `main` (commit puncak `48b5971` saat itu),
+  `main` dijadikan default branch GitHub. Branch `claude/bentuk-customer-
+  order-clarity-jnehjg` dihapus (0 commit unik tersisa).
+- Reorganisasi docs yang sudah berjalan tapi belum ter-commit (~280 file
+  dari `docs/*.md` dipindah ke `docs/md_for_systems/*`) di-review lalu
+  di-commit; file index/global (`index_master.md`, `attachments_index.md`,
+  `globalrules.yaml`, `globalstarthere.md`, `uistandardindex.md`)
+  dikembalikan ke `docs/` root atas permintaan user (index/skema harus
+  langsung terlihat, tidak terkubur di subfolder).
+- `docs/BACKLOG.md` (2.016 baris) dipecah jadi 10 file domain
+  `backlog01_*.md`..`backlog10_*.md` + `ringkasanstatus.md`/
+  `kebijakanbesar.md`/`catatanauditmenyeluruh.md`. Aturan baru dikunci:
+  item SELESAI tidak boleh menumpuk di backlog, wajib pindah ke sini
+  (lihat memory `feedback_backlog_hygiene_rule`).
+- Branch `claude/exciting-hypatia-1d0d5a` (Engine MRP/MPS/Kanban) ditemukan
+  punya migration yang SUDAH terlanjur jalan di DB (`prd_mrp_run`/
+  `prd_mrp_requirement` ada) tapi kodenya tidak pernah masuk jalur utama.
+  **TIDAK digabung** -- user menegaskan MRP/MPS sengaja ditelantarkan
+  (hasilnya tidak disukai, akan dirancang ulang niru UI/UX ProDev/Inquiry).
+  Kode diarsipkan ke git tag `arsip/mrp-mps-2026-08-30` (tag, bukan branch)
+  sebelum branch-nya dihapus.
+- 2 dokumen lama (`masteremployee_tier1.md`, `TIER_1_ATTENDANCE.md`) yang
+  masih bilang Recruitment/Payroll/Attendance "ditunda total" padahal
+  `DEC-SCOPE-OPEN` (2026-08-26) sudah membuka ketiganya -- diperbaiki DI
+  SUMBERNYA (bukan cuma dicatat sbg disclosure), atas teguran user.
+
+Hasil akhir: satu folder kerja, satu branch `main`, nol worktree.
+
+---
+
+## 2026-09-22 -- Verifikasi Master Mesin & Master Proses "enterprise" (BACKLOG §27.4)
+
+Sesi lebih awal hari yang sama (commit `56a4b35`, `db695b0`, `5a031b6`,
+`da138d4`, `b2fc0ff`) membangun lapis kedua Master Mesin & Master Proses
+jauh melampaui field kosong di sampel HTML user. Diverifikasi ulang sesi
+ini (bukan cuma baca pesan commit) -- tabel & kolom hidup di DB, 30/30
+test lulus (`MachineProcessCapabilityTest`, `MasterMachineMigratedDataTest`,
+`ProductionMasterProcessTest`):
+
+- **Layar Master Mesin** jadi 6 tab (identitas / spesifikasi teknis /
+  kapasitas & performa / biaya & aset / perawatan & OEE / proses), **Master
+  Proses** 4 tab (info utama / parameter & kapasitas / ongkos & tooling /
+  mesin pelaksana). Tab kapabilitas Proses x Mesin ada di kedua layar,
+  CRUD dishare lewat trait.
+- Field baru: `plate_size`, `drying_system`, `mtbf_hours`, `helper_min`
+  (dipisah dari `operator_min` -- tarif upah beda) di mesin; `washup_minutes`
+  (dipisah dari setup -- cuci SESUDAH job, bukan sebelum), `work_center_id`,
+  `qc_blocking` di proses.
+- **4 tabel baru**: `prod_process_machine` (matriks kapabilitas, 68 baris
+  live), `prod_process_precedence` (aturan urutan wajib/terlarang, 12
+  baris), `prod_routing_template`+`prod_routing_step` (urutan operasi
+  standar per kategori produk, kerangka siap/0 baris), `prod_machine_
+  changeover` (setup berdasar transisi, bukan cuma mesin, 0 baris),
+  `prod_machine_downtime` (log stop, otomatis terklasifikasi terencana/
+  tak-terencana dari jenis stop -- bukan dipilih operator, supaya
+  Availability tidak gampang dipoles).
+- **OEE dihitung nyata** (bukan target manual): Availability dari kalender
+  mesin + log downtime, Performance dari output WO vs kapasitas teoretis,
+  Quality dari hasil bagus vs total. Kalau datanya belum ada, faktor itu
+  NULL (bukan 0%) -- "mesin mati" dan "belum bisa diukur" dibedakan tegas.
+  Status saat ini: `prd_wo_operation_output` masih 0 baris, jadi Performance
+  & Quality memang belum bisa dihitung dari data nyata.
+
+**Menutup BACKLOG §27.4** ("UI/UX Master Mesin & Proses diluruskan") --
+sudah dikerjakan berdasar sampel HTML user, bukan lagi menunggu rincian.
+
+---
+
 ## 2026-09-16 (pagi) — Komponen `<x-form.badge>` dipasang di 6/6 layar entry transaksi
 
 Sebelumnya masing-masing layar (`pur/pr/entry.blade.php`, `pur/po/entry.blade.php`,
