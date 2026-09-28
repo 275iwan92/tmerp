@@ -3,7 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Master\FinPaymentTerm;
+use App\Models\Sdi\QuoActivity;
+use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SecUser;
+use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\QuotationBuilder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
@@ -28,6 +31,7 @@ class UatQuotationInquirySeeder extends Seeder
         ['IQ99DUM005', 'REVISE', 2], ['IQ99DUM006', 'RECALC', 2],
         ['IQ99DUM001', 'RECALC', 3], ['IQ99DUM002', 'NEW', 3],
         ['IQ99DUM003', 'NEW', 4],
+        ['IQ99DUM001', 'NEW', 4], ['IQ99DUM002', 'NEW', 0], ['IQ99DUM003', 'RECALC', 3],
     ];
 
     private $db;
@@ -71,7 +75,7 @@ class UatQuotationInquirySeeder extends Seeder
             $this->sampleQuotations();
         });
 
-        $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* + 3 quotation contoh (2 draft, 1 terbit) siap di '.$this->db->getDatabaseName().'.');
+        $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* + 5 quotation contoh (2 draft, 1 terbit + follow-up, 1 Lost, 1 Win) + 1 inquiry Cancelled siap di '.$this->db->getDatabaseName().'.');
     }
 
     // 2 draft untuk mencoba layar Edit: #1 persis hasil otomatis, #2 ada field yang
@@ -95,8 +99,47 @@ class UatQuotationInquirySeeder extends Seeder
             $item->save();
         }
 
-        // #3 sudah terbit -> Preview Cetak + Lampiran (dieline/artwork/3D) bisa langsung dicoba.
-        QuotationBuilder::createFromInquiries($id([self::PREFIX.'007', self::PREFIX.'008']))->update(['doc_status' => 'PUBLISHED']);
+        // #3 sudah terbit, belum ada hasil -> Preview Cetak + Lampiran, dan coba Win/Lost + Follow-up.
+        $open = QuotationBuilder::createFromInquiries($id([self::PREFIX.'007', self::PREFIX.'008']));
+        $open->update(['doc_status' => 'PUBLISHED']);
+        $this->activities($open, [
+            ['CALL', 5, 'NO_ANSWER', 'Tidak diangkat.', 'Telepon ulang besok', 4],
+            ['CALL', 4, 'NEUTRAL', 'Masih dibandingkan dengan 2 vendor lain.', 'Kunjungan bawa sampel', 1],
+            ['WHATSAPP', 2, 'POSITIVE', 'Minta sampel cetak 4 warna dikirim minggu ini.', null, null],
+        ]);
+
+        // #4 terbit lalu LOST (alasan kalah = cancel_reason inquiry, dibaca laporan Win-Rate Sales).
+        $lost = QuotationBuilder::createFromInquiries($id([self::PREFIX.'005', self::PREFIX.'006']));
+        $lost->update(['doc_status' => 'PUBLISHED']);
+        $this->activities($lost, [
+            ['VISIT', 8, 'NEUTRAL', 'Presentasi sampel ke purchasing.', 'Tunggu keputusan', 5],
+            ['CALL', 3, 'NEGATIVE', 'Customer memilih vendor lain.', null, null],
+        ]);
+        $this->db->table('iqp_inquiry')->whereIn('inquiry_no', [self::PREFIX.'005', self::PREFIX.'006'])
+            ->update(['sub_state' => 'LOST', 'cancel_reason' => 'Harga kompetitor ±12% lebih murah (data UAT)']);
+
+        // #5 terbit lalu WIN -> CO lahir lewat jalur yang sama dgn tombol Win (inquiry jadi CONVERTED).
+        $won = QuotationBuilder::createFromInquiries($id([self::PREFIX.'009', self::PREFIX.'010']));
+        $won->update(['doc_status' => 'PUBLISHED']);
+        $this->activities($won, [['MEETING', 6, 'POSITIVE', 'Deal harga, PO menyusul.', 'Buat Customer Order', 5]]);
+        CoOrderBuilder::findOrCreateFromQuotation($won->fresh());
+
+        // Inquiry batal (closed tanpa quotation) untuk sumber Revise/Recalc dari inquiry "mati".
+        $this->db->table('iqp_inquiry')->where('inquiry_no', self::PREFIX.'011')
+            ->update(['sub_state' => 'CANCELLED', 'stat_confirm' => 1, 'stat_cancel' => 1, 'cancel_reason' => 'Customer membatalkan permintaan (data UAT)']);
+    }
+
+    // [jenis, hari lalu, hasil, catatan, tindak lanjut, tindak lanjut +hari]
+    private function activities(QuoQuotation $q, array $rows): void
+    {
+        foreach ($rows as [$type, $ago, $result, $notes, $next, $nextIn]) {
+            QuoActivity::create([
+                'quotation_id' => $q->id_quotation, 'activity_type' => $type, 'activity_date' => now()->subDays($ago)->toDateString(),
+                'contact_person' => $q->attn_contact, 'result' => $result, 'notes' => $notes,
+                'next_action' => $next, 'next_action_date' => $nextIn ? now()->subDays($ago)->addDays($nextIn)->toDateString() : null,
+                'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login,
+            ]);
+        }
     }
 
     // Sumber IQ99DUM* tak punya dieline: pinjam dieline_spec part dummy lain (beragam tipe box)
@@ -180,10 +223,10 @@ class UatQuotationInquirySeeder extends Seeder
             return;
         }
 
+        // Quotation contoh (semua status) + CO yang lahir darinya ikut dihapus; item/CC/follow-up cascade.
         $quoIds = $this->db->table('quo_quotation_item')->whereIn('inquiry_id', $inq)->distinct()->pluck('quotation_id');
-        $this->db->table('quo_quotation_item')->whereIn('inquiry_id', $inq)->delete();
-        $this->db->table('quo_quotation')->whereIn('id_quotation', $quoIds)->where('doc_status', 'DRAFT')
-            ->whereNotExists(fn ($q) => $q->from('quo_quotation_item')->whereColumn('quotation_id', 'quo_quotation.id_quotation'))->delete();
+        $this->db->table('co_order')->whereIn('quotation_id', $quoIds)->delete();
+        $this->db->table('quo_quotation')->whereIn('id_quotation', $quoIds)->delete();
 
         $parts = $this->db->table('iqp_part')->whereIn('inquiry_id', $inq)->pluck('id_part');
         foreach ($parts as $partId) {
