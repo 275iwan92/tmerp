@@ -120,7 +120,7 @@ final class AppMenu
     {
         $groups = $u->groups()->get(['group_code', 'group_name']);
 
-        return ['name' => $u->name, 'email' => (string) $u->email, 'role' => $groups->pluck('group_name')->implode(', ') ?: ($u->is_admin ? 'Administrator' : ''),
+        return ['name' => $u->name, 'email' => (string) $u->email, 'role' => $u->jobTitle() ?: ($groups->pluck('group_name')->implode(', ') ?: ($u->is_admin ? 'Administrator' : '')),
             'developer' => (bool) $u->is_admin || $groups->contains('group_code', self::DEVELOPER_GROUP)];
     }
 }

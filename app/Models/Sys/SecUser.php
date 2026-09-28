@@ -268,6 +268,15 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
     // employee_id -> tm2mst.emp_employee (LOGICAL, lintas-DB) -- dipakai Flow
     // Engine utk resolusi "posisi user login ini" saat menyusun antrian approval
     // (PrApproval, dst). Query terpisah, bukan join, sesuai CLAUDE.md §2.
+    // Jabatan dari data pegawai yang terhubung (org_position.position_name), untuk label di kartu profil
+    // -- bukan nama grup hak akses (user 2026-09-28: "saya General Manager, bukan Direksi").
+    public function jobTitle(): ?string
+    {
+        $positionId = $this->currentPositionId();
+
+        return $positionId ? \App\Models\Master\OrgPosition::where('position_id', $positionId)->value('position_name') : null;
+    }
+
     public function currentPositionId(): ?int
     {
         if (! $this->employee_id) {

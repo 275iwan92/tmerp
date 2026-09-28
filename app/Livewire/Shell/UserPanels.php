@@ -57,6 +57,11 @@ class UserPanels extends Component
     {
         $user = Auth::user();
 
+        // Jabatan pegawai dulu; nama grup hak akses hanya cadangan.
+        if ($title = $user->jobTitle()) {
+            return $title;
+        }
+
         if ($user->is_admin) {
             return 'Administrator';
         }
