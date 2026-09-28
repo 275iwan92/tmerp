@@ -1,8 +1,9 @@
 <?php
 
-use App\Livewire\Concerns\HasGridStatFilter;
 use App\Livewire\Concerns\HasGridPagination;
+use App\Livewire\Concerns\HasGridStatFilter;
 use App\Models\Sdi\QuoQuotation;
+use App\Models\Sdi\QuoQuotationItem;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -18,9 +19,8 @@ use Livewire\WithPagination;
 // (DRAFT->PUBLISHED langsung dari grid, sesuai instruksi user 2026-08-22).
 new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
 {
-    use HasGridStatFilter;
-
     use HasGridPagination;
+    use HasGridStatFilter;
     use WithPagination;
 
     public string $search = '';
@@ -29,7 +29,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function quotations()
     {
-        return QuoQuotation::with('customer')
+        return QuoQuotation::with(['customer', 'items.inquiry:id_inquiry,sub_state'])
             ->when($this->search !== '', function ($q) {
                 $term = $this->search;
                 $q->where(function ($qq) use ($term) {
@@ -76,7 +76,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
         // konsisten dgn pagination server-side, hindari N+1 lintas ribuan baris.
         $ids = $this->quotations->pluck('id_quotation');
 
-        return \App\Models\Sdi\QuoQuotationItem::whereIn('quotation_id', $ids)
+        return QuoQuotationItem::whereIn('quotation_id', $ids)
             ->selectRaw('quotation_id, SUM(subtotal) as subtotal_sum')
             ->groupBy('quotation_id')
             ->pluck('subtotal_sum', 'quotation_id')
@@ -101,6 +101,31 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
         return QuoQuotation::where('doc_status', 'PUBLISHED')->count();
     }
 
+    // Win/Lost dibaca dari iqp_inquiry.sub_state (sumber yang sama dgn layar
+    // Win-Rate Sales). Quotation dihitung Win bila ada inquiry-nya CONVERTED.
+    private function wonFilter($q)
+    {
+        return $q->whereHas('items.inquiry', fn ($i) => $i->where('sub_state', 'CONVERTED'));
+    }
+
+    private function lostFilter($q)
+    {
+        return $q->whereHas('items.inquiry', fn ($i) => $i->where('sub_state', 'LOST'))
+            ->whereDoesntHave('items.inquiry', fn ($i) => $i->where('sub_state', '!=', 'LOST'));
+    }
+
+    #[Computed]
+    public function statWon(): int
+    {
+        return $this->wonFilter(QuoQuotation::query())->count();
+    }
+
+    #[Computed]
+    public function statLost(): int
+    {
+        return $this->lostFilter(QuoQuotation::query())->count();
+    }
+
     // Componentization grid (2026-08-27): avatarInitials()/avatarGradient()
     // dipindah ke App\Support\Grid\Avatar (dipakai <x-grid.identity-cell>).
 
@@ -114,6 +139,12 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                 'filter' => fn ($q) => $q->where('doc_status', 'DRAFT')],
             'published' => ['label' => Translator::t('sales_quo_stat_published', 'Published'), 'value' => $this->statPublished, 'tone' => 'active',
                 'filter' => fn ($q) => $q->where('doc_status', 'PUBLISHED')],
+            'won' => ['label' => Translator::t('sales_quo_stat_won', 'Win'), 'value' => $this->statWon, 'tone' => 'extra',
+                'filter' => fn ($q) => $this->wonFilter($q)],
+            'lost' => ['label' => Translator::t('sales_quo_stat_lost', 'Lost'), 'value' => $this->statLost, 'tone' => 'critical',
+                'filter' => fn ($q) => $this->lostFilter($q)],
+            'winrate' => ['label' => Translator::t('sales_quo_stat_winrate', 'Win-Rate'),
+                'value' => ($this->statWon + $this->statLost) ? round($this->statWon / ($this->statWon + $this->statLost) * 100, 1).'%' : '—'],
         ];
     }
 };
@@ -142,7 +173,7 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                         <tr>
                             <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1]">{{ Translator::t('sales_quo_col_quotation', 'Quotation') }}</th>
                             <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[110px]">{{ Translator::t('sales_quo_col_date', 'Tanggal') }}</th>
-                            <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[100px]">{{ Translator::t('sales_quo_col_status', 'Status') }}</th>
+                            <th class="text-left px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[150px]">{{ Translator::t('sales_quo_col_status', 'Status') }}</th>
                             <th class="text-right px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[140px]">{{ Translator::t('sales_quo_col_value', 'Nilai (excl PPN)') }}</th>
                             <th class="text-right px-3 py-2 bg-field-soft text-muted text-[11px] uppercase tracking-wide border-b border-field-badge sticky top-0 z-[1] w-[80px]">{{ Translator::t('sales_quo_col_action', 'Aksi') }}</th>
                         </tr>
@@ -154,6 +185,9 @@ new #[Title('Daftar Quotation — TELASIH MAKMUR ERP')] class extends Component
                                 <td class="px-3 py-2 border-b border-field-badge">{{ $q->issued_date?->translatedFormat('d M Y') }}</td>
                                 <td class="px-3 py-2 border-b border-field-badge">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {{ $q->doc_status === 'PUBLISHED' ? 'bg-[#e9f9ef] text-[#16a34a]' : 'bg-[#fef6e7] text-[#b45309]' }}">{{ $q->doc_status }}</span>
+                                    @if ($outcome = $q->outcome())
+                                        <x-ui.badge :tone="$outcome === 'WON' ? 'success' : 'danger'" size="xs" pill>{{ $outcome === 'WON' ? 'WIN' : 'LOST' }}</x-ui.badge>
+                                    @endif
                                 </td>
                                 <td class="px-3 py-2 border-b border-field-badge text-right font-semibold">{{ number_format($this->grandTotals[$q->id_quotation] ?? 0, 0, ',', '.') }}</td>
                                 <td class="px-3 py-2 border-b border-field-badge text-right whitespace-nowrap">

@@ -57,6 +57,24 @@ class QuoQuotation extends Model
         return $this->hasMany(QuoQuotationCc::class, 'quotation_id', 'id_quotation')->orderBy('line_seq');
     }
 
+    public function activities(): HasMany
+    {
+        return $this->hasMany(QuoActivity::class, 'quotation_id', 'id_quotation')->orderByDesc('activity_date')->orderByDesc('id_activity');
+    }
+
+    // Menang/kalah tetap disimpan di iqp_inquiry.sub_state (sumber layar Win-Rate
+    // Sales): CONVERTED ditulis CoOrderBuilder, LOST ditulis markLost di sini.
+    public function outcome(): ?string
+    {
+        $states = $this->items->pluck('inquiry.sub_state')->filter()->unique();
+
+        return match (true) {
+            $states->contains('CONVERTED') => 'WON',
+            $states->isNotEmpty() && $states->every(fn ($s) => $s === 'LOST') => 'LOST',
+            default => null,
+        };
+    }
+
     // Dipakai bersama oleh Quotation Entry (builder) & Quotation Print (dokumen resmi)
     // supaya perhitungan pajak selalu konsisten di 2 layar itu.
     public function totals(): array

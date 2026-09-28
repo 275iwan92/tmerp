@@ -6,9 +6,11 @@ use App\Models\Master\FinCurrency;
 use App\Models\Master\FinPaymentTerm;
 use App\Models\Master\SalesPerson;
 use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\QuoActivity;
 use App\Models\Sdi\QuoQuotation;
 use App\Models\Sdi\QuoQuotationCc;
 use App\Models\Sdi\QuoQuotationItem;
+use App\Services\Sales\CoOrderBuilder;
 use App\Services\Sales\QuotationBuilder;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
@@ -30,6 +32,14 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
     public array $chosen = [];
 
     public string $notes = '';
+
+    public bool $showLostForm = false;
+
+    public string $lostReason = '';
+
+    public bool $showActivityForm = false;
+
+    public array $act = [];
 
     public function mount(?int $quotation = null): void
     {
@@ -137,7 +147,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         $q = $this->quotation;
 
         return collect($this->autoValues)->map(function ($auto, $field) use ($q) {
-            $current = $q->{$field} instanceof \DateTimeInterface ? $q->{$field}->format('Y-m-d') : $q->{$field};
+            $current = $q->{$field} instanceof DateTimeInterface ? $q->{$field}->format('Y-m-d') : $q->{$field};
 
             return (string) $current === (string) $auto ? 'auto' : 'override';
         })->all();
@@ -252,7 +262,7 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
 
     private function refresh(): void
     {
-        unset($this->quotation, $this->autoValues, $this->autoState, $this->contactOptions, $this->ccOptions, $this->salesOptions, $this->totals, $this->chooserRows);
+        unset($this->quotation, $this->autoValues, $this->autoState, $this->contactOptions, $this->ccOptions, $this->salesOptions, $this->totals, $this->chooserRows, $this->outcome, $this->lostReasonText);
     }
 
     public function updateHeader(string $field, $value): void
@@ -368,10 +378,128 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
         $this->refresh();
     }
 
+    // Siklus quotation: DRAFT -> PUBLISHED (confirmed) -> closed WON (CO lahir,
+    // inquiry CONVERTED) atau closed LOST (inquiry LOST + alasan).
+    #[Computed]
+    public function outcome(): ?string
+    {
+        if (! $this->quotationId) {
+            return null;
+        }
+
+        $this->quotation->loadMissing('items.inquiry');
+
+        return $this->quotation->outcome();
+    }
+
+    #[Computed]
+    public function lostReasonText(): ?string
+    {
+        return $this->quotation->items->pluck('inquiry.cancel_reason')->filter()->first();
+    }
+
+    public function openLostForm(): void
+    {
+        $this->lostReason = '';
+        $this->showLostForm = true;
+    }
+
+    public function closeLostForm(): void
+    {
+        $this->showLostForm = false;
+    }
+
+    // Sama aturannya dgn markLost() di form Inquiry: semua inquiry di quotation
+    // ini yang belum terminal ditandai LOST, alasan disimpan di cancel_reason.
+    public function markLost(): void
+    {
+        if ($this->quotation->doc_status !== 'PUBLISHED' || $this->outcome) {
+            return;
+        }
+
+        $this->validate(['lostReason' => ['required', 'string', 'max:255']], [], ['lostReason' => 'Alasan kalah']);
+
+        $ids = $this->quotation->items->pluck('inquiry_id')->filter()->unique();
+
+        IqpInquiry::whereIn('id_inquiry', $ids)
+            ->whereNotIn('sub_state', ['CANCELLED', 'CONVERTED', 'LOST'])
+            ->update(['cancel_reason' => $this->lostReason, 'sub_state' => 'LOST', 'updated_by' => Auth::user()->login]);
+
+        $this->showLostForm = false;
+        $this->refresh();
+    }
+
+    // ============== Progress follow-up Sales (activity log ala CRM) ==============
+
+    #[Computed]
+    public function activities()
+    {
+        return $this->quotationId ? $this->quotation->activities()->get() : collect();
+    }
+
+    public function openActivityForm(): void
+    {
+        $this->act = ['activity_type' => 'CALL', 'activity_date' => now()->toDateString(), 'contact_person' => $this->quotation->attn_contact,
+            'result' => '', 'notes' => '', 'next_action_date' => '', 'next_action' => ''];
+        $this->resetValidation();
+        $this->showActivityForm = true;
+    }
+
+    public function closeActivityForm(): void
+    {
+        $this->showActivityForm = false;
+    }
+
+    public function setActType(string $type): void
+    {
+        $this->act['activity_type'] = $type;
+    }
+
+    public function setActResult(string $result): void
+    {
+        $this->act['result'] = ($this->act['result'] ?? '') === $result ? '' : $result;
+    }
+
+    public function saveActivity(): void
+    {
+        if (! $this->quotationId) {
+            return;
+        }
+
+        $data = $this->validate([
+            'act.activity_type' => ['required', 'in:'.implode(',', array_keys(QuoActivity::TYPES))],
+            'act.activity_date' => ['required', 'date'],
+            'act.contact_person' => ['nullable', 'string', 'max:150'],
+            'act.result' => ['nullable', 'in:'.implode(',', array_keys(QuoActivity::RESULTS))],
+            'act.notes' => ['nullable', 'string', 'max:2000'],
+            'act.next_action_date' => ['nullable', 'date'],
+            'act.next_action' => ['nullable', 'string', 'max:255'],
+        ], [], ['act.activity_date' => 'Tanggal', 'act.activity_type' => 'Jenis'])['act'];
+
+        QuoActivity::create(array_map(fn ($v) => $v === '' ? null : $v, $data) + [
+            'quotation_id' => $this->quotationId,
+            'created_by' => Auth::user()->login,
+            'updated_by' => Auth::user()->login,
+        ]);
+
+        $this->showActivityForm = false;
+        unset($this->activities);
+    }
+
+    public function deleteActivity(int $id): void
+    {
+        QuoActivity::where('quotation_id', $this->quotationId)->where('created_by', Auth::user()->login)->whereKey($id)->delete();
+        unset($this->activities);
+    }
+
     // "1 CO = 1 Quotation" (keputusan user 2026-08-20) -- lihat App\Services\Sales\CoOrderBuilder.
     public function createOrOpenCo()
     {
-        $order = \App\Services\Sales\CoOrderBuilder::findOrCreateFromQuotation($this->quotation);
+        if ($this->outcome === 'LOST') {
+            return;
+        }
+
+        $order = CoOrderBuilder::findOrCreateFromQuotation($this->quotation);
 
         if (! $order) {
             return;
@@ -574,12 +702,58 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                         class="w-full px-4 py-2.5 rounded text-xs font-bold bg-accent text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
                         Terbitkan Quotation
                     </button>
+                @elseif ($this->outcome === 'LOST')
+                    <x-ui.card variant="muted" size="sm" class="mb-4">
+                        <x-ui.badge tone="danger" pill icon="fa-xmark">LOST</x-ui.badge>
+                        <p class="text-xs mt-2"><b>{{ \App\Support\Localization\Translator::t('sales_quo_lost_reason', 'Alasan kalah') }}:</b> {{ $this->lostReasonText ?? '—' }}</p>
+                    </x-ui.card>
                 @else
-                    <div class="text-center text-xs text-[#1f8a4c] font-semibold bg-[#eaf7ee] border border-[#a9d9bb] rounded-md py-2.5 mb-2.5">✓ Sudah diterbitkan — isi terkunci</div>
-                    <button type="button" wire:click="createOrOpenCo"
-                        class="w-full px-4 py-2.5 rounded text-xs font-bold bg-[#22a06b] text-white cursor-pointer">
-                        📦 Buat Customer Order
-                    </button>
+                    <x-alert.banner type="success" :message="$this->outcome === 'WON' ? '✓ WON — Customer Order sudah dibuat' : '✓ Sudah diterbitkan — isi terkunci'" />
+                    <div class="flex flex-col gap-2 mt-2.5 mb-4">
+                        <x-ui.button variant="success" block icon="fa-box" wire:click="createOrOpenCo">
+                            {{ $this->outcome === 'WON' ? 'Buka Customer Order' : 'Win → Buat Customer Order' }}
+                        </x-ui.button>
+                        @if (! $this->outcome)
+                            <x-ui.button variant="action-danger" block icon="fa-xmark" wire:click="openLostForm">Lost → Isi Alasan</x-ui.button>
+                        @endif
+                    </div>
+                @endif
+
+                @if ($this->quotationId && $this->quotation->doc_status === 'PUBLISHED')
+                    <x-ui.card variant="section" size="sm" :title="'Follow-up ('.$this->activities->count().')'">
+                        <x-slot:actions>
+                            <x-ui.button size="xs" icon="fa-plus" wire:click="openActivityForm">Tambah</x-ui.button>
+                        </x-slot:actions>
+                        <div class="flex flex-wrap gap-1 mb-2">
+                            @foreach (\App\Models\Sdi\QuoActivity::TYPES as $code => $t)
+                                @if ($n = $this->activities->where('activity_type', $code)->count())
+                                    <x-ui.badge tone="info" size="xs" pill>{{ $t[0] }} {{ $t[1] }} ×{{ $n }}</x-ui.badge>
+                                @endif
+                            @endforeach
+                        </div>
+                        <div class="flex flex-col gap-2 max-h-[45vh] overflow-y-auto tm-scroll">
+                            @forelse ($this->activities as $a)
+                                <div wire:key="act-{{ $a->id_activity }}" class="border-l-2 border-accent pl-2.5 text-[11.5px]">
+                                    <div class="flex items-center gap-1.5">
+                                        <b>{{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][0] ?? '' }} {{ \App\Models\Sdi\QuoActivity::TYPES[$a->activity_type][1] ?? $a->activity_type }}</b>
+                                        <span class="text-muted">{{ $a->activity_date?->format('d M Y') }}</span>
+                                        @if ($a->result)
+                                            <x-ui.badge :tone="match ($a->result) { 'POSITIVE' => 'success', 'NEGATIVE' => 'danger', default => 'muted' }" size="xs" pill>{{ \App\Models\Sdi\QuoActivity::RESULTS[$a->result] ?? $a->result }}</x-ui.badge>
+                                        @endif
+                                        @if ($a->created_by === auth()->user()->login)
+                                            <x-ui.icon-button icon="fa-trash" size="xs" class="ml-auto" wire:click="deleteActivity({{ $a->id_activity }})" wire:confirm="Hapus catatan follow-up ini?" />
+                                        @endif
+                                    </div>
+                                    @if ($a->contact_person)<div class="text-muted">{{ $a->contact_person }}</div>@endif
+                                    @if ($a->notes)<div>{{ $a->notes }}</div>@endif
+                                    @if ($a->next_action)<div class="text-accent">→ {{ $a->next_action }}@if ($a->next_action_date) ({{ $a->next_action_date->format('d M') }})@endif</div>@endif
+                                    <div class="text-[10px] text-muted">{{ $a->created_by }}</div>
+                                </div>
+                            @empty
+                                <p class="text-[11px] text-muted">Belum ada follow-up. Catat tiap telepon, kunjungan, atau pesan ke customer.</p>
+                            @endforelse
+                        </div>
+                    </x-ui.card>
                 @endif
             </div>
 
@@ -600,6 +774,51 @@ new #[Title('Quotation Entry — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </template>
         </div>
+    @endif
+
+    @if ($showLostForm)
+        <x-ui.modal title="Lost — alasan kalah" close="closeLostForm" size="md">
+            <div class="p-4 flex flex-col gap-2">
+                <p class="text-[11px] text-muted">Semua inquiry di quotation ini ditandai LOST. Alasan ini muncul di laporan Win-Rate Sales.</p>
+                <x-form.textarea label="Alasan kalah *" rows="3" wire:model="lostReason" placeholder="Mis. harga kompetitor lebih murah, customer batal proyek, lead time terlalu lama..." />
+                @error('lostReason')<p class="text-[11px] text-danger-ink">{{ $message }}</p>@enderror
+            </div>
+            <x-slot:footer>
+                <x-ui.button preset="cancel" wire:click="closeLostForm" />
+                <x-ui.button variant="danger" icon="fa-xmark" wire:click="markLost">Tandai Lost</x-ui.button>
+            </x-slot:footer>
+        </x-ui.modal>
+    @endif
+
+    @if ($showActivityForm)
+        <x-ui.modal title="Follow-up quotation" close="closeActivityForm" size="lg">
+            <div class="p-4 flex flex-col gap-3">
+                <x-form.toggle-group label="Jenis *">
+                    @foreach (\App\Models\Sdi\QuoActivity::TYPES as $code => $t)
+                        <x-form.toggle-option :active="($act['activity_type'] ?? '') === $code" wire:click="setActType('{{ $code }}')">{{ $t[0] }} {{ $t[1] }}</x-form.toggle-option>
+                    @endforeach
+                </x-form.toggle-group>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="sm:w-48"><x-form.date-picker label="Tanggal *" wire:model="act.activity_date" /></div>
+                    <div class="flex-1"><x-form.input label="Kontak yang dihubungi" wire:model="act.contact_person" /></div>
+                </div>
+                <x-form.toggle-group label="Hasil">
+                    @foreach (\App\Models\Sdi\QuoActivity::RESULTS as $code => $label)
+                        <x-form.toggle-option :active="($act['result'] ?? '') === $code" wire:click="setActResult('{{ $code }}')">{{ $label }}</x-form.toggle-option>
+                    @endforeach
+                </x-form.toggle-group>
+                <x-form.textarea label="Catatan" rows="3" wire:model="act.notes" placeholder="Apa yang dibicarakan, respon customer..." />
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="sm:w-48"><x-form.date-picker label="Tindak lanjut tgl" wire:model="act.next_action_date" /></div>
+                    <div class="flex-1"><x-form.input label="Tindak lanjut berikutnya" wire:model="act.next_action" placeholder="Mis. telepon ulang, kirim sampel..." /></div>
+                </div>
+                @if ($errors->any())<x-alert.banner type="danger" :message="$errors->first()" />@endif
+            </div>
+            <x-slot:footer>
+                <x-ui.button preset="cancel" wire:click="closeActivityForm" />
+                <x-ui.button preset="save" type="button" wire:click="saveActivity" />
+            </x-slot:footer>
+        </x-ui.modal>
     @endif
 
     @if ($showChooser)
