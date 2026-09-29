@@ -15,6 +15,9 @@ final class Catalog
         'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
         'p5-grid-ntx' => '2026-09-26',    // Grid Pre-Entry > Non-Transactional (Master, isi tidak berubah dari p5-grid)
         'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
+        'p5-grid-group' => '2026-09-26',     // Grid Report dipecah per varian 2026-09-30, isi tidak berubah
+        'p5-grid-drilldown' => '2026-09-26',
+        'p5-grid-pivot' => '2026-09-26',
         'p5-grid-special' => '2026-09-26', // Grid Special (spreadsheet)
         // Menu Form & Dokumen disetujui user 2026-09-26
         'p5-form-single' => '2026-09-26',
@@ -96,12 +99,19 @@ final class Catalog
                     'p5-grid-ntx' => $page('Grid Non-Transactional', 'fa-solid fa-address-book', [
                         'grid-master' => ['Grid Non-Transactional (Master: photo box + Edit + Active/Inactive)', $c('Grid')],
                     ], 'grid_kerapatan_baris.html') + ['folder' => 'Grid Pre-Entry'],
-                    'p5-grid-report' => $page('Grid Report', 'fa-solid fa-table-list', [
-                        'grid-report' => ['1 · Grid Report List (compact, thousands of rows, Filter pop-up)', $c('Grid')],
-                        'grid-group' => ['2 · Grid Group By (+ subtotal)', $c('Grid')],
-                        'grid-drilldown' => ['3 · Grid Summary → Details (drill-down)', $c('Drilldown', 'Grid')],
-                        'grid-pivot' => ['4 · Grid Pivot (rows × columns × values)', $c('Pivot')],
-                    ]),
+                    // Grid Report = submenu, 1 halaman per varian (user 2026-09-30).
+                    'p5-grid-report' => $page('Grid Report List', 'fa-solid fa-table-list', [
+                        'grid-report' => ['Grid Report List (compact, thousands of rows, Filter pop-up)', $c('Grid')],
+                    ]) + ['folder' => 'Grid Report'],
+                    'p5-grid-group' => $page('Grid Group By', 'fa-solid fa-layer-group', [
+                        'grid-group' => ['Grid Group By (+ subtotal)', $c('Grid')],
+                    ]) + ['folder' => 'Grid Report'],
+                    'p5-grid-drilldown' => $page('Grid Summary → Details', 'fa-solid fa-arrow-down-short-wide', [
+                        'grid-drilldown' => ['Grid Summary → Details (drill-down)', $c('Drilldown', 'Grid')],
+                    ]) + ['folder' => 'Grid Report'],
+                    'p5-grid-pivot' => $page('Grid Pivot', 'fa-solid fa-table-cells-large', [
+                        'grid-pivot' => ['Grid Pivot (rows × columns × values)', $c('Pivot')],
+                    ]) + ['folder' => 'Grid Report'],
                     // Grid Special (user 2026-09-26): grid yang selnya langsung diedit, bukan pintu ke form maupun laporan.
                     'p5-grid-special' => $page('Grid Special', 'fa-solid fa-table-cells', [
                         'grid-sheet' => ['1 · Grid Spreadsheet (inline edit, Excel copy/paste, drag-fill)', $c('Sheet')],
