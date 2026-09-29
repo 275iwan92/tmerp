@@ -104,6 +104,13 @@ class UatProductMarketSeeder extends Seeder
                 ['BOX_SOUVENIR', null, 'GIFT_BOX', 'Art carton', null, '4/0', '1000,3000,5000', null, [
                     ['Kecil (perkiraan)', 100, 100, 100], ['Sedang (perkiraan)', 150, 150, 80]]],
             ]],
+            // Acuan Master Card nyata KS Power N120 MF (DS003637, PT. Selatan Jadi Jaya): Duplex 310 + BC flute, 2 part double join.
+            // Bentuknya karton slotted (RSC); dieline RSC belum ada di Tipe Produk -> sementara STE (user 2026-09-29: "ukuran besar accu truck").
+            'KEMASAN_AUTOPART' => ['Kemasan Autopart', [
+                ['BOX_AKI', 'Box Aki / Accu', 'STE_BOX', 'Duplex', 'BCF', '4/0', '10000,30000,50000',
+                    'Duplex 310 gr + laminasi BC flute, laminating glossy. Ukuran besar = 2 part (double join).', [
+                        ['Besar · Accu Truck N120', 507, 187, 267]]],
+            ]],
             'LABEL_TAG' => [null, [
                 ['HANG_TAG', null, 'HANG_TAG', 'Art carton', null, '4/4', '5000,10000,20000', null, [['5 x 9 cm', 50, 90, 0], ['6 x 10 cm', 60, 100, 0]]],
                 ['LABEL_STIKER', 'Label / Stiker Produk', 'LABEL_STIKER', 'Stiker bontax', null, '4/0', '5000,10000,50000', 'Stiker bontax/vinyl, potong kiss-cut.', [

@@ -17,6 +17,7 @@
       this.type = this.input('type_code')?.value || '';
       // Kategori Produk -> Detail Kategori -> Ukuran Pasaran (master Lookup Product Market, dikirim layar sebagai JSON).
       try { this.markets = JSON.parse($(this.el, 'script[data-inq-markets]')?.textContent || '[]'); } catch (err) { this.markets = []; }
+      if (this.doc.id && this.doc.market) this.showMarket(this.doc.market);
       // Bahan slot 0 Paper / 1 Sheet-SF: Jenis -> Gramatur (mat_category level 2 -> 3).
       try { this.chains = JSON.parse($(this.el, 'script[data-inq-matchains]')?.textContent || '[]'); } catch (err) { this.chains = []; }
       this.on('change', null, e => this.changed(e));
@@ -167,6 +168,19 @@
       this.lockType(true);
       setOptions(this.el, 'market_size', [...this.detail.sizes.map((s, i) => [String(i), s.label]), [CUSTOM, CUSTOM_SIZE]]);
       this.fillParts(null);
+    }
+
+    // Dokumen tersimpan: tampilkan Kategori/Detail/Ukuran hasil tebakan server (Sales::marketOf) tanpa mengubah part/Tipe Produk.
+    showMarket(m) {
+      this.group = this.markets.find(g => g.code === m.group) || null;
+      this.detail = (this.group?.details || []).find(d => d.code === m.detail) || null;
+      if (!this.detail) return;
+      const off = this.locked();
+      setField(this.el, 'product_group', m.group);
+      setOptions(this.el, 'product_detail', [...this.group.details.map(d => [d.code, d.label]), [CUSTOM, CUSTOM_DETAIL]], {disabled: off});
+      setField(this.el, 'product_detail', m.detail);
+      setOptions(this.el, 'market_size', [...this.detail.sizes.map((s, i) => [String(i), s.label]), [CUSTOM, CUSTOM_SIZE]], {disabled: off});
+      setField(this.el, 'market_size', String(m.size));
     }
 
     // Pilih Ukuran -> dimensi semua part (Tipe Produk berlaku untuk semua part). Custom = dimensi diisi manual di part.

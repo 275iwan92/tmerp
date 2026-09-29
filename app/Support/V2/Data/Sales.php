@@ -189,7 +189,29 @@ final class Sales
                 'is_new_charge' => (bool) $t->is_new_charge, 'cost' => $num($t->cost), 'remark' => $t->remark ?? ''])->values()->all(),
             'external_costs' => $i->externalCosts->map(fn ($c) => ['id' => $c->id_external_cost, 'description' => $c->description ?? '', 'cost_kind' => $c->cost_kind,
                 'amount' => $num($c->amount), 'tax_treatment' => $c->tax_treatment])->values()->all(),
+            'market' => self::marketOf($i->parts->first()?->dieline_spec['dims'] ?? []),
         ];
+    }
+
+    // Kategori/Detail/Ukuran tidak disimpan di inkuiri (hanya pemandu isian) -> untuk dokumen tersimpan ditebak dari
+    // ukuran part yang sama persis dengan satu Ukuran Pasaran. Tidak ada yang cocok = dibiarkan kosong.
+    public static function marketOf(array $dims): ?array
+    {
+        $want = array_filter(array_intersect_key($dims, array_flip(['product_length', 'product_width', 'product_height'])), fn ($v) => (float) $v > 0);
+        if (! $want) {
+            return null;
+        }
+        foreach (self::productMarkets() as $g) {
+            foreach ($g['details'] as $d) {
+                foreach ($d['sizes'] as $k => $z) {
+                    if (collect($want)->every(fn ($v, $key) => isset($z['dims'][$key]) && abs((float) $z['dims'][$key] - (float) $v) < 0.01)) {
+                        return ['group' => $g['code'], 'detail' => $d['code'], 'size' => $k];
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     // Inkuiri asal dari dokumen REVISE/RECALC (parentInquiry()).
