@@ -4,7 +4,22 @@
 return [
     'users' => [
         ['login' => 'admin', 'password' => 'admin', 'name' => 'Administrator DevLib', 'email' => 'admin@devlib.test', 'role' => 'Administrator', 'developer' => true],
+        // Contoh opening screen per jabatan (data pegawai & jabatan = tm2mst emp_employee / org_position di tmerp).
+        ['login' => 'yuna', 'password' => 'yuna', 'name' => 'Yuna Puji Astuti', 'email' => 'yuna@devlib.test', 'role' => 'Sales & Marketing',
+            'employee_code' => 'TM-00121', 'position_code' => 'SRSTAFFSALESMKT', 'position' => 'Senior Staff Sales & Marketing',
+            'department' => 'Sales & Marketing Dept.', 'superior' => 'Sales & Marketing Manager', 'developer' => false],
+        ['login' => 'sania', 'password' => 'sania', 'name' => 'Sania Maura Fitriani', 'email' => 'sania@devlib.test', 'role' => 'Human Capital',
+            'employee_code' => 'TM-00150', 'position_code' => 'HROFFICER', 'position' => 'Human Resource Officer',
+            'department' => 'Human Capital Dept.', 'superior' => 'Human Capital Manager', 'developer' => false],
     ],
+
+    // Opening screen (x-dl::dashboard): profil per KODE JABATAN. Jabatan yang tidak terdaftar = 'general'
+    // (mekanisme sama, isi KPI/aktivitas umum). Profil baru cukup ditambah di sini + App\Support\DashboardData.
+    'dashboards' => [
+        'SRSTAFFSALESMKT' => 'sales',
+    ],
+    // Lokasi cuaca bawaan = kantor (Jl. Simpang Panji Suroso, Arjosari, Blimbing, Kota Malang — kop dokumen resmi).
+    'weather' => ['city' => 'Malang', 'lat' => -7.935, 'lon' => 112.655],
 
     // Hak akses akun DevLib (Devlib\\Access). '*' = semua; 'po.*' = semua aksi PO.
     'abilities' => ['po.*', 'devlib.*'],

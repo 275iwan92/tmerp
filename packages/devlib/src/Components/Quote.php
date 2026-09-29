@@ -3,7 +3,7 @@
 namespace Devlib\Components;
 
 // Kata motivasi dari daftar (biasanya dari file teks lewat x-dl::frame quotes="...").
-// order: random | sequence (urut, lanjut tiap kali halaman dibuka); interval: detik ganti (0 = tetap).
+// order: random | sequence (urut, lanjut tiap kali halaman dibuka) | day (baris sesuai tanggal: 366 baris, baris ke-60 = 29 Feb); interval: detik ganti (0 = tetap).
 class Quote extends DevlibComponent
 {
     public function __construct(
