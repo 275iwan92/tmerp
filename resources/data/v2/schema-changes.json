@@ -1,5 +1,582 @@
 [
     {
+        "at": "2026-09-30 06:29:48",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2inv",
+                "table": "rm_stock_d_bak",
+                "column": "id_stock_d_bak",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2inv",
+                "table": "rm_stock_d_bak__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "cust_category",
+                "column": "id_category",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "emp_bpjs_kesehatan",
+                "column": "id_bpjs_kesehatan",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "emp_bpjs_ketenagakerjaan",
+                "column": "id_bpjs_ketenagakerjaan",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "fin_payment_term",
+                "column": "id_payment_term",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "fin_tax_scheme",
+                "column": "id_tax_scheme",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_type",
+                "column": "id_type",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "sup_category",
+                "column": "id_category",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "cust_category__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "emp_bpjs_kesehatan__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "emp_bpjs_ketenagakerjaan__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "fin_payment_term__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "fin_tax_scheme__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_type__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "sup_category__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_type",
+                "column": "id_type",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "iqp_type__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_app_menu_color",
+                "column": "id_menu_color",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_chat_participants",
+                "column": "id_participant",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_constant_category",
+                "column": "id_constant_category",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_languages",
+                "column": "id_language",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_setting",
+                "column": "id_setting",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sys",
+                "table": "sys_theme",
+                "column": "id_theme",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_app_menu_color__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_chat_participants__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_constant_category__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_languages__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_setting__oldpk",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_theme__oldpk",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
+        "at": "2026-09-30 06:21:30",
+        "items": [
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_account",
+                "column": "account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_account",
+                "column": "parent_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_account",
+                "column": "default_cc_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_asset",
+                "column": "credit_account_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_asset_category",
+                "column": "asset_account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_asset_category",
+                "column": "accum_account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_asset_category",
+                "column": "expense_account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_bank_recon",
+                "column": "account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_bank_statement",
+                "column": "account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_invoice",
+                "column": "revenue_account_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_partner_account",
+                "column": "ar_account_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_partner_account",
+                "column": "ap_account_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "fin_voucher_line",
+                "column": "account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_account_tree",
+                "column": "account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_account_tree",
+                "column": "parent_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_account_tree",
+                "column": "default_cc_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2acc",
+                "table": "v1_fin_trial_balance",
+                "column": "account_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2hrr",
+                "table": "app_pipeline_stage_config",
+                "column": "id_track",
+                "detail": "tinyint unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2hrr",
+                "table": "rcr_approval_matrix",
+                "column": "id_track",
+                "detail": "tinyint unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2hrr",
+                "table": "rcr_offer_approval_matrix",
+                "column": "id_track",
+                "detail": "tinyint unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2hrr",
+                "table": "rcr_requisition",
+                "column": "id_track",
+                "detail": "tinyint unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2hrr",
+                "table": "rcr_track",
+                "column": "id_track",
+                "detail": "tinyint unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "fin_currency",
+                "column": "id_currency",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "fin_exchange_rate",
+                "column": "currency_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "geo_country",
+                "column": "currency_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "mat_category",
+                "column": "id_category",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "mat_category",
+                "column": "parent_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "mat_plano_size",
+                "column": "id_plano_size",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "mat_raw",
+                "column": "prefix5_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "prod_layout_group",
+                "column": "plano_size_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "prod_market",
+                "column": "paper_category_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "prod_market",
+                "column": "sheet_category_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "prod_part_material",
+                "column": "category_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "uom_conversion",
+                "column": "id_conversion",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2mst",
+                "table": "uom_unit",
+                "column": "id_uom",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sdi",
+                "table": "co_order",
+                "column": "ship_area_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sdi",
+                "table": "do_delivery",
+                "column": "ship_area_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sdi",
+                "table": "iqp_layout",
+                "column": "plano_size_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_group",
+                "column": "id_group",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_group_permission",
+                "column": "group_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_group_permission",
+                "column": "module_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_module",
+                "column": "id_module",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_module",
+                "column": "parent_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_recovery_question",
+                "column": "id_question",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_user",
+                "column": "security_question_id",
+                "detail": "int unsigned null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sec_user_group",
+                "column": "group_id",
+                "detail": "int unsigned -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sys_app_menu",
+                "column": "id",
+                "detail": "int -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sys_app_menu",
+                "column": "parent_id",
+                "detail": "int null -> bigint unsigned null"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sys_quotes",
+                "column": "id",
+                "detail": "int -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sys_translations",
+                "column": "id",
+                "detail": "int -> bigint unsigned"
+            },
+            {
+                "kind": "tipe berubah",
+                "db": "tm2sys",
+                "table": "sys_user_menu",
+                "column": "id_umenu",
+                "detail": "int unsigned -> bigint unsigned"
+            }
+        ]
+    },
+    {
         "at": "2026-09-30 00:13:38",
         "items": [
             {
