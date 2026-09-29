@@ -3,6 +3,7 @@
 use App\Console\Commands\DdtBaseline;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
+use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
@@ -12,6 +13,7 @@ use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
 use App\Support\V2\AppMenu;
+use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\Quotation;
 use App\Support\V2\Flows;
@@ -190,6 +192,11 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 Quotation::save($q, $r->only(Quotation::HEADER), $r->has('cc_present') ? (array) $r->input('cc', []) : null,
                     (array) $r->input('items', []), array_keys((array) $r->input('remove', [])));
                 $q->refresh();
+                if ($r->input('action') === 'add_line') {
+                    Quotation::addLine($q);
+
+                    return $open($id)->with('v2_flash', 'Baris bebas ditambahkan — isi uraian, qty, dan harga lalu Simpan.');
+                }
                 if ($r->input('action') === 'confirm') {
                     Quotation::confirm($q);
 
@@ -204,11 +211,6 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
                 return $open($id)->with('v2_flash', 'Inquiry ditambahkan ke quotation.');
             })->name('add-inquiry');
-            Route::post('/add-line', function (int $id) use ($open) {
-                Quotation::addLine(QuoQuotation::findOrFail($id));
-
-                return $open($id)->with('v2_flash', 'Baris bebas ditambahkan — isi uraian, qty, dan harga lalu Simpan.');
-            })->name('add-line');
             Route::post('/delete', function (int $id) {
                 $q = QuoQuotation::findOrFail($id);
                 Quotation::delete($q);
@@ -244,6 +246,55 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return $open($id)->with('v2_flash', 'Follow-up dihapus.');
             })->whereNumber('aid')->name('activity.delete');
         });
+    });
+
+    // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan komponen v1 pages::co.entry). Tombol "+" menyimpan isian dulu.
+    Route::prefix('co')->name('co.')->middleware('module:SALES')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'customer-order').'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['mode' => ['required', 'in:INTEGRATED,INSTANT'], 'quotation_id' => ['required_if:mode,INTEGRATED', 'nullable', 'integer'],
+                'customer_id' => ['required_if:mode,INSTANT', 'nullable', 'integer']], [], ['quotation_id' => 'Quotation', 'customer_id' => 'Customer']);
+            $o = $d['mode'] === 'INTEGRATED' ? CustomerOrder::createIntegrated((int) $d['quotation_id']) : CustomerOrder::createInstant((int) $d['customer_id']);
+
+            return $o ? $open($o->id_order)->with('v2_flash', "Customer Order {$o->co_no} ({$o->entry_mode}) siap diisi.")
+                : back()->withErrors(['quotation_id' => 'Quotation ini tidak bisa menjadi Customer Order (belum terbit / LOST).']);
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
+            $o = CoOrder::findOrFail($id);
+            $r->validate(['co_date' => ['nullable', 'date'], 'items.*.due_date' => ['nullable', 'date'], 'deliveries.*.ship_date' => ['nullable', 'date'],
+                'product_id' => ['nullable', 'integer']], [], ['co_date' => 'CO Date']);
+            CustomerOrder::save($o, $r->all());
+            $action = (string) $r->input('action', 'save');
+            $msg = 'Customer Order tersimpan.';
+            if ($action === 'add_product') {
+                abort_unless($r->filled('product_id'), 422, 'Pilih Master Product.');
+                CustomerOrder::addProduct($o, (int) $r->input('product_id'));
+                $msg = 'Baris product ditambahkan — isi qty & due date.';
+            } elseif ($action === 'add_service') {
+                CustomerOrder::addService($o);
+                $msg = 'Baris jasa ditambahkan.';
+            } elseif ($action === 'add_cost') {
+                CustomerOrder::addCost($o);
+                $msg = 'Biaya luar ditambahkan.';
+            } elseif (str_starts_with($action, 'add_delivery_')) {
+                CustomerOrder::addDelivery($o, (int) substr($action, 13));
+                $msg = 'Jadwal kirim ditambahkan.';
+            } elseif ($action === 'confirm') {
+                $o = CoOrder::with('items.deliveries')->findOrFail($id);
+                if (! CustomerOrder::confirm($o)) {
+                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: tiap baris PRODUCT wajib punya Due Date'.($o->isInstant() ? ' dan Master Product' : '').'.']);
+                }
+                $msg = "Customer Order {$o->co_no} CONFIRMED — jadwal kirim default dibuat di Customer Plan Delivery.";
+            }
+
+            return $open($id)->with('v2_flash', $msg);
+        })->whereNumber('id')->name('save');
+        Route::post('/{id}/delete', function (int $id) {
+            $o = CoOrder::findOrFail($id);
+            CustomerOrder::delete($o);
+
+            return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
+        })->whereNumber('id')->name('delete');
     });
 
     // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).

@@ -149,7 +149,7 @@
             @endforelse
             @if ($draft)
                 <x-dl::action-bar>
-                    <x-dl::button variant="secondary" icon="plus" label="+ Tambah Baris" type="submit" :formaction="route('v2.quotation.add-line', $q->id_quotation)" formnovalidate />
+                    <x-dl::button variant="secondary" icon="plus" label="+ Tambah Baris" type="submit" name="action" value="add_line" />
                     @if ($more)<x-dl::button variant="secondary" icon="plus" label="+ Tambah Inquiry" data-dl-open="quotation-add" />@endif
                 </x-dl::action-bar>
             @endif
