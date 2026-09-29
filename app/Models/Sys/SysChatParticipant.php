@@ -11,7 +11,7 @@ class SysChatParticipant extends Model
 
     protected $table = 'sys_chat_participants';
 
-    public $incrementing = false;
+    protected $primaryKey = 'id_participant';
 
     public $timestamps = false;
 
