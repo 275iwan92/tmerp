@@ -284,7 +284,8 @@ final class InquiryWriter
             $this->persistFinishings($part, $row['finishings']);
         }
 
-        $inquiry->parts()->whereNotIn('id_part', $keep)->delete();
+        // Rakitan (ASSEMBLY) tidak ada di form part; diatur terpisah (InquiryAssembly) -> jangan ikut terhapus.
+        $inquiry->parts()->where(fn ($q) => $q->whereNull('part_kind')->orWhere('part_kind', '<>', 'ASSEMBLY'))->whereNotIn('id_part', $keep)->delete();
     }
 
     private function persistMaterials(IqpPart $part, array $rows, string $materialSource): void

@@ -156,7 +156,7 @@ final class Sales
             return null;
         }
         $num = fn ($v) => $v === null ? '' : rtrim(rtrim((string) $v, '0'), '.');
-        $code = $i->parts->first()?->dieline_spec['type_code'] ?? '';
+        $code = $i->parts->first(fn ($p) => $p->part_kind !== 'ASSEMBLY')?->dieline_spec['type_code'] ?? '';
 
         return [
             'id' => $i->id_inquiry, 'inquiry_no' => $i->inquiry_no, 'inquiry_type' => $i->inquiry_type, 'sub_state' => $i->sub_state,
@@ -171,7 +171,7 @@ final class Sales
             'type_code' => isset(self::dielineTypes()[$code]) ? $code : '',
             'qty' => (float) ($i->tiers->firstWhere('is_primary', true)?->qty ?? 0),
             'tiers' => $i->tiers->map(fn ($t) => ['id' => $t->id_tier, 'qty' => $num($t->qty), 'is_primary' => (bool) $t->is_primary])->values()->all(),
-            'parts' => $i->parts->map(fn ($p) => [
+            'parts' => $i->parts->where('part_kind', '<>', 'ASSEMBLY')->map(fn ($p) => [
                 'id' => $p->id_part, 'part_name' => $p->part_name, 'part_role' => '', 'part_type' => $p->part_type ?? 'DC',
                 'qty_per_sku' => $num($p->qty_per_sku) ?: '1', 'pack_qty' => $p->pack_qty ?? '', 'dims' => $p->dieline_spec['dims'] ?? [],
                 'flat_w' => $num($p->flat_w), 'flat_h' => $num($p->flat_h), 'flat_area' => $num($p->flat_area),
@@ -189,7 +189,7 @@ final class Sales
                 'is_new_charge' => (bool) $t->is_new_charge, 'cost' => $num($t->cost), 'remark' => $t->remark ?? ''])->values()->all(),
             'external_costs' => $i->externalCosts->map(fn ($c) => ['id' => $c->id_external_cost, 'description' => $c->description ?? '', 'cost_kind' => $c->cost_kind,
                 'amount' => $num($c->amount), 'tax_treatment' => $c->tax_treatment])->values()->all(),
-            'market' => self::marketOf($i->parts->first()?->dieline_spec['dims'] ?? []),
+            'market' => self::marketOf($i->parts->first(fn ($p) => $p->part_kind !== 'ASSEMBLY')?->dieline_spec['dims'] ?? []),
         ];
     }
 

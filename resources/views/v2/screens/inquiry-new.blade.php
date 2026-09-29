@@ -132,3 +132,50 @@
             ]" />
     </x-dl::card>
 </x-mp::sales.inquiry-form>
+
+@if ($doc)
+    {{-- Rakitan (docs/flow_product_master.md §3): di luar form part supaya alur isian part tidak berubah; tersimpan langsung. --}}
+    @php
+        $inqModel = \App\Models\Sdi\IqpInquiry::find($doc['id']);
+        $tree = \App\Services\Sales\InquiryAssembly::tree($inqModel);
+        $flat = [];
+        $walk = function (array $nodes, int $depth) use (&$walk, &$flat) {
+            foreach ($nodes as $n) {
+                $flat[] = $n + ['depth' => $depth];
+                $walk($n['children'], $depth + 1);
+            }
+        };
+        $walk($tree, 0);
+        $assemblies = array_values(array_filter($flat, fn ($n) => $n['kind'] === 'ASSEMBLY'));
+    @endphp
+    <x-dl::card id="rakitan" title="Rakitan (part gabungan)" description="Gabungkan 2 part atau lebih menjadi rakitan, mis. Body = Part A + Part B dengan lem 2 sisi (Double Join). Rakitan boleh bertingkat. Bahan tetap milik part; rakitan membawa jenis sambungan.">
+        <x-dl::table :columns="['name' => 'Struktur', 'kind' => 'Jenis', 'join' => 'Sambungan', 'qty' => 'Qty dalam induk']"
+            :rows="array_map(fn ($n) => ['name' => str_repeat('— ', $n['depth']).$n['name'], 'kind' => $n['kind'] === 'ASSEMBLY' ? 'Rakitan' : 'Komponen',
+                'join' => $n['join'] ?? '—', 'qty' => $n['depth'] ? rtrim(rtrim(number_format($n['qty'], 4, ',', ''), '0'), ',') : '—'], $flat)"
+            empty="Belum ada part tersimpan." source="{{ \App\Support\V2\Src::of('tm2sdi.iqp_part.part_kind', 'parent_part_id', 'qty_in_parent', 'join_type_id') }}" />
+        @if ($errors->hasAny(['children', 'assembly_name', 'join_type_id', 'qty_in_parent']))<x-dl::alert tone="danger" :message="$errors->first()" />@endif
+        @if (! $readonly)
+            @foreach ($assemblies as $a)
+                <form method="post" action="{{ route('v2.inquiry.assembly.delete', [$doc['id'], $a['id']]) }}" style="display:inline">
+                    @csrf
+                    <x-dl::button variant="secondary" size="sm" icon="delete" :label="'Bongkar '.$a['name']" type="submit" onclick="return confirm('Bongkar rakitan {{ $a['name'] }}? Part-nya tetap ada.')" />
+                </form>
+            @endforeach
+            @if (count($tree) >= 2)
+                <form method="post" action="{{ route('v2.inquiry.assembly.store', $doc['id']) }}">
+                    @csrf
+                    <x-dl::divider label="+ Tambah Rakitan" />
+                    <x-dl::form.row cols="3">
+                        <x-dl::field.text name="assembly_name" label="Nama rakitan" required placeholder="Body" :value="old('assembly_name')" :source="\App\Support\V2\Src::of('tm2sdi.iqp_part.part_name')" />
+                        <x-dl::field.select name="join_type_id" label="Jenis sambungan" required :options="\App\Models\Master\MatJoinType::where('activate', true)->orderBy('sort_order')->pluck('label', 'id_join_type')->all()" :source="\App\Support\V2\Src::of('tm2mst.mat_join_type')" />
+                        <x-dl::field.decimal name="qty_in_parent" label="Qty tiap part dalam rakitan" :decimals="0" value="1" :source="\App\Support\V2\Src::of('tm2sdi.iqp_part.qty_in_parent')" />
+                    </x-dl::form.row>
+                    <x-dl::field.checkboxes name="children" label="Part yang digabung (minimal 2)" required :options="collect($tree)->mapWithKeys(fn ($n) => [$n['id'] => $n['name'].($n['kind'] === 'ASSEMBLY' ? ' (rakitan)' : '')])->all()" />
+                    <x-dl::action-bar><x-dl::button preset="save" label="Buat Rakitan" /></x-dl::action-bar>
+                </form>
+            @else
+                <p class="mp-hint">Simpan minimal 2 part dulu untuk membuat rakitan.</p>
+            @endif
+        @endif
+    </x-dl::card>
+@endif

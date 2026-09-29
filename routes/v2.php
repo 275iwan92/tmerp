@@ -14,6 +14,7 @@ use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocShare;
 use App\Services\Docs\DocShareService;
+use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
@@ -174,6 +175,28 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return back()->with('v2_flash', ProdProductAcc::TYPES[$d['acc_type']].' tercatat.');
         })->name('acc');
+    });
+
+    // Rakitan (ASSEMBLY) Inquiry Baru: kelompokkan part jadi rakitan + jenis sambungan (App\Services\Sales\InquiryAssembly).
+    Route::prefix('inquiry/{id}/assembly')->name('inquiry.assembly.')->whereNumber('id')->middleware('module:SALES')->group(function () {
+        $back = fn (int $id) => redirect(route('v2.screen', 'inquiry-new').'?id='.$id.'#rakitan');
+        Route::post('/', function (Request $r, int $id) use ($back) {
+            $d = $r->validate(['assembly_name' => ['required', 'string', 'max:100'], 'join_type_id' => ['required', 'integer'],
+                'children' => ['required', 'array', 'min:2'], 'qty_in_parent' => ['nullable', 'numeric', 'min:0.0001']],
+                ['children.min' => 'Pilih minimal 2 part.'], ['assembly_name' => 'Nama rakitan', 'join_type_id' => 'Jenis sambungan', 'children' => 'Part']);
+            try {
+                (new InquiryAssembly(Auth::user()->login))->create(IqpInquiry::findOrFail($id), $d['assembly_name'], (int) $d['join_type_id'], $d['children'], (float) ($d['qty_in_parent'] ?? 1) ?: 1);
+            } catch (InvalidArgumentException $e) {
+                return $back($id)->withErrors(['children' => $e->getMessage()]);
+            }
+
+            return $back($id)->with('v2_flash', 'Rakitan "'.$d['assembly_name'].'" dibuat.');
+        })->name('store');
+        Route::post('/{part}/delete', function (int $id, int $part) use ($back) {
+            (new InquiryAssembly(Auth::user()->login))->remove(IqpInquiry::findOrFail($id), $part);
+
+            return $back($id)->with('v2_flash', 'Rakitan dibongkar; part-nya kembali berdiri sendiri.');
+        })->whereNumber('part')->name('delete');
     });
 
     // Quotation v2 (App\Support\V2\Data\Quotation = aturan komponen v1 pages::quotation.entry). Customer tidak diketik: dari inquiry.
