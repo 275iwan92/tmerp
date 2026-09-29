@@ -5,6 +5,8 @@ use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SysConstant;
+use App\Models\Sys\SysDocShare;
+use App\Services\Docs\DocShareService;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
@@ -217,6 +219,35 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return $open($doc)->with('v2_flash', "Inkuiri {$doc->inquiry_no} dibatalkan.");
         })->whereNumber('id')->name('cancel');
+    });
+
+    // Print & Email (objek DevLib x-dl::doc-share): simpan snapshot HTML -> token untuk QR / link online; kirim e-mail.
+    Route::prefix('doc-share')->name('docshare.')->group(function () {
+        Route::post('/', function (Request $r) {
+            $d = $r->validate(['doc_type' => ['required', 'string', 'max:40'], 'doc_id' => ['nullable', 'integer'], 'doc_no' => ['nullable', 'string', 'max:60'],
+                'title' => ['required', 'string', 'max:200'], 'html' => ['required', 'string', 'max:8000000']]);
+            $share = (new DocShareService(Auth::user()->login))->snapshot($d);
+
+            return response()->json(['token' => $share->token, 'url' => $share->url(), 'file' => DocShareService::fileName($share)]);
+        })->name('store');
+
+        Route::post('/{token}/email', function (Request $r, string $token) {
+            $share = SysDocShare::where('token', $token)->firstOrFail();
+            $list = fn ($k) => DocShareService::addresses($r->input($k));
+            $r->merge(['to_list' => $list('to'), 'cc_list' => $list('cc'), 'bcc_list' => $list('bcc')]);
+            $r->validate(['to_list' => ['required', 'array', 'min:1'], 'to_list.*' => ['email'], 'cc_list.*' => ['email'], 'bcc_list.*' => ['email'],
+                'subject' => ['required', 'string', 'max:255'], 'message' => ['nullable', 'string', 'max:5000'],
+                'image' => ['nullable', 'file', 'mimes:jpg,jpeg', 'max:15360'], 'pdf' => ['nullable', 'file', 'mimes:pdf', 'max:15360']],
+                ['to_list.required' => 'Isi minimal satu alamat To.', 'to_list.*.email' => 'Alamat To tidak valid: :input',
+                    'cc_list.*.email' => 'Alamat CC tidak valid: :input', 'bcc_list.*.email' => 'Alamat BCC tidak valid: :input'], ['subject' => 'Subjek']);
+            $log = (new DocShareService(Auth::user()->login))->email($share, ['to' => $r->input('to_list'), 'cc' => $r->input('cc_list'), 'bcc' => $r->input('bcc_list'),
+                'subject' => $r->input('subject'), 'message' => $r->input('message'), 'with_link' => $r->boolean('with_link')], $r->file('image'), $r->file('pdf'),
+                ['name' => Auth::user()->name ?? Auth::user()->login, 'email' => Auth::user()->email]);
+
+            return $log->status === 'SENT'
+                ? response()->json(['message' => 'E-mail terkirim ke '.$log->to_list.'.'])
+                : response()->json(['message' => 'E-mail gagal dikirim: '.$log->error], 422);
+        })->name('email');
     });
 
     // Pedoman alur (Markdown di docs/) -- dibaca user DAN developer sebelum mengubah alur terkait.

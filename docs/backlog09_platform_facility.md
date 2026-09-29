@@ -8,6 +8,20 @@ Fasilitas yang dipakai lintas-modul: chat antar user, AI lokal untuk menjawab ke
 
 ---
 
+## 18. E-MAIL SISTEM — PENGIRIM = E-MAIL USER TERVERIFIKASI + BOUNCE (catatan user 2026-09-29)
+
+Konteks: tombol Email dokumen (`x-dl::doc-share`, `App\Services\Docs\DocShareService`) sudah jalan, tapi `MAIL_MAILER=log`
+di `.env`/`.env.mockup` (belum ada SMTP). Saat ini From = alamat sistem (`MAIL_FROM_ADDRESS`, nama "User via Telasih Makmur"),
+Reply-To = `sec_user.email` pengirim. Improvement saat setting e-mail sistem:
+- [ ] **From = e-mail user** yang diinput di halaman Security (bukan alamat sistem).
+- [ ] Di halaman Security, e-mail user **wajib diuji valid** (kirim link/kode verifikasi, simpan status terverifikasi) —
+      user tanpa e-mail terverifikasi tidak bisa mengirim dokumen.
+- [ ] Alamat tujuan jelas: tiap user mencantumkan e-mail yang valid (lookup user/kontak customer, bukan ketik bebas saja).
+- [ ] **Bounce back** (mailbox penuh / alamat salah) → notifikasi peringatan ke user pengirim (`sys_notification`) +
+      status `sys_doc_email.status` = BOUNCED.
+- [ ] Setting SMTP lewat layar (aturan "semua data wajib punya inputan"), bukan hanya `.env`.
+
+
 
 ## 17. PISAHKAN DATABASE DUMMY `ddt*` UNTUK erptest.test (keputusan user 2026-09-24)
 

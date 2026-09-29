@@ -66,7 +66,7 @@
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     </x-dl::card>
 @else
-    <form method="post" action="{{ route('v2.derived.save', 'revise') }}" enctype="multipart/form-data" data-rv-form data-locked="{{ $locked ? 1 : 0 }}">
+    <form method="post" action="{{ route('v2.derived.save', 'revise') }}" enctype="multipart/form-data" id="revise-form" data-rv-form data-locked="{{ $locked ? 1 : 0 }}">
         @csrf
         <input type="hidden" name="product_id" value="{{ $doc['id'] }}">
         @if ($inq)<input type="hidden" name="id" value="{{ $inq->id_inquiry }}">@endif
@@ -78,6 +78,7 @@
                     <x-dl::badge :label="$inq ? $inq->inquiry_no : 'Belum tersimpan'" />
                     <x-dl::badge :label="$inq?->sub_state ?? 'DRAFT'" :tone="Sales::STATE_TONES[$inq?->sub_state ?? 'DRAFT'] ?? 'neutral'" />
                 </span>
+                <x-dl::doc-share target="#revise-form" type="inquiry-revise" :doc-id="$inq?->id_inquiry" :number="$inq?->inquiry_no" title="Inquiry Revisi" />
             </x-dl::action-bar>
             <h2 class="mp-bigname">{{ $doc['name'] }} <small class="mp-hint">→ Rev.{{ $doc['revision_no'] + 1 }}</small></h2>
             <p class="mp-hint">Induk: {{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ $doc['customer'] }} · inquiry asal {{ $source?->inquiry_no }}. Product induk tetap utuh.</p>

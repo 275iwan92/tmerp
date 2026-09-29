@@ -31,6 +31,9 @@ return [
     // Folder mockup user (di repo tmerp, satu tingkat di atas situs ini).
     'mockup_path' => base_path('docs/mockups'),
 
+    // Endpoint Print/Email x-dl::doc-share (routes/v2.php docshare.*). Kosong = PDF/JPEG saja tanpa QR/online/email.
+    'doc_share_url' => '/v2/doc-share',
+
     // Data contoh untuk halaman komponen (di tmerp nanti dari Lookup/tabel master).
     'demo' => [
         'locations' => [

@@ -131,10 +131,12 @@ KS Power N120 MF
   Priced Inquiry → Quotation (WIN → Master Product) → Customer Order → Shipping Schedule → Post to Production.
 - **ACC Digital / Proof Digital = dokumen CETAK.** Pencatatan ACC customer (tanggal & jam, penyetuju, saluran, bukti)
   ada di **form ProDev**, dengan **tombol khusus "Print ACC / Proof Digital"** di form itu. Tidak ada menu terpisah.
-- **Print & Email di setiap form (⬜ belum dibangun)**: tombol Print → PDF, JPEG, dan HTML online (html+css+svg+js)
-  yang selalu memuat **QR code** untuk handover; tombol **Email** → hasil print online jadi body e-mail atau lampiran
-  PDF, user mengisi To / CC / BCC / pesan lalu kirim. Dibangun di **DevLib** sebagai objek induk supaya semua form
-  mewarisinya (OO).
+- **Print & Email di setiap form (✅ dibangun 2026-09-29)** = objek DevLib **`x-dl::doc-share`** (`Devlib\Components\DocShare`
+  + JS `DocShare`): tombol **Print ▾** → PDF, JPEG, HTML online (link tanpa login `/d/{token}`), Printer; semua hasil
+  membawa **QR** ke salinan online (snapshot saat dicetak, `tm2sys.sys_doc_share`). Tombol **Email** → To/CC/BCC/Subjek/
+  Pesan + pilih: link online, dokumen (gambar) di isi e-mail, lampiran PDF; tercatat di `sys_doc_email`. Layar cukup
+  menaruh 1 tag dan menunjuk area dokumennya (`target`). Masa berlaku link = konstanta `DOC_SHARE_DAYS` (0 = tanpa batas).
+  Sudah terpasang: Master Product, Inquiry Rekalkulasi, Inquiry Revisi, ACC / Proof Digital.
 - Halaman login tmerp.test & mockup.test **tanpa daftar akun UAT** (dimatikan 2026-09-29 di `.env.mockup`).
 - (Nanti) Pendaftaran akun: tanyakan **nama lengkap** dulu untuk dicek keberadaan user-nya.
 - Backup & disaster recovery: `docs/dr_backup_guide.md`.

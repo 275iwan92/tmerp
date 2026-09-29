@@ -2,6 +2,8 @@
 
 namespace Devlib\Components;
 
+use Devlib\Locale;
+
 // Tombol baku. icon = arti baku (save, delete, print... lihat Devlib\Icon) atau emoji. href terisi = dirender <a>. variant link = tampil sebagai tautan.
 class Button extends DevlibComponent
 {
@@ -18,7 +20,7 @@ class Button extends DevlibComponent
     ) {
         if ($preset && isset(self::PRESETS[$preset])) {
             [$id, $en, $variant, $icon, $type] = self::PRESETS[$preset];
-            $this->label = $this->label !== '' ? $this->label : (\Devlib\Locale::lang() === 'en' ? $en : $id);
+            $this->label = $this->label !== '' ? $this->label : (Locale::lang() === 'en' ? $en : $id);
             $this->variant = $this->variant === 'primary' ? $variant : $this->variant;
             $this->icon ??= $icon;
             $this->type ??= $type;
@@ -37,6 +39,7 @@ class Button extends DevlibComponent
         'new' => ['+ New Record', '+ New Record', 'primary', null, 'button'],
         'apply' => ['Terapkan', 'Apply', 'primary', null, 'button'],
         'print' => ['Cetak', 'Print', 'secondary', 'print', 'button'],
+        'email' => ['Email', 'Email', 'secondary', 'email', 'button'],
         'submit' => ['Ajukan', 'Submit', 'primary', 'submit', 'submit'],
         'approve' => ['Setujui', 'Approve', 'success', 'approve', 'button'],
         'reject' => ['Tolak', 'Reject', 'danger', 'reject', 'button'],

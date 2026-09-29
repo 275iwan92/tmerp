@@ -34,7 +34,7 @@
     <x-dl::action-bar>
         <x-dl::button variant="secondary" icon="back" label="Back" href="javascript:history.back()" />
         <x-dl::button variant="secondary" icon="view" label="Master Product" :href="route('v2.screen', 'master-product').'?id='.$doc['id']" />
-        <x-dl::button preset="print" onclick="window.print()" />
+        <x-dl::doc-share target=".mp-proof" type="product-acc" :doc-id="$doc['id']" :number="$doc['code']" title="ACC / Proof Digital" orientation="landscape" />
     </x-dl::action-bar>
 
     <div class="mp-proof" data-dl-src="{{ Src::of('tm2mst.prod_product', 'tm2mst.prod_part_artwork', 'tm2mst.prod_product_acc') }}">

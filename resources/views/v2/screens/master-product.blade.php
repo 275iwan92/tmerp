@@ -54,9 +54,10 @@
         :filters="['customer' => 'Customer', 'join' => 'Sambungan', 'status' => 'Status']" />
     <p class="mp-hint">Product lahir otomatis saat Quotation WIN (CO terbentuk) — tidak dibuat manual. Klik 2x baris untuk membuka.</p>
 @else
-    <x-dl::card>
+    <x-dl::card id="mp-doc">
         <x-dl::action-bar>
             <x-dl::button variant="secondary" icon="back" label="Back" :href="route('v2.screen', 'master-product')" />
+            <x-dl::doc-share target="#mp-doc" type="master-product" :doc-id="$doc['id']" :number="$doc['code']" title="Master Product" />
             <span class="mp-chips">
                 <x-dl::badge :label="$doc['status'] === 'ACTIVE' ? 'Resmi · Quotation WIN' : 'DRAFT (ProDev)'" :tone="$doc['status'] === 'ACTIVE' ? 'success' : 'neutral'" />
                 @if ($doc['join'])<x-dl::badge :label="$doc['join']" tone="warn" />@endif

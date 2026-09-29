@@ -2334,3 +2334,32 @@ html.dl-locked body{overflow:hidden}
 .dl-prose pre code{background:none;padding:0}
 .dl-prose table{border-collapse:collapse;margin:1em 0}
 .dl-prose th,.dl-prose td{border:1px solid var(--dl-border);padding:6px 10px;text-align:left}
+
+/* ===== DocShare (x-dl::doc-share): Print ▾ + Email ===== */
+.dl-docshare{display:inline-flex;gap:8px;align-items:center;position:relative}
+.dl-docshare__menu{position:relative;display:inline-flex}
+.dl-docshare__caret{margin-left:6px;font-size:.8em;opacity:.7}
+.dl-docshare__list{display:none;position:absolute;top:calc(100% + 4px);right:0;z-index:60;min-width:230px;padding:6px;background:var(--dl-surface);border:1px solid var(--dl-border);border-radius:10px;box-shadow:0 10px 30px rgba(15,23,42,.16)}
+.dl-docshare.is-open .dl-docshare__list{display:block}
+.dl-docshare__list button{display:grid;grid-template-columns:22px 1fr;column-gap:8px;width:100%;padding:8px 10px;border:0;background:none;border-radius:7px;color:var(--dl-ink);text-align:left;cursor:pointer;font:inherit}
+.dl-docshare__list button:hover{background:var(--dl-hover)}
+.dl-docshare__list button i{grid-row:span 2;align-self:center;color:var(--dl-accent)}
+.dl-docshare__list small{grid-column:2;color:var(--dl-muted);font-size:.78em}
+.dl-docshare.is-busy{opacity:.6;cursor:progress}
+.dl-docshare__online{display:grid;gap:12px;justify-items:center}
+.dl-docshare__online .dl-field{width:100%}
+.dl-docshare__qr img{width:180px;height:180px;display:block}
+.dl-docshare__mailform{display:grid;gap:10px}
+.dl-docshare__stage{position:absolute;left:-20000px;top:0;background:#fff;padding:18px;box-sizing:border-box}
+.dl-docshare__head{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid #1f2937;color:#111827}
+.dl-docshare__head b{display:block;font-size:18px}.dl-docshare__head small{color:#6b7280}
+.dl-docshare__head figure{margin:0;text-align:center}.dl-docshare__head figure img{width:96px;height:96px}
+.dl-docshare__head figcaption{font-size:9px;color:#6b7280;max-width:180px;word-break:break-all}
+/* Halaman dokumen online /d/{token} */
+.dl-share-page{background:#eef1f5;margin:0;padding:16px}
+.dl-share-page__head{max-width:1100px;margin:0 auto 12px;display:flex;gap:16px;align-items:center;background:#fff;border-radius:10px;padding:12px 16px}
+.dl-share-page__head>div:first-child{flex:1;display:grid;gap:2px}.dl-share-page__head small,.dl-share-page__head span{color:#6b7280;font-size:12px}
+.dl-share-page__qr img{width:84px;height:84px}
+.dl-share-page__doc{max-width:1100px;margin:0 auto;background:#fff;border-radius:10px;padding:16px;overflow-x:auto}
+@media print{.dl-share-page{background:#fff;padding:0}.dl-share-page__head button{display:none}.dl-share-page__doc{padding:0;max-width:none}}
+@media (max-width:640px){.dl-share-page{padding:8px}.dl-share-page__head{flex-wrap:wrap}}

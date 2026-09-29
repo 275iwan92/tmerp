@@ -71,6 +71,7 @@
                     <x-dl::badge :label="$inq ? $inq->inquiry_no : 'Belum tersimpan'" />
                     <x-dl::badge :label="$inq?->sub_state ?? 'DRAFT'" :tone="Sales::STATE_TONES[$inq?->sub_state ?? 'DRAFT'] ?? 'neutral'" />
                 </span>
+                <x-dl::doc-share target="#recalc-form" type="inquiry-recalc" :doc-id="$inq?->id_inquiry" :number="$inq?->inquiry_no" title="Inquiry Rekalkulasi" />
             </x-dl::action-bar>
             <h2 class="mp-bigname">{{ $doc['name'] }}</h2>
             <p class="mp-hint">{{ $doc['code'] }} · No. Desain {{ $doc['design_no'] ?? '—' }} · {{ collect($doc['dims'])->map(fn ($v) => $v === null ? '—' : rtrim(rtrim(number_format($v, 2, ',', ''), '0'), ','))->implode(' × ') }} cm{{ $doc['join'] ? ' · '.$doc['join'] : '' }}</p>

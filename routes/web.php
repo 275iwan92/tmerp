@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\Sys\SysDocShare;
 use App\Services\Portal\CandidateAuthService;
 use App\Support\Branding\Brand;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 Route::get('/', fn () => redirect(config('app.ui') === 'v2' ? '/v2' : '/menu'));
 
@@ -27,6 +29,20 @@ Route::get('/manifest.json', function () {
         ],
     ])->header('Content-Type', 'application/manifest+json');
 })->name('pwa.manifest');
+
+// Dokumen online hasil Print/Email (QR serah terima) -- publik tanpa login, token acak 128-bit, isi = snapshot saat dicetak.
+Route::get('/d/{token}', function (string $token) {
+    $share = SysDocShare::where('token', $token)->first();
+    abort_if(! $share, 404);
+    abort_if($share->isExpired(), 410, 'Link dokumen ini sudah kedaluwarsa.');
+    $share->timestamps = false;
+    $share->increment('view_count', 1, ['last_viewed_at' => now()]);
+    $nonce = Str::random(24);
+
+    return response()->view('v2.share', ['share' => $share, 'nonce' => $nonce])
+        ->header('Content-Security-Policy', "script-src 'nonce-{$nonce}' https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'none'; form-action 'none'")
+        ->header('X-Robots-Tag', 'noindex');
+})->where('token', '[a-f0-9]{32}')->name('doc.share');
 
 // Portal Rekrutmen Profesional (publik, DI LUAR middleware 'auth' internal --
 // akun kandidat TERPISAH dari sec_user, lihat App\Services\Portal\CandidateAuthService
