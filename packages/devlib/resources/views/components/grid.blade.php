@@ -19,7 +19,8 @@
                 <x-dl::button variant="secondary" size="sm" icon="columns" label="Kolom" data-g-toggle="columns" />
                 <div class="dl-pop2__panel" data-g-panel="columns"><div class="dl-pop2__title">Kolom tampil</div><div data-g-col-list></div></div>
             </div>
-            @if ($groups)
+            {{-- Grid transaksi tanpa tombol Grup (user 2026-09-30); group-by awal dari layar tetap berlaku. --}}
+            @if ($groups && ! $isTx())
                 <div class="dl-pop2" data-g-pop>
                     <x-dl::button variant="secondary" size="sm" icon="group" label="Grup" data-g-toggle="group" />
                     <div class="dl-pop2__panel" data-g-panel="group"><div class="dl-pop2__title">Kelompokkan menurut</div><div data-g-group-list></div></div>
