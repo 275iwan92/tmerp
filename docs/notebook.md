@@ -28,7 +28,11 @@
 
 ## 1. Sales (Inquiry, Quotation, Customer Order, Delivery/CPDEL)
 
-- [ ]
+- [ ] Butuh ada standard ukuran plano, 65 x 100, 61 x 86, 89 x 120, 90 x 120, 70 x 100, 65 x 90, 72 x 102, 79 x 109, 89 x 125
+- [ ] Butuh tambahan warna dari 4/4 menjadi 6/6 dan semua opsi harus ada misal 4/3, 4/4 dan seterusnya sampai pada 6/6.
+- [ ] harus ada pilihan warna untuk warna khusus 4 kotak 
+- [ ] harus ada fasilitas acc digital
+
 
 ## 2. Purchase / Procurement
 
@@ -36,7 +40,7 @@
 
 ## 3. Inventory / Warehouse
 
-- [ ]
+- [ ] butuh kepastian summary stock report dan stock card 
 
 ## 4. Production (ProDev, ProCost, Scheduling, Work Order)
 
