@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\DdtBaseline;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SysConstant;
 use App\Services\Sales\InquiryDuplicator;
@@ -10,6 +11,7 @@ use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -131,6 +133,29 @@ Route::prefix('v2')->name('v2.')->group(function () {
         return view('v2.dictionary', ['stats' => Schema::stats(), 'columns' => Schema::columns(), 'tables' => Schema::tables(),
             'duplicates' => Schema::duplicates(), 'copies' => Schema::copies(), 'changes' => Schema::changes()]);
     })->name('dictionary');
+
+    // Data dummy: baseline & reset (user 2026-09-28). Developer saja; ddt:baseline menolak bila bukan database ddt*.
+    Route::prefix('dummy')->name('dummy.')->group(function () {
+        $guard = fn () => abort_unless(AppMenu::user(Auth::user())['developer'], 403);
+        $run = function (string $action, string $ok) use ($guard) {
+            $guard();
+            set_time_limit(0);
+            try {
+                Artisan::call('ddt:baseline', ['action' => $action, '--force' => true]);
+            } catch (Throwable $e) {
+                return back()->with('v2_error', $e->getMessage());
+            }
+
+            return back()->with('v2_flash', $ok.' '.trim(collect(explode("\n", Artisan::output()))->filter()->last()));
+        };
+        Route::get('/', function () use ($guard) {
+            $guard();
+
+            return view('v2.dummy', ['manifest' => DdtBaseline::manifest()]);
+        })->name('index');
+        Route::post('/reset', fn () => $run('restore', 'Reset selesai.'))->name('reset');
+        Route::post('/save', fn () => $run('save', 'Baseline disimpan.'))->name('save');
+    });
 
     // Mockup HTML/gambar asli (docs/mockups), dibuka dari kartu info layar.
     Route::get('/berkas/{file}', function (string $file) {

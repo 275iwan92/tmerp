@@ -1,0 +1,39 @@
+@extends('v2.layout', ['title' => 'Data Dummy', 'bodyClass' => 'dl-page-body'])
+@section('body')
+    <div class="dl-cat">
+        @if (session('v2_flash'))
+            <x-dl::alert tone="success" :message="session('v2_flash')" />
+        @endif
+        @if (session('v2_error'))
+            <x-dl::alert tone="danger" :message="session('v2_error')" />
+        @endif
+
+        <x-dl::card title="Data Dummy (UAT) — baseline & reset" icon="fa-rotate-left"
+            description="Baseline = salinan kondisi data dummy yang dianggap benar. Reset mengembalikan semua database dummy bisnis persis ke baseline. Akun, menu, dan security (ddtsys) tidak ikut direset.">
+            @if ($manifest)
+                <div class="dl-grid__stats">
+                    <x-dl::stat-box label="Baseline dibuat" :value="$manifest['created_at']" />
+                    <x-dl::stat-box label="Oleh" :value="$manifest['by']" />
+                    <x-dl::stat-box label="Database" :value="count($manifest['databases'])" />
+                    <x-dl::stat-box label="File upload" :value="$manifest['files']" />
+                </div>
+                <p class="dl-note">{{ implode(' · ', $manifest['databases']) }}</p>
+            @else
+                <x-dl::alert tone="warn" message="Belum ada baseline. Simpan kondisi data dummy sekarang sebagai baseline dulu." />
+            @endif
+
+            <x-dl::action-bar>
+                <form method="POST" action="{{ route('v2.dummy.reset') }}">
+                    @csrf
+                    <x-dl::button type="submit" variant="danger" icon="fa-rotate-left" label="Reset data dummy" :disabled="! $manifest"
+                        data-dl-confirm="Semua perubahan pada data dummy sejak baseline akan hilang dan dikembalikan ke baseline. Lanjutkan?" />
+                </form>
+                <form method="POST" action="{{ route('v2.dummy.save') }}">
+                    @csrf
+                    <x-dl::button type="submit" variant="secondary" icon="fa-floppy-disk" label="Jadikan kondisi sekarang baseline"
+                        data-dl-confirm="Baseline lama ditimpa dengan kondisi data dummy sekarang. Lanjutkan?" data-dl-confirm-tone="warn" />
+                </form>
+            </x-dl::action-bar>
+        </x-dl::card>
+    </div>
+@endsection

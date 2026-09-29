@@ -44,6 +44,11 @@
 | `mockup_FORM_prodev_3.png` | Mockup Step 3 (Costing): stat card Selling Price/AI Nesting Savings/Raw Material Mass/Total Budget, itemized cost line items, volume price curve | ⬜ Belum dipakai — `inquiry/costing.blade.php` tidak di-redesign, cuma ditambah wizard-bar navigasi | Referensi kalau nanti mau redesign Costing |
 | `mockup_FORM_prodev_4.png` | Mockup Master Card — ternyata SUDAH sangat dekat dgn `production/prodev-print.blade.php` yang ada (No.Desain/Dimensi/Kode Pisau/Material/layout imposisi/routing/5 signoff role) | ✅ Dikonfirmasi selaras, cuma ditambah wizard-bar | `production.prodev.print` |
 | `mockup_FORM_prodev_5.png` | Mockup Step 5 (Analytics): dashboard Material Utilization & Operational Efficiency — Sheet Yield/Waste Reduction/Batch Cost Saved/Substrate Saved, chart benchmark algoritma + cost breakdown donut | ⬜ Belum dibangun — modul Analytics belum ada sama sekali, wizard-bar step ini disabled "belum dibangun" | Kandidat modul baru kalau mau dikerjakan |
+| `sample-1-mama_sakhi.jpg` | Artwork bentangan penuh Paper Lunch Box (PPL) "Mama Sakhi Kitchen", kraft full color + Halal; ukuran tidak tercetak | ✅ Dummy UAT `IQ99FBX002` (PPL M standar) | `UatFoodBoxInquirySeeder` |
+| `sample-2-martabak.jpg` | Artwork dus martabak "Martabak & Terang Bulan A-ye Bandung" (tutup berengsel + lidah kunci); ukuran tidak tercetak | ✅ Dummy `IQ99FBX005` (Dus Nasi/RICE_BOX 21x13,5x5,5 standar); dasar ubah Dus Martabak -> RICE_BOX di Lookup Product Market | `UatFoodBoxInquirySeeder`, `UatProductMarketSeeder` |
+| `sample-3-stoicbox.jpg` | Mailer box "Stoic Box" cetak 2 sisi: kiri = luar (kuning), kanan = dalam (biru) | ✅ Dummy `IQ99FBX006` (MAILER 31x20x7 standar), dipotong jadi artwork luar + sisi dalam | `UatFoodBoxInquirySeeder` |
+| `sample-4-dowiqpispa.jpg` | Box kue R8 "Dowiq Pispa Bakery" — tercetak "R8 KRAFT 18 x 18 x 6,7 cm" (ukuran customer) | ✅ Dummy `IQ99FBX004` (menggantikan .webp lama) | `UatFoodBoxInquirySeeder` |
+| `sample-5-mbakida.jpg` | PPL "Warung Mbak Ida" — tercetak "PPL M 15,8 x 9 x 4,85 cm" | ✅ Dummy `IQ99FBX001` (menggantikan .webp lama); acuan uji artwork menempel di dieline | `UatFoodBoxInquirySeeder` |
 
 ## Catatan tambahan
 

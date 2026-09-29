@@ -10,7 +10,8 @@ use RuntimeException;
 // Tipe Produk (dieline), bahan #1 Paper / #2 Sheet (kategori bahan baku 5 tingkat), warna, jenjang qty, ukuran pasaran.
 // Ukuran bertanda (perkiraan) = ukuran umum pasar yang belum diverifikasi ke sumber resmi; lainnya dari riset:
 // rokok 85x55x20 / 98x56x20 / 100x45x15 mm (thelegacyprinting, urgentboxes), parfum 30ml 5x5x10 & 100ml 7x7x14 cm
-// (paperlicious, pacmora), sepatu 18x14x8 s/d 33x20x13 cm (pamanpack, wellenprint).
+// (paperlicious, pacmora), sepatu 18x14x8 s/d 33x20x13 cm (pamanpack, wellenprint),
+// dus martabak 21x13,5x5,5 / 16x12x5 / 12x8x4 cm (printingharvest), mailer e-flute 22x14x6 .. 31x25x6 cm (twindigital) — 2026-09-29.
 // Hanya di ddt*. Diulang = reset (baris created_by = uat-seeder dihapus dulu).
 //   php artisan db:seed --class=UatProductMarketSeeder --env=mockup
 class UatProductMarketSeeder extends Seeder
@@ -81,8 +82,9 @@ class UatProductMarketSeeder extends Seeder
                     ['Snack 100 g (perkiraan)', 120, 40, 170], ['Cookies 200 g (perkiraan)', 150, 60, 200]]],
                 ['BOX_DONAT', 'Box Donat', 'SHALLOW_BOX', 'Duplex', null, '4/0', '1000,3000,5000', null, [
                     ['Isi 6 (perkiraan)', 260, 180, 60], ['Isi 12 (perkiraan)', 350, 260, 60]]],
-                ['DUS_MARTABAK', 'Dus Martabak', 'SHALLOW_BOX', 'Duplex', null, '2/0', '1000,3000,5000', null, [
-                    ['Martabak Manis (perkiraan)', 260, 260, 50], ['Martabak Telur (perkiraan)', 220, 150, 50]]],
+                // Dus martabak = tutup berengsel + lidah kunci (sampel customer 2026-09-29) -> dieline Dus Nasi (RICE_BOX), bukan tray.
+                ['DUS_MARTABAK', 'Dus Martabak', 'RICE_BOX', 'Duplex', null, '2/0', '1000,3000,5000', 'Kraft/duplex laminasi food grade.', [
+                    ['Martabak Manis Besar', 210, 135, 55], ['Martabak Sedang', 160, 120, 50], ['Martabak Mini', 120, 80, 40]]],
             ]],
             'KEMASAN_ELEKTRONIK' => ['Kemasan Elektronik & Gadget', [
                 ['BOX_HANDPHONE', 'Box Handphone', 'BOX_WITH_LID', 'Art carton', null, '4/0', '1000,3000,5000', 'Hard box art carton + greyboard.', [
@@ -93,7 +95,8 @@ class UatProductMarketSeeder extends Seeder
             ]],
             'KEMASAN_ECOMMERCE' => ['Kemasan E-commerce / Pengiriman', [
                 ['MAILER_ONLINE', 'Mailer Box Online Shop', 'MAILER', 'Kraft', 'SHEF', '1/0', '1000,3000,5000', 'Kraft + E-flute, sablon/1 warna.', [
-                    ['S (perkiraan)', 200, 150, 50], ['M (perkiraan)', 250, 200, 80], ['L (perkiraan)', 300, 250, 100]]],
+                    ['22 x 14 x 6 cm', 220, 140, 60], ['29 x 18 x 7,5 cm', 290, 180, 75], ['31 x 20 x 7 cm', 310, 200, 70],
+                    ['25 x 25 x 6 cm', 250, 250, 60], ['31 x 25 x 6 cm', 310, 250, 60]]],
             ]],
             'KEMASAN_HAMPERS' => ['Hampers & Gift', [
                 ['BOX_HAMPERS', 'Box Hampers', 'BOX_WITH_LID', 'Art carton', 'SHEF', '4/0', '500,1000,3000', 'Musiman (Lebaran/Natal).', [

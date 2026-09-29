@@ -6,6 +6,7 @@ use App\Models\Sys\SecUser;
 use App\Models\Sys\SysAppMenu;
 use App\Support\Localization\Translator;
 use App\Support\Menu\MenuRoutes;
+use Illuminate\Support\Facades\DB;
 
 // Menu v2 (x-dl::layer-shell) dari sys_app_menu (di mockup.test = ddtsys). Isi menu = induk di database, bukan kode.
 // Hak akses: modul lewat SecUser::visibleAppMenuCodes() (sama dengan v1), PLUS required_object di grup/item
@@ -52,7 +53,9 @@ final class AppMenu
 
         if (self::user($user)['developer']) {
             $modules[] = ['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'children' => [
-                ['label' => 'Database', 'items' => [['code' => 'V2-dictionary', 'label' => 'Data Dictionary', 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report']]],
+                ['label' => 'Database', 'items' => [['code' => 'V2-dictionary', 'label' => 'Data Dictionary', 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report'],
+                    // Hanya di situs dummy (database ddt*): baseline & reset data UAT.
+                    ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => 'Data Dummy (Reset)', 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report']] : [])]],
             ]];
         }
 
