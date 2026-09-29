@@ -15,7 +15,7 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 - Quotation berisi **banyak inquiry**; **1 inquiry = 1 product**. ✅ (quotation multi-inquiry sudah ada)
 - **1 Quotation ↔ 1 Customer Order** (No. CO). Satu CO punya **banyak CO Detail**. ✅
 - **Setiap CO Detail menunjuk ke Master Product** — rantai lengkap bisa ditelusuri:
-  Quotation → No. CO → CO Detail → Product → Parts. 🟡 (kolom `co_order_item.product_id` ada, tapi sekarang diisi dari
+  Quotation → No. CO → CO Detail → Product (milik customer) → Parts. 🟡 (kolom `co_order_item.product_id` ada, tapi sekarang diisi dari
   `iqp_inquiry.parent_product_id` yang punya 2 arti — lihat §7)
 
 ## 2. Quotation WIN = lahir di Master Product ⬜
@@ -25,8 +25,10 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 - Yang ikut menjadi data pokok product: **semua part** beserta bahan, BOM, BOP, warna/tinta, finishing,
   **dieline + ukuran bentangan**, **mockup/artwork sisi luar & dalam**, layout ProDev (plano, UP, pisau),
   dan semua ketentuan detail lainnya.
-- **Nama product masih boleh diubah Sales (manual)** sampai **No. PO customer diisi di Customer Order** — setelah itu
-  terkunci. Tujuan: nama product di **salinan PO customer = CO Detail = Surat Jalan Detail** (sama persis).
+- **Setiap product WAJIB punya pemilik = customer** (`prod_product.customer_id`), ditampilkan & bisa ditelusuri
+  (semua product milik 1 customer). Master Product **tidak** menampilkan No. PO (user 2026-09-29).
+- **Nama product diubah manual oleh Sales** supaya sama dengan PO customer. Tujuan: nama product di
+  **salinan PO customer = CO Detail = Surat Jalan Detail** (sama persis).
 
 ## 3. Struktur product: 1 product = banyak part, bisa bertingkat ⬜
 
