@@ -4,6 +4,7 @@ use App\Console\Commands\DdtBaseline;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Sdi\CoOrder;
+use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
@@ -13,6 +14,7 @@ use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
 use App\Support\V2\AppMenu;
+use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\Quotation;
@@ -295,6 +297,24 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
         })->whereNumber('id')->name('delete');
+    });
+
+    // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
+    Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'cpdel').'?id='.$id);
+        Route::post('/{id}/split', function (Request $r, int $id) use ($open) {
+            $d = $r->validate(['ship_date' => ['required', 'date'], 'split_qty' => ['nullable', 'numeric']], [], ['ship_date' => 'Tanggal kirim', 'split_qty' => 'Qty dipecah']);
+            $error = Cpdel::split($id, $d['split_qty'] ?? null, $d['ship_date']);
+
+            return $error ? $open($id)->withErrors(['split' => $error]) : $open($id)->with('v2_flash', 'Jadwal kirim diperbarui.');
+        })->whereNumber('id')->name('split');
+        Route::post('/merge', function (Request $r) use ($open) {
+            $ids = array_map('intval', (array) $r->input('ids', []));
+            $error = Cpdel::merge($ids);
+
+            return $error ? back()->withErrors(['merge' => $error])
+                : $open((int) CoOrderDelivery::whereIn('id_delivery', $ids)->value('id_delivery'))->with('v2_flash', 'Baris berhasil digabung ke tanggal paling awal.');
+        })->name('merge');
     });
 
     // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).
