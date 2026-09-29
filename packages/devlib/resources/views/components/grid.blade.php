@@ -1,4 +1,4 @@
-<div {{ $attributes->class(['dl-grid', 'dl-grid--report' => $isReport(), 'dl-grid--tx' => $isTx()]) }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
+<div {{ $attributes->class(['dl-grid', 'dl-grid--report' => $isReport(), 'dl-grid--entry' => $isEntry()]) }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
     @if ($stats)<div class="dl-grid__stats" data-g-stats></div>@endif
     <div class="dl-grid__panel">
         @if ($tabs)<div class="dl-tabs__bar dl-grid__tabs" data-g-tabs></div>@endif
@@ -19,14 +19,14 @@
                 <x-dl::button variant="secondary" size="sm" icon="columns" label="Kolom" data-g-toggle="columns" />
                 <div class="dl-pop2__panel" data-g-panel="columns"><div class="dl-pop2__title">Kolom tampil</div><div data-g-col-list></div></div>
             </div>
-            {{-- Grid transaksi tanpa tombol Grup (user 2026-09-30); group-by awal dari layar tetap berlaku. --}}
-            @if ($groups && ! $isTx())
+            {{-- Grid Pre-Entry tanpa tombol Grup (user 2026-09-30); group-by awal dari layar tetap berlaku. --}}
+            @if ($groups && ! $isEntry())
                 <div class="dl-pop2" data-g-pop>
                     <x-dl::button variant="secondary" size="sm" icon="group" label="Grup" data-g-toggle="group" />
                     <div class="dl-pop2__panel" data-g-panel="group"><div class="dl-pop2__title">Kelompokkan menurut</div><div data-g-group-list></div></div>
                 </div>
             @endif
-            @unless ($isTx())
+            @unless ($isEntry())
             <div class="dl-pop2" data-g-pop>
                 <x-dl::button variant="secondary" size="sm" icon="density" label="Kerapatan" data-g-toggle="density" />
                 <div class="dl-pop2__panel" data-g-panel="density">

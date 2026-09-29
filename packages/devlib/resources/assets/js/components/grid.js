@@ -14,16 +14,17 @@
       this.hasExp = this.cfg.expand.length > 0 || !!this.cfg.detail;
       // report = Grid for Reporting: rapat, tanpa centang/Aksi, saring per kolom di kepala tabel.
       this.report = this.cfg.mode === 'report';
-      // tx = grid transaksi Pre-Data Entry (user 2026-09-30): selalu rapat, kolom Aksi tanpa judul di paling kiri,
-      // ikon tanpa kotak. Centang hanya bila layar memasang aksi massal (bulk) -- tanpa bulk centang tak berguna.
-      this.tx = !this.report && this.cfg.actions !== 'master';
+      // entry = Grid Pre-Entry (user 2026-09-30): kolom Aksi tanpa judul di paling kiri, ikon tanpa kotak.
+      // Transactional selalu rapat; Master (kotak image/inisial di tiap baris) selalu normal.
+      // Centang hanya bila layar memasang aksi massal (bulk) -- tanpa bulk centang tak berguna.
+      this.entry = !this.report;
       this.chk = !this.report && this.cfg.bulk.length > 0;
       this.saveKey = 'dl-grid-' + this.cfg.id;
       this.saved = {};
       try { this.saved = JSON.parse(localStorage.getItem(this.saveKey) || '{}'); } catch (e) {}
 
       this.st = Object.assign({search: '', sort: null, dir: 1, stat: null, tab: 0, filters: {}, hidden: this.cols.filter(c => !c.visible).map(c => c.key),
-        group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: this.report ? 'compact' : 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: '', colf: {}}, this.tx ? {density: 'compact', lines: 'fixed', linesN: 1} : {});
+        group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: this.report ? 'compact' : 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: '', colf: {}}, this.entry ? {density: this.cfg.actions === 'master' ? 'normal' : 'compact', lines: 'fixed', linesN: 1} : {});
 
       this.sel = new Set();
       this.lastIdx = null;
@@ -160,11 +161,11 @@
     }
 
     actFirst() {
-      return this.tx && this.cfg.actions !== 'none';
+      return this.entry && this.cfg.actions !== 'none';
     }
 
     actLast() {
-      return !this.tx && this.cfg.actions !== 'none';
+      return !this.entry && this.cfg.actions !== 'none';
     }
 
     sorted(list) {

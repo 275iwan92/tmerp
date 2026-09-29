@@ -14,7 +14,7 @@ final class Catalog
         'p7-layer' => '2026-09-24',   // Layer Menu
         'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
         'p5-grid-tx' => '2026-09-30',     // Grid Pre-Entry > Transactional -- DISETUJUI & DIKUNCI user; jangan ubah tanpa perintah user
-        'p5-grid-ntx' => '2026-09-26',    // Grid Pre-Entry > Non-Transactional (Master, isi tidak berubah dari p5-grid)
+        'p5-grid-master' => '2026-09-30', // Grid Pre-Entry > Grid Master (dulu Non-Transactional) -- tata letak = Transactional + kotak per baris
         'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
         'p5-grid-group' => '2026-09-26',     // Grid Report dipecah per varian 2026-09-30, isi tidak berubah
         'p5-grid-drilldown' => '2026-09-26',
@@ -90,15 +90,16 @@ final class Catalog
             // Grid, Form, Dokumen = 3 menu terpisah (user 2026-09-26) supaya breadcrumb menunjukkan keluarganya.
             ['code' => 'GR', 'short' => 'GR', 'label' => 'Grid', 'icon' => 'fa-solid fa-table',
                 'pages' => [
-                    // Pohon menu Grid (user 2026-09-30): Grid Pre-Entry (Transactional | Non-Transactional), Grid Report, Grid Special,
+                    // Pohon menu Grid (user 2026-09-30): Grid Pre-Entry (Transactional | Master), Grid Report, Grid Special,
                     // Grid Variant. 'folder' = submenu Layer Menu tempat halaman ini berada.
                     // Transactional = pintu ke dokumen: rapat, Aksi tanpa judul di kiri, ikon tanpa kotak, centang hanya bila ada bulk.
-                    // Non-Transactional = Master: kotak foto, Edit + Aktif/Nonaktif.
+                    // Grid Master = sama persis dengan Transactional, beda satu: kotak di tiap baris (image, tanpa image -> 2 huruf),
+                    // sehingga kerapatan normal (bukan rapat).
                     'p5-grid-tx' => $page('Grid Transactional', 'fa-solid fa-file-invoice', [
                         'grid-worklist' => ['Grid Transactional (worklist dokumen)', $c('Grid')],
                     ], 'grid_kerapatan_baris.html') + ['folder' => 'Grid Pre-Entry'],
-                    'p5-grid-ntx' => $page('Grid Non-Transactional', 'fa-solid fa-address-book', [
-                        'grid-master' => ['Grid Non-Transactional (Master: photo box + Edit + Active/Inactive)', $c('Grid')],
+                    'p5-grid-master' => $page('Grid Master', 'fa-solid fa-address-book', [
+                        'grid-master' => ['Grid Master (box per row: image or 2-letter initials)', $c('Grid')],
                     ], 'grid_kerapatan_baris.html') + ['folder' => 'Grid Pre-Entry'],
                     // Grid Report = submenu, 1 halaman per varian (user 2026-09-30).
                     'p5-grid-report' => $page('Grid Report List', 'fa-solid fa-table-list', [

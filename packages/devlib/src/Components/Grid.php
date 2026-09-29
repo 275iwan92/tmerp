@@ -23,10 +23,12 @@ namespace Devlib\Components;
 // newUrl: alamat tombol + New Record (pindah ke form baru / pemilih sumber).
 // quickAdd: [kolom..] -> baris isian cepat di atas tabel (Enter = tambah, event dl:grid-add). groupBy = grup awal.
 // mode (user 2026-09-26, dua keluarga grid yang dipisah):
-//   entry  = Grid Pre-Entry: pintu ke form, + New Record. Dua cabang (user 2026-09-30):
-//            Transactional (actions worklist/none, isTx): selalu rapat, kolom Aksi tanpa judul di paling kiri, ikon tanpa kotak.
-//            Non-Transactional (actions master): baris lega, kotak foto (image + fallback inisial), Edit + Aktif/Nonaktif di kanan.
-//            Centang hanya muncul bila layar memasang bulk (aksi massal) -- tanpa bulk centang tidak berguna.
+//   entry  = Grid Pre-Entry: pintu ke form, + New Record. Dua cabang dengan tata letak SAMA (user 2026-09-30):
+//            kolom Aksi tanpa judul di paling kiri, ikon tanpa kotak, toolbar tanpa Grup/Kerapatan,
+//            centang hanya bila layar memasang bulk (aksi massal).
+//            Transactional (actions worklist/none): selalu rapat.
+//            Master (actions master): satu-satunya beda = kotak di tiap baris (image, tanpa image -> 2 huruf inisial),
+//            karena itu kerapatan selalu normal.
 //   report = Grid for Reporting: rapat (banyak baris per layar, data ribuan), TANPA centang/Aksi/New Record,
 //            fokus cari + Filters terbuka di atas tabel + saring per kolom (teks mengandung; angka boleh >, <, >=, <=, =).
 class Grid extends DevlibComponent
@@ -70,10 +72,10 @@ class Grid extends DevlibComponent
         return $this->mode === 'report';
     }
 
-    // Grid transaksi (bukan Master, bukan Reporting): selalu rapat, Aksi di kiri tanpa judul, ikon tanpa kotak.
-    public function isTx(): bool
+    // Grid Pre-Entry (Transactional & Master): Aksi di kiri tanpa judul, ikon tanpa kotak, tanpa Grup/Kerapatan.
+    public function isEntry(): bool
     {
-        return ! $this->isReport() && $this->actions !== 'master';
+        return ! $this->isReport();
     }
 
     public function tag(): string

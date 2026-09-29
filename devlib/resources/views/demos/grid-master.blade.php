@@ -16,5 +16,4 @@
         ['label' => 'Nonaktif', 'where' => ['active' => false], 'tone' => 'danger'],
     ]"
     :filters="['dept' => 'Departemen', 'status' => 'Status', 'city' => 'Kota']"
-    :bulk="[['key' => 'export', 'label' => 'Export terpilih', 'icon' => 'export'], ['key' => 'deactivate', 'label' => 'Nonaktifkan', 'icon' => 'deactivate', 'variant' => 'danger', 'confirm' => 'Nonaktifkan semua baris terpilih?']]"
 />
