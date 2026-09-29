@@ -74,6 +74,10 @@ KS Power N120 MF
   turunan resmi masuk master.
 - **REKALKULASI** = **product yang sama**, spec 100% terkunci, yang diisi hanya Qty & Deadline. Menghasilkan
   **versi harga baru** di ProCost dengan **tanggal & jam terbit** yang jelas; riwayat harga per product bisa dilihat.
+  Layar Rekalkulasi WAJIB menampilkan **riwayat harga detail untuk Sales**: tiap versi (terbaru di atas) berisi tanggal &
+  jam terbit, dokumen sumber (Inquiry Baru/Rekalkulasi), penyetuju, harga per jenjang qty (+ total), selisih vs versi
+  sebelumnya, dasar perubahan (mis. harga bahan naik), dan dipakai di Quotation/CO mana (WIN/LOST/terbuka).
+  HPP & margin tetap rahasia Costing (tidak tampil).
 
 ## 5. ACC Digital Artwork (wajib) ⬜
 
