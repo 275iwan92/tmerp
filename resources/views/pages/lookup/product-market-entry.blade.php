@@ -202,7 +202,7 @@ new #[Title('Product Market — TELASIH MAKMUR ERP')] class extends Component
         $this->market_code = Str::upper(Str::slug($this->market_code ?: $this->market_label, '_'));
 
         $this->validate([
-            'market_code' => ['required', 'max:40', Rule::unique('tm2mst.prod_market', 'market_code')->ignore($this->recordId, 'id_market')],
+            'market_code' => ['required', 'max:40', Rule::unique(ProdMarket::class, 'market_code')->ignore($this->recordId, 'id_market')],
             'market_label' => 'required|max:100',
             'parent_id' => 'nullable|exists:tm2mst.prod_market,id_market',
             'type_code' => ($this->isDetail() ? 'required' : 'nullable').'|exists:tm2mst.prod_type,type_code',

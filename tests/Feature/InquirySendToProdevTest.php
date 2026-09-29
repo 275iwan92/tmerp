@@ -27,8 +27,8 @@ class InquirySendToProdevTest extends TestCase
             DB::connection('tm2sdi')->table('iqp_part')->where('inquiry_id', $this->inquiryId)->delete();
             DB::connection('tm2sdi')->table('iqp_inquiry')->where('id_inquiry', $this->inquiryId)->delete();
             ProdPart::whereIn('id_part', $partIds)->delete();
-            if ($inquiry && $inquiry->parent_product_id) {
-                ProdProduct::whereKey($inquiry->parent_product_id)->delete();
+            if ($inquiry && $inquiry->product_id) {
+                ProdProduct::whereKey($inquiry->product_id)->delete();
             }
         }
 
@@ -69,11 +69,11 @@ class InquirySendToProdevTest extends TestCase
         $this->assertNotNull($iqpPart->prod_part_id, 'iqp_part.prod_part_id harus terisi setelah sendToProDev');
 
         $inquiry = IqpInquiry::findOrFail($this->inquiryId);
-        $this->assertNotNull($inquiry->parent_product_id, 'iqp_inquiry.parent_product_id harus terisi (prod_product auto-dibuat)');
+        $this->assertNotNull($inquiry->product_id, 'iqp_inquiry.product_id harus terisi (prod_product auto-dibuat)');
 
         $prodPart = ProdPart::findOrFail($iqpPart->prod_part_id);
         $this->assertSame('Test Part SendToProDev', $prodPart->part_name);
-        $this->assertSame($inquiry->parent_product_id, $prodPart->product_id);
+        $this->assertSame($inquiry->product_id, $prodPart->product_id);
 
         // Panggil lagi -- harus idempoten (tidak bikin ProdProduct/ProdPart dobel).
         $test->call('sendToProDev', 0)->assertHasNoErrors();
