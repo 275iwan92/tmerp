@@ -13,6 +13,7 @@ final class Catalog
     public const APPROVED = [
         'p7-layer' => '2026-09-24',   // Layer Menu
         'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
+        'p5-grid-tx' => '2026-09-30',     // Grid Pre-Entry > Transactional -- DISETUJUI & DIKUNCI user; jangan ubah tanpa perintah user
         'p5-grid-ntx' => '2026-09-26',    // Grid Pre-Entry > Non-Transactional (Master, isi tidak berubah dari p5-grid)
         'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
         'p5-grid-group' => '2026-09-26',     // Grid Report dipecah per varian 2026-09-30, isi tidak berubah
