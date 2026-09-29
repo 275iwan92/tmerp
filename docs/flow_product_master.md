@@ -18,7 +18,7 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
   Quotation → No. CO → CO Detail → Product (milik customer) → Parts. 🟡 (kolom `co_order_item.product_id` ada, tapi sekarang diisi dari
   `iqp_inquiry.parent_product_id` yang punya 2 arti — lihat §7)
 
-## 2. Quotation WIN = lahir di Master Product ⬜
+## 2. Quotation WIN = lahir di Master Product ✅ (ProductMasterSync, dipanggil saat CO lahir dari Quotation)
 
 - Saat quotation **dimenangkan (WIN)**, setiap inquiry di dalamnya disalin menjadi **data pokok Master Product**,
   tidak hanya tersimpan di `iqp_part`.
@@ -30,7 +30,7 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 - **Nama product diubah manual oleh Sales** supaya sama dengan PO customer. Tujuan: nama product di
   **salinan PO customer = CO Detail = Surat Jalan Detail** (sama persis).
 
-## 3. Struktur product: 1 product = banyak part, bisa bertingkat ⬜
+## 3. Struktur product: 1 product = banyak part, bisa bertingkat ✅ (skema + dummy KS Power; UI input rakitan di Inquiry Baru ⬜)
 
 ```
 Product
@@ -64,7 +64,7 @@ KS Power N120 MF
       Bahan per part: Duplex 310 gsm + SH B/C Flute M125/M125X3/K125; pisau SJJ N120 MF 72,9 × 46,4 cm
 ```
 
-## 4. Revisi & Rekalkulasi berangkat dari Master Product ⬜
+## 4. Revisi & Rekalkulasi berangkat dari Master Product ✅ (layar v2 inquiry-revise / inquiry-recalc)
 
 - Di layar Revisi/Rekalkulasi, user **memilih product (atau inquiry)** → **semua part tampil** lengkap dengan
   **dieline + mockup artwork** yang jelas, bahan, BOM, BOP, warna, finishing.
@@ -85,7 +85,7 @@ KS Power N120 MF
   Sales hanya melihat harga JUAL product, (2) **riwayat harga jual**, (3) **proses khusus berbiaya besar** (mis. UV Spot, Emboss,
   Hot Print, Laminasi, Plong/pisau baru, Lem 2 sisi) — baru kemudian detail part + dieline (terkunci).
 
-## 5. ACC Digital Artwork (wajib) ⬜
+## 5. ACC Digital Artwork (wajib) 🟡 (cetak Proof Digital + catat ACC di ProDev ✅; blokir proses Cetak di WO ⬜)
 
 > **Format dokumen = Proof Digital** yang selama ini dipakai (contoh asli: `docs/attachments/Proof Digital KAYS N200 C MF
 > (N200L) DS003479_DC 310g 2x.pdf` — isinya proof KS Power N120 MF DS003637). Boleh berubah sedikit, jangan banyak:
@@ -121,3 +121,20 @@ KS Power N120 MF
   bahan per part, BOM, induk rakitan + jenis join, versi/cabang product.
 - Izin user 2026-09-29: perubahan alur di zona beku Inquiry/ProDev/ProCost untuk keperluan pedoman ini **diizinkan**,
   asalkan urutan Inquiry → ProDev → ProCost tetap.
+
+## 9. Aturan layar (user 2026-09-29)
+
+- **Setiap layar input dimulai dari GRID** (DevLib; pilih keluarga yang cocok: Grid for Master / Pre-Data Entry / Report),
+  lalu form: **+ New Record → isi → Simpan (DRAFT, bisa diedit & dihapus) → Confirm** (terkunci) → sesudahnya hanya
+  **Cancel** (+ Print). Pakai istilah **Confirm** (bukan Submit) supaya mindset user tidak berubah.
+- **Bar alur order di atas layar** (x-mp::sales.flow-steps): Inquiry → Product Development → Product Costing →
+  Priced Inquiry → Quotation (WIN → Master Product) → Customer Order → Shipping Schedule → Post to Production.
+- **ACC Digital / Proof Digital = dokumen CETAK.** Pencatatan ACC customer (tanggal & jam, penyetuju, saluran, bukti)
+  ada di **form ProDev**, dengan **tombol khusus "Print ACC / Proof Digital"** di form itu. Tidak ada menu terpisah.
+- **Print & Email di setiap form (⬜ belum dibangun)**: tombol Print → PDF, JPEG, dan HTML online (html+css+svg+js)
+  yang selalu memuat **QR code** untuk handover; tombol **Email** → hasil print online jadi body e-mail atau lampiran
+  PDF, user mengisi To / CC / BCC / pesan lalu kirim. Dibangun di **DevLib** sebagai objek induk supaya semua form
+  mewarisinya (OO).
+- Halaman login tmerp.test & mockup.test **tanpa daftar akun UAT** (dimatikan 2026-09-29 di `.env.mockup`).
+- (Nanti) Pendaftaran akun: tanyakan **nama lengkap** dulu untuk dicek keberadaan user-nya.
+- Backup & disaster recovery: `docs/dr_backup_guide.md`.
