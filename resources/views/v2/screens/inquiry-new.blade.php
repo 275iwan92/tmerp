@@ -52,11 +52,11 @@
             {{-- Wajib diisi sampai Ukuran (user 2026-09-26); produk yang belum ada di daftar lewat pilihan Custom. --}}
             <x-dl::field.select name="product_group" label="Kategori Produk" required placeholder="— pilih kategori —"
                 :options="collect($markets)->pluck('label', 'code')->all() + ['__CUSTOM__' => '➕ Custom (belum ada di daftar)']"
-                hint="Wajib — pilih Custom bila produk belum ada di daftar." :source="'tm2mst.prod_market (induk), tidak disimpan'" />
+                hint="Wajib — pilih Custom bila produk belum ada di daftar." :source="Src::of('tm2mst.prod_market (induk), tidak disimpan')" />
             <x-dl::field.select name="product_detail" label="Detail Kategori" required placeholder="— pilih kategori dulu —" :options="[]" disabled
-                :source="'tm2mst.prod_market (detail) → Tipe Produk, tidak disimpan'" />
+                :source="Src::of('tm2mst.prod_market (detail) → Tipe Produk, tidak disimpan')" />
             <x-dl::field.select name="market_size" label="Ukuran Pasaran" required placeholder="— pilih detail dulu —" :options="[]" disabled
-                :source="'tm2mst.prod_type_size (milik detail) → dimensi semua Part'" />
+                :source="Src::of('tm2mst.prod_type_size (milik detail) → dimensi semua Part')" />
             <x-dl::field.select name="type_code" label="Tipe Produk (dieline internasional)" placeholder="— pilih tipe produk —" :value="$typeCode"
                 :options="collect($types)->map(fn ($t) => $t['label'])->all()" hint="Otomatis dari Detail Kategori — nama ini yang dicari di Pacdora. Custom: pilih dieline terdekat."
                 :source="Src::of('tm2sdi.iqp_part.part_type', 'tm2mst.prod_type.type_code')" />
