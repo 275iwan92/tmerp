@@ -117,7 +117,10 @@ class UatKsPowerSeeder extends Seeder
         $this->sdi->table('co_order')->where('id_order', $order->id_order)->update(['data_origin' => 'DUMMY']);
         $this->sdi->table('co_order_item')->where('order_id', $order->id_order)->update(['data_origin' => 'DUMMY', 'due_date' => '2026-10-19']);
         $product = IqpInquiry::find($inquiryId)->product_id;
-        $this->mst->table('prod_product')->where('id_product', $product)->update(['product_code' => 'SJJ-KS PWR N120 MF', 'data_origin' => 'DUMMY']);
+        $this->mst->table('prod_product')->where('id_product', $product)->update(['product_code' => 'SJJ-KS PWR N120 MF', 'drawing_by' => 'RINGGA', 'design_date' => '2026-09-24', 'data_origin' => 'DUMMY']);
+        // Master card: "ACC E-mail: 23 September 2026 · Di ACC oleh: Pak Habibi"; ACC Digital & Box Polos masih kosong.
+        $this->mst->table('prod_product_acc')->insert(['product_id' => $product, 'acc_type' => 'EMAIL', 'acc_at' => '2026-09-23 09:00:00', 'approved_by' => 'Pak Habibi',
+            'channel' => 'EMAIL', 'note' => 'Dari master card DS003637', 'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'updated_by' => 'uat', 'data_origin' => 'DUMMY']);
         $this->mst->table('prod_part')->where('product_id', $product)->update(['data_origin' => 'DUMMY']);
 
         $this->command?->info(self::INQ_NO." -> {$order->co_no} -> Master Product #{$product} (KS Power N120 MF, Body Double Join + Part A/B) di ".$this->sdi->getDatabaseName().'.');
@@ -164,6 +167,7 @@ class UatKsPowerSeeder extends Seeder
             foreach ($parts as $p) {
                 Storage::disk('public')->deleteDirectory("product/{$p}");
             }
+            $this->mst->table('prod_product_acc')->where('product_id', $inq->product_id)->delete();
             foreach (['prod_part_material', 'prod_part_ink', 'prod_part_process', 'prod_part_finishing', 'prod_part_artwork', 'prod_part_attachment'] as $t) {
                 $this->mst->table($t)->whereIn('part_id', $parts)->delete();
             }

@@ -19,6 +19,8 @@ class ProdProduct extends Model
         'revision_no',
         'source_inquiry_id',
         'card_status',
+        'drawing_by',
+        'design_date',
         'product_code',
         'design_no',
         'product_name',
@@ -59,6 +61,7 @@ class ProdProduct extends Model
     protected $casts = [
         'stat_confirm' => 'boolean',
         'activate' => 'boolean',
+        'design_date' => 'date',
     ];
 
     // Gambar berasal dari Master Card legacy & dipakai bersama antar produk,
@@ -100,6 +103,11 @@ class ProdProduct extends Model
     public function revisions(): HasMany
     {
         return $this->hasMany(self::class, 'parent_product_id', 'id_product');
+    }
+
+    public function accs(): HasMany
+    {
+        return $this->hasMany(ProdProductAcc::class, 'product_id', 'id_product')->orderByDesc('acc_at');
     }
 
     public function layoutGroups(): HasMany

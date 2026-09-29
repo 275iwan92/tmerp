@@ -1,8 +1,11 @@
 <?php
 
 use App\Console\Commands\DdtBaseline;
+use App\Models\Master\ProdProduct;
+use App\Models\Master\ProdProductAcc;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sys\SysConstant;
+use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
 use App\Support\V2\AppMenu;
@@ -123,6 +126,97 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return response()->json(['id' => $c->id_customer, 'label' => $c->customer_name, 'code' => $c->customer_code,
                 'message' => "Customer baru \"{$c->customer_name}\" ({$c->customer_code}) dibuat — status DRAFT."]);
         })->name('customer');
+    });
+
+    // Master Product (docs/flow_product_master.md): nama diubah Sales, isian Proof Digital, catat ACC customer.
+    Route::prefix('product/{id}')->name('product.')->whereNumber('id')->group(function () {
+        $product = function (int $id) {
+            abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+
+            return ProdProduct::findOrFail($id);
+        };
+        Route::post('/name', function (Request $r, int $id) use ($product) {
+            $d = $r->validate(['product_name' => ['required', 'string', 'max:200']], [], ['product_name' => 'Nama product']);
+            $product($id)->update($d + ['updated_by' => Auth::user()->login]);
+
+            return back()->with('v2_flash', 'Nama product tersimpan.');
+        })->name('name');
+        Route::post('/proof', function (Request $r, int $id) use ($product) {
+            $d = $r->validate(['drawing_by' => ['nullable', 'string', 'max:100'], 'design_date' => ['nullable', 'date']], [], ['drawing_by' => 'Drawing by']);
+            $product($id)->update($d + ['updated_by' => Auth::user()->login]);
+
+            return back()->with('v2_flash', 'Isian Proof Digital tersimpan.');
+        })->name('proof');
+        Route::post('/acc', function (Request $r, int $id) use ($product) {
+            $p = $product($id);
+            $d = $r->validate(['acc_type' => ['required', 'in:'.implode(',', array_keys(ProdProductAcc::TYPES))], 'acc_at' => ['required', 'date'],
+                'approved_by' => ['required', 'string', 'max:100'], 'channel' => ['required', 'in:'.implode(',', array_keys(ProdProductAcc::CHANNELS))],
+                'note' => ['nullable', 'string', 'max:500'], 'evidence' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240']],
+                [], ['acc_at' => 'Tanggal & jam ACC', 'approved_by' => 'Di-ACC oleh', 'channel' => 'Saluran', 'evidence' => 'Bukti']);
+            $file = $r->file('evidence');
+            ProdProductAcc::create(collect($d)->except('evidence')->all() + ['product_id' => $p->id_product,
+                'evidence_path' => $file?->store("product/{$p->id_product}/acc", 'public'), 'evidence_filename' => $file?->getClientOriginalName(),
+                'created_by' => Auth::user()->login, 'updated_by' => Auth::user()->login]);
+
+            return back()->with('v2_flash', ProdProductAcc::TYPES[$d['acc_type']].' tercatat.');
+        })->name('acc');
+    });
+
+    // Inquiry Rekalkulasi / Revisi dari Master Product: Simpan (DRAFT) -> Confirm; Hapus selama DRAFT; Cancel sesudah Confirm.
+    Route::prefix('derived')->name('derived.')->group(function () {
+        $guard = fn () => abort_unless(Auth::user()->canAccessModule('SALES'), 403);
+        $writer = fn () => new InquiryDerivedWriter(Auth::user()->login);
+        $open = fn (IqpInquiry $d) => redirect(route('v2.screen', $d->inquiry_type === 'RECALC' ? 'inquiry-recalc' : 'inquiry-revise').'?id='.$d->id_inquiry);
+
+        Route::post('/{type}', function (Request $r, string $type) use ($guard, $writer, $open) {
+            $guard();
+            $doc = $r->filled('id') ? IqpInquiry::where('inquiry_type', strtoupper($type))->findOrFail((int) $r->input('id')) : null;
+            $product = ProdProduct::findOrFail((int) $r->input('product_id'));
+            if ($type === 'recalc') {
+                $d = $r->validate(['qty' => ['required', 'numeric', 'min:1'], 'deadline_quotation' => ['nullable', 'date']], [], ['qty' => 'Qty order']);
+                $doc = $writer()->recalc($product, $doc, $d + ['deadline_quotation' => null]);
+            } else {
+                $d = $r->validate(['revise_scope' => ['required', 'array', 'min:1'], 'revise_scope.*' => ['in:'.implode(',', array_keys(InquiryDerivedWriter::SCOPES))],
+                    'revise_reason' => ['required', 'string', 'max:255'], 'design_number' => ['nullable', 'string', 'max:30'],
+                    'parts.*.artwork' => ['nullable', 'image', 'max:10240'], 'parts.*.artwork_inner' => ['nullable', 'image', 'max:10240']],
+                    [], ['revise_scope' => 'Scope revisi', 'revise_reason' => 'Alasan revisi']);
+                $doc = $writer()->revise($product, $doc, ['scope' => $d['revise_scope'], 'reason' => $d['revise_reason'], 'design_number' => $d['design_number'] ?? null,
+                    'parts' => $r->input('parts', [])], InquiryDerivedWriter::artworks($r->file('parts', [])));
+            }
+            if ($r->input('action') === 'confirm') {
+                $writer()->confirm($doc);
+
+                return $open($doc)->with('v2_flash', "Inkuiri {$doc->inquiry_no} di-Confirm — dikirim ke ProDev → ProCost, form terkunci.");
+            }
+
+            return $open($doc)->with('v2_flash', "Tersimpan sebagai {$doc->inquiry_no} (DRAFT).");
+        })->whereIn('type', ['recalc', 'revise'])->name('save');
+
+        Route::post('/{id}/delete', function (int $id) use ($guard, $writer) {
+            $guard();
+            $doc = IqpInquiry::whereIn('inquiry_type', ['RECALC', 'REVISE'])->findOrFail($id);
+            $writer()->delete($doc);
+
+            return redirect(route('v2.screen', $doc->inquiry_type === 'RECALC' ? 'inquiry-recalc' : 'inquiry-revise'))->with('v2_flash', "Draft {$doc->inquiry_no} dihapus.");
+        })->whereNumber('id')->name('delete');
+
+        // Sesudah Confirm: kirim part ke ProDev (REVISE -> product turunan dibuat di sini, IqpInquiry::ensureDraftProduct).
+        Route::post('/{id}/prodev', function (Request $r, int $id) use ($guard) {
+            $guard();
+            $doc = IqpInquiry::whereIn('inquiry_type', ['RECALC', 'REVISE'])->findOrFail($id);
+            $part = $doc->parts()->findOrFail((int) $r->input('part_id'));
+
+            return redirect(route('v2.screen', 'prodev').'?part='.(new InquiryWriter(Auth::user()->login))->sendToProDev($doc, $part));
+        })->whereNumber('id')->name('prodev');
+
+        Route::post('/{id}/cancel', function (Request $r, int $id) use ($guard, $open) {
+            $guard();
+            $doc = IqpInquiry::whereIn('inquiry_type', ['RECALC', 'REVISE'])->findOrFail($id);
+            $d = $r->validate(['cancel_reason' => ['required', 'string', 'max:255']], [], ['cancel_reason' => 'Alasan batal']);
+            (new InquiryWriter(Auth::user()->login))->cancel($doc, $d['cancel_reason']);
+
+            return $open($doc)->with('v2_flash', "Inkuiri {$doc->inquiry_no} dibatalkan.");
+        })->whereNumber('id')->name('cancel');
     });
 
     // Pedoman alur (Markdown di docs/) -- dibaca user DAN developer sebelum mengubah alur terkait.

@@ -692,6 +692,8 @@ new #[Title('Costing (HPP) — TELASIH MAKMUR ERP')] class extends Component
     @else
     <div class="max-w-[1320px] mx-auto my-4 px-4 space-y-4 text-[13px]">
 
+        @include('partials.revise-diff', ['inquiryId' => $inquiryId, 'card' => $card])
+
         {{-- ═════ Header (mockup: breadcrumb + judul + badge) + tombol alur (deviasi #1) ═════ --}}
         <div class="{{ $card }} !py-3 flex flex-wrap items-center gap-3">
             <div>

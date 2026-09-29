@@ -11,7 +11,8 @@ final class Screens
     private static function shared(): array
     {
         return [
-            'master-product' => ['Master Produk', 'fa-solid fa-box', 'master/produk.blade.php', null],
+            'master-product' => ['Master Product', 'fa-solid fa-box', 'docs/flow_product_master.md (baru, v2)', null],
+            'product-acc' => ['ACC Digital / Proof Digital', 'fa-solid fa-stamp', 'docs/flow_product_master.md §5', null],
             'master-raw' => ['Master Bahan Baku', 'fa-solid fa-layer-group', 'master/raw-material/index.blade.php', 'mockup_master_rawmaterial.html'],
             'master-customer' => ['Master Customer', 'fa-solid fa-building', 'master/customer.blade.php', 'mockup_master_customer.html'],
             'master-matcat' => ['Kategori Bahan Baku', 'fa-solid fa-sitemap', 'master/mat-category.blade.php', null],
@@ -47,7 +48,7 @@ final class Screens
                     $it('delivery-order', ['Delivery Order', 'fa-solid fa-truck', 'dispatch/do/entry.blade.php + list', null]),
                     $it('delivery-notes', ['Delivery Notes (Surat Jalan)', 'fa-solid fa-file-lines', 'dispatch/do/print-surat-jalan.blade.php', null]),
                 ]],
-                ['label' => 'Master', 'items' => [$it('master-product'), $it('master-raw'), $it('master-customer'), $it('master-card')]],
+                ['label' => 'Master', 'items' => [$it('master-product'), $it('product-acc'), $it('master-raw'), $it('master-customer'), $it('master-card')]],
                 ['label' => 'Lookup', 'items' => [$it('master-matcat'), $it('master-uom'), $it('master-currency')]],
                 ['label' => 'Laporan', 'items' => [
                     $it('win-rate', ['Win-Rate Sales', 'fa-solid fa-trophy', 'sales/win-rate.blade.php', null]),

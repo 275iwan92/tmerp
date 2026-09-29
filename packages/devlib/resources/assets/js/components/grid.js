@@ -97,6 +97,7 @@
 
     _emit(name, detail) {
       const go = this.el.dispatchEvent(new CustomEvent(name, {bubbles: true, cancelable: true, detail}));
+      if (go && name === 'dl:grid-new' && this.cfg.newUrl) { location.href = this.cfg.newUrl; return false; }
       if (go && name === 'dl:grid-open' && this.cfg.openUrl && ['open', 'edit'].includes(detail.action)) { location.href = this.cfg.openUrl.replace('{id}', encodeURIComponent(detail.id)); return false; }
       return go;
     }
