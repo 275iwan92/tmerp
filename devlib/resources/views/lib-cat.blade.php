@@ -2,7 +2,7 @@
 @section('body')
     <div class="dl-cat">
         <div class="dl-cat__nav">
-            <x-dl::breadcrumb :items="[$page['part'] => null, $page['label'] => null]" />
+            <x-dl::breadcrumb :items="array_fill_keys([...($page['trail'] ?? [$page['part']]), $page['label']], null)" />
             <div class="dl-cat__chips">
                 @foreach ($page['members'] as $slug => [$label])
                     <x-dl::button variant="secondary" size="sm" :href="'#'.$slug" :label="$label" />

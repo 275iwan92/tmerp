@@ -13,7 +13,7 @@ final class Catalog
     public const APPROVED = [
         'p7-layer' => '2026-09-24',   // Layer Menu
         'shell' => '2026-09-24',      // menu utama = Layer Shell (tanpa top bar)
-        'p5-grid' => '2026-09-26',        // Grid for Pre-Data Entry
+        'p5-grid-ntx' => '2026-09-26',    // Grid Pre-Entry > Non-Transactional (Master, isi tidak berubah dari p5-grid)
         'p5-grid-report' => '2026-09-26', // Grid for Reporting (tombol Filter -> pop-up)
         'p5-grid-special' => '2026-09-26', // Grid Special (spreadsheet)
         // Menu Form & Dokumen disetujui user 2026-09-26
@@ -86,26 +86,32 @@ final class Catalog
             // Grid, Form, Dokumen = 3 menu terpisah (user 2026-09-26) supaya breadcrumb menunjukkan keluarganya.
             ['code' => 'GR', 'short' => 'GR', 'label' => 'Grid', 'icon' => 'fa-solid fa-table',
                 'pages' => [
-                    // Tiga keluarga grid (user 2026-09-26): Pre-Data Entry, Reporting, Special (spreadsheet).
-                    // Dua keluarga pertama: Pre-Data Entry = pintu ke form (baris lega, centang, kotak Aksi,
-                    // + New Record); Reporting = baca data ribuan baris (rapat, tanpa Aksi, fokus cari + filter). x-dl::grid mode=entry|report.
-                    'p5-grid' => $page('Grid for Pre-Data Entry (6 variants)', 'fa-solid fa-table', [
-                        'grid-master' => ['1 · Grid for Master (photo box + Edit + Active/Inactive)', $c('Grid')],
-                        'grid-worklist' => ['2 · Grid for Single Transaction (worklist)', $c('Grid')],
-                        'grid-master-detail' => ['3 · Grid for Master-Detail (expand row = items)', $c('Grid')],
-                        'grid-status' => ['4 · Grid with Status Bar (stages + progress)', $c('Grid')],
-                        'grid-photos' => ['5 · Grid with Photos (table ↔ cards)', $c('Grid')],
-                        'grid-mix' => ['6 · Grid with Mix Component', $c('Grid')],
-                    ], 'grid_kerapatan_baris.html'),
-                    'p5-grid-report' => $page('Grid for Reporting (4 variants)', 'fa-solid fa-table-list', [
+                    // Pohon menu Grid (user 2026-09-30): Grid Pre-Entry (Transactional | Non-Transactional), Grid Report, Grid Special,
+                    // Grid Variant. 'folder' = submenu Layer Menu tempat halaman ini berada.
+                    // Transactional = pintu ke dokumen: rapat, Aksi tanpa judul di kiri, ikon tanpa kotak, centang hanya bila ada bulk.
+                    // Non-Transactional = Master: kotak foto, Edit + Aktif/Nonaktif.
+                    'p5-grid-tx' => $page('Grid Transactional', 'fa-solid fa-file-invoice', [
+                        'grid-worklist' => ['Grid Transactional (worklist dokumen)', $c('Grid')],
+                    ], 'grid_kerapatan_baris.html') + ['folder' => 'Grid Pre-Entry'],
+                    'p5-grid-ntx' => $page('Grid Non-Transactional', 'fa-solid fa-address-book', [
+                        'grid-master' => ['Grid Non-Transactional (Master: photo box + Edit + Active/Inactive)', $c('Grid')],
+                    ], 'grid_kerapatan_baris.html') + ['folder' => 'Grid Pre-Entry'],
+                    'p5-grid-report' => $page('Grid Report', 'fa-solid fa-table-list', [
                         'grid-report' => ['1 · Grid Report List (compact, thousands of rows, Filter pop-up)', $c('Grid')],
                         'grid-group' => ['2 · Grid Group By (+ subtotal)', $c('Grid')],
                         'grid-drilldown' => ['3 · Grid Summary → Details (drill-down)', $c('Drilldown', 'Grid')],
                         'grid-pivot' => ['4 · Grid Pivot (rows × columns × values)', $c('Pivot')],
                     ]),
                     // Grid Special (user 2026-09-26): grid yang selnya langsung diedit, bukan pintu ke form maupun laporan.
-                    'p5-grid-special' => $page('Grid Special (1 variant)', 'fa-solid fa-table-cells', [
+                    'p5-grid-special' => $page('Grid Special', 'fa-solid fa-table-cells', [
                         'grid-sheet' => ['1 · Grid Spreadsheet (inline edit, Excel copy/paste, drag-fill)', $c('Sheet')],
+                    ]),
+                    // Grid Variant (user 2026-09-30): grid lain yang sudah dibuat tapi belum masuk salah satu keluarga di atas.
+                    'p5-grid-variant' => $page('Grid Variant', 'fa-solid fa-shapes', [
+                        'grid-master-detail' => ['Grid Master-Detail (expand row = items)', $c('Grid')],
+                        'grid-status' => ['Grid with Status Bar (stages + progress)', $c('Grid')],
+                        'grid-photos' => ['Grid with Photos (table ↔ cards)', $c('Grid')],
+                        'grid-mix' => ['Grid with Mix Component', $c('Grid')],
                     ]),
                 ]],
             // Tiga keluarga form (user 2026-09-26): Single, Master-Detail, Special.
@@ -179,6 +185,7 @@ final class Catalog
         foreach ($groups as &$g) {
             foreach ($g['pages'] as &$p) {
                 $p['part'] = $g['label'];
+                $p['trail'] = array_values(array_filter([$g['label'], $p['folder'] ?? null]));
             }
         }
 
@@ -295,8 +302,20 @@ final class Catalog
         foreach (self::groups() as $g) {
             $items = [];
             foreach ($g['pages'] as $slug => $p) {
-                $items[] = ['code' => 'P-'.$slug, 'label' => $p['label'], 'icon' => $p['icon'], 'url' => route('lib', ['slug' => $slug]),
+                $item = ['code' => 'P-'.$slug, 'label' => $p['label'], 'icon' => $p['icon'], 'url' => route('lib', ['slug' => $slug]),
                     'type' => 'form'] + (isset(self::APPROVED[$slug]) ? ['badge' => 'Approved', 'badgeTone' => 'done'] : ['badge' => 'Review', 'badgeTone' => 'partial']);
+                if (! isset($p['folder'])) {
+                    $items[] = $item;
+
+                    continue;
+                }
+                // Halaman ber-folder dikumpulkan jadi satu submenu (posisi = halaman pertamanya).
+                $at = array_search($p['folder'], array_column($items, 'label'), true);
+                if ($at === false) {
+                    $items[] = ['label' => $p['folder'], 'icon' => 'fa-solid fa-folder', 'items' => [$item]];
+                } else {
+                    $items[$at]['items'][] = $item;
+                }
             }
             $modules[] = ['code' => $g['code'], 'short' => $g['short'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => [['label' => 'Components', 'items' => $items]]];
         }
