@@ -87,7 +87,11 @@ KS Power N120 MF
 
 ## 5. ACC Digital Artwork (wajib) ⬜
 
-> Mockup dokumen ACC Digital **menunggu dokumen yang selama ini dipakai** (user 2026-09-29) — jangan dibangun dulu.
+> **Format dokumen = Proof Digital** yang selama ini dipakai (contoh asli: `docs/attachments/Proof Digital KAYS N200 C MF
+> (N200L) DS003479_DC 310g 2x.pdf` — isinya proof KS Power N120 MF DS003637). Boleh berubah sedikit, jangan banyak:
+> judul kode+ukuran (P x L x T cm) · tabel REVISION NOTE (NO, catatan, DESIGN NUMBER, DATE) · dieline+artwork tiap part
+> (A, B) · blok bawah: logo+nama perusahaan + "Perhatian !!!", CUSTOMER, ITEM, Inner SIZE L/W/H mm, DATE, DESIGN NUMBER,
+> PRINT COLOUR, DRAWING BY, APPROVED BY (QA, PRACETAK, CUSTOMER = INQUIRE & APPROVED BY), NOTE.
 
 - Normalnya dibuat **setelah PO customer turun**, karena butuh biaya **CTP** (Computer To Plate — pembuatan plat cetak,
   proses pre-press). Produksi mencetak **sample dari plat CTP itu** → customer memberi ACC.
@@ -96,8 +100,6 @@ KS Power N120 MF
 - Batas waktunya belum pasti (tergantung customer) → cukup dicatat: tanggal/jam, penyetuju (mis. Pak Habibi),
   saluran (WA/e-mail — selama ini manual lewat WhatsApp), bukti (screenshot/file).
 - Master card mencatat: *"ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD"*.
-- Format dokumen ACC Digital mengikuti contoh dokumen Proof Digital user (DS003479) — boleh berubah sedikit, jangan banyak.
-  (File contoh menunggu dikirim ulang user; salinan pertama 0 byte.)
 
 ## 6. ACC Sample Bentuk ⬜
 
