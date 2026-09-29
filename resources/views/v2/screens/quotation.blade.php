@@ -92,7 +92,7 @@
         $lostReason = $q->items->pluck('inquiry.cancel_reason')->filter()->first();
         $more = $draft ? Quotation::available((int) $q->customer_id) : [];
     @endphp
-    <form method="post" action="{{ route('v2.quotation.save', $q->id_quotation) }}" id="quotation-form">
+    <form method="post" action="{{ route('v2.quotation.save', $q->id_quotation) }}" id="quotation-form" data-dl-guard>
         @csrf
         <x-dl::card>
             <x-dl::action-bar>

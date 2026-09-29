@@ -152,6 +152,7 @@ final class Catalog
             ['code' => 'MA', 'short' => 'MA', 'label' => 'Menus, Accounts & Layout', 'icon' => 'fa-solid fa-table-columns',
                 'pages' => [
                     'shell' => ['label' => 'Shell (main menu)', 'icon' => 'fa-solid fa-table-columns', 'full' => true, 'classes' => $c('Shell', 'LayerShell', 'LayerMenu'), 'mockup' => 'main_menu_v2.html'],
+                    'screen-nav' => ['label' => 'Screen Navigation (Grid ↔ Form)', 'icon' => 'fa-solid fa-route', 'classes' => $c('Shell', 'LayerMenu', 'Breadcrumb', 'Grid')],
                     'p7-menus' => $page('Menu (Ribbon · Mega · Side Panel)', 'fa-solid fa-bars-staggered', [
                         'ribbon' => ['Excel-style Ribbon (tabs, groups, multi icons, submenu, split, toggle, KeyTips)', $c('Ribbon')],
                         'mega-menu' => ['ScriptCase-style Mega Menu (color bar + 4-column icon panel)', $c('MegaMenu')],

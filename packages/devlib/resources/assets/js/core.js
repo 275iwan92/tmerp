@@ -306,9 +306,13 @@ window.Devlib = window.Devlib || {};
     $$(document, '[data-dl-t]').forEach(el => { el.textContent = T(el.dataset.dlT); });
   });
 
-  // Dirty-guard: form ber-atribut data-dl-guard yang sudah diubah -> tanya sebelum ditinggal.
+  // Dirty-guard: form (atau wadah isian non-form, mis. form JS) ber-atribut data-dl-guard yang sudah diubah -> tanya sebelum ditinggal.
+  // Hanya isian bernama yang dihitung (kotak cari dropdown/grid tidak membuat form "berubah").
   const dirtyForms = new Set();
-  const markDirty = e => { const f = e.target.closest && e.target.closest('form[data-dl-guard]'); if (f) { dirtyForms.add(f); f.classList.add('is-dirty'); } };
+  const markDirty = e => {
+    const f = e.target.closest && e.target.closest('[data-dl-guard]');
+    if (f && e.target.name) { dirtyForms.add(f); f.classList.add('is-dirty'); }
+  };
   document.addEventListener('input', markDirty, true);
   document.addEventListener('change', markDirty, true);
   document.addEventListener('submit', e => { dirtyForms.delete(e.target); e.target.classList.remove('is-dirty'); }, true);
@@ -325,17 +329,32 @@ window.Devlib = window.Devlib || {};
       document.body.appendChild(ov); $(ov, '[data-v=save]').focus();
     });
   }
-  function submitForm(f) { const btn = f.querySelector('[type=submit]'); if (f.requestSubmit) f.requestSubmit(btn || undefined); else if (btn) btn.click(); }
+  // Simpan = tombol Simpan form itu (preset save / data-dl-save), bukan sembarang submit pertama (bisa Hapus / + Tambah).
+  function submitForm(f) {
+    const btn = f.querySelector('[data-dl-save], [data-dl-preset=save]') || (f.tagName === 'FORM' ? f.querySelector('[type=submit]') : null);
+    if (f.tagName !== 'FORM') { btn?.click(); return; }
+    if (f.requestSubmit) f.requestSubmit(btn && btn.type === 'submit' ? btn : undefined); else if (btn) btn.click();
+  }
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-dl-back], [data-dl-leave], a[href]:not([href^="#"]):not([target=_blank]):not([href^="javascript"])');
     const live = [...dirtyForms].filter(f => document.contains(f));
-    if (!a || !live.length || a.closest('form[data-dl-guard]') === live[0] && !a.hasAttribute('data-dl-back') && !a.hasAttribute('data-dl-leave')) return;
+    if (!a || !live.length || a.closest('[data-dl-guard]') === live[0] && !a.hasAttribute('data-dl-back') && !a.hasAttribute('data-dl-leave')) return;
     e.preventDefault(); e.stopImmediatePropagation();
     askDirty().then(v => {
       if (v === 'save') submitForm(live[0]);
       else if (v === 'discard') { live.forEach(f => { dirtyForms.delete(f); f.classList.remove('is-dirty'); }); a.click(); }
     });
   }, true);
+
+  // Breadcrumb mode menu: Modul/Grup diklik -> Layer Menu dibuka di cabang itu (di Shell induk bila layar ada di dalam tab).
+  document.addEventListener('click', e => {
+    const c = e.target.closest('[data-dl-crumb-menu]'); if (!c) return;
+    e.preventDefault();
+    const msg = {dl: 'menu', path: JSON.parse(c.dataset.dlCrumbMenu || '[]'), leaf: c.dataset.leaf || null};
+    const lm = document.querySelector('[data-dl-layer-menu]');
+    if (window.parent !== window) window.parent.postMessage(msg, location.origin);
+    else if (lm?.dlComponent) lm.dlComponent.goTo(msg.path, msg.leaf);
+  });
 
   // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
   const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');

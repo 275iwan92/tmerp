@@ -64,7 +64,7 @@
                 <x-dl::badge :label="$doc['parent'] ? 'Turunan Rev.'.$doc['revision_no'] : 'Produk induk'" />
             </span>
         </x-dl::action-bar>
-        <form method="post" action="{{ route('v2.product.name', $doc['id']) }}">
+        <form method="post" action="{{ route('v2.product.name', $doc['id']) }}" data-dl-guard>
             @csrf
             <x-dl::form.row cols="3">
                 <x-dl::field.text name="product_name" label="Nama product" required :value="old('product_name', $doc['name'])" hint="Diubah Sales supaya sama dengan PO customer; tercetak di CO Detail & Surat Jalan." :source="Src::of('tm2mst.prod_product.product_name')" />

@@ -9,6 +9,10 @@
       this.lm = $(this.el, '[data-dl-layer-menu]');
       this.lm.addEventListener('dl:layer-menu', e => { e.preventDefault(); this.openTab(e.detail.key); });
       this.lm.addEventListener('dl:layer-menu-action', e => { e.preventDefault(); this.command(e.detail.key); });
+      // Breadcrumb di dalam layar (iframe, origin sama) -> buka menu pada modul / grup itu.
+      window.addEventListener('message', e => {
+        if (e.origin === location.origin && e.data?.dl === 'menu') this.lm.dlComponent?.goTo(e.data.path || [], e.data.leaf);
+      });
     }
 
     // Chat tinggal di Layer Menu (tukar / dok kanan), bukan laci Shell.

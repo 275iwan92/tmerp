@@ -78,7 +78,7 @@
         $missingProduct = $o->itemsMissingProduct();
         $products = $draft ? CustomerOrder::productOptions($o, request('psearch')) : [];
     @endphp
-    <form method="post" action="{{ route('v2.co.save', $o->id_order) }}" id="co-form">
+    <form method="post" action="{{ route('v2.co.save', $o->id_order) }}" id="co-form" data-dl-guard>
         @csrf
         <x-dl::card>
             <x-dl::action-bar>

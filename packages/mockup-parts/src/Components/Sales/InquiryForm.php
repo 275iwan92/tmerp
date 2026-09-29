@@ -60,7 +60,7 @@ class InquiryForm extends DevlibComponent
     {
         return <<<'BLADE'
             @php($d = $doc)
-            <div {{ $attributes->class('mp-inq') }} {!! $dl() !!} data-mp-inquiry data-config="{{ json_encode($config()) }}">
+            <div {{ $attributes->class('mp-inq') }} {!! $dl() !!} data-mp-inquiry data-dl-guard data-config="{{ json_encode($config()) }}">
                 <x-mp::sales.doc-bar :mode="$mode" :no="$d['inquiry_no']" :state="$d['sub_state']" :back-url="$backUrl" />
 
                 <x-dl::alert tone="success" data-inq-flash />

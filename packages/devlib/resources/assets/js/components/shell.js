@@ -184,7 +184,7 @@
     /* ---------------- tab MDI ---------------- */
     openTab(code) {
       const it = this.findItem(code); if (!it) return;
-      if (this.openTabs.has(code)) { this.activate(code); return; }
+      if (this.openTabs.has(code)) { this.activate(code); this.toGrid(code, it.url); return; }
       const tab = document.createElement('div'); tab.className = 'dl-tab'; tab.dataset.code = code;
       tab.innerHTML = `<span><i class="${esc(it.icon || typeIcon(it.type))}"></i></span><span class="tlbl">${esc(it.label)}</span><button type="button" class="tx" title="Tutup">×</button>`;
       tab.addEventListener('click', ev => { if (ev.target.classList.contains('tx')) { ev.stopPropagation(); this.closeTab(code); } else this.activate(code); });
@@ -194,6 +194,23 @@
       this.content.appendChild(pane);
       this.openTabs.set(code, {tab, pane});
       this.activate(code);
+    }
+
+    // Klik menu pada layar yang sudah terbuka = kembali ke grid layar itu (alamat menu, tanpa ?id/?new...).
+    // Form yang sedang diubah -> tanya Simpan / Buang / Batal (dialog dirty-guard DevLib di dalam layar itu);
+    // Simpan: form dikirim, grid dibuka bila hasilnya tanpa pesan error; Batal: tetap di form.
+    toGrid(code, url) {
+      const fr = this.openTabs.get(code)?.pane.querySelector('iframe'); let w;
+      try { w = fr.contentWindow; if (!w.location.search) return; } catch (e) { return; }
+      const go = () => { w.location.href = url; };
+      const h = w.Devlib?.h, live = h ? [...h.dirtyForms].filter(f => w.document.contains(f)) : [];
+      if (!live.length) { go(); return; }
+      h.askDirty().then(v => {
+        if (v === 'save') {
+          fr.addEventListener('load', () => { try { if (!fr.contentWindow.document.querySelector('.dl-alert--danger.is-show')) fr.contentWindow.location.href = url; } catch (e) {} }, {once: true});
+          h.submitForm(live[0]);
+        } else if (v === 'discard') { live.forEach(f => { h.dirtyForms.delete(f); f.classList.remove('is-dirty'); }); go(); }
+      });
     }
 
     activate(code) {

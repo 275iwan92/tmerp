@@ -11,7 +11,7 @@
     <div class="dl-cat">
         @if (session('v2_flash'))<x-dl::alert tone="success" :message="session('v2_flash')" />@endif
         @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
-        <form method="post" action="{{ route('v2.settings.mail.save') }}" autocomplete="off">
+        <form method="post" action="{{ route('v2.settings.mail.save') }}" autocomplete="off" data-dl-guard>
             @csrf
             <x-dl::card title="Setting E-mail (SMTP)" icon="email" description="Dipakai tombol Email di setiap dokumen dan link verifikasi e-mail user. Mode .env = pakai isian server (MAIL_* di .env).">
                 <x-dl::form.row cols="3">

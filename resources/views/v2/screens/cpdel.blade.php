@@ -65,7 +65,7 @@
     </x-dl::card>
 
     @if ($planned)
-        <form method="post" action="{{ route('v2.cpdel.split', $d->id_delivery) }}">
+        <form method="post" action="{{ route('v2.cpdel.split', $d->id_delivery) }}" data-dl-guard>
             @csrf
             <x-dl::card title="Pindah tanggal / Split" description="Qty kosong = pindahkan seluruh baris ke tanggal baru. Qty diisi = qty itu dipecah jadi baris baru di tanggal baru, sisanya tetap.">
                 <x-dl::form.row cols="2">

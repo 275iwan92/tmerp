@@ -2,7 +2,9 @@
 @section('body')
     <div class="dl-cat">
         <div class="dl-cat__nav">
-            <x-dl::breadcrumb :items="[$screen['module'] => null, $screen['group'] => null, $screen['label'] => null]" />
+            {{-- Modul/Grup = buka Layer Menu di cabang itu; nama layar = kembali ke grid (DevLib Breadcrumb menu + current). --}}
+            <x-dl::breadcrumb menu :items="[$screen['module'] => null, $screen['group'] => null, $screen['label'] => $screen['url']]"
+                :current="request()->query() ? (request('id') ? 'Form' : '+ New Record') : null" />
         </div>
         @if ($built)
             @include('v2.screens.'.$screen['slug'])

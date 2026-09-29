@@ -59,7 +59,7 @@
         <x-dl::action-bar><x-dl::button variant="secondary" icon="back" label="Back" :href="$home" /></x-dl::action-bar>
     </x-dl::card>
 @else
-    <form method="post" action="{{ route('v2.derived.save', 'recalc') }}" id="recalc-form">
+    <form method="post" action="{{ route('v2.derived.save', 'recalc') }}" id="recalc-form" data-dl-guard>
         @csrf
         <input type="hidden" name="product_id" value="{{ $doc['id'] }}">
         @if ($inq)<input type="hidden" name="id" value="{{ $inq->id_inquiry }}">@endif

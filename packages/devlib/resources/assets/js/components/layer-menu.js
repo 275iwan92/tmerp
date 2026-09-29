@@ -117,6 +117,20 @@
       return h;
     }
 
+    // Buka menu pada cabang berlabel (mis. ['Sales', 'Sales Order'] dari breadcrumb). Label tidak cocok -> cari lewat daun berlabel leaf.
+    goTo(labels, leaf = null) {
+      if (this.st.show !== 'menu') this.show('menu');
+      const path = [];
+      let items = this.root;
+      for (const l of labels) { const n = items.find(x => x.items && x.label === l); if (!n) break; path.push(n); items = n.items; }
+      if (path.length < labels.length && leaf) {
+        const hunt = (xs, trail) => { for (const n of xs) { if (!n.items && n.label === leaf) return trail; if (n.items) { const r = hunt(n.items, [...trail, n]); if (r) return r; } } return null; };
+        const t = hunt(this.root, []); if (t) path.splice(0, path.length, ...t.slice(0, labels.length));
+      }
+      this.path = path; this.draw();
+      this.track.children[this.path.length]?.querySelector('.dl-lm__a')?.focus({preventScroll: true});
+    }
+
     back() { this.path.pop(); this.draw(); this.track.children[this.path.length]?.querySelector('.dl-lm__a')?.focus({preventScroll: true}); }
 
     click(e, t) {
