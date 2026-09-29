@@ -29,6 +29,8 @@ class QuoQuotation extends Model
         'currency_code',
         'notes',
         'doc_status',
+        'stat_cancel',
+        'cancel_reason',
         'issued_by',
         'created_by',
         'updated_by',
@@ -36,6 +38,7 @@ class QuoQuotation extends Model
 
     protected $casts = [
         'revision_no' => 'integer',
+        'stat_cancel' => 'boolean',
         'issued_date' => 'date',
         'valid_until' => 'date',
         'deadline_date' => 'date',

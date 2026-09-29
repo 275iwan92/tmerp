@@ -1,5 +1,99 @@
 [
     {
+        "at": "2026-09-29 23:55:15",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "quo_quotation",
+                "column": "stat_cancel",
+                "detail": "tinyint(1)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "quo_quotation",
+                "column": "cancel_reason",
+                "detail": "varchar(255)"
+            }
+        ]
+    },
+    {
+        "at": "2026-09-29 23:40:26",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_product",
+                "column": "drawing_by",
+                "detail": "varchar(100)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_product",
+                "column": "design_date",
+                "detail": "date"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_type_size",
+                "column": "market_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_market",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2mst",
+                "table": "prod_product_acc",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "artwork_inner_path",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "artwork_inner_original_filename",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "quo_activity",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_doc_email",
+                "column": "",
+                "detail": ""
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sys",
+                "table": "sys_doc_share",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-09-29 16:58:40",
         "items": [
             {

@@ -45,7 +45,10 @@ class QuotationBuilder
     // (costing published) yang belum ditarik ke quotation mana pun dan belum closed.
     public static function availableInquiries()
     {
-        $quoted = QuoQuotationItem::where('source_type', 'INQUIRY_TIER')->whereNotNull('inquiry_id')->pluck('inquiry_id')->unique();
+        // Quotation yang dibatalkan melepas inquiry-nya (boleh ditawarkan lagi).
+        $quoted = QuoQuotationItem::where('source_type', 'INQUIRY_TIER')->whereNotNull('inquiry_id')
+            ->whereIn('quotation_id', QuoQuotation::where('doc_status', '<>', 'CANCELLED')->select('id_quotation'))
+            ->pluck('inquiry_id')->unique();
 
         return IqpInquiry::whereHas('costing', fn ($q) => $q->where('published_flag', true))
             ->whereNotNull('customer_id')

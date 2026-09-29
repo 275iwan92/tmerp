@@ -4,6 +4,7 @@ use App\Console\Commands\DdtBaseline;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Sdi\IqpInquiry;
+use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocShare;
 use App\Services\Docs\DocShareService;
@@ -12,6 +13,7 @@ use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Data\Prodev;
+use App\Support\V2\Data\Quotation;
 use App\Support\V2\Flows;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
@@ -163,6 +165,85 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return back()->with('v2_flash', ProdProductAcc::TYPES[$d['acc_type']].' tercatat.');
         })->name('acc');
+    });
+
+    // Quotation v2 (App\Support\V2\Data\Quotation = aturan komponen v1 pages::quotation.entry). Customer tidak diketik: dari inquiry.
+    Route::prefix('quotation')->name('quotation.')->middleware('module:SALES')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'quotation').'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['inquiry_ids' => ['required', 'array', 'min:1'], 'inquiry_ids.*' => ['integer']], [], ['inquiry_ids' => 'Inquiry']);
+            try {
+                $q = Quotation::create($d['inquiry_ids']);
+            } catch (InvalidArgumentException $e) {
+                return back()->withErrors(['inquiry_ids' => $e->getMessage()]);
+            }
+
+            return $open($q->id_quotation)->with('v2_flash', "Quotation {$q->quotation_no} dibuat (DRAFT).");
+        })->name('create');
+
+        Route::prefix('{id}')->whereNumber('id')->group(function () use ($open) {
+            Route::post('/save', function (Request $r, int $id) use ($open) {
+                $q = QuoQuotation::findOrFail($id);
+                $r->validate(['issued_date' => ['required', 'date'], 'valid_until' => ['nullable', 'date'], 'deadline_date' => ['nullable', 'date'],
+                    'items' => ['array'], 'items.*.description' => ['nullable', 'string', 'max:500'], 'items.*.qty_unit' => ['nullable', 'string', 'max:20']],
+                    [], ['issued_date' => 'Tanggal dokumen']);
+                Quotation::save($q, $r->only(Quotation::HEADER), $r->has('cc_present') ? (array) $r->input('cc', []) : null,
+                    (array) $r->input('items', []), array_keys((array) $r->input('remove', [])));
+                $q->refresh();
+                if ($r->input('action') === 'confirm') {
+                    Quotation::confirm($q);
+
+                    return $open($id)->with('v2_flash', "Quotation {$q->quotation_no} di-Confirm (terbit). Kirim ke customer lewat Print / Email.");
+                }
+
+                return $open($id)->with('v2_flash', 'Quotation tersimpan.');
+            })->name('save');
+            Route::post('/add-inquiry', function (Request $r, int $id) use ($open) {
+                $d = $r->validate(['inquiry_ids' => ['required', 'array', 'min:1']], [], ['inquiry_ids' => 'Inquiry']);
+                Quotation::addInquiries(QuoQuotation::findOrFail($id), $d['inquiry_ids']);
+
+                return $open($id)->with('v2_flash', 'Inquiry ditambahkan ke quotation.');
+            })->name('add-inquiry');
+            Route::post('/add-line', function (int $id) use ($open) {
+                Quotation::addLine(QuoQuotation::findOrFail($id));
+
+                return $open($id)->with('v2_flash', 'Baris bebas ditambahkan — isi uraian, qty, dan harga lalu Simpan.');
+            })->name('add-line');
+            Route::post('/delete', function (int $id) {
+                $q = QuoQuotation::findOrFail($id);
+                Quotation::delete($q);
+
+                return redirect(route('v2.screen', 'quotation'))->with('v2_flash', "Draft {$q->quotation_no} dihapus.");
+            })->name('delete');
+            Route::post('/cancel', function (Request $r, int $id) use ($open) {
+                $d = $r->validate(['cancel_reason' => ['required', 'string', 'max:255']], [], ['cancel_reason' => 'Alasan batal']);
+                Quotation::cancel(QuoQuotation::findOrFail($id), $d['cancel_reason']);
+
+                return $open($id)->with('v2_flash', 'Quotation dibatalkan; inquiry-nya bisa ditawarkan lagi.');
+            })->name('cancel');
+            Route::post('/lost', function (Request $r, int $id) use ($open) {
+                $d = $r->validate(['lost_reason' => ['required', 'string', 'max:255']], [], ['lost_reason' => 'Alasan kalah']);
+                Quotation::lost(QuoQuotation::with('items.inquiry')->findOrFail($id), $d['lost_reason']);
+
+                return $open($id)->with('v2_flash', 'Quotation ditutup LOST.');
+            })->name('lost');
+            Route::post('/win', function (int $id) {
+                $order = Quotation::win(QuoQuotation::with('items.inquiry')->findOrFail($id));
+
+                return $order ? redirect(route('v2.screen', 'customer-order').'?id='.$order)->with('v2_flash', 'WIN — Customer Order dibuat dari quotation ini.')
+                    : back()->withErrors(['win' => 'Customer Order tidak bisa dibuat dari quotation ini.']);
+            })->name('win');
+            Route::post('/activity', function (Request $r, int $id) use ($open) {
+                Quotation::addActivity(QuoQuotation::findOrFail($id), (array) $r->input('act', []));
+
+                return $open($id)->with('v2_flash', 'Follow-up tercatat.');
+            })->name('activity');
+            Route::post('/activity/{aid}/delete', function (int $id, int $aid) use ($open) {
+                Quotation::deleteActivity(QuoQuotation::findOrFail($id), $aid);
+
+                return $open($id)->with('v2_flash', 'Follow-up dihapus.');
+            })->whereNumber('aid')->name('activity.delete');
+        });
     });
 
     // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).
