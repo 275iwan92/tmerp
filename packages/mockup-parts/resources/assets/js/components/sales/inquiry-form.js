@@ -17,6 +17,8 @@
       this.type = this.input('type_code')?.value || '';
       // Kategori Produk -> Detail Kategori -> Ukuran Pasaran (master Lookup Product Market, dikirim layar sebagai JSON).
       try { this.markets = JSON.parse($(this.el, 'script[data-inq-markets]')?.textContent || '[]'); } catch (err) { this.markets = []; }
+      // Bahan slot 0 Paper / 1 Sheet-SF: Jenis -> Gramatur (mat_category level 2 -> 3).
+      try { this.chains = JSON.parse($(this.el, 'script[data-inq-matchains]')?.textContent || '[]'); } catch (err) { this.chains = []; }
       this.on('change', null, e => this.changed(e));
       this.on('click', null, e => this.clicked(e));
       this.on('input', '[data-inq-name] input', (e, t) => { this.title(t.closest('[data-inq-part]')); });
@@ -89,6 +91,14 @@
       if (n === 'product_detail_custom') return this.parts().forEach(p => { const nm = $(p, '[data-inq-name] input'); if (nm) { nm.value = e.target.value; nm.dispatchEvent(new Event('input', {bubbles: true})); } });
       if (n === 'material_source') return this.custMaterial();
       if (n.endsWith('[cfg_color]')) return this.derived(e.target.closest('[data-inq-part]'), e.target.value);
+      const mj = n.match(/\[materials\]\[(\d)\]\[jenis\]$/);
+      if (mj) return this.jenis(e.target.closest('[data-inq-part]'), +mj[1], e.target.value);
+    }
+
+    // Jenis berganti -> daftar Gramatur milik jenis itu (kosong = "semua").
+    jenis(p, slot, v) {
+      const g = $(p, `[name$="[materials][${slot}][gramatur]"]`); if (!g) return;
+      setOptions(p, g.name, (this.chains[slot]?.gram || {})[v] || [], {disabled: !v});
     }
 
     clicked(e) {
@@ -170,10 +180,12 @@
         if (nm) { nm.value = d.label.split(' (')[0] + (sizeName ? ' ' + sizeName : ''); nm.dispatchEvent(new Event('input', {bubbles: true})); }
         const col = $(p, '[data-inq-color] [data-dl-value]');
         if (col && d.color) { setField(p, col.name, d.color); col.dispatchEvent(new Event('change', {bubbles: true})); }
-        const lines = $(p, '[data-dl-lines]');
-        if (lines && lines.dlLines && d.materials.length) {
-          lines.dlLines.set(d.materials.map((m, i) => ({material: 'CAT:' + m.label, material_label: m.label, brand: '', category: m.category, is_primary: i === 0})));
-        }
+        (d.materials || []).forEach((m, s) => {
+          const j = $(p, `[name$="[materials][${s}][jenis]"]`); if (!j || !m.jenis) return;
+          setField(p, j.name, m.jenis);
+          this.jenis(p, s, String(m.jenis));
+          const g = $(p, `[name$="[materials][${s}][gramatur]"]`); if (g && m.gramatur) setField(p, g.name, m.gramatur);
+        });
       });
     }
 

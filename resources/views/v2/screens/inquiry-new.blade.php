@@ -9,7 +9,8 @@
     $types = Sales::dielineTypes();
     $typeCode = $doc['type_code'] ?? '';
     $finishing = array_column(Sales::masters()['finishing_types'], 'finishing_name', 'id_finishing_type');
-    $blankPart = ['materials' => [['is_primary' => true]]];
+    $blankPart = [];
+    $chains = Sales::materialChains();
     $parts = $doc['parts'] ?? [$blankPart];
     $tiers = $doc['tiers'] ?? [['qty' => 10000, 'is_primary' => true], ['qty' => 50000, 'is_primary' => false], ['qty' => 200000, 'is_primary' => false]];
     // Kategori Produk -> Detail Kategori -> Ukuran Pasaran = master Lookup Product Market (tm2mst.prod_market, diisi officer ProDev).
@@ -94,10 +95,11 @@
     <x-dl::card title="Part & Dieline" description="dimensi produk & preview dieline live">
         <div data-inq-parts>
             @foreach ($parts as $n => $part)
-                <x-mp::sales.inquiry-part :index="(string) $n" :part="$part + ['saved' => (bool) $doc]" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" />
+                <x-mp::sales.inquiry-part :index="(string) $n" :part="$part + ['saved' => (bool) $doc]" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" :material-chains="$chains" />
             @endforeach
         </div>
-        <template data-inq-part-tpl><x-mp::sales.inquiry-part index="__I__" :part="$blankPart" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" /></template>
+        <template data-inq-part-tpl><x-mp::sales.inquiry-part index="__I__" :part="$blankPart" :types="$types" :type-code="$typeCode" :finishing-types="$finishing" :material-chains="$chains" /></template>
+        <script type="application/json" data-inq-matchains>@json($chains)</script>
         <div><x-dl::button variant="secondary" icon="＋" label="Tambah Part" data-inq-add-part /></div>
     </x-dl::card>
 

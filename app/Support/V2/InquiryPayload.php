@@ -2,6 +2,7 @@
 
 namespace App\Support\V2;
 
+use App\Models\Master\MatCategory;
 use App\Models\Sdi\IqpInquiry;
 use Illuminate\Http\Request;
 
@@ -92,16 +93,45 @@ final class InquiryPayload
             'flat_area' => self::num($d['flat_area'] ?? ''),
             'cfg_color' => (string) ($p['cfg_color'] ?? ''),
             'cfg_ink' => (string) ($p['cfg_ink'] ?? ''),
-            // Bahan dari Kategori Produk ("CAT:<kategori>") belum item persis -> disimpan sebagai nama saja (rawmat_id kosong).
-            'materials' => array_map(fn ($m) => [
-                'id' => self::id($m),
-                'rawmat_id' => is_numeric($m['material'] ?? '') ? (int) $m['material'] : null,
-                'display_name' => (string) ($m['material_label'] ?? ''),
-                'gram_weight' => null, 'size_p' => null, 'size_l' => null,
-                'is_primary' => self::bool($m['is_primary'] ?? false),
-            ], array_values($p['materials'] ?? [])),
+            'materials' => self::materials($p['materials'] ?? []),
             'finishings' => array_values($p['finishings'] ?? []),
         ];
+    }
+
+    // Bahan = 2 slot tetap (0 Paper, 1 Sheet/SF), sales pilih Jenis + Gramatur saja (user 2026-09-29):
+    // tanpa merek & ukuran plano -> rawmat_id/size kosong, diputuskan Purchasing/ProDev.
+    // category_id = node terdalam yang dipilih; baris lama tanpa pilihan (data sebelum ini) dibiarkan apa adanya.
+    private static function materials(array $slots): array
+    {
+        $rows = [];
+        foreach ([0, 1] as $s) {
+            $m = $slots[$s] ?? [];
+            $cat = (int) (($m['gramatur'] ?? '') ?: ($m['jenis'] ?? 0));
+            $node = $cat ? MatCategory::find($cat) : null;
+            if (! $node) {
+                if (self::id($m)) {
+                    $rows[] = ['id' => self::id($m), 'keep_only' => true];
+                }
+
+                continue;
+            }
+            $chain = $node->ancestorChain();
+            $rows[] = [
+                'id' => self::id($m), 'layer_seq' => $s + 1, 'rawmat_id' => null, 'category_id' => $cat,
+                'display_name' => implode(' › ', array_map(fn ($c) => $c->category_name, $chain)),
+                'gram_weight' => ($m['gramatur'] ?? '') && preg_match('/(\d+)/', $node->category_name, $g) ? $g[1] : null,
+                'flute_type' => $s === 1 ? ($chain[1]->category_name ?? null) : null,
+                'size_p' => null, 'size_l' => null, 'is_primary' => false,
+            ];
+        }
+        foreach ($rows as $k => $r) {
+            if (empty($r['keep_only'])) {
+                $rows[$k]['is_primary'] = true;
+                break;
+            }
+        }
+
+        return $rows;
     }
 
     private static function id(array $row): ?int

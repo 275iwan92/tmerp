@@ -13,17 +13,45 @@ class InquiryPart extends DevlibComponent
 {
     public const PART_TYPES = ['DC' => 'Paper', 'DC+SHEET' => 'Paper + Sheet', 'DC+SF' => 'Paper + SF', 'SHEET' => 'Sheet', 'KRAFT' => 'Kraft'];
 
-    public const COLORS = ['4/4', '4/1', '4/0', '2/0', '1/1', '1/0'];
-
     public function __construct(
         public string $index = '0',
         public array $part = [],
         public array $types = [],
         public ?string $typeCode = null,
         public array $finishingTypes = [],
+        public array $materialChains = [],
     ) {
         $this->part += ['id' => null, 'artwork_url' => null, 'artwork_name' => null, 'artwork_inner_url' => null, 'artwork_inner_name' => null, 'part_name' => '', 'part_role' => '', 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => '', 'dims' => [], 'cfg_color' => '4/4',
-            'cfg_ink' => '', 'materials' => [], 'finishings' => [], 'sent' => false, 'saved' => false, 'suggestions' => []];
+            'cfg_ink' => '', 'material_slots' => [], 'finishings' => [], 'sent' => false, 'saved' => false, 'suggestions' => []];
+    }
+
+    // Semua kombinasi sisiA/sisiB 1/0 .. 6/6 (user 2026-09-29).
+    public function colors(): array
+    {
+        $out = [];
+        foreach (range(1, 6) as $front) {
+            foreach (range(0, 6) as $back) {
+                $out[] = "$front/$back";
+            }
+        }
+
+        return $out;
+    }
+
+    // Slot bahan 0 = Paper, 1 = Sheet/SF: ['id', 'jenis', 'gramatur', 'label' (nama tersimpan)].
+    public function slots(): array
+    {
+        return array_map(fn ($s) => ($this->part['material_slots'][$s] ?? []) + ['id' => null, 'jenis' => '', 'gramatur' => '', 'label' => ''], [0, 1]);
+    }
+
+    public function jenisOptions(int $slot): array
+    {
+        return array_column($this->materialChains[$slot]['jenis'] ?? [], 1, 0);
+    }
+
+    public function gramOptions(int $slot, $jenis): array
+    {
+        return array_column($this->materialChains[$slot]['gram'][$jenis] ?? [], 1, 0);
     }
 
     public function tag(): string
@@ -59,11 +87,6 @@ class InquiryPart extends DevlibComponent
     public function partTypes(): array
     {
         return self::PART_TYPES;
-    }
-
-    public function colors(): array
-    {
-        return self::COLORS;
     }
 
     public function breakdown(): ?array
@@ -120,18 +143,22 @@ class InquiryPart extends DevlibComponent
                             :source="\MockupParts\Src::of('tm2mst.prod_type.dieline_spec', 'tm2sdi.iqp_part.dieline_spec', 'tm2sdi.iqp_part.flat_w', 'tm2sdi.iqp_part.flat_h', 'tm2sdi.iqp_part.flat_area')" />
 
                         <x-dl::divider label="Bahan (Material)" />
-                        <p class="mp-hint">Pilih dari master bahan baku — brand &amp; jenis bahan otomatis terisi.</p>
-                        <x-dl::lines :name="$n('materials')" title="Bahan" add-label="+ Tambah Bahan" :rows="$p['materials']" :source="\MockupParts\Src::of('tm2sdi.iqp_part_material')"
-                            :columns="[
-                                ['key' => 'material', 'label' => 'Bahan (ketik untuk cari)', 'type' => 'lookup', 'lookup' => 'paper', 'required' => true, 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_material.rawmat_id', 'tm2mst.mat_raw.material_name')],
-                                ['key' => 'brand', 'label' => 'Brand', 'type' => 'display', 'width' => '120px', 'src' => \MockupParts\Src::of('tm2mst.mat_raw.brand')],
-                                ['key' => 'category', 'label' => 'Jenis Bahan', 'type' => 'display', 'width' => '120px', 'src' => \MockupParts\Src::of('tm2mst.mat_raw.category1')],
-                                ['key' => 'is_primary', 'label' => 'Utama', 'type' => 'primary', 'labels' => ['✓', '—'], 'width' => '80px', 'src' => \MockupParts\Src::of('tm2sdi.iqp_part_material.is_primary')],
-                            ]" />
+                        <p class="mp-hint">Pilih Jenis &amp; Gramatur saja — merek &amp; ukuran plano ditentukan Purchasing/ProDev.</p>
+                        @foreach ($slots() as $s => $slot)
+                            <input type="hidden" name="{{ $n('materials') }}[{{ $s }}][id]" value="{{ $slot['id'] }}">
+                            <x-dl::form.row cols="3">
+                                <x-dl::field.display :label="'Bahan #'.($s + 1)" :value="$materialChains[$s]['label'] ?? ''" :hint="$slot['label'] !== '' && $slot['jenis'] === '' ? 'Data lama: '.$slot['label'].' — pilih ulang Jenis' : null"
+                                    :source="\MockupParts\Src::of('tm2mst.mat_category (level 1)')" />
+                                <x-dl::field.select :name="$n('materials').'['.$s.'][jenis]'" label="Jenis" placeholder="— pilih jenis —" :options="$jenisOptions($s)" :value="$slot['jenis']"
+                                    :source="\MockupParts\Src::of('tm2sdi.iqp_part_material.category_id', 'tm2mst.mat_category (level 2)')" />
+                                <x-dl::field.select :name="$n('materials').'['.$s.'][gramatur]'" label="Gramatur / Spec" placeholder="— semua —" :options="$gramOptions($s, $slot['jenis'])" :value="$slot['gramatur']"
+                                    :disabled="$slot['jenis'] === ''" :source="\MockupParts\Src::of('tm2sdi.iqp_part_material.category_id', 'tm2sdi.iqp_part_material.gram_weight', 'tm2mst.mat_category (level 3)')" />
+                            </x-dl::form.row>
+                        @endforeach
 
                         <x-dl::divider label="Cetak / Warna" />
                         <x-dl::form.row cols="3">
-                            <x-dl::field.select :name="$n('cfg_color')" label="Notasi Warna" :options="$colors()" :value="$p['cfg_color']" :placeholder="null" hint="Format sisiA/sisiB (4/4, 4/0, 4/1)" :source="$src('cfg_color')" data-inq-color />
+                            <x-dl::field.select :name="$n('cfg_color')" label="Notasi Warna" :options="$colors()" :value="$p['cfg_color']" :placeholder="null" hint="Format sisiA/sisiB (1/0 s.d. 6/6)" :source="$src('cfg_color')" data-inq-color />
                             <x-dl::field.display label="Turunan (otomatis)" :value="$cb ? 'front: '.$cb['front'].' · back: '.$cb['back'].' · total: '.$cb['total'].' · side: '.$cb['side'] : ''"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.cfg_color').' (dihitung dari Notasi Warna)'" data-inq-derived />
                             <x-dl::field.text :name="$n('cfg_ink')" label="Catatan Warna (Pantone)" placeholder="mis. Pantone 485 C" :value="$p['cfg_ink']" :source="$src('cfg_ink')" />

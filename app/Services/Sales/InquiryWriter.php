@@ -302,12 +302,21 @@ final class InquiryWriter
     {
         $keep = [];
 
-        foreach (array_values(array_filter($rows, fn ($r) => $r['rawmat_id'] || $r['display_name'] !== '')) as $i => $row) {
+        foreach ($rows as $row) {
+            if (! empty($row['keep_only'])) {
+                $keep[] = $row['id'];
+            }
+        }
+
+        $filled = array_filter($rows, fn ($r) => empty($r['keep_only']) && (($r['rawmat_id'] ?? null) || ($r['category_id'] ?? null) || $r['display_name'] !== ''));
+        foreach (array_values($filled) as $i => $row) {
             $data = [
-                'layer_seq' => $i + 1,
+                'layer_seq' => $row['layer_seq'] ?? $i + 1,
                 'rawmat_id' => $row['rawmat_id'] ?: null,
+                'category_id' => $row['category_id'] ?? null,
                 'rawmat_name' => $row['display_name'] !== '' ? $row['display_name'] : null,
                 'gram_weight' => $row['gram_weight'] ?: null,
+                'flute_type' => $row['flute_type'] ?? null,
                 'size_p' => $row['size_p'] ?: null,
                 'size_l' => $row['size_l'] ?: null,
                 'is_primary' => $row['is_primary'],

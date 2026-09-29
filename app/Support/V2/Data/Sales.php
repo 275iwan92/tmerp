@@ -3,6 +3,7 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Master\CustCustomer;
+use App\Models\Master\MatCategory;
 use App\Models\Master\MatRaw;
 use App\Models\Master\ProdMarket;
 use App\Models\Master\ProdType;
@@ -53,6 +54,38 @@ final class Sales
         ];
     }
 
+    // Bahan Inquiry (user 2026-09-29): Sales pilih Jenis + Gramatur/Spec saja dari hirarki mat_category
+    // (sama dengan Lookup Product Market), tanpa merek & ukuran. Slot 0 = Paper, slot 1 = Sheet/SF.
+    // gram = [id Jenis => [[id, nama], ...]] -- pasangan (bukan objek) supaya urutan tetap di JS.
+    public static function materialChains(): array
+    {
+        static $c;
+
+        return $c ??= array_map(function ($root) {
+            $rootId = MatCategory::roots()->where('category_name', $root)->value('id_category');
+            $jenis = MatCategory::where('parent_id', $rootId)->where('level', 2)->where('activate', true)->get(['id_category', 'category_name'])
+                ->sortBy('category_name', SORT_NATURAL | SORT_FLAG_CASE)->values();
+            $gram = MatCategory::whereIn('parent_id', $jenis->pluck('id_category'))->where('level', 3)->where('activate', true)
+                ->get(['id_category', 'parent_id', 'category_name'])->sortBy('category_name', SORT_NATURAL | SORT_FLAG_CASE);
+
+            return ['root' => $root, 'label' => $root === 'Paper' ? 'Paper' : 'Sheet / SF',
+                'jenis' => $jenis->map(fn ($j) => [$j->id_category, $j->category_name])->all(),
+                'gram' => $gram->groupBy('parent_id')->map(fn ($g) => $g->map(fn ($x) => [$x->id_category, trim($x->category_name)])->values()->all())->all()];
+        }, ['Paper', 'Sheet']);
+    }
+
+    // id kategori tersimpan (node terdalam) -> ['jenis' => id level 2, 'gramatur' => id level 3].
+    public static function materialSlot(?int $categoryId): array
+    {
+        static $parent;
+        $parent ??= MatCategory::whereIn('level', [2, 3])->pluck('parent_id', 'id_category')->all();
+        $level3 = $categoryId && isset($parent[$categoryId]) && isset($parent[$parent[$categoryId]]);
+
+        $known = $categoryId && isset($parent[$categoryId]);
+
+        return ['jenis' => $known ? ($level3 ? $parent[$categoryId] : $categoryId) : '', 'gramatur' => $level3 ? $categoryId : ''];
+    }
+
     // Tipe produk + dieline_spec + parameter + ukuran pasaran umum, langsung dari tm2mst.prod_type* (2026-09-26;
     // sebelumnya salinan JSON statis yang identik untuk 22 tipe lama). Hanya tipe yang punya dieline (elements).
     public static function dielineTypes(): array
@@ -81,14 +114,13 @@ final class Sales
     public static function productMarkets(): array
     {
         return ProdMarket::query()->where('activate', true)->whereNull('parent_id')->orderBy('sort_order')->orderBy('market_label')
-            ->with(['children' => fn ($q) => $q->where('activate', true)->with(['type', 'paperCategory', 'sheetCategory', 'sizes' => fn ($z) => $z->where('activate', true)->with('values')])])
+            ->with(['children' => fn ($q) => $q->where('activate', true)->with(['type', 'sizes' => fn ($z) => $z->where('activate', true)->with('values')])])
             ->get()->map(fn ($g) => ['code' => $g->market_code, 'label' => $g->market_label,
                 'details' => $g->children->filter(fn ($d) => $d->type_code)->map(fn ($d) => [
                     'code' => $d->market_code, 'label' => $d->market_label, 'type_code' => $d->type_code, 'type_name' => $d->type?->type_name,
                     'color' => $d->default_color, 'tiers' => $d->tierList(),
-                    // Bahan awal = rantai kategori bahan baku: #1 Paper, #2 Sheet/SF (item persis dipilih kemudian).
-                    'materials' => collect([$d->paperCategory, $d->sheetCategory])->filter()->map(fn ($c) => [
-                        'label' => ProdMarket::chainLabel($c), 'category' => $c->category_name])->values()->all(),
+                    // Bahan awal slot #1 Paper, #2 Sheet/SF = Jenis + Gramatur dari rantai kategori bahan baku.
+                    'materials' => [self::materialSlot($d->paper_category_id), self::materialSlot($d->sheet_category_id)],
                     'sizes' => $d->sizes->map(fn ($z) => ['label' => $z->size_label, 'dims' => self::sizeDims($z)])->values()->all(),
                 ])->values()->all()])
             ->filter(fn ($g) => $g['details'])->values()->all();
@@ -129,6 +161,11 @@ final class Sales
                 'materials' => $p->materials->map(fn ($m) => ['id' => $m->id_part_material, 'material' => $m->rawmat_id ?: '',
                     'material_label' => $m->rawmat_name ?? $m->rawMaterial?->material_name ?? '', 'brand' => $m->rawMaterial?->brand ?? '',
                     'category' => $m->rawMaterial?->category1 ?? '', 'is_primary' => (bool) $m->is_primary])->values()->all(),
+                'material_slots' => collect([0, 1])->map(function ($s) use ($p) {
+                    $m = $p->materials->firstWhere('layer_seq', $s + 1);
+
+                    return ['id' => $m?->id_part_material, 'label' => $m?->rawmat_name ?? ''] + self::materialSlot($m?->category_id);
+                })->all(),
                 'finishings' => $p->finishings->map(fn ($f) => ['finishing_type_id' => $f->finishing_type_id, 'attribute' => $f->attribute ?? ''])->values()->all(),
                 'sent' => (bool) $p->prod_part_id, 'prod_part_id' => $p->prod_part_id,
             ])->values()->all(),
