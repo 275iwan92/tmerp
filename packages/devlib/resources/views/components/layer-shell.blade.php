@@ -7,6 +7,10 @@
         </x-slot:profile>
     </x-dl::layer-menu>
 
+    {{-- Layar kecil (<=760px): Layer Menu menjadi laci, dibuka tombol ini (user 2026-09-29). --}}
+    <button type="button" class="dl-shell__burger" data-dl-lm-toggle aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+    <div class="dl-shell__scrim" data-dl-lm-scrim></div>
+
     <div class="dl-main">
         @include('devlib::components.shell.work', ['intro' => 'Pilih modul di <b>menu kiri</b>; klik cabang untuk turun satu layer, <b>Back</b> untuk naik.', 'hint' => 'Ctrl+K cari cepat · roda gigi di sebelah nama = Chat, Profile, Notifikasi, Menu Classic.'])
     </div>
