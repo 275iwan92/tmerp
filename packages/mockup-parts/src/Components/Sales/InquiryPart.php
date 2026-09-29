@@ -22,7 +22,7 @@ class InquiryPart extends DevlibComponent
         public array $materialChains = [],
     ) {
         $this->part += ['id' => null, 'artwork_url' => null, 'artwork_name' => null, 'artwork_inner_url' => null, 'artwork_inner_name' => null, 'part_name' => '', 'part_role' => '', 'part_type' => 'DC', 'qty_per_sku' => 1, 'pack_qty' => '', 'dims' => [], 'cfg_color' => '4/4',
-            'cfg_ink' => '', 'material_slots' => [], 'finishings' => [], 'sent' => false, 'saved' => false, 'suggestions' => []];
+            'cfg_ink' => '', 'material_rows' => [], 'finishings' => [], 'sent' => false, 'saved' => false, 'suggestions' => []];
     }
 
     // Semua kombinasi sisiA/sisiB 1/0 .. 6/6 (user 2026-09-29).
@@ -38,20 +38,15 @@ class InquiryPart extends DevlibComponent
         return $out;
     }
 
-    // Slot bahan 0 = Paper, 1 = Sheet/SF: ['id', 'jenis', 'gramatur', 'label' (nama tersimpan)].
-    public function slots(): array
+    // Baris bahan: #1 Paper & #2 Sheet/SF selalu ada (baris bawaan), sisanya baris tambahan (mis. Paper 2 lapis).
+    public function rows(): array
     {
-        return array_map(fn ($s) => ($this->part['material_slots'][$s] ?? []) + ['id' => null, 'jenis' => '', 'gramatur' => '', 'label' => ''], [0, 1]);
-    }
+        $rows = array_values($this->part['material_rows']);
+        foreach ([0, 1] as $c) {
+            $rows[$c] = ['chain' => $c] + ($rows[$c] ?? []);
+        }
 
-    public function jenisOptions(int $slot): array
-    {
-        return array_column($this->materialChains[$slot]['jenis'] ?? [], 1, 0);
-    }
-
-    public function gramOptions(int $slot, $jenis): array
-    {
-        return array_column($this->materialChains[$slot]['gram'][$jenis] ?? [], 1, 0);
+        return $rows;
     }
 
     public function tag(): string
@@ -144,17 +139,13 @@ class InquiryPart extends DevlibComponent
 
                         <x-dl::divider label="Bahan (Material)" />
                         <p class="mp-hint">Pilih Jenis &amp; Gramatur saja — merek &amp; ukuran plano ditentukan Purchasing/ProDev.</p>
-                        @foreach ($slots() as $s => $slot)
-                            <input type="hidden" name="{{ $n('materials') }}[{{ $s }}][id]" value="{{ $slot['id'] }}">
-                            <x-dl::form.row cols="3">
-                                <x-dl::field.display :label="'Bahan #'.($s + 1)" :value="$materialChains[$s]['label'] ?? ''" :hint="$slot['label'] !== '' && $slot['jenis'] === '' ? 'Data lama: '.$slot['label'].' — pilih ulang Jenis' : null"
-                                    :source="\MockupParts\Src::of('tm2mst.mat_category (level 1)')" />
-                                <x-dl::field.select :name="$n('materials').'['.$s.'][jenis]'" label="Jenis" placeholder="— pilih jenis —" :options="$jenisOptions($s)" :value="$slot['jenis']"
-                                    :source="\MockupParts\Src::of('tm2sdi.iqp_part_material.category_id', 'tm2mst.mat_category (level 2)')" />
-                                <x-dl::field.select :name="$n('materials').'['.$s.'][gramatur]'" label="Gramatur / Spec" placeholder="— semua —" :options="$gramOptions($s, $slot['jenis'])" :value="$slot['gramatur']"
-                                    :disabled="$slot['jenis'] === ''" :source="\MockupParts\Src::of('tm2sdi.iqp_part_material.category_id', 'tm2sdi.iqp_part_material.gram_weight', 'tm2mst.mat_category (level 3)')" />
-                            </x-dl::form.row>
-                        @endforeach
+                        <div data-inq-mats data-seq="{{ count($rows()) }}">
+                            @foreach ($rows() as $m => $row)
+                                <x-mp::sales.inquiry-material :name="$n('materials')" :index="(string) $m" :row="$row" :chains="$materialChains" :fixed="$m < 2" />
+                            @endforeach
+                        </div>
+                        <template data-inq-mat-tpl><x-mp::sales.inquiry-material :name="$n('materials')" index="__M__" :chains="$materialChains" /></template>
+                        <div><x-dl::button size="sm" variant="secondary" label="+ Tambah Bahan" title="Mis. Paper 2 lapis atau Sheet 2 lapis" data-inq-mat-add /></div>
 
                         <x-dl::divider label="Cetak / Warna" />
                         <x-dl::form.row cols="3">

@@ -91,14 +91,30 @@
       if (n === 'product_detail_custom') return this.parts().forEach(p => { const nm = $(p, '[data-inq-name] input'); if (nm) { nm.value = e.target.value; nm.dispatchEvent(new Event('input', {bubbles: true})); } });
       if (n === 'material_source') return this.custMaterial();
       if (n.endsWith('[cfg_color]')) return this.derived(e.target.closest('[data-inq-part]'), e.target.value);
-      const mj = n.match(/\[materials\]\[(\d)\]\[jenis\]$/);
-      if (mj) return this.jenis(e.target.closest('[data-inq-part]'), +mj[1], e.target.value);
+      const row = e.target.closest('[data-inq-mat]');
+      if (row && n.endsWith('[chain]')) return this.chain(row);
+      if (row && n.endsWith('[jenis]')) return this.jenis(row, e.target.value);
     }
 
-    // Jenis berganti -> daftar Gramatur milik jenis itu (kosong = "semua").
-    jenis(p, slot, v) {
-      const g = $(p, `[name$="[materials][${slot}][gramatur]"]`); if (!g) return;
-      setOptions(p, g.name, (this.chains[slot]?.gram || {})[v] || [], {disabled: !v});
+    // Baris bahan: Kategori (Paper / Sheet-SF) -> Jenis -> Gramatur (kosong = "semua").
+    matField(row, k) { return $(row, `[name$="[${k}]"]`); }
+    matChain(row) { return this.matField(row, 'chain')?.value === 'S' ? 1 : 0; }
+    chain(row) {
+      setOptions(row, this.matField(row, 'jenis').name, this.chains[this.matChain(row)]?.jenis || []);
+      this.jenis(row, '');
+    }
+    jenis(row, v) {
+      const g = this.matField(row, 'gramatur'); if (!g) return;
+      setOptions(row, g.name, (this.chains[this.matChain(row)]?.gram || {})[v] || [], {disabled: !v});
+    }
+    // + Tambah Bahan: lapis tambahan (mis. Paper 2 lapis / Sheet 2 lapis), default Paper.
+    addMaterial(p) {
+      const box = $(p, '[data-inq-mats]'), tpl = $(p, 'template[data-inq-mat-tpl]');
+      const i = +(box.dataset.seq || box.children.length); box.dataset.seq = i + 1;
+      const w = document.createElement('div');
+      w.innerHTML = tpl.innerHTML.replaceAll('__M__', String(i)).trim();
+      const row = w.firstElementChild; box.appendChild(row);
+      Devlib.mount(row);
     }
 
     clicked(e) {
@@ -106,6 +122,8 @@
       if (x.closest('[data-inq-save]')) return this.save();
       if (x.closest('[data-inq-confirm]')) return this.confirm();
       if (x.closest('[data-inq-add-part]')) return this.addPart();
+      if (x.closest('[data-inq-mat-add]')) return this.addMaterial(part);
+      if (x.closest('[data-inq-mat-del]')) return x.closest('[data-inq-mat]').remove();
       if (x.closest('[data-inq-template]')) return this.applyTemplate();
       if (x.closest('[data-inq-remove]')) return confirmBox({message: 'Hapus part ini?', tone: 'danger'}).then(ok => { if (ok) { part.remove(); this.removable(); this.template(); } });
       if (x.closest('[data-inq-role-open]')) { this.rolePart = part; return openLayer('inq-role'); }
@@ -181,10 +199,10 @@
         const col = $(p, '[data-inq-color] [data-dl-value]');
         if (col && d.color) { setField(p, col.name, d.color); col.dispatchEvent(new Event('change', {bubbles: true})); }
         (d.materials || []).forEach((m, s) => {
-          const j = $(p, `[name$="[materials][${s}][jenis]"]`); if (!j || !m.jenis) return;
-          setField(p, j.name, m.jenis);
-          this.jenis(p, s, String(m.jenis));
-          const g = $(p, `[name$="[materials][${s}][gramatur]"]`); if (g && m.gramatur) setField(p, g.name, m.gramatur);
+          const row = $(p, `[data-inq-mat="${s}"]`); if (!row || !m.jenis) return;
+          setField(row, this.matField(row, 'jenis').name, m.jenis);
+          this.jenis(row, String(m.jenis));
+          if (m.gramatur) setField(row, this.matField(row, 'gramatur').name, m.gramatur);
         });
       });
     }

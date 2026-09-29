@@ -98,14 +98,14 @@ final class InquiryPayload
         ];
     }
 
-    // Bahan = 2 slot tetap (0 Paper, 1 Sheet/SF), sales pilih Jenis + Gramatur saja (user 2026-09-29):
+    // Bahan = baris bawaan #1 Paper, #2 Sheet/SF + lapis tambahan bebas; sales pilih Jenis + Gramatur saja (user 2026-09-29):
     // tanpa merek & ukuran plano -> rawmat_id/size kosong, diputuskan Purchasing/ProDev.
     // category_id = node terdalam yang dipilih; baris lama tanpa pilihan (data sebelum ini) dibiarkan apa adanya.
-    private static function materials(array $slots): array
+    private static function materials(array $input): array
     {
         $rows = [];
-        foreach ([0, 1] as $s) {
-            $m = $slots[$s] ?? [];
+        $seq = 0;
+        foreach (array_values($input) as $m) {
             $cat = (int) (($m['gramatur'] ?? '') ?: ($m['jenis'] ?? 0));
             $node = $cat ? MatCategory::find($cat) : null;
             if (! $node) {
@@ -117,10 +117,10 @@ final class InquiryPayload
             }
             $chain = $node->ancestorChain();
             $rows[] = [
-                'id' => self::id($m), 'layer_seq' => $s + 1, 'rawmat_id' => null, 'category_id' => $cat,
+                'id' => self::id($m), 'layer_seq' => ++$seq, 'rawmat_id' => null, 'category_id' => $cat,
                 'display_name' => implode(' › ', array_map(fn ($c) => $c->category_name, $chain)),
                 'gram_weight' => ($m['gramatur'] ?? '') && preg_match('/(\d+)/', $node->category_name, $g) ? $g[1] : null,
-                'flute_type' => $s === 1 ? ($chain[1]->category_name ?? null) : null,
+                'flute_type' => ($chain[0]->category_name ?? '') === 'Sheet' ? ($chain[1]->category_name ?? null) : null,
                 'size_p' => null, 'size_l' => null, 'is_primary' => false,
             ];
         }

@@ -299,6 +299,11 @@ button.dl-fm__chip:hover{border-color:var(--dl-accent)}
 .mp-part__head b{color:var(--dl-ink-strong)}
 .mp-part__body{padding:12px;display:flex;flex-direction:column;gap:10px}
 .mp-part__main{display:flex;flex-direction:column;gap:10px}
+/* Baris bahan Inquiry: 3 isian + tombol hapus (baris bawaan #1/#2 tanpa tombol hapus). */
+.mp-mat{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.mp-mat__cells{flex:1;min-width:0}
+.mp-mat__del{margin-top:22px;flex-shrink:0}
+.mp-mat__del.is-off{visibility:hidden}
 .mp-part__name{display:flex;align-items:flex-end;gap:6px;align-self:start}.mp-part__name>.dl-field{flex:1;min-width:0}.mp-part__name>.dl-iconbtn{margin-bottom:2px}
 .mp-roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
 .mp-role{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:2px solid var(--dl-border);border-radius:var(--dl-radius-lg);background:var(--dl-surface);cursor:pointer;text-align:center;font-family:inherit}

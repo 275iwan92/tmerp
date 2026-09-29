@@ -74,16 +74,36 @@ final class Sales
         }, ['Paper', 'Sheet']);
     }
 
-    // id kategori tersimpan (node terdalam) -> ['jenis' => id level 2, 'gramatur' => id level 3].
+    // id kategori tersimpan (node terdalam) -> ['chain' => 0 Paper | 1 Sheet, 'jenis' => id level 2, 'gramatur' => id level 3].
     public static function materialSlot(?int $categoryId): array
     {
         static $parent;
         $parent ??= MatCategory::whereIn('level', [2, 3])->pluck('parent_id', 'id_category')->all();
         $level3 = $categoryId && isset($parent[$categoryId]) && isset($parent[$parent[$categoryId]]);
-
         $known = $categoryId && isset($parent[$categoryId]);
+        $jenis = $known ? ($level3 ? $parent[$categoryId] : $categoryId) : '';
+        $sheet = $jenis !== '' && in_array($jenis, array_column(self::materialChains()[1]['jenis'], 0));
 
-        return ['jenis' => $known ? ($level3 ? $parent[$categoryId] : $categoryId) : '', 'gramatur' => $level3 ? $categoryId : ''];
+        return ['chain' => $sheet ? 1 : 0, 'jenis' => $jenis, 'gramatur' => $level3 ? $categoryId : ''];
+    }
+
+    // Baris bahan part untuk layar: [0] = baris Paper pertama, [1] = baris Sheet/SF pertama, sisanya lapis tambahan (urut layer_seq).
+    // Baris lama tanpa kategori (dulu pilih mat_raw) mengisi baris bawaan yang masih kosong, lalu jadi baris tambahan.
+    public static function materialRows($materials): array
+    {
+        $fixed = [0 => null, 1 => null];
+        $extra = [];
+        foreach ($materials->sortBy('layer_seq') as $m) {
+            $r = ['id' => $m->id_part_material, 'label' => $m->rawmat_name ?? ''] + self::materialSlot($m->category_id);
+            $slot = $r['jenis'] !== '' ? $r['chain'] : (array_search(null, $fixed, true) === false ? null : array_search(null, $fixed, true));
+            if ($slot !== null && $fixed[$slot] === null) {
+                $fixed[$slot] = ['chain' => $slot] + $r;
+            } else {
+                $extra[] = $r;
+            }
+        }
+
+        return array_merge([$fixed[0] ?? ['chain' => 0], $fixed[1] ?? ['chain' => 1]], $extra);
     }
 
     // Tipe produk + dieline_spec + parameter + ukuran pasaran umum, langsung dari tm2mst.prod_type* (2026-09-26;
@@ -161,11 +181,7 @@ final class Sales
                 'materials' => $p->materials->map(fn ($m) => ['id' => $m->id_part_material, 'material' => $m->rawmat_id ?: '',
                     'material_label' => $m->rawmat_name ?? $m->rawMaterial?->material_name ?? '', 'brand' => $m->rawMaterial?->brand ?? '',
                     'category' => $m->rawMaterial?->category1 ?? '', 'is_primary' => (bool) $m->is_primary])->values()->all(),
-                'material_slots' => collect([0, 1])->map(function ($s) use ($p) {
-                    $m = $p->materials->firstWhere('layer_seq', $s + 1);
-
-                    return ['id' => $m?->id_part_material, 'label' => $m?->rawmat_name ?? ''] + self::materialSlot($m?->category_id);
-                })->all(),
+                'material_rows' => self::materialRows($p->materials),
                 'finishings' => $p->finishings->map(fn ($f) => ['finishing_type_id' => $f->finishing_type_id, 'attribute' => $f->attribute ?? ''])->values()->all(),
                 'sent' => (bool) $p->prod_part_id, 'prod_part_id' => $p->prod_part_id,
             ])->values()->all(),
