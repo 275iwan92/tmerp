@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Beranda Sales — Mockup</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap">
+<!--
+  Mockup opening screen / dashboard setelah login (user: Yuna Puji Astuti, TM-00121,
+  Senior Staff Sales & Marketing). CSS murni + SVG inline (tanpa CDN Tailwind/FA).
+  Warna lewat token --color-* supaya ikut tema sys_theme nanti.
+-->
+<style>
+  :root {
+    --navy: #2c3e69; --accent: #2c7be5; --muted: #8a94a6; --ink: #1e293b; --ink2: #475569;
+    --line: #e2e8f0; --bg: #f1f5f9; --card: #fff;
+    --accent-soft: #eaf2fd; --field-border: #cbd5e1;
+    --ok: #16a34a; --ok-soft: #dcfce7; --warn: #d97706; --warn-soft: #fef3c7;
+    --bad: #dc2626; --bad-soft: #fee2e2; --info-soft: #e0edff; --vio: #7c3aed; --vio-soft: #ede9fe;
+    --s1: #2c7be5; --s2: #14b8a6; --s3: #f59e0b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--ink); font-size: 13px; display: flex; min-height: 100vh; }
+  svg.i { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  /* ---- Layer menu v2 (disederhanakan) ---- */
+  .rail { width: 232px; background: var(--navy); color: #cfd8ea; display: flex; flex-direction: column; flex: none; }
+  .brand { padding: 18px 20px; font-weight: 700; font-size: 17px; color: #fff; display: flex; gap: 10px; align-items: center; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .brand b { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; font-size: 13px; }
+  .nav { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav .grp { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #8797b8; padding: 14px 10px 6px; font-weight: 600; }
+  .nav a { display: flex; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 8px; color: #cfd8ea; text-decoration: none; font-weight: 500; }
+  .nav a.on { background: rgba(255,255,255,.12); color: #fff; box-shadow: inset 3px 0 0 var(--accent); }
+  .nav a .cnt { margin-left: auto; font-size: 10px; background: rgba(255,255,255,.14); border-radius: 99px; padding: 1px 7px; }
+  .me { margin-top: auto; padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.08); display: flex; gap: 10px; align-items: center; }
+  .av { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg,#f472b6,#fb923c); color: #fff; font-weight: 700; display: grid; place-items: center; font-size: 13px; flex: none; }
+  .me .n { color: #fff; font-weight: 600; font-size: 12.5px; } .me .r { font-size: 10.5px; color: #8797b8; }
+
+  main { flex: 1; padding: 20px 24px 28px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+  .ch { display: flex; align-items: center; gap: 10px; padding: 14px 18px 0; }
+  .ch h3 { font-size: 14px; font-weight: 600; }
+  .ch .sub { font-size: 11.5px; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+  .b-ok { background: var(--ok-soft); color: #15803d; } .b-warn { background: var(--warn-soft); color: #b45309; }
+  .b-bad { background: var(--bad-soft); color: #b91c1c; } .b-info { background: var(--info-soft); color: #1d4ed8; }
+  .b-vio { background: var(--vio-soft); color: #6d28d9; } .b-mute { background: #f1f5f9; color: #64748b; }
+
+  /* ---- Hero ---- */
+  .hero { display: grid; grid-template-columns: 1fr 300px 250px; gap: 16px; }
+  .greet { position: relative; overflow: hidden; padding: 22px 24px; background: linear-gradient(120deg, #2c3e69 0%, #34518f 55%, #2c7be5 130%); color: #fff; border: none; }
+  .greet .sunart { position: absolute; right: -40px; top: -60px; width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(circle, rgba(255,214,102,.55), rgba(255,214,102,0) 65%); }
+  .greet .eyebrow { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; opacity: .75; font-weight: 600; }
+  .greet h1 { font-size: 26px; font-weight: 700; margin: 4px 0 6px; }
+  .greet .pos { font-size: 12.5px; opacity: .9; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .greet .pos span.dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.5); }
+  .greet .brief { margin-top: 12px; font-size: 12.5px; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 10px; padding: 9px 12px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .greet .brief b { color: #ffe08a; }
+  .greet .btns { display: flex; gap: 8px; margin-top: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 7px; border-radius: 8px; padding: 8px 13px; font-weight: 600; font-size: 12.5px; border: 1px solid transparent; cursor: pointer; font-family: inherit; }
+  .btn-w { background: #fff; color: var(--navy); }
+  .btn-g { background: rgba(255,255,255,.12); color: #fff; border-color: rgba(255,255,255,.3); }
+  .btn-o { background: #fff; color: var(--accent); border-color: #bcd4f7; padding: 5px 10px; font-size: 11.5px; }
+  .btn-o.solid { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn .pill { font-size: 10px; background: var(--accent-soft); color: var(--accent); border-radius: 99px; padding: 0 6px; }
+  .btn-g .pill { background: rgba(255,255,255,.2); color: #fff; }
+
+  .clock { padding: 18px 20px; display: flex; flex-direction: column; }
+  .clock .t { font-size: 44px; font-weight: 700; letter-spacing: -.02em; line-height: 1; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .clock .t small { font-size: 18px; color: var(--muted); font-weight: 600; margin-left: 2px; }
+  .clock .d { margin-top: 6px; font-weight: 600; }
+  .clock .w { margin-top: 2px; font-size: 11.5px; color: var(--muted); }
+  .daybar { margin-top: auto; }
+  .att { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  table.fu td:nth-child(5) { white-space: nowrap; }
+  .daybar .track { height: 6px; background: #eef2f7; border-radius: 99px; position: relative; margin-top: 6px; }
+  .daybar .fill { position: absolute; inset: 0 auto 0 0; width: 8%; background: var(--accent); border-radius: 99px; }
+  .daybar .lg { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); margin-top: 5px; }
+
+  .wx { padding: 16px 18px; background: linear-gradient(180deg, #eaf4ff, #fff 70%); }
+  .wx .top { display: flex; align-items: flex-start; gap: 10px; }
+  .wx .temp { font-size: 38px; font-weight: 700; line-height: 1; }
+  .wx .temp sup { font-size: 16px; }
+  .wx .loc { font-size: 11.5px; color: var(--ink2); display: flex; gap: 4px; align-items: center; margin-bottom: 4px; }
+  .wx .cond { font-weight: 600; margin-top: 4px; }
+  .wx .meta { display: flex; gap: 12px; font-size: 11px; color: var(--ink2); margin-top: 8px; }
+  .wx .hrs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 12px; text-align: center; font-size: 10.5px; color: var(--ink2); }
+  .wx .hrs div { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 5px 0; }
+  .wx .hrs b { display: block; font-size: 12px; color: var(--ink); }
+  .wx .tip { margin-top: 10px; font-size: 11px; background: var(--warn-soft); color: #92400e; border-radius: 8px; padding: 6px 9px; }
+
+  /* ---- Period + KPI ---- */
+  .bar { display: flex; align-items: center; gap: 12px; }
+  .bar h2 { font-size: 16px; font-weight: 700; }
+  .seg { display: inline-flex; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 3px; margin-left: auto; }
+  .seg span { white-space: nowrap; padding: 6px 13px; border-radius: 7px; font-weight: 600; font-size: 12px; color: var(--ink2); }
+  .seg span.on { background: var(--navy); color: #fff; }
+  .kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .kpi { padding: 14px 16px; }
+  .kpi .l { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; color: var(--ink2); }
+  .kpi .ic { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
+  .kpi .v { font-size: 24px; font-weight: 700; margin-top: 10px; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+  .kpi .v small { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .kpi .prog { height: 6px; background: #eef2f7; border-radius: 99px; margin-top: 10px; position: relative; }
+  .kpi .prog i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; }
+  .kpi .prog em { position: absolute; top: -3px; width: 2px; height: 12px; background: var(--ink); border-radius: 2px; }
+  .kpi .f { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; }
+  .up { color: var(--ok); font-weight: 600; } .dn { color: var(--bad); font-weight: 600; }
+
+  /* ---- Grid rows ---- */
+  .row2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; }
+  .row3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  .legend { display: flex; gap: 14px; font-size: 11px; color: var(--ink2); margin-left: auto; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .legend i.line { height: 2px; border-radius: 0; vertical-align: 3px; width: 14px; }
+  .sumrow { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); margin-top: auto; }
+  .row2 > .card { display: flex; flex-direction: column; }
+  .sumrow > div { padding: 12px 18px; border-right: 1px solid var(--line); }
+  .sumrow > div:last-child { border-right: none; }
+  .sumrow .k { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+  .sumrow .x { font-size: 15px; font-weight: 700; margin-top: 2px; }
+
+  /* aktivitas */
+  .acts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 14px 18px 4px; }
+  .act { border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; }
+  .act .h { display: flex; align-items: center; gap: 7px; font-size: 11.5px; font-weight: 600; color: var(--ink2); }
+  .act .n { font-size: 22px; font-weight: 700; margin-top: 6px; }
+  .act .n small { font-size: 11px; color: var(--muted); font-weight: 500; }
+  .act .p { height: 5px; background: #eef2f7; border-radius: 99px; margin-top: 7px; overflow: hidden; }
+  .act .p i { display: block; height: 100%; border-radius: 99px; }
+  table.mx { width: calc(100% - 36px); margin: 10px 18px 4px; border-collapse: collapse; font-size: 12px; }
+  table.mx th { text-align: right; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table.mx th:first-child, table.mx td:first-child { text-align: left; }
+  table.mx td { text-align: right; padding: 7px 8px; border-bottom: 1px solid #f1f5f9; font-variant-numeric: tabular-nums; }
+  table.mx tr.tot td { font-weight: 700; border-bottom: none; }
+  .seg-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+
+  /* follow-up table */
+  table.fu { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.fu th { white-space: nowrap; text-align: left; font-size: 10.5px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; padding: 9px 12px; background: #f8fafc; border-bottom: 1px solid var(--line); border-top: 1px solid var(--line); }
+  table.fu td { padding: 10px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  table.fu td.c, table.fu th.c { text-align: center; }
+  .idn { display: flex; gap: 10px; align-items: center; }
+  .idn .a { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-weight: 700; font-size: 11.5px; flex: none; }
+  .idn .nm { font-weight: 600; white-space: nowrap; } .idn .cd { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .stage { display: flex; gap: 3px; }
+  .stage i { width: 18px; height: 5px; border-radius: 99px; background: #e2e8f0; }
+  .stage i.on { background: var(--accent); }
+  .ico3 { display: inline-flex; gap: 8px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .ico3 span { display: inline-flex; align-items: center; gap: 3px; }
+  .ico3 svg.i { width: 13px; height: 13px; color: var(--muted); }
+
+  /* agenda */
+  .ag { padding: 12px 18px 16px; display: flex; flex-direction: column; gap: 0; }
+  .ag .it { display: grid; grid-template-columns: 52px 14px 1fr; gap: 10px; padding: 8px 0; }
+  .ag .tm { font-weight: 700; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .ag .tm small { display: block; color: var(--muted); font-weight: 500; font-size: 10.5px; }
+  .ag .ln { position: relative; }
+  .ag .ln::before { content: ''; position: absolute; left: 6px; top: 16px; bottom: -14px; width: 2px; background: #e2e8f0; }
+  .ag .it:last-child .ln::before { display: none; }
+  .ag .ln b { position: absolute; top: 3px; left: 1px; width: 12px; height: 12px; border-radius: 50%; border: 3px solid; background: #fff; }
+  .ag .ti { font-weight: 600; } .ag .ds { font-size: 11.5px; color: var(--ink2); margin-top: 1px; }
+  .ag .it.done .ti { color: var(--muted); text-decoration: line-through; }
+
+  /* quote */
+  .quote { display: flex; align-items: center; gap: 18px; padding: 18px 24px; background: linear-gradient(90deg, #fffaf0, #fff 60%); border-color: #fde7c2; }
+  .quote .mk { font-size: 60px; line-height: .6; color: #f59e0b; font-family: Georgia, serif; height: 34px; }
+  .quote .q { font-size: 15.5px; font-weight: 500; font-style: italic; color: #3b3326; }
+  .quote .by { font-size: 11.5px; color: var(--muted); margin-top: 4px; font-style: normal; }
+  .quote .day { margin-left: auto; text-align: center; flex: none; border-left: 1px solid #fde7c2; padding-left: 18px; }
+  .quote .day b { display: block; font-size: 22px; color: #b45309; }
+  .quote .day span { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+  /* catatan mockup */
+  .notes { border: 1px dashed #94a3b8; background: #fbfdff; border-radius: 12px; padding: 14px 18px; font-size: 11.5px; color: var(--ink2); }
+  .notes h4 { font-size: 12px; color: var(--ink); margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
+  .notes ol { padding-left: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 28px; }
+  .notes code { background: #eef2f7; border-radius: 4px; padding: 0 4px; font-size: 11px; color: #334155; }
+  .num { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #dc2626; color: #fff; font-size: 10px; font-weight: 700; font-style: normal; vertical-align: 1px; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M3 4h2l2.5 11h11L21 7H6.5"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/><path d="M9 8h6"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="i-money" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></symbol>
+  <symbol id="i-uplus" viewBox="0 0 24 24"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 12.5-4.3M19 14v6M16 17h6"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M17 2l3 3-3 3M4 11V9a4 4 0 0 1 4-4h12M7 22l-3-3 3-3M20 13v2a4 4 0 0 1-4 4H4"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 16h15a3 3 0 1 1-3 3M3 12h17"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></symbol>
+</svg>
+
+<!-- ======= Layer menu v2 (x-dl::layer-shell), disederhanakan ======= -->
+<aside class="rail">
+  <div class="brand"><b>TM</b> TMERP</div>
+  <nav class="nav">
+    <a class="on"><svg class="i"><use href="#i-home"/></svg> Beranda</a>
+    <div class="grp">Sales Order</div>
+    <a><svg class="i"><use href="#i-file"/></svg> Inquiry Product <span class="cnt">5</span></a>
+    <a><svg class="i"><use href="#i-send"/></svg> Quotation <span class="cnt">3</span></a>
+    <a><svg class="i"><use href="#i-cart"/></svg> Customer Order</a>
+    <a><svg class="i"><use href="#i-cal"/></svg> Customer Plan Delivery</a>
+    <div class="grp">Marketing</div>
+    <a><svg class="i"><use href="#i-users"/></svg> Prospek &amp; Aktivitas</a>
+    <a><svg class="i"><use href="#i-truck"/></svg> Delivery Order</a>
+    <div class="grp">Laporan</div>
+    <a><svg class="i"><use href="#i-chart"/></svg> Pencapaian Sales</a>
+  </nav>
+  <div class="me">
+    <div class="av">YP</div>
+    <div><div class="n">Yuna Puji Astuti</div><div class="r">TM-00121 · Sr. Staff Sales</div></div>
+  </div>
+</aside>
+
+<main>
+
+  <!-- ======= 1. Greeting + jam + cuaca ======= -->
+  <section class="hero">
+    <div class="card greet">
+      <div class="sunart"></div>
+      <div class="eyebrow">Selasa, 29 September 2026</div>
+      <h1>Selamat pagi, Yuna ☀️</h1>
+      <div class="pos">Senior Staff Sales &amp; Marketing <span class="dot"></span> Sales &amp; Marketing Dept. <span class="dot"></span> Atasan: Sales &amp; Marketing Manager</div>
+      <div class="brief">
+        <span>Hari ini: <b>2 visit</b>, <b>5 telepon</b> follow-up</span>
+        <span>Quotation menunggu jawaban: <b>3</b></span>
+        <span>Sisa hari kerja bulan ini: <b>1</b></span>
+      </div>
+      <div class="btns">
+        <button class="btn btn-w"><svg class="i"><use href="#i-brief"/></svg> Job Description</button>
+        <button class="btn btn-g"><svg class="i"><use href="#i-book"/></svg> SOP Sales <span class="pill">4</span></button>
+      </div>
+    </div>
+
+    <div class="card clock">
+      <div class="muted" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Waktu setempat · WIB</div>
+      <div class="t" style="margin-top:8px">08:42<small>:17</small></div>
+      <div class="d">Selasa, 29 September 2026</div>
+      <div class="w">Minggu ke-40 · hari ke-272 dari 365</div>
+      <div class="att">
+        <span class="badge b-ok">✓ Check-in 07:52</span><span class="muted" style="font-size:11px">tepat waktu · Shift Reguler</span>
+      </div>
+      <div class="daybar">
+        <div class="track"><div class="fill"></div></div>
+        <div class="lg"><span>Masuk 08:00</span><span>Jam kerja berjalan 42 mnt</span><span>Pulang 17:00</span></div>
+      </div>
+    </div>
+
+    <div class="card wx">
+      <div class="loc"><svg class="i" style="width:13px;height:13px"><use href="#i-pin"/></svg> Sidoarjo, Jawa Timur</div>
+      <div class="top">
+        <svg width="54" height="46" viewBox="0 0 54 46"><circle cx="20" cy="18" r="11" fill="#fbbf24"/><g stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round"><path d="M20 1v3M20 32v3M3 18h3M34 18h3M8 6l2 2M30 6l-2 2"/></g><path d="M18 42h26a8 8 0 0 0 0-16 11 11 0 0 0-20.5 3A6.5 6.5 0 0 0 18 42z" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/></svg>
+        <div><div class="temp">31<sup>°C</sup></div><div class="cond">Cerah berawan</div></div>
+      </div>
+      <div class="meta">
+        <span><svg class="i" style="width:12px;height:12px;vertical-align:-2px"><use href="#i-drop"/></svg> 68%</span>
+        <span><svg class="i" style="width:12px;height:12px;vertical-align:-2px"><use href="#i-wind"/></svg> 14 km/j</span>
+        <span>Terasa 35°</span>
+      </div>
+      <div class="hrs">
+        <div>10<b>32°</b></div><div>12<b>34°</b></div><div>14<b>33°</b></div><div>16<b>29°</b></div><div>18<b>27°</b></div>
+      </div>
+      <div class="tip">🌧️ Peluang hujan 60% pukul 15–17 — atur visit sore lebih awal.</div>
+    </div>
+  </section>
+
+  <!-- ======= 2. KPI + pilihan periode ======= -->
+  <div class="bar">
+    <h2>KPI Saya</h2>
+    <span class="muted">Periode 1–29 Sep 2026 · dibanding Agustus 2026</span>
+    <div class="seg"><span>Harian</span><span>Mingguan</span><span class="on">Bulanan</span><span>3 Bulan</span><span>6 Bulan</span><span>12 Bulan</span></div>
+  </div>
+
+  <section class="kpis">
+    <div class="card kpi">
+      <div class="l"><span class="ic" style="background:var(--info-soft);color:var(--accent)"><svg class="i"><use href="#i-money"/></svg></span> Omzet Customer Order</div>
+      <div class="v">Rp 412,5jt <small>/ 600jt</small></div>
+      <div class="prog"><i style="width:68.8%;background:var(--accent)"></i><em style="left:96.7%" title="Seharusnya"></em></div>
+      <div class="f"><span class="badge b-warn">68,8% · di bawah laju</span><span class="up">▲ 9,4%</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="l"><span class="ic" style="background:var(--vio-soft);color:var(--vio)"><svg class="i"><use href="#i-send"/></svg></span> Quotation Terkirim</div>
+      <div class="v">18 <small>/ 20 dok · Rp 1,24 M</small></div>
+      <div class="prog"><i style="width:90%;background:var(--vio)"></i><em style="left:96.7%"></em></div>
+      <div class="f"><span class="badge b-ok">90% · sesuai laju</span><span class="up">▲ 3</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="l"><span class="ic" style="background:var(--ok-soft);color:var(--ok)"><svg class="i"><use href="#i-trophy"/></svg></span> Win Rate Quotation</div>
+      <div class="v">38% <small>target ≥ 35%</small></div>
+      <div class="prog"><i style="width:100%;background:var(--ok)"></i></div>
+      <div class="f"><span class="badge b-ok">Tercapai</span><span class="up">▲ 4 poin</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="l"><span class="ic" style="background:#ccfbf1;color:#0f766e"><svg class="i"><use href="#i-uplus"/></svg></span> Customer Baru</div>
+      <div class="v">3 <small>/ 4 customer</small></div>
+      <div class="prog"><i style="width:75%;background:var(--s2)"></i><em style="left:96.7%"></em></div>
+      <div class="f"><span class="badge b-warn">75%</span><span class="dn">▼ 1</span></div>
+    </div>
+    <div class="card kpi">
+      <div class="l"><span class="ic" style="background:var(--warn-soft);color:var(--warn)"><svg class="i"><use href="#i-repeat"/></svg></span> Repeat Order Existing</div>
+      <div class="v">11 <small>/ 12 customer aktif</small></div>
+      <div class="prog"><i style="width:91.7%;background:var(--s3)"></i><em style="left:96.7%"></em></div>
+      <div class="f"><span class="badge b-ok">91,7%</span><span class="up">▲ 2</span></div>
+    </div>
+  </section>
+
+  <!-- ======= 3. Target vs pencapaian + aktivitas ======= -->
+  <section class="row2">
+    <div class="card">
+      <div class="ch">
+        <div><h3>Target vs Pencapaian Omzet</h3><div class="sub">12 bulan terakhir · juta rupiah · garis putus = target bulanan</div></div>
+        <div class="legend"><span><i style="background:var(--accent)"></i>Tercapai</span><span><i style="background:#bcd4f7"></i>Belum tercapai</span><span><i class="line" style="background:#dc2626"></i>Target</span></div>
+      </div>
+      <svg viewBox="0 0 760 250" width="100%" style="display:block;margin:auto 0">
+        <g font-size="10.5" fill="#8a94a6" font-family="Instrument Sans, sans-serif">
+          <g stroke="#eef2f7"><line x1="46" y1="20" x2="745" y2="20"/><line x1="46" y1="70" x2="745" y2="70"/><line x1="46" y1="120" x2="745" y2="120"/><line x1="46" y1="170" x2="745" y2="170"/></g>
+          <line x1="46" y1="220" x2="745" y2="220" stroke="#cbd5e1"/>
+          <text x="38" y="24" text-anchor="end">800</text><text x="38" y="74" text-anchor="end">600</text><text x="38" y="124" text-anchor="end">400</text><text x="38" y="174" text-anchor="end">200</text><text x="38" y="224" text-anchor="end">0</text>
+        </g>
+        <!-- skala: 0..800 -> y 220..20 (0,25 px/jt). slot 58px mulai x=52 -->
+        <g>
+          <!-- Okt 520/550 --><rect x="62" y="90" width="36" height="130" rx="4" fill="#bcd4f7"/>
+          <!-- Nov 580/550 --><rect x="120" y="75" width="36" height="145" rx="4" fill="#2c7be5"/>
+          <!-- Des 610/550 --><rect x="178" y="67.5" width="36" height="152.5" rx="4" fill="#2c7be5"/>
+          <!-- Jan 430/550 --><rect x="236" y="112.5" width="36" height="107.5" rx="4" fill="#bcd4f7"/>
+          <!-- Feb 495/550 --><rect x="294" y="96.25" width="36" height="123.75" rx="4" fill="#bcd4f7"/>
+          <!-- Mar 575/550 --><rect x="352" y="76.25" width="36" height="143.75" rx="4" fill="#2c7be5"/>
+          <!-- Apr 540/600 --><rect x="410" y="85" width="36" height="135" rx="4" fill="#bcd4f7"/>
+          <!-- Mei 655/600 --><rect x="468" y="56.25" width="36" height="163.75" rx="4" fill="#2c7be5"/>
+          <!-- Jun 620/600 --><rect x="526" y="65" width="36" height="155" rx="4" fill="#2c7be5"/>
+          <!-- Jul 590/600 --><rect x="584" y="72.5" width="36" height="147.5" rx="4" fill="#bcd4f7"/>
+          <!-- Agu 612/600 --><rect x="642" y="67" width="36" height="153" rx="4" fill="#2c7be5"/>
+          <!-- Sep 412.5/600 (berjalan) --><rect x="700" y="116.9" width="36" height="103.1" rx="4" fill="#2c7be5" opacity=".55"/>
+          <rect x="700" y="70" width="36" height="46.9" rx="4" fill="none" stroke="#2c7be5" stroke-dasharray="3 3"/>
+        </g>
+        <polyline fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="6 4" points="52,82.5 400,82.5 400,70 745,70"/>
+        <g font-size="10.5" fill="#475569" text-anchor="middle" font-family="Instrument Sans, sans-serif">
+          <text x="80" y="238">Okt</text><text x="138" y="238">Nov</text><text x="196" y="238">Des</text><text x="254" y="238">Jan</text><text x="312" y="238">Feb</text><text x="370" y="238">Mar</text><text x="428" y="238">Apr</text><text x="486" y="238">Mei</text><text x="544" y="238">Jun</text><text x="602" y="238">Jul</text><text x="660" y="238">Agu</text><text x="718" y="238" font-weight="700" fill="#1e293b">Sep</text>
+          <text x="718" y="110" fill="#1d4ed8" font-weight="700">412</text>
+          <text x="718" y="64" fill="#64748b" font-size="9.5">sisa 188</text>
+        </g>
+      </svg>
+      <div class="sumrow">
+        <div><div class="k">Pencapaian 12 bln</div><div class="x">Rp 6,64 M</div></div>
+        <div><div class="k">Target 12 bln</div><div class="x">Rp 6,90 M</div></div>
+        <div><div class="k">Rasio</div><div class="x" style="color:var(--warn)">96,2%</div></div>
+        <div><div class="k">Bulan tercapai</div><div class="x">6 <span class="muted" style="font-size:12px;font-weight:500">dari 11</span></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div><h3>Aktivitas Sales</h3><div class="sub">Telepon · Email · Visit — bulan ini vs target</div></div>
+        <span class="badge b-info" style="margin-left:auto">+ Catat aktivitas</span>
+      </div>
+      <div class="acts">
+        <div class="act"><div class="h"><svg class="i" style="color:var(--s1)"><use href="#i-phone"/></svg> Telepon</div><div class="n">96 <small>/ 110</small></div><div class="p"><i style="width:87%;background:var(--s1)"></i></div></div>
+        <div class="act"><div class="h"><svg class="i" style="color:var(--s2)"><use href="#i-mail"/></svg> Email</div><div class="n">71 <small>/ 80</small></div><div class="p"><i style="width:89%;background:var(--s2)"></i></div></div>
+        <div class="act"><div class="h"><svg class="i" style="color:var(--s3)"><use href="#i-pin"/></svg> Visit</div><div class="n">14 <small>/ 20</small></div><div class="p"><i style="width:70%;background:var(--s3)"></i></div></div>
+      </div>
+      <table class="mx">
+        <tr><th>Sasaran</th><th>Telp</th><th>Email</th><th>Visit</th><th>Total</th></tr>
+        <tr><td><span class="seg-dot" style="background:#8b5cf6"></span>Prospek (belum pernah order)</td><td>41</td><td>33</td><td>5</td><td>79</td></tr>
+        <tr><td><span class="seg-dot" style="background:#14b8a6"></span>Customer baru (order &lt; 6 bln)</td><td>22</td><td>15</td><td>4</td><td>41</td></tr>
+        <tr><td><span class="seg-dot" style="background:#f59e0b"></span>Existing (maintain)</td><td>33</td><td>23</td><td>5</td><td>61</td></tr>
+        <tr class="tot"><td>Total</td><td>96</td><td>71</td><td>14</td><td>181</td></tr>
+      </table>
+      <div style="padding:6px 18px 14px">
+        <div class="sub muted" style="font-size:11px;margin-bottom:4px">Minggu ini (Sen–Sab)</div>
+        <svg viewBox="0 0 400 86" width="100%" height="86" style="display:block">
+          <line x1="0" y1="66" x2="400" y2="66" stroke="#e2e8f0"/>
+          <g>
+            <!-- per hari 3 batang, lebar 11, jarak grup 66 -->
+            <rect x="14" y="30" width="11" height="36" rx="2" fill="#2c7be5"/><rect x="27" y="42" width="11" height="24" rx="2" fill="#14b8a6"/><rect x="40" y="58" width="11" height="8" rx="2" fill="#f59e0b"/>
+            <rect x="80" y="38" width="11" height="28" rx="2" fill="#2c7be5"/><rect x="93" y="46" width="11" height="20" rx="2" fill="#14b8a6"/><rect x="106" y="50" width="11" height="16" rx="2" fill="#f59e0b"/>
+            <rect x="146" y="50" width="11" height="16" rx="2" fill="#2c7be5" opacity=".35"/><rect x="159" y="58" width="11" height="8" rx="2" fill="#14b8a6" opacity=".35"/><rect x="172" y="50" width="11" height="16" rx="2" fill="#f59e0b" opacity=".35"/>
+            <rect x="212" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/><rect x="225" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/><rect x="238" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/>
+            <rect x="278" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/><rect x="291" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/><rect x="304" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/>
+            <rect x="344" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/><rect x="357" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/><rect x="370" y="62" width="11" height="4" rx="2" fill="#cbd5e1"/>
+          </g>
+          <g font-size="10.5" fill="#64748b" text-anchor="middle" font-family="Instrument Sans, sans-serif">
+            <text x="32" y="80">Sen</text><text x="98" y="80">Sel</text><text x="164" y="80" font-weight="700" fill="#1e293b">Rab*</text><text x="230" y="80">Kam</text><text x="296" y="80">Jum</text><text x="362" y="80">Sab</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 4. Fokus follow-up + agenda ======= -->
+  <section class="row3">
+    <div class="card" style="overflow:hidden">
+      <div class="ch" style="padding-bottom:12px">
+        <div><h3>Fokus Follow-up</h3><div class="sub">Urut dari yang paling lama tidak dihubungi</div></div>
+        <div class="seg" style="font-size:11px"><span class="on">Semua 9</span><span>Prospek 4</span><span>Baru 2</span><span>Existing 3</span></div>
+      </div>
+      <table class="fu">
+        <tr><th>Customer / Prospek</th><th>Sasaran</th><th>Tahap</th><th class="c">Telp·Email·Visit</th><th>Terakhir</th><th class="c">Aksi</th></tr>
+        <tr>
+          <td><div class="idn"><div class="a" style="background:#ede9fe;color:#6d28d9">SP</div><div><div class="nm">PT Sumber Pangan Lestari</div><div class="cd">Ibu Ratna W. · Purchasing</div></div></div></td>
+          <td><span class="badge b-vio">Prospek</span></td>
+          <td><div class="stage"><i class="on"></i><i class="on"></i><i></i><i></i></div><div class="muted" style="font-size:10.5px;margin-top:3px">Inquiry · IQ2609014</div></td>
+          <td class="c"><span class="ico3"><span><svg class="i"><use href="#i-phone"/></svg>4</span><span><svg class="i"><use href="#i-mail"/></svg>2</span><span><svg class="i"><use href="#i-pin"/></svg>1</span></span></td>
+          <td><span class="badge b-bad">9 hari lalu</span></td>
+          <td class="c"><button class="btn btn-o solid">Telepon</button></td>
+        </tr>
+        <tr>
+          <td><div class="idn"><div class="a" style="background:#e0edff;color:#1d4ed8">KN</div><div><div class="nm">CV Kopi Nusa Jaya</div><div class="cd">Bp. Hendra · Owner</div></div></div></td>
+          <td><span class="badge b-vio">Prospek</span></td>
+          <td><div class="stage"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div><div class="muted" style="font-size:10.5px;margin-top:3px">Quotation · QT2609008</div></td>
+          <td class="c"><span class="ico3"><span><svg class="i"><use href="#i-phone"/></svg>6</span><span><svg class="i"><use href="#i-mail"/></svg>4</span><span><svg class="i"><use href="#i-pin"/></svg>2</span></span></td>
+          <td><span class="badge b-warn">5 hari lalu</span></td>
+          <td class="c"><button class="btn btn-o solid">Visit</button></td>
+        </tr>
+        <tr>
+          <td><div class="idn"><div class="a" style="background:#ccfbf1;color:#0f766e">AF</div><div><div class="nm">PT Anugrah Farma Medika</div><div class="cd">Bp. Dimas · Brand Manager</div></div></div></td>
+          <td><span class="badge b-ok">Customer baru</span></td>
+          <td><div class="stage"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></div><div class="muted" style="font-size:10.5px;margin-top:3px">CO pertama · CO2608021</div></td>
+          <td class="c"><span class="ico3"><span><svg class="i"><use href="#i-phone"/></svg>3</span><span><svg class="i"><use href="#i-mail"/></svg>5</span><span><svg class="i"><use href="#i-pin"/></svg>1</span></span></td>
+          <td><span class="badge b-warn">4 hari lalu</span></td>
+          <td class="c"><button class="btn btn-o">Email</button></td>
+        </tr>
+        <tr>
+          <td><div class="idn"><div class="a" style="background:#fef3c7;color:#b45309">MS</div><div><div class="nm">PT Mitra Snack Indonesia</div><div class="cd">Ibu Lina · PPIC</div></div></div></td>
+          <td><span class="badge b-warn">Existing</span></td>
+          <td><div class="muted" style="font-size:11.5px">Repeat order terakhir 38 hari</div><div class="muted" style="font-size:10.5px;margin-top:1px">rata-rata siklus 30 hari</div></td>
+          <td class="c"><span class="ico3"><span><svg class="i"><use href="#i-phone"/></svg>2</span><span><svg class="i"><use href="#i-mail"/></svg>1</span><span><svg class="i"><use href="#i-pin"/></svg>0</span></span></td>
+          <td><span class="badge b-mute">3 hari lalu</span></td>
+          <td class="c"><button class="btn btn-o">Telepon</button></td>
+        </tr>
+        <tr>
+          <td><div class="idn"><div class="a" style="background:#fee2e2;color:#b91c1c">BK</div><div><div class="nm">UD Berkah Kosmetika</div><div class="cd">Ibu Sari · Pemilik</div></div></div></td>
+          <td><span class="badge b-vio">Prospek</span></td>
+          <td><div class="stage"><i class="on"></i><i></i><i></i><i></i></div><div class="muted" style="font-size:10.5px;margin-top:3px">Kontak awal</div></td>
+          <td class="c"><span class="ico3"><span><svg class="i"><use href="#i-phone"/></svg>1</span><span><svg class="i"><use href="#i-mail"/></svg>1</span><span><svg class="i"><use href="#i-pin"/></svg>0</span></span></td>
+          <td><span class="badge b-mute">2 hari lalu</span></td>
+          <td class="c"><button class="btn btn-o">Jadwalkan</button></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div><h3>Agenda Hari Ini</h3><div class="sub">Selasa, 29 Sep · 4 kegiatan</div></div>
+        <span class="badge b-mute" style="margin-left:auto">1 selesai</span>
+      </div>
+      <div class="ag">
+        <div class="it done"><div class="tm">08:15<small>15 mnt</small></div><div class="ln"><b style="border-color:#94a3b8"></b></div><div><div class="ti">Briefing tim Sales</div><div class="ds">Ruang meeting lt. 2</div></div></div>
+        <div class="it"><div class="tm">10:00<small>1 jam</small></div><div class="ln"><b style="border-color:var(--s3)"></b></div><div><div class="ti">Visit · PT Anugrah Farma Medika</div><div class="ds">Bawa sampel dus sekunder 2 varian · Jl. Raya Waru 112</div></div></div>
+        <div class="it"><div class="tm">13:30<small>30 mnt</small></div><div class="ln"><b style="border-color:var(--s1)"></b></div><div><div class="ti">Telepon · CV Kopi Nusa Jaya</div><div class="ds">Konfirmasi QT2609008 — nego harga tier 5.000 pcs</div></div></div>
+        <div class="it"><div class="tm">14:30<small>1 jam</small></div><div class="ln"><b style="border-color:var(--s3)"></b></div><div><div class="ti">Visit · PT Sumber Pangan Lestari</div><div class="ds">Presentasi opsi laminasi doff · <span style="color:#b45309">maju sebelum hujan</span></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= 5. Kata motivasi harian (365) ======= -->
+  <section class="card quote">
+    <div class="mk">“</div>
+    <div>
+      <div class="q">Pelanggan tidak membeli kotak — mereka membeli keyakinan bahwa produknya akan sampai di rak dengan cantik. Jaga keyakinan itu di setiap panggilan.</div>
+      <div class="by">Kata hari ini · Kategori: Pelayanan</div>
+    </div>
+    <div class="day"><b>272</b><span>dari 365</span></div>
+  </section>
+
+  <!-- ======= Catatan mockup (bukan bagian layar) ======= -->
+  <section class="notes">
+    <h4><svg class="i"><use href="#i-info"/></svg> Catatan mockup — sumber data tiap blok (bukan bagian layar)</h4>
+    <ol>
+      <li>Greeting ikut jam: Pagi 04–10.59 · Siang 11–14.59 · Sore 15–17.59 · Malam 18–03.59. Nama &amp; jabatan dari <code>sec_user → emp_employee → org_position</code>.</li>
+      <li>Cuaca: API publik (usulan Open-Meteo, tanpa API key) berdasar kota kantor / lokasi browser; cache 30 mnt.</li>
+      <li>Job Description = HTML di <code>org_position.job_description</code> (sudah ada). SOP = <code>sop_document.content</code> (HTML) — perlu tautan SOP ↔ jabatan.</li>
+      <li>KPI &amp; target per user per periode: tabel target baru (usulan di <code>tm2sdi</code>); realisasi dihitung dari <code>quo_quotation</code> / <code>co_order</code>.</li>
+      <li>Aktivitas Telp/Email/Visit: tabel log aktivitas baru per customer/prospek + tombol "Catat aktivitas".</li>
+      <li>Kata motivasi: tabel 366 baris (per hari-ke-n, termasuk 29 Feb), ada layar input (aturan §7.12).</li>
+    </ol>
+  </section>
+
+</main>
+</body>
+</html>
