@@ -2,12 +2,16 @@
 @section('body')
     <div class="dl-cat">
         <div class="dl-cat__nav">
-            <x-dl::breadcrumb :items="array_fill_keys([...($page['trail'] ?? [$page['part']]), $page['label']], null)" />
-            <div class="dl-cat__chips">
-                @foreach ($page['members'] as $slug => [$label])
-                    <x-dl::button variant="secondary" size="sm" :href="'#'.$slug" :label="$label" />
-                @endforeach
-            </div>
+            {{-- menu: Modul / folder di breadcrumb bisa diklik = buka Layer Menu di cabang itu (user 2026-09-30). --}}
+            <x-dl::breadcrumb menu :items="array_fill_keys([...($page['trail'] ?? [$page['part']]), $page['label']], null)" />
+            {{-- Tombol lompat hanya berguna bila halaman berisi >1 contoh. --}}
+            @if (count($page['members']) > 1)
+                <div class="dl-cat__chips">
+                    @foreach ($page['members'] as $slug => [$label])
+                        <x-dl::button variant="secondary" size="sm" :href="'#'.$slug" :label="$label" />
+                    @endforeach
+                </div>
+            @endif
         </div>
         @foreach ($page['members'] as $slug => [$label, $classes])
             <section class="dl-cat__item" id="{{ $slug }}">
