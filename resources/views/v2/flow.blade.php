@@ -1,4 +1,4 @@
-@extends('v2.layout', ['title' => $flow['title'], 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => $flow['title'], 'bodyClass' => 'dl-page-body', 'framed' => true])
 @section('body')
     <div class="dl-cat">
         <x-dl::flow :title="$flow['title']" :steps="$flow['steps']" source="app/Support/Flows.php" />

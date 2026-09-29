@@ -1,4 +1,4 @@
-@extends('v2.layout', ['title' => $screen['label'], 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => $screen['label'], 'bodyClass' => 'dl-page-body', 'framed' => true])
 @section('body')
     <div class="dl-cat">
         <div class="dl-cat__nav">

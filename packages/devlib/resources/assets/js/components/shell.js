@@ -21,20 +21,32 @@
       this.chatCount = 2;
       this.notifCount = 3;
       // Dibaca sebelum initNav: navigasi Classic memanggil showHome() saat mulai, yang menyimpan daftar kosong.
-      let saved = null; try { saved = JSON.parse(sessionStorage.getItem('dl-shell-tabs')); } catch (e) {}
+      // Tab HANYA dipulihkan setelah tukar Menu Classic <-> Layer Menu (tanda dl-shell-keep). Memanggil menu
+      // lagi (muat ulang, login ulang) = mulai bersih, semua tab & pilihan hilang (user 2026-09-29).
+      let saved = null;
+      try { if (sessionStorage.getItem('dl-shell-keep')) saved = JSON.parse(sessionStorage.getItem('dl-shell-tabs')); sessionStorage.removeItem('dl-shell-keep'); } catch (e) {}
       this.initFrame();
       this.initNav();
       this.refreshCounts();
       this.restoreTabs(saved);
     }
 
-    // Tab terbuka bertahan saat halaman dimuat ulang (mis. menukar Menu Classic <-> Layer Menu). Per tab browser.
+    // Daftar tab terbuka (per tab browser) -- dipakai hanya untuk tukar Menu Classic <-> Layer Menu.
     saveTabs() { try { sessionStorage.setItem('dl-shell-tabs', JSON.stringify({open: [...this.openTabs.keys()], active: this.activeTab})); } catch (e) {} }
 
+    // ?open=<kode> (mis. layar yang tadinya terbuka sendirian lalu dialihkan ke shell) SELALU dibuka & diaktifkan,
+    // di atas tab yang dipulihkan; lalu alamat dirapikan kembali (tanpa ?open) supaya refresh tidak membukanya lagi.
     restoreTabs(s) {
-      if (!s?.open?.length) { if (this.el.dataset.dlOpen) this.openTab(this.el.dataset.dlOpen); return; }
-      s.open.forEach(c => this.openTab(c));
-      s.active && this.openTabs.has(s.active) ? this.activate(s.active) : this.showHome();
+      const open = this.el.dataset.dlOpen;
+      if (s?.open?.length) {
+        s.open.forEach(c => this.openTab(c));
+        if (!open) s.active && this.openTabs.has(s.active) ? this.activate(s.active) : this.showHome();
+      }
+      if (open) {
+        this.openTab(open);
+        const u = new URL(location.href); u.searchParams.delete('open');
+        history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+      }
     }
 
     /* ---------------- kerangka kerja (dipakai semua turunan) ---------------- */
@@ -86,12 +98,13 @@
       else if (a === 'devmode') setDevMode(!document.body.classList.contains('dl-dev'));
       else if (a === 'help') toast('Bantuan & dukungan — segera (tiket ke tim dev / sys_support_tickets).');
       else if (a === 'menu-layer' || a === 'menu-classic') this.switchMenu(a.slice(5));
-      else if (a === 'logout') $(this.el, 'form[data-dl-logout]')?.requestSubmit();
+      else if (a === 'logout') { try { sessionStorage.removeItem('dl-shell-tabs'); } catch (e) {} $(this.el, 'form[data-dl-logout]')?.requestSubmit(); }
     }
 
-    // Pilihan menu = cookie dl_menu (dibaca server lewat Shell::preferred()), lalu halaman dimuat ulang.
+    // Pilihan menu = cookie dl_menu (dibaca server lewat Shell::preferred()), lalu halaman dimuat ulang (tab ikut).
     switchMenu(mode) {
       document.cookie = `dl_menu=${mode}; path=/; max-age=31536000; samesite=lax`;
+      try { sessionStorage.setItem('dl-shell-keep', '1'); } catch (e) {}
       location.reload();
     }
 

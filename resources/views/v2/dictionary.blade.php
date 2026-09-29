@@ -1,4 +1,4 @@
-@extends('v2.layout', ['title' => 'Data Dictionary', 'bodyClass' => 'dl-page-body'])
+@extends('v2.layout', ['title' => 'Data Dictionary', 'bodyClass' => 'dl-page-body', 'framed' => true])
 @section('body')
     @php
         $colDefs = [['key' => 'col', 'label' => 'Kolom'], ['key' => 'type', 'label' => 'Tipe'], ['key' => 'null', 'label' => 'Null'], ['key' => 'key', 'label' => 'Key'], ['key' => 'fk', 'label' => 'FK ke'], ['key' => 'comment', 'label' => 'Keterangan']];
