@@ -25,6 +25,9 @@
         $accProduct = \App\Models\Master\ProdPart::whereKey($partId)->value('product_id');
         $accDoc = $accProduct ? \App\Support\V2\Data\ProductMaster::doc($accProduct) : null;
     @endphp
+    <x-dl::action-bar>
+        <x-dl::doc-share target="[data-mp-prodev]" type="prodev" :doc-id="$partId" :number="\App\Models\Master\ProdPart::whereKey($partId)->value('mastercard_code')" title="Pro-Dev Layout" orientation="landscape" />
+    </x-dl::action-bar>
     <x-mp::prodev.workbench :data="Prodev::workbench($partId, route('v2.screen', 'prodev'), route('v2.screen', 'procost').'?part='.$partId)" />
     @if ($accDoc)
         <x-dl::card :title="'ACC customer — '.$accDoc['name']" description="Catat ACC E-mail / ACC Digital (dari sample cetak plat CTP) / Sample Bentuk. Dokumen cetaknya: ACC Digital / Proof Digital.">

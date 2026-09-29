@@ -18,6 +18,12 @@
     $i = fn (string $col) => Src::of('tm2sdi.iqp_inquiry.'.$col);
 @endphp
 
+@if ($doc)
+    <x-dl::action-bar>
+        <x-dl::doc-share target="[data-mp-inquiry]" type="inquiry-new" :doc-id="$doc['id']" :number="$doc['inquiry_no'] ?? null" title="Inquiry Baru" />
+    </x-dl::action-bar>
+@endif
+
 <x-mp::sales.inquiry-form mode="NEW" :doc="$doc ?? []" :readonly="(bool) $readonly" :back-url="route('v2.screen', 'inquiry')"
     :links="['🔀 Imposition' => route('v2.screen', 'prodev'), '🖨 Cetak Nota' => route('v2.screen', 'nota-inquiry').($doc ? '?id='.$doc['id'] : '')]"
     :prodev-url="route('v2.screen', 'prodev').'?part={part}&inquiry={inquiry}'"
