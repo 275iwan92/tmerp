@@ -19,7 +19,6 @@ final class Catalog
         'p5-grid-group' => '2026-09-26',     // Grid Report dipecah per varian 2026-09-30, isi tidak berubah
         'p5-grid-drilldown' => '2026-09-26',
         'p5-grid-pivot' => '2026-09-26',
-        'p5-grid-special' => '2026-09-26', // Grid Special (spreadsheet)
         // Menu Form & Dokumen disetujui user 2026-09-26
         'p5-form-single' => '2026-09-26',
         'p5-form-md' => '2026-09-26',
@@ -90,7 +89,7 @@ final class Catalog
             // Grid, Form, Dokumen = 3 menu terpisah (user 2026-09-26) supaya breadcrumb menunjukkan keluarganya.
             ['code' => 'GR', 'short' => 'GR', 'label' => 'Grid', 'icon' => 'fa-solid fa-table',
                 'pages' => [
-                    // Pohon menu Grid (user 2026-09-30): Grid Pre-Entry (Transactional | Master), Grid Report, Grid Special,
+                    // Pohon menu Grid (user 2026-09-30): Grid Pre-Entry (Transactional | Master | Lookup), Grid Report,
                     // Grid Variant. 'folder' = submenu Layer Menu tempat halaman ini berada.
                     // Transactional = pintu ke dokumen: rapat, Aksi tanpa judul di kiri, ikon tanpa kotak, centang hanya bila ada bulk.
                     // Grid Master = sama persis dengan Transactional, beda satu: kotak di tiap baris (image, tanpa image -> 2 huruf),
@@ -101,6 +100,10 @@ final class Catalog
                     'p5-grid-master' => $page('Grid Master', 'fa-solid fa-address-book', [
                         'grid-master' => ['Grid Master (box per row: image or 2-letter initials)', $c('Grid')],
                     ], 'grid_kerapatan_baris.html') + ['folder' => 'Grid Pre-Entry'],
+                    // Grid Lookup (user 2026-09-30, dulu Grid Special): daftar bantu kecil yang jarang berubah, diisi langsung di sel.
+                    'p5-grid-lookup' => $page('Grid Lookup', 'fa-solid fa-list-check', [
+                        'grid-lookup' => ['Grid Lookup (edit in cell: Religion)', $c('LookupGrid')],
+                    ]) + ['folder' => 'Grid Pre-Entry'],
                     // Grid Report = submenu, 1 halaman per varian (user 2026-09-30).
                     'p5-grid-report' => $page('Grid Report List', 'fa-solid fa-table-list', [
                         'grid-report' => ['Grid Report List (compact, thousands of rows, Filter pop-up)', $c('Grid')],
@@ -114,16 +117,13 @@ final class Catalog
                     'p5-grid-pivot' => $page('Grid Pivot', 'fa-solid fa-table-cells-large', [
                         'grid-pivot' => ['Grid Pivot (rows × columns × values)', $c('Pivot')],
                     ]) + ['folder' => 'Grid Report'],
-                    // Grid Special (user 2026-09-26): grid yang selnya langsung diedit, bukan pintu ke form maupun laporan.
-                    'p5-grid-special' => $page('Grid Special', 'fa-solid fa-table-cells', [
-                        'grid-sheet' => ['1 · Grid Spreadsheet (inline edit, Excel copy/paste, drag-fill)', $c('Sheet')],
-                    ]),
                     // Grid Variant (user 2026-09-30): grid lain yang sudah dibuat tapi belum masuk salah satu keluarga di atas.
                     'p5-grid-variant' => $page('Grid Variant', 'fa-solid fa-shapes', [
                         'grid-master-detail' => ['Grid Master-Detail (expand row = items)', $c('Grid')],
                         'grid-status' => ['Grid with Status Bar (stages + progress)', $c('Grid')],
                         'grid-photos' => ['Grid with Photos (table ↔ cards)', $c('Grid')],
                         'grid-mix' => ['Grid with Mix Component', $c('Grid')],
+                        'grid-sheet' => ['Grid Spreadsheet (bulk edit, Excel copy/paste, drag-fill)', $c('Sheet')],
                     ]),
                 ]],
             // Tiga keluarga form (user 2026-09-26): Single, Master-Detail, Special.

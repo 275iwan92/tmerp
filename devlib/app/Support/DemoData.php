@@ -25,6 +25,7 @@ final class DemoData
                 'phone' => '+628'.(1200000000 + $i * 7919),
                 'city' => ['Surabaya', 'Sidoarjo', 'Gresik', 'Mojokerto'][$i % 4],
                 'active' => $i % 9 !== 0,
+                'attendance_ytd' => 150 + ($i * 37) % 120,
             ];
         }
 

@@ -48,6 +48,7 @@
         const gr = x.closest('[data-g-grp]'); if (gr) { const g = gr.dataset.gGrp; this.st.collapsed = this.st.collapsed.includes(g) ? this.st.collapsed.filter(v => v !== g) : [...this.st.collapsed, g]; return this.drawBody(); }
         const vw = x.closest('[data-g-view] .dl-segment__opt'); if (vw) { this.st.view = vw.dataset.value; this.qq('[data-g-view] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b === vw)); return this.drawBody(); }
         const im = x.closest('[data-g-img]'); if (im) { const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-grid__lightbox'; ov.innerHTML = `<img src="${esc(im.dataset.gImg)}" alt=""><button type="button" class="dl-modal__x">&times;</button>`; ov.addEventListener('click', () => ov.remove()); document.body.appendChild(ov); return; }
+        const gl = x.closest('[data-g-link]'); if (gl && gl.getAttribute('href') === '#') { e.preventDefault(); const id = gl.closest('tr').dataset.id; if (this._emit('dl:grid-link', {id, key: gl.dataset.gLink})) toast(`${gl.closest('td') && this.cols.find(c => c.key === gl.dataset.gLink)?.label}: ${id} (pratinjau)`); return; }
         const ga = x.closest('[data-g-action]'); if (ga) { const id = ga.closest('tr').dataset.id; if (this._emit('dl:grid-action', {id, action: ga.dataset.gAction})) toast(`${ga.textContent}: ${this.rows.find(v => String(v[this.cfg.rowKey]) === id)?.name || id} (pratinjau)`); return; }
         if (x.closest('[data-g-qa-add]')) return this.quickAdd();
         const ex = x.closest('[data-g-exp]'); if (ex) { const id = ex.closest('tr').dataset.id; this.st.open = this.st.open.includes(id) ? this.st.open.filter(v => v !== id) : [...this.st.open, id]; return this.drawBody(); }
@@ -115,6 +116,7 @@
     }
 
     fmtCell(c, v) {
+      if (c.type === 'link') return this.fmtCell({...c, type: c.format || 'number'}, v);
       return c.type === 'money' ? fmt.money(v) : c.type === 'number' ? fmt.number(v, String(v).includes('.') ? 2 : 0) : c.type === 'date' ? fmt.gridDate(v) : v;
     }
 
@@ -170,7 +172,7 @@
 
     sorted(list) {
       if (!this.st.sort) return list;
-      const c = this.cols.find(x => x.key === this.st.sort), num = ['number', 'money'].includes(c && c.type);
+      const c = this.cols.find(x => x.key === this.st.sort), num = ['number', 'money', 'link'].includes(c && c.type);
       return [...list].sort((a, b) => { const x = this.val(a, this.st.sort), y = this.val(b, this.st.sort); return (num ? (+x - +y) : String(x).localeCompare(String(y), 'id', {numeric: true})) * this.st.dir; });
     }
 
@@ -191,7 +193,7 @@
       this.q('[data-g-head]').innerHTML = '<tr>' + (this.actFirst() ? '<th class="dl-grid__act"></th>' : '') + (this.chk ? '<th class="dl-grid__chk"><input type="checkbox" data-g-all aria-label="Pilih semua di halaman"></th>' : '') + (this.hasExp ? '<th class="dl-grid__exp"></th>' : '')
         + vis.map(c => {
           const on = this.st.sort === c.key, arrow = on ? (this.st.dir > 0 ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short') : 'fa-sort';
-          return `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
+          return `<th class="${['number', 'money', 'link'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
         }).join('') + (this.actLast() ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
     }
 
@@ -206,6 +208,8 @@
         case 'badge': return `<td><span class="dl-badge dl-badge--pill dl-badge--${esc((c.tones || {})[v] || 'neutral')}">${esc(v)}</span></td>`;
         case 'money': case 'number': return `<td class="num">${esc(this.fmtCell(c, v))}</td>`;
         case 'date': return `<td class="dl-grid__date">${esc(this.fmtCell(c, v))}</td>`;
+        // Nilai dari transaksi (Grid Master, user 2026-09-30): hanya-baca, klik = buka transaksi baris ini (url {id}).
+        case 'link': { const u = c.url ? c.url.replace('{id}', encodeURIComponent(r[this.cfg.rowKey])) : '#'; return `<td class="num"><a class="dl-grid__link" href="${esc(u)}" data-g-link="${esc(c.key)}" title="Buka transaksi">${esc(this.fmtCell(c, v))} <i class="fa-solid fa-arrow-up-right-from-square"></i></a></td>`; }
         case 'image': return `<td class="dl-grid__imgcell">${v ? `<button type="button" class="dl-grid__thumb" data-g-img="${esc(v)}" title="Perbesar"><img src="${esc(v)}" alt="" loading="lazy"></button>` : (c.fallback ? `<span class="dl-grid__noimg dl-grid__noimg--ini">${esc(String(this.val(r, c.fallback) || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase())}</span>` : '<span class="dl-grid__noimg"><i class="fa-regular fa-image"></i></span>')}</td>`;
         case 'progress': { const n = Math.max(0, Math.min(100, +v || 0)), t = n >= 100 ? 'success' : n >= 60 ? 'accent' : n >= 30 ? 'warn' : 'danger'; return `<td><span class="dl-grid__prog dl-chart--${t}"><span style="width:${n}%"></span></span><small class="dl-grid__progv">${n}%</small></td>`; }
         case 'steps': { const at = (c.steps || []).indexOf(v); return `<td><span class="dl-grid__steps" title="${esc(v)}">${(c.steps || []).map((s2, i) => `<i class="${i < at ? 'is-done' : i === at ? 'is-now' : ''}" title="${esc(s2)}"></i>`).join('')}</span><small class="dl-grid__stepv">${esc(v)}</small></td>`; }

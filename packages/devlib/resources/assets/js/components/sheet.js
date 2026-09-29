@@ -21,6 +21,10 @@
       this.fill = null;
       this.drag = false;
       this.seq = 0;
+      this.lookup = !!this.cfg.lookup;
+      this.term = '';
+      const srch = $(this.el, '[data-s-search]');
+      if (srch) srch.addEventListener('input', () => { this.term = srch.value.trim().toLowerCase(); this.render(); });
       this.wrap.addEventListener('keydown', e => {
         if (this.edit) {
           if (e.key === 'Escape') { e.preventDefault(); this.commit(true); }
@@ -82,12 +86,17 @@
       this.wrap.addEventListener('focusout', e => { if (this.edit && !this.wrap.contains(e.relatedTarget)) this.commit(); });
       this.el.addEventListener('click', e => {
         if (e.target.closest('[data-s-add]')) { this.data.push(this.blank()); this.cur = {r: this.data.length - 1, c: this.firstEditable()}; this.anchor = null; this.render(); this.wrap.focus(); return; }
+        if (e.target.closest('[data-s-revert]')) {
+          if (!this.changes().length) return;
+          confirmBox({message: 'Buang semua perubahan yang belum disimpan?', tone: 'danger'}).then(ok => { if (!ok) return; this.data = this.data.filter(r => this.orig.has(String(r[this.cfg.rowKey]))).map(r => ({...this.orig.get(String(r[this.cfg.rowKey]))})); this.cur = {r: 0, c: this.firstEditable()}; this.anchor = null; this.undo.length = 0; this.redo.length = 0; this.render(); });
+          return;
+        }
         if (e.target.closest('[data-s-del]')) { const R = this.rng(), n = R.r1 - R.r0 + 1; confirmBox({message: `Hapus ${n} baris terpilih?`, tone: 'danger'}).then(ok => { if (!ok) return; this.data.splice(R.r0, n); this.cur = {r: Math.max(0, Math.min(R.r0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.undo.length = 0; this.render(); }); return; }
         if (e.target.closest('[data-s-undo]')) { const u = this.undo.pop(); if (u) this.redo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-redo]')) { const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-save]')) {
-          const nBad = this.data.reduce((t, r) => t + this.cols.filter(c => this.bad(c, r[c.key])).length, 0);
-          if (nBad) { toast(`${nBad} sel belum benar (wajib / angka / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
+          const nBad = this.data.reduce((t, r) => t + this.cols.filter(c => this.bad(c, r[c.key], r)).length, 0);
+          if (nBad) { toast(`${nBad} sel belum benar (wajib / kembar / angka / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
           const changed = this.changes();
           this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
           this.data.forEach(r => this.orig.set(String(r[this.cfg.rowKey]), {...r})); this.undo.length = 0; this.redo.length = 0;
@@ -115,7 +124,9 @@
       return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + v.toLocaleString('id-ID') : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' && v ? fmt.date(v + 'T12:00:00+07:00') : (v ?? '');
     }
 
-    bad(c, v) {
+    // unique: nilai tidak boleh kembar di baris lain (tanpa beda huruf besar/kecil) -- validasi final tetap di server.
+    bad(c, v, row) {
+      if (c.unique && row && v !== '' && v != null && this.data.some(o => o !== row && String(o[c.key] ?? '').trim().toLowerCase() === String(v).trim().toLowerCase())) return true;
       return (c.required && (v === '' || v == null)) || (this.num(c) && v !== '' && v != null && typeof v !== 'number') || (c.type === 'select' && v && c.options && !(v in c.options));
     }
 
@@ -125,10 +136,17 @@
     render() {
       const R = this.rng();
       this.table.innerHTML = `<thead><tr><th class="dl-sheet__no">#</th>${this.cols.map(c => `<th class="${this.num(c) ? 'num' : ''}" ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.required ? ' <span class="dl-field__req">*</span>' : ''}</th>`).join('')}</tr></thead><tbody>`
-        + this.data.map((r, i) => `<tr class="${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v) ? 'is-bad' : ''}">${esc(this.show(c, v))}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
-      const changed = this.changes(); $(this.el, '[data-s-info]').textContent = `${this.data.length} baris · ${changed.length} berubah`;
-      const sv = $(this.el, '[data-s-save]'); sv.disabled = !changed.length; sv.lastChild.textContent = changed.length ? `Simpan Semua (${changed.length})` : 'Simpan Semua';
-      $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
+        + this.data.map((r, i) => this.lookup && this.term && !this.cols.some(c => String(this.show(c, r[c.key])).toLowerCase().includes(this.term)) ? '' : `<tr class=""${this.orig.has(String(r[this.cfg.rowKey])) ? '' : 'is-new'}"><td class="dl-sheet__no" data-s-rowsel="${i}">${i + 1}</td>${this.cols.map((c, j) => { const v = r[c.key], inR = i >= R.r0 && i <= R.r1 && j >= R.c0 && j <= R.c1; return `<td data-r="${i}" data-c="${j}" class="${this.num(c) ? 'num' : ''} ${c.readonly ? 'is-ro' : ''} ${inR ? 'is-sel' : ''} ${i === this.cur.r && j === this.cur.c ? 'is-cur' : ''} ${this.dirty(r, c) ? 'is-dirty' : ''} ${this.bad(c, v, r) ? 'is-bad' : ''}">${this.lookup && c.type === 'check' ? `<span class="dl-sheet__sw ${v ? 'is-on' : ''}"></span>` : esc(this.show(c, v))}${i === R.r1 && j === R.c1 && !this.edit ? '<span class="dl-sheet__fill" data-s-fill title="Tarik untuk mengisi ke bawah"></span>' : ''}</td>`; }).join('')}</tr>`).join('') + '</tbody>';
+      const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
+      sv.disabled = !changed.length;
+      if (this.lookup) {
+        info.textContent = changed.length ? `${changed.length} perubahan belum disimpan` : `${this.data.length} baris`; info.classList.toggle('is-warn', !!changed.length);
+        const rv = $(this.el, '[data-s-revert]'); if (rv) rv.disabled = !changed.length;
+      } else {
+        info.textContent = `${this.data.length} baris · ${changed.length} berubah`;
+        sv.lastChild.textContent = changed.length ? `Simpan Semua (${changed.length})` : 'Simpan Semua';
+        $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
+      }
       const td = this.cellEl(this.cur.r, this.cur.c); if (td) td.scrollIntoView({block: 'nearest', inline: 'nearest'});
     }
 

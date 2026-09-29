@@ -7,6 +7,7 @@
         ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['TETAP' => 'success', 'KONTRAK' => 'info', 'HARIAN' => 'warn']],
         ['key' => 'join_date', 'label' => 'Tgl Masuk', 'type' => 'date'],
         ['key' => 'city', 'label' => 'Kota'],
+        ['key' => 'attendance_ytd', 'label' => 'Attendance this year (days)', 'type' => 'link', 'format' => 'number'],
         ['key' => 'phone', 'label' => 'No. HP', 'visible' => false],
     ]"
     :stats="[

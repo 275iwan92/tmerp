@@ -15,6 +15,8 @@ namespace Devlib\Components;
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]
 // stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total)
 // actions: master (Edit + Aktif/Nonaktif, Pilihan C) | worklist (Buka saja; Confirm/Approve TIDAK di grid, hanya di form) | none
+// link: nilai hasil transaksi (Grid Master, mis. 'Valued transactions'), hanya-baca; 'format' => money|number,
+//   'url' => alamat daftar transaksi baris itu ({id}); tanpa url -> event dl:grid-link.
 // Tipe kolom tambahan: image (thumbnail + perbesar), progress (0-100), steps ('steps' => [tahap..], nilai = tahap sekarang),
 //   toggle (saklar, bisa diubah -> dl:grid-cell), rating, spark (array angka), button ('text', 'action' -> dl:grid-action).
 // detail: ['key' => kolom array baris anak, 'columns' => [[key,label,type]], 'title'] -> baris dibuka = tabel detail bersarang.

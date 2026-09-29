@@ -7,6 +7,8 @@ namespace Devlib\Components;
 // dengan Excel, pegangan isi di pojok seleksi (salin / lanjutkan deret angka), Ctrl+Z / Ctrl+Y, Delete kosongkan.
 // columns: [['key','label','type' => text|number|money|select|date|check,'options','required','readonly','width']]
 // Simpan Semua -> validasi -> event dl:sheet-save {rows, changed}. Sel berubah ditandai; salah dimerahkan.
+// lookup=true (turunan LookupGrid = Grid Lookup): daftar bantu kecil -- Cari + Baris + Batal + Simpan saja, rapat,
+// tanpa Hapus (baris yang sudah dipakai cukup dinonaktifkan), kolom 'unique' => true tidak boleh kembar.
 class Sheet extends DevlibComponent
 {
     public function __construct(
@@ -15,6 +17,7 @@ class Sheet extends DevlibComponent
         public string $rowKey = 'id',
         public string $title = '',
         public ?string $source = null,
+        public bool $lookup = false,
     ) {}
 
     public function tag(): string
@@ -36,13 +39,23 @@ class Sheet extends DevlibComponent
             }
 
             return $c;
-        }, $this->columns), 'rowKey' => $this->rowKey];
+        }, $this->columns), 'rowKey' => $this->rowKey, 'lookup' => $this->lookup];
     }
 
     public function render()
     {
         return <<<'BLADE'
-            <div {{ $attributes->class('dl-sheet') }} {!! $dl() !!} data-dl-sheet data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
+            <div {{ $attributes->class(['dl-sheet', 'dl-sheet--lookup' => $lookup]) }} {!! $dl() !!} data-dl-sheet data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
+                @if ($lookup)
+                <div class="dl-sheet__bar">
+                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari..." data-s-search aria-label="Cari"></div>
+                    <span class="dl-sheet__info" data-s-info></span>
+                    <span class="dl-print__spacer"></span>
+                    <x-dl::button variant="secondary" size="sm" icon="new" label="Baris" data-s-add />
+                    <x-dl::button preset="cancel" size="sm" data-s-revert />
+                    <x-dl::button preset="save" size="sm" label="Simpan" data-s-save />
+                </div>
+                @else
                 <div class="dl-sheet__bar">
                     @if ($title)<b>{{ $title }}</b>@endif
                     <x-dl::button variant="secondary" size="sm" icon="new" label="Baris" data-s-add />
@@ -53,8 +66,9 @@ class Sheet extends DevlibComponent
                     <span class="dl-print__spacer"></span>
                     <x-dl::button preset="save" size="sm" label="Simpan Semua" data-s-save />
                 </div>
+                @endif
                 <div class="dl-sheet__wrap" tabindex="0" data-s-wrap aria-label="Lembar kerja"><table class="dl-sheet__table" data-s-table></table></div>
-                <p class="dl-sheet__help">Ketik langsung untuk mengisi · Enter/F2 edit · Tab/panah pindah · Shift/drag pilih rentang · Ctrl+C / Ctrl+V dengan Excel · tarik kotak kecil di pojok seleksi untuk mengisi ke bawah · Ctrl+Z undo</p>
+                @unless ($lookup)<p class="dl-sheet__help">Ketik langsung untuk mengisi · Enter/F2 edit · Tab/panah pindah · Shift/drag pilih rentang · Ctrl+C / Ctrl+V dengan Excel · tarik kotak kecil di pojok seleksi untuk mengisi ke bawah · Ctrl+Z undo</p>@endunless
             </div>
             BLADE;
     }
