@@ -201,7 +201,12 @@ ke induk (`iqp_type`), lookup generik ke `ref_`. Prefix `cost_` DIHAPUS (costing
 transaksi = `iqp_costing`, ikut inquiry).
 
 ### Kolom
-- PK: `id_<entitas>` (kecuali `prod_type`, `iqp_type` = kode varchar).
+- PK: `id_<entitas>`. **LOCKED user 2026-09-30: SEMUA tabel wajib punya PK tunggal
+  auto number tipe BIGINT** (`$table->id('id_<entitas>')` = BIGINT UNSIGNED AUTO_INCREMENT) —
+  termasuk tabel lookup (kode varchar jadi kolom UNIQUE biasa, bukan PK), tabel 1-ke-1
+  (FK induk jadi kolom UNIQUE), dan tabel pivot (pasangan FK jadi UNIQUE komposit).
+  Tabel lama yang belum sesuai (audit 2026-09-30: 35 dari 300) dimigrasi bertahap atas
+  persetujuan user; tabel bawaan framework Laravel (`cache`, `sessions`, `jobs`, dst) dikecualikan.
 - Nama: English, snake_case.
 - Master: `activate` (toggle aktif/nonaktif, boolean 1 kata — **bukan** `is_active`,
   keputusan user 2026-08-26) + `created_at/by` + `updated_at/by`.
