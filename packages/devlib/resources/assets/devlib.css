@@ -905,6 +905,7 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__table th.is-sorted i{opacity:1}
 .dl-grid__table td{padding:var(--dl-grid-pad) 10px;border-bottom:1px solid var(--dl-border-soft);color:var(--dl-ink);vertical-align:middle}
 .dl-grid__txt{max-width:320px}
+.dl-grid__date{white-space:nowrap} /* tanggal selalu utuh, tidak terpotong jadi "10 Sep..." */
 .dl-grid.is-clamped .dl-grid__txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--dl-grid-lines);line-clamp:var(--dl-grid-lines);overflow:hidden}
 .dl-grid .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .dl-grid__row{cursor:default}

@@ -384,6 +384,14 @@ window.Devlib = window.Devlib || {};
   const fmt = {
     number: (n, d = 0) => Number(n).toLocaleString('id-ID', {minimumFractionDigits: d, maximumFractionDigits: d}),
     money: (n, cur = 'IDR', d = 0) => ({IDR: 'Rp', USD: '$', EUR: '€', JPY: '¥'}[cur] || cur) + ' ' + fmt.number(n, d),
+    // Tanggal di grid (user 2026-09-30): selalu dd-Mmm-yyyy, mis. 10-Oct-2026. 'YYYY-MM-DD...' dibaca apa adanya (tanpa geser zona waktu).
+    gridDate: v => {
+      if (!v) return '';
+      const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], iso = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (iso) return `${iso[3]}-${M[+iso[2] - 1]}-${iso[1]}`;
+      const d = new Date(v); if (isNaN(d)) return String(v);
+      return `${String(d.getDate()).padStart(2, '0')}-${M[d.getMonth()]}-${d.getFullYear()}`;
+    },
     date: (v = new Date(), style = 'short') => new Date(v).toLocaleDateString('id-ID', style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : style === 'numeric' ? {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()} : {day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ()}),
     time: (v = new Date()) => new Date(v).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ()}) + ' WIB',
   };
