@@ -118,7 +118,7 @@ final class DashboardDocs
                 self::perizinan(),
             ],
             'HROFFICER' => [self::perizinan()],
-            default => [],
+            default => $position ? [self::perizinan()] : [],
         };
     }
 

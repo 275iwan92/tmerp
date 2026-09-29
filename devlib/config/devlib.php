@@ -11,12 +11,17 @@ return [
         ['login' => 'sania', 'password' => 'sania', 'name' => 'Sania Maura Fitriani', 'email' => 'sania@devlib.test', 'role' => 'Human Capital',
             'employee_code' => 'TM-00150', 'position_code' => 'HROFFICER', 'position' => 'Human Resource Officer',
             'department' => 'Human Capital Dept.', 'superior' => 'Human Capital Manager', 'developer' => false],
+        ['login' => 'carrij', 'password' => 'carrij', 'name' => 'Carrij Soehendra', 'email' => 'carrij@devlib.test', 'role' => 'Direksi',
+            'employee_code' => 'TM-00491', 'position_code' => 'PRESDIR', 'position' => 'Presiden Direktur',
+            'department' => 'Direksi', 'superior' => null, 'developer' => false],
     ],
 
     // Opening screen (x-dl::dashboard): profil per KODE JABATAN. Jabatan yang tidak terdaftar = 'general'
     // (mekanisme sama, isi KPI/aktivitas umum). Profil baru cukup ditambah di sini + App\Support\DashboardData.
     'dashboards' => [
         'SRSTAFFSALESMKT' => 'sales',
+        // Top management (level Direktur): angka tingkat perusahaan (keputusan user 2026-09-29).
+        'PRESDIR' => 'management', 'DIRFA' => 'management', 'GM' => 'management',
     ],
     // Lokasi cuaca bawaan = kantor (Jl. Simpang Panji Suroso, Arjosari, Blimbing, Kota Malang — kop dokumen resmi).
     'weather' => ['city' => 'Malang', 'lat' => -7.935, 'lon' => 112.655],

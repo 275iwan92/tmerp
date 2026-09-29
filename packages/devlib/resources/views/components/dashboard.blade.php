@@ -50,7 +50,7 @@
 
     {{-- 2. Pilihan periode --}}
     <div class="dl-dash__bar">
-        <h2>KPI Saya</h2>
+        <h2>{{ $d['kpi_title'] ?? 'KPI Saya' }}</h2>
         <div class="dl-dash__seg" role="tablist">
             @foreach ($periods as $key => $label)
                 <button type="button" class="{{ $key === $period() ? 'is-active' : '' }}" data-dash-period="{{ $key }}">{{ $label }}</button>

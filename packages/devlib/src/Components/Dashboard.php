@@ -16,6 +16,7 @@ namespace Devlib\Components;
 //   'jobdesc' => ['title', 'updated', 'html'],            // HTML dari master jabatan (diisi HR)
 //   'sops' => [['code', 'title', 'revision', 'effective', 'html'], ...],
 //   'periods' => ['daily' => 'Harian', ...], 'period' => 'monthly',
+//   'kpi_title' => 'KPI Saya' (bawaan) | 'KPI Perusahaan' (manajemen),
 //   'kpis' => [periode => [['label', 'value', 'previous', 'target', 'format', 'good_when', 'icon', 'tone', 'spark'], ...]],
 //   'trend' => [periode => ['title', 'caption', 'labels', 'actual', 'target', 'format', 'summary' => [[label, nilai], ...]]],
 //   'activities' => ['title', 'caption', 'types' => [[key, label, icon, tone]], 'segments' => [[key, label, tone]],

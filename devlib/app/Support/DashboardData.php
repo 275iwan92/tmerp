@@ -54,7 +54,11 @@ final class DashboardData
             'quotes' => Frame::textLines('motivasi-harian.txt'),
         ];
 
-        return $base + ($profile === 'sales' ? self::sales($now) : self::general($now));
+        return array_merge($base, match ($profile) {
+            'sales' => self::sales($now),
+            'management' => self::management($now),
+            default => self::general($now),
+        });
     }
 
     // ---- profil Sales ------------------------------------------------------------------------------------
@@ -130,6 +134,82 @@ final class DashboardData
                 ['time' => '10:00', 'duration' => '1 jam', 'title' => 'Visit · PT Anugrah Farma Medika', 'note' => 'Bawa sampel dus sekunder 2 varian', 'tone' => 'warn'],
                 ['time' => '13:30', 'duration' => '30 mnt', 'title' => 'Telepon · CV Kopi Nusa Jaya', 'note' => 'Konfirmasi QT2609008 — nego harga tier 5.000 pcs', 'tone' => 'accent'],
                 ['time' => '14:30', 'duration' => '1 jam', 'title' => 'Visit · PT Sumber Pangan Lestari', 'note' => 'Presentasi opsi laminasi doff', 'tone' => 'warn'],
+            ],
+        ];
+    }
+
+    // ---- profil Management (Presiden Direktur, Direktur, General Manager): angka tingkat PERUSAHAAN ------------
+
+    private static function management(CarbonImmutable $now): array
+    {
+        $kpis = $trend = $act = [];
+        foreach (self::SCALE as $p => $f) {
+            $labels = self::labels($p, $now);
+            $target = self::series(count($labels), 2.5e9 * $f, 0.05);
+            $actual = self::actuals($target, $p, 17);
+            $n = count($labels) - 1;
+            $kpis[$p] = [
+                ['label' => 'Omzet Perusahaan', 'value' => $actual[$n], 'previous' => $actual[$n - 1] * self::RUNNING[$p], 'target' => $target[$n], 'format' => 'money', 'icon' => 'fa-building', 'tone' => 'accent', 'spark' => array_slice($actual, -8, 7)],
+                ['label' => 'Margin Kotor', 'value' => 24.6, 'previous' => 23.1, 'target' => 27, 'format' => 'percent', 'icon' => 'fa-percent', 'tone' => 'violet'],
+                ['label' => 'Piutang Jatuh Tempo', 'value' => round(845e6 * min(1, max(0.35, $f / 3)), -6), 'previous' => round(620e6 * min(1, max(0.35, $f / 3)), -6), 'format' => 'money', 'good_when' => 'down', 'icon' => 'fa-file-invoice-dollar', 'tone' => 'danger', 'hint' => 'Naik = perlu perhatian penagihan'],
+                ['label' => 'Pengiriman Tepat Waktu', 'value' => 93, 'previous' => 89, 'target' => 95, 'format' => 'percent', 'icon' => 'fa-truck-fast', 'tone' => 'success'],
+                ['label' => 'Customer Order Baru', 'value' => self::round(64 * $f * self::RUNNING[$p] / 0.688), 'previous' => self::round(58 * $f), 'target' => self::round(70 * $f), 'icon' => 'fa-bag-shopping', 'tone' => 'teal'],
+            ];
+            $sumA = array_sum($actual);
+            $sumT = array_sum($target);
+            $trend[$p] = [
+                'title' => 'Target vs Pencapaian Omzet Perusahaan',
+                'caption' => self::caption($p).' · batang = pencapaian, garis = target',
+                'labels' => $labels, 'actual' => $actual, 'target' => $target, 'format' => 'money',
+                'source' => 'realisasi: co_order (CONFIRMED) seluruh sales · target: target perusahaan',
+                'summary' => [
+                    ['Pencapaian', 'Rp '.self::compact($sumA)],
+                    ['Target', 'Rp '.self::compact($sumT)],
+                    ['Rasio', number_format($sumA / $sumT * 100, 1, ',', '.').'%', $sumA >= $sumT ? 'good' : 'warn'],
+                    ['Periode tercapai', count(array_filter(array_map(fn ($a, $t) => $a >= $t, array_slice($actual, 0, -1), array_slice($target, 0, -1)))).' dari '.$n],
+                ],
+            ];
+            $act[$p] = self::activity($p, $f, ['approval' => 60, 'meeting' => 16, 'visit' => 6], ['sales' => .4, 'ops' => .35, 'fin' => .25], $now);
+        }
+
+        return [
+            'profile_label' => 'Dashboard Manajemen',
+            'kpi_title' => 'KPI Perusahaan',
+            'attendance' => null,
+            'brief' => [['Menunggu keputusan Anda', '4'], ['Rapat hari ini', '2'], ['Pengiriman terlambat', '1'], ['Sisa hari kerja bulan ini', (string) self::workDaysLeft($now)]],
+            'kpis' => $kpis,
+            'trend' => $trend,
+            'activities' => [
+                'title' => 'Aktivitas Pimpinan',
+                'caption' => 'Persetujuan · Rapat · Kunjungan menurut bidang',
+                'segment_label' => 'Bidang',
+                'types' => [
+                    ['key' => 'approval', 'label' => 'Persetujuan', 'icon' => 'fa-stamp', 'tone' => 'accent'],
+                    ['key' => 'meeting', 'label' => 'Rapat', 'icon' => 'fa-people-group', 'tone' => 'teal'],
+                    ['key' => 'visit', 'label' => 'Kunjungan', 'icon' => 'fa-location-dot', 'tone' => 'warn'],
+                ],
+                'segments' => [
+                    ['key' => 'sales', 'label' => 'Penjualan & Costing', 'tone' => 'accent'],
+                    ['key' => 'ops', 'label' => 'Produksi & Pembelian', 'tone' => 'violet'],
+                    ['key' => 'fin', 'label' => 'Keuangan & SDM', 'tone' => 'teal'],
+                ],
+                'data' => $act,
+            ],
+            'focus' => [
+                'title' => 'Menunggu Keputusan Anda',
+                'caption' => 'Urut dari yang paling lama menunggu',
+                'columns' => ['Dokumen', 'Bidang', 'Tahap', 'Rincian', 'Menunggu', 'Aksi'],
+                'rows' => [
+                    ['name' => 'PO2609041 · PT Contoh Karton Nusantara', 'sub' => 'Rp 86,4 jt · karton duplex 350 gsm', 'segment' => 'Pembelian', 'tone' => 'violet', 'step' => 3, 'stage' => 'Direksi (> Rp 50 jt)', 'counts' => ['fa-list' => 4, 'fa-paperclip' => 2], 'last' => '2 hari', 'last_tone' => 'danger', 'action' => 'Tinjau', 'primary' => true],
+                    ['name' => 'Publish harga · IQ2609014', 'sub' => 'PT Sumber Pangan Lestari · 3 tier', 'segment' => 'Costing', 'tone' => 'accent', 'step' => 3, 'stage' => 'Publish ke Sales', 'counts' => ['fa-list' => 3, 'fa-paperclip' => 1], 'last' => '1 hari', 'last_tone' => 'warn', 'action' => 'Tinjau', 'primary' => true],
+                    ['name' => 'Diskon khusus · QT2609008', 'sub' => 'CV Kopi Nusa Jaya · diskon 7,5%', 'segment' => 'Penjualan', 'tone' => 'accent', 'step' => 2, 'stage' => 'Di atas kewenangan Manager', 'counts' => ['fa-list' => 2, 'fa-paperclip' => 1], 'last' => '5 jam', 'last_tone' => 'neutral', 'action' => 'Tinjau'],
+                    ['name' => 'Perpanjangan kontrak 3 karyawan', 'sub' => 'Diajukan HR Officer', 'segment' => 'SDM', 'tone' => 'success', 'step' => 2, 'stage' => 'Persetujuan Direksi', 'counts' => ['fa-list' => 3, 'fa-paperclip' => 3], 'last' => '3 jam', 'last_tone' => 'neutral', 'action' => 'Tinjau'],
+                ],
+            ],
+            'agenda' => [
+                ['time' => '09:00', 'duration' => '1 jam', 'title' => 'Rapat manajemen mingguan', 'note' => 'Omzet, piutang, kapasitas produksi', 'tone' => 'accent', 'done' => true],
+                ['time' => '13:00', 'duration' => '1 jam', 'title' => 'Kunjungan · PT Anugrah Farma Medika', 'note' => 'Bersama Sales & Marketing Manager', 'tone' => 'warn'],
+                ['time' => '15:30', 'duration' => '30 mnt', 'title' => 'Review cashflow & giro', 'note' => 'Bersama Direktur F&A', 'tone' => 'teal'],
             ],
         ];
     }
