@@ -31,10 +31,18 @@
     // Tab terbuka bertahan saat halaman dimuat ulang (mis. menukar Menu Classic <-> Layer Menu). Per tab browser.
     saveTabs() { try { sessionStorage.setItem('dl-shell-tabs', JSON.stringify({open: [...this.openTabs.keys()], active: this.activeTab})); } catch (e) {} }
 
+    // data-dl-open (dari ?open=, mis. pendaratan Direksi -> MGMT_EXEC) HARUS menang atas tab
+    // yang dipulihkan dari sesi sebelumnya (tab lain browser tab yang sama) -- kalau tidak,
+    // login berikutnya bisa "nyangkut" di tab lama alih-alih mendarat ke layar yang dimaksud.
+    // ?open= dibuang dari address bar setelah dipakai supaya reload BERIKUTNYA (tanpa niat
+    // "buka ini") tidak terus memaksa balik ke tab yang sama.
     restoreTabs(s) {
-      if (!s?.open?.length) { if (this.el.dataset.dlOpen) this.openTab(this.el.dataset.dlOpen); return; }
+      const want = this.el.dataset.dlOpen;
+      if (want) { const u = new URL(location.href); u.searchParams.delete('open'); history.replaceState(null, '', u.pathname + u.search + u.hash); }
+      if (!s?.open?.length) { if (want) this.openTab(want); return; }
       s.open.forEach(c => this.openTab(c));
-      s.active && this.openTabs.has(s.active) ? this.activate(s.active) : this.showHome();
+      if (want) this.openTab(want);
+      else s.active && this.openTabs.has(s.active) ? this.activate(s.active) : this.showHome();
     }
 
     /* ---------------- kerangka kerja (dipakai semua turunan) ---------------- */
