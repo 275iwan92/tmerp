@@ -1,5 +1,178 @@
 [
     {
+        "at": "2026-09-29 16:58:40",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "parent_part_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "part_kind",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "join_type_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "qty_in_parent",
+                "detail": "decimal(10,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "dieline_spec",
+                "detail": "json"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "flat_w",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "flat_h",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "flat_area",
+                "detail": "decimal(20,4)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part",
+                "column": "source_iqp_part_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part_artwork",
+                "column": "side",
+                "detail": "varchar(5)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part_artwork",
+                "column": "original_filename",
+                "detail": "varchar(255)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part_material",
+                "column": "role",
+                "detail": "varchar(12)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_part_material",
+                "column": "category_id",
+                "detail": "int unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_product",
+                "column": "parent_product_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_product",
+                "column": "revision_no",
+                "detail": "smallint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2mst",
+                "table": "prod_product",
+                "column": "source_inquiry_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom dihapus",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "parent_product_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "parent_inquiry_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_inquiry",
+                "column": "product_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "parent_part_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "part_kind",
+                "detail": "varchar(10)"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "join_type_id",
+                "detail": "bigint unsigned"
+            },
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part",
+                "column": "qty_in_parent",
+                "detail": "decimal(10,4)"
+            },
+            {
+                "kind": "tabel baru",
+                "db": "tm2sdi",
+                "table": "iqp_revise_change",
+                "column": "",
+                "detail": ""
+            }
+        ]
+    },
+    {
         "at": "2026-09-29 07:32:54",
         "items": [
             {
