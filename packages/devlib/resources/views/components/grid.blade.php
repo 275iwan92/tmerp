@@ -1,4 +1,4 @@
-<div {{ $attributes->class(['dl-grid', 'dl-grid--report' => $isReport()]) }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
+<div {{ $attributes->class(['dl-grid', 'dl-grid--report' => $isReport(), 'dl-grid--tx' => $isTx()]) }} {!! $dl() !!} data-dl-grid data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
     @if ($stats)<div class="dl-grid__stats" data-g-stats></div>@endif
     <div class="dl-grid__panel">
         @if ($tabs)<div class="dl-tabs__bar dl-grid__tabs" data-g-tabs></div>@endif
@@ -25,6 +25,7 @@
                     <div class="dl-pop2__panel" data-g-panel="group"><div class="dl-pop2__title">Kelompokkan menurut</div><div data-g-group-list></div></div>
                 </div>
             @endif
+            @unless ($isTx())
             <div class="dl-pop2" data-g-pop>
                 <x-dl::button variant="secondary" size="sm" icon="density" label="Kerapatan" data-g-toggle="density" />
                 <div class="dl-pop2__panel" data-g-panel="density">
@@ -35,6 +36,7 @@
                     <x-dl::button variant="link" label="Kembalikan ke bawaan" data-g-density-reset />
                 </div>
             </div>
+            @endunless
             @if ($cards)<div class="dl-segment" data-g-view><button type="button" class="dl-segment__opt is-active" data-value="table" title="Tampilan tabel"><i class="fa-solid fa-table-list"></i></button><button type="button" class="dl-segment__opt" data-value="cards" title="Tampilan kartu"><i class="fa-solid fa-grip"></i></button></div>@endif
             <x-dl::button variant="secondary" size="sm" icon="export" label="Export" data-g-export title="Export CSV = kolom yang sedang tampil (atur dulu lewat Kolom)" />
             @if ($newRecord)<x-dl::button preset="new" size="sm" data-g-new :label="$newRecord" />@endif

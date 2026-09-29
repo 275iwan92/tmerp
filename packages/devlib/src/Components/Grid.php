@@ -23,8 +23,10 @@ namespace Devlib\Components;
 // newUrl: alamat tombol + New Record (pindah ke form baru / pemilih sumber).
 // quickAdd: [kolom..] -> baris isian cepat di atas tabel (Enter = tambah, event dl:grid-add). groupBy = grup awal.
 // mode (user 2026-09-26, dua keluarga grid yang dipisah):
-//   entry  = Grid for Pre-Data Entry: baris lega, centang + kotak ikon Aksi per baris, + New Record; pintu ke form.
-//            Grid for Master: kolom pertama = kotak foto (image + fallback inisial), identity tanpa bulatan avatar.
+//   entry  = Grid Pre-Entry: pintu ke form, + New Record. Dua cabang (user 2026-09-30):
+//            Transactional (actions worklist/none, isTx): selalu rapat, kolom Aksi tanpa judul di paling kiri, ikon tanpa kotak.
+//            Non-Transactional (actions master): baris lega, kotak foto (image + fallback inisial), Edit + Aktif/Nonaktif di kanan.
+//            Centang hanya muncul bila layar memasang bulk (aksi massal) -- tanpa bulk centang tidak berguna.
 //   report = Grid for Reporting: rapat (banyak baris per layar, data ribuan), TANPA centang/Aksi/New Record,
 //            fokus cari + Filters terbuka di atas tabel + saring per kolom (teks mengandung; angka boleh >, <, >=, <=, =).
 // confirmWhen: baris worklist yang boleh di-Confirm ([kolom => nilai|[nilai..]]), per layar (Quotation = DRAFT, PO = SUBMITTED).
@@ -68,6 +70,12 @@ class Grid extends DevlibComponent
     public function isReport(): bool
     {
         return $this->mode === 'report';
+    }
+
+    // Grid transaksi (bukan Master, bukan Reporting): selalu rapat, Aksi di kiri tanpa judul, ikon tanpa kotak.
+    public function isTx(): bool
+    {
+        return ! $this->isReport() && $this->actions !== 'master';
     }
 
     public function tag(): string

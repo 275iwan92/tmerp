@@ -915,6 +915,13 @@ form.is-dirty .dl-form__title::after{content:" • belum disimpan";color:var(--d
 .dl-grid__chk input{accent-color:var(--dl-accent);cursor:pointer}
 .dl-grid__act{width:1%;white-space:nowrap;text-align:right!important}
 .dl-grid__act .dl-iconbtn+.dl-iconbtn{margin-left:4px}
+/* Grid transaksi (user 2026-09-30): Aksi di kiri tanpa judul, ikon polos tanpa kotak, baris selalu rapat. */
+.dl-grid--tx .dl-grid__act{text-align:left!important;padding-right:2px!important}
+.dl-grid--tx .dl-grid__act .dl-iconbtn{width:22px;height:22px;border-color:transparent;background:none;color:var(--dl-muted)}
+.dl-grid--tx .dl-grid__act .dl-iconbtn+.dl-iconbtn{margin-left:2px}
+.dl-grid--tx .dl-grid__act .dl-iconbtn:hover{color:var(--dl-accent);background:var(--dl-accent-soft)}
+.dl-grid--tx .dl-grid__act .dl-iconbtn--success{color:var(--dl-green)}
+.dl-grid--tx .dl-grid__act .dl-iconbtn--danger{color:var(--dl-danger)}
 .dl-grid__chev{border:none;background:none;color:var(--dl-muted);cursor:pointer;padding:4px;transition:transform .15s}
 .dl-grid__chev.is-open{transform:rotate(90deg);color:var(--dl-accent)}
 .dl-grid__detail td{background:var(--dl-surface-alt)}

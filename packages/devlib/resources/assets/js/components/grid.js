@@ -14,13 +14,16 @@
       this.hasExp = this.cfg.expand.length > 0 || !!this.cfg.detail;
       // report = Grid for Reporting: rapat, tanpa centang/Aksi, saring per kolom di kepala tabel.
       this.report = this.cfg.mode === 'report';
-      this.chk = !this.report;
+      // tx = grid transaksi Pre-Data Entry (user 2026-09-30): selalu rapat, kolom Aksi tanpa judul di paling kiri,
+      // ikon tanpa kotak. Centang hanya bila layar memasang aksi massal (bulk) -- tanpa bulk centang tak berguna.
+      this.tx = !this.report && this.cfg.actions !== 'master';
+      this.chk = !this.report && this.cfg.bulk.length > 0;
       this.saveKey = 'dl-grid-' + this.cfg.id;
       this.saved = {};
       try { this.saved = JSON.parse(localStorage.getItem(this.saveKey) || '{}'); } catch (e) {}
 
       this.st = Object.assign({search: '', sort: null, dir: 1, stat: null, tab: 0, filters: {}, hidden: this.cols.filter(c => !c.visible).map(c => c.key),
-        group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: this.report ? 'compact' : 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: '', colf: {}});
+        group: this.cfg.groupBy || '', view: 'table', page: 1, perPage: this.cfg.perPage, density: this.report ? 'compact' : 'normal', lines: 'fixed', linesN: 1, collapsed: [], open: []}, this.saved, {page: 1, search: '', colf: {}}, this.tx ? {density: 'compact', lines: 'fixed', linesN: 1} : {});
 
       this.sel = new Set();
       this.lastIdx = null;
@@ -156,6 +159,14 @@
       return this.shown().length + (this.chk ? 1 : 0) + (this.hasExp ? 1 : 0) + (this.cfg.actions !== 'none' ? 1 : 0);
     }
 
+    actFirst() {
+      return this.tx && this.cfg.actions !== 'none';
+    }
+
+    actLast() {
+      return !this.tx && this.cfg.actions !== 'none';
+    }
+
     sorted(list) {
       if (!this.st.sort) return list;
       const c = this.cols.find(x => x.key === this.st.sort), num = ['number', 'money'].includes(c && c.type);
@@ -176,11 +187,11 @@
 
     drawHead() {
       const vis = this.shown();
-      this.q('[data-g-head]').innerHTML = '<tr>' + (this.chk ? '<th class="dl-grid__chk"><input type="checkbox" data-g-all aria-label="Pilih semua di halaman"></th>' : '') + (this.hasExp ? '<th class="dl-grid__exp"></th>' : '')
+      this.q('[data-g-head]').innerHTML = '<tr>' + (this.actFirst() ? '<th class="dl-grid__act"></th>' : '') + (this.chk ? '<th class="dl-grid__chk"><input type="checkbox" data-g-all aria-label="Pilih semua di halaman"></th>' : '') + (this.hasExp ? '<th class="dl-grid__exp"></th>' : '')
         + vis.map(c => {
           const on = this.st.sort === c.key, arrow = on ? (this.st.dir > 0 ? 'fa-arrow-up-short-wide' : 'fa-arrow-down-wide-short') : 'fa-sort';
           return `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''} ${c.sortable ? 'is-sortable' : ''} ${on ? 'is-sorted' : ''}" data-key="${esc(c.key)}"${srcAttr(c)} ${c.width ? `style="width:${esc(c.width)}"` : ''}>${esc(c.label)}${c.sortable ? ` <i class="fa-solid ${arrow}"></i>` : ''}</th>`;
-        }).join('') + (this.cfg.actions !== 'none' ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
+        }).join('') + (this.actLast() ? '<th class="dl-grid__act">Aksi</th>' : '') + '</tr>';
     }
 
     cell(c, r) {
@@ -215,9 +226,10 @@
     rowHtml(r, idx) {
       const id = String(r[this.cfg.rowKey]), open = this.st.open.includes(id), span = this.span();
       let h = `<tr class="dl-grid__row ${this.sel.has(id) ? 'is-selected' : ''} ${this.cfg.activeKey && r[this.cfg.activeKey] === false ? 'is-inactive' : ''}" data-id="${esc(id)}" data-idx="${idx}" title="Klik 2x untuk membuka">`
+        + (this.actFirst() ? this.actionsCell(r) : '')
         + (this.chk ? `<td class="dl-grid__chk"><input type="checkbox" ${this.sel.has(id) ? 'checked' : ''} aria-label="Pilih baris"></td>` : '')
         + (this.hasExp ? `<td class="dl-grid__exp"><button type="button" class="dl-grid__chev ${open ? 'is-open' : ''}" data-g-exp aria-label="Buka detail"><i class="fa-solid fa-chevron-right"></i></button></td>` : '')
-        + this.shown().map(c => this.cell(c, r)).join('') + this.actionsCell(r) + '</tr>';
+        + this.shown().map(c => this.cell(c, r)).join('') + (this.actLast() ? this.actionsCell(r) : '') + '</tr>';
       if (open && this.cfg.detail) { const D = this.cfg.detail, kids = r[D.key] || []; h += `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__nest"><b>${esc(D.title || 'Detail')} · ${kids.length} baris</b><table><thead><tr>${D.columns.map(c => `<th class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${esc(c.label)}</th>`).join('')}</tr></thead><tbody>${kids.map(k => `<tr>${D.columns.map(c => `<td class="${['number', 'money'].includes(c.type) ? 'num' : ''}">${esc(this.fmtCell(c, k[c.key] ?? ''))}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${D.columns.length}">Tidak ada detail</td></tr>`}</tbody></table></div></td></tr>`; }
       else if (open) h += `<tr class="dl-grid__detail"><td colspan="${span}"><div class="dl-grid__detailbox">${this.cfg.expand.map(k => { const c = this.cols.find(x => x.key === k) || {key: k, label: k}; return `<div><small>${esc(c.label)}</small><b>${esc(this.fmtCell(c, this.val(r, k)) || '—')}</b></div>`; }).join('')}</div></td></tr>`;
       return h;
@@ -243,13 +255,13 @@
       this.q('[data-g-body]').innerHTML = html;
       if (this.cfg.quickAdd.length) {
         const qa = this.cfg.quickAdd.map(k => this.cols.find(c => c.key === k) || {key: k, label: k});
-        this.q('[data-g-body]').insertAdjacentHTML('afterbegin', `<tr class="dl-grid__quick"><td class="dl-grid__chk"><i class="fa-solid fa-plus"></i></td>${this.hasExp ? '<td></td>' : ''}<td colspan="${span - 1 - (this.hasExp ? 1 : 0)}"><div class="dl-grid__qa">${qa.map(c => `<input type="text" data-g-qa="${esc(c.key)}" placeholder="${esc(c.label)}${['number', 'money'].includes(c.type) ? ' (angka)' : ''}" aria-label="${esc(c.label)}">`).join('')}<button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-g-qa-add>Tambah</button><small>Enter = tambah</small></div></td></tr>`);
+        this.q('[data-g-body]').insertAdjacentHTML('afterbegin', `<tr class="dl-grid__quick"><td class="dl-grid__chk"><i class="fa-solid fa-plus"></i></td><td colspan="${span - 1}"><div class="dl-grid__qa">${qa.map(c => `<input type="text" data-g-qa="${esc(c.key)}" placeholder="${esc(c.label)}${['number', 'money'].includes(c.type) ? ' (angka)' : ''}" aria-label="${esc(c.label)}">`).join('')}<button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-g-qa-add>Tambah</button><small>Enter = tambah</small></div></td></tr>`);
       }
       const cardsOn = this.cfg.cards && this.st.view === 'cards';
       this.q('[data-g-cards]').hidden = !cardsOn; this.q('.dl-grid__wrap').hidden = !!cardsOn;
       if (cardsOn) { const C = this.cfg.cards; this.q('[data-g-cards]').innerHTML = page.map(r => `<article class="dl-grid__card" data-id="${esc(r[this.cfg.rowKey])}"><div class="dl-grid__cardimg">${r[C.image] ? `<img src="${esc(r[C.image])}" alt="" loading="lazy">` : '<i class="fa-regular fa-image"></i>'}${C.badge && r[C.badge] ? `<span class="dl-badge dl-badge--pill dl-badge--${esc((C.tones || {})[r[C.badge]] || 'neutral')}">${esc(r[C.badge])}</span>` : ''}</div><div class="dl-grid__cardbody"><b>${esc(r[C.title])}</b><small>${esc(r[C.sub] ?? '')}</small>${(C.meta || []).map(k => { const c = this.cols.find(x => x.key === k) || {key: k}; return `<span><em>${esc(c.label || k)}</em>${esc(this.fmtCell(c, r[k] ?? ''))}</span>`; }).join('')}</div></article>`).join('') || '<div class="dl-empty"><b class="dl-empty__title">Tidak ada data yang cocok</b></div>'; }
       const cnt = this.q('[data-g-count]'); if (cnt) cnt.textContent = `${fmt.number(total)} baris cocok dari ${fmt.number(this.rows.length)}`;
-      this.q('[data-g-foot]').innerHTML = sums.length && page.length ? '<tr>' + (this.chk ? '<td class="dl-grid__chk"></td>' : '') + (this.hasExp ? '<td></td>' : '') + this.shown().map((c, i) => c.sum ? `<td class="num"><b>${esc(this.fmtCell(c, list.reduce((t, r) => t + (+this.val(r, c.key) || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Total (semua hasil)</b>' : ''}</td>`).join('') + (this.cfg.actions !== 'none' ? '<td></td>' : '') + '</tr>' : '';
+      this.q('[data-g-foot]').innerHTML = sums.length && page.length ? '<tr>' + (this.actFirst() ? '<td></td>' : '') + (this.chk ? '<td class="dl-grid__chk"></td>' : '') + (this.hasExp ? '<td></td>' : '') + this.shown().map((c, i) => c.sum ? `<td class="num"><b>${esc(this.fmtCell(c, list.reduce((t, r) => t + (+this.val(r, c.key) || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Total (semua hasil)</b>' : ''}</td>`).join('') + (this.actLast() ? '<td></td>' : '') + '</tr>' : '';
       this.drawPager(total, pages);
       const all = this.q('[data-g-all]'); if (all) { const ids = page.map(r => String(r[this.cfg.rowKey])); all.checked = ids.length > 0 && ids.every(i => this.sel.has(i)); all.indeterminate = !all.checked && ids.some(i => this.sel.has(i)); }
     }
@@ -272,7 +284,7 @@
       if (gl) gl.innerHTML = [['', 'Tanpa grup'], ...Object.entries(this.cfg.groups)].map(([k, l]) => `<label class="dl-choice"><input type="radio" name="g-${esc(this.cfg.id)}" value="${esc(k)}" data-g-group ${this.st.group === k ? 'checked' : ''}> ${esc(l)}</label>`).join('');
       this.qq('[data-g-density] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.st.density));
       this.qq('[data-g-lines] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.st.lines));
-      const ln = this.q('[data-g-lines-n]'); ln.value = this.st.linesN; ln.disabled = this.st.lines === 'auto';
+      const ln = this.q('[data-g-lines-n]'); if (ln) { ln.value = this.st.linesN; ln.disabled = this.st.lines === 'auto'; }
       this.el.dataset.density = this.st.density; this.el.style.setProperty('--dl-grid-lines', this.st.lines === 'auto' ? 'unset' : this.st.linesN); this.el.classList.toggle('is-clamped', this.st.lines !== 'auto');
       const chips = [
         ...(this.st.stat !== null ? [['stat', 'Kotak: ' + this.cfg.stats[this.st.stat].label]] : []),
