@@ -78,6 +78,9 @@ KS Power N120 MF
   jam terbit, dokumen sumber (Inquiry Baru/Rekalkulasi), penyetuju, harga per jenjang qty (+ total), selisih vs versi
   sebelumnya, dasar perubahan (mis. harga bahan naik), dan dipakai di Quotation/CO mana (WIN/LOST/terbuka).
   HPP & margin tetap rahasia Costing (tidak tampil).
+  **Urutan prioritas layar Rekalkulasi (fokus Sales):** (1) **bahan baku yang digunakan** per part (Jenis/Gramatur,
+  ukuran, harga acuan vs kini), (2) **riwayat harga jual**, (3) **proses khusus berbiaya besar** (mis. UV Spot, Emboss,
+  Hot Print, Laminasi, Plong/pisau baru, Lem 2 sisi) — baru kemudian detail part + dieline (terkunci).
 
 ## 5. ACC Digital Artwork (wajib) ⬜
 
