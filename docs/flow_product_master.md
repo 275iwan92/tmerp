@@ -30,7 +30,7 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 - **Nama product diubah manual oleh Sales** supaya sama dengan PO customer. Tujuan: nama product di
   **salinan PO customer = CO Detail = Surat Jalan Detail** (sama persis).
 
-## 3. Struktur product: 1 product = banyak part, bisa bertingkat ✅ (skema + dummy KS Power; UI input rakitan di Inquiry Baru ⬜)
+## 3. Struktur product: 1 product = banyak part, bisa bertingkat ✅ (skema + dummy KS Power; UI input rakitan di Inquiry Baru ✅ kartu "Rakitan" di bawah form, 2026-09-30)
 
 ```
 Product

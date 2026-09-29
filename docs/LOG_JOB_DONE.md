@@ -3,6 +3,31 @@
 
 ---
 
+## 2026-09-29/30 malam -- 10 job v2 Sales tanpa pengawasan (Iwan)
+
+Semua diuji di mockup.test (ddt*) lewat kernel HTTP + cek DB; data uji dikembalikan ke snapshot. Detail: commit f6129a4..HEAD.
+- **Job 10 — migration tm2\***: 13 migration tertunda dijalankan di tm2* (prod_market, quo_activity, prod_product_acc,
+  sys_doc_share, struktur pimpinan, dst). Backup sebelum migrasi: `C:\Users\iwanp\tmerp_backup\2026-09-29_pre_tm2_migrate`.
+- **Job 1 — ProDev v2 di atas DB**: data & tombol workbench memanggil komponen v1 `pages::production.prodev` yang sama
+  (route `v2.prodev.call` / `v2.prodev.artwork`); `resources/data/v2/prodev.json` diarsipkan.
+- **Job 2 + 6 — Quotation v2 + status Cancelled**: grid → pilih inquiry Ready to Quote → DRAFT (header/CC/baris/baris bebas/
+  tambah inquiry) → Simpan/Hapus/Confirm → Print/Email → WIN (CO) / LOST / Cancel + follow-up. `quo_quotation.stat_cancel`
+  + `cancel_reason`; inquiry dari quotation batal kembali Ready to Quote.
+- **Job 3 — Customer Order v2**: INTEGRATED (dari quotation terbit) & INSTANT (customer + Master Product); due date wajib;
+  jadwal kirim, biaya luar, Confirm → engine CPDEL; Hapus hanya draft INSTANT.
+- **Job 4 — CPDEL v2**: grid jadwal kirim CO CONFIRMED; pindah tanggal / split / gabung (logika v1).
+- **Job 5 — Print + Email** di Inquiry Baru v2 & ProDev v2 (tombol saja).
+- **Job 7 — Laporan Quotation**: Quotation Terbuka, Hasil Quotation (WIN/LOST/Cancel), Follow-up Quotation (grid report);
+  menu v2 (ddtsys) Sales > Laporan; Quotation/CO/CPDEL di menu v2 diarahkan ke layar v2.
+- **Job 9 — Setting E-mail + verifikasi**: `tm2sys.sys_mail_setting` (layar Developer > Setting E-mail, password terenkripsi,
+  uji kirim), Profil > E-mail (link verifikasi signed), From = e-mail user terverifikasi & wajib-verifikasi (saklar, default mati),
+  gagal kirim → notifikasi. Sisa di backlog09 §18 (bounce belakangan, pilih alamat dari kontak).
+- **Job 8 — Rakitan di Inquiry Baru v2**: kartu Rakitan (buat/bongkar, jenis sambungan, bertingkat); InquiryWriter tidak lagi
+  menghapus baris ASSEMBLY saat Simpan.
+- Baseline dummy disimpan ulang (baseline lama: `C:\Users\iwanp\tmerp_backup\ddt-baseline_2026-09-29_1846`).
+
+
+
 ## 2026-09-10/11 -- Rollout i18n bertahap "7 malam" (BACKLOG §13, §13.1, §13.2)
 
 ## 13. I18N APP-WIDE — ROLLOUT BERTAHAP 7 MALAM (mulai 2026-09-07)
