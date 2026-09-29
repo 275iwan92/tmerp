@@ -3,6 +3,7 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Master\CustCustomer;
+use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoActivity;
 use App\Models\Sdi\QuoQuotation;
@@ -59,6 +60,91 @@ final class Quotation
                 'followups' => $q->activities->count(),
                 'next' => $next?->next_action_date?->toDateString(),
                 'status' => self::status($q),
+            ];
+        })->all();
+    }
+
+    // ---------- Laporan (grid report) ----------
+
+    // Quotation terbit yang belum WIN/LOST: umur, masa berlaku, follow-up terakhir & berikutnya.
+    public static function outstandingRows(): array
+    {
+        return collect(self::closedOrOpen())->where('status', 'PUBLISHED')->map(function ($r) {
+            $r['expired'] = $r['valid'] && $r['valid'] < now()->toDateString() ? 'KEDALUWARSA' : 'BERLAKU';
+
+            return $r;
+        })->values()->all();
+    }
+
+    // Quotation yang sudah ditutup: WIN / LOST / CANCELLED, dengan bulan tutup & alasan.
+    public static function resultRows(): array
+    {
+        return collect(self::closedOrOpen())->whereIn('status', ['WON', 'LOST', 'CANCELLED'])->values()->all();
+    }
+
+    public static function followupRows(): array
+    {
+        $acts = QuoActivity::with('quotation')->orderByDesc('activity_date')->orderByDesc('id_activity')->limit(2000)->get();
+        $customers = CustCustomer::whereIn('id_customer', $acts->pluck('quotation.customer_id')->unique()->filter())->pluck('customer_name', 'id_customer');
+        $today = now()->toDateString();
+
+        return $acts->map(fn (QuoActivity $a) => [
+            'id' => $a->quotation_id,
+            'no' => $a->quotation?->quotation_no,
+            'customer' => $customers[$a->quotation?->customer_id] ?? '—',
+            'date' => $a->activity_date?->toDateString(),
+            'type' => QuoActivity::TYPES[$a->activity_type][1] ?? $a->activity_type,
+            'contact' => $a->contact_person,
+            'result' => QuoActivity::RESULTS[$a->result] ?? '—',
+            'notes' => $a->notes,
+            'next_date' => $a->next_action_date?->toDateString(),
+            'next' => $a->next_action,
+            'due' => ! $a->next_action_date ? '—' : ($a->next_action_date->toDateString() < $today ? 'LEWAT' : ($a->next_action_date->toDateString() === $today ? 'HARI INI' : 'NANTI')),
+            'by' => $a->created_by,
+        ])->all();
+    }
+
+    private static function closedOrOpen(): array
+    {
+        static $rows;
+        if ($rows !== null) {
+            return $rows;
+        }
+        $quotes = QuoQuotation::with(['items.inquiry:id_inquiry,sub_state,cancel_reason', 'activities'])->where('doc_status', '<>', 'DRAFT')
+            ->orderByDesc('issued_date')->limit(2000)->get();
+        $customers = CustCustomer::whereIn('id_customer', $quotes->pluck('customer_id')->unique())->pluck('customer_name', 'id_customer');
+        $orders = CoOrder::whereIn('quotation_id', $quotes->pluck('id_quotation'))->get(['quotation_id', 'co_no', 'co_date'])->keyBy('quotation_id');
+
+        return $rows = $quotes->map(function (QuoQuotation $q) use ($customers, $orders) {
+            $status = self::status($q);
+            $last = $q->activities->first();
+            $closed = match ($status) {
+                'WON' => $orders[$q->id_quotation]?->co_date,
+                'LOST', 'CANCELLED' => $q->updated_at,
+                default => null,
+            };
+
+            return [
+                'id' => $q->id_quotation,
+                'no' => $q->quotation_no,
+                'customer' => $customers[$q->customer_id] ?? '—',
+                'sales' => $q->sales_pic ?: '—',
+                'date' => $q->issued_date?->toDateString(),
+                'valid' => $q->valid_until?->toDateString(),
+                'age' => $q->issued_date ? (int) $q->issued_date->diffInDays(now(), true) : null,
+                'total' => $q->totals()['grand'],
+                'followups' => $q->activities->count(),
+                'last_followup' => $last?->activity_date?->toDateString(),
+                'next' => $q->activities->whereNotNull('next_action_date')->first()?->next_action_date?->toDateString(),
+                'status' => $status,
+                'closed' => $closed?->toDateString(),
+                'month' => $closed?->format('Y-m'),
+                'co' => $orders[$q->id_quotation]->co_no ?? null,
+                'reason' => match ($status) {
+                    'LOST' => $q->items->pluck('inquiry.cancel_reason')->filter()->first(),
+                    'CANCELLED' => $q->cancel_reason,
+                    default => null,
+                },
             ];
         })->all();
     }
