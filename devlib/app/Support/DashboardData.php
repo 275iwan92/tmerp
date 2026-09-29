@@ -24,6 +24,12 @@ final class DashboardData
         return config('devlib.dashboards')[$user['position_code'] ?? ''] ?? 'general';
     }
 
+    // Data contoh untuk akun DevLib tertentu (halaman katalog komponen).
+    public static function forLogin(string $login): array
+    {
+        return self::for(collect(config('devlib.users'))->firstWhere('login', $login) ?? []);
+    }
+
     public static function for(array $user): array
     {
         $profile = self::profile($user);

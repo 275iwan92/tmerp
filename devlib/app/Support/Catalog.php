@@ -146,6 +146,10 @@ final class Catalog
                     'p5-calendar' => $page('Calendar', 'fa-solid fa-calendar-days', ['calendar-events' => ['Event Calendar (day / week / month)', $c('Calendar')]], 'mockup_UIUX_calendar.html'),
                     'p5-org' => $page('Org Chart', 'fa-solid fa-sitemap', ['org-chart' => ['Organization Structure (drag to change superior, vacancies, multiple holders)', $c('OrgChart')]], 'Organization-Structure-Mockup.html'),
                     'p6-charts' => $page('Charts', 'fa-solid fa-chart-pie', ['chart-bars' => ['Bars: bar, stacked, horizontal, combo', $c('Chart')], 'chart-lines' => ['Line, area, radar, heatmap', $c('Chart')], 'chart-pies' => ['Pie, donut, funnel', $c('Chart')]], 'mockup_dashboardcolor.html'),
+                    'p6-dashboard' => $page('Opening Dashboard (per position)', 'fa-solid fa-house-user', [
+                        'dashboard-sales' => ['1 · Sales profile (Senior Staff Sales & Marketing)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
+                        'dashboard-general' => ['2 · General profile (position without its own dashboard)', $c('Dashboard', 'Kpi', 'Chart', 'Quote')],
+                    ], 'dashboard_home_sales.html'),
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),
                     'p6-codes' => $page('QR & Barcode', 'fa-solid fa-qrcode', ['codes' => ['QR & Barcode (Code128, EAN-13)', $c('Qr', 'Barcode')]]),
                 ]],

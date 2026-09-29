@@ -3,6 +3,21 @@
 
 ---
 
+## 2026-09-29 -- Opening screen / dashboard per jabatan (DevLib, Fase 1)
+
+- Mockup `docs/mockups/dashboard_home_sales.html/.jpg` (Yuna, Sales) disetujui user.
+- Komponen baru `x-dl::dashboard` (`packages/devlib`): salam + jam + cuaca, tombol Job Description & SOP
+  (HTML per jabatan, modal), KPI per periode Harian..12 Bulan, target vs pencapaian (combo chart),
+  aktivitas (Telp/Email/Visit x sasaran), fokus follow-up, agenda, kata motivasi harian (`x-dl::quote order=day`,
+  366 baris `devlib/public/media/text/motivasi-harian.txt`).
+- Dipasang di halaman pembuka devlib.test lewat slot `dashboard` Shell (tanpa slot = sambutan lama, v2 tmerp tak berubah).
+- Keputusan user: jabatan tanpa dashboard khusus = **Dashboard General** (mekanisme sama, isi bidang beda).
+  Profil per kode jabatan di `config/devlib.php -> dashboards`; data contoh `devlib/app/Support/DashboardData.php`.
+- JD/SOP mengikuti format dokumen resmi (`docs/attachments`: JD & KPI Staff Finance, SOP Perizinan). Isi JD Sales
+  & SOP-SLS = contoh, menunggu versi resmi HR. Cuaca = Malang (alamat kantor di kop dokumen).
+- Belum: perilaku menu Layer Shell di layar HP; tabel DB tmerp (target per user, log aktivitas, kata harian,
+  SOP <-> jabatan) untuk Fase 2.
+
 ## 2026-09-10/11 -- Rollout i18n bertahap "7 malam" (BACKLOG §13, §13.1, §13.2)
 
 ## 13. I18N APP-WIDE — ROLLOUT BERTAHAP 7 MALAM (mulai 2026-09-07)
