@@ -70,7 +70,9 @@ KS Power N120 MF
   **dieline + mockup artwork** yang jelas, bahan, BOM, BOP, warna, finishing.
 - **REVISI** = membuka **cabang baru**: setiap revisi menghasilkan **product turunan baru** di Master Product yang mencatat
   induknya ("turunan dari product X"). Product lama tetap utuh; CO lama tetap memakai snapshot-nya.
-  Hanya blok yang dipilih di scope yang boleh diubah; alur lanjut ProDev → ProCost → Quotation; bila WIN, product
+  **Titik berat Revisi = HARUS TAHU PERBEDAANNYA**: tiap field yang berubah dicatat sebelum → sesudah
+  (`iqp_revise_change`: part, scope, field, nilai lama, nilai baru, diulang di ProDev/ProCost/Proof) dan informasi ini
+  **mengalir & tampil di ProDev dan ProCost**. Hanya blok yang dipilih di scope yang boleh diubah; alur lanjut ProDev → ProCost → Quotation; bila WIN, product
   turunan resmi masuk master.
 - **REKALKULASI** = **product yang sama**, spec 100% terkunci, yang diisi hanya Qty & Deadline. Menghasilkan
   **versi harga baru** di ProCost dengan **tanggal & jam terbit** yang jelas; riwayat harga per product bisa dilihat.
@@ -78,11 +80,14 @@ KS Power N120 MF
   jam terbit, dokumen sumber (Inquiry Baru/Rekalkulasi), penyetuju, harga per jenjang qty (+ total), selisih vs versi
   sebelumnya, dasar perubahan (mis. harga bahan naik), dan dipakai di Quotation/CO mana (WIN/LOST/terbuka).
   HPP & margin tetap rahasia Costing (tidak tampil).
-  **Urutan prioritas layar Rekalkulasi (fokus Sales):** (1) **bahan baku yang digunakan** per part (Jenis/Gramatur,
-  ukuran, harga acuan vs kini), (2) **riwayat harga jual**, (3) **proses khusus berbiaya besar** (mis. UV Spot, Emboss,
+  **Urutan prioritas layar Rekalkulasi (fokus Sales):** (1) **bahan baku yang digunakan** per part (Jenis/Gramatur;
+  merek hanya acuan) — **harga beli bahan & ukuran/luasan plano TIDAK tampil di Sales, hanya di ProCost**;
+  Sales hanya melihat harga JUAL product, (2) **riwayat harga jual**, (3) **proses khusus berbiaya besar** (mis. UV Spot, Emboss,
   Hot Print, Laminasi, Plong/pisau baru, Lem 2 sisi) — baru kemudian detail part + dieline (terkunci).
 
 ## 5. ACC Digital Artwork (wajib) ⬜
+
+> Mockup dokumen ACC Digital **menunggu dokumen yang selama ini dipakai** (user 2026-09-29) — jangan dibangun dulu.
 
 - Normalnya dibuat **setelah PO customer turun**, karena butuh biaya **CTP** (Computer To Plate — pembuatan plat cetak,
   proses pre-press). Produksi mencetak **sample dari plat CTP itu** → customer memberi ACC.

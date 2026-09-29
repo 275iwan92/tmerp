@@ -167,7 +167,7 @@ final class Sales
             'cust_material_spec' => $i->cust_material_spec ?? '', 'cust_material_eta' => $i->cust_material_eta?->toDateString(),
             'stat_confirm' => (bool) $i->stat_confirm, 'stat_cancel' => (bool) $i->stat_cancel, 'cancel_reason' => $i->cancel_reason,
             'is_approved' => (bool) $i->is_approved, 'revision_no' => (int) $i->revision_no, 'design_number' => $i->design_number,
-            'revise_scope' => $i->reviseScopeArray(), 'revise_reason' => $i->revise_reason ?? '', 'parent_id' => $i->parent_product_id,
+            'revise_scope' => $i->reviseScopeArray(), 'revise_reason' => $i->revise_reason ?? '', 'parent_id' => $i->parent_inquiry_id, 'product_id' => $i->product_id,
             'type_code' => isset(self::dielineTypes()[$code]) ? $code : '',
             'qty' => (float) ($i->tiers->firstWhere('is_primary', true)?->qty ?? 0),
             'tiers' => $i->tiers->map(fn ($t) => ['id' => $t->id_tier, 'qty' => $num($t->qty), 'is_primary' => (bool) $t->is_primary])->values()->all(),
@@ -192,10 +192,10 @@ final class Sales
         ];
     }
 
-    // Inkuiri asal dari dokumen REVISE/RECALC (tmerp: parentInquiry() = parent_product_id).
+    // Inkuiri asal dari dokumen REVISE/RECALC (parentInquiry()).
     public static function parentDoc(int $id): ?array
     {
-        $parent = IqpInquiry::whereKey($id)->value('parent_product_id');
+        $parent = IqpInquiry::whereKey($id)->value('parent_inquiry_id');
 
         return $parent ? self::inquiryDoc((int) $parent) : null;
     }

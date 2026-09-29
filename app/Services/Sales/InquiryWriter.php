@@ -6,7 +6,6 @@ use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdPartAttachment;
 use App\Models\Master\ProdPartFinishing;
-use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdType;
 use App\Models\Master\RefFinishingType;
 use App\Models\Sdi\IqpInquiry;
@@ -101,24 +100,14 @@ final class InquiryWriter
             throw ValidationException::withMessages(['part' => 'Confirm inquiry ini dulu sebelum kirim ke ProDev (spec harus FIX).']);
         }
 
-        if (! $inquiry->parent_product_id) {
-            $product = ProdProduct::create([
-                'product_code' => 'DRAFT-'.$inquiry->id_inquiry,
-                'product_name' => $inquiry->product_draft_name ?: $inquiry->inquiry_no,
-                'customer_id' => $inquiry->customer_id,
-                'activate' => true,
-                'created_by' => $this->login,
-                'updated_by' => $this->login,
-            ]);
-            $inquiry->update(['parent_product_id' => $product->id_product]);
-        }
+        $productId = $inquiry->ensureDraftProduct($this->login);
 
         if (! $part->prod_part_id) {
             $dims = $part->dieline_spec['dims'] ?? [];
             $cm = fn (string $k) => isset($dims[$k]) ? round(((float) $dims[$k]) / 10, 2) : null;
 
             $prodPart = ProdPart::create([
-                'product_id' => $inquiry->parent_product_id,
+                'product_id' => $productId,
                 'part_code' => 'P'.$part->id_part,
                 'part_name' => $part->part_name,
                 'cm_length' => $cm('product_length'),

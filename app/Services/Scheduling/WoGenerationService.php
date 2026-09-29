@@ -33,7 +33,7 @@ class WoGenerationService
      * @return Collection<int, PrdWo>
      *
      * @throws \RuntimeException kalau delivery ini sudah pernah generate WO,
-     *                            atau tidak py inquiry/part sama sekali.
+     *                           atau tidak py inquiry/part sama sekali.
      */
     public function generateFromDelivery(CoOrderDelivery $delivery): Collection
     {
@@ -81,7 +81,7 @@ class WoGenerationService
                     'source_co_id' => $delivery->order_id,
                     'source_delivery_id' => $delivery->id_delivery,
                     'source_iqp_part_id' => $part->id_part,
-                    'product_id' => $inquiry->parent_product_id,
+                    'product_id' => $inquiry->product_id,
                     'part_code' => $part->part_code ?: $part->part_name,
                     'qty' => $qty,
                     'due_date' => $delivery->ship_date,
@@ -117,7 +117,7 @@ class WoGenerationService
                     // Belum ada BOP dari ProDev -- pakai routing snapshot Inquiry apa adanya.
                     foreach ($part->processes->sortBy('step_seq') as $routingStep) {
                         $targetRate = $this->lookupDefaultMachineRate(
-                            $inquiry->parent_product_id, $wo->part_code, $routingStep->process_id, $routingStep->machine_id,
+                            $inquiry->product_id, $wo->part_code, $routingStep->process_id, $routingStep->machine_id,
                         );
 
                         PrdWoOperation::create([

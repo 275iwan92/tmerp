@@ -71,7 +71,7 @@ class CoOrderBuilder
                     'quotation_item_id' => $qi->id_item,
                     'line_kind' => $qi->source_type === 'FREEFORM' ? 'SERVICE' : 'PRODUCT',
                     'inquiry_id' => $qi->inquiry_id,
-                    'product_id' => $qi->inquiry?->parent_product_id,
+                    'product_id' => $qi->inquiry?->product_id,
                     'description' => $qi->description,
                     'spec_note' => $qi->spec_note,
                     'qty' => $qi->qty,
@@ -96,6 +96,13 @@ class CoOrderBuilder
             $quotation->items->pluck('inquiry_id')->filter()->unique()->each(
                 fn ($id) => IqpInquiry::where('id_inquiry', $id)->update(['co_id' => $order->id_order, 'sub_state' => 'CONVERTED'])
             );
+
+            // WIN -> tiap inquiry jadi data pokok Master Product; CO Detail menunjuk product itu (docs/flow_product_master.md §2).
+            $sync = new ProductMasterSync($login);
+            foreach ($quotation->items->pluck('inquiry')->filter()->unique('id_inquiry') as $inq) {
+                $product = $sync->fromInquiry($inq->refresh());
+                CoOrderItem::where('order_id', $order->id_order)->where('inquiry_id', $inq->id_inquiry)->update(['product_id' => $product->id_product]);
+            }
 
             return $order;
         });

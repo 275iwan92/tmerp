@@ -591,7 +591,7 @@ new #[Title('TELASIH MAKMUR — REVISE')] class extends Component
                 'product_draft_name' => $this->source->product_draft_name,
                 'sales_note' => 'REVISE dari '.$this->source->inquiry_no.' — '.$this->revise_reason,
                 'inquiry_type' => 'REVISE',
-                'parent_product_id' => $this->source->parent_product_id ?? $this->source->id_inquiry,
+                'parent_inquiry_id' => $this->source->id_inquiry,
                 'revision_no' => $newRevisionNo,
                 'revise_scope' => implode(',', $this->scope),
                 'revise_reason' => $this->revise_reason,

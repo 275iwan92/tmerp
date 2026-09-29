@@ -15,6 +15,10 @@ class ProdProduct extends Model
     protected $primaryKey = 'id_product';
 
     protected $fillable = [
+        'parent_product_id',
+        'revision_no',
+        'source_inquiry_id',
+        'card_status',
         'product_code',
         'design_no',
         'product_name',
@@ -79,12 +83,23 @@ class ProdProduct extends Model
         return $this->belongsTo(ProdCategory::class, 'category_id', 'id_category');
     }
 
-    // Tidak ada relasi balik ke iqp_inquiry (parent_product_id, tm2sdi) di sini secara
-    // sengaja — sama seperti CustCustomer, master tetap netral. Lihat IqpInquiry::parentProduct().
+    // Tidak ada relasi balik ke iqp_inquiry (product_id, tm2sdi) di sini secara
+    // sengaja — sama seperti CustCustomer, master tetap netral. Lihat IqpInquiry::product().
 
     public function parts(): HasMany
     {
         return $this->hasMany(ProdPart::class, 'product_id', 'id_product');
+    }
+
+    // Revisi = cabang: product turunan menunjuk induknya (docs/flow_product_master.md §4).
+    public function parentProduct(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_product_id', 'id_product');
+    }
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_product_id', 'id_product');
     }
 
     public function layoutGroups(): HasMany

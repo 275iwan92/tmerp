@@ -29,7 +29,8 @@ class IqpInquiry extends Model
         'product_draft_name',
         'sales_note',
         'inquiry_type',
-        'parent_product_id',
+        'parent_inquiry_id',
+        'product_id',
         'revision_no',
         'revise_scope',
         'revise_reason',
@@ -90,17 +91,40 @@ class IqpInquiry extends Model
         return $this->belongsTo(CustCustomer::class, 'customer_id', 'id_customer');
     }
 
-    // FK lintas-DB (tm2sdi -> tm2mst): produk asal untuk RECALC/REVISE.
-    public function parentProduct(): BelongsTo
+    // FK lintas-DB (tm2sdi -> tm2mst): Master Product inquiry ini -- DRAFT sejak Kirim ke ProDev, resmi saat Quotation WIN.
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(ProdProduct::class, 'parent_product_id', 'id_product');
+        return $this->belongsTo(ProdProduct::class, 'product_id', 'id_product');
     }
 
-    // Sumber "produk existing" untuk RECALC/REVISE saat ini = inkuiri tersimpan lain
-    // (belum ada modul prod_product terpisah, lihat komentar hub.blade.php).
+    // Inquiry asal dokumen REVISE/RECALC.
     public function parentInquiry(): BelongsTo
     {
-        return $this->belongsTo(self::class, 'parent_product_id', 'id_inquiry');
+        return $this->belongsTo(self::class, 'parent_inquiry_id', 'id_inquiry');
+    }
+
+    // Product DRAFT untuk ProDev (dibuat sekali). REVISE = cabang baru dari product induknya
+    // (docs/flow_product_master.md §4); RECALC memakai product yang sama dengan inquiry asalnya.
+    public function ensureDraftProduct(string $login): int
+    {
+        if ($this->product_id) {
+            return (int) $this->product_id;
+        }
+
+        $parentProduct = $this->inquiry_type === 'REVISE' ? $this->parentInquiry?->product_id : null;
+        $product = ProdProduct::create([
+            'product_code' => 'DRAFT-'.$this->id_inquiry,
+            'product_name' => $this->product_draft_name ?: $this->inquiry_no,
+            'customer_id' => $this->customer_id,
+            'parent_product_id' => $parentProduct,
+            'revision_no' => $parentProduct ? (int) ProdProduct::whereKey($parentProduct)->value('revision_no') + 1 : 0,
+            'activate' => true,
+            'created_by' => $login,
+            'updated_by' => $login,
+        ]);
+        $this->update(['product_id' => $product->id_product]);
+
+        return (int) $product->id_product;
     }
 
     // revise_scope disimpan CSV (lihat migration 2026_08_09_000006) — bukan cast
@@ -131,8 +155,12 @@ class IqpInquiry extends Model
     // $source harus sudah eager-load parts.materials & parts.processes.
     public function cloneStructureFrom(self $source): void
     {
+        $map = [];
         foreach ($source->parts as $part) {
             $newPart = $this->parts()->create([
+                'part_kind' => $part->part_kind,
+                'join_type_id' => $part->join_type_id,
+                'qty_in_parent' => $part->qty_in_parent,
                 'part_seq' => $part->part_seq,
                 'part_code' => $part->part_code,
                 'part_name' => $part->part_name,
@@ -148,11 +176,13 @@ class IqpInquiry extends Model
                 'created_by' => 'web',
                 'updated_by' => 'web',
             ]);
+            $map[$part->id_part] = $newPart;
 
             foreach ($part->materials as $mat) {
                 $newPart->materials()->create([
                     'layer_seq' => $mat->layer_seq,
                     'rawmat_id' => $mat->rawmat_id,
+                    'category_id' => $mat->category_id,
                     'rawmat_name' => $mat->rawmat_name,
                     'gram_weight' => $mat->gram_weight,
                     'flute_type' => $mat->flute_type,
@@ -200,6 +230,18 @@ class IqpInquiry extends Model
                 ]) + ['created_by' => 'web', 'updated_by' => 'web']);
             }
         }
+
+        // Struktur rakitan ikut tersalin: induk menunjuk ke part baru, bukan part sumber.
+        foreach ($source->parts as $part) {
+            if ($part->parent_part_id && isset($map[$part->parent_part_id])) {
+                $map[$part->id_part]->update(['parent_part_id' => $map[$part->parent_part_id]->id_part]);
+            }
+        }
+    }
+
+    public function reviseChanges(): HasMany
+    {
+        return $this->hasMany(IqpReviseChange::class, 'inquiry_id', 'id_inquiry');
     }
 
     public function tiers(): HasMany

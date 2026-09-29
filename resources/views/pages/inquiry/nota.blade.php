@@ -25,7 +25,7 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
     {
         return IqpInquiry::with([
             'customer',
-            'parentProduct',
+            'product',
             'parts.materials',
             'parts.processes',
             'tiers',
@@ -151,7 +151,7 @@ new #[Title('Nota Inquiry — TELASIH MAKMUR ERP')] class extends Component
                 </div>
             </x-print.party>
             <x-print.party label="PRODUK">
-                <div class="nm">{{ $this->inquiry->product_draft_name ?? $this->inquiry->parentProduct?->product_name ?? '—' }}</div>
+                <div class="nm">{{ $this->inquiry->product_draft_name ?? $this->inquiry->product?->product_name ?? '—' }}</div>
                 <div class="dt">
                     {{ $this->inquiry->parts->count() }} part
                     @if ($this->inquiry->deadline_quotation) · Deadline quotation: {{ $this->inquiry->deadline_quotation->translatedFormat('d M Y') }} @endif

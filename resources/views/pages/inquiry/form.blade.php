@@ -2403,7 +2403,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
     // Mode #1 -- link Inquiry(BARU) -> ProDev yg SEBELUMNYA TIDAK ADA SAMA
     // SEKALI (CLAUDE.md §4 "VITAL", gap ditemukan 2026-09-03). Seed prod_product
-    // (draft, kalau iqp_inquiry belum punya parent_product_id) + prod_part dari
+    // (draft, kalau iqp_inquiry belum punya product_id -- IqpInquiry::ensureDraftProduct()) + prod_part dari
     // dims kasar iqp_part.dieline_spec['dims'] (product_length/width/height,
     // mm->cm), lalu bawa officer langsung ke ProDev part itu. ProDev TETAP
     // yang isi detail teknis lengkap (die_w_cm, flap, dst) -- di sini cuma
@@ -2426,25 +2426,13 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         $part = IqpPart::findOrFail($row['id']);
 
-        if (! $this->inquiry->parent_product_id) {
-            $product = ProdProduct::create([
-                'product_code' => 'DRAFT-'.$this->inquiry->id_inquiry,
-                'product_name' => $this->inquiry->product_draft_name ?: $this->inquiry_no,
-                'customer_id' => $this->inquiry->customer_id,
-                'activate' => true,
-                'created_by' => Auth::user()->login,
-                'updated_by' => Auth::user()->login,
-            ]);
-            $this->inquiry->update(['parent_product_id' => $product->id_product]);
-        } else {
-            $this->inquiry->refresh();
-        }
+        $this->inquiry->ensureDraftProduct(Auth::user()->login);
 
         if (! $part->prod_part_id) {
             $dims = $part->dieline_spec['dims'] ?? [];
 
             $prodPart = ProdPart::create([
-                'product_id' => $this->inquiry->parent_product_id,
+                'product_id' => $this->inquiry->product_id,
                 'part_code' => 'P'.$part->id_part,
                 'part_name' => $part->part_name,
                 'cm_length' => isset($dims['product_length']) ? round(((float) $dims['product_length']) / 10, 2) : null,

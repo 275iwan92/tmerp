@@ -17,6 +17,10 @@ class IqpPart extends Model
 
     protected $fillable = [
         'inquiry_id',
+        'parent_part_id',
+        'part_kind',
+        'join_type_id',
+        'qty_in_parent',
         'prod_part_id',
         'part_seq',
         'part_code',
@@ -56,6 +60,12 @@ class IqpPart extends Model
     // Bahan yang DIPILIH Sales (input). Baris source=ENGINE (bahan finishing
     // hasil engine BOM ProDev) sengaja tidak ikut, supaya tidak muncul/terhapus
     // di form Inquiry -- pakai bomMaterials() untuk BOM lengkap.
+    // Rakitan: part anak digabung dgn sambungan (tm2mst.mat_join_type, lintas-DB = logis).
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_part_id', 'id_part');
+    }
+
     public function materials(): HasMany
     {
         return $this->hasMany(IqpPartMaterial::class, 'part_id', 'id_part')->where('source', 'MANUAL');

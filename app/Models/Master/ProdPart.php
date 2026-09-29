@@ -4,6 +4,7 @@ namespace App\Models\Master;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ProdPart extends Model
@@ -67,17 +68,43 @@ class ProdPart extends Model
         'flap_max_mm',
         'flap_width_mm',
         'flap_offset_mm',
+        'parent_part_id',
+        'part_kind',
+        'join_type_id',
+        'qty_in_parent',
+        'dieline_spec',
+        'flat_w',
+        'flat_h',
+        'flat_area',
+        'source_iqp_part_id',
     ];
 
     protected $casts = [
         'activate' => 'boolean',
         'color_set_1' => 'array',
         'color_set_2' => 'array',
+        'dieline_spec' => 'array',
     ];
 
     public function product(): BelongsTo
     {
         return $this->belongsTo(ProdProduct::class, 'product_id', 'id_product');
+    }
+
+    // Rakitan (ASSEMBLY) menggabungkan part anak dengan sambungan mat_join_type; bertingkat tanpa batas.
+    public function parentPart(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_part_id', 'id_part');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_part_id', 'id_part');
+    }
+
+    public function joinType(): BelongsTo
+    {
+        return $this->belongsTo(MatJoinType::class, 'join_type_id', 'id_join_type');
     }
 
     public function processes(): HasMany
@@ -95,7 +122,7 @@ class ProdPart extends Model
         return $this->hasMany(ProdPartAttachment::class, 'part_id', 'id_part');
     }
 
-    public function layoutGroups(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function layoutGroups(): BelongsToMany
     {
         return $this->belongsToMany(ProdLayoutGroup::class, 'prod_layout_group_part', 'part_id', 'id_layout_group')
             ->withPivot('qty_up_in_group');
