@@ -14,7 +14,7 @@ namespace Devlib\Components;
 //            'fallback' => kolom nama (image: tanpa foto -> inisial di kotak yang sama),
 //            'visible' => true, 'sortable' => true, 'sum' => false (money/number)]]
 // stats/tabs: [['label', 'where' => [kolom => nilai|[nilai..]], 'tone']]  (tanpa where = total)
-// actions: master (Edit + Aktif/Nonaktif, Pilihan C) | worklist (Buka + Confirm) | none
+// actions: master (Edit + Aktif/Nonaktif, Pilihan C) | worklist (Buka saja; Confirm/Approve TIDAK di grid, hanya di form) | none
 // Tipe kolom tambahan: image (thumbnail + perbesar), progress (0-100), steps ('steps' => [tahap..], nilai = tahap sekarang),
 //   toggle (saklar, bisa diubah -> dl:grid-cell), rating, spark (array angka), button ('text', 'action' -> dl:grid-action).
 // detail: ['key' => kolom array baris anak, 'columns' => [[key,label,type]], 'title'] -> baris dibuka = tabel detail bersarang.
@@ -29,7 +29,6 @@ namespace Devlib\Components;
 //            Centang hanya muncul bila layar memasang bulk (aksi massal) -- tanpa bulk centang tidak berguna.
 //   report = Grid for Reporting: rapat (banyak baris per layar, data ribuan), TANPA centang/Aksi/New Record,
 //            fokus cari + Filters terbuka di atas tabel + saring per kolom (teks mengandung; angka boleh >, <, >=, <=, =).
-// confirmWhen: baris worklist yang boleh di-Confirm ([kolom => nilai|[nilai..]]), per layar (Quotation = DRAFT, PO = SUBMITTED).
 class Grid extends DevlibComponent
 {
     public function __construct(
@@ -56,7 +55,6 @@ class Grid extends DevlibComponent
         public ?string $openUrl = null,
         public ?string $newUrl = null,
         public string $mode = 'entry',
-        public array $confirmWhen = ['status' => 'SUBMITTED'],
     ) {
         if ($this->isReport()) {
             $this->actions = 'none';
@@ -95,7 +93,7 @@ class Grid extends DevlibComponent
             'rowKey' => $this->rowKey, 'stats' => $this->stats, 'tabs' => $this->tabs, 'filters' => $this->filters, 'groups' => $this->groups,
             'bulk' => $this->bulk, 'expand' => $this->expand, 'actions' => $this->actions, 'activeKey' => $this->activeKey, 'perPage' => $this->perPage,
             'openUrl' => $this->openUrl, 'newUrl' => $this->newUrl, 'detail' => $this->detail ?: null, 'cards' => $this->cards ?: null, 'quickAdd' => $this->quickAdd, 'groupBy' => $this->groupBy,
-            'mode' => $this->mode, 'confirmWhen' => $this->confirmWhen, 'pageSizes' => $this->isReport() ? [50, 100, 250, 500] : [10, 25, 50, 100],
+            'mode' => $this->mode, 'pageSizes' => $this->isReport() ? [50, 100, 250, 500] : [10, 25, 50, 100],
         ];
     }
 

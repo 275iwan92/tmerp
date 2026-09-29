@@ -20,7 +20,7 @@
 
 @if (! $d)
     <x-dl::grid id="cpdel-list" :rows="Cpdel::rows()" search="Cari no. CO, customer, product..." actions="worklist" :active-key="null" :new-record="null"
-        :open-url="$home.'?id={id}'" :confirm-when="['status' => '__none__']" group-by="co"
+        :open-url="$home.'?id={id}'" group-by="co"
         source="{{ Src::of('tm2sdi.co_order_delivery', 'tm2sdi.co_order (CONFIRMED)', 'tm2sdi.co_order_item.due_date') }}"
         :columns="[
             ['key' => 'item', 'label' => 'Product', 'type' => 'identity', 'code' => 'co'],

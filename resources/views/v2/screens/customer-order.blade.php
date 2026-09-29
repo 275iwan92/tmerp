@@ -24,7 +24,7 @@
 
 @if (! $o && ! request('new'))
     <x-dl::grid id="co-list" :rows="CustomerOrder::rows()" search="Cari no. CO, customer, no. PO, quotation..." actions="worklist" :active-key="null"
-        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" :confirm-when="['status' => '__none__']"
+        :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'"
         source="{{ Src::of('tm2sdi.co_order', 'tm2sdi.co_order_item', 'tm2sdi.co_order_external_cost', 'tm2sdi.quo_quotation.quotation_no') }}"
         :columns="[
             ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],

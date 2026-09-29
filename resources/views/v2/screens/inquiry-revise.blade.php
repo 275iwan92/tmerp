@@ -41,7 +41,7 @@
 
 @if (! $doc && ! request('pick') && ! $noProduct)
     <x-dl::grid id="revise-docs" :rows="ProductMaster::derivedRows('REVISE')" search="Cari no. inkuiri, product, customer..." actions="worklist" :active-key="null"
-        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'" :confirm-when="['status' => '__none__']"
+        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'"
         source="{{ Src::of('tm2sdi.iqp_inquiry (inquiry_type = REVISE)', 'tm2sdi.iqp_revise_change') }}"
         :columns="[
             ['key' => 'name', 'label' => 'Product', 'type' => 'identity', 'code' => 'inquiry_no'],

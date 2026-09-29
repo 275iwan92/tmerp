@@ -17,7 +17,7 @@
     <p class="dl-note">Buka layar ini dari Shell (menu kiri). Klik 2x baris → form. Ubah isian, lalu klik <b>menu layar ini lagi</b>: muncul <b>Simpan / Buang perubahan / Batal</b>. Breadcrumb: klik nama modul/grup untuk membuka menu di cabang itu, klik nama layar untuk kembali ke grid.</p>
 
     @if (! $row)
-        <x-dl::grid id="screen-nav" :rows="$rows" actions="worklist" :active-key="null" :new-record="null" :open-url="$grid.'?id={id}'" :confirm-when="['status' => '__none__']"
+        <x-dl::grid id="screen-nav" :rows="$rows" actions="worklist" :active-key="null" :new-record="null" :open-url="$grid.'?id={id}'"
             :columns="[
                 ['key' => 'name', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'code'],
                 ['key' => 'city', 'label' => 'Kota'],

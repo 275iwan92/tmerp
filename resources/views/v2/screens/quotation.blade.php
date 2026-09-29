@@ -25,7 +25,7 @@
 
 @if (! $q && ! request('pick'))
     <x-dl::grid id="quotation-list" :rows="Quotation::rows()" search="Cari no. quotation, customer, sales..." actions="worklist" :active-key="null"
-        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'" :confirm-when="['status' => '__none__']"
+        :new-url="$home.'?pick=1'" :open-url="$home.'?id={id}'"
         source="{{ Src::of('tm2sdi.quo_quotation', 'tm2sdi.quo_quotation_item', 'tm2sdi.quo_activity', 'tm2sdi.iqp_inquiry.sub_state') }}"
         :columns="[
             ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
