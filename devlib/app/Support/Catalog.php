@@ -327,7 +327,7 @@ final class Catalog
                     $items[$at]['items'][] = $item;
                 }
             }
-            $modules[] = ['code' => $g['code'], 'short' => $g['short'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => [['label' => 'Components', 'items' => $items]]];
+            $modules[] = ['code' => $g['code'], 'short' => $g['short'], 'label' => $g['label'], 'icon' => $g['icon'], 'children' => $items]; // langsung isi modul, tanpa lapis "Components" (user 2026-09-30: membingungkan)
         }
 
         return $modules;

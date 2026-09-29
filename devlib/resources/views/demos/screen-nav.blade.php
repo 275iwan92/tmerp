@@ -13,7 +13,7 @@
     $row = collect($rows)->firstWhere('id', (int) $id);
 @endphp
 <div class="dl-demo">
-    <x-dl::breadcrumb menu :items="['Menus, Accounts & Layout' => null, 'Components' => null, 'Screen Navigation (Grid ↔ Form)' => $grid]" :current="$row ? 'Form '.$row['code'] : null" />
+    <x-dl::breadcrumb menu :items="['Menus, Accounts & Layout' => null, 'Screen Navigation (Grid ↔ Form)' => $grid]" :current="$row ? 'Form '.$row['code'] : null" />
     <p class="dl-note">Buka layar ini dari Shell (menu kiri). Klik 2x baris → form. Ubah isian, lalu klik <b>menu layar ini lagi</b>: muncul <b>Simpan / Buang perubahan / Batal</b>. Breadcrumb: klik nama modul/grup untuk membuka menu di cabang itu, klik nama layar untuk kembali ke grid.</p>
 
     @if (! $row)
