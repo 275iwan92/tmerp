@@ -1,0 +1,108 @@
+Create a detailed UI mockup of a modern web-based ERP module for Sales > Inquiry & Quotation > New Inquiry in an offset printing and packaging company. The form is used for New Product Inquiry (types: New / Revise / Recalc). Clean, professional SaaS design with light gray/white background, blue accents, rounded cards, and clear section dividers.
+
+### Header & Status
+- Breadcrumb: Sales > Inquiry & Quotation > New Inquiry
+- Dark blue top bar: "New Product Inquiry" + blue badge "NEW"
+- Status: "not saved - DRAFT"
+- Back button on the right
+- Yellow info banner for Sales Officer: "Sales Officer — fill in header, tier qty, part & dieline, tooling, discount, and external costs below. Costing (HPP) & speed estimation will follow in the next iteration."
+- Action buttons: green "Save", green "Confirm"
+- Right side buttons: "Imposition", "Print Note", and DRAFT badge
+
+### Inquiry Header Section
+- Inquiry No.: auto-generated when saved
+- Date* (date picker)
+- Customer Need Date (date picker)
+- Sales PIC (searchable dropdown)
+- Source* (dropdown, e.g. EMAIL)
+- Customer* (searchable input)
+- Product Name (draft)* (text input + "aa" button) with helper text about temporary name and restricted special characters
+- Product Category (optional dropdown) with helper text that it quickly fills Product Type & common parts
+
+- Product Type (dropdown, applies to all Parts) 
+  - Next to it: a second dropdown called "Market Product Variant" (or "Indonesian Market Subtype")
+  - This second dropdown is a subset of the selected Product Type and only shows popular packaging products commonly circulating in the Indonesian market
+  - All Product Types and their subtypes must already have complete reference data sourced from pacdora.com and diecuttemplates.com (standard dieline structures, dimensions, flaps, etc.)
+  - Helper text: "Category above is just a shortcut — you can also select Product Type and Market Variant directly here."
+
+- Sales Notes (optional text area)
+- Material Source: checkbox "Customer provides their own raw material" with helper text explaining default behavior
+
+### TIERED ORDER QTY Section
+- Title + subtitle: "Costing calculates HPP per tier — exactly 1 PRIMARY"
+- Table columns: # | Qty (pcs)* | Primary
+- Support multiple tiers with "Primary" checkbox (only one can be primary)
+- Buttons: + Add Tier, copy, and delete per row
+
+### PART & DIELINE Section (most important visual part)
+- Title: PART & DIELINE — "product dimensions & live dieline preview"
+- Part name, Part Type (dropdown), Qty per Set, Content per Pack (pcs)
+- Artwork / Design upload zone (JPG/PNG, max 10MB)
+
+Left side:
+- STANDARD SIZES quick buttons (e.g. Cube 100, Hampers, Large Parcel)
+- DIMENSIONS input fields in mm:
+  - Length (L), Width (W), Height (H)
+  - Glue Flap (GF), Bleed (BL), Top Tuck Flap (TF)
+  - Thumb Hole
+  - Flat Size (Blank) W × H with calculated Area
+  - MANUAL checkbox
+
+Right side – Live Dieline Preview (critical):
+- Large dark background area showing the full dieline layout of the product (example: Gift Box)
+- The dieline is rendered as an interactive SVG
+- Lines are color-coded:
+  - Red = Cutting
+  - Green = Creasing
+  - Dashed = Bleed
+  - Blue = Hole / Perforation
+- All measurements are displayed dynamically on the SVG (L, W, H, flaps, bleed, etc.)
+- When any dimension number is changed in the input fields, the SVG dieline updates in real-time (dynamic)
+- Unit toggle: mm / cm
+- Zoom controls + download as SVG button
+- Bottom summary bars: total Cutting Line length, Creasing Line length, Perforation/Hole length
+
+Dieline Display Options (checkboxes near the preview):
+- Overflow
+- Glue margin
+- Direction (with info tooltip)
+- Cross (with info tooltip)
+- Lock tab
+- Dimension lines (checked by default)
+
+3D Preview:
+- Small static 3D isometric box preview on the bottom right (not interactive, just visual reference)
+
+### Material Section
+- Table: # | Material* | Brand | Material Type | Primary
+- Auto-fills Brand & Material Type when material is selected from master
+- + Add Material button
+
+### Print / Color Section
+- Color Notation (dropdown, e.g. 4/4)
+- Automatic breakdown calculated field
+- Color Notes (Pantone) optional input
+
+### Additional Finishing Section
+- Optional decorative processes (hot print, UV spot, emboss, laminating, etc.)
+- Empty table with + Add Finishing
+- + Add Part button below
+
+### TOOLING STATUS Section
+- Info about new tooling cost (printing plate, die/knife, film)
+- Empty table: # | Type | Status | New Cost? | Cost (Rp) | Notes
+- + Add Tooling button
+
+### EXTERNAL / THIRD-PARTY COST Section
+- For fixed third-party costs (trucking, expedition, external services)
+- Empty table: # | Description | Type | Amount (Rp) | Tax Treatment
+- + Add Cost button
+
+Overall behavior:
+- Form is long and scrollable
+- All tables support add / copy / delete rows
+- Required fields marked with *
+- Heavy use of helper texts and light blue info banners
+- The dieline SVG is fully dynamic and updates instantly when dimension values change
+- 3D preview remains static
+- All Product Type and Market Product Variant options are pre-loaded with reference data from pacdora.com and diecuttemplates.com

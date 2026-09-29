@@ -1,0 +1,50 @@
+{
+  "name": "packaging-erp/inquiry-offset",
+  "type": "project",
+  "description": "Offset Packaging ERP - New Product Inquiry Module (PHP 8.4, Laravel 13, Livewire 4)",
+  "keywords": [
+    "laravel",
+    "livewire",
+    "packaging",
+    "cad-dieline",
+    "erp",
+    "offset-printing"
+  ],
+  "license": "proprietary",
+  "require": {
+    "php": "^8.4",
+    "laravel/framework": "^13.0",
+    "livewire/livewire": "^4.0",
+    "spatie/laravel-ray": "^1.37"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.23",
+    "laravel/pint": "^1.18",
+    "mockery/mockery": "^1.6",
+    "nunomaduro/collision": "^8.5",
+    "phpunit/phpunit": "^11.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/",
+      "Database\\Factories\\": "database/factories/",
+      "Database\\Seeders\\": "database/seeders/"
+    }
+  },
+  "scripts": {
+    "post-autoload-dump": [
+      "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+      "@php artisan package:discover --ansi"
+    ]
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

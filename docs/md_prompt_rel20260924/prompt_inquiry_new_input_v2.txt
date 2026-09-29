@@ -1,0 +1,242 @@
+SYSTEM ARCHITECTURE, COMPLETE USER PROMPT, BEHAVIORS, METHODS & PROPERTY SPECIFICATION
+========================================================================================
+APPLICATION MODULE : Sales > Inquiry & Quotation > New Inquiry (Offset Packaging ERP)
+TARGET AUDIENCE    : Offset Printing & Packaging Manufacturing Enterprises, Top Management, C-Level Demo
+STANDARDS COMPLIANCE: ECMA (European Carton Makers Association) & FEFCO International Standards
+DESIGN SYSTEM      : Clean SaaS Dashboard (Slate/White/Blue accents), High-Density Data Grids, Tabular Numerals
+TECH STACK         : React 19, TypeScript, Tailwind CSS, Lucide Icons, SVG CAD Engine, CSS 3D Transforms
+Change React with PHPv8.4 and Laravel v13 or up, if you cannot using React and TypeScript. 
+
+----------------------------------------------------------------------------------------
+SECTION 1: APPLICATION OBJECTIVE & SCOPE BOUNDARY
+----------------------------------------------------------------------------------------
+Build a production-grade, web-based ERP module exclusively designed for "New Product Inquiry".
+Scope is strictly dedicated to New Product creation (Inquiry Type = "NEW").
+Sales Officers use this screen to record commercial terms, customer specifications, tiered order quantities,
+geometric dimensions, CAD dieline structures, artwork files, substrate materials, printing colors,
+finishing embellishments, tooling requirements, and external third-party pass-through expenses.
+Upon confirmation, the data package is handed over to Prepress CAD and Costing (HPP) engineers.
+
+----------------------------------------------------------------------------------------
+SECTION 2: HEADER & NAVIGATION ARCHITECTURE
+----------------------------------------------------------------------------------------
+[Properties & State]
+- breadcrumb        : "Sales / Inquiry & Quotation / New Inquiry"
+- moduleIdentifier  : "Offset Packaging SPK" (Single-purpose New Inquiry form, no tab switchers)
+- title             : "New Product Inquiry"
+- typeBadge         : Static blue badge "NEW"
+- inquiryNo         : String, auto-generated sequence (e.g., "INQ-2026-09-0842")
+- formStatus        : Enum ('DRAFT' | 'SAVED' | 'CONFIRMED')
+  * 'DRAFT'     : Amber pulse indicator, text "not saved - DRAFT"
+  * 'SAVED'     : Blue indicator, text "SAVED · Draft"
+  * 'CONFIRMED' : Emerald pulsing indicator, text "CONFIRMED · Ready for Costing"
+- infoBanner        : Amber alert notification:
+  "Sales Officer — fill in header, tier qty, part & dieline, tooling, discount, and external costs below.
+   Costing (HPP) & speed estimation will follow in the next iteration."
+
+[Header Methods & Action Handlers]
+- onSave()            : Validates draft, sets status to 'SAVED', triggers floating success toast.
+- onConfirm()         : Enforces mandatory fields (Customer, Product Name draft, Dimensions, at least 1 Tier Qty).
+                        If valid, sets status to 'CONFIRMED', displays submission toast, and locks record for Costing.
+- onOpenImposition()  : Opens the Press Sheet Imposition & Yield Calculation Modal.
+- onOpenPrintNote()   : Opens the Print-ready Production Brief & Inquiry Handover Sheet.
+- onOpenPromptExport(): Opens this Comprehensive Prompt Specification Modal with Copy & Download features.
+- onOpenPortableGuide(): Opens the Portable & 0-Install Execution Guide for Windows 10/11 browser environments.
+- onBack()            : Alerts user if changes are unsaved, reloads or navigates back safely.
+
+----------------------------------------------------------------------------------------
+SECTION 3: INQUIRY HEADER SPECIFICATION
+----------------------------------------------------------------------------------------
+[Form Fields & Validation Rules]
+1. inquiryNo (Read-only, string): Auto-generated system number with year-month-sequence format.
+2. date* (Date, required): Defaults to current date (ISO string YYYY-MM-DD).
+3. customerNeedDate (Date, optional): Client target deadline / proof delivery (defaults to +21 days).
+4. salesPic* (Select, required): Searchable list of technical account executives:
+   - "Budi Santoso — Senior Packaging Account Exec"
+   - "Maya Indrawati — Technical Sales Specialist"
+   - "Rian Pratama — Key Account FMCG"
+   - "Dewi Sartika — Pharma & Cosmetics Specialist"
+5. source* (Select, required): Inquiry channel (EMAIL, WHATSAPP, SALES_VISIT, TENDER_BID, EXHIBITION, TELEPHONE).
+6. customer* (Searchable Input + Autocomplete):
+   Real-time filter against master client database (e.g. PT Mayora Indah Tbk, PT Unilever Indonesia Tbk,
+   PT Kalbe Farma Tbk, PT Paragon Technology and Innovation / Wardah, PT Indofood CBP Sukses Makmur Tbk).
+   Supports custom new client name entry if not found in database.
+7. productNameDraft* (Text + "aa" Case Converter Button):
+   Temporary working product name. Validates against illegal file characters (/ \ : * ? " < > |).
+   "aa" button method toggleCase():
+   - If lowercase -> converts to Title Case.
+   - If Title Case -> converts to UPPERCASE.
+   - If UPPERCASE -> converts to lowercase.
+8. productCategory (Select Shortcut, optional):
+   Categorization shortcut (Cosmetics, Pharma, Food & Bakery, Rigid Gift Box, E-Commerce Mailer, Garment Sleeve).
+   When selected, automatically triggers handleCategorySelect() to set recommended Product Type & default variant.
+9. productType* (Select, ECMA/FEFCO Standards):
+   - STE: Straight Tuck End (ECMA A20.20.03.01)
+   - RTE: Reverse Tuck End (ECMA A20.20.01.01)
+   - CRASH_LOCK: Auto-lock Bottom / Crash-lock (ECMA A20.20.04.01)
+   - SNAP_LOCK: Snap-lock 1-2-3 Bottom (ECMA A20.20.05.01)
+   - RIGID_BOX: 2-Piece Rigid Set-up Box Lid + Base (ECMA D20.20.01.01)
+   - MAILER: Corrugated E-Commerce Mailer Box (FEFCO 0427)
+   - SLEEVE_TRAY: Sleeve and Slide Tray Box (ECMA C20.20.01.01)
+10. marketVariantId* (Select, Indonesian Market Subtype):
+   Pre-loaded with accurate reference data from pacdora.com and diecuttemplates.com:
+   - "Dus Kosmetik Skincare (Wardah / Kahf style STE)"
+   - "Dus Obat / Strip Farma (Kalbe / Kimia Farma RTE)"
+   - "Dus Makanan / Roti Crash-Lock (Holland Bakery / J.CO)"
+   - "Dus Martabak Manis Hot Food Snap-Lock"
+   - "Box Hampers Lebaran Hardbox Rigid Box"
+   - "Dus Sepatu / Courier E-Flute Mailer"
+   - "Dus Donat Isi 6 Window"
+11. salesNotes (Textarea, optional): Multi-line packaging machine tolerances, export specs, humidity requirements.
+12. customerProvidesRawMaterial (Boolean checkbox):
+   If checked, substrate raw material cost is excluded (Rp 0) from internal factory HPP costing sheet.
+
+----------------------------------------------------------------------------------------
+SECTION 4: TIERED ORDER QUANTITY SPECIFICATION
+----------------------------------------------------------------------------------------
+[Data Model: TierQtyItem]
+- id          : Unique string UUID (e.g., "t-1")
+- tierNumber  : Sequential integer (1, 2, 3...)
+- qty         : Number (pieces, min: 100, step: 500)
+- isPrimary   : Boolean (exactly ONE row must have isPrimary = true)
+
+[Behaviors & Methods]
+- handleAddTier()    : Appends new tier with quantity calculated at 1.5x of previous tier.
+- handleCopyTier(idx): Clones specified row with 2x quantity, inserts directly below, and re-sequences tier numbers.
+- handleDeleteTier(id): Deletes row with confirmation. Enforces minimum 1 tier. If primary row is deleted, automatically reassigns primary status to the first row.
+- handleSetPrimary(id): Radio toggle enforcing that only exactly 1 tier is marked as Primary base costing tier.
+
+----------------------------------------------------------------------------------------
+SECTION 5: PART & DIELINE WITH LIVE ARTWORK MAPPING & STANDALONE 3D PREVIEW
+----------------------------------------------------------------------------------------
+[Part Metadata Properties]
+- partName       : String (defaults to "Main Outer Folding Box")
+- partType       : Select ("Main Box (Body)", "Lid / Cover", "Base / Tray", "Outer Sleeve", "Inner Partition", "Header Card")
+- qtyPerSet      : Number (default: 1)
+- contentPerPack : Number (default: 1)
+- artworkFile    : Object { name: string, size: string, previewUrl: string (Base64 DataURL) } | null
+
+[Artwork Upload Behavior]
+- Method handleFileUpload(event):
+  1. Accepts JPG, PNG, PDF, AI files up to 10MB limit.
+  2. Reads file via FileReader as Base64 DataURL (readAsDataURL).
+  3. Updates state artworkFile.previewUrl.
+  4. LIVE SYNC 1: Automatically injects an SVG <image> tag with preserveAspectRatio="none"
+     onto the main panels of the dieline CAD canvas (X1 to X5, YTopScore to YBottomScore).
+  5. LIVE SYNC 2: Maps the texture as CSS background-image across Front, Back, Left, Right,
+     and Top panels of the standalone 3D interactive box.
+  6. Displays uploaded file badge with name, size, and delete/remove button.
+
+[Left Column: Dimensional Geometry Inputs (mm)]
+- Standard Sizes Quick Presets:
+  Instant buttons: "Cube 100", "Hampers Lebaran", "Martabak Manis", "Skincare Dropper 30ml", "Large Parcel", "Donat Isi 6".
+  Clicking a preset automatically updates L, W, H, flaps, and suggested board type.
+- L (Length)        : Finished interior length (mm)
+- W (Width)         : Finished interior width / side depth (mm)
+- H (Height)        : Finished interior box height (mm)
+- glueFlap (GF)     : Glue manufacturer flap width (mm, default: 12-16mm)
+- bleed (BL)        : Printing bleed extension beyond cutline (mm, default: 3mm)
+- tuckFlap (TF)     : Top tuck insertion flap depth (mm, default: 14-18mm)
+- hasThumbHole      : Boolean checkbox for thumb hole notch on tuck flap
+- thumbHoleRadius   : Number (default: 8mm)
+- Flat Blank Size   : Width = GF + 2W + 2L | Height = H + 2TF + 2L | Area (m²) = (Width * Height) / 1,000,000.
+- isManualFlatSize  : Checkbox allowing manual override of blank Width and Height.
+
+[Center Column: Live Dynamic SVG CAD Engine]
+- Coordinate System & Geometry Algorithms:
+  * X coordinates : x0 (0), x1 (GF), x2 (GF+W), x3 (GF+W+L), x4 (GF+2W+L), x5 (GF+2W+2L)
+  * Y coordinates : yTopOuter, yTopScore, yBottomScore, yBottomOuter
+- Color-coded ISO Drafting Lines:
+  * RED (#EF4444)     : Cutting line (Knife rule 23.8mm 2pt)
+  * GREEN (#10B981)   : Creasing line (Scoring matrix channel)
+  * DASHED (#64748B)  : Bleed line (+3mm margin)
+  * BLUE (#3B82F6)    : Perforation / Thumb Hole Arc
+- Live Interactive Layer:
+  * Drag-to-pan with mouse coordinates tracking (isDragging, pan.x, pan.y).
+  * Zoom controls: ZoomIn (+15%), ZoomOut (-15%), Reset View (100%), and SVG export button.
+  * Unit toggle: Instant unit conversion between 'mm' and 'cm'.
+  * Display Options Checkboxes:
+    - Overflow (shows/hides bleed rectangle)
+    - Glue margin (toggles hatched polygon shading)
+    - Direction (displays paperboard grain orientation arrow)
+    - Cross (renders CMYK registration crosshairs)
+    - Lock tab (shows friction locking notches)
+    - Dimension lines (renders dimension tick arrows with numeric labels)
+- Bottom Summary KPI Bar:
+  Calculates exact linear meters for die manufacturing:
+  * Flat Blank Size (mm / cm & m²)
+  * Cutting Rule Length (meters)
+  * Creasing Rule Length (meters)
+  * Perforation / Hole Length (meters)
+
+[Standalone 3D Packaging Box Component (Positioned OUTSIDE Dieline Canvas)]
+- Component: <Interactive3DBox /> placed directly below Part & Dieline section.
+- Rendering Engine: Pure CSS 3D Transforms with perspective: 1100px and transform-style: preserve-3d.
+- Face Proportions: Dynamically scaled based on actual L, W, H mm inputs.
+- Real-time 360° Manual Rotation:
+  * Mouse drag listeners: onMouseDown, onMouseMove, onMouseUp.
+  * Drag delta translates directly into rotX (pitch, clamped between -85° and +85°) and rotY (yaw, 0° to 360°).
+- Interactive Features:
+  * "Auto-Spin" toggle: Rotates box continuously at 33 FPS for executive presentations.
+  * Zoom In / Zoom Out controls (scale 0.6x to 1.8x).
+  * Reset Angle button (returns to default isometric -22° X, 38° Y).
+  * Live rotation angle readout display (X: ...°, Y: ...°).
+  * Real-time Texture Mapping: Uploaded artwork is automatically mapped across Front, Back, Left, Right,
+    and Top panels so users can inspect seam alignment and graphic continuity across all faces.
+
+----------------------------------------------------------------------------------------
+SECTION 6: SUBSTRATE MATERIAL SPECIFICATION
+----------------------------------------------------------------------------------------
+[Data Model: MaterialItem]
+- id, materialName, brand, materialType, gsm, isPrimary
+- Auto-fill functionality: Selecting materialName from master catalog instantly sets:
+  * Ivory Board Food Grade (Ningbo Star APP) -> FBB / GC1, 300 gsm
+  * Duplex Board Coated (Tjiwi Kimia) -> White-Grey Duplex, 310 gsm
+  * Art Carton Premium (Indah Kiat) -> 2-Side Coated, 260 gsm
+  * Kraft Liner Brown Foodgrade (Oji Paper) -> Unbleached Virgin Kraft, 280 gsm
+  * Corrugated Sheet E-Flute (Cikarang Box) -> Flute E Single Wall, 350 gsm
+  * Solid Greyboard No. 30 (Hardbox Board, 2.0 mm caliper)
+- Primary substrate radio toggle, duplicate row, and delete row capabilities.
+
+----------------------------------------------------------------------------------------
+SECTION 7: PRINT & COLOR SPECIFICATION
+----------------------------------------------------------------------------------------
+- colorNotation (Select): Standard offset notations:
+  * 4/0 : 4 Colors CMYK Front / 0 Back -> Auto-calculates 4 CTP Plates
+  * 4/4 : 4 Colors Front / 4 Colors Back -> Auto-calculates 8 CTP Plates
+  * 1/0 : 1 Color Monochrome Front -> Auto-calculates 1 CTP Plate
+  * 2/0 : 2 Spot / Process Colors Front -> Auto-calculates 2 CTP Plates
+  * 5/0 : 4 Colors CMYK + 1 Special Pantone -> Auto-calculates 5 CTP Plates
+- colorNotesPantone (Input): Specific Pantone spot formulas (e.g., "Pantone 871 C Metallic Gold").
+
+----------------------------------------------------------------------------------------
+SECTION 8: ADDITIONAL FINISHING, TOOLING & EXTERNAL COSTS
+----------------------------------------------------------------------------------------
+- Additional Finishing Table:
+  Processes: Thermal Matte Lamination, Thermal Gloss, UV Spot Screen 3D, Hot Stamping Foil Gold 24k,
+  Embossing / Debossing, Window Patching Film PVC/PET, Auto Folding-Gluing.
+  Attributes: Side/Location, Coverage Area %, Notes, Duplicate, and Delete.
+  "+ Add Part" button allows multi-piece box sets (Lid + Tray, Sleeves, Partitions).
+- Tooling Status Table:
+  Types: CTP Offset Printing Plates, Laser Diecut Knife Block (Pisau Pon), Hot Stamping Magnesium Die.
+  Attributes: Status (New, Existing, Repeat with Revision, Customer Supplied), New Cost checkbox, Cost (Rp), Notes.
+- External / Third-Party Costs Table:
+  Types: Trucking Delivery Colt Diesel (CDE/CDD), Expedited Courier, Packaging Lab Testing (COA), Subcontracting.
+  Attributes: Description, Cost Type, Amount (Rp), Tax Treatment (PPN 11%, Non-PPN, PPh 23).
+
+----------------------------------------------------------------------------------------
+SECTION 9: OFFSET PRESS IMPOSITION & PRODUCTION BRIEF MODALS
+----------------------------------------------------------------------------------------
+1. ImpositionModal (<ImpositionModal />):
+   - Calculates step-and-repeat layouts on standard Indonesian master sheets (Plano 650x1000 mm, 790x1090 mm).
+   - Accounts for Gripper Margin (12mm), Side Guides (10mm), and Tail Color Control Bars.
+   - Calculates optimal Ups (e.g. 6 UP, 9 UP) considering both normal and 90° rotated layout orientations.
+   - Computes sheet efficiency percentage and trim waste.
+   - Renders interactive visual SVG layout of the press sheet with colored densitometer strip.
+2. PrintNoteModal (<PrintNoteModal />):
+   - Generates official Sales to Prepress & Costing handover document.
+   - Includes full company header (PT INDO PACKAGING OFFSET UTAMA), inquiry metadata, tiered volumes,
+     dimension specifications, substrate and ink breakdowns, tooling details, and 3 sign-off signature blocks.
+   - Supports native window.print() and PDF export.
+
+========================================================================================
