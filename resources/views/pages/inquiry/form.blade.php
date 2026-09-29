@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\Master\CustCustomer;
-use App\Models\Master\MatRaw;
+use App\Models\Master\MatCategory;
 use App\Models\Master\ProdMarket;
 use App\Models\Master\ProdPart;
 use App\Models\Master\ProdPartAttachment;
@@ -19,6 +19,8 @@ use App\Models\Sdi\IqpPartMaterial;
 use App\Models\Sdi\IqpTier;
 use App\Models\Sdi\IqpTooling;
 use App\Models\Sys\SysConstant;
+use App\Models\Sys\SysTheme;
+use App\Support\ActiveTheme;
 use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -252,9 +254,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     // (mode edit) SENGAJA tidak disentuh, tetap warna literal spt sebelumnya
     // (CLAUDE.md §4 "JANGAN DIUBAH").
     #[Computed]
-    public function theme(): \App\Models\Sys\SysTheme
+    public function theme(): SysTheme
     {
-        return \App\Support\ActiveTheme::resolve();
+        return ActiveTheme::resolve();
     }
 
     // Ringkasan Box Style + Dieline per part (user 2026-09-04: "boleh
@@ -465,18 +467,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'artwork_path' => $p->artwork_path,
             'artwork_original_filename' => $p->artwork_original_filename,
             'suggestions' => null,
-            'materials' => $p->materials->map(fn (IqpPartMaterial $m) => [
-                'id' => $m->id_part_material,
-                'rawmat_id' => $m->rawmat_id,
-                'display_name' => $m->rawmat_name ?? '',
-                'brand' => $m->rawMaterial?->brand ?? '',
-                'category' => $m->rawMaterial?->category1 ?? '',
-                'gram_weight' => $m->gram_weight,
-                'size_p' => $m->size_p,
-                'size_l' => $m->size_l,
-                'query' => '',
-                'is_primary' => (bool) $m->is_primary,
-            ])->values()->all(),
+            'materials' => $this->hydrateMaterialSlots($p->materials),
             'finishings' => $p->finishings->map(fn (IqpPartFinishing $fin) => [
                 'id' => $fin->id_part_finishing,
                 'finishing_type_id' => $fin->finishing_type_id,
@@ -490,7 +481,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
 
         foreach ($this->parts as $i => $part) {
             if (empty($part['materials'])) {
-                $this->parts[$i]['materials'] = [$this->blankMaterialRow(true)];
+                $this->parts[$i]['materials'] = $this->blankMaterialsPair();
             }
 
             if (! empty($part['type_code'])) {
@@ -925,7 +916,7 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             'artwork_original_filename' => null,
             'suggestions' => null,
             'part_role' => '',
-            'materials' => [$this->blankMaterialRow(true)],
+            'materials' => $this->blankMaterialsPair(),
             'finishings' => [],
         ];
 
@@ -946,20 +937,162 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
     }
 
+    // Bahan (user 2026-09-29): sales tidak tahu ukuran plano & tidak berwenang
+    // pilih brand -- cuma pilih Jenis + Gramatur/Spec dari hirarki mat_category
+    // (pola sama dgn "Lookup Product Market" -> Nilai Awal Inquiry New).
+    // rawmat_id/size_p/size_l TIDAK diisi sales, dibiarkan null (resolve brand
+    // & ukuran plano spesifik = kerjaan Purchasing/ProDev belakangan).
     protected function blankMaterialRow(bool $isPrimary = false): array
     {
         return [
             'id' => null,
             'rawmat_id' => null,
+            'category_id' => null,
+            'jenis_id' => null,
+            'gramatur_id' => null,
             'display_name' => '',
-            'brand' => '',
-            'category' => '',
             'gram_weight' => null,
+            'flute_type' => null,
             'size_p' => null,
             'size_l' => null,
-            'query' => '',
             'is_primary' => $isPrimary,
         ];
+    }
+
+    // Slot #1 = Paper, slot #2 = Sheet/SF -- 2 hal besar bahan baku utama
+    // (keputusan user 2026-09-29), tetap ada meski salah satu belum diisi.
+    protected function blankMaterialsPair(): array
+    {
+        return [$this->blankMaterialRow(true), $this->blankMaterialRow(false)];
+    }
+
+    // Bangun ulang 2 slot dari baris iqp_part_material tersimpan (layer_seq
+    // 1=Paper, 2=Sheet) -- turunkan balik jenis_id/gramatur_id dari
+    // category_id via ancestorChain() supaya dropdown ke-restore saat edit.
+    protected function hydrateMaterialSlots($materials): array
+    {
+        $slots = $this->blankMaterialsPair();
+
+        foreach ($materials as $m) {
+            $slot = (int) $m->layer_seq - 1;
+
+            if ($slot !== 0 && $slot !== 1) {
+                continue;
+            }
+
+            $chain = $m->category_id ? MatCategory::find($m->category_id)?->ancestorChain() : null;
+
+            $slots[$slot] = [
+                'id' => $m->id_part_material,
+                'rawmat_id' => $m->rawmat_id,
+                'category_id' => $m->category_id,
+                'jenis_id' => $chain[1]->id_category ?? null,
+                'gramatur_id' => $chain[2]->id_category ?? null,
+                'display_name' => $m->rawmat_name ?? '',
+                'gram_weight' => $m->gram_weight,
+                'flute_type' => $m->flute_type,
+                'size_p' => $m->size_p,
+                'size_l' => $m->size_l,
+                'is_primary' => (bool) $m->is_primary,
+            ];
+        }
+
+        return $slots;
+    }
+
+    // id_category root 'Paper' (slot 0) / 'Sheet' (slot 1), sama persis dgn
+    // ProdMarket::CHAIN_ROOT di layar Lookup Product Market.
+    #[Computed]
+    public function materialChainRoots(): array
+    {
+        return [
+            MatCategory::roots()->where('category_name', 'Paper')->value('id_category'),
+            MatCategory::roots()->where('category_name', 'Sheet')->value('id_category'),
+        ];
+    }
+
+    public function materialSlotLabel(int $slot): string
+    {
+        return $slot === 0 ? 'Paper' : 'Sheet / SF';
+    }
+
+    public function materialJenisOptions(int $slot): array
+    {
+        $rootId = $this->materialChainRoots[$slot] ?? null;
+
+        if (! $rootId) {
+            return [];
+        }
+
+        return MatCategory::where('parent_id', $rootId)->where('level', 2)->where('activate', true)
+            ->orderBy('category_name')->pluck('category_name', 'id_category')->all();
+    }
+
+    public function materialGramaturOptions(int $partIndex, int $slot): array
+    {
+        $jenisId = $this->parts[$partIndex]['materials'][$slot]['jenis_id'] ?? null;
+
+        if (! $jenisId) {
+            return [];
+        }
+
+        return MatCategory::where('parent_id', $jenisId)->where('level', 3)->where('activate', true)
+            ->orderBy('category_name')->pluck('category_name', 'id_category')->all();
+    }
+
+    public function setMaterialJenis(int $partIndex, int $slot, ?string $jenisId): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$slot])) {
+            return;
+        }
+
+        $this->parts[$partIndex]['materials'][$slot]['jenis_id'] = $jenisId !== '' && $jenisId !== null ? (int) $jenisId : null;
+        $this->parts[$partIndex]['materials'][$slot]['gramatur_id'] = null;
+        $this->resolveMaterialRow($partIndex, $slot);
+    }
+
+    public function setMaterialGramatur(int $partIndex, int $slot, ?string $gramaturId): void
+    {
+        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$slot])) {
+            return;
+        }
+
+        $this->parts[$partIndex]['materials'][$slot]['gramatur_id'] = $gramaturId !== '' && $gramaturId !== null ? (int) $gramaturId : null;
+        $this->resolveMaterialRow($partIndex, $slot);
+    }
+
+    // Node terdalam yang terpilih (Gramatur kalau ada, kalau tidak Jenis) jadi
+    // category_id yang disimpan -- turunkan display_name (chain label "Paper
+    // › Kraft › 300gr"), gram_weight (parse angka depan nama Gramatur), dan
+    // flute_type (nama Jenis, khusus slot Sheet) dari situ.
+    protected function resolveMaterialRow(int $partIndex, int $slot): void
+    {
+        $row = $this->parts[$partIndex]['materials'][$slot];
+        $deepestId = $row['gramatur_id'] ?: $row['jenis_id'];
+
+        if (! $deepestId) {
+            $this->parts[$partIndex]['materials'][$slot]['category_id'] = null;
+            $this->parts[$partIndex]['materials'][$slot]['display_name'] = '';
+            $this->parts[$partIndex]['materials'][$slot]['gram_weight'] = null;
+            $this->parts[$partIndex]['materials'][$slot]['flute_type'] = null;
+
+            return;
+        }
+
+        $node = MatCategory::find($deepestId);
+
+        if (! $node) {
+            return;
+        }
+
+        $chain = $node->ancestorChain();
+        $gramaturNode = $row['gramatur_id'] ? $node : null;
+        $jenisNode = $chain[1] ?? null;
+
+        $this->parts[$partIndex]['materials'][$slot]['category_id'] = $deepestId;
+        $this->parts[$partIndex]['materials'][$slot]['display_name'] = implode(' › ', array_map(fn ($n) => $n->category_name, $chain));
+        $this->parts[$partIndex]['materials'][$slot]['gram_weight'] = $gramaturNode && preg_match('/(\d+)/', (string) $gramaturNode->category_name, $m) ? (float) $m[1] : null;
+        $this->parts[$partIndex]['materials'][$slot]['flute_type'] = $slot === 1 ? $jenisNode?->category_name : null;
     }
 
     public function removePart(int $index): void
@@ -1164,7 +1297,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         // Hanya Detail Kategori (punya Tipe Produk); Kategori induk jadi awalan label.
         return ProdMarket::with(['parent', 'paperCategory', 'sheetCategory'])->where('activate', true)->whereNotNull('type_code')->orderBy('sort_order')->orderBy('market_label')->get()
             ->mapWithKeys(fn ($m) => [$m->market_code => ['label' => ($m->parent ? $m->parent->market_label.' › ' : '').$m->market_label, 'type_code' => $m->type_code, 'id' => $m->id_market,
-                'materials' => array_values(array_filter([ProdMarket::chainLabel($m->paperCategory), ProdMarket::chainLabel($m->sheetCategory)])),
+                // Slot #0 = Paper, slot #1 = Sheet/SF (nama chain, id_category node terdalam default).
+                'materials' => [$m->paper_category_id, $m->sheet_category_id],
                 'color' => $m->default_color, 'tiers' => $m->tierList()]])->all();
     }
 
@@ -1188,14 +1322,22 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
             if ($market['color']) {
                 $this->parts[$i]['cfg_color'] = $market['color'];
             }
-            // Bahan lapis 1 = #1 Paper, lapis 2 = #2 Sheet/SF (nama rantai kategori; item persis dipilih kemudian).
-            foreach ($market['materials'] as $layer => $name) {
-                if (! isset($this->parts[$i]['materials'][$layer])) {
-                    $this->addMaterialRow($i);
+            // Bahan slot #1 Paper / #2 Sheet-SF: default dari Product Market kalau
+            // slot itu belum diisi sales (rantai lengkap sampai Jenis/Gramatur).
+            foreach ($market['materials'] as $slot => $categoryId) {
+                if (! $categoryId || ($this->parts[$i]['materials'][$slot]['category_id'] ?? null)) {
+                    continue;
                 }
-                if (empty($this->parts[$i]['materials'][$layer]['rawmat_id'])) {
-                    $this->parts[$i]['materials'][$layer]['display_name'] = $name;
+
+                $chain = MatCategory::find($categoryId)?->ancestorChain();
+
+                if (! $chain) {
+                    continue;
                 }
+
+                $this->parts[$i]['materials'][$slot]['jenis_id'] = $chain[1]->id_category ?? null;
+                $this->parts[$i]['materials'][$slot]['gramatur_id'] = $chain[2]->id_category ?? null;
+                $this->resolveMaterialRow($i, $slot);
             }
         }
 
@@ -1332,35 +1474,8 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
     }
 
     // ================= BAHAN / MATERIAL per part (iqp_part_material, Tier1 §5.11) =================
-
-    public function addMaterialRow(int $partIndex): void
-    {
-        if ($this->readOnly || ! isset($this->parts[$partIndex])) {
-            return;
-        }
-
-        $this->parts[$partIndex]['materials'][] = $this->blankMaterialRow(count($this->parts[$partIndex]['materials']) === 0);
-    }
-
-    public function removeMaterialRow(int $partIndex, int $matIndex): void
-    {
-        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$matIndex])) {
-            return;
-        }
-
-        if (count($this->parts[$partIndex]['materials']) <= 1) {
-            return;
-        }
-
-        $wasPrimary = $this->parts[$partIndex]['materials'][$matIndex]['is_primary'];
-
-        unset($this->parts[$partIndex]['materials'][$matIndex]);
-        $this->parts[$partIndex]['materials'] = array_values($this->parts[$partIndex]['materials']);
-
-        if ($wasPrimary && ! empty($this->parts[$partIndex]['materials'])) {
-            $this->parts[$partIndex]['materials'][0]['is_primary'] = true;
-        }
-    }
+    // 2 slot tetap (bukan add/remove bebas lagi, user 2026-09-29): #1 Paper,
+    // #2 Sheet/SF. Lihat blankMaterialRow()/resolveMaterialRow() di atas.
 
     public function setMaterialPrimary(int $partIndex, int $matIndex): void
     {
@@ -1419,48 +1534,6 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         }
 
         $this->parts[$partIndex]['finishings'][] = ['id' => null, 'finishing_type_id' => $finishingTypeId, 'attribute' => ''];
-    }
-
-    public function materialResults(int $partIndex, int $matIndex)
-    {
-        $row = $this->parts[$partIndex]['materials'][$matIndex] ?? null;
-
-        if (! $row || $row['rawmat_id'] || mb_strlen($row['query']) < 2) {
-            return collect();
-        }
-
-        return MatRaw::query()
-            ->where('activate', true)
-            ->where('stat_confirm', true)
-            ->where(function ($q) use ($row) {
-                $q->where('material_name', 'like', "%{$row['query']}%")
-                    ->orWhere('material_code', 'like', "%{$row['query']}%");
-            })
-            ->orderBy('material_name')
-            ->limit(8)
-            ->get();
-    }
-
-    public function selectMaterial(int $partIndex, int $matIndex, int $rawmatId): void
-    {
-        if ($this->readOnly || ! isset($this->parts[$partIndex]['materials'][$matIndex])) {
-            return;
-        }
-
-        $material = MatRaw::find($rawmatId);
-
-        if (! $material) {
-            return;
-        }
-
-        $this->parts[$partIndex]['materials'][$matIndex]['rawmat_id'] = $material->material_id;
-        $this->parts[$partIndex]['materials'][$matIndex]['display_name'] = $material->material_name;
-        $this->parts[$partIndex]['materials'][$matIndex]['brand'] = $material->brand ?? '';
-        $this->parts[$partIndex]['materials'][$matIndex]['category'] = $material->category1 ?? '';
-        $this->parts[$partIndex]['materials'][$matIndex]['gram_weight'] = $material->gram_weight;
-        $this->parts[$partIndex]['materials'][$matIndex]['size_p'] = $material->cm_length;
-        $this->parts[$partIndex]['materials'][$matIndex]['size_l'] = $material->cm_width;
-        $this->parts[$partIndex]['materials'][$matIndex]['query'] = '';
     }
 
     public function clearMaterialRow(int $partIndex, int $matIndex): void
@@ -1821,9 +1894,9 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $top = IqpPartMaterial::query()
             ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_material.part_id')
             ->where('iqp_part.dieline_spec->type_code', $typeCode)
-            ->whereNotNull('iqp_part_material.rawmat_id')
-            ->selectRaw('iqp_part_material.rawmat_id, iqp_part_material.rawmat_name, count(*) as cnt')
-            ->groupBy('iqp_part_material.rawmat_id', 'iqp_part_material.rawmat_name')
+            ->whereNotNull('iqp_part_material.category_id')
+            ->selectRaw('iqp_part_material.category_id, iqp_part_material.rawmat_name, count(*) as cnt')
+            ->groupBy('iqp_part_material.category_id', 'iqp_part_material.rawmat_name')
             ->orderByDesc('cnt')
             ->first();
 
@@ -1834,11 +1907,11 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $total = IqpPartMaterial::query()
             ->join('iqp_part', 'iqp_part.id_part', '=', 'iqp_part_material.part_id')
             ->where('iqp_part.dieline_spec->type_code', $typeCode)
-            ->whereNotNull('iqp_part_material.rawmat_id')
+            ->whereNotNull('iqp_part_material.category_id')
             ->count();
 
         return [
-            'rawmat_id' => $top->rawmat_id,
+            'category_id' => $top->category_id,
             'rawmat_name' => $top->rawmat_name,
             'pct' => $total > 0 ? (int) round($top->cnt / $total * 100) : 0,
         ];
@@ -1879,17 +1952,23 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $this->parts[$index]['cfg_color'] = $code;
     }
 
-    public function applySuggestedMaterial(int $index, int $rawmatId): void
+    public function applySuggestedMaterial(int $index, int $categoryId): void
     {
         if ($this->readOnly || ! isset($this->parts[$index])) {
             return;
         }
 
-        if (empty($this->parts[$index]['materials'])) {
-            $this->addMaterialRow($index);
+        $chain = MatCategory::find($categoryId)?->ancestorChain();
+
+        if (! $chain) {
+            return;
         }
 
-        $this->selectMaterial($index, 0, $rawmatId);
+        $slot = ($chain[0]->category_name ?? null) === 'Sheet' ? 1 : 0;
+
+        $this->parts[$index]['materials'][$slot]['jenis_id'] = $chain[1]->id_category ?? null;
+        $this->parts[$index]['materials'][$slot]['gramatur_id'] = $chain[2]->id_category ?? null;
+        $this->resolveMaterialRow($index, $slot);
     }
 
     // ================= TOOLING (iqp_tooling, Tier1 F6) =================
@@ -2216,15 +2295,17 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
         $keepIds = [];
 
         foreach ($this->parts[$partIndex]['materials'] as $matIndex => $row) {
-            if (! $row['rawmat_id'] && $row['display_name'] === '') {
+            if (! $row['category_id'] && ! $row['rawmat_id'] && $row['display_name'] === '') {
                 continue;
             }
 
             $data = [
                 'layer_seq' => $matIndex + 1,
                 'rawmat_id' => $row['rawmat_id'] ?: null,
+                'category_id' => $row['category_id'] ?: null,
                 'rawmat_name' => $row['display_name'] !== '' ? $row['display_name'] : null,
                 'gram_weight' => $row['gram_weight'] ?: null,
+                'flute_type' => $row['flute_type'] ?: null,
                 'size_p' => $row['size_p'] ?: null,
                 'size_l' => $row['size_l'] ?: null,
                 'is_primary' => $row['is_primary'],
@@ -3053,77 +3134,53 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                     </div>
 
                                     <div class="sec-title">Bahan (Material)</div>
-                                    @if (($part['suggestions']['material'] ?? null) && empty($part['materials'][0]['rawmat_id'] ?? null))
+                                    @if (($part['suggestions']['material'] ?? null) && empty($part['materials'][0]['category_id'] ?? null))
                                         @php($sugMat = $part['suggestions']['material'])
                                         <div class="note b" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                                             <span>💡 Saran bahan dari histori: <b>{{ $sugMat['rawmat_name'] }}</b> (dipakai {{ $sugMat['pct'] }}% Inquiry Tipe Produk ini sebelumnya)</span>
                                             @unless($readOnly)
-                                                <button type="button" class="btn g xs" wire:click="applySuggestedMaterial({{ $i }}, {{ $sugMat['rawmat_id'] }})">Pakai</button>
+                                                <button type="button" class="btn g xs" wire:click="applySuggestedMaterial({{ $i }}, {{ $sugMat['category_id'] }})">Pakai</button>
                                             @endunless
                                         </div>
                                     @endif
-                                    <div class="hint" style="margin-bottom:6px">Pilih dari master bahan baku — brand &amp; jenis bahan otomatis terisi.</div>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                <th style="width:36px">Lyr</th>
-                                                <th>Bahan (ketik untuk cari)</th>
-                                                <th style="width:100px">Brand</th>
-                                                <th style="width:120px">Jenis Bahan</th>
-                                                <th style="width:80px">Utama</th>
-                                                <th style="width:36px"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($part['materials'] as $j => $mat)
-                                                <tr wire:key="mat-{{ $i }}-{{ $mat['id'] ?? 'new-'.$j }}">
-                                                    <td>{{ $j + 1 }}</td>
-                                                    <td>
-                                                        @if ($mat['rawmat_id'])
-                                                            <div style="display:flex;gap:6px;align-items:center">
-                                                                <input type="text" value="{{ $mat['display_name'] }}" readonly class="cust-ok">
-                                                                @unless($readOnly)
-                                                                    <button type="button" class="btn g xs" wire:click="clearMaterialRow({{ $i }}, {{ $j }})">Ganti</button>
-                                                                @endunless
-                                                            </div>
-                                                        @else
-                                                            <div class="ac-wrap">
-                                                                <input type="text" wire:model.live.debounce.400ms="parts.{{ $i }}.materials.{{ $j }}.query"
-                                                                       autocomplete="off" placeholder="ketik kode/nama bahan…" @if($readOnly) disabled @endif>
-                                                                @if (mb_strlen($mat['query'] ?? '') >= 2)
-                                                                    <div class="ac-box on">
-                                                                        @forelse ($this->materialResults($i, $j) as $m)
-                                                                            <div class="ac-i" wire:click="selectMaterial({{ $i }}, {{ $j }}, {{ $m->material_id }})">
-                                                                                <b>{!! $this->highlightMatch($m->material_name, $mat['query']) !!}</b>
-                                                                                <span class="cd">{{ $m->material_code }}</span>
-                                                                            </div>
-                                                                        @empty
-                                                                            <div class="ac-none">Bahan tak ditemukan.</div>
-                                                                        @endforelse
-                                                                    </div>
-                                                                @endif
-                                                            </div>
-                                                        @endif
-                                                    </td>
-                                                    <td><input type="text" value="{{ $mat['brand'] }}" readonly placeholder="—" title="Brand dari master bahan"></td>
-                                                    <td><input type="text" value="{{ $mat['category'] }}" readonly placeholder="—" title="Jenis bahan dari master"></td>
-                                                    <td style="text-align:center">
-                                                        <button type="button" class="btn xs {{ $mat['is_primary'] ? 'p' : 'g' }}"
-                                                                wire:click="setMaterialPrimary({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>
-                                                            {{ $mat['is_primary'] ? '✓' : '—' }}
-                                                        </button>
-                                                    </td>
-                                                    <td>
-                                                        <button type="button" class="btn d xs" wire:click="removeMaterialRow({{ $i }}, {{ $j }})"
-                                                                @if($readOnly || count($part['materials']) <= 1) disabled @endif>✕</button>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                    <button type="button" class="btn g xs" style="margin-top:6px" wire:click="addMaterialRow({{ $i }})" @if($readOnly) disabled @endif>
-                                        ＋ Tambah Bahan
-                                    </button>
+                                    <div class="hint" style="margin-bottom:6px">Sales pilih Jenis &amp; Gramatur/Spec saja — brand &amp; ukuran plano ditentukan Purchasing/ProDev kemudian.</div>
+                                    @foreach ($part['materials'] as $j => $mat)
+                                        <div wire:key="mat-{{ $i }}-{{ $j }}" style="margin-bottom:10px">
+                                            <div class="grid">
+                                                <div class="f">
+                                                    <label>Bahan #{{ $j + 1 }} — {{ $this->materialSlotLabel($j) }}</label>
+                                                    <select wire:change="setMaterialJenis({{ $i }}, {{ $j }}, $event.target.value)"
+                                                            x-data x-effect="$el.value = @js((string) ($mat['jenis_id'] ?? ''))" @if($readOnly) disabled @endif>
+                                                        <option value="">— pilih Jenis —</option>
+                                                        @foreach ($this->materialJenisOptions($j) as $catId => $name)
+                                                            <option value="{{ $catId }}">{{ $name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="f">
+                                                    <label>Gramatur / Spec <span class="hint" style="font-weight:400">(opsional)</span></label>
+                                                    <select wire:change="setMaterialGramatur({{ $i }}, {{ $j }}, $event.target.value)"
+                                                            x-data x-effect="$el.value = @js((string) ($mat['gramatur_id'] ?? ''))"
+                                                            @if($readOnly || ! $mat['jenis_id']) disabled @endif>
+                                                        <option value="">— semua —</option>
+                                                        @foreach ($this->materialGramaturOptions($i, $j) as $catId => $name)
+                                                            <option value="{{ $catId }}">{{ $name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="f" style="max-width:100px">
+                                                    <label>Utama</label>
+                                                    <button type="button" class="btn xs {{ $mat['is_primary'] ? 'p' : 'g' }}" style="width:100%"
+                                                            wire:click="setMaterialPrimary({{ $i }}, {{ $j }})" @if($readOnly) disabled @endif>
+                                                        {{ $mat['is_primary'] ? '✓ Utama' : '—' }}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            @if ($mat['display_name'])
+                                                <div class="hint">{{ $mat['display_name'] }}</div>
+                                            @endif
+                                        </div>
+                                    @endforeach
 
                                     <div class="sec-title">Cetak / Warna</div>
                                     @if ($part['suggestions']['color'] ?? null)
@@ -3148,11 +3205,14 @@ new #[Title('TELASIH MAKMUR — Inkuiri')] class extends Component
                                         <div class="f">
                                             <label>Notasi Warna</label>
                                             <select wire:model="parts.{{ $i }}.cfg_color" x-data x-effect="$el.value = @js($part['cfg_color'])" @if($readOnly) disabled @endif>
-                                                @foreach (['4/4', '4/1', '4/0', '2/0', '1/1', '1/0'] as $opt)
-                                                    <option value="{{ $opt }}" @selected($part['cfg_color'] === $opt)>{{ $opt }}</option>
+                                                @foreach (range(1, 6) as $front)
+                                                    @foreach (range(0, 6) as $back)
+                                                        @php($opt = "{$front}/{$back}")
+                                                        <option value="{{ $opt }}" @selected($part['cfg_color'] === $opt)>{{ $opt }}</option>
+                                                    @endforeach
                                                 @endforeach
                                             </select>
-                                            <div class="hint">Format sisiA/sisiB (4/4, 4/0, 4/1)</div>
+                                            <div class="hint">Format sisiA/sisiB (1/0 s.d. 6/6)</div>
                                         </div>
                                         <div class="f col3">
                                             <label>Turunan (otomatis)</label>

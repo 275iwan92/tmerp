@@ -1,5 +1,17 @@
 [
     {
+        "at": "2026-09-29 07:32:54",
+        "items": [
+            {
+                "kind": "kolom baru",
+                "db": "tm2sdi",
+                "table": "iqp_part_material",
+                "column": "category_id",
+                "detail": "bigint unsigned"
+            }
+        ]
+    },
+    {
         "at": "2026-09-26 12:35:34",
         "items": [
             {

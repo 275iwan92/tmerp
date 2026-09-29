@@ -2,6 +2,7 @@
 
 namespace App\Models\Sdi;
 
+use App\Models\Master\MatCategory;
 use App\Models\Master\MatRaw;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ class IqpPartMaterial extends Model
         'part_id',
         'layer_seq',
         'rawmat_id',
+        'category_id',
         'rawmat_name',
         'gram_weight',
         'flute_type',
@@ -49,5 +51,13 @@ class IqpPartMaterial extends Model
     public function rawMaterial(): BelongsTo
     {
         return $this->belongsTo(MatRaw::class, 'rawmat_id', 'material_id');
+    }
+
+    // FK lintas-DB (tm2sdi -> tm2mst): kategori bahan (Jenis atau Gramatur/Spec)
+    // yang dipilih sales di Inquiry New -- bukan mat_raw spesifik (sales tidak
+    // pilih brand/ukuran, lihat migration 2026_09_29_000002).
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(MatCategory::class, 'category_id', 'id_category');
     }
 }
