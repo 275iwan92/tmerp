@@ -20,7 +20,7 @@
 
     // Adaptor bentuk Livewire (call/set) supaya kode tmerp di run() tidak perlu diubah.
     wire() {
-      return {call: (m, ...a) => Promise.resolve(this.server(m, ...a)), set: (k, v) => { this.data[k] = v; }};
+      return {call: (m, ...a) => this.data.serverUrl ? this.post(m, a) : Promise.resolve(this.server(m, ...a)), set: (k, v) => { this.data[k] = v; }};
     }
 
     job() {
@@ -47,8 +47,28 @@
       }
     }
 
+    // Dengan serverUrl (layar v2 di atas database): method komponen tmerp yang sama lewat route v2.prodev.call.
+    async post(method, args) {
+      const r = await fetch(this.data.serverUrl, {method: 'POST', credentials: 'same-origin',
+        headers: {'Content-Type': 'application/json', Accept: 'application/json', 'X-CSRF-TOKEN': this.data.csrf},
+        body: JSON.stringify({method, args})});
+      const res = await r.json().catch(() => null);
+      if (!r.ok) return {ok: false, message: (res && res.message) || ('Server error ' + r.status)};
+      return res;
+    }
+
     // Tanpa server: file dibaca di browser; analisa warna berjalan di sisi browser (colors null).
-    uploadArtwork(file) {
+    async uploadArtwork(file) {
+      if (this.data.uploadUrl) {
+        const f = new FormData();
+        f.append('file', file);
+        const r = await fetch(this.data.uploadUrl, {method: 'POST', body: f, credentials: 'same-origin',
+          headers: {Accept: 'application/json', 'X-CSRF-TOKEN': this.data.csrf}});
+        const res = await r.json().catch(() => null);
+        if (!r.ok || !res || !res.ok) { alert((res && res.message) || ('Upload gagal (' + r.status + ')')); return; }
+        window.dispatchEvent(new CustomEvent('prodev-artwork-updated', {detail: res}));
+        return;
+      }
       const job = this.job();
       window.dispatchEvent(new CustomEvent('prodev-artwork-updated', {detail: {partId: job.partId, url: URL.createObjectURL(file), name: file.name, colors: null}}));
     }

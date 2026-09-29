@@ -11,6 +11,7 @@ use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
 use App\Support\V2\AppMenu;
+use App\Support\V2\Data\Prodev;
 use App\Support\V2\Flows;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
@@ -162,6 +163,20 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
             return back()->with('v2_flash', ProdProductAcc::TYPES[$d['acc_type']].' tercatat.');
         })->name('acc');
+    });
+
+    // ProDev workbench: panggilan server = method komponen v1 pages::production.prodev (App\Support\V2\Data\Prodev).
+    Route::prefix('prodev/{part}')->name('prodev.')->whereNumber('part')->middleware('module:PROD')->group(function () {
+        Route::post('/call', function (Request $r, int $part) {
+            $d = $r->validate(['method' => ['required', 'in:'.implode(',', Prodev::CALLS)], 'args' => ['array']]);
+
+            return response()->json(Prodev::call($part, $d['method'], $d['args'] ?? []));
+        })->name('call');
+        Route::post('/artwork', function (Request $r, int $part) {
+            $r->validate(['file' => ['required', 'file']]);
+
+            return response()->json(Prodev::uploadArtwork($part, $r->file('file')));
+        })->name('artwork');
     });
 
     // Inquiry Rekalkulasi / Revisi dari Master Product: Simpan (DRAFT) -> Confirm; Hapus selama DRAFT; Cancel sesudah Confirm.
