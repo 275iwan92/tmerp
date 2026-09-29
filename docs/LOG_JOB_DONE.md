@@ -16,9 +16,10 @@
 - JD/SOP mengikuti format dokumen resmi (`docs/attachments`: JD & KPI Staff Finance, SOP Perizinan). Isi JD Sales
   & SOP-SLS = contoh, menunggu versi resmi HR. Cuaca = Malang (alamat kantor di kop dokumen).
 - Layar HP (<=760px, keputusan user): Layer Menu jadi laci lewat tombol menu, isi selebar layar.
-- Top management (PRESDIR / DIRFA / GM, keputusan user) = profil **Management**: KPI Perusahaan (omzet perusahaan,
-  margin kotor, piutang jatuh tempo, pengiriman tepat waktu, CO baru), aktivitas pimpinan per bidang, daftar
-  "Menunggu Keputusan Anda". SOP Perizinan kini tampil di semua jabatan.
+- Top management (PRESDIR / DIRFA / GM, keputusan user) = profil **Management**, fokus BISNIS & TARGET (user
+  2026-09-29): KPI Perusahaan, target vs pencapaian omzet perusahaan, Target per Bidang (omzet, penagihan, output
+  produksi, pengiriman tepat waktu, biaya bahan/omzet, customer baru), Pipeline Penjualan (funnel Inquiry -> CO),
+  Pencapaian Target per Sales. Tanpa aktivitas pribadi/agenda. SOP Perizinan kini tampil di semua jabatan.
 - Belum: tabel DB tmerp (target per user, log aktivitas, kata harian,
   SOP <-> jabatan) untuk Fase 2.
 

@@ -120,7 +120,55 @@
                         @endif
                     </x-dl::card>
                 @endif
+
+                {{-- Target per bidang (profil manajemen: menggantikan aktivitas pribadi) --}}
+                @if ($tg = $d['targets'][$key] ?? null)
+                    <x-dl::card :title="$tg['title']" :description="$tg['caption'] ?? null" icon="fa-bullseye" class="dl-dash__targets">
+                        @foreach ($tg['rows'] as $r)
+                            @php($pct = $r['target'] ? $r['actual'] / $r['target'] * 100 : 0)
+                            @php($pct = ($r['good_when'] ?? 'up') === 'down' ? ($r['actual'] ? $r['target'] / $r['actual'] * 100 : 100) : $pct)
+                            @php($tone = $pct >= 100 ? 'success' : ($pct >= 85 ? 'warn' : 'danger'))
+                            <div class="dl-dash__tg">
+                                <span class="dl-dash__tgicon dl-dash--{{ $r['tone'] ?? 'accent' }}"><i class="fa-solid {{ \Devlib\Icon::fa($r['icon'] ?? 'fa-bullseye') }}"></i></span>
+                                <div class="dl-dash__tgbody">
+                                    <div class="dl-dash__tghead"><b>{{ $r['label'] }}</b><x-dl::badge :tone="$tone" :label="\Devlib\Locale::percent($pct, 0)" /></div>
+                                    <small>{{ \Devlib\Components\Dashboard::fmt($r['actual'], $r['format'] ?? 'number') }} dari target {{ \Devlib\Components\Dashboard::fmt($r['target'], $r['format'] ?? 'number') }}@if (! empty($r['sub'])) · {{ $r['sub'] }}@endif</small>
+                                    <x-dl::progress :value="min(100, $pct)" :tone="$tone" />
+                                </div>
+                            </div>
+                        @endforeach
+                    </x-dl::card>
+                @endif
             </div>
+
+            {{-- Pipeline penjualan + pencapaian per orang/unit --}}
+            @if (($pl = $d['pipeline'][$key] ?? null) || ($rk = $d['ranking'][$key] ?? null))
+                @php($rk = $d['ranking'][$key] ?? null)
+                <div class="dl-dash__row dl-dash__row--half">
+                    @if ($pl)
+                        <x-dl::chart type="funnel" :title="$pl['title']" :subtitle="$pl['caption'] ?? null" :format="$pl['format'] ?? 'number'" height="260px"
+                            :labels="$pl['labels']" :series="[['name' => $pl['series'] ?? 'Nilai', 'data' => $pl['values']]]" :source="$pl['source'] ?? null" />
+                    @endif
+                    @if ($rk)
+                        <x-dl::card :title="$rk['title']" :description="$rk['caption'] ?? null" icon="fa-ranking-star">
+                            <div class="dl-dash__scroll"><table class="dl-table dl-dash__rk">
+                                <thead><tr><th>{{ $rk['name_label'] ?? 'Nama' }}</th><th class="num">Target</th><th class="num">Pencapaian</th><th>%</th></tr></thead>
+                                <tbody>
+                                    @foreach ($rk['rows'] as $r)
+                                        @php($pct = $r['target'] ? $r['actual'] / $r['target'] * 100 : 0)
+                                        <tr>
+                                            <td><div class="dl-dash__who"><x-dl::avatar :name="$r['name']" size="sm" /><div><b>{{ $r['name'] }}</b><small>{{ $r['sub'] ?? '' }}</small></div></div></td>
+                                            <td class="num">{{ \Devlib\Components\Dashboard::fmt($r['target'], $rk['format'] ?? 'money') }}</td>
+                                            <td class="num">{{ \Devlib\Components\Dashboard::fmt($r['actual'], $rk['format'] ?? 'money') }}</td>
+                                            <td class="dl-dash__rkpct"><x-dl::progress :value="min(100, $pct)" :tone="$pct >= 100 ? 'success' : ($pct >= 85 ? 'warn' : 'danger')" /><small>{{ \Devlib\Locale::percent($pct, 0) }}</small></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table></div>
+                        </x-dl::card>
+                    @endif
+                </div>
+            @endif
         </div>
     @endforeach
 
