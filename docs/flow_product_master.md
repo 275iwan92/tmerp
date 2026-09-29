@@ -1,0 +1,107 @@
+# Pedoman Alur: Inquiry → Quotation WIN → Master Product → Revisi / Rekalkulasi
+
+> Diputuskan user 2026-09-29. Dokumen ini adalah **pedoman** untuk user dan developer (Claude): baca dulu
+> sebelum mengerjakan apa pun yang menyentuh alur Inquiry, ProDev, ProCost, Quotation, Customer Order,
+> Master Product, ACC Digital, atau Surat Jalan. Tampil di Menu v2 → Sales → Alur → **Pedoman: Master Product**.
+> Status tiap aturan: ✅ sudah jalan di aplikasi · 🟡 sebagian · ⬜ belum dibangun.
+
+## 1. Alur utama (tidak berubah)
+
+```
+Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → WIN → Customer Order → CPDEL → Delivery Order / Surat Jalan
+```
+
+- Urutan Inquiry → ProDev → ProCost **tetap**, juga untuk Revisi dan Rekalkulasi. ✅
+- Quotation berisi **banyak inquiry**; **1 inquiry = 1 product**. ✅ (quotation multi-inquiry sudah ada)
+- **1 Quotation ↔ 1 Customer Order** (No. CO). Satu CO punya **banyak CO Detail**. ✅
+- **Setiap CO Detail menunjuk ke Master Product** — rantai lengkap bisa ditelusuri:
+  Quotation → No. CO → CO Detail → Product → Parts. 🟡 (kolom `co_order_item.product_id` ada, tapi sekarang diisi dari
+  `iqp_inquiry.parent_product_id` yang punya 2 arti — lihat §7)
+
+## 2. Quotation WIN = lahir di Master Product ⬜
+
+- Saat quotation **dimenangkan (WIN)**, setiap inquiry di dalamnya disalin menjadi **data pokok Master Product**,
+  tidak hanya tersimpan di `iqp_part`.
+- Yang ikut menjadi data pokok product: **semua part** beserta bahan, BOM, BOP, warna/tinta, finishing,
+  **dieline + ukuran bentangan**, **mockup/artwork sisi luar & dalam**, layout ProDev (plano, UP, pisau),
+  dan semua ketentuan detail lainnya.
+- **Nama product masih boleh diubah Sales (manual)** sampai **No. PO customer diisi di Customer Order** — setelah itu
+  terkunci. Tujuan: nama product di **salinan PO customer = CO Detail = Surat Jalan Detail** (sama persis).
+
+## 3. Struktur product: 1 product = banyak part, bisa bertingkat ⬜
+
+```
+Product
+ └── Part (Komponen) atau Rakitan
+       ├── Dieline + ukuran bentangan, artwork luar/dalam (mockup)
+       ├── Bahan (Jenis + Gramatur per lapis; mat_raw persis ditetapkan ProDev/Purchasing)
+       ├── BOM (bahan + tinta + coating/film + lem/packing)
+       ├── BOP (urutan proses + mesin)
+       └── Finishing, warna
+```
+
+- Semua bahan, BOM, BOP **tertaut ke part**, part tertaut ke product.
+- **Rakitan** = part yang dibuat dengan menggabungkan part lain. Boleh **bertingkat tanpa batas**
+  (contoh: kursi dari sheet — rakitan di dalam rakitan). Tiap node punya BOM & BOP sendiri.
+- Bahan tetap milik komponen; rakitan hanya menambah bahan penggabung (lem/tape) & packing.
+- **Jenis sambungan (join) pada rakitan:**
+  - **SINGLE JOIN** — direkatkan 1 sisi, **masih bisa dibentangkan**. Dieline tampil sebagai 1 bentangan gabungan.
+  - **DOUBLE JOIN** — direkatkan 2 sisi, **tidak bisa dibentangkan lagi** (jadi tabung). Dieline tampil per komponen +
+    3D rakitan + tanda "tidak bisa dibentangkan"; berdampak ke packing/volume kirim.
+- Produksi: WO rakitan menunggu WO komponennya selesai (penggabungan WO antar-part belum dimodelkan — tahap tersendiri).
+- ProCost: HPP rakitan = HPP komponen + biaya proses penggabungan.
+
+**Contoh nyata (sampel dummy PERMANEN, tidak boleh hilang saat Reset):** KS Power N120 MF — PT. Selatan Jadi Jaya,
+DS003637, 50,7 × 18,7 × 26,7 cm, Double Join. Master card: `docs/attachments/mastercard/`.
+
+```
+KS Power N120 MF
+ └── Rakitan Body (DOUBLE JOIN) — BOP: Lem Samping → Hitung → Pack (10 pcs/pack)
+      ├── Part A (1/2 UP) — BOP: Potong → Cetak (Lithrone G40, CMYK) → QC → Laminating Glossy → Laminasi → Plong Belakang → Kupas
+      └── Part B (1/2 UP) — BOP: sama dengan Part A
+      Bahan per part: Duplex 310 gsm + SH B/C Flute M125/M125X3/K125; pisau SJJ N120 MF 72,9 × 46,4 cm
+```
+
+## 4. Revisi & Rekalkulasi berangkat dari Master Product ⬜
+
+- Di layar Revisi/Rekalkulasi, user **memilih product (atau inquiry)** → **semua part tampil** lengkap dengan
+  **dieline + mockup artwork** yang jelas, bahan, BOM, BOP, warna, finishing.
+- **REVISI** = membuka **cabang baru**: setiap revisi menghasilkan **product turunan baru** di Master Product yang mencatat
+  induknya ("turunan dari product X"). Product lama tetap utuh; CO lama tetap memakai snapshot-nya.
+  Hanya blok yang dipilih di scope yang boleh diubah; alur lanjut ProDev → ProCost → Quotation; bila WIN, product
+  turunan resmi masuk master.
+- **REKALKULASI** = **product yang sama**, spec 100% terkunci, yang diisi hanya Qty & Deadline. Menghasilkan
+  **versi harga baru** di ProCost dengan **tanggal & jam terbit** yang jelas; riwayat harga per product bisa dilihat.
+
+## 5. ACC Digital Artwork (wajib) ⬜
+
+- Normalnya dibuat **setelah PO customer turun**, karena butuh biaya **CTP** (Computer To Plate — pembuatan plat cetak,
+  proses pre-press). Produksi mencetak **sample dari plat CTP itu** → customer memberi ACC.
+- Tetapi **ada customer yang ACC sebelum PO** — tetap boleh dicatat.
+- **ACC Digital WAJIB ada sebagai pedoman produksi**: proses Cetak (WO) tidak boleh jalan tanpa ACC Digital.
+- Batas waktunya belum pasti (tergantung customer) → cukup dicatat: tanggal/jam, penyetuju (mis. Pak Habibi),
+  saluran (WA/e-mail — selama ini manual lewat WhatsApp), bukti (screenshot/file).
+- Master card mencatat: *"ACC PROOF PRINT (DIGITAL + CETAK) HARUS DILAMPIRKAN BERSAMA MASTER CARD"*.
+- Format dokumen ACC Digital mengikuti contoh dokumen Proof Digital user (DS003479) — boleh berubah sedikit, jangan banyak.
+  (File contoh menunggu dikirim ulang user; salinan pertama 0 byte.)
+
+## 6. ACC Sample Bentuk ⬜
+
+- Sample bentuk dibuat **sungguhan dari sheet saja** untuk mengecek presisi saat dibentuk.
+- **Dicatat** (tanggal, penyetuju, saluran, bukti); tidak menahan proses.
+
+## 7. Due date Customer Order 🟡
+
+- Default = **tanggal CO dibuat + 14 hari kerja**, tetapi **MANUAL ADJUSTABLE** — harus fleksibel saat input.
+  (Menggantikan aturan lama "14 hari kerja dari approval prove fisik".)
+- `due_date` tetap wajib terisi di semua baris PRODUCT sebelum CO bisa Confirm (sudah ada ✅).
+
+## 8. Catatan teknis untuk developer
+
+- Kolom `iqp_inquiry.parent_product_id` saat ini punya **2 arti**: id inquiry induk (Revisi/Rekalkulasi) **dan**
+  id `prod_product` (diisi "Kirim ke ProDev"). Harus dipisah: tautan ke Master Product pakai kolom tersendiri.
+- Tabel master yang sudah ada: `prod_product`, `prod_part`, `prod_part_process` (BOP), `prod_part_finishing`,
+  `prod_part_attachment` (artwork), `prod_layout_group` (layout ProDev). **Belum ada**: dieline di `prod_part`,
+  bahan per part, BOM, induk rakitan + jenis join, versi/cabang product.
+- Izin user 2026-09-29: perubahan alur di zona beku Inquiry/ProDev/ProCost untuk keperluan pedoman ini **diizinkan**,
+  asalkan urutan Inquiry → ProDev → ProCost tetap.

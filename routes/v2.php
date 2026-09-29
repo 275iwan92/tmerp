@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 // Layar v2 (objek DevLib, Menu v2 tanpa top bar). Dimuat di dalam grup auth + force.password routes/web.php.
 // mockup.test (APP_UI=v2) mendarat di sini; tmerp.test tetap v1 sampai go-live.
@@ -123,6 +124,14 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 'message' => "Customer baru \"{$c->customer_name}\" ({$c->customer_code}) dibuat — status DRAFT."]);
         })->name('customer');
     });
+
+    // Pedoman alur (Markdown di docs/) -- dibaca user DAN developer sebelum mengubah alur terkait.
+    Route::get('/pedoman/{slug}', function (string $slug) {
+        $file = ['product-master' => 'flow_product_master.md'][$slug] ?? abort(404);
+        $md = file_get_contents(base_path('docs/'.$file));
+
+        return view('v2.guide', ['title' => trim(ltrim(strtok($md, "\n"), '# ')), 'html' => Str::markdown($md, ['html_input' => 'escape'])]);
+    })->name('guide');
 
     Route::get('/flow/{module}', fn (string $module) => view('v2.flow', ['flow' => Flows::get($module) ?? abort(404)]))->name('flow');
 

@@ -2321,3 +2321,16 @@ html.dl-locked body{overflow:hidden}
 .dl-shell__lm{border-radius:0;height:100%}
 .dl-shell__dock{border-radius:0}
 .dl-shell__dock.is-on{border:none;border-left:1px solid var(--dl-border)}
+/* Prose: dokumen pedoman (Markdown -> HTML), mis. v2/pedoman/*. */
+.dl-prose{max-width:960px;margin:0 auto;padding:18px 24px 60px;font-family:var(--dl-font);color:var(--dl-ink);font-size:calc(13.5px * var(--dl-font-scale));line-height:1.65}
+.dl-prose h1{font-size:1.55em;color:var(--dl-ink-strong);margin:.2em 0 .6em}
+.dl-prose h2{font-size:1.2em;color:var(--dl-ink-strong);margin:1.6em 0 .5em;padding-bottom:.3em;border-bottom:1px solid var(--dl-border)}
+.dl-prose blockquote{margin:0 0 1em;padding:10px 14px;background:var(--dl-accent-soft);border-left:3px solid var(--dl-accent);border-radius:var(--dl-radius-sm)}
+.dl-prose blockquote p{margin:0}
+.dl-prose ul,.dl-prose ol{padding-left:1.4em}
+.dl-prose li{margin:.25em 0}
+.dl-prose code{background:var(--dl-chip);padding:1px 5px;border-radius:4px;font-size:.92em}
+.dl-prose pre{background:var(--dl-surface-alt);border:1px solid var(--dl-border);border-radius:var(--dl-radius);padding:12px 14px;overflow-x:auto;line-height:1.45}
+.dl-prose pre code{background:none;padding:0}
+.dl-prose table{border-collapse:collapse;margin:1em 0}
+.dl-prose th,.dl-prose td{border:1px solid var(--dl-border);padding:6px 10px;text-align:left}

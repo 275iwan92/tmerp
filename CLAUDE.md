@@ -471,6 +471,13 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
 > file ini dulu** kalau bingung standar mana yang relevan untuk 1 layar baru,
 > daripada baca satu-satu daftar di bawah.
 
+- `flow_product_master.md` — **PEDOMAN ALUR wajib dibaca sebelum menyentuh
+  Inquiry/ProDev/ProCost/Quotation/CO/Master Product/Revisi/Rekalkulasi/ACC Digital**
+  (user 2026-09-29): Quotation WIN → Master Product (multi-part, rakitan bertingkat
+  Single/Double Join), Revisi = product turunan, Rekalkulasi = versi harga bertanggal,
+  ACC Digital wajib, due date CO +14 hari kerja adjustable. Tampil di Menu v2 →
+  Sales → Alur → Pedoman (`/v2/pedoman/product-master`) — update dokumen ini tiap
+  ada keputusan alur baru.
 - `componentstandard.md` — **wajib dibaca sebelum menulis markup layar apa
   pun** (keputusan user 2026-09-23): komponen UI berlapis & object oriented —
   token `@theme` → primitive `app/View/Components/Ui/*` (`x-ui.button`,

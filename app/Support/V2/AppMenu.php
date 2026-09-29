@@ -98,6 +98,7 @@ final class AppMenu
             'SALES' => [['label' => 'Alur', 'icon' => 'fa-solid fa-diagram-project', 'items' => [
                 ['code' => 'F-SALES', 'label' => 'Alur Sales: Inquiry → CPDEL', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'SALES'), 'type' => 'report'],
                 ['code' => 'F-COSTING', 'label' => 'Alur Costing: ProDev → ProCost → Publish', 'icon' => 'fa-solid fa-diagram-project', 'url' => route('v2.flow', 'COSTING'), 'type' => 'report'],
+                ['code' => 'G-PRODUCT', 'label' => 'Pedoman: Master Product & Revisi', 'icon' => 'fa-solid fa-book', 'url' => route('v2.guide', 'product-master'), 'type' => 'report'],
             ]]],
             default => [],
         };
