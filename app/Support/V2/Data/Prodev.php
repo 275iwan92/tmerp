@@ -7,6 +7,7 @@ use App\Models\Sdi\IqpPart;
 use App\Models\Sys\SysConstant;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 
 // Data layar ProDev v2 = komponen tmerp v1 `pages::production.prodev` yang SAMA (zona beku: flow & rumus tidak disalin,
@@ -88,7 +89,7 @@ final class Prodev
 
         try {
             $c->updatedArtworkUpload();
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return ['ok' => false, 'message' => collect($e->errors())->flatten()->first()];
         }
 
