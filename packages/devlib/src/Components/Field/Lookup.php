@@ -12,6 +12,7 @@ class Lookup extends Field
         public string $lookup = '',
         public array $fill = [],
         public bool $create = false,
+        public array $params = [],
         string $name = '',
         string $label = '',
         ?string $tooltip = null,
@@ -38,8 +39,17 @@ class Lookup extends Field
         return 'lookup';
     }
 
+    // Mode remote (def punya search): URL cari ke server + parameter tambahan layar.
+    public function url(): ?string
+    {
+        return $this->def['remote'] ? route('devlib.lookup', ['name' => $this->lookup] + $this->params) : null;
+    }
+
     public function current(): ?array
     {
+        if ($this->def['remote']) {
+            return \Devlib\Lookup::find($this->lookup, $this->value);
+        }
         foreach ($this->def['rows'] as $r) {
             if ((string) ($r[$this->def['key']] ?? '') === (string) $this->value) {
                 return $r;

@@ -2363,3 +2363,8 @@ html.dl-locked body{overflow:hidden}
 .dl-share-page__doc{max-width:1100px;margin:0 auto;background:#fff;border-radius:10px;padding:16px;overflow-x:auto}
 @media print{.dl-share-page{background:#fff;padding:0}.dl-share-page__head button{display:none}.dl-share-page__doc{padding:0;max-width:none}}
 @media (max-width:640px){.dl-share-page{padding:8px}.dl-share-page__head{flex-wrap:wrap}}
+
+/* Split: isi utama + panel samping (x-dl::split) */
+.dl-split{display:grid;grid-template-columns:minmax(0,1fr) var(--dl-aside,320px);gap:12px;align-items:start}
+.dl-split__main,.dl-split__aside{min-width:0;display:flex;flex-direction:column;gap:12px}
+@media (max-width:900px){.dl-split{grid-template-columns:1fr}}

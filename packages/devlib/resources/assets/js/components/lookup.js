@@ -10,7 +10,25 @@
       this.rows = JSON.parse(this.el.dataset.rows || '[]');
       this.fill = JSON.parse(this.el.dataset.fill || '{}');
       this.p = bindPanel(this.el, () => { if (this.p.search) { this.p.search.value = ''; this.p.search.dispatchEvent(new Event('input')); this.p.search.focus(); } });
-      $$(this.el, 'tr.dl-dd__item').forEach(tr => tr.addEventListener('click', () => {
+      // Mode remote (data-url): ketik min. 2 huruf -> cari ke server, baris diganti hasilnya.
+      if (this.el.dataset.url && this.p.search) {
+        const cols = JSON.parse(this.el.dataset.columns || '[]'), list = $(this.el, '[data-dl-dd-list]');
+        let timer = null, seq = 0;
+        this.p.search.addEventListener('input', () => {
+          clearTimeout(timer);
+          const q = this.p.search.value.trim(); if (q.length < 2) return;
+          timer = setTimeout(async () => {
+            const my = ++seq, u = new URL(this.el.dataset.url, location.origin); u.searchParams.set('q', q);
+            const res = await fetch(u, {headers: {Accept: 'application/json'}, credentials: 'same-origin'}).then(x => x.ok ? x.json() : []).catch(() => []);
+            if (my !== seq) return;
+            this.rows = res;
+            list.innerHTML = res.map((r, i) => `<tr class="dl-dd__item" data-i="${i}">${cols.map(c => `<td>${Devlib.h.esc(r[c] ?? '')}</td>`).join('')}</tr>`).join('')
+              || `<tr><td colspan="${cols.length}">Tidak ditemukan.</td></tr>`;
+          }, 250);
+        });
+      }
+      $(this.el, '[data-dl-dd-list]').addEventListener('click', e => {
+        const tr = e.target.closest('tr.dl-dd__item'); if (!tr) return;
         const r = this.rows[+tr.dataset.i];
         $(this.el, '[data-dl-value]').value = r[this.el.dataset.key];
         $(this.el, '[data-dl-dd-text]').textContent = r[this.el.dataset.label];
@@ -27,7 +45,7 @@
           if (txt) txt.textContent = r[col] ?? '';
           if (box) { box.classList.remove('is-filled'); void box.offsetWidth; box.classList.add('is-filled'); }
         });
-      }));
+      });
       if (this.el.hasAttribute('data-create')) {
         const btn = $(this.el, '[data-dl-lookup-create]'), label = this.el.dataset.label;
         this.p.search.addEventListener('input', () => {

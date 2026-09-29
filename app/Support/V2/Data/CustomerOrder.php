@@ -3,10 +3,10 @@
 namespace App\Support\V2\Data;
 
 use App\Models\Master\CustCustomer;
-use App\Models\Master\ProdProduct;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\QuoQuotation;
 use App\Services\Sales\CoOrderBuilder;
+use App\Support\V2\Lookups;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -67,21 +67,6 @@ final class CustomerOrder
             ->mapWithKeys(fn ($c) => [$c->id_customer => $c->customer_name.($c->customer_code ? ' ('.$c->customer_code.')' : '')])->all();
     }
 
-    // Master Product untuk baris PRODUCT: milik customer CO ini dulu (bisnis ini product per customer), lalu hasil cari.
-    public static function productOptions(CoOrder $o, ?string $search = null): array
-    {
-        $search = trim((string) $search);
-
-        return ProdProduct::where('activate', true)
-            ->where(fn ($q) => $q->where('customer_id', $o->customer_id)
-                ->when(mb_strlen($search) >= 2, fn ($qq) => $qq->orWhere('product_name', 'like', "%{$search}%")
-                    ->orWhere('product_code', 'like', "%{$search}%")->orWhere('design_no', 'like', "%{$search}%")))
-            ->orderByRaw('CASE WHEN customer_id = ? THEN 0 ELSE 1 END', [$o->customer_id])->orderBy('product_name')->limit(300)
-            ->get(['id_product', 'product_name', 'product_code', 'default_selling_price'])
-            ->mapWithKeys(fn ($p) => [$p->id_product => $p->product_name.' ('.$p->product_code.')'
-                .($p->default_selling_price ? ' · Rp '.number_format((float) $p->default_selling_price, 0, ',', '.') : '')])->all();
-    }
-
     public static function createIntegrated(int $quotationId): ?CoOrder
     {
         return CoOrderBuilder::findOrCreateFromQuotation(QuoQuotation::findOrFail($quotationId));
@@ -109,6 +94,15 @@ final class CustomerOrder
             }
         }
 
+        // Shipment Location = picker wilayah v1 (onAddressPicked): nilai lookup "LEVEL:id".
+        if (array_key_exists('ship_area', $in)) {
+            $cur = $o->ship_area_id ? $o->ship_area_level.':'.$o->ship_area_id : '';
+            if ((string) $in['ship_area'] !== $cur) {
+                $g = Lookups::geoFind((string) $in['ship_area']);
+                $c->onAddressPicked('co-ship-address', $g['id'] ?? null, $g['level'] ?? null, $g['full_label'] ?? null, $g['postal_code'] ?? null);
+            }
+        }
+
         foreach (array_keys((array) ($in['remove'] ?? [])) as $id) {
             $c->removeItem((int) $id);
         }
@@ -119,6 +113,15 @@ final class CustomerOrder
             $c->removeExternalCost((int) $id);
         }
 
+        $o->load(['items.deliveries', 'externalCosts']);
+        // Ganti Master Product baris PRODUCT = pickProduct v1 (baris snapshot quotation hanya ditautkan, harga tetap).
+        foreach ((array) ($in['items'] ?? []) as $id => $row) {
+            $item = $o->items->firstWhere('id_item', (int) $id);
+            if ($item && $item->line_kind === 'PRODUCT' && ! empty($row['product_id']) && (int) $row['product_id'] !== (int) $item->product_id) {
+                $c->openProductPicker((int) $id);
+                $c->pickProduct((int) $row['product_id']);
+            }
+        }
         $o->load(['items.deliveries', 'externalCosts']);
         self::diff($o->items->keyBy('id_item'), (array) ($in['items'] ?? []), ['description', 'qty', 'qty_unit', 'unit_price', 'discount_pct', 'due_date'],
             ['qty', 'unit_price', 'discount_pct'], fn ($id, $f, $v) => $c->updateItem($id, $f, $v));

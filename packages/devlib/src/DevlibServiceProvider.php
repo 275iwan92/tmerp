@@ -2,6 +2,7 @@
 
 namespace Devlib;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -28,6 +29,12 @@ class DevlibServiceProvider extends ServiceProvider
 
             return response()->file($path, ['Content-Type' => $type, 'Cache-Control' => 'no-cache']);
         })->where('file', '[A-Za-z0-9._-]+')->name('devlib.asset');
+
+        // Lookup remote: cari ke server (data besar). Middleware diatur aplikasi pemakai (config devlib.lookup_middleware).
+        Route::middleware(config('devlib.lookup_middleware', ['web']))
+            ->get('/_devlib-lookup/{name}', fn (Request $r, string $name) => response()->json(
+                Lookup::search($name, (string) $r->query('q', ''), $r->except('q'))))
+            ->where('name', '[A-Za-z0-9_-]+')->name('devlib.lookup');
     }
 
     // URL aset + versi dari waktu ubah file, supaya perubahan library langsung terlihat.

@@ -7,6 +7,9 @@ return [
     ],
 
     // Hak akses akun DevLib (Devlib\\Access). '*' = semua; 'po.*' = semua aksi PO.
+    // Route pencarian Lookup remote (/_devlib-lookup/{name}).
+    'lookup_middleware' => ['web', 'auth'],
+
     'abilities' => ['po.*', 'devlib.*'],
 
     // Bahasa antarmuka bawaan (id | en); label tombol preset ikut ini.
