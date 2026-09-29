@@ -82,7 +82,7 @@ class LayerShell extends Shell
             ['key' => 'pass', 'label' => 'Ubah password', 'icon' => 'password'],
             ['key' => 'help', 'label' => 'Bantuan & dukungan', 'icon' => 'help'],
             $this->developer ? ['key' => 'devmode', 'label' => 'Mode Developer', 'icon' => 'fa-bug'] : null,
-            ['key' => 'menu-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'],
+            $this->classic ? ['key' => 'menu-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'] : null,
             ['key' => 'logout', 'label' => 'Keluar aplikasi', 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
         ]));
     }

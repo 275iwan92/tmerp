@@ -30,6 +30,8 @@ class Shell extends DevlibComponent
         public bool $developer = false,
         public array $chat = [],
         public ?string $open = null,
+        // false = pilihan tukar ke Menu Classic disembunyikan (situs ERP v2 hanya Layer Menu; Classic tetap ada di katalog DevLib).
+        public bool $classic = true,
     ) {}
 
     public function tag(): string
