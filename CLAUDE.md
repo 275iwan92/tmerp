@@ -34,6 +34,7 @@ php artisan make:tm-screen master|grid|form modul.nama --model="Master\X" ...  #
 - `bootstrap/app.php` memuat `.env.mockup` bila host = mockup.test (DB_* -> `ddt*`, `DB_OLD=tm2old` dipakai bersama, `APP_UI=v2`, pengaturan `UAT_*`). Artisan situs dummy: `php artisan ... --env=mockup`. **Jangan pernah menulis ke `tm2*` saat kerja UAT/mockup.**
 - `ddt*` = salinan penuh `tm2*`: `php artisan ddt:copy` (bisnis), `ddt:copy-sys` (menu/security/config; menolak menimpa tanpa `--force` karena `ddtsys` punya perubahan sendiri). Nanti `ddtsys` yang benar disalin ke `tm2sys`.
 - SQL mentah lintas-DB WAJIB `App\Support\DbName::table('tm2mst.x')` (dijaga `NoHardcodedDatabaseNameTest`).
+- **Alamat shell v2 = `mockup.test/menu`** (user 2026-09-29; `/v2` lama dialihkan ke sana). Layar menu HANYA tampil sebagai tab: dibuka sebagai halaman penuh -> `KeepScreensInShell` mengalihkan ke `/menu?open=<kode>`. Memuat ulang menu / logout = semua tab ditutup (tab hanya ikut saat tukar Classic<->Layer).
 - **Menu v2** (disetujui user) = `x-dl::layer-shell` + `App\Support\V2\AppMenu` dari `sys_app_menu`; item `target='v2:<slug>'` -> layar v2 (`routes/v2.php`, `resources/views/v2`), selain itu layar v1 (`App\Support\Menu\MenuRoutes`). v1 = menu lama (top bar).
 - Data khusus UAT (akun di halaman login, lewati pertanyaan keamanan) HANYA di `.env.mockup` (`config/uat.php`) — **jangan** di konstanta/DB.
 - Mode Developer = F10, hanya Administrator / grup `DEVELOPER`.

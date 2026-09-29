@@ -2,10 +2,12 @@
 
 use App\Services\Portal\CandidateAuthService;
 use App\Support\Branding\Brand;
+use App\Support\V2\Shell;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => redirect(config('app.ui') === 'v2' ? '/v2' : '/menu'));
+Route::get('/', fn () => redirect('/menu'));
 
 // PWA manifest -- dibuat dinamis (bukan public/manifest.json statis) supaya
 // nama aplikasi ikut Brand::name() (tm2sys.sys_constant APP_NAME, bisa
@@ -92,8 +94,14 @@ Route::middleware(['auth', 'locale'])->group(function () {
         return redirect()->route('login');
     })->name('logout');
 
-    Route::middleware('force.password')->group(function () {
-        Route::livewire('/menu', 'pages::main-menu')->name('menu');
+    Route::middleware(['force.password', 'shell.tab'])->group(function () {
+        // /menu = shell. Situs v2 (mockup.test, APP_UI=v2) -> shell v2 (alamat pendek, user 2026-09-29);
+        // situs v1 -> shell lama. APP_UI dibaca per host saat boot (bootstrap/app.php), jadi JANGAN route:cache.
+        if (Shell::isV2Site()) {
+            Route::get('/menu', fn (Request $r) => Shell::view($r))->name('menu');
+        } else {
+            Route::livewire('/menu', 'pages::main-menu')->name('menu');
+        }
 
         require __DIR__.'/v2.php';
 

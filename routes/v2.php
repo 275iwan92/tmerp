@@ -9,6 +9,7 @@ use App\Support\V2\Flows;
 use App\Support\V2\InquiryPayload;
 use App\Support\V2\Schema;
 use App\Support\V2\Screens;
+use App\Support\V2\Shell;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -17,8 +18,8 @@ use Illuminate\Support\Facades\Route;
 // mockup.test (APP_UI=v2) mendarat di sini; tmerp.test tetap v1 sampai go-live.
 Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
-    Route::get('/', fn (Request $r) => view('v2.home', ['modules' => AppMenu::modules(Auth::user()), 'user' => AppMenu::user(Auth::user()),
-        'open' => $r->query('open')]))->name('home');
+    // Situs v2: shell ada di /menu (alamat pendek); /v2 lama dialihkan ke sana. Situs v1: /v2 = pratinjau shell v2.
+    Route::get('/', fn (Request $r) => Shell::isV2Site() ? redirect(Shell::url($r->query())) : Shell::view($r))->name('home');
 
     Route::post('/logout', function (Request $r) {
         Auth::logout();

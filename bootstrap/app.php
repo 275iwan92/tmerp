@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureIsAdmin;
 use App\Http\Middleware\EnsureModuleAccess;
 use App\Http\Middleware\EnsurePortalCandidateAuthenticated;
 use App\Http\Middleware\ForcePasswordChange;
+use App\Http\Middleware\KeepScreensInShell;
 use App\Http\Middleware\SetUserLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -23,6 +24,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'force.password' => ForcePasswordChange::class,
             'portal.candidate' => EnsurePortalCandidateAuthenticated::class,
             'locale' => SetUserLocale::class,
+            'shell.tab' => KeepScreensInShell::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
