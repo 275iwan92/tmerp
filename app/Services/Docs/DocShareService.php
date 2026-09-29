@@ -6,6 +6,7 @@ use App\Mail\DocShareMail;
 use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocEmail;
 use App\Models\Sys\SysDocShare;
+use App\Support\Mail\MailSettings;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
@@ -39,6 +40,10 @@ class DocShareService
         $log = new SysDocEmail(['share_id' => $share->id_share, 'to_list' => implode(', ', $d['to']), 'cc_list' => implode(', ', $d['cc']) ?: null,
             'bcc_list' => implode(', ', $d['bcc']) ?: null, 'subject' => $d['subject'], 'message' => $d['message'], 'with_link' => $d['with_link'],
             'with_image' => $image !== null, 'with_pdf' => $pdf !== null, 'created_by' => $this->user, 'updated_by' => $this->user]);
+        $setting = MailSettings::apply();
+        if ($sender) {
+            $sender['as_from'] = $setting->from_user && ! empty($sender['verified']);
+        }
         try {
             Mail::to($d['to'])->cc($d['cc'])->bcc($d['bcc'])->send(new DocShareMail($share, $d['subject'], $d['message'], $d['with_link'],
                 $image?->get(), $pdf ? [$pdf->get(), self::fileName($share).'.pdf'] : null, $sender));
@@ -46,6 +51,7 @@ class DocShareService
         } catch (Throwable $e) {
             $log->status = 'FAILED';
             $log->error = mb_substr($e->getMessage(), 0, 2000);
+            MailSettings::notifyFailure($this->user, implode(', ', $d['to']), mb_substr($e->getMessage(), 0, 300), $share->url());
         }
         $log->save();
 

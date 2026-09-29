@@ -123,7 +123,10 @@ new #[Title('Setup & Security — TELASIH MAKMUR ERP')] class extends Component
             ]);
 
             $user = SecUser::findOrFail($this->editingUserId);
-            $user->update(['name' => $this->u_name, 'email' => $this->u_email ?: null]);
+            $email = $this->u_email ?: null;
+            // Alamat berubah = verifikasi lama gugur (user harus verifikasi ulang, lihat v2 Profil > E-mail).
+            $reverify = strcasecmp((string) $user->email, (string) $email) !== 0 ? ['email_verified' => false, 'email_verified_at' => null] : [];
+            $user->update(['name' => $this->u_name, 'email' => $email] + $reverify);
             $user->groups()->sync([$this->u_group_id]);
         } else {
             $this->validate([

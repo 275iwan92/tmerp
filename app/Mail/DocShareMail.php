@@ -17,9 +17,13 @@ class DocShareMail extends Mailable
 
     public function envelope(): Envelope
     {
-        // Sementara: From = alamat sistem (MAIL_FROM), balasan ke e-mail user pengirim dari Security. Rencana: From = e-mail user
-        // yang sudah diverifikasi + notifikasi bounce ke user (docs/backlog09_platform_facility.md).
-        $from = $this->sender ? new Address(config('mail.from.address'), $this->sender['name'].' via '.Brand::companyName()) : null;
+        // From = e-mail user yang sudah terverifikasi bila Setting E-mail mengizinkan (as_from); selain itu alamat sistem atas nama user.
+        // Balasan selalu ke e-mail user pengirim.
+        $from = match (true) {
+            ! $this->sender => null,
+            ! empty($this->sender['as_from']) => new Address($this->sender['email'], $this->sender['name']),
+            default => new Address(config('mail.from.address'), $this->sender['name'].' via '.Brand::companyName()),
+        };
         $reply = $this->sender && filter_var($this->sender['email'], FILTER_VALIDATE_EMAIL) ? [new Address($this->sender['email'], $this->sender['name'])] : [];
 
         return new Envelope(from: $from, replyTo: $reply, subject: $this->subjectLine);

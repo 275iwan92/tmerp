@@ -10,18 +10,14 @@ Fasilitas yang dipakai lintas-modul: chat antar user, AI lokal untuk menjawab ke
 
 ## 18. E-MAIL SISTEM — PENGIRIM = E-MAIL USER TERVERIFIKASI + BOUNCE (catatan user 2026-09-29)
 
-Konteks: tombol Email dokumen (`x-dl::doc-share`, `App\Services\Docs\DocShareService`) sudah jalan, tapi `MAIL_MAILER=log`
-di `.env`/`.env.mockup` (belum ada SMTP). Saat ini From = alamat sistem (`MAIL_FROM_ADDRESS`, nama "User via Telasih Makmur"),
-Reply-To = `sec_user.email` pengirim. Improvement saat setting e-mail sistem:
-- [ ] **From = e-mail user** yang diinput di halaman Security (bukan alamat sistem).
-- [ ] Di halaman Security, e-mail user **wajib diuji valid** (kirim link/kode verifikasi, simpan status terverifikasi) —
-      user tanpa e-mail terverifikasi tidak bisa mengirim dokumen.
-- [ ] Alamat tujuan jelas: tiap user mencantumkan e-mail yang valid (lookup user/kontak customer, bukan ketik bebas saja).
-- [ ] **Bounce back** (mailbox penuh / alamat salah) → notifikasi peringatan ke user pengirim (`sys_notification`) +
-      status `sys_doc_email.status` = BOUNCED.
-- [ ] Setting SMTP lewat layar (aturan "semua data wajib punya inputan"), bukan hanya `.env`.
-
-
+Dibangun 2026-09-30 (lihat LOG_JOB_DONE): layar v2 Developer > Setting > Setting E-mail (tm2sys.sys_mail_setting, password
+terenkripsi, uji kirim), Profil > E-mail (link verifikasi bertanda tangan -> sec_user.email_verified), From = e-mail user
+terverifikasi (saklar), wajib-verifikasi (saklar), gagal kirim langsung -> sys_notifications ke pengirim + status FAILED.
+Kedua saklar default MATI sampai SMTP nyata terpasang. Sisa:
+- [ ] **Bounce yang datang belakangan** (mailbox penuh / alamat salah setelah diterima server) -> butuh baca kotak masuk
+      pengirim (IMAP) atau webhook penyedia SMTP; status `sys_doc_email.status` = BOUNCED belum pernah terisi. Perlu keputusan
+      penyedia e-mail perusahaan.
+- [ ] Alamat tujuan: pilih dari kontak customer / user (sekarang ketik bebas, format divalidasi).
 
 ## 17. PISAHKAN DATABASE DUMMY `ddt*` UNTUK erptest.test (keputusan user 2026-09-24)
 

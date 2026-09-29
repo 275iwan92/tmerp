@@ -4,6 +4,13 @@
         <x-slot:profile>
             <section data-lm-page="theme" data-label="Tema" data-icon="fa-palette"><x-dl::theme-picker /></section>
             <section data-lm-page="lang" data-label="Bahasa" data-icon="fa-globe"><x-dl::lang-switch /></section>
+            @if (! empty($user['email_url']))
+                <section data-lm-page="email" data-label="E-mail" data-icon="fa-envelope">
+                    <p>{{ $user['email'] ?: 'Belum ada e-mail' }}</p>
+                    <x-dl::badge :label="! empty($user['email_verified']) ? 'Terverifikasi' : 'Belum terverifikasi'" :tone="! empty($user['email_verified']) ? 'success' : 'warn'" />
+                    <x-dl::action-bar><x-dl::button size="sm" icon="email" label="Kelola e-mail" :href="$user['email_url']" /></x-dl::action-bar>
+                </section>
+            @endif
         </x-slot:profile>
     </x-dl::layer-menu>
 

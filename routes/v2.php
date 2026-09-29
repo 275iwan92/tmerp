@@ -1,6 +1,10 @@
 <?php
 
 use App\Console\Commands\DdtBaseline;
+use App\Mail\EmailVerifyMail;
+use App\Models\Sys\SysMailSetting;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Sdi\CoOrder;
@@ -13,6 +17,7 @@ use App\Services\Docs\DocShareService;
 use App\Services\Sales\InquiryDerivedWriter;
 use App\Services\Sales\InquiryDuplicator;
 use App\Services\Sales\InquiryWriter;
+use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
@@ -400,6 +405,9 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
         Route::post('/{token}/email', function (Request $r, string $token) {
             $share = SysDocShare::where('token', $token)->firstOrFail();
+            if (MailSettings::current()->require_verified && ! MailSettings::verified(Auth::user())) {
+                return response()->json(['message' => 'E-mail Anda belum terverifikasi. Buka Profil > E-mail untuk verifikasi dulu: '.route('v2.account.email')], 422);
+            }
             $list = fn ($k) => DocShareService::addresses($r->input($k));
             $r->merge(['to_list' => $list('to'), 'cc_list' => $list('cc'), 'bcc_list' => $list('bcc')]);
             $r->validate(['to_list' => ['required', 'array', 'min:1'], 'to_list.*' => ['email'], 'cc_list.*' => ['email'], 'bcc_list.*' => ['email'],
@@ -409,12 +417,73 @@ Route::prefix('v2')->name('v2.')->group(function () {
                     'cc_list.*.email' => 'Alamat CC tidak valid: :input', 'bcc_list.*.email' => 'Alamat BCC tidak valid: :input'], ['subject' => 'Subjek']);
             $log = (new DocShareService(Auth::user()->login))->email($share, ['to' => $r->input('to_list'), 'cc' => $r->input('cc_list'), 'bcc' => $r->input('bcc_list'),
                 'subject' => $r->input('subject'), 'message' => $r->input('message'), 'with_link' => $r->boolean('with_link')], $r->file('image'), $r->file('pdf'),
-                ['name' => Auth::user()->name ?? Auth::user()->login, 'email' => Auth::user()->email]);
+                ['name' => Auth::user()->name ?? Auth::user()->login, 'email' => Auth::user()->email, 'verified' => MailSettings::verified(Auth::user())]);
 
             return $log->status === 'SENT'
                 ? response()->json(['message' => 'E-mail terkirim ke '.$log->to_list.'.'])
                 : response()->json(['message' => 'E-mail gagal dikirim: '.$log->error], 422);
         })->name('email');
+    });
+
+    // E-mail user: status + link verifikasi (signed, 24 jam) -> sec_user.email_verified. Setting E-mail sistem (admin).
+    Route::prefix('account/email')->name('account.email')->group(function () {
+        Route::get('/', fn () => view('v2.account-email'))->name('');
+        Route::post('/send', function () {
+            $u = Auth::user();
+            abort_unless($u->email && filter_var($u->email, FILTER_VALIDATE_EMAIL), 422, 'E-mail belum diisi / tidak valid.');
+            MailSettings::apply();
+            $url = URL::temporarySignedRoute('v2.account.email.verify', now()->addDay(), ['id' => $u->id_user, 'hash' => sha1(strtolower($u->email))]);
+            try {
+                Mail::to($u->email)->send(new EmailVerifyMail($u->name ?: $u->login, $url));
+            } catch (Throwable $e) {
+                MailSettings::notifyFailure($u->login, $u->email, mb_substr($e->getMessage(), 0, 300));
+
+                return back()->withErrors(['email' => 'Link verifikasi gagal dikirim: '.mb_substr($e->getMessage(), 0, 200)]);
+            }
+
+            return back()->with('v2_flash', 'Link verifikasi dikirim ke '.$u->email.'. Buka e-mail itu dan klik tombolnya (berlaku 24 jam).');
+        })->name('.send');
+        Route::get('/verify/{id}/{hash}', function (int $id, string $hash) {
+            $u = Auth::user();
+            abort_unless($u->id_user === $id && hash_equals(sha1(strtolower((string) $u->email)), $hash), 403, 'Link ini untuk akun / alamat lain.');
+            $u->forceFill(['email_verified' => true, 'email_verified_at' => now()])->save();
+
+            return redirect(route('v2.account.email'))->with('v2_flash', 'E-mail '.$u->email.' terverifikasi.');
+        })->middleware('signed')->name('.verify');
+    });
+    Route::prefix('settings/mail')->name('settings.mail')->group(function () {
+        Route::get('/', function () {
+            abort_unless(Auth::user()->is_admin, 403);
+
+            return view('v2.mail-setting');
+        })->name('');
+        Route::post('/', function (Request $r) {
+            abort_unless(Auth::user()->is_admin, 403);
+            $d = $r->validate(['mailer' => ['required', 'in:env,smtp,log'], 'host' => ['nullable', 'required_if:mailer,smtp', 'string', 'max:150'],
+                'port' => ['nullable', 'integer', 'between:1,65535'], 'encryption' => ['nullable', 'in:tls,ssl'], 'username' => ['nullable', 'string', 'max:150'],
+                'password' => ['nullable', 'string', 'max:500'], 'from_address' => ['nullable', 'email', 'max:150'], 'from_name' => ['nullable', 'string', 'max:150']],
+                [], ['host' => 'SMTP host', 'from_address' => 'Alamat pengirim']);
+            $s = SysMailSetting::query()->first() ?? new SysMailSetting(['created_by' => Auth::user()->login]);
+            $s->fill(collect($d)->except('password')->all() + ['from_user' => $r->boolean('from_user'), 'require_verified' => $r->boolean('require_verified'),
+                'updated_by' => Auth::user()->login]);
+            if ($r->filled('password')) {
+                $s->password = $r->input('password');
+            }
+            $s->save();
+            if ($r->input('action') !== 'test') {
+                return back()->with('v2_flash', 'Setting e-mail tersimpan.');
+            }
+            $u = Auth::user();
+            abort_unless($u->email, 422, 'Isi e-mail akun Anda dulu (Security) untuk uji kirim.');
+            MailSettings::apply();
+            try {
+                Mail::raw('E-mail uji dari '.config('app.name').' — setting e-mail berfungsi.', fn ($m) => $m->to($u->email)->subject('E-mail uji'));
+            } catch (Throwable $e) {
+                return back()->withErrors(['mail' => 'Tersimpan, tapi e-mail uji gagal: '.mb_substr($e->getMessage(), 0, 300)]);
+            }
+
+            return back()->with('v2_flash', 'Tersimpan; e-mail uji dikirim ke '.$u->email.' (mode: '.$s->mailer.').');
+        })->name('.save');
     });
 
     // Pedoman alur (Markdown di docs/) -- dibaca user DAN developer sebelum mengubah alur terkait.

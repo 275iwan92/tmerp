@@ -30,6 +30,8 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         'pswd',
         'name',
         'email',
+        'email_verified',
+        'email_verified_at',
         'phone',
         'active',
         'is_admin',
@@ -74,6 +76,8 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
         'pswd_last_updated' => 'datetime',
         'birth_date' => 'date',
         'security_setup_at' => 'datetime',
+        'email_verified' => 'boolean',
+        'email_verified_at' => 'datetime',
     ];
 
     // security_defaultpassword_spec.md §4 — SET/GET plaintext, tersimpan

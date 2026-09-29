@@ -53,6 +53,7 @@ final class AppMenu
 
         if (self::user($user)['developer']) {
             $modules[] = ['code' => 'DEV', 'short' => 'DEV', 'label' => 'Developer', 'icon' => 'fa-solid fa-code', 'children' => [
+                ...($user->is_admin ? [['label' => 'Setting', 'items' => [['code' => 'V2-mail', 'label' => 'Setting E-mail (SMTP)', 'icon' => 'fa-solid fa-envelope', 'url' => route('v2.settings.mail'), 'type' => 'form']]]] : []),
                 ['label' => 'Database', 'items' => [['code' => 'V2-dictionary', 'label' => 'Data Dictionary', 'icon' => 'fa-solid fa-database', 'url' => route('v2.dictionary'), 'type' => 'report'],
                     // Hanya di situs dummy (database ddt*): baseline & reset data UAT.
                     ...(str_starts_with(DB::connection('tm2sdi')->getDatabaseName(), 'ddt') ? [['code' => 'V2-dummy', 'label' => 'Data Dummy (Reset)', 'icon' => 'fa-solid fa-rotate-left', 'url' => route('v2.dummy.index'), 'type' => 'report']] : [])]],
@@ -126,6 +127,7 @@ final class AppMenu
 
         return ['name' => $u->name, 'email' => (string) $u->email, // Kartu profil = nama lengkap saja (user 2026-09-28: layar dilihat pemiliknya sendiri).
             'role' => null,
+            'email_url' => route('v2.account.email'), 'email_verified' => (bool) $u->email_verified,
             'developer' => (bool) $u->is_admin || $groups->contains('group_code', self::DEVELOPER_GROUP)];
     }
 }
