@@ -22,20 +22,35 @@ class UatFoodBoxInquirySeeder extends Seeder
 
     private const ASSETS = __DIR__.'/assets/uat-foodbox/';
 
-    // [prospek, nama produk, [artwork luar, artwork dalam|null], tipe, dims (mm; PPL: alas P, L, T, atas P, L), [flat W, H], warna, bahan (material_code), catatan]
+    // [prospek, nama produk, tipe, catatan, parts[]]; part = [nama, part_type, dims (mm), [flat W, H], warna, [artwork luar, dalam|null], bahan[]].
+    // dims PPL: alas P, L, T, atas P, L. Bahan = rantai mat_category [Kategori, Jenis, Gramatur] tanpa merek/ukuran plano
+    // (Sales pilih Jenis+Gramatur, keputusan user 2026-09-29) -> iqp_part_material.category_id, rawmat_id kosong.
     private const PLAN = [
-        ['Warung Mbak Ida', 'Paper Lunch Box PPL M Kraft - Warung Mbak Ida', ['warung-mbak-ida-ppl-m.jpg', null], 'PAPER_LUNCH_BOX', [158, 90, 48.5, 177, 110], [256.84, 337.84], '1/0', 'PKM23023',
-            'PPL M (alas 15,8 x 9 cm, tinggi 4,85 cm - tercetak di desain). Cetak 1 warna hitam di kraft food grade. Bakso, pangsit, rujak cingur; dijual juga lewat GrabFood/ShopeeFood/GoFood.'],
-        ['Mama Sakhi Kitchen', 'Paper Lunch Box PPL M Kraft - Mama Sakhi Kitchen', ['mama-sakhi-kitchen-ppl-m.jpg', null], 'PAPER_LUNCH_BOX', [158, 90, 50, 177, 110], [259.79, 341.98], '4/0', 'PKM23023',
-            'Die sama dengan PPL M; ukuran tidak tercetak -> ukuran standar PPL M (bawah 15,8 x 9, atas 17,7 x 11, tinggi 5 cm). Full color + logo Halal.'],
-        ['Warung Lancar Bu Dewi', 'Dus Nasi Kotak R8 Kraft - Warung Lancar Bu Dewi', ['warung-lancar-bu-dewi-r8.png', null], 'RICE_BOX', [180, 180, 67], [314, 607.9], '4/0', 'PKM23023',
-            'Dus nasi R8 (18 x 18 x 6,7 cm). Full color + logo Halal. Untuk nasi & lauk, perlu kraft food grade.'],
-        ['Dowiq Pispa Bakery', 'Box Kue R8 Kraft - Dowiq Pispa Bakery', ['dowiq-pispa-bakery-r8.jpg', null], 'RICE_BOX', [180, 180, 67], [314, 607.9], '4/0', 'PKD24024',
-            'Box kue/roti R8 (18 x 18 x 6,7 cm - tercetak di desain, ukuran customer). Full color. Roti, kue kering, kue basah, pizza.'],
-        ['Martabak & Terang Bulan A-ye Bandung', 'Dus Martabak Kraft - Martabak A-ye Bandung', ['martabak-a-ye-bandung.jpg', null], 'RICE_BOX', [210, 135, 55], [320, 473.5], '4/0', 'PKM23023',
-            'Dus martabak; ukuran tidak tercetak -> standar dus martabak manis 21 x 13,5 x 5,5 cm. Full color + logo Halal, daftar varian terang bulan/martabak telor.'],
-        ['Stoic Box', 'Mailer Box Stoic Box (cetak 2 sisi)', ['stoic-box-mailer-luar.jpg', 'stoic-box-mailer-dalam.jpg'], 'MAILER', [310, 200, 70], [456, 346], '4/4', 'PKD24024',
-            'Mailer box e-flute; ukuran tidak tercetak -> standar 31 x 20 x 7 cm. Cetak 2 sisi: luar kuning (logo Stoic Box), dalam biru (sambutan + QR).'],
+        ['Warung Mbak Ida', 'Paper Lunch Box PPL M Kraft - Warung Mbak Ida', 'PAPER_LUNCH_BOX',
+            'PPL M (alas 15,8 x 9 cm, tinggi 4,85 cm - tercetak di desain). Cetak 1 warna hitam di kraft food grade. Bakso, pangsit, rujak cingur; dijual juga lewat GrabFood/ShopeeFood/GoFood.',
+            [['MonoForm', 'DC', [158, 90, 48.5, 177, 110], [256.84, 337.84], '1/0', ['warung-mbak-ida-ppl-m.jpg', null], [['Paper', 'Kraft', '290gr']]]]],
+        ['Mama Sakhi Kitchen', 'Paper Lunch Box PPL M Kraft - Mama Sakhi Kitchen', 'PAPER_LUNCH_BOX',
+            'Die sama dengan PPL M; ukuran tidak tercetak -> ukuran standar PPL M (bawah 15,8 x 9, atas 17,7 x 11, tinggi 5 cm). Full color + logo Halal.',
+            [['MonoForm', 'DC', [158, 90, 50, 177, 110], [259.79, 341.98], '4/0', ['mama-sakhi-kitchen-ppl-m.jpg', null], [['Paper', 'Kraft', '290gr']]]]],
+        ['Warung Lancar Bu Dewi', 'Dus Nasi Kotak R8 Kraft - Warung Lancar Bu Dewi', 'RICE_BOX',
+            'Dus nasi R8 (18 x 18 x 6,7 cm). Full color + logo Halal. Untuk nasi & lauk, perlu kraft food grade.',
+            [['MonoForm', 'DC', [180, 180, 67], [314, 607.9], '4/0', ['warung-lancar-bu-dewi-r8.png', null], [['Paper', 'Kraft', '290gr']]]]],
+        ['Dowiq Pispa Bakery', 'Box Kue R8 Kraft - Dowiq Pispa Bakery', 'RICE_BOX',
+            'Box kue/roti R8 (18 x 18 x 6,7 cm - tercetak di desain, ukuran customer). Full color. Roti, kue kering, kue basah, pizza.',
+            [['MonoForm', 'DC', [180, 180, 67], [314, 607.9], '4/0', ['dowiq-pispa-bakery-r8.jpg', null], [['Paper', 'Kraft', '300gr']]]]],
+        ['Martabak & Terang Bulan A-ye Bandung', 'Dus Martabak Kraft - Martabak A-ye Bandung', 'RICE_BOX',
+            'Dus martabak; ukuran tidak tercetak -> standar dus martabak manis 21 x 13,5 x 5,5 cm. Full color + logo Halal, daftar varian terang bulan/martabak telor.',
+            [['MonoForm', 'DC', [210, 135, 55], [320, 473.5], '4/0', ['martabak-a-ye-bandung.jpg', null], [['Paper', 'Kraft', '290gr']]]]],
+        ['Stoic Box', 'Mailer Box Stoic Box (cetak 2 sisi)', 'MAILER',
+            'Mailer box e-flute; ukuran tidak tercetak -> standar 31 x 20 x 7 cm. Cetak 2 sisi: luar kuning (logo Stoic Box), dalam biru (sambutan + QR).',
+            [['MonoForm', 'DC', [310, 200, 70], [456, 346], '4/4', ['stoic-box-mailer-luar.jpg', 'stoic-box-mailer-dalam.jpg'], [['Paper', 'Kraft', '300gr']]]]],
+        // Gambar referensi user 2026-09-29 (dieline tray + tutup): alas L 350 x W 280 x H 115 mm (tercetak). Tutup "L+, W+, H-" tanpa angka:
+        // tinggi tutup diukur dari proporsi gambar dieline tutup (sirip ~0,155 x W) = 45 mm; L/W tutup = alas + 5 mm
+        // (2 x tebal kraft+E-flute ~1,8 mm + kelonggaran 1 mm) supaya tutup masuk. Bentangan = A + 2C + 2 bleed 3 mm.
+        ['Contoh Box Tutup-Alas (gambar referensi)', 'Box Tutup-Alas Kraft 35 x 28 x 11,5 cm', 'BOX_WITH_LID',
+            'Box tutup-alas (tray + tutup lepas), kraft polos coklat sesuai gambar referensi. Alas 350 x 280 x 115 mm (tercetak di gambar); tutup tidak bernomor ("L+, W+, H-") -> 355 x 285 x 45 mm (alas + 5 mm kelonggaran, tinggi dari proporsi gambar). Ukuran besar -> kraft dilaminasi single face E-flute.',
+            [['Body', 'DC+SF', [350, 280, 115], [586, 516], '1/0', null, [['Paper', 'Kraft', '300gr'], ['Sheet', 'SFEF', 'M125/K125']]],
+             ['Lid', 'DC+SF', [355, 285, 45], [451, 381], '1/0', null, [['Paper', 'Kraft', '300gr'], ['Sheet', 'SFEF', 'M125/K125']]]]],
     ];
 
     private const TIERS = [1000, 3000, 5000];
@@ -50,15 +65,13 @@ class UatFoodBoxInquirySeeder extends Seeder
             throw new RuntimeException('UatFoodBoxInquirySeeder hanya boleh di database dummy ddt* (--env=mockup).');
         }
 
-        $types = DB::connection('tm2mst')->table('prod_type')->whereIn('type_code', array_column(self::PLAN, 3))->pluck('dieline_spec', 'type_code');
+        $types = DB::connection('tm2mst')->table('prod_type')->whereIn('type_code', array_column(self::PLAN, 2))->pluck('dieline_spec', 'type_code');
         $sales = DB::connection('tm2mst')->table('sales_person')->where('activate', 1)->orderBy('id_sales_person')->pluck('sales_name')->all() ?: [null];
-        $materials = DB::connection('tm2mst')->table('mat_raw')->whereIn('material_code', array_column(self::PLAN, 7))->get()->keyBy('material_code');
 
-        $this->db->transaction(function () use ($types, $sales, $materials) {
+        $this->db->transaction(function () use ($types, $sales) {
             $this->reset();
 
-            foreach (self::PLAN as $i => [$prospect, $product, [$file, $inner], $typeCode, $d, [$flatW, $flatH], $color, $matCode, $note]) {
-                [$a, $b, $c] = $d;
+            foreach (self::PLAN as $i => [$prospect, $product, $typeCode, $note, $parts]) {
                 $now = now();
                 $inquiryId = $this->db->table('iqp_inquiry')->insertGetId([
                     'inquiry_no' => self::PREFIX.str_pad((string) ($i + 1), 3, '0', STR_PAD_LEFT),
@@ -92,39 +105,63 @@ class UatFoodBoxInquirySeeder extends Seeder
                         'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'updated_by' => 'uat', 'data_origin' => 'DUMMY']);
                 }
 
-                $spec = json_decode($types[$typeCode], true);
-                $spec['dims'] = ['product_length' => $a, 'product_width' => $b, 'product_height' => $c]
-                    + (isset($d[3]) ? ['top_length' => $d[3], 'top_width' => $d[4]] : []);
-                $spec['type_code'] = $typeCode;
+                foreach ($parts as $n => [$partName, $partType, $d, [$flatW, $flatH], $color, $art, $mats]) {
+                    $spec = json_decode($types[$typeCode], true);
+                    $spec['dims'] = ['product_length' => $d[0], 'product_width' => $d[1], 'product_height' => $d[2]]
+                        + (isset($d[3]) ? ['top_length' => $d[3], 'top_width' => $d[4]] : [])
+                        + ($typeCode === 'BOX_WITH_LID' ? ['lid_height' => $parts[1][2][2], 'overflow_margin' => 3] : []);
+                    $spec['type_code'] = $typeCode;
 
-                $partId = $this->db->table('iqp_part')->insertGetId([
-                    'inquiry_id' => $inquiryId, 'part_seq' => 1, 'part_code' => 'P1', 'part_name' => 'MonoForm', 'part_type' => 'DC',
-                    'qty_per_sku' => 1, 'cfg_color' => $color, 'dieline_spec' => json_encode($spec),
-                    'flat_w' => $flatW, 'flat_h' => $flatH, 'flat_area' => round($flatW * $flatH, 2),
-                    'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'updated_by' => 'uat', 'data_origin' => 'DUMMY',
-                ]);
+                    $partId = $this->db->table('iqp_part')->insertGetId([
+                        'inquiry_id' => $inquiryId, 'part_seq' => $n + 1, 'part_code' => 'P'.($n + 1), 'part_name' => $partName, 'part_type' => $partType,
+                        'qty_per_sku' => 1, 'cfg_color' => $color, 'dieline_spec' => json_encode($spec),
+                        'flat_w' => $flatW, 'flat_h' => $flatH, 'flat_area' => round($flatW * $flatH, 2),
+                        'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'updated_by' => 'uat', 'data_origin' => 'DUMMY',
+                    ]);
 
-                $mat = $materials[$matCode] ?? null;
-                preg_match('/(\d+)\s*GR/i', (string) $mat?->material_name, $gsm);
-                $this->db->table('iqp_part_material')->insert([
-                    'part_id' => $partId, 'layer_seq' => 1, 'rawmat_id' => $mat?->material_id, 'rawmat_name' => $mat?->material_name ?? 'Brown Kraft',
-                    'gram_weight' => $gsm[1] ?? null, 'is_primary' => 1, 'material_source' => 'OWN', 'source' => 'MANUAL',
-                    'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'data_origin' => 'DUMMY',
-                ]);
+                    foreach ($mats as $m => $path) {
+                        $cat = $this->category($path);
+                        $gsm = preg_match('/^(\d+)\s*gr/i', $path[2], $g) ? $g[1] : null;
+                        $this->db->table('iqp_part_material')->insert([
+                            'part_id' => $partId, 'layer_seq' => $m + 1, 'rawmat_id' => null, 'category_id' => $cat, 'rawmat_name' => implode(' › ', $path),
+                            'gram_weight' => $gsm, 'flute_type' => $path[0] === 'Sheet' ? $path[1] : null, 'is_primary' => $m === 0 ? 1 : 0,
+                            'material_source' => 'OWN', 'source' => 'MANUAL',
+                            'created_at' => $now, 'updated_at' => $now, 'created_by' => 'uat', 'data_origin' => 'DUMMY',
+                        ]);
+                    }
 
-                $path = "inquiry/{$partId}/artwork/{$file}";
-                Storage::disk('public')->put($path, file_get_contents(self::ASSETS.$file));
-                $art = ['artwork_path' => $path, 'artwork_original_filename' => $file];
-                if ($inner) {
-                    $ipath = "inquiry/{$partId}/artwork-inner/{$inner}";
-                    Storage::disk('public')->put($ipath, file_get_contents(self::ASSETS.$inner));
-                    $art += ['artwork_inner_path' => $ipath, 'artwork_inner_original_filename' => $inner];
+                    if ($art) {
+                        [$file, $inner] = $art;
+                        $path = "inquiry/{$partId}/artwork/{$file}";
+                        Storage::disk('public')->put($path, file_get_contents(self::ASSETS.$file));
+                        $upd = ['artwork_path' => $path, 'artwork_original_filename' => $file];
+                        if ($inner) {
+                            $ipath = "inquiry/{$partId}/artwork-inner/{$inner}";
+                            Storage::disk('public')->put($ipath, file_get_contents(self::ASSETS.$inner));
+                            $upd += ['artwork_inner_path' => $ipath, 'artwork_inner_original_filename' => $inner];
+                        }
+                        $this->db->table('iqp_part')->where('id_part', $partId)->update($upd);
+                    }
                 }
-                $this->db->table('iqp_part')->where('id_part', $partId)->update($art);
             }
         });
 
         $this->command?->info(count(self::PLAN).' inquiry '.self::PREFIX.'* (sampel desain customer, DRAFT) siap di '.$this->db->getDatabaseName().'.');
+    }
+
+    // [Kategori, Jenis, Gramatur] -> id_category node terdalam; gagal keras bila master mat_category tidak punya rantai itu.
+    private function category(array $path): int
+    {
+        $id = null;
+        foreach ($path as $level => $name) {
+            $id = DB::connection('tm2mst')->table('mat_category')->where('level', $level + 1)->where('category_name', $name)
+                ->when($id, fn ($q) => $q->where('parent_id', $id), fn ($q) => $q->whereNull('parent_id'))->value('id_category');
+            if (! $id) {
+                throw new RuntimeException('mat_category tidak ada: '.implode(' › ', $path));
+            }
+        }
+
+        return $id;
     }
 
     private function reset(): void
