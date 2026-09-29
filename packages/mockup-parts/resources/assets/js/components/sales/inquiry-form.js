@@ -34,7 +34,7 @@
         const inner = !!e.target.closest('[data-inq-artwork-inner]');
         const p = e.target.closest('[data-inq-artwork], [data-inq-artwork-inner]')?.closest('[data-inq-part]'); if (!p) return;
         const f = e.detail.files[0];
-        if (!inner) this.artPreview(p, f);
+        this.artPreview(p, f, inner);
         if (f && this.locked()) this.uploadArtwork(p, f, inner);
       });
       try { const m = sessionStorage.getItem('inq-flash'); if (m) { sessionStorage.removeItem('inq-flash'); this.flash(m); } } catch (err) { /* tanpa storage: pesan dilewati */ }
@@ -315,10 +315,12 @@
 
     confirm() { return this.persist('confirm'); }
 
-    artPreview(p, file) {
-      if (p.dlArtUrl) URL.revokeObjectURL(p.dlArtUrl);
-      p.dlArtUrl = file && file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
-      $(p, '[data-dl-dieline-x]')?.dlDielineX?.setArtwork(p.dlArtUrl);
+    artPreview(p, file, inner = false) {
+      const k = inner ? 'dlArtInUrl' : 'dlArtUrl';
+      if (p[k]) URL.revokeObjectURL(p[k]);
+      p[k] = file && file.type.startsWith('image/') ? URL.createObjectURL(file) : null;
+      const d = $(p, '[data-dl-dieline-x]')?.dlDielineX; if (!d) return;
+      if (inner) d.setArtworkInner(p[k]); else d.setArtwork(p[k]);
     }
 
     async uploadArtwork(p, file, inner = false) {

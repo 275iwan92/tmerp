@@ -35,7 +35,8 @@
 
     // Form terkunci (lihat-saja): isian & tombol mati kecuali data-inq-keep; tombol tambah/hapus baris disembunyikan.
     lockAll() {
-      $$(this.el, 'input, select, textarea, button').forEach(x => { if (!x.closest('[data-inq-keep], .dl-mov')) x.disabled = true; });
+      // Alat tampilan dieline (tab sisi, zoom, satuan, opsi gambar) hanya mengubah tampilan -> tetap aktif.
+      $$(this.el, 'input, select, textarea, button').forEach(x => { if (!x.closest('[data-inq-keep], .dl-mov, .dl-dieline__tools, .dl-dieline__opts')) x.disabled = true; });
       $$(this.el, '[data-inq-officer]').forEach(a => a.classList.remove('is-show'));
       $$(this.el, '[data-l-add], [data-l-del], [data-l-dup]').forEach(b => { b.hidden = true; });
     }

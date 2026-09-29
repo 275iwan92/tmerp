@@ -123,7 +123,7 @@ class InquiryPart extends DevlibComponent
                             <x-dl::field.upload :name="$n('artwork')" label="Artwork / Desain (luar)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork
                                 :value="$p['artwork_url'] ? ['url' => $p['artwork_url'], 'name' => $p['artwork_name']] : null"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_path', 'tm2sdi.iqp_part.artwork_original_filename', 'tm2sdi.iqp_part.artwork_colors')" />
-                            {{-- Sisi dalam (cetak 2 sisi, mis. mailer box) — disimpan, tidak ikut pratinjau dieline/3D. --}}
+                            {{-- Sisi dalam (cetak 2 sisi, mis. mailer box) — tampil di tab "Sisi Dalam" pratinjau dieline (tidak di 3D). --}}
                             <x-dl::field.upload :name="$n('artwork_inner')" label="Artwork Sisi Dalam (opsional)" accept=".jpg,.jpeg,.png" data-inq-keep data-inq-artwork-inner
                                 :value="$p['artwork_inner_url'] ? ['url' => $p['artwork_inner_url'], 'name' => $p['artwork_inner_name']] : null"
                                 :source="\MockupParts\Src::of('tm2sdi.iqp_part.artwork_inner_path', 'tm2sdi.iqp_part.artwork_inner_original_filename')" />
@@ -139,7 +139,7 @@ class InquiryPart extends DevlibComponent
                             <x-dl::alert :tone="$sug['tone'] ?? 'info'">{{ $sug['text'] }}<x-dl::button size="sm" variant="secondary" :label="$sug['action'] ?? 'Pakai'" data-inq-suggest="{{ $sug['apply'] ?? '' }}" /></x-dl::alert>
                         @endforeach
                         <p class="mp-hint" data-inq-dieline-name hidden></p>
-                        <x-mp::dieline-v3 :data-artwork="$p['artwork_url']" :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
+                        <x-mp::dieline-v3 :data-artwork="$p['artwork_url']" :data-artwork-inner="$p['artwork_inner_url']" :types="$types" :type="$typeCode ?: array_key_first($types)" :dims="$p['dims']" :name="$n('dieline')" :picker="false" height="400px"
                             :source="\MockupParts\Src::of('tm2mst.prod_type.dieline_spec', 'tm2sdi.iqp_part.dieline_spec', 'tm2sdi.iqp_part.flat_w', 'tm2sdi.iqp_part.flat_h', 'tm2sdi.iqp_part.flat_area')" />
 
                         <x-dl::divider label="Bahan (Material)" />

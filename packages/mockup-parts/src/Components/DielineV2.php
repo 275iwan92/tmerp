@@ -75,6 +75,8 @@ class DielineV2 extends Dieline
                     <div class="dl-dieline__tools">
                         <span class="dl-dieline__legend"><i class="is-cut"></i>Cutting <i class="is-crease"></i>Creasing <i class="is-bleed"></i>Bleed <i class="is-hole"></i>Hole</span>
                         <span class="dl-print__spacer"></span>
+                        {{-- Cetak 2 sisi: tampil bila ada artwork sisi dalam (data-artwork-inner / setArtworkInner). --}}
+                        <div class="dl-segment" data-d-side hidden><button type="button" class="dl-segment__opt is-active" data-value="out">Sisi Luar</button><button type="button" class="dl-segment__opt" data-value="in">Sisi Dalam</button></div>
                         <div class="dl-segment dl-dieline__unit" data-d-unit><button type="button" class="dl-segment__opt" data-value="mm">mm</button><button type="button" class="dl-segment__opt" data-value="cm">cm</button></div>
                         <x-dl::icon-button icon="fa-magnifying-glass-minus" title="Perkecil" data-d-zoom="-1" /><b data-d-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Perbesar" data-d-zoom="1" />
                         <x-dl::button variant="secondary" size="sm" icon="download" label="SVG" data-d-svg />
@@ -88,6 +90,7 @@ class DielineV2 extends Dieline
                         <label class="dl-choice"><input type="checkbox" data-d-opt="cross" checked> Cross <x-dl::tooltip text="Tanda register (crosshair) di sudut bleed untuk menyelaraskan cetak CMYK."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
                         <label class="dl-choice"><input type="checkbox" data-d-opt="lock"> Lock tab <x-dl::tooltip text="Takik pengunci gesek (friction lock) di ujung lipatan tuck flap — indikatif."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
                         <label class="dl-choice"><input type="checkbox" data-d-dims-on @checked($dimensions)> Dimension lines</label>
+                        <label class="dl-choice" data-d-mirror-wrap hidden><input type="checkbox" data-d-opt="mirror"> Mirror <x-dl::tooltip text="Centang bila file sisi dalam dibuat di atas dieline yang dicerminkan (dilihat dari dalam) — gambar dibalik agar jatuh pas di panelnya."><i class="fa-regular fa-circle-question dl-dieline__q"></i></x-dl::tooltip></label>
                     </div>
                     <div class="dl-dieline__canvas"><div class="dl-dieline__preview" data-d-preview></div></div>
                     @if ($level() >= 3)<div class="dl-dieline__foot"><div class="dl-dieline__lens" data-d-lens></div><div class="dl-dieline__3d" data-d-3d title="Tampilan 3D statis (ilustrasi)"></div></div>@endif

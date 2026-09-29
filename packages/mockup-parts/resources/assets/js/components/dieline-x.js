@@ -20,9 +20,14 @@
       this.zoom = 1;
       this.manual = false;
       this.unit = this.el.dataset.unit || 'mm';
-      // Artwork tersimpan (url) dipakai sampai user memilih file baru (setArtwork).
+      // Artwork tersimpan (url) dipakai sampai user memilih file baru (setArtwork / setArtworkInner).
+      // Cetak 2 sisi: tab Sisi Luar / Sisi Dalam; this.art = artwork sisi yang sedang tampil.
       this.saved = this.el.dataset.artwork || null;
-      this.art = this.saved;
+      this.savedIn = this.el.dataset.artworkInner || null;
+      this.outArt = this.saved;
+      this.inArt = this.savedIn;
+      this.side = 'out';
+      this.art = this.outArt;
       this.q = s => $(this.el, s);
       this.fw = this.q('[data-d-fw]');
       this.fh = this.q('[data-d-fh]');
@@ -41,6 +46,7 @@
         const s = e.target.closest('[data-d-size]');
         if (s) { Object.assign(this.dims, this.T[this.code].sizes[+s.dataset.dSize].dims); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); return this.redraw(); }
         const u = e.target.closest('[data-d-unit] .dl-segment__opt'); if (u) { this.unit = u.dataset.value; return this.redraw(); }
+        const sd = e.target.closest('[data-d-side] .dl-segment__opt'); if (sd) return this.showSide(sd.dataset.value);
         const z = e.target.closest('[data-d-zoom]'); if (z) { this.zoom = Math.min(3, Math.max(0.4, Math.round((this.zoom + +z.dataset.dZoom * 0.2) * 10) / 10)); return this.redraw(); }
         if (e.target.closest('[data-d-svg]')) {
           const svgEl = this.q('[data-d-preview] svg'); if (!svgEl) return toast('Isi dimensi dulu.', 'warn');
@@ -51,10 +57,26 @@
       this.el.dlDielineX = {get dims() { return {...self.dims}; }, setType: c => { this.code = c; this.dims = {}; this.fields(); this.redraw(); },
         setDims: d => { Object.assign(this.dims, d); $$(this.el, '[data-d-dim]').forEach(i => { i.value = this.dims[i.dataset.dDim] ?? ''; }); this.redraw(); }, redraw: this.redraw,
         // url gambar (object URL / storage) atau null = kembali ke artwork tersimpan.
-        setArtwork: url => { this.art = url || this.saved; this.loadArt(); }};
+        setArtwork: url => { this.outArt = url || this.saved; if (this.side === 'out') this.showSide('out'); },
+        // File sisi dalam baru langsung ditampilkan; dihapus & tak ada yang tersimpan -> kembali ke sisi luar.
+        setArtworkInner: url => { this.inArt = url || this.savedIn; this.showSide(url ? 'in' : this.inArt ? this.side : 'out'); }};
       if (!window.TMDieline) { this.q('[data-d-preview]').textContent = 'TMDieline tidak termuat.'; return; }
+      this.sideUi();
       this.fields();this.redraw();
       if (this.art) this.loadArt();
+    }
+
+    showSide(side) {
+      this.side = side === 'in' && this.inArt ? 'in' : 'out';
+      this.art = this.side === 'in' ? this.inArt : this.outArt;
+      this.sideUi();
+      this.loadArt();
+    }
+
+    sideUi() {
+      const box = this.q('[data-d-side]'), mw = this.q('[data-d-mirror-wrap]');
+      if (box) { box.hidden = !this.inArt; $$(box, '.dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.side)); }
+      if (mw) mw.hidden = this.side !== 'in';
     }
 
     term(k, p) {
@@ -205,6 +227,7 @@
         img.setAttribute('x', R.x); img.setAttribute('y', R.y);
         img.setAttribute('width', R.w); img.setAttribute('height', R.h);
         img.setAttribute('preserveAspectRatio', 'none'); img.setAttribute('opacity', '.8');
+        if (this.side === 'in' && this.opt('mirror')) img.setAttribute('transform', `translate(${2 * R.x + R.w},0) scale(-1,1)`);
         svg.insertBefore(img, svg.firstChild);
       }
       let d = `<defs><pattern id="${this.uid}h" width="${u * 2}" height="${u * 2}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="${u * 2}" stroke="var(--dl-dl-glue)" stroke-width="${u * 0.6}"/></pattern></defs><g class="dl-deco">`;
@@ -237,7 +260,8 @@
 
     // Artwork di sisi 3D: tiap sisi = transformasi afin gambar ke bidang isometrik, dipotong sesuai urutan panel dieline (L, W, L, W).
     art3d(L, Wd, H, c, s) {
-      if (!this.art || !this.opt('artwork') || !this.g) return '';
+      // 3D = tampak luar kotak; sisi dalam tidak dipasang di sini.
+      if (!this.art || this.side === 'in' || !this.opt('artwork') || !this.g) return '';
       const g = this.g, R = this.artRect(g), F = this.faces3d(g), id = this.uid + 'f', href = esc(this.art);
       if (!F) return '';
       // Sumber [x,y,w,h] di bentangan -> sisi w x h: gambar (menempati R) diskalakan & digeser agar sumber jatuh di 0..w, 0..h.
@@ -275,7 +299,7 @@
 
     annotate() {
       const t0 = this.T[this.code], dimTxt = ['product_length', 'product_width', 'product_height'].map(k => this.dims[k]).filter(v => v !== '' && v != null);
-      if (this.v3) this.q('[data-d-title]').textContent = t0 ? `${t0.label.toUpperCase()}${dimTxt.length ? ' · ' + dimTxt.join(' × ') + ' MM' : ''}${this.dims.diameter ? ' · Ø ' + this.dims.diameter + ' MM' : ''}` : '';
+      if (this.v3) this.q('[data-d-title]').textContent = t0 ? `${t0.label.toUpperCase()}${dimTxt.length ? ' · ' + dimTxt.join(' × ') + ' MM' : ''}${this.dims.diameter ? ' · Ø ' + this.dims.diameter + ' MM' : ''}${this.side === 'in' ? ' · SISI DALAM' : ''}` : '';
       if (this.v3) this.preview3d();
       $$(this.el, '[data-d-unit] .dl-segment__opt').forEach(b => b.classList.toggle('is-active', b.dataset.value === this.unit));
       const svg = this.q('[data-d-preview] svg'), termsBox = this.q('[data-d-terms]');
