@@ -115,6 +115,7 @@ Route::middleware(['auth', 'locale'])->group(function () {
             : Route::livewire('/menu', 'pages::main-menu')->name('menu');
 
         require __DIR__.'/v2.php';
+        require __DIR__.'/v2_master_card.php';
 
         Route::middleware('module:SALES')->group(function () {
             Route::livewire('/inquiry', 'pages::inquiry.hub')->name('inquiry.hub');
