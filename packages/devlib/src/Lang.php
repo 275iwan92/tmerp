@@ -10,8 +10,8 @@ final class Lang
     private static array $extra = [];
 
     public const DICT = [
-        'save' => ['Simpan', 'Save'], 'cancel' => ['Batal', 'Cancel'], 'close' => ['Tutup', 'Close'], 'delete' => ['Hapus', 'Delete'],
-        'discard' => ['Buang perubahan', 'Discard changes'], 'processing' => ['Memproses…', 'Processing…'], 'search' => ['Cari', 'Search'],
+        'save' => ['Save', 'Save'], 'cancel' => ['Cancel', 'Cancel'], 'close' => ['Tutup', 'Close'], 'delete' => ['Delete', 'Delete'],
+        'discard' => ['Undo', 'Undo'], 'processing' => ['Memproses…', 'Processing…'], 'search' => ['Cari', 'Search'],
         'dirty_title' => ['Ada perubahan belum disimpan', 'You have unsaved changes'],
         'dirty_msg' => ['Perubahan di layar ini belum disimpan. Simpan dulu sebelum pindah?', 'Changes on this screen are not saved. Save before leaving?'],
         'shortcuts' => ['Pintasan keyboard', 'Keyboard shortcuts'], 'created_by' => ['Dibuat', 'Created'], 'updated_by' => ['Diubah', 'Updated'],

@@ -3,8 +3,8 @@
 namespace Devlib\Components;
 
 // Induk form (mockup UIUX_components_part1.html): judul + isi (kolom/baris field) + kaki berisi tombol tambahan opsional dan tombol split aksi.
-// Simpan: isian wajib dicek (tab berisi error dibuka & diberi tanda), x-dl::lines ikut divalidasi; di dalam modal/drawer ditutup setelah sukses.
-// mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Batal mengembalikan nilai semula. Event dl:form-submit.
+// Save: isian wajib dicek (tab berisi error dibuka & diberi tanda), x-dl::lines ikut divalidasi; di dalam modal/drawer ditutup setelah sukses.
+// mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Cancel mengembalikan nilai semula. Event dl:form-submit.
 // panel="top" (Single Form, user 2026-09-30): panel aksi menempel di atas -- judul, badge status, lalu tombol, Back di ujung kanan; tombol baku menurut kind+status;
 // layar TIDAK menyusun tombol sendiri. kind=master: Deactivate/Activate + New + Undo + Save. kind=document: draft = Delete + New + Undo + Confirm + Save,
 // confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Duplicate + Print, closed = New + Print. status=new (form sama tapi kosong) = Undo + Save. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).

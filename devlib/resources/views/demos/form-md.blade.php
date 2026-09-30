@@ -1,4 +1,4 @@
-<x-dl::form title="Purchase Requisition PR-2609-0012" :actions="['Simpan' => '💾', 'Simpan & Ajukan' => '📤']">
+<x-dl::form title="Purchase Requisition PR-2609-0012" :actions="['Save' => '💾', 'Save & Submit' => '📤']">
     <x-dl::form.row cols="3">
         <x-dl::field.text name="pr_no" label="No. PR" value="PR-2609-0012" code readonly />
         <x-dl::field.date name="pr_date" label="Tanggal" value="2026-09-24" required />

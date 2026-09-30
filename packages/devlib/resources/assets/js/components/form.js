@@ -19,7 +19,7 @@
         if (this.el.getAttribute('action')) return;
         e.preventDefault();
         const data = {}; new FormData(this.el).forEach((v, k) => { if (k !== '_token') data[k] = v; });
-        toast('Aksi: ' + (this.el.querySelector('[data-dl-split-value]')?.value || 'Simpan') + ' (pratinjau, tidak dikirim)', 'success');
+        toast('Aksi: ' + (this.el.querySelector('[data-dl-split-value]')?.value || 'Save') + ' (pratinjau, tidak dikirim)', 'success');
         this.el.dispatchEvent(new CustomEvent('dl:form-submit', {bubbles: true, detail: data}));
         if (this.viewMode) { this.snapshot = null; this.setView(true); }
         const layer = this.el.closest('[data-dl-modal-id],[data-dl-drawer-id]'); if (layer) closeLayer(layer);

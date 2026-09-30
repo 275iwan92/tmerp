@@ -31,7 +31,7 @@
     </x-slot:perms>
     <x-slot:lang>
         <div class="dl-sec"><h2>Bahasa</h2><p class="dl-sec__desc">Bahasa default saat login dan bahasa yang tersedia.</p>
-            <x-dl::form title="Bahasa default" :actions="['Simpan' => '💾']"><x-dl::field.select name="default_lang" label="Bahasa saat login" :options="['id' => 'Bahasa Indonesia', 'en' => 'English']" value="id" /></x-dl::form>
+            <x-dl::form title="Bahasa default" :actions="['Save' => '💾']"><x-dl::field.select name="default_lang" label="Bahasa saat login" :options="['id' => 'Bahasa Indonesia', 'en' => 'English']" value="id" /></x-dl::form>
             <x-dl::grid id="sec-langs" :rows="[['code' => 'id', 'name' => 'Bahasa Indonesia', 'active' => true], ['code' => 'en', 'name' => 'English', 'active' => true]]" row-key="code" :quick-add="['code', 'name']"
                 :columns="[['key' => 'code', 'label' => 'Kode'], ['key' => 'name', 'label' => 'Nama'], ['key' => 'active', 'label' => 'Aktif', 'type' => 'toggle']]" /></div>
     </x-slot:lang>

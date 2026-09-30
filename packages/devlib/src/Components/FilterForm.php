@@ -29,7 +29,7 @@ class FilterForm extends DevlibComponent
                 <div class="dl-filter__body">{{ $slot }}</div>
                 <div class="dl-filter__foot">
                     <span class="dl-filter__save" data-fl-savebox hidden><input type="text" placeholder="Nama filter" data-fl-name aria-label="Nama filter"><x-dl::button size="sm" label="OK" data-fl-saveok /></span>
-                    <x-dl::button variant="link" size="sm" icon="fa-star" label="Simpan filter" data-fl-save />
+                    <x-dl::button variant="link" size="sm" icon="fa-star" label="Save Filter" data-fl-save />
                     <span class="dl-print__spacer"></span>
                     <x-dl::button variant="ghost" size="sm" label="Reset" data-fl-reset />
                     <x-dl::button size="sm" icon="filter" label="Terapkan" type="submit" />

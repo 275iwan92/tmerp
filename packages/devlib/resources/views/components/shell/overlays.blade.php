@@ -37,7 +37,7 @@
             <div class="dl-mfield"><label>No. telepon</label><input value="0812-3456-7890"></div>
             <div class="dl-mfield"><label>Jabatan</label><input value="{{ $user['role'] }}" readonly></div>
         </div>
-        <div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-dl-mclose>Batal</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-mclose>Simpan</button></div>
+        <div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-dl-mclose>Cancel</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-mclose>Save</button></div>
     </div></div>
 
     <div class="dl-mov" data-dl-modal="pass"><div class="dl-modal" data-dl="modal ubah password" data-dl-class="bagian Shell" data-dl-src="sec_user.pswd">
@@ -47,7 +47,7 @@
             <div class="dl-mfield"><label>Password baru</label><input type="password" placeholder="Min. 8 karakter"></div>
             <div class="dl-mfield"><label>Konfirmasi password baru</label><input type="password" placeholder="Ulangi password"></div>
         </div>
-        <div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-dl-mclose>Batal</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-mclose>Simpan</button></div>
+        <div class="dl-modal__foot"><button type="button" class="dl-mbtn dl-mbtn--c" data-dl-mclose>Cancel</button><button type="button" class="dl-mbtn dl-mbtn--p" data-dl-mclose>Save</button></div>
     </div></div>
 
     <div class="dl-pal-ov" data-dl-palette data-dl="palet perintah Ctrl+K" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (semua item)">

@@ -192,7 +192,7 @@
           <label><span>Deskripsi</span><textarea rows="3" data-e-desc>${esc(e.desc || '')}</textarea></label>
           <p class="dl-lines__err" data-e-err></p>
         </div>
-        <div class="dl-modal__foot">${isNew ? '' : '<button type="button" class="dl-btn dl-btn--danger dl-btn--md" data-e-del><i class="fa-solid fa-trash-can"></i> Hapus</button><span class="dl-kcard__spacer"></span>'}<button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Batal</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save><i class="fa-solid fa-floppy-disk"></i> Simpan</button></div></div>`;
+        <div class="dl-modal__foot">${isNew ? '' : '<button type="button" class="dl-btn dl-btn--danger dl-btn--md" data-e-del><i class="fa-solid fa-trash-can"></i> Delete</button><span class="dl-kcard__spacer"></span>'}<button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Cancel</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save><i class="fa-solid fa-floppy-disk"></i> Save</button></div></div>`;
       };
       const read = () => { e.title = $(ov, '[data-e-title]').value.trim(); e.desc = $(ov, '[data-e-desc]').value.trim(); e.allDay = $(ov, '[data-e-allday]').checked; const a = $(ov, '[data-e-start]').value, b = $(ov, '[data-e-end]').value; if (a) e.s = this.parse(a); if (b) e.e = this.parse(b); };
       draw();

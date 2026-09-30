@@ -35,7 +35,7 @@
                 <x-dl::alert tone="info" message="Pantulan (bounce) yang datang belakangan tidak terbaca otomatis — butuh akses kotak masuk pengirim. Yang langsung ditolak server tercatat GAGAL dan pengirim mendapat notifikasi." />
                 <x-dl::action-bar>
                     <x-dl::button variant="secondary" icon="back" label="Back" :href="route('v2.home')" />
-                    <x-dl::button variant="secondary" icon="send" label="Simpan & kirim e-mail uji ke saya" type="submit" name="action" value="test" />
+                    <x-dl::button variant="secondary" icon="send" label="Save & Send Test Email" type="submit" name="action" value="test" />
                     <x-dl::button preset="save" name="action" value="save" />
                 </x-dl::action-bar>
             </x-dl::card>

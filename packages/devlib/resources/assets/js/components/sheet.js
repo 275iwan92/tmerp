@@ -252,7 +252,7 @@
         const rv = $(this.el, '[data-s-revert]'); if (rv) rv.disabled = !changed.length;
       } else {
         info.textContent = `${this.data.length} baris · ${changed.length} berubah`;
-        sv.lastChild.textContent = changed.length ? `Simpan Semua (${changed.length})` : 'Simpan Semua';
+        sv.lastChild.textContent = changed.length ? `Save All (${changed.length})` : 'Save All';
         $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
       }
       const td = this.cellEl(this.cur.r, this.cur.c); if (td) td.scrollIntoView({block: 'nearest', inline: 'nearest'});

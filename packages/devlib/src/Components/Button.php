@@ -31,14 +31,15 @@ class Button extends DevlibComponent
     // Aksi umum berlabel BAKU (LOCKED): satu kata sama di semua layar, ikut bahasa.
     // preset => [label ID, label EN, variant, ikon, type]
     public const PRESETS = [
-        'save' => ['Simpan', 'Save', 'primary', 'save', 'submit'],
-        'cancel' => ['Batal', 'Cancel', 'secondary', 'cancel', 'button'],
+        // Istilah aksi SELALU English di kedua bahasa (user 2026-09-30): Save, Cancel, Delete, Print, Undo, ...
+        'save' => ['Save', 'Save', 'primary', 'save', 'submit'],
+        'cancel' => ['Cancel', 'Cancel', 'secondary', 'cancel', 'button'],
         'close' => ['Tutup', 'Close', 'secondary', 'close', 'button'],
         'confirm' => ['Confirm', 'Confirm', 'success', 'confirm', 'button'],
-        'delete' => ['Hapus', 'Delete', 'danger', 'delete', 'button'],
+        'delete' => ['Delete', 'Delete', 'danger', 'delete', 'button'],
         'new' => ['+ New Record', '+ New Record', 'primary', null, 'button'],
         'apply' => ['Terapkan', 'Apply', 'primary', null, 'button'],
-        'print' => ['Cetak', 'Print', 'secondary', 'print', 'button'],
+        'print' => ['Print', 'Print', 'secondary', 'print', 'button'],
         'email' => ['Email', 'Email', 'secondary', 'email', 'button'],
         'submit' => ['Ajukan', 'Submit', 'primary', 'submit', 'submit'],
         'approve' => ['Setujui', 'Approve', 'success', 'approve', 'button'],

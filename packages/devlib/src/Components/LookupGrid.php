@@ -3,7 +3,7 @@
 namespace Devlib\Components;
 
 // Grid Lookup (Grid Pre-Entry): daftar bantu kecil yang jarang berubah (Agama, Golongan Darah, ...), diisi langsung di sel.
-// = Sheet mode lookup: Cari + Baris + Batal + Simpan, rapat, tanpa Hapus; kolom 'unique' => true tidak boleh kembar.
+// = Sheet mode lookup: Cari + Baris + Undo + Save, rapat, tanpa Hapus; kolom 'unique' => true tidak boleh kembar.
 class LookupGrid extends Sheet
 {
     public function __construct(

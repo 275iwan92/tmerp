@@ -9,8 +9,8 @@ namespace Devlib\Components;
 // Kolom teks: badge aa/Aa/AA di sel yang diedit (seperti x-dl::field.text), diingat per kolom; 'case' => uppercase|capitalize = awal.
 // Kolom angka: 'decimals' => n = selalu tampil n digit (18.450,00). Edit seperti sel Excel: angka mentah (1250000,5), format saat keluar sel.
 // Kolom date: tampil dd-Mmm-yyyy, ketik 10-10-26 / 10 okt / 2026-10-10 (disimpan YYYY-MM-DD). time: ketik 8 / 830 / 8.30 -> 08:30.
-// Simpan Semua -> validasi -> event dl:sheet-save {rows, changed}. Sel berubah ditandai; salah dimerahkan.
-// lookup=true (turunan LookupGrid = Grid Lookup): daftar bantu kecil -- Cari + Baris + Batal + Simpan saja, rapat,
+// Save All -> validasi -> event dl:sheet-save {rows, changed}. Sel berubah ditandai; salah dimerahkan.
+// lookup=true (turunan LookupGrid = Grid Lookup): daftar bantu kecil -- Cari + Baris + Undo + Save saja, rapat,
 // tanpa Hapus (baris yang sudah dipakai cukup dinonaktifkan), kolom 'unique' => true tidak boleh kembar.
 class Sheet extends DevlibComponent
 {
@@ -55,19 +55,19 @@ class Sheet extends DevlibComponent
                     <span class="dl-sheet__info" data-s-info></span>
                     <span class="dl-print__spacer"></span>
                     <x-dl::button variant="secondary" size="sm" icon="new" label="Baris" data-s-add />
-                    <x-dl::button preset="cancel" size="sm" data-s-revert />
-                    <x-dl::button preset="save" size="sm" label="Simpan" data-s-save />
+                    <x-dl::button variant="secondary" size="sm" icon="undo" label="Undo" data-s-revert />
+                    <x-dl::button preset="save" size="sm" label="Save" data-s-save />
                 </div>
                 @else
                 <div class="dl-sheet__bar">
                     @if ($title)<b>{{ $title }}</b>@endif
                     <x-dl::button variant="secondary" size="sm" icon="new" label="Baris" data-s-add />
-                    <x-dl::button variant="secondary" size="sm" icon="delete" label="Hapus baris" data-s-del />
+                    <x-dl::button variant="secondary" size="sm" icon="delete" label="Delete Row" data-s-del />
                     <x-dl::icon-button icon="undo" title="Undo (Ctrl+Z)" data-s-undo />
                     <x-dl::icon-button icon="fa-rotate-right" title="Redo (Ctrl+Y)" data-s-redo />
                     <span class="dl-sheet__info" data-s-info></span>
                     <span class="dl-print__spacer"></span>
-                    <x-dl::button preset="save" size="sm" label="Simpan Semua" data-s-save />
+                    <x-dl::button preset="save" size="sm" label="Save All" data-s-save />
                 </div>
                 @endif
                 <div class="dl-sheet__wrap" tabindex="0" data-s-wrap aria-label="Lembar kerja"><table class="dl-sheet__table" data-s-table></table></div>

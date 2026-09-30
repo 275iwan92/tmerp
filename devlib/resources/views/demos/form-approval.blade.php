@@ -1,4 +1,4 @@
-<x-dl::form title="Pengajuan Cuti" :actions="['Simpan Draft' => '💾']">
+<x-dl::form title="Pengajuan Cuti" :actions="['Save' => '💾']">
     <x-dl::form.row>
         <x-dl::field.text name="pegawai" label="Pegawai" value="Budi Santoso (TM-000123)" readonly />
         <x-dl::field.select name="jenis" label="Jenis Cuti" :options="['Tahunan', 'Sakit', 'Melahirkan', 'Penting']" value="Tahunan" required />

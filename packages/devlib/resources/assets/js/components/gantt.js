@@ -59,7 +59,7 @@
           <div class="dl-modal__body dl-gantt__edit"><label><span>Kode</span><input value="${esc(t.label)}" disabled></label>
           <label><span>Resource</span><select data-e-row>${this.rows.map(r => `<option value="${esc(r.key)}" ${r.key === t.row ? 'selected' : ''}>${esc(r.label)}${r.section ? ' (' + esc(r.section.split(' ')[0].toLowerCase()) + ')' : ''}</option>`).join('')}</select></label>
           <label><span>Proses</span><select data-e-proc>${Object.entries(this.cats).map(([k, c]) => `<option value="${esc(k)}" ${k === t.process ? 'selected' : ''}>${esc(c.label)}</option>`).join('')}</select></label></div>
-          <div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Batal</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save>Simpan</button></div></div>`;
+          <div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--ghost dl-btn--md" data-x>Cancel</button><button type="button" class="dl-btn dl-btn--primary dl-btn--md" data-e-save>Save</button></div></div>`;
         ov.addEventListener('click', ev => {
           if (ev.target === ov || ev.target.closest('[data-x]')) return ov.remove();
           if (ev.target.closest('[data-e-save]')) { const nr = $(ov, '[data-e-row]').value, np = $(ov, '[data-e-proc]').value; if (nr !== t.row || np !== t.process) { t.row = nr; t.process = np; this.touch(t, 'reassign'); toast(`${t.label} dipindah ke ${this.rows.find(r => r.key === nr).label}.`, 'success'); } ov.remove(); this.render(); }

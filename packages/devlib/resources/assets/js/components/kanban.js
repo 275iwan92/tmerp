@@ -130,7 +130,7 @@
           <div class="dl-kcol__body" data-k-drop>${shown.map(this.cardHtml).join('') || '<div class="dl-kcol__empty">Tidak ada kartu</div>'}</div>
           ${this.canAddCard ? `<footer class="dl-kcol__foot"><button type="button" class="dl-kcol__add" data-k-add><i class="fa-solid fa-plus"></i> Tambah kartu</button>
             <div class="dl-kcol__composer" hidden><textarea rows="2" placeholder="Judul kartu..." data-k-new-title></textarea><input type="datetime-local" data-k-new-due title="Tenggat">
-            <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-k-new-save>Simpan</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-k-new-cancel>Batal</button></div></div></footer>` : ''}
+            <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-k-new-save>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-k-new-cancel>Cancel</button></div></div></footer>` : ''}
         </section>`;
       }).join('') + (this.canAddCol ? '<button type="button" class="dl-kanban__addcol" data-k-addcol><i class="fa-solid fa-plus"></i> Tambah kolom</button>' : '');
     }
@@ -176,7 +176,7 @@
           <div class="dl-kpop__list">${this.allLabels().filter(t => !labelQ || t.label.toLowerCase().includes(labelQ.toLowerCase())).map(t => `<label class="dl-kpop__row"><input type="checkbox" data-m-label="${esc(t.label)}" ${(card.tags || []).some(x => (x.label || x) === t.label) ? 'checked' : ''}><span class="dl-badge dl-badge--${esc(t.tone)}">${esc(t.label)}</span></label>`).join('')}</div>
           ${labelQ && !this.allLabels().some(t => t.label.toLowerCase() === labelQ.toLowerCase()) ? `<button type="button" class="dl-btn dl-btn--secondary dl-btn--sm" data-m-labelnew>+ Buat label "${esc(labelQ)}"</button>` : ''}`,
         dates: () => `<span class="dl-kpop__lbl">Tenggat (tanggal & jam, WIB)</span><input type="datetime-local" class="dl-kmodal__in" data-m-due value="${esc((card.due || '').replace(' ', 'T'))}">
-          <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-duesave>Simpan</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-dueclear>Hapus tenggat</button></div>`,
+          <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-duesave>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-dueclear>Hapus tenggat</button></div>`,
         checklist: () => `<span class="dl-kpop__lbl">Judul checklist</span><input class="dl-kmodal__in" data-m-cktitle value="Checklist">
           <button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-ckcreate>Tambah</button>`,
         members: () => `<div class="dl-kpop__list">${members.map(m => `<label class="dl-kpop__row"><input type="checkbox" data-m-member="${esc(m)}" ${card.members.includes(m) ? 'checked' : ''}><span class="dl-kcard__av">${esc(this.ini(m))}</span>${esc(m)}</label>`).join('')}</div>`,
@@ -201,7 +201,7 @@
               </div>` : ''}
               <p class="dl-kmodal__cap"><i class="fa-solid fa-align-left"></i> Deskripsi</p>
               ${editDesc ? `<textarea rows="5" class="dl-kmodal__desc" data-m-desc placeholder="Tambahkan deskripsi yang lebih rinci...">${esc(card.desc || '')}</textarea>
-                <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-descsave>Simpan</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-desccancel>Batal</button></div>`
+                <div class="dl-row"><button type="button" class="dl-btn dl-btn--primary dl-btn--sm" data-m-descsave>Save</button><button type="button" class="dl-btn dl-btn--ghost dl-btn--sm" data-m-desccancel>Cancel</button></div>`
                 : `<div class="dl-kmodal__descview ${card.desc ? '' : 'is-empty'}" data-m-descedit tabindex="0">${esc(card.desc || 'Tambahkan deskripsi yang lebih rinci...')}</div>`}
               ${hasCk ? `<div class="dl-kmodal__ckhead"><p class="dl-kmodal__cap"><i class="fa-regular fa-square-check"></i> ${esc(card.checklistTitle || 'Checklist')}</p><button type="button" class="dl-btn dl-btn--danger-soft dl-btn--sm" data-m-ckdelall>Delete</button></div>
                 <div class="dl-kmodal__pct"><span>${pct}%</span><div class="dl-progress__track"><div class="dl-progress__bar ${pct === 100 ? 'is-done' : ''}" style="width:${pct}%"></div></div></div>

@@ -28,7 +28,7 @@
                 <p class="dl-loginbox__sub" data-i18n="f_sub_new">Data cocok. Buat password baru.</p>
                 <x-dl::field.password name="new_password" label="Password baru" i18n="f_new" icon="fa-lock" autocomplete="new-password" required hint="Min. 8 karakter, kombinasi huruf & angka." />
                 <x-dl::field.password name="new_password_confirmation" label="Konfirmasi" i18n="r_conf" icon="fa-lock" autocomplete="new-password" required />
-                <x-dl::button type="submit" size="lg" block label="Simpan" i18n="f_save" />
+                <x-dl::button type="submit" size="lg" block label="Save" i18n="f_save" />
             </div>
             <div class="dl-auth__done" data-fg-step="done" hidden>
                 <span class="dl-auth__circle"><i class="fa-solid fa-check"></i></span>
