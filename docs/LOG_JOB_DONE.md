@@ -3,6 +3,17 @@
 
 ---
 
+## 2026-10-01 -- Engine target kecepatan mesin + spek mesin dari riset online (ddt*)
+
+- `App\Services\Production\SpeedTarget\SpeedTargetEngine` (engine suggests, PPIC confirms): 6 lapis sumber berurutan + tingkat
+  keyakinan TINGGI/SEDANG/RENDAH; P75 qty/jam dengan baris SETTING/QC/HITUNG/dst tidak ikut, satuan dipisah (LBR/PCS/SET).
+- Usulan di `tm2mst.prod_speed_suggestion`; `SpeedSuggestionStore::accept()` (Terima/Ubah) menulis ke `prod_machine.speed_target_per_hour`
+  atau `prod_process_machine.speed_per_hour` + jejak `[SPEED ...]` di catatan; usulan yang ditolak tidak disodorkan ulang.
+- Parameter di Settings > Constants (grup SPEED_ENGINE, 10 konstanta); perintah `production:suggest-speed-targets` harian 03:00.
+- Kolom baru `prod_machine.legacy_machine_names` (nama mesin di tm2old) diisi 21 mesin.
+- Katalog model +14 dari riset online (Agfa Avalon C8-30/C4-30, QZYK-1150, YDS-1100BT, FHSGJ-1050, SGUV-650, FM-1100, YB-1450E, TYMB-750,
+  LQ-QF-1080C, TD-202, SG-ASC-530A01, WM-700A, Xenons X3S); 14 mesin dipilihkan model SEMENTARA, hanya kolom kosong yang diisi.
+
 ## 2026-10-01 -- Master Card Collection v2 (menu Sales > Inquiry & Quotation > Pro-Dev)
 
 - Upload master card lama: Excel (.xlsx sheet "MC", dibaca lewat label + gambar proof/rencana potong dari zip) atau foto

@@ -43,6 +43,7 @@ class ProdMachine extends Model
         'machine_code',
         'machine_name',
         'nickname',
+        'legacy_machine_names',
         'machine_model_id',
         'machine_type',
         'brand_model',
