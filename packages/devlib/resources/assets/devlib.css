@@ -1971,11 +1971,18 @@ td.dl-print__no{text-align:center}
 .dl-form--panel .dl-lines__adjt .dl-lines__adjin{padding:3px 6px}
 .dl-form--panel .dl-lines__footer .dl-lines__totals{padding:6px 12px;gap:2px}
 .dl-form--panel .dl-lines__hint{margin-top:3px}
+.dl-confirm__why{display:flex;flex-direction:column;gap:3px;margin-top:8px;font-size:calc(12px * var(--dl-font-scale))}
+.dl-confirm__why textarea{width:100%;border:1px solid var(--dl-f-line);border-radius:var(--dl-radius-sm);padding:6px 8px;font-family:inherit;font-size:inherit;background:var(--dl-surface);color:var(--dl-f-ink);resize:vertical}
+.dl-confirm__why em{color:var(--dl-danger);font-style:normal;font-size:calc(11px * var(--dl-font-scale))}
+.dl-form__logact--approved,.dl-form__logact--approve{background:var(--dl-success-soft, #dcfce7);color:var(--dl-green)}
+.dl-form__logact--rejected{background:var(--dl-danger-soft);color:var(--dl-danger)}
 .dl-form__steps{display:inline-flex;align-items:stretch;flex:none;margin-left:4px}
 .dl-form__step{position:relative;display:inline-flex;align-items:center;height:22px;padding:0 12px 0 16px;margin-left:-4px;font-size:calc(11px * var(--dl-font-scale));font-weight:600;color:var(--dl-muted);background:var(--dl-chip);clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%,7px 50%);white-space:nowrap}
 .dl-form__step:first-child{margin-left:0;padding-left:11px;border-radius:11px 0 0 11px;clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%)}
 .dl-form__step.is-done{background:var(--dl-accent-soft);color:var(--dl-accent)}
 .dl-form__step.is-active{background:var(--dl-accent);color:var(--dl-white)}
+.dl-form__step.is-hold{background:var(--dl-amber-2);color:var(--dl-white)}
+.dl-form__logact--hold{background:var(--dl-amber-soft, #fef3c7);color:var(--dl-amber-2)}
 .dl-form__step.is-rejected{background:var(--dl-danger);color:var(--dl-white)}
 .dl-form__panel .dl-form__title{font-size:calc(15px * var(--dl-font-scale))}
 .dl-form--panel .dl-form__body.dl-tabs{display:block;margin-top:4px}

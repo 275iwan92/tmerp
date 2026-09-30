@@ -250,18 +250,20 @@ window.Devlib = window.Devlib || {};
   }
 
   // Modal konfirmasi library (pengganti window.confirm): Devlib.confirm({...}).then(ok => ...)
-  function confirmBox({title = 'Konfirmasi', message = 'Lanjutkan?', tone = 'warn', ok = 'Ya, lanjutkan', cancel = null} = {}) {
+  // reason: true = kotak alasan WAJIB diisi; hasil Promise = teks alasan (atau false bila batal).
+  function confirmBox({title = 'Konfirmasi', message = 'Lanjutkan?', tone = 'warn', ok = 'Ya, lanjutkan', cancel = null, reason = false} = {}) {
     return new Promise(resolve => {
       const cancelLabel = cancel || 'Cancel';
       const icon = {danger: 'fa-trash-can', warn: 'fa-triangle-exclamation', success: 'fa-circle-check', info: 'fa-circle-info'}[tone] || 'fa-circle-question';
       const ov = document.createElement('div'); ov.className = 'dl-mov is-on dl-confirm';
-      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p></div></div>`
+      ov.innerHTML = `<div class="dl-modal dl-modal--sm" role="alertdialog" aria-modal="true"><div class="dl-confirm__body"><span class="dl-confirm__icon dl-confirm__icon--${tone}"><i class="fa-solid ${icon}"></i></span><div><h3>${esc(title)}</h3><p>${esc(message)}</p>${reason ? '<label class="dl-confirm__why"><span>Alasan <b class="dl-field__req">*</b></span><textarea rows="2" data-why></textarea><em data-why-err></em></label>' : ''}</div></div>`
         + `<div class="dl-modal__foot"><button type="button" class="dl-btn dl-btn--secondary dl-btn--md" data-no>${esc(cancelLabel)}</button><button type="button" class="dl-btn dl-btn--${tone === 'danger' ? 'danger' : 'primary'} dl-btn--md" data-yes>${esc(ok)}</button></div></div>`;
       const done = v => { ov.remove(); document.removeEventListener('keydown', key); resolve(v); };
-      const key = e => { if (e.key === 'Escape') done(false); else if (e.key === 'Enter') done(true); };
-      ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-no]')) done(false); else if (e.target.closest('[data-yes]')) done(true); });
+      const yes = () => { if (!reason) return done(true); const w = $(ov, '[data-why]').value.trim(); if (!w) { $(ov, '[data-why-err]').textContent = 'Alasan wajib diisi.'; return $(ov, '[data-why]').focus(); } done(w); };
+      const key = e => { if (e.key === 'Escape') done(false); else if (e.key === 'Enter' && !(reason && e.target.matches('textarea') && e.shiftKey)) { if (!reason || !e.target.matches('textarea')) { e.preventDefault(); yes(); } } };
+      ov.addEventListener('click', e => { if (e.target === ov || e.target.closest('[data-no]')) done(false); else if (e.target.closest('[data-yes]')) yes(); });
       document.addEventListener('keydown', key);
-      document.body.appendChild(ov); $(ov, '[data-yes]').focus();
+      document.body.appendChild(ov); (reason ? $(ov, '[data-why]') : $(ov, '[data-yes]')).focus();
     });
   }
 

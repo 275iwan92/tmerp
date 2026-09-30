@@ -65,16 +65,21 @@
 
     // Tombol panel (selain Save = submit biasa). Ada action -> kirim ulang form dgn _action=<act>; tanpa action = pratinjau DevLib.
     act(a) {
-      const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci.', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger'], draft: ['Kembalikan dokumen ini ke Draft? Isinya bisa diubah lagi dan harus di-Confirm ulang.', 'warn'], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
-      const go = () => {
+      // [pesan, nada, alasan wajib?] -- Cancel, Reject, Back to Draft wajib alasan (tercatat di History).
+      const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci dan masuk approval (bila ada).', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger', true], draft: ['Kembalikan dokumen ini ke Draft? Isinya bisa diubah lagi dan harus di-Confirm ulang.', 'warn', true],
+        approve: ['Setujui dokumen ini di tingkat approval Anda?', 'success'], reject: ['Tolak dokumen ini? Dokumen berhenti (Rejected); pembuat bisa membuat ulang lewat Duplicate.', 'danger', true], hold: ['Tahan (Hold) dokumen ini di tingkat approval Anda? Nanti tetap diputuskan Approve atau Reject.', 'warn', true], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
+      const go = why => {
         this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
         // Print/Email tidak mengubah dokumen -> tidak kirim form (layar menangkap dl:form-action, mis. buka x-dl::doc-share).
         if (!this.el.getAttribute('action') || a === 'print' || a === 'email') return toast(`Aksi: ${a} (pratinjau)`, 'success');
         let h = $(this.el, 'input[name=_action]'); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = '_action'; this.el.appendChild(h); }
-        h.value = a; if (a === 'confirm') this.el.requestSubmit(); else HTMLFormElement.prototype.submit.call(this.el);  // hanya Confirm yang divalidasi
+        h.value = a;
+        let r = $(this.el, 'input[name=_reason]'); if (!r) { r = document.createElement('input'); r.type = 'hidden'; r.name = '_reason'; this.el.appendChild(r); }
+        r.value = typeof why === 'string' ? why : '';
+        if (a === 'confirm') this.el.requestSubmit(); else HTMLFormElement.prototype.submit.call(this.el);  // hanya Confirm yang divalidasi
       };
       if (!ask) return go();
-      confirmBox({message: ask[0], tone: ask[1]}).then(ok => { if (ok) go(); });
+      confirmBox({message: ask[0], tone: ask[1], reason: !!ask[2]}).then(ok => { if (ok) go(ok); });
     }
 
     setView(on) { this.el.classList.toggle('is-view', on); this.fs.forEach(f => { f.disabled = on; }); const ed = $(this.el, '[data-f-edit]'); if (ed) ed.hidden = !on; }

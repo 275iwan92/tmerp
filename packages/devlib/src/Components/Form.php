@@ -11,6 +11,9 @@ namespace Devlib\Components;
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
 // Master-Detail: slot strip = ringkasan kunci di atas tab (No., tanggal, pihak, Grand Total besar); tab = field header;
 // slot detail = baris item di tengah (x-dl::lines, footer total ikut di dalamnya).
+// Approval: :approval-levels (1-3), :approval-at (tingkat yang menunggu), :can-approve (user = pemeriksa tingkat itu).
+//   status approval (pemeriksa: Approve/Reject/Hold; pembuat hanya Cancel), hold, rejected (berhenti; Duplicate), approved;
+//   tanpa Back to Draft setelah masuk approval; Closed otomatis saat dokumen diteruskan ke modul berikutnya (mis. PR -> PO).
 // :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
 // Tab read-only 'History' SELALU ditambahkan objek: created by/at, last updated by/at + :log = [['at','by','action','note'], ...]
 // (log riwayat: Created, Saved, Confirmed, Back to Draft, Cancelled, Closed -- terbaru di atas) (user 2026-09-30).
@@ -41,6 +44,9 @@ class Form extends DevlibComponent
         public ?string $subtitle = null,
         public bool $pipeline = false,
         public array $log = [],
+        public int $approvalLevels = 0,
+        public int $approvalAt = 0,
+        public bool $canApprove = false,
         public array $hidden = [],
     ) {}
 
@@ -63,7 +69,7 @@ class Form extends DevlibComponent
     {
         $all = $this->baseActions();
 
-        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'undo', 'delete', 'confirm', 'new', 'duplicate'], true)));
+        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'undo', 'delete', 'confirm', 'new', 'duplicate', 'cancel'], true)));
     }
 
     // Istilah tombol & status SELALU English (user 2026-09-30, supaya sama bagi user & developer):
@@ -85,6 +91,13 @@ class Form extends DevlibComponent
             'document.draft' => [$b('delete', 'delete', 'Delete'), $new, $undo, $b('confirm', 'confirm', 'Confirm'), $save],
             // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (super-admin, admin-app, level manager
             // ke atas) -- server tetap wajib cek hak yang sama saat aksi diterima.
+            // Approval berjenjang (user 2026-09-30): Approve/Reject hanya dari pemeriksa tingkat berjalan; Cancel hanya dari user pembuat.
+            // Keputusan pemeriksa: Approve / Reject / Hold (Hold = tunda di tingkat itu, lalu tetap diputuskan Approve/Reject).
+            // Setelah masuk approval TIDAK ada Back to Draft. Rejected = berhenti (pembuat pakai Duplicate).
+            'document.approval' => $this->canApprove ? [$b('reject', 'reject', 'Reject', 'danger'), $b('hold', 'hold', 'Hold', 'secondary'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
+            'document.hold' => $this->canApprove ? [$b('reject', 'reject', 'Reject', 'danger'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
+            'document.rejected' => [$new, $dup, $print],
+            'document.approved' => [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $b('email', 'email', 'Email'), $print],
             'document.confirmed' => array_values(array_filter([$b('cancel', 'cancel', 'Cancel', 'danger'), $this->canReopen ? $b('draft', null, 'Back to Draft', 'secondary', 'fa-rotate-left') : null, $new, $b('email', 'email', 'Email'), $print])),
             // Cancelled: Duplicate = Draft baru berisi salinan isi (tanpa nomor) supaya tidak mengetik ulang (user 2026-09-30).
             'document.cancelled' => [$new, $dup, $print],
@@ -95,12 +108,15 @@ class Form extends DevlibComponent
     // Sesudah Confirm / Cancel / Close isi terkunci (tampil sebagai teks); ubah lagi hanya lewat Back to Draft.
     public function locked(): bool
     {
-        return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'cancelled', 'closed'], true));
+        return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'approval', 'hold', 'approved', 'rejected', 'cancelled', 'closed'], true));
     }
 
     // Bar tahapan (pola form PO Master-Detail yang disetujui user): Draft > Confirmed > Closed; Cancelled = tahap merah.
     public function steps(): array
     {
+        if ($this->approvalLevels > 0) {
+            return $this->approvalSteps();
+        }
         $order = ['draft', 'confirmed', 'closed'];
         $at = $this->status === 'new' ? 0 : array_search($this->status === 'cancelled' ? 'confirmed' : $this->status, $order, true);
         $steps = [];
@@ -114,9 +130,29 @@ class Form extends DevlibComponent
         return $steps;
     }
 
+    // Draft > Confirmed > Approval 1..n > Approved > Closed. Rejected / Cancelled = tahap merah di posisi terjadinya.
+    private function approvalSteps(): array
+    {
+        $n = $this->approvalLevels;
+        $labels = ['Draft', 'Confirmed', ...array_map(fn ($i) => 'Approval '.$i, range(1, $n)), 'Approved', 'Closed'];
+        $lv = max(1, min($n, $this->approvalAt));
+        $at = match ($this->status) {
+            'new', 'draft' => 0, 'confirmed' => 1, 'approval', 'hold', 'rejected' => 1 + $lv, 'approved' => $n + 2, 'closed' => $n + 3, 'cancelled' => $this->approvalAt ? 1 + $lv : 1, default => 0,
+        };
+        $red = in_array($this->status, ['rejected', 'cancelled'], true);
+        $hold = $this->status === 'hold';
+        $steps = [];
+        foreach ($labels as $i => $l) {
+            $name = $i === $at && ($red || $hold) ? ucfirst($this->status).($this->status === 'cancelled' ? '' : ' L'.$lv) : $l;
+            $steps[] = [$name, $i < $at ? 'is-done' : ($i === $at ? ($red ? 'is-rejected' : ($hold ? 'is-hold' : ($this->status === 'closed' ? 'is-done' : 'is-active'))) : '')];
+        }
+
+        return $steps;
+    }
+
     public function statusBadge(): array
     {
-        return ['new' => ['Draft', 'neutral'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger'], 'closed' => ['Closed', 'neutral'], 'active' => ['Active', 'success'], 'inactive' => ['Inactive', 'danger']][$this->status] ?? [$this->status, 'neutral'];
+        return ['new' => ['Draft', 'neutral'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger'], 'closed' => ['Closed', 'neutral'], 'approval' => ['Waiting Approval '.$this->approvalAt, 'warn'], 'hold' => ['Hold L'.$this->approvalAt, 'warn'], 'approved' => ['Approved', 'success'], 'rejected' => ['Rejected', 'danger'], 'active' => ['Active', 'success'], 'inactive' => ['Inactive', 'danger']][$this->status] ?? [$this->status, 'neutral'];
     }
 
     public function tag(): string
