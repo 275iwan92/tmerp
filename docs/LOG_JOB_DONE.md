@@ -3,6 +3,22 @@
 
 ---
 
+## 2026-09-30 -- Pembersihan backlog: item basi dihapus (dicek ke kode)
+
+- backlog02 §3 "Manual input CO & Costing" -> sudah ada: CO INSTANT (commit 59fab26, v1+v2) + ProCost `data_source=MANUAL`.
+- backlog02 §18 (rantai Inquiry->ProDev->Master Card) -> 12 gap sudah ditutup 2026-09-17/18, section tinggal catatan.
+- backlog02 §23 (mesin nonaktif) -> sudah beres 2026-09-23 (0 rujukan menggantung).
+- backlog03 §6 `iqp_part`->`prod_part` belum ter-link -> sudah: InquiryWriter/ProductMasterSync/SpecEngine menulis prod_part.
+- backlog03 §6 catatan PROD_MON_WO -> sudah dinyatakan bukan item terbuka.
+- backlog06 §15 info branch & peringatan multi-sesi -> basi (sekarang satu branch main).
+- backlog06 §12.5 "Payroll belum dibangun" & "GPS clock-in tidak dibangun" -> basi (11 layar + GPS sudah live).
+- backlog06 §12.6 App Flutter -> duplikat §8.
+- backlog07 paragraf Payroll "UI 0%" -> basi; diringkas jadi sisa nyata (jurnal saat CLOSED, UI lembur, Open Item Tier 2).
+- backlog07 12 kategori mat_category tanpa COA -> duplikat backlog04.
+- backlog09 §17 pisah DB ddt* -> sudah jalan (`.env.mockup`, `DbName::table`, `NoHardcodedDatabaseNameTest`).
+
+---
+
 ## 2026-09-29/30 malam -- 10 job v2 Sales tanpa pengawasan (Iwan)
 
 Semua diuji di mockup.test (ddt*) lewat kernel HTTP + cek DB; data uji dikembalikan ke snapshot. Detail: commit f6129a4..HEAD.

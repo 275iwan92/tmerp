@@ -38,10 +38,6 @@ Master karyawan & organisasi, presensi/roster, payroll, dan portal rekrutmen.
 > selesai. Tujuannya supaya sesi/prompt berikutnya yang menyentuh modul
 > ini tidak perlu menggali ulang dari nol.
 
-**Branch kerja:** `claude/bentuk-customer-order-clarity-jnehjg` (branch
-bersama, dipakai beberapa sesi paralel — lihat peringatan multi-sesi di
-bawah). **Commit terakhir milik Payroll:** `44d0e09` "Payroll: Modul 07
-(Rekening Bank) + Modul 09 (GPS Clock-in sungguhan)".
 
 ### Checklist 11 layar — SEMUA SELESAI
 01 Upload Finger/Excel · 02 Grid Presensi Harian + Override · 03 Payroll
@@ -73,16 +69,6 @@ konfirmasi eksplisit user. Rujukan: memory Claude Code
   slip cetak.
 - Logo perusahaan asli belum dipasang di ikon PWA (masih ikon generik
   hasil PHP GD, `Brand::logoPath()` sudah ada tapi belum dipakai di sini).
-
-### ⚠️ Peringatan multi-sesi (per 2026-09-09)
-Working tree branch ini punya perubahan uncommitted milik sesi LAIN yang
-sedang berjalan paralel (Component Library/i18n/Kanban) — bukan bagian
-modul Payroll: `resources/js/component-library.js`,
-`date-picker.blade.php`, `spreadsheet-table.blade.php`,
-`component-library.blade.php`, `routes/web.php`, `docs/ddl/tm2sys.sql`,
-plus file baru di `docs/ddl/`, `docs/md_sales/`, `docs/mockups/`,
-`resources/views/components/kanban/`. **Sesi Payroll berikutnya jangan
-commit/revert file-file itu** — bukan tanggung jawab modul ini.
 
 ### Rujukan lengkap
 `docs/LOG_JOB_DONE.md` (entri "2026-09-07 (lanjutan 6)"), memory Claude
@@ -122,12 +108,8 @@ Konteks lengkap audit ini ada di `BACKLOG.md`.
   shift Satpam (S1-S5) — skema saat ini tidak punya konsep gedung.
 - **DELTA-03**: business unit ke-3 (Indostry Packaging) belum punya kode
   dokumen huruf (setelah TLS/TDP) — perlu diputuskan.
-- Semua perhitungan Rupiah (lembur, denda, potongan, uang makan/roti,
-  prorata gaji, slip gaji) tetap domain **Payroll**, konsisten dengan §7
-  di atas (modul Payroll belum dibangun sama sekali).
 - Koneksi real-time mesin fingerprint (SDK/ADMS) — ditunda ke v2, v1
   cuma berbasis file-export.
-- GPS/selfie mobile clock-in — tidak diminta, tidak dibangun.
 
 ---
 
@@ -141,8 +123,6 @@ Konteks lengkap audit ini ada di `BACKLOG.md`.
   KTP) — **belum didesain**.
 - Kebijakan retensi/purge/anonimisasi data kandidat lama (kepatuhan PDP)
   — belum ada keputusan sama sekali.
-- App Flutter (kanal ke-2 portal, Android+iOS) — belum mulai, effort
-  setingkat proyek terpisah.
 - Publikasi ke Google Play ($25)/App Store ($99/th) + privacy policy —
   dicatat eksplisit sebagai tugas OPERASIONAL user, bukan sesuatu yang
   bisa dikerjakan Claude Code — jangan lupa saat rilis.

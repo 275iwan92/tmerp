@@ -28,36 +28,12 @@ General Ledger, Account Receivable, Account Payable, kas & bank, pajak, dan Acco
   2026-08-28) — prasyarat "DO belum ada" di catatan lama SUDAH TERPENUHI,
   tapi status mekanisme snapshot Costing V2 itu sendiri **belum
   dikonfirmasi ada atau tidak** — cek dulu sebelum mulai.
-- **Payroll (tm2pyr) — fondasi (skema+enkripsi+engine) SUDAH ADA, UI masih
-  0%.** **UPDATE 2026-09-05**: `docs/LOG_JOB_DONE.md` entri "Payroll (tm2pyr)
-  fondasi" — skema `tm2pyr.pyr_*` + `tm2mst.att_*`/`emp_overtime_request`
-  live, `App\Casts\PayrollEncrypted` (AES-256-GCM, VERBA_SANCTA) terpasang &
-  diverifikasi, `AttendanceCalculationService` + `PayrollEngineService`
-  jalan end-to-end (diuji tinker). **Yang MASIH belum ada**: 11 layar
-  Livewire (import finger, grid review harian, payroll batch UI, cetak
-  payslip, generator bank-transfer/cash-disbursement — lihat mockup di
-  `docs/payroll_timeattendance/mockup_*.html`), UI pengajuan/approval
-  `emp_overtime_request`, beberapa `[DELTA-CONFIRM]`/Open Item Tier 2 (KJK
-  dijumlah vs window terpanjang, PAT-5/PAT+5 prorata vs zero-total, aturan
-  tidak-finger ke-3+) belum dikonfirmasi ke bisnis. GPS mobile clock-in/ESS
-  approval workflow (fitur v4.0 di paket referensi) sengaja tidak
-  diprioritaskan, lihat §12.5. **UPDATE 2026-09-05 lanjutan (sore)**: user
-  menulis alur bisnis lengkap end-to-end (bukan cuma hitung gaji) —
-  `pyr_payroll_run` didesain ulang total: periode **WEEKLY atau MONTHLY**
-  (bukan tahun+bulan, dari sampel Excel riil `docs/attachments/*GAJI
-  KARYAWAN*.xlsb` yang semuanya "WEEKLY"), + siklus status penuh DRAFT→
-  CALCULATED (bisa diulang, estimasi H-1 & proses ulang H)→VERIFIED (cek
-  jam masuk/keluar semua/random sample)→CONFIRMED (kunci presensi)→PAID
-  (transfer/cash)→CLOSED (slip terkirim, next_run_id periode berikutnya
-  auto-dibuat DRAFT kosong). `emp_employee.payment_frequency` baru
-  (WEEKLY/MONTHLY, default MONTHLY) menentukan pegawai masuk run yang mana.
-  Diuji end-to-end via tinker (lifecycle penuh 1 pegawai). **Belum**:
-  layar UI utk tiap tahap, hook `JournalPostingService` saat CLOSED, dan
-  generator bank-transfer/cash-disbursement fisik (baru pencatatan status
-  PAID). Detail: `docs/LOG_JOB_DONE.md` entri lanjutan hari yang sama.
-- **12 kategori `mat_category` tanpa default COA** — sama item dengan §4
-  Procurement (mempengaruhi Finance juga karena ini soal akun jurnal),
-  layarnya sudah ada, tinggal user isi.
+- **Payroll → jurnal otomatis** — 11 layar Payroll sudah live (backlog06
+  §15), tapi belum ada hook `JournalPostingService` saat run CLOSED (0 kode
+  jurnal payroll ditemukan, dicek 2026-09-30). Sisa lain: UI pengajuan/
+  approval `emp_overtime_request` (model ada, layar belum), dan Open Item
+  Tier 2 yang belum dikonfirmasi bisnis (KJK dijumlah vs window terpanjang,
+  PAT-5/PAT+5 prorata vs zero-total, aturan tidak-finger ke-3+).
 
 ---
 

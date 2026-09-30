@@ -19,36 +19,6 @@ Kedua saklar default MATI sampai SMTP nyata terpasang. Sisa:
       penyedia e-mail perusahaan.
 - [ ] Alamat tujuan: pilih dari kontak customer / user (sekarang ketik bebas, format divalidasi).
 
-## 17. PISAHKAN DATABASE DUMMY `ddt*` UNTUK erptest.test (keputusan user 2026-09-24)
-
-> **Keputusan user**: database data dummy memakai prefix **`ddt`** = "data
-> dummy test" — `ddtmst`, `ddtsdi`, `ddtpur`, `ddtinv`, `ddtprd`, `ddtacc`,
-> `ddthrm`, `ddthrr`, `ddtpyr`, `ddtsys` (pasangan 1-1 dgn `tm2*`).
-> **Pengecualian `tm2old`**: TIDAK diduplikasi (tidak ada `ddtold`) — data
-> lama khusus dibaca (sumber migrasi), dipakai BERSAMA oleh erptest.test &
-> tmerp.test (`DB_OLD` tetap `tm2old` di kedua env; keputusan user 2026-09-24).
-> **Target waktu**: sebelum Fase 4 (tmerp.test pakai data asli).
-
-**State saat ini**: `erptest.test` (Fase 3) = junction Herd ke folder
-`tmerp` (kode sama), membaca DB `tm2*` yang sama dgn `tmerp.test`. Dummy
-dibedakan lewat kolom `data_origin` (DUMMY/LEGACY) + `DataOriginScope`.
-
-**Yang harus dikerjakan sebelum `ddt*` aman dipakai:**
-1. Nama DB per koneksi sudah env-driven (`DB_SYS`, `DB_MST`, ... di
-   `config/database.php`) — tapi nama koneksi Laravel tetap `tm2*`
-   (dipakai `$connection` model), cukup ganti isi env-nya.
-2. **218 referensi `tm2xxx.tabel` hardcode di 91 file** `app/ resources/
-   routes/` (SQL mentah lintas-DB) → wajib diganti nama DB dari config,
-   kalau tidak erptest diam-diam membaca/menulis DB asli.
-3. **~210 VIEW** di `tm2*` berisi qualifier `tm2xxx.` → dibuat ulang di
-   `ddt*` dengan qualifier `ddt*`.
-4. Pilih env per host (mis. `.env.erptest` dimuat bila host = erptest.test)
-   + clone skema `tm2*` → `ddt*` + pindahkan baris `data_origin='DUMMY'`.
-5. Test (`tests/`) juga menulis ke `tm2*` — putuskan test pakai `ddt*`.
-
----
-
-
 ## 16. CHAT ANTAR USER — LENGKAPI "NEW CHAT" ALA WHATSAPP (instruksi user 2026-09-09)
 
 > **Permintaan user**: "untuk user profile, saya ingin membuat interface nya

@@ -26,8 +26,6 @@ sebelum eksekusi):
   ketemu di Packing) — skema saat ini 1 `iqp_part` = 1 `prd_wo`, belum
   bisa model ini, butuh desain tabel baru (`prd_wo_convergence` atau
   sejenis).
-- `iqp_part` → `prod_part` (master part reusable lintas-order) belum
-  ter-link — `prod_part` sendiri ternyata tidak pernah terisi.
 - **F10-F14 & F18-F20** (MRP netting, Material Substitution/Cutting Yield
   engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
   Interruption Profile reporting) — semua secara eksplisit ditunda user,
@@ -35,10 +33,6 @@ sebelum eksekusi):
 - **Maintenance submodule** (`PROD_MTN_SCH`/`PROD_MTN_PREV`) — di luar
   cakupan modul Production Scheduling menurut Tier1 §6 sendiri, belum ada
   spec sama sekali.
-- `PROD_MON_WO` sekarang sudah kepakai (Screen #3 Monitoring Dashboard) —
-  **BUKAN lagi item terbuka**, catatan lama yang bilang ini ambigu sudah
-  usang.
-
 ---
 
 ---
