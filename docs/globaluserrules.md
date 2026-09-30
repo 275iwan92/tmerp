@@ -23,7 +23,9 @@
    percepatan yang langsung dikerjakan Produksi, sehingga jalur tercepatnya adalah input langsung di CO.
    Jalur INSTANT tidak boleh dihapus atau dipersulit.
 3. **[LOCKED] Alur utama:** Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → WIN →
-   Customer Order → CPDEL → Delivery Order / Surat Jalan. Pedoman rinci: `docs/flow_product_master.md`.
+   Customer Order → CPDEL → **POST ke Produksi** → Delivery Order / Surat Jalan. Pedoman rinci: `docs/flow_product_master.md`.
+   **[2026-10-01] Jalan pintas pekerjaan cepat:** setelah CPDEL di-POST ke Produksi, DO dan DN (Surat Jalan) **boleh
+   langsung dibuat** tanpa menunggu produksi selesai, untuk pekerjaan yang pengerjaannya hanya sekitar 30 menit.
 4. **[LOCKED] 1 Quotation = 1 Customer Order.** Quotation berisi banyak inquiry; 1 inquiry = 1 product.
    Quotation WIN = Master Product lahir. Revisi = product turunan; Rekalkulasi = versi harga bertanggal.
 5. **[LOCKED] Inquiry punya 3 jenis dokumen:** BARU, REVISI (spec berubah), REKALKULASI (spec sama, harga bahan berubah).
@@ -124,3 +126,4 @@
 | 2026-10-01 | **RELEASE 1 Oktober 2026**: seluruh aturan user dikumpulkan dalam dokumen ini. |
 | 2026-10-01 | A.1–A.2: Quotation wajib integrated; CO boleh direct (kompatibel V1 + percepatan Direksi). |
 | 2026-10-01 | B.3: database & formula English, kamus untuk tampilan/cetak. |
+| 2026-10-01 | A.3: CPDEL → POST ke Produksi; setelah POST, jalan pintas DO + DN (Surat Jalan) boleh dibuat untuk pekerjaan ±30 menit. |

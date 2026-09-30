@@ -12,6 +12,9 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 ```
 
 - Urutan Inquiry → ProDev → ProCost **tetap**, juga untuk Revisi dan Rekalkulasi. ✅
+- **CPDEL → POST ke Produksi → DO / Surat Jalan** (user 2026-10-01). **Jalan pintas pekerjaan cepat:** setelah CPDEL
+  di-POST ke Produksi, DO dan DN (Surat Jalan) boleh langsung dibuat tanpa menunggu produksi selesai, untuk pekerjaan
+  yang pengerjaannya hanya sekitar 30 menit. ⬜ (belum dibangun)
 - Quotation berisi **banyak inquiry**; **1 inquiry = 1 product**. ✅ (quotation multi-inquiry sudah ada)
 - **1 Quotation ↔ 1 Customer Order** (No. CO). Satu CO punya **banyak CO Detail**. ✅
 - **Inquiry → Quotation WAJIB integrated** (user 2026-10-01): baris quotation selalu berasal dari inquiry yang
