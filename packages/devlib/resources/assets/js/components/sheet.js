@@ -1,7 +1,8 @@
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, parseDate} = Devlib.h;
+  const MON = {jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mei: 5, jun: 6, jul: 7, aug: 8, agu: 8, agt: 8, sep: 9, oct: 10, okt: 10, nov: 11, dec: 12, des: 12};
   /* ============================ SHEET (spreadsheet) ============================ */
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
@@ -98,7 +99,7 @@
         if (e.target.closest('[data-s-redo]')) { const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-save]')) {
           const nBad = this.data.reduce((t, r) => t + this.cols.filter(c => this.bad(c, r[c.key], r)).length, 0);
-          if (nBad) { toast(`${nBad} sel belum benar (wajib / kembar / angka / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
+          if (nBad) { toast(`${nBad} sel belum benar (wajib / kembar / angka / tanggal / jam / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
           const changed = this.changes();
           this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
           this.data.forEach(r => this.orig.set(String(r[this.cfg.rowKey]), {...r})); this.undo.length = 0; this.redo.length = 0;
@@ -121,21 +122,38 @@
       return c.decimals != null ? v.toLocaleString('id-ID', {minimumFractionDigits: c.decimals, maximumFractionDigits: c.decimals}) : v.toLocaleString('id-ID', {maximumFractionDigits: 10});
     }
 
+    // Tanggal diketik ala sel Excel: 10-10-2026, 10/10/26, 10-Oct-2026, 10 okt 2026, 2026-10-10; tanpa tahun = tahun ini.
+    pDate(s) {
+      const iso = parseDate(s); if (iso) return iso;
+      const m = s.toLowerCase().match(/^(\d{1,2})[\s/.-]+(\d{1,2}|[a-z]{3,})[\s/.-]*(\d{2}|\d{4})?$/); if (!m) return null;
+      const mo = /^\d+$/.test(m[2]) ? +m[2] : MON[m[2].slice(0, 3)], y = m[3] ? (m[3].length === 2 ? 2000 + +m[3] : +m[3]) : new Date().getFullYear();
+      return mo ? parseDate(`${y}-${mo}-${+m[1]}`) : null;
+    }
+
+    // Jam 24 jam ala Excel: 8 / 8:30 / 08.30 / 0830 -> 08:30.
+    pTime(s) {
+      const m = s.match(/^(\d{1,2})(?:[:.]?(\d{2}))?$/); if (!m || +m[1] > 23 || +(m[2] ?? 0) > 59) return null;
+      return `${m[1].padStart(2, '0')}:${m[2] ?? '00'}`;
+    }
+
     parse(c, raw) {
       const s = String(raw ?? '').trim();
       if (c.type === 'check') return /^(1|true|ya|y|x|✓)$/i.test(s);
+      if (c.type === 'date') return s === '' ? '' : this.pDate(s) ?? s;
+      if (c.type === 'time') return s === '' ? '' : this.pTime(s) ?? s;
       if (this.num(c)) { if (s === '') return ''; const t = s.replace(/\s|Rp/gi, ''); const n = t.includes(',') ? +t.replace(/\./g, '').replace(',', '.') : (/^-?\d{1,3}(\.\d{3})+$/.test(t) ? +t.replace(/\./g, '') : +t); return isNaN(n) ? s : c.decimals != null ? Math.round(n * 10 ** c.decimals) / 10 ** c.decimals : n; }
       if (c.type === 'select' && c.options) { const hit = Object.entries(c.options).find(([k, l]) => k.toLowerCase() === s.toLowerCase() || String(l).toLowerCase() === s.toLowerCase()); return hit ? hit[0] : s; }
       return s;
     }
 
     show(c, v) {
-      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' && v ? fmt.date(v + 'T12:00:00+07:00') : (v ?? '');
+      return c.type === 'check' ? (v ? '✓' : '') : this.num(c) ? (v === '' || v == null ? '' : typeof v === 'number' ? (c.type === 'money' ? 'Rp ' : '') + this.numText(c, v) : String(v)) : c.type === 'select' ? (c.options?.[v] ?? v ?? '') : c.type === 'date' ? fmt.gridDate(v) : (v ?? '');
     }
 
     // unique: nilai tidak boleh kembar di baris lain (tanpa beda huruf besar/kecil) -- validasi final tetap di server.
     bad(c, v, row) {
       if (c.unique && row && v !== '' && v != null && this.data.some(o => o !== row && String(o[c.key] ?? '').trim().toLowerCase() === String(v).trim().toLowerCase())) return true;
+      if (v && ((c.type === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(v)) || (c.type === 'time' && !/^\d{2}:\d{2}$/.test(v)))) return true;
       return (c.required && (v === '' || v == null)) || (this.num(c) && v !== '' && v != null && typeof v !== 'number') || (c.type === 'select' && v && c.options && !(v in c.options));
     }
 
@@ -185,8 +203,8 @@
       const v = this.data[this.cur.r][c.key];
       if (c.type === 'select') td.innerHTML = `<select class="dl-sheet__in">${['', ...Object.keys(c.options || {})].map(k => `<option value="${esc(k)}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(k ? c.options[k] : '—')}</option>`).join('')}</select>`;
       else {
-        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? String(v).replace('.', ',') : v ?? '');
-        td.innerHTML = `<input class="dl-sheet__in ${this.isText(c) ? 'has-case' : ''}" type="${c.type === 'date' ? 'date' : 'text'}" ${this.num(c) ? 'inputmode="decimal"' : ''} value="${esc(this.isText(c) ? applyCase(String(start), mode) : start)}">`
+        const ci = this.cur.c, mode = this.caseMode[ci], start = initial ?? (this.num(c) && typeof v === 'number' ? String(v).replace('.', ',') : c.type === 'date' ? fmt.gridDate(v) : v ?? '');
+        td.innerHTML = `<input class="dl-sheet__in ${this.isText(c) ? 'has-case' : ''}" type="text" ${this.num(c) ? 'inputmode="decimal"' : ''} ${c.type === 'date' ? 'placeholder="dd-mm-yyyy"' : c.type === 'time' ? 'placeholder="hh:mm" inputmode="numeric"' : ''} value="${esc(this.isText(c) ? applyCase(String(start), mode) : start)}">`
           + (this.isText(c) ? `<button type="button" class="dl-case dl-sheet__case" data-s-case title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">${CASE_LABEL[mode]}</button>` : '');
         const inp = $(td, '.dl-sheet__in');
         if (this.isText(c)) {

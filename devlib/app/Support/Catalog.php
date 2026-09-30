@@ -104,6 +104,8 @@ final class Catalog
                     'p5-grid-lookup' => $page('Grid Lookup', 'fa-solid fa-list-check', [
                         'grid-lookup' => ['Grid Lookup (edit in cell: Religion)', $c('LookupGrid')],
                         'grid-lookup-decimal' => ['Grid Lookup (decimal columns: 1.250.000,50)', $c('LookupGrid')],
+                        'grid-lookup-date' => ['Grid Lookup (date column: Holidays, 17-Aug-2026)', $c('LookupGrid')],
+                        'grid-lookup-time' => ['Grid Lookup (time column: Work Shifts, 07:00)', $c('LookupGrid')],
                     ]) + ['folder' => 'Grid Pre-Entry'],
                     // Grid Report = submenu, 1 halaman per varian (user 2026-09-30).
                     'p5-grid-report' => $page('Grid Report List', 'fa-solid fa-table-list', [
