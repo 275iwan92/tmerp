@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 0. PERINTAH UMUM
 
+> **WAJIB DIBACA PERTAMA: `docs/globaluserrules.md`** — Pedoman Aturan User (RELEASE 1 Oktober 2026).
+> Semua aturan & keputusan user terkumpul di sana dan dijadikan pedoman. Aturan baru dari user
+> ditambahkan ke file itu (bagian + Changelog) setiap kali diberikan.
+
 Stack: PHP ^8.3, Laravel 13, Livewire 4 (SFC), Filament 5, PowerGrid, Tailwind 4 + Vite 8. Served by Laravel Herd di `http://tmerp.test`.
 
 ```bash
