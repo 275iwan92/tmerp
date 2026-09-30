@@ -27,6 +27,20 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
   Jasa/Service, Peralatan Kebersihan — murni tinggal user isi manual per
   kategori (keputusan akun, bukan kode), akun GR/IR universal (813) sudah
   terisi semua.
+- **PO Kontan + Kas Kecil — BELUM ADA, dibahas di sesi lain** (dicatat user
+  2026-10-01). Pembelian kontan berdampak ke petty cash DAN ke PO (ada input
+  "PO Kontan"). Kondisi kode: `po_order.i_po_type` baru `LOCAL`/`IMPORT`/
+  `SUBCONTRACT` (belum `CASH`); modul Kas Kecil (saldo, pemegang, plafon,
+  kasbon, replenish) belum ada; `fin_voucher.source_type/source_id` sudah bisa
+  dipakai menautkan voucher ke PO; SPB sudah jurnal Dr Persediaan / Cr GR/IR.
+  Usulan alur (imprest): PO Kontan -> kasbon (Dr Uang Muka Pembelian / Cr Kas
+  Kecil) -> SPB -> pertanggungjawaban nota (Dr GR/IR / Cr Uang Muka, selisih
+  kembali/kurang) -> replenish kas kecil dari bank. **Keputusan user yang
+  ditunggu:** (1) kasbon dulu vs PO dicatat setelah belanja dari nota;
+  (2) plafon nilai PO Kontan; (3) wajib PR/approval atau approval ringan;
+  (4) satu kas kecil atau per gudang/departemen; (5) akun COA Kas Kecil &
+  Uang Muka Pembelian sudah ada atau perlu dibuat. Kas Kecil = layar Finance
+  yang dipakai bersama, bukan cuma Purchasing.
 
 ---
 
