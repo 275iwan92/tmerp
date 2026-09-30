@@ -210,7 +210,17 @@ form mengirim angka kanonik; server `num()` = `Locale::input`; layar v2 memakai 
 teks objek PrintOut & DocShare lewat kamus Lang; demo devlib.test (Locale & Formats, Print ▾); contoh JPEG
 `docs/mockups/print_lang_quotation.jpg` (menunggu OK user).
 
-**SISA:**
+**SISA -- PRIORITAS: supaya modul BARU otomatis siap ID + EN (fondasi, kerjakan sebelum modul baru berikutnya):**
+A. Helper pendek label layar: tulis teks English di kode, terjemahan dari kamus -- mis. directive Blade `@t('Customer')`
+   + fungsi `t()` (bungkus `Dictionary::t`), juga dipakai DevLib (`Lang` jatuh ke kamus bila kunci tidak ada).
+B. Daftar otomatis: teks English yang dipanggil tetapi belum ada di `sys_dictionary` langsung tercatat (baris baru tanpa
+   terjemahan) -- penerjemah cukup mengisi sel kosong, developer tidak perlu insert manual.
+C. JS `T()` membaca kamus yang sama (dikirim ke halaman per bahasa aktif), bukan hanya pasangan [ID, EN] di kode.
+D. Generator `make:tm-screen` + skill `tmerp-screen`/`tmerp-stack-rules` memakai pola A secara bawaan (label English + kamus).
+E. Test penjaga (pola `UiRatchetTest`): layar v2 baru tidak boleh berisi label Indonesia mentah / number_format / format('d-M-Y').
+F. Migration kamus ke **tm2sys** (sekarang baru ddtsys) -- tunggu izin user.
+
+**SISA lain:**
 1. Layar input kamus (Setup > Translation Dictionary: grid sheet source_en × kolom per bahasa, sel kosong disorot,
    Export/Import Excel) -- wajib §7.12, belum dibangun.
 2. Setelah contoh JPEG disetujui: label layar/nota v2 yang masih teks Indonesia mentah -> sumber English + kamus, per dokumen:
