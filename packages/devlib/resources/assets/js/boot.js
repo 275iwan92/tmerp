@@ -38,7 +38,6 @@
     Devlib.mountOne("LoginBox");
     Devlib.mountOne("Code");
     Devlib.mountOne("Grid");
-    Devlib.mountOne("ApprovalBar");
     Devlib.mountOne("Formation");
     Devlib.mountOne("Chat");
     Devlib.mountOne("Ribbon");

@@ -1,7 +1,7 @@
 /* DevLib · Approval */
 (function (Devlib) {
   'use strict';
-  const {$, esc, toast, confirmBox, fmt, fieldErr, at} = Devlib.h;
+  const {$, esc, toast, confirmBox, fmt} = Devlib.h;
   /* ============================ APPROVAL ============================ */
   class Approval extends Devlib.Component {
     static selector = "[data-dl-approval]";
@@ -10,8 +10,6 @@
       this.cols = JSON.parse(this.el.dataset.cols || '{}');
       this.me = this.el.dataset.me;
       this.cur = this.docs[0] ? this.docs[0].id : null;
-      this.note = $(this.el, '[name=approval_note]');
-      this.noteField = this.note.closest('.dl-field');
       this.icon = {SUBMITTED: 'fa-paper-plane', APPROVED: 'fa-check', REJECTED: 'fa-ban', HOLD: 'fa-pause'};
       this.el.addEventListener('click', e => {
         const it = e.target.closest('[data-a-id]'); if (it) { this.cur = isNaN(+it.dataset.aId) ? it.dataset.aId : +it.dataset.aId; this.list(); this.detail(); return; }
@@ -53,16 +51,16 @@
           <div><p class="dl-appr__cap">Alur Approval</p><ol class="dl-appr__steps">${steps.map(s => `<li class="is-${esc(s.status)}"><span class="dl-appr__dot">${s.status === 'done' ? '<i class="fa-solid fa-check"></i>' : s.status === 'rejected' ? '<i class="fa-solid fa-xmark"></i>' : ''}</span><b>${esc(s.role)}</b>${s.plt ? ' <span class="dl-badge dl-badge--pill dl-badge--violet">PLT</span>' : ''}<small>${esc(s.by || (s.status === 'current' ? 'Menunggu Anda' : 'Menunggu'))}${s.at ? ' · ' + esc(s.at) : ''}</small></li>`).join('')}</ol></div>
           <div><p class="dl-appr__cap">Riwayat Dokumen</p><ul class="dl-appr__hist">${(d.history || []).map(h => `<li><i class="fa-solid ${this.icon[h.action] || 'fa-circle'}"></i><div><b>${esc(h.action)}</b>${h.plt ? ' <span class="dl-badge dl-badge--pill dl-badge--violet">PLT</span>' : ''}<small>Oleh: ${esc(h.by)} · ${esc(h.at)}</small>${h.note ? `<q>${esc(h.note)}</q>` : ''}</div></li>`).join('')}</ul></div>
         </div>`;
-      this.note.value = ''; fieldErr(this.note, '');
     }
 
+    // Layar hanya-baca: tanpa kotak isian. Alasan Tolak/Tahan diminta di dialog konfirmasi (wajib).
     decide(action) {
       const d = this.docs.find(x => x.id === this.cur && !x.decided); if (!d) return;
-      const n = this.note.value.trim();
-      if (action !== 'approve' && !n) { fieldErr(this.note, action === 'reject' ? 'Alasan penolakan wajib diisi.' : 'Alasan menahan wajib diisi.'); this.note.focus(); return; }
       const word = {approve: 'Setujui', reject: 'Tolak', hold: 'Tahan'}[action];
-      confirmBox({message: `${word} ${d.no}?`, tone: action === 'reject' ? 'danger' : action === 'hold' ? 'warn' : 'success'}).then(ok => {
-        if (!ok) return;
+      confirmBox({title: `${word} ${d.no}?`, message: action === 'approve' ? 'Dokumen diteruskan ke tahap berikutnya.' : action === 'reject' ? 'Dokumen dikembalikan ke pembuat.' : 'Dokumen ditahan sampai diputuskan lagi.',
+        tone: action === 'reject' ? 'danger' : action === 'hold' ? 'warn' : 'success', ok: word, reason: action !== 'approve'}).then(res => {
+        if (!res) return;
+        const n = typeof res === 'string' ? res : '';
         const now = `${fmt.date()} ${fmt.time()}`, step = (d.steps || []).find(s => s.status === 'current');
         (d.history = d.history || []).push({action: {approve: 'APPROVED', reject: 'REJECTED', hold: 'HOLD'}[action], by: this.me, at: now, note: n});
         if (action === 'hold') { d.held = true; toast(`${d.no} ditahan.`, 'warn'); this.detail(); this.list(); }

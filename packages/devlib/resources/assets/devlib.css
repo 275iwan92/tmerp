@@ -2011,19 +2011,9 @@ td.dl-print__no{text-align:center}
 .dl-form.is-view .dl-field{border-bottom:1px dashed var(--dl-border-soft)}
 .dl-form.is-view .dl-form__foot [data-dl-split],.dl-form.is-view .dl-form__foot [data-f-cancel]{display:none}
 .dl-tabs__err{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:6px;border-radius:9px;background:var(--dl-danger);color:var(--dl-white);font-size:10.5px;font-weight:800}
-.dl-apbar{display:flex;flex-direction:column;gap:10px;border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);padding:12px;background:var(--dl-surface-alt);margin-top:10px}
-.dl-apbar__pipe{padding:0}
 .dl-master__step.is-rejected{background:var(--dl-danger);color:var(--dl-white)}
-.dl-apbar__banner:empty{display:none}
-.dl-apbar__banner{padding:8px 12px;border-radius:var(--dl-radius);font-size:calc(12.5px * var(--dl-font-scale));background:var(--dl-info-soft);color:var(--dl-accent)}
-.dl-apbar[data-tone="APPROVED"] .dl-apbar__banner{background:color-mix(in srgb,var(--dl-green) 14%,var(--dl-surface));color:var(--dl-green)}
-.dl-apbar[data-tone="REJECTED"] .dl-apbar__banner{background:var(--dl-danger-soft);color:var(--dl-danger)}
-.dl-apbar__act[hidden]{display:none}
-.dl-apbar__buttons{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.dl-apbar__buttons [hidden]{display:none}
-.dl-apbar__hist:empty{display:none}
 .dl-forms-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.dl-form__body > :is(.dl-tabs,.dl-lines,.dl-apbar){grid-column:1/-1}
+.dl-form__body > :is(.dl-tabs,.dl-lines){grid-column:1/-1}
 .dl-form.is-view [data-dl-phone-read]{display:none}
 
 .dl-stat--violet{border-left-color:var(--dl-violet)}

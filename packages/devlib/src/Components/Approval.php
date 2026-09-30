@@ -3,7 +3,8 @@
 namespace Devlib\Components;
 
 // Approval Center (mockup pr/po_approval_center): daftar dokumen menunggu (kiri) + detail (kanan):
-// ringkasan, baris item, alur approval berjenjang (PLT ditandai), riwayat, catatan, Tolak / Tahan / Setujui.
+// ringkasan, baris item, alur approval berjenjang (PLT ditandai), riwayat, Tolak / Tahan / Setujui.
+// Hanya-baca (user 2026-09-30): tidak ada isian di layar; alasan Tolak/Tahan wajib, diminta di dialog konfirmasi.
 // docs: [['id','no','title','amount','party','date','submitted_by','summary' => [label => nilai],
 //         'lines' => [[...]], 'steps' => [['role','by','at','status' => done|current|pending','plt']],
 //         'history' => [['action','by','at','note','plt']]]]
@@ -43,7 +44,6 @@ class Approval extends DevlibComponent
                         <div data-a-body></div>
                         {{ $slot }}
                         <div class="dl-appr__action" data-a-action>
-                            <x-dl::field.text name="approval_note" label="Catatan Approval / Alasan Penolakan" multiline hint="Wajib diisi bila menolak atau menahan." />
                             <div class="dl-appr__buttons">
                                 <x-dl::button preset="reject" :label="$rejectLabel" data-a-do="reject" />
                                 @if ($holdLabel)<x-dl::button preset="hold" :label="$holdLabel" data-a-do="hold" />@endif

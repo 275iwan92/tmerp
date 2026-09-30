@@ -26,7 +26,6 @@ final class Catalog
         // user belum QC, "single form bukan seperti ini".
         'p5-master' => '2026-09-26',
         'p5-master-detail' => '2026-09-26',
-        'p5-approval' => '2026-09-26',
         'p5-print' => '2026-09-26',
         'p5-report' => '2026-09-26',
         'p5-import' => '2026-09-26',
@@ -139,10 +138,11 @@ final class Catalog
                         'form-md' => ['1 · Customer Order (key summary, header tabs, details in the middle, footer totals)', $c('Form', 'Lines')],
                         'form-md-po' => ['2 · Purchase Order (same frame, supplier side)', $c('Form', 'Lines')],
                     ], 'UIUX_components_part1.html'),
-                    // Form Approval dipisah jadi submenu sendiri (user 2026-09-30): alur beda (Submit -> Approve/Reject berjenjang per level).
+                    // Form Approval (user 2026-09-30) = Approval Center (dulu Documents > Approval): hanya-baca, detail dokumen
+                    // + alur berjenjang + riwayat; aksi cuma Approve / Reject / Hold (alasan diminta di dialog).
                     'p5-form-approval' => $page('Form Approval', 'fa-solid fa-stamp', [
-                        'form-approval' => ['Form with Approval (Confirm, then Approve / Reject / Hold by level)', $c('Form', 'ApprovalBar')],
-                    ], 'UIUX_components_part1.html'),
+                        'approval-po' => ['Approval Center PO (read-only details, Approve / Reject / Hold)', $c('Approval')],
+                    ], 'mockup_po_approval_center.html'),
                     // Form Wizard = submenu sendiri, sejajar Single & Master-Detail (user 2026-09-30).
                     'p5-form-wizard' => $page('Form Wizard', 'fa-solid fa-shoe-prints', [
                         'wizard-customer' => ['Form Wizard (step by step)', $c('Wizard', 'Wizard\\Step')],
@@ -154,7 +154,6 @@ final class Catalog
                 'pages' => [
                     'p5-master' => $page('Master', 'fa-solid fa-address-book', ['master-employee' => ['Employee Master (grid + edit form)', $c('Master', 'Grid')]], 'mockup_master_customer.html'),
                     'p5-master-detail' => $page('Master-Detail', 'fa-solid fa-file-invoice', ['master-detail-po' => ['Purchase Order (header + item lines)', $c('Master', 'Lines', 'Grid')]], 'mockup_purchase_requisition.html'),
-                    'p5-approval' => $page('Approval', 'fa-solid fa-stamp', ['approval-po' => ['Approval Center PO', $c('Approval')]], 'mockup_po_approval_center.html'),
                     'p5-print' => $page('Print Out', 'fa-solid fa-print', ['print-co' => ['Customer Order Note (prices, VAT, amount in words, multi-page)', $c('PrintOut')], 'print-spb' => ['Goods Receipt Note (multi-level header, no prices)', $c('PrintOut')], 'doc-share' => ['Print ▾ (PDF / JPEG / HTML online + QR / Printer) + Email — on every form', $c('DocShare')]], 'nota_co_mockup.html', [...$c('PrintOut', 'DocShare'), 'Devlib\\Terbilang']),
                     'p5-report' => $page('Report', 'fa-solid fa-file-lines', ['report-stock-card' => ['Stock Card (running balance, per month)', $c('Report')], 'report-master-stock' => ['Stock Master (KPI, groups + subtotal, highlight < MIN)', $c('Report')]], 'mockup_print_master_stock.html'),
                     'p5-import' => $page('Import / Export', 'fa-solid fa-file-import', ['import-items' => ['Import CSV (column mapping, validation, failed rows)', $c('Import')], 'grid-master' => ['Export CSV from Grid (visible columns)', $c('Grid')]]),
