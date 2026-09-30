@@ -49,11 +49,11 @@ final class DemoData
             $out[] = [
                 'id' => $p['id'], 'no' => $p['po_no'], 'title' => 'Purchase Order', 'amount' => $p['total'], 'party' => $p['supplier'], 'date' => $p['po_date'],
                 'submitted_by' => $p['requester'].' (Purchasing)',
-                'summary' => ['Nilai' => 'Rp '.number_format($p['total'], 0, ',', '.'), 'Termin' => ['Net 30', 'Net 14', 'COD'][$i % 3], 'Estimasi Tiba' => date('j M Y', strtotime($p['po_date'].' +7 days')), 'Jumlah Item' => $p['items']],
+                'summary' => ['Nilai' => 'Rp '.number_format($p['total'], 0, ',', '.'), 'Termin' => ['Net 30', 'Net 14', 'COD'][$i % 3], 'Estimasi Tiba' => date('d-M-Y', strtotime($p['po_date'].' +7 days')), 'Jumlah Item' => $p['items']],
                 'lines' => $p['lines'],
                 'steps' => $steps,
-                'history' => [['action' => 'SUBMITTED', 'by' => $p['requester'], 'at' => date('j M Y', strtotime($p['po_date'])).', 10:05'],
-                    ['action' => 'APPROVED', 'by' => $steps[1]['by'], 'at' => date('j M Y', strtotime($p['po_date'].' +1 day')).', 15:40', 'plt' => $steps[1]['plt'], 'note' => 'Harga sesuai penawaran.']],
+                'history' => [['action' => 'SUBMITTED', 'by' => $p['requester'], 'at' => date('d-M-Y', strtotime($p['po_date'])).' 10:05'],
+                    ['action' => 'APPROVED', 'by' => $steps[1]['by'], 'at' => date('d-M-Y', strtotime($p['po_date'].' +1 day')).' 15:40', 'plt' => $steps[1]['plt'], 'note' => 'Harga sesuai penawaran.']],
             ];
         }
 
@@ -99,7 +99,9 @@ final class DemoData
         $specs = ['230x160x60mm, DC 350gsm, UV varnish, cetak 4/0', '180x60mm, art paper 210gsm, cetak 4/1 +1 PMS 032C', '200x140mm, bahan customer, cetak 4/0', '120x80mm, laminasi metalize, cetak 4/4', '300x200x80mm, DC 400gsm, cetak 2/0 +1 PMS 286C'];
         $out = [];
         for ($i = 0; $i < $n; $i++) {
-            $qty = 3000 + $i * 770; $price = 150 + $i * 37; $disc = $i % 4 === 0 ? 2 : 0;
+            $qty = 3000 + $i * 770;
+            $price = 150 + $i * 37;
+            $disc = $i % 4 === 0 ? 2 : 0;
             $out[] = ['name' => $names[$i % count($names)], 'code' => sprintf('FG-%04d', 101 + $i), 'spec' => $specs[$i % count($specs)], 'ship' => date('j M y', strtotime('2026-09-05 +'.$i.' days')),
                 'qty' => $qty, 'price' => $price, 'disc' => $disc ? $disc.'%' : '–', 'subtotal' => round($qty * $price * (1 - $disc / 100))];
         }
@@ -143,7 +145,6 @@ final class DemoData
             return ['code' => $r[0], 'name' => $r[1], 'cat' => $r[2], 'wh' => $r[3], 'uom' => $r[4], 'open' => $r[5], 'in' => $r[6], 'out' => $r[7], 'adj' => $r[8], 'end' => $end, 'min' => 'min '.$r[9], 'status' => $end < $r[9] ? '< MIN' : 'OK'];
         }, $rows);
     }
-
 
     // Ringkasan per supplier dari PO (untuk drill-down).
     public static function supplierSummary(): array

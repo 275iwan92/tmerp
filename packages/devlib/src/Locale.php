@@ -36,14 +36,15 @@ final class Locale
         return CarbonImmutable::parse($v ?? 'now')->setTimezone(self::timezone())->locale('id');
     }
 
-    // long: Rabu, 23 September 2026 · short: 23 Sep 2026 · numeric: 23/09/2026
+    // long: Rabu, 23 September 2026 · short: 23-Sep-2026 (baku tanggal seluruh aplikasi, user 2026-09-30: dd-Mmm-yyyy,
+    // bulan Inggris sama dgn grid) · numeric: 23/09/2026
     public static function date(DateTimeInterface|string|null $v = null, string $style = 'short'): string
     {
-        return self::at($v)->translatedFormat(match ($style) {
-            'long' => 'l, j F Y',
-            'numeric' => 'd/m/Y',
-            default => 'j M Y',
-        });
+        return match ($style) {
+            'long' => self::at($v)->translatedFormat('l, j F Y'),
+            'numeric' => self::at($v)->format('d/m/Y'),
+            default => self::at($v)->format('d-M-Y'),
+        };
     }
 
     public static function time(DateTimeInterface|string|null $v = null, bool $seconds = false): string
@@ -53,7 +54,7 @@ final class Locale
 
     public static function dateTime(DateTimeInterface|string|null $v = null): string
     {
-        return self::date($v).', '.self::time($v);
+        return self::date($v).' '.self::time($v);
     }
 
     public static function number(float|int|string|null $n, int $decimals = 0): string

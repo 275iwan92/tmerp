@@ -394,7 +394,8 @@ window.Devlib = window.Devlib || {};
       const d = new Date(v); if (isNaN(d)) return String(v);
       return `${String(d.getDate()).padStart(2, '0')}-${M[d.getMonth()]}-${d.getFullYear()}`;
     },
-    date: (v = new Date(), style = 'short') => new Date(v).toLocaleDateString('id-ID', style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : style === 'numeric' ? {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()} : {day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ()}),
+    // short = dd-Mmm-yyyy (baku seluruh aplikasi, sama dgn gridDate) menurut zona waktu aplikasi.
+    date: (v = new Date(), style = 'short') => style === 'short' ? fmt.gridDate(new Date(v).toLocaleDateString('en-CA', {timeZone: TZ()})) : new Date(v).toLocaleDateString('id-ID', style === 'long' ? {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: TZ()} : {day: '2-digit', month: '2-digit', year: 'numeric', timeZone: TZ()}),
     time: (v = new Date()) => new Date(v).toLocaleTimeString('id-ID', {hour: '2-digit', minute: '2-digit', hour12: false, timeZone: TZ()}) + ' WIB',
   };
 

@@ -191,9 +191,9 @@
 
     <x-dl::card title="Follow-up customer" description="Catatan telepon / kunjungan / WhatsApp / email sampai customer memutuskan.">
         <x-dl::table :columns="['date' => 'Tanggal', 'type' => 'Jenis', 'contact' => 'Kontak', 'result' => 'Hasil', 'notes' => 'Catatan', 'next' => 'Tindak lanjut', 'by' => 'Oleh']"
-            :rows="$q->activities->map(fn ($a) => ['date' => $a->activity_date?->format('d M Y'), 'type' => implode(' ', QuoActivity::TYPES[$a->activity_type] ?? [$a->activity_type]),
+            :rows="$q->activities->map(fn ($a) => ['date' => $a->activity_date?->format('d-M-Y'), 'type' => implode(' ', QuoActivity::TYPES[$a->activity_type] ?? [$a->activity_type]),
                 'contact' => $a->contact_person ?? '—', 'result' => QuoActivity::RESULTS[$a->result] ?? '—', 'notes' => $a->notes ?? '—',
-                'next' => trim(($a->next_action_date?->format('d M Y') ?? '').' '.($a->next_action ?? '')) ?: '—', 'by' => $a->created_by])->all()"
+                'next' => trim(($a->next_action_date?->format('d-M-Y') ?? '').' '.($a->next_action ?? '')) ?: '—', 'by' => $a->created_by])->all()"
             empty="Belum ada follow-up." source="{{ Src::of('tm2sdi.quo_activity') }}" />
         @if (in_array($status, ['DRAFT', 'PUBLISHED'], true))
             <x-dl::action-bar><x-dl::button variant="secondary" icon="plus" label="+ Tambah Follow-up" data-dl-open="quotation-activity" /></x-dl::action-bar>

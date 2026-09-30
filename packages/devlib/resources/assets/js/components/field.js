@@ -1,7 +1,7 @@
 /* DevLib · Field */
 (function (Devlib) {
   'use strict';
-  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, words} = Devlib.h;
+  const {$, $$, CASES, CASE_LABEL, applyCase, bindPanel, T, words, fmt} = Devlib.h;
 
   class Field extends Devlib.Component {
     static selector = ".dl-field";
@@ -114,10 +114,10 @@
       this.dt = $(this.el, '[data-dl-date]');
       if (this.dt) {
         const hidden = $(this.dt, '[data-dl-value]'), text = $(this.dt, '[data-dl-date-text]'), days = $(this.dt, '[data-dl-cal-days]'), title = $(this.dt, '[data-dl-cal-title]');
-        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         let view = hidden.value ? new Date(hidden.value) : new Date();
         const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        const setVal = (d, quiet) => { hidden.value = d ? iso(d) : ''; text.value = d ? `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}` : ''; if (!quiet) hidden.dispatchEvent(new Event('change', {bubbles: true})); };
+        const setVal = (d, quiet) => { hidden.value = d ? iso(d) : ''; text.value = d ? fmt.gridDate(iso(d)) : ''; if (!quiet) hidden.dispatchEvent(new Event('change', {bubbles: true})); };
         const draw = () => {
           title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;
           const first = new Date(view.getFullYear(), view.getMonth(), 1).getDay(), total = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
@@ -139,14 +139,14 @@
       if (this.dtt) {
         const hidden = $(this.dtt, '[data-dl-value]'), text = $(this.dtt, '[data-dl-date-text]'), days = $(this.dtt, '[data-dl-cal-days]'), title = $(this.dtt, '[data-dl-cal-title]');
         const hh = $(this.dtt, '[data-dl-time-h]'), mm = $(this.dtt, '[data-dl-time-m]'), prev = $(this.dtt, '[data-dl-dt-preview]'), tz = this.dtt.dataset.tzLabel || 'WIB';
-        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const pad = n => String(n).padStart(2, '0');
         let [d0, t0] = (hidden.value || '').split(/[ T]/);
         let sel = d0 ? d0 : null;
         let view = sel ? new Date(sel) : new Date();
         if (t0) { hh.value = t0.slice(0, 2); const m = Math.round(+t0.slice(3, 5) / +mm.options[1].value) * +mm.options[1].value; mm.value = pad(m % 60); }
         const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-        const label = (ds, h, m) => { const d = new Date(ds); return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()}, ${h}:${m} ${tz}`; };
+        const label = (ds, h, m) => `${fmt.gridDate(ds)} ${h}:${m} ${tz}`;
         const preview = () => { prev.textContent = 'Selected: ' + (sel ? label(sel, hh.value, mm.value) : '-'); };
         const draw = () => {
           title.textContent = `${MON[view.getMonth()]} ${view.getFullYear()}`;

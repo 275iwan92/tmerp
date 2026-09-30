@@ -15,7 +15,7 @@
         <x-dl::card title="E-mail Saya" icon="email" description="Alamat ini dipakai saat Anda mengirim dokumen (Print > Email) dan menerima balasan customer.">
             <x-dl::form.row cols="3">
                 <x-dl::field.display label="E-mail" :value="$u->email ?: 'Belum diisi — minta admin mengisinya di Security'" :source="Src::of('tm2sys.sec_user.email')" />
-                <x-dl::field.display label="Status" :value="$verified ? 'Terverifikasi '.$u->email_verified_at?->format('d M Y H:i') : 'Belum terverifikasi'" :source="Src::of('tm2sys.sec_user.email_verified', 'email_verified_at')" />
+                <x-dl::field.display label="Status" :value="$verified ? 'Terverifikasi '.$u->email_verified_at?->format('d-M-Y H:i') : 'Belum terverifikasi'" :source="Src::of('tm2sys.sec_user.email_verified', 'email_verified_at')" />
                 <x-dl::field.display label="Wajib verifikasi untuk kirim dokumen" :value="$setting->require_verified ? 'Ya' : 'Tidak (belum diwajibkan admin)'" :source="Src::of('tm2sys.sys_mail_setting.require_verified')" />
             </x-dl::form.row>
             @if ($u->email && ! $verified)
