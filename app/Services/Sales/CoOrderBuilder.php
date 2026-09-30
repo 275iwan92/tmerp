@@ -5,9 +5,11 @@ namespace App\Services\Sales;
 use App\Models\Master\CustCustomer;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\SalesPerson;
+use App\Models\Prd\PrdWo;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
 use App\Models\Sdi\CoOrderItem;
+use App\Models\Sdi\DoLine;
 use App\Models\Sdi\IqpCostingPriceTier;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
@@ -213,6 +215,43 @@ class CoOrderBuilder
         });
 
         return true;
+    }
+
+    // Kenapa belum bisa dibatalkan (null = boleh): jadwal kirimnya sudah jadi WO atau baris DO yang masih hidup.
+    public static function cancelBlocker(CoOrder $order): ?string
+    {
+        if ($order->doc_status !== 'CONFIRMED') {
+            return 'Hanya Customer Order Confirmed yang bisa di-Cancel.';
+        }
+        $deliveryIds = CoOrderDelivery::where('order_id', $order->id_order)->pluck('id_delivery');
+        $wo = PrdWo::where('wo_status', '<>', 'CANCELLED')
+            ->where(fn ($q) => $q->where('source_co_id', $order->id_order)->orWhereIn('source_delivery_id', $deliveryIds))->pluck('wo_no');
+        if ($wo->isNotEmpty()) {
+            return 'Sudah ada Work Order: '.$wo->implode(', ').'. Cancel WO-nya dulu.';
+        }
+        $do = DoLine::with('delivery:id_delivery,do_no')->whereIn('co_delivery_id', $deliveryIds)->where('status', '<>', 'CANCELLED')->get()
+            ->pluck('delivery.do_no')->filter()->unique();
+        if ($do->isNotEmpty()) {
+            return 'Sudah ada Delivery Order: '.$do->implode(', ').'. Cancel DO-nya dulu.';
+        }
+
+        return null;
+    }
+
+    // Quotation tetap WIN, inquiry tetap CONVERTED, Master Product tetap; order ulang = CO INSTANT (1 Quotation = 1 CO).
+    public static function cancel(CoOrder $order, string $reason): ?string
+    {
+        if ($err = self::cancelBlocker($order)) {
+            return $err;
+        }
+        $login = Auth::user()->login;
+
+        DB::connection('tm2sdi')->transaction(function () use ($order, $reason, $login) {
+            $order->update(['doc_status' => 'CANCELLED', 'stat_cancel' => true, 'cancel_reason' => $reason, 'updated_by' => $login]);
+            CoOrderDelivery::where('order_id', $order->id_order)->update(['status' => 'CANCELLED', 'updated_by' => $login]);
+        });
+
+        return null;
     }
 
     private static function resolveSalesPerson(?string $picSalesName): ?int

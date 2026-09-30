@@ -2,17 +2,19 @@
 
 use App\Console\Commands\DdtBaseline;
 use App\Mail\EmailVerifyMail;
-use App\Models\Sys\SysMailSetting;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
+use App\Models\Pur\PoOrder;
+use App\Models\Pur\PrRequisition;
+use App\Models\Pur\PvReceipt;
 use App\Models\Sdi\CoOrder;
 use App\Models\Sdi\CoOrderDelivery;
+use App\Models\Sdi\DoDelivery;
 use App\Models\Sdi\IqpInquiry;
 use App\Models\Sdi\QuoQuotation;
 use App\Models\Sys\SysConstant;
 use App\Models\Sys\SysDocShare;
+use App\Models\Sys\SysMailSetting;
 use App\Services\Docs\DocShareService;
 use App\Services\Sales\InquiryAssembly;
 use App\Services\Sales\InquiryDerivedWriter;
@@ -22,15 +24,11 @@ use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
-use App\Support\V2\Data\PurchaseRequisition;
+use App\Support\V2\Data\DeliveryOrder;
+use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
 use App\Support\V2\Data\PurchaseReceive;
-use App\Support\V2\Data\DeliveryOrder;
-use App\Models\Sdi\DoDelivery;
-use App\Models\Pur\PvReceipt;
-use App\Models\Pur\PoOrder;
-use App\Models\Pur\PrRequisition;
-use App\Support\V2\Data\Prodev;
+use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
 use App\Support\V2\Flows;
 use App\Support\V2\InquiryPayload;
@@ -39,7 +37,9 @@ use App\Support\V2\Screens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 
 // Layar v2 (objek DevLib, Menu v2 tanpa top bar). Dimuat di dalam grup auth + force.password routes/web.php.
@@ -396,7 +396,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 [], ['supplier_id' => 'Supplier', 'warehouse' => 'Gudang', 'po_line_ids' => 'Baris PO']);
             try {
                 $pv = PurchaseReceive::create((int) $d['supplier_id'], $d['warehouse'], $d['po_line_ids']);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 return back()->withErrors(['po_line_ids' => $e->getMessage()]);
             }
 
@@ -484,6 +484,11 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 CustomerOrder::delete($o);
 
                 return redirect(route('v2.screen', 'customer-order'))->with('v2_flash', "Draft {$o->co_no} dihapus.");
+            }
+            if ($r->input('action') === 'cancel') {
+                $err = CustomerOrder::cancel($o, (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', "Customer Order {$o->co_no} CANCELLED — jadwal kirimnya ikut dibatalkan.");
             }
             $r->validate(['co_date' => ['nullable', 'date'], 'items.*.due_date' => ['nullable', 'date'], 'deliveries.*.ship_date' => ['nullable', 'date'],
                 'product_id' => ['nullable', 'integer']], [], ['co_date' => 'CO Date']);

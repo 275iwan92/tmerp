@@ -2,7 +2,7 @@
      Alur layar: GRID CO -> + New Record = pilih jalur: INTEGRATED (dari Quotation terbit, baris = snapshot quotation) atau
      INSTANT (pilih customer, baris PRODUCT dari Master Product) -> DRAFT: header, baris + due date, jadwal kirim, biaya luar
      -> Simpan / Hapus (draft INSTANT) -> Confirm (wajib due date tiap baris PRODUCT; INSTANT + Master Product) -> engine CPDEL
-     membuat jadwal kirim default -> Print / Email. --}}
+     membuat jadwal kirim default -> Print / Email. Confirmed -> Cancel beralasan (ditolak bila sudah ada WO / DO). --}}
 @php
     use App\Models\Master\FinPaymentTerm;
     use App\Models\Master\SalesPerson;
@@ -41,6 +41,7 @@
             ['label' => 'Semua'],
             ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
             ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
+            ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
         ]"
         :filters="['mode' => 'Jalur', 'status' => 'Status']" />
 @elseif (! $o)
@@ -95,13 +96,14 @@
         ])->values()->all();
         $log = collect($c->historyTimeline())->map(fn ($r) => ['at' => $r['date'], 'by' => '', 'action' => $r['type'].(! empty($r['current']) ? ' (ini)' : ''), 'note' => $r['label']])->reverse()->values()->all();
     @endphp
+    @if ($o->doc_status === 'CANCELLED')<x-dl::alert tone="danger" :message="'Cancelled oleh '.$o->updated_by.' — '.$o->cancel_reason" />@endif
     @if ($draft && $missingDue->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingDue->count().' baris Product belum ada Due Date (wajib sebelum Confirm).'" />@endif
     @if ($draft && $missingProduct->isNotEmpty())<x-dl::alert tone="warn" :message="'⚠ '.$missingProduct->count().' baris belum terkait Master Product.'" />@endif
 
     <x-dl::form id="co-form" :title="'Customer Order · '.$o->co_no" :subtitle="($o->customer?->customer_name ?? '—').' · '.$o->entry_mode"
         panel="top" kind="document" :status="$draft ? 'draft' : strtolower($o->doc_status)" :pipeline="true"
         :action="route('v2.co.save', $o->id_order)" action-field="action" :back="$home" :new-url="$home.'?new=1'"
-        :hide="array_merge(['print', 'email', 'cancel'], $o->isInstant() ? [] : ['delete'])"
+        :hide="array_merge(['print', 'email', 'duplicate'], $o->isInstant() ? [] : ['delete'])"
         :tabs="['general' => 'General', 'finance' => 'Finance', 'delivery' => 'Delivery', 'notes' => 'Notes']"
         :created-by="$o->created_by" :created-at="$o->created_at?->toDateTimeString()" :updated-by="$o->updated_by" :updated-at="$o->updated_at?->toDateTimeString()" :log="$log">
         <x-slot:special>

@@ -15,7 +15,7 @@ use Livewire\Component;
 // baris PRODUCT wajib Master Product. Confirm -> engine CPDEL (CoOrderBuilder::confirm). Tambahan v2: Hapus draft INSTANT.
 final class CustomerOrder
 {
-    public const STATUS_TONES = ['DRAFT' => 'neutral', 'CONFIRMED' => 'success'];
+    public const STATUS_TONES = ['DRAFT' => 'neutral', 'CONFIRMED' => 'success', 'CANCELLED' => 'danger'];
 
     public const MODE_TONES = ['INTEGRATED' => 'info', 'INSTANT' => 'violet'];
 
@@ -156,6 +156,11 @@ final class CustomerOrder
     public static function confirm(CoOrder $o): bool
     {
         return CoOrderBuilder::confirm(CoOrder::with('items.deliveries')->findOrFail($o->id_order));
+    }
+
+    public static function cancel(CoOrder $o, string $reason): ?string
+    {
+        return trim($reason) === '' ? 'Alasan Cancel wajib diisi.' : CoOrderBuilder::cancel($o, trim($reason));
     }
 
     // Hanya DRAFT INSTANT: CO INTEGRATED sudah menandai inquiry CONVERTED + Master Product (WIN), jadi tidak dihapus di sini.

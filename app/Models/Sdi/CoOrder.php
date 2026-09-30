@@ -36,6 +36,8 @@ class CoOrder extends Model
         'discount_doc_pct',
         'discount_qty_pct',
         'doc_status',
+        'stat_cancel',
+        'cancel_reason',
         'notes',
         'share_token',
         'share_expires_at',
