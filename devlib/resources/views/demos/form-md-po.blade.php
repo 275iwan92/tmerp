@@ -11,6 +11,14 @@
     $isNew = $status === 'new';
     $dup = $act === 'duplicate';
     $blank = $isNew && ! $dup;
+    // Log riwayat (History): contoh isi -- di tmerp dari tm2sys.doc_state_log + audit perubahan. Terbaru di atas.
+    $log = $isNew ? [] : array_values(array_filter([
+        in_array($status, ['confirmed', 'cancelled', 'closed'], true) ? ['at' => now()->format('Y-m-d H:i:s'), 'by' => 'johiwan', 'action' => ucfirst($status), 'note' => $status === 'cancelled' ? 'Salah customer, dibuat ulang.' : null] : null,
+        $status === 'draft' && $act === 'draft' ? ['at' => now()->format('Y-m-d H:i:s'), 'by' => 'johiwan', 'action' => 'Back to Draft', 'note' => 'Revisi qty sesuai PO customer.'] : null,
+        ['at' => '2026-09-02 09:40:00', 'by' => 'siti', 'action' => 'Saved', 'note' => 'Ubah harga baris 2'],
+        ['at' => '2026-09-02 08:40:00', 'by' => 'siti', 'action' => 'Saved', 'note' => null],
+        ['at' => '2026-09-02 08:12:00', 'by' => 'siti', 'action' => 'Created', 'note' => null],
+    ]));
     $po = [
         'po_no' => 'PO-2609-0001', 'po_date' => '2026-09-02', 'supplier' => 'UD Lem Sejahtera', 'buyer' => 'Siti Rahma', 'pr_ref' => 'PR-2609-0012',
         'eta' => '2026-09-09', 'warehouse' => 'GD-BB', 'term' => 'NET30', 'currency' => 'IDR', 'ship_to' => 'Gudang Bahan Baku, Jl. Contoh Industri 42',
@@ -33,7 +41,7 @@
     @endforeach
 </div>
 <x-dl::form :title="$isNew ? 'Purchase Order · New'.($dup ? ' (copy of '.$po['po_no'].')' : '') : 'Purchase Order · '.$po['po_no']" :subtitle="$blank ? null : $po['supplier']"
-    panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true"
+    panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true" :log="$log"
     :action="$here.'#form-md-po'" method="GET" :new-url="$here.'?'.$me.'_new=1#form-md-po'" :hidden="['doc' => $me]"
     :tabs="['basic' => 'Basic', 'kirim' => 'Pengiriman', 'bayar' => 'Pembayaran', 'lampiran' => 'Lampiran & Catatan']"
     :created-by="$isNew ? null : 'siti'" :created-at="$isNew ? null : '2026-09-02 08:12:00'"
@@ -71,7 +79,7 @@
     </x-slot:lampiran>
     <x-slot:detail>
         <x-dl::lines name="po_lines" title="Details" add-label="+ Add Line" :rows="$blank ? [] : $po['lines']" :min-rows="$blank ? 1 : 0" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
-            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11]"
+            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['freight' => 'Ongkos Kirim', 'handling' => 'Bongkar Muat', 'other' => 'Biaya Lain']]"
             :columns="[
                 ['key' => 'item', 'label' => 'Item', 'type' => 'lookup', 'lookup' => 'item', 'required' => true, 'width' => '240px'],
                 ['key' => 'spec', 'label' => 'Spesifikasi', 'width' => '170px'],

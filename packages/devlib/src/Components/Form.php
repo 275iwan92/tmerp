@@ -12,7 +12,8 @@ namespace Devlib\Components;
 // Master-Detail: slot strip = ringkasan kunci di atas tab (No., tanggal, pihak, Grand Total besar); tab = field header;
 // slot detail = baris item di tengah (x-dl::lines, footer total ikut di dalamnya).
 // :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
-// Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
+// Tab read-only 'History' SELALU ditambahkan objek: created by/at, last updated by/at + :log = [['at','by','action','note'], ...]
+// (log riwayat: Created, Saved, Confirmed, Back to Draft, Cancelled, Closed -- terbaru di atas) (user 2026-09-30).
 class Form extends DevlibComponent
 {
     public function __construct(
@@ -39,12 +40,13 @@ class Form extends DevlibComponent
         public bool $canInput = true,
         public ?string $subtitle = null,
         public bool $pipeline = false,
+        public array $log = [],
         public array $hidden = [],
     ) {}
 
     public function panelTabs(): array
     {
-        return ($this->tabs ?: ['main' => 'Data']) + ['audit' => ['Riwayat', 'fa-clock-rotate-left']];
+        return ($this->tabs ?: ['main' => 'Data']) + ['audit' => ['History', 'fa-clock-rotate-left']];
     }
 
     // dd-Mmm-yyyy HH:mm, sama dgn tanggal grid.
@@ -166,11 +168,17 @@ class Form extends DevlibComponent
                             <div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $key }}">
                                 @if ($key === 'audit')
                                     <div class="dl-form__audit">
-                                        <x-dl::field.display label="Dibuat oleh" :value="$createdBy" />
-                                        <x-dl::field.display label="Dibuat pada" :value="$stamp($createdAt)" />
-                                        <x-dl::field.display label="Terakhir diubah oleh" :value="$updatedBy" />
-                                        <x-dl::field.display label="Terakhir diubah pada" :value="$stamp($updatedAt)" />
+                                        <x-dl::field.display label="Created by" :value="$createdBy" />
+                                        <x-dl::field.display label="Created at" :value="$stamp($createdAt)" />
+                                        <x-dl::field.display label="Last updated by" :value="$updatedBy" />
+                                        <x-dl::field.display label="Last updated at" :value="$stamp($updatedAt)" />
                                     </div>
+                                    @if ($log)
+                                        <div class="dl-form__logwrap"><table class="dl-form__log">
+                                            <thead><tr><th>Date &amp; time</th><th>By</th><th>Action</th><th>Note</th></tr></thead>
+                                            <tbody>@foreach ($log as $e)<tr><td>{{ $stamp($e['at'] ?? null) }}</td><td>{{ $e['by'] ?? '' }}</td><td><span class="dl-form__logact dl-form__logact--{{ strtolower(str_replace(' ', '-', $e['action'] ?? '')) }}">{{ $e['action'] ?? '' }}</span></td><td>{{ $e['note'] ?? '' }}</td></tr>@endforeach</tbody>
+                                        </table></div>
+                                    @endif
                                 @elseif ($key === 'main' && ! $tabs){{ $slot }}@else{{ ${$key} ?? '' }}@endif
                             </div>
                         @endforeach

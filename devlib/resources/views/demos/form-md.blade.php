@@ -14,6 +14,14 @@
     $isNew = $status === 'new';
     $dup = $act === 'duplicate';
     $blank = $isNew && ! $dup;
+    // Log riwayat (History): contoh isi -- di tmerp dari tm2sys.doc_state_log + audit perubahan. Terbaru di atas.
+    $log = $isNew ? [] : array_values(array_filter([
+        in_array($status, ['confirmed', 'cancelled', 'closed'], true) ? ['at' => now()->format('Y-m-d H:i:s'), 'by' => 'johiwan', 'action' => ucfirst($status), 'note' => $status === 'cancelled' ? 'Salah customer, dibuat ulang.' : null] : null,
+        $status === 'draft' && $act === 'draft' ? ['at' => now()->format('Y-m-d H:i:s'), 'by' => 'johiwan', 'action' => 'Back to Draft', 'note' => 'Revisi qty sesuai PO customer.'] : null,
+        ['at' => '2026-09-30 09:40:00', 'by' => 'carrij', 'action' => 'Saved', 'note' => 'Ubah harga baris 2'],
+        ['at' => '2026-09-30 08:40:00', 'by' => 'carrij', 'action' => 'Saved', 'note' => null],
+        ['at' => '2026-09-30 08:12:00', 'by' => 'carrij', 'action' => 'Created', 'note' => null],
+    ]));
     $co = [
         'co_no' => '2602402', 'co_date' => '2026-09-30', 'customer' => 'CV Samudra Kiat Jaya', 'sales' => 'Carrij Soehendra', 'consignee' => 'CV Samudra Kiat Jaya',
         'po_no' => 'PO/SKJ/IX/0187', 'po_date' => '2026-09-28', 'po_recv' => '2026-09-29', 'ship' => 'DELIVER', 'pay' => 'NET30', 'bank' => 'BCA', 'tax' => 'NO',
@@ -34,7 +42,7 @@
     @endforeach
 </div>
 <x-dl::form :title="$isNew ? 'Customer Order · New'.($dup ? ' (copy of '.$co['co_no'].')' : '') : 'Customer Order · '.$co['co_no']" :subtitle="$blank ? null : $co['customer']"
-    panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true"
+    panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true" :log="$log"
     :action="$here.'#form-md'" method="GET" :new-url="$here.'?'.$me.'_new=1#form-md'" :hidden="['doc' => $me]"
     :tabs="['basic' => 'Basic', 'kirim' => 'Pengiriman', 'pajak' => 'Pajak & Bayar', 'lampiran' => 'Lampiran & Catatan']"
     :created-by="$isNew ? null : 'carrij'" :created-at="$isNew ? null : '2026-09-30 08:12:00'"
@@ -79,7 +87,7 @@
     </x-slot:lampiran>
     <x-slot:detail>
         <x-dl::lines name="lines" title="Details" add-label="+ Add Line" :rows="$blank ? [] : $co['lines']" :min-rows="$blank ? 1 : 0" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
-            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11]"
+            :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11, 'costs' => ['freight' => 'Ongkos Kirim', 'plate' => 'Biaya Plate / Pisau', 'other' => 'Biaya Lain']]"
             :columns="[
                 ['key' => 'product', 'label' => 'Product', 'type' => 'lookup', 'lookup' => 'product', 'required' => true, 'width' => '260px'],
                 ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '100px'],

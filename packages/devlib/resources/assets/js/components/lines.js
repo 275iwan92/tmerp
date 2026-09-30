@@ -27,7 +27,10 @@
 
       this.el.addEventListener('input', e => {
         const t = e.target;
-        if (t.matches('[data-l-disc]')) { t.value = t.value.replace(/[^\d]/g, '') ? (+t.value.replace(/[^\d]/g, '')).toLocaleString('id-ID') : ''; return this.refresh(); }
+        if (t.matches('[data-l-disc], [data-l-cost]')) {
+          if (t.matches('[data-l-disc]') && $(this.el, '[data-l-dmode]')?.value === 'PCT') { t.value = t.value.replace(/[^\d,]/g, ''); return this.refresh(); }
+          t.value = t.value.replace(/[^\d]/g, '') ? (+t.value.replace(/[^\d]/g, '')).toLocaleString('id-ID') : ''; return this.refresh();
+        }
         if (!t.matches('.dl-lines__in') || t.dataset.lk !== undefined) return;
         const c = this.colOf(t.dataset.k), r = this.rowOf(t);
         if (c.type === 'text' && t.dataset.case) { const p = t.selectionStart; t.value = applyCase(t.value, t.dataset.case); try { t.setSelectionRange(p, p); } catch (x) {} }
@@ -35,7 +38,7 @@
         t.closest('td').classList.remove('is-invalid');
         this.refresh();
       });
-      this.el.addEventListener('change', e => { if (e.target.matches('select.dl-lines__in, input[type=date].dl-lines__in')) { this.rowOf(e.target)[e.target.dataset.k] = e.target.value; e.target.closest('td').classList.remove('is-invalid'); this.refresh(); } if (e.target.matches('[data-l-ppn]')) this.refresh(); });
+      this.el.addEventListener('change', e => { if (e.target.matches('select.dl-lines__in, input[type=date].dl-lines__in')) { this.rowOf(e.target)[e.target.dataset.k] = e.target.value; e.target.closest('td').classList.remove('is-invalid'); this.refresh(); } if (e.target.matches('[data-l-ppn], [data-l-rate]')) this.refresh(); if (e.target.matches('[data-l-dmode]')) { const d = $(this.el, '[data-l-disc]'); if (d) d.value = '0'; this.refresh(); } });
       this.el.addEventListener('focusin', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) { t.value = this.rowOf(t)[t.dataset.k] ?? ''; t.select(); } });
       this.el.addEventListener('focusout', e => { const t = e.target; if (t.classList.contains('dl-lines__num')) t.value = this.show(this.colOf(t.dataset.k), this.rowOf(t)[t.dataset.k] ?? ''); });
       this.el.addEventListener('keydown', e => {
@@ -167,7 +170,8 @@
       $(this.el, '[data-l-foot]').innerHTML = sums.length && this.rows.length ? `<tr><td></td>${this.tcols.map((c, i) => c.sum ? `<td class="num"><b>${esc(this.show(c, this.rows.reduce((t, r) => t + (+r[c.key] || 0), 0)))}</b></td>` : `<td>${i === 0 ? '<b>Jumlah</b>' : ''}</td>`).join('')}${this.ro ? '' : '<td></td>'}</tr>` : '';
       $(this.el, '[data-l-count]').textContent = `${this.rows.filter(this.filled).length} baris`;
       const t = this.total();
-      if (this.cfg.totals && this.cfg.totals.of) Object.entries(t).forEach(([k, v]) => { const b = $(this.el, `[data-l-t="${k}"]`); if (b) b.textContent = 'Rp ' + this.money(v); });
+      if (this.cfg.totals && this.cfg.totals.of) Object.entries(t).forEach(([k, v]) => { const b = $(this.el, `[data-l-t="${k}"]`); if (b) b.textContent = (k === 'disc' && v ? '− ' : '') + 'Rp ' + this.money(v); });
+      const pl = $(this.el, '[data-l-ppnlbl]'); if (pl) pl.textContent = `PPN ${t.rate.toLocaleString('id-ID')}%`;
       // Ringkasan di atas form (No. dokumen & nominal penting) ikut hidup:
       // [data-l-val="<name>:<key>"] -- key: grand|sub|dpp|ppn (Rp), count (baris terisi), sum.<kolom> (jumlah kolom).
       const filled = this.rows.filter(this.filled), scope = this.el.closest('form') || document;
@@ -180,9 +184,13 @@
 
     total() {
       const of = this.cfg.totals && this.cfg.totals.of, sub = this.rows.reduce((t, r) => t + (+r[of] || 0), 0);
-      const d = $(this.el, '[data-l-disc]'), disc = d ? +this.raw(d.value) || 0 : 0, dpp = sub - disc;
-      const p = $(this.el, '[data-l-ppn]'), ppn = p && p.checked ? Math.round(dpp * (+this.cfg.totals.ppn || 0)) / 100 : 0;
-      return {sub, dpp, ppn, grand: dpp + ppn};
+      // Diskon Rp atau % dari Details; PPN dari DPP dgn tarif terpilih; biaya lain ditambahkan setelah PPN.
+      const d = $(this.el, '[data-l-disc]'), pct = $(this.el, '[data-l-dmode]')?.value === 'PCT', dv = d ? +this.raw(d.value) || 0 : 0;
+      const disc = Math.min(sub, pct ? Math.round(sub * dv) / 100 : dv), dpp = sub - disc;
+      const rs = $(this.el, '[data-l-rate]'), rate = rs ? +rs.value : +(this.cfg.totals && this.cfg.totals.ppn) || 0;
+      const p = $(this.el, '[data-l-ppn]'), ppn = p && p.checked ? Math.round(dpp * rate) / 100 : 0;
+      const cost = $$(this.el, '[data-l-cost]').reduce((a, x) => a + (+this.raw(x.value) || 0), 0);
+      return {sub, disc, dpp, ppn, cost, rate, grand: dpp + ppn + cost};
     }
 
     changed() {
