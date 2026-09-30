@@ -13,6 +13,7 @@ use App\Services\Production\MachineOeeService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Master Mesin -> tm2mst.prod_machine. Naik kelas dari daftar aset jadi
@@ -32,6 +33,18 @@ use Livewire\Component;
 // panel Where-used di tab Biaya sebelum menonaktifkan.
 new #[Title('Master Mesin — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     use HasGridStatFilter;
     use ManagesProcessMachineCapability;
 

@@ -5,6 +5,7 @@ use App\Models\Prd\PrdScrapType;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Kelola Tipe Scrap -- data pendukung F15 Production Output Recording
@@ -14,6 +15,8 @@ use Livewire\Component;
 // daftar riil PT Telasih Makmur. Pola grid sama Rule Library.
 new #[Title('Kelola Tipe Scrap — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
     use HasGridStatFilter;
 
     public bool $showModal = false;

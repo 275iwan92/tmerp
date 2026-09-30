@@ -143,6 +143,18 @@ abstract class DbGrid
         return $this->v1Route() ? route($this->v1Route()).'?open={id}' : null;
     }
 
+    // Alamat + New Record. Bawaan: layar v1 dengan ?new=1.
+    public function newUrl(): ?string
+    {
+        return $this->canCreate() ? route($this->v1Route()).'?new=1' : null;
+    }
+
+    // Route v1 yang parameternya id baris (mis. master.warehouse.edit {warehouse}) -> alamat berpola {id}.
+    protected function routeUrl(string $name, string $param): string
+    {
+        return str_replace('987654321', '{id}', route($name, [$param => 987654321]));
+    }
+
     public function url(): string
     {
         return route('v2.screen', $this->slug());
@@ -151,7 +163,6 @@ abstract class DbGrid
     // Isi atribut x-dl::grid.
     public function props(): array
     {
-        $route = $this->v1Route();
 
         return [
             'id' => $this->slug(),
@@ -167,8 +178,8 @@ abstract class DbGrid
                 default => 'none',
             },
             'activeKey' => $this->family() === self::MASTER ? 'active' : null,
-            'newRecord' => $this->canCreate() ? '+ New Record' : null,
-            'newUrl' => $this->canCreate() ? route($route).'?new=1' : null,
+            'newRecord' => $this->newUrl() ? '+ New Record' : null,
+            'newUrl' => $this->newUrl(),
             'openUrl' => $this->openUrl(),
             'toggleUrl' => $this->family() === self::MASTER ? str_replace('__ID__', '{id}', route('v2.grid.toggle', [$this->slug(), '__ID__'])) : null,
             'source' => Src::of(...array_map(fn ($c) => ($m = new $c)->getConnectionName().'.'.$m->getTable(), $this->models())),

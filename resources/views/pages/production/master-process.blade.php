@@ -8,6 +8,7 @@ use App\Models\Master\ProdProcess;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Master Proses (PROD_MST_PROCESS) -- data riil dimigrasi dari tm2old.m_process,
@@ -23,6 +24,18 @@ use Livewire\Component;
 // Kolom "Kesiapan" di grid yang menunjukkan mana yang masih perlu dilengkapi.
 new #[Title('Master Proses — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     use HasGridStatFilter;
     use ManagesProcessMachineCapability;
 

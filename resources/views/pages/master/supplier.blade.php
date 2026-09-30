@@ -13,6 +13,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Pola sama persis dengan pages::master.customer (grid/form/detail) — lihat
@@ -20,6 +21,18 @@ use Livewire\Component;
 // migration 2026_08_18_000005_create_sup_supplier_table.php.
 new #[Title('Master Supplier — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->editRow($id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->newSupplier();
+    }
+
     use HasGridStatFilter;
 
     #[Url]

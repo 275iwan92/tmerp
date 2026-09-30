@@ -5,6 +5,7 @@ use App\Models\Master\ProdProcess;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Master Crew (PROD_MST_CREW) -- data riil dimigrasi dari tm2old.mst_machine
@@ -17,6 +18,18 @@ use Livewire\Component;
 // komentar migration 000029). Pola grid+form sama master/machine.blade.php.
 new #[Title('Master Crew — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     public string $search = '';
 
     public string $panel = 'grid'; // grid | form

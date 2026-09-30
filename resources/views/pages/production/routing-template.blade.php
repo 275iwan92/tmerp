@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Master Routing Template -> tm2mst.prod_routing_template + _step.
@@ -26,6 +27,18 @@ use Livewire\Component;
 // BLOCK menghentikan, WARN hanya memperingatkan.
 new #[Title('Master Routing Template — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     use HasGridStatFilter;
 
     public string $search = '';

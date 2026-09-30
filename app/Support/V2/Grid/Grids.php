@@ -19,6 +19,21 @@ final class Grids
         Hrm\BankAccountGrid::class,
         Hrm\ContactGapGrid::class,
         Hrm\DisciplineGrid::class,
+        Master\CustomerGrid::class,
+        Master\SupplierGrid::class,
+        Master\RawMaterialGrid::class,
+        Master\MatCategoryGrid::class,
+        Master\WarehouseGrid::class,
+        Master\ShiftGrid::class,
+        Prod\MachineGrid::class,
+        Prod\ProcessGrid::class,
+        Prod\RoutingTemplateGrid::class,
+        Prod\CrewGrid::class,
+        Prod\ScrapTypeGrid::class,
+        Sales\ProductMarketGrid::class,
+        Sales\CostingListGrid::class,
+        Sales\WinRateGrid::class,
+        Acc\CoaGrid::class,
     ];
 
     public static function find(string $slug): ?DbGrid

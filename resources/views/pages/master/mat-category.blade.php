@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // Pengganti layar input doc_rmprefix1..5 yang sebelumnya TIDAK ADA (cuma
@@ -16,6 +17,18 @@ use Livewire\Component;
 // merusak hirarki yang sudah dipakai material lain.
 new #[Title('Master Kategori Bahan Baku — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     public array $stockClasses = ['RAW', 'INDIRECT', 'SERVICE'];
 
     public string $search = '';

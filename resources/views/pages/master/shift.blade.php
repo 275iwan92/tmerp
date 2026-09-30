@@ -7,6 +7,7 @@ use App\Models\Master\OrgDepartment;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // mockup_master_produksi.html #page-shift. Direplikasi dari struktur legacy
@@ -16,6 +17,18 @@ use Livewire\Component;
 // teks bebas. Hari dengan start_time/end_time kosong = "tidak beroperasi".
 new #[Title('Master Shift — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     use HasGridStatFilter;
 
     public array $dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

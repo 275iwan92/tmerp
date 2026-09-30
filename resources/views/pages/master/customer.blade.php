@@ -14,6 +14,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // mockup_master_customer.html (v2, 2026-08-19). Redesign dari versi tab
@@ -30,6 +31,18 @@ use Livewire\Component;
 // percetakan" — satu-satunya bagian dokumen lama itu yang masih dipakai).
 new #[Title('Master Customer — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->editRow($id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->newCustomer();
+    }
+
     use HasGridStatFilter;
 
     #[Url]

@@ -8,6 +8,7 @@ use App\Support\Localization\Translator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use App\Livewire\Concerns\OpensFromQuery;
 use Livewire\Component;
 
 // financeaccounting_tier4.md — Master Chart of Accounts. Grid dari VIEW v1_fin_account_tree
@@ -16,6 +17,18 @@ use Livewire\Component;
 // di nextAccountId() saat tambah baru, user hanya isi account_code (kode GL).
 new #[Title('Master Chart of Accounts — TELASIH MAKMUR ERP')] class extends Component
 {
+    use OpensFromQuery;
+
+    protected function openFromQuery(int $id): void
+    {
+        $this->openModal('edit', $id);
+    }
+
+    protected function newFromQuery(): void
+    {
+        $this->openModal('new');
+    }
+
     use HasGridStatFilter;
 
     public array $accountTypes = ['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'COGS', 'EXPENSE', 'OTHER_INCOME', 'OTHER_EXPENSE'];
