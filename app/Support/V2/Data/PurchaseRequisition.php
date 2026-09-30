@@ -1,0 +1,161 @@
+<?php
+
+namespace App\Support\V2\Data;
+
+use App\Models\Master\FlowLog;
+use App\Models\Master\OrgDepartment;
+use App\Models\Pur\PrRequisition;
+use App\Services\Flow\FlowEngineService;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
+
+// Purchase Requisition v2 = aturan & tulis data komponen v1 pages::pur.pr.entry (updateHeader / updateLine / addMasterItem /
+// addFreeText / submit / approveDoc / rejectDoc / holdDoc), supaya v1 & v2 memakai satu sumber aturan.
+final class PurchaseRequisition
+{
+    public const HEADER = ['i_doc_date', 'i_department_id', 'i_need_date', 'i_notes'];
+
+    public const LINE = ['i_description', 'i_qty', 'i_uom', 'i_est_price', 'i_need_date', 'i_notes'];
+
+    public const STATUS_TONES = ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'APPROVED' => 'success', 'PARTIALLY_ORDERED' => 'info',
+        'FULLY_ORDERED' => 'success', 'CLOSED' => 'neutral', 'REJECTED' => 'danger', 'REVISION_NEEDED' => 'danger', 'CANCELLED' => 'danger'];
+
+    public static function component(int $id): Component
+    {
+        $c = app('livewire')->new('pages::pur.pr.entry');
+        $c->prId = $id;
+
+        return $c;
+    }
+
+    public static function rows(): array
+    {
+        $prs = PrRequisition::withCount('lines')->orderByDesc('pr_id')->limit(500)->get();
+        $dept = OrgDepartment::whereIn('department_id', $prs->pluck('i_department_id')->unique())->pluck('department_name', 'department_id');
+
+        return $prs->map(fn ($p) => ['id' => $p->pr_id, 'no' => $p->doc_no ?: '(draft #'.$p->pr_id.')', 'dept' => $dept[$p->i_department_id] ?? '—',
+            'date' => $p->i_doc_date?->toDateString(), 'need' => $p->i_need_date?->toDateString(), 'lines' => $p->lines_count,
+            'total' => (float) $p->c_est_total, 'status' => $p->status])->all();
+    }
+
+    public static function departments(): array
+    {
+        return OrgDepartment::where('activate', true)->orderBy('department_name')->pluck('department_name', 'department_id')->all();
+    }
+
+    public static function create(int $departmentId): PrRequisition
+    {
+        $login = Auth::user()->login;
+
+        return PrRequisition::create(['i_doc_date' => now()->toDateString(), 'i_source' => 'MANUAL', 'i_department_id' => $departmentId,
+            'status' => 'DRAFT', 'created_by' => $login, 'updated_by' => $login]);
+    }
+
+    // Header + baris dari satu form; hanya nilai yang berubah yang dikirim ke komponen v1.
+    public static function save(PrRequisition $pr, array $in): void
+    {
+        abort_unless($pr->status === 'DRAFT', 422, 'PR sudah diajukan, tidak bisa diubah.');
+        $c = self::component($pr->pr_id);
+        foreach (self::HEADER as $f) {
+            if (array_key_exists($f, $in) && self::str($in[$f]) !== self::str($pr->{$f})) {
+                $c->updateHeader($f, self::str($in[$f]));
+            }
+        }
+        foreach (array_keys((array) ($in['remove'] ?? [])) as $id) {
+            $c->removeLine((int) $id);
+        }
+        $lines = $pr->lines()->get()->keyBy('pr_line_id');
+        foreach ((array) ($in['lines'] ?? []) as $id => $row) {
+            $line = $lines->get((int) $id);
+            if (! $line) {
+                continue;
+            }
+            foreach (self::LINE as $f) {
+                if (! array_key_exists($f, (array) $row)) {
+                    continue;
+                }
+                $v = in_array($f, ['i_qty', 'i_est_price'], true) ? self::num($row[$f]) : self::str($row[$f]);
+                $cur = self::str($line->{$f});
+                if ($v !== $cur && ! (is_numeric($v) && is_numeric($cur) && (float) $v === (float) $cur)) {
+                    $c->updateLine((int) $id, $f, $v);
+                }
+            }
+        }
+    }
+
+    public static function addMaterial(PrRequisition $pr, int $materialId): void
+    {
+        self::component($pr->pr_id)->addMasterItem($materialId);
+    }
+
+    public static function addFree(PrRequisition $pr, string $description, string $uom): void
+    {
+        $c = self::component($pr->pr_id);
+        $c->freeDescription = $description;
+        $c->freeUom = $uom;
+        $c->addFreeText();
+    }
+
+    // Confirm = Submit v1: nomor dokumen lahir + masuk antrian approval flow engine. Balasan = pesan bila flow belum dikonfigurasi.
+    public static function submit(PrRequisition $pr): string
+    {
+        $c = self::component($pr->pr_id);
+        $c->submit(app(FlowEngineService::class));
+
+        return $c->blockedMessage;
+    }
+
+    // approve | reject | hold oleh approver tahap berjalan (pendingApproval v1). Balasan = pesan error (kosong = sukses).
+    public static function decide(PrRequisition $pr, string $action, string $note): string
+    {
+        $c = self::component($pr->pr_id);
+        $c->approvalNote = $note;
+        match ($action) {
+            'approve' => $c->approveDoc(app(FlowEngineService::class)),
+            'reject' => $c->rejectDoc(app(FlowEngineService::class)),
+            'hold' => $c->holdDoc(app(FlowEngineService::class)),
+        };
+
+        return $c->approvalError;
+    }
+
+    public static function pending(PrRequisition $pr): ?object
+    {
+        return app(FlowEngineService::class)->pendingForUser('PR', Auth::id())->firstWhere('doc_id', $pr->pr_id);
+    }
+
+    // Log flow engine -> tab History (terbaru di atas) + tahap approval berjalan.
+    public static function log(PrRequisition $pr): array
+    {
+        return FlowLog::where('module_code', 'PR')->where('doc_id', $pr->pr_id)->orderByDesc('acted_at')->get()
+            ->map(fn ($l) => ['at' => $l->acted_at?->toDateTimeString(), 'by' => $l->created_by, 'action' => ucfirst(strtolower((string) $l->action)), 'note' => $l->notes])->all();
+    }
+
+    public static function delete(PrRequisition $pr): void
+    {
+        abort_unless($pr->status === 'DRAFT', 422, 'Hanya PR DRAFT yang bisa dihapus.');
+        $pr->delete();
+    }
+
+    // Status v1 -> status Form DevLib (Draft > Confirmed > Approval > Approved > Closed).
+    public static function formStatus(PrRequisition $pr, bool $held): string
+    {
+        return match ($pr->status) {
+            'DRAFT' => 'draft', 'SUBMITTED' => $held ? 'hold' : 'approval', 'APPROVED', 'PARTIALLY_ORDERED' => 'approved',
+            'FULLY_ORDERED', 'CLOSED' => 'closed', 'REJECTED', 'REVISION_NEEDED' => 'rejected', 'CANCELLED' => 'cancelled', default => 'draft',
+        };
+    }
+
+    private static function str(mixed $v): string
+    {
+        return $v instanceof \DateTimeInterface ? $v->format('Y-m-d') : trim((string) $v);
+    }
+
+    private static function num(mixed $v): string
+    {
+        $v = trim((string) $v);
+        $v = str_contains($v, ',') ? str_replace(['.', ','], ['', '.'], $v) : (substr_count($v, '.') > 1 ? str_replace('.', '', $v) : $v);
+
+        return $v === '' ? '0' : $v;
+    }
+}

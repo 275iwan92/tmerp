@@ -1156,6 +1156,9 @@ form.is-dirty .dl-master__heading b::after{content:" • belum disimpan";color:v
 .dl-lines__adjt tfoot td{border-top:1px solid var(--dl-border);font-weight:700;padding-top:5px;font-variant-numeric:tabular-nums}
 .dl-lines__adjt .dl-lines__chk{width:44px;text-align:center}
 .dl-lines__dpp{border-top:1px dashed var(--dl-border);padding-top:4px}
+.dl-lines__tools{display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap}
+.dl-lines__tools .dl-field{min-width:200px;margin:0}
+.dl-lines__head{flex-wrap:wrap}
 .dl-docfoot{border:1px solid var(--dl-border);border-radius:var(--dl-radius-lg);margin-top:6px}
 .dl-lines__left{display:grid;grid-template-columns:minmax(0,560px) minmax(220px,1fr);gap:8px 16px;align-items:start;min-width:0}
 .dl-lines__left > .dl-lines__words{margin-top:38px}

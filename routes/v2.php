@@ -22,6 +22,8 @@ use App\Support\Mail\MailSettings;
 use App\Support\V2\AppMenu;
 use App\Support\V2\Data\Cpdel;
 use App\Support\V2\Data\CustomerOrder;
+use App\Support\V2\Data\PurchaseRequisition;
+use App\Models\Pur\PrRequisition;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\Quotation;
 use App\Support\V2\Flows;
@@ -282,6 +284,53 @@ Route::prefix('v2')->name('v2.')->group(function () {
                 return $open($id)->with('v2_flash', 'Follow-up dihapus.');
             })->whereNumber('aid')->name('activity.delete');
         });
+    });
+
+    // Purchase Requisition v2 (App\Support\V2\Data\PurchaseRequisition = aturan komponen v1 pages::pur.pr.entry). Satu rute simpan:
+    // action = save | confirm (Submit ke flow approval) | approve | reject | hold | delete | add_material | add_free.
+    Route::prefix('pr')->name('pr.')->middleware('module:PROC')->group(function () {
+        $open = fn (int $id) => redirect(route('v2.screen', 'purchase-requisition').'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['department_id' => ['required', 'integer']], [], ['department_id' => 'Departemen']);
+            $pr = PurchaseRequisition::create((int) $d['department_id']);
+
+            return $open($pr->pr_id)->with('v2_flash', 'PR draft dibuat — tambahkan item lalu Confirm (ajukan).');
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
+            $pr = PrRequisition::findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            if (in_array($action, ['approve', 'reject', 'hold'], true)) {
+                $err = PurchaseRequisition::decide($pr, $action, (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['approval' => $err]) : $open($id)->with('v2_flash', 'Keputusan approval tersimpan ('.ucfirst($action).').');
+            }
+            if ($action === 'delete') {
+                PurchaseRequisition::delete($pr);
+
+                return redirect(route('v2.screen', 'purchase-requisition'))->with('v2_flash', 'Draft PR dihapus.');
+            }
+            $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_need_date' => ['nullable', 'date'], 'lines.*.i_need_date' => ['nullable', 'date']]);
+            PurchaseRequisition::save($pr, $r->all());
+            $msg = 'PR tersimpan.';
+            if ($action === 'add_material') {
+                abort_unless($r->filled('material_id'), 422, 'Pilih item dari master.');
+                PurchaseRequisition::addMaterial($pr->refresh(), (int) $r->input('material_id'));
+                $msg = 'Item master ditambahkan — isi qty & harga estimasi.';
+            } elseif ($action === 'add_free') {
+                abort_unless(trim((string) $r->input('free_description')) !== '', 422, 'Isi uraian item bebas.');
+                PurchaseRequisition::addFree($pr->refresh(), (string) $r->input('free_description'), (string) $r->input('free_uom', ''));
+                $msg = 'Item bebas ditambahkan.';
+            } elseif ($action === 'confirm') {
+                $pr->refresh()->load('lines');
+                if ($pr->lines->isEmpty() || ! $pr->i_department_id) {
+                    return $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: PR wajib punya departemen dan minimal 1 item.']);
+                }
+                $blocked = PurchaseRequisition::submit($pr);
+                $msg = $blocked ?: 'PR di-Confirm (diajukan) — menunggu approval.';
+            }
+
+            return $open($id)->with('v2_flash', $msg);
+        })->whereNumber('id')->name('save');
     });
 
     // Customer Order v2 (App\Support\V2\Data\CustomerOrder = aturan komponen v1 pages::co.entry). Tombol "+" menyimpan isian dulu.

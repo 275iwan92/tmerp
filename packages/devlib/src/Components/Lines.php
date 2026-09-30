@@ -20,6 +20,7 @@ use Devlib\Lookup;
 // Layar server-driven: 'keyField' => 'id_item' -> terkirim name[<id>][kolom] (bukan indeks); 'removeField' => 'remove' -> baris
 // ber-id yang dihapus terkirim remove[<id>]=1; :addable=false -> tambah baris lewat tombol layar;
 // :duplicable=false = tanpa tombol salin baris; row-lock="editable" = baris dgn nilai false tidak bisa dihapus (mis. snapshot quotation) (mis. pilih Master Product).
+// Slot tools = kontrol tambah baris milik layar (mis. pilih Master Item + tombol) di bar judul Details.
 // Terkirim: name[i][kolom] per baris, name_discount, name_ppn. Di dalam x-dl::master: baris = data[name].
 class Lines extends DevlibComponent
 {
@@ -110,7 +111,7 @@ class Lines extends DevlibComponent
     {
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-lines', 'is-readonly' => $readonly]) }} {!! $dl() !!} data-dl-lines data-name="{{ $name }}" data-total-key="{{ $totalKey }}" data-count-key="{{ $countKey }}" data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
-                <div class="dl-lines__head"><b>{{ $title }}</b><span class="dl-lines__count" data-l-count></span><span class="dl-lines__spacer"></span>
+                <div class="dl-lines__head"><b>{{ $title }}</b><span class="dl-lines__count" data-l-count></span><span class="dl-lines__spacer"></span>@isset($tools)<div class="dl-lines__tools">{{ $tools }}</div>@endisset
                     @if (! $readonly && $addable)<x-dl::button variant="secondary" size="sm" :label="$addLabel" data-l-add title="Tambah baris (Enter di baris terakhir)" />@endif
                 </div>
                 <div class="dl-lines__wrap"><table class="dl-lines__table"><thead data-l-head></thead><tbody data-l-body></tbody><tfoot data-l-foot></tfoot></table></div>

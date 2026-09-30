@@ -28,6 +28,13 @@ final class Lookups
                 ->orderByRaw('CASE WHEN p.customer_id = ? THEN 0 ELSE 1 END', [(int) ($ctx['customer_id'] ?? 0)])->orderBy('p.product_name')->limit(50)->get(),
             'find' => fn ($v) => self::products()->where('p.id_product', (int) $v)->first()]);
 
+        // Bahan baku / item beli (PR, PO): dicari ke server -- mat_raw aktif & confirmed (sama dgn filter v1 pur.pr.entry).
+        Lookup::define('material', ['key' => 'material_id', 'label' => 'label', 'source' => 'tm2mst.mat_raw (activate = 1, stat_confirm = 1)',
+            'columns' => ['material_name' => 'Nama Item', 'material_code' => 'Kode', 'uom_purchase' => 'Satuan'],
+            'search' => fn (string $q) => self::materials()->where(fn ($w) => $w->where('material_name', 'like', "%{$q}%")->orWhere('material_code', 'like', "%{$q}%"))
+                ->orderBy('material_name')->limit(50)->get(),
+            'find' => fn ($v) => self::materials()->where('material_id', (int) $v)->first()]);
+
         // Wilayah kirim = v_geo_full_address (5 level, sama dengan AddressPicker v1). Nilai = "LEVEL:id".
         Lookup::define('geo_area', ['key' => 'area', 'label' => 'full_label', 'source' => 'tm2mst.v_geo_full_address',
             'columns' => ['full_label' => 'Wilayah', 'postal_code' => 'Kode Pos'], 'fill' => ['ship_postal_code' => 'postal_code'],
@@ -36,6 +43,12 @@ final class Lookups
                 ->where(fn ($w) => $w->where('full_label', 'like', "%{$q}%")->orWhere('postal_code', 'like', "{$q}%"))
                 ->orderBy('full_label')->limit(30)->get()->map(fn ($r) => (array) $r + ['area' => self::geoKey($r)]),
             'find' => fn ($v) => self::geoFind((string) $v)]);
+    }
+
+    private static function materials()
+    {
+        return DB::connection('tm2mst')->table('mat_raw')->where('activate', 1)->where('stat_confirm', 1)
+            ->select('material_id', 'material_code', 'material_name', 'uom_purchase', DB::raw("CONCAT(material_code, ' · ', material_name) as label"));
     }
 
     private static function products()

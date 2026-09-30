@@ -58,6 +58,18 @@ final class Screens
                 ]],
                 ['label' => 'Alur', 'items' => [self::flowItem('SALES', 'Alur Sales: Inquiry → CPDEL')]],
             ]],
+            ['code' => 'PROC', 'short' => 'PRC', 'label' => 'Procurement', 'icon' => 'fa-solid fa-cart-flatbed', 'groups' => [
+                ['label' => 'Requisition', 'items' => [
+                    $it('purchase-requisition', ['Purchase Requisition (PR)', 'fa-solid fa-file-circle-plus', 'pur/pr/index + entry.blade.php', 'mockup_purchase_requisition.html']),
+                ]],
+                ['label' => 'Order', 'items' => [
+                    $it('purchase-order', ['Purchase Order (PO)', 'fa-solid fa-file-invoice-dollar', 'pur/po/index + entry.blade.php', null]),
+                ]],
+                ['label' => 'Receive', 'items' => [
+                    $it('purchase-receive', ['Penerimaan Barang (SPB)', 'fa-solid fa-truck-ramp-box', 'pur/pv/index + entry.blade.php', null]),
+                ]],
+                ['label' => 'Master', 'items' => [$it('master-raw')]],
+            ]],
             ['code' => 'COSTING', 'short' => 'PCO', 'label' => 'Product Costing', 'icon' => 'fa-solid fa-scale-balanced', 'groups' => [
                 ['label' => 'Costing', 'items' => [
                     $it('procost', ['Pro-Cost (Costing Hub)', 'fa-solid fa-scale-balanced', 'inquiry/costing.blade.php + costing-list', 'inquiry_costing_hub.html']),
