@@ -349,3 +349,52 @@ Semua relasi `tm2inv` → `wh_*` = **logis** (lintas-DB), divalidasi Laravel.
 - ERPNext — Putaway Rule: https://docs.erpnext.com/docs/v12/user/manual/en/stock/putaway-rule
 - Accurate Online — Pemindahan barang antar gudang: https://help.accurate.id/product/accurate-online/fitur-aol/persediaan/pemindahan-barang/mencatat-pemindahan-barang-antar-gudang/
 - Zahir — Transfer barang antar gudang tanpa jurnal: https://help.zahironline.com/portal/id/kb/articles/transfer-barang-antar-gudang-tanpa-jurnal
+
+---
+
+## 11. Tambahan 2026-10-01 (permintaan user ke-2): multi lokasi, transfer, laporan, adjustment
+
+Preview interaktif semua layar: artifact "Tata Letak Gudang TMERP"
+(salinan repo `docs/mockups/inventory_booking_preview_v2.html`). Booking: `materialbooking_tier1.md`.
+Implementasi mengikuti aturan multi-bahasa 2026-10-01 (DB/status English, label English + kamus).
+
+**Multi lokasi.** (a) satu item di banyak bin/gudang: semua laporan & pencarian difilter
+Site → Gudang → Zona → Bin dan dijumlah per tingkat. (b) banyak lokasi fisik: tabel baru
+`wh_site` (`id_site`, `site_code`, `site_name`, `address`, `geo_id`, `activate`) +
+`wh_warehouse.site_id`; tiap site punya gudang virtual `IN-TRANSIT`.
+
+**Transfer** (`doc_cat TF`, nomor `26TF00005`): Antar Bin / Antar Gudang (1 langkah:
+Confirm → Closed) / Antar Site (2 langkah: Confirm = kirim ke In Transit + surat jalan
+internal; Receive di site tujuan = Closed, boleh sebagian, selisih jadi Adjustment Draft).
+In Transit tetap dinilai tapi tidak Available. Tanpa jurnal.
+
+**Cari Barang**: item/lot/pallet/bin → total per site + rincian per bin; aksi Map, Transfer, Stock Card.
+
+**Stock Card** simple (tgl, dokumen, masuk, keluar, saldo; TF dalam gudang disembunyikan) dan
+**Extended** (site/zona/bin, lot, pallet, pemilik, referensi, kolom Adj terpisah, nilai rata-rata,
+saldo nilai, user; TF tampil 2 baris). Kolom nilai hanya Finance/Costing/Ops Manager+ (disaring server).
+
+**Item per Lokasi**: posisi sekarang per bin + riwayat IN/OUT/ADJ/TF (filter tipe), bisa juga per bin.
+
+**Adjustment + approval**: Confirm = kirim ke approval (Approval Setting v2); approver read-only,
+Level n of N, Approve/Reject final, Hold sementara, catatan wajib utk Reject/Hold, log. Stok
+berubah setelah approval terakhir; sebelumnya tampil "Pending adj" di On Hand.
+
+**Master Stock**: semua item per periode: saldo awal, masuk, keluar, adjustment, saldo akhir
+(+ nilai bila berhak); periode tertutup dari snapshot `inv_period`.
+
+**Stock On Hand**: On Hand, Booked, Available, Incoming (PO), Pending adj, Min, status
+(Short / Late PO / Below min / Slow moving / OK) sebagai filter.
+
+| # | Keputusan | Rekomendasi |
+|---|---|---|
+| M1 | Lapis Site | Tambah bila ≥ 2 alamat fisik (mohon info jumlah lokasi fisik) |
+| M2 | Transfer antar site | 2 langkah dengan In Transit |
+| M3 | Selisih terima transfer | Otomatis Adjustment Draft + approval |
+| A1 | Jenjang approval adjustment | L1 Kepala Gudang; L2 Ops Manager bila minus / ≥ Rp 1 jt; L3 Dir F&A ≥ Rp 10 jt (angka ditetapkan user) |
+| A2 | Kapan stok berubah | Setelah approval terakhir |
+| S1 | Kolom nilai | Hanya Finance, Costing, Ops Manager+ |
+
+**Temuan data**: saldo berjalan `ddtinv.rm_stockcard.qty_eb` ANIMAL GLUE tidak konsisten
+(IN 1.000 → ADJ +100 tercatat saldo 100) dan ada saldo negatif di UNKNOWN-LEGACY — perlu
+diperiksa sebelum laporan Stock Card/Master Stock dibangun di atas tabel ini.
