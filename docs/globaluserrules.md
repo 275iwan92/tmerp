@@ -140,5 +140,6 @@
 | 2026-10-01 | A.3: tombol Post to Production pada CPDEL Confirmed; sistem tidak tahu lama pengerjaan sampai produksi di-input; batas 30 menit berubah sesuai data. |
 | 2026-10-01 | A.3: hasil produksi tetap wajib di-input walau sudah dikirim; data hasil produksi = acuan KPI semua departemen. |
 | 2026-10-01 | Pedoman ini dibuka dari menu akun v2 → **Bantuan & dukungan**. |
+| 2026-10-01 | A.3 dibangun di v2 (ddt): Post to Production, DO hanya dari baris Posted, laporan Shipped Without Production Output. |
 | 2026-10-01 | C.17: F1 = Bantuan & dukungan di v2; Tiket Bantuan di profil dengan ikon jelas; Back kembali ke Profile. |
 | 2026-10-01 | B.12: dummy yang salah selalu dihapus dan diganti baru (aturan main tetap, tanpa tanya). |
