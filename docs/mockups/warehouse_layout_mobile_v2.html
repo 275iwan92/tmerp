@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Warehouse Mobile — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .phone { width: 340px; height: 700px; border: 10px solid #1e293b; border-radius: 34px; background: #f8fafc; overflow: hidden; position: relative; box-shadow: 0 10px 25px #0002; }
+  .bar { background: #2c3e69; color: #fff; padding: 22px 14px 10px; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; }
+  .btn { padding: 10px 12px; border-radius: 10px; font-weight: 700; font-size: 14px; text-align: center; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px; }
+  .step { display:inline-flex; width:20px; height:20px; border-radius:50%; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-5 flex gap-7 justify-center">
+
+<!-- ===== 1. DAFTAR TUGAS ===== -->
+<div>
+  <div class="cap">③ Scan Center › Tugas Gudang (HP staf)</div>
+  <div class="phone">
+    <div class="bar">
+      <div class="text-[10px] opacity-70">WH-RAW-01 · Andi (Staf Gudang)</div>
+      <div class="text-base font-bold">Tugas Gudang</div>
+    </div>
+    <div class="p-3 space-y-3">
+      <div class="grid grid-cols-3 gap-2">
+        <div class="rounded-lg p-2 bg-violet-50 ring-2 ring-violet-500"><div class="text-[10px] text-violet-700 font-semibold">PUTAWAY</div><div class="text-xl font-bold text-violet-700">4</div></div>
+        <div class="rounded-lg p-2 bg-sky-50"><div class="text-[10px] text-sky-700 font-semibold">PICK</div><div class="text-xl font-bold text-sky-700">2</div></div>
+        <div class="rounded-lg p-2 bg-amber-50"><div class="text-[10px] text-amber-700 font-semibold">COUNT</div><div class="text-xl font-bold text-amber-700">1</div></div>
+      </div>
+      <div class="card p-3 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center text-lg"><i class="fa-solid fa-pallet"></i></div>
+        <div class="flex-1"><div class="font-bold">PL-2610-00042</div><div class="text-[11px] text-slate-500">Art Paper 310 g 79×109 · 2.000 lbr</div><div class="text-[10px] text-muted">PV-2610-0007 · di RCV sejak 07:40</div></div>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+      </div>
+      <div class="card p-3 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center text-lg"><i class="fa-solid fa-pallet"></i></div>
+        <div class="flex-1"><div class="font-bold">PL-2610-00043</div><div class="text-[11px] text-slate-500">Art Paper 310 g 79×109 · 2.000 lbr</div><div class="text-[10px] text-muted">PV-2610-0007 · di RCV sejak 07:40</div></div>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+      </div>
+      <div class="card p-3 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center text-lg"><i class="fa-solid fa-fill-drip"></i></div>
+        <div class="flex-1"><div class="font-bold">Tinta Process Cyan 1 kg × 12</div><div class="text-[11px] text-slate-500">lot TC-2609 · exp 30-Mar-2027</div><div class="text-[10px] text-muted">PV-2610-0008 · di RCV sejak 08:15</div></div>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+      </div>
+      <div class="card p-3 flex items-center gap-3 border-rose-200">
+        <div class="w-10 h-10 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-lg"><i class="fa-solid fa-pallet"></i></div>
+        <div class="flex-1"><div class="font-bold">PL-2609-00388</div><div class="text-[11px] text-slate-500">Duplex 350 g 65×100 · 1.500 lbr</div><div class="text-[10px] text-rose-600 font-semibold">di RCV 3 hari — segera ditata</div></div>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+      </div>
+    </div>
+    <div class="absolute bottom-3 left-3 right-3"><div class="btn bg-navy text-white"><i class="fa-solid fa-qrcode mr-2"></i>Scan QR</div></div>
+  </div>
+</div>
+
+<!-- ===== 2. PUTAWAY ===== -->
+<div>
+  <div class="cap">④ Putaway — sistem menyarankan, staf mengonfirmasi</div>
+  <div class="phone">
+    <div class="bar flex items-center gap-2">
+      <i class="fa-solid fa-arrow-left"></i>
+      <div><div class="text-[10px] opacity-70">PUTAWAY · PV-2610-0007</div><div class="text-base font-bold">PL-2610-00042</div></div>
+    </div>
+    <div class="p-3 space-y-3">
+      <div class="card p-3">
+        <div class="flex items-center gap-2 mb-1"><span class="step bg-emerald-500 text-white"><i class="fa-solid fa-check text-[10px]"></i></span><span class="font-semibold">Pallet discan</span></div>
+        <div class="text-[12px] font-bold">Art Paper 310 g 79×109</div>
+        <div class="grid grid-cols-2 gap-1 text-[11px] mt-1">
+          <div><span class="lbl">Qty</span><br>2.000 lbr</div><div><span class="lbl">Lot</span><br>AP-1001-01</div>
+          <div><span class="lbl">Dari</span><br>RCV · Receiving</div><div><span class="lbl">Pemilik</span><br>milik sendiri</div>
+        </div>
+      </div>
+      <div class="rounded-xl p-3 bg-sky-50 border-2 border-sky-400">
+        <div class="flex items-center gap-2 mb-1"><span class="step bg-sky-500 text-white">2</span><span class="font-semibold text-sky-800">Saran bin</span></div>
+        <div class="text-lg font-bold text-navy tracking-tight">PPR-L02-04</div>
+        <div class="text-[11px] text-slate-600">Lajur 02 slot 04 · terisi 2/4 pallet</div>
+        <div class="text-[10.5px] text-sky-800 mt-1"><i class="fa-solid fa-lightbulb mr-1"></i>Aturan #3 "Kertas Art Paper → PPR", strategi <b>Add to existing</b> (item sama, lot lebih baru ditaruh di belakang)</div>
+        <div class="mt-2 rounded-lg bg-white border border-sky-200 p-2 flex gap-1 flex-wrap text-[9px]">
+          <span class="px-1.5 py-1 rounded bg-blue-200">L01</span><span class="px-1.5 py-1 rounded bg-navy text-white font-bold">L02-04 ←</span><span class="px-1.5 py-1 rounded bg-blue-200">L03</span><span class="px-1.5 py-1 rounded bg-slate-100">L04</span><span class="px-1.5 py-1 rounded bg-blue-200">L05</span><span class="px-1.5 py-1 rounded bg-slate-100">L06</span>
+        </div>
+      </div>
+      <div class="card p-3">
+        <div class="flex items-center gap-2 mb-2"><span class="step bg-slate-300 text-slate-700">3</span><span class="font-semibold">Scan QR bin tujuan</span></div>
+        <div class="h-28 rounded-lg bg-slate-800 relative flex items-center justify-center">
+          <div class="w-20 h-20 border-2 border-white/80 rounded-md"></div>
+          <div class="absolute bottom-1 text-[10px] text-white/70">arahkan kamera ke label bin</div>
+        </div>
+        <div class="text-[10.5px] text-muted mt-2">Bin berbeda dari saran? Boleh — sistem minta alasan singkat (penuh / rusak / lainnya).</div>
+      </div>
+    </div>
+    <div class="absolute bottom-3 left-3 right-3 flex gap-2"><div class="btn flex-1 border border-slate-300 bg-white">Other Bin</div><div class="btn flex-1 bg-accent text-white opacity-50">Done</div></div>
+  </div>
+</div>
+
+<!-- ===== 3. PICK LIST ===== -->
+<div>
+  <div class="cap">⑤ Pick List WO — urut FIFO / FEFO + jalur</div>
+  <div class="phone">
+    <div class="bar flex items-center gap-2">
+      <i class="fa-solid fa-arrow-left"></i>
+      <div><div class="text-[10px] opacity-70">PICK · ke Staging SM74</div><div class="text-base font-bold">WO-2610-0012</div></div>
+    </div>
+    <div class="p-3 space-y-2.5">
+      <div class="text-[11px] text-slate-600">Dus Osima N100 · 3 bahan · <b>1 / 4 baris selesai</b></div>
+      <div class="h-1.5 bg-slate-200 rounded"><div class="h-1.5 bg-emerald-500 rounded w-1/4"></div></div>
+      <div class="card p-3 opacity-60">
+        <div class="flex justify-between"><span class="font-bold"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>PPR-L01-01</span><span class="text-[10px] text-muted">FIFO · terima 12-Sep</span></div>
+        <div class="text-[11px]">Art Paper 310 g 79×109 · PL-2609-00371</div>
+        <div class="text-[11px] font-semibold">1.250 / 1.250 lbr</div>
+      </div>
+      <div class="card p-3 border-2 border-accent">
+        <div class="flex justify-between"><span class="font-bold text-accent">PPR-L03-05</span><span class="text-[10px] text-muted">FIFO · terima 12-Sep</span></div>
+        <div class="text-[11px]">Art Paper 310 g 79×109 · PL-2609-00372</div>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="lbl">Ambil</span>
+          <div class="flex-1 border border-[#c9d6ea] bg-[#f7faff] rounded-md px-2 py-1.5 font-semibold text-sm">750</div>
+          <span class="text-[11px]">/ 750 lbr</span>
+        </div>
+        <div class="flex gap-2 mt-2"><div class="btn flex-1 !py-1.5 !text-xs border border-slate-300"><i class="fa-solid fa-qrcode mr-1"></i>Scan Bin</div><div class="btn flex-1 !py-1.5 !text-xs border border-slate-300"><i class="fa-solid fa-qrcode mr-1"></i>Scan Pallet</div></div>
+      </div>
+      <div class="card p-3">
+        <div class="flex justify-between"><span class="font-bold">CHM-A01-2</span><span class="text-[10px] text-rose-600 font-semibold">FEFO · exp 15-Nov-2026</span></div>
+        <div class="text-[11px]">Tinta Process Magenta 1 kg · lot TM-2608</div>
+        <div class="text-[11px] font-semibold">0 / 3 kg</div>
+      </div>
+      <div class="card p-3">
+        <div class="flex justify-between"><span class="font-bold">CHM-A03-1</span><span class="text-[10px] text-muted">FEFO · exp 20-Jan-2027</span></div>
+        <div class="text-[11px]">Lem Water Base 20 kg · lot LW-2609</div>
+        <div class="text-[11px] font-semibold">0 / 8 kg</div>
+      </div>
+    </div>
+    <div class="absolute bottom-3 left-3 right-3"><div class="btn bg-accent text-white">Done</div></div>
+  </div>
+</div>
+
+</main>
+<div class="text-center text-[11px] text-muted pb-4">Web/PWA di HP (kamera sebagai pemindai QR) · objek DevLib baru <b>x-dl::scan</b> · tiap "Done" mem-post dokumen Transfer (kartu stok tetap satu sumber kebenaran) · Tahap 2</div>
+</body>
+</html>

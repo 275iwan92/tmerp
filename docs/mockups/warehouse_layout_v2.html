@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Warehouse Layout — Mockup</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  tailwind.config = { theme: { extend: { colors: { navy: '#2c3e69', accent: '#2c7be5', muted: '#8a94a6' } } } };
+</script>
+<style>
+  body { font-family: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; }
+  .lbl { font-size: 10px; color: #8a94a6; text-transform: uppercase; font-weight: 600; margin-bottom: 2px; }
+  .inp { width: 100%; border: 1px solid #c9d6ea; border-radius: 6px; padding: 5px 8px; font-size: 12px; background: #f7faff; display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+  .inp.ro { background: #f1f5f9; color: #475569; }
+  .aa { font-size: 9px; font-weight: 700; color: #2c7be5; background: #e3edfb; border-radius: 4px; padding: 1px 4px; }
+  .ib { width: 26px; height: 26px; border: 1px solid #cbd5e1; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; color: #2c3e69; background: #fff; }
+  .btn { padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 12px; }
+  th { font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; text-align: left; padding: 6px 8px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+  td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .cap { font-size: 13px; font-weight: 700; color: #334155; margin: 18px 0 6px; }
+  /* denah: 1 sel = 20px */
+  .map { position: relative; width: 880px; height: 520px; background-color: #fbfcfe;
+         background-image: linear-gradient(#eef2f7 1px, transparent 1px), linear-gradient(90deg, #eef2f7 1px, transparent 1px);
+         background-size: 20px 20px; border: 1px solid #cbd5e1; border-radius: 6px; }
+  .zone { position: absolute; border: 2px solid; border-radius: 6px; }
+  .zt { position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; }
+  .bin { position: absolute; width: 34px; height: 30px; border: 1px solid #94a3b8; border-radius: 4px; font-size: 8.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: #334155; }
+  .e { background: #ffffff; }
+  .p { background: #bfdbfe; border-color: #60a5fa; }
+  .f { background: #fcd34d; border-color: #d97706; }
+  .o { background: #fca5a5; border-color: #dc2626; }
+  .b { background: repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 4px, #cbd5e1 4px, #cbd5e1 8px); color:#64748b; }
+  .sel { outline: 3px solid #2c3e69; outline-offset: 1px; z-index: 5; }
+  .tag { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#dc2626; color:#fff; font-size:10px; font-weight:700; }
+</style>
+</head>
+<body class="text-xs text-slate-800">
+<main class="p-4 max-w-[1400px] mx-auto">
+
+<!-- ======================= 1. WAREHOUSE MAP ======================= -->
+<div class="cap">① Inventory › Warehouse › Warehouse Map — kepala gudang (desktop)</div>
+<section class="card p-3 space-y-3">
+  <div class="grid grid-cols-6 gap-2">
+    <div class="rounded-lg p-2.5 bg-slate-100 ring-2 ring-navy relative"><div class="text-[10px] text-slate-500 font-semibold uppercase">All Bins</div><div class="text-xl font-bold">86</div><i class="fa-solid fa-circle-check absolute top-2 right-2 text-navy"></i></div>
+    <div class="rounded-lg p-2.5 bg-white border border-slate-200"><div class="text-[10px] text-slate-500 font-semibold uppercase">Empty</div><div class="text-xl font-bold text-slate-600">31</div></div>
+    <div class="rounded-lg p-2.5 bg-sky-50"><div class="text-[10px] text-sky-700 font-semibold uppercase">Partly Used</div><div class="text-xl font-bold text-sky-700">38</div></div>
+    <div class="rounded-lg p-2.5 bg-amber-50"><div class="text-[10px] text-amber-700 font-semibold uppercase">Full</div><div class="text-xl font-bold text-amber-700">12</div></div>
+    <div class="rounded-lg p-2.5 bg-rose-50"><div class="text-[10px] text-rose-700 font-semibold uppercase">Over Capacity / Blocked</div><div class="text-xl font-bold text-rose-700">2 / 3</div></div>
+    <div class="rounded-lg p-2.5 bg-violet-50"><div class="text-[10px] text-violet-700 font-semibold uppercase">In Receiving &gt; 24 h</div><div class="text-xl font-bold text-violet-700">4 pallet</div></div>
+  </div>
+
+  <div class="flex items-center gap-2">
+    <div class="w-64"><div class="inp"><span>WH-RAW-01 · Gudang Utama Bahan Baku</span><i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+    <div class="w-44"><div class="inp"><span>Color by: Occupancy</span><i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+    <div class="inp w-72"><span class="text-muted"><i class="fa-solid fa-magnifying-glass mr-1"></i>Cari item / lot / pallet / kode bin → bin disorot</span></div>
+    <span class="ml-auto flex items-center gap-3 text-[11px] text-slate-600">
+      <span><span class="inline-block w-3 h-3 border border-slate-400 bg-white align-middle"></span> Empty</span>
+      <span><span class="inline-block w-3 h-3 bg-blue-200 border border-blue-400 align-middle"></span> Partly</span>
+      <span><span class="inline-block w-3 h-3 bg-amber-300 border border-amber-600 align-middle"></span> Full</span>
+      <span><span class="inline-block w-3 h-3 bg-red-300 border border-red-600 align-middle"></span> Over</span>
+      <span><span class="inline-block w-3 h-3 b align-middle border border-slate-400"></span> Blocked</span>
+    </span>
+    <button class="btn border border-slate-300 bg-white"><i class="fa-solid fa-print mr-1"></i>Print</button>
+  </div>
+
+  <div class="flex gap-3">
+    <!-- DENAH -->
+    <div class="map shrink-0">
+      <!-- RECEIVING -->
+      <div class="zone" style="left:0;top:340px;width:160px;height:120px;border-color:#8b5cf6;background:#f5f3ffcc"><span class="zt text-violet-700">RCV · Receiving</span>
+        <div class="absolute left-3 top-6 text-[10px] text-violet-700 leading-4">PL-2610-00042<br>PL-2610-00043<br>PL-2610-00044<br>PL-2609-00388 <span class="text-rose-600 font-bold">(3 hari)</span></div></div>
+      <!-- QC -->
+      <div class="zone" style="left:0;top:220px;width:160px;height:100px;border-color:#f59e0b;background:#fffbebcc"><span class="zt text-amber-700">QC · Karantina QC</span>
+        <div class="absolute left-3 top-6 text-[10px] text-amber-700">2 pallet menunggu QC</div></div>
+      <!-- REJECT -->
+      <div class="zone" style="left:0;top:20px;width:160px;height:80px;border-color:#dc2626;background:#fef2f2cc"><span class="zt text-rose-700">REJ · Reject / Afval</span></div>
+      <!-- PAPER FLOOR -->
+      <div class="zone" style="left:200px;top:20px;width:420px;height:340px;border-color:#2563eb;background:#eff6ffaa"><span class="zt text-blue-700">PPR · Kertas Plano (lantai, lajur × slot) · FIFO</span></div>
+      <!-- lanes L01..L06, slots 01..07 -->
+      <div id="lanes"></div>
+      <!-- INK RACK -->
+      <div class="zone" style="left:660px;top:20px;width:200px;height:200px;border-color:#059669;background:#ecfdf5aa"><span class="zt text-emerald-700">CHM · Tinta &amp; Kimia (rak) · FEFO</span></div>
+      <div id="racks"></div>
+      <!-- STAGING -->
+      <div class="zone" style="left:660px;top:250px;width:200px;height:130px;border-color:#0891b2;background:#ecfeffaa"><span class="zt text-cyan-700">STG · Staging Produksi</span>
+        <div class="absolute left-2 top-6 grid grid-cols-2 gap-1.5 text-[9.5px]">
+          <div class="bin p !static !w-[88px]">SM74 · 2 plt</div><div class="bin e !static !w-[88px]">KBA · kosong</div>
+          <div class="bin p !static !w-[88px]">Pond-01 · 1 plt</div><div class="bin f !static !w-[88px]">Lem-01 · penuh</div>
+        </div></div>
+      <!-- CONSIGN -->
+      <div class="zone" style="left:200px;top:400px;width:260px;height:100px;border-color:#db2777;background:#fdf2f8aa"><span class="zt text-pink-700">CSG · Titipan Customer (1 pemilik / bin)</span>
+        <div class="absolute left-2 top-6 flex gap-1.5">
+          <div class="bin p !static !w-[74px] !h-[40px] text-center leading-3">CSG-01<br>PT Osima</div>
+          <div class="bin p !static !w-[74px] !h-[40px] text-center leading-3">CSG-02<br>Yama</div>
+          <div class="bin e !static !w-[74px] !h-[40px]">CSG-03</div>
+        </div></div>
+      <!-- TOOLING -->
+      <div class="zone" style="left:500px;top:400px;width:140px;height:100px;border-color:#64748b;background:#f8fafcaa"><span class="zt text-slate-600">TLG · Rak Pisau &amp; Plat</span>
+        <div class="absolute left-3 top-7 text-[10px] text-slate-600 leading-4">R1–R6 · 214 pisau<br>R7–R8 · plat CTP</div></div>
+      <!-- doors -->
+      <div class="absolute text-[10px] font-bold text-slate-500" style="left:-2px;top:466px"><i class="fa-solid fa-truck-ramp-box"></i> Dock Bongkar</div>
+      <div class="absolute text-[10px] font-bold text-slate-500" style="left:800px;top:392px"><i class="fa-solid fa-door-open"></i> Ke Produksi</div>
+    </div>
+
+    <!-- PANEL BIN -->
+    <aside class="flex-1 card p-3 space-y-2.5 border-navy/30">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] text-muted uppercase font-semibold">Bin</div>
+          <div class="text-sm font-bold text-navy">WH-RAW-01-PPR-L03-05</div>
+          <div class="text-[11px] text-slate-500">Zona PPR · Kertas Plano · lantai · lajur 03 slot 05</div>
+        </div>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">Full</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="rounded bg-slate-50 p-2"><div class="lbl">Pallet</div><div class="font-bold">4 / 4</div><div class="h-1.5 bg-slate-200 rounded mt-1"><div class="h-1.5 bg-amber-500 rounded w-full"></div></div></div>
+        <div class="rounded bg-slate-50 p-2"><div class="lbl">Berat</div><div class="font-bold">1.935 / 3.200 kg</div><div class="h-1.5 bg-slate-200 rounded mt-1"><div class="h-1.5 bg-sky-500 rounded" style="width:60%"></div></div></div>
+      </div>
+      <table class="w-full">
+        <thead><tr><th>Pallet</th><th>Item</th><th class="text-right">Qty</th><th>Terima</th></tr></thead>
+        <tbody>
+          <tr><td class="font-semibold text-accent">PL-2609-00371</td><td>Art Paper 310 g 79×109<div class="text-[10px] text-muted">lot AP-0926-07</div></td><td class="text-right">1.250 lbr</td><td>12-Sep-2026</td></tr>
+          <tr><td class="font-semibold text-accent">PL-2609-00372</td><td>Art Paper 310 g 79×109<div class="text-[10px] text-muted">lot AP-0926-07</div></td><td class="text-right">2.000 lbr</td><td>12-Sep-2026</td></tr>
+          <tr><td class="font-semibold text-accent">PL-2609-00390</td><td>Art Paper 310 g 79×109<div class="text-[10px] text-muted">lot AP-0927-02</div></td><td class="text-right">2.000 lbr</td><td>25-Sep-2026</td></tr>
+          <tr><td class="font-semibold text-accent">PL-2609-00391</td><td>Art Paper 310 g 79×109<div class="text-[10px] text-muted">lot AP-0927-02</div></td><td class="text-right">2.000 lbr</td><td>25-Sep-2026</td></tr>
+        </tbody>
+      </table>
+      <div class="text-[11px] text-slate-500">Pemilik: <b>milik sendiri</b> · Aturan zona: 1 item per bin, boleh campur lot · Cycle count terakhir 02-Sep-2026 (jatuh tempo 02-Oct-2026)</div>
+      <div class="flex flex-wrap gap-1.5 pt-1">
+        <button class="btn bg-accent text-white"><i class="fa-solid fa-right-left mr-1"></i>Transfer</button>
+        <button class="btn border border-slate-300 bg-white"><i class="fa-solid fa-clock-rotate-left mr-1"></i>History</button>
+        <button class="btn border border-slate-300 bg-white"><i class="fa-solid fa-qrcode mr-1"></i>Bin Label</button>
+        <button class="btn border border-rose-300 text-rose-700 bg-white"><i class="fa-solid fa-ban mr-1"></i>Block</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ======================= 2. SETUP ======================= -->
+<div class="cap">② Inventory › Setup › Warehouse &amp; Location — Zona + Generator Bin</div>
+<section class="card p-3 flex gap-3">
+  <div class="flex-1 space-y-2">
+    <div class="flex items-center gap-2">
+      <div class="w-64"><div class="inp"><span>WH-RAW-01 · Gudang Utama Bahan Baku</span><i class="fa-solid fa-chevron-down text-muted"></i></div></div>
+      <div class="inp w-56"><span class="text-muted"><i class="fa-solid fa-magnifying-glass mr-1"></i>Cari zona</span></div>
+      <span class="ml-auto"></span>
+      <button class="btn border border-slate-300 bg-white"><i class="fa-solid fa-draw-polygon mr-1"></i>Edit Map</button>
+      <button class="btn bg-accent text-white">+ New Record</button>
+    </div>
+    <table class="w-full">
+      <thead><tr><th>Zona</th><th>Tipe</th><th>Mode</th><th>Kelas</th><th>Aturan</th><th class="text-right">Bin</th><th class="text-right">Terpakai</th><th>Status</th><th class="w-20">Aksi</th></tr></thead>
+      <tbody>
+        <tr><td><div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-violet-100 text-violet-700 font-bold flex items-center justify-center text-[10px]">RCV</span><div><div class="font-semibold">Receiving</div><div class="text-[10px] text-muted">RCV</div></div></div></td><td>RECEIVING</td><td>AREA</td><td>ANY</td><td class="text-[11px]">—</td><td class="text-right">1</td><td class="text-right">4 plt</td><td><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span></td><td><span class="ib"><i class="fa-solid fa-pen"></i></span> <span class="ib"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-[10px]">QC</span><div><div class="font-semibold">Karantina QC</div><div class="text-[10px] text-muted">QC</div></div></div></td><td>QC_HOLD</td><td>AREA</td><td>RM</td><td class="text-[11px]">tidak bisa dipakai produksi</td><td class="text-right">1</td><td class="text-right">2 plt</td><td><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span></td><td><span class="ib"><i class="fa-solid fa-pen"></i></span> <span class="ib"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr class="bg-sky-50/60"><td><div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center text-[10px]">PPR</span><div><div class="font-semibold">Kertas Plano</div><div class="text-[10px] text-muted">PPR</div></div></div></td><td>STORAGE</td><td>FLOOR</td><td>RM</td><td class="text-[11px]">1 item/bin · FIFO · count 30 hr</td><td class="text-right">42</td><td class="text-right">71%</td><td><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span></td><td><span class="ib"><i class="fa-solid fa-pen"></i></span> <span class="ib"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-[10px]">CHM</span><div><div class="font-semibold">Tinta &amp; Kimia</div><div class="text-[10px] text-muted">CHM</div></div></div></td><td>STORAGE</td><td>RACK</td><td>RM</td><td class="text-[11px]">campur item · FEFO · count 14 hr</td><td class="text-right">32</td><td class="text-right">48%</td><td><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span></td><td><span class="ib"><i class="fa-solid fa-pen"></i></span> <span class="ib"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-pink-100 text-pink-700 font-bold flex items-center justify-center text-[10px]">CSG</span><div><div class="font-semibold">Titipan Customer</div><div class="text-[10px] text-muted">CSG</div></div></div></td><td>CONSIGN</td><td>AREA</td><td>RM</td><td class="text-[11px]">1 pemilik/bin · tidak dinilai</td><td class="text-right">3</td><td class="text-right">2 bin</td><td><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span></td><td><span class="ib"><i class="fa-solid fa-pen"></i></span> <span class="ib"><i class="fa-solid fa-ban"></i></span></td></tr>
+        <tr><td><div class="flex items-center gap-2"><span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-[10px]">SUB</span><div><div class="font-semibold">Di Subkon (virtual)</div><div class="text-[10px] text-muted">WH-SUBCON · 1 bin / supplier</div></div></div></td><td>SUBCON</td><td>AREA</td><td>SFG</td><td class="text-[11px]">tidak ada di denah</td><td class="text-right">4</td><td class="text-right">3 supplier</td><td><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-700">Active</span></td><td><span class="ib"><i class="fa-solid fa-pen"></i></span> <span class="ib"><i class="fa-solid fa-ban"></i></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- dialog generator -->
+  <div class="w-[380px] shrink-0 rounded-lg border-2 border-navy/40 shadow-lg bg-white">
+    <div class="bg-navy text-white px-3 py-2 rounded-t-md flex items-center justify-between"><span class="font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Generate Bins — PPR Kertas Plano</span><i class="fa-solid fa-xmark"></i></div>
+    <div class="p-3 space-y-2">
+      <div class="grid grid-cols-3 gap-2">
+        <div><div class="lbl">Mode</div><div class="inp ro">FLOOR</div></div>
+        <div><div class="lbl">Lajur dari–s/d</div><div class="inp"><span>01 – 06</span></div></div>
+        <div><div class="lbl">Slot dari–s/d</div><div class="inp"><span>01 – 07</span></div></div>
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <div><div class="lbl">Kapasitas pallet</div><div class="inp"><span>4</span></div></div>
+        <div><div class="lbl">Kapasitas kg</div><div class="inp"><span>3.200</span></div></div>
+        <div><div class="lbl">Count tiap (hari)</div><div class="inp"><span>30</span></div></div>
+      </div>
+      <div><div class="lbl">Pola kode</div><div class="inp ro">{WH}-{ZONE}-L{lajur}-{slot}</div></div>
+      <div class="rounded bg-slate-50 border border-slate-200 p-2 text-[11px]">
+        <div class="font-semibold mb-1">Pratinjau · 42 bin (0 sudah ada, dilewati)</div>
+        <div class="font-mono text-[10.5px] text-slate-600 leading-4">WH-RAW-01-PPR-L01-01<br>WH-RAW-01-PPR-L01-02<br>…<br>WH-RAW-01-PPR-L06-07</div>
+      </div>
+      <label class="flex items-center gap-2 text-[11px]"><i class="fa-regular fa-square-check text-accent text-sm"></i> Letakkan otomatis di denah (lajur vertikal, mulai kiri-atas zona)</label>
+      <label class="flex items-center gap-2 text-[11px]"><i class="fa-regular fa-square-check text-accent text-sm"></i> Cetak label bin QR setelah dibuat</label>
+      <div class="flex justify-end gap-2 pt-1"><button class="btn border border-slate-300 bg-white">Cancel</button><button class="btn bg-accent text-white">Generate</button></div>
+    </div>
+  </div>
+</section>
+<div class="text-[11px] text-muted mt-2">Data contoh (denah fiktif) — denah nyata menunggu sketsa dari user (keputusan K9). Semua bin/zona tersimpan di DB (ddtmst.wh_zone / wh_loc), bukan data JS.</div>
+</main>
+<script>
+  // lajur kertas: 6 lajur x 7 slot
+  const occ = ['p','f','p','e','p','f','e', 'f','f','p','p','e','e','e', 'p','p','f','f','f','p','b', 'e','p','p','o','e','e','e', 'p','e','e','p','p','e','b', 'f','f','p','e','e','e','e'];
+  let h = '', i = 0;
+  for (let l = 1; l <= 6; l++) for (let s = 1; s <= 7; s++) {
+    const cls = occ[i++] + ((l === 3 && s === 5) ? ' sel f' : '');
+    h += `<div class="bin ${cls}" style="left:${200 + 20 + (l - 1) * 66}px;top:${20 + 22 + (s - 1) * 44}px">L0${l}-0${s}</div>`;
+  }
+  // tandai L03-05 benar-benar Full
+  document.getElementById('lanes').innerHTML = h.replace('class="bin f sel f"','class="bin sel f"');
+  const rocc = ['p','p','e','f','p','e','e','p','f','p','e','e','p','e','p','b'];
+  let r = ''; i = 0;
+  for (let a = 1; a <= 4; a++) for (let lv = 1; lv <= 4; lv++) {
+    r += `<div class="bin ${rocc[i++]}" style="left:${660 + 10 + (a - 1) * 47}px;top:${20 + 22 + (lv - 1) * 42}px">A0${a}-${lv}</div>`;
+  }
+  document.getElementById('racks').innerHTML = r;
+</script>
+</body>
+</html>
