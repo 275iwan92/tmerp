@@ -33,14 +33,9 @@ final class Grids
         Sales\ProductMarketGrid::class,
         Sales\CostingListGrid::class,
         Sales\WinRateGrid::class,
-        Sales\CoOpenReport::class,
-        Sales\CoAllReport::class,
-        Sales\CoStatusReport::class,
-        Sales\CoShipSummaryReport::class,
+        Sales\CoSummaryReport::class,
+        Sales\CoOrderReport::class,
         Sales\CoShipDetailReport::class,
-        Sales\CoPriceReport::class,
-        Sales\CoTotalSalesReport::class,
-        Sales\CoOutstandingReport::class,
         Acc\CoaGrid::class,
     ];
 

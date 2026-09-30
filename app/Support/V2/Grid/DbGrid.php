@@ -73,6 +73,12 @@ abstract class DbGrid
         return [];
     }
 
+    // Panduan singkat di atas grid (mis. cara memakai tombol Kolom di laporan). null = tanpa panduan.
+    public function guide(): ?string
+    {
+        return null;
+    }
+
     // Grid Report: pilihan Grup (kolom => label) + grup awal (varian Group By, subtotal kolom 'sum').
     public function groups(): array
     {

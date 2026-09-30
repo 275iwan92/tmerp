@@ -106,6 +106,9 @@ abstract class CoReportGrid extends DbGrid
             'qty_max' => $i->qty_max !== null ? (float) $i->qty_max : null, 'due' => $i->due_date ? substr((string) $i->due_date, 0, 10) : null,
             'currency' => $o?->currency_code, 'price' => (float) $i->unit_price, 'disc' => (float) $i->discount_pct, 'subtotal' => (float) $i->subtotal,
             'planned' => (float) ($this->planned[$i->getKey()] ?? 0), 'shipped' => $shipped, 'remain' => max(0, (float) $i->qty - $shipped),
+            // Penanda kotak statistik (pengganti laporan v1 terpisah "Status Open and Not Cancel" & "Outstanding Order").
+            'open' => $o && ! $o->stat_cancel && ! in_array($o->doc_status, ['CLOSED', 'CANCELLED'], true),
+            'outstanding' => $o && ! $o->stat_cancel && $o->doc_status === 'CONFIRMED' && (float) $i->qty > $shipped,
         ];
     }
 
