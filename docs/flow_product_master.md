@@ -14,6 +14,11 @@ Inquiry (Baru / Revisi / Rekalkulasi) → ProDev → ProCost → Quotation → W
 - Urutan Inquiry → ProDev → ProCost **tetap**, juga untuk Revisi dan Rekalkulasi. ✅
 - Quotation berisi **banyak inquiry**; **1 inquiry = 1 product**. ✅ (quotation multi-inquiry sudah ada)
 - **1 Quotation ↔ 1 Customer Order** (No. CO). Satu CO punya **banyak CO Detail**. ✅
+- **Inquiry → Quotation WAJIB integrated** (user 2026-10-01): baris quotation selalu berasal dari inquiry yang
+  costing-nya sudah PUBLISHED — tidak ada quotation tanpa ProDev/ProCost, termasuk data dummy. ✅
+- **Customer Order BOLEH direct tanpa Quotation** (CO INSTANT dari Master Product) (user 2026-10-01): menjaga
+  kompatibilitas dengan sistem lama, dan sesuai realita — Direksi bisa minta percepatan yang langsung dikerjakan
+  Produksi, jalur tercepatnya input langsung di CO. ✅
 - **Setiap CO Detail menunjuk ke Master Product** — rantai lengkap bisa ditelusuri:
   Quotation → No. CO → CO Detail → Product (milik customer) → Parts. 🟡 (kolom `co_order_item.product_id` ada, tapi sekarang diisi dari
   `iqp_inquiry.parent_product_id` yang punya 2 arti — lihat §7)

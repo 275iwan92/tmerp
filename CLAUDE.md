@@ -393,14 +393,17 @@ label khusus untuk 1 layar tertentu — bukan variasi bebas per developer.
   - **Customer Order Mode #2 (manual/standalone)** — pembuatan CO **tanpa**
     lewat Quotation, meniru alur manual versi sebelumnya (ScriptCase V1), TAPI
     dengan syarat **Master Product (`prod_product`) harus dibuat dulu**
-    sebelum baris CO bisa diisi (beda dari baris manual di CO Mode #1 yang
-    sekarang bebas free-text `description`, lihat `co/entry.blade.php::
-    addItem()`). **STATUS 2026-09-03: BELUM ADA** — 0 jalur kode bikin CO
-    tanpa Quotation, dan skema `co_order.quotation_id` saat ini **NOT NULL**
-    sehingga CO tanpa Quotation mustahil tanpa migration (jadikan nullable +
-    validasi baru: kalau `quotation_id` null maka tiap baris **wajib**
-    `product_id` terisi dari Master Product). Ini gap nyata, target scope
-    berikutnya — jangan asumsikan sudah bisa.
+    sebelum baris CO bisa diisi. **SUDAH ADA** (2026-09-21, commit 59fab26):
+    `co_order.entry_mode` INTEGRATED / INSTANT, `quotation_id` nullable,
+    `CoOrderBuilder::createInstant()` + picker Master Product per baris.
+  - **ATURAN LOCKED user 2026-10-01 — Quotation WAJIB integrated, CO boleh direct:**
+    Inquiry → Quotation **harus selalu integrated** (baris quotation dari
+    inquiry yang costing-nya PUBLISHED; tidak ada quotation yang melompati
+    ProDev/ProCost, termasuk data dummy/seeder). Customer Order **boleh direct
+    input tanpa Quotation** (INSTANT) karena (1) kompatibel dengan sistem lama
+    (ScriptCase V1) dan (2) realita pabrik: Direksi bisa minta percepatan yang
+    langsung dikerjakan Produksi — jalur tercepatnya input langsung di CO.
+    Jangan hapus/persulit jalur INSTANT, dan jangan buat jalur Quotation direct.
   - **Pola sama seperti ProDev/ProCost**: 2 mode = 2 JALUR INPUT, bukan 2
     alur bisnis berbeda — tujuan akhir (dokumen CO valid, siap CPDEL) harus
     sama, cuma titik masuknya beda (dari Quotation vs manual+Master Product).
