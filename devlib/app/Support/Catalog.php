@@ -141,7 +141,7 @@ final class Catalog
                     ], 'UIUX_components_part1.html'),
                     // Form Approval dipisah jadi submenu sendiri (user 2026-09-30): alur beda (Submit -> Approve/Reject berjenjang per level).
                     'p5-form-approval' => $page('Form Approval', 'fa-solid fa-stamp', [
-                        'form-approval' => ['Form with Approval (Submit, Approve / Reject by level)', $c('Form', 'ApprovalBar')],
+                        'form-approval' => ['Form with Approval (Confirm, then Approve / Reject / Hold by level)', $c('Form', 'ApprovalBar')],
                     ], 'UIUX_components_part1.html'),
                     'p5-form-special' => $page('Form Special (3 variants)', 'fa-solid fa-wand-magic-sparkles', [
                         'wizard-customer' => ['1 · Form Wizard (step by step)', $c('Wizard')],
