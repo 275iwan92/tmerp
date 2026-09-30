@@ -1,6 +1,7 @@
 @php
-    // Master-Detail = objek Form yang sama dgn Single Form (panel atas, istilah English, siklus status, tab Riwayat);
-    // bedanya isi: header dokumen + tabel baris item (x-dl::lines). Status baru ditentukan "server" (blok ini).
+    // Form Master-Detail (user 2026-09-30): isi = bagian FORM dari Documents > Master-Detail (Purchase Order) yang dinilai benar
+    // -- header 3 kolom + bar tahapan + baris item (lookup, jumlah, diskon, PPN, total) -- di dalam objek Form yang sama dgn
+    // Single Form (panel atas, istilah English, siklus status, tab Riwayat). Status baru ditentukan "server" (blok ini).
     $act = request('_action');
     $status = match ($act) {
         'confirm' => 'confirmed', 'draft', 'save' => 'draft', 'cancel' => 'cancelled', 'delete', 'duplicate' => 'new',
@@ -8,14 +9,9 @@
     };
     $isNew = $status === 'new';
     $dup = $act === 'duplicate';
-    $sampleItems = [
-        ['item' => 'AP-80-6590', 'spec' => 'Art Paper 80 gsm 65x90', 'qty' => 20, 'uom' => 'RIM', 'price' => 425000],
-        ['item' => 'INK-CY-01', 'spec' => 'Tinta Cyan Toyo 1 kg', 'qty' => 4, 'uom' => 'KG', 'price' => 185000],
-        ['item' => 'PLT-7490', 'spec' => 'Plat CTP 745x605', 'qty' => 12, 'uom' => 'PCS', 'price' => 95000],
-    ];
-    $head = ['pr_date' => '2026-09-24', 'divisi' => 'Offset Printing', 'alasan' => 'Stok kertas & tinta untuk order CO-2609-0031.'];
-    $h = fn ($k) => $isNew && ! $dup ? null : (! $isNew && request()->has($k) ? request($k) : $head[$k]);
-    $items = $isNew && ! $dup ? [] : (! $isNew && is_array(request('items')) ? array_values(request('items')) : $sampleItems);
+    $po = \App\Support\DemoData::purchaseOrders()[0];
+    $rec = $isNew && ! $dup ? ['lines' => []] : ($dup ? ['po_no' => null] + $po : $po);
+    $locked = in_array($status, ['confirmed', 'cancelled', 'closed'], true);
 @endphp
 <div class="dl-row" style="margin-bottom:8px">
     <span class="dl-note" style="margin:0">Lihat status:</span>
@@ -23,25 +19,28 @@
         <x-dl::button size="sm" :variant="$sk === $status ? 'primary' : 'secondary'" :label="$sl" :href="url()->current().'?status='.$sk" />
     @endforeach
 </div>
-<x-dl::form :title="$dup ? 'Purchase Requisition · New (copy of PR-2609-0012)' : ($isNew ? 'Purchase Requisition · New' : 'Purchase Requisition · PR-2609-0012')"
-    panel="top" kind="document" :status="$status" :can-reopen="true"
+<x-dl::form :title="$isNew ? 'Purchase Order · New'.($dup ? ' (copy of '.$po['po_no'].')' : '') : 'Purchase Order · '.$po['po_no']" :subtitle="$rec['supplier'] ?? null"
+    panel="top" kind="document" :status="$status" :pipeline="true" :can-reopen="true"
     :action="url()->current()" method="GET" :new-url="url()->current().'?new=1'"
-    :created-by="$isNew ? null : 'yuna'" :created-at="$isNew ? null : '2026-09-24 08:12:00'"
-    :updated-by="$isNew ? null : ($act ? 'johiwan' : 'yuna')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : '2026-09-24 09:40:00')">
+    :created-by="$isNew ? null : 'siti'" :created-at="$isNew ? null : $po['po_date'].' 08:12:00'"
+    :updated-by="$isNew ? null : ($act ? 'johiwan' : 'siti')" :updated-at="$isNew ? null : ($act ? now()->format('Y-m-d H:i:s') : $po['po_date'].' 09:40:00')">
     <x-dl::form.row :cols="3">
-        <x-dl::field.text name="pr_no" label="PR No." :value="$isNew ? null : 'PR-2609-0012'" placeholder="(otomatis)" code readonly :case-toggle="false" />
-        <x-dl::field.date name="pr_date" label="Tanggal" :value="$h('pr_date')" placeholder="—" required />
-        <x-dl::field.select name="divisi" label="Divisi" :options="['Offset Printing', 'Digital Printing', 'Gudang']" :value="$h('divisi')" required />
+        <x-dl::field.text name="po_no" label="No. PO" :value="$rec['po_no'] ?? null" placeholder="(otomatis)" code readonly :case-toggle="false" />
+        <x-dl::field.date name="po_date" label="Tanggal PO" :value="$rec['po_date'] ?? null" placeholder="—" required />
+        <x-dl::field.select name="supplier" label="Supplier" :options="['PT Contoh Kertas Jaya', 'CV Tinta Nusantara', 'PT Karton Abadi', 'UD Lem Sejahtera', 'PT Plat Offset Prima']" :value="$rec['supplier'] ?? null" required />
     </x-dl::form.row>
-    <x-dl::field.text name="alasan" label="Justifikasi" multiline :value="$h('alasan')" />
-    <x-dl::lines name="items" title="Item Permintaan" :rows="$items" :totals="['of' => 'subtotal']" :readonly="in_array($status, ['confirmed', 'cancelled', 'closed'], true)"
+    <x-dl::form.row :cols="3">
+        <x-dl::field.text name="requester" label="Pemohon" :value="$rec['requester'] ?? null" />
+        <x-dl::field.text name="note" label="Catatan" multiline :value="$rec['note'] ?? null" />
+    </x-dl::form.row>
+    <x-dl::lines name="lines" title="Item Pesanan" :rows="$rec['lines']" :readonly="$locked" :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11]"
         :columns="[
-            ['key' => 'item', 'label' => 'Kode Item', 'required' => true, 'width' => '150px'],
+            ['key' => 'item', 'label' => 'Kode / Nama Item', 'type' => 'lookup', 'lookup' => 'item', 'required' => true, 'width' => '240px'],
             ['key' => 'spec', 'label' => 'Spesifikasi'],
-            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'width' => '90px'],
+            ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'required' => true, 'sum' => true, 'width' => '90px'],
             ['key' => 'uom', 'label' => 'Satuan', 'type' => 'select', 'options' => ['PCS', 'LBR', 'RIM', 'KG', 'ROLL'], 'width' => '90px'],
-            ['key' => 'price', 'label' => 'Est. Harga', 'type' => 'money', 'width' => '130px'],
-            ['key' => 'subtotal', 'label' => 'Est. Subtotal', 'type' => 'money', 'formula' => 'qty * price'],
+            ['key' => 'price', 'label' => 'Harga/Unit', 'type' => 'money', 'required' => true, 'width' => '130px'],
+            ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * price', 'sum' => true],
         ]" />
 </x-dl::form>
-<p class="dl-note">Master-Detail = objek Form yang sama dengan Single Form: tombol di atas (Draft: Delete · New · Undo · Confirm · Save │ Back), isi terkunci setelah Confirm, tab Riwayat selalu ada. Bagian atas = header dokumen, bawah = tabel baris item dengan total.</p>
+<p class="dl-note">Form Master-Detail = form Purchase Order dari Documents › Master-Detail, dipasang di objek Form yang sama dengan Single Form: panel tombol di atas, bar tahapan Draft › Confirmed › Closed (Cancelled merah), header 3 kolom, baris item dengan lookup, jumlah, diskon, PPN 11% dan total. Setelah Confirm header & baris terkunci. Tab Riwayat selalu ada.</p>

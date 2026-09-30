@@ -9,6 +9,7 @@ namespace Devlib\Components;
 // layar TIDAK menyusun tombol sendiri. kind=master: Deactivate/Activate + New + Undo + Save. kind=document: draft = Delete + New + Undo + Confirm + Save,
 // confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Duplicate + Print, closed = New + Print. status=new (form sama tapi kosong) = Undo + Save. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
+// :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
 {
@@ -34,6 +35,8 @@ class Form extends DevlibComponent
         public ?string $updatedAt = null,
         public bool $canReopen = false,
         public bool $canInput = true,
+        public ?string $subtitle = null,
+        public bool $pipeline = false,
         public array $hidden = [],
     ) {}
 
@@ -91,6 +94,22 @@ class Form extends DevlibComponent
         return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'cancelled', 'closed'], true));
     }
 
+    // Bar tahapan (pola form PO Master-Detail yang disetujui user): Draft > Confirmed > Closed; Cancelled = tahap merah.
+    public function steps(): array
+    {
+        $order = ['draft', 'confirmed', 'closed'];
+        $at = $this->status === 'new' ? 0 : array_search($this->status === 'cancelled' ? 'confirmed' : $this->status, $order, true);
+        $steps = [];
+        foreach ($order as $i => $k) {
+            $steps[] = [ucfirst($k), $i < $at ? 'is-done' : ($i === $at ? ($this->status === 'cancelled' ? 'is-rejected' : 'is-active') : '')];
+        }
+        if ($this->status === 'cancelled') {
+            $steps[1][0] = 'Cancelled';
+        }
+
+        return $steps;
+    }
+
     public function statusBadge(): array
     {
         return ['new' => ['Draft', 'neutral'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger'], 'closed' => ['Closed', 'neutral'], 'active' => ['Active', 'success'], 'inactive' => ['Inactive', 'danger']][$this->status] ?? [$this->status, 'neutral'];
@@ -110,7 +129,7 @@ class Form extends DevlibComponent
                 @endif
                 @if ($panel)
                     <div class="dl-form__panel">
-                        <div class="dl-form__title">{{ $title }}</div>
+                        <div class="dl-form__heading"><div class="dl-form__title">{{ $title }}</div>@if ($subtitle)<small>{{ $subtitle }}</small>@endif</div>
                         <x-dl::badge :label="$statusBadge()[0]" :tone="$statusBadge()[1]" />
                         <span class="dl-print__spacer"></span>
                         @foreach ($panelActions() as $a)
@@ -125,6 +144,9 @@ class Form extends DevlibComponent
                         <span class="dl-form__sep"></span>
                         <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" data-f-act="back" />
                     </div>
+                    @if ($pipeline)
+                        <div class="dl-master__pipe dl-form__pipe">@foreach ($steps() as [$sl, $sc])<span class="dl-master__step {{ $sc }}">{{ $sl }}</span>@endforeach</div>
+                    @endif
                 @elseif ($title !== '')
                     <div class="dl-form__head"><div class="dl-form__title">{{ $title }}</div>@if ($mode === 'view')<x-dl::button variant="secondary" size="sm" icon="edit" label="Edit" data-f-edit />@endif</div>
                 @endif
