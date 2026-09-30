@@ -9,6 +9,7 @@
       this.fs = $(this.el, '[data-f-fs]');
       this.viewMode = this.el.dataset.mode === 'view';
       this.snapshot = null;
+      this.saved = this.values();  // titik kembali Undo = isi saat form dibuka
       if (this.viewMode) this.setView(true);
       this.el.addEventListener('input', e => { const f = e.target.closest('.dl-field.is-invalid'); if (f && hasValue(f)) { f.classList.remove('is-invalid'); const x = $(f, '[data-dl-field-error]'); if (x) x.textContent = ''; } }, true);
       this.el.addEventListener('submit', e => {
@@ -28,6 +29,7 @@
         const act = e.target.closest('[data-f-act]')?.dataset.fAct;
         if (act === 'back' && !e.target.closest('a[href]')) return history.back();
         if (act === 'new' && e.target.closest('a[href]')) return;
+        if (act === 'undo') return this.undo();
         if (act && act !== 'save') return this.act(act);
         if (e.target.closest('[data-f-cancel]') && this.snapshot) { fillForm(this.el, this.snapshot, false); this.snapshot = null; this.setView(true); toast('Perubahan dibatalkan.'); }
       });
@@ -44,6 +46,23 @@
         showQr(JSON.stringify(data, null, 2));
       });
     }
+    values() {
+      const v = {}; new FormData(this.el).forEach((x, k) => { if (!(x instanceof File)) v[k] = x; });
+      $$(this.el, 'input[type=checkbox][name]').forEach(c => { v[c.name] = c.checked; });
+      return v;
+    }
+
+    // Undo = buang perubahan yang belum disimpan, kembali ke isi saat form dibuka (tanpa kirim ke server).
+    undo() {
+      if (!this.el.classList.contains('is-dirty')) return toast('Tidak ada perubahan untuk di-Undo.');
+      confirmBox({message: 'Buang semua perubahan yang belum disimpan?', tone: 'warn'}).then(ok => {
+        if (!ok) return;
+        fillForm(this.el, this.saved, false);
+        $$(this.el, '.dl-field.is-invalid').forEach(f => f.classList.remove('is-invalid')); $$(this.el, '.dl-tabs__err').forEach(x => x.remove());
+        dirtyForms.delete(this.el); this.el.classList.remove('is-dirty'); toast('Perubahan dibatalkan.');
+      });
+    }
+
     // Tombol panel (selain Save = submit biasa). Ada action -> kirim ulang form dgn _action=<act>; tanpa action = pratinjau DevLib.
     act(a) {
       const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci.', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger'], draft: ['Kembalikan dokumen ini ke Draft? Isinya bisa diubah lagi dan harus di-Confirm ulang.', 'warn'], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];

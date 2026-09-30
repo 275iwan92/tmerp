@@ -6,8 +6,8 @@ namespace Devlib\Components;
 // Simpan: isian wajib dicek (tab berisi error dibuka & diberi tanda), x-dl::lines ikut divalidasi; di dalam modal/drawer ditutup setelah sukses.
 // mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Batal mengembalikan nilai semula. Event dl:form-submit.
 // panel="top" (Single Form, user 2026-09-30): panel aksi menempel di atas -- judul, badge status, lalu tombol, Back di ujung kanan; tombol baku menurut kind+status;
-// layar TIDAK menyusun tombol sendiri. kind=master: Nonaktifkan/Aktifkan + New + Save. kind=document: draft = Delete + New + Confirm + Save,
-// confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Duplicate + Print. status=new (+ New Record, form sama tapi kosong) = Save saja. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
+// layar TIDAK menyusun tombol sendiri. kind=master: Deactivate/Activate + New + Undo + Save. kind=document: draft = Delete + New + Undo + Confirm + Save,
+// confirmed = Cancel + Back to Draft (hanya :can-reopen) + New + Email + Print, cancelled = New + Duplicate + Print, closed = New + Print. status=new (form sama tapi kosong) = Undo + Save. Tombol khusus layar lewat slot 'special' (sebelum tombol utama).
 // Isi diusahakan muat 1 layar; lebih dari itu -> :tabs ['key' => 'Judul'] + slot per key (tanpa tabs = isi $slot di tab 'Data').
 // Tab read-only 'Riwayat' SELALU ditambahkan objek: dibuat oleh + tanggal-jam, terakhir diubah oleh + tanggal-jam (user 2026-09-30).
 class Form extends DevlibComponent
@@ -56,38 +56,44 @@ class Form extends DevlibComponent
     {
         $all = $this->baseActions();
 
-        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'delete', 'confirm', 'new', 'duplicate'], true)));
+        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'undo', 'delete', 'confirm', 'new', 'duplicate'], true)));
     }
 
+    // Istilah tombol & status SELALU English (user 2026-09-30, supaya sama bagi user & developer):
+    // tombol New, Save, Undo, Delete, Confirm, Cancel, Duplicate, Back to Draft, Back; status Draft, Confirmed, Cancelled, Closed.
     private function baseActions(): array
     {
-        $new = ['new', null, 'secondary', null, 'new'];
-        $print = [null, \Devlib\Locale::lang() === 'en' ? 'Print' : 'Cetak', 'primary', 'print', 'print'];
+        $b = fn (string $act, ?string $preset, string $label, ?string $variant = null, ?string $icon = null) => [$preset, $label, $variant, $icon, $act];
+        $new = $b('new', 'new', 'New', 'secondary', 'fa-plus');
+        $save = $b('save', 'save', 'Save');
+        $undo = $b('undo', null, 'Undo', 'secondary', 'undo');
+        $dup = $b('duplicate', null, 'Duplicate', 'secondary', 'fa-copy');
+        $print = $b('print', null, 'Print', 'primary', 'print');
 
         return match ($this->kind.'.'.$this->status) {
-            // Data baru (belum pernah disimpan): cuma Save -- Nonaktifkan/Delete/Confirm/Print belum ada artinya.
-            'master.new', 'document.new' => [['save', null, null, null, 'save']],
-            'master.active' => [[null, 'Nonaktifkan', 'secondary', 'fa-toggle-off', 'deactivate'], $new, ['save', null, null, null, 'save']],
-            'master.inactive' => [[null, 'Aktifkan', 'secondary', 'fa-toggle-on', 'activate'], $new, ['save', null, null, null, 'save']],
-            'document.draft' => [['delete', null, null, null, 'delete'], $new, ['confirm', null, null, null, 'confirm'], ['save', null, null, null, 'save']],
+            // Data baru (belum pernah disimpan): Undo + Save saja -- Delete/Confirm/Print belum ada artinya.
+            'master.new', 'document.new' => [$undo, $save],
+            'master.active' => [$b('deactivate', null, 'Deactivate', 'secondary', 'fa-toggle-off'), $new, $undo, $save],
+            'master.inactive' => [$b('activate', null, 'Activate', 'secondary', 'fa-toggle-on'), $new, $undo, $save],
+            'document.draft' => [$b('delete', 'delete', 'Delete'), $new, $undo, $b('confirm', 'confirm', 'Confirm'), $save],
             // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (super-admin, admin-app, level manager
             // ke atas) -- server tetap wajib cek hak yang sama saat aksi diterima.
-            'document.confirmed' => array_values(array_filter([['cancel', null, 'danger', null, 'cancel'], $this->canReopen ? [null, 'Back to Draft', 'secondary', 'fa-rotate-left', 'draft'] : null, $new, ['email', null, null, null, 'email'], $print])),
+            'document.confirmed' => array_values(array_filter([$b('cancel', 'cancel', 'Cancel', 'danger'), $this->canReopen ? $b('draft', null, 'Back to Draft', 'secondary', 'fa-rotate-left') : null, $new, $b('email', 'email', 'Email'), $print])),
             // Cancelled: Duplicate = Draft baru berisi salinan isi (tanpa nomor) supaya tidak mengetik ulang (user 2026-09-30).
-            'document.cancelled' => [$new, [null, 'Duplicate', 'secondary', 'fa-copy', 'duplicate'], $print],
-            default => [$new, $print],
+            'document.cancelled' => [$new, $dup, $print],
+            default => [$new, $print],  // closed
         };
     }
 
-    // Sesudah Confirm / Cancel isi terkunci (tampil sebagai teks); ubah lagi hanya lewat Back to Draft.
+    // Sesudah Confirm / Cancel / Close isi terkunci (tampil sebagai teks); ubah lagi hanya lewat Back to Draft.
     public function locked(): bool
     {
-        return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'cancelled'], true));
+        return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'cancelled', 'closed'], true));
     }
 
     public function statusBadge(): array
     {
-        return ['new' => [$this->kind === 'document' ? 'Draft' : 'Baru', $this->kind === 'document' ? 'neutral' : 'info'], 'active' => ['Aktif', 'success'], 'inactive' => ['Nonaktif', 'danger'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger']][$this->status] ?? [$this->status, 'neutral'];
+        return ['new' => ['Draft', 'neutral'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger'], 'closed' => ['Closed', 'neutral'], 'active' => ['Active', 'success'], 'inactive' => ['Inactive', 'danger']][$this->status] ?? [$this->status, 'neutral'];
     }
 
     public function tag(): string
@@ -111,7 +117,7 @@ class Form extends DevlibComponent
                             @php [$pre, $lbl, $var, $ico, $act] = $a; $cls = $a[5] ?? ''; @endphp
                             @if ($loop->last && isset($special)){{ $special }}@endif
                             @if ($act === 'save')
-                                <x-dl::button size="sm" :preset="$pre" :variant="$var ?? 'primary'" type="submit" name="_action" value="save" data-f-act="save" />
+                                <x-dl::button size="sm" :preset="$pre" :label="$lbl" :variant="$var ?? 'primary'" type="submit" name="_action" value="save" data-f-act="save" />
                             @else
                                 <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :href="$act === 'new' ? $newUrl : null" :class="$cls" data-f-act="{{ $act }}" />
                             @endif

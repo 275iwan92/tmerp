@@ -35,6 +35,13 @@
         <x-dl::button size="sm" :variant="$rk === $as ? 'primary' : 'secondary'" :label="$rl" :href="url()->current().'?'.http_build_query(['as' => $rk, 'status' => $isNew ? 'draft' : $status])" />
     @endforeach
 </div>
+{{-- Closed biasanya diset proses lanjutan (mis. order selesai dikirim), bukan tombol -- pintasan ini hanya untuk melihat tampilannya. --}}
+<div class="dl-row" style="margin-bottom:8px">
+    <span class="dl-note" style="margin:0">Lihat status:</span>
+    @foreach (['draft' => 'Draft', 'confirmed' => 'Confirmed', 'cancelled' => 'Cancelled', 'closed' => 'Closed'] as $sk => $sl)
+        <x-dl::button size="sm" :variant="$sk === $status ? 'primary' : 'secondary'" :label="$sl" :href="url()->current().'?'.http_build_query(['as' => $as, 'status' => $sk])" />
+    @endforeach
+</div>
 <x-dl::form :title="$dup ? 'Pegawai · Baru (salinan TM-00012)' : ($isNew ? 'Pegawai · Baru' : 'Pegawai · TM-00012 '.$name)" panel="top" kind="document" :status="$status"
     :action="url()->current()" method="GET" :new-url="url()->current().'?new=1&as='.$as" :can-reopen="$canReopen" :can-input="$canInput" :hidden="['as' => $as]"
     :tabs="['utama' => 'Utama', 'pribadi' => 'Data Pribadi', 'alamat' => 'Alamat & Kontak', 'darurat' => 'Kontak Darurat']"
@@ -102,4 +109,6 @@
         </x-dl::form.row>
     </x-slot:darurat>
 </x-dl::form>
-<p class="dl-note">Siklus: status awal selalu <b>Draft</b> (Delete · + New Record · Confirm · Save). <b>Confirm</b> -> Confirmed: isi terkunci, tombol jadi Cancel · + New Record · Email · Print. <b>Cancel</b> -> Cancelled: + New Record · <b>Duplicate</b> (Draft baru berisi salinan isi) · Print. <b>Back to Draft</b> muncul di sebelah Cancel hanya untuk super-admin, admin-app, dan level manager ke atas — dan mereka (kecuali super-admin) <b>tidak bisa input</b>: isi selalu terkunci, tanpa Save/Delete/Confirm/New — coba ganti "Simulasi login sebagai" di atas. Tab Riwayat (read-only) selalu ada.</p>
+<p class="dl-note">Istilah English (tombol: New, Save, Undo, Delete, Confirm, Cancel, Duplicate, Back to Draft, Back; status: Draft, Confirmed, Cancelled, Closed).
+Status awal selalu <b>Draft</b>: Delete · New · Undo · Confirm · Save. <b>Undo</b> = buang perubahan yang belum di-Save. <b>Confirmed</b>: isi terkunci, Cancel · Back to Draft · New · Email · Print.
+<b>Cancelled</b>: New · Duplicate · Print. <b>Closed</b>: New · Print. Back to Draft hanya super-admin, admin-app, level manager ke atas — dan mereka (kecuali super-admin) tidak bisa input.</p>
