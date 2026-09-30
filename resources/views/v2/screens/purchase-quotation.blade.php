@@ -29,7 +29,7 @@
             <x-dl::pick-matrix name="pick" unit="PO" :source="Src::of('tm2pur.pq_line', 'tm2pur.pq_quotation (CONFIRMED)', 'tm2pur.pr_line')"
                 :columns="collect($compare['suppliers'])->mapWithKeys(fn ($s) => [$s['pq_id'] => ['label' => $s['name'], 'sub' => $s['no'].' · '.($s['term'] ?: 'termin —').' · s/d '.$s['valid']]])->all()"
                 :rows="collect($compare['rows'])->map(fn ($r) => ['key' => $r['pr_line_id'], 'label' => $r['label'], 'sub' => $r['qty'], 'default' => $r['cheapest'], 'locked' => $r['done'] ? 'Sudah di-PO' : null,
-                    'cells' => collect($r['cells'])->map(fn ($c) => ['value' => $c['pq_line_id'], 'text' => number_format($c['price'], 0, ',', '.').' / '.$c['uom'],
+                    'cells' => collect($r['cells'])->map(fn ($c) => ['value' => $c['pq_line_id'], 'text' => \Devlib\Locale::number($c['price'], 0).' / '.$c['uom'],
                         'sub' => $c['lead'] ? 'lead '.$c['lead'].' hr' : null, 'disabled' => $c['ordered'] ? 'Sudah jadi PO' : (! $c['same_uom'] ? 'Satuan beda dengan PR' : null)])->all()])->all()" />
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="url()->previous() !== url()->current() ? url()->previous() : $home" />
@@ -84,7 +84,7 @@
         $ordered = PurchaseQuotation::orderedLineIds($pq);
         $open = $pq->lines->reject(fn ($l) => isset($ordered[$l->pq_line_id]));
         $prOpts = PurchaseQuotation::prLineOptions($pq);
-        $money = fn ($v) => 'Rp '.number_format((float) $v, 0, ',', '.');
+        $money = fn ($v) => 'Rp '.\Devlib\Locale::number((float) $v, 0);
         $fileUrl = $pq->source_path ? Storage::disk('public')->url($pq->source_path) : null;
         $ext = strtolower(pathinfo((string) $pq->source_name, PATHINFO_EXTENSION));
         $lines = $pq->lines->map(fn ($l) => [

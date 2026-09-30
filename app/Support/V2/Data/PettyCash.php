@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\DB;
 // reimburse, riwayat transaksi, isi ulang, dan setting (nama, pemegang, plafon). Aturan & jurnal = PettyCashService.
 final class PettyCash
 {
-    public const TYPE_TONES = ['Isi Ulang' => 'success', 'Kasbon' => 'warn', 'Pertanggungjawaban' => 'info', 'Reimburse' => 'info'];
+    public const STEP_LABELS = ['ADVANCE' => 'Give Advance', 'SETTLE' => 'Settlement', 'REIMBURSE' => 'Reimburse'];
+
+    public const STEP_TONES = ['Give Advance' => 'warn', 'Settlement' => 'info', 'Reimburse' => 'info'];
 
     public static function fund(): ?FinPettyCash
     {
@@ -49,7 +51,7 @@ final class PettyCash
         return PoOrder::where('i_procure_type', 'CASH')->where('status', 'APPROVED')->orderBy('po_id')->get()
             ->map(fn ($po) => ['po' => $po, 'step' => PettyCashService::nextStep($po)])->filter(fn ($x) => $x['step'])
             ->map(fn ($x) => ['id' => $x['po']->po_id, 'no' => $x['po']->doc_no, 'shop' => $x['po']->i_shop_name ?: ($sup[$x['po']->i_supplier_id] ?? '—'),
-                'total' => (float) $x['po']->c_grand_total, 'step' => ['ADVANCE' => 'Ambil Kasbon', 'SETTLE' => 'Pertanggungjawaban', 'REIMBURSE' => 'Reimburse'][$x['step']],
+                'total' => (float) $x['po']->c_grand_total, 'step' => self::STEP_LABELS[$x['step']],
                 'by' => $x['po']->created_by])->values()->all();
     }
 

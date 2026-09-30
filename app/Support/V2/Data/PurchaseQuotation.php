@@ -283,7 +283,7 @@ final class PurchaseQuotation
         })->all();
 
         return ['pr' => $pr, 'rows' => $rows, 'suppliers' => $pqs->map(fn ($q) => ['pq_id' => $q->pq_id, 'no' => $q->doc_no,
-            'name' => $sup[$q->i_supplier_id] ?? '#'.$q->i_supplier_id, 'term' => $q->i_payment_term, 'valid' => $q->i_quotation_valid_until?->format('d-M-Y')])->all()];
+            'name' => $sup[$q->i_supplier_id] ?? '#'.$q->i_supplier_id, 'term' => $q->i_payment_term, 'valid' => \Devlib\Locale::d($q->i_quotation_valid_until)])->all()];
     }
 
     // Buat PO dari baris PQ terpilih: 1 draft PO per supplier. Baris ber-PR -> lewat alokasi PR (PoBuilderService), harga

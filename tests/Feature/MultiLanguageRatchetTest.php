@@ -14,9 +14,9 @@ use Tests\TestCase;
 class MultiLanguageRatchetTest extends TestCase
 {
     private const BASELINE = [
-        'id_label' => 688,        // label Indonesia mentah lama (2026-10-01) -- dipindah ke English bertahap (backlog09 §13)
-        'number_format_id' => 2,  // purchase-quotation (sesi Purchase)
-        'format_d_M_Y' => 1,      // PurchaseQuotation (sesi Purchase)
+        'id_label' => 687,        // label Indonesia mentah lama (2026-10-01) -- dipindah ke English bertahap (backlog09 §13)
+        'number_format_id' => 0,
+        'format_d_M_Y' => 0,
         'js_locale_id' => 0,
     ];
 

@@ -29,7 +29,7 @@ final class PurchaseOrder
     // PO Kontan (user 2026-10-01): kolom tambahan, disimpan langsung (tidak lewat updateHeader v1).
     public const CASH_HEADER = ['i_cash_mode', 'i_petty_cash_id', 'i_shop_name'];
 
-    public const CASH_MODES = ['ADVANCE' => 'Kasbon dulu (ambil uang, lalu pertanggungjawaban nota)', 'REIMBURSE' => 'Beli dulu (diganti dari kas kecil)'];
+    public const CASH_MODES = ['ADVANCE' => 'Cash advance first, then settle with receipt', 'REIMBURSE' => 'Buy first, reimbursed from petty cash'];
 
     // Supplier default PO Kontan = master TOKO KONTAN (sudah ada di sup_supplier); nama toko riil diisi di i_shop_name.
     public const CASH_SUPPLIER = 'TOKO KONTAN';
@@ -191,8 +191,8 @@ final class PurchaseOrder
         if ($po->isCash()) {
             $po->refresh()->recalcTax();
             if ((float) $po->c_grand_total > self::maxCash()) {
-                return 'PO Kontan maksimal Rp '.number_format(self::maxCash(), 0, ',', '.').' (Settings > Constants PO_CASH_MAX). Nilai ini Rp '
-                    .number_format((float) $po->c_grand_total, 0, ',', '.').' — pakai PO biasa.';
+                return 'PO Kontan maksimal Rp '.\Devlib\Locale::number(self::maxCash(), 0).' (Settings > Constants PO_CASH_MAX). Nilai ini Rp '
+                    .\Devlib\Locale::number((float) $po->c_grand_total, 0).' — pakai PO biasa.';
             }
             if (! $po->i_cash_mode || ! $po->i_petty_cash_id) {
                 return 'PO Kontan wajib memilih mode (Kasbon / Beli dulu) dan kas kecil.';
