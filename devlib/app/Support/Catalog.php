@@ -20,11 +20,8 @@ final class Catalog
         'p5-grid-group' => '2026-09-26',     // Grid Report dipecah per varian 2026-09-30, isi tidak berubah
         'p5-grid-drilldown' => '2026-09-26',
         'p5-grid-pivot' => '2026-09-26',
-        // Menu Form & Dokumen disetujui user 2026-09-26
-        'p5-form-single' => '2026-09-26',
-        'p5-form-md' => '2026-09-26',
-        'p5-form-special' => '2026-09-26',
-        'form' => '2026-09-26',
+        // Menu Dokumen disetujui user 2026-09-26. Menu Form (p5-form-single/-md/-special, form) DICABUT ke Review 2026-09-30:
+        // user belum QC, "single form bukan seperti ini".
         'p5-master' => '2026-09-26',
         'p5-master-detail' => '2026-09-26',
         'p5-approval' => '2026-09-26',
