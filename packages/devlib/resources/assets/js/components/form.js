@@ -6,7 +6,7 @@
   class Form extends Devlib.Component {
     static selector = "[data-dl-form]";
     init() {
-      this.fs = $(this.el, '[data-f-fs]');
+      this.fs = $$(this.el, '[data-f-fs]');  // Form panel: satu fieldset per bagian (tombol tab di luar fieldset)
       this.viewMode = this.el.dataset.mode === 'view';
       this.snapshot = null;
       this.saved = this.values();  // titik kembali Undo = isi saat form dibuka
@@ -25,7 +25,7 @@
         const layer = this.el.closest('[data-dl-modal-id],[data-dl-drawer-id]'); if (layer) closeLayer(layer);
       });
       this.el.addEventListener('click', e => {
-        if (e.target.closest('[data-f-edit]')) { if (this.fs) this.fs.disabled = false; this.snapshot = {}; new FormData(this.el).forEach((v, k) => { this.snapshot[k] = v; }); $$(this.el, 'input[type=checkbox][name]').forEach(c => { this.snapshot[c.name] = c.checked; }); this.setView(false); $(this.el, '.dl-form__body input:not([type=hidden]),.dl-form__body textarea')?.focus(); return; }
+        if (e.target.closest('[data-f-edit]')) { this.fs.forEach(f => { f.disabled = false; }); this.snapshot = {}; new FormData(this.el).forEach((v, k) => { this.snapshot[k] = v; }); $$(this.el, 'input[type=checkbox][name]').forEach(c => { this.snapshot[c.name] = c.checked; }); this.setView(false); $(this.el, '.dl-form__body input:not([type=hidden]),.dl-form__body textarea')?.focus(); return; }
         const act = e.target.closest('[data-f-act]')?.dataset.fAct;
         if (act === 'back' && !e.target.closest('a[href]')) return history.back();
         if (act === 'new' && e.target.closest('a[href]')) return;
@@ -77,7 +77,7 @@
       confirmBox({message: ask[0], tone: ask[1]}).then(ok => { if (ok) go(); });
     }
 
-    setView(on) { this.el.classList.toggle('is-view', on); if (this.fs) this.fs.disabled = on; const ed = $(this.el, '[data-f-edit]'); if (ed) ed.hidden = !on; }
+    setView(on) { this.el.classList.toggle('is-view', on); this.fs.forEach(f => { f.disabled = on; }); const ed = $(this.el, '[data-f-edit]'); if (ed) ed.hidden = !on; }
 
     validate() {
       $$(this.el, '.dl-tabs__err').forEach(x => x.remove());

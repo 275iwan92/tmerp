@@ -158,8 +158,9 @@ class Form extends DevlibComponent
                 @endif
                 @foreach ($hidden as $hk => $hv)<input type="hidden" name="{{ $hk }}" value="{{ $hv }}">@endforeach
                 @if ($panel)
-                    <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())>
-                    @isset($strip)<div class="dl-form__strip">{{ $strip }}</div>@endisset
+                    {{-- Terkunci (Confirmed/Cancelled/Closed/read-only) = hanya ISIAN yang dimatikan (fieldset per bagian);
+                         tombol tab header & footer TIDAK di dalam fieldset, jadi tetap bisa diklik di status apa pun. --}}
+                    @isset($strip)<fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())><div class="dl-form__strip">{{ $strip }}</div></fieldset>@endisset
                     <div class="dl-form__body dl-tabs" data-dl-tabs>
                         <div class="dl-tabs__bar" role="tablist">
                             @foreach ($panelTabs() as $key => $t)
@@ -167,7 +168,7 @@ class Form extends DevlibComponent
                             @endforeach
                         </div>
                         @foreach ($panelTabs() as $key => $t)
-                            <div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $key }}">
+                            <div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $key }}"><fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view' || $locked())>
                                 @if ($key === 'audit')
                                     <div class="dl-form__audit">
                                         <x-dl::field.display label="Created by" :value="$createdBy" />
@@ -182,12 +183,11 @@ class Form extends DevlibComponent
                                         </table></div>
                                     @endif
                                 @elseif ($key === 'main' && ! $tabs){{ $slot }}@else{{ ${$key} ?? '' }}@endif
-                            </div>
+                            </fieldset></div>
                         @endforeach
                     </div>
                     {{-- Master-Detail: detail selalu tampil di tengah (tidak ikut tab header), footer total di bawahnya. --}}
                     @isset($detail)<div class="dl-form__detail">{{ $detail }}</div>@endisset
-                    </fieldset>
                 @else
                     <fieldset class="dl-form__fs" data-f-fs @disabled($mode === 'view')><div class="dl-form__body">{{ $slot }}</div></fieldset>
                 @endif

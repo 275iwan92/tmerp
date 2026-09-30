@@ -15,7 +15,9 @@
       this.tcols = this.cols.filter(c => !c.more);
       this.open = new Set();
       this.name = this.cfg.name;
-      this.ro = this.cfg.readonly;
+      // Di form terkunci (Confirmed/Cancelled/Closed) baris & isian footer otomatis read-only; tombol tab footer tetap aktif.
+      this.ro = this.cfg.readonly || !!this.el.closest('form.is-view');
+      if (this.ro) $$(this.el, '.dl-lines__footer input, .dl-lines__footer select').forEach(x => { if (x.type === 'checkbox' || x.tagName === 'SELECT') x.disabled = true; else x.readOnly = true; });
       this.rows = JSON.parse(this.el.dataset.rows || '[]');
       // Rumus aman: hanya nama kolom, angka, dan + - * / ( ).
       this.cols.forEach(c => {
