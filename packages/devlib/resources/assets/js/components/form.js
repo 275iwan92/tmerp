@@ -1,7 +1,7 @@
 /* DevLib · Form */
 (function (Devlib) {
   'use strict';
-  const {$, $$, showQr, toast, confirmBox, layer, closeLayer, dirtyForms, fillForm, hasValue} = Devlib.h;
+  const {$, $$, showQr, toast, confirmBox, layer, closeLayer, dirtyForms, fillForm, hasValue, T, Tf, esc} = Devlib.h;
   // Tombol tambahan form (mockup: "Generate QR Code Data") -> QR berisi semua isian form.
   class Form extends Devlib.Component {
     static selector = "[data-dl-form]";
@@ -16,7 +16,7 @@
         const af = this.el.dataset.actionField || '_action';
         if (e.submitter?.name === af) $(this.el, `input[type=hidden][name="${af}"]`)?.remove();  // Save menang atas sisa aksi panel
         const n = this.validate();
-        if (n) { e.preventDefault(); dirtyForms.add(this.el); this.el.classList.add('is-dirty'); toast(`${n} isian wajib belum diisi.`, 'danger'); return; }
+        if (n) { e.preventDefault(); dirtyForms.add(this.el); this.el.classList.add('is-dirty'); toast(Tf('f_required_n', {n}), 'danger'); return; }
         if (this.el.getAttribute('action')) return;
         e.preventDefault();
         const data = {}; new FormData(this.el).forEach((v, k) => { if (k !== '_token') data[k] = v; });
@@ -89,7 +89,7 @@
     validate() {
       $$(this.el, '.dl-tabs__err').forEach(x => x.remove());
       const bad = $$(this.el, '.dl-field').filter(f => !f.closest('.dl-lines') && $(f, '.dl-field__req') && !hasValue(f));
-      bad.forEach(f => { f.classList.add('is-invalid'); const er = $(f, '[data-dl-field-error]'); if (er) er.textContent = 'Wajib diisi'; });
+      bad.forEach(f => { f.classList.add('is-invalid'); const er = $(f, '[data-dl-field-error]'); if (er) er.textContent = T('f_required'); });
       const lineBad = $$(this.el, '[data-dl-lines]').reduce((n, l) => n + (l.dlLines ? l.dlLines.validate() : 0), 0);
       const panels = new Map();
       [...bad, ...$$(this.el, '.dl-lines td.is-invalid')].forEach(x => { const p = x.closest('.dl-tabs__panel'); if (p) panels.set(p, (panels.get(p) || 0) + 1); });

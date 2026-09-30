@@ -14,10 +14,11 @@ use Tests\TestCase;
 class MultiLanguageRatchetTest extends TestCase
 {
     private const BASELINE = [
-        'id_label' => 687,        // label Indonesia mentah lama (2026-10-01) -- dipindah ke English bertahap (backlog09 §13)
+        'id_label' => 48,         // sisa 2026-10-01: purchase-quotation (sesi Purchase) + cpdel (ditulis ulang sesi CPDEL)
         'number_format_id' => 0,
         'format_d_M_Y' => 0,
         'js_locale_id' => 0,
+        'js_id_text' => 180,      // teks Indonesia mentah di JS DevLib (grid/lines/sheet/form sudah dipindah 2026-10-01) -> pindahkan ke T('kunci') + pasangan Devlib\Lang
     ];
 
     /** @return array<string, int> */
@@ -38,10 +39,31 @@ class MultiLanguageRatchetTest extends TestCase
             }
         }
         foreach ($js as $f) {
-            $c['js_locale_id'] += preg_match_all("/toLocale(?:String|DateString)\\('id-ID'/", $f->getContents());
+            $src = preg_replace('#^\s*//.*$#m', '', $f->getContents());
+            $c['js_locale_id'] += preg_match_all("/toLocale(?:String|DateString)\\('id-ID'/", $src);
+            preg_match_all('/\'((?:[^\'\\\\\n]|\\\\.){3,})\'|`([^`\n]{3,})`/', $src, $m);
+            foreach (array_merge($m[1], $m[2]) as $text) {
+                $c['js_id_text'] += $text !== '' && Dictionary::looksIndonesian(preg_replace('/\$\{[^}]*\}|<[^>]*>/', ' ', $text)) ? 1 : 0;
+            }
         }
 
         return $c;
+    }
+
+    // Setiap T('kunci') / Tf('kunci') di JS DevLib wajib punya pasangan [ID, EN] di Devlib\Lang (kalau tidak, kunci mentah tampil).
+    public function test_every_js_translation_key_exists(): void
+    {
+        $keys = array_keys(\Devlib\Lang::all());
+        $missing = [];
+        foreach ((new Finder)->files()->in(base_path('packages/devlib/resources/assets/js'))->name('*.js') as $f) {
+            preg_match_all("/\\bTf?\\('([a-z][\\w.]*)'/", $f->getContents(), $m);
+            foreach (array_unique($m[1]) as $k) {
+                if (! in_array($k, $keys, true)) {
+                    $missing[] = $f->getFilename().': '.$k;
+                }
+            }
+        }
+        $this->assertSame([], $missing, 'Kunci T() tanpa pasangan di Devlib\Lang.');
     }
 
     public function test_multi_language_debt_never_grows(): void

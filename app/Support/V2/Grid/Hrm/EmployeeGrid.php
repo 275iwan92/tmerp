@@ -67,11 +67,11 @@ class EmployeeGrid extends HrmGrid
         return [
             ['key' => 'photo', 'label' => 'Foto', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'position', 'label' => 'Jabatan'],
+            ['key' => 'position', 'label' => 'Position'],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'work_status', 'label' => 'Status Kerja', 'type' => 'badge', 'tones' => ['Bekerja' => 'success', 'Dirumahkan' => 'warn', 'Cuti' => 'info']],
-            ['key' => 'pay', 'label' => 'Gaji', 'type' => 'badge', 'tones' => ['Mingguan' => 'warn', 'Bulanan' => 'info']],
-            ['key' => 'join_date', 'label' => 'Tgl Masuk', 'type' => 'date'],
+            ['key' => 'pay', 'label' => 'Salary', 'type' => 'badge', 'tones' => ['Mingguan' => 'warn', 'Bulanan' => 'info']],
+            ['key' => 'join_date', 'label' => 'Join Date', 'type' => 'date'],
             ['key' => 'attendance_ytd', 'label' => 'Attendance this year (days)', 'type' => 'link', 'format' => 'number'],
             ['key' => 'nik', 'label' => 'NIK KTP', 'visible' => false],
             ['key' => 'phone', 'label' => 'No. HP', 'visible' => false],
@@ -98,11 +98,11 @@ class EmployeeGrid extends HrmGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua'],
-            ['label' => 'Aktif', 'where' => ['active' => true], 'tone' => 'success'],
+            ['label' => 'All'],
+            ['label' => 'Active', 'where' => ['active' => true], 'tone' => 'success'],
             ['label' => 'Mingguan', 'where' => ['active' => true, 'pay' => 'Mingguan'], 'tone' => 'warn'],
             ['label' => 'Bulanan', 'where' => ['active' => true, 'pay' => 'Bulanan'], 'tone' => 'info'],
-            ['label' => 'Nonaktif', 'where' => ['active' => false], 'tone' => 'danger'],
+            ['label' => 'Inactive', 'where' => ['active' => false], 'tone' => 'danger'],
         ];
     }
 

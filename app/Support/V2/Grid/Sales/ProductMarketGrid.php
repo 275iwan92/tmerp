@@ -72,8 +72,8 @@ class ProductMarketGrid extends DbGrid
             ['key' => 'name', 'label' => 'Product Market', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'parent', 'label' => 'Induk'],
             ['key' => 'type', 'label' => 'Tipe Produk'],
-            ['key' => 'color', 'label' => 'Warna Awal'],
-            ['key' => 'sizes', 'label' => 'Ukuran Pasaran', 'type' => 'link', 'format' => 'number'],
+            ['key' => 'color', 'label' => 'Initial Colour'],
+            ['key' => 'sizes', 'label' => 'Standard Size', 'type' => 'link', 'format' => 'number'],
         ];
     }
 

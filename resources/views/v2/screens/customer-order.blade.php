@@ -23,48 +23,48 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $o && ! request('new'))
-    <x-dl::grid id="co-list" :rows="CustomerOrder::rows()" search="Cari no. CO, customer, no. PO, quotation..." actions="worklist" :active-key="null"
+    <x-dl::grid id="co-list" :rows="CustomerOrder::rows()" search="Search CO no., customer, PO no., quotation..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'"
         source="{{ Src::of('tm2sdi.co_order', 'tm2sdi.co_order_item', 'tm2sdi.co_order_external_cost', 'tm2sdi.quo_quotation.quotation_no') }}"
         :columns="[
             ['key' => 'customer', 'label' => 'Customer', 'type' => 'identity', 'code' => 'no'],
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
+            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
             ['key' => 'mode', 'label' => 'Jalur', 'type' => 'badge', 'tones' => CustomerOrder::MODE_TONES],
             ['key' => 'quotation', 'label' => 'Quotation'],
             ['key' => 'po', 'label' => 'No. PO customer'],
-            ['key' => 'lines', 'label' => 'Baris', 'type' => 'number'],
+            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'due', 'label' => 'Due date terdekat', 'type' => 'date'],
-            ['key' => 'total', 'label' => 'Total tagihan', 'type' => 'money', 'sum' => true],
+            ['key' => 'total', 'label' => t('Total due'), 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => CustomerOrder::STATUS_TONES],
         ]"
         :stats="[
-            ['label' => 'Semua'],
+            ['label' => t('All')],
             ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'],
-            ['label' => 'Menunggu approval', 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'],
+            ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'],
             ['label' => 'Approved', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
             ['label' => 'Rejected / Cancelled', 'where' => ['status' => ['REJECTED', 'CANCELLED']], 'tone' => 'danger'],
         ]"
         :filters="['mode' => 'Jalur', 'status' => 'Status']" />
 @elseif (! $o)
     @php $quotes = CustomerOrder::quotationChoices(); @endphp
-    <x-dl::card title="+ New Record — pilih jalur Customer Order" description="Dua jalur masuk, dokumen & lanjutannya (CPDEL, produksi) sama.">
+    <x-dl::card title="+ New Record — choose the Customer Order path" description="Two entry paths; the document & what follows (CPDEL, production) are the same.">
         <div class="mp-grid2">
             <form method="post" action="{{ route('v2.co.create') }}">
                 @csrf
                 <input type="hidden" name="mode" value="INTEGRATED">
-                <x-dl::card title="INTEGRATED — dari Quotation" description="Customer setuju penawaran. Baris & harga = snapshot quotation (1 Quotation = 1 CO).">
+                <x-dl::card title="INTEGRATED — from Quotation" description="Customer accepts the quotation. Lines & prices = quotation snapshot (1 Quotation = 1 CO).">
                     @if ($quotes)
                         <x-dl::field.select name="quotation_id" label="Quotation terbit" required :options="collect($quotes)->mapWithKeys(fn ($q) => [$q['id'] => $q['no'].' · '.$q['customer'].' · '.$q['lines'].' baris · '.$rp($q['total'])])->all()" :source="Src::of('tm2sdi.quo_quotation (PUBLISHED, belum ada CO)')" />
-                        <x-dl::action-bar><x-dl::button preset="save" label="Buat dari Quotation" /></x-dl::action-bar>
+                        <x-dl::action-bar><x-dl::button preset="save" :label="t('Create from Quotation')" /></x-dl::action-bar>
                     @else
-                        <x-dl::empty-state title="Tidak ada quotation terbit yang belum menjadi CO" />
+                        <x-dl::empty-state title="No issued quotation that is not yet a CO" />
                     @endif
                 </x-dl::card>
             </form>
             <form method="post" action="{{ route('v2.co.create') }}">
                 @csrf
                 <input type="hidden" name="mode" value="INSTANT">
-                <x-dl::card title="INSTANT — tanpa Quotation" description="Order langsung (repeat order / verbal). Baris product wajib dari Master Product customer.">
+                <x-dl::card title="INSTANT — tanpa Quotation" description="Direct order (repeat order / verbal). Product lines must come from the customer's Master Product.">
                     <x-dl::field.select name="customer_id" label="Customer" required :options="CustomerOrder::customerOptions()" :source="Src::of('tm2mst.cust_customer')" />
                     <x-dl::action-bar><x-dl::button preset="save" label="Buat Instant" /></x-dl::action-bar>
                 </x-dl::card>
@@ -131,27 +131,27 @@
                 <x-dl::field.display label="Ref. Quotation" :value="$o->quotation?->quotation_no ?? '— (Instant, tanpa Quotation)'" :source="Src::of('tm2sdi.co_order.quotation_id')" />
                 <x-dl::field.text name="customer_po_no" label="Cust. PO No." :case-toggle="false" placeholder="PO/customer/..." :value="old('customer_po_no', $o->customer_po_no)" :source="Src::of('tm2sdi.co_order.customer_po_no')" />
                 <x-dl::field.display label="Order Type" :value="$c->orderType()" :source="Src::calc('jenis baris', 'tm2sdi.co_order_item.line_kind')" />
-                <x-dl::field.select name="sales_person_id" label="PIC Sales" placeholder="— pilih —" :options="SalesPerson::where('activate', true)->orderBy('sales_name')->pluck('sales_name', 'id_sales_person')->all()" :value="old('sales_person_id', $o->sales_person_id)" :source="Src::of('tm2mst.sales_person')" />
+                <x-dl::field.select name="sales_person_id" label="PIC Sales" placeholder="— choose —" :options="SalesPerson::where('activate', true)->orderBy('sales_name')->pluck('sales_name', 'id_sales_person')->all()" :value="old('sales_person_id', $o->sales_person_id)" :source="Src::of('tm2mst.sales_person')" />
             </x-dl::form.row>
         </x-slot:general>
         <x-slot:finance>
             <x-dl::form.row :cols="4">
                 <x-dl::field.display label="Currency" :value="$cur" :source="Src::of('tm2sdi.co_order.currency_code')" />
-                <x-dl::field.select name="payment_term" label="Payment Terms" placeholder="— pilih —" :options="FinPaymentTerm::where('activate', true)->orderBy('sort_order')->pluck('term_label', 'payment_term_code')->all()" :value="old('payment_term', $o->payment_term)" :source="Src::of('tm2mst.fin_payment_term')" />
+                <x-dl::field.select name="payment_term" label="Payment Terms" placeholder="— choose —" :options="FinPaymentTerm::where('activate', true)->orderBy('sort_order')->pluck('term_label', 'payment_term_code')->all()" :value="old('payment_term', $o->payment_term)" :source="Src::of('tm2mst.fin_payment_term')" />
             </x-dl::form.row>
         </x-slot:finance>
         <x-slot:delivery>
             {{-- Metode & pihak pengiriman (v1 sdi_co: shipment_method, recipient/shipper/forwarder = customer). --}}
             <x-dl::form.row :cols="4">
-                <x-dl::field.select name="shipment_method" label="Shipment Method" placeholder="— pilih —" :options="\App\Models\Sdi\CoOrder::SHIPMENT_METHODS" :value="old('shipment_method', $o->shipment_method)" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.shipment_method')" />
-                <x-dl::field.lookup name="recipient_customer_id" lookup="customer" label="Penerima (bila beda dari customer)" placeholder="Cari customer..." :value="$o->recipient_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.recipient_customer_id', 'tm2mst.cust_customer.customer_name')" />
-                <x-dl::field.lookup name="shipper_customer_id" lookup="customer" label="Shipper" placeholder="Cari customer..." :value="$o->shipper_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.shipper_customer_id', 'tm2mst.cust_customer.customer_name')" />
-                <x-dl::field.lookup name="forwarder_customer_id" lookup="customer" label="Forwarder" placeholder="Cari customer..." :value="$o->forwarder_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.forwarder_customer_id', 'tm2mst.cust_customer.customer_name')" />
+                <x-dl::field.select name="shipment_method" label="Shipment Method" placeholder="— choose —" :options="\App\Models\Sdi\CoOrder::SHIPMENT_METHODS" :value="old('shipment_method', $o->shipment_method)" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.shipment_method')" />
+                <x-dl::field.lookup name="recipient_customer_id" lookup="customer" label="Recipient (if different from the customer)" placeholder="Search customer..." :value="$o->recipient_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.recipient_customer_id', 'tm2mst.cust_customer.customer_name')" />
+                <x-dl::field.lookup name="shipper_customer_id" lookup="customer" label="Shipper" placeholder="Search customer..." :value="$o->shipper_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.shipper_customer_id', 'tm2mst.cust_customer.customer_name')" />
+                <x-dl::field.lookup name="forwarder_customer_id" lookup="customer" label="Forwarder" placeholder="Search customer..." :value="$o->forwarder_customer_id" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.forwarder_customer_id', 'tm2mst.cust_customer.customer_name')" />
             </x-dl::form.row>
             <x-dl::form.row :cols="3">
-                <x-dl::field.lookup name="ship_area" lookup="geo_area" label="Shipment Location" placeholder="Cari kelurahan / kecamatan / kota / kode pos..." :value="$area" :source="Src::of('tm2sdi.co_order.ship_area_id', 'ship_area_level', 'ship_address_label')" />
-                <x-dl::field.text name="ship_address_detail" label="Detail Alamat (jalan, no., RT/RW, patokan)" placeholder="Jl. ..., No. ..." :value="old('ship_address_detail', $o->ship_address_detail)" :source="Src::of('tm2sdi.co_order.ship_address_detail')" />
-                <x-dl::field.display name="ship_postal_code" label="Kode Pos" :value="$o->ship_postal_code ?? '—'" :source="Src::of('tm2sdi.co_order.ship_postal_code')" />
+                <x-dl::field.lookup name="ship_area" lookup="geo_area" label="Shipment Location" placeholder="Search village / district / city / postcode..." :value="$area" :source="Src::of('tm2sdi.co_order.ship_area_id', 'ship_area_level', 'ship_address_label')" />
+                <x-dl::field.text name="ship_address_detail" label="Address Details (street, no., RT/RW, landmark)" placeholder="Jl. ..., No. ..." :value="old('ship_address_detail', $o->ship_address_detail)" :source="Src::of('tm2sdi.co_order.ship_address_detail')" />
+                <x-dl::field.display name="ship_postal_code" label="Postcode" :value="$o->ship_postal_code ?? '—'" :source="Src::of('tm2sdi.co_order.ship_postal_code')" />
             </x-dl::form.row>
             {{-- Jadwal kirim per baris Product (kosong = saat Confirm dibuat otomatis 1 baris qty penuh @ Due Date). --}}
             @foreach ($o->items->where('line_kind', 'PRODUCT') as $it)
@@ -161,12 +161,12 @@
                         <x-dl::field.select :name="'deliveries['.$d->id_delivery.'][shipment_type]'" label="Type" :options="['FULL' => 'FULL', 'PARTIAL' => 'PARTIAL']" :value="$d->shipment_type" :source="Src::of('tm2sdi.co_order_delivery.shipment_type')" />
                         <x-dl::field.date :name="'deliveries['.$d->id_delivery.'][ship_date]'" label="Ship Date" :value="$d->ship_date?->toDateString()" :source="Src::of('tm2sdi.co_order_delivery.ship_date')" />
                         <x-dl::field.decimal :name="'deliveries['.$d->id_delivery.'][ship_qty]'" label="Qty" :decimals="0" :value="rtrim(rtrim((string) $d->ship_qty, '0'), '.')" :source="Src::of('tm2sdi.co_order_delivery.ship_qty')" />
-                        @if ($draft)<x-dl::field.checkbox :name="'remove_delivery['.$d->id_delivery.']'" text="Hapus jadwal ini saat Save" />@else<x-dl::field.display label="Status" :value="$d->status ?? '—'" />@endif
+                        @if ($draft)<x-dl::field.checkbox :name="'remove_delivery['.$d->id_delivery.']'" text="Delete this schedule on Save" />@else<x-dl::field.display label="Status" :value="$d->status ?? '—'" />@endif
                     </x-dl::form.row>
                 @empty
-                    <x-dl::empty-state title="Belum ada jadwal kirim — saat Confirm dibuat otomatis 1 baris qty penuh @ Due Date." />
+                    <x-dl::empty-state title="No delivery schedule yet — on Confirm one full-qty line @ Due Date is created automatically." />
                 @endforelse
-                @if ($draft)<x-dl::button variant="secondary" size="sm" label="+ Jadwal Kirim" type="submit" name="action" :value="'add_delivery_'.$it->id_item" formnovalidate />@endif
+                @if ($draft)<x-dl::button variant="secondary" size="sm" :label="t('+ Delivery Schedule')" type="submit" name="action" :value="'add_delivery_'.$it->id_item" formnovalidate />@endif
             @endforeach
         </x-slot:delivery>
         <x-slot:material>
@@ -183,7 +183,7 @@
             </x-dl::action-bar>
         </x-slot:material>
         <x-slot:notes>
-            <x-dl::field.text name="notes" label="Catatan internal (Ops / PPIC)" multiline placeholder="Internal notes for Ops/PPIC..." :value="old('notes', $o->notes)" :source="Src::of('tm2sdi.co_order.notes')" />
+            <x-dl::field.text name="notes" label="Internal notes (Ops / PPIC)" multiline placeholder="Internal notes for Ops/PPIC..." :value="old('notes', $o->notes)" :source="Src::of('tm2sdi.co_order.notes')" />
         </x-slot:notes>
         <x-slot:detail>
             <x-dl::lines name="items" title="Details" key-field="id_item" remove-field="remove" row-lock="editable" :addable="false" :duplicable="false" :min-rows="0" :rows="$lines" :readonly="! $draft"
@@ -191,21 +191,21 @@
                 :columns="[
                     ['key' => 'description', 'label' => 'Produk / Jasa', 'readonlyUnless' => 'editable', 'width' => '320px'],
                     ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'readonlyUnless' => 'editable', 'sum' => true, 'width' => '110px'],
-                    ['key' => 'qty_unit', 'label' => 'Satuan', 'type' => 'display', 'width' => '80px'],
-                    ['key' => 'unit_price', 'label' => 'Harga', 'type' => 'money', 'readonlyUnless' => 'editable', 'width' => '120px'],
+                    ['key' => 'qty_unit', 'label' => t('Unit'), 'type' => 'display', 'width' => '80px'],
+                    ['key' => 'unit_price', 'label' => t('Price'), 'type' => 'money', 'readonlyUnless' => 'editable', 'width' => '120px'],
                     ['key' => 'discount_pct', 'label' => 'Disc %', 'type' => 'display', 'width' => '70px'],
                     ['key' => 'due_date', 'label' => 'Due Date', 'type' => 'date', 'width' => '150px'],
                     ['key' => 'qty_minim', 'label' => 'Qty Minim', 'type' => 'bool', 'width' => '90px'],
                     ['key' => 'subtotal', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'qty * unit_price * (1 - discount_pct / 100)', 'sum' => true, 'width' => '140px'],
-                    ['key' => 'kind', 'label' => 'Jenis', 'type' => 'display', 'more' => true],
-                    ['key' => 'source', 'label' => 'Asal Baris', 'type' => 'display', 'more' => true],
+                    ['key' => 'kind', 'label' => t('Type'), 'type' => 'display', 'more' => true],
+                    ['key' => 'source', 'label' => t('Line Source'), 'type' => 'display', 'more' => true],
                     ['key' => 'inquiry', 'label' => 'Inquiry', 'type' => 'display', 'more' => true],
                     ['key' => 'product_label', 'label' => 'Master Product', 'type' => 'display', 'more' => true],
                     ['key' => 'spec_note', 'label' => 'Spesifikasi', 'type' => 'display', 'more' => true],
                 ]">
                 @if ($draft)
                     <x-slot:tools>
-                        <x-dl::field.lookup name="product_id" lookup="product" :params="['customer_id' => $o->customer_id]" label="+ Produk dari Master Product" placeholder="Ketik min. 2 huruf nama / kode produk / design no..." :source="Src::of('tm2mst.prod_product')" />
+                        <x-dl::field.lookup name="product_id" lookup="product" :params="['customer_id' => $o->customer_id]" label="+ Product from Master Product" placeholder="Type at least 2 letters of the product name / code / design no...." :source="Src::of('tm2mst.prod_product')" />
                         <x-dl::button size="sm" variant="secondary" label="+ Produk" type="submit" name="action" value="add_product" formnovalidate />
                         <x-dl::button size="sm" variant="secondary" label="+ Jasa" type="submit" name="action" value="add_service" formnovalidate />
                     </x-slot:tools>
@@ -225,14 +225,14 @@
                 ]))">
                 <x-slot:disc>
                     <x-dl::form.row :cols="2">
-                        <x-dl::field.display label="Disc. Doc (fix dari Inquiry)" :value="$o->discount_doc_pct !== null ? \Devlib\Locale::decimal($o->discount_doc_pct, 2).'%' : '—'" :source="Src::of('tm2sdi.co_order.discount_doc_pct')" />
+                        <x-dl::field.display label="Doc. Disc. (fixed from Inquiry)" :value="$o->discount_doc_pct !== null ? \Devlib\Locale::decimal($o->discount_doc_pct, 2).'%' : '—'" :source="Src::of('tm2sdi.co_order.discount_doc_pct')" />
                         <x-dl::field.decimal name="discount_qty_pct" label="Disc. Qty" unit="%" :value="$o->discount_qty_pct !== null ? rtrim(rtrim((string) $o->discount_qty_pct, '0'), '.') : ''" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.discount_qty_pct')" />
                     </x-dl::form.row>
                 </x-slot:disc>
                 <x-slot:tax>
                     <x-dl::form.row :cols="2">
-                        <x-dl::field.select name="is_ppn" label="Pajak" :options="['1' => 'PPN', '0' => 'Non PPN']" :value="$o->is_ppn ? '1' : '0'" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.is_ppn')" />
-                        <x-dl::field.display label="PPh 23 (baris jasa)" :value="\Devlib\Locale::number($totals['wht23_pct']).'% · dipotong customer'" :source="Src::of('CoOrder::totals()')" />
+                        <x-dl::field.select name="is_ppn" label="Tax" :options="['1' => 'PPN', '0' => 'Non PPN']" :value="$o->is_ppn ? '1' : '0'" :disabled="! $draft" :source="Src::of('tm2sdi.co_order.is_ppn')" />
+                        <x-dl::field.display label="PPh 23 (service lines)" :value="\Devlib\Locale::number($totals['wht23_pct']).'% · dipotong customer'" :source="Src::of('CoOrder::totals()')" />
                     </x-dl::form.row>
                 </x-slot:tax>
                 <x-slot:cost>
@@ -242,12 +242,12 @@
                             <x-dl::field.text :name="'costs['.$x->id_cost.'][description]'" label="Description" :value="$x->description" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.description')" />
                             <x-dl::field.decimal :name="'costs['.$x->id_cost.'][nominal]'" label="Nominal" :value="rtrim(rtrim((string) $x->nominal, '0'), '.')" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.nominal')" />
                             <x-dl::field.select :name="'costs['.$x->id_cost.'][tax_treatment]'" label="Tax Treatment" :options="['TAXABLE' => 'Taxable', 'REIMBURSEMENT' => 'Reimbursement']" :value="$x->tax_treatment" :disabled="! $draft" :source="Src::of('tm2sdi.co_order_external_cost.tax_treatment')" />
-                            @if ($draft)<x-dl::field.checkbox :name="'remove_cost['.$x->id_cost.']'" text="Hapus saat Save" />@endif
+                            @if ($draft)<x-dl::field.checkbox :name="'remove_cost['.$x->id_cost.']'" text="Delete on Save" />@endif
                         </x-dl::form.row>
                     @empty
-                        <x-dl::empty-state title="Belum ada biaya lain." />
+                        <x-dl::empty-state title="No other costs yet." />
                     @endforelse
-                    @if ($draft)<x-dl::button variant="secondary" size="sm" label="+ Add Cost" type="submit" name="action" value="add_cost" formnovalidate />@endif
+                    @if ($draft)<x-dl::button variant="secondary" size="sm" :label="t('+ Add Cost')" type="submit" name="action" value="add_cost" formnovalidate />@endif
                 </x-slot:cost>
             </x-dl::doc-footer>
         </x-slot:detail>

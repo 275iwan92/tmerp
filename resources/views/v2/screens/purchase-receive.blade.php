@@ -22,18 +22,18 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $pv && ! request('new'))
-    <x-dl::grid id="pv-list" :rows="PurchaseReceive::rows()" search="Cari no. penerimaan, supplier, no. PO..." actions="worklist" :active-key="null"
+    <x-dl::grid id="pv-list" :rows="PurchaseReceive::rows()" search="Search receipt no., supplier, PO no...." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.pv_receipt', 'tm2pur.pv_line') }}"
         :columns="[
             ['key' => 'supplier', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'no'],
             ['key' => 'type', 'label' => 'Receipt Type', 'type' => 'badge', 'tones' => PurchaseReceive::TYPE_TONES],
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
-            ['key' => 'warehouse', 'label' => 'Gudang'],
+            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
+            ['key' => 'warehouse', 'label' => t('Warehouse')],
             ['key' => 'po', 'label' => 'No. PO'],
-            ['key' => 'lines', 'label' => 'Baris', 'type' => 'number'],
+            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseReceive::STATUS_TONES],
         ]"
-        :stats="[['label' => 'Semua'], ['label' => 'Draft / QC', 'where' => ['status' => ['DRAFT', 'QC_PENDING']], 'tone' => 'warn'], ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'success'], ['label' => 'From Customer', 'where' => ['type' => 'From Customer'], 'tone' => 'info'], ['label' => 'From Subcon', 'where' => ['type' => 'From Subcon'], 'tone' => 'warn']]"
+        :stats="[['label' => t('All')], ['label' => 'Draft / QC', 'where' => ['status' => ['DRAFT', 'QC_PENDING']], 'tone' => 'warn'], ['label' => 'Posted', 'where' => ['status' => 'POSTED'], 'tone' => 'success'], ['label' => 'From Customer', 'where' => ['type' => 'From Customer'], 'tone' => 'info'], ['label' => 'From Subcon', 'where' => ['type' => 'From Subcon'], 'tone' => 'warn']]"
         :filters="['supplier' => 'Supplier', 'warehouse' => 'Gudang', 'status' => 'Status']" />
 @elseif (! $pv)
     @php $kind = request('type', 'PO'); @endphp
@@ -67,7 +67,7 @@
             </x-dl::form.row>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <x-dl::button type="submit" variant="secondary" label="Next: choose PO lines" />
+                <x-dl::button type="submit" variant="secondary" :label="t('Next: choose PO lines')" />
             </x-dl::action-bar>
         </form>
         @if ($sub)
@@ -84,7 +84,7 @@
     </x-dl::card>
 @elseif (! $pv && request('new'))
     @php $sid = (int) request('supplier'); @endphp
-    <x-dl::card title="+ New Record — Penerimaan Barang (SPB)" description="Langkah 1: pilih supplier yang punya PO terkirim. Langkah 2: pilih gudang penerima dan baris PO yang datang.">
+    <x-dl::card title="+ New Record — Goods Receipt (SPB)" description="Step 1: choose a supplier with sent POs. Step 2: choose the receiving warehouse and the arriving PO lines.">
         <form method="get" action="{{ $home }}">
             <input type="hidden" name="new" value="1">
             <x-dl::form.row :cols="2">
@@ -92,7 +92,7 @@
             </x-dl::form.row>
             <x-dl::action-bar>
                 <x-dl::button variant="secondary" icon="back" label="Back" :href="$home" />
-                <x-dl::button type="submit" variant="secondary" label="Lanjut: pilih baris PO" />
+                <x-dl::button type="submit" variant="secondary" :label="t('Next: choose PO lines')" />
             </x-dl::action-bar>
         </form>
         @if ($sid)
@@ -100,9 +100,9 @@
                 @csrf
                 <input type="hidden" name="supplier_id" value="{{ $sid }}">
                 <x-dl::form.row :cols="2">
-                    <x-dl::field.select name="warehouse" label="Gudang Penerima" required :options="PurchaseReceive::warehouses()" :source="Src::of('tm2mst.wh_warehouse')" />
+                    <x-dl::field.select name="warehouse" label="Receiving Warehouse" required :options="PurchaseReceive::warehouses()" :source="Src::of('tm2mst.wh_warehouse')" />
                 </x-dl::form.row>
-                <x-dl::field.checkboxes name="po_line_ids" label="Baris PO yang datang" required :options="PurchaseReceive::openLineOptions($sid)" :source="Src::of('tm2pur.po_line (sisa > 0)')" />
+                <x-dl::field.checkboxes name="po_line_ids" label="Arriving PO lines" required :options="PurchaseReceive::openLineOptions($sid)" :source="Src::of('tm2pur.po_line (sisa > 0)')" />
                 <x-dl::action-bar><x-dl::button preset="save" label="Buat Penerimaan" /></x-dl::action-bar>
             </form>
         @endif
@@ -222,13 +222,13 @@
         @endif
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. SPB</span><b>{{ $pv->doc_no }}</b></div>
-            <x-dl::field.date name="i_doc_date" label="Tanggal Terima" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
-            <x-dl::field.display label="Gudang Penerima" :value="$pv->i_warehouse_code" :source="Src::of('tm2pur.pv_receipt.i_warehouse_code')" />
+            <x-dl::field.date name="i_doc_date" label="Receipt Date" :value="$pv->i_doc_date?->toDateString()" :source="Src::of('tm2pur.pv_receipt.i_doc_date')" />
+            <x-dl::field.display label="Receiving Warehouse" :value="$pv->i_warehouse_code" :source="Src::of('tm2pur.pv_receipt.i_warehouse_code')" />
             <div class="dl-strip__kv dl-strip__grand"><span>Nilai Diterima</span><b>{{ $money($value) }}</b></div>
         </x-slot:strip>
         <x-slot:general>
             <x-dl::form.row :cols="4">
-                <x-dl::field.text name="i_supplier_do_no" label="No. Surat Jalan Supplier" :case-toggle="false" :value="$pv->i_supplier_do_no" :source="Src::of('tm2pur.pv_receipt.i_supplier_do_no')" />
+                <x-dl::field.text name="i_supplier_do_no" label="Supplier Delivery Note No." :case-toggle="false" :value="$pv->i_supplier_do_no" :source="Src::of('tm2pur.pv_receipt.i_supplier_do_no')" />
                 <x-dl::field.text name="i_vehicle_no" label="No. Kendaraan" :case-toggle="false" :value="$pv->i_vehicle_no" :source="Src::of('tm2pur.pv_receipt.i_vehicle_no')" />
                 <x-dl::field.display label="PO" :value="$pv->c_po_doc_list ?: '—'" :source="Src::of('tm2pur.pv_receipt.c_po_doc_list')" />
                 <x-dl::field.display label="Diposting" :value="$pv->posted_at ? \Devlib\Locale::dt($pv->posted_at).' · '.$pv->posted_by : '—'" :source="Src::of('tm2pur.pv_receipt.posted_at')" />
@@ -243,7 +243,7 @@
             </x-dl::form.row>
         </x-slot:supplier>
         <x-slot:notes>
-            <x-dl::field.text name="i_notes" label="Catatan penerimaan" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
+            <x-dl::field.text name="i_notes" label="Receipt notes" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
             @if ($pv->status === 'CANCELLED')
                 <x-dl::field.display label="Dibatalkan" :value="$pv->cancelled_by.' · '.\Devlib\Locale::dt($pv->cancelled_at).' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason', 'cancelled_by', 'cancelled_at', 'rm_stock_rev_doc_id')" />
             @endif
@@ -260,21 +260,21 @@
                     ['key' => 'i_uom_stock', 'label' => 'Sat. Stok', 'type' => 'display', 'width' => '70px'],
                     ['key' => 'qc_qty', 'label' => 'QC Qty', 'type' => 'select', 'options' => ['DONE' => 'Selesai'], 'width' => '100px'],
                     ['key' => 'qc_quality_status', 'label' => 'QC Kualitas', 'type' => 'select', 'options' => ['PENDING' => 'Pending', 'PASS' => 'Pass', 'FAIL' => 'Fail', 'PARTIAL' => 'Partial'], 'width' => '110px'],
-                    ['key' => 'c_qty_accepted', 'label' => 'Qty Diterima (Partial)', 'type' => 'number', 'more' => true],
-                    ['key' => 'c_qty_rejected', 'label' => 'Qty Ditolak (Partial)', 'type' => 'number', 'more' => true],
+                    ['key' => 'c_qty_accepted', 'label' => t('Qty Received (Partial)'), 'type' => 'number', 'more' => true],
+                    ['key' => 'c_qty_rejected', 'label' => t('Qty Rejected (Partial)'), 'type' => 'number', 'more' => true],
                     ['key' => 'variance', 'label' => 'Selisih vs PO', 'type' => 'display', 'more' => true],
                     ['key' => 'tol_override_reason', 'label' => 'Alasan Override Toleransi', 'more' => true],
                     ['key' => 'i_lot_no', 'label' => 'No. Lot', 'more' => true],
                     ['key' => 'i_location_code', 'label' => 'Lokasi Rak', 'more' => true],
-                    ['key' => 'value', 'label' => 'Nilai Diterima', 'type' => 'display', 'more' => true],
-                    ['key' => 'code', 'label' => 'Kode Item', 'type' => 'display', 'more' => true],
+                    ['key' => 'value', 'label' => t('Received Value'), 'type' => 'display', 'more' => true],
+                    ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
                 ]">
                 @if ($draft)
                     <x-slot:tools>
                         @php $more = PurchaseReceive::openLineOptions($pv->i_supplier_id); @endphp
                         @if ($more)
-                            <x-dl::field.multi-select name="po_line_ids" label="+ Baris PO lain dari supplier ini" :options="$more" :source="Src::of('tm2pur.po_line (sisa > 0)')" />
-                            <x-dl::button size="sm" variant="secondary" label="+ Tambah Baris PO" type="submit" name="action" value="add_lines" formnovalidate />
+                            <x-dl::field.multi-select name="po_line_ids" label="+ Other PO lines from this supplier" :options="$more" :source="Src::of('tm2pur.po_line (sisa > 0)')" />
+                            <x-dl::button size="sm" variant="secondary" :label="t('+ Add PO Line')" type="submit" name="action" value="add_lines" formnovalidate />
                         @endif
                     </x-slot:tools>
                 @endif

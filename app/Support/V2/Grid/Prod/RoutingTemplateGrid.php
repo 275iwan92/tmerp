@@ -45,7 +45,7 @@ class RoutingTemplateGrid extends ProdGrid
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Template', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'type', 'label' => 'Tipe Produk'],
-            ['key' => 'substrate', 'label' => 'Bahan'],
+            ['key' => 'substrate', 'label' => 'Material'],
             ['key' => 'default', 'label' => 'Default', 'type' => 'badge', 'tones' => ['Ya' => 'success']],
             ['key' => 'steps', 'label' => 'Steps', 'type' => 'link', 'format' => 'number'],
         ];

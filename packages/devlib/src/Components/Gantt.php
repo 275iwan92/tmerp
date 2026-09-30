@@ -50,8 +50,8 @@ class Gantt extends DevlibComponent
                 <div class="dl-gantt__bar">
                     <div class="dl-segment" data-g2-mode><button type="button" class="dl-segment__opt {{ $simulation ? 'is-active' : '' }}" data-value="sim">● Simulasi</button><button type="button" class="dl-segment__opt {{ $simulation ? '' : 'is-active' }}" data-value="live">○ Live</button></div>
                     <span class="dl-gantt__spacer"></span>
-                    <x-dl::field.select name="gantt_resource" :options="['' => 'Semua Resource'] + collect($rows)->pluck('label', 'key')->all()" placeholder="Semua Resource" />
-                    <x-dl::field.select name="gantt_process" :options="['' => 'Semua Proses'] + collect($categories)->map(fn ($c) => $c['label'])->all()" placeholder="Semua Proses" />
+                    <x-dl::field.select name="gantt_resource" :options="['' => 'Semua Resource'] + collect($rows)->pluck('label', 'key')->all()" placeholder="All Resources" />
+                    <x-dl::field.select name="gantt_process" :options="['' => 'Semua Proses'] + collect($categories)->map(fn ($c) => $c['label'])->all()" placeholder="All Processes" />
                     {{ $actions ?? '' }}
                     @if ($submitLabel)<x-dl::button preset="submit" :label="$submitLabel" data-g2-submit />@endif
                 </div>

@@ -33,7 +33,7 @@ class NotificationList extends DevlibComponent
                         </div>
                     </div>
                 @empty
-                    <x-dl::empty-state icon="notification" title="Tidak ada notifikasi" />
+                    <x-dl::empty-state icon="notification" title="No notifications" />
                 @endforelse
             </div>
             BLADE;

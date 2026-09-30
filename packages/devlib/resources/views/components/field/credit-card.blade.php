@@ -14,6 +14,6 @@
         <label><span class="dl-cc__lbl">CVV</span><span class="dl-field__box"><input type="password" inputmode="numeric" autocomplete="cc-csc" name="{{ $name }}_cvv" class="dl-input" placeholder="•••" maxlength="3" data-dl-cc-cvv @disabled($disabled) @readonly($readonly)></span></label>
     </div>
     @if ($holder)
-        <label><span class="dl-cc__lbl">Nama di kartu</span><span class="dl-field__box"><input type="text" autocomplete="cc-name" name="{{ $name }}_holder" class="dl-input" placeholder="Sesuai yang tercetak" data-dl-cc-holder @disabled($disabled) @readonly($readonly)><button type="button" class="dl-field__trigger dl-case" data-dl-cc-case title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">AA</button></span></label>
+        <label><span class="dl-cc__lbl">Nama di kartu</span><span class="dl-field__box"><input type="text" autocomplete="cc-name" name="{{ $name }}_holder" class="dl-input" placeholder="{{ \Devlib\Lang::text('As printed') }}" data-dl-cc-holder @disabled($disabled) @readonly($readonly)><button type="button" class="dl-field__trigger dl-case" data-dl-cc-case title="Ganti huruf: kecil / Kapital Tiap Kata / BESAR">AA</button></span></label>
     @endif
 </div>

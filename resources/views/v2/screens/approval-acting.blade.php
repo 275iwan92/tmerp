@@ -13,19 +13,19 @@
     panel="top" kind="master" status="active" :action="route('v2.approval-acting.save')" action-field="action" :hide="['deactivate', 'new']"
     :back="route('v2.screen', 'approval-setting')" :tabs="['general' => 'General']">
     <x-slot:general>
-        <x-dl::alert tone="info" message="Isi jabatan, user pengganti, dan tanggal berhalangan. Selama tanggal itu, dokumen yang menunggu jabatan tersebut muncul di Approval Center user pengganti (juga tetap bisa diputuskan pemegang aslinya)." />
+        <x-dl::alert tone="info" message="Fill in the position, the acting user and the absence dates. During those dates, documents waiting for that position appear in the acting user's Approval Center (the original holder can still decide them)." />
     </x-slot:general>
     <x-slot:detail>
         <x-dl::lines name="acting" title="Daftar PLT" key-field="acting_id" remove-field="remove" :duplicable="false" :min-rows="0" :rows="ApprovalSetting::actingRows()"
-            add-label="+ Tambah PLT" source="{{ Src::of('tm2mst.flow_position_acting', 'tm2mst.org_position', 'tm2sys.sec_user') }}"
+            add-label="+ Add Acting Officer" source="{{ Src::of('tm2mst.flow_position_acting', 'tm2mst.org_position', 'tm2sys.sec_user') }}"
             :columns="[
-                ['key' => 'position_id', 'label' => 'Jabatan yang digantikan', 'type' => 'select', 'options' => ApprovalSetting::positionOptions(), 'required' => true, 'width' => '320px'],
+                ['key' => 'position_id', 'label' => t('Position being covered'), 'type' => 'select', 'options' => ApprovalSetting::positionOptions(), 'required' => true, 'width' => '320px'],
                 ['key' => 'acting_user_id', 'label' => 'User pengganti', 'type' => 'select', 'options' => ApprovalSetting::userOptions(), 'required' => true, 'width' => '240px'],
                 ['key' => 'start_date', 'label' => 'Mulai', 'type' => 'date', 'required' => true, 'width' => '150px'],
                 ['key' => 'end_date', 'label' => 'Selesai', 'type' => 'date', 'required' => true, 'width' => '150px'],
-                ['key' => 'reason', 'label' => 'Alasan (cuti, dinas, ...)', 'width' => '200px'],
+                ['key' => 'reason', 'label' => t('Reason (leave, business trip, ...)'), 'width' => '200px'],
                 ['key' => 'status', 'label' => 'Status', 'type' => 'display', 'width' => '100px'],
-                ['key' => 'activate', 'label' => 'Aktif', 'type' => 'bool', 'more' => true],
+                ['key' => 'activate', 'label' => t('Active'), 'type' => 'bool', 'more' => true],
                 ['key' => 'original', 'label' => 'Pemegang asli', 'type' => 'display', 'more' => true],
             ]" />
     </x-slot:detail>

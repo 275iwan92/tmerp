@@ -75,15 +75,15 @@ class LayerShell extends Shell
     public function actions(): array
     {
         return array_values(array_filter([
-            ['key' => 'palette', 'label' => 'Cari (Ctrl K)', 'icon' => 'search'],
+            ['key' => 'palette', 'label' => \Devlib\Lang::text('Search (Ctrl K)'), 'icon' => 'search'],
             ['key' => 'notif', 'label' => 'Notifikasi', 'icon' => 'notification'],
             ['key' => 'ai', 'label' => 'Asisten AI', 'icon' => 'ai'],
             ['key' => 'edit', 'label' => 'Edit profil', 'icon' => 'fa-user-pen'],
-            ['key' => 'pass', 'label' => 'Ubah password', 'icon' => 'password'],
+            ['key' => 'pass', 'label' => \Devlib\Lang::text('Change password'), 'icon' => 'password'],
             ['key' => 'help', 'label' => 'Bantuan & dukungan', 'icon' => 'help'],
             $this->developer ? ['key' => 'devmode', 'label' => 'Mode Developer', 'icon' => 'fa-bug'] : null,
             $this->classic ? ['key' => 'menu-classic', 'label' => 'Menu Classic', 'icon' => 'fa-table-columns'] : null,
-            ['key' => 'logout', 'label' => 'Keluar aplikasi', 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
+            ['key' => 'logout', 'label' => \Devlib\Lang::text('Sign out'), 'icon' => 'logout', 'tone' => 'danger', 'confirm' => 'Keluar dari aplikasi?'],
         ]));
     }
 

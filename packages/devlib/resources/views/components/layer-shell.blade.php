@@ -16,7 +16,7 @@
     </x-dl::layer-menu>
 
     <div class="dl-main">
-        @include('devlib::components.shell.work', ['intro' => 'Pilih modul di <b>menu kiri</b>; klik cabang untuk turun satu layer, <b>Back</b> untuk naik.', 'hint' => 'Ctrl+K cari cepat · roda gigi di sebelah nama = Chat, Profile, Notifikasi, Menu Classic.'])
+        @include('devlib::components.shell.work', ['intro' => 'Choose a module in the <b>left menu</b>; click a branch to go down one layer, <b>Back</b> to go up.', 'hint' => 'Ctrl+K quick search · the gear next to the name = Chat, Profile, Notifications, Classic Menu.'])
     </div>
 
     <aside class="dl-lm-dock dl-shell__dock" data-dl-lm-dock></aside>

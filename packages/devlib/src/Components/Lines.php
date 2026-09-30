@@ -113,7 +113,7 @@ class Lines extends DevlibComponent
         return <<<'BLADE'
             <div {{ $attributes->class(['dl-lines', 'is-readonly' => $readonly]) }} {!! $dl() !!} data-dl-lines data-name="{{ $name }}" data-total-key="{{ $totalKey }}" data-count-key="{{ $countKey }}" data-config="{{ json_encode($config()) }}" data-rows="{{ json_encode($rows) }}">
                 <div class="dl-lines__head"><b>{{ $title }}</b><span class="dl-lines__count" data-l-count></span><span class="dl-lines__spacer"></span>@isset($tools)<div class="dl-lines__tools">{{ $tools }}</div>@endisset
-                    @if (! $readonly && $addable)<x-dl::button variant="secondary" size="sm" :label="$addLabel" data-l-add title="Tambah baris (Enter di baris terakhir)" />@endif
+                    @if (! $readonly && $addable)<x-dl::button variant="secondary" size="sm" :label="$addLabel" data-l-add :title="\Devlib\Lang::text('Add row (Enter on the last row)')" />@endif
                 </div>
                 <div class="dl-lines__wrap"><table class="dl-lines__table"><thead data-l-head></thead><tbody data-l-body></tbody><tfoot data-l-foot></tfoot></table></div>
                 <div data-l-inputs hidden></div>
@@ -136,7 +136,7 @@ class Lines extends DevlibComponent
                                     <div class="dl-tabs__panel {{ $loop->first ? 'is-active' : '' }}" data-panel="{{ $k }}">
                                         @if (in_array($k, ['disc', 'tax', 'cost'], true))
                                             <table class="dl-lines__adjt" data-l-grp="{{ $k }}">
-                                                <thead><tr><th>{{ ['disc' => 'Discount', 'tax' => 'Tax', 'cost' => 'Cost'][$k] }}</th><th class="num">%</th><th class="num">Amount</th>@if ($k === 'cost')<th class="dl-lines__chk" title="Masuk DPP (kena PPN)">PPN</th>@if ($landed)<th class="dl-lines__chk" title="Dibagi ke HPP item (landed cost)">HPP</th>@endif @endif</tr></thead>
+                                                <thead><tr><th>{{ ['disc' => 'Discount', 'tax' => 'Tax', 'cost' => 'Cost'][$k] }}</th><th class="num">%</th><th class="num">Amount</th>@if ($k === 'cost')<th class="dl-lines__chk" title="{{ \Devlib\Lang::text('In tax base (subject to VAT)') }}">PPN</th>@if ($landed)<th class="dl-lines__chk" title="{{ \Devlib\Lang::text('Allocated to item COGS (landed cost)') }}">HPP</th>@endif @endif</tr></thead>
                                                 <tbody>
                                                     @foreach (['disc' => $discs, 'tax' => $taxes, 'cost' => $costs][$k] as $rk => $row)
                                                         @php [$rl, $rp, $sign] = $row; @endphp

@@ -78,9 +78,9 @@ class PayslipGrid extends HrmGrid
             ['key' => 'period', 'label' => 'Periode'],
             ['key' => 'name', 'label' => 'Pegawai', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'net', 'label' => 'Gaji Bersih', 'type' => 'money'],
+            ['key' => 'net', 'label' => 'Net Salary', 'type' => 'money'],
             ['key' => 'printed', 'label' => 'Printout', 'type' => 'badge', 'tones' => ['Sudah' => 'success', 'Belum' => 'neutral']],
-            ['key' => 'wa', 'label' => 'Kirim WA', 'type' => 'badge', 'tones' => ['Terkirim' => 'success', 'Belum' => 'neutral']],
+            ['key' => 'wa', 'label' => 'Send WhatsApp', 'type' => 'badge', 'tones' => ['Terkirim' => 'success', 'Belum' => 'neutral']],
             ['key' => 'anomaly', 'label' => 'Anomali', 'type' => 'badge', 'tones' => ['Ada' => 'danger']],
         ];
     }
@@ -101,9 +101,9 @@ class PayslipGrid extends HrmGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua slip'],
-            ['label' => 'Belum dicetak', 'where' => ['printed' => 'Belum'], 'tone' => 'warn'],
-            ['label' => 'Belum kirim WA', 'where' => ['wa' => 'Belum'], 'tone' => 'info'],
+            ['label' => 'All slips'],
+            ['label' => 'Not printed', 'where' => ['printed' => 'Belum'], 'tone' => 'warn'],
+            ['label' => 'WhatsApp not sent', 'where' => ['wa' => 'Belum'], 'tone' => 'info'],
             ['label' => 'Anomali', 'where' => ['anomaly' => 'Ada'], 'tone' => 'danger'],
         ];
     }

@@ -43,12 +43,12 @@ class ProcessGrid extends ProdGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Proses', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Process', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'stage', 'label' => 'Tahap'],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'where', 'label' => 'Dikerjakan', 'type' => 'badge', 'tones' => ['In-house' => 'success', 'Subkon' => 'warn']],
             ['key' => 'manual', 'label' => 'Manual', 'type' => 'badge', 'tones' => ['Ya' => 'info']],
-            ['key' => 'speed', 'label' => 'Kecepatan Default/Jam', 'type' => 'number'],
+            ['key' => 'speed', 'label' => 'Default Speed/Hour', 'type' => 'number'],
             ['key' => 'machines', 'label' => 'Machines', 'type' => 'link', 'format' => 'number'],
         ];
     }

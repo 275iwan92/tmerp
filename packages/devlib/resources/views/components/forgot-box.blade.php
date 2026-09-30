@@ -6,8 +6,8 @@
         @if ($mode === 'email')
             <div data-fg-step="1">
                 <p class="dl-loginbox__sub" data-i18n="f_sub_email">Masukkan email akun Anda. Kami kirim tautan untuk atur ulang password.</p>
-                <x-dl::field.text name="email" type="email" label="Email" i18n="l_email" icon="fa-envelope" size="lg" placeholder="nama@telasih.co.id" :case-toggle="false" autocomplete="email" required />
-                <x-dl::button type="submit" size="lg" block label="Kirim tautan reset" i18n="f_send" />
+                <x-dl::field.text name="email" type="email" label="Email" i18n="l_email" icon="fa-envelope" size="lg" placeholder="name@telasih.co.id" :case-toggle="false" autocomplete="email" required />
+                <x-dl::button type="submit" size="lg" block :label="\Devlib\Lang::text('Send reset link')" i18n="f_send" />
             </div>
             <div class="dl-auth__ok" data-fg-step="done" hidden><i class="fa-solid fa-circle-check"></i> <span data-i18n="f_done_email">Jika email terdaftar, tautan reset sudah dikirim.</span></div>
         @else
@@ -17,16 +17,16 @@
                 <p class="dl-loginbox__sub" data-i18n="f_sub_q">Jawab 4 pertanyaan sesuai data akun Anda. Tanpa email.</p>
                 <x-dl::field.text name="login" label="Username" i18n="l_login" icon="fa-user" :case-toggle="false" autocomplete="username" required />
                 <div class="dl-auth__two">
-                    <x-dl::field.date name="birth_date" label="Tanggal lahir" i18n="f_birth" required />
+                    <x-dl::field.date name="birth_date" label="Date of birth" i18n="f_birth" required />
                     <x-dl::field.phone name="phone" label="No. HP terdaftar" i18n="f_phone" kind="mobile" required />
                 </div>
-                <x-dl::field.text name="mother_name" label="Nama ibu kandung" i18n="f_mother" icon="fa-person-dress" required />
+                <x-dl::field.text name="mother_name" label="Mother's maiden name" i18n="f_mother" icon="fa-person-dress" required />
                 <x-dl::field.text name="security_answer" :label="$question" icon="fa-shield-halved" required />
                 <x-dl::button type="submit" size="lg" block label="Lanjut" i18n="f_next" />
             </div>
             <div data-fg-step="2" hidden>
                 <p class="dl-loginbox__sub" data-i18n="f_sub_new">Data cocok. Buat password baru.</p>
-                <x-dl::field.password name="new_password" label="Password baru" i18n="f_new" icon="fa-lock" autocomplete="new-password" required hint="Min. 8 karakter, kombinasi huruf & angka." />
+                <x-dl::field.password name="new_password" label="New password" i18n="f_new" icon="fa-lock" autocomplete="new-password" required hint="Min. 8 karakter, kombinasi huruf & angka." />
                 <x-dl::field.password name="new_password_confirmation" label="Konfirmasi" i18n="r_conf" icon="fa-lock" autocomplete="new-password" required />
                 <x-dl::button type="submit" size="lg" block label="Save" i18n="f_save" />
             </div>

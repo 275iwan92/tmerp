@@ -42,7 +42,7 @@ trait GeneralCoReport
     public function stats(): array
     {
         return [
-            ['label' => 'Semua CO (sudah di-post)'],
+            ['label' => 'All COs (posted)'],
             ['label' => 'Outstanding', 'where' => ['outstanding' => true], 'tone' => 'warn'],
             ['label' => 'Closed', 'where' => ['status' => 'CLOSED'], 'tone' => 'success'],
         ];

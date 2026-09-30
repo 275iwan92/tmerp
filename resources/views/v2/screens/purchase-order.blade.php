@@ -16,17 +16,17 @@
 @if ($errors->any())<x-dl::alert tone="danger" :message="$errors->first()" />@endif
 
 @if (! $po && ! request('new'))
-    <x-dl::grid id="po-list" :rows="PurchaseOrder::rows()" search="Cari no. PO, supplier..." actions="worklist" :active-key="null"
+    <x-dl::grid id="po-list" :rows="PurchaseOrder::rows()" search="Search PO no., supplier..." actions="worklist" :active-key="null"
         :new-url="$home.'?new=1'" :open-url="$home.'?id={id}'" source="{{ Src::of('tm2pur.po_order', 'tm2pur.po_line', 'tm2mst.sup_supplier') }}"
         :columns="[
             ['key' => 'supplier', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'no'],
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
-            ['key' => 'delivery', 'label' => 'Tgl Kirim', 'type' => 'date'],
-            ['key' => 'lines', 'label' => 'Baris', 'type' => 'number'],
+            ['key' => 'date', 'label' => t('Date'), 'type' => 'date'],
+            ['key' => 'delivery', 'label' => t('Ship Date'), 'type' => 'date'],
+            ['key' => 'lines', 'label' => t('Lines'), 'type' => 'number'],
             ['key' => 'total', 'label' => 'Grand Total', 'type' => 'money', 'sum' => true],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => PurchaseOrder::STATUS_TONES],
         ]"
-        :stats="[['label' => 'Semua'], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => 'Menunggu approval', 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved / Sent', 'where' => ['status' => ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED']], 'tone' => 'success']]"
+        :stats="[['label' => t('All')], ['label' => 'Draft', 'where' => ['status' => 'DRAFT'], 'tone' => 'neutral'], ['label' => t('Waiting for approval'), 'where' => ['status' => 'SUBMITTED'], 'tone' => 'warn'], ['label' => 'Approved / Sent', 'where' => ['status' => ['APPROVED', 'SENT', 'PARTIALLY_RECEIVED']], 'tone' => 'success']]"
         :filters="['supplier' => 'Supplier', 'status' => 'Status']" />
 @elseif (! $po)
     <form method="post" action="{{ route('v2.po.create') }}">
@@ -79,11 +79,11 @@
         <x-slot:special>
             @unless (in_array($po->status, ['DRAFT', 'SUBMITTED'], true))<x-dl::button size="sm" preset="print" label="Print" :href="route('pur.po.print', ['po' => $po->po_id])" target="_blank" />@endunless
             @if ($pettyStep)<x-dl::button size="sm" variant="success" icon="fa-wallet" :label="\App\Support\V2\Data\PettyCash::STEP_LABELS[$pettyStep]" :href="route('v2.screen', 'petty-cash').'?po='.$po->po_id" />@endif
-            @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" label="Kirim ke Supplier" type="submit" name="action" value="send" formnovalidate onclick="return confirm('Tandai PO ini sudah dikirim ke supplier?')" />@endif
+            @if ($po->status === 'APPROVED' && ! $cash)<x-dl::button size="sm" variant="success" icon="fa-paper-plane" :label="t('Send to Supplier')" type="submit" name="action" value="send" formnovalidate onclick="return confirm('Tandai PO ini sudah dikirim ke supplier?')" />@endif
         </x-slot:special>
         <x-slot:strip>
             <div class="dl-strip__kv dl-strip__doc"><span>No. PO</span><b>{{ $po->doc_no ?: '(saat Confirm)' }}</b></div>
-            <x-dl::field.date name="i_doc_date" label="Tanggal PO" :value="$po->i_doc_date?->toDateString()" :source="Src::of('tm2pur.po_order.i_doc_date')" />
+            <x-dl::field.date name="i_doc_date" label="PO Date" :value="$po->i_doc_date?->toDateString()" :source="Src::of('tm2pur.po_order.i_doc_date')" />
             <x-dl::field.display label="Supplier" :value="($sup->supplier_name ?? '—').' ('.($sup->supplier_code ?? '—').')'" :source="Src::of('tm2mst.sup_supplier')" />
             <div class="dl-strip__kv dl-strip__grand"><span>Net Payable</span><b>{{ $money($po->c_net_payable) }}</b></div>
         </x-slot:strip>
@@ -95,8 +95,8 @@
                 @else
                     <x-dl::field.select name="i_procure_type" label="Tipe Pengadaan" :options="['REPEAT' => 'Repeat (rutin)', 'ONE_TIME' => 'One-Time', 'CAPEX' => 'Capex']" :value="$po->i_procure_type" :source="Src::of('tm2pur.po_order.i_procure_type')" />
                 @endif
-                <x-dl::field.display label="Revisi ke" :value="(string) ($po->revision_no ?? 0)" :source="Src::of('tm2pur.po_order.revision_no')" />
-                <x-dl::field.display label="Dikirim ke supplier" :value="\Devlib\Locale::dt($po->sent_at) ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />
+                <x-dl::field.display label="Revision no." :value="(string) ($po->revision_no ?? 0)" :source="Src::of('tm2pur.po_order.revision_no')" />
+                <x-dl::field.display label="Sent to supplier" :value="\Devlib\Locale::dt($po->sent_at) ?? '—'" :source="Src::of('tm2pur.po_order.sent_at')" />
             </x-dl::form.row>
             @if ($cash)
                 <x-dl::form.row :cols="4">
@@ -123,12 +123,12 @@
         </x-slot:finance>
         <x-slot:delivery>
             <x-dl::form.row :cols="3">
-                <x-dl::field.date name="i_delivery_date" label="Tanggal Kirim" :value="$po->i_delivery_date?->toDateString()" :source="Src::of('tm2pur.po_order.i_delivery_date')" />
-                <x-dl::field.text name="i_ship_to" label="Kirim Ke" :value="$po->i_ship_to" :source="Src::of('tm2pur.po_order.i_ship_to')" />
+                <x-dl::field.date name="i_delivery_date" label="Delivery Date" :value="$po->i_delivery_date?->toDateString()" :source="Src::of('tm2pur.po_order.i_delivery_date')" />
+                <x-dl::field.text name="i_ship_to" label="Ship To" :value="$po->i_ship_to" :source="Src::of('tm2pur.po_order.i_ship_to')" />
             </x-dl::form.row>
         </x-slot:delivery>
         <x-slot:notes>
-            <x-dl::field.text name="i_notes" label="Catatan untuk supplier" multiline :value="$po->i_notes" :source="Src::of('tm2pur.po_order.i_notes')" />
+            <x-dl::field.text name="i_notes" label="Notes for the supplier" multiline :value="$po->i_notes" :source="Src::of('tm2pur.po_order.i_notes')" />
         </x-slot:notes>
         <x-slot:detail>
             <x-dl::lines name="lines" title="Details" key-field="po_line_id" :addable="false" :duplicable="false" row-lock="__never" :min-rows="0" :rows="$lines" :readonly="! $draft"
@@ -136,18 +136,18 @@
                 :columns="[
                     ['key' => 'i_description', 'label' => 'Item', 'type' => 'display', 'width' => '320px'],
                     ['key' => 'i_qty', 'label' => 'Qty', 'type' => $cash ? 'number' : 'display', 'width' => '100px'],
-                    ['key' => 'i_uom', 'label' => 'Satuan', 'type' => 'display', 'width' => '80px'],
-                    ['key' => 'i_price', 'label' => 'Harga', 'type' => 'money', 'width' => '130px'],
+                    ['key' => 'i_uom', 'label' => t('Unit'), 'type' => 'display', 'width' => '80px'],
+                    ['key' => 'i_price', 'label' => t('Price'), 'type' => 'money', 'width' => '130px'],
                     ['key' => 'i_disc_pct', 'label' => 'Disc %', 'type' => 'number', 'width' => '80px'],
                     ['key' => 'net', 'label' => 'Subtotal', 'type' => 'money', 'formula' => 'i_qty * i_price * (1 - i_disc_pct / 100)', 'sum' => true, 'width' => '140px'],
-                    ['key' => 'code', 'label' => 'Kode Item', 'type' => 'display', 'more' => true],
+                    ['key' => 'code', 'label' => t('Item Code'), 'type' => 'display', 'more' => true],
                     ['key' => 'account', 'label' => 'Expense Account (non-stock)', 'type' => 'display', 'more' => true],
-                    ['key' => 'pq', 'label' => 'Harga dari PQ', 'type' => 'display', 'more' => true],
-                    ['key' => 'class', 'label' => 'Jenis', 'type' => 'display', 'more' => true],
+                    ['key' => 'pq', 'label' => t('Price from PQ'), 'type' => 'display', 'more' => true],
+                    ['key' => 'class', 'label' => t('Type'), 'type' => 'display', 'more' => true],
                     ['key' => 'stock', 'label' => 'Stok', 'type' => 'display', 'more' => true],
                     ['key' => 'tol', 'label' => 'Toleransi', 'type' => 'display', 'more' => true],
-                    ['key' => 'received', 'label' => 'Sudah diterima', 'type' => 'display', 'more' => true],
-                    ['key' => 'outstanding', 'label' => 'Sisa', 'type' => 'display', 'more' => true],
+                    ['key' => 'received', 'label' => t('Received'), 'type' => 'display', 'more' => true],
+                    ['key' => 'outstanding', 'label' => t('Remaining'), 'type' => 'display', 'more' => true],
                 ]">
                 @if ($draft)
                     <x-slot:tools>
@@ -161,8 +161,8 @@
                             <x-dl::button size="sm" variant="secondary" label="+ Free Item" type="submit" name="action" value="add_free" formnovalidate />
                         @endif
                         @if ($allocs)
-                            <x-dl::field.select name="alloc_id" label="+ Tarik baris dari PR approved" :options="$allocs" :source="Src::of('tm2pur.pr_line_alloc (PR APPROVED, belum jadi PO)')" />
-                            <x-dl::button size="sm" variant="secondary" label="+ Tarik Baris PR" type="submit" name="action" value="add_alloc" formnovalidate />
+                            <x-dl::field.select name="alloc_id" label="+ Pull lines from approved PR" :options="$allocs" :source="Src::of('tm2pur.pr_line_alloc (PR APPROVED, belum jadi PO)')" />
+                            <x-dl::button size="sm" variant="secondary" :label="t('+ Pull PR Lines')" type="submit" name="action" value="add_alloc" formnovalidate />
                         @endif
                     </x-slot:tools>
                 @endif

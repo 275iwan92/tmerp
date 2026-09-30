@@ -9,17 +9,17 @@
         @endif
 
         <x-dl::card title="Data Dummy (UAT) — baseline & reset" icon="fa-rotate-left"
-            description="Baseline = salinan kondisi data dummy yang dianggap benar. Reset mengembalikan semua database dummy bisnis persis ke baseline. Akun, menu, dan security (ddtsys) tidak ikut direset.">
+            description="Baseline = a copy of the dummy data considered correct. Reset restores every business dummy database exactly to the baseline. Accounts, menus and security (ddtsys) are not reset.">
             @if ($manifest)
                 <div class="dl-grid__stats">
-                    <x-dl::stat-box label="Baseline dibuat" :value="$manifest['created_at']" />
-                    <x-dl::stat-box label="Oleh" :value="$manifest['by']" />
+                    <x-dl::stat-box label="Baseline created" :value="$manifest['created_at']" />
+                    <x-dl::stat-box label="By" :value="$manifest['by']" />
                     <x-dl::stat-box label="Database" :value="count($manifest['databases'])" />
                     <x-dl::stat-box label="File upload" :value="$manifest['files']" />
                 </div>
                 <p class="dl-note">{{ implode(' · ', $manifest['databases']) }}</p>
             @else
-                <x-dl::alert tone="warn" message="Belum ada baseline. Simpan kondisi data dummy sekarang sebagai baseline dulu." />
+                <x-dl::alert tone="warn" message="No baseline yet. Save the current dummy data as the baseline first." />
             @endif
 
             <x-dl::action-bar>

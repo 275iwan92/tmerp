@@ -63,7 +63,7 @@ class SideMenu extends DevlibComponent
                     <b class="dl-sm__title">{{ $title }}</b>
                     <button type="button" class="dl-sm__mini" data-sm-mini title="Ciutkan / lebarkan" aria-label="Ciutkan menu"><i class="fa-solid fa-angles-{{ $side === 'right' ? 'right' : 'left' }}"></i></button>
                 </div>
-                @if ($search)<div class="dl-sm__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari menu…" data-sm-q aria-label="Cari menu"></div>@endif
+                @if ($search)<div class="dl-sm__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search menu…') }}" data-sm-q aria-label="{{ \Devlib\Lang::text('Search menu') }}"></div>@endif
                 <div class="dl-sm__scroll">
                     @if ($favorites)
                         <div class="dl-sm__extra" data-sm-fav hidden><div class="dl-sm__cap"><i class="fa-solid fa-star"></i> <span class="dl-sm__t">Favorit</span></div><ul class="dl-sm__ul" data-sm-favlist></ul></div>

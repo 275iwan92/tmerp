@@ -53,7 +53,7 @@ class Import extends DevlibComponent
                 <div data-i-step="2" hidden><p class="dl-import__hint" data-i-fileinfo></p><div class="dl-import__map" data-i-map></div>
                     <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Ganti file" data-i-back="1" /><span class="dl-print__spacer"></span><x-dl::button icon="next" label="Pratinjau" data-i-preview /></div></div>
                 <div data-i-step="3" hidden><div class="dl-import__stats" data-i-stats></div><label class="dl-choice"><input type="checkbox" data-i-onlybad> Hanya tampilkan baris bermasalah</label><div class="dl-import__wrap"><table class="dl-import__table" data-i-table></table></div>
-                    <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Cocokkan ulang" data-i-back="2" /><x-dl::button variant="secondary" size="sm" icon="download" label="Unduh baris gagal" data-i-failed /><span class="dl-print__spacer"></span><x-dl::button preset="submit" label="Import" data-i-go /></div></div>
+                    <div class="dl-import__foot"><x-dl::button variant="secondary" size="sm" icon="prev" label="Cocokkan ulang" data-i-back="2" /><x-dl::button variant="secondary" size="sm" icon="download" :label="\Devlib\Lang::text('Download failed rows')" data-i-failed /><span class="dl-print__spacer"></span><x-dl::button preset="submit" label="Import" data-i-go /></div></div>
             </div>
             BLADE;
     }

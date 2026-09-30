@@ -59,7 +59,7 @@ class MatCategoryGrid extends MasterDataGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Kategori', 'type' => 'identity', 'code' => 'prefix', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Category', 'type' => 'identity', 'code' => 'prefix', 'avatar' => false],
             ['key' => 'level', 'label' => 'Level', 'type' => 'number'],
             ['key' => 'parent', 'label' => 'Induk'],
             ['key' => 'class', 'label' => 'Kelas Stok', 'type' => 'badge', 'tones' => ['RM' => 'info', 'FG' => 'success', 'SFG' => 'warn']],

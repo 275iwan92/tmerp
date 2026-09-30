@@ -14,7 +14,7 @@
             <button type="button" class="dl-tb-btn" data-dl-act="nosidebar" title="Sembunyikan sidebar">☰</button>
             <nav class="dl-mega" data-dl-mega></nav>
             <div class="dl-tb-spacer"></div>
-            <button type="button" class="dl-tb-btn" data-dl-act="palette" title="Cari / perintah (Ctrl K)"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button type="button" class="dl-tb-btn" data-dl-act="palette" title="{{ \Devlib\Lang::text('Search / command (Ctrl K)') }}"><i class="fa-solid fa-magnifying-glass"></i></button>
             <button type="button" class="dl-tb-btn" data-dl-act="notopbar" title="Sembunyikan top bar"><i class="fa-solid fa-chevron-up"></i></button>
             <div class="dl-pop">
                 <button type="button" class="dl-avatar-btn" data-dl-act="usermenu" title="{{ $user['name'] }}">
@@ -53,7 +53,7 @@
             </div>
         </header>
         <div class="dl-topbar-restore"><button type="button" data-dl-act="showtopbar">▾ Tampilkan top bar</button></div>
-        @include('devlib::components.shell.work', ['intro' => 'Pilih modul di <b>mega menu</b> atas — submenunya muncul di sidebar.', 'hint' => 'Ctrl+K cari cepat · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> sembunyikan sidebar · <kbd>⤒</kbd> sembunyikan top bar.'])
+        @include('devlib::components.shell.work', ['intro' => 'Choose a module in the top <b>mega menu</b> — its submenu appears in the sidebar.', 'hint' => 'Ctrl+K quick search · <kbd>⊟</kbd> mini sidebar · <kbd>☰</kbd> hide sidebar · <kbd>⤒</kbd> hide top bar.'])
     </div>
 
     @include('devlib::components.shell.overlays', ['chatDrawer' => true])

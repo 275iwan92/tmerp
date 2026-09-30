@@ -39,12 +39,12 @@
 
 <div class="mp-inq-actions">
     <x-dl::button icon="＋" label="Create Inquiry" data-dl-open="wiz-type" />
-    <x-dl::button variant="secondary" icon="📝" :label="'Continue Draft ('.$draftCount.')'" data-inq-preset="draft" title="Saring grid ke inquiry DRAFT" />
-    <x-dl::button variant="secondary" icon="💰" :label="'Ready to Quote ('.$readyCount.')'" data-inq-preset="ready" title="Sudah dapat harga, belum dikirim ke customer lewat Quotation" />
+    <x-dl::button variant="secondary" icon="📝" :label="'Continue Draft ('.$draftCount.')'" data-inq-preset="draft" :title="t('Filter the grid to DRAFT inquiries')" />
+    <x-dl::button variant="secondary" icon="💰" :label="'Ready to Quote ('.$readyCount.')'" data-inq-preset="ready" :title="t('Priced, not yet sent to the customer through a Quotation')" />
     <span class="mp-inq-actions__hint">Klik 2x baris untuk buka. DRAFT bisa diedit; status lain lihat-saja.</span>
 </div>
 
-<x-mp::sales.inquiry-worklist class="mp-inq-grid" :rows="$rows" :columns="$columns" search="Cari no. inkuiri / produk / customer..."
+<x-mp::sales.inquiry-worklist class="mp-inq-grid" :rows="$rows" :columns="$columns" :search="t('Search inquiry no. / product / customer...')"
     source="{{ Src::of('tm2sdi.iqp_inquiry', 'tm2sdi.iqp_tier', 'tm2sdi.iqp_part', 'tm2sdi.iqp_costing', 'tm2mst.cust_customer') }}"
     :data-open="json_encode(['NEW' => route('v2.screen', 'inquiry-new').'?id={id}', 'RECALC' => route('v2.screen', 'inquiry-recalc').'?id={id}', 'REVISE' => route('v2.screen', 'inquiry-revise').'?id={id}'])"
     :stats="[
@@ -54,17 +54,17 @@
         ['label' => 'Processed by Pro-Cost', 'where' => ['procost' => true], 'tone' => 'success'],
     ]"
     :tabs="[
-        ['label' => 'Semua'],
-        ['label' => 'Produk Baru', 'where' => ['inquiry_type' => 'NEW']],
-        ['label' => 'Hitung Ulang Harga', 'where' => ['inquiry_type' => 'RECALC']],
-        ['label' => 'Ubah Spesifikasi', 'where' => ['inquiry_type' => 'REVISE']],
+        ['label' => t('All')],
+        ['label' => t('New Product'), 'where' => ['inquiry_type' => 'NEW']],
+        ['label' => t('Recalculate Price'), 'where' => ['inquiry_type' => 'RECALC']],
+        ['label' => t('Change Specification'), 'where' => ['inquiry_type' => 'REVISE']],
     ]"
     :filters="['sub_state' => 'Status', 'customer' => 'Customer', 'pic_sales' => 'PIC Sales']"
     :groups="['customer' => 'Customer', 'sub_state' => 'Status', 'part_type' => 'Tipe Produk']"
     :expand="['pic_sales', 'deadline_quotation']" />
 
 {{-- Wizard Create Inquiry: 1 jenis -> 2 sumber (RECALC/REVISE) -> 3 pilih inquiry -> form. --}}
-<x-dl::modal id="wiz-type" title="Create Inquiry — Langkah 1: pilih jenis" size="lg" icon="plus">
+<x-dl::modal id="wiz-type" title="Create Inquiry — Step 1: choose the type" size="lg" icon="plus">
     <div class="mp-wiz">
         @foreach (InquiryTypeCard::TYPES as $type => $t)
             <div class="mp-wiz__opt mp-typecard--{{ strtolower($type) }}">
@@ -115,7 +115,7 @@
         <x-dl::alert :tone="$type === 'RECALC' ? 'info' : 'warn'" :message="$type === 'RECALC'
             ? 'Semua spesifikasi disalin dari inkuiri terpilih dan DIKUNCI. Anda hanya mengisi qty & deadline.'
             : 'Spesifikasi disalin lalu BISA DIUBAH. Tipe produk tetap terkunci — kalau tipe berubah, gunakan Produk Baru.'" />
-        <x-mp::sales.inquiry-worklist :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" search="Cari no. inkuiri / customer / produk..."
+        <x-mp::sales.inquiry-worklist :id="'pick-'.strtolower($type).'-grid'" :rows="$saved" :per-page="8" :search="t('Search inquiry no. / customer / product...')"
             :columns="array_values(array_filter($columns, fn ($c) => in_array($c['key'], ['product_draft_name', 'inquiry_no', 'inquiry_date', 'part_type', 'qty', 'sub_state'])))"
             :data-open="json_encode($picker($type))" />
         <x-slot:footer>
@@ -131,9 +131,9 @@
         @csrf
         <input type="hidden" name="source_id" data-dup-source>
         <p class="mp-dup__src" data-dup-label></p>
-        <x-dl::field.select name="customer_id" label="Customer tujuan" required :options="$customers" placeholder="Pilih customer..."
+        <x-dl::field.select name="customer_id" label="Customer tujuan" required :options="$customers" placeholder="Choose customer..."
             :source="Src::of('tm2mst.cust_customer.customer_name')" />
-        <x-dl::alert tone="info" message="Spec (part, bahan, proses, finishing, tinta) disalin apa adanya. Qty & harga tidak ikut: inquiry baru lahir sebagai Produk Baru DRAFT dan lewat Pro-Dev → Pro-Cost lagi." />
+        <x-dl::alert tone="info" message="Spec (parts, material, process, finishing, ink) is copied as is. Qty & price are not: the new inquiry is born as a DRAFT New Product and goes through Pro-Dev → Pro-Cost again." />
     </form>
     <x-slot:footer>
         <x-dl::button preset="cancel" data-dl-close-modal />

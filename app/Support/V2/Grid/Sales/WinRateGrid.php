@@ -54,7 +54,7 @@ class WinRateGrid extends DbGrid
     {
         return [
             ['key' => 'no', 'label' => 'Inquiry'],
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
+            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
             ['key' => 'product', 'label' => 'Produk'],
             ['key' => 'pic', 'label' => 'PIC Sales'],
             ['key' => 'result', 'label' => 'Hasil', 'type' => 'badge', 'tones' => ['Menang' => 'success', 'Kalah' => 'danger']],

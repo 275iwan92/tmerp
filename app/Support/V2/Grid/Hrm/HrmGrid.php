@@ -23,10 +23,10 @@ abstract class HrmGrid extends DbGrid
     protected function requestStats(): array
     {
         return [
-            ['label' => 'Semua'],
-            ['label' => 'Menunggu', 'where' => ['status' => 'PENDING'], 'tone' => 'warn'],
-            ['label' => 'Disetujui', 'where' => ['status' => ['APPROVED', 'AUTO_APPROVED']], 'tone' => 'success'],
-            ['label' => 'Ditolak', 'where' => ['status' => 'REJECTED'], 'tone' => 'danger'],
+            ['label' => 'All'],
+            ['label' => 'Waiting', 'where' => ['status' => 'PENDING'], 'tone' => 'warn'],
+            ['label' => 'Approved', 'where' => ['status' => ['APPROVED', 'AUTO_APPROVED']], 'tone' => 'success'],
+            ['label' => 'Rejected', 'where' => ['status' => 'REJECTED'], 'tone' => 'danger'],
         ];
     }
 }

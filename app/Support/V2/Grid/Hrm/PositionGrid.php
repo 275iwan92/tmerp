@@ -72,7 +72,7 @@ class PositionGrid extends HrmGrid
             ['key' => 'name', 'label' => 'Posisi', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'level', 'label' => 'Level'],
-            ['key' => 'reports_to', 'label' => 'Melapor Ke'],
+            ['key' => 'reports_to', 'label' => 'Reports To'],
             ['key' => 'holders', 'label' => 'Active employees', 'type' => 'link', 'format' => 'number'],
         ];
     }

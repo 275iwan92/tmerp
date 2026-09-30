@@ -54,10 +54,10 @@ class CorrectionRequestGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'field', 'label' => 'Field'],
             ['key' => 'old', 'label' => 'Nilai Lama'],
-            ['key' => 'new', 'label' => 'Nilai Baru'],
+            ['key' => 'new', 'label' => 'New Value'],
             ['key' => 'reason', 'label' => 'Alasan'],
             ['key' => 'requested', 'label' => 'Diajukan', 'type' => 'date'],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],

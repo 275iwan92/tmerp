@@ -73,7 +73,7 @@ class CostingListGrid extends DbGrid
         return [
             ['key' => 'no', 'label' => 'Inkuiri'],
             ['key' => 'name', 'label' => 'Produk', 'type' => 'identity', 'code' => 'customer', 'avatar' => false],
-            ['key' => 'type', 'label' => 'Jenis', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'REVISE' => 'warn', 'RECALC' => 'accent']],
+            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'REVISE' => 'warn', 'RECALC' => 'accent']],
             ['key' => 'state', 'label' => 'Status Inquiry'],
             ['key' => 'costing', 'label' => 'Status Costing', 'type' => 'badge', 'tones' => ['BELUM' => 'neutral', 'DRAFT' => 'warn', 'PENDING_APPROVAL' => 'info', 'PUBLISHED' => 'success']],
         ];
@@ -91,9 +91,9 @@ class CostingListGrid extends DbGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua'],
-            ['label' => 'Belum dihitung', 'where' => ['costing' => 'BELUM'], 'tone' => 'neutral'],
-            ['label' => 'Menunggu approval', 'where' => ['costing' => 'PENDING_APPROVAL'], 'tone' => 'info'],
+            ['label' => 'All'],
+            ['label' => 'Not calculated', 'where' => ['costing' => 'BELUM'], 'tone' => 'neutral'],
+            ['label' => 'Waiting for approval', 'where' => ['costing' => 'PENDING_APPROVAL'], 'tone' => 'info'],
             ['label' => 'Published', 'where' => ['costing' => 'PUBLISHED'], 'tone' => 'success'],
         ];
     }

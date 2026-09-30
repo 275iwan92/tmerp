@@ -57,14 +57,14 @@ class DisciplineGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
-            ['key' => 'shift', 'label' => 'Jam Shift'],
-            ['key' => 'in', 'label' => 'Jam Masuk'],
+            ['key' => 'shift', 'label' => 'Shift Hours'],
+            ['key' => 'in', 'label' => 'Clock-in Time'],
             ['key' => 'late', 'label' => 'Telat (Mnt)', 'type' => 'number'],
-            ['key' => 'category', 'label' => 'Kategori'],
-            ['key' => 'kind', 'label' => 'Jenis'],
+            ['key' => 'category', 'label' => 'Category'],
+            ['key' => 'kind', 'label' => 'Type'],
         ];
     }
 

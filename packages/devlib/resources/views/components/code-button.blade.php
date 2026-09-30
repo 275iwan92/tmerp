@@ -1,5 +1,5 @@
 <div class="dl-code" {!! $dl() !!} data-dl-code>
-    <button type="button" class="dl-code__btn" data-dl-code-open title="Lihat kode layar ini"><i class="fa-solid fa-code"></i></button>
+    <button type="button" class="dl-code__btn" data-dl-code-open title="{{ \Devlib\Lang::text('View this screen\'s code') }}"><i class="fa-solid fa-code"></i></button>
     <div class="dl-mov" data-dl-code-modal>
         <div class="dl-modal dl-code__modal">
             <div class="dl-modal__head">

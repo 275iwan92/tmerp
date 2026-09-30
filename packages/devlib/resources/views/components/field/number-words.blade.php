@@ -8,7 +8,7 @@
             <input id="{{ $uid }}" type="text" inputmode="decimal" class="dl-input dl-input--boxed dl-input--prefixed dl-words__input" placeholder="{{ $placeholder ?? '0' }}" data-dl-words-input @disabled($disabled) @readonly($readonly)>
             @if ($picker)
                 <div class="dl-dd__panel" data-dl-dd-panel>
-                    <div class="dl-dd__search"><input type="text" placeholder="Cari..." data-dl-dd-search></div>
+                    <div class="dl-dd__search"><input type="text" placeholder="{{ \Devlib\Lang::text('Search...') }}" data-dl-dd-search></div>
                     <div class="dl-dd__list" data-dl-dd-list>
                         @foreach ($cs as $code => $c)
                             <div class="dl-dd__item dl-dd__item--split" data-value="{{ $code }}" data-a="{{ $c[0] }}" data-b="{{ $code }}"><span>{{ $code }} · {{ $c[1] }}</span><strong>{{ $c[0] }}</strong></div>

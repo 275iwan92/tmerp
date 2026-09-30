@@ -72,7 +72,7 @@ class CoSummaryReport extends CoReportGrid
 
         return [
             ['key' => 'co', 'label' => 'No CO'],
-            ['key' => 'co_date', 'label' => 'Tgl CO', 'type' => 'date'],
+            ['key' => 'co_date', 'label' => 'CO Date', 'type' => 'date'],
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'po', 'label' => 'No PO Customer'],
             ['key' => 'sales', 'label' => 'Sales By'],
@@ -83,13 +83,13 @@ class CoSummaryReport extends CoReportGrid
             ['key' => 'qty', 'label' => 'Total Qty', 'type' => 'number', 'sum' => true],
             ['key' => 'value', 'label' => 'Nilai Order', 'type' => 'money', 'sum' => true],
             ['key' => 'shipped', 'label' => 'Terkirim', 'type' => 'number', 'sum' => true],
-            ['key' => 'progress', 'label' => '% Kirim', 'type' => 'progress'],
-            ['key' => 'remain', 'label' => 'Sisa', 'type' => 'number', 'sum' => true] + $hidden,
-            ['key' => 'planned', 'label' => 'Rencana Kirim', 'type' => 'number', 'sum' => true] + $hidden,
+            ['key' => 'progress', 'label' => '% Shipped', 'type' => 'progress'],
+            ['key' => 'remain', 'label' => 'Remaining', 'type' => 'number', 'sum' => true] + $hidden,
+            ['key' => 'planned', 'label' => 'Planned Shipment', 'type' => 'number', 'sum' => true] + $hidden,
             ['key' => 'confirm', 'label' => 'Confirm', 'type' => 'badge', 'tones' => ['Yes' => 'success', 'No' => 'neutral']] + $hidden,
             ['key' => 'mode', 'label' => 'Mode CO', 'type' => 'badge', 'tones' => ['INTEGRATED' => 'info', 'INSTANT' => 'accent']] + $hidden,
             ['key' => 'currency', 'label' => 'Mata Uang'] + $hidden,
-            ['key' => 'month', 'label' => 'Bulan'] + $hidden,
+            ['key' => 'month', 'label' => 'Month'] + $hidden,
             ['key' => 'due', 'label' => 'Due Date terdekat', 'type' => 'date'] + $hidden,
             ['key' => 'note', 'label' => 'Note'] + $hidden,
             ['key' => 'recipient', 'label' => 'Penerima'] + $hidden,
@@ -101,11 +101,11 @@ class CoSummaryReport extends CoReportGrid
     public function stats(): array
     {
         return [
-            ['label' => 'Semua CO'],
-            ['label' => 'Open & tidak batal', 'where' => ['open' => true], 'tone' => 'info'],
+            ['label' => 'All COs'],
+            ['label' => 'Open & not cancelled', 'where' => ['open' => true], 'tone' => 'info'],
             ['label' => 'Confirmed', 'where' => ['status' => 'CONFIRMED'], 'tone' => 'success'],
             ['label' => 'Outstanding', 'where' => ['outstanding' => true], 'tone' => 'warn'],
-            ['label' => 'Batal', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
+            ['label' => 'Cancelled', 'where' => ['status' => 'CANCELLED'], 'tone' => 'danger'],
         ];
     }
 }

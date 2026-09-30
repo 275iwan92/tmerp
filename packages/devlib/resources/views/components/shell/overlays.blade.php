@@ -43,7 +43,7 @@
     <div class="dl-mov" data-dl-modal="pass"><div class="dl-modal" data-dl="modal ubah password" data-dl-class="bagian Shell" data-dl-src="sec_user.pswd">
         <div class="dl-modal__head"><h3>Ubah password</h3><button type="button" class="dl-modal__x" data-dl-mclose>&times;</button></div>
         <div class="dl-modal__body">
-            <div class="dl-mfield"><label>Password lama</label><input type="password" placeholder="Password saat ini"></div>
+            <div class="dl-mfield"><label>Password lama</label><input type="password" placeholder="{{ \Devlib\Lang::text('Current password') }}"></div>
             <div class="dl-mfield"><label>Password baru</label><input type="password" placeholder="Min. 8 karakter"></div>
             <div class="dl-mfield"><label>Konfirmasi password baru</label><input type="password" placeholder="Ulangi password"></div>
         </div>
@@ -52,7 +52,7 @@
 
     <div class="dl-pal-ov" data-dl-palette data-dl="palet perintah Ctrl+K" data-dl-class="bagian Shell" data-dl-src="{{ $menuSource }} (semua item)">
         <div class="dl-pal">
-            <div class="dl-pal__in"><span>🔎</span><input data-dl-pal-input placeholder="Ketik nama form, grid, atau laporan…" autocomplete="off"></div>
+            <div class="dl-pal__in"><span>🔎</span><input data-dl-pal-input placeholder="{{ \Devlib\Lang::text('Type a form, grid or report name…') }}" autocomplete="off"></div>
             <div class="dl-pal__list" data-dl-pal-list></div>
             <div class="dl-pal__foot"><span><kbd>↑</kbd><kbd>↓</kbd> pilih</span><span><kbd>↵</kbd> buka</span><span><kbd>esc</kbd> tutup</span></div>
         </div>

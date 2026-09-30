@@ -44,7 +44,7 @@ class CrewGrid extends ProdGrid
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
             ['key' => 'name', 'label' => 'Crew', 'type' => 'identity', 'avatar' => false],
-            ['key' => 'process', 'label' => 'Proses Default'],
+            ['key' => 'process', 'label' => 'Default Process'],
         ];
     }
 

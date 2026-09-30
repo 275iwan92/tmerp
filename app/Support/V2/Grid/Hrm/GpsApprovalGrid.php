@@ -55,10 +55,10 @@ class GpsApprovalGrid extends HrmGrid
     public function columns(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Karyawan', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
-            ['key' => 'date', 'label' => 'Tanggal', 'type' => 'date'],
-            ['key' => 'time', 'label' => 'Jam'],
-            ['key' => 'type', 'label' => 'Jenis', 'type' => 'badge', 'tones' => ['Masuk' => 'info', 'Pulang' => 'neutral']],
+            ['key' => 'name', 'label' => 'Employee', 'type' => 'identity', 'code' => 'code', 'avatar' => false],
+            ['key' => 'date', 'label' => 'Date', 'type' => 'date'],
+            ['key' => 'time', 'label' => 'Time'],
+            ['key' => 'type', 'label' => 'Type', 'type' => 'badge', 'tones' => ['Masuk' => 'info', 'Pulang' => 'neutral']],
             ['key' => 'distance', 'label' => 'Jarak (m)', 'type' => 'number'],
             ['key' => 'geofence', 'label' => 'Radius', 'type' => 'badge', 'tones' => ['Di luar radius' => 'danger', 'Dalam radius' => 'success']],
             ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => self::REQUEST_TONES],

@@ -39,7 +39,7 @@ class OrgChart extends DevlibComponent
                     <span class="dl-org__zoom"><x-dl::icon-button icon="fa-magnifying-glass-minus" title="Perkecil" data-o-zoom="-1" /><b data-o-zoomval>100%</b><x-dl::icon-button icon="fa-magnifying-glass-plus" title="Perbesar" data-o-zoom="1" /><x-dl::button variant="ghost" size="sm" label="Pas" data-o-zoom="0" /></span>
                     @if ($editable)<span class="dl-org__tip"><i class="fa-solid fa-circle-info"></i> Tarik ikon titik-titik di kiri kartu ke kartu atasan lain untuk memindahkan struktur bawahan.</span>@endif
                     <span class="dl-org__spacer"></span>
-                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="Cari pegawai / jabatan..." data-o-search aria-label="Cari pegawai"></div>
+                    <div class="dl-grid__search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" placeholder="{{ \Devlib\Lang::text('Search employee / position...') }}" data-o-search aria-label="{{ \Devlib\Lang::text('Search employee') }}"></div>
                 </div>
                 <div class="dl-org__canvas" data-o-canvas><div class="dl-org__tree" data-o-tree></div></div>
             </div>

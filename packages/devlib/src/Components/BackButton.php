@@ -17,7 +17,7 @@ class BackButton extends DevlibComponent
     public function render()
     {
         return <<<'BLADE'
-            <a href="{{ $fallback }}" {{ $attributes->class('dl-back') }} {!! $dl() !!} data-dl-back title="Kembali ke layar sebelumnya"><span>Back</span><i class="fa-solid fa-arrow-left"></i></a>
+            <a href="{{ $fallback }}" {{ $attributes->class('dl-back') }} {!! $dl() !!} data-dl-back title="{{ \Devlib\Lang::text('Back to the previous screen') }}"><span>Back</span><i class="fa-solid fa-arrow-left"></i></a>
             BLADE;
     }
 }

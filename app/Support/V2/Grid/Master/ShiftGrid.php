@@ -58,7 +58,7 @@ class ShiftGrid extends MasterDataGrid
     {
         return [
             ['key' => 'photo', 'label' => '', 'type' => 'image', 'fallback' => 'name', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Nama Shift', 'type' => 'identity', 'avatar' => false],
+            ['key' => 'name', 'label' => 'Shift Name', 'type' => 'identity', 'avatar' => false],
             ['key' => 'dept', 'label' => 'Departemen'],
             ['key' => 'employees', 'label' => 'Active employees', 'type' => 'link', 'format' => 'number'],
         ];

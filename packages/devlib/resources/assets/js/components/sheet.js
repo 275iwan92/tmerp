@@ -1,7 +1,7 @@
 /* DevLib · Sheet */
 (function (Devlib) {
   'use strict';
-  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime} = Devlib.h;
+  const {$, $$, esc, toast, confirmBox, fmt, CASES, CASE_LABEL, applyCase, numStr, NUM, DlDate, DlTime, T, Tf} = Devlib.h;
   /* ============================ SHEET (spreadsheet) ============================ */
   class Sheet extends Devlib.Component {
     static selector = "[data-dl-sheet]";
@@ -84,7 +84,7 @@
           const step = this.num(col) && src.length >= 2 && src.every(v => typeof v === 'number') && src.every((v, i) => !i || v - src[i - 1] === src[1] - src[0]) ? src[1] - src[0] : null;
           for (let r = F.r1 + 1, i = 0; r <= F.to; r++, i++) list.push({r, k: col.key, v: step !== null ? src[src.length - 1] + step * (i + 1) : src[i % src.length]});
         }
-        this.anchor = {r: F.r0, c: F.c0}; this.cur = {r: F.to, c: F.c1}; if (list.length) { this.apply(list); toast(`${list.length} sel diisi otomatis.`, 'success'); } else this.render();
+        this.anchor = {r: F.r0, c: F.c0}; this.cur = {r: F.to, c: F.c1}; if (list.length) { this.apply(list); toast(Tf('s_filled', {n: list.length}), 'success'); } else this.render();
       });
       this.table.addEventListener('dblclick', e => { const td = e.target.closest('td[data-r]'); if (td) { this.cur = {r: +td.dataset.r, c: +td.dataset.c}; this.anchor = null; this.startEdit(); } });
       this.wrap.addEventListener('focusout', e => { if (this.edit && !this.wrap.contains(e.relatedTarget)) this.commit(); });
@@ -95,17 +95,17 @@
           confirmBox({message: 'Buang semua perubahan yang belum disimpan?', tone: 'danger'}).then(ok => { if (!ok) return; this.data = this.data.filter(r => this.orig.has(String(r[this.cfg.rowKey]))).map(r => ({...this.orig.get(String(r[this.cfg.rowKey]))})); this.cur = {r: 0, c: this.firstEditable()}; this.anchor = null; this.undo.length = 0; this.redo.length = 0; this.render(); });
           return;
         }
-        if (e.target.closest('[data-s-del]')) { const R = this.rng(), n = R.r1 - R.r0 + 1; confirmBox({message: `Hapus ${n} baris terpilih?`, tone: 'danger'}).then(ok => { if (!ok) return; this.data.splice(R.r0, n); this.cur = {r: Math.max(0, Math.min(R.r0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.undo.length = 0; this.render(); }); return; }
+        if (e.target.closest('[data-s-del]')) { const R = this.rng(), n = R.r1 - R.r0 + 1; confirmBox({message: Tf('s_delete_n', {n}), tone: 'danger'}).then(ok => { if (!ok) return; this.data.splice(R.r0, n); this.cur = {r: Math.max(0, Math.min(R.r0, this.data.length - 1)), c: this.cur.c}; this.anchor = null; this.undo.length = 0; this.render(); }); return; }
         if (e.target.closest('[data-s-undo]')) { const u = this.undo.pop(); if (u) this.redo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-redo]')) { const u = this.redo.pop(); if (u) this.undo.push(this.apply(u, true)); return; }
         if (e.target.closest('[data-s-save]')) {
           const nBad = this.data.reduce((t, r) => t + this.cols.filter(c => this.bad(c, r[c.key], r)).length, 0);
-          if (nBad) { toast(`${nBad} sel belum benar (wajib / kembar / angka / tanggal / jam / pilihan).`, 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
+          if (nBad) { toast(Tf('s_bad', {n: nBad}), 'danger'); const b = $(this.table, 'td.is-bad'); if (b) { this.cur = {r: +b.dataset.r, c: +b.dataset.c}; this.anchor = null; this.render(); } return; }
           const changed = this.changes();
           if (this.cfg.saveUrl) return this.saveServer(changed);
           this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
           this.data.forEach(r => this.orig.set(String(r[this.cfg.rowKey]), {...r})); this.undo.length = 0; this.redo.length = 0;
-          toast(`${changed.length} baris disimpan.`, 'success'); this.render();
+          toast(Tf('s_saved', {n: changed.length}), 'success'); this.render();
         }
       });
       this.el.dlSheet = {get data() { return self.data; }, render: this.render, apply: this.apply, get cur() { return self.cur; }, set cur(v) { self.cur = v; self.anchor = null; self.render(); }};
@@ -154,7 +154,7 @@
       } else if (col.type === 'time') {
         const [h0, m0] = /^\d{2}:\d{2}$/.test(cur || '') ? cur.split(':').map(Number) : [8, 0];
         p.className = 'dl-pick__panel dl-pick__panel--time is-open dl-sheet__calpanel';
-        p.innerHTML = `<div class="dl-pick__head">Pilih Jam</div><div class="dl-pick__time"><label>Jam <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>Menit <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
+        p.innerHTML = `<div class="dl-pick__head">${esc(T('s_pick_time'))}</div><div class="dl-pick__time"><label>${esc(T('s_hour'))} <select data-h>${Array.from({length: 24}, (_, i) => `<option ${i === h0 ? 'selected' : ''}>${pad(i)}</option>`).join('')}</select></label><b>:</b><label>Menit <select data-m>${Array.from({length: 12}, (_, i) => `<option ${i * 5 === Math.round(m0 / 5) * 5 % 60 ? 'selected' : ''}>${pad(i * 5)}</option>`).join('')}</select></label></div><div class="dl-pick__foot"><button type="button" class="dl-pick__sec" data-x>Clear</button><button type="button" class="dl-pick__pri" data-a>Apply</button></div>`;
         p.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; if ('x' in b.dataset) pick(''); else if ('a' in b.dataset) pick(`${$(p, '[data-h]').value}:${$(p, '[data-m]').value}`); });
         p.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $(p, '[data-a]').click(); } });
       } else {
@@ -244,10 +244,10 @@
       const changed = this.changes(), info = $(this.el, '[data-s-info]'), sv = $(this.el, '[data-s-save]');
       sv.disabled = !changed.length;
       if (this.lookup) {
-        info.textContent = changed.length ? `${changed.length} perubahan belum disimpan` : `${this.data.length} baris`; info.classList.toggle('is-warn', !!changed.length);
+        info.textContent = changed.length ? Tf('s_unsaved', {n: changed.length}) : Tf('g_rows_n', {n: this.data.length}); info.classList.toggle('is-warn', !!changed.length);
         const rv = $(this.el, '[data-s-revert]'); if (rv) rv.disabled = !changed.length;
       } else {
-        info.textContent = `${this.data.length} baris · ${changed.length} berubah`;
+        info.textContent = Tf('s_rows_changed', {n: this.data.length, c: changed.length});
         sv.lastChild.textContent = changed.length ? `Save All (${changed.length})` : 'Save All';
         $(this.el, '[data-s-undo]').disabled = !this.undo.length; $(this.el, '[data-s-redo]').disabled = !this.redo.length;
       }
@@ -264,7 +264,7 @@
           if (!ok || j.error) return toast(j.error || j.message || 'Gagal menyimpan.', 'danger');
           this.data = j.rows; this.orig = new Map(this.data.map(r => [String(r[this.cfg.rowKey]), {...r}])); this.undo.length = 0; this.redo.length = 0;
           this.el.dispatchEvent(new CustomEvent('dl:sheet-save', {bubbles: true, detail: {rows: this.data.map(r => ({...r})), changed}}));
-          toast(`${changed.length} baris disimpan.`, 'success'); this.render();
+          toast(Tf('s_saved', {n: changed.length}), 'success'); this.render();
         })
         .catch(() => toast('Gagal menyimpan.', 'danger'));
     }

@@ -17,7 +17,7 @@ final class Flows
         $later = fn (string $label, string $icon, string $module, string $note) => ['key' => $label, 'label' => $label, 'icon' => $icon, 'module' => $module, 'status' => 'todo', 'note' => $note];
 
         return match ($module) {
-            'SALES' => ['title' => 'Alur Sales: dari Inquiry sampai pengiriman', 'steps' => [
+            'SALES' => ['title' => t('Sales flow: from Inquiry to delivery'), 'steps' => [
                 $s('inquiry', 'Inquiry Product', 'Sales', '3 jenis dokumen: BARU (dari nol), REVISI (spec berubah), REKALKULASI (harga bahan saja)',
                     array_filter([$b('inquiry-new', 'Baru'), $b('inquiry-revise', 'Revisi'), $b('inquiry-recalc', 'Rekalkulasi')])),
                 $s('prodev', null, 'Sales · Production', 'Inquiry BARU dikirim ke ProDev: cari layout fisik paling hemat -> prod_layout_group CONFIRMED'),
@@ -28,7 +28,7 @@ final class Flows
                 $s('delivery-order', null, 'Sales', 'Pengiriman berdasar jadwal CPDEL', array_filter([$b('delivery-notes', 'Surat Jalan')])),
                 $later('Invoice & Piutang', 'fa-file-invoice-dollar', 'Finance', 'Modul Finance (menyusul)'),
             ]],
-            'COSTING' => ['title' => 'Alur Product Costing: dari layout ProDev sampai harga dipublish', 'steps' => [
+            'COSTING' => ['title' => t('Product Costing flow: from ProDev layout to published price'), 'steps' => [
                 $s('inquiry', 'Inquiry Product (BARU)', 'Sales', 'Spesifikasi kasar dari Sales'),
                 $s('prodev', null, 'Production', 'Mode #1 integrasi: berawal dari iqp_part; Mode #2 manual tanpa Inquiry'),
                 $s('procost', 'Pro-Cost (ambil data layout)', 'Product Costing', 'Mode #1: tarik prod_layout_group CONFIRMED',

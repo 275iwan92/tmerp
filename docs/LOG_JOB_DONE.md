@@ -3,6 +3,15 @@
 
 ---
 
+## 2026-10-01 -- Utang label multi-bahasa: 643 label Indonesia -> English + kamus (tampilan ID tetap sama)
+
+- Konversi sesuai konteks (x-dl::* polos, HTML/komponen lain `t()`/`Lang::text()`, tombol non-baku dibungkus terjemahan).
+- Kamus: 460 pasangan (json + migration 000022/000024), `source_en` utf8mb4_bin (000023); pasangan DevLib di `Devlib\Lang` (devlib.test tanpa DB).
+- `DevlibComponent` ikut menerjemahkan `addLabel` & `groups`; teks bawaan JS grid/lines/sheet/form lewat `T()`/`Tf()`.
+- Bukti: snapshot 68 layar v2 mode ID identik sebelum/sesudah (3 label English lama kini ikut diterjemahkan); mode EN baris Indonesia 1696 -> 824.
+- MultiLanguageRatchetTest: id_label 691 -> 48, + metrik js_id_text 180, + test kunci T() JS wajib ada di Lang.
+- Sesi lain (Purchase, Maintenance, CO, CPDEL, Warehouse) diberi tahu aturan lewat pesan antar-sesi.
+
 ## 2026-10-01 -- Maintenance v2 M1 (mockup.test / ddt*) -- K1-K10 + mockup disetujui user
 
 - Migration `2026_10_01_000040`: 11 tabel `tm2prd.mnt_*` (code, plan/_task/_part, request, wo/_task/_part/_labor,

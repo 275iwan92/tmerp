@@ -186,7 +186,7 @@ abstract class CoReportGrid extends DbGrid
     {
         return [
             ['key' => 'co', 'label' => 'No CO'],
-            ['key' => 'co_date', 'label' => 'Tgl CO', 'type' => 'date'],
+            ['key' => 'co_date', 'label' => 'CO Date', 'type' => 'date'],
             ['key' => 'customer', 'label' => 'Customer'],
             ['key' => 'po', 'label' => 'No PO Customer'],
             ['key' => 'ship_method', 'label' => 'Shipment Method'],
@@ -195,7 +195,7 @@ abstract class CoReportGrid extends DbGrid
             ['key' => 'sales', 'label' => 'Sales By'],
             ['key' => 'product', 'label' => 'Product'],
             ['key' => 'qty', 'label' => 'Qty', 'type' => 'number', 'sum' => true],
-            ['key' => 'unit', 'label' => 'Satuan'],
+            ['key' => 'unit', 'label' => 'Unit'],
             ['key' => 'order_type', 'label' => 'Order Type', 'type' => 'badge', 'tones' => ['NEW' => 'info', 'RTP' => 'success', 'RDP' => 'warn']],
             ['key' => 'cfg_color', 'label' => 'Cfg Color'],
             ['key' => 'qty_minim', 'label' => 'Qty Minim', 'type' => 'badge', 'tones' => ['Yes' => 'warn', 'No' => 'neutral']],
