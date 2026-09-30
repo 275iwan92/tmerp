@@ -36,6 +36,9 @@ final class Grids
         Sales\CoSummaryReport::class,
         Sales\CoOrderReport::class,
         Sales\CoShipDetailReport::class,
+        Sales\GeneralCoSummaryReport::class,
+        Sales\GeneralCoOrderReport::class,
+        Sales\GeneralCoShipDetailReport::class,
         Acc\CoaGrid::class,
     ];
 

@@ -27,7 +27,8 @@ final class AppMenu
         $allowed = $user->is_admin ? null : $user->accessibleModules()->keys();
         // Direksi boleh melihat menu operasional (aturan user 2026-09-25); pendaratan awalnya Laporan Manajemen (login).
         $visible = $user->visibleAppMenuCodes();
-        $ok = fn (SysAppMenu $n) => $allowed === null || $n->required_object === null || $allowed->contains($n->required_object);
+        $ok = fn (SysAppMenu $n) => $allowed === null || $n->required_object === null || $n->required_object === SecUser::PUBLIC_MODULE
+            || $allowed->contains($n->required_object);
         $routes = MenuRoutes::map();
 
         $modules = [];

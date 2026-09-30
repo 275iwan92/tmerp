@@ -196,9 +196,12 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
             });
     }
 
+    // Modul terbuka untuk semua user login (General Report: CO yang sudah di-post, tanpa harga — user 2026-09-30).
+    public const PUBLIC_MODULE = 'GENERAL';
+
     public function canAccessModule(string $moduleCode): bool
     {
-        if ($this->is_admin) {
+        if ($this->is_admin || $moduleCode === self::PUBLIC_MODULE) {
             return true;
         }
 
@@ -323,7 +326,7 @@ class SecUser extends Authenticatable implements CanResetPasswordContract, Filam
             ->where('activate', true)
             ->whereNotNull('required_object')
             ->get()
-            ->filter(fn ($m) => $accessible->contains($m->required_object))
+            ->filter(fn ($m) => $m->required_object === self::PUBLIC_MODULE || $accessible->contains($m->required_object))
             ->pluck('code');
     }
 }
