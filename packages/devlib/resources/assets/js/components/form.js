@@ -1,7 +1,7 @@
 /* DevLib · Form */
 (function (Devlib) {
   'use strict';
-  const {$, $$, showQr, toast, layer, closeLayer, dirtyForms, fillForm, hasValue} = Devlib.h;
+  const {$, $$, showQr, toast, confirmBox, layer, closeLayer, dirtyForms, fillForm, hasValue} = Devlib.h;
   // Tombol tambahan form (mockup: "Generate QR Code Data") -> QR berisi semua isian form.
   class Form extends Devlib.Component {
     static selector = "[data-dl-form]";
@@ -24,6 +24,10 @@
       });
       this.el.addEventListener('click', e => {
         if (e.target.closest('[data-f-edit]')) { if (this.fs) this.fs.disabled = false; this.snapshot = {}; new FormData(this.el).forEach((v, k) => { this.snapshot[k] = v; }); $$(this.el, 'input[type=checkbox][name]').forEach(c => { this.snapshot[c.name] = c.checked; }); this.setView(false); $(this.el, '.dl-form__body input:not([type=hidden]),.dl-form__body textarea')?.focus(); return; }
+        const act = e.target.closest('[data-f-act]')?.dataset.fAct;
+        if (act === 'back' && !e.target.closest('a[href]')) return history.back();
+        if (act === 'new' && e.target.closest('a[href]')) return;
+        if (act && act !== 'save') return this.act(act);
         if (e.target.closest('[data-f-cancel]') && this.snapshot) { fillForm(this.el, this.snapshot, false); this.snapshot = null; this.setView(true); toast('Perubahan dibatalkan.'); }
       });
       this.extra = this.el.querySelector('[data-dl-form-extra]');
@@ -39,6 +43,19 @@
         showQr(JSON.stringify(data, null, 2));
       });
     }
+    // Tombol panel (selain Save = submit biasa). Ada action -> kirim ulang form dgn _action=<act>; tanpa action = pratinjau DevLib.
+    act(a) {
+      const ask = {delete: ['Hapus data ini? Tidak bisa dikembalikan.', 'danger'], confirm: ['Confirm dokumen ini? Setelah confirm isi terkunci.', 'warn'], cancel: ['Batalkan dokumen ini?', 'danger'], deactivate: ['Nonaktifkan data ini? Data tidak muncul lagi di pilihan.', 'warn'], activate: ['Aktifkan kembali data ini?', 'warn']}[a];
+      const go = () => {
+        this.el.dispatchEvent(new CustomEvent('dl:form-action', {bubbles: true, detail: {action: a}}));
+        if (!this.el.getAttribute('action')) return toast(`Aksi: ${a} (pratinjau, tidak dikirim)`, 'success');
+        let h = $(this.el, 'input[name=_action]'); if (!h) { h = document.createElement('input'); h.type = 'hidden'; h.name = '_action'; this.el.appendChild(h); }
+        h.value = a; if (a === 'confirm') this.el.requestSubmit(); else HTMLFormElement.prototype.submit.call(this.el);  // hanya Confirm yang divalidasi
+      };
+      if (!ask) return go();
+      confirmBox({message: ask[0], tone: ask[1]}).then(ok => { if (ok) go(); });
+    }
+
     setView(on) { this.el.classList.toggle('is-view', on); if (this.fs) this.fs.disabled = on; const ed = $(this.el, '[data-f-edit]'); if (ed) ed.hidden = !on; }
 
     validate() {

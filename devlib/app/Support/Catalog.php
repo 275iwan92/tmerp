@@ -130,11 +130,9 @@ final class Catalog
             // Tiga keluarga form (user 2026-09-26): Single, Master-Detail, Special.
             ['code' => 'FM', 'short' => 'FM', 'label' => 'Form', 'icon' => 'fa-solid fa-pen-to-square',
                 'pages' => [
-                    'p5-form-single' => $page('Single Form (4 variants)', 'fa-solid fa-pen-to-square', [
-                        'form' => ['1 · Form Standard (all field types)', $c('Form')],
-                        'form-tabs' => ['2 · Form with Tabs', $c('Form', 'Tabs')],
-                        'form-view' => ['3 · Form Read-only (view mode + Edit)', $c('Form')],
-                        'form-popup' => ['4 · Form Pop-up (modal & drawer)', $c('Modal', 'Drawer', 'Form')],
+                    // Single Form (user 2026-09-30): SATU contoh -- Edit Pegawai, tab + bagian read-only + panel aksi di atas + tab Riwayat.
+                    'p5-form-single' => $page('Single Form', 'fa-solid fa-pen-to-square', [
+                        'form-single' => ['Single Form · Edit Employee (tabs, read-only, action panel on top)', $c('Form', 'Tabs')],
                     ], 'UIUX_components_part1.html'),
                     'p5-form-md' => $page('Form Master-Detail (2 variants)', 'fa-solid fa-file-invoice', [
                         'form-md' => ['1 · Form Master-Detail (header + item lines)', $c('Form', 'Lines')],

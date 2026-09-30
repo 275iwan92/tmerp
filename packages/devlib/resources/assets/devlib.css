@@ -1889,6 +1889,12 @@ td.dl-print__no{text-align:center}
 .dl-sheet__help{margin:0;padding:6px 10px;font-size:calc(11px * var(--dl-font-scale));color:var(--dl-muted);border-top:1px solid var(--dl-border-soft)}
 
 /* ================= FORM varian (BC) ================= */
+.dl-form--panel{padding-top:0}
+.dl-form__panel{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;background:var(--dl-surface);border-bottom:1px solid var(--dl-f-line-soft)}
+.dl-form__sep{width:1px;align-self:stretch;margin:2px 2px;background:var(--dl-f-line-soft)}
+.dl-form__panel .dl-form__title{font-size:calc(15px * var(--dl-font-scale))}
+.dl-form--panel .dl-form__body.dl-tabs{margin-top:4px}
+.dl-form__audit{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:4px 16px;max-width:880px}
 .dl-form__fs{border:0;margin:0;padding:0;min-width:0}
 .dl-form__head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .dl-form.is-view .dl-field__box,.dl-form.is-view .dl-dd__btn,.dl-form.is-view .dl-prefix__btn,.dl-form.is-view .dl-input--boxed{border-color:transparent!important;background:transparent!important;box-shadow:none!important}
