@@ -140,6 +140,7 @@ td.c,th.c{text-align:center}
           <tr><td><b>Hak akses</b></td><td>Dipasang pada pasangan group × modul / sub-modul.</td><td>RO, ROP, RW, RWP, RWPE</td></tr>
           <tr><td><b>Approve / Reject</b></td><td>Tidak disetel di group. Boleh bila level user ≥ level tahap dokumen <b>dan</b> hak di modulnya minimal RW.</td><td>firman (manager) approve quotation</td></tr>
           <tr><td><b>Back to Draft</b></td><td>Membuka lagi dokumen Confirmed menjadi Draft. Tidak disetel di group. Hanya <b>super-admin</b>, <b>admin-app</b>, atau user dengan level <b>manager ke atas</b> (keputusan user 30 Sep 2026).</td><td>nisa (manager) membuka lagi CO yang salah</td></tr>
+          <tr><td><b>Pemeriksa tidak input</b></td><td>User yang bisa Approve / Reject / Back to Draft &mdash; <b>admin-app</b> dan level <b>manager ke atas</b> &mdash; <b>tidak bisa input</b> di form data dan dokumen: isi selalu terkunci, tanpa Save, Delete, Confirm, + New Record. Tetap boleh Approve / Reject, Cancel, Back to Draft, Print, Email, Export sesuai haknya. Alasan: yang bisa membuka lagi dokumen sekaligus bisa mengubah isinya itu berbahaya (pemisahan pembuat dan pemeriksa). Pengecualian: <b>super-admin</b> (dipakai untuk UAT) bisa segalanya. Layar pengaturan dan kelola user tidak terkena aturan ini. (keputusan user 30 Sep 2026)</td><td>nisa (manager) membuka lagi CO ke Draft, yuna (data-entry) yang memperbaiki isinya lalu Confirm ulang</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -227,7 +228,7 @@ td.c,th.c{text-align:center}
         <thead><tr><th>Peran</th><th>Boleh</th><th>Tidak boleh</th><th>Pemegang</th></tr></thead>
         <tbody>
           <tr><td class="code">super-admin</td><td>Semua, termasuk pengaturan kritis.</td><td>–</td><td>johiwan</td></tr>
-          <tr><td class="code">admin-app</td><td>Semua modul RWPE, approve / reject, tambah dan nonaktifkan user, reset password, atur group dan hak modul, pengaturan ringan (tema, identitas perusahaan, label menu).</td><td>Pengaturan kritis.</td><td>carrij, dewi</td></tr>
+          <tr><td class="code">admin-app</td><td>Semua modul RWPE <b>sebagai pemeriksa</b> (lihat, print, export, approve / reject, Cancel, Back to Draft &mdash; tanpa input data/dokumen), tambah dan nonaktifkan user, reset password, atur group dan hak modul, pengaturan ringan (tema, identitas perusahaan, label menu).</td><td>Pengaturan kritis.</td><td>carrij, dewi</td></tr>
           <tr><td class="code">developer</td><td>Mode Developer (F10), Data Dictionary.</td><td>Tidak menambah hak modul.</td><td>dinul</td></tr>
         </tbody>
       </table></div>
@@ -274,8 +275,12 @@ td.c,th.c{text-align:center}
   Sub-modul mewarisi modul kecuali diatur. Beberapa group = hak tertinggi. Tanpa group = tolak.
 - Level (1..7): data-entry, supervisor, vice-manager, manager, general-manager, director,
   president-director. Level HANYA untuk approve/reject alur dokumen (level >= tahap + hak RW).
-- Peran global: super-admin (semua + pengaturan kritis), admin-app (semua modul RWPE + kelola user,
-  tanpa pengaturan kritis), developer (F10, Data Dictionary).
+- Peran global: super-admin (semua + pengaturan kritis; dipakai UAT), admin-app (semua modul RWPE sebagai
+  pemeriksa + kelola user, tanpa pengaturan kritis), developer (F10, Data Dictionary).
+- Back to Draft: hanya super-admin, admin-app, level manager ke atas.
+- Pemeriksa tidak input: admin-app & level manager ke atas TIDAK bisa Save/Delete/Confirm/New di form
+  data/dokumen (isi terkunci); tetap Approve/Reject/Cancel/Back to Draft/Print/Email/Export.
+  Kecuali super-admin (UAT). Layar pengaturan & kelola user tidak terkena.
 - Penegakan di komponen form/grid standar: RO/ROP kunci field & sembunyikan Save/Delete/Confirm/New;
   Print hanya ROP/RWP/RWPE; Export hanya RWPE; Approve/Reject sesuai level tahap.
 - Profil user di menu: nama lengkap saja. Jabatan hanya di struktur organisasi.</pre>

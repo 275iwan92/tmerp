@@ -33,6 +33,7 @@ class Form extends DevlibComponent
         public ?string $updatedBy = null,
         public ?string $updatedAt = null,
         public bool $canReopen = false,
+        public bool $canInput = true,
         public array $hidden = [],
     ) {}
 
@@ -49,9 +50,17 @@ class Form extends DevlibComponent
 
     // [preset|null, label|null, variant|null (null = warna preset), icon|null, act] urut kiri -> kanan (user 2026-09-30):
     // ... + New Record, Confirm, Save paling kanan; Back di ujung kanan terpisah (dirender di luar daftar ini).
+    // canInput=false (user 2026-09-30): pemeriksa -- level approve / Back to Draft (manager ke atas, admin-app) -- TIDAK boleh
+    // input: isi selalu terkunci, tanpa Save/Delete/Confirm/New; tetap boleh Cancel, Back to Draft, Email, Print. super-admin (UAT) bebas.
     public function panelActions(): array
     {
-        // elemen ke-6 opsional = kelas tambahan tombol.
+        $all = $this->baseActions();
+
+        return $this->canInput ? $all : array_values(array_filter($all, fn ($a) => ! in_array($a[4], ['save', 'delete', 'confirm', 'new'], true)));
+    }
+
+    private function baseActions(): array
+    {
         $new = ['new', null, 'secondary', null, 'new'];
         $print = [null, \Devlib\Locale::lang() === 'en' ? 'Print' : 'Cetak', 'primary', 'print', 'print'];
 
@@ -61,8 +70,8 @@ class Form extends DevlibComponent
             'master.active' => [[null, 'Nonaktifkan', 'secondary', 'fa-toggle-off', 'deactivate'], $new, ['save', null, null, null, 'save']],
             'master.inactive' => [[null, 'Aktifkan', 'secondary', 'fa-toggle-on', 'activate'], $new, ['save', null, null, null, 'save']],
             'document.draft' => [['delete', null, null, null, 'delete'], $new, ['confirm', null, null, null, 'confirm'], ['save', null, null, null, 'save']],
-            // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (hak khusus: super-admin, admin-app,
-            // atau group yang diberi hak Back to Draft) -- server tetap wajib cek hak yang sama saat aksi diterima.
+            // Back to Draft tepat di sebelah Cancel, HANYA bila layar memberi :can-reopen (super-admin, admin-app, level manager
+            // ke atas) -- server tetap wajib cek hak yang sama saat aksi diterima.
             'document.confirmed' => array_values(array_filter([['cancel', null, 'danger', null, 'cancel'], $this->canReopen ? [null, 'Back to Draft', 'secondary', 'fa-rotate-left', 'draft'] : null, $new, ['email', null, null, null, 'email'], $print])),
             default => [$new, $print],
         };
@@ -71,7 +80,7 @@ class Form extends DevlibComponent
     // Sesudah Confirm / Cancel isi terkunci (tampil sebagai teks); ubah lagi hanya lewat Back to Draft.
     public function locked(): bool
     {
-        return $this->panel && in_array($this->status, ['confirmed', 'cancelled'], true);
+        return $this->panel && (! $this->canInput || in_array($this->status, ['confirmed', 'cancelled'], true));
     }
 
     public function statusBadge(): array
