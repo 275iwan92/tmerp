@@ -34,6 +34,8 @@ class Shell extends DevlibComponent
         public bool $classic = true,
         // Halaman Bantuan & dukungan (dibuka sebagai tab); kosong = pesan "segera".
         public ?string $helpUrl = null,
+        // Halaman profil Layer Menu yang dibuka saat mulai (mis. kembali ke Tiket Bantuan sesudah kirim tiket).
+        public ?string $profilePage = null,
     ) {}
 
     public function tag(): string

@@ -24,6 +24,11 @@
       let saved = null; try { saved = JSON.parse(sessionStorage.getItem('dl-shell-tabs')); } catch (e) {}
       this.initFrame();
       this.initNav();
+      // F1 (core.js) dari halaman ini atau dari layar di dalam tab -> Bantuan & dukungan.
+      document.addEventListener('dl:help', () => this.command('help'));
+      window.addEventListener('message', e => { if (e.origin === location.origin && e.data?.dl === 'help') this.command('help'); });
+      // Tombol ber-data-dl-tab-url (mis. pedoman di halaman Bantuan) dibuka sebagai tab kerja.
+      this.el.addEventListener('click', e => { const b = e.target.closest('[data-dl-tab-url]'); if (b) { e.preventDefault(); this.openUrlTab(b.dataset.dlTabCode || b.dataset.dlTabUrl, b.dataset.dlTabLabel || b.textContent.trim(), b.dataset.dlTabUrl, b.dataset.dlTabIcon); } });
       this.refreshCounts();
       this.restoreTabs(saved);
     }
@@ -157,8 +162,13 @@
     openHelp() {
       const url = this.el.dataset.dlHelp;
       if (!url) { toast('Bantuan & dukungan — segera.'); return; }
-      if (!this.findItem('HELP')) this.items.push({code: 'HELP', label: 'Bantuan & dukungan', icon: 'fa-solid fa-circle-question', url});
-      this.openTab('HELP');
+      this.openUrlTab('HELP', 'Bantuan & dukungan', url, 'fa-solid fa-circle-question');
+    }
+
+    // Halaman di luar menu (pedoman, bantuan) dibuka sebagai tab kerja biasa.
+    openUrlTab(code, label, url, icon = 'fa-solid fa-book') {
+      if (!this.findItem(code)) this.items.push({code, label, icon, url});
+      this.openTab(code);
     }
 
     arrow(d) { const b = document.createElement('button'); b.type = 'button'; b.className = `dl-mega__arrow is-${d < 0 ? 'l' : 'r'}`; b.innerHTML = `<i class="fa-solid fa-chevron-${d < 0 ? 'left' : 'right'}"></i>`; b.title = d < 0 ? 'Geser kiri' : 'Geser kanan'; b.addEventListener('click', () => this.mega.scrollBy({left: d * 200, behavior: 'smooth'})); return b; }

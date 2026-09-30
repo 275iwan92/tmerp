@@ -1,4 +1,4 @@
-<div class="dl-shell dl-shell--layer" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}" data-dl-open="{{ $open }}" data-dl-help="{{ $helpUrl }}">
+<div class="dl-shell dl-shell--layer" {!! $dl() !!} data-dl-modules="{{ json_encode($modules) }}" data-dl-user="{{ json_encode($user) }}" data-dl-developer="{{ $developer ? '1' : '0' }}" data-dl-open="{{ $open }}" data-dl-help="{{ $helpUrl }}" data-dl-profile-page="{{ $profilePage }}">
     <x-dl::layer-menu class="dl-shell__lm" id="shell" :items="$views() ? [] : $layerTree()" :views="$views()" :initial-view="$startView()" :title="$brand" :user="$user['name']" :role="$user['role'] ?? null" :login="$user['email'] ?? null" dock="[data-dl-lm-dock]" :actions="$actions()">
         <x-slot:chat><x-dl::chat compact :me="$chat['me'] ?? $user" :people="$chat['people'] ?? []" :convos="$chat['convos'] ?? []" /></x-slot:chat>
         <x-slot:profile>
@@ -11,6 +11,7 @@
                     <x-dl::action-bar><x-dl::button size="sm" icon="email" label="Kelola e-mail" :href="$user['email_url']" /></x-dl::action-bar>
                 </section>
             @endif
+            {{ $profilePages ?? '' }}
         </x-slot:profile>
     </x-dl::layer-menu>
 

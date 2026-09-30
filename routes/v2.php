@@ -66,7 +66,21 @@ use Illuminate\Validation\ValidationException;
 Route::prefix('v2')->name('v2.')->group(function () {
     // ?open=<kode menu> = tab yang dibuka saat mulai (mis. Direksi -> MGMT_EXEC), bila belum ada tab yang dipulihkan.
     Route::get('/', fn (Request $r) => view('v2.home', ['modules' => AppMenu::modules(Auth::user()), 'user' => AppMenu::user(Auth::user()),
-        'open' => $r->query('open')]))->name('home');
+        'open' => $r->query('open'), 'profilePage' => session('v2_profile_page'),
+        'tickets' => \App\Models\Sys\SysSupportTicket::with('replies')->where('created_by_user_id', Auth::id())->orderByDesc('id_ticket')->limit(20)->get()]))->name('home');
+
+    // Tiket Bantuan dari halaman profil (menu akun / F1) -> tm2sys.sys_support_ticket, dijawab tim developer di Setup > Support Tickets.
+    Route::post('/support/ticket', function (Request $r) {
+        $v = \Illuminate\Support\Facades\Validator::make($r->all(), ['description' => ['required', 'string', 'max:5000'], 'screen_context' => ['nullable', 'string', 'max:150']],
+            [], ['description' => 'Uraian masalah']);
+        if ($v->fails()) {
+            return redirect()->route('v2.home')->withErrors($v)->withInput()->with('v2_profile_page', 'ticket');
+        }
+        $d = $v->validated();
+        $t =\App\Models\Sys\SysSupportTicket::create($d + ['ticket_no' => \App\Models\Sys\SysSupportTicket::nextNo(), 'created_by_user_id' => Auth::id(), 'status' => 'OPEN']);
+
+        return redirect()->route('v2.home')->with(['v2_profile_page' => 'ticket', 'v2_flash' => "Tiket {$t->ticket_no} terkirim ke tim support."]);
+    })->name('support.ticket');
 
     Route::post('/logout', function (Request $r) {
         Auth::logout();

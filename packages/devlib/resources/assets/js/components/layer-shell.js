@@ -13,11 +13,17 @@
       window.addEventListener('message', e => {
         if (e.origin === location.origin && e.data?.dl === 'menu') this.lm.dlComponent?.goTo(e.data.path || [], e.data.leaf);
       });
+      // Kembali ke halaman profil tertentu setelah kirim form dari sana (data-dl-profile-page, mis. tiket bantuan).
+      const p = this.el.dataset.dlProfilePage; if (p) this.lm.dlComponent?.openProfile(p);
     }
+
+    // Bantuan = halaman profil "help" bila ada (Back kembali ke Profile), selain itu tab Bantuan Shell.
+    hasPage(k) { return !!this.lm.dlComponent?.page(k); }
 
     // Chat tinggal di Layer Menu (tukar / dok kanan), bukan laci Shell.
     command(a) {
       if (a === 'chat') this.lm.dlComponent.openChat();
+      else if (a === 'help' && this.hasPage('help')) this.lm.dlComponent.openProfile('help');
       else super.command(a);
     }
 

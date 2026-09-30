@@ -510,7 +510,7 @@ window.Devlib = window.Devlib || {};
   // Pintasan keyboard: tombol ber-data-dl-key (preset Simpan = Ctrl+S, Baru = Alt+N), '?' = daftar pintasan.
   const keyName = e => [e.ctrlKey || e.metaKey ? 'ctrl' : '', e.altKey ? 'alt' : '', e.shiftKey ? 'shift' : '', e.key.toLowerCase()].filter(Boolean).join('+');
   const visible = el => el.offsetParent !== null && !el.disabled;
-  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['f10', 'Mode Developer nyala / mati (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
+  const BUILTIN = [['ctrl+k', 'Cari menu / perintah'], ['esc', 'Tutup modal / drawer / popup'], ['f1', 'Bantuan & dukungan (pedoman + tiket)'], ['f10', 'Mode Developer nyala / mati (admin)'], ['?', 'Tampilkan daftar pintasan ini']];
   function showShortcuts() {
     const own = $$(document, '[data-dl-key]').filter(visible).map(b => [b.dataset.dlKey, b.textContent.trim() || b.title]);
     const rows = [...new Map([...own, ...BUILTIN].map(r => [r[0], r])).values()];
@@ -522,6 +522,8 @@ window.Devlib = window.Devlib || {};
   document.addEventListener('keydown', e => {
     const k = keyName(e), typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName) || e.target.isContentEditable;
     if (k === 'f10') { e.preventDefault(); toggleDev(); return; }
+    // F1 = Bantuan & dukungan. Layar di dalam tab (iframe) meneruskan ke Shell induk; Shell sendiri menangani lewat dl:help.
+    if (k === 'f1') { e.preventDefault(); if (window.parent !== window) window.parent.postMessage({dl: 'help'}, location.origin); else document.dispatchEvent(new CustomEvent('dl:help')); return; }
     if ((k === '?' || k === 'shift+?') && !typing) { e.preventDefault(); showShortcuts(); return; }
     const btn = $$(document, `[data-dl-key="${k}"]`).find(visible);
     if (btn) { e.preventDefault(); btn.click(); }

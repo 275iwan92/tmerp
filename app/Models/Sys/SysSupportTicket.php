@@ -21,6 +21,14 @@ class SysSupportTicket extends Model
 
     protected $casts = ['resolved_at' => 'datetime'];
 
+    // SPT + yymm + urut 4 digit per bulan (sama dengan Help Center v1).
+    public static function nextNo(): string
+    {
+        $seq = static::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count() + 1;
+
+        return 'SPT'.now()->format('ym').str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(SecUser::class, 'created_by_user_id', 'id_user');
