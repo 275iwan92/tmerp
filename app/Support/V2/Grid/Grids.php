@@ -25,6 +25,8 @@ final class Grids
         Master\MatCategoryGrid::class,
         Master\WarehouseGrid::class,
         Master\ShiftGrid::class,
+        Master\HolidayCalendarGrid::class,
+        Master\OfficeHoursLookup::class,
         Prod\MachineGrid::class,
         Prod\MachineModelLookup::class,
         Prod\ProcessGrid::class,

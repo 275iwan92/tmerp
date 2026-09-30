@@ -164,7 +164,7 @@ final class Catalog
                 'pages' => [
                     'p5-kanban' => $page('Kanban', 'fa-solid fa-table-columns', ['kanban-production' => ['Production Board (drag, WIP, move rules, card detail)', $c('Kanban')]], 'mockup_UIUX_kanban.html'),
                     'p5-gantt' => $page('Gantt', 'fa-solid fa-bars-staggered', ['gantt-scheduling' => ['Scheduling Board (resource × hours)', $c('Gantt')]], 'mockup_scheduling_board.html'),
-                    'p5-calendar' => $page('Calendar', 'fa-solid fa-calendar-days', ['calendar-events' => ['Event Calendar (day / week / month)', $c('Calendar')]], 'mockup_UIUX_calendar.html'),
+                    'p5-calendar' => $page('Calendar', 'fa-solid fa-calendar-days', ['calendar-events' => ['Event Calendar (day / week / month)', $c('Calendar')], 'calendar-year' => ['Year Calendar (12 months, colored marks: holidays, working days)', $c('YearCalendar')]], 'mockup_UIUX_calendar.html'),
                     'p5-org' => $page('Org Chart', 'fa-solid fa-sitemap', ['org-chart' => ['Organization Structure (drag to change superior, vacancies, multiple holders)', $c('OrgChart')]], 'Organization-Structure-Mockup.html'),
                     'p6-charts' => $page('Charts', 'fa-solid fa-chart-pie', ['chart-bars' => ['Bars: bar, stacked, horizontal, combo', $c('Chart')], 'chart-lines' => ['Line, area, radar, heatmap', $c('Chart')], 'chart-pies' => ['Pie, donut, funnel', $c('Chart')]], 'mockup_dashboardcolor.html'),
                     'p6-indicators' => $page('Dashboard Indicators', 'fa-solid fa-gauge-high', ['indicators' => ['KPI, gauge, progress ring, bullet, traffic light', $c('Kpi', 'Gauge', 'ProgressRing', 'Bullet', 'TrafficLight')]]),

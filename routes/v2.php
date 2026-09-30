@@ -6,6 +6,7 @@ use App\Models\Acc\FinPettyCashTx;
 use App\Models\Master\FlowConfig;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
+use App\Models\Master\SysHoliday;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PqQuotation;
 use App\Models\Pur\PrRequisition;
@@ -41,6 +42,7 @@ use App\Support\V2\Data\PurchaseQuotation;
 use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
+use App\Support\V2\Data\WorkCalendar;
 use App\Support\V2\Flows;
 use App\Support\V2\Grid\DbGrid;
 use App\Support\V2\Grid\DbLookup;
@@ -817,6 +819,21 @@ Route::prefix('v2')->name('v2.')->group(function () {
             return redirect(route('v2.screen', 'approval-acting'))->with('v2_flash', 'Daftar officer pengganti (PLT) tersimpan.');
         })->name('approval-acting.save');
     });
+
+    // Holiday Calendar v2 (App\Support\V2\Data\WorkCalendar): save / activate / deactivate satu hari libur.
+    Route::post('/holiday/save', function (Request $r) {
+        abort_unless(Auth::user()->canAccessModule('MDATA'), 403);
+        $h = $r->filled('id') ? SysHoliday::findOrFail((int) $r->input('id')) : null;
+        $action = (string) $r->input('action', 'save');
+        if ($h && in_array($action, ['activate', 'deactivate'], true)) {
+            $h->update(['activate' => $action === 'activate', 'updated_by' => Auth::user()->login]);
+        } else {
+            $h = WorkCalendar::saveHoliday($h, $r->all());
+        }
+
+        return redirect(route('v2.screen', 'holiday-calendar').'?year='.$h->holiday_date->year.'&id='.$h->id_holiday)
+            ->with('v2_flash', Dictionary::t('Holiday saved.'));
+    })->name('holiday.save');
 
     // Customer Plan Delivery v2 (App\Support\V2\Data\Cpdel = confirmSplit/confirmMerge v1 pages::co.delivery-plan).
     Route::prefix('cpdel')->name('cpdel.')->middleware('module:SALES')->group(function () {
