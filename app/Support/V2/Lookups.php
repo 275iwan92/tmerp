@@ -35,6 +35,13 @@ final class Lookups
                 ->orderBy('material_name')->limit(50)->get(),
             'find' => fn ($v) => self::materials()->where('material_id', (int) $v)->first()]);
 
+        // Pegawai aktif (teknisi Maintenance, pelapor): dicari ke server.
+        Lookup::define('employee', ['key' => 'employee_id', 'label' => 'label', 'source' => 'tm2mst.emp_employee (activate = 1)',
+            'columns' => ['full_name' => 'Name', 'employee_code' => 'Employee No', 'position_name' => 'Position'],
+            'search' => fn (string $q) => self::employees()->where(fn ($w) => $w->where('e.full_name', 'like', "%{$q}%")->orWhere('e.employee_code', 'like', "%{$q}%")->orWhere('p.position_name', 'like', "%{$q}%"))
+                ->orderBy('e.full_name')->limit(50)->get(),
+            'find' => fn ($v) => self::employees()->where('e.employee_id', (int) $v)->first()]);
+
         // Wilayah kirim = v_geo_full_address (5 level, sama dengan AddressPicker v1). Nilai = "LEVEL:id".
         Lookup::define('geo_area', ['key' => 'area', 'label' => 'full_label', 'source' => 'tm2mst.v_geo_full_address',
             'columns' => ['full_label' => 'Wilayah', 'postal_code' => 'Kode Pos'], 'fill' => ['ship_postal_code' => 'postal_code'],
@@ -49,6 +56,13 @@ final class Lookups
     {
         return DB::connection('tm2mst')->table('mat_raw')->where('activate', 1)->where('stat_confirm', 1)
             ->select('material_id', 'material_code', 'material_name', 'uom_purchase', DB::raw("CONCAT(material_code, ' · ', material_name) as label"));
+    }
+
+    private static function employees()
+    {
+        return DB::connection('tm2mst')->table('emp_employee as e')->where('e.activate', 1)
+            ->leftJoin('org_position as p', 'p.position_id', '=', 'e.position_id')
+            ->select('e.employee_id', 'e.full_name', 'e.employee_code', 'p.position_name', DB::raw("CONCAT(e.full_name, ' · ', COALESCE(e.employee_code, '')) as label"));
     }
 
     private static function products()

@@ -3,6 +3,21 @@
 
 ---
 
+## 2026-10-01 -- Maintenance v2 M1 (mockup.test / ddt*) -- K1-K10 + mockup disetujui user
+
+- Migration `2026_10_01_000040`: 11 tabel `tm2prd.mnt_*` (code, plan/_task/_part, request, wo/_task/_part/_labor,
+  meter_reading, log), modul akses `MAINT` + grup `MAINT_TECH`/`MAINT_HEAD`, menu v2 Maintenance (Work / Planning /
+  Master / Report), konstanta `MNT_LABOR_RATE_HOUR`, katalog 70 kode Component/Problem/Cause/Action (English).
+  Menu lama Production > Support (PROD_MTN_SCH/PREV) diarahkan ke layar v2. Dijalankan di ddt* saja.
+- `MaintenanceService`: Request (P1 = mesin berhenti -> downtime dibuka + WO otomatis), Accept/Reject, WO
+  Confirm/Start/Hold/Resume/Done/Close/Cancel/Back to Draft, downtime & `machine_status` memakai tabel yang sudah
+  ada, biaya part+labor+vendor, generator PM (waktu/meter, Floating/Fixed) + `maintenance:generate-pm` harian 06:00,
+  MTBF/MTTR/Availability, cache kolom maintenance di `prod_machine`.
+- Layar v2 (objek DevLib): Maintenance Request, Maintenance Work Order (Checklist / Spare Parts / Labor), My Work,
+  Preventive Plan, Maintenance Codes (Grid Lookup), Maintenance WO Report. DevLib Form: status `working` + `:stage`.
+- Dummy ddt (migration `000041`, tidak menulis di tm2*): 7 plan, 11 WO (keadaan mockup + riwayat), 6 request.
+- `tests/Feature/MaintenanceServiceTest` 3 test / 36 assertion (lulus di ddt, skip di tm2 selama tabel belum ada).
+
 ## 2026-10-01 -- Multi-language dasar: DB English + kamus, angka/tanggal per bahasa, Bahasa cetak
 
 - Keputusan LOCKED user dicatat (CLAUDE.md §3, memori, docs/multilanguage_design.md).

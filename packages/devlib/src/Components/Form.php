@@ -2,6 +2,8 @@
 
 namespace Devlib\Components;
 
+use Devlib\Locale;
+
 // Induk form (mockup UIUX_components_part1.html): judul + isi (kolom/baris field) + kaki berisi tombol tambahan opsional dan tombol split aksi.
 // Save: isian wajib dicek (tab berisi error dibuka & diberi tanda), x-dl::lines ikut divalidasi; di dalam modal/drawer ditutup setelah sukses.
 // mode="view": tampil sebagai teks (fieldset disabled), tombol Edit -> bisa diubah, Cancel mengembalikan nilai semula. Event dl:form-submit.
@@ -16,6 +18,8 @@ namespace Devlib\Components;
 //   tanpa Back to Draft setelah masuk approval; Closed otomatis saat dokumen diteruskan ke modul berikutnya (mis. PR -> PO).
 // :action-field = nama field aksi yang dikirim (default _action; layar lama mis. 'action'); :hide = aksi panel yang disembunyikan.
 // :subtitle = baris kecil di bawah judul (mis. supplier); :pipeline = bar tahapan Draft > Confirmed > Closed (Master-Detail).
+// :stage = badge kedua = tahap kerja di dalam status dokumen (mis. Maintenance WO Confirmed + In Progress); status 'working' = Confirmed
+// tapi isian tetap terbuka (Cancel, New, Print, Save + tombol kerja di slot special).
 // Tab read-only 'History' SELALU ditambahkan objek: created by/at, last updated by/at + :log = [['at','by','action','note'], ...]
 // (log riwayat: Created, Saved, Confirmed, Back to Draft, Cancelled, Closed -- terbaru di atas) (user 2026-09-30).
 class Form extends DevlibComponent
@@ -51,6 +55,7 @@ class Form extends DevlibComponent
         public string $actionField = '_action',
         public array $hide = [],
         public array $hidden = [],
+        public ?string $stage = null,
     ) {}
 
     public function panelTabs(): array
@@ -61,7 +66,7 @@ class Form extends DevlibComponent
     // dd-Mmm-yyyy HH:mm, sama dgn tanggal grid.
     public function stamp(?string $at): string
     {
-        return \Devlib\Locale::stamp($at);
+        return Locale::stamp($at);
     }
 
     // [preset|null, label|null, variant|null (null = warna preset), icon|null, act] urut kiri -> kanan (user 2026-09-30):
@@ -102,6 +107,9 @@ class Form extends DevlibComponent
             'document.hold' => $this->canApprove ? [$b('reject', 'reject', 'Reject', 'danger'), $b('approve', 'approve', 'Approve')] : [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print],
             'document.rejected' => [$new, $dup, $print],
             'document.approved' => [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $b('email', 'email', 'Email'), $print],
+            // working (Maintenance WO dsb): dokumen Confirmed yang sedang DIKERJAKAN -- hasil kerja masih diisi, jadi tetap bisa Save;
+            // tombol kerja (Start/Hold/Done/...) lewat slot special. Badge tetap Confirmed + :stage (mis. In Progress).
+            'document.working' => [$b('cancel', 'cancel', 'Cancel', 'danger'), $new, $print, $save],
             'document.confirmed' => array_values(array_filter([$b('cancel', 'cancel', 'Cancel', 'danger'), $this->canReopen ? $b('draft', null, 'Back to Draft', 'secondary', 'fa-rotate-left') : null, $new, $b('email', 'email', 'Email'), $print])),
             // Cancelled: Duplicate = Draft baru berisi salinan isi (tanpa nomor) supaya tidak mengetik ulang (user 2026-09-30).
             'document.cancelled' => [$new, $dup, $print],
@@ -122,7 +130,7 @@ class Form extends DevlibComponent
             return $this->approvalSteps();
         }
         $order = ['draft', 'confirmed', 'closed'];
-        $at = $this->status === 'new' ? 0 : array_search($this->status === 'cancelled' ? 'confirmed' : $this->status, $order, true);
+        $at = $this->status === 'new' ? 0 : array_search(in_array($this->status, ['cancelled', 'working'], true) ? 'confirmed' : $this->status, $order, true);
         $steps = [];
         foreach ($order as $i => $k) {
             $steps[] = [ucfirst($k), $i < $at ? 'is-done' : ($i === $at ? ($this->status === 'cancelled' ? 'is-rejected' : 'is-active') : '')];
@@ -156,7 +164,7 @@ class Form extends DevlibComponent
 
     public function statusBadge(): array
     {
-        return ['new' => ['Draft', 'neutral'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger'], 'closed' => ['Closed', 'neutral'], 'approval' => ['Waiting Approval '.$this->approvalAt, 'warn'], 'hold' => ['Hold L'.$this->approvalAt, 'warn'], 'approved' => ['Approved', 'success'], 'rejected' => ['Rejected', 'danger'], 'active' => ['Active', 'success'], 'inactive' => ['Inactive', 'danger']][$this->status] ?? [$this->status, 'neutral'];
+        return ['new' => ['Draft', 'neutral'], 'draft' => ['Draft', 'neutral'], 'confirmed' => ['Confirmed', 'success'], 'working' => ['Confirmed', 'success'], 'cancelled' => ['Cancelled', 'danger'], 'closed' => ['Closed', 'neutral'], 'approval' => ['Waiting Approval '.$this->approvalAt, 'warn'], 'hold' => ['Hold L'.$this->approvalAt, 'warn'], 'approved' => ['Approved', 'success'], 'rejected' => ['Rejected', 'danger'], 'active' => ['Active', 'success'], 'inactive' => ['Inactive', 'danger']][$this->status] ?? [$this->status, 'neutral'];
     }
 
     public function tag(): string
@@ -180,6 +188,7 @@ class Form extends DevlibComponent
                         @else
                             <x-dl::badge :label="$statusBadge()[0]" :tone="$statusBadge()[1]" />
                         @endif
+                        @if ($stage)<x-dl::badge :label="$stage" tone="info" />@endif
                         <span class="dl-print__spacer"></span>
                         @foreach ($panelActions() as $a)
                             @php [$pre, $lbl, $var, $ico, $act] = $a; $cls = $a[5] ?? ''; @endphp

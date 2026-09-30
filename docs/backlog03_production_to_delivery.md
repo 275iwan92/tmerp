@@ -30,13 +30,21 @@ sebelum eksekusi):
   engine, Time-Phased Procurement, Lead Time Historical Tracking, Customer
   Interruption Profile reporting) — semua secara eksplisit ditunda user,
   belum digarap sama sekali.
-- **Maintenance submodule** (`PROD_MTN_SCH`/`PROD_MTN_PREV`) — riset + desain
-  + mockup SELESAI 2026-10-01 (`docs/maintenance_tier1.md`,
-  `docs/mockups/maintenance_v2.jpg`): modul v2 baru **Maintenance** (Request ->
-  Work Order, Preventive Plan waktu/meter, integrasi downtime/Scheduling
-  Board/gudang/PR, KPI MTBF/MTTR/PM compliance). **Menunggu OK user** atas
-  keputusan K1-K10 (§9) sebelum build fase M1-M3. Kompresor & forklift
-  (`is_process_machine=0`) termasuk aset maintenance.
+- **Maintenance** (modul v2 `MAINT`) — K1-K10 + mockup DISETUJUI user 2026-10-01; **M1 inti SELESAI di
+  mockup.test (ddt*)** — lihat LOG_JOB_DONE 2026-10-01. Sisa terbuka:
+  - **tm2*** : migration `2026_10_01_000040_create_maintenance_module` belum dijalankan di tm2* (menunggu OK user);
+    `000041` (dummy) tidak menulis apa pun di tm2*.
+  - **M2 Integrasi**: blok MTN abu-abu di Scheduling Board (PPIC tidak bisa menaruh operasi; usul geser -> kepala
+    maintenance Confirm); tombol "Breakdown" Worklist WO (`prd_breakdown_event`) -> Request P1; **Issue** spare part
+    ke `rm_stock` (`ref_doc_type='MNT_WO'`); **Create PR** dari baris spare part yang kurang (`i_source='MAINTENANCE'`,
+    WO otomatis Waiting Part); tab Maintenance di Master Mesin; `mnt_machine_part` (spare part milik mesin).
+  - **M3 Lantai & KPI**: QR label mesin -> form Report Problem (HP, foto); PM Calendar; laporan Machine Reliability &
+    PM Compliance (WO Report sudah ada); akumulasi meter otomatis dari output WO produksi + layar input counter
+    (`mnt_meter_reading` sekarang hanya diisi dummy); Daily Check ringan.
+  - **K8**: spare part lama masih di kategori "Others"/tanpa kategori -> dirapikan ke Spare Part Machine lewat layar,
+    daftar kandidat ditunjukkan ke user dulu. **K10**: aturan & periode inspeksi K3 forklift/kompresor dicek ke HR/K3.
+  - Teknisi di data pegawai baru 1 (DINUL ROCHMAN, Technical Support & Maintenance); grup `MAINT_TECH`/`MAINT_HEAD`
+    sudah ada tapi belum ada anggota -> user tentukan siapa.
 ---
 
 ---

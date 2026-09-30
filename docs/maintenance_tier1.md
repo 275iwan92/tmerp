@@ -1,10 +1,11 @@
-# MAINTENANCE — Tier 1 (riset, desain, alur) · DRAFT menunggu OK user
+# MAINTENANCE — Tier 1 (riset, desain, alur) · DISETUJUI user 2026-10-01
 
 > Dibuat 2026-10-01 atas instruksi user: *"Kompresor & forklift tetap sebagai mesin tapi diberi FLAG
 > non-produksi (just only supported), tetap jadi bagian MAINTENANCE module, karena nanti ada penjadwalan
 > PREVENTIVE MAINTENANCE dan BREAKDOWN MAINTENANCE."*
-> Status: **DESAIN — belum dibangun**. Mockup: `docs/mockups/maintenance_v2.html` / `.jpg`.
-> Backlog: `backlog03_*.md` §6 (Maintenance submodule). Jangan bangun sebelum §9 disetujui.
+> Status: **§9 K1-K10 + mockup disetujui user 2026-10-01 ("setuju dari preview"). M1 inti DIBANGUN di mockup.test (ddt*)**;
+> M2/M3 + migration tm2* = sisa di `backlog03_*.md` §6. Mockup: `docs/mockups/maintenance_v2.html` / `.jpg`.
+> Kode: `App\Services\Maintenance\MaintenanceService`, `routes/v2_maintenance.php`, layar `resources/views/v2/screens/maintenance-*.blade.php`.
 
 ---
 

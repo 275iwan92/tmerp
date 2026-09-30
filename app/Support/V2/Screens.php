@@ -96,6 +96,16 @@ final class Screens
                     $it('approval-stock', ['Adjustment & Opname Approval Center', 'fa-solid fa-stamp', 'inventory/stock-adjustment-approval.blade.php', null]),
                 ]],
             ]],
+            ['code' => 'MAINT', 'short' => 'MT', 'label' => 'Maintenance', 'icon' => 'fa-solid fa-screwdriver-wrench', 'groups' => [
+                ['label' => 'Work', 'items' => [
+                    $it('maintenance-request', ['Maintenance Request', 'fa-solid fa-triangle-exclamation', 'v2 baru: docs/maintenance_tier1.md §3 (tm2prd.mnt_request)', 'maintenance_v2.jpg']),
+                    $it('maintenance-wo', ['Maintenance Work Order', 'fa-solid fa-screwdriver-wrench', 'v2 baru: docs/maintenance_tier1.md §3-§5 (tm2prd.mnt_wo)', 'maintenance_v2.jpg']),
+                    $it('maintenance-my-work', ['My Work (technician)', 'fa-solid fa-user-gear', 'v2 baru: docs/maintenance_tier1.md §6', 'maintenance_v2.jpg']),
+                ]],
+                ['label' => 'Planning', 'items' => [
+                    $it('maintenance-plan', ['Preventive Plan', 'fa-solid fa-calendar-check', 'v2 baru: docs/maintenance_tier1.md §4 (tm2prd.mnt_plan)', 'maintenance_v2.jpg']),
+                ]],
+            ]],
             ['code' => 'SETUP', 'short' => 'SET', 'label' => 'Setup', 'icon' => 'fa-solid fa-gear', 'groups' => [
                 ['label' => 'Settings', 'items' => [
                     $it('approval-setting', ['Setting Approval', 'fa-solid fa-list-ol', 'v2 baru: tm2mst.flow_config + flow_config_step (pengganti m_authorize)', null]),

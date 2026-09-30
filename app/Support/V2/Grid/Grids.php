@@ -41,6 +41,8 @@ final class Grids
         Sales\GeneralCoOrderReport::class,
         Sales\GeneralCoShipDetailReport::class,
         Acc\CoaGrid::class,
+        Maint\MaintenanceCodeLookup::class,
+        Maint\MaintenanceWoReport::class,
         Setup\TranslationDictionaryLookup::class,
     ];
 
