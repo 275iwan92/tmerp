@@ -26,6 +26,12 @@
    Customer Order → CPDEL → **POST ke Produksi** → Delivery Order / Surat Jalan. Pedoman rinci: `docs/flow_product_master.md`.
    **[2026-10-01] Jalan pintas pekerjaan cepat:** setelah CPDEL di-POST ke Produksi, DO dan DN (Surat Jalan) **boleh
    langsung dibuat** tanpa menunggu produksi selesai, untuk pekerjaan yang pengerjaannya hanya sekitar 30 menit.
+   - Setiap baris CPDEL yang sudah **Confirmed** punya tombol **Post to Production**.
+   - Sistem **tidak tahu** lama pengerjaan sampai hasil produksi di-input, jadi jalan pintas tidak diblokir oleh
+     perkiraan sistem. Batas "30 menit" **bukan angka mati**: bisa berubah mengikuti data yang ada (disimpan sebagai
+     nilai yang bisa diubah user, bukan hardcode).
+   - **Hasil produksi TETAP WAJIB di-input** walaupun barang sudah dikirim lewat jalan pintas. Data hasil produksi
+     menjadi **acuan KPI semua departemen**, jadi tidak boleh ada pekerjaan yang terkirim tanpa catatan hasil produksi.
 4. **[LOCKED] 1 Quotation = 1 Customer Order.** Quotation berisi banyak inquiry; 1 inquiry = 1 product.
    Quotation WIN = Master Product lahir. Revisi = product turunan; Rekalkulasi = versi harga bertanggal.
 5. **[LOCKED] Inquiry punya 3 jenis dokumen:** BARU, REVISI (spec berubah), REKALKULASI (spec sama, harga bahan berubah).
@@ -127,3 +133,6 @@
 | 2026-10-01 | A.1–A.2: Quotation wajib integrated; CO boleh direct (kompatibel V1 + percepatan Direksi). |
 | 2026-10-01 | B.3: database & formula English, kamus untuk tampilan/cetak. |
 | 2026-10-01 | A.3: CPDEL → POST ke Produksi; setelah POST, jalan pintas DO + DN (Surat Jalan) boleh dibuat untuk pekerjaan ±30 menit. |
+| 2026-10-01 | A.3: tombol Post to Production pada CPDEL Confirmed; sistem tidak tahu lama pengerjaan sampai produksi di-input; batas 30 menit berubah sesuai data. |
+| 2026-10-01 | A.3: hasil produksi tetap wajib di-input walau sudah dikirim; data hasil produksi = acuan KPI semua departemen. |
+| 2026-10-01 | Pedoman ini dibuka dari menu akun v2 → **Bantuan & dukungan**. |

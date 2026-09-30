@@ -92,7 +92,7 @@
       else if (a === 'edit' || a === 'pass') $(this.el, `[data-dl-modal="${a}"]`).classList.add('is-on');
       else if (a === 'palette') this.openPalette();
       else if (a === 'devmode') setDevMode(!document.body.classList.contains('dl-dev'));
-      else if (a === 'help') toast('Bantuan & dukungan — segera (tiket ke tim dev / sys_support_tickets).');
+      else if (a === 'help') this.openHelp();
       else if (a === 'menu-layer' || a === 'menu-classic') this.switchMenu(a.slice(5));
       else if (a === 'logout') $(this.el, 'form[data-dl-logout]')?.requestSubmit();
     }
@@ -151,6 +151,14 @@
 
     findItem(code) {
       return this.items.find(x => x.code === code);
+    }
+
+    // Bantuan = tab biasa (bukan item menu): didaftarkan sekali sebagai item HELP lalu dibuka seperti menu.
+    openHelp() {
+      const url = this.el.dataset.dlHelp;
+      if (!url) { toast('Bantuan & dukungan — segera.'); return; }
+      if (!this.findItem('HELP')) this.items.push({code: 'HELP', label: 'Bantuan & dukungan', icon: 'fa-solid fa-circle-question', url});
+      this.openTab('HELP');
     }
 
     arrow(d) { const b = document.createElement('button'); b.type = 'button'; b.className = `dl-mega__arrow is-${d < 0 ? 'l' : 'r'}`; b.innerHTML = `<i class="fa-solid fa-chevron-${d < 0 ? 'left' : 'right'}"></i>`; b.title = d < 0 ? 'Geser kiri' : 'Geser kanan'; b.addEventListener('click', () => this.mega.scrollBy({left: d * 200, behavior: 'smooth'})); return b; }

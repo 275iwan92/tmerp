@@ -1009,7 +1009,8 @@ Route::prefix('v2')->name('v2.')->group(function () {
 
     // Pedoman alur (Markdown di docs/) -- dibaca user DAN developer sebelum mengubah alur terkait.
     Route::get('/pedoman/{slug}', function (string $slug) {
-        $file = ['product-master' => 'flow_product_master.md'][$slug] ?? abort(404);
+        // aturan = Pedoman Aturan User (dibuka dari Bantuan & dukungan di menu akun).
+        $file = ['product-master' => 'flow_product_master.md', 'aturan' => 'globaluserrules.md'][$slug] ?? abort(404);
         $md = file_get_contents(base_path('docs/'.$file));
 
         return view('v2.guide', ['title' => trim(ltrim(strtok($md, "\n"), '# ')), 'html' => Str::markdown($md, ['html_input' => 'escape'])]);
