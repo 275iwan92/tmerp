@@ -11,12 +11,6 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
 
 ## 4. PROCUREMENT (tm2pur)
 
-- **Purchase Receive — 3 alur, baru 1 yang ada**: PV/SPB saat ini cuma
-  cover "Receiving dari PO" (supplier vs PO). **Belum dibangun**:
-  "Receiving dari Customer" (consignment, customer kirim bahan sendiri,
-  butuh stok terpisah/`ownership_type` — skema belum diputuskan) dan
-  "Receiving dari Subkontraktor" (SFG kembali dari pihak ketiga, masuk
-  `sfg_stock`). Detail lengkap: `docs/SIDEBAR_MENU_STANDARD.md` §6/§6a.
 - **12 dari 18 kategori Level-1 `mat_category`** masih kosong default COA
   account (`default_coa_account_id`/`default_stock_asset_account_id`) —
   layar isinya **SUDAH ADA** (`master/mat-category.blade.php`, bagian
@@ -28,40 +22,31 @@ Purchase Requisition -> Purchase Order -> Purchase Quotation -> penerimaan baran
   kategori (keputusan akun, bukan kode), akun GR/IR universal (813) sudah
   terisi semua.
 - **Alur Purchasing (user 2026-10-01): PR -> PQ (boleh dilewati) -> PO -> Purchase Receive (SPB) -> otomatis
-  STOCK INPUT.** Status: PR/PQ/PO/SPB v2 sudah tersambung. Post SPB SUDAH otomatis membuat & mem-posting dokumen
-  Stock In RM (`PvPostingService::postToInventory` -> `StockDocumentService` doc IN, `ref_doc_type='PV'`) + jurnal
-  Dr Persediaan / Cr GR/IR. **Yang belum:** layar **Stock In v2** (menu INV_IN / INV_RM_ITEM1 masih NOT_BUILT) untuk
-  melihat dokumen Stock In hasil SPB (read-only karena lahir dari SPB) maupun input manual.
-- **PQ v2 sisa:** (1) `ANTHROPIC_API_KEY` belum diisi -> PDF/foto penawaran belum terbaca otomatis (keputusan user:
-  key & izin data penawaran dikirim ke Anthropic); (2) migration PQ di tm2* menunggu OK; (3) file .eml/.msg belum
-  didukung (upload lampirannya); (4) CSV berformat angka Indonesia ("12.500") bisa terbaca 12,5 oleh pembaca Excel lokal.
-- **Sisa sesi 2026-10-01 (Purchase) — menunggu user:**
-  1. Review layar di mockup.test (menu v2 kini: **R kuning** = belum direview, **A hijau** = approved/LOCKED oleh user):
-     Purchase Quotation (upload -> cek -> Confirm -> Bandingkan -> Buat PO) dan Cancel SPB di Penerimaan Barang.
-  2. OK menjalankan 2 migration ke tm2*: `2026_10_01_000002_pq_upload_extract_and_po_line_link`,
-     `2026_10_01_000020_pv_receipt_cancel_columns` (sudah jalan di ddt*).
-  3. Data uji UAT: di ddt* semua baris PR APPROVED sudah FULLY_ORDERED -> buat PR baru + approve dulu untuk mencoba
-     PR -> PQ -> PO dari awal.
-  4. Belum dibangun: layar **Stock In v2** (lihat dokumen hasil SPB & batal SPB `OUT/..` ref PV_CANCEL); Penerimaan dari
-     Customer & dari Subkon; Purchase Return v2; PO Kontan + Kas Kecil (lihat butir di bawah); Purchase Invoice/AP
-     (backlog07 §12.3); konversi roll -> rim saat terima (rumus: berat 1 rim = lebar roll cm x panjang potong cm x GSM
-     / 20.000; rim = berat bersih roll / berat 1 rim; butuh keputusan: satuan beli kg/roll, kapan panjang potong
-     ditentukan, % waste).
-- **PO Kontan + Kas Kecil — BELUM ADA, dibahas di sesi lain** (dicatat user
-  2026-10-01). Pembelian kontan berdampak ke petty cash DAN ke PO (ada input
-  "PO Kontan"). Kondisi kode: `po_order.i_po_type` baru `LOCAL`/`IMPORT`/
-  `SUBCONTRACT` (belum `CASH`); modul Kas Kecil (saldo, pemegang, plafon,
-  kasbon, replenish) belum ada; `fin_voucher.source_type/source_id` sudah bisa
-  dipakai menautkan voucher ke PO; SPB sudah jurnal Dr Persediaan / Cr GR/IR.
-  Usulan alur (imprest): PO Kontan -> kasbon (Dr Uang Muka Pembelian / Cr Kas
-  Kecil) -> SPB -> pertanggungjawaban nota (Dr GR/IR / Cr Uang Muka, selisih
-  kembali/kurang) -> replenish kas kecil dari bank. **Keputusan user yang
-  ditunggu:** (1) kasbon dulu vs PO dicatat setelah belanja dari nota;
-  (2) plafon nilai PO Kontan; (3) wajib PR/approval atau approval ringan;
-  (4) satu kas kecil atau per gudang/departemen; (5) akun COA Kas Kecil &
-  Uang Muka Pembelian sudah ada atau perlu dibuat. Kas Kecil = layar Finance
-  yang dipakai bersama, bukan cuma Purchasing.
+  STOCK INPUT.** PR/PQ/PO/SPB v2 sudah tersambung; Post SPB otomatis membuat & mem-posting Stock In RM + jurnal.
+  **Yang belum:** layar **Stock In v2** (menu INV_IN / INV_RM_ITEM1 masih NOT_BUILT) untuk melihat dokumen Stock In
+  hasil SPB / pembalik Cancel SPB (`OUT/..` ref PV_CANCEL) maupun input manual.
+- **Purchase Return v2 — dibahas di sesi lain (user 2026-10-01, "agar lebih detail").** Preview desain sudah pernah
+  ditunjukkan (Draft -> Confirm -> approval PRT -> Kirim Barang: Stock Out + Dr GR/IR / Cr Persediaan -> Closed saat CN
+  diterima / barang pengganti masuk). Retur v1 sekarang belum mengeluarkan stok, belum menjurnal, belum update PO.
+- **Purchase Invoice / hutang supplier** belum ada (backlog07 §12.3) -> GR/IR (211900) belum pernah dilunasi.
+- **Konversi roll -> rim saat terima**: rumus berat 1 rim = lebar roll cm x panjang potong cm x GSM / 20.000;
+  rim = berat bersih roll / berat 1 rim. Butuh keputusan user: satuan beli kg/roll, kapan panjang potong ditentukan, % waste.
 
----
+### Sisa sesi 2026-10-01 (Purchase) — menunggu user
+1. **Review di mockup.test** (menu v2: **R kuning** = belum direview, **A hijau** = approved/LOCKED oleh user):
+   - Purchase Quotation (upload file penawaran -> cek -> Confirm -> Bandingkan -> Buat PO).
+   - Penerimaan Barang: Cancel SPB; + New Record jenis **From Customer** (pilih CO) dan **From Subcon** (dummy
+     PO Subkon PO2600008 CENTRAL GRAFIK, 2 baris laminasi) + Report Shortage setelah Confirm.
+   - PO Kontan (+ New Record > Jenis PO = Cash PO) -> approval login `dewi` (Direktur F&A) -> Finance > Kas & Bank >
+     Kas Kecil: Give Advance / Settlement / Reimburse / Top Up / Setting.
+2. **OK menjalankan migration ke tm2*** (sudah jalan di ddt*): `2026_10_01_000002_pq_upload_extract_and_po_line_link`,
+   `2026_10_01_000020_pv_receipt_cancel_columns`, `2026_10_01_000030_po_cash_petty_cash` (COA 111400, jurnal PTY,
+   flow POC, konstanta PO_CASH_MAX, kas kecil KK-01 Mia), `2026_10_01_000040_pv_receipt_customer_subcon`.
+3. **Kas Kecil**: plafon (imprest) belum diisi — isi di Kas Kecil > Setting; saldo awal masuk lewat Top Up.
+4. **PQ**: `ANTHROPIC_API_KEY` belum diisi (PDF/foto penawaran belum terbaca otomatis; keputusan user: key & izin data
+   penawaran dikirim ke Anthropic); .eml/.msg belum didukung; CSV angka Indonesia ("12.500") bisa terbaca 12,5.
+5. **Belum dibangun (kecil, menyusul bila perlu)**: pembatalan transaksi kas kecil (kasbon/settlement salah input);
+   cetak Tanda Terima Bahan Customer & cetak SPB; daftar bahan customer yang sudah datang di layar CO; data uji PR baru
+   (semua baris PR APPROVED di ddt* sudah FULLY_ORDERED -> buat PR baru + approve untuk mencoba PR -> PQ -> PO).
 
 ---

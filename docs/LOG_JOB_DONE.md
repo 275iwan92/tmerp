@@ -47,6 +47,22 @@
 - Field Money: nilai DB `1250000.00` dibulatkan lalu diformat `1.250.000` (Blade + JS), tidak lagi 125.000.000.
 - Sheet kalkulator mini: presisi hasil memakai `col.decimals` (dulu `c.decimals` = indeks kolom).
 
+## 2026-10-01 -- PO Kontan + Kas Kecil; Penerimaan dari Customer & Subkon (mockup.test)
+
+- **PO Kontan** (Tipe Pengadaan CASH): mode Kasbon dulu / Beli dulu (reimburse), maks. Constants `PO_CASH_MAX`
+  Rp 2.000.000, approval Direktur F&A saja (flow `POC`), item Master Bahan / uraian bebas + akun biaya, tanpa PPN terpisah.
+- **Kas Kecil v2** (Finance > Kas & Bank, `fin_petty_cash` + `fin_petty_cash_tx`, 1 kas dipegang Mia): Give Advance
+  (Dr 114300 / Cr Kas Kecil), Settlement nota (Dr GR/IR | biaya / Cr Uang Muka + kembalian / kurang bayar; harga PO =
+  nota, PO -> SENT -> SPB), Reimburse, Top Up (Dr Kas Kecil / Cr Bank), Setting. COA baru 111400 + jurnal PTY.
+- **Penerimaan Barang 3 jenis** (`pv_receipt.i_receipt_type`): From Customer (bahan customer wajib No. CO, baris dari
+  item CO, tanpa stok & jurnal) dan From Subcon (PO Subkon, langsung ke proses berikutnya, Dr 513000 / Cr GR/IR;
+  Report Shortage setelah Confirm mengoreksi qty, PO & jurnal PV_SHORT). Cancel SPB ikut membalik PV_SHORT.
+- Label layar baru English (aturan multi-bahasa); baseline MultiLanguageRatchetTest turun (687 / 0 / 0).
+- Diuji siklus penuh di ddt* lalu data uji dihapus; 1 PO Subkon dummy (PO2600008, DUMMY) ditinggal untuk UAT.
+  Migration 000030 & 000040 di ddt* saja; tm2* menunggu OK user.
+
+---
+
 ## 2026-10-01 -- Cancel SPB (pengganti trigger legacy) + toleransi terima dari konstanta
 
 - Trigger legacy pembelian->stok (dump `docs/ddl/tm_20260911.sql`) dicek: `inv_in_detail`/`pur_prcv_detail` (hitung
