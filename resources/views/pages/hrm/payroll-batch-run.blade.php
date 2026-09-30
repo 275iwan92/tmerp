@@ -31,6 +31,12 @@ new #[Title('Payroll Batch Run — TELASIH MAKMUR ERP')] class extends Component
         }
     }
 
+    // Layar ini tidak punya form terpisah: "new" = belum ada periode terpilih, siap Calculate periode baru.
+    protected function newFromQuery(): void
+    {
+        $this->selectedRunId = null;
+    }
+
     public string $periodType = 'MONTHLY';
 
     public string $periodStart = '';

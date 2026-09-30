@@ -31,7 +31,7 @@ new #[Title('Cetak Work Order — TELASIH MAKMUR ERP')] class extends Component
     #[Computed]
     public function wo(): PrdWo
     {
-        return PrdWo::with(['coOrder', 'product', 'operations.crew.employee' => fn ($q) => $q->orderBy('seq_no')])->findOrFail($this->woId);
+        return PrdWo::with(['coOrder', 'product', 'operations.crew.employee'])->findOrFail($this->woId);
     }
 
     #[Computed]
