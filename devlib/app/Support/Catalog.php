@@ -144,10 +144,14 @@ final class Catalog
                     'p5-form-approval' => $page('Form Approval', 'fa-solid fa-stamp', [
                         'form-approval' => ['Form with Approval (Confirm, then Approve / Reject / Hold by level)', $c('Form', 'ApprovalBar')],
                     ], 'UIUX_components_part1.html'),
-                    'p5-form-special' => $page('Form Special (3 variants)', 'fa-solid fa-wand-magic-sparkles', [
-                        'wizard-customer' => ['1 · Form Wizard (step by step)', $c('Wizard')],
-                        'form-filter' => ['2 · Form Filter / Report Criteria', $c('FilterForm')],
-                        'form-quickadd' => ['3 · Form Quick-add inside Grid', $c('Grid')],
+                    // Form Wizard = submenu sendiri, sejajar Single & Master-Detail (user 2026-09-30).
+                    'p5-form-wizard' => $page('Form Wizard', 'fa-solid fa-shoe-prints', [
+                        'wizard-customer' => ['Form Wizard (step by step)', $c('Wizard', 'Wizard\\Step')],
+                    ], 'UIUX_components_part1.html'),
+                    // Form Variant (user 2026-09-30): form lain yang belum masuk keluarga di atas (pola sama dengan Grid Variant).
+                    'p5-form-variant' => $page('Form Variant', 'fa-solid fa-shapes', [
+                        'form-filter' => ['1 · Form Filter / Report Criteria', $c('FilterForm')],
+                        'form-quickadd' => ['2 · Form Quick-add inside Grid', $c('Grid')],
                     ], 'UIUX_components_part1.html'),
                     'form' => ['label' => 'Form · all fields (full screen)', 'icon' => 'fa-solid fa-pen-to-square', 'full' => true,
                         'classes' => $c('Form', 'Form\Col', 'Form\Row', 'DeviceFrame'), 'mockup' => 'UIUX_components_part1.html'],
