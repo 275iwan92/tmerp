@@ -25,6 +25,8 @@ use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\PurchaseOrder;
 use App\Support\V2\Data\PurchaseReceive;
+use App\Support\V2\Data\DeliveryOrder;
+use App\Models\Sdi\DoDelivery;
 use App\Models\Pur\PvReceipt;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PrRequisition;
@@ -424,6 +426,43 @@ Route::prefix('v2')->name('v2.')->group(function () {
             }
 
             return $open($id)->with('v2_flash', $msg);
+        })->whereNumber('id')->name('save');
+    });
+
+    // Delivery Order v2 (App\Support\V2\Data\DeliveryOrder = aturan komponen v1 pages::dispatch.do.entry -> DispatchService).
+    // action = save | pull (tarik jadwal kirim CO) | confirm | ship (Shipped) | cancel (alasan wajib). Surat Jalan memakai rute yang sama.
+    Route::prefix('do')->name('do.')->middleware('module:SALES')->group(function () {
+        $open = fn (int $id, string $slug = 'delivery-order') => redirect(route('v2.screen', $slug).'?id='.$id);
+        Route::post('/create', function (Request $r) use ($open) {
+            $d = $r->validate(['customer_id' => ['required', 'integer']], [], ['customer_id' => 'Customer']);
+            $do = DeliveryOrder::create((int) $d['customer_id']);
+
+            return $open($do->id_delivery)->with('v2_flash', 'Draft DO dibuat — tarik baris dari jadwal kirim Customer Order.');
+        })->name('create');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
+            $do = DoDelivery::findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            $slug = $r->input('from') === 'delivery-notes' ? 'delivery-notes' : 'delivery-order';
+            if (in_array($action, ['confirm', 'ship', 'cancel'], true)) {
+                if ($action === 'confirm' && $do->status === 'DRAFT') {
+                    $err = DeliveryOrder::save($do, $r->all());
+                    if ($err) {
+                        return $open($id, $slug)->withErrors(['save' => $err]);
+                    }
+                }
+                [$ok, $m] = DeliveryOrder::act($do->refresh(), $action, (string) $r->input('_reason', ''));
+
+                return $ok ? $open($id, $slug)->with('v2_flash', ['confirm' => 'DO di-Confirm — Surat Jalan siap dicetak.', 'ship' => 'Barang sudah dikirim (SHIPPED).', 'cancel' => 'DO dibatalkan.'][$action])
+                    : $open($id, $slug)->withErrors(['action' => $m]);
+            }
+            $r->validate(['do_date' => ['nullable', 'date'], 'scheduled_ship_date' => ['nullable', 'date']]);
+            $err = DeliveryOrder::save($do, $r->all());
+            if ($action === 'pull') {
+                abort_unless($r->filled('co_delivery_ids'), 422, 'Pilih jadwal kirim CO.');
+                $err = DeliveryOrder::pull($do->refresh(), (array) $r->input('co_delivery_ids')) ?: $err;
+            }
+
+            return $err ? $open($id, $slug)->withErrors(['save' => $err]) : $open($id, $slug)->with('v2_flash', $action === 'pull' ? 'Baris ditarik dari jadwal kirim CO.' : 'DO tersimpan.');
         })->whereNumber('id')->name('save');
     });
 

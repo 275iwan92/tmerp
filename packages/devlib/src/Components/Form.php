@@ -190,6 +190,7 @@ class Form extends DevlibComponent
                                 <x-dl::button size="sm" :preset="$pre" :label="$lbl ?? ''" :variant="$var ?? 'primary'" :icon="$ico" :href="$act === 'new' ? $newUrl : null" :class="$cls" data-f-act="{{ $act }}" />
                             @endif
                         @endforeach
+                        @if (! $panelActions() && isset($special)){{ $special }}@endif
                         <span class="dl-form__sep"></span>
                         <x-dl::button variant="secondary" size="sm" icon="back" label="Back" :href="$back" data-f-act="back" />
                     </div>
