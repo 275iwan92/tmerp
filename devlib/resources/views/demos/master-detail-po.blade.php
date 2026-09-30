@@ -1,4 +1,4 @@
-<x-dl::master title="Purchase Order" name-key="po_no" code-key="supplier" :pipeline="['DRAFT' => 'Draft', 'SUBMITTED' => 'Diajukan', 'APPROVED' => 'Disetujui', 'CLOSED' => 'Selesai']">
+<x-dl::master title="Purchase Order" name-key="po_no" code-key="supplier" :pipeline="['Draft' => 'Draft', 'Confirmed' => 'Confirmed', 'Closed' => 'Closed']">
     <x-dl::grid id="md-po" :rows="\App\Support\DemoData::purchaseOrders()" actions="worklist" :active-key="null" search="Cari no. PO, supplier..."
         :columns="[
             ['key' => 'po_no', 'label' => 'No. PO'],
@@ -6,9 +6,9 @@
             ['key' => 'supplier', 'label' => 'Supplier'],
             ['key' => 'items', 'label' => 'Item', 'type' => 'number'],
             ['key' => 'total', 'label' => 'Total', 'type' => 'money', 'sum' => true],
-            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'APPROVED' => 'success', 'CLOSED' => 'info', 'CANCELLED' => 'danger']],
+            ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Draft' => 'neutral', 'Confirmed' => 'success', 'Cancelled' => 'danger', 'Closed' => 'info']],
         ]"
-        :tabs="[['label' => 'Semua'], ['label' => 'Perlu Tindakan', 'where' => ['status' => ['DRAFT', 'SUBMITTED']]], ['label' => 'Disetujui', 'where' => ['status' => 'APPROVED']]]" />
+        :tabs="[['label' => 'Semua'], ['label' => 'Draft', 'where' => ['status' => 'Draft']], ['label' => 'Confirmed', 'where' => ['status' => 'Confirmed']]]" />
 
     <x-slot:form>
         <x-dl::form.row cols="3">
@@ -18,7 +18,7 @@
         </x-dl::form.row>
         <x-dl::form.row cols="3">
             <x-dl::field.text name="requester" label="Pemohon" />
-            <x-dl::field.select name="status" label="Status" :options="['DRAFT' => 'Draft', 'SUBMITTED' => 'Diajukan', 'APPROVED' => 'Disetujui', 'CLOSED' => 'Selesai', 'CANCELLED' => 'Batal']" />
+            <x-dl::field.select name="status" label="Status" :options="['Draft' => 'Draft', 'Confirmed' => 'Confirmed', 'Cancelled' => 'Cancelled', 'Closed' => 'Closed']" />
             <x-dl::field.text name="note" label="Catatan" multiline />
         </x-dl::form.row>
         <x-dl::lines name="lines" title="Item Pesanan" total-key="total" count-key="items" :totals="['of' => 'subtotal', 'discount' => true, 'ppn' => 11]"

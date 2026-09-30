@@ -5,14 +5,14 @@
         ['key' => 'supplier', 'label' => 'Supplier'],
         ['key' => 'items', 'label' => 'Item', 'type' => 'number', 'sum' => true],
         ['key' => 'total', 'label' => 'Total', 'type' => 'money', 'sum' => true],
-        ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['DRAFT' => 'neutral', 'SUBMITTED' => 'warn', 'APPROVED' => 'success', 'CLOSED' => 'info', 'CANCELLED' => 'danger']],
+        ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Draft' => 'neutral', 'Confirmed' => 'success', 'Cancelled' => 'danger', 'Closed' => 'info']],
         ['key' => 'note', 'label' => 'Catatan'],
     ]"
     :tabs="[
         ['label' => 'Semua'],
-        ['label' => 'Perlu Tindakan', 'where' => ['status' => ['DRAFT', 'SUBMITTED']]],
-        ['label' => 'Disetujui', 'where' => ['status' => 'APPROVED']],
-        ['label' => 'Selesai / Batal', 'where' => ['status' => ['CLOSED', 'CANCELLED']]],
+        ['label' => 'Draft', 'where' => ['status' => 'Draft']],
+        ['label' => 'Confirmed', 'where' => ['status' => 'Confirmed']],
+        ['label' => 'Closed / Cancelled', 'where' => ['status' => ['Closed', 'Cancelled']]],
     ]"
     :filters="['supplier' => 'Supplier', 'requester' => 'Pemohon']"
     :groups="['supplier' => 'Supplier', 'status' => 'Status']"

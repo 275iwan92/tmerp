@@ -6,9 +6,9 @@
     $grid = url()->current();
     $id = request('id');
     $rows = [
-        ['id' => 1, 'name' => 'PT Contoh Kertas Jaya', 'code' => 'SUP-001', 'city' => 'Surabaya', 'status' => 'DRAFT'],
-        ['id' => 2, 'name' => 'CV Tinta Warna', 'code' => 'SUP-002', 'city' => 'Sidoarjo', 'status' => 'CONFIRMED'],
-        ['id' => 3, 'name' => 'PT Lem Kuat', 'code' => 'SUP-003', 'city' => 'Gresik', 'status' => 'DRAFT'],
+        ['id' => 1, 'name' => 'PT Contoh Kertas Jaya', 'code' => 'SUP-001', 'city' => 'Surabaya', 'status' => 'Draft'],
+        ['id' => 2, 'name' => 'CV Tinta Warna', 'code' => 'SUP-002', 'city' => 'Sidoarjo', 'status' => 'Confirmed'],
+        ['id' => 3, 'name' => 'PT Lem Kuat', 'code' => 'SUP-003', 'city' => 'Gresik', 'status' => 'Draft'],
     ];
     $row = collect($rows)->firstWhere('id', (int) $id);
 @endphp
@@ -21,7 +21,7 @@
             :columns="[
                 ['key' => 'name', 'label' => 'Supplier', 'type' => 'identity', 'code' => 'code'],
                 ['key' => 'city', 'label' => 'Kota'],
-                ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['DRAFT' => 'neutral', 'CONFIRMED' => 'success']],
+                ['key' => 'status', 'label' => 'Status', 'type' => 'badge', 'tones' => ['Draft' => 'neutral', 'Confirmed' => 'success']],
             ]" />
     @else
         @if (request('saved'))<x-dl::alert tone="success" message="Tersimpan (demo, tanpa database)." />@endif

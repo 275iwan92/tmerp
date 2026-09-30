@@ -153,7 +153,7 @@ final class DemoData
             $out[$k]['po']++;
             $out[$k]['items'] += $p['items'];
             $out[$k]['total'] += $p['total'];
-            $out[$k]['open'] += in_array($p['status'], ['DRAFT', 'SUBMITTED', 'APPROVED']) ? 1 : 0;
+            $out[$k]['open'] += in_array($p['status'], ['Draft', 'Confirmed']) ? 1 : 0;
         }
 
         return array_values($out);
@@ -260,7 +260,7 @@ final class DemoData
                 'lines_discount' => 0,
                 'lines_ppn' => true,
                 'total' => round(array_sum(array_column($lines, 'subtotal')) * 1.11, 2),
-                'status' => ['DRAFT', 'SUBMITTED', 'APPROVED', 'APPROVED', 'CLOSED', 'CANCELLED'][$i % 6],
+                'status' => ['Draft', 'Confirmed', 'Confirmed', 'Confirmed', 'Closed', 'Cancelled'][$i % 6],  // status baku (user 2026-09-30)
                 'requester' => ['Andi Pratama', 'Siti Rahma', 'Joko Santoso'][$i % 3],
                 'note' => $i % 4 === 0 ? 'Kirim bertahap sesuai jadwal cetak minggu ini; konfirmasi ulang ke gudang sebelum barang diturunkan.' : 'Reguler',
             ];
