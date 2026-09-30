@@ -25,6 +25,23 @@
 - Field Money: nilai DB `1250000.00` dibulatkan lalu diformat `1.250.000` (Blade + JS), tidak lagi 125.000.000.
 - Sheet kalkulator mini: presisi hasil memakai `col.decimals` (dulu `c.decimals` = indeks kolom).
 
+## 2026-10-01 -- Cancel SPB (pengganti trigger legacy) + toleransi terima dari konstanta
+
+- Trigger legacy pembelian->stok (dump `docs/ddl/tm_20260911.sql`) dicek: `inv_in_detail`/`pur_prcv_detail` (hitung
+  barang masuk PO), `pur_po_detail` (CLOSED bila diterima >= 90%), `pur_po` (terbilang) sudah punya padanan PHP
+  (`PvPostingService::recalcPo`, terbilang saat render); `inv_book` 4 trigger isinya sudah dimatikan di legacy.
+  Server tm2*/ddt* sendiri tidak punya trigger.
+- Yang belum ada = `pur_prcv_detail AFTER DELETE` -> dibangun sebagai **Cancel SPB** (`PvPostingService::cancel`):
+  SPB POSTED -> Stock Out RM ber-ref `PV_CANCEL` (ditolak bila stok sudah terpakai), PO dihitung ulang (kembali SENT
+  bila tidak ada penerimaan tersisa), jurnal Dr Persediaan / Cr GR/IR dibalik; tanpa jurnal HPP. Alasan min. 10 huruf;
+  ditolak bila sudah diserahkan/ditagih atau sudah ada Purchase Return. Tombol Cancel di layar v2 Penerimaan Barang.
+- Toleransi terima: per item (`mat_raw.tol_purchase`), kosong -> Settings > Constants `RECEIVE_TOLERANCE_PCT`
+  (dulu angka 5 tertulis di kode `PvPostingService` & `PvLine`).
+- Diuji siklus Post -> Cancel di ddt* (PO2600005), data uji dihapus & nilai awal dikembalikan. Migration
+  `2026_10_01_000020_pv_receipt_cancel_columns` di ddt* saja; tm2* menunggu OK user.
+
+---
+
 ## 2026-10-01 -- Purchase Quotation v2: upload file penawaran -> dibaca -> bandingkan -> Buat PO
 
 - Layar v2 `purchase-quotation` (menu PROC_PQ, ddtsys): upload file dari email supplier (PDF/Excel/CSV/JPG/PNG, maks. 10),

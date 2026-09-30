@@ -17,7 +17,7 @@ class PvReceipt extends Model
         'doc_no', 'i_doc_date', 'i_supplier_id', 'i_warehouse_code',
         'i_supplier_do_no', 'i_vehicle_no', 'i_notes',
         'c_po_count', 'c_po_doc_list',
-        'status', 'posted_at', 'posted_by', 'rm_stock_doc_id',
+        'status', 'posted_at', 'posted_by', 'rm_stock_doc_id', 'cancel_reason', 'cancelled_at', 'cancelled_by', 'rm_stock_rev_doc_id',
         'is_handed_over', 'handed_over_at', 'handed_over_by',
         'created_by', 'updated_by',
     ];
@@ -25,6 +25,7 @@ class PvReceipt extends Model
     protected $casts = [
         'i_doc_date' => 'date',
         'posted_at' => 'datetime',
+        'cancelled_at' => 'datetime',
         'is_handed_over' => 'boolean',
         'handed_over_at' => 'datetime',
     ];

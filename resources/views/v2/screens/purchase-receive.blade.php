@@ -77,7 +77,7 @@
 
     <x-dl::form id="pv-form" :title="'Penerimaan Barang · '.$pv->doc_no" :subtitle="($sup->supplier_name ?? '—').' · '.$pv->status"
         panel="top" kind="document" :status="PurchaseReceive::formStatus($pv)" :pipeline="true"
-        :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['cancel', 'duplicate', 'email', 'print'], $pv->status === 'DRAFT' ? [] : ['delete'])"
+        :action="route('v2.pv.save', $pv->pv_id)" action-field="action" :back="$home" :new-url="$home.'?new=1'" :hide="array_merge(['duplicate', 'email', 'print'], $pv->status === 'POSTED' ? [] : ['cancel'], $pv->status === 'DRAFT' ? [] : ['delete'])"
         :tabs="['general' => 'General', 'supplier' => 'Supplier', 'notes' => 'Notes']"
         :created-by="$pv->created_by" :created-at="$pv->created_at?->toDateTimeString()" :updated-by="$pv->updated_by" :updated-at="$pv->updated_at?->toDateTimeString()">
         <x-slot:strip>
@@ -104,6 +104,9 @@
         </x-slot:supplier>
         <x-slot:notes>
             <x-dl::field.text name="i_notes" label="Catatan penerimaan" multiline :value="$pv->i_notes" :source="Src::of('tm2pur.pv_receipt.i_notes')" />
+            @if ($pv->status === 'CANCELLED')
+                <x-dl::field.display label="Dibatalkan" :value="$pv->cancelled_by.' · '.$pv->cancelled_at?->format('d-M-Y H:i').' — '.$pv->cancel_reason" :source="Src::of('tm2pur.pv_receipt.cancel_reason', 'cancelled_by', 'cancelled_at', 'rm_stock_rev_doc_id')" />
+            @endif
         </x-slot:notes>
         <x-slot:detail>
             <x-dl::lines name="lines" title="Details" key-field="pv_line_id" :addable="false" :duplicable="false" row-lock="__never" :min-rows="0" :rows="$lines" :readonly="! $draft"

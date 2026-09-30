@@ -2,13 +2,15 @@
 
 namespace App\Services\Pur;
 
+use App\Models\Acc\FinVoucher;
+use App\Models\Inventory\RmStock;
 use App\Models\Master\MatCategory;
 use App\Models\Master\MatRaw;
 use App\Models\Master\WhLoc;
 use App\Models\Master\WhWarehouse;
-use App\Models\Pur\PoLine;
 use App\Models\Pur\PoOrder;
 use App\Models\Pur\PvReceipt;
+use App\Models\Sys\SysConstant;
 use App\Services\Acc\JournalPostingService;
 use App\Services\Inventory\StockDocumentService;
 use App\Services\Inventory\StockPostingService;
@@ -107,6 +109,92 @@ class PvPostingService
         $journalWarning = static::postPurchaseJournal($pv, $login);
 
         return ['ok' => true, 'message' => null, 'journal_warning' => $journalWarning];
+    }
+
+    // CANCEL SPB (user 2026-10-01) -- pengganti trigger legacy pur_prcv_detail AFTER DELETE (hitung ulang barang masuk
+    // PO saat penerimaan dihapus). SPB POSTED tidak dihapus, tapi dibalik dengan urutan yang sama seperti post():
+    // (1) stok keluar lagi lewat dokumen Stock Out RM ber-ref PV_CANCEL (StockPostingService, jalur sah satu-satunya
+    // ke kartu stok; ditolak bila saldo jadi negatif = barang sudah terpakai -> pakai Purchase Return / Adjustment),
+    // (2) tm2pur: status CANCELLED + hitung ulang semua PO tersentuh (recalcPo hanya menghitung PV POSTED),
+    // (3) jurnal Dr Persediaan / Cr GR/IR dibalik (JournalPostingService::reverse) -- gagal di sini = peringatan saja,
+    // sama seperti jurnal saat post.
+    public static function cancel(PvReceipt $pv, string $reason): array
+    {
+        if ($pv->status !== 'POSTED') {
+            return ['ok' => false, 'message' => 'Hanya penerimaan POSTED yang bisa di-Cancel (Draft cukup dihapus).'];
+        }
+        if (mb_strlen(trim($reason)) < 10) {
+            return ['ok' => false, 'message' => 'Alasan pembatalan wajib diisi, minimal 10 karakter.'];
+        }
+        if ($pv->is_handed_over) {
+            return ['ok' => false, 'message' => 'Penerimaan ini sudah diserahkan / ditagih — tidak bisa di-Cancel.'];
+        }
+        $returns = DB::connection('tm2pur')->table('prt_return')->where('pv_id', $pv->pv_id)->where('status', '!=', 'CANCELLED')->pluck('doc_no');
+        if ($returns->isNotEmpty()) {
+            return ['ok' => false, 'message' => 'Sudah ada Purchase Return ('.$returns->implode(', ').') dari penerimaan ini — batalkan returnya dulu.'];
+        }
+
+        $login = Auth::user()->login;
+
+        try {
+            $revDocId = static::reverseInventory($pv, $login);
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'message' => 'Gagal membalik stok: '.$e->getMessage()];
+        }
+
+        DB::connection('tm2pur')->transaction(function () use ($pv, $login, $revDocId, $reason) {
+            $pv->update(['status' => 'CANCELLED', 'cancel_reason' => mb_substr(trim($reason), 0, 255), 'cancelled_at' => now(),
+                'cancelled_by' => $login, 'rm_stock_rev_doc_id' => $revDocId, 'updated_by' => $login]);
+            $poIds = DB::connection('tm2pur')->table('pv_line')->where('pv_id', $pv->pv_id)->select('c_po_id')->distinct()->pluck('c_po_id');
+            foreach ($poIds as $poId) {
+                static::recalcPo($poId);
+            }
+        });
+
+        $warning = null;
+        $voucher = FinVoucher::withoutGlobalScopes()->where('source_type', 'PV')->where('source_id', $pv->pv_id)
+            ->where('status', 'POSTED')->whereNull('reversed_by_id')->first();
+        if ($voucher) {
+            try {
+                app(JournalPostingService::class)->reverse($voucher, now()->toDateString(), $login, "Cancel {$pv->doc_no}: ".trim($reason));
+            } catch (\Throwable $e) {
+                $warning = "Jurnal {$voucher->voucher_number} belum dibalik: ".$e->getMessage();
+            }
+        }
+
+        return ['ok' => true, 'message' => null, 'journal_warning' => $warning];
+    }
+
+    // Stock Out RM berisi baris yang persis sama dgn dokumen Stock In hasil post() (item, lokasi, lot, qty).
+    protected static function reverseInventory(PvReceipt $pv, string $login): ?int
+    {
+        $in = $pv->rm_stock_doc_id ? RmStock::with('lines')->find($pv->rm_stock_doc_id) : null;
+        if (! $in || ! $in->stat_confirm || $in->lines->isEmpty()) {
+            return null;
+        }
+
+        $docService = app(StockDocumentService::class);
+        $docId = $docService->saveDraft('RM', null, [
+            'doc_no' => $docService->nextDocNo('RM', 'OUT'),
+            'doc_date' => now()->toDateString(),
+            'doc_type' => -1,
+            'doc_cat' => 'STOCK',
+            'ref_doc_type' => 'PV_CANCEL',
+            'ref_doc_id' => $pv->pv_id,
+            'ref_doc_no' => $pv->doc_no,
+            'warehouse_id' => $in->warehouse_id,
+            'notes' => "Pembalik Penerimaan Barang {$pv->doc_no} (Cancel SPB, dokumen masuk {$in->doc_no})",
+        ], $in->lines->map(fn ($l) => ['material_id' => $l->material_id, 'qty' => (float) $l->qty, 'uom_code' => $l->uom_code,
+            'unit_price' => (float) $l->unit_price, 'lot_no' => $l->lot_no, 'location_id' => $l->location_id])->all(), $login);
+
+        $result = app(StockPostingService::class)->postDocument('RM', $docId, $login);
+        if (! $result['posted']) {
+            $docService->cancel('RM', $docId, $login);
+
+            throw new \RuntimeException(($result['error'] ?? 'tidak diketahui').' Barang kemungkinan sudah terpakai — pakai Purchase Return / Stock Adjustment.');
+        }
+
+        return $docId;
     }
 
     // Bangun + posting SATU dokumen Stock In RM dari baris PV yang is_stock=1
@@ -260,7 +348,8 @@ class PvPostingService
                 ->sum('pv_line.i_qty_purchase');
 
             $outstanding = max((float) $line->i_qty - $received, 0);
-            $tolPct = (float) ($line->c_tol_pct ?? 5);
+            // Toleransi per item (mat_raw.tol_purchase, disalin ke po_line) -> kosong = Settings > Constants RECEIVE_TOLERANCE_PCT.
+            $tolPct = (float) ($line->c_tol_pct ?? SysConstant::number('RECEIVE_TOLERANCE_PCT', 5));
             $variancePct = $line->i_qty > 0 ? ($outstanding / $line->i_qty * 100) : 0;
 
             $status = match (true) {
@@ -280,6 +369,8 @@ class PvPostingService
         $newStatus = match (true) {
             $allClosed => 'RECEIVED',
             $anyReceived => 'PARTIALLY_RECEIVED',
+            // Semua penerimaan PO ini di-Cancel -> kembali ke SENT (siap diterima lagi).
+            in_array($po->status, ['RECEIVED', 'PARTIALLY_RECEIVED'], true) => 'SENT',
             default => $po->status,
         };
 

@@ -6,6 +6,7 @@ use App\Models\Master\FlowConfig;
 use App\Models\Master\ProdProduct;
 use App\Models\Master\ProdProductAcc;
 use App\Models\Pur\PoOrder;
+use App\Models\Pur\PqQuotation;
 use App\Models\Pur\PrRequisition;
 use App\Models\Pur\PvReceipt;
 use App\Models\Sdi\CoOrder;
@@ -30,6 +31,7 @@ use App\Support\V2\Data\CustomerOrder;
 use App\Support\V2\Data\DeliveryOrder;
 use App\Support\V2\Data\Prodev;
 use App\Support\V2\Data\PurchaseOrder;
+use App\Support\V2\Data\PurchaseQuotation;
 use App\Support\V2\Data\PurchaseReceive;
 use App\Support\V2\Data\PurchaseRequisition;
 use App\Support\V2\Data\Quotation;
@@ -370,6 +372,68 @@ Route::prefix('v2')->name('v2.')->group(function () {
         })->whereNumber('id')->name('save');
     });
 
+    // Purchase Quotation v2 (App\Support\V2\Data\PurchaseQuotation): upload file penawaran -> PQ Draft terbaca -> cek -> Confirm ->
+    // Bandingkan per PR -> Buat PO. action (save) = save | confirm | cancel | delete; Buat PO = POST pq/po.
+    Route::prefix('pq')->name('pq.')->middleware('module:PROC')->group(function () {
+        $home = fn () => route('v2.screen', 'purchase-quotation');
+        $open = fn (int $id) => redirect($home().'?id='.$id);
+        Route::post('/upload', function (Request $r) use ($home, $open) {
+            $r->validate(['pr_id' => ['nullable', 'integer'], 'files' => ['required', 'array', 'min:1', 'max:10'], 'files.*' => ['file', 'max:20480']],
+                [], ['files' => 'File penawaran', 'files.*' => 'File penawaran']);
+            $made = [];
+            $errors = [];
+            foreach ($r->file('files') as $f) {
+                try {
+                    $made[] = PurchaseQuotation::upload($r->filled('pr_id') ? (int) $r->input('pr_id') : null, $f);
+                } catch (InvalidArgumentException $e) {
+                    $errors[] = $e->getMessage();
+                }
+            }
+            if (count($made) === 1 && ! $errors) {
+                return $open($made[0]->pq_id)->with('v2_flash', 'File terbaca menjadi PQ Draft — cek baris kuning, lalu Confirm.');
+            }
+            $back = redirect($home())->with('v2_flash', count($made).' file menjadi PQ Draft — buka satu per satu untuk dicek.');
+
+            return $errors ? $back->withErrors(['files' => implode(' ', $errors)]) : $back;
+        })->name('upload');
+        Route::post('/{id}/save', function (Request $r, int $id) use ($home, $open) {
+            $pq = PqQuotation::findOrFail($id);
+            $action = (string) $r->input('action', 'save');
+            if ($action === 'delete') {
+                PurchaseQuotation::delete($pq);
+
+                return redirect($home())->with('v2_flash', 'Draft PQ dihapus.');
+            }
+            if ($action === 'cancel') {
+                $err = PurchaseQuotation::cancel($pq, (string) $r->input('_reason', ''));
+
+                return $err ? $open($id)->withErrors(['cancel' => $err]) : $open($id)->with('v2_flash', 'PQ dibatalkan.');
+            }
+            $r->validate(['i_doc_date' => ['nullable', 'date'], 'i_quotation_valid_until' => ['nullable', 'date'], 'i_fx_rate' => ['nullable', 'numeric', 'min:0']]);
+            PurchaseQuotation::save($pq, $r->all());
+            if ($action === 'confirm') {
+                $err = PurchaseQuotation::confirm($pq->refresh());
+
+                return $err ? $open($id)->withErrors(['confirm' => 'Belum bisa Confirm: '.implode(' ', $err)]) : $open($id)->with('v2_flash', "PQ {$pq->doc_no} di-Confirm — siap dibandingkan & dijadikan PO.");
+            }
+
+            return $open($id)->with('v2_flash', 'PQ tersimpan.');
+        })->whereNumber('id')->name('save');
+        // Buat PO dari baris PQ terpilih (layar Bandingkan atau tombol di form PQ).
+        Route::post('/po', function (Request $r) {
+            $ids = array_merge((array) $r->input('pq_line_ids', []), array_values(array_filter((array) $r->input('pick', []))));
+            try {
+                $pos = PurchaseQuotation::createPo($ids);
+            } catch (InvalidArgumentException $e) {
+                return back()->withErrors(['po' => $e->getMessage()]);
+            }
+            $first = array_key_first($pos);
+
+            return redirect(route('v2.screen', 'purchase-order').(count($pos) === 1 ? '?id='.$first : ''))
+                ->with('v2_flash', 'Baris penawaran masuk ke '.implode(', ', $pos).' — lanjutkan di Purchase Order.');
+        })->name('po');
+    });
+
     // Purchase Order v2 (App\Support\V2\Data\PurchaseOrder = aturan komponen v1 pages::pur.po.entry). Satu rute simpan:
     // action = save | confirm (Submit) | approve | reject | hold | send (Kirim ke Supplier) | delete | add_alloc.
     Route::prefix('po')->name('po.')->middleware('module:PROC')->group(function () {
@@ -419,7 +483,7 @@ Route::prefix('v2')->name('v2.')->group(function () {
     });
 
     // Penerimaan Barang / SPB v2 (App\Support\V2\Data\PurchaseReceive = aturan komponen v1 pages::pur.pv.entry).
-    // action = save | confirm (Post: stok masuk + jurnal) | delete | add_lines.
+    // action = save | confirm (Post: stok masuk + jurnal) | cancel (balik Post) | delete | add_lines.
     Route::prefix('pv')->name('pv.')->middleware('module:PROC')->group(function () {
         $open = fn (int $id) => redirect(route('v2.screen', 'purchase-receive').'?id='.$id);
         Route::post('/create', function (Request $r) use ($open) {
@@ -436,6 +500,11 @@ Route::prefix('v2')->name('v2.')->group(function () {
         Route::post('/{id}/save', function (Request $r, int $id) use ($open) {
             $pv = PvReceipt::findOrFail($id);
             $action = (string) $r->input('action', 'save');
+            if ($action === 'cancel') {
+                [$ok, $m] = PurchaseReceive::cancel($pv, (string) $r->input('_reason', ''));
+
+                return $ok ? $open($id)->with('v2_flash', $m) : $open($id)->withErrors(['cancel' => $m]);
+            }
             if ($action === 'delete') {
                 PurchaseReceive::delete($pv);
 

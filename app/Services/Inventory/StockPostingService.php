@@ -66,7 +66,7 @@ class StockPostingService
         $usageJournalRows = [];
 
         $result = DB::connection('tm2inv')->transaction(function () use ($map, $category, $docId, $actingUser, &$usageJournalRows) {
-            /** @var \App\Models\Inventory\RmStock|\App\Models\Inventory\FgStock|\App\Models\Inventory\SfgStock $header */
+            /** @var RmStock|FgStock|SfgStock $header */
             $header = $map['header']::with('lines')->lockForUpdate()->findOrFail($docId);
 
             if ($header->stat_confirm) {
@@ -142,7 +142,9 @@ class StockPostingService
                 // dilewati + masuk peringatan "belum lengkap", bukan silent skip.
                 // Nilai pakai avg_unitprice SEBELUM baris ini (prevAvg) -- itu
                 // valuasi moving-average yang sah saat barang ini keluar.
-                if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT') {
+                // Pembalik penerimaan (Cancel SPB, ref PV_CANCEL) bukan pemakaian produksi: jurnalnya = pembalik jurnal
+                // pembelian (PvPostingService::cancel), jadi TIDAK ikut jurnal HPP di sini.
+                if (in_array($category, ['RM', 'SFG'], true) && $docType === 'OUT' && $header->ref_doc_type !== 'PV_CANCEL') {
                     $usageJournalRows[] = ['category' => $category, 'item_id' => $itemId, 'qty' => abs($qtyFinal), 'unit_cost' => $prevAvg];
                 }
 

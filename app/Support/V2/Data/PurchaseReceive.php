@@ -122,6 +122,14 @@ final class PurchaseReceive
         return [$r['ok'], $r['ok'] ? trim('Penerimaan diposting — stok masuk. '.($r['journal_warning'] ?? '')) : $r['message']];
     }
 
+    // Cancel = pembalik SPB POSTED (PvPostingService::cancel): stok keluar lagi, PO dihitung ulang, jurnal dibalik.
+    public static function cancel(PvReceipt $pv, string $reason): array
+    {
+        $r = PvPostingService::cancel($pv->refresh()->load('lines'), $reason);
+
+        return [$r['ok'], $r['ok'] ? trim('Penerimaan dibatalkan — stok dikeluarkan lagi, PO dihitung ulang. '.($r['journal_warning'] ?? '')) : $r['message']];
+    }
+
     public static function delete(PvReceipt $pv): void
     {
         abort_unless($pv->status === 'DRAFT', 422, 'Hanya penerimaan DRAFT yang bisa dihapus.');

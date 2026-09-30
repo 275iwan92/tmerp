@@ -2,6 +2,7 @@
 
 namespace App\Models\Pur;
 
+use App\Models\Sys\SysConstant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -55,6 +56,6 @@ class PvLine extends Model
 
         $variance = ($this->i_qty_purchase - $qtyOutstandingBeforeThis) / $qtyOutstandingBeforeThis * 100;
         $this->c_qty_variance_pct = round($variance, 4);
-        $this->is_tol_exceeded = $variance > (float) ($this->c_tol_pct ?? 5);
+        $this->is_tol_exceeded = $variance > (float) ($this->c_tol_pct ?? SysConstant::number('RECEIVE_TOLERANCE_PCT', 5));
     }
 }
